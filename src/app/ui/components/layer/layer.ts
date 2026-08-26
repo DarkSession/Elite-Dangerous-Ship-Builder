@@ -58,6 +58,13 @@ export type LayerWidth = 'default' | 'wide';
  *
  * Dismissal restores the invoking control, so a Commander who opens a layer
  * from a row ends up back on that row rather than at the top of the document.
+ *
+ * A click on the ground around the layer dismisses it, as the reference does on
+ * both of its modals (Commander request 2026-08-26). It is the same act as
+ * Escape, which the native element has always honoured here through its own
+ * `close` event, and it means the same thing: every layer's dismissal is a
+ * cancel, and the one destructive answer any of them offers is behind a button
+ * a Commander has to press.
  */
 @Component({
   selector: 'edsb-layer',
@@ -136,6 +143,35 @@ export class Layer {
 
   dismiss(): void {
     this.dismissed.emit();
+  }
+
+  /**
+   * Dismiss a click that landed on the ground rather than on the layer.
+   *
+   * Two checks, and both are needed. The target says the click reached the
+   * dialog element itself rather than bubbling from something inside it; the
+   * box says it was outside the panel rather than on the padding the panel
+   * draws around its own content, which is still the dialog element.
+   *
+   * A click a keyboard produced carries no position — it reports the origin —
+   * so the box check would call it a backdrop click. It never reaches here:
+   * such a click is dispatched at the control that was activated, and the
+   * target check has already turned it away.
+   */
+  dismissFromBackdrop(event: MouseEvent): void {
+    const dialog = event.currentTarget;
+    if (event.target !== dialog || !(dialog instanceof HTMLElement)) {
+      return;
+    }
+    const box = dialog.getBoundingClientRect();
+    const onThePanel =
+      event.clientX >= box.left &&
+      event.clientX <= box.right &&
+      event.clientY >= box.top &&
+      event.clientY <= box.bottom;
+    if (!onThePanel) {
+      this.dismiss();
+    }
   }
 
   #dialog(): HTMLDialogElement | null {

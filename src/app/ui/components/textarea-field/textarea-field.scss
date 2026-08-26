@@ -1,3 +1,4 @@
+@use '../../../../styles/responsive' as layout;
 @use '../field/field';
 
 // The payload mode the reference draws: monospaced, and isolated so a
@@ -15,4 +16,11 @@
 
 .field__control[readonly] {
   background-color: var(--edsb-surface-sunken);
+}
+
+// Read, but not drawn. For a field the surface around it already names in
+// words a reader can see — the exchange layers, whose title and description
+// say what the one control below them takes (Commander request 2026-08-26).
+.field__label--hidden {
+  @include layout.visually-hidden;
 }

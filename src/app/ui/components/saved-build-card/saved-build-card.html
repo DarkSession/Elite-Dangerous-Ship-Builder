@@ -30,15 +30,32 @@
       <span class="record__note">{{ note }}</span>
     }
 
+    <!--
+      Three facts the canvas does not draw, kept where a reader can still get
+      them (Commander request 2026-08-26).
+
+      The row it drew them on carried `Current build`, `Valid` and
+      `Deleted in 6 days` beneath the title, which is three lines of chrome on
+      every row of a library the canvas draws as four dense columns. Each is
+      already said by something the canvas *does* draw: the row the workspace
+      holds is the one on the amber edge, and it is `aria-current` besides; a
+      build with issues carries their count on a warm plate beside its title,
+      and a build with none carries nothing, which is what a clean build looks
+      like. So they stay as text and stop being ink.
+
+      The remaining life is the one that loses something real. FR-013 accepted
+      a record vanishing on a clock because FR-010 put the countdown on the
+      row — that notice is now read aloud rather than drawn, and a Commander
+      who does not use a screen reader sees a record's last days only if they
+      go looking. The request was explicit and the spec records the trade.
+    -->
     <span class="record__states">
       @if (build().current) {
-        <span class="record__current">{{ build().currentLabel }}</span>
+        <span>{{ build().currentLabel }}</span>
       }
-      <span class="record__validation record__validation--{{ build().validation.tone }}">
-        {{ build().validation.label }}
-      </span>
+      <span>{{ build().validation.label }}</span>
       @if (build().remaining; as remaining) {
-        <span class="record__remaining">{{ remaining }}</span>
+        <span>{{ remaining }}</span>
       }
     </span>
   </span>

@@ -28,6 +28,23 @@ describe('ShareLinkPanel', () => {
     expect(text).toContain(BUNDLED_ENGLISH['link.copy-failed']);
   });
 
+  it('answers a copy on the control that did it, and adds nothing beside it', () => {
+    const idle = renderComponent(ShareLinkPanel, { state: 'published', url: URL });
+    const copied = renderComponent(ShareLinkPanel, {
+      state: 'published',
+      url: URL,
+      feedback: 'copied',
+    });
+
+    expect(textOf(element(idle))).toContain(BUNDLED_ENGLISH['link.copy']);
+    expect(textOf(element(copied))).toContain(BUNDLED_ENGLISH['link.copied']);
+    // The label swapped rather than a notice arriving under it, so the panel
+    // does not grow a second place saying the same thing.
+    expect(textOf(element(copied))).not.toContain(BUNDLED_ENGLISH['link.copy']);
+    expect(query(copied, '.share-link__actions edsb-action-button')).not.toBeNull();
+    expect(element(copied).querySelector('edsb-status-notice')).toBeNull();
+  });
+
   it('says a share that did not start is not a lost link', () => {
     const fixture = renderComponent(ShareLinkPanel, {
       state: 'published',

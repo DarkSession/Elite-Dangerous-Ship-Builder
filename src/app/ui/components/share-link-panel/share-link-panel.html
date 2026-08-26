@@ -1,6 +1,5 @@
 <section class="share-link" [attr.aria-labelledby]="panelId + '-title'">
   <h3 class="share-link__title" [id]="panelId + '-title'">{{ title() }}</h3>
-  <p class="share-link__description">{{ description() }}</p>
 
   @switch (state()) {
     @case ('encoding') {

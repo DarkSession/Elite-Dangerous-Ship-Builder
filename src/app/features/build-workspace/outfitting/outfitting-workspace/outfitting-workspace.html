@@ -20,10 +20,17 @@
   <h2 class="visually-hidden" [id]="regionHeadingId">{{ regionLabel() }}</h2>
 
   <!--
-    Both halves of the ingress gate's answer, above everything else on the
-    screen. They are drawn outside the has-a-build branch on purpose: a refused
+    The refusing half of the ingress gate's answer, above everything else on the
+    screen. It is drawn outside the has-a-build branch on purpose: a refused
     build is exactly the case where there may be nothing open to describe, and
     that is when the reason matters most (FR-013).
+
+    Its other half — what the Almanac completed on a build that *was* accepted —
+    is not here. It goes under `BUILD STATUS` in the rail below, beside the
+    package's own verdict on the build that arrived (Commander request
+    2026-08-26). A completion is a remark about a build a Commander now has
+    open, not a reason they cannot have one, and a banner over the whole screen
+    said otherwise every time an import succeeded.
   -->
   <edsb-ingress-refusal-notice
     class="outfitting__feedback"
@@ -31,14 +38,6 @@
     [revision]="revision()"
     [slotLabels]="slotLabels()"
     (dismissed)="active.dismissIngressRefusal()"
-  />
-
-  <edsb-quality-completion-notice
-    class="outfitting__feedback"
-    [notices]="qualityNotices()"
-    [revision]="revision()"
-    [slotLabels]="slotLabels()"
-    (dismissed)="active.setQualityCompletionNotices([])"
   />
 
   @if (!store.hasBuild()) {
@@ -230,6 +229,20 @@
           {{ statusRailLabel() }}
         </p>
         <edsb-build-status />
+
+        <!--
+          What the Almanac completed while this build was read in, under the
+          same heading as what it says is wrong with it. Both are the package's
+          reading of the build now open, and the rail is where this screen puts
+          that reading (Commander request 2026-08-26).
+        -->
+        <edsb-quality-completion-notice
+          class="outfitting__feedback"
+          [notices]="qualityNotices()"
+          [revision]="revision()"
+          [slotLabels]="slotLabels()"
+          (dismissed)="active.setQualityCompletionNotices([])"
+        />
       </div>
 
       <!--

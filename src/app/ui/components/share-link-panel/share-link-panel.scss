@@ -17,7 +17,6 @@
   @include layout.display-title(var(--edsb-text-size-heading-sm));
 }
 
-.share-link__description,
 .share-link__slef-unavailable {
   font-weight: var(--edsb-text-weight-prose);
   color: var(--edsb-text-subtle);

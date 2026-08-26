@@ -121,12 +121,24 @@ browser and share builds by URL. SLEF import and export are specified in
   MUST delete the unnamed record afterwards. Saving a copy under another name MUST create a further
   record and leave the original where it is. Replacing the active build MUST NOT be confirmed,
   because FR-008 leaves nothing to lose.
-- **FR-010**: Stored entries MUST show their name or that they have none, hull, last-modified time
-  and the validation state recorded at that time. An unnamed entry MUST also show how long it has
+- **FR-010**: Stored entries MUST state their name or that they have none, hull, last-modified time
+  and the validation state recorded at that time. An unnamed entry MUST also state how long it has
   before it expires, and MUST be titled by the build's own ship name, by its ident where there is no
-  ship name, or by the hull name where there is neither. That title MUST be read from the build
+  ship name, or by the hull name where there is neither.
+
+  **Ruled 2026-08-26 (Commander request).** "State" rather than "show": the recorded validation, the
+  remaining life and the marker on the record the workspace holds are all read but not drawn. The
+  canvas draws a row of four columns — build, hull, price, edited — with a count of the build's
+  issues on a warm plate beside its title and nothing else beneath it, and three further lines of
+  chrome on every row is not that row. Two of the three lose nothing: the row the workspace holds is
+  the one on the amber edge and carries `aria-current`, and a build with issues carries their count
+  where the canvas puts it, while a build with none carries nothing, which is what a clean build
+  looks like.
+
+  The remaining life is the one that costs something, and FR-013 below records what. That title MUST be read from the build
   rather than stored on the record, MUST NOT be a name the application invented, and MUST be
   distinguished from a name the Commander gave the record. A build MAY have one local note.
+
 - **FR-011**: Notes and storage identities MUST remain local and MUST NOT enter a build link or SLEF
   export.
 - **FR-012**: A record deleted by another live page MUST NOT clear that page's active build. The
@@ -149,6 +161,13 @@ browser and share builds by URL. SLEF import and export are specified in
   The sweep MUST NOT be announced after it has run. FR-010's remaining time on the entry is the
   notice, given while there is still something a Commander can do about it; a message about builds
   that are already gone offers nothing to act on and no way back.
+
+  **Amended 2026-08-26 (Commander request).** That notice is now read rather than drawn — see
+  FR-010. It is still on the entry, still given while the record is there to save, and still the
+  only warning; what changed is that a Commander who does not use a screen reader meets it only by
+  going to the record. The trade was made deliberately and is stated here rather than left for
+  somebody to discover: an unnamed record can now run out without any drawn warning that it was
+  going to.
 
   Expiry is not a storage bound and MUST NOT be presented as one: at the browser storage quota the
   Commander MUST still be able to choose records to discard while the active in-memory build remains

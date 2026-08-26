@@ -442,6 +442,48 @@ describe('Layer', () => {
     expect(dismissals).toBe(1);
   });
 
+  it('dismisses a click on the ground around it, and not one on itself', () => {
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+    const dialog = query(fixture, 'dialog');
+    // jsdom lays nothing out, so the panel's box is declared rather than
+    // measured. What is being checked is the rule, not the renderer.
+    dialog.getBoundingClientRect = () =>
+      ({ left: 100, right: 300, top: 100, bottom: 300 }) as DOMRect;
+
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 200, clientY: 200 }));
+    expect(dismissals).toBe(0);
+
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 20, clientY: 20 }));
+    expect(dismissals).toBe(1);
+  });
+
+  it('leaves a click inside the layer to whatever it landed on', () => {
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+    query(fixture, 'dialog').getBoundingClientRect = () =>
+      ({ left: 100, right: 300, top: 100, bottom: 300 }) as DOMRect;
+
+    // A click on the title bubbles to the dialog carrying the title as its
+    // target, and reports the origin because nothing positioned it. Without
+    // the target check, the box check alone would dismiss the layer.
+    query(fixture, '.layer__title').dispatchEvent(
+      new MouseEvent('click', { bubbles: true, clientX: 0, clientY: 0 }),
+    );
+
+    expect(dismissals).toBe(0);
+  });
+
   it('gives the dismiss control a visible label', () => {
     const fixture = renderComponent(Layer, {
       title: 'Import a build',

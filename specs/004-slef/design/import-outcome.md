@@ -9,7 +9,8 @@ The reference review found `imp-modal`, `simp-modal`, `mimp-modal`, `exp-modal` 
 notice or region that reports what an accepted import did. What such a surface would have said is
 already drawn twice over, by screens that exist:
 
-- **the completed partial rolls** — feature 002's quality-completion notice in the build workspace,
+- **the completed partial rolls** — feature 002's quality-completion notice, drawn in the build
+  workspace's status rail under `BUILD STATUS` since the 2026-08-26 request,
   which reads `ActiveBuildStore.qualityCompletionNotices`, is bound to the active revision and is
   dismissible;
 - **the package verdict, issue by issue** — feature 003's build-status rail, which renders the

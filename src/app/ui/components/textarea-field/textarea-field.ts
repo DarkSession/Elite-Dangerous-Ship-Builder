@@ -44,6 +44,19 @@ export class TextareaField {
   /** Monospaced and direction-isolated, for a payload rather than prose. */
   readonly technical = input(false);
 
+  /**
+   * The label is read but not drawn.
+   *
+   * For the one case where the surface around the field already names it in
+   * words a reader can see — a layer titled `Import build` whose only control
+   * is the payload, with the sentence saying what to paste directly above it.
+   * A second `SLEF payload` over the top of that is the same fact twice, and
+   * neither exchange canvas draws it (Commander request 2026-08-26). The label
+   * itself stays: it is what gives the control its accessible name, and a
+   * control whose name lives only in a nearby paragraph has none.
+   */
+  readonly labelHidden = input(false);
+
   readonly changed = output<string>();
 
   readonly relations = createFieldRelations({

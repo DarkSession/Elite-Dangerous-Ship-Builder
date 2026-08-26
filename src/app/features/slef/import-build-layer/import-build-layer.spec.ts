@@ -62,6 +62,7 @@ describe('the import layer', () => {
       failure: {
         message: 'This is not valid JSON, so the Almanac could not read it.',
         diagnostics: [],
+        advancedLabel: 'Show advanced',
         diagnosticsLabel: 'What the Almanac rejected',
         refusals: [],
       },
@@ -76,6 +77,7 @@ describe('the import layer', () => {
     const fixture = render({
       failure: {
         message: 'The Almanac rejected this entry.',
+        advancedLabel: 'Show advanced',
         diagnosticsLabel: 'What the Almanac rejected',
         refusals: [],
         diagnostics: [
@@ -103,12 +105,65 @@ describe('the import layer', () => {
       failure: {
         message: 'The Almanac cannot complete the engineering on 2 of these modules.',
         diagnostics: [],
+        advancedLabel: 'Show advanced',
         diagnosticsLabel: 'What the Almanac rejected',
         refusals: ['MainEngines · Thrusters · 42% · unsupportedEngineering', 'FrameShiftDrive · …'],
       },
     });
 
     expect(element(fixture).querySelectorAll('.slef-import__refusals li')).toHaveLength(2);
+  });
+
+  it('keeps a refusal’s detail behind one control, closed until it is asked for', () => {
+    const fixture = render({
+      failure: {
+        message: 'This entry was refused.',
+        advancedLabel: 'Show advanced',
+        diagnosticsLabel: 'What was refused',
+        refusals: ['MainEngines · Thrusters · 42% · unsupportedEngineering'],
+        diagnostics: [],
+      },
+    });
+    const trigger = query(fixture, '.disclosure__trigger');
+    const content = query(fixture, '.disclosure__content');
+
+    expect(textOf(trigger)).toBe('Show advanced');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(content.hasAttribute('hidden')).toBe(true);
+    // The sentence itself is not behind it: a refusal is answered before a
+    // Commander presses anything.
+    expect(textOf(element(fixture))).toContain('This entry was refused.');
+
+    trigger.click();
+    fixture.detectChanges();
+
+    expect(query(fixture, '.disclosure__trigger').getAttribute('aria-expanded')).toBe('true');
+    expect(query(fixture, '.disclosure__content').hasAttribute('hidden')).toBe(false);
+  });
+
+  it('draws no control for a refusal that has no detail to open', () => {
+    const fixture = render({
+      failure: {
+        message: 'There is nothing here to import yet.',
+        advancedLabel: 'Show advanced',
+        diagnosticsLabel: 'What was refused',
+        refusals: [],
+        diagnostics: [],
+      },
+    });
+
+    expect(element(fixture).querySelector('edsb-disclosure')).toBeNull();
+  });
+
+  it('reads the payload field’s name without drawing it', () => {
+    const fixture = render();
+    const label = query(fixture, 'label.field__label');
+
+    // Still the control's accessible name, and still out of the way: neither
+    // exchange canvas draws a label over the payload.
+    expect(textOf(label)).toBe('SLEF payload');
+    expect(label.getAttribute('for')).toBe(query(fixture, 'textarea').getAttribute('id'));
+    expect(label.className).toContain('field__label--hidden');
   });
 
   it('draws no Clear control and no candidate panel, because the canvas draws neither', () => {

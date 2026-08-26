@@ -1,8 +1,15 @@
 <div class="slef-import">
   <p class="slef-import__description">{{ view().description }}</p>
 
+  <!--
+    The label is read, not drawn: the layer is titled `Import build` and the
+    sentence above says what to paste, so `SLEF payload` over the top of the
+    one control on the surface is the same fact a third time. Neither exchange
+    canvas draws it (Commander request 2026-08-26).
+  -->
   <edsb-textarea-field
     [label]="view().fieldLabel"
+    [labelHidden]="true"
     [value]="view().draft"
     [rows]="8"
     [technical]="true"
@@ -24,19 +31,28 @@
     beside it would be the same fact twice on one screen.
   -->
   @if (view().failure; as failure) {
-    @if (failure.refusals.length > 0) {
-      <ul class="slef-import__refusals">
-        @for (refusal of failure.refusals; track refusal) {
-          <li data-bidi-isolate>{{ refusal }}</li>
+    @if (failure.refusals.length > 0 || failure.diagnostics.length > 0) {
+      <edsb-disclosure
+        class="slef-import__advanced"
+        [label]="failure.advancedLabel"
+        [expanded]="advanced()"
+        (toggled)="advanced.set($event)"
+      >
+        @if (failure.refusals.length > 0) {
+          <ul class="slef-import__refusals">
+            @for (refusal of failure.refusals; track refusal) {
+              <li data-bidi-isolate>{{ refusal }}</li>
+            }
+          </ul>
         }
-      </ul>
-    }
 
-    @if (failure.diagnostics.length > 0) {
-      <edsb-diagnostic-list
-        [label]="failure.diagnosticsLabel"
-        [diagnostics]="failure.diagnostics"
-      />
+        @if (failure.diagnostics.length > 0) {
+          <edsb-diagnostic-list
+            [label]="failure.diagnosticsLabel"
+            [diagnostics]="failure.diagnostics"
+          />
+        }
+      </edsb-disclosure>
     }
   }
 
