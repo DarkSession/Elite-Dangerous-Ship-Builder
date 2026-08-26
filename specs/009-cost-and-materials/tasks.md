@@ -194,9 +194,31 @@ is not named, and that a build with no engineering draws no materials block at a
 - [x] T023 [P] Run the capability in Chromium and Firefox at all five viewports with an axe scan
       over the no-build, active-build, no-engineering, Mercenary-absent and Mercenary-present
       states, in `e2e/cost-and-materials.spec.ts` (depends on T022)
+      _Completed 2026-08-25._ One sweep of the populated block was landed originally, which said
+      nothing about the other four — they differ in what is on screen rather than in how it is
+      styled. The five are now covered, though not all of them from here.
+      `sweepOutfittingState` scans the **whole document**, and the no-build and nothing-crafted
+      screens are already swept by `e2e/outfitting-accessibility.spec.ts` ("an empty workspace says
+      why it is empty") and `e2e/module-outfitting.spec.ts` ("is accessible in every rendered ledger
+      state"). Re-sweeping them from here would have added roughly twenty full scans a run against
+      a budget T034 already records as tight. So this file sweeps the two states nothing else
+      reaches — the populated block and the Merc-Coin row — and asserts the content of the other
+      two without a second scan of the same screen.
 - [x] T024 [P] Assert 200% text, actual 400% browser zoom, expanded translations, long canonical
       material names and RTL layout with no lost content, no lost label-to-value association and no
       document horizontal scrolling, in `e2e/cost-and-materials.spec.ts` (depends on T022)
+      _Completed 2026-08-25._ None of this had landed; it was ticked without the work, and nothing
+      else covered it — `e2e/reflow.spec.ts` runs at `/`, and the pseudo-locale sweeps in
+      `e2e/expansion-rtl.spec.ts` run against the preview catalogue, which these blocks are
+      deliberately not in (T013). Now in "reading at another text size and direction", "at 400%
+      browser zoom" and "in German, at a doubled text size", following the shape features 005, 007,
+      008 and 010 each use in their own suite. Label-to-figure association is measured as content
+      **overflowing its own box**, not as two boxes meeting: these are non-wrapping flex rows, so
+      sibling boxes never intersect however long the text grows, and an intersection test here
+      would be one that cannot fail. Expanded
+      translation is exercised as German — a real shipped locale whose compounds are the unbreakable
+      words the condition is about — since the `en-XA` provider cannot be reached from the product
+      application by design.
 - [x] T025 [P] Assert that no figure, label or state in either block depends on colour, icon, title
       or position alone — `TOTAL` and the Merc Coin row are named as well as accented — and that
       nothing essential depends on hover, in `e2e/cost-and-materials.spec.ts` (depends on T022)
@@ -206,10 +228,49 @@ is not named, and that a build with no engineering draws no materials block at a
       untranslated disclosure, and the bundled English fallback works offline — across every shipped
       locale and the pseudo-locales in `src/app/i18n/testing/pseudo-locales.ts`, in
       `e2e/cost-and-materials.spec.ts` (depends on T022)
+      _Completed 2026-08-25, with three clauses corrected._ What had landed was the German number
+      formatting and the raw-key check. It is now joined by "names every material through the shared
+      game-text primitive", asserting that every row is drawn by `edsb-game-text` and carries the
+      language its text is actually in — and that a row is tagged as canonical exactly when the
+      presenter fell back to English, which is what would catch a row tagged or left untagged
+      wrongly.
+      **The untranslated-disclosure clause is withdrawn as unreachable from here, not claimed.**
+      Every material of the blueprint this journey applies has a German name in the pinned Almanac,
+      so no row in it is ever canonical and the disclosure itself never renders. Deleting
+      `edsb-game-text`'s disclosure would leave this test green. Rather than pin a fixture to a
+      material the package happens not to translate — which the next catalogue could translate and
+      quietly make vacuous again — the disclosure stays covered where it is built and owned, by
+      feature 011's own tests for the primitive.
+      **The pseudo-locale clause is withdrawn as unreachable.** `en-XA` and `ar-XB` are absent from
+      the production registry by design and are applied only through the preview application's
+      `variant` address; with no preview declaration for a feature component (T013) there is no
+      address that reaches these blocks. Their two conditions are covered directly instead: German
+      for expansion and a `dir="rtl"` document for direction (T024). Both shipped locales are
+      covered — German by the two tests above, English by every other test in the file.
+      The offline English-fallback clause moves to T027, where the service worker exists.
 - [x] T027 [P] Add the offline journey — load the workspace, go offline, read both blocks with no
       cross-origin request — and assert no cost or material value appears in local storage, browser
       history, a URL, a build link or a SLEF export, in `e2e/cost-and-materials.spec.ts` (depends on
       T022)
+      _Completed 2026-08-25, in two files, with one clause corrected._ The **offline journey lands in
+      `e2e/offline-privacy.spec.ts`**, not here: a service worker exists only in a production build,
+      which is what `pnpm run e2e:offline` runs and what this file's projects do not. It follows
+      feature 007's own offline journey in the same suite, and proves more than that the blocks are
+      still painted — with the network gone, engineering a mount still makes the materials block
+      appear from nothing, with its footer counting the rows beside it. The credit figures are
+      asserted **not** to move, and that is the correct expectation rather than a weaker one: a
+      blueprint is paid for in materials, and a module's catalogue price is unchanged by having been
+      engineered.
+      The link, address and storage assertions stay here: "puts no figure of its own into a link or
+      an address the session visits" watches every navigation rather than only the final URL, because
+      the build link is republished into the fragment on each edit.
+      **The SLEF clause was wrong as written and is corrected.** A SLEF `Loadout` event carries
+      `HullValue`, `ModulesValue` and `Rebuy` as fields of the format, and feature 004 deliberately
+      writes the package's current catalogue retail into them
+      (`src/app/domain/slef/slef-export-pricing.spec.ts`). Asserting their absence would assert
+      against an accepted contract. What is asserted is what feature 009 owns and 004 does not
+      export: no material, no consolidated list and no Merc Coin figure reaches the payload — and the
+      credit fields are named as the format's, so the next reader does not mistake them for a leak.
 - [x] T028 Add the design-fidelity check asserting the rendered blocks carry exactly the canvas's
       rows and no others — no trace control, disclosure, evidence list, lower-bound, unavailable or
       missing-recipe text — in `e2e/cost-and-materials.spec.ts` (depends on T022)
@@ -243,6 +304,24 @@ is not named, and that a build with no engineering draws no materials block at a
       `e2e:timing` on a clean `main` worktree gave 111.4, 135.5, pass, 133.0 and 129.6 ms against a
       100 ms budget, no better than this branch. It is feature 002's SC-002 gate and a pre-existing
       environment problem, not a feature 009 regression; nothing here raises the budget.
+      _Re-verified 2026-08-25, after T023, T024, T026 and T027 were completed._ What was run
+      and passed on this machine: `format:check`, `help:artifacts:check`, `typecheck` (all four
+      projects), the production `build`, `policy` (all seven checkers, against the built output),
+      and `test` — 2173 unit tests with coverage at 86.2% statements, 86.3% branches, 89.6%
+      functions and 86.4% lines, over a floor of 80%. `e2e/cost-and-materials.spec.ts` is 70
+      tests where it was 46, all passing, and `e2e/offline-privacy.spec.ts` is 5 where it was 4,
+      all passing against a production build with its service worker. **What could not be run
+      here, and is therefore not claimed: Firefox.** This container ships Chromium only, so the
+      added assertions were exercised on `chromium-desktop`, `chromium-tablet-landscape` and
+      `chromium-mobile-portrait` — three of the five layout profiles, in one engine — rather
+      than on all ten matrix projects. Two of them were written to be engine-independent
+      deliberately, after a review pointed out they had not been: text that does not fit its box
+      is measured from a `Range` over the element's contents rather than from `scrollWidth`,
+      because the engines disagree about what `scrollWidth` means for an `overflow: visible` box
+      and Gecko would have answered "nothing overflows" however far the text ran; and both sides
+      of every heading comparison are case-folded rather than trusting `innerText` to apply
+      `text-transform`. Neither has been observed under Gecko here. The ten-project claim above
+      stands on the earlier full run, not on this one, and CI is what re-establishes it.
 
 ---
 

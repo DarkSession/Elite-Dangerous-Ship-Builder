@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { applyDraft, chooseRecipe, openEditor } from './outfitting-surfaces';
 import { openFirstHullFromManifest } from './shell';
 
 /**
@@ -109,6 +110,74 @@ test.describe('offline capability', () => {
       .click();
     await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
     await expect.poll(() => recharge.innerText()).not.toBe(chargedAt);
+
+    await context.setOffline(false);
+  });
+
+  test('reads the cost and material blocks with no network at all', async ({ page, context }) => {
+    await withWorker(page, '/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+
+    await context.setOffline(true);
+
+    // Both blocks are a synchronous read of an in-memory loadout and an
+    // installed package, so they are not merely still painted with the network
+    // gone — they still answer an edit. Engineering a mount is what proves it:
+    // the materials block is absent for a build that crafts nothing, and it has
+    // to be built from the package's consolidated result to appear at all
+    // (feature 009, quickstart scenario 6).
+    const credits = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
+    await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
+
+    const mount = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
+    await mount.click();
+    await expect(mount).toHaveAttribute('aria-pressed', 'true');
+    // The fitting has to be on screen before the editor is asked for: at the
+    // compact profiles this suite also runs, the editor is behind an action
+    // that only exists once a mount is marked, so asking immediately races it.
+    await expect(
+      page.locator('.replacement__title, .outfitting__bench-title').first(),
+    ).toBeVisible();
+    await openEditor(page);
+    await chooseRecipe(page, /Increased Range/i);
+    await applyDraft(page);
+
+    // Material rows only: a Merc Coin row would sit among these and is
+    // deliberately outside the footer's counts, so counting it here would
+    // compare two different things and happen to agree only while this journey
+    // buys no Mercenary article.
+    const rows = page.locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)');
+    await expect(rows.first()).toBeVisible();
+
+    // The footer counts the rows beside it, and it counted them here, offline.
+    const footer = await page.locator('edsb-cost-materials .block__footer span').allInnerTexts();
+    expect(footer).toHaveLength(2);
+    expect(Number(footer[0]?.replaceAll(/\D/gu, ''))).toBe(await rows.count());
+
+    // The credit figures are expected *not* to move: a blueprint is paid for in
+    // materials, and a module's catalogue price is what it is whether or not it
+    // has been engineered. Stated rather than left implicit, because a reader
+    // who assumed otherwise would read the line above as a bug.
+    expect(await page.locator('edsb-cost-materials .cost__value').allInnerTexts()).toEqual(credits);
+
+    // The reading itself came from the installed package rather than from a
+    // fetch: every row has a name and a count with the network gone.
+    //
+    // Deliberately not asserted here: that the rarity *pictures* paint. They are
+    // `<img alt="">` decoration whose meaning is carried by the
+    // `visually-hidden` label beside them, and `ngsw-config.json` precaches
+    // `/assets/ships/**` but not `/assets/icons/**` — so offline they do not
+    // load, and the row still reads. A `data-grade` assertion would say nothing
+    // about it either way: that attribute is a host binding rendered from the
+    // in-memory package result, present with or without a network.
+    const names = await rows.locator('.game-text__value').allInnerTexts();
+    const counts = await rows.locator('.rail-material__count').allInnerTexts();
+    expect(names).toHaveLength(await rows.count());
+    expect(counts).toHaveLength(await rows.count());
+    for (const reading of [...names, ...counts]) {
+      expect(reading.trim()).not.toBe('');
+    }
 
     await context.setOffline(false);
   });
