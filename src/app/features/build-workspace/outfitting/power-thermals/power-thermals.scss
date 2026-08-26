@@ -368,7 +368,14 @@
   color: var(--edsb-text-accent);
 }
 
-.distributor__cell--numeric {
+// The elements are named in the selector because the rule they have to beat
+// carries a type, and a bare class does not outweigh one class plus one type:
+// `text-align: end` never applied and every figure sat at its column's start.
+// Count these with Angular's scoping attribute in mind — every compound
+// selector is emitted with an `[_ngcontent-…]` — which is what still leaves
+// `.distributor thead th` a type ahead of this rule and its headings labelled.
+.distributor th.distributor__cell--numeric,
+.distributor td.distributor__cell--numeric {
   @include layout.metric-value(var(--edsb-text-size-body));
 
   text-align: end;

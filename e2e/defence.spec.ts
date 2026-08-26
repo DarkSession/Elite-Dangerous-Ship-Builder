@@ -11,7 +11,8 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
  * The unit suites already prove what the projection selects and what each
  * sentinel means. What only a browser can show is the rest: that the mode strip
  * actually opens the layer, that the allocation the power dashboard is read at
- * is the allocation these cards are read at, and that the whole panel survives a
+ * is the allocation the pip column and the recovery are read at — while the
+ * bare four columns beside them stand still — and that the whole panel survives a
  * phone, a doubled text size and a 400% zoom without losing a figure or
  * scrolling the document sideways.
  *
@@ -45,7 +46,8 @@ async function openMode(page: Page, label: string): Promise<void> {
  * The damage rows of one card, cell by cell.
  *
  * The bar's own cell is left out: it holds no text at all, by design, and every
- * reading on the line is in the three cells that do.
+ * reading on the line is in the cells that do — four on the shield card since
+ * the fifth column joined it, three on the hull, which pips do not reach.
  */
 async function damageRows(page: Page, card: string): Promise<string[][]> {
   return page
@@ -147,6 +149,92 @@ test.describe('reading the build', () => {
     await expect(page.locator('edsb-defence-analysis .card--shield .card__identity')).toContainText(
       /\S/u,
     );
+  });
+
+  test('sets every figure flush to the end of its own column', async ({ page }) => {
+    // A column of figures is read down its length, so the digits have to line
+    // up. Measured against each cell's own trailing content edge rather than
+    // against the figures beside it: `32.0` over `32.0` shares an edge whether
+    // the column is aligned to its start or its end, so a test that only
+    // compares siblings cannot see the thing it is named for.
+    //
+    // Measured at all — rather than asserted on a style — because the rule that
+    // draws this was present and outweighed for as long as the table has
+    // existed: the cell rule beside it carries a type selector, and a bare
+    // class does not beat one.
+    await openDefence(page);
+
+    for (const card of ['card--shield', 'card--armour'] as const) {
+      const cells = await page
+        .locator(`edsb-defence-analysis .${card} .damage tbody .damage__cell--numeric`)
+        .evaluateAll((nodes) =>
+          nodes.map((node) => {
+            const style = getComputedStyle(node);
+            const box = node.getBoundingClientRect();
+            const rtl = style.direction === 'rtl';
+            // The cell's own trailing content edge, inside its padding. A
+            // figure flush to it is aligned to the end; one that is not, is
+            // not — which a comparison between sibling figures cannot tell,
+            // because equal-width figures share an edge whichever way the
+            // column is aligned.
+            const edge = rtl
+              ? box.left + parseFloat(style.paddingInlineEnd)
+              : box.right - parseFloat(style.paddingInlineEnd);
+            // The figure itself, not the cell's contents: a weakness and an
+            // unbounded pool each carry a word for a screen reader, positioned
+            // out of sight, and a range over the whole cell would union that
+            // box in and measure something nobody sees.
+            const figure = [...node.childNodes].find(
+              (child) => child.nodeType === 3 && (child.textContent ?? '').trim() !== '',
+            );
+            if (figure === undefined) {
+              throw new Error(`no figure text node in ${node.className}`);
+            }
+            const range = node.ownerDocument.createRange();
+            range.selectNodeContents(figure);
+            const drawn = range.getBoundingClientRect();
+            return { edge, figure: rtl ? drawn.left : drawn.right };
+          }),
+        );
+      expect(cells.length).toBeGreaterThan(0);
+      for (const cell of cells) {
+        expect(Math.abs(cell.figure - cell.edge)).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  test('keeps the danger ink on a weakness figure, not only the hatch on its bar', async ({
+    page,
+  }) => {
+    // The selector that right-aligns these cells carries a type, so the rule
+    // that reddens a weakness has to carry one too or it loses the colour to
+    // the numeric ink. The two facts live on the same cell and a regression in
+    // either is invisible from the other, so they are asserted together.
+    //
+    // Compared against the token rather than a literal: this suite may not
+    // write down a colour any more than it may write down a megajoule.
+    await openDefence(page);
+
+    const ink = await page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      const swatch = document.createElement('span');
+      swatch.style.color = root.getPropertyValue('--edsb-text-danger');
+      document.body.append(swatch);
+      const resolved = getComputedStyle(swatch).color;
+      swatch.remove();
+
+      const weak = [...document.querySelectorAll('.damage__row--weak .damage__cell--numeric')];
+      return {
+        danger: resolved,
+        drawn: [...new Set(weak.map((cell) => getComputedStyle(cell).color))],
+        aligned: [...new Set(weak.map((cell) => getComputedStyle(cell).textAlign))],
+        count: weak.length,
+      };
+    });
+
+    expect(ink.count, 'the stock hull draws at least one weakness').toBeGreaterThan(0);
+    expect(ink.drawn).toEqual([ink.danger]);
+    expect(ink.aligned).toEqual(['end']);
   });
 
   test('draws the four damage types with a resistance and a pool apiece', async ({ page }) => {
@@ -311,7 +399,7 @@ test.describe('reading the build', () => {
   });
 });
 
-test.describe('the allocation the cards are read at', () => {
+test.describe('the allocation the pip column and the recovery are read at', () => {
   test('moves the pip column alone, and leaves the bare shield where it is', async ({ page }) => {
     await openDefence(page);
     const heading = page.locator('edsb-defence-analysis .card--shield .damage thead th').last();
@@ -320,20 +408,27 @@ test.describe('the allocation the cards are read at', () => {
     const strength = await pool(page, 'card--shield').innerText();
 
     // The pips live on the power dashboard, and one ship has one allocation:
-    // moving them there is what these cards are read at.
+    // moving them there is what the pip column and the recovery are read at.
     await openMode(page, englishMessages['anatomy.mode.power']);
     await page.locator('.distributor tbody tr').first().locator('.pips__step').nth(3).click();
     await settled(page);
     await openMode(page, englishMessages['anatomy.mode.defence']);
 
     const after = await damageRows(page, 'card--shield');
-    // `RESIST` and `MJ` are the bare shield at zero pips, so a pip moving on the
-    // dashboard leaves every figure in them exactly where it was (FR-002).
+    // `RESIST` and `MJ` are the bare shield, which no allocation moves — the
+    // package's own call for them takes none — so a pip moving on the dashboard
+    // leaves every figure in them exactly where it was (FR-002).
     expect(after.map((row) => row.slice(0, 3))).toEqual(before.map((row) => row.slice(0, 3)));
     // What the allocation buys is a column of its own, headed with the count it
     // was read at, and it is the only thing on the table that follows the pips.
     expect(after.map((row) => row[3])).not.toEqual(before.map((row) => row[3]));
     expect(await heading.innerText()).not.toEqual(column);
+    // Named, not merely moved. The fourth block on systems is four pips, and
+    // the heading says so: a figure that follows the allocation is never drawn
+    // without the allocation it was read at (FR-002).
+    expect(caps(await heading.innerText())).toBe(
+      caps(englishMessages['defence.damage.column.megajoules-at-pips'].replace('{{pips}}', '4')),
+    );
     // The pool itself is not a function of the allocation, and the package says
     // so by returning the same strength.
     expect(digits(await pool(page, 'card--shield').innerText())).toBe(digits(strength));

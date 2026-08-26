@@ -123,6 +123,56 @@ test.describe('component preview catalogue', () => {
     }
   });
 
+  test('sets a declared numeric column flush to the end of its cells', async ({ page }) => {
+    // A column a caller declares numeric is read down its length, so its digits
+    // have to line up — and the heading above them was right-aligned while the
+    // figures under it were not, because the `thead th` rule carries its own
+    // compound selector and the cell rule was a bare class the `.table td` rule
+    // beside it outweighed. The heading is measured with the body for exactly
+    // that reason.
+    const cells = await page
+      .locator('.table :is(thead, tbody) .table__cell--numeric')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const style = getComputedStyle(node);
+          const box = node.getBoundingClientRect();
+          const rtl = style.direction === 'rtl';
+          // The cell's own trailing content edge, inside its padding. Text
+          // flush to it is aligned to the end; text that is not, is not —
+          // which a comparison between sibling cells cannot tell, because
+          // equal-width text shares an edge whichever way a column is aligned.
+          const edge = rtl
+            ? box.left + parseFloat(style.paddingInlineEnd)
+            : box.right - parseFloat(style.paddingInlineEnd);
+
+          // Each run of text on its own, rather than one range over the cell.
+          // A heading holds its unit in a block-level span, and a block fills
+          // the cell whatever its text does inside it: a range over the whole
+          // cell would measure that box and report every alignment as flush.
+          const walker = node.ownerDocument.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+          const runs: number[] = [];
+          for (let text = walker.nextNode(); text !== null; text = walker.nextNode()) {
+            if ((text.textContent ?? '').trim() === '') {
+              continue;
+            }
+            const range = node.ownerDocument.createRange();
+            range.selectNodeContents(text);
+            const drawn = range.getBoundingClientRect();
+            runs.push(rtl ? drawn.left : drawn.right);
+          }
+          return { edge, runs };
+        }),
+      );
+
+    expect(cells.length, 'the catalogue renders a table with a numeric column').toBeGreaterThan(0);
+    for (const cell of cells) {
+      expect(cell.runs.length, 'every numeric cell draws text to measure').toBeGreaterThan(0);
+      for (const run of cell.runs) {
+        expect(Math.abs(run - cell.edge)).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
   test('renders right-to-left without changing semantic order', async ({ page }) => {
     const order = await page
       .locator('[data-preview-address]')
