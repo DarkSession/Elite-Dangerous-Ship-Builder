@@ -91,29 +91,18 @@
 }
 
 // Canvas 1c's three `.pipset` groups under the bar: a bank name in that bank's
-// own ink beside four blocks, one bank to a line.
-//
-// The canvas stands the three side by side with the name over the blocks, at
-// 14 CSS pixels square apiece. That is under the floor a target may not go
-// below, and three groups of four 24-pixel targets do not share a 306-pixel
-// rail — so this takes the arrangement the reference itself draws for this same
-// block where the space is narrow: the bank's name on the line, the four blocks
-// filling what is left of it. One column of names and one of blocks, owned by
-// the group rather than by each line, so the three names square up and the
-// twelve blocks all start on the same edge.
+// own ink over four blocks, the three side by side as the canvas stands them.
+// They wrap rather than scroll, because the rail is narrow and three groups of
+// four targets do not share a 306-pixel line at a doubled text size.
 .pipsets {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack-tight);
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
   margin-block-start: var(--edsb-space-stack);
 }
 
 .pipset {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-template-columns: subgrid;
-  align-items: center;
+  @include layout.stack(var(--edsb-space-stack-tight));
+
   min-inline-size: 0;
 }
 
@@ -127,25 +116,26 @@
 // same control the distributor's cell draws, at the same size, so the two places
 // a Commander can set the pips are the same to press.
 //
-// The blocks take the line between them rather than each holding the 2.75rem
-// design baseline: four of those are 176px before the gaps, and the canvas draws
-// a pip block as a chip in a row of them rather than as a button standing on its
-// own. They are held to the 24-pixel floor instead, which is the floor and not a
-// waiver — and the row stays bounded so that a text size which finally squeezes
-// even those scrolls the row rather than the document.
+// The blocks hold the 24-pixel floor rather than the 2.75rem design baseline:
+// four of those are 176px before the gaps, in a 306-pixel rail that has three
+// groups of them to stand, and the canvas draws a pip block as a chip in a row
+// of them rather than as a button standing on its own. The floor is a floor and
+// not a waiver — the canvas's own 14 pixels stay unbuilt — and the row is still
+// bounded, so a text size that finally squeezes even those scrolls the row
+// rather than the document.
 .pips {
   @include layout.bounded-scroller;
 
   display: flex;
   gap: var(--edsb-space-inline-tight);
-  min-inline-size: 0;
+  inline-size: max-content;
 }
 
 .pips__step {
   @include layout.target-floor;
 
   position: relative;
-  flex: 1 1 var(--edsb-target-size-floor);
+  flex: 0 0 var(--edsb-target-size-floor);
   padding: 0;
   background-color: var(--edsb-surface-inset);
   border: var(--edsb-border-width-hairline) solid transparent;

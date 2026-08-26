@@ -366,13 +366,13 @@ package call: every figure is one the projection already returns.
 - [x] T080 Size the pip blocks as the chips the canvas draws rather than as standalone buttons: the
       24-pixel SC 2.5.8 floor, recorded on `DENSE_TARGETS`, with the blocks sharing the line between
       them. The canvas's own 14 and 16 pixels stay unbuilt.
-- [x] T081 Re-lay the rail's pip control one bank to a line — the bank's name on the line, the four
-      blocks filling what is left — which is the arrangement the reference draws for this same block
-      where the space is narrow (@1221528). Three groups of four 24-pixel blocks do not stand side
-      by side in a 306-pixel rail.
-- [x] T082 Lay the panel out as two rows of two, and give the heat block its own container so that
-      whether its bars and its tiles stand side by side is decided by that box rather than by the
-      panel around it.
+- [x] T081 Keep the rail's pip control in the reference's own arrangement — three groups side by
+      side, the name over the blocks, wrapped when they do not fit — now that the blocks are 108
+      pixels a group rather than 188 and no longer scroll sideways inside their own row.
+- [x] T082 Lay the panel out as two rows of two, at the wide step rather than the medium one — a
+      pair is only a pair while both halves can hold what is in them, and half of the tablet
+      column is 209 pixels. Give the heat block its own container so that whether its bars and its
+      tiles stand side by side is decided by that box rather than by the panel around it.
       _Correct `canvas-contract.md` and `design/power-and-heat-detail.md` with it: the
       `margin-top: 12px` both quoted for a full-width block belongs to the second grid._
 - [x] T083 [P] Cover all four in tests: the additive geometry and the shared plant mark in the

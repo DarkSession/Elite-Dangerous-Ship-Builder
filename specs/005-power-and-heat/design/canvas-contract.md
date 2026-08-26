@@ -175,14 +175,11 @@ The package accepts fractional pips in `[0, 4]` per bank and computes
   says what they are and not what pressing one does; they are ruled the same
   control the distributor cell carries, in a second place
   (`power-and-heat-detail.md`, "The rail's pip control").
-- The desktop drawing stands the three `.pipset` groups side by side, name over
-  blocks, each block `flex: 1` at `height: 14px` — about 21 CSS pixels wide in a
-  306-pixel rail. That is under the floor a target may not go below, and three
-  groups of four 24-pixel targets do not share that rail. **Built in the
-  reference's own narrow arrangement instead** (2026-08-26, Commander request):
-  the mobile rail (@1221528, `PIP ALLOCATION`) draws the same block one
-  bank to a line — the bank's name on the line, the four blocks filling what is
-  left of it at `height: 18px` — which holds the floor at the rail's width.
+- Each `.pipbar` is `flex: 1` at `height: 14px` — about 21 CSS pixels wide in a
+  306-pixel rail. **Built at the 24-pixel target floor** (2026-08-26, Commander
+  request), like the distributor cell's blocks and for the same reason. Three
+  groups of four at that size do not share a 306-pixel line, so they wrap, which
+  is what this rail has always done with them.
 
 Nothing else in the rail belongs to this capability. The canvas draws no heat
 sentence in the rail.

@@ -54,7 +54,13 @@ on the same two columns (`grid-template-columns: 1fr 1fr; margin-top: 12px; alig
 This was read as a two-column row over two full-width blocks, and the `margin-top: 12px` quoted for
 block 3 belongs to the second grid rather than to a full-width block. Built that way the distributor
 stood a whole panel below the fold of a region bounded by the column it sits in — a Commander opening
-`POWER` found the module list and nothing under it. Each pair is stretched so its two plates square
+`POWER` found the module list and nothing under it.
+
+The pairing opens at the wide step rather than the medium one, because a pair is only a pair while
+both halves can hold what is in them: at the tablet column's 442px each block came out at 209, which
+is narrower than the medium minimum a single block is held to, and the distributor's five columns
+and the heat scenarios' names were both wrapping a word at a time. Below the wide step all four
+stack, which is canvas 1d's arrangement. Each pair is stretched so its two plates square
 up against each other, and no further: the canvas's `min-height` is a measurement of its own sample
 build, and holding a real one to it rules a plate off around empty ground (review note, wave 13).
 Canvas 1d stacks all four.
@@ -327,14 +333,13 @@ revision two other regions read figures at an allocation — feature 006's `MJ �
 and feature 007's `CAP 61 MJ · WEP 3 PIPS` — which a Commander would otherwise have to leave the
 region to change.
 
-**One bank to a line, corrected 2026-08-26 (Commander request).** Canvas 1c stands the three groups
-side by side with the name over the blocks, each block about 21 CSS pixels wide in a 306-pixel rail.
-That is under the floor a target may not go below, and three groups of four 24-pixel blocks do not
-share that rail — built at the baseline they scrolled sideways inside their own row. The rail takes
-the arrangement the reference itself draws for this same block where the space is narrow (@1221528,
-the mobile `PIP ALLOCATION`): the bank's name on the line and the four blocks filling what is left
-of it. One column of names and one of blocks, owned by the group, so the three names square up and
-the twelve blocks all start on the same edge.
+**The blocks hold the 24px target floor, corrected 2026-08-26 (Commander request).** Canvas 1c
+stands the three groups side by side with the name over the blocks, each block about 21 CSS pixels
+wide in a 306-pixel rail. Built at the project's 44px design baseline the three groups were 564
+pixels of blocks in a 306-pixel column, and the row scrolled sideways inside itself to hold them.
+At the floor they are 108 pixels a group, which the rail wraps the way it has always wrapped them.
+Same size as the distributor cell's blocks, so the two places a Commander can set the pips are the
+same to press.
 
 The rail draws no half-pip block and no running total: four blocks a bank, exactly as the
 distributor's cell draws them, filled from the leading edge so a bank standing on a half fills half

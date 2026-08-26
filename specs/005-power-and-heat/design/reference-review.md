@@ -313,10 +313,9 @@ itself to hold them.
 
 Held to WCAG 2.2 SC 2.5.8's 24-pixel floor instead, recorded on `DENSE_TARGETS` beside the ledger's
 power chip and the segmented strip. That is the floor and not a waiver, and the reference's own 14
-pixels stay unbuilt. Four blocks at 24 still do not stand side by side three times over in the rail,
-so the rail takes the arrangement the reference itself draws for this same block where the space is
-narrow (@1221528): one bank to a line, the bank's name on the line and the four blocks filling what
-is left of it.
+pixels stay unbuilt. The rail keeps the reference's own arrangement — three groups side by side,
+the name over the blocks — and wraps them when they do not fit, which is what it has always done
+with them; at the floor a group is 108 pixels rather than 188.
 
 ### The panel is two rows of two
 
@@ -329,6 +328,12 @@ Built as read, the distributor stood a whole panel below the fold of a region th
 column it sits in: a Commander opening `POWER` found the module list and nothing under it, and
 reported the block as missing. Laid out as the reference draws it, the dashboard is a third shorter
 and the distributor sits beside the heat profile on the second row.
+
+The pairing opens at the wide step rather than the medium one. A pair is only a pair while both
+halves can hold what is in them, and at the tablet column's 442 pixels each block came out at 209 —
+narrower than the minimum a single block is held to, with the distributor's five columns and the
+heat scenarios' names both wrapping a word at a time. Below that step all four stack, which is
+canvas 1d.
 
 The heat block now measures itself rather than the panel around it, because half of a wide panel is
 not a wide block: whether its bars and its tiles stand side by side is a question about that box.
