@@ -746,7 +746,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the longest name a build reaches through this journey fits its row at a doubled text size',
       'the block appears and follows an edit with the network gone',
       'no material, list or count of one reaches a SLEF export',
-      'the axe sweep runs over the no-build, nothing-crafted and Merc-Coin states, not one of them',
+      'the Merc-Coin row is swept for accessibility, a state no other suite reaches',
     ],
     manualRecord: 'screen-reader',
   },

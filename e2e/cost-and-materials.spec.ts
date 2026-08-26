@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import { ZOOM_400, sweepOutfittingState } from './accessibility';
-import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import {
   applyDraft,
@@ -611,10 +611,12 @@ const READINGS = [
  * nowhere is left out: the accessibility-only equivalents this application sets
  * beside a figure — the `credits` unit, among others — are positioned out of
  * the flow and clipped to a pixel, and counting them would report every row as
- * broken. A one-pixel difference is sub-pixel rounding; two is text that
- * genuinely does not fit.
+ * broken. Under two pixels is sub-pixel rounding, which the engines do
+ * differently; two is text that genuinely does not fit.
  */
 async function overflowingReadings(page: Page): Promise<string[]> {
+  await laidOut(page);
+
   return page.locator(READINGS).evaluateAll((nodes) =>
     nodes
       .map((node) => {
@@ -669,15 +671,35 @@ async function overflowingReadings(page: Page): Promise<string[]> {
           return null;
         }
 
-        const over = Math.round(Math.max(right - box.right, box.left - left, 0));
-        return over > 1 ? `${(element.textContent ?? '').trim().slice(0, 40)} (+${over}px)` : null;
+        // Thresholded before rounding. Rounding first would make the real
+        // tolerance a pixel and a half, so sub-pixel layout noise at 200% text
+        // would report a phantom overflow of exactly two.
+        const over = Math.max(right - box.right, box.left - left, 0);
+        return over >= 2
+          ? `${(element.textContent ?? '').trim().slice(0, 40)} (+${Math.round(over)}px)`
+          : null;
       })
       .filter((entry): entry is string => entry !== null),
   );
 }
 
+/**
+ * Waits until the page has stopped moving and is drawn in its real typefaces.
+ *
+ * Every measurement below is a one-shot read of a box, and two things move
+ * boxes after the DOM is ready: a running transition, and a webfont arriving.
+ * The faces here are `font-display: swap` and not preloaded, so a swap landing
+ * mid-measurement would either invent an overflow or hide one.
+ */
+async function laidOut(page: Page): Promise<void> {
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  await settled(page);
+}
+
 /** Where each material row's name and count sit, so a mirrored layout can be told from an unmoved one. */
 async function rowEdges(page: Page): Promise<{ name: number; count: number }[]> {
+  await laidOut(page);
+
   return page.locator('edsb-cost-materials .rail-material').evaluateAll((rows) =>
     rows.flatMap((row) => {
       const name = row.querySelector('.rail-material__name');
@@ -889,7 +911,12 @@ test.describe('in German, at a doubled text size', () => {
 test.describe('the accessibility sweep, state by state', () => {
   test('with no build open, neither block is drawn', async ({ page }) => {
     await page.goto('/build');
-    await expect(page.getByRole('main')).toBeVisible();
+    // The route is lazy, so waiting for the shell's `main` alone would assert
+    // the absence of a block against a screen that had not drawn yet — and
+    // would go on passing if `shown()` ever started drawing one. Waited for by
+    // the empty state the page draws in place of the workspace, since
+    // `edsb-outfitting-workspace` is exactly what is not rendered here.
+    await expect(page.locator('.workspace__empty')).toBeVisible();
 
     // The state is asserted, not swept: `sweepOutfittingState` scans the whole
     // document, and this exact state is already swept by
