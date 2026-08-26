@@ -338,20 +338,54 @@ geometry:
   that move when the window does. The floating-point tolerance in the module is separate and smaller:
   a candidate placed at exactly one separation must not then read as being under it.
 
-The order is the package's own drawing order, greedy and one pass: the first mount keeps its
-position, and each one after it keeps its position unless that would touch a mark already placed, in
-which case it takes the first clear step outward from the middle of the plate — outward, because a
-mount is on the hull and the air around the hull is where a fourteen-pixel square with a number in it
-covers nothing. Three rings, and then it gives up and keeps its own position: a mount flung far
-enough that only the leader says where it is has been made harder to read, not easier, and the
-front-on-hover rule already handles the honest overlap.
+**Every mount in a crowd moves, and each moves the same distance.** Mounts whose marks would touch
+are gathered into one group — transitively, because a chain of three each too close to the next is
+one problem and not two — and the whole group is spread onto a ring around the middle of those
+mounts. Each member keeps its own side of the crowd, so a mount on the left stays on the left and no
+two leaders cross.
 
-Forty-one of the package's ninety-six plates move at least one mark; the Anaconda's underside moves
-five of its eight, which is the plate that put a utility inside a large hardpoint's floor.
+The alternative, and the first thing built, was to pin the first mount and push the others off it.
+That is worse in two ways. It makes the answer depend on the order the package happened to draw the
+mounts in, which is not a fact about the ship. And it leaves the pinned mount as the only member of
+the crowd with no leader — which reads as though that one mount were exactly where its mark is and
+its neighbours had been guessed at, when all of them are equally approximate. A ring says what is
+true: these mounts are too close together to draw apart, so here they all are, each tied back to its
+own point.
+
+A ring must also clear every published mount position that is _not_ in the crowd. Without that a mark
+can come to rest exactly where a different mount is, so a reader sees a numbered square sitting on
+mount B carrying mount A's number while A's leader runs off elsewhere — the precise failure the
+leader exists to prevent, committed by the thing meant to prevent it. It happened on two plates
+before the rule existed. Inside a crowd the question does not arise the same way: the mounts are
+piled together by definition and the marks are arranged around them, which is what each member's own
+leader is there to tell apart.
+
+**Two numbers, and they are deliberately not the same one.** _Whether_ two marks need help is a
+question about whether they are touching — a quarter of a mark's width of air, below which two
+squares read as one shape with a seam down it. _How far_ to spread them once they do is a question
+about whether the leader explaining it can be read, and the answer is larger: a mark's own square
+covers half a mark's width of its leader, so a mark that shifts less than that draws nothing at all,
+and the ring is therefore pushed out past the furthest mount in the crowd and then a further mark and
+a quarter beyond it. Answering both with one number was the first attempt, and it did both jobs
+badly — it spread pairs that had eleven pixels of air between them by four pixels each, inventing a
+problem on one plate while explaining nothing on another. Held apart, the shipped package's shortest
+leader is ten and a half pixels of visible line, and no plate moves a mark that was not crowded.
+
+A crowd that cannot be spread that far — because the ring will not fit inside the frame, or cannot
+clear the marks and mounts around it — keeps its mounts' own positions. A mount flung far enough that
+only the leader says where it is has been made harder to read, not easier, and the front-on-hover
+rule already answers the honest overlap.
+
+At the wide two-column plate, forty-two of the package's ninety-six plates move at least one mark and
+a hundred and forty of four hundred and thirty-five marks move — eighty-three hardpoints and
+fifty-seven utility mounts, because a crowd moves whole. The Anaconda's underside moves seven of its
+eight, the plate that puts a utility inside a large hardpoint's floor; its top plate moves none,
+because nothing on it is touching. Those counts move with the measured separation, so they describe
+that plate rather than every width.
 
 **What the leader is not.** It carries no _mount state_: kind, fitted, engineering and side are all
-words in the button's own name, selection is `aria-pressed` and the ledger row, and the hairline is
-one quiet amber whatever the mount is. It is `aria-hidden` for that reason, not because it means
+words in the button's own name, selection is `aria-pressed` and the ledger row, and the line is one amber
+whatever the mount is. It is `aria-hidden` for that reason, not because it means
 nothing — it plainly means something, which is _this mark belongs to that point_. What makes it
 decoration is that the point was never information a Commander had to have. It is also not a
 convergence line, a range or any other assertion about the ship — it is one segment between a mark
@@ -365,12 +399,12 @@ that keeps a mark anywhere near its own mount separates them all. What the searc
 weaker and still worth having: no mark loses more than half of itself, so every number can be read
 and every square's own edge found. The complete ledger is the equivalent that does not degrade.
 
-**A leader can end underneath another mark.** Where the package genuinely draws two mounts closer
-together than a mark is wide, the displaced mark's leader has to terminate inside the other mount's
-square, and because the leaders are drawn under the marks its last segment disappears beneath it.
-What a reader sees is a line running between two marks rather than a line pointing at a mount. It
-happens on about a dozen plates. It is inherent rather than a defect in the placement — the anchor is
-where it is — and if it proves to matter the answer is a leader that stops at the other mark's edge.
+**A leader's far end is a bare point.** The line is trimmed to its own mark's edge — the part inside
+an opaque square is not on screen, and half a mark's width of every leader is inside the mark it
+leads to, so trimming is what makes the drawn segment all visible. The other end carries nothing: the
+mount's published position is the package's own annotation, under the interface's filter. In a dense
+crowd the members' anchors sit close together in the middle of the ring, so which line ends on which
+mount is read from the line rather than from anything drawn at its end.
 
 **A mark's position is a sighted-only cue**, which is not new and not load-bearing: a mount's
 position on the hull was never exposed to assistive technology, and feature 002's ledger is the

@@ -365,7 +365,20 @@ said and the requirement is what changed.
       room than a plate has made the greedy search give up more often and produced a _tighter_
       result: on the Anaconda's underside at 200% text the asked-for 13.1% left two marks six pixels
       apart where 9% left them twenty-five apart.
-- [x] T079 Cover all four in the suites that gate the build: `placeMarks` in
+- [x] T083 Move every mount of a crowd rather than pinning the first — `placeMarks` gathers mounts
+      whose marks would touch into one group, transitively, and spreads the whole group onto a ring
+      around the middle of those mounts, each member on its own side of it and each with its own
+      leader. Pinning the first made the answer depend on package drawing order and left that mount
+      as the only one in the crowd with no leader, claiming a precision none of them has.
+- [x] T084 Make the leaders readable — separate the distance that decides _whether_ marks are
+      crowded (a quarter of a mark's width of air) from the distance a crowd is _spread_ by (past the
+      furthest mount, plus a mark and a quarter), trim each line to its own mark's edge in
+      `hull-schematic.ts` since the square hides everything inside it, and draw it at a rule's width
+      in `--edsb-border-node-leader` at 0.7 rather than a hairline at 0.4. One number for both jobs
+      did both badly: it spread pairs with eleven pixels of air between them by four pixels each. The
+      shipped package's shortest visible leader is now ten and a half pixels, and no plate moves a
+      mark that was not crowded.
+- [x] T079 Cover all six in the suites that gate the build: `placeMarks` in
       `src/app/domain/anatomy/mount-declutter.spec.ts`, the plate's own displacement, leader and
       filtered-box assertions in `src/app/ui/outfitting/hull-schematic.spec.ts`, and the two
       end-to-end assertions — leaders matching displaced marks on both plates, a selected utility

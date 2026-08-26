@@ -91,33 +91,36 @@ export interface MarkPlacement {
 export const MARK_SEPARATION = 0.055;
 
 /**
- * The steps a displaced mark may take, in mark-separations.
+ * How far a cluster's ring may be grown before the search gives up on it.
  *
- * Three is the whole ladder. A mount that still has nowhere to go after three
- * rings is on a hull whose mounts are packed tighter than any arrangement of
- * squares can separate, and it keeps its own position: an honest overlap the
- * front-on-hover rule still resolves, rather than a mark flung far enough from
- * its mount that the leader is the only thing saying where the mount is.
+ * Each step is a quarter wider than the last, so eight of them reach about five
+ * times the ring a cluster starts with. A cluster still with nowhere to go
+ * after that is on a plate too small for any arrangement, and its marks stay on
+ * their mounts: a mount flung far enough that only the leader says where it is
+ * has been made harder to read, not easier, and the plate's own front-on-hover
+ * rule already handles the honest overlap.
  */
-const RINGS: readonly number[] = [1, 2, 3];
+const GROWTH = 1.25;
+const GROWTH_STEPS = 8;
 
 /**
- * The eight directions a mark may step in.
+ * The least a mark may move, in its own widths, for moving it to be worth it.
  *
- * Unit vectors under the same norm the separation test uses, so every one of
- * them lands a candidate exactly one separation away from where it started —
- * a diagonal step covers as much ground as a straight one.
+ * A displacement is only useful if a reader can *see* that it happened, and
+ * what they see is the part of the leader outside the mark's own square — the
+ * square covers half a mark's width of it. So a mark shifted half a width draws
+ * nothing at all, and one shifted a whole width draws a stub. At one and a
+ * quarter there is a real segment to follow.
+ *
+ * This is deliberately not the same number as the separation a crowd is
+ * detected by. *Whether* two marks need help is a question about whether they
+ * are touching; *how far* to move them once they do is a question about whether
+ * the leader explaining it can be read. Answering both with one number is what
+ * the first attempt did, and it displaced marks that had eleven pixels of air
+ * between them by four pixels each — spreading pairs that did not need it, and
+ * explaining none of the ones that did.
  */
-const DIRECTIONS: readonly PlatePoint[] = [
-  { x: 0, y: -1 },
-  { x: 1, y: -1 },
-  { x: 1, y: 0 },
-  { x: 1, y: 1 },
-  { x: 0, y: 1 },
-  { x: -1, y: 1 },
-  { x: -1, y: 0 },
-  { x: -1, y: -1 },
-];
+const LEAST_TRAVEL = 1.25;
 
 /**
  * How far apart two square marks are, measured the way squares overlap.
@@ -133,69 +136,147 @@ function separation(a: PlatePoint, b: PlatePoint): number {
 }
 
 /**
- * The eight directions, ordered by how far each points away from the middle of
- * the plate.
+ * The groups of mounts that have to be solved together.
  *
- * A mount is on the hull and the hull is centred in the frame, so stepping
- * outward moves a mark off the drawing into the air around it, where a
- * fourteen-pixel square with a number in it is legible and covers nothing.
- * Stepping inward would push it deeper onto the structure and, on a dense
- * hull, straight into the next mount.
- *
- * Ties keep the fixed order above — `sort` is stable — so two mounts the same
- * distance out on opposite sides of the nose are answered the same way every
- * time this runs.
+ * Two mounts are in the same group when their marks would touch, and the
+ * relation is followed transitively: a chain of three mounts each too close to
+ * the next is one problem, not two, because moving the middle one changes both
+ * answers. Package drawing order decides the order of the groups and of the
+ * members inside them, so the same hull always produces the same grouping.
  */
-function outwardFirst(anchor: PlatePoint, frame: PlateFrame): readonly PlatePoint[] {
-  const outward = { x: anchor.x - frame.width / 2, y: anchor.y - frame.height / 2 };
-  return [...DIRECTIONS].sort(
-    (a, b) => b.x * outward.x + b.y * outward.y - (a.x * outward.x + a.y * outward.y),
-  );
+function crowds(anchors: readonly PlatePoint[], gap: number): readonly (readonly number[])[] {
+  const owner = anchors.map((_, index) => index);
+  const find = (index: number): number => {
+    let root = index;
+    while (owner[root] !== root) {
+      root = owner[root];
+    }
+    return root;
+  };
+
+  for (let i = 0; i < anchors.length; i += 1) {
+    for (let j = i + 1; j < anchors.length; j += 1) {
+      if (separation(anchors[i], anchors[j]) < gap) {
+        owner[find(i)] = find(j);
+      }
+    }
+  }
+
+  const groups = new Map<number, number[]>();
+  anchors.forEach((_, index) => {
+    const root = find(index);
+    groups.set(root, [...(groups.get(root) ?? []), index]);
+  });
+  return [...groups.values()];
+}
+
+/** The middle of what a group of mounts occupies. */
+function middleOf(points: readonly PlatePoint[]): PlatePoint {
+  const sum = points.reduce((into, one) => ({ x: into.x + one.x, y: into.y + one.y }), {
+    x: 0,
+    y: 0,
+  });
+  return { x: sum.x / points.length, y: sum.y / points.length };
+}
+
+/**
+ * Where a crowd's marks go: a ring around the middle of the mounts themselves.
+ *
+ * **Every member moves, and every member moves the same distance.** That is the
+ * point of doing it this way rather than pinning the first mount and pushing
+ * the others off it. Pinning one is arbitrary — it makes the answer depend on
+ * the order the package happened to draw them in — and it leaves the pinned
+ * mount as the only one in the crowd with no leader, which reads as though that
+ * mount alone were exactly where its mark is and the others had been guessed.
+ * A ring says what is true: these mounts are too close together to draw apart,
+ * so here they all are, each tied back to its own point.
+ *
+ * Each member keeps its own side of the crowd. The ring's slots are handed out
+ * in the members' own angular order and the ring is then turned to the offset
+ * that best matches the directions the mounts actually lie in, so a mount on
+ * the crowd's left stays on the left and no two leaders cross.
+ */
+function ringOf(members: readonly PlatePoint[], radius: number): readonly PlatePoint[] {
+  const middle = middleOf(members);
+  const step = (2 * Math.PI) / members.length;
+
+  // Each mount's own direction from the middle of the crowd. Two mounts on the
+  // same point have no direction to keep, and take their slot's own angle.
+  const bearings = members.map((one, index) => {
+    const away = { x: one.x - middle.x, y: one.y - middle.y };
+    return away.x === 0 && away.y === 0 ? index * step : Math.atan2(away.y, away.x);
+  });
+
+  const order = members.map((_, index) => index).sort((a, b) => bearings[a] - bearings[b] || a - b);
+
+  // The turn that lines the ring up with the mounts: the mean of each mount's
+  // own bearing less the slot it is about to take, averaged as a direction so
+  // the wrap from -pi to pi does not pull it to the opposite side.
+  let sin = 0;
+  let cos = 0;
+  order.forEach((member, slot) => {
+    const difference = bearings[member] - slot * step;
+    sin += Math.sin(difference);
+    cos += Math.cos(difference);
+  });
+  const turn = Math.atan2(sin, cos);
+
+  const placed: PlatePoint[] = new Array<PlatePoint>(members.length);
+  order.forEach((member, slot) => {
+    const angle = turn + slot * step;
+    placed[member] = {
+      x: middle.x + radius * Math.cos(angle),
+      y: middle.y + radius * Math.sin(angle),
+    };
+  });
+  return placed;
+}
+
+/**
+ * The smallest ring that puts a crowd's own marks far enough apart.
+ *
+ * Neighbours on a ring of `n` sit `2r sin(pi/n)` apart, so the radius that
+ * separates them is `gap / (2 sin(pi/n))` — half a gap for a pair, a gap over
+ * root three for a trio, and so on. Squares are compared by their widest axis
+ * rather than by straight-line distance, so this is a floor and the search
+ * above it does the rest.
+ */
+function ringFor(count: number, gap: number): number {
+  return count < 2 ? 0 : gap / (2 * Math.sin(Math.PI / count));
 }
 
 /**
  * One attempt at an arrangement, at one separation.
  *
- * Greedy and in one pass: the first mount keeps its own position, and each one
- * after it keeps its own position unless that would touch a mark already
- * placed, in which case it takes the first clear step it can find. Package
- * drawing order is what decides who moves, and it is the same order on every
- * render, so one hull at one plate size is one arrangement — there is nothing
- * here that could settle differently on a second pass.
+ * Mounts far enough from everything keep their own position and draw no leader.
+ * Every mount in a crowd moves: its whole crowd is spread onto a ring around
+ * the middle of those mounts, each member the same distance from that middle
+ * and on its own side of it, and each tied back to its own point by a leader.
  *
- * A step is chosen in two passes over the same ladder, and the first pass is
- * what stops a displaced mark from lying about which mount it belongs to. A
- * mark that steps onto *another mount's* published position sits on top of that
- * mount while its own leader runs off somewhere else — the reader sees a
- * numbered square exactly where mount B is, labelled with mount A's number,
- * which is worse than the overlap being fixed. So the first pass requires a
- * candidate to be clear of every other mount's anchor as well as of every mark
- * already placed; only if the whole ladder fails that test does the second pass
- * drop the anchor requirement. Dropping it is a real loss and it is taken last.
+ * The ring starts at the smallest radius that separates the crowd's own members
+ * and grows a quarter at a time until the whole crowd also clears three other
+ * things: the marks of crowds already placed, the published position of every
+ * mount that is not in this crowd — a mark parked on a *different* mount reads
+ * as that mount's number, which is the one thing the leader exists to prevent —
+ * and the edges of the frame, because a mark half off the plate cannot be
+ * pressed. A crowd that never clears all three keeps its mounts' own positions.
  *
- * A displaced mark must also land inside the frame, because a mark half off the
- * plate is not a mark a Commander can press. The anchor itself is exempt from
- * that test: a mount the package drew near the edge is where the mount is, and
- * moving it to satisfy a rule about displacement would be this function
- * inventing geometry for a mount that never collided with anything.
- *
+ * Crowds are taken largest first, so the arrangement that needs the most room
+ * chooses before the plate is filled with smaller ones. Ties keep package
+ * drawing order, so one hull at one plate size is one arrangement.
  */
 function arrange(
   anchors: readonly PlatePoint[],
   frame: PlateFrame,
   gap: number,
+  mark: number,
 ): readonly MarkPlacement[] {
   const inset = gap / 2;
-  const placed: PlatePoint[] = [];
-
-  // Every step below lands a candidate at exactly one gap from where it
-  // started, so the test it then has to pass is the one case binary arithmetic
-  // cannot answer: `(y + gap) - y` is not always `gap`, and a candidate placed
-  // at exactly one separation must not then read as being under it.
+  // Every step lands marks at exactly one gap from each other, so the test they
+  // then have to pass is the one case binary arithmetic cannot answer:
+  // `(y + gap) - y` is not always `gap`, and a mark placed at exactly one
+  // separation must not then read as being under it.
   const tolerance = gap * 1e-9;
-
-  const clearOf = (point: PlatePoint, others: readonly PlatePoint[]): boolean =>
-    others.every((other) => separation(point, other) >= gap - tolerance);
 
   const inside = (point: PlatePoint): boolean =>
     point.x >= inset &&
@@ -203,43 +284,75 @@ function arrange(
     point.y >= inset &&
     point.y <= frame.height - inset;
 
-  const keep = (anchor: PlatePoint, mark: PlatePoint, displaced: boolean): MarkPlacement => {
-    placed.push(mark);
-    return { anchor, mark, displaced };
-  };
+  const clearOf = (point: PlatePoint, others: readonly PlatePoint[]): boolean =>
+    others.every((other) => separation(point, other) >= gap - tolerance);
 
-  return anchors.map((anchor, index) => {
-    if (clearOf(anchor, placed)) {
-      return keep(anchor, anchor, false);
+  const placed: PlatePoint[] = [];
+  const marks: PlatePoint[] = new Array<PlatePoint>(anchors.length);
+  const displaced = new Array<boolean>(anchors.length).fill(false);
+
+  const groups = [...crowds(anchors, gap)].sort((a, b) => b.length - a.length || a[0] - b[0]);
+
+  for (const group of groups) {
+    const members = group.map((index) => anchors[index]);
+
+    if (members.length === 1) {
+      marks[group[0]] = members[0];
+      placed.push(members[0]);
+      continue;
     }
 
-    // Every mount's published position except this one's. A mark that came to
-    // rest on one of these would be sitting exactly where a different mount is.
-    const foreign = anchors.filter((_, other) => other !== index);
-    const directions = outwardFirst(anchor, frame);
+    const foreign = anchors.filter((_, index) => !group.includes(index));
 
-    for (const alsoClearOfMounts of [true, false]) {
-      for (const ring of RINGS) {
-        for (const direction of directions) {
-          const candidate = {
-            x: anchor.x + direction.x * ring * gap,
-            y: anchor.y + direction.y * ring * gap,
-          };
-          if (
-            inside(candidate) &&
-            clearOf(candidate, placed) &&
-            (!alsoClearOfMounts || clearOf(candidate, foreign))
-          ) {
-            return keep(anchor, candidate, true);
-          }
-        }
+    // How far the ring has to be from the middle of the crowd, which is two
+    // separate demands and neither implies the other.
+    //
+    // The first is that the crowd's own marks clear each other, which is what
+    // the ring's own geometry gives.
+    //
+    // The second is that each member visibly *moved*. A ring is measured from
+    // the middle of the crowd, but a member's own mount is not at that middle —
+    // it is up to half the crowd's own width away from it, and in the direction
+    // its mark is about to go. So a radius that looks generous can leave the
+    // outermost member travelling almost nowhere, and its leader is then
+    // entirely inside its own square. Pushing the ring out past the furthest
+    // mount, and then past it by the distance a leader needs, is what makes the
+    // guarantee hold for every member rather than for the average one.
+    const middle = middleOf(members);
+    const reach = Math.max(...members.map((one) => Math.hypot(one.x - middle.x, one.y - middle.y)));
+    const smallest = Math.max(ringFor(members.length, gap), reach + mark * LEAST_TRAVEL);
+    let settled: readonly PlatePoint[] | null = null;
+
+    for (let step = 0; step < GROWTH_STEPS && settled === null; step += 1) {
+      const ring = ringOf(members, smallest * GROWTH ** step);
+      const room = ring.every(
+        (one, index) =>
+          inside(one) &&
+          clearOf(one, placed) &&
+          clearOf(one, foreign) &&
+          clearOf(
+            one,
+            ring.filter((_, other) => other !== index),
+          ),
+      );
+      if (room) {
+        settled = ring;
       }
     }
 
-    // Nowhere to stand. The mark stays on its mount and overlaps, which is what
-    // the plate's own front-on-hover rule is for.
-    return keep(anchor, anchor, false);
-  });
+    group.forEach((index, member) => {
+      const mark = settled?.[member] ?? members[member];
+      marks[index] = mark;
+      displaced[index] = settled !== null;
+      placed.push(mark);
+    });
+  }
+
+  return anchors.map((anchor, index) => ({
+    anchor,
+    mark: marks[index],
+    displaced: displaced[index],
+  }));
 }
 
 /** The smallest pairwise distance in an arrangement; `Infinity` for one mark. */
@@ -291,23 +404,22 @@ export function placeMarks(
   anchors: readonly PlatePoint[],
   frame: PlateFrame,
   separationFraction: number = MARK_SEPARATION,
+  markFraction: number = separationFraction / 2,
 ): readonly MarkPlacement[] {
   let best: readonly MarkPlacement[] | null = null;
   let bestSpread = -Infinity;
-  let bestMoved = Infinity;
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {
     const placements = arrange(
       anchors,
       frame,
       separationFraction * RETREAT ** attempt * frame.width,
+      markFraction * frame.width,
     );
     const spread = tightest(placements);
-    const moved = placements.filter((one) => one.displaced).length;
-    if (spread > bestSpread || (spread === bestSpread && moved < bestMoved)) {
+    if (spread > bestSpread) {
       best = placements;
       bestSpread = spread;
-      bestMoved = moved;
     }
   }
 

@@ -17,7 +17,12 @@ import type {
   SchematicSide,
   SideAssetState,
 } from '../../domain/anatomy/anatomy-model';
-import { MARK_SEPARATION, placeMarks, type PlatePoint } from '../../domain/anatomy/mount-declutter';
+import {
+  MARK_SEPARATION,
+  placeMarks,
+  type MarkPlacement,
+  type PlatePoint,
+} from '../../domain/anatomy/mount-declutter';
 import { hullSchematicImagePath } from '../../platform/assets/hull-artwork-path';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { ElementSizeAdapter, type ElementSize } from '../../platform/browser/element-size.adapter';
@@ -48,12 +53,19 @@ export interface HullSchematicView {
 const PLATE_RATIO = 720 / 292;
 
 /**
- * How much room a mark asks for, as a multiple of its own width.
+ * How close two marks may be drawn before the plate treats them as a crowd.
  *
- * A hairline of air, so two marks that clear it read as two marks rather than
- * as one shape with a seam down it.
+ * A quarter of a mark's width of air between two squares. Below that they read
+ * as one shape with a seam down it; above it they are two marks a reader can
+ * tell apart, and moving them would be officiousness — the Almanac puts plenty
+ * of mounts a comfortable distance apart, and a plate that shuffled those
+ * around would be inventing a problem to solve.
+ *
+ * This says only *who* needs help. How far a crowd is then spread is a separate
+ * question, answered in `mount-declutter.ts` by what its leaders need to be
+ * legible, and the two numbers are deliberately not the same one.
  */
-const MARK_AIR = 1.15;
+const MARK_AIR = 1.25;
 
 /**
  * The most of a plate one mark may claim before the plate stops decluttering.
@@ -90,6 +102,51 @@ export interface PlateLeader {
   readonly y1: number;
   readonly x2: number;
   readonly y2: number;
+}
+
+/**
+ * One leader, ending at the edge of the mark rather than under it.
+ *
+ * A mark is an opaque square drawn over the plate, so the part of a leader
+ * inside it is not on screen at all — and since the whole line is only about a
+ * mark's width long, that is most of it. Trimming moves the drawn end out to
+ * the square's boundary, so every pixel of what is drawn is a pixel a reader
+ * can see.
+ *
+ * The square is axis-aligned, so the distance from its centre to its edge along
+ * a given direction is half its width over the larger of the direction's two
+ * components — the same widest-axis measure the placement separates marks by.
+ * A line shorter than that reach is left alone: there is nothing to trim to,
+ * and a zero-length line is not an improvement on a short one.
+ */
+function trimmed(
+  placement: MarkPlacement,
+  reach: number,
+): { x1: number; y1: number; x2: number; y2: number } {
+  const run = {
+    x: placement.mark.x - placement.anchor.x,
+    y: placement.mark.y - placement.anchor.y,
+  };
+  const length = Math.hypot(run.x, run.y);
+  const widest = Math.max(Math.abs(run.x), Math.abs(run.y));
+  const trim = widest === 0 ? 0 : (reach * length) / widest;
+
+  if (trim <= 0 || trim >= length) {
+    return {
+      x1: placement.anchor.x,
+      y1: placement.anchor.y,
+      x2: placement.mark.x,
+      y2: placement.mark.y,
+    };
+  }
+
+  const back = trim / length;
+  return {
+    x1: placement.anchor.x,
+    y1: placement.anchor.y,
+    x2: placement.mark.x - run.x * back,
+    y2: placement.mark.y - run.y * back,
+  };
 }
 
 /** Where the hull's own rectangle sits inside the plate's, in drawing units. */
@@ -374,12 +431,21 @@ export class HullSchematic {
    * so a plate's first frame is decluttered rather than stacked.
    */
   readonly #separation = computed(() => {
+    const mark = this.#markShare();
+    return mark === null ? MARK_SEPARATION : Math.min(MAX_SEPARATION, mark * MARK_AIR);
+  });
+
+  /**
+   * How much of the plate's width one mark covers, or `null` before it is known.
+   *
+   * The one measured quantity everything else here is built from: the
+   * separation the marks are placed at, and the length the leaders are trimmed
+   * by so they end at a square's edge rather than under it.
+   */
+  readonly #markShare = computed(() => {
     const plate = this.#frameSize().width;
     const mark = this.#markSize().width;
-    if (plate <= 0 || mark <= 0) {
-      return MARK_SEPARATION;
-    }
-    return Math.min(MAX_SEPARATION, (mark * MARK_AIR) / plate);
+    return plate <= 0 || mark <= 0 ? null : mark / plate;
   });
 
   constructor() {
@@ -456,6 +522,7 @@ export class HullSchematic {
         occurrences.map((occurrence) => this.#anchorOf(laid, occurrence.centre)),
         { width: laid.frameWidth, height: laid.frameHeight },
         this.#separation(),
+        this.#markShare() ?? MARK_SEPARATION / MARK_AIR,
       );
 
       const marks = occurrences.map((occurrence, index) => ({
@@ -465,17 +532,14 @@ export class HullSchematic {
         displaced: placements[index].displaced,
       }));
 
+      // Half a mark, in the frame's own units: how far back from a mark's
+      // centre its own square reaches. Zero until the plate has been measured,
+      // which draws the untrimmed line rather than no line.
+      const reach = ((this.#markShare() ?? 0) * laid.frameWidth) / 2;
+
       const leaders = placements.flatMap((placement, index) =>
         placement.displaced
-          ? [
-              {
-                key: occurrences[index].item.key,
-                x1: placement.anchor.x,
-                y1: placement.anchor.y,
-                x2: placement.mark.x,
-                y2: placement.mark.y,
-              },
-            ]
+          ? [{ key: occurrences[index].item.key, ...trimmed(placement, reach) }]
           : [],
       );
 

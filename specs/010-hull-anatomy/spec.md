@@ -29,14 +29,16 @@ draws them and the withdrawn surfaces are recorded in
 Three things the reference did not answer, decided by what the built screen does on real hulls and
 real hardware.
 
-- Q: What happens where the package draws mounts so close together that their marks touch? → A: The
-  mark steps aside and a hairline ties it back to the point the package published. The anchor never
-  moves and the step is arithmetic over the package's own coordinates. How far apart two marks must
-  be is the mark's own drawn width, which the plate measures — a mark's size has an absolute floor,
-  so its share of the plate grows as the plate narrows or the text enlarges, and a fixed fraction
-  separated nothing at 320-pixel reflow or 200% text. **FR-012 is amended rather than clarified**:
-  the requirement as written put a mount's control at the published position, and this moves it. The
-  front-on-hover rule stays for the plates too small for any arrangement to separate.
+- Q: What happens where the package draws mounts so close together that their marks touch? → A: All
+  of them move, together, onto a ring around the mounts they belong to, and each draws a line back to
+  the point the package published. The anchors never move and every step is arithmetic over the
+  package's own coordinates. Two measured distances decide it, and they are not the same one: how
+  close is too close, and how far to move once they are — the second is larger, because a mark's own
+  square hides half a mark's width of its line and a move nobody can see explains nothing. Both are
+  measured rather than assumed, since a mark's size has an absolute floor and its share of the plate
+  grows as the plate narrows or the text enlarges. **FR-012 is amended rather than clarified**: the
+  requirement as written put a mount's control at the published position, and this moves it. The
+  front-on-hover rule stays for the crowds no ring can be fitted around.
 - Q: Should a selected utility mount take the accent fill a selected hardpoint takes? → A: No. The
   fill says _selected_ and the hue says _which kind_, so a selected utility is filled in the
   informational hue the legend's `UTILITY` entry draws. Selection remains carried by `aria-pressed`
@@ -109,9 +111,13 @@ real hardware.
   moving that geometry. A mark MAY be drawn away from its anchor to keep it clear of another mark,
   provided the anchor is unchanged, a leader joins the mark to its anchor, the displacement is
   computed only from coordinates the package published and the application's own measurement of how
-  large it drew the mark, and the result is deterministic for a given hull and plate size. The
-  minimum distance between two marks is the mark's own drawn width plus a hairline; because that
-  width does not scale with the plate at every size, it MUST be measured rather than assumed
+  large it drew the mark, and the result is deterministic for a given hull and plate size. Where two
+  or more marks are too close, **every one of them MUST be moved**, by the same distance, around the
+  mounts they belong to: leaving one in place makes the arrangement depend on package drawing order
+  and gives that one mark no leader, which claims a precision none of them has. The distance marks
+  are moved MUST be enough for a leader to be visible outside the mark it leads to, which is a larger
+  distance than the one that decides whether they were too close at all; because a mark's drawn width
+  does not scale with the plate at every size, both MUST be measured rather than assumed
   (design/hull-anatomy.md, "Marks that would touch").
   The marks are drawn at the canvas's own size, below the project's 44-pixel baseline: the size
   criterion is met through SC 2.5.8's Equivalent exception, by feature 002's complete ledger offering

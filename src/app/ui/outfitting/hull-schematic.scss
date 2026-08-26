@@ -82,13 +82,19 @@
   pointer-events: none;
 }
 
-// One hairline, at one width whatever the plate's scale is: the frame's units
-// are the hull's, so a stroke measured in them would be four times thicker on a
+// One line, at one width whatever the plate's scale is: the frame's units are
+// the hull's, so a stroke measured in them would be four times thicker on a
 // two-column plate than on a phone. `non-scaling-stroke` in the template is
 // what makes this a CSS length rather than a drawing one.
+//
+// A rule's width rather than a hairline's. The segment is short — the mark's
+// own square covers everything inside it, and the template trims the line to
+// that square's edge so what is left is all there is — and a one-pixel line
+// that short is not something a reader finds on a lit drawing.
 .schematic__leader {
   stroke: var(--edsb-border-node-leader);
-  stroke-width: var(--edsb-border-width-hairline);
+  stroke-width: var(--edsb-border-width-rule);
+  stroke-linecap: round;
 }
 
 // Written over the drawing in the corner, as the canvas writes it. It is the

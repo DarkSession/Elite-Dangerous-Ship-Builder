@@ -108,12 +108,13 @@ describe('HullSchematic', () => {
     expect(mount.style.top).toBe('75%');
   });
 
-  it('steps a mark aside from one it would touch, and ties it back to its mount', () => {
+  it('moves both mounts of a crowd and ties each back to its own point', () => {
     // Four drawing units apart on a hull 480 across: the Almanac's own case,
-    // where two real mounts are closer together than a mark is wide. The second
-    // mark moves; the mount it belongs to does not, and the hairline between
-    // them is what keeps the mount's real position on the plate
-    // (design/hull-anatomy.md, "Marks that would touch").
+    // where two real mounts are closer together than a mark is wide. **Both**
+    // marks move, around the middle of the two mounts, and each draws its own
+    // hairline back to the point the package published — pinning one would
+    // leave it as the only mark in the crowd claiming to be exactly where its
+    // mount is (design/hull-anatomy.md, "Marks that would touch").
     const fixture = renderComponent(HullSchematic, {
       view: view({
         occurrences: [
@@ -124,17 +125,19 @@ describe('HullSchematic', () => {
     });
 
     const marks = element(fixture).querySelectorAll<HTMLElement>('.schematic__mount');
-    expect(marks[0].getAttribute('data-displaced')).toBe('false');
+    expect(marks[0].getAttribute('data-displaced')).toBe('true');
     expect(marks[1].getAttribute('data-displaced')).toBe('true');
     expect(marks[1].style.left).not.toBe(marks[0].style.left);
 
+    // One line per moved mark, each starting at its own mount's published
+    // position, turned with the hull.
     const leaders = element(fixture).querySelectorAll('.schematic__leader');
-    expect(leaders.length).toBe(1);
-    // The far end is the middle of the package's own annotation, turned with
-    // the hull — the position the unmoved mark would have had.
-    expect(Number(leaders[0].getAttribute('x1'))).toBeCloseTo(179.89, 2);
-    expect(Number(leaders[0].getAttribute('y1'))).toBeCloseTo(180, 2);
-    expect(Number(leaders[0].getAttribute('x2'))).not.toBeCloseTo(179.89, 2);
+    expect(leaders.length).toBe(2);
+    const starts = [...leaders].map((leader) => Number(leader.getAttribute('x1')));
+    expect(starts.map((start) => Math.round(start * 100) / 100).sort()).toEqual([175.89, 179.89]);
+    for (const leader of leaders) {
+      expect(Number(leader.getAttribute('x2'))).not.toBe(Number(leader.getAttribute('x1')));
+    }
     // Decoration: the mount is a named button and the line says nothing a
     // reader has to hear.
     expect(query(fixture, '.schematic__leaders').getAttribute('aria-hidden')).toBe('true');

@@ -176,17 +176,20 @@ interface MarkPlacement {
 Where one mount's numbered square is drawn, in the plate frame's own units. `anchor` is the
 occurrence's own centre turned with the hull and centred in the frame — the position the package
 published, and the position the plate is still stating. `mark` is where the square goes: the anchor,
-unless drawing it there would touch a square already placed, in which case `displaced` is true, the
-square takes a deterministic step — outward from the middle of the plate where there is room, inward
-or sideways where there is not — and the plate draws a hairline from the mark back to the anchor.
+unless it would touch another square, in which case every mount it is crowded with is spread onto a
+ring around the middle of those mounts, `displaced` is true for all of them, and the plate draws a
+line from each mark back to its own anchor. Each member keeps its own side of the crowd, so no two
+lines cross.
 
 Every coordinate is the package's own or arithmetic over it; nothing about where a mount _is_ comes
-from the rendered document (FR-003). The one measured input is how far apart two marks must be, which
-is how wide the plate drew a mark plus a hairline: a mark's size has an absolute floor, so its share
-of the plate is not constant and cannot be assumed. That distance is a ceiling rather than a promise
-— asking for more room than a plate has produces a _tighter_ arrangement, so the search retreats
-until it finds the one that separated its marks best (FR-012; design/hull-anatomy.md, "Marks that
-would touch").
+from the rendered document (FR-003). What is measured is how wide the plate drew one of its own
+marks, because a mark's size has an absolute floor and its share of the plate is therefore not
+constant. Two distances come from that measurement and they are deliberately different: how close two
+marks may be before they count as crowded, and how far a crowd is then spread — the second larger,
+because a mark's own square hides half a mark's width of its line. The first is a ceiling rather than
+a promise: asking for more room than a plate has produces a _tighter_ arrangement, so the search
+retreats until it finds the one that separated its marks best (FR-012; design/hull-anatomy.md, "Marks
+that would touch").
 
 ## AnatomyProjection
 

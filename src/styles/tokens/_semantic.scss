@@ -171,10 +171,13 @@
   --edsb-border-region: var(--edsb-palette-amber-a18);
   --edsb-border-dialog: var(--edsb-palette-amber-a45);
   --edsb-border-quiet: var(--edsb-palette-ink-a18);
-  // The hairline from a mount to the mark that stepped aside from it, where the
-  // hull draws two mounts closer together than a mark is wide. Quiet enough not
-  // to read as hull structure, strong enough to follow across it.
-  --edsb-border-node-leader: var(--edsb-palette-amber-a40);
+  // The line from a mount to the mark that stepped aside from it, where the hull
+  // draws two mounts closer together than a mark is wide. It has to be followed
+  // across a lit technical drawing over a hatched plate, and at 0.4 it could
+  // not be: the segment is a few pixels long once the mark's own square has
+  // covered its end, and a quiet hairline that short reads as part of the
+  // artwork. Strong enough to be a line somebody drew on purpose.
+  --edsb-border-node-leader: var(--edsb-palette-amber-a70);
   --edsb-border-danger-quiet: var(--edsb-palette-hot-a40);
 
   // The one-pixel ground a grid's gaps expose as rules.

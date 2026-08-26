@@ -42,8 +42,13 @@ describe('placeMarks', () => {
     expect(placed.map((one) => one.anchor)).toEqual(anchors);
   });
 
-  it('steps a mark aside when it would touch one already placed', () => {
+  it('moves every mount of a crowd, not just the ones after the first', () => {
     // Six units apart on a 720-unit frame: the Anaconda's pair, to scale.
+    //
+    // Both move. Pinning the first would make the answer depend on the order
+    // the package happened to draw them in, and would leave the pinned mount as
+    // the only one in the crowd with no leader — which reads as though that one
+    // were exactly where its mark is and the other had been guessed.
     const anchors = [
       { x: 360, y: 146 },
       { x: 366, y: 146 },
@@ -51,9 +56,63 @@ describe('placeMarks', () => {
 
     const [first, second] = placeMarks(anchors, FRAME);
 
-    expect(first.displaced).toBe(false);
+    expect(first.displaced).toBe(true);
     expect(second.displaced).toBe(true);
     expect(apart(first.mark, second.mark)).toBeGreaterThanOrEqual(GAP - SLACK);
+  });
+
+  it('moves a crowd’s mounts the same distance, around the middle of them', () => {
+    const anchors = [
+      { x: 360, y: 146 },
+      { x: 366, y: 146 },
+      { x: 363, y: 152 },
+    ];
+
+    const placed = placeMarks(anchors, FRAME);
+    const middle = {
+      x: anchors.reduce((sum, one) => sum + one.x, 0) / anchors.length,
+      y: anchors.reduce((sum, one) => sum + one.y, 0) / anchors.length,
+    };
+
+    const radii = placed.map((one) => Math.hypot(one.mark.x - middle.x, one.mark.y - middle.y));
+    for (const radius of radii) {
+      expect(radius).toBeCloseTo(radii[0], 6);
+    }
+  });
+
+  it('keeps each mount on its own side of the crowd, so no two leaders cross', () => {
+    // Four mounts at the compass points of a tight square. Each mark should end
+    // up in the direction its own mount lies from the middle.
+    const anchors = [
+      { x: 360, y: 140 },
+      { x: 366, y: 146 },
+      { x: 360, y: 152 },
+      { x: 354, y: 146 },
+    ];
+
+    const placed = placeMarks(anchors, FRAME);
+    const middle = { x: 360, y: 146 };
+
+    placed.forEach((one) => {
+      const mount = Math.atan2(one.anchor.y - middle.y, one.anchor.x - middle.x);
+      const mark = Math.atan2(one.mark.y - middle.y, one.mark.x - middle.x);
+      const between = Math.abs(Math.atan2(Math.sin(mark - mount), Math.cos(mark - mount)));
+      expect(between).toBeLessThan(Math.PI / 4);
+    });
+  });
+
+  it('leaves a lone mount where the package drew it, with no leader', () => {
+    const anchors = [
+      { x: 360, y: 146 },
+      { x: 366, y: 146 },
+      // Far from the pair, and from everything else.
+      { x: 120, y: 60 },
+    ];
+
+    const placed = placeMarks(anchors, FRAME);
+
+    expect(placed[2].displaced).toBe(false);
+    expect(placed[2].mark).toEqual(placed[2].anchor);
   });
 
   it('keeps the displaced mount pointing at the point the package published', () => {
@@ -140,18 +199,21 @@ describe('placeMarks', () => {
     }
   });
 
-  it('keeps a mount that has nowhere to go on its own position', () => {
-    // Forty mounts on one point. The rings run out, and the ones left over stay
-    // where the package drew them rather than being flung across the hull.
+  it('never puts a mark outside the plate, however crowded the hull', () => {
+    // Forty mounts on one point — past anything the package ships. Whatever the
+    // search settles on, every mark it reports has to be somewhere a Commander
+    // can press: on the plate, and either spread onto a ring or left on its own
+    // mount. Nothing may hang off the edge.
     const anchors = Array.from({ length: 40 }, () => ({ x: 360, y: 146 }));
 
     const placed = placeMarks(anchors, FRAME);
 
     expect(placed.length).toBe(40);
-    // More than one of them gave up, which is what proves the ladder ended
-    // rather than that forty rings were quietly walked.
-    expect(placed.filter((one) => !one.displaced).length).toBeGreaterThan(1);
     for (const one of placed) {
+      expect(one.mark.x).toBeGreaterThanOrEqual(0);
+      expect(one.mark.y).toBeGreaterThanOrEqual(0);
+      expect(one.mark.x).toBeLessThanOrEqual(FRAME.width);
+      expect(one.mark.y).toBeLessThanOrEqual(FRAME.height);
       if (!one.displaced) {
         expect(one.mark).toEqual(one.anchor);
       }
@@ -163,36 +225,25 @@ describe('placeMarks', () => {
     // reader sees a numbered square exactly where B is, carrying A's number,
     // while A's leader runs off somewhere else. The candidate has to clear every
     // other mount's anchor, not just the marks already placed.
+    // A pair that has to spread, and a third mount well clear of it — clear
+    // enough that it is not part of the crowd, so the pair's marks have to keep
+    // off its position rather than being arranged around it.
     const anchors = [
       { x: 300, y: 150 },
       { x: 305, y: 150 },
-      // Where the second mark would otherwise have been pushed.
-      { x: 305 - GAP, y: 150 + GAP },
+      { x: 300, y: 150 + GAP * 1.6 },
     ];
 
     const placed = placeMarks(anchors, FRAME);
+    const outsider = anchors[2];
 
-    for (const one of placed) {
-      if (!one.displaced) {
-        continue;
-      }
-      for (const anchor of anchors) {
-        if (anchor === one.anchor) {
-          continue;
-        }
-        expect(apart(one.mark, anchor)).toBeGreaterThanOrEqual(GAP - SLACK);
-      }
+    // Only the mount outside the crowd. Inside one, the mounts are by
+    // definition piled together and the marks are arranged around them, so a
+    // mark near a fellow member's point is the arrangement rather than a defect
+    // — which is what each member's own leader is there to tell apart.
+    for (const one of placed.slice(0, 2)) {
+      expect(apart(one.mark, outsider)).toBeGreaterThanOrEqual(GAP - SLACK);
     }
-  });
-
-  it('gives up the anchor rule rather than leaving a mark stacked', () => {
-    // Twelve mounts on one point: nothing can clear every foreign anchor, so the
-    // second pass drops that requirement rather than refusing to move at all.
-    const anchors = Array.from({ length: 12 }, () => ({ x: 360, y: 146 }));
-
-    const placed = placeMarks(anchors, FRAME);
-
-    expect(placed.filter((one) => one.displaced).length).toBeGreaterThan(0);
   });
 
   it('takes the separation it is given rather than one of its own', () => {
@@ -206,7 +257,44 @@ describe('placeMarks', () => {
     ];
 
     expect(placeMarks(anchors, FRAME, 0.03).map((one) => one.displaced)).toEqual([false, false]);
-    expect(placeMarks(anchors, FRAME, 0.12).map((one) => one.displaced)).toEqual([false, true]);
+    expect(placeMarks(anchors, FRAME, 0.12).map((one) => one.displaced)).toEqual([true, true]);
+  });
+
+  it('moves a mark far enough that the leader explaining it can be seen', () => {
+    // A mark's own square covers half its width of its leader, so a mark that
+    // shifts less than that draws nothing at all. Every mark that moves has to
+    // move far enough to leave a segment behind — including the outermost
+    // member of a crowd, whose mount is already displaced from the middle the
+    // ring is measured from and which therefore travels least.
+    const mark = 0.04 * FRAME.width;
+    const anchors = [
+      { x: 300, y: 150 },
+      { x: 306, y: 150 },
+      { x: 303, y: 158 },
+    ];
+
+    for (const one of placeMarks(anchors, FRAME, 0.05, 0.04)) {
+      if (one.displaced) {
+        const travel = Math.hypot(one.mark.x - one.anchor.x, one.mark.y - one.anchor.y);
+        expect(travel).toBeGreaterThan(mark / 2);
+      }
+    }
+  });
+
+  it('leaves marks alone when they are already a comfortable distance apart', () => {
+    // Twice the separation asked for. Nothing here is touching, so nothing
+    // should be shuffled: a plate that spread mounts the package had already
+    // drawn apart would be inventing a problem to solve.
+    const anchors = [
+      { x: 200, y: 150 },
+      { x: 200 + GAP * 2, y: 150 },
+      { x: 200 + GAP * 4, y: 150 },
+    ];
+
+    const placed = placeMarks(anchors, FRAME);
+
+    expect(placed.map((one) => one.displaced)).toEqual([false, false, false]);
+    expect(placed.map((one) => one.mark)).toEqual(anchors);
   });
 
   it('returns one placement per mount, in the order it was handed them', () => {
