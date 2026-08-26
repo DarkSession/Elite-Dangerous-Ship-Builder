@@ -80,8 +80,9 @@ describe('projectDefence', () => {
 
     it.each(PIP_SETTINGS)('carries the capacitor beside it at %s SYS pips', (pips) => {
       // The pips are their own package call since Almanac 0.2.0, so the shield
-      // above stays still and this is the only thing on the projection that
-      // moves with the allocation (FR-002).
+      // above stays still and this is the only thing on the damage table that
+      // moves with the allocation (FR-002). The recovery moves with it as well,
+      // but it is not on this table.
       const build = fullyFittedBuild();
       const result = BuildMetrics.of(build).shieldCapacitorMetricsResult({ systemsPips: pips });
       if (!result.complete) {

@@ -24,8 +24,12 @@
   z-index: 2;
   flex-wrap: wrap;
   padding-block: var(--edsb-space-control-block);
-  // Exactly the height the regions below offset their own sticky chrome by.
-  min-block-size: var(--edsb-layout-bar-height);
+  // The bar's own floor: one row of controls at the target baseline. What the
+  // regions below clear is `--edsb-layout-bar-height`, which is this bar as it
+  // was actually drawn — a separate token on purpose, because a bar sized from
+  // its own measurement could never shrink again (token layer,
+  // `--edsb-layout-bar-floor`).
+  min-block-size: var(--edsb-layout-bar-floor);
 }
 
 // A sticky banner is a fixed share of a short viewport, and at 400% zoom that
@@ -165,8 +169,17 @@
     display: none;
   }
 
+  // The menu hangs off its trigger's trailing edge (canvas 1d), so where the
+  // trigger lands decides whether the panel lands on the screen at all. The
+  // compact bar wraps — a long build name, a German label, a doubled text size
+  // — and a trigger that has taken a row of its own sits at its leading edge,
+  // dragging the panel past the left of the viewport where nothing in it can
+  // be pressed. Holding it to the trailing edge of whatever row it lands on is
+  // both what the canvas draws and what keeps the panel on the screen
+  // (012/FR-001, 011/FR-011).
   .frame__action-layer {
     display: block;
+    margin-inline-start: auto;
   }
 }
 

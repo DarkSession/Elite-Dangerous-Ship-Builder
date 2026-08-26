@@ -85,8 +85,9 @@ module protection for the active build.
 
 ## Almanac Coverage
 
-`shieldMetricsResult()`, `shieldRecoveryResult()`, `cellBanks()` and `armourMetrics()` provide all defence
-numbers and states. Hull hardness is package catalogue data.
+`shieldMetricsResult()`, `shieldCapacitorMetricsResult()`, `shieldRecoveryResult()`, `cellBanks()`
+and `armourMetrics()` provide all defence numbers and states. Hull hardness is package catalogue
+data.
 
 ## Success Criteria
 

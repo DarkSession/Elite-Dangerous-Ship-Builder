@@ -1,17 +1,36 @@
 @use '../../../../../../styles/responsive' as layout;
 
-// Canvas 1c's `SHOT CONVERGENCE`: a `16 / 6` gunsight plate, the range it is
-// drawn at, and four cells reporting the spread. The block's own frame, heading
-// and note are the panel's, and stay with it; everything here is the content
-// inside that frame.
+// Canvas 1c's `SHOT CONVERGENCE`: a square gunsight plate, the range it is drawn
+// at, and four cells reporting the spread. The block's own frame and its heading
+// line — which since the 2026-08-25 canvas revision carries the ring caption —
+// are the panel's, and stay with it; everything here is the content inside that
+// frame.
 :host {
   display: block;
   min-inline-size: 0;
 }
 
+// The plate beside its readout, as the canvas sets them, and stacked when the
+// readout has no room to stand there. A wrapping row rather than a query,
+// because the only question is whether the two fit side by side — which is the
+// available space asking itself, and answers the same way for a phone, a 400%
+// zoom and an expanded translation.
 .convergence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--edsb-space-region);
+  min-inline-size: 0;
+}
+
+// The range and the four cells: one column beside the plate, and the whole
+// width beneath it once it cannot be. The basis is what it takes for the
+// canvas's four fact cells to stand as more than one column; below that the
+// row wraps rather than squeezing them.
+.convergence__readout {
   @include layout.stack(var(--edsb-space-stack));
 
+  flex: 1 1 15rem;
   min-inline-size: 0;
 }
 
@@ -23,28 +42,39 @@
 // ---------------------------------------------------------------------------
 // The gunsight plate
 
-// Canvas 1c's `16 / 6` box on hatched ground, inside an amber hairline. Its own
-// ratio rather than the anatomy plate's `720 / 292`: the gunsight runs the full
-// width of the panel, and the taller box turned a band into a third of the
-// screen.
+// Canvas 1c's `172px` square box on hatched ground, inside an amber hairline.
 //
-// Its own query container, because the badge numeral is sized in `cqw` against
-// the plate it is drawn on rather than against whatever box happens to enclose
-// it — the same reason `.schematic` is one.
+// Square in pixels because the plate is square in *angle*: the 2026-08-25
+// revision maps both axes over the same field of view, so a milliradian has to
+// cover the same number of pixels up as across, and only a square box makes
+// that true. The rings follow from it — the script sizes a ring's height by the
+// box's own `offsetWidth / offsetHeight`, which on this box is one. A wider box
+// under the same mapping would squash every shot's height in exactly its own
+// proportion and push a ring past the top and bottom of the plate, which is why
+// the earlier `16 / 6` band went with the earlier mapping that levelled it
+// (`design/canvas-contract.md`, "3. SHOT CONVERGENCE").
 //
-// Every *mark* on it is placed with physical `left` and `top`, deliberately, as
+// It takes the canvas's own width and shrinks with the block rather than
+// growing to fill it: a square plate given a whole panel's width is a diagram
+// several screens tall, and the field of view it draws does not get wider for
+// having more room.
+//
+// Its own query container, because the hardpoint numeral is sized in `cqw`
+// against the plate it is drawn on rather than against whatever box happens to
+// enclose it — the same reason `.schematic` is one.
+//
+// Every mark on it is placed with physical `left` and `top`, deliberately, as
 // the hull schematic places its mounts: a gunsight is a view out of the
 // cockpit, and a right-to-left interface does not move a ship's port hardpoint
-// to starboard. The leaders make it a correctness question rather than a
-// preference — `transform-origin` has no logical form, so a leader anchored by
-// its inline start would pivot about its far end under `rtl` and point away
-// from the dot it belongs to. The two captions are the exception, and are
-// placed logically: they are sentences, not geometry, and a sentence belongs at
-// the reading edge.
+// to starboard. The numeral beside a dot follows it for the same reason — the
+// canvas picks its corner from where the neighbouring dots are, and mirroring
+// that would put it back over one of them.
 .plate {
   position: relative;
+  flex: none;
   container-type: inline-size;
-  aspect-ratio: var(--edsb-layout-gunsight-ratio);
+  inline-size: min(100%, var(--edsb-layout-gunsight-plate));
+  aspect-ratio: 1;
   overflow: hidden;
   background: var(--edsb-surface-plate);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative-strong);
@@ -69,106 +99,121 @@
 
 // The two dashed rings, centred on the axis and sized in the angle they stand
 // for rather than in pixels, so they stay true at every plate width.
+//
+// A circle in angle, on a plate that is square in angle, is a circle in pixels:
+// the canvas arrives at the same shape by multiplying the ring's height by the
+// box's `offsetWidth / offsetHeight`, and `aspect-ratio` is that product without
+// measuring the box. Only the width is bound, so the height follows it.
 .plate__ring {
   position: absolute;
   left: 50%;
   top: 50%;
   translate: -50% -50%;
+  aspect-ratio: 1;
   border: var(--edsb-border-width-hairline) dashed var(--edsb-border-decorative);
   border-radius: 50%;
 }
 
-// Where the shot actually lands: the canvas's 11px dot, ringed in the plate's
+// Where the shot actually lands: the canvas's 7px dot, ringed in the plate's
 // own ground so it stays visible over a dashed ring or the axis.
+// Four marks in one 7px stack, so which one is on top has to be decided rather
+// than left to document order. The hull schematics settle it the same way and
+// for the same reason: this hull's mounts project to nearly the same angles, so
+// a mark is often a sliver of whatever was drawn after it. The selected mount
+// comes to the front, then the numerals, then the armed dots, and the empty ones
+// sit under all of them — they are the context the plate is read against, and
+// where a shot actually goes is the reading.
 .plate__dot {
   position: absolute;
+  z-index: 2;
   translate: -50% -50%;
   inline-size: var(--edsb-layout-shot-dot);
   block-size: var(--edsb-layout-shot-dot);
-  background-color: var(--edsb-surface-mount-fixed);
+  background-color: var(--edsb-surface-mount-armed);
   border-radius: 50%;
   box-shadow: 0 0 0 var(--edsb-border-width-thick) var(--edsb-surface-sunken);
 }
 
-// The leader from a badge to its dot. Drawn from the badge outwards and turned
-// onto the bearing between the two, which is why its length is a percentage of
-// the plate's width and the geometry behind it is worked in the canvas's own
-// square-unit plate space.
-.plate__leader {
+// The mount's hardpoint numeral, set beside its own dot at the corner the
+// component chose for it. Two margins rather than a `translate`, because the
+// canvas offsets it in pixels from the dot's own position and a percentage
+// translate would scale that gap with the numeral's own text.
+.plate__numeral {
   position: absolute;
-  block-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-surface-accent-selected);
-  rotate: 0deg;
-  transform-origin: 0 50%;
-}
-
-// The mount's numbered badge, parked at the plate's nearer edge: the schematic's
-// own hardpoint node, on sunken ground so the numeral keeps its contrast
-// whichever ink the mount takes.
-.plate__shot {
-  position: absolute;
-  translate: -50% -50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--edsb-layout-shot-badge);
-  block-size: var(--edsb-layout-shot-badge);
-  background-color: var(--edsb-surface-sunken);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-surface-mount-fixed);
-  color: var(--edsb-text-accent-strong);
-}
-
-// An aimed mount and a fixed one, told apart at a glance. The word is in the
-// shot's own sentence below; this only separates two marks.
-.plate__shot--aimed {
-  border-color: var(--edsb-surface-mount-aimed);
-  color: var(--edsb-text-info);
-}
-
-.plate__dot--aimed {
-  background-color: var(--edsb-surface-mount-aimed);
-}
-
-.plate__leader--aimed {
-  background-color: var(--edsb-surface-info-quiet);
-}
-
-.plate__badge {
+  z-index: 3;
   font-family: var(--edsb-font-metric);
   font-size: var(--edsb-text-size-node-mark);
   font-weight: var(--edsb-text-weight-control);
   line-height: var(--edsb-text-leading-flat);
+  color: var(--edsb-surface-mount-armed);
 }
 
-.plate__caption {
-  position: absolute;
-  @include layout.micro-label(var(--edsb-text-accent));
+// An armed mount, an empty one and the selected one, told apart at a glance.
+// Every one of the three is written out in the mark's own sentence below; this
+// only separates the marks.
+//
+// The empty mount's numeral is text, and takes a text ink. The mark beside it
+// takes `--edsb-surface-mount-empty`, which is a non-text ink at the 3:1 that
+// asks of it; a 7px numeral set in the same one would be text below the 4.5:1
+// floor. The number is the schematics' own `--edsb-text-muted`, so an empty
+// mount's numeral reads the same in both drawings. The outline is not theirs:
+// they draw it dashed in `--edsb-border-quiet`, which is a hairline beside a
+// 44px square, where here it is the whole of a 7px mark and has to carry 3:1 on
+// its own.
+.plate__numeral--empty {
+  color: var(--edsb-text-muted);
 }
 
-.plate__caption--lead {
-  inset-block-start: var(--edsb-space-inline-tight);
-  inset-inline-start: var(--edsb-space-inline-tight);
+// The numeral follows the mark, so the selected mount is one mark rather than a
+// blue dot beside a numeral in somebody else's ink. It is set after the empty
+// rule so a selected empty hardpoint reads as selected, which is the state a
+// Commander is looking at while they decide what to put in it.
+.plate__numeral--selected {
+  z-index: 5;
+  color: var(--edsb-surface-mount-selected);
 }
 
-.plate__caption--trail {
-  inset-block-end: var(--edsb-space-inline-tight);
-  inset-inline-end: var(--edsb-space-inline-tight);
-  color: var(--edsb-text-subtle);
+// A hardpoint with nothing on it: the same dot, hollow, in the quiet ink the
+// hull schematics give an empty mount. Hollow as well as quiet because the plate
+// is small and four inks on a 7px mark is more than a 7px mark can hold — an
+// outline against a fill is the difference a reader sees first, and the ink
+// confirms it. What it is is written out in the mark's own sentence either way.
+//
+// The fill is the same ground the armed dot's own halo is drawn in rather than
+// `transparent`, so a dashed ring or an axis running under the mark does not
+// read as something inside it.
+.plate__dot--empty {
+  z-index: 1;
+  background-color: var(--edsb-surface-sunken);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-surface-mount-empty);
+}
 
-  // Two figures with their units, so the uppercase the mixin gives `IMPACT
-  // PLANE` beside it would print `10.0 M` and state the mega prefix instead of
-  // the metre.
-  //
-  // The canvas sets this caption uppercase apart from that one symbol —
-  // `wireConvergence` writes `'RING 2 · ' + mrad + ' MRAD · ' + metres + ' m AT
-  // THIS RANGE'` — and the mix is not reproduced. `text-transform` is
-  // all-or-nothing over a text node, and the caption is one sentence whose parts
-  // move between languages, so splitting it into a transformed span and an
-  // untransformed one would fix English word order into the markup. Sentence
-  // case is the departure taken instead: a lowercase word is a typographic
-  // difference, a metre printed `M` is a different unit
-  // (`design/canvas-contract.md`, review note 15).
-  text-transform: none;
+// The mount the workspace has selected: the plate's other ink, and a ring around
+// the mark in the same one, outside the ground halo that already separates the
+// dot from the plate.
+//
+// The ink is what the canvas spends on a gimballed mount. It is spent here
+// instead because this plate has three things to separate and the canvas had
+// one, and because how a weapon aims is a fact about the weapon that its own
+// sentence carries, where "this is the mount you have open" is a fact about the
+// plate that nothing else on it could say. The ring is kept beside the ink so
+// the mark still stands out where a reader cannot tell the two hues apart —
+// `outline` follows `border-radius`, so it is a circle without a second element
+// to draw it, and it is drawn outside the box so it moves no mark around it.
+.plate__dot--selected {
+  z-index: 4;
+  background-color: var(--edsb-surface-mount-selected);
+  outline: var(--edsb-border-width-thick) solid var(--edsb-surface-mount-selected);
+  outline-offset: var(--edsb-space-3xs);
+}
+
+// A selected hardpoint that has nothing on it stays hollow: whether a mount is
+// armed is what the fill against the outline says, and selection is a hue. A
+// mark that filled itself in to say "selected" would be reporting a weapon that
+// is not there.
+.plate__dot--empty.plate__dot--selected {
+  background-color: var(--edsb-surface-sunken);
+  border-color: var(--edsb-surface-mount-selected);
 }
 
 // The plate in words. Kept out of sight rather than out of the document: it is
@@ -180,10 +225,14 @@
 // ---------------------------------------------------------------------------
 // Canvas 1c's four cells under the plate
 
-// `repeat(4, 1fr)` with a hairline gap showing the rule through it, which is
-// how the canvas draws them: one row of label-over-figure, not a stacked list.
-// The cells fall to two and then to one as the block narrows, because four
-// columns of a German label at 200% text is four columns of wrapped fragments.
+// `repeat(4, 1fr)` with a hairline gap showing the rule through it: one row of
+// label-over-figure. Canvas 1c stacks the same four as label-left, value-right
+// rows down the column beside the plate; the row is this application's own
+// arrangement of them, carrying the same four labels and the same four figures,
+// and is sanctioned as a departure in `design/canvas-contract.md` under the
+// 2026-08-25 revision. The cells fall to two and then to one as the block
+// narrows, because four columns of a German label at 200% text is four columns
+// of wrapped fragments.
 .facts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(var(--edsb-layout-offence-label), 100%), 1fr));

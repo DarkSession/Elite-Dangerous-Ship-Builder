@@ -138,48 +138,92 @@ export type Convergence =
     };
 ```
 
-`SHIP_GUNSIGHTS` publishes every player-flyable hull's hardpoint offsets from
-the cockpit, in metres. A weapon's journal slot key is resolved to its place in
-that list through `enumerateSlots`, never by reading a number out of the key —
-the package documents hulls where the two disagree. A hull the catalogue does
-not carry, or one whose gunsight length does not match its hardpoint count, is
-`unavailable`: a convergence drawn from some of the mounts would be a spread
-nobody has.
+```ts
+export interface ConvergenceMount {
+  readonly slot: string;
+  readonly hardpoint: number;
+  readonly offset: GunsightOffset;
+  readonly offsetMetres: number;
+  readonly weapon: ConvergenceWeapon | null;
+}
 
-Only the armed mounts are carried. An earlier revision also carried a `vacant`
-list of every hardpoint no returned weapon claimed, on the belief that the
-canvas never faces an empty one; it does, and draws nothing for it, so both the
-field and the marks it fed are withdrawn (`design/canvas-contract.md`, review
-note 8).
+export interface ConvergenceWeapon {
+  readonly name: string;
+  readonly symbol: string;
+  readonly mount: ModuleMount | null;
+}
+```
+
+`SHIP_GUNSIGHTS` publishes every player-flyable hull's hardpoint offsets from
+the cockpit, in metres. The enumerated hardpoints are walked in the hull's own
+order and a returned weapon is matched onto one by its journal slot key, never
+by reading a number out of that key — the package documents hulls where the two
+disagree. A hull the catalogue does not carry, or one whose gunsight length does
+not match its hardpoint count, is `unavailable`: a convergence drawn from some
+of the mounts would be a spread nobody has.
+
+`mounts` is the **hull's** list, not the build's: every placed hardpoint is
+carried, and one no returned weapon claimed carries `weapon: null`. An earlier
+revision carried the armed mounts alone, because neither canvas draws an empty
+one; drawing them is a departure sanctioned on 2026-08-26 at the maintainer's
+request and recorded as such (`design/canvas-contract.md`, review note 8, and
+`spec.md` FR-012).
+
+The weapon is nested rather than flattened because its three fields exist
+together or not at all. A mount with a name and no symbol is not a state a hull
+can be in, and three optional fields would let a surface read one of them off an
+empty mount and print it.
 
 `widest` is `null` when the build has armed nothing. That is **not**
 `unavailable`: the two are different answers, and the unavailable sentence says
 the package publishes no geometry for this hull, which for a placed hull whose
 hardpoints are merely empty would be false. A build with no armed mount keeps
-the plate — axes, rings and no marks — and is given none of the four figures
-beneath it, all of which are about a group of armed mounts.
+the plate — axes, rings and every one of its mounts, drawn empty — and is given
+none of the four figures beneath it, all of which are about a group of armed
+mounts.
 
-The spans are distances between two published offsets, and `widest` is the mount
-furthest from the cockpit's axis. No ballistics are modelled and no offset is
-derived (`spec.md` FR-010).
+The spans are distances between two published offsets and `widest` is the mount
+furthest from the cockpit's axis, both measured **across the armed mounts
+alone**, as is the `apparentSpreadMilliradians` of the view below. An empty
+hardpoint is drawn because its offset is the hull's; it fires nothing, so a span
+reaching one would be a separation between a shot and no shot. No ballistics are
+modelled and no offset is derived (`spec.md` FR-010).
 
 ```ts
-export const FIELD_OF_VIEW_MILLIRADIANS = 115;
-export const PLATE_ASPECT = 6 / 16;
-export const TARGET_RANGE = { min: 100, max: 2000, step: 25, initial: 600 } as const;
+export const FIELD_OF_VIEW_MILLIRADIANS = 40;
+export const PLATE_MARGIN_FRACTION = 0.92;
+export const TARGET_RANGE = { min: 500, max: 5000, step: 100, initial: 1000 } as const;
 ```
 
-These are properties of the **drawing**, taken from the canvas's own script
-(`wireConvergence`). The plate keeps milliradians-per-unit uniform on both axes,
-so its vertical half-field is `115 × 6/16 = 43.125` mrad and a shot further off
-the axis than that is clipped rather than stretched to fit. The field of view
-never moves to accommodate a build, and a clipped shot keeps the sentence stated
-beside the plate (`spec.md` FR-011).
+These are properties of the **drawing**. The first two are the canvas's own
+script's (`wireConvergence`), and the 2026-08-25 canvas revision changed both.
+The third is not: the canvas's track runs `100`–`2000` on a `25` step and opens
+at `600`, and these bounds are the maintainer's, set on 2026-08-26 so the track
+reaches past a real weapon's maximum range (`design/canvas-contract.md`, review
+note 18). None of the three changes a figure — each decides what the plate shows
+and at what distance the package is asked, never what it answers. The plate is square in _angle_ — both axes map over the same field of
+view — and the box it is drawn in is square too, which is what makes that
+mapping level: a milliradian then covers the same number of pixels up as
+across. The script's correction of a ring's height by the box's own
+`offsetWidth / offsetHeight` is one on such a box, so a ring is a circle in
+pixels as well as in angle and the plate draws it as `aspect-ratio: 1` rather
+than measuring anything.
+
+A shot further off the axis than the plate shows is **clamped** to the frame's
+own margin rather than clipped out of it: `PLATE_MARGIN_FRACTION` is the
+canvas's `clamp(50 ± mrad / FOV × 50, 4, 96)` written as the fraction of the
+half plate it works out to. The field of view never moves to accommodate a
+build, so a clamped mark is exactly the case where the sentence stated beside
+the plate — which carries the offset and the angle the shot actually has, never
+the clamped one — is the true reading (`spec.md` FR-011).
 
 `convergenceAt(convergence, metres)` asks `projectGunsight` where the shots go at
 one range and returns their positions as fractions of the plate, the diagonal of
 their spread in milliradians, and the two rings the canvas draws at a third and
-two thirds of the field of view.
+two thirds of the field of view. Every mount is placed, the empty ones included —
+the package is being asked where a mount points, which it answers from the
+offset alone — and only the spread is narrowed to the armed ones, because it is
+the one figure there that reports a group rather than a mark.
 
 ## Capacitor
 
@@ -261,7 +305,7 @@ and an edit changes its contents without changing the reference.
 
 The whole-build firing cost (`energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond`,
 `sustainedHeatPerSecond`, `thermalLoad`, `powerDraw` on `WeaponTotals`), `netDrainRate`, the returned
-`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's four columns, the
+`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's five columns, the
 `AmmunitionCapacity`, any target result, and any distributor power observation. Each is a field no
 canvas draws, so nothing downstream can blank, dash or zero one.
 

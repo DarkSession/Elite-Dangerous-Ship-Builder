@@ -150,8 +150,9 @@ package facts and both are drawn.
 
 ## Missing reference content restored by the plan
 
-Both mocks are examples rather than exhaustive states. The wide mock puts no figure on the reserve
-tank it names; the narrow mock omits roll, both module identities, the `OPTIMAL` curve mark, the
+Both mocks are examples rather than exhaustive states. The wide mock as first drawn put no figure on
+the reserve tank it named, and the revision of 2026-08-25 removed the naming too — the amendment
+above records it; the narrow mock omits roll, both module identities, the `OPTIMAL` curve mark, the
 total range with its jump count, mass lock and the `SCO` badge. It does draw `MAX 1,890 t`,
 `OPT MASS 1,800 t` and `MAX FUEL 8.30 t`, so the drive's facts and the maximum mark are not among
 what it leaves out.

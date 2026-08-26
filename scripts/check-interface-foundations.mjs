@@ -1419,6 +1419,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The canvas’s own one-word mark under the mass bar; German writes the same word.',
     'drives.thrusters.maximum-mass':
       'The canvas’s own abbreviation at the end of the mass bar; German abbreviates it the same way.',
+    'drives.thrusters.fuel.tank':
+      'The canvas’s own one-word qualifier beside the fuel segment; Tank is the ordinary German word.',
     'drives.rail.tonnes': 'The SI symbol for the tonne, identical in German.',
     'hullDetail.unit.shield': 'The SI symbol for the megajoule, identical in German.',
     'library.save.name.label': '"Name" is the ordinary German word.',
@@ -1437,10 +1439,16 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A dash standing in for a group the package never published; not a word in either language.',
     'power.heat.does-not-settle':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
+    'offence.convergence.ring':
+      'The canvas’s own name for the outer ring, and two variables after it. “Ring” is the ordinary German word, and the separator is language-neutral. It reads identically since the 2026-08-25 canvas revision dropped the “at this range” it used to end on.',
     'offence.capacitor.endurance.sustained':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'outfitting.search.shortcut.apple':
       'The Apple command key and a letter; the glyph is the key itself, not a word.',
+    'help.licence.index.application':
+      'A composition pattern: the label is the product word “App”, which German uses too, and the rest is the link variable.',
+    'help.action.symbol':
+      'A question mark, drawn as the reference draws it. The glyph is the mark itself and not a word; the action’s translated name is what a reader is told.',
     'outfitting.acquisition.short.mercenary':
       'Merc-Coin is the in-game currency name and is not translated.',
     'slef.import.refusal.module':

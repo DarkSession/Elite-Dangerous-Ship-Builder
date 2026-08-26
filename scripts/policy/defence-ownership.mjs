@@ -2,8 +2,8 @@
 /**
  * Repository policy checks for feature 006's own source.
  *
- * Shield strength, recovery, cell banks and armour are four package answers
- * this application shows and does not have. Every rule here is about a way that
+ * Shield strength, what a SYS allocation makes of it, recovery, cell banks and
+ * armour are five package answers this application shows and does not have. Every rule here is about a way that
  * could stop being true without anything failing: a second call site would
  * still return a plausible pool, a subtraction of two package figures would
  * still print a number, and a deep import would still compile. None of them can
@@ -57,9 +57,17 @@ export const ALLOWED_SUBPATHS = [
 /** Any import of the package, so a barrel or an unlisted subject is caught too. */
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
 
-/** The four build answers this capability is made of. */
+/**
+ * The five build answers this capability is made of.
+ *
+ * The bare shield and what a SYS allocation makes of it became two calls in
+ * Almanac 0.2.0, and the second draws the damage table's fifth column (FR-002).
+ * It is fenced like the other four: a second call site would return a plausible
+ * pool at a plausible allocation and nothing would fail.
+ */
 export const PACKAGE_CALLS = [
   'shieldMetricsResult(',
+  'shieldCapacitorMetricsResult(',
   'shieldRecoveryResult(',
   'cellBanks(',
   'armourMetrics(',
@@ -84,6 +92,14 @@ export const FIGURE_FIELDS = [
   'boostMultiplier',
   'systemsResistance',
   'resistance',
+  'resistances',
+  // The capacitor's own measured fields. `effectiveResistances` is the one this
+  // application must never draw — the resistances with the pips folded in, on a
+  // table whose `RESIST` column is a base value — so combining it with anything
+  // is caught here rather than left to a reading of the contract.
+  'effectiveResistances',
+  'capacity',
+  'rechargeRate',
   'effectiveHitPoints',
   'regenRate',
   'brokenRegenRate',

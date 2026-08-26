@@ -36,15 +36,48 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 /**
- * The one external destination the modal offers.
+ * The two external destinations the modal offers, and the only two it may.
  *
- * Audited and committed here rather than derived from a git remote: a remote is
- * whatever the person building happened to clone from, and this URL is a
- * promise about where the complete terms are. Deriving it would make the
- * promise depend on a fork.
+ * Audited and committed here rather than derived from a git remote or from the
+ * installed package's own `repository` field: a remote is whatever the person
+ * building happened to clone from, a package field is whatever the package
+ * happened to publish, and each of these URLs is a promise about where the
+ * complete terms are. Deriving either would make the promise depend on a fork.
+ *
+ * Both are complete licence documents. Nothing else — no issue tracker, no
+ * homepage, no docs site — is a destination, which is the shape
+ * `validateLicenceDestination` enforces one URL at a time.
  */
 export const REPOSITORY_LICENSE_URL =
   'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE';
+
+/**
+ * The bundled library's own licence, at its repository root.
+ *
+ * The package publishes `repository.url` as this repository with a `typescript`
+ * directory, but the licence it ships is the repository's root `LICENSE`, not a
+ * per-directory one — `legal/almanac/LICENSE` is a byte-exact mirror of that
+ * file, which is what `verifySourceDistribution` proves on every build. The
+ * path here is the one that document actually lives at.
+ */
+export const ALMANAC_LICENSE_URL =
+  'https://github.com/DarkSession/Elite-Dangerous-Almanac/blob/main/LICENSE';
+
+/** Each audited destination, with the exact path it is allowed to point at. */
+const LICENCE_DESTINATIONS = [
+  {
+    id: 'repositoryLicense',
+    url: REPOSITORY_LICENSE_URL,
+    pathname: '/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
+    describedAs: "this repository's LICENSE on main",
+  },
+  {
+    id: 'almanacLicense',
+    url: ALMANAC_LICENSE_URL,
+    pathname: '/DarkSession/Elite-Dangerous-Almanac/blob/main/LICENSE',
+    describedAs: "the Almanac repository's LICENSE on main",
+  },
+];
 
 /** The package whose catalogue and calculations this application reads. */
 export const ALMANAC_PACKAGE_NAME = '@elite-dangerous-almanac/core';
@@ -342,14 +375,22 @@ export function validateAlmanacIdentity(packageManifest) {
 }
 
 /**
- * Validates the one URL the modal will offer.
+ * Validates one of the URLs the modal will offer.
  *
  * Parsed rather than pattern-matched, so a credential, a port or a query cannot
  * hide inside something that looks right. A query string in particular is how
  * application state would leak into an outbound navigation, and the rule is
  * that it never does (FR-003).
+ *
+ * `id` selects which audited destination is being checked, and the exact path
+ * for it is looked up rather than passed in: a caller that could name its own
+ * path could audit a URL against itself.
  */
-export function validateLicenceDestination(url) {
+export function validateLicenceDestination(url, id = 'repositoryLicense') {
+  const audited = LICENCE_DESTINATIONS.find((destination) => destination.id === id);
+  if (audited === undefined) {
+    throw new HelpManifestError('licence destination', `"${id}" is not an audited destination.`);
+  }
   let parsed;
   try {
     parsed = new URL(url);
@@ -371,14 +412,11 @@ export function validateLicenceDestination(url) {
   if (parsed.host !== 'github.com') {
     throw new HelpManifestError('licence destination', `"${url}" is not on github.com.`);
   }
-  if (parsed.pathname !== '/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE') {
-    throw new HelpManifestError(
-      'licence destination',
-      `"${url}" is not this repository's LICENSE on main.`,
-    );
+  if (parsed.pathname !== audited.pathname) {
+    throw new HelpManifestError('licence destination', `"${url}" is not ${audited.describedAs}.`);
   }
   return {
-    id: 'repositoryLicense',
+    id: audited.id,
     url,
     purpose: 'completeLegalTerms',
     leavesApplication: true,
@@ -506,6 +544,13 @@ export const HELP_MANIFEST: HelpManifestV1 = assertHelpManifest({
       leavesApplication: true,
       mayRequireNetwork: true,
     },
+    almanacLicense: {
+      id: 'almanacLicense',
+      url: ${literal(manifest.destinations.almanacLicense.url)},
+      purpose: 'completeLegalTerms',
+      leavesApplication: true,
+      mayRequireNetwork: true,
+    },
   },
   sourceDistribution: [
 ${mirrors}
@@ -554,7 +599,8 @@ export async function generateHelpManifest({
     almanac: validateAlmanacIdentity(almanacManifest),
     disclaimer: extractFrontierDisclaimer(licenseText),
     destinations: {
-      repositoryLicense: validateLicenceDestination(REPOSITORY_LICENSE_URL),
+      repositoryLicense: validateLicenceDestination(REPOSITORY_LICENSE_URL, 'repositoryLicense'),
+      almanacLicense: validateLicenceDestination(ALMANAC_LICENSE_URL, 'almanacLicense'),
     },
     sourceDistribution: await verifySourceDistribution({
       packageRoot: resolvedPackageRoot,

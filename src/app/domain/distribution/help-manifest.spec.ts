@@ -23,6 +23,13 @@ const manifest = (overrides: Partial<HelpManifestV1> = {}): HelpManifestV1 =>
         leavesApplication: true,
         mayRequireNetwork: true,
       },
+      almanacLicense: {
+        id: 'almanacLicense',
+        url: 'https://github.com/DarkSession/Elite-Dangerous-Almanac/blob/main/LICENSE',
+        purpose: 'completeLegalTerms',
+        leavesApplication: true,
+        mayRequireNetwork: true,
+      },
     },
     sourceDistribution: [
       {
@@ -126,10 +133,22 @@ describe('assertHelpManifest', () => {
     it('rejects a manifest carrying no destination at all', () => {
       expect(() =>
         assertHelpManifest(manifest({ destinations: {} as HelpManifestV1['destinations'] })),
-      ).toThrow(/exactly one destination/);
+      ).toThrow(/exactly the destinations/);
     });
 
-    it('rejects a second destination, which would be a navigation nobody reviewed', () => {
+    it('rejects a manifest carrying only one of the two', () => {
+      const subject = manifest();
+      expect(() =>
+        assertHelpManifest({
+          ...subject,
+          destinations: {
+            repositoryLicense: subject.destinations.repositoryLicense,
+          } as HelpManifestV1['destinations'],
+        }),
+      ).toThrow(/exactly the destinations/);
+    });
+
+    it('rejects a third destination, which would be a navigation nobody reviewed', () => {
       const subject = manifest();
       expect(() =>
         assertHelpManifest({
@@ -139,49 +158,69 @@ describe('assertHelpManifest', () => {
             almanacIssues: subject.destinations.repositoryLicense,
           } as HelpManifestV1['destinations'],
         }),
-      ).toThrow(/exactly one destination/);
+      ).toThrow(/exactly the destinations/);
     });
 
-    it('requires the one destination to be the complete legal terms', () => {
-      const subject = manifest();
-      expect(() =>
-        assertHelpManifest({
-          ...subject,
-          destinations: {
-            repositoryLicense: {
-              ...subject.destinations.repositoryLicense,
-              purpose: 'packageDefectReport' as 'completeLegalTerms',
+    it.each(['repositoryLicense', 'almanacLicense'] as const)(
+      'requires %s to be the complete legal terms',
+      (id) => {
+        const subject = manifest();
+        expect(() =>
+          assertHelpManifest({
+            ...subject,
+            destinations: {
+              ...subject.destinations,
+              [id]: {
+                ...subject.destinations[id],
+                purpose: 'packageDefectReport' as 'completeLegalTerms',
+              },
             },
-          },
-        }),
-      ).toThrow(/sole completeLegalTerms destination/);
-    });
+          }),
+        ).toThrow(new RegExp(`${id} must be a completeLegalTerms destination`));
+      },
+    );
 
-    it('requires the destination to admit that it leaves the application', () => {
-      const subject = manifest();
-      expect(() =>
-        assertHelpManifest({
-          ...subject,
-          destinations: {
-            repositoryLicense: {
-              ...subject.destinations.repositoryLicense,
-              leavesApplication: false as true,
+    it.each(['repositoryLicense', 'almanacLicense'] as const)(
+      'requires %s to carry its own id rather than the other one',
+      (id) => {
+        const subject = manifest();
+        const other = id === 'repositoryLicense' ? 'almanacLicense' : 'repositoryLicense';
+        expect(() =>
+          assertHelpManifest({
+            ...subject,
+            destinations: { ...subject.destinations, [id]: { ...subject.destinations[other] } },
+          }),
+        ).toThrow(new RegExp(`${id} must be a completeLegalTerms destination`));
+      },
+    );
+
+    it.each(['repositoryLicense', 'almanacLicense'] as const)(
+      'requires %s to admit that it leaves the application',
+      (id) => {
+        const subject = manifest();
+        expect(() =>
+          assertHelpManifest({
+            ...subject,
+            destinations: {
+              ...subject.destinations,
+              [id]: { ...subject.destinations[id], leavesApplication: false as true },
             },
-          },
-        }),
-      ).toThrow(/leaves the app/);
-    });
+          }),
+        ).toThrow(/leaves the app/);
+      },
+    );
 
-    it('rejects an empty destination URL', () => {
+    it.each(['repositoryLicense', 'almanacLicense'] as const)('rejects an empty %s URL', (id) => {
       const subject = manifest();
       expect(() =>
         assertHelpManifest({
           ...subject,
           destinations: {
-            repositoryLicense: { ...subject.destinations.repositoryLicense, url: '' },
+            ...subject.destinations,
+            [id]: { ...subject.destinations[id], url: '' },
           },
         }),
-      ).toThrow(/repositoryLicense.url/);
+      ).toThrow(new RegExp(`destinations.${id}.url`));
     });
   });
 

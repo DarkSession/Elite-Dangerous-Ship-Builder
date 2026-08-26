@@ -8,12 +8,14 @@
 # The end-to-end suite is **sharded across parallel jobs**, which is the one
 # thing the verification contract permits a CI run to do with the matrix: shard
 # it, never reduce it. Every shard loads the same ten projects and between them
-# they run every test exactly once. The suite is ~96 minutes of work; six shards
-# of two workers put it inside a job budget, where a single job of two workers
-# reached only about half of it before the timeout. The width is on the shard
-# axis rather than the worker axis because a shard is another runner with its
-# own cores, and a fourth worker on a four-vCPU box only starves the other
-# three — see the note on `workers` in `playwright.config.ts`.
+# they run every test exactly once. The suite is ~96 minutes of work; ten shards
+# of two workers put about five minutes of tests in each, which leaves the job
+# budget mostly to the fixed setup — checkout, install and the browser engines —
+# and keeps a slow shard clear of the timeout that a single job of two workers
+# hit after covering only about half the suite. The width is on the shard axis
+# rather than the worker axis because a shard is another runner with its own
+# cores, and a fourth worker on a four-vCPU box only starves the other three —
+# see the note on `workers` in `playwright.config.ts`.
 name: CI
 
 on:
@@ -32,7 +34,7 @@ env:
   # One place to change the shard count. It is read by the job matrix below and
   # by `playwright.config.ts`, and the two must agree or the run silently covers
   # a fraction of the suite while reporting green.
-  E2E_SHARDS: 6
+  E2E_SHARDS: 10
 
 jobs:
   check:
@@ -153,7 +155,7 @@ jobs:
       # else broke — which is the whole point of running the full matrix.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     steps:
       - name: Check out the repository
@@ -339,6 +341,17 @@ jobs:
           # the same reason the Check job resolves it: so that what a reviewer
           # opens states a version rather than the placeholder `0`.
           fetch-depth: 0
+          # The publishing step below pushes to another repository, from a
+          # worktree of this clone, with its own token on the remote URL. A
+          # credential persisted here writes an `http.https://github.com/`
+          # `.extraheader` into this clone's config, an Authorization header
+          # outranks credentials carried in a URL, and the push would go out as
+          # `github-actions[bot]` and be refused by the preview repository.
+          # `github-pages-deploy-action` tries to unset that header itself, but
+          # it clears the key older `actions/checkout` releases wrote, not the
+          # one v7 does. Nothing here needs an authenticated git operation
+          # against this repository after the checkout, so do not persist one.
+          persist-credentials: false
 
       - name: Set up pnpm
         if: ${{ steps.token.outputs.available == 'true' }}

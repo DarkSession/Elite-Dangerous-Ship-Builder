@@ -14,10 +14,15 @@ was withdrawn on that basis, and what replaced it, is in
 
 ## Entry and exit
 
-- A visible Help action is part of the wide application frame, where the reference draws its `?`
-  control beside Import.
-- The narrow action menu contains the same visible action, matching the reference's `HELP & FAQ`
-  mobile menu item without relying on the menu's `?` icon.
+- A Help action is part of the wide application frame, drawn as the reference's own `?` beside
+  Import. The mark is what is seen; the action's localised name is carried inside the control as
+  text, so what a reader is told is the word and not the symbol.
+- The narrow action menu contains the same action, spelled out as the reference spells it out there.
+  A menu is a list of rows a Commander reads rather than a bar they scan, and the canvas draws it in
+  words for the same reason.
+- **Corrected 2026-08-26.** Both bullets previously required the words at both widths, with the `?`
+  demoted to decoration; the trade that reversed it is recorded in
+  [reference-review.md](./reference-review.md#two-departures-withdrawn-on-2026-08-26).
 - There is no contextual entry on any other surface. The reference draws none, and the frame carries
   every capability, so provenance is reached from the frame rather than from a per-surface control.
 - Opening overlays the current capability. It does not navigate, add history or change the URL.
@@ -71,8 +76,10 @@ reference FAQ's import claim and retained-partial-roll answer are not included: 
 
 A semantic fact group inside `ABOUT` presents two facts, which is what the reference draws:
 
-- Application version; and
-- Bundled Almanac version.
+- App version; and
+- Library version — the reference's own term for the bundled Almanac, adopted on 2026-08-26. The
+  package is credited by name in the `almanacOwnership` topic and in the licence summary; a version
+  label is not where that credit lives.
 
 Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
 alone has been told a number, not a version.
@@ -99,6 +106,40 @@ Measured 2026-08-25 against the `initial` budget in `angular.json` (500 kB warni
 **402.26 kB raw, 101.41 kB estimated transfer.** The eagerly imported manifest and the bundled
 English help catalogue are inside the budget with room; there is no overage to record and the
 ceiling is not raised.
+
+### The two licence links, 2026-08-26
+
+The `LICENCE` summary's first two lines link the complete documents they summarise: this
+repository's `LICENSE` and the bundled library's. Both addresses come from the generated manifest,
+where they are audited; neither is typed into a template or a catalogue.
+
+They are inline links inside the sentence, not controls beside it. That distinction is the whole
+design:
+
+- The reference's licence block is four compact lines. A row of buttons under them is a different
+  screen; a few underlined words inside a line is the same one.
+- The link's visible words are the whole of its accessible name. Both lines link an MIT licence on
+  GitHub and say so in the same words; which document each covers is the line's own leading label,
+  so the link does not repeat it into a sentence only a reader hears.
+- A localised sentence decides where its own link sits. The presenter resolves the line with a
+  marker standing in for the link and cuts it there, so a German line that wants the link in the
+  middle gets it in the middle. A template that appended the link would quietly move it.
+- SC 2.5.8's **Inline** exception is what makes a target this small conformant: "the target is in a
+  sentence or its size is otherwise constrained by the line-height of non-target text". Padding it
+  to the project's 44-pixel baseline would break the line rather than help anyone hit it. The
+  exception is proved rather than claimed — `expectTargetSizes` grants it only to an element that is
+  measurably `display: inline` and measurably beside non-target text in its own block.
+
+One consequence reached feature 011's preview catalogue. A stage that renders a component alone
+cannot preview an inline one honestly: a bare link in an empty box wraps differently, sits on a
+different baseline and is not in a sentence, so the catalogue's own target sweep would measure it
+against a baseline the standard exempts sentences from — and pass or fail for a shape the product
+never draws. A preview state may now declare the prose the stage puts around it, and this component
+is the first to use it.
+
+Conformance for this section is stated under the same qualification as everything else in this
+feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
+which the constitution excludes.
 
 ### Known gap: EDAssets interface marks
 

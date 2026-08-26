@@ -1,5 +1,18 @@
 # Viewing Conditions Contract
 
+> **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
+> specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
+> design won all three** ([design/reference-review.md](../design/reference-review.md)). Ruling C
+> reassigned every viewing condition to **feature 005**, which draws what its own artboard draws:
+> whole pip bars, a `DEPLOYED` / `RETRACTED` toggle inside the Power capability, and no load control
+> anywhere. The half-pip domain, the draft, Apply, Reset, the running total, the field guidance and
+> the serialization-exclusion suite frozen here are not built and are not to be reintroduced without
+> a new ruling. Feature 003 owns no condition state at all.
+>
+> This file is retained as the record of what was ruled against, which is why it is left as it was
+> written. The conditions live in `specs/005-power-and-heat/`; what is built here is in
+> [design/status-rail.md](../design/status-rail.md).
+
 ## Defaults
 
 A new top-level document or active-build replacement settles:

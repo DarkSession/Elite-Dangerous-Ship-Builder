@@ -254,6 +254,40 @@ test.describe('reading the build', () => {
     expect(facts).toContain(caps(englishMessages['power.heat.sinks']));
   });
 
+  test('sets every distributor figure flush to the end of its own column', async ({ page }) => {
+    // Measured against each cell's own trailing content edge, not against the
+    // figures beside it: this table's three banks draw equal-width figures down
+    // every column, so siblings share an edge whichever way the column is
+    // aligned and a comparison between them proves nothing.
+    await openPower(page);
+
+    const cells = await page
+      .locator('.distributor tbody .distributor__cell--numeric')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const style = getComputedStyle(node);
+          const box = node.getBoundingClientRect();
+          const rtl = style.direction === 'rtl';
+          // The cell's own trailing content edge, inside its padding. A
+          // figure flush to it is aligned to the end; one that is not, is
+          // not — which a comparison between sibling figures cannot tell,
+          // because equal-width figures share an edge whichever way the
+          // column is aligned.
+          const edge = rtl
+            ? box.left + parseFloat(style.paddingInlineEnd)
+            : box.right - parseFloat(style.paddingInlineEnd);
+          const range = node.ownerDocument.createRange();
+          range.selectNodeContents(node);
+          const drawn = range.getBoundingClientRect();
+          return { edge, figure: rtl ? drawn.left : drawn.right };
+        }),
+      );
+    expect(cells.length).toBeGreaterThan(0);
+    for (const cell of cells) {
+      expect(Math.abs(cell.figure - cell.edge)).toBeLessThanOrEqual(1);
+    }
+  });
+
   test('draws the three capacitors with their own figures', async ({ page }) => {
     await openPower(page);
 
@@ -393,6 +427,36 @@ test.describe('the status rail', () => {
     await expect(
       page.locator('edsb-power-summary button, edsb-power-summary a, edsb-power-summary input'),
     ).toHaveCount(0);
+  });
+
+  test('stands on the same inset as the cells it heads', async ({ page }) => {
+    await openPower(page);
+
+    // Canvas 1c draws this block and the six metric cells under it inside one
+    // padded block, which the workspace owns. So the figures start where the
+    // cells start: an inset of this block's own would be a second one inside
+    // that padding, and the reading would stand further in than the cells it
+    // heads (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
+    // are one block").
+    const line = page.locator('edsb-power-summary .rail-power');
+    const cells = page.locator('.outfitting__status-cells .metric');
+    await expect(line).toBeVisible();
+    await expect(cells).toHaveCount(6);
+
+    // The leading edge of the grid, not of its first cell in DOM order: the
+    // cells are two to a row, so mirrored the first of them is the one in the
+    // trailing column and its own edge is a column in from the block's.
+    // Both edges are read in the page, in one call: mixing Playwright's own
+    // box with an in-page rect would round two independently-derived numbers
+    // and leave a sub-pixel difference to land on.
+    const [lineStart, gridStart] = await line.evaluate((node, selector) => {
+      const cellStarts = [...document.querySelectorAll(selector)].map(
+        (cell) => cell.getBoundingClientRect().left,
+      );
+      return [(node as HTMLElement).getBoundingClientRect().left, Math.min(...cellStarts)];
+    }, '.outfitting__status-cells .metric');
+
+    expect(Math.round(lineStart)).toBe(Math.round(gridStart));
   });
 });
 

@@ -7,6 +7,7 @@ import {
   ElementRef,
   afterRenderEffect,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -20,6 +21,7 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 import { AcquisitionBadge } from './acquisition-badge';
+import { observeManifest, type CandidateManifest } from './manifest';
 import { GameText } from '../components/game-text/game-text';
 import { UnavailableFact } from './unavailable-fact';
 
@@ -73,6 +75,11 @@ interface RenderedRow {
   templateUrl: './candidate-list.html',
   styleUrl: './candidate-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // The stylesheet keys off the measurement rather than taking one of its own.
+  // Two thresholds — a container query and this — would disagree for a frame on
+  // every resize, and a rail drawn under the accordion's reveal rule can be
+  // handed no family to select (`manifest.ts`).
+  host: { '[attr.data-manifest]': 'manifest()' },
 })
 export class CandidateList {
   readonly #messages = inject(MessageService);
@@ -103,8 +110,12 @@ export class CandidateList {
       return;
     }
 
-    const list = this.#host.nativeElement.querySelector<HTMLElement>('.candidates__body');
-    const row = list?.querySelector<HTMLElement>('.family__choices .candidate--fitted');
+    // Whichever box this manifest scrolls its rows in: the accordion's single
+    // scroller, or the rail composition's variant pane.
+    const list = this.#host.nativeElement.querySelector<HTMLElement>(
+      '.candidates__body, .candidates__pane',
+    );
+    const row = list?.querySelector<HTMLElement>('.candidate--fitted');
     if (list === null || list === undefined || row === undefined || row === null) {
       return;
     }
@@ -169,7 +180,29 @@ export class CandidateList {
    */
   readonly fittedVariant = input<PreEngineeredVariant | null>(null);
 
+  /**
+   * Which manifest this width draws, measured from the chooser's own box.
+   *
+   * Read here rather than passed in, because the threshold is this element's
+   * container and no ancestor's: at 1200px the workspace is already in its
+   * three-column composition while the bench it left in the middle is nowhere
+   * near wide enough for a rail beside a pane.
+   */
+  readonly manifest = observeManifest();
+
   readonly chosen = output<string>();
+
+  /**
+   * The reveal model this manifest is under, for whoever holds the revealed set.
+   *
+   * The rail and the accordion do not reveal families the same way, and the
+   * difference is a rule rather than an arrangement, so the state that holds
+   * what is revealed has to know which of the two is drawing it
+   * (`candidate-query.ts`, `FamilyReveal`).
+   */
+  readonly manifestChanged = output<CandidateManifest>();
+
+  readonly #reportManifest = effect(() => this.manifestChanged.emit(this.manifest()));
 
   /** One family opened or closed. View state; it changes no build. */
   readonly familyToggled = output<OutfittingFamilyId>();
@@ -177,8 +210,39 @@ export class CandidateList {
   /** The prefix every family control and region id is built from. */
   readonly #idBase = relationId('candidate-family');
 
+  /** The one pane the rail's rows all point at. */
+  readonly paneId = relationId('candidate-pane');
+
+  /**
+   * The family the rail has selected, and whose rows the pane draws.
+   *
+   * Exactly one, by construction: under the rail the revealed set is always a
+   * single id and `seedFamilies` falls back to the first family in package
+   * order, so the pane is never empty. The `?? families()[0]` is not a second
+   * rule — it is what the pane draws for the one frame between a resize and the
+   * re-seed that follows it, rather than painting nothing.
+   *
+   * The rail marks its selected row from this rather than from each family's
+   * own `open`, so the row that is marked and the rows that are drawn can never
+   * be two different families — including in that one frame.
+   */
+  readonly revealedFamily = computed<CandidateFamilyView | null>(() => {
+    const families = this.families();
+    return families.find((family) => family.open) ?? families[0] ?? null;
+  });
+
+  readonly familiesLabel = this.#messages.messageSignal('outfitting.family.heading');
   readonly moduleColumn = this.#messages.messageSignal('outfitting.column.module');
   readonly classColumn = this.#messages.messageSignal('outfitting.column.class');
+  /**
+   * The third and last column of the revised wide manifest.
+   *
+   * Named on its own rather than taken from `factColumns()`, because that list
+   * is the compact card's five labelled figures and this head has three cells.
+   * Reading the last of five to draw the third of three is the kind of coupling
+   * that survives exactly until one of the two changes.
+   */
+  readonly costColumn = this.#messages.messageSignal('outfitting.column.cost');
   readonly fittedLabel = this.#messages.messageSignal('outfitting.candidate.fitted');
   readonly mercCoinLabel = this.#messages.messageSignal(
     'outfitting.engineering.materials.merc-coin',

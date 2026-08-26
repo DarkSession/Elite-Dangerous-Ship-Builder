@@ -278,6 +278,67 @@ test.describe('Drives & Mass', () => {
     }
   });
 
+  test('the envelope follows the ENG allocation, and boost does not', async ({ page }) => {
+    // Almanac 0.2.0 split a build's own flight model from what an allocation
+    // makes of it, and FR-004 carries the split: `mobilityMetricsResult` owns
+    // `boost` and takes no pips at all, `mobilityCapacitorMetricsResult` owns
+    // the speed and the three rotations at the settled allocation. Only a
+    // browser can show that the card is actually re-read when another feature's
+    // control moves, and only this test can show the two results are not
+    // borrowing figures from each other.
+    await openDrives(page);
+
+    const rows = page.locator('edsb-drives-mass .drives__envelope-row');
+    // `allInnerTexts` does not retry, so the list is waited for first — the
+    // same guard every other envelope assertion in this file opens with.
+    await expect(rows).toHaveCount(5);
+    const reading = async (): Promise<string[]> =>
+      rows.locator('.drives__envelope-value').allInnerTexts();
+    // `innerText` returns what the reader sees, and the design system sets
+    // these labels in caps from CSS, so the row is found by the same `caps()`
+    // the rest of this suite compares a drawn label with.
+    const labels = await rows.locator('.drives__envelope-label').allInnerTexts();
+    const rowFor = (key: 'drives.thrusters.boost' | 'drives.thrusters.speed'): number =>
+      labels.findIndex((label) => caps(label.trim()) === caps(englishMessages[key]));
+    const boost = rowFor('drives.thrusters.boost');
+    const speed = rowFor('drives.thrusters.speed');
+    expect(boost).toBeGreaterThanOrEqual(0);
+    expect(speed).toBeGreaterThanOrEqual(0);
+
+    const before = await reading();
+
+    // Through feature 005's own distributor, which is what settles the pips.
+    // The dashboard opens on even thirds — two apiece, of six — so the first
+    // step of the engines row moves the allocation the card is read at from two
+    // pips to one.
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.power'] })
+      .click();
+    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await page.locator('.distributor tbody tr').nth(1).locator('.pips__step').first().click();
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.drives'] })
+      .click();
+    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await settled(page);
+
+    const after = await reading();
+
+    // The top speed the capacitor result owns moved, so the card was re-read
+    // rather than left standing at the allocation it was first drawn at. The
+    // three rotations are the same result's and move with it, but whether each
+    // moves far enough to change a drawn digit is the package's business and
+    // not something this suite writes down.
+    expect(after[speed]).not.toBe(before[speed]);
+
+    // The boost the build's own flight model owns did not. A boost that
+    // followed the pips would mean one result had been read for a figure the
+    // other publishes, which is the seam FR-004 keeps apart.
+    expect(after[boost]).toBe(before[boost]);
+  });
+
   test('a switched-off mount reads as off, with the package’s own reasons', async ({
     page,
   }, testInfo) => {
@@ -648,6 +709,19 @@ test.describe('Drives & Mass', () => {
     ).toBe(wide.facts);
 
     await expectNoDocumentOverflow(page);
+
+    // The arrangement is swept from the top of the page.
+    //
+    // Resizing keeps the scroll offset the tablet layout was left at, and the
+    // command bar is sticky: whichever row that offset happens to park behind
+    // the bar is read as an obscured target by the geometry rules. Which row
+    // that is says nothing about the stacked arrangement — it moves with every
+    // change to any height above it, and it is a different row in each of the
+    // five profiles this test runs in — so the state named here is scanned
+    // where a Commander who reached this width meets it, at its top.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await settled(page);
+
     await sweepOutfittingState(page, testInfo, 'drives and mass, stacked');
   });
 
@@ -799,7 +873,13 @@ test.describe('the status rail', () => {
     const boxes = await cells.evaluateAll((nodes) =>
       nodes.map((node) => {
         const box = (node as HTMLElement).getBoundingClientRect();
-        return { top: Math.round(box.top), left: Math.round(box.left), width: box.width };
+        return {
+          top: Math.round(box.top),
+          left: Math.round(box.left),
+          right: Math.round(box.right),
+          bottom: Math.round(box.bottom),
+          width: box.width,
+        };
       }),
     );
 
@@ -815,6 +895,30 @@ test.describe('the status rail', () => {
     const columns = [...new Set(boxes.map((box) => box.left))].sort((a, b) => a - b);
     expect(columns).toHaveLength(2);
     expect(columns[1] - (columns[0] + boxes[0].width)).toBeLessThanOrEqual(2);
+
+    // The amber ground reaches exactly as far as the cells do. It is what rules
+    // them off each other through the one-pixel gaps, and it is nothing else —
+    // a band of it around the six would be a box the canvas draws around
+    // nothing, which is what a ground painted across the block's own inset
+    // looks like.
+    const grid = page.locator('.outfitting__status-cells');
+    const ground = await grid.evaluate((node) => {
+      const box = (node as HTMLElement).getBoundingClientRect();
+      const style = getComputedStyle(node as HTMLElement);
+      return {
+        top: Math.round(box.top),
+        left: Math.round(box.left),
+        right: Math.round(box.right),
+        bottom: Math.round(box.bottom),
+        padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+      };
+    });
+
+    expect(ground.padding).toEqual(['0px', '0px', '0px', '0px']);
+    expect(ground.top).toBe(Math.min(...boxes.map((box) => box.top)));
+    expect(ground.left).toBe(Math.min(...boxes.map((box) => box.left)));
+    expect(ground.right).toBe(Math.max(...boxes.map((box) => box.right)));
+    expect(ground.bottom).toBe(Math.max(...boxes.map((box) => box.bottom)));
   });
 
   test('names each figure with its unit, and holds no control', async ({ page }) => {

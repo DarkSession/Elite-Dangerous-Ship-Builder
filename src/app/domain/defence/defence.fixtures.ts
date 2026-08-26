@@ -9,8 +9,8 @@ import { defaultBuild } from '../outfitting/outfitting.fixtures';
  * Every one of them is a real `ShipLoadout` the package answers for. Nothing
  * here writes down a megajoule, a hull point, a resistance or a duration: the
  * fixtures put a build into a state and let `shieldMetricsResult()`,
- * `shieldRecoveryResult()`, `cellBanks()` and `armourMetrics()` say what that
- * state means (constitution II).
+ * `shieldCapacitorMetricsResult()`, `shieldRecoveryResult()`, `cellBanks()` and
+ * `armourMetrics()` say what that state means (constitution II).
  *
  * The module symbols below are identities the installed package either carries
  * or does not, and `packageModule` fails loudly when one stops being carried —

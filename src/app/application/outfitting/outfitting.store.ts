@@ -41,7 +41,9 @@ import {
   applyQuery,
   openCandidateQuery,
   toggleFamily,
+  withReveal,
   type CandidateQueryState,
+  type FamilyReveal,
 } from './candidate-query';
 import { engineeringOperation } from './engineering-draft';
 import type { OutfittingSurface } from './outfitting-state';
@@ -75,6 +77,13 @@ export class OutfittingStore {
   readonly #surface = signal<OutfittingSurface>('workspace');
   readonly #lastEditFailure = signal<EditFailure | null>(null);
   readonly #query = signal('');
+  /**
+   * Which reveal model the manifest that is drawing reports it is under.
+   *
+   * The accordion until something says otherwise: it is the model every
+   * renderer can draw, and the one a region with no measurement gets.
+   */
+  readonly #reveal = signal<FamilyReveal>('accordion');
 
   /**
    * The session's decisions, oldest first, and the branch undo left behind.
@@ -216,7 +225,7 @@ export class OutfittingStore {
    */
   readonly #candidateQuery = linkedSignal<CandidateQueryState | null>(() => {
     const open = this.#openQuery();
-    return open === null ? null : applyQuery(open, this.#query());
+    return open === null ? null : applyQuery(withReveal(open, this.#reveal()), this.#query());
   });
 
   readonly candidateQuery = this.#candidateQuery.asReadonly();
@@ -264,6 +273,23 @@ export class OutfittingStore {
    */
   toggleFamily(familyId: OutfittingFamilyId): void {
     this.#candidateQuery.update((state) => (state === null ? null : toggleFamily(state, familyId)));
+  }
+
+  /**
+   * Which reveal model the composition drawing the chooser is under.
+   *
+   * Reported by the manifest itself, because the threshold is the manifest's own
+   * container and not the workspace's: at 1200px the workspace is already in its
+   * three-column composition while the bench it left in the middle is nowhere
+   * near wide enough for a rail beside a pane. Setting it re-seeds the revealed
+   * set, which is the requirement rather than a side effect — the default under
+   * a rail is not the default under an accordion (FR-021).
+   *
+   * View state, like the set it seeds: no revision is spent and no checkpoint
+   * is taken.
+   */
+  setFamilyReveal(reveal: FamilyReveal): void {
+    this.#reveal.set(reveal);
   }
 
   dismissFailure(): void {

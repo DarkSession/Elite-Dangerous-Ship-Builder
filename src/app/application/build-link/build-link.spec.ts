@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { normalizeIncomingBuild } from '../../domain/build/build-ingress-normalizer';
 import { BuildLinkCodecError } from '../../domain/build-link/build-link-codec-error';
 import { encodeBuildLinkFragment } from '../../domain/build-link/build-link-codec-loader';
 import { provideLocalization } from '../../i18n/i18n.providers';
@@ -133,6 +134,34 @@ describe('BuildLinkCoordinator', () => {
     // the build that was just restored.
     expect(await ingress.ingest(await anacondaFragment())).toEqual({ kind: 'unchanged' });
     expect(active.provenance()).toBe('stock');
+  });
+
+  it('treats an imported build’s own link as nothing to do', async () => {
+    const { ingress, active } = setup();
+    const imported = normalizeIncomingBuild({ event: 'Loadout', Ship: 'anaconda', Modules: [] });
+    if (imported.kind !== 'accepted') {
+      throw new Error('the fixture import was refused');
+    }
+    active.commit({
+      loadout: imported.candidate,
+      hullName: 'Anaconda',
+      provenance: 'working',
+      qualityNotices: [],
+      sourceNamed: null,
+      baseline: null,
+    });
+
+    // What a reload of an imported build looks like from here. A journal event
+    // names the hull the way the game logs it, and the codec names it the way
+    // the package does; the sameness test folds module symbols and compares the
+    // hull byte for byte. Until the identity was resolved at ingress, the
+    // restored record said `anaconda` where its own link said `Anaconda`, so
+    // the build differed from itself and a Commander was asked whether to
+    // replace it with an identical one.
+    const fragment = await encodeBuildLinkFragment(active.loadout()!);
+
+    expect(await ingress.ingest(fragment)).toEqual({ kind: 'unchanged' });
+    expect(active.provenance()).toBe('working');
   });
 
   it('does not read back a fragment it published itself', async () => {

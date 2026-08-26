@@ -24,11 +24,23 @@
       <h2>{{ cell.declaration.componentId }} — {{ cell.state.state }}</h2>
 
       @if (isRendered(cell.state)) {
-        <div class="preview-cell__stage" [attr.data-preview-stage]="cell.address">
-          <ng-container
-            *ngComponentOutlet="cell.declaration.component; inputs: inputsFor(cell.state)"
-          />
-        </div>
+        <!--
+          A component that lives inside a sentence is staged inside one. The
+          words come from the declaration rather than from here, and are held on
+          one line by `prettier-ignore` for the same reason the product's own
+          licence line is: the whitespace around an inline element is content,
+          and a formatter's indentation becomes a space a reader sees.
+        -->
+        @if (cell.state.sentence; as sentence) {
+          <!-- prettier-ignore -->
+          <p class="preview-cell__stage" [attr.data-preview-stage]="cell.address">{{ sentence[0] }}<ng-container *ngComponentOutlet="cell.declaration.component; inputs: inputsFor(cell.state)" />{{ sentence[1] }}</p>
+        } @else {
+          <div class="preview-cell__stage" [attr.data-preview-stage]="cell.address">
+            <ng-container
+              *ngComponentOutlet="cell.declaration.component; inputs: inputsFor(cell.state)"
+            />
+          </div>
+        }
       } @else {
         <p [attr.data-preview-na]="cell.address">{{ cell.state.naReason }}</p>
       }

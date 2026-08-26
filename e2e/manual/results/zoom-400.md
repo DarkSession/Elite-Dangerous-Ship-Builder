@@ -1,6 +1,6 @@
 # Results: actual 400% browser zoom
 
-Protocol: [`zoom-400`](../zoom-400.protocol.md), version 2.
+Protocol: [`zoom-400`](../zoom-400.protocol.md), version 3.
 
 Each row is one observation: one capability and state, in one engine, at one orientation. Rows are
 appended, never edited — a later run is a new row, so the history of a regression stays readable.
@@ -65,3 +65,21 @@ real zoom can contradict.
 | —    | —   | Chromium | —     | —        | landscape   | help · about / open | As above                                                                                         | —      | not run |
 | —    | —   | Firefox  | —     | —        | portrait    | help · about / open | As above                                                                                         | —      | not run |
 | —    | —   | Firefox  | —     | —        | landscape   | help · about / open | As above                                                                                         | —      | not run |
+
+## Drives & Mass (feature 008)
+
+The two cards choose their arrangement from a container query on the region
+rather than from the viewport, which is the whole point: at 400% the region is
+narrow for the same reason a phone's is, so real zoom must select the stacked
+pair. The observation is whether it actually does in a real window, and whether
+the mass bar's two marks — the optimal tick and the maximum at the end of the
+track — stay on one line and off each other once the browser's own chrome has
+taken its share. Both are asserted under emulated zoom; neither is a judgment
+the emulation can finish.
+
+| Date | OS  | Browser  | Build | Viewport | Orientation | Capability / state            | Expected                                                                                             | Actual | Result  |
+| ---- | --- | -------- | ----- | -------- | ----------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- | ------ | ------- |
+| —    | —   | Chromium | —     | —        | landscape   | drives & mass / ready         | Cards stacked; every reading kept; bar marks on one line and clear of each other; no sideways scroll | —      | not run |
+| —    | —   | Chromium | —     | —        | portrait    | drives & mass / thrusters off | As above, with the package’s reasons in place of the envelope                                        | —      | not run |
+| —    | —   | Firefox  | —     | —        | landscape   | drives & mass / ready         | As above                                                                                             | —      | not run |
+| —    | —   | Firefox  | —     | —        | portrait    | drives & mass / thrusters off | As above                                                                                             | —      | not run |

@@ -623,6 +623,66 @@ test.describe('the compact route the reference draws', () => {
 
     await expect(page.getByRole('button', { name: HELP_ACTION }).first()).toBeVisible();
   });
+
+  test('draws the reference’s mark on the bar and its words in the menu', async ({ page }) => {
+    await withStockBuild(page);
+
+    // Both compositions are in the document at every width; which one is drawn
+    // is a media query, and what each one draws is what this asserts. The wide
+    // command bar carries the reference's `?`: one control, the mark hidden
+    // from the accessibility tree, and the action's localised name inside the
+    // control as text rather than as the glyph.
+    const wide = page.locator('.frame__actions .action--symbol');
+    await expect(wide).toHaveCount(1);
+    await expect(wide.locator('.action__symbol')).toHaveText(englishMessages['help.action.symbol']);
+    await expect(wide.locator('.action__symbol')).toHaveAttribute('aria-hidden', 'true');
+    await expect(wide.locator('.action__label')).toHaveCount(0);
+    await expect(wide.locator('.visually-hidden')).toHaveText(englishMessages['help.action.label']);
+
+    // And it is the only control on the bar drawn that way. A row of marks is a
+    // row of guesses; one is a convention.
+    expect(await page.locator('.frame__actions .action').count()).toBeGreaterThan(1);
+
+    // The compact action layer spells the same entry out and draws no mark at
+    // all, which is what canvas 1d draws there: a menu is a list of rows a
+    // Commander reads rather than a bar they scan.
+    await expect(page.locator('.action-layer__panel .action--symbol')).toHaveCount(0);
+    await expect(
+      page
+        .locator('.action-layer__panel .action__label')
+        .filter({ hasText: englishMessages['help.action.label'] }),
+    ).toHaveCount(1);
+  });
+
+  test('keeps the frame’s actions inside the viewport at 200% text', async ({ page }) => {
+    // Whichever composition this width draws, and the compact one is the one
+    // that can escape: its panel hangs off a trigger in a wrapping sticky
+    // banner, and both of its escapes are horizontal — a rem-based
+    // `min-inline-size` wider than the screen, and a wrapped trigger sitting at
+    // the leading edge of its own row. Either one puts FR-001's only route to
+    // help off the side of the phone, where nothing can reach it, without
+    // making the document scroll sideways for anyone to notice.
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await withStockBuild(page);
+
+    const trigger = page.locator('.action-layer__trigger');
+    const compact = await trigger.isVisible();
+    if (compact) {
+      await openActionLayer(page);
+    }
+
+    const drawn = compact ? page.locator('.action-layer__panel') : page.locator('.frame__actions');
+    await expect(drawn).toBeVisible();
+
+    const width = page.viewportSize()?.width ?? 0;
+    const box = await drawn.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(width);
+
+    // And the entry itself is there to be pressed, once, at this text size.
+    await expect(page.getByRole('button', { name: HELP_ACTION })).toHaveCount(1);
+  });
 });
 
 /**
@@ -786,17 +846,32 @@ test.describe('the one legal body the modal embeds', () => {
     await expect(excerpt).toHaveAttribute('lang', 'en');
   });
 
-  test('opens the section with the reference’s three-line summary', async ({ page }) => {
+  test('opens the section with the summary, one claim to a line', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
     const lines = helpModal(page).locator('.help-dialog__licence-line');
 
-    await expect(lines).toHaveCount(3);
+    // Four claims about four different things: this application's own code,
+    // the library it was built against, the game data and imagery, and the
+    // typefaces. The reference draws three; the library's line arrives with
+    // the link to its terms, which is what a summary of what covers what was
+    // missing while there was nowhere to point.
+    await expect(lines).toHaveCount(4);
     await expect(lines).toHaveText([
-      new RegExp(englishMessages['help.licence.index.application'], 'i'),
+      new RegExp(englishMessages['help.licence.link.application'], 'i'),
+      new RegExp(englishMessages['help.licence.link.library'], 'i'),
       new RegExp(englishMessages['help.licence.index.gameData'], 'i'),
       new RegExp(englishMessages['help.licence.index.typefaces'], 'i'),
     ]);
+
+    // The label each linked line opens with is still its own, so the two
+    // similarly-worded links are told apart by the words in front of them.
+    await expect(lines.nth(0)).toContainText(
+      englishMessages['help.licence.index.application'].replace('{{licence}}', '').trim(),
+    );
+    await expect(lines.nth(1)).toContainText(
+      englishMessages['help.licence.index.library'].replace('{{licence}}', '').trim(),
+    );
   });
 
   test('embeds one legal body and no other document', async ({ page }) => {
@@ -834,8 +909,36 @@ test.describe('the one legal body the modal embeds', () => {
   });
 });
 
-test.describe('the modal offers no way out of the application', () => {
-  test('draws no link at all, and asks for nothing to draw itself', async ({ page, context }) => {
+test.describe('the two documents the modal points at', () => {
+  /**
+   * The audited destinations, read out of the generator itself.
+   *
+   * Not typed in here. The generator is where the two URLs are declared and
+   * validated, so a change to either fails this journey rather than leaving it
+   * asserting a third thing that agrees with neither the product nor the
+   * audit. Run in its own Node process for the reason `freshDisclaimer` gives:
+   * this suite is transpiled to CommonJS and the generator is a real ES module.
+   */
+  async function auditedDestinations(): Promise<{ repository: string; almanac: string }> {
+    const { stdout } = await promisify(execFile)(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        "const generator = await import('./scripts/generate-help-manifest.mjs');" +
+          'process.stdout.write(' +
+          'JSON.stringify({ repository: generator.REPOSITORY_LICENSE_URL,' +
+          ' almanac: generator.ALMANAC_LICENSE_URL }));',
+      ],
+      { cwd: process.cwd() },
+    );
+    return JSON.parse(stdout) as { repository: string; almanac: string };
+  }
+
+  test('draws exactly the two audited licence links, and asks for nothing to draw itself', async ({
+    page,
+    context,
+  }) => {
     await page.goto('/build');
     await page.waitForLoadState('networkidle');
     await settled(page);
@@ -847,31 +950,81 @@ test.describe('the modal offers no way out of the application', () => {
 
     await openHelp(page);
 
-    // The reference draws no control here, and neither does this. The
-    // remaining licence and third-party terms live in the repository
-    // `LICENSE`, which a Commander reaches from the repository.
-    await expect(helpModal(page).getByRole('link')).toHaveCount(0);
+    // Two links, both complete licence documents, both from the generated
+    // manifest. A third — an issue tracker, a homepage, a docs site — would be
+    // a navigation nobody accepted (FR-003).
+    const links = helpModal(page).getByRole('link');
+    await expect(links).toHaveCount(2);
+    const audited = await auditedDestinations();
+    await expect(links.nth(0)).toHaveAttribute('href', audited.repository);
+    await expect(links.nth(1)).toHaveAttribute('href', audited.almanac);
+
+    // Drawing them costs nothing. A link is an address, not a request: opening
+    // the modal reaches no origin, opens no tab and warms no destination.
     expect(outbound.filter((url) => url.includes('github'))).toEqual([]);
     expect(popups).toEqual([]);
-    // Nothing measures or warms a destination either: no preconnect, no
-    // prefetch.
     expect(await page.locator('link[rel="preconnect"], link[rel="prefetch"]').count()).toBe(0);
   });
 
-  test('carries no repository URL anywhere in its rendered text', async ({ page }) => {
+  test('leaves deliberately, says so, and takes no session with it', async ({ page }) => {
     await withStockBuild(page);
     const fragment = new URL(await settled(page)).hash;
     expect(fragment.length).toBeGreaterThan(0);
 
     await openHelp(page);
+    const links = await helpModal(page).getByRole('link').all();
+    expect(links).toHaveLength(2);
+
+    for (const link of links) {
+      // Named in visible text, because a Commander is told before they leave
+      // and never after (constitution I).
+      await expect(link).toContainText(/github/i);
+
+      // `noreferrer` is the load-bearing half. This application keeps the open
+      // build in the URL fragment; a fragment never rides in a `Referer`, but
+      // the path around it would, and no part of a session belongs in another
+      // origin's logs.
+      const rel = (await link.getAttribute('rel')) ?? '';
+      expect(rel).toContain('noreferrer');
+      expect(rel).toContain('noopener');
+      expect(await link.getAttribute('target')).toBe('_blank');
+
+      // Neither address carries anything but the path to a document: no query,
+      // no fragment, nothing that could be state on its way out.
+      const href = new URL((await link.getAttribute('href')) ?? '');
+      expect(href.protocol).toBe('https:');
+      expect(href.search).toBe('');
+      expect(href.hash).toBe('');
+    }
+  });
+
+  test('carries no URL in its rendered text, and nothing about this session', async ({ page }) => {
+    await withStockBuild(page);
+    const fragment = new URL(await settled(page)).hash;
+
+    await openHelp(page);
     const text = (await helpModal(page).textContent()) ?? '';
 
+    // The destinations are in `href`s. A URL drawn as words is a thing to
+    // mistype and a line that wraps sideways at 200% text.
     expect(text).not.toContain('https://');
-    expect(text).not.toContain('github.com');
     // And nothing about the open build, the route or this browser's stored
     // records is drawn either.
     expect(text).not.toContain(fragment.slice(1));
     expect(text).not.toContain('edsb:');
+  });
+
+  test('says the same thing on screen as it says to a reader', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    // No reader-only sentence appended to either name. Both links read alike,
+    // which is what they are — an MIT licence on GitHub — and which document
+    // each covers is the line's own leading label rather than a second
+    // sentence only some people get.
+    for (const link of await helpModal(page).getByRole('link').all()) {
+      await expect(link).toHaveAccessibleName((await link.textContent())?.trim() ?? '');
+    }
   });
 });
 

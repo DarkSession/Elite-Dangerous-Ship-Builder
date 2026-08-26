@@ -78,23 +78,42 @@ Before any active-build replacement is presented or any calculation is read:
 
 1. decode without changing the active build and retain only evidence needed for supported
    normalization/refusal outcomes;
-2. pass the complete candidate through the released Almanac ingress boundary. An unknown hull
+2. resolve the hull the source named to the package's own `Ship.symbol` and construct on that
+   symbol, so an accepted candidate's `shipSymbol` is a package identity. A hull the package does
+   not carry is passed on exactly as it arrived, so the refusal is the package's own and names what
+   the Commander sent. A candidate that arrives already built has nothing left to resolve — its hull
+   cannot be renamed without rebuilding it — so the gate checks that identity instead and refuses a
+   candidate reconstructed on anything else. Whoever reconstructs a snapshot owns getting it right;
+3. pass the complete candidate through the released Almanac ingress boundary. An unknown hull
    refuses and every fixed mount returns populated with the hull default. Do not classify a slot,
    choose a replacement locally or run a second repair pass;
-3. capture finite source quality in `[0,1)` only for supported modules the candidate resolves;
-4. correlate those remaining partials by exact package slot/module identity, set aside the modules
+4. capture finite source quality in `[0,1)` only for supported modules the candidate resolves;
+5. correlate those remaining partials by exact package slot/module identity, set aside the modules
    the package reports as final articles — its `preEngineeredVariant.engineeringLocked` — and call
    `completeEngineeringGrade(slotKey)` for the rest. Accept `normalized`, atomically refuse
    `unsupported`, and treat unexpected missing/mismatched/`unchanged` results as package-contract
    failures;
-5. retain transient quality-completed notices only; persist no fixed-default history metadata;
-6. commit once before history starts or resets, then allow validation/calculation reads.
+6. retain transient quality-completed notices only; persist no fixed-default history metadata;
+7. commit once before history starts or resets, then allow validation/calculation reads.
 
 Never call `completeEngineeringGrade()` for absent quality, quality `1`, or a final article. A final
 article's quality is a figure the game writes for a finished module, not a roll: the package bakes the
 article's fixed modifiers in during construction and locks it against further engineering, so it
 answers `finalArticle` and the whole build would be refused over a module with nothing wrong with it.
 Whether an article is final is read from the package, never recognised from a symbol or a blueprint.
+
+Never keep a hull symbol a source spelled its own way. A journal `Loadout` event writes the hull in
+lower case, package lookups match without regard to case, and `ShipLoadout` keeps whatever string it
+was handed — so an unresolved symbol reaches storage and records intact and is only noticed where the
+application compares one itself or spells one into a path. Feature 010's schematics are directories
+named the package's way, and it draws none of them for a build that spells its hull differently. The
+build-link coordinator's own "is this the same build?" comparison folds module symbols and not the
+hull's, so an imported build and its own link disagreed on nothing but case and every reload of one
+asked the Commander to confirm a replacement. Resolving the identity at ingress settles both.
+Reconstruction from a snapshot resolves it the same way, so a record written before the identity was
+resolved at ingress gets it back when it is opened. A build link never lost it: the codec stores an index into a
+table of the package's own symbols, so a decoded link has always named the hull the package's way.
+
 Refusal leaves the current build, revision, dirty state, autosave, fragment, notices and history
 untouched.
 

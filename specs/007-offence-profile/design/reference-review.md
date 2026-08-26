@@ -8,6 +8,13 @@ verbatim extraction and the template; this document is the reasoning behind it. 
 the package results override the canvas's sample values, calculations and inline CSS — never its
 choice of what is on the screen.
 
+> **A plan-time record, and the canvas has moved since.** What follows describes the canvas as it
+> stood when this feature was planned. The 2026-08-25 revision added a `RANGE` column to the weapon
+> list and re-drew the convergence plate, its ring caption and its range field. The reasoning below
+> is kept as it was written, because it is why the region is shaped the way it is; what is
+> **currently** drawn is [canvas-contract.md](./canvas-contract.md), and its "Canvas revision,
+> 2026-08-25" section is the whole of the difference.
+
 ## What canvas 1c actually shows
 
 Selecting Offence in the central outfitting panel replaces anatomy with:

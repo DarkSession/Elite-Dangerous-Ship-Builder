@@ -19,9 +19,11 @@ const POOL_DIGITS = 0;
  * cost block, exactly where canvas 1c draws them. Canvas 1d draws the same two
  * in its Status mode.
  *
- * Nothing here is interactive, as nothing else in the rail is: the canvas draws
- * no control in it, and at both widths the analysis these two figures come from
- * is a segment away.
+ * Nothing here is interactive, as none of the rail's six cells is: the canvas
+ * draws no control in that grid. The rail around it is another matter since
+ * the 2026-08-25 revision, which put feature 005's pip control in it
+ * (`specs/003-ship-statistics/design/status-rail.md`, item 4). At both widths
+ * the analysis these two figures come from is a segment away.
  *
  * A shield the package could not read has no figure, and the cell says so
  * rather than standing at zero — a zero is a number a Commander might act on

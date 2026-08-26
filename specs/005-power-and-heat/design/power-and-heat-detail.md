@@ -317,6 +317,12 @@ is scaled to whichever of the demand and the plant output is larger, so a build 
 marks its plant at the end of the track rather than off it, and a build with a dark group reproduces
 the artboard's own percentages.
 
+This block carries **no inset of its own**. Canvas 1c draws it and the six metric cells under it
+inside one padded block closed by one amber rule, so the workspace owns that block
+(`.outfitting__status-band`) because three other features draw into it too, and this block sits in it
+with no padding — two insets stacked would stand these figures a block's padding further in than the
+cells they head (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5 are one block").
+
 There is **no heat sentence and no severity word** here (review note: "Where in the design is
 `Verdict`?"). The sentence says the group is unpowered; a word standing beside it to grade that is a
 word the design does not draw. The sentence is this application's own rather than a package

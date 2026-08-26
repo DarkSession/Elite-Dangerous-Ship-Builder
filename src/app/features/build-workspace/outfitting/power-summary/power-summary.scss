@@ -2,19 +2,14 @@
 
 // Canvas 1c's power block in the 306 px rail, and the same block in canvas 1d's
 // Status mode. The sentence takes the three-pixel marker and quiet tinted ground
-// feature 003's issue list established, in the one tier the canvas draws for it:
-// hot, for a group the plant cannot keep lit. There is no second tier here — the
-// canvas prints one sentence in this block and no other.
+// feature 003's issue list established, in the one tier this feature builds:
+// hot, for a group the plant cannot keep lit. No second tier is built — canvas
+// 1d does draw one, the amber middle it prints `Sustained fire peaks at 131%
+// heat` in, and wave 13 withdrew that tier
+// (`specs/005-power-and-heat/design/reference-review.md`, "Tier 2 is withdrawn
+// entirely"), so the absence is a ruling rather than a reading of the artboard.
 :host {
   display: block;
-}
-
-// The rail draws one ground with no side padding of its own, so each group it
-// stacks carries its own inset — the same one feature 003's issue group above
-// and the cost block below take. Without it the sentence's tinted band, the
-// figures and the bar all run into both seams.
-.block {
-  padding: var(--edsb-space-panel);
 }
 
 .statements {

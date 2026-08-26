@@ -207,36 +207,53 @@
       </div>
 
       <!--
-        Feature 005's three contributions, in the rail's own order: the
-        statements about a shed group and a build that cooks itself under
-        sustained fire, and the `POWER` line. Between the validation issues and
-        the six metric cells features 006 to 008 own, exactly where canvas 1c
-        draws them (`specs/005-power-and-heat/design/power-and-heat-detail.md`,
-        "The status rail").
-      -->
-      <edsb-power-summary />
+        Canvas 1c's second rail block. The canvas draws its `POWER` line, its
+        bar and its pips together with the six metric cells inside one inset,
+        closed by the same amber hairline that separates every block in the
+        rail — it stacks the cells under the power line inside one padding
+        rather than ruling the two off each other. So this holds feature 005's
+        block and the cells features 006 to 008 own, and it is where feature
+        005's pip control lands when that feature draws it
+        (`specs/005-power-and-heat/tasks.md`, T074 — not built yet).
 
-      <!--
-        Canvas 1c draws six metric cells under the `POWER` line, in this
-        order: `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006
-        owns the first two, feature 007 owns `DPS` and feature 008 the last
-        three, and they are drawn in that order
-        (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
-        composition"; `specs/007-offence-profile/design/canvas-contract.md`,
-        "The status rail cell").
-
-        One grid holds all six, because that is what the canvas draws: a single
-        band of cells whose one-pixel gaps show the amber ground through as the
-        only rules between them. Three features contribute to it and none of them
-        owns it, so the grid is declared here and each of them draws its cells
-        straight into it. Drawn as three grids the six would be ruled off each
-        other in threes — `DPS` could never share a row with `JUMP`, which is the
-        row the canvas puts them on.
+        Feature 005's contributions come first, in the rail's own order: one
+        statement per band its plant cannot keep lit, and then the `POWER` line.
+        There is no heat sentence beside them, and that is a ruling rather than
+        a reading of the artboard: canvas 1d prints one, and feature 005's
+        wave-13 ruling withdrew the tier it belonged to
+        (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The status
+        rail").
       -->
-      <div class="outfitting__status-cells">
-        <edsb-defence-summary />
-        <edsb-offence-summary />
-        <edsb-drives-summary />
+      <div class="outfitting__status-band">
+        <edsb-power-summary />
+
+        <!--
+          The six metric cells under the `POWER` line, in the canvas's order:
+          `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006 owns
+          the first two, feature 007 owns `DPS` and feature 008 the last three,
+          and they are drawn in that order
+          (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
+          composition"; `specs/007-offence-profile/design/canvas-contract.md`,
+          "The status rail cell").
+
+          One grid holds all six, because that is what the canvas draws: a single
+          band of cells whose one-pixel gaps show the amber ground through as the
+          only rules between them. Three features contribute to it and none of
+          them owns it, so the grid is declared here and each of them draws its
+          cells straight into it. Drawn as three grids the six would be ruled off
+          each other in threes — `DPS` could never share a row with `JUMP`, which
+          is the row the canvas puts them on.
+
+          The grid carries the ground and nothing else: the block around it
+          carries the inset. Set on one element the padding would be painted in
+          that ground too, and the six cells would sit inside an amber band the
+          canvas does not draw.
+        -->
+        <div class="outfitting__status-cells">
+          <edsb-defence-summary />
+          <edsb-offence-summary />
+          <edsb-drives-summary />
+        </div>
       </div>
 
       <edsb-cost-materials />

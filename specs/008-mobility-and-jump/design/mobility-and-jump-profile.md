@@ -43,8 +43,10 @@ Canvas 1c puts them side by side and canvas 1d stacks them. Both are the same DO
    drawn; neither canvas has them.
 
 There is no fourth group between the legend and the envelope. The canvas draws no unladen mass and
-no cargo capacity, and a reading it does not draw is not this screen's to add; both tank capacities
-appear where it puts them, in the fuel row's own qualifier.
+no cargo capacity, and a reading it does not draw is not this screen's to add. Nor does it draw a
+tank capacity: the fuel row's qualifier was `TANK 32 T + RESERVE` until the revision of 2026-08-25
+cut it to the one word, so `fuelCapacity` joined the other two and is no longer read either. The
+row's own figure is the fuel part of `buildMass(load)` and is unchanged by that.
 
 **Frame Shift Drive**:
 
@@ -118,8 +120,11 @@ precision. The rail and the cards are one reading of one build seen twice, and a
 the hold or rounded differently would put two numbers for one quantity on one screen with both
 looking like answers.
 
-Nothing in the rail is interactive, as nothing else in it is: the canvas draws no control there, and
-at both widths the cards these figures come from are a segment away.
+None of **these three cells** is interactive, as none of the six is: the canvas draws no control in
+that grid, and at both widths the cards these figures come from are a segment away. The rail around
+them is no longer entirely a read-out — the 2026-08-25 canvas revision put feature 005's
+`SYS` / `ENG` / `WEP` pip control in it — but that control is that feature's and it is not in this
+grid (`specs/003-ship-statistics/design/status-rail.md`, item 4).
 
 ## Responsive composition
 

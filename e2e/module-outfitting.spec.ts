@@ -7,6 +7,11 @@ import {
   openAllFamilies,
   openChooser,
   openChooserRows,
+  revealFamilyHolding,
+  revealedRows,
+  acrossEveryFamily,
+  familyControls,
+  manifestOf,
   openEditor,
   surfacesAreLayers,
 } from './outfitting-surfaces';
@@ -113,28 +118,50 @@ async function fitFromChooser(
 
   // The same reading the ledger gives: the module's name and mount, with the
   // class column folded in the way the ledger's own code line writes it.
-  const identities = await rows.evaluateAll((nodes) =>
-    nodes.map((node) => {
-      const drawn = (element: Element | null): string => {
-        if (element === null) {
-          return '';
-        }
-        // What a sighted Commander reads. The class cell also spells its code
-        // out for anyone who cannot see it, and the ledger has no such line.
-        const clone = element.cloneNode(true) as HTMLElement;
-        for (const hidden of clone.querySelectorAll('.visually-hidden')) {
-          hidden.remove();
-        }
-        return clone.textContent ?? '';
-      };
-      return `${drawn(node.querySelector('.candidate__name'))} ${drawn(
-        node.querySelector('.candidate__class'),
-      )}`
-        .replace(/\s+/g, ' ')
-        .trim();
-    }),
-  );
-  const index = pick(identities);
+  const identitiesNow = async (): Promise<readonly string[]> =>
+    rows.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const drawn = (element: Element | null): string => {
+          if (element === null) {
+            return '';
+          }
+          // What a sighted Commander reads. The class cell also spells its code
+          // out for anyone who cannot see it, and the ledger has no such line.
+          const clone = element.cloneNode(true) as HTMLElement;
+          for (const hidden of clone.querySelectorAll('.visually-hidden')) {
+            hidden.remove();
+          }
+          return clone.textContent ?? '';
+        };
+        return `${drawn(node.querySelector('.candidate__name'))} ${drawn(
+          node.querySelector('.candidate__class'),
+        )}`
+          .replace(/\s+/g, ' ')
+          .trim();
+      }),
+    );
+
+  // The rail draws one family's rows at a time, so a row the caller asked for
+  // may be in a family it has not revealed yet. The families are walked until
+  // the pick lands — which is what a Commander does, and is the only reading
+  // the accordion needs no help with because it can have every family open.
+  let identities = await identitiesNow();
+  let index = pick(identities);
+  if (index < 0 && (await manifestOf(page)) === 'rail') {
+    const ids = await familyControls(page).evaluateAll((nodes) => nodes.map((node) => node.id));
+    for (const id of ids) {
+      const control = page.locator(`#${id}`);
+      await expect(async () => {
+        await control.click();
+        await expect(control).toHaveAttribute('aria-pressed', 'true', { timeout: 1_000 });
+      }).toPass({ timeout: 15_000 });
+      identities = await identitiesNow();
+      index = pick(identities);
+      if (index >= 0) {
+        break;
+      }
+    }
+  }
   expect(index, 'no choice matched what the test asked for').toBeGreaterThan(-1);
 
   // The row is the control. Its radio is a 1px box underneath the label's own
@@ -471,23 +498,55 @@ async function search(page: Page, query: string): Promise<void> {
   await page.locator('input[type="search"]').fill(query);
 }
 
+/**
+ * The published count, once the search that provoked it has actually settled.
+ *
+ * `fill` ends the typing, not the search. The surface republishes its figure a
+ * beat later, so a bare read taken straight afterwards returns the answer to
+ * the *previous* query — the whole list, where a narrowing search was just
+ * typed. Every other caller in this file asserts through a retrying locator and
+ * never meets it; this one compares two numbers and does, which is how a run
+ * once read 349 against 2 and called it a regression.
+ *
+ * Narrowing is the settle condition rather than a pause, because it is the
+ * thing being waited for: a search that has been applied publishes fewer
+ * choices than the unfiltered list it was typed into.
+ */
+async function narrowedCount(page: Page, unfiltered: number): Promise<number> {
+  await expect.poll(() => drawnCount(page)).toBeLessThan(unfiltered);
+  return drawnCount(page);
+}
+
 test.describe('finding a replacement', () => {
   test('offers every choice the Almanac has for the mount, and says how many', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'SmallHardpoint1');
     // The count the surface publishes is the whole list; what is in the
-    // document is whatever families are open. With every family open the two
-    // are the same number, which is how "every choice" is checked (SC-006).
-    await openChooserRows(page);
+    // document is whatever families are revealed. The accordion can reveal them
+    // all at once and the rail draws one family at a time, so the rows are
+    // gathered family by family — which is how "every choice" is checked at
+    // either width (SC-006).
+    await openChooser(page);
 
     const drawn = await drawnCount(page);
     // The families' own rows. The compact composition draws canvas 1d's
     // `FITTED HERE` block above them, which is the fitted row a second time —
     // a duplicate of a row already counted, not another choice.
-    const rendered = await page.locator('.family__choices .candidate').count();
+    const seen = new Set<string>();
+    await acrossEveryFamily(page, async (rows) => {
+      for (const key of await rows.evaluateAll((nodes) =>
+        nodes.flatMap((node) =>
+          Array.from(node.querySelectorAll('input[type="radio"]')).map(
+            (radio) => (radio as HTMLInputElement).value,
+          ),
+        ),
+      )) {
+        seen.add(key);
+      }
+    });
 
     // The count is the list, not a separate claim about it.
-    expect(drawn).toBe(rendered);
+    expect(seen.size).toBe(drawn);
     expect(drawn).toBeGreaterThan(1);
 
     // The expansion is stock records *plus* their pre-engineered variants, so a
@@ -503,14 +562,18 @@ test.describe('finding a replacement', () => {
     // (module-replacement design, wave 10).
     await openChooserRows(page);
 
-    const drawn = await drawnCount(page);
-    // Every choice, in the document, from the first frame. A list that grew as
-    // it was reached could not tell the browser how tall it was, so its bar
-    // shrank under the Commander every time it grew (wave 4).
-    await expect(page.locator('.candidate')).toHaveCount(drawn);
+    // Every choice of every revealed family, in the document, from the first
+    // frame. A list that grew as it was reached could not tell the browser how
+    // tall it was, so its bar shrank under the Commander every time it grew
+    // (wave 4). What is revealed differs by manifest — all of them under the
+    // accordion, one family under the rail — so the claim is about the rows
+    // that *are* revealed rather than about a total.
+    const revealed = await revealedRows(page).count();
+    expect(revealed).toBeGreaterThan(0);
 
-    // The manifest's own scroller, under the column head rather than around it.
-    const scroller = page.locator('.candidates__body');
+    // The manifest's own scroller, under the column head rather than around it:
+    // the accordion's single body, or the rail's variant pane.
+    const scroller = page.locator('.candidates__body, .candidates__pane').first();
     // Read once the fonts and the row images have settled. What this test is
     // about is the scroller's height not moving *as the list is reached* — a
     // figure read while a webfont is still swapping in moves for a reason that
@@ -531,7 +594,7 @@ test.describe('finding a replacement', () => {
     });
     const before = await scroller.evaluate((node) => node.scrollHeight);
     await scroller.evaluate((node) => node.scrollTo(0, node.scrollHeight));
-    await expect(page.locator('.candidate')).toHaveCount(drawn);
+    await expect(revealedRows(page)).toHaveCount(revealed);
     expect(await scroller.evaluate((node) => node.scrollHeight)).toBe(before);
   });
 
@@ -540,23 +603,32 @@ test.describe('finding a replacement', () => {
   }) => {
     await openStockBuild(page);
     await selectMount(page, 'SmallHardpoint1');
-    await openChooserRows(page);
+    await openChooser(page);
 
     const controls = page.locator('.family');
     const families = await controls.count();
     expect(families).toBeGreaterThan(1);
 
     // Every row belongs to exactly one family's region, and every row the
-    // surface counted is in one of them (FR-020, SC-006).
+    // surface counted is in one of them (FR-020, SC-006). Counted family by
+    // family, because the rail reveals one at a time and the accordion can
+    // reveal them all — the claim is the same, and only the walking differs.
     const drawn = await drawnCount(page);
-    const grouped = await page.locator('.family__choices > .candidate').count();
+    let grouped = 0;
+    await acrossEveryFamily(page, async (rows) => {
+      grouped += await rows.count();
+    });
     expect(grouped).toBe(drawn);
 
     // Nothing is drawn outside a family except canvas 1d's `FITTED HERE` block,
     // which the compact composition pins above the list and the wide one does
-    // not draw at all.
+    // not draw at all. Counted against what is revealed *now*, which is the
+    // whole list under the accordion and the last family the walk selected
+    // under the rail.
     const pinned = await page.locator('.candidates__pinned .candidate').count();
-    expect(await page.locator('.candidate').count()).toBe(drawn + pinned);
+    expect(await page.locator('.candidate').count()).toBe(
+      (await revealedRows(page).count()) + pinned,
+    );
 
     // The sections are gone with their headings, and nothing replaced them.
     await expect(page.locator('.candidates__section, .candidates__group')).toHaveCount(0);
@@ -568,7 +640,7 @@ test.describe('finding a replacement', () => {
   }) => {
     await openStockBuild(page);
     await selectMount(page, 'SmallHardpoint1');
-    await openChooserRows(page);
+    await revealFamilyHolding(page, /not sold anywhere/i);
 
     // Canvas 1c marks the reward on the row itself, directly under the ordinary
     // article it is built on — so the heading that used to carry that fact has
@@ -583,7 +655,7 @@ test.describe('finding a replacement', () => {
     await expect(reward.locator('.acquisition__route')).toHaveCount(1);
 
     // It sits inside a family, and inside the same family as its base module.
-    const family = reward.locator('xpath=ancestor::*[contains(@class, "family__choices")]');
+    const family = reward.locator('xpath=ancestor::*[contains(@class, "candidates__choices")]');
     await expect(family).toHaveCount(1);
 
     const rewardName = (await reward.locator('.candidate__name').innerText())
@@ -660,10 +732,14 @@ test.describe('finding a replacement', () => {
     // takes the rest of that family out of every other optional mount.
     await selectMount(page, 'Slot02_Size6');
     await openChooser(page);
-    // A search opens every family it matched, so the rows behind the count are
-    // all in the document without anything being opened by hand (FR-023).
+    // Compared on the count the surface publishes rather than on the rows in the
+    // document. What the two manifests draw differs by design — the accordion
+    // opens every family a narrow search matched, the rail draws the first of
+    // them — but both are counting the same answer from the package, and it is
+    // the answer this test is about.
+    const everything = await drawnCount(page);
     await search(page, 'docking computer');
-    const before = await page.locator('.candidate').count();
+    const before = await narrowedCount(page, everything);
     expect(before).toBeGreaterThan(0);
     if (await surfacesAreLayers(page)) {
       await page.getByRole('button', { name: /cancel/i }).click();
@@ -676,11 +752,12 @@ test.describe('finding a replacement', () => {
 
     await selectMount(page, 'Slot02_Size6');
     await openChooser(page);
+    const everythingLeft = await drawnCount(page);
     await search(page, 'docking computer');
 
     // Fewer, because the Almanac now says so. Nothing here knows what an
     // exclusive family is; it asked again and rendered the answer.
-    expect(await page.locator('.candidate').count()).toBeLessThan(before);
+    expect(await narrowedCount(page, everythingLeft)).toBeLessThan(before);
   });
 
   test('is accessible in every chooser state', async ({ page }, testInfo) => {

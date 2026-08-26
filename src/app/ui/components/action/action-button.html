@@ -1,6 +1,6 @@
 <button
   type="button"
-  [class]="'action action--' + emphasis()"
+  [class]="classes()"
   [disabled]="disabled()"
   [attr.aria-busy]="busy() ? 'true' : null"
   [attr.aria-pressed]="isToggle() ? (pressed() ? 'true' : 'false') : null"
@@ -8,7 +8,18 @@
   [attr.aria-describedby]="description() ? descriptionId : null"
   (click)="activate()"
 >
-  <span class="action__label">{{ label() }}</span>
+  <!--
+    The mark and the name, never one or the other. Where a caller supplies a
+    conventional mark it is what is drawn and the name goes on being carried as
+    text, so the accessible name is the same string either way and nothing has
+    to be inferred from a shape.
+  -->
+  @if (symbol(); as mark) {
+    <span class="action__symbol" aria-hidden="true">{{ mark }}</span>
+    <span class="visually-hidden">{{ label() }}</span>
+  } @else {
+    <span class="action__label">{{ label() }}</span>
+  }
 </button>
 
 <!--

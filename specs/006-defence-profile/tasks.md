@@ -214,3 +214,69 @@ Recorded in `design/reference-review.md`, "Canvas revision, 2026-08-25".
       both allocations and the pips only as `systemsResistance`
 - [x] T082 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`
+
+---
+
+## Phase: closing the 2026-08-25 revision's gaps
+
+T078–T082 delivered the fifth column and its tests, but three artefacts were left describing the
+four-column table the revision replaced, and one behaviour the contract states was never proven.
+Found by reading the delivered surface back against `spec.md` and `design/defence-profile.md`.
+
+- [x] T083 Reconcile [design/screen-inventory.md](./design/screen-inventory.md) with the revision:
+      its FR-002 ownership row still had the resistances and pools read at the standing allocation,
+      which spec.md FR-002 and the design now make the bare shield. The surface table gained the
+      fifth column, and "Required states" gained the states it has of its own — the column at no
+      pips, where it repeats the bare pool, and a capacitor refused while the bare shield stands
+- [x] T084 Replace the stale assertion on `build/defence-analysis-shields` in
+      `e2e/coverage-ledger.ts`, which claimed the cards are read at the standing allocation, with
+      the two the revision actually asks for: the bare columns holding still under a moving pip, and
+      the fifth column headed with the allocation it was read at. Both are already exercised by
+      `e2e/defence.spec.ts`, "moves the pip column alone"
+- [x] T085 Name `effectiveResistances` in the capacitor mapping in
+      [contracts/shield-profile.md](./contracts/shield-profile.md) as carried and not drawn. It is
+      the one carried field that would be a defect if drawn — the resistances with the pips folded
+      in, on a table whose `RESIST` column is a base value — so its exclusion is stated rather than
+      left to inference
+- [x] T086 Prove the two results are independent in both directions, which the contract asserted and
+      nothing verified: a refused capacitor withdraws the fifth column and leaves the four bare ones
+      whole figure for figure, and a refused bare shield draws no table for the capacitor to sit
+      beside. Both in `defence-analysis.spec.ts`, with the `afterEach` restore the `BuildMetrics`
+      seam needs, matching `src/app/domain/defence/defence.spec.ts`. Extend the contract's own
+      verification list to require both
+- [x] T087 Give the fifth column the fence the other four answers have, in
+      `scripts/policy/defence-ownership.mjs`: `shieldCapacitorMetricsResult(` joins `PACKAGE_CALLS`
+      so a second call site cannot appear, and `effectiveResistances`, `capacity` and `rechargeRate`
+      join `FIGURE_FIELDS` so arithmetic on the field T085 declared undrawable is caught by the
+      build rather than by a reading of the contract
+- [x] T088 Correct the two places the revision's own staleness survived in the suites: the unit
+      test named for a pool read "at the standing allocation", which no allocation moves, and
+      `e2e/defence.spec.ts`'s preamble and describe block, which still said the cards are read at
+      the allocation when only the pip column and the recovery are
+- [x] T089 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+- [x] T090 Second review round: fence the shield's own `resistances` beside the capacitor's plural,
+      compare every field but the fifth column in the capacitor-refused test so the bar is covered
+      too, and assert the mirror test's premise that the capacitor stands. With the four stale
+      statements the round found: the policy header still counting four package answers, the
+      contract preamble calling a per-damage-type record a scalar, the inventory's FR-001 row
+      omitting the build's own slot list, and the e2e inline comment still saying the cards are
+      read at the allocation
+- [x] T091 Third review round: the last places still counting four package calls or reading the
+      bare shield at an allocation — `spec.md`'s own Almanac Coverage list, the `systemsPips` field
+      doc on the projection, the `RESIST`/`MJ` comment in `e2e/defence.spec.ts` and the rail suite's
+      note in `defence-summary.spec.ts` — and `resistances` regrouped in `FIGURE_FIELDS` beside the
+      singular it belongs with rather than under the capacitor's own fields
+- [x] T092 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+- [x] T093 Fourth review round. T091 claimed "the last places" and was wrong twice: the fixtures
+      header still enumerated four package calls, and the unit twin of the `RESIST`/`MJ` comment
+      still read "at zero pips". The round also caught a claim that the capacitor is the only thing
+      on the projection moving with the allocation, when the recovery moves with it too. Three of
+      the four places it stood came in with the 0.2.0 split and one was written by T091; the two
+      making that claim now scope it to the damage table, which is where it is true, and the other
+      two say what they were each actually about
+- [x] T094 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+- [x] T095 Fifth review round: the contract's boundary said every pip-dependent figure comes from
+      the capacitor, when the recovery is pip-dependent and is its own call; `DefenceConditions`
+      still counted the pre-0.2.0 "both shield calls" in its headline while its body already named
+      the right two; and T093 credited this branch with a claim it inherited
+- [x] T096 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`

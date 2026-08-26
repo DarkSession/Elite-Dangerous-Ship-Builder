@@ -402,7 +402,9 @@
   // The stacked damage bar is 22px — a band, not the 66px command bar the panel
   // reached for before this measure existed. The label-bar-figure rows below it
   // set their label at 104px and their figure at 62px, and the weapon table's
-  // three figure columns at 46, 44 and 60px; those are floors here rather than
+  // four figure columns at 46, 44, 62 and 60px — narrowed to 42, 30 and 56 where
+  // canvas 1d draws the same table at phone width, which is why the measure
+  // below sits under the widest of them; those are floors here rather than
   // fixed tracks, because a German label at 200% text needs more than the
   // canvas's English one and a column that clips its own head reads as a
   // different figure. What the canvas is actually fixing is that the tracks
@@ -423,16 +425,37 @@
   --edsb-measure-offence-bar: 0.6875rem; // 11
   --edsb-measure-offence-label: 6.5rem;
   --edsb-measure-offence-value: 3.875rem;
-  --edsb-measure-weapon-figure: 3.75rem;
+  --edsb-measure-weapon-figure: 2.5rem;
 
-  // Canvas 1c's gunsight plate: `aspect-ratio: 16/6`, an 11px dot where each
-  // shot lands, and a 20px badge parked at the plate's edge with a leader line
-  // back to its dot. The badge is off the shot rather than on it because five
-  // shots converging is five marks in one place, and a numeral inside each of
-  // them is unreadable exactly when the spread is tightest.
-  --edsb-measure-gunsight-ratio: 16 / 6;
-  --edsb-measure-shot-dot: 0.6875rem;
-  --edsb-measure-shot-badge: 1.25rem;
+  // The floor under the weapon table's module column: 155px, which is two lines
+  // of a weapon's cell — `Huge Multi-Cannon` over `4A GIMBALLED · OVERCHARGED
+  // G5` — wrapping at words rather than inside them. Measured in Chromium at the
+  // widths this block is actually given, and held to by
+  // `e2e/offence-profile.spec.ts` in both languages.
+  --edsb-measure-weapon-module: 9.6875rem;
+
+  // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
+  // box square in pixels, and a 7px dot where each shot lands with the mount's
+  // hardpoint numeral set beside it.
+  //
+  // The box is square because the plate is square in *angle* — the script maps
+  // both axes over the same field of view and corrects a ring's height by the
+  // box's own `offsetWidth / offsetHeight`, which is a correction only a square
+  // box makes vanish. On a wider box the same mapping would squash every shot's
+  // height in exactly the box's proportion, which is a spread no build has, and
+  // would put a ring past the top and bottom of its own plate. The earlier
+  // drawing kept a `16 / 6` box level by dividing its vertical axis by a
+  // narrower field; the revision squares the box instead, and this follows it.
+  //
+  // Drawn at `8rem` rather than the canvas's own `172px`, from 2026-08-26. The
+  // plate is decorative in full — every mark on it is a sentence beside it — and
+  // at the canvas's width it was the tallest thing in the offence panel, setting
+  // the whole convergence block's height on its own. Squareness is the property
+  // that matters, not the number of pixels: every mark is placed as a fraction
+  // of the plate rather than in pixels, so it is the same diagram at either
+  // size (`design/canvas-contract.md`, review note 18).
+  --edsb-measure-gunsight-plate: 8rem;
+  --edsb-measure-shot-dot: 0.4375rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 
@@ -442,6 +465,19 @@
   // The canvas's manifest row: 13px of name between 11px of padding, plus the
   // 2px that separates one row from the next.
   --edsb-measure-candidate-row: 2.625rem;
+
+  // The 2026-08-25 revision of canvas 1c's manifest: `grid-template-columns:
+  // 216px minmax(0, 1fr); column-gap: 14px` for the rail beside its pane, both
+  // bounded at `max-height: 470px`, and `2.6fr 70px 150px` for the three
+  // columns a row is drawn in inside that pane. The rail and the two fixed
+  // columns are the canvas's own pixels; the name takes what is left, as its
+  // `fr` says, because there is nothing left over for it to run away with once
+  // the rail has its 216px.
+  --edsb-measure-family-rail: 13.5rem;
+  --edsb-measure-family-gap: 0.875rem;
+  --edsb-measure-manifest-pane: 29.375rem;
+  --edsb-measure-candidate-class: 4.375rem;
+  --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
 
