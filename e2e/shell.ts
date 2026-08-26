@@ -67,17 +67,28 @@ export async function openActionLayer(page: Page): Promise<void> {
  * has chosen, so opening a record is two presses: choose the row, then open it.
  * Retried as one unit, because the listing re-reads storage after any write and
  * the row a press was aimed at can be replaced a frame later.
+ *
+ * Both presses are scoped to the library's own layer, and a retry that finds the
+ * workspace already open simply stops. Without either, a retry after a
+ * navigation that has already landed would press the workspace's own title —
+ * which is a button too, and carries the same name as the row.
  */
 export async function openRecordFromLibrary(page: Page, title: string): Promise<void> {
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const row = page.getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
-  const open = page.getByRole('button', { name: `Open ${title}` });
+  const surface = page.getByRole('dialog', { name: /^saved builds$/i });
+  const row = surface.getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
+  const open = surface.getByRole('button', { name: `Open ${title}` });
 
   await expect(async () => {
-    await row.click({ timeout: 2_000 });
-    await open.click({ timeout: 2_000 });
-    await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 2_000 });
-  }).toPass({ timeout: 20_000 });
+    if (/\/build(#|$)/.test(page.url())) {
+      return;
+    }
+    await row.click({ timeout: 5_000 });
+    await open.click({ timeout: 5_000 });
+    await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
+
+  await expect(page).toHaveURL(/\/build(#|$)/);
 }
 
 export async function savedToBrowser(page: Page | Locator): Promise<void> {

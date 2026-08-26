@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
-import { savedToBrowser, reachShellLink } from './shell';
+import { openRecordFromLibrary, savedToBrowser, reachShellLink } from './shell';
 
 /**
  * Managing what this browser is holding.
@@ -126,24 +126,6 @@ async function chooseFirstUnnamed(page: Page): Promise<void> {
   await expect(async () => {
     await row.click({ timeout: 2_000 });
     await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
-  }).toPass({ timeout: 15_000 });
-}
-
-/**
- * Opens a stored build from the library and waits for the workspace.
- *
- * The listing is built from storage after the page is up, so a press can land
- * on the row the framework is about to replace: the click resolves against a
- * node that is detached a frame later, its handler never runs, and the page
- * simply stays on the library with nothing to say it did not work. The press is
- * retried until the workspace is reached rather than made once and asserted
- * after.
- */
-async function openRecord(page: Page, title: string): Promise<void> {
-  await expect(async () => {
-    await chooseRecord(page, title);
-    await page.getByRole('button', { name: `Open ${title}` }).click();
-    await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 2_000 });
   }).toPass({ timeout: 15_000 });
 }
 
@@ -273,7 +255,7 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a')]);
     await page.goto('/builds');
 
-    await openRecord(page, 'Build a');
+    await openRecordFromLibrary(page, 'Build a');
 
     await expect(page.getByText('Anaconda').first()).toBeVisible();
   });
@@ -471,10 +453,10 @@ test.describe('the build library', () => {
 
     // The other page opens the same named record, so both hold the same baseline.
     await second.goto('/builds');
-    await openRecord(second, 'Shared build');
+    await openRecordFromLibrary(second, 'Shared build');
 
     await first.goto('/builds');
-    await openRecord(first, 'Shared build');
+    await openRecordFromLibrary(first, 'Shared build');
 
     // One page saves; the other's baseline is now stale.
     await reachShellLink(second, 'Open saved build');
