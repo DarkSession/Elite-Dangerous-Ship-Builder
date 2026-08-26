@@ -378,7 +378,19 @@ said and the requirement is what changed.
       did both badly: it spread pairs with eleven pixels of air between them by four pixels each. The
       shipped package's shortest visible leader is now ten and a half pixels, and no plate moves a
       mark that was not crowded.
-- [x] T079 Cover all six in the suites that gate the build: `placeMarks` in
+- [x] T085 Turn a crowd's ring to where there is room rather than only to where its own mounts point
+      — sixteen turns tried per radius in `placeMarks`, scored by the clearance each leaves between
+      this crowd's marks _and its leaders_ and everything around them, ties going to the turn that
+      lines up with the mounts so a crowd with open air on all sides still sits where they point.
+      Asked twice, because a crowd placed first cannot see the marks of crowds not yet placed.
+      Reported on the Corsair: `LargeHardpoint1` sat on the left of its own crowd, so its mark was
+      sent left across two hardpoints while the right side of the hull stood empty.
+- [x] T086 Prefer a short leader to a stacked mark — where a plate has no room for a ring far enough
+      out to be legible, `placeMarks` falls back to one that merely separates the marks rather than
+      leaving the crowd alone. Refusing to move it kept the overlap this exists to remove, for a line
+      nobody could have seen; it failed the doubled-text assertion on a phone, where the Anaconda's
+      top plate is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate.
+- [x] T079 Cover all eight in the suites that gate the build: `placeMarks` in
       `src/app/domain/anatomy/mount-declutter.spec.ts`, the plate's own displacement, leader and
       filtered-box assertions in `src/app/ui/outfitting/hull-schematic.spec.ts`, and the two
       end-to-end assertions — leaders matching displaced marks on both plates, a selected utility

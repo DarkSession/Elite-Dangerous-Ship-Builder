@@ -297,6 +297,43 @@ describe('placeMarks', () => {
     expect(placed.map((one) => one.mark)).toEqual(anchors);
   });
 
+  it('turns a crowd towards the room rather than into its neighbours', () => {
+    // A pair that has to spread, with a wall of mounts close on one side and
+    // open plate on the other. Aligned to its own mounts the ring would send a
+    // mark into the wall; it should go the other way. This is the Corsair's top
+    // plate in miniature (design/hull-anatomy.md, "Marks that would touch").
+    const anchors = [
+      { x: 360, y: 146 },
+      { x: 366, y: 146 },
+      { x: 250, y: 100 },
+      { x: 250, y: 146 },
+      { x: 250, y: 192 },
+    ];
+
+    const placed = placeMarks(anchors, FRAME);
+
+    // Neither of the crowded pair ends up on the crowded side of its own mount.
+    for (const one of placed.slice(0, 2)) {
+      expect(one.mark.x).toBeGreaterThan(300);
+    }
+  });
+
+  it('takes a short leader over a mark left stacked', () => {
+    // A plate with no room for a legible ring: refusing to move the crowd keeps
+    // the overlap this exists to remove, for the sake of a line nobody could
+    // have seen. Separating them is the lesser evil and is what happens.
+    const tight: PlateFrame = { width: 120, height: 49 };
+    const anchors = [
+      { x: 60, y: 24 },
+      { x: 63, y: 24 },
+    ];
+
+    const placed = placeMarks(anchors, tight, 0.12, 0.1);
+
+    expect(placed.every((one) => one.displaced)).toBe(true);
+    expect(apart(placed[0].mark, placed[1].mark)).toBeGreaterThan(apart(anchors[0], anchors[1]));
+  });
+
   it('returns one placement per mount, in the order it was handed them', () => {
     const anchors = [
       { x: 10, y: 20 },

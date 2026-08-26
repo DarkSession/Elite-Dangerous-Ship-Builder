@@ -104,6 +104,16 @@ const GROWTH = 1.25;
 const GROWTH_STEPS = 8;
 
 /**
+ * How many turns of a crowd's ring are tried before one is chosen.
+ *
+ * Sixteen, a step of twenty-two and a half degrees — fine enough to find the
+ * open side of a hull and coarse enough to be nothing to compute. The turn that
+ * lines up with the mounts is always among them and wins every tie, so a crowd
+ * with room on all sides still sits where its own mounts point.
+ */
+const TURNS = 16;
+
+/**
  * The least a mark may move, in its own widths, for moving it to be worth it.
  *
  * A displacement is only useful if a reader can *see* that it happened, and
@@ -196,33 +206,16 @@ function middleOf(points: readonly PlatePoint[]): PlatePoint {
  * that best matches the directions the mounts actually lie in, so a mount on
  * the crowd's left stays on the left and no two leaders cross.
  */
-function ringOf(members: readonly PlatePoint[], radius: number): readonly PlatePoint[] {
+function ringOf(
+  members: readonly PlatePoint[],
+  radius: number,
+  turn: number,
+): readonly PlatePoint[] {
   const middle = middleOf(members);
   const step = (2 * Math.PI) / members.length;
 
-  // Each mount's own direction from the middle of the crowd. Two mounts on the
-  // same point have no direction to keep, and take their slot's own angle.
-  const bearings = members.map((one, index) => {
-    const away = { x: one.x - middle.x, y: one.y - middle.y };
-    return away.x === 0 && away.y === 0 ? index * step : Math.atan2(away.y, away.x);
-  });
-
-  const order = members.map((_, index) => index).sort((a, b) => bearings[a] - bearings[b] || a - b);
-
-  // The turn that lines the ring up with the mounts: the mean of each mount's
-  // own bearing less the slot it is about to take, averaged as a direction so
-  // the wrap from -pi to pi does not pull it to the opposite side.
-  let sin = 0;
-  let cos = 0;
-  order.forEach((member, slot) => {
-    const difference = bearings[member] - slot * step;
-    sin += Math.sin(difference);
-    cos += Math.cos(difference);
-  });
-  const turn = Math.atan2(sin, cos);
-
   const placed: PlatePoint[] = new Array<PlatePoint>(members.length);
-  order.forEach((member, slot) => {
+  slotOrder(members).forEach((member, slot) => {
     const angle = turn + slot * step;
     placed[member] = {
       x: middle.x + radius * Math.cos(angle),
@@ -230,6 +223,95 @@ function ringOf(members: readonly PlatePoint[], radius: number): readonly PlateP
     };
   });
   return placed;
+}
+
+/** Each mount's own direction from the middle of its crowd. */
+function bearingsOf(members: readonly PlatePoint[]): readonly number[] {
+  const middle = middleOf(members);
+  const step = (2 * Math.PI) / members.length;
+  return members.map((one, index) => {
+    const away = { x: one.x - middle.x, y: one.y - middle.y };
+    // Two mounts on the same point have no direction to keep, and take their
+    // slot's own angle.
+    return away.x === 0 && away.y === 0 ? index * step : Math.atan2(away.y, away.x);
+  });
+}
+
+/**
+ * Which slot on the ring each member takes, in the members' own angular order.
+ *
+ * Handing the slots out in that order is what keeps a crowd's leaders from
+ * crossing *each other*, whatever the ring is then turned to: the marks go
+ * round the ring in the same cyclic order the mounts go round the middle.
+ */
+function slotOrder(members: readonly PlatePoint[]): readonly number[] {
+  const bearings = bearingsOf(members);
+  return members.map((_, index) => index).sort((a, b) => bearings[a] - bearings[b] || a - b);
+}
+
+/**
+ * The turn that lines a ring up with the mounts themselves.
+ *
+ * The mean of each mount's own bearing less the slot it is about to take,
+ * averaged as a direction so the wrap from -pi to pi does not pull it to the
+ * opposite side. This is where a crowd sits when nothing is around it, and the
+ * search departs from it only for a reason.
+ */
+function alignedTurn(members: readonly PlatePoint[]): number {
+  const bearings = bearingsOf(members);
+  const step = (2 * Math.PI) / members.length;
+
+  let sin = 0;
+  let cos = 0;
+  slotOrder(members).forEach((member, slot) => {
+    const difference = bearings[member] - slot * step;
+    sin += Math.sin(difference);
+    cos += Math.cos(difference);
+  });
+  return Math.atan2(sin, cos);
+}
+
+/** How far a point is from a segment, measured the way the marks are. */
+function fromSegment(point: PlatePoint, from: PlatePoint, to: PlatePoint): number {
+  const run = { x: to.x - from.x, y: to.y - from.y };
+  const length = run.x * run.x + run.y * run.y;
+  const along =
+    length === 0
+      ? 0
+      : Math.min(
+          1,
+          Math.max(0, ((point.x - from.x) * run.x + (point.y - from.y) * run.y) / length),
+        );
+  return separation(point, { x: from.x + run.x * along, y: from.y + run.y * along });
+}
+
+/**
+ * How much room an arrangement leaves between itself and everything around it.
+ *
+ * Both the marks and the lines that explain them are scored, because a mark can
+ * land in clear air and still have been reached by a leader drawn straight
+ * across two of its neighbours. That is what the Corsair's top plate did: its
+ * `LargeHardpoint1` sits on the left of its own crowd, so a ring aligned to the
+ * mounts sent that mark left, across the two hardpoints beyond it, while the
+ * whole right side of the hull stood empty. A ring that only looks at its own
+ * members cannot see that; this is what lets it.
+ */
+function roomAround(
+  ring: readonly PlatePoint[],
+  members: readonly PlatePoint[],
+  others: readonly PlatePoint[],
+): number {
+  let closest = Infinity;
+  for (const other of others) {
+    ring.forEach((mark, index) => {
+      closest = Math.min(
+        closest,
+        separation(mark, other),
+        fromSegment(other, members[index], mark),
+      );
+    });
+  }
+  return closest;
 }
 
 /**
@@ -287,65 +369,117 @@ function arrange(
   const clearOf = (point: PlatePoint, others: readonly PlatePoint[]): boolean =>
     others.every((other) => separation(point, other) >= gap - tolerance);
 
-  const placed: PlatePoint[] = [];
-  const marks: PlatePoint[] = new Array<PlatePoint>(anchors.length);
+  const marks: PlatePoint[] = anchors.map((anchor) => anchor);
   const displaced = new Array<boolean>(anchors.length).fill(false);
 
   const groups = [...crowds(anchors, gap)].sort((a, b) => b.length - a.length || a[0] - b[0]);
 
-  for (const group of groups) {
+  /**
+   * Where one crowd's marks go, given everything it has to keep clear of.
+   *
+   * `around` is the rest of the plate as the caller currently understands it —
+   * other crowds' marks and the mounts outside this one.
+   */
+  const settle = (
+    group: readonly number[],
+    around: readonly PlatePoint[],
+  ): readonly PlatePoint[] | null => {
     const members = group.map((index) => anchors[index]);
-
-    if (members.length === 1) {
-      marks[group[0]] = members[0];
-      placed.push(members[0]);
-      continue;
-    }
-
-    const foreign = anchors.filter((_, index) => !group.includes(index));
-
-    // How far the ring has to be from the middle of the crowd, which is two
-    // separate demands and neither implies the other.
-    //
-    // The first is that the crowd's own marks clear each other, which is what
-    // the ring's own geometry gives.
-    //
-    // The second is that each member visibly *moved*. A ring is measured from
-    // the middle of the crowd, but a member's own mount is not at that middle —
-    // it is up to half the crowd's own width away from it, and in the direction
-    // its mark is about to go. So a radius that looks generous can leave the
-    // outermost member travelling almost nowhere, and its leader is then
-    // entirely inside its own square. Pushing the ring out past the furthest
-    // mount, and then past it by the distance a leader needs, is what makes the
-    // guarantee hold for every member rather than for the average one.
     const middle = middleOf(members);
     const reach = Math.max(...members.map((one) => Math.hypot(one.x - middle.x, one.y - middle.y)));
-    const smallest = Math.max(ringFor(members.length, gap), reach + mark * LEAST_TRAVEL);
-    let settled: readonly PlatePoint[] | null = null;
+    const separating = ringFor(members.length, gap);
+    const legible = Math.max(separating, reach + mark * LEAST_TRAVEL);
+    const aligned = alignedTurn(members);
 
-    for (let step = 0; step < GROWTH_STEPS && settled === null; step += 1) {
-      const ring = ringOf(members, smallest * GROWTH ** step);
-      const room = ring.every(
+    const fits = (ring: readonly PlatePoint[]): boolean =>
+      ring.every(
         (one, index) =>
           inside(one) &&
-          clearOf(one, placed) &&
-          clearOf(one, foreign) &&
+          clearOf(one, around) &&
           clearOf(
             one,
             ring.filter((_, other) => other !== index),
           ),
       );
-      if (room) {
-        settled = ring;
+
+    // The best turn at one radius, or nothing if none of them fits. Every turn
+    // is tried, not just the one that lines up with the mounts, and the winner
+    // leaves the most room between this crowd's marks and leaders and
+    // everything around them. Ties go to the turn nearest the aligned one, so a
+    // crowd with open air on every side still sits where its own mounts point
+    // and the arrangement stays deterministic.
+    const bestAt = (radius: number): readonly PlatePoint[] | null => {
+      let best: readonly PlatePoint[] | null = null;
+      let bestRoom = -Infinity;
+      let bestSwing = Infinity;
+
+      for (let turn = 0; turn < TURNS; turn += 1) {
+        const swing = (turn * 2 * Math.PI) / TURNS;
+        const ring = ringOf(members, radius, aligned + swing);
+        if (!fits(ring)) {
+          continue;
+        }
+        const room = roomAround(ring, members, around);
+        const from = Math.abs(Math.atan2(Math.sin(swing), Math.cos(swing)));
+        if (room > bestRoom || (room === bestRoom && from < bestSwing)) {
+          best = ring;
+          bestRoom = room;
+          bestSwing = from;
+        }
+      }
+      return best;
+    };
+
+    // Two ladders, tried in order of what they promise. The first asks for a
+    // ring far enough out that every member visibly moved and its leader can be
+    // read. The second asks only that the crowd's marks stop covering each
+    // other. A plate can be too small for the first and not for the second —
+    // eight twenty-eight-pixel marks on a phone at doubled text is exactly that
+    // — and a crowd left stacked because the roomier answer would not fit keeps
+    // the overlap this exists to remove, for the sake of a leader nobody could
+    // have seen anyway.
+    for (const floor of [legible, separating]) {
+      for (let step = 0; step < GROWTH_STEPS; step += 1) {
+        const ring = bestAt(floor * GROWTH ** step);
+        if (ring !== null) {
+          return ring;
+        }
       }
     }
+    return null;
+  };
 
-    group.forEach((index, member) => {
-      const mark = settled?.[member] ?? members[member];
-      marks[index] = mark;
-      displaced[index] = settled !== null;
-      placed.push(mark);
-    });
+  /** Every mount not in `group`, at wherever its own mark currently sits. */
+  const rest = (group: readonly number[]): readonly PlatePoint[] =>
+    marks.filter((_, index) => !group.includes(index));
+
+  // Two passes. The first places each crowd against the crowds already placed,
+  // largest first — but a crowd choosing its turn cannot see the marks of
+  // crowds that have not been placed yet, so it can pick a side that a later
+  // one then fills, or run its leaders across a mount that is about to move.
+  // The second pass re-asks the same question with the whole plate visible.
+  // That is what the Corsair's top plate needed: its first crowd chose the
+  // direction of its own mounts, straight over two hardpoints that had not been
+  // arranged yet, while the other side of the hull stood empty.
+  for (const pass of [0, 1]) {
+    for (const group of groups) {
+      if (group.length === 1) {
+        continue;
+      }
+      const ring = settle(group, rest(group));
+      if (ring !== null) {
+        group.forEach((index, member) => {
+          marks[index] = ring[member];
+          displaced[index] = true;
+        });
+      } else if (pass === 0) {
+        // Nowhere to stand: this crowd keeps its mounts' own positions, which
+        // is what `marks` already holds.
+        group.forEach((index) => {
+          displaced[index] = false;
+        });
+      }
+    }
   }
 
   return anchors.map((anchor, index) => ({

@@ -352,6 +352,23 @@ its neighbours had been guessed at, when all of them are equally approximate. A 
 true: these mounts are too close together to draw apart, so here they all are, each tied back to its
 own point.
 
+**A ring is turned to where there is room, not only to where its own mounts point.** The turn that
+lines the ring up with the mounts — each member on its own side of the crowd — is where a crowd sits
+when nothing is around it, and it wins every tie. But a crowd sitting in the middle of a hull has
+other mounts on some sides and open air on others, and a ring that only looks inward cannot tell
+those apart. The Corsair's top plate is the case: its `LargeHardpoint1` sits on the left of its own
+crowd, so an inward-looking ring sent that mark left, straight over the two hardpoints beyond it,
+while the whole right side of the hull stood empty. Sixteen turns of the ring are tried and the one
+that leaves the most room wins — room measured for the leaders as well as the marks, because a mark
+can land in clear air and still have been reached by a line drawn across two of its neighbours. The
+slots are still handed out in the members' own angular order whatever the turn, so a crowd's own
+leaders never cross each other.
+
+That question is asked twice. A crowd placed first cannot see the marks of crowds not yet placed, so
+it can choose a side that a later one then fills, or run a leader across a mount that is about to
+move; a second pass re-asks with the whole plate visible. It is what the Corsair needed, and it is
+also what raised the shipped package's shortest visible leader from under a pixel to ten.
+
 A ring must also clear every published mount position that is _not_ in the crowd. Without that a mark
 can come to rest exactly where a different mount is, so a reader sees a numbered square sitting on
 mount B carrying mount A's number while A's leader runs off elsewhere — the precise failure the
@@ -371,17 +388,21 @@ badly — it spread pairs that had eleven pixels of air between them by four pix
 problem on one plate while explaining nothing on another. Held apart, the shipped package's shortest
 leader is ten and a half pixels of visible line, and no plate moves a mark that was not crowded.
 
-A crowd that cannot be spread that far — because the ring will not fit inside the frame, or cannot
-clear the marks and mounts around it — keeps its mounts' own positions. A mount flung far enough that
-only the leader says where it is has been made harder to read, not easier, and the front-on-hover
-rule already answers the honest overlap.
+Where a plate has no room for the roomier answer, the smaller one is taken rather than nothing: a
+crowd that would otherwise stay stacked is spread by whatever separates its marks, even if its
+leaders are then too short to read. That order matters and was got wrong once — refusing to move a
+crowd whose leaders could not be legible kept the overlap this exists to remove, for the sake of a
+line nobody could have seen anyway. It shows up at doubled text on a phone, where the Anaconda's
+underside is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate. Only when
+even that will not fit does a crowd keep its mounts' own positions, and the front-on-hover rule
+answers the overlap.
 
-At the wide two-column plate, forty-two of the package's ninety-six plates move at least one mark and
-a hundred and forty of four hundred and thirty-five marks move — eighty-three hardpoints and
-fifty-seven utility mounts, because a crowd moves whole. The Anaconda's underside moves seven of its
-eight, the plate that puts a utility inside a large hardpoint's floor; its top plate moves none,
-because nothing on it is touching. Those counts move with the measured separation, so they describe
-that plate rather than every width.
+At the wide two-column plate a hundred and sixty-nine of four hundred and thirty-five marks move, all
+of them with a visible leader, the shortest ten pixels of line. No mark ends outside its frame and no
+pair of marks is left covering more than half of the other, at that width or at doubled text on a
+phone. Thirteen leaders still graze the edge of another mark, all of them on plates carrying nine or
+ten mounts, where every direction is somebody's; that is the residue rather than the rule, and it is
+recorded below.
 
 **What the leader is not.** It carries no _mount state_: kind, fitted, engineering and side are all
 words in the button's own name, selection is `aria-pressed` and the ledger row, and the line is one amber
@@ -398,6 +419,12 @@ is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate,
 that keeps a mark anywhere near its own mount separates them all. What the search guarantees there is
 weaker and still worth having: no mark loses more than half of itself, so every number can be read
 and every square's own edge found. The complete ledger is the equivalent that does not degrade.
+
+**A leader can still graze another mark.** Thirteen of them do, on the four densest plates in the
+package — nine or ten mounts each, where every direction out of a crowd is already somebody else's.
+The turn search picks the roomiest arrangement available rather than a clear one, because on those
+plates there is no clear one. What it has removed is the case that reads as a mistake: a line running
+the length of the hull across two other numbers. What is left clips a corner.
 
 **A leader's far end is a bare point.** The line is trimmed to its own mark's edge — the part inside
 an opaque square is not on screen, and half a mark's width of every leader is inside the mark it
