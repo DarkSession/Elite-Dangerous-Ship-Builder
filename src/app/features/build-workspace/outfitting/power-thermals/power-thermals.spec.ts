@@ -92,7 +92,6 @@ describe('PowerThermals', () => {
     expect(component.bankRows()).toEqual([]);
     expect(component.modulesTotal()).toBeNull();
     expect(component.heatAvailable()).toBe(false);
-    expect(component.distributorAvailable()).toBe(false);
   });
 
   describe('the priority groups', () => {

@@ -573,31 +573,29 @@
 // and the halves of this arrangement that are decided in the template read that
 // same answer (`composition.ts`, `observeComposition`).
 .outfitting[data-composition='compact'] {
-  // The gutter is the frame's, and this screen does not want it.
+  // One column, whatever the container's width says.
   //
-  // Canvas 1d has no page inset: every band paints to both edges of the screen
-  // and carries its own 14px inside — the ledger rows, the category strip, the
-  // key figures, the mode panels and the sticky foot alike, each closed by a
-  // hairline that runs the full width. Inset by the page as well, every one of
-  // those rules stopped 14px short of the glass and every reading inside them
-  // stood 28px in, which is the misalignment reported against this screen. The
-  // frame's gutter stays where it is right — a page whose own bands have no
-  // inset — and this one takes it back (reported 2026-08-26).
-  margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+  // This arrangement and the wide grid above are decided by different questions.
+  // The grid asks the region's width; this asks `composition()`, which also
+  // answers `compact` on a short viewport at any width — a landscape phone, or
+  // 400% zoom. Where the two disagreed the grid stayed on and this block only
+  // re-ordered inside it, so on an 844x390 screen the two bands that exist only
+  // here — the key figures and the sticky foot — were auto-placed into a second
+  // column beside the ledger instead of stacking under it. The composition that
+  // decides the template's half of the arrangement decides the whole of it.
+  display: flex;
+  flex-direction: column;
+  gap: var(--edsb-space-region);
 
   // The notices are a labelled rule over prose rather than a band, so they take
   // the inset back as their own padding and their text stands where the ledger's
   // does.
   .outfitting__feedback {
     order: 0;
-    padding-inline: var(--edsb-space-inline-loose);
   }
 
-  // The empty state is a bordered plate, so it takes the inset back as margin:
-  // padding would inset its words and leave its border against the glass.
   .outfitting__empty {
     order: 0;
-    margin-inline: var(--edsb-space-inline-loose);
   }
 
   .outfitting__centre {
@@ -629,5 +627,34 @@
   // and once from the key figures above the tabs.
   .outfitting__status-rail:not(.outfitting__status-rail--guest) {
     display: none;
+  }
+
+  // The gutter is the frame's, and this screen does not want it.
+  //
+  // Canvas 1d has no page inset: every band paints to both edges of the screen
+  // and carries its own 14px inside — the ledger rows, the category strip, the
+  // key figures, the mode panels and the sticky foot alike, each closed by a
+  // hairline that runs the full width. Inset by the page as well, every one of
+  // those rules stopped 14px short of the glass and every reading inside them
+  // stood 28px in, which is the misalignment reported against this screen. The
+  // frame's gutter stays where it is right — a page whose own bands have no
+  // inset — and this one takes it back (reported 2026-08-26).
+  //
+  // Only where there is a gutter to take back. The frame draws one at the
+  // compact *width*; this block is also live on a short viewport at any width,
+  // and there a negative margin cancels nothing and instead pulls every band
+  // 14px past the page on both sides, where `overflow-x: hidden` clips it.
+  @include layout.compact {
+    margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+
+    .outfitting__feedback {
+      padding-inline: var(--edsb-space-inline-loose);
+    }
+
+    // The empty state is a bordered plate, so it takes the inset back as
+    // margin: padding would inset its words and leave its border on the glass.
+    .outfitting__empty {
+      margin-inline: var(--edsb-space-inline-loose);
+    }
   }
 }

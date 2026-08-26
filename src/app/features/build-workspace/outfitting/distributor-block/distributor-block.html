@@ -16,9 +16,16 @@
         and with them the column each figure belongs to. Written out, the table
         is a table at both widths and only its drawing changes (011/FR-010,
         reported 2026-08-26).
+
+        `rowgroup` is stated on both sections for the same reason and is not
+        redundant: the header row is taken out of the page at the narrow width
+        (`visually-hidden` is `position: absolute`), which blockifies
+        `table-header-group` and drops its implicit role — and with it the
+        association between each heading and the column it names, at exactly the
+        width where the headings are the only thing carrying it.
       -->
       <table class="distributor" role="table" [attr.aria-labelledby]="headingId">
-        <thead>
+        <thead role="rowgroup">
           <tr role="row">
             <th role="columnheader" scope="col">{{ columns().bank }}</th>
             <th role="columnheader" scope="col" class="distributor__cell--numeric">
@@ -33,7 +40,7 @@
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           @for (bank of rows(); track bank.kind) {
             <tr role="row" [attr.data-bank]="bank.kind">
               <th role="rowheader" scope="row" class="distributor__bank">{{ bank.name }}</th>

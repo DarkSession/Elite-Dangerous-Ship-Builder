@@ -70,15 +70,6 @@ export interface ShotView {
   readonly statement: string;
 }
 
-/**
- * One of the canvas's four cells under the gunsight plate.
- *
- * A label and a figure, and nothing else. The canvas draws each cell as exactly
- * two lines — `APPARENT SPREAD` over `33 mrad`, and `wireConvergence` writes
- * only the figure into it — so the cell that once carried a third line naming
- * the range has none: the range field's own readout, directly above the cells,
- * already says what range the plate is drawn at.
- */
 /** A leader line from a dot to a numeral that could not sit beside it. */
 export interface ShotLeader {
   readonly x1: number;

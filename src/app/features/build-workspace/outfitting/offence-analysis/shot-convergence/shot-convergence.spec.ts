@@ -225,8 +225,10 @@ describe('ShotConvergence', () => {
         continue;
       }
       expect(shot.leader).toBeNull();
-      expect([7, -13]).toContain(shot.numeralLeft);
-      expect([-14, 5]).toContain(shot.numeralTop);
+      // The canvas's four corners, each with the anchor's own `3, 4` inset
+      // already in it: the offset handed back is the offset drawn with.
+      expect([10, -10]).toContain(shot.numeralLeft);
+      expect([-10, 9]).toContain(shot.numeralTop);
     }
 
     // A leader is drawn for exactly the numerals that moved, and no others.

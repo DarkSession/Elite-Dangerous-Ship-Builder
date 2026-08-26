@@ -55,8 +55,9 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
 ## Compact/zoom composition
 
 - Show the route/build identity and one Menu/Actions control drawn as the canvas's `⋮` mark on its
-  own outlined 40px square. Ruled 2026-08-26, reversing an earlier reading: the word `MENU` is not
-  drawn on any artboard, and a bar already carrying a build's name has no room for it. The mark is
+  own outlined square, at this feature's 44px target baseline rather than the canvas's own 40. Ruled
+  2026-08-26, reversing an earlier reading: the word `MENU` is not drawn on any artboard, and a bar
+  already carrying a build's name has no room for it. The mark is
   decoration and is hidden from assistive technology; the control's accessible name is the same
   localized phrase the wide bar's group carries, so nothing is named by a glyph. The opened layer
   lists every action with visible localized text, including Help.

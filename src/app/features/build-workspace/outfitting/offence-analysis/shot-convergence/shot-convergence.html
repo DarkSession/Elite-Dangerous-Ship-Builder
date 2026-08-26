@@ -12,10 +12,9 @@
 <div class="convergence">
   <!--
     The gunsight plate. Decorative in full: every shot on it is stated in
-    words in the list below, and the four figures under it are what
-    actually report the spread. A shot outside the plate's field of view
-    is held at the frame's own margin and keeps the sentence that states
-    where it really goes.
+    words in the list below, which is what actually reports the spread. A
+    shot outside the plate's field of view is held at the frame's own
+    margin and keeps the sentence that states where it really goes.
   -->
   <div class="plate" aria-hidden="true">
     <span class="plate__axis plate__axis--vertical"></span>
@@ -98,7 +97,6 @@
         class="plate__numeral"
         [class.plate__numeral--empty]="!shot.armed"
         [class.plate__numeral--selected]="shot.selected"
-        [attr.data-displaced]="shot.displaced ? 'true' : null"
         [style.left.%]="shot.left"
         [style.top.%]="shot.top"
         [style.margin-left.px]="shot.numeralLeft"

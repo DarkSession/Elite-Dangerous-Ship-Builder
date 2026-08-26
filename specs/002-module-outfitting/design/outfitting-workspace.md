@@ -212,12 +212,24 @@ reader meeting the same six figures twice on one screen has no way to tell which
 
 ### The bands run to the glass
 
-Canvas 1d has no page inset. Every band paints to both edges of the screen and carries its own 14px
-inside it — the ledger rows, the category strip, the key figures, the anatomy's header row, the mode
-panels and the sticky foot alike, each closed by a hairline that runs the full width. The application
-frame gives its compact pages a 14px gutter, which is right for a page whose own blocks have no
-inset; this one's do, so **the workspace takes that gutter back** with a negative inline margin and
-each band pays for itself.
+Canvas 1d has no page inset. Every band paints to both edges of the screen and carries its own inside
+it — the anatomy's header row, the key figures, the mode panels and the sticky foot at 14px, the
+ledger rows at the 16px canvas 1c gives them, the category strip full-bleed with its segments padded
+— each closed by a hairline that runs the full width. The application frame gives its compact pages a
+14px gutter, which is right for a page whose own blocks have no inset; this one's do, so **the
+workspace takes that gutter back** with a negative inline margin and each band pays for itself.
+
+The take-back is scoped to the compact _width_, not to the compact composition. The two are not the
+same: `composition()` also answers `compact` on a short viewport at any width, and the frame draws
+its gutter at the width alone — so a landscape phone would have had 14px pulled off each edge with no
+gutter to cancel, and `overflow-x: hidden` would have clipped it rather than showing it. The same
+block resets the wide grid for the same reason: the arrangement the composition decides in the
+template has to be the arrangement the stylesheet draws, or the two bands that exist only here are
+auto-placed into a second column beside the ledger.
+
+The ledger's rows keep canvas 1c's 16px, so a reading in them stands two pixels further in than one
+in the anatomy above. That is the artboards disagreeing with each other, not the double inset this
+section is about, and it is left where the roomy canvas puts it.
 
 Built the other way round the two insets added up: every band's closing hairline stopped 14px short
 of the glass, every reading inside one stood 28px in, and the anatomy — still on canvas 1c's roomier

@@ -124,9 +124,19 @@
 // columns drift with the surface so no two rows lined up the same way at two
 // sizes. Bounded rather than fixed, so a long hull name or a doubled text size
 // takes what it has instead of overflowing (reported 2026-08-26).
-@include layout.container-medium-up(records) {
+//
+// The columns open at the width the name has room in, not at the width the row
+// fits in. The two fixed tracks and the gaps between them come to 16.25rem, so
+// at the medium step's 24rem the title, the note and the state labels shared
+// 7.75rem — narrower than a hull name — while the two short monospace readings
+// beside them stood at their full size. The step below leaves the name half the
+// row, which is the proportion the artboard draws. Stated raw rather than
+// through a mixin because it is derived from these tracks; the list's own
+// headings use the same figure and must move with it
+// (`../record-list/responsive-record-list.scss`).
+@container records (min-width: 34rem) {
   .record {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
+    grid-template-columns: var(--edsb-layout-record-columns);
     align-items: baseline;
   }
 

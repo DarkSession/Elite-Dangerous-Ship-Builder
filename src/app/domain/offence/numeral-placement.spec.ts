@@ -11,10 +11,6 @@ const METRICS: NumeralMetrics = {
   clearance: 1.5,
 };
 
-/** The canvas's own anchor offset from a dot to its numeral's ink box. */
-const ANCHOR_LEFT = 3;
-const ANCHOR_TOP = 4;
-
 interface Box {
   readonly id: string;
   readonly left: number;
@@ -26,10 +22,12 @@ function boxes(anchors: readonly NumeralAnchor[], metrics = METRICS): readonly B
   const placed = placeNumerals(anchors, metrics);
   return placed.map((placement, index) => {
     const anchor = anchors[index]!;
+    // The placement is the whole offset from the dot, so the ink box is the dot
+    // plus it — no anchor inset to add back.
     return {
       id: placement.id,
-      left: anchor.x + placement.left + ANCHOR_LEFT,
-      top: anchor.y + placement.top + ANCHOR_TOP,
+      left: anchor.x + placement.left,
+      top: anchor.y + placement.top,
     };
   });
 }
@@ -99,8 +97,10 @@ describe('gunsight numeral placement', () => {
     const [placement] = placeNumerals([{ id: 'one', order: 1, x: 86, y: 86 }], METRICS);
 
     // Nothing to stand clear of, so the plate is drawn the way the canvas
-    // draws it and this rule does not show itself at all.
-    expect(placement).toEqual({ id: 'one', left: 7, top: -14, displaced: false });
+    // draws it and this rule does not show itself at all. The canvas's corner
+    // is `7, -14` from the dot and its anchor inset is `3, 4`; the offset
+    // handed back is the sum, because it is the offset the caller draws with.
+    expect(placement).toEqual({ id: 'one', left: 10, top: -10, displaced: false });
   });
 
   it('never draws two numerals over each other on the reported hull', () => {

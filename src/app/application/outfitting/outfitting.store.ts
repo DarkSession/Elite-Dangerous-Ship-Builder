@@ -278,10 +278,12 @@ export class OutfittingStore {
    */
   #carryOpenFamily(): void {
     const open = untracked(() => this.#candidateQuery()?.openFamilies);
-    const only = open === undefined || open.size !== 1 ? null : [...open][0]!;
-    if (only !== null) {
-      this.#carriedFamily.set(only);
-    }
+    // Set unconditionally, `null` included. Written only when there was one
+    // family to carry, the previous mount's carry outlived the step it belonged
+    // to: leaving a chooser with none open or three open left the earlier value
+    // standing, and a mount two selections later was seeded from it. One step
+    // means one step (reported 2026-08-26).
+    this.#carriedFamily.set(open === undefined || open.size !== 1 ? null : [...open][0]!);
   }
 
   showSurface(surface: OutfittingSurface): void {

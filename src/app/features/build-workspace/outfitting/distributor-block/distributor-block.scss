@@ -85,7 +85,11 @@
 // two digits at a time while the blocks sat in a strip wider than the table's
 // figures put together.
 .distributor__pips {
-  inline-size: var(--edsb-border-width-hairline);
+  // A table cell asked for less than its contents need takes exactly what they
+  // need and no more, which is the whole of the intent here. Zero rather than
+  // the hairline token this used to borrow: that token means the width of a
+  // rule, and a retune of rules has no business moving a column.
+  inline-size: 0;
 }
 
 // The canvas's own colour per bank, on the bank's name and on its pip blocks.

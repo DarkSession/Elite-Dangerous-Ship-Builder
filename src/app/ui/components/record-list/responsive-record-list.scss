@@ -56,11 +56,14 @@
 // Where the surface is wide enough, the headers appear and the rows take the
 // same three tracks. Narrow, each row stacks and the headers step aside rather
 // than being read as labels for a shape that is not there.
-@include layout.container-medium-up(records) {
+// The step the rows themselves open their columns at, and the reason for the
+// figure is stated with them (`../saved-build-card/saved-build-card.scss`). The
+// two must move together or the headings stand over nothing.
+@container records (min-width: 34rem) {
   .records__columns {
     display: grid;
     // The same tracks the rows take, or the headings name the wrong columns.
-    grid-template-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
+    grid-template-columns: var(--edsb-layout-record-columns);
     padding-inline-start: calc(var(--edsb-space-row) + var(--edsb-border-width-marker));
   }
 

@@ -490,10 +490,6 @@ export class PowerThermals {
 
   readonly heatAvailable = computed(() => (this.#projection()?.heat ?? null) !== null);
 
-  readonly distributorAvailable = computed(
-    () => (this.#projection()?.distributor ?? null) !== null,
-  );
-
   /** `SYS`, `ENG` and `WEP`, in the canvas's order, each with its own steps. */
   readonly bankRows = computed<readonly BankRowView[]>(() => {
     const capacitors = this.#projection()?.distributor?.capacitors ?? [];

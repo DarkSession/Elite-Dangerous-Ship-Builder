@@ -127,10 +127,29 @@ export class HullAnatomy {
   /** Which segment is open, for a caller drawing a guest mode's panel. */
   readonly modeChanged = output<string>();
 
-  /** The mode the strip has open. Nothing about it is persisted or routed. */
-  readonly #mode = signal<string>('mounts');
+  /** The mode last asked for. Nothing about it is persisted or routed. */
+  readonly #requested = signal<string>('mounts');
 
-  readonly activeMode = this.#mode.asReadonly();
+  /**
+   * The mode the strip actually has open.
+   *
+   * A guest segment belongs to the caller and can be withdrawn — the compact
+   * arrangement offers `STATUS` and the roomy one does not — so a strip left
+   * standing on a segment nobody offers any more falls back to its own first
+   * one. Read straight off what was asked for instead, rotating a phone to
+   * landscape with `STATUS` open drew the region's rule and its strip and
+   * nothing under them, with no segment marked as the open one (reported
+   * 2026-08-26).
+   */
+  readonly #mode = computed(() => {
+    const requested = this.#requested();
+    if (isAnatomyMode(requested)) {
+      return requested;
+    }
+    return this.guestModes().some((mode) => mode.id === requested) ? requested : 'mounts';
+  });
+
+  readonly activeMode = this.#mode;
 
   /** The guest segment currently open, or none — this region's own is. */
   readonly guestMode = computed(
@@ -285,7 +304,7 @@ export class HullAnatomy {
     if (!isAnatomyMode(mode) && !this.guestModes().some((guest) => guest.id === mode)) {
       return;
     }
-    this.#mode.set(mode);
+    this.#requested.set(mode);
     this.modeChanged.emit(mode);
   }
 

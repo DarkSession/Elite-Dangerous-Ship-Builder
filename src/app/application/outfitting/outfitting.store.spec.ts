@@ -299,6 +299,29 @@ describe('outfitting store - fitting', () => {
 
       expect([...store.candidateQuery()!.openFamilies]).toEqual(seeded);
     });
+
+    it('carries the open family exactly one step, and not two', () => {
+      // A mount with one family open. Leaving it carries that family to the
+      // next mount, which is what makes moving down a row of empty hardpoints
+      // keep the category a Commander is working in (FR-021).
+      store.select(FIXTURE_SLOTS.fittedHardpoint);
+      const carried = [...store.candidateQuery()!.openFamilies][0]!;
+
+      store.select(FIXTURE_SLOTS.hardpoint);
+      expect(store.candidateQuery()?.carriedFamilyId).toBe(carried);
+
+      // Nothing is carried out of a chooser with none open. Written only when
+      // there was something to carry, the first mount's family outlived the one
+      // step it belonged to and seeded a mount two selections later.
+      const open = store.candidateQuery()!.openFamilies;
+      for (const familyId of [...open]) {
+        store.toggleFamily(familyId);
+      }
+      expect([...store.candidateQuery()!.openFamilies]).toEqual([]);
+
+      store.select(FIXTURE_SLOTS.utility);
+      expect(store.candidateQuery()?.carriedFamilyId).toBeNull();
+    });
   });
 
   it('leaves the snapshot, revision and derived results untouched after a refusal', () => {

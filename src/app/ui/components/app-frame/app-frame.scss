@@ -85,10 +85,22 @@
 }
 
 // The same mark, as the way back to the shipyard. It is a link, so it takes a
-// focus ring and a pointer, and its target is the mark's own box — which is
-// already above the accessible floor at the size the canvas draws it.
+// focus ring, a pointer and a target of its own.
+//
+// The mark is 26 x 23 — the size the canvas draws it, and under the 24-pixel
+// floor on one axis, let alone this feature's 44-pixel baseline. A control that
+// stands on its own is held to the baseline, so the target is the box around the
+// mark rather than the mark: the drawing is unchanged and the press is the size
+// it should be (011/FR-012, reported 2026-08-26).
 .frame__flag--home {
-  display: block;
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // Taken back out of the bar, so a 44px press does not open a 44px gap beside
+  // an insignia the canvas sets 26px wide.
+  margin-inline: calc((var(--edsb-target-size) - var(--edsb-layout-insignia-width)) / -2);
   cursor: pointer;
 
   &:focus-visible {
@@ -153,7 +165,7 @@
     inline-size: var(--edsb-target-size);
     margin-inline-start: calc(var(--edsb-space-2xs) * -1);
     font-family: var(--edsb-font-metric);
-    font-size: var(--edsb-text-size-lg);
+    font-size: var(--edsb-text-size-metric);
     color: var(--edsb-text-accent);
     text-decoration: none;
 

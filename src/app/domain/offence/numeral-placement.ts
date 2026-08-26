@@ -42,7 +42,15 @@ export interface NumeralAnchor {
 /** Where one numeral is drawn, relative to its own dot. */
 export interface NumeralPlacement {
   readonly id: string;
-  /** Pixels from the dot to the numeral's ink box, on each axis. */
+  /**
+   * Pixels from the dot to the numeral's ink box, on each axis.
+   *
+   * The whole offset, ready to draw with. It used to be the offset *minus* the
+   * anchor's own `3, 4`, which every caller then had to add back and none did:
+   * the numeral was drawn three pixels left and four above the box this
+   * function had checked for collisions, and the leader that ties a displaced
+   * numeral to its dot ended at the same wrong point (reported 2026-08-26).
+   */
   readonly left: number;
   readonly top: number;
   /**
@@ -227,8 +235,8 @@ export function placeNumerals(
     if (chosen !== null) {
       placements.set(anchor.id, {
         id: anchor.id,
-        left: chosen.offset[0],
-        top: chosen.offset[1],
+        left: chosen.offset[0] + ANCHOR_LEFT,
+        top: chosen.offset[1] + ANCHOR_TOP,
         displaced: false,
       });
       placed.push(chosen.box);
@@ -241,7 +249,16 @@ export function placeNumerals(
     // dot whenever that line is free and only swings aside when it is not.
     const [dx, dy] = pushDirection(anchor, metrics);
     const outward = Math.atan2(dy, dx);
-    const start = Math.max(metrics.dotRadius + metrics.clearance, PUSH_STEP);
+    // Far enough out that the numeral clears its *own* dot. The distance is
+    // measured centre to centre, so the dot's radius and the clearance alone
+    // put the box's near edge half a numeral inside the mark its leader points
+    // back to — at the built metrics, an 11px numeral spanning 1px to 12px from
+    // the centre of a 5px dot. `others` excludes the anchor deliberately, so
+    // nothing downstream rejects it (reported 2026-08-26).
+    const start = Math.max(
+      metrics.dotRadius + metrics.clearance + Math.max(metrics.width, metrics.height) / 2,
+      PUSH_STEP,
+    );
     let fallback: { left: number; top: number; box: Box } | null = null;
     let settled = false;
     for (let step = 0; step < PUSH_LIMIT && !settled; step += 1) {
@@ -281,8 +298,8 @@ export function placeNumerals(
     };
     placements.set(anchor.id, {
       id: anchor.id,
-      left: resting.left - anchor.x - ANCHOR_LEFT,
-      top: resting.top - anchor.y - ANCHOR_TOP,
+      left: resting.left - anchor.x,
+      top: resting.top - anchor.y,
       displaced: true,
     });
     placed.push(resting.box);

@@ -389,6 +389,11 @@
   // manifest's own columns").
   --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
     var(--edsb-measure-candidate-cost);
+  // The saved-build row's tracks, and the column headings that stand over them.
+  // One declaration because the two have to agree exactly or the headings name
+  // the wrong columns; canvas 1a's own `1fr 150px 84px`, once the `Mcr` column
+  // it draws between them is taken out (feature 001 build-library design).
+  --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
   --edsb-layout-family-rail: var(--edsb-measure-family-rail);
   --edsb-layout-family-gap: var(--edsb-measure-family-gap);
   --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
