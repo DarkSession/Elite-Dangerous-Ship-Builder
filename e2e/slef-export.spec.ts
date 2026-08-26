@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectRelationship } from './accessibility/assertions';
-import { reachShellAction } from './shell';
+import { reachShellAction, savedToBrowser } from './shell';
 
 /**
  * A build, handed over as a file rather than as a link.
@@ -724,6 +724,10 @@ test.describe('what is never trusted', () => {
       });
       Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
     });
+    // The reload has to come after the build is in its record, not merely on
+    // screen: autosave coalesces its writes, so a page reloaded in the window
+    // before the first one lands restores nothing and comes back empty.
+    await savedToBrowser(page);
     await page.reload();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
