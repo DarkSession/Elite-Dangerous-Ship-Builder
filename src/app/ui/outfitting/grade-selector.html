@@ -1,4 +1,4 @@
-<fieldset class="grades">
+<fieldset class="grades" [class.grades--steps]="asSteps()">
   <legend class="grades__legend">
     <span class="grades__label">{{ legend() }}</span>
     @if (selectedLabel(); as grade) {

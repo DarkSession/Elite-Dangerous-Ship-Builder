@@ -170,7 +170,35 @@ Canvas 1d's summary line under each recipe — `DAMAGE ▲ · THERMAL LOAD ▲` 
 reason it was withdrawn on 2026-08-21: the Almanac publishes no description for a blueprint and no
 direction for what one moves, so those lines would be a private claim about game mechanics
 (`reference-review.md`, "Blueprint option descriptions"). The experimental effect descriptions beside
-them are package text and are drawn.
+them are package text and are drawn — **where the package has one**. It has none for any effect
+today, so every option in that card carried `Name unavailable` under its own name until 2026-08-26.
+That stand-in is right for a name, because an article a reader cannot be told the name of is a fact
+worth stating; it is wrong for a description twice over, since it is not a name and the option is
+fully named on the line above it. The line is now absent where the text is (Commander request
+2026-08-26).
+
+**Two more, 2026-08-26 (Commander request: "mobile engineering still doesn't look like the
+design").** The plates above were built and the drawing inside them was not:
+
+- **Each option is a plate of its own.** Canvas 1d draws every row in the `BLUEPRINT` and
+  `EXPERIMENTAL EFFECT` cards at `min-height: 46px; padding: 9px 11px` on the inset ground, with its
+  own hairline around it and 6px of the card showing between one and the next; the chosen one takes
+  an amber wash and an amber edge. They had been built as the ledger's continuous ruled list — a
+  marker on the leading edge, a hairline under each row, no border — which is a different control
+  from the one the artboard draws. The no-blueprint and no-effect rows keep their dashed edge, which
+  is how the artboard marks the way out.
+- **The grade is five numbered buttons here, not a bar.** Canvas 1c writes `GRADE   5` over five bare
+  cells filled up to the choice; canvas 1d writes `GRADE` over five `38px` buttons numbered `1` to
+  `5`, only the chosen one filled. Only 1c's control had been built, so the phone drew a row of five
+  identical amber blocks with no digit on any of them and no way to tell which grade was set except
+  the figure beside the legend. The two drawings are one choice, and which is drawn is the editor's
+  placement rather than a width the control could read off itself — so the editor says so, with the
+  same flag it already uses to turn the recipe and effect lists into menus. In 1d's control the
+  figure beside the legend goes: the numbered buttons say it, and written twice it would be the same
+  grade said twice in one control. Its one variance from the artboard is that `GRADE` stays over the
+  buttons rather than beside them — a `<legend>` is not a flex item of its own fieldset in any
+  engine, and the alternatives are hiding the group's own name and drawing a second copy of it, which
+  a reader hears twice, or a wrapper the control does not need.
 
 ## Operations
 

@@ -47,12 +47,25 @@
             [language]="effect.name.language"
             [translationState]="effect.name.translationState"
           />
-          <edsb-game-text
-            class="effect__description"
-            [text]="effect.description.text"
-            [language]="effect.description.language"
-            [translationState]="effect.description.translationState"
-          />
+          <!--
+            Only where the package has one. `edsb-game-text` stands in for a
+            missing string with `Name unavailable`, which is the right answer for
+            a name — an article a reader cannot be told the name of is a fact
+            worth stating — and the wrong one here twice over: this is not a
+            name, and an effect whose description the catalogue does not carry is
+            already fully named on the line above. The Almanac carries no
+            description for any of them today, so every option in the card read
+            `Name unavailable` under its own name (Commander request
+            2026-08-26).
+          -->
+          @if (effect.description.text !== null) {
+            <edsb-game-text
+              class="effect__description"
+              [text]="effect.description.text"
+              [language]="effect.description.language"
+              [translationState]="effect.description.translationState"
+            />
+          }
           @if (effect.applied) {
             <span class="effect__applied">{{ appliedLabel() }}</span>
           }

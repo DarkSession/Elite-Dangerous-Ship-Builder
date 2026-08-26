@@ -79,9 +79,37 @@
   @include layout.visually-hidden;
 }
 
-// The canvas draws the cells bare and puts the chosen grade beside the legend.
+// Canvas 1c draws the cells bare and puts the chosen grade beside the legend.
 // The number stays in each cell's accessible name, so a reader still hears
-// which grade a cell is.
-.grade__number {
+// which grade a cell is. Canvas 1d writes it on the cell instead — see below.
+.grades:not(.grades--steps) .grade__number {
   @include layout.visually-hidden;
+}
+
+// Canvas 1d's control: `GRADE` beside five numbered buttons `flex: 1; height:
+// 38px`, the chosen one solid amber on the ground colour and the rest on the
+// quiet amber wash. Drawn as five bare cells filled to the choice it came out as
+// a bar with no numbers on it at all, which is canvas 1c's control on canvas
+// 1d's screen (Commander request 2026-08-26).
+// The legend stays over the cells rather than beside them, which is the one
+// thing here canvas 1c decides for both: a `<legend>` is not a flex item of its
+// own fieldset in any engine, so putting `GRADE` on the cells' line means either
+// hiding the group's own name and drawing a second copy of it — announced twice
+// — or a wrapper the control does not need. The row it heads is the same row.
+.grades--steps .grade {
+  block-size: var(--edsb-layout-grade-step);
+}
+
+// The quiet wash is what a button that is *not* the chosen one carries. Stated
+// against the fill rather than over it: both selectors weigh the same, and this
+// one is written later, so a plain `.grades--steps .grade` would take the amber
+// off the very cell the control exists to mark.
+.grades--steps .grade:not([data-filled='true']) {
+  background-color: var(--edsb-surface-accent-quiet);
+}
+
+.grades--steps .grade__number {
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-control);
 }

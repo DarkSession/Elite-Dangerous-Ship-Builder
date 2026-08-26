@@ -124,6 +124,35 @@ describe('grade selector', () => {
     ).toBe(true);
   });
 
+  it('draws canvas 1d’s numbered buttons where the editor is a layer', () => {
+    // Canvas 1c fills a bare bar to the chosen grade; canvas 1d draws five
+    // numbered buttons with only the chosen one filled. Built as 1c's control
+    // alone, the phone showed a row of five identical amber blocks with no
+    // digit on any of them (Commander request 2026-08-26).
+    const fixture = renderComponent(GradeSelector, {
+      grades: [1, 2, 3, 4, 5],
+      selected: 3,
+      asSteps: true,
+    });
+
+    expect(queryAll(fixture, '.grade__number').map((cell) => textOf(cell))).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+    ]);
+    // One button is the chosen one. Filling the four below it would be four
+    // buttons claiming to be pressed.
+    expect(
+      queryAll(fixture, '.grade')
+        .filter((cell) => cell.getAttribute('data-filled') === 'true')
+        .map((cell) => textOf(cell)),
+    ).toEqual(['3']);
+    // And the grade is not also written beside the legend: the cells say it.
+    expect(queryAll(fixture, '.grades__selected')).toHaveLength(0);
+  });
+
   it('exposes no quality or roll control of any kind', () => {
     const fixture = renderComponent(GradeSelector, { grades: [1, 2, 3, 4, 5], selected: 5 });
 
@@ -158,7 +187,12 @@ describe('experimental effect list', () => {
     expect(textOf(element(fixture))).toContain('reduce the target’s hull resistance');
   });
 
-  it('says the effect is unavailable rather than going quiet', () => {
+  it('draws no description line for an effect the catalogue has none for', () => {
+    // Reversed 2026-08-26. The line used to stand in with `Name unavailable`,
+    // on the reading that going quiet hides a gap. It is not a name and the
+    // option is already named on the line above it, and since the Almanac
+    // carries no description for any effect the card read `Name unavailable`
+    // under every one of its own options (Commander request).
     const fixture = renderComponent(ExperimentalEffectList, {
       effects: [
         {
@@ -173,7 +207,9 @@ describe('experimental effect list', () => {
       ],
     });
 
-    expect(textOf(query(fixture, '.effect__description')).length).toBeGreaterThan(0);
+    expect(queryAll(fixture, '.effect__description')).toHaveLength(0);
+    // The effect is still named, and a name the catalogue has lost still says so.
+    expect(textOf(query(fixture, '.effect__name')).length).toBeGreaterThan(0);
   });
 });
 

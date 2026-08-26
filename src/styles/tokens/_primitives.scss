@@ -570,6 +570,10 @@
   --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
+  // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
+  // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
+  // wants a button around it rather than a band.
+  --edsb-measure-grade-step: 2.375rem; // 38
 
   // Canvas 1c's defence rows: the 46px resistance column and the 56px value
   // column every figure in the two cards is right-aligned inside. They are
