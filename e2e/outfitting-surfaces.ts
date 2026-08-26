@@ -556,19 +556,25 @@ export async function applyDraft(
 /**
  * Waits for a fit to have been committed, whichever surface took it.
  *
- * A layer closes on a committed fit. An inline panel stays exactly where it is
- * — there is nothing to close — and what changes is the pick: the store clears
- * it, so the confirm control goes back to having nothing to confirm.
+ * A layer closes on a committed fit. An inline panel stays exactly where it is —
+ * there is nothing to close — and what changes is which row the manifest calls
+ * the chosen one: it reseeds around the module now in the mount, so the pick and
+ * the mount agree again.
+ *
+ * Read as the conjunction of the two, and it has to be. The fitted marker alone
+ * is no proof: a stock record and its pre-engineered variants share a symbol, so
+ * several rows can be the module in the mount. The mark alone is no proof
+ * either, now that opening a mount marks what is already fitted in it — that
+ * mark stands before any of this begins. What is only true afterwards is that
+ * the *marked* row is a fitted one: the click that starts a fit moves the mark
+ * onto a row that is not yet in the mount, and only the commit puts the two back
+ * together.
  */
 export async function fitCommitted(page: Page): Promise<void> {
   if (await surfacesAreLayers(page)) {
     await expect(page.locator('.candidate')).toHaveCount(0);
   } else {
-    // The pick, cleared. Not the fitted marker: a stock record and its
-    // pre-engineered variants share a symbol, so more than one row can be the
-    // module that is in the mount.
-    await expect(page.locator('.candidate[data-selected="true"]')).toHaveCount(0);
-    await expect(page.locator('.candidate--fitted').first()).toBeVisible();
+    await expect(page.locator('.candidate[data-selected="true"].candidate--fitted')).toHaveCount(1);
   }
 }
 
