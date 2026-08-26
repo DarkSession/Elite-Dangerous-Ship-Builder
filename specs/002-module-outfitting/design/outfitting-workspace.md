@@ -164,16 +164,65 @@ hard to read.
 
 ## Narrow and 400%-zoom composition
 
-- Existing compact build identity/actions header, including the same ship name and ident fields.
-- Undo/redo in a clearly named action region or overflow menu with identical accessible names/state.
-- Complete accepted-normalization/edit-refusal notice.
-- Shared anatomy/status outlet and concise metric/power strip, then slot-kind/category controls and
-  semantic slot cards. This intentionally follows canvas 1d's source order. Categories change the
-  visible list but not build/history.
-- Selected slot exposes explicit `Change module` and `Engineer` actions. Each opens its full-screen
-  feature layer. Back/cancel changes no build.
-- Package validation and later calculation details remain available through their owning shared
-  outlets; no functionality is removed in landscape.
+**Restated 2026-08-26 against canvas 1d.** The compact artboard is not the wide one stacked, and the
+implementation had been reading it as though it were: the three regions came down the page in the
+wide composition's order, so the ledger opened the screen, the anatomy sat under it and the status
+rail closed it. Canvas 1d's own order is the list below, and these four corrections are what it asks
+for (Commander request 2026-08-26).
+
+In canvas 1d's order:
+
+1. Notices, unchanged: an accepted normalisation or a refused edit is above everything else.
+2. **The mode strip and whatever it has open.** `MOUNTS · POWER · DRIVES · DEFENCE · OFFENCE ·
+STATUS`. Five of the six are the anatomy region's own; see "The status segment" below for the
+   sixth.
+3. **The six key readings** — `DPS`, `SHIELD`, `ARMOUR`, `JUMP`, `SPEED`, `MASS` — on one strip,
+   closed by a hairline. See "The compact key figures" below.
+4. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
+5. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
+   in the ledger above, `position: sticky; bottom: 0` on its own plate. Each opens its full-screen
+   feature layer; back or cancel changes no build. It is drawn after the ledger rather than under the
+   anatomy, which is where the artboard puts it and why it is not inside the bench — at this width
+   the bench is the layer these two open.
+
+The DOM stays in the wide composition's order, which is the reading order the three regions were
+written in; the compact arrangement asks for the artboard's order in CSS. Undo and redo keep their
+place in the shell's own action menu with identical accessible names and state, and package
+validation and later calculation details remain available through their owning outlets — no
+capability is removed in landscape.
+
+### The status segment
+
+Canvas 1d's strip has a sixth segment, `STATUS`, and what it opens is the status rail — `BUILD
+STATUS`, the power line, cost and materials. That rail is not the anatomy region's and is not drawn
+inside it, so the strip carries the segment, reports which one is open, and draws nothing for it; the
+workspace puts the rail where the panel would have been (`hull-anatomy.ts`, `AnatomyGuestMode`). A
+panel that is not the open one is removed from the page rather than hidden visually — it is a tab.
+
+The segment is offered only at compact width. At wide width the rail is the third track of canvas
+1c's grid and is on screen whatever the strip has open, so there is nothing for a segment to reveal.
+
+### The compact key figures
+
+Canvas 1d draws the same six readings twice: once in the strip above the category tabs and again
+inside the `STATUS` panel's cell band. **The application draws them once**, in the strip, and the rail
+omits its cell band at this width. Both are on screen together whenever `STATUS` is open, and a
+reader meeting the same six figures twice on one screen has no way to tell which copy is the reading
+— the strip is the one that is always there, so it is the one that is kept.
+
+### No `ALL` at compact width
+
+Canvas 1d's tab strip is `HARDPOINTS · CORE · OPTIONAL · UTILITY`, with no `ALL` and no counts on the
+tabs. The `ALL` chip is canvas 1c's: at compact width the ledger is one category at a time and a
+Commander says which, rather than being handed thirty-four mounts to scroll. A window narrowing while
+`ALL` is chosen lands on the first tab, which is the one the artboard draws selected.
+
+`CORE` lists three of the package's slot kinds. Canvas 1c counts `CORE 8` on an Anaconda whose seven
+core internals are followed by its cargo hatch, and canvas 1d's `CORE` panel draws that hatch as its
+last row — so the hatch is a core internal as far as both artboards are concerned, whatever
+`SlotKind` calls it. Armour joins it for the same reason and one more: with no `ALL` there is no other
+tab it could be reached from. The rule is the same at both widths, so a Commander who found armour
+under `CORE` on a phone finds it there on a desktop.
 
 ## Slot presentation
 

@@ -263,6 +263,8 @@
   "outfitting.status-rail.label": "Status des Aufbaus",
   "build-status.severity.error": "Fehler",
   "build-status.severity.incomplete": "Unvollständig",
+  "outfitting.status-rail.mode": "Status",
+  "outfitting.key-figures.label": "Kennzahlen",
   "outfitting.category.legend": "Welche Halterungen angezeigt werden",
   "outfitting.category.all": "Alle",
   "outfitting.category.hardpoint": "Waffenhalterungen",

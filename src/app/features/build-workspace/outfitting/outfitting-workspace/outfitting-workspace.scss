@@ -504,15 +504,50 @@
   font-size: var(--edsb-text-size-compact);
 }
 
-// Canvas 1d's sticky bar, and only canvas 1d's: at wider compositions the two
+// Canvas 1d's sticky foot, and only canvas 1d's: at wider compositions the two
 // panels are drawn without a control that opens them.
+//
+// `position: sticky; bottom: 0` on its own plate, under the ledger it acts on —
+// so the mount a Commander marked is still on screen while they choose what to
+// do to it, however far down the list they marked it.
 .outfitting__bench-actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 2;
+  padding: var(--edsb-space-inline-loose);
+  // The frame's compact gutter is the page's; this plate is the canvas's
+  // full-bleed bar, so it takes that inset back and paints to both edges.
+  margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
 .outfitting__action {
   @include layout.control-secondary;
   @include layout.control-base;
+}
+
+// The canvas fills the first of the two and leaves the second outlined: the one
+// that changes what is fitted is the one a Commander came to the bar for, and
+// it takes the width that is left over.
+.outfitting__action--primary {
+  @include layout.control-primary;
+
+  flex: 1 1 auto;
+}
+
+// Canvas 1d's strip of six readings over the category tabs: label above figure,
+// evenly shared across the row, on the panel ground and closed by a hairline.
+// The cells themselves are features 006 to 008's, exactly as in the rail.
+.outfitting__key-figures {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--edsb-space-inline-tight);
+  padding-block: var(--edsb-space-stack-tight);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
 // Why a mount cannot be emptied, and what the Almanac restricts it to. Neither
@@ -522,4 +557,57 @@
   @include layout.visually-hidden;
 
   margin: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Canvas 1d's order
+// ---------------------------------------------------------------------------
+
+// The compact artboard is not the wide one stacked. It opens with the mode
+// strip and whatever that has open, then the six key readings, then the
+// category tabs and the ledger, and closes with the sticky pair of actions for
+// whichever mount is marked. The DOM stays in the wide composition's order —
+// which is the reading order the three regions were written in — and this is
+// where the artboard's own order is asked for (Commander request 2026-08-26).
+// Keyed to the composition the region reports rather than to a container query
+// of its own. The two would disagree: a short viewport takes the compact
+// arrangement whatever the region's width is, which a width query cannot ask,
+// and the halves of this arrangement that are decided in the template read that
+// same answer (`composition.ts`, `observeComposition`).
+.outfitting[data-composition='compact'] {
+  .outfitting__feedback,
+  .outfitting__empty {
+    order: 0;
+  }
+
+  .outfitting__centre {
+    order: 1;
+  }
+
+  // The panel canvas 1d's `STATUS` segment opens. It is the same rail, in the
+  // place the strip's own panel would have been, because the strip cannot draw
+  // a region it does not own (`hull-anatomy.ts`, `AnatomyGuestMode`).
+  .outfitting__status-rail {
+    order: 2;
+  }
+
+  .outfitting__key-figures {
+    order: 3;
+  }
+
+  .outfitting__ledger-region {
+    order: 4;
+  }
+
+  .outfitting__bench-actions {
+    order: 5;
+  }
+
+  // Closed unless the strip has it open. Not `visibility` and not a wash:
+  // the segment is a tab, and a panel that is not the open one is not on the
+  // page at all — or every reading in it would be announced twice, once here
+  // and once from the key figures above the tabs.
+  .outfitting__status-rail:not(.outfitting__status-rail--guest) {
+    display: none;
+  }
 }

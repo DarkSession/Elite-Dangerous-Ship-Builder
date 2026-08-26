@@ -152,3 +152,108 @@ describe('the outfitting workspace’s command-bar channel', () => {
     expect(store.canUndo()).toBe(false);
   });
 });
+
+/**
+ * Canvas 1d's arrangement, which is not canvas 1c's stacked.
+ *
+ * The renderer here has no `ResizeObserver`, so the region reports the compact
+ * composition — which is the one under test and the one every capability has to
+ * fit into (`composition.ts`, `observeComposition`).
+ */
+describe('the compact workspace', () => {
+  let active: ActiveBuildStore;
+  let store: OutfittingStore;
+
+  function render() {
+    const fixture = TestBed.createComponent(OutfittingWorkspace);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
+    });
+    active = TestBed.inject(ActiveBuildStore);
+    store = TestBed.inject(OutfittingStore);
+    active.commit(candidateFor(defaultBuild()));
+  });
+
+  it('offers four categories and no “all”, as canvas 1d’s tabs do', () => {
+    const fixture = render();
+
+    const values = fixture.componentInstance.categories().map((entry) => entry.value);
+
+    // At this width the ledger is one category at a time and a Commander says
+    // which, rather than being handed thirty-four mounts to scroll.
+    expect(values).toEqual(['hardpoint', 'core', 'optional', 'utility']);
+    expect(fixture.componentInstance.category()).toBe('hardpoint');
+  });
+
+  it('lists armour and the cargo hatch under core', () => {
+    const fixture = render();
+    const workspace = fixture.componentInstance;
+
+    workspace.category.set('core');
+    fixture.detectChanges();
+
+    const kinds = workspace.groups().map((group) => group.kind);
+
+    // Canvas 1c counts `CORE 8` on a hull whose seven core internals are
+    // followed by its cargo hatch, and 1d's `CORE` panel draws that hatch as
+    // its last row. Armour joins them: with no `ALL` there is no other tab it
+    // could be reached from.
+    expect(kinds).toContain('core');
+    expect(kinds).toContain('armour');
+    expect(kinds).toContain('cargoHatch');
+    expect(workspace.categories().find((entry) => entry.value === 'core')?.count).toBe(
+      workspace.groups().reduce((total, group) => total + group.slots.length, 0),
+    );
+  });
+
+  it('draws the six key readings once, above the category tabs', () => {
+    const element = render().nativeElement as HTMLElement;
+
+    // Both the strip and the rail's cell band would state the same six
+    // figures, and both are on screen together whenever the status segment is
+    // open. The strip is the one that is always there, so it is the one kept.
+    expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(1);
+    expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(0);
+    expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
+  });
+
+  it('hands the anatomy strip a status segment, and draws the rail for it', () => {
+    const fixture = render();
+    const workspace = fixture.componentInstance;
+
+    expect(workspace.anatomyGuestModes().map((mode) => mode.id)).toEqual(['status']);
+    expect(workspace.statusModeOpen()).toBe(false);
+
+    workspace.showAnatomyMode('status');
+    fixture.detectChanges();
+
+    expect(workspace.statusModeOpen()).toBe(true);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.outfitting__status-rail--guest'),
+    ).not.toBeNull();
+  });
+
+  it('draws the two mount actions after the ledger, not inside the anatomy', () => {
+    const fixture = render();
+
+    store.select(FIXTURE_SLOTS.fittedHardpoint);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const actions = element.querySelector('.outfitting__bench-actions');
+
+    expect(actions).not.toBeNull();
+    // Canvas 1d's sticky foot sits under the ledger it acts on, so the mount a
+    // Commander marked is still on screen while they choose what to do to it.
+    expect(element.querySelector('.outfitting__centre')?.contains(actions!)).toBe(false);
+    expect(
+      element.querySelector('.outfitting__ledger-region')!.compareDocumentPosition(actions!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+});

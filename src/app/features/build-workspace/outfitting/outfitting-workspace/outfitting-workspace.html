@@ -97,7 +97,10 @@
       plates never need a detail block of their own (feature 010).
     -->
     <div class="outfitting__centre">
-      <edsb-hull-anatomy />
+      <edsb-hull-anatomy
+        [guestModes]="anatomyGuestModes()"
+        (modeChanged)="showAnatomyMode($event)"
+      />
 
       <!--
       The selected mount's bench. Canvas 1c gives it no opening control at all:
@@ -119,29 +122,6 @@
           @if (!replacementShown()) {
             <div class="outfitting__bench-header">
               <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
-            </div>
-          }
-
-          @if (benchIsLayer()) {
-            <div class="outfitting__bench-actions">
-              @if (capabilitiesFor(slot).canOpenReplacement) {
-                <button
-                  class="outfitting__action"
-                  type="button"
-                  (click)="handle(slot, { kind: 'replace' })"
-                >
-                  {{ replaceLabel() }}
-                </button>
-              }
-              @if (capabilitiesFor(slot).canOpenEngineering) {
-                <button
-                  class="outfitting__action"
-                  type="button"
-                  (click)="handle(slot, { kind: 'engineer' })"
-                >
-                  {{ engineerLabel() }}
-                </button>
-              }
             </div>
           }
 
@@ -174,6 +154,51 @@
     </div>
 
     <!--
+      Canvas 1d's six key readings, drawn once and above the category tabs where
+      the artboard draws them. The same three components as the rail's cell
+      band, rendered here instead of there at this width — one instance either
+      way, so a reader meets each figure once (`design/outfitting-workspace.md`,
+      "The compact key figures").
+    -->
+    @if (benchIsLayer()) {
+      <div class="outfitting__key-figures" [attr.aria-label]="keyFiguresLabel()" role="group">
+        <edsb-defence-summary />
+        <edsb-offence-summary />
+        <edsb-drives-summary />
+      </div>
+    }
+
+    <!--
+      Canvas 1d's sticky foot: `CHANGE MODULE` filled and `ENGINEER` outlined,
+      for whichever mount is marked in the ledger above. It is drawn after the
+      ledger rather than under the anatomy, which is where the artboard puts it
+      and why it is lifted out of the bench — at this width the bench itself is
+      a full-screen layer these two open.
+    -->
+    @if (benchIsLayer() && selectedSlot(); as slot) {
+      <div class="outfitting__bench-actions">
+        @if (capabilitiesFor(slot).canOpenReplacement) {
+          <button
+            class="outfitting__action outfitting__action--primary"
+            type="button"
+            (click)="handle(slot, { kind: 'replace' })"
+          >
+            {{ replaceLabel() }}
+          </button>
+        }
+        @if (capabilitiesFor(slot).canOpenEngineering) {
+          <button
+            class="outfitting__action"
+            type="button"
+            (click)="handle(slot, { kind: 'engineer' })"
+          >
+            {{ engineerLabel() }}
+          </button>
+        }
+      </div>
+    }
+
+    <!--
       Canvas 1c's third track: the 306px status rail closing its
       `392px 1fr 306px` grid, and canvas 1d's Status stack. The canvas's order is
       the order below — the heading, what the Almanac reports about the build,
@@ -195,6 +220,7 @@
     -->
     <div
       class="outfitting__status-rail"
+      [class.outfitting__status-rail--guest]="statusModeOpen()"
       tabindex="0"
       role="group"
       [attr.aria-labelledby]="statusRailHeadingId"
@@ -249,11 +275,13 @@
           that ground too, and the six cells would sit inside an amber band the
           canvas does not draw.
         -->
-        <div class="outfitting__status-cells">
-          <edsb-defence-summary />
-          <edsb-offence-summary />
-          <edsb-drives-summary />
-        </div>
+        @if (!benchIsLayer()) {
+          <div class="outfitting__status-cells">
+            <edsb-defence-summary />
+            <edsb-offence-summary />
+            <edsb-drives-summary />
+          </div>
+        }
       </div>
 
       <edsb-cost-materials />

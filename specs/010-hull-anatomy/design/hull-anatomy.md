@@ -166,7 +166,8 @@ Canvas 1c sets a strip of five segments beside the `HULL ANATOMY` rule — `MOUN
 `DRIVES`, `DEFENCE`, `OFFENCE` — selecting which layer is drawn over the plates. That strip is what
 is built, at every width: all five in that order, as feature 011's `edsb-tab-group` in the same
 segmented presentation the side selector uses, full width under the rule when the region is narrow
-and at its own label width beside it when there is room.
+and at its own label width beside it when there is room. A caller may add segments after them, for a
+panel this region does not draw; see "Divergence from canvas 1d — the sixth segment".
 
 Canvas 1d's strip is **not** the same control, and the difference is recorded below.
 
@@ -222,15 +223,25 @@ showing, with the anatomy as one of them and feature 003's `BUILD STATUS` block 
 arrangement of the same blocks", arriving "with the capability navigation it belongs to"
 (`specs/003-ship-statistics/design/status-capability.md`).
 
-That navigation is the compact workspace's, not this capability's. Building it means the compact
-workspace stops stacking its regions and starts switching between them, which is the same grid whose
-source order is already recorded above under "Narrow, mobile and zoomed", and which belongs to
-feature 002's composition. So this capability draws canvas 1c's anatomy-scoped strip at every width
-and borrows only 1d's shape for it — full width, under the rule.
+That navigation is the compact workspace's, not this capability's. So this capability draws canvas
+1c's anatomy-scoped strip at every width, borrows 1d's shape for it — full width, under the rule —
+and does not decide what a sixth segment would open.
 
-What is deliberately **not** done is drawing a sixth `STATUS` segment inside the anatomy's own strip.
-It would be an invention at wide width, where canvas 1c draws five; and drawn disabled it would say
-the build's status cannot be read while the status rail sits on the same screen saying it.
+**Built 2026-08-26 — the segment is drawn, and it is a guest.** The strip now carries segments a
+caller hands it: `guestModes` puts them after this region's own five, `modeChanged` reports which
+segment is open, and this region draws **nothing** for one of them. Feature 002's compact workspace
+passes `STATUS` and puts the status rail where the panel would have been. The two objections that
+held it back are answered rather than overruled:
+
+- _An invention at wide width._ The segment is passed only where canvas 1d draws it. At wide width
+  the caller passes none, the strip is canvas 1c's five, and there is nothing for a segment to reveal
+  because the rail is the third track of 1c's grid and already on screen.
+- _Disabled, it would deny a reading the same screen is giving._ It is never disabled. It is offered
+  exactly where it opens something.
+
+What is still **not** done is this capability deciding what `STATUS` means, drawing feature 003's
+blocks, or reaching for the rail. It carries a word and reports a press; the region that owns the
+panel draws the panel.
 
 ## Divergence from FR-008 — the selected mount's facts
 

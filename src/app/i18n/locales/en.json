@@ -263,6 +263,8 @@
   "outfitting.status-rail.label": "Build status",
   "build-status.severity.error": "Error",
   "build-status.severity.incomplete": "Incomplete",
+  "outfitting.status-rail.mode": "Status",
+  "outfitting.key-figures.label": "Key figures",
   "outfitting.category.legend": "Which mounts to show",
   "outfitting.category.all": "All",
   "outfitting.category.hardpoint": "Hardpoints",

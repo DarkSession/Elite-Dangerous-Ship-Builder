@@ -1414,6 +1414,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
     'shell.status.label': '"Status" is the ordinary German word.',
+    'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',
     'field.optional': '"Optional" is the ordinary German word.',
     'format.credits': 'CR is the in-game abbreviation and is not translated.',
