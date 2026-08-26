@@ -74,7 +74,7 @@ grade selectors in the Engineer panel, not here.
 - The four rules, and each block's own inset.
 - The type/unit footer in the same faint micro treatment as `REBUY 5%`, its two
   counts set at opposite ends of the row.
-- Merc Coin as the final row of the materials block, in its own colour.
+- Merc Coin as the final row of the `COST` block, ruled off under `REBUY 5%`, in its own colour.
 - The wide rail becoming a stacked block in 1d's Status mode.
 
 ## Ruled divergences (wave 10, 2026-08-22)
@@ -82,20 +82,54 @@ grade selectors in the Engineer panel, not here.
 Six collisions between the specification and the canvas were surfaced to the user before
 implementation. **The design won all six.** These rulings are binding; do not re-litigate them.
 
-| #   | Canvas draws                                            | Specification wanted                                                                                                                                                                                    | Ruling                                                                                                                                                                                                                                                               |
-| --- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A   | `TOTAL 361,352,360`, the amber anchor of the block      | No combined total — the package returns no such field (FR-001/002)                                                                                                                                      | **Design.** The application adds the package `hull` and `modules` and draws the row.                                                                                                                                                                                 |
-| B   | `REBUY 5%` as the label                                 | The literal package rebuy with no derived percentage (FR-002)                                                                                                                                           | **Design.** The label text is the canvas's, fixed; the number stays the package's `rebuy`.                                                                                                                                                                           |
-| C   | `Merc Coins 1,840` as the last row of `MATERIALS`       | A separate conditional region with per-slot entries, purchase grade and current grade (FR-005/006)                                                                                                      | **Design.** One row, at the foot of the materials block, shown only when a Mercenary article is recognized. Per-slot Merc pricing is not built.                                                                                                                      |
-| D   | `14 BLUEPRINTS`, `18 MATERIAL TYPES`, `412 UNITS TOTAL` | No authored aggregate arithmetic (Story 2)                                                                                                                                                              | **Design.** All three are counted by the application over package results.                                                                                                                                                                                           |
-| E   | Five material rows out of eighteen                      | Every consolidated row (Story 2)                                                                                                                                                                        | **Split: every row, and keep the counts.** The list is complete; the canvas's aggregate footer stays. This is the one ruling that is not purely the canvas — truncation was rejected because a Commander cannot shop from a list that hides thirteen of its entries. |
-| F   | _(nothing)_                                             | Per-row material trace disclosure (SC-003 as written), the unpriced-module evidence list with slot actions (FR-002), and lower-bound / unavailable / missing-recipe / untranslated wording (FR-008/010) | **Design — remove all of it.** Roughly half of the specified surface is drawn nowhere on either canvas and is not built. The former SC-002 and SC-003 are withdrawn with it.                                                                                         |
+| #   | Canvas draws                                                         | Specification wanted                                                                                                                                                                                    | Ruling                                                                                                                                                                                                                                                               |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A   | `TOTAL 361,352,360`, the amber anchor of the block                   | No combined total — the package returns no such field (FR-001/002)                                                                                                                                      | **Design.** The application adds the package `hull` and `modules` and draws the row.                                                                                                                                                                                 |
+| B   | `REBUY 5%` as the label                                              | The literal package rebuy with no derived percentage (FR-002)                                                                                                                                           | **Design.** The label text is the canvas's, fixed; the number stays the package's `rebuy`.                                                                                                                                                                           |
+| C   | `Merc Coins 1,840` ruled off under `REBUY 5%`, at the foot of `COST` | A separate conditional region with per-slot entries, purchase grade and current grade (FR-005/006)                                                                                                      | **Design.** One row, shown only when a Mercenary article is recognized. Per-slot Merc pricing is not built. **Re-decided 2026-08-26** — see below; the row moved from `MATERIALS` to `COST` when the canvas moved it.                                                |
+| D   | `14 BLUEPRINTS`, `18 MATERIAL TYPES`, `412 UNITS TOTAL`              | No authored aggregate arithmetic (Story 2)                                                                                                                                                              | **Design.** All three are counted by the application over package results.                                                                                                                                                                                           |
+| E   | Five material rows out of eighteen                                   | Every consolidated row (Story 2)                                                                                                                                                                        | **Split: every row, and keep the counts.** The list is complete; the canvas's aggregate footer stays. This is the one ruling that is not purely the canvas — truncation was rejected because a Commander cannot shop from a list that hides thirteen of its entries. |
+| F   | _(nothing)_                                                          | Per-row material trace disclosure (SC-003 as written), the unpriced-module evidence list with slot actions (FR-002), and lower-bound / unavailable / missing-recipe / untranslated wording (FR-008/010) | **Design — remove all of it.** Roughly half of the specified surface is drawn nowhere on either canvas and is not built. The former SC-002 and SC-003 are withdrawn with it.                                                                                         |
 
 **Almanac 0.1.7 reconciliation (2026-08-23).** Ruling A still requires the `TOTAL` row, but the
 package now returns it as `buildCost().credits.total`; the temporary application addition is
 retired. Ruling D now has three application-owned counts only: blueprint count, material-type count
 and unit total. The package's same `buildCost()` result also owns the consolidated material list and
 the complete Merc Coin total, so no application recognition or consolidation rule remains.
+
+### Ruling C, re-decided (2026-08-26)
+
+The canvas revision of 2026-08-26 moves `Merc Coins` out of `MATERIALS` and into `COST`, ruled off
+under `REBUY 5%`, with the `MATERIALS` block beginning below it. Both artboards agree (1c at
+`.dc.html` 22536-22574, 1d at 32227-32265).
+
+The ruling's substance is unchanged and is not re-argued: one row, only when the package reports a
+charge, no per-slot Merc pricing, named as well as coloured. What changed is which block it closes —
+and the drawing now agrees with the reasoning, because a purchase price belongs with the prices. It
+stays out of the material list and out of the two counts for the same reason it always did: it is
+not a material.
+
+One consequence in the product. The `MATERIALS` block used to be drawn whenever there were rows _or_
+a Merc Coin figure, so that a recognised purchase with nothing crafted still showed its price. With
+the row in `COST`, the price is shown by the block that now carries it, and `MATERIALS` is drawn for
+rows alone.
+
+### Ruling G (2026-08-26) — the material list is a bounded box
+
+Both artboards draw five material rows against a footer counting eighteen types. Ruling E already
+settled what the list _holds_ — every consolidated row, because a Commander cannot shop from a list
+that hides thirteen of its entries. Ruling G settles how tall it _grows_: the list is a box with a
+scroll, as the canvas draws it, not a column that runs the length of the rail.
+
+The two rulings do not collide. Ruling E rejected **truncation** — rows that are not there at all.
+A bounded box drops nothing: every row is present, reachable and counted, and the footer still
+describes the whole list. The bound is a `rem` measure, so a Commander reading at 200% gets a taller
+box rather than the same box holding half as many rows.
+
+Because the box scrolls, it is focusable and carries an accessible name — the same requirement this
+document already records for the sibling region: a scroll box needs `tabindex="0"` for the automated
+axe gate, since `scrollable-region-focusable` carries the `wcag2a` tag. The block's own heading is
+the name.
 
 ### What ruling F withdraws
 

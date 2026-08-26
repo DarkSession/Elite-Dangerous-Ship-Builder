@@ -6,8 +6,8 @@
 // stack, so there is one set of rules and no width branching here — the parent
 // decides how much room the region gets.
 //
-// The canvas rules this content four times — above `TOTAL`, between the two
-// blocks, above the counts, and above Merc Coin — each with a one-pixel amber
+// The canvas rules this content four times — above `TOTAL`, above Merc Coin,
+// between the two blocks, and above the counts — each with a one-pixel amber
 // wash. Those rules are the block's structure rather than decoration: the one
 // above `TOTAL` is what makes it read as the sum of the two rows over it rather
 // than a third fact beside them.
@@ -154,18 +154,28 @@
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
-// Ruled off the list above it, the way the canvas rules it — but only when
-// there is a list above it. On a build that bought an article and crafts
-// nothing, the row is the block's only content and a rule under the heading
-// would separate it from nothing.
+// The bounded material list (ruling G). Both canvases draw five rows against a
+// footer counting eighteen types, so the list is a box with a scroll. Nothing
+// is dropped — ruling E still holds — and the cap is a `rem` measure, so a
+// Commander reading at 200% gets a taller box rather than the same box holding
+// half as many rows.
+.rail-materials--bounded {
+  max-block-size: var(--edsb-layout-material-list);
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+}
+
+// Ruled off what sits above it, the way the canvas rules it. Merc Coin now
+// closes the cost rows, which are always present when the row is, so this rule
+// is unconditional where it used to depend on there being a list above it.
 .rail-material--ruled {
   padding-block-start: var(--edsb-space-stack);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
 // The canvas gives Merc Coin its own colour, because it is the one figure in
-// the block that is not a material. The row is named as well as coloured, so
-// the colour is emphasis rather than meaning.
+// the block that is not paid in credits. The row is named as well as coloured,
+// so the colour is emphasis rather than meaning.
 .rail-material--merc-coin {
   .rail-material__name,
   .rail-material__count {

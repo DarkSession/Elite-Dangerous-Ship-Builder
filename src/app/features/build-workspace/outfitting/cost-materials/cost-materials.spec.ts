@@ -202,27 +202,34 @@ describe('cost and materials surface', () => {
       expect(fixture.nativeElement.querySelector('.rail-material--merc-coin')).toBeNull();
     });
 
-    it('closes the materials block when one is', () => {
+    it('closes the cost block when one is', () => {
       const build = cargoRackBuild(mercenaryCargoRack());
       const fixture = render(build);
 
       expect(fixture.componentInstance.mercCoin()).not.toBeNull();
-      // Last, as both canvases draw it — after every material row.
-      const rows = [...fixture.nativeElement.querySelectorAll('.rail-material')];
-      expect(rows.at(-1)?.classList.contains('rail-material--merc-coin')).toBe(true);
+      // Inside COST, ruled off under REBUY, as both canvases draw it since the
+      // 2026-08-26 revision (ruling C, re-decided).
+      const blocks = [...fixture.nativeElement.querySelectorAll('.block')];
+      const coin = fixture.nativeElement.querySelector('.rail-material--merc-coin');
+      expect(coin).not.toBeNull();
+      expect(blocks[0]?.contains(coin)).toBe(true);
+      // And never inside the material list.
+      expect(
+        fixture.nativeElement.querySelector('.rail-materials--bounded .rail-material--merc-coin'),
+      ).toBeNull();
     });
 
-    it('shows the block for a purchase that crafts nothing', () => {
+    it('still shows the price for a purchase that crafts nothing', () => {
       // A Mercenary article at its purchase grade is bought, not crafted: it
-      // has a price and no shopping list. Neither canvas draws that
-      // combination, and hiding the block would hide the price.
+      // has a price and no shopping list. The price is now carried by COST, so
+      // the materials block is drawn for rows alone and the price survives its
+      // absence (ruling C, re-decided).
       const fixture = render(cargoRackBuild(mercenaryCargoRack()));
 
       expect(fixture.componentInstance.materialRows()).toEqual([]);
-      expect(fixture.componentInstance.materialsShown()).toBe(true);
+      expect(fixture.componentInstance.materialsShown()).toBe(false);
       expect(fixture.componentInstance.blueprintCount()).toBeNull();
-      // No rule above it: there is no list for it to be ruled off.
-      expect(fixture.nativeElement.querySelector('.rail-material--ruled')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.rail-material--merc-coin')).not.toBeNull();
     });
 
     it('is named as well as coloured', () => {

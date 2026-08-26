@@ -23,6 +23,37 @@
         </div>
       }
     </dl>
+
+    <!--
+      Merc Coin closes the COST block, ruled off under `REBUY`, as both
+      canvases draw it (ruling C, re-decided 2026-08-26). It is a purchase
+      price rather than a material, so it belongs with the prices and stays out
+      of the material list and its two counts — and it is named as well as
+      coloured, because nothing here may carry meaning by colour alone.
+    -->
+    @if (mercCoin(); as coins) {
+      <dl class="rail-materials">
+        <div class="rail-material rail-material--merc-coin rail-material--ruled">
+          <dt class="rail-material__name">
+            <!--
+              Decorative: the row names the currency in words right beside it,
+              so the coin repeats the label rather than carrying it. Same
+              product asset feature 002 already ships, served from this origin
+              — the canvas's own file has no provenance decision behind it.
+            -->
+            <img
+              class="rail-material__coin"
+              src="assets/icons/merc-coin.png"
+              alt=""
+              width="14"
+              height="14"
+            />
+            {{ mercCoinLabel() }}
+          </dt>
+          <dd class="rail-material__count" data-bidi-isolate>{{ coins }}</dd>
+        </div>
+      </dl>
+    }
   </section>
 
   @if (materialsShown()) {
@@ -35,7 +66,20 @@
       </div>
 
       @if (materialRows().length > 0) {
-        <dl class="rail-materials">
+        <!--
+          Both canvases draw five rows against a footer counting eighteen
+          types, so the list is a bounded box and not the whole shopping list.
+          Every row is still here and still reachable — the box scrolls.
+          `tabindex` is what makes it reachable without a pointer, and what the
+          axe gate requires of a scroll box (`scrollable-region-focusable`
+          carries the `wcag2a` tag); the heading names it.
+        -->
+        <dl
+          class="rail-materials rail-materials--bounded"
+          tabindex="0"
+          role="group"
+          [attr.aria-labelledby]="materialsHeadingId"
+        >
           @for (row of materialRows(); track row.symbol) {
             <div class="rail-material">
               <dt class="rail-material__name">
@@ -70,39 +114,6 @@
           <span>{{ totals.types }}</span>
           <span data-bidi-isolate>{{ totals.units }}</span>
         </p>
-      }
-
-      <!--
-        Merc Coin closes the block, as both canvases draw it (ruling C). It is a
-        purchase price rather than a material, so it stays out of the list above
-        and out of the two counts — and it is named as well as coloured, because
-        nothing here may carry meaning by colour alone.
-      -->
-      @if (mercCoin(); as coins) {
-        <dl class="rail-materials">
-          <div
-            class="rail-material rail-material--merc-coin"
-            [class.rail-material--ruled]="materialRows().length > 0"
-          >
-            <dt class="rail-material__name">
-              <!--
-                Decorative: the row names the currency in words right beside it,
-                so the coin repeats the label rather than carrying it. Same
-                product asset feature 002 already ships, served from this origin
-                — the canvas's own file has no provenance decision behind it.
-              -->
-              <img
-                class="rail-material__coin"
-                src="assets/icons/merc-coin.png"
-                alt=""
-                width="14"
-                height="14"
-              />
-              {{ mercCoinLabel() }}
-            </dt>
-            <dd class="rail-material__count" data-bidi-isolate>{{ coins }}</dd>
-          </div>
-        </dl>
       }
     </section>
   }

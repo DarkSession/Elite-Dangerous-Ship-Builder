@@ -459,6 +459,12 @@
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 
+  // Both canvases draw five material rows against a footer that counts
+  // eighteen types, so the list they draw is a bounded box rather than the
+  // whole shopping list. Held in `rem` so the box grows with the Commander's
+  // text size instead of trapping more rows in the same pixels at 200%.
+  --edsb-measure-material-list: 11.5rem;
+
   // The two icons the canvas draws inline in a row — the engineered mark and
   // the Merc Coin — at 14 to 16px depending on the artboard.
   --edsb-measure-icon: 0.9375rem;

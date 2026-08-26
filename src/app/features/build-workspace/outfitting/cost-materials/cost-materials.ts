@@ -94,17 +94,12 @@ export class CostMaterials {
   /**
    * Whether the materials block is drawn at all.
    *
-   * Rows *or* a Merc Coin figure, because the canvas puts Merc Coin inside this
-   * block (ruling C) and a build can have a recognised purchase with nothing
-   * crafted — a Mercenary article at its purchase grade is bought, not crafted,
-   * so it has a price and no shopping list. Neither canvas draws that
-   * combination; hiding the block would hide the price, which FR-006 requires
-   * to be shown whenever an article is recognised, so the block appears
-   * carrying only the row it has.
+   * Rows alone, since the 2026-08-26 canvas moved Merc Coin out of this block
+   * and into COST (ruling C, re-decided). A build with a recognised purchase
+   * and nothing crafted still shows its price — in the block that now carries
+   * it — so FR-006 is satisfied without drawing an empty shopping list here.
    */
-  readonly materialsShown = computed(
-    () => this.materialRows().length > 0 || this.mercCoin() !== null,
-  );
+  readonly materialsShown = computed(() => this.materialRows().length > 0);
 
   /** The canvas's four rows, in its order: Hull, Modules, TOTAL, REBUY 5%. */
   readonly costRows = computed<readonly CostRow[]>(() => {
