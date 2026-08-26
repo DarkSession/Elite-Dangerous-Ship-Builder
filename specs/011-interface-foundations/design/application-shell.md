@@ -130,6 +130,13 @@ beside it (`eng-bp-btn`): a mono glyph at the trailing edge, in the field's own 
 disabled ink when the control is disabled, with the control's trailing inset opened far enough that
 the longest option stops before the mark rather than running under it.
 
+**The search field's platform mark goes with it.** A `type="search"` box draws a clear mark of its
+own in WebKit and Blink, in the browser's ink and at the browser's size, and this system's own search
+already carries a clear control at the same edge — so a field with something in it showed two crosses
+side by side, one of them a colour nothing else on the screen uses. The platform's is removed; the
+one that stays is named, reachable from a keyboard and drawn in the theme (Commander request
+2026-08-26).
+
 A `select` is a replaced element and hosts no pseudo-element, so the mark is a box positioned over
 it. It is `pointer-events: none`, so the whole control still opens on a press anywhere across it, and
 `aria-hidden`, because the element already tells a reader it is a menu — a caret announced beside it

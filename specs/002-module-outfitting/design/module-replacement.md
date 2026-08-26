@@ -428,6 +428,18 @@ same four routes as spoken sentences beside the mark since wave 10. The revision
 those sentences are the right words, not a new element to build. The drawn markers stay a subset of
 the spoken ones.
 
+**Amended 2026-08-26 (Commander request): the tip is drawn after all, as the sentence itself.** The
+2026-08-25 reading is still right about what a tip may not be — the only carrier of a meaning — and
+that is exactly why it can now be added. Neither the ledger row nor the manifest row draws the
+sentence, so on those rows the mark stands alone with no way to ask what it is; a Commander who can
+see the icon and cannot see the words had a mark and no question. Each mark now carries the row's own
+sentence as its `title`, so hovering shows the same words a reader is already given. It is the
+sentence and not a shorter phrase beside it: one restriction, one wording, whether it is drawn,
+hovered or read. The mark stays presentational with its `alt` empty, so the tip adds a way to see the
+sentence and never a second announcement of it, and the sentence stays in the accessibility tree
+whether or not a pointer ever reaches the icon — which is what 011 FR-006 asks and what the hover
+adds nothing to.
+
 **The mark sits on the name's own line, in the ledger as in the manifest.** Canvas 1c draws the
 fitted `Advanced Plasma Accelerator` with its Powerplay mark 7px after the name and the
 `FIXED · 51.7 DPS · 1.97 MW · 24.0 t` code line under both. The ledger row therefore projects the

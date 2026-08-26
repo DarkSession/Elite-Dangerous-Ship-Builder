@@ -81,6 +81,19 @@ under them — is the taller of the two readings at the moment a Commander is ma
 editor was the pane being scrolled. Not an even split: the canvas does draw the manifest the taller
 of the two, and this only narrows the margin (Commander request 2026-08-26).
 
+**And a share is not a size. Ruled 2026-08-26 (Commander request).** The ratio divides whatever the
+bench has, so on a shorter screen each panel is a smaller fraction of a smaller box: at 900px the
+manifest drew four rows and at 700px it drew two, which is a glimpse of a list rather than a list.
+Canvas 1c settles what one should be — it draws the workspace over a `min-height: 880px`, leaving the
+bench 574px under the plates and giving the manifest 292 of it: the head, the column rule and five
+rows. Each panel now states a floor of its own, on its own host, because how short a panel may get
+before it stops being one is the panel's statement rather than the bench's; the manifest's is
+measured against the editor's, so the two can never ask for more than the bench holds and neither
+ends up in a box that clips it. Where the bench cannot give both, the editor's is the floor that
+holds — it is the panel that can be read a line at a time. This costs the editor some of what the
+ratio above gave it at 900px, which is the trade: five rows of manifest against forty pixels of a
+comparison that scrolls either way.
+
 **Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
 track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
 the page to two hundred rows, and the plates fit that column: they are drawn at the hull's own

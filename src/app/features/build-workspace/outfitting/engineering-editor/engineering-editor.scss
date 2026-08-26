@@ -6,11 +6,28 @@
   container-type: inline-size;
   container-name: engineering;
 
+  // Shrinkable below its content, so the boxes inside scroll rather than the
+  // panel pushing its neighbour off the bench. The floor below is what stops
+  // that where the bench is bounded.
+  min-block-size: 0;
+
   // The bound the panel gives way against, written the way the bench above
   // writes its own. Without one the region grows to its content, nothing
   // scrolls inside it, and the actions below end up drawn over the foot of the
   // material list — over the control a Commander is reaching for.
   max-block-size: calc(100svh - var(--edsb-layout-bar-height));
+}
+
+// How short this panel may get before it stops being one: a recipe, the grade
+// under it and the first of the comparisons. It is the smaller of the bench's
+// two floors — this is the panel that can be read a line at a time — and it is
+// what the manifest measures its own floor against, so the two together never
+// exceed the bench they are in (`module-replacement.scss`; Commander request
+// 2026-08-26).
+@container outfitting (min-width: 47rem) {
+  :host {
+    min-block-size: var(--edsb-layout-editor-panel);
+  }
 }
 
 // A viewport this short cannot divide into a scroller and a foot and still show

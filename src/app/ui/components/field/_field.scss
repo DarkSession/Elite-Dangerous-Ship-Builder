@@ -101,6 +101,19 @@
   color: var(--edsb-text-disabled);
 }
 
+// The platform's own clear mark on a search field, removed.
+//
+// A `type="search"` box draws one in WebKit and Blink, in the browser's ink and
+// at the browser's size, and this system's own search already carries a clear
+// control at the same edge — so a field with something in it showed two crosses
+// side by side, one of them a colour nothing else on the screen uses (Commander
+// request 2026-08-26). The one that stays is the one that is named, reachable
+// from a keyboard and drawn in the theme.
+.field__control::-webkit-search-cancel-button,
+.field__control::-webkit-search-decoration {
+  appearance: none;
+}
+
 .field__control option {
   background-color: var(--edsb-surface-panel);
   color: var(--edsb-text-primary);

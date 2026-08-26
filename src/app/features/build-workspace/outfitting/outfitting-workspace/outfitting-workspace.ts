@@ -186,6 +186,20 @@ export class OutfittingWorkspace {
   readonly #anatomyMode = signal<string>('mounts');
 
   /**
+   * Whether the anatomy region is showing a dashboard rather than its plates.
+   *
+   * The middle column bounds the plates, which are drawn at the hull's own
+   * proportions and fit it. A dashboard is whatever the build has to say and
+   * does not, so the column releases and the page carries it
+   * (`design/outfitting-workspace.md`, "a detail panel is not bounded by the
+   * column"). Read off `mounts` rather than by listing the dashboards, so a
+   * mode that lands next releases the column by what it draws rather than by a
+   * list somebody remembered to add it to — the same rule the region applies to
+   * itself.
+   */
+  readonly anatomyDashboard = computed(() => this.#anatomyMode() !== 'mounts');
+
+  /**
    * Canvas 1d's sixth segment, `STATUS`, and what it opens.
    *
    * Offered only where the artboard draws it. At wide width the rail is the

@@ -181,6 +181,32 @@ describe('acquisition badge', () => {
     expect(items[0]!.querySelector('.acquisition__route')).not.toBeNull();
     expect(textOf(element(fixture))).toContain('ELITE_HORIZONS_V_PLANETARY_LANDINGS');
   });
+
+  it('lets a mark be asked what it means, in the sentence beside it', () => {
+    const fixture = renderComponent(AcquisitionBadge, {
+      labels: [
+        {
+          kind: 'powerplay',
+          packageValue: 'powerplay',
+          messageKey: 'outfitting.acquisition.powerplay',
+          params: null,
+        },
+      ],
+    });
+
+    const item = element(fixture).querySelector('.acquisition__item')!;
+    const mark = item.querySelector('.acquisition__route')!;
+    const sentence = textOf(item as HTMLElement);
+
+    // Canvas 1c gives every one of these icons a tip. It is the row's own
+    // sentence and not a second wording of it, so what is hovered and what is
+    // read are the same words.
+    expect(sentence.length).toBeGreaterThan(0);
+    expect(mark.getAttribute('title')).toBe(sentence);
+    // Still presentational: the tip is a way to see the sentence, never a
+    // second announcement of it.
+    expect(mark.getAttribute('alt')).toBe('');
+  });
 });
 
 describe('candidate list', () => {

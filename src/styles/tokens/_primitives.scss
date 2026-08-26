@@ -488,6 +488,24 @@
   // text size instead of trapping more rows in the same pixels at 200%.
   --edsb-measure-material-list: 11.5rem;
 
+  // What each of the bench's two panels needs before it is a panel rather than
+  // a strip.
+  //
+  // Canvas 1c draws the workspace over a `min-height: 880px`, which leaves the
+  // bench 574px under the plates and divides it into a 292px fitting panel and
+  // a 266px editor. The first of those is the head, the manifest's column rule
+  // and five rows — the point at which the list is a list rather than a
+  // glimpse. Held to a ratio alone the panel followed the window down instead:
+  // at 900px it drew four rows and at 700px it drew two (Commander request
+  // 2026-08-26).
+  //
+  // The editor's is the smaller figure because it is the one that can be read a
+  // line at a time: a recipe, the grade under it and the first comparisons. It
+  // is what the fitting panel's floor is measured against, so the two can never
+  // add up to more than the bench they are in.
+  --edsb-measure-fitting-panel: 18rem;
+  --edsb-measure-editor-panel: 10rem;
+
   // One of canvas 1d's six key readings, at the narrowest it may be drawn.
   //
   // The artboard sets all six across a 390px screen: 362px once the band's own

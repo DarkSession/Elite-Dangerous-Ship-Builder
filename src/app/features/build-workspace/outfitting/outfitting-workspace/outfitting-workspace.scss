@@ -225,41 +225,6 @@
     flex: none;
   }
 
-  // A dashboard is not a pair of plates.
-  //
-  // The plates are drawn at the hull's own proportions and ask for exactly that
-  // height, so the column bounds them and hands the rest to the bench. The four
-  // dashboard modes are panels of figures whose height is whatever the build has
-  // to say, and the power one exceeds this column on any screen under 900px: at
-  // 1560 x 800 it was given 224px for 1053px of content.
-  //
-  // It scrolled that inside itself until 2026-08-26 — a second scrollbar in a
-  // column that already had one, with the distributor's pip blocks below its own
-  // fold and the page underneath refusing to move. So the column is released
-  // instead and the page carries the panel, exactly as a short viewport releases
-  // it (Commander request 2026-08-26). The plates keep the bound: they are the
-  // arrangement it was written for, and they fit it.
-  //
-  // Read off the region's own class rather than a flag beside it, so a mode that
-  // lands next is bounded or released by what it draws rather than by a list
-  // somebody remembered to add it to. `.anatomy--dashboard` is `edsb-hull-anatomy`'s
-  // own host class and this column holds nothing else that could carry it.
-  .outfitting__centre:has(> .anatomy--dashboard) {
-    position: static;
-    block-size: auto;
-  }
-
-  .outfitting__centre:has(> .anatomy--dashboard) .outfitting__bench {
-    flex: none;
-    min-block-size: 0;
-    overflow: visible;
-  }
-
-  .outfitting__centre:has(> .anatomy--dashboard) edsb-module-replacement,
-  .outfitting__centre:has(> .anatomy--dashboard) edsb-engineering-editor {
-    flex: none;
-  }
-
   // Named through the column so the base rule below, which resets both of these
   // for the unbounded compositions, does not win on source order.
   .outfitting__centre .outfitting__bench {
@@ -284,6 +249,15 @@
   // the attribute comparison under them — is the taller of the two readings at
   // the moment a Commander is making it. Not an even split: the canvas does
   // draw the manifest the taller, and this only narrows the margin.
+  //
+  // A ratio alone is not enough, though: it is a share of whatever the bench
+  // has, and on a shorter screen the share is smaller than the panel. At 900px
+  // the manifest drew four rows and at 700px it drew two, which is a glimpse of
+  // a list rather than a list (Commander request 2026-08-26). Each panel states
+  // its own floor, in its own stylesheet — how short a panel may get before it
+  // stops being one is the panel's statement, not the bench's — and the
+  // manifest measures its floor against the editor's so the two can never ask
+  // for more than the bench holds.
   .outfitting__bench edsb-module-replacement {
     flex: 1.1 1 0;
   }
@@ -296,6 +270,45 @@
   // rail runs under both of them instead of squeezing the bench.
   .outfitting__status-rail {
     grid-column: 1 / -1;
+  }
+
+  // A dashboard is not a pair of plates.
+  //
+  // The plates are drawn at the hull's own proportions and ask for exactly that
+  // height, so the column bounds them and hands the rest to the bench. The four
+  // dashboard modes are panels of figures whose height is whatever the build has
+  // to say, and the power one exceeds this column on any screen under 900px: at
+  // 1560 x 800 it was given 224px for 1053px of content.
+  //
+  // It scrolled that inside itself until 2026-08-26 — a second scrollbar in a
+  // column that already had one, with the distributor's pip blocks below its own
+  // fold and the page underneath refusing to move. So the column is released
+  // instead and the page carries the panel, exactly as a short viewport releases
+  // it (Commander request 2026-08-26). The plates keep the bound: they are the
+  // arrangement it was written for, and they fit it.
+  //
+  // Read off whether the region is showing a dashboard rather than off which
+  // mode it is on, so a mode that lands next is bounded or released by what it
+  // draws rather than by a list somebody remembered to add it to. The region
+  // publishes that as `modeChanged` and already draws it on itself as
+  // `anatomy--dashboard`; the workspace carries the same reading on the section
+  // it owns, which is what these rules can name. They are stated last in this
+  // arrangement because two of them weigh the same as the rules they release.
+  .outfitting--dashboard .outfitting__centre {
+    position: static;
+    block-size: auto;
+  }
+
+  .outfitting--dashboard .outfitting__bench {
+    flex: none;
+    min-block-size: 0;
+    overflow: visible;
+  }
+
+  .outfitting--dashboard edsb-module-replacement,
+  .outfitting--dashboard edsb-engineering-editor {
+    flex: none;
+    min-block-size: 0;
   }
 }
 
@@ -385,6 +398,7 @@
   .outfitting__bench edsb-module-replacement,
   .outfitting__bench edsb-engineering-editor {
     flex: none;
+    min-block-size: 0;
   }
 
   .outfitting__ledger-region {
@@ -528,10 +542,11 @@
 // Both panels scroll inside their own box, so neither can push the other off
 // the bench. Where the bench is unbounded — a narrow composition, a short
 // viewport — they keep their own height and the page scrolls instead.
-.outfitting__bench edsb-module-replacement,
-.outfitting__bench edsb-engineering-editor {
-  min-block-size: 0;
-}
+//
+// Each panel says so itself, on its own host: the bench's rule for it was one
+// selector weight above the panel's own, so a floor the panel stated for itself
+// could never take (Commander request 2026-08-26). What the bench still decides
+// is the share, above, and the release, below.
 
 .outfitting__bench-header {
   @include layout.section-rule;
