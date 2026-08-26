@@ -35,7 +35,9 @@ step, because two regions need more room than one.
 
 Each format is a bordered plate carrying a tracked condensed title over a description
 (`specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards"), the selected one
-washed amber with its title in amber. The list carries no visible question above it — the canvas
+washed amber with its title in amber and a marker inside its leading edge. Both plates are closed
+boxes: the marker is drawn inside the chosen plate's edge rather than in place of it, so neither
+format sits in the list with one side open (Commander request 2026-08-26). The list carries no visible question above it — the canvas
 draws none — and its name stays in the accessibility tree for anyone reading the group aloud.
 
 Where the width will not hold two regions, the same choices become the scrolling chip strip canvas 1d

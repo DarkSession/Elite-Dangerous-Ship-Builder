@@ -115,13 +115,25 @@ export class App {
   readonly actions = computed(() => {
     const screen = this.chrome.actions();
     const update = this.updateAction();
+    // Importing opens the bar's actions rather than closing them.
+    //
+    // No canvas draws either of the two ways a build arrives on the command
+    // bar's action row — the shipyard's `IMPORT` sits beside `?` and its
+    // `OPEN SAVED BUILD` is a control on the page — so where they go on a bar
+    // that carries both is this application's decision. They belong beside each
+    // other: they are the same question with two answers, and the screen's own
+    // history and export sat between them (Commander request 2026-08-26).
+    // The library is a route and stays the link in the bar's navigation, which
+    // the frame draws immediately before this row, so the pair are neighbours
+    // with the screen's own actions grouped off after them.
+    const [first, ...rest] = screen;
     return [
-      ...screen,
       {
         id: IMPORT_ACTION,
         label: this.#messages.message('slef.import.title'),
         emphasis: 'secondary' as const,
       },
+      ...(first === undefined ? [] : [{ ...first, startsGroup: true }, ...rest]),
       {
         id: HELP_ACTION,
         label: this.help.actionLabel(),

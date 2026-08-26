@@ -15,6 +15,7 @@
         type="text"
         [id]="nameFieldId"
         [value]="name() ?? ''"
+        [attr.maxlength]="nameMaxLength"
         [attr.placeholder]="fallbackName()"
         (change)="confirm('name', field.value)"
         (keydown.escape)="closed.emit()"
@@ -54,6 +55,7 @@
         type="text"
         [id]="identFieldId"
         [value]="ident() ?? ''"
+        [attr.maxlength]="identMaxLength"
         (change)="confirm('ident', plateField.value)"
         (keydown.escape)="closed.emit()"
       />

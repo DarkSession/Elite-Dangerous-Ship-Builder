@@ -511,6 +511,29 @@ describe('ship identity fields', () => {
     expect(committed).toEqual([{ field: 'ident', value: null }]);
   });
 
+  it('holds each field to the length the game\u2019s own terminal takes', () => {
+    const named = renderComponent(ShipIdentityFields, { ...NAMED, editing: 'name' });
+    expect(query(named, '.identity-fields__input').getAttribute('maxlength')).toBe('22');
+
+    const plated = renderComponent(ShipIdentityFields, { ...NAMED, editing: 'ident' });
+    expect(query(plated, '.identity-fields__input').getAttribute('maxlength')).toBe('6');
+  });
+
+  it('clips a longer value it was opened on rather than committing it', () => {
+    // `maxlength` bounds typing and pasting; it says nothing about the value the
+    // field opened on, which may have come from a link or a SLEF file. Leaving
+    // the field is what brings it inside the game's own limit.
+    const fixture = renderComponent(ShipIdentityFields, { ...NAMED, editing: 'ident' });
+    const committed: unknown[] = [];
+    fixture.componentInstance.committed.subscribe((commit) => committed.push(commit));
+
+    const field = query(fixture, '.identity-fields__input') as HTMLInputElement;
+    field.value = 'FD-11X-EXTRA';
+    field.dispatchEvent(new Event('change'));
+
+    expect(committed).toEqual([{ field: 'ident', value: 'FD-11X' }]);
+  });
+
   it('asks to be opened rather than opening itself', () => {
     const fixture = renderComponent(ShipIdentityFields, NAMED);
     const opened: unknown[] = [];

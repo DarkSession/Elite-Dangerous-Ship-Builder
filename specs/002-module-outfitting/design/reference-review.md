@@ -334,6 +334,16 @@ channel rather than drawing its own pair inside the region: a second pair would 
 actions twice, in a place neither canvas puts them. Task T093 named a component file for them; what
 was built is the channel, and the task text now says so.
 
+**Where the two ways in sit on that row, ruled 2026-08-26 (Commander request).** No canvas draws
+either of them there. The shipyard's `IMPORT` sits alone beside `?` on canvas 1a's bar, and its
+`OPEN SAVED BUILD` is a control on the page — beside the filters on the manifest, beside
+`BUILD STOCK HULL` on the hull detail — so a bar carrying both is this application's own composition
+and their order is its own decision. They belong beside each other: they are the same question with
+two answers, and the screen's history pair and `EXPORT` sat between them. Importing now opens the
+action row and the screen's own actions are grouped off after it, which puts it next to the library
+link the frame draws immediately before that row. The library stays a link: it is a route, and a
+button for it could not be opened in a new tab or have its address copied.
+
 The next-action summary the contract asks for is exposed by the store and carried as the control's
 `aria-describedby` — invisible, because neither canvas draws a summary beside either control. It is
 the same accessibility floor as the ledger's hidden slot keys.
