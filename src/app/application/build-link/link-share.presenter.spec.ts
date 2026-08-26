@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
@@ -106,6 +107,71 @@ describe('the share link, and every way passing it on can fail', () => {
 
     expect(navigator.copied).toContain('#b.abc');
     expect(dialog.feedback()).toBe('copied');
+  });
+
+  it('puts the control’s own label back once the answer has been read', async () => {
+    // The copy is answered on the control that did it, and a control that went
+    // on claiming a copy from a minute ago would be answering the wrong press.
+    vi.useFakeTimers();
+    try {
+      const { dialog, active } = setup();
+      active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
+
+      await dialog.copy();
+      expect(dialog.feedback()).toBe('copied');
+
+      vi.advanceTimersByTime(1_200);
+
+      expect(dialog.feedback()).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives a second copy its own full hold rather than the rest of the first', async () => {
+    // Two presses are two answers, and the second is owed as long a look as the
+    // first. Left running, the first press's timer would put the label back part
+    // way through the second one's.
+    vi.useFakeTimers();
+    try {
+      const { dialog, active } = setup();
+      active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
+
+      await dialog.copy();
+      vi.advanceTimersByTime(1_000);
+      expect(dialog.feedback()).toBe('copied');
+
+      await dialog.copy();
+
+      // What was left of the first hold would have expired here.
+      vi.advanceTimersByTime(1_000);
+      expect(dialog.feedback()).toBe('copied');
+
+      vi.advanceTimersByTime(200);
+      expect(dialog.feedback()).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('drops the pending restore when the link is shared instead', async () => {
+    // The hold belongs to the copy that set it. Left running, it would put the
+    // copy control's label back in the middle of a different answer.
+    vi.useFakeTimers();
+    try {
+      const { dialog, active } = setup();
+      active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
+      await dialog.copy();
+
+      await dialog.share();
+      expect(dialog.feedback()).toBe('idle');
+
+      vi.advanceTimersByTime(1_200);
+
+      expect(dialog.feedback()).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('keeps the link on screen when the clipboard refuses', async () => {
