@@ -43,14 +43,15 @@ real hardware.
   fill says _selected_ and the hue says _which kind_, so a selected utility is filled in the
   informational hue the legend's `UTILITY` entry draws. Selection remains carried by `aria-pressed`
   and by the ledger row as well as by the fill.
-- Q: iPadOS draws the hulls in the package's own blue. → A: **Not reproduced, and recorded as a
-  diagnosis rather than a fixed defect.** Unfiltered, the package's own ink is exactly the reported
-  blue, and the likeliest reason for the filter not applying is that it was declared on an SVG
-  container element, which WebKit is understood not to filter. It moves to an ordinary box around
-  the drawing, which removes the engine-dependent case; the marks and leaders stay outside it. The
-  engine matrix is Chromium and Firefox by constitutional mandate, so no automated test covers this
-  and confirming it needs a manual check on the device. Recorded in
-  [design/hull-anatomy.md](./design/hull-anatomy.md), "Schematic regions".
+- Q: iPadOS draws the hulls in the package's own blue. → A: The schematic filter was declared on an
+  SVG container element, which WebKit does not apply a filter function to; unfiltered, the package's
+  own ink is exactly the reported blue. It moves to an ordinary box around the drawing, which removes
+  the engine-dependent case rather than working around it; the marks and leaders stay outside it.
+  **Confirmed on the device on 2026-08-26** — the plate, not the mechanism, which is the explanation
+  that predicted the fix. The engine matrix is Chromium and Firefox by constitutional mandate, so no
+  automated test guards it: the suites assert the fix's shape and
+  [e2e/manual/webkit-filter.protocol.md](../../e2e/manual/webkit-filter.protocol.md) covers the rest.
+  Recorded in [design/hull-anatomy.md](./design/hull-anatomy.md), "Schematic regions".
 
 ## User Scenarios
 

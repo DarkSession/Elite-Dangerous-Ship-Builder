@@ -160,10 +160,13 @@ describe('HullSchematic', () => {
   });
 
   it('filters the drawing on an ordinary box rather than on a group inside it', () => {
-    // A CSS filter function on an SVG container element is not applied by every
-    // engine — WebKit on iPadOS leaves it off and the plate then shows the
-    // package's own near-black navy. The marks and leaders stay outside the
-    // filtered box, so they keep the interface's own colours.
+    // WebKit does not apply a CSS filter function to an SVG container element,
+    // and the plate then shows the package's own near-black navy — which is
+    // what an iPad reported before the filter moved to a plain box. This engine
+    // applies it either way, so what is asserted is the *shape* of the fix: the
+    // filter's element is an ordinary box, and the marks and leaders sit
+    // outside it where they keep the interface's own colours. Whether the hull
+    // is actually amber on WebKit is `e2e/manual/webkit-filter.protocol.md`.
     const fixture = renderComponent(HullSchematic, { view: view() });
 
     const picture = query(fixture, '.schematic__picture');

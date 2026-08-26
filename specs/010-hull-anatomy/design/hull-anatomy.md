@@ -107,15 +107,19 @@ plate holds its whole document at its own ratio at every width.
   declared on an ordinary box around the drawing, not on a group inside it**, and the reason is a
   defect this repository cannot reproduce. The symptom reported was "on iPad OS the hulls are blue";
   unfiltered, the package's own ink is exactly that — a hull drawn in near-black navy over seven
-  bright feature hues — so the drawing arriving unfiltered is the likely cause, and the likely reason
-  for that is a CSS filter _function_ on an SVG container element, which WebKit is understood not to
-  apply. **None of that was verified here.** Constitution principle VIII fixes the engine matrix at
-  Chromium and Firefox, both of which apply the filter in either position, so the change is a no-op
-  in every test this project runs and no automated test covers the engine the defect was in.
-  Declaring it on a plain box removes the engine-dependent case rather than working around it; the
-  marks and the leaders stay outside that box, where they keep the interface's own colours rather
-  than being pushed through a lift meant for package ink. Confirming the fix is a manual check on the
-  device, and until someone runs it this is a plausible diagnosis and not a closed defect.
+  bright feature hues — and the reason a filter would not apply is that it was a CSS filter
+  _function_ on an SVG container element, which WebKit declines. **The fix is confirmed on the
+  device** (2026-08-26; `e2e/manual/results/webkit-filter.md`). What is confirmed is the plate: the
+  hull draws amber there now. The mechanism is the explanation that predicted it rather than
+  something measured here, which matters only if the symptom returns — the first thing to check is
+  still which element carries the filter. Declaring it on a plain box removes the engine-dependent
+  case rather than working around it; the marks and the leaders stay outside that box, where they
+  keep the interface's own colours rather than being pushed through a lift meant for package ink.
+  **No automated test guards it**: constitution principle VIII fixes the engine matrix at Chromium
+  and Firefox, both of which apply the filter in either position, so a change moving it back would
+  pass every check this project runs. The suites assert the fix's shape — that the filter's element
+  is a plain box and the marks sit outside it — and `e2e/manual/webkit-filter.protocol.md` is what
+  stands in for the rest.
 - A side that has not arrived carries the hull illustration's own loading mark, in the place the
   drawing will be, with the words spoken rather than drawn. Prose in the frame and a hull after it is
   a plate that changes height when the fetch lands.

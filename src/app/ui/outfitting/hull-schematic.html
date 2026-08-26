@@ -30,13 +30,14 @@
         mount is a real button in the overlay above, so the drawing itself
         carries no control and no fact that is not also written down.
 
-        The plain box around it is what carries the schematic filter. A CSS
-        filter function on an SVG container element is not applied by every
-        engine — WebKit on iPadOS leaves it off, and what a Commander then sees
-        is the package's own ink: a hull drawn in the near-black navy the
-        Almanac uses, over the seven bright hues of its feature panels. On an
-        ordinary box every engine applies it, and the marks and leaders stay
-        outside it where they keep the interface's own colours
+        The plain box around it is what carries the schematic filter, and it
+        has to stay a plain box: WebKit does not apply a CSS filter function to
+        an SVG container element, and what a Commander then sees is the
+        package's own ink — a hull drawn in the near-black navy the Almanac
+        uses, over the seven bright hues of its feature panels. Reported from an
+        iPad, fixed here, confirmed on the device
+        (e2e/manual/results/webkit-filter.md). No automated test guards it: the
+        matrix is Chromium and Firefox, and both filter either position
         (design/hull-anatomy.md, "Schematic regions").
       -->
       <div class="schematic__picture">

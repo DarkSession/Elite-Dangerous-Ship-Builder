@@ -38,14 +38,17 @@
 
 // A plain box around the drawing, and the element the schematic filter is on.
 //
-// It is here rather than on the `g` inside the picture because of a defect this
-// repository cannot reproduce: hulls were reported blue on iPadOS, and
-// unfiltered the package's own ink is exactly that — near-black navy structure
-// over seven bright feature hues. The likeliest reason for the filter not
-// applying is that it was on an SVG container element, which WebKit is
-// understood not to filter. Unverified: the engine matrix is Chromium and
-// Firefox, which filter either position. An ordinary box has no such
-// engine-dependent case.
+// It is here rather than on the `g` inside the picture because WebKit does not
+// apply a CSS filter *function* to an SVG container element. Hulls were
+// reported blue on iPadOS, and unfiltered the package's own ink is exactly that
+// — near-black navy structure over seven bright feature hues. Confirmed fixed
+// on the device, 2026-08-26 (`e2e/manual/results/webkit-filter.md`).
+//
+// Nothing automated guards it. The engine matrix is Chromium and Firefox by
+// constitutional mandate and both filter either position, so moving this back
+// onto the `g` would pass every check this project runs and break the plate on
+// every WebKit browser. The unit suite asserts only the shape — a plain box,
+// with the marks outside it.
 //
 // Absolutely positioned so the frame keeps taking its height from its own
 // `aspect-ratio` rather than from this, and inert to the pointer so the marks

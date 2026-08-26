@@ -342,13 +342,17 @@ said and the requirement is what changed.
       with the reasoning in `design/hull-anatomy.md`, "Legend and visual language": the fill says
       _selected_ and the hue says _which kind_.
 - [x] T078 Remove the engine-dependent case behind the iPadOS report of blue hulls — the schematic
-      filter moves from the SVG group inside the picture, which WebKit is understood not to filter,
-      to an ordinary `.schematic__picture` box around it in `hull-schematic.html` and
-      `hull-schematic.scss`, leaving the marks and the leaders outside it. **The defect is not
-      reproduced and the fix is not verified**: the engine matrix is Chromium and Firefox, both of
-      which filter either position, so the change is a no-op in every test this project runs.
-      Confirming it is a manual check on the device. Recorded in `design/hull-anatomy.md`,
-      "Schematic regions".
+      filter moves from the SVG group inside the picture, which WebKit does not apply a filter
+      function to, to an ordinary `.schematic__picture` box around it in `hull-schematic.html` and
+      `hull-schematic.scss`, leaving the marks and the leaders outside it. **Confirmed on the device
+      on 2026-08-26**, recorded in `e2e/manual/results/webkit-filter.md` against the protocol added
+      by T088. Recorded in `design/hull-anatomy.md`, "Schematic regions".
+- [x] T088 Give the WebKit filter a manual protocol and a result record —
+      `e2e/manual/webkit-filter.protocol.md` and `e2e/manual/results/webkit-filter.md`, in the shape
+      the zoom and screen-reader protocols already use. The engine matrix is Chromium and Firefox by
+      constitutional mandate and both apply the filter in either position, so a change that moved it
+      back onto an SVG container would pass every automated check; the suites assert the fix's shape
+      and the protocol names the conditions under which a person re-checks the rest.
 - [x] T080 Measure the plate rather than assuming a mark's share of it — `ElementSizeAdapter` in
       `src/app/platform/browser/element-size.adapter.ts` with its unit suite, observed in
       `hull-schematic.ts` over the plate frame and one mark, and passed to `placeMarks` as the
