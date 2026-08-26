@@ -1445,6 +1445,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'outfitting.search.shortcut.apple':
       'The Apple command key and a letter; the glyph is the key itself, not a word.',
+    'help.licence.index.application':
+      'A composition pattern: the label is the product word “App”, which German uses too, and the rest is the link variable.',
+    'help.action.symbol':
+      'A question mark, drawn as the reference draws it. The glyph is the mark itself and not a word; the action’s translated name is what a reader is told.',
     'outfitting.acquisition.short.mercenary':
       'Merc-Coin is the in-game currency name and is not translated.',
     'slef.import.refusal.module':

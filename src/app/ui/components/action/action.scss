@@ -34,6 +34,14 @@
   overflow-wrap: break-word;
 }
 
+// A control drawn as a mark rather than as its words. One glyph is narrower
+// than any label, so the target the words used to give it is stated here
+// instead of being inherited from text that is no longer drawn (constitution
+// V, AA target size).
+.action--symbol {
+  min-inline-size: var(--edsb-target-size);
+}
+
 .action--primary {
   @include layout.control-primary;
 }

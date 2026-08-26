@@ -59,13 +59,16 @@ export interface FrontierDisclaimer {
 /**
  * A deliberate navigation out of the application.
  *
- * There is exactly one. FR-009's package-defect action was withdrawn with the
- * design review on 2026-08-25, so `id` and `purpose` are single-member unions
- * rather than the open sets an earlier revision planned: a second destination
- * is now a type error rather than a review note.
+ * There are exactly two, and both are complete licence documents: this
+ * repository's own `LICENSE`, and the bundled library's. `purpose` stays a
+ * single-member union and `id` a closed pair, so a third destination — an issue
+ * tracker, a homepage, a docs site — is a type error rather than a review note.
+ * FR-009's package-defect action was withdrawn on 2026-08-25 and does not come
+ * back with these; what came back is the licence link FR-003 had withdrawn on
+ * the same day, on the 2026-08-26 ruling recorded in the specification.
  */
 export interface ExternalDestination {
-  readonly id: 'repositoryLicense';
+  readonly id: 'repositoryLicense' | 'almanacLicense';
   readonly url: string;
   readonly purpose: 'completeLegalTerms';
   readonly leavesApplication: true;
@@ -94,6 +97,7 @@ export interface HelpManifestV1 {
   readonly disclaimer: FrontierDisclaimer;
   readonly destinations: {
     readonly repositoryLicense: ExternalDestination;
+    readonly almanacLicense: ExternalDestination;
   };
   readonly sourceDistribution: readonly SourceDistributionArtifact[];
 }
@@ -156,25 +160,31 @@ export function assertHelpManifest(manifest: HelpManifestV1): HelpManifestV1 {
 
   // One destination, and the object cannot quietly grow a second one: a key
   // nobody expects here is a navigation nobody reviewed.
-  const destinationIds = Object.keys(manifest.destinations);
-  if (destinationIds.length !== 1 || destinationIds[0] !== 'repositoryLicense') {
+  // Exactly two, named. Both are complete-licence documents and nothing else
+  // is a destination: an issue tracker, a homepage or a docs site reaching this
+  // set would be a navigation this feature never accepted (FR-003).
+  const expectedIds = ['repositoryLicense', 'almanacLicense'];
+  const destinationIds = Object.keys(manifest.destinations).sort();
+  if (destinationIds.join(',') !== [...expectedIds].sort().join(',')) {
     throw new Error(
-      `Help manifest must carry exactly one destination, repositoryLicense; found ${
+      `Help manifest must carry exactly the destinations ${expectedIds.join(' and ')}; found ${
         destinationIds.join(', ') || 'none'
       }.`,
     );
   }
 
-  const licence = manifest.destinations.repositoryLicense;
-  if (licence.id !== 'repositoryLicense' || licence.purpose !== 'completeLegalTerms') {
-    throw new Error('repositoryLicense must be the sole completeLegalTerms destination.');
+  for (const id of expectedIds) {
+    const licence = manifest.destinations[id as 'repositoryLicense' | 'almanacLicense'];
+    if (licence.id !== id || licence.purpose !== 'completeLegalTerms') {
+      throw new Error(`${id} must be a completeLegalTerms destination carrying its own id.`);
+    }
+    if (!licence.leavesApplication || !licence.mayRequireNetwork) {
+      throw new Error(
+        `The ${id} destination must state that it leaves the app and needs a network.`,
+      );
+    }
+    assertNonEmpty(licence.url, `destinations.${id}.url`);
   }
-  if (!licence.leavesApplication || !licence.mayRequireNetwork) {
-    throw new Error(
-      'The licence destination must state that it leaves the app and needs a network.',
-    );
-  }
-  assertNonEmpty(licence.url, 'destinations.repositoryLicense.url');
 
   for (const artifact of manifest.sourceDistribution) {
     assertNonEmpty(artifact.mirrorPath, `sourceDistribution.${artifact.id}.mirrorPath`);

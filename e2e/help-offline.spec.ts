@@ -69,14 +69,27 @@ test.describe('help offline', () => {
     await expect(modal).toBeVisible();
 
     // Every part of it, not merely the shell: the sections, the purpose, all
-    // seven questions with their answers, and the three-line licence summary.
+    // seven questions with their answers, and the whole licence summary.
     await expect(modal).toContainText(englishMessages['help.section.about']);
     await expect(modal).toContainText(englishMessages['help.section.faq']);
     await expect(modal).toContainText(englishMessages['help.section.licence']);
     await expect(modal).toContainText(englishMessages['help.purpose']);
-    await expect(modal).toContainText(englishMessages['help.licence.index.application']);
+    await expect(modal).toContainText(englishMessages['help.licence.link.application']);
+    await expect(modal).toContainText(englishMessages['help.licence.link.library']);
     await expect(modal).toContainText(englishMessages['help.licence.index.gameData']);
     await expect(modal).toContainText(englishMessages['help.licence.index.typefaces']);
+
+    // And both licence links are drawn, with their addresses, on a visit that
+    // has no network at all. A link is an address rather than a request: what
+    // needs a connection is following one, and nothing about drawing it waits,
+    // fetches or degrades. Which is the whole distinction FR-001 turns on —
+    // the modal is complete offline, and one of the things it is complete
+    // about is where the terms it summarises can be read.
+    const links = modal.getByRole('link');
+    await expect(links).toHaveCount(2);
+    for (const link of await links.all()) {
+      expect(await link.getAttribute('href')).toMatch(/^https:\/\/github\.com\//);
+    }
 
     // SC-004's help part: the same seven, in order, with complete text and
     // nothing waiting on anything.
