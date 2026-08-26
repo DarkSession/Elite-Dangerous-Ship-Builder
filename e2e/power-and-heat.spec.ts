@@ -570,6 +570,12 @@ test.describe('the rail’s pip control', () => {
   test('holds the target baseline on every block, at this project’s layout', async ({ page }) => {
     await openPower(page);
 
+    // Counted before it is measured. `expectTargetSizes` asserts that nothing
+    // it found is undersized, which a selector matching nothing satisfies just
+    // as well — so without this the sweep would go green on a rail that drew no
+    // control at all.
+    await expect(page.locator('edsb-power-summary .pips__step')).toHaveCount(12);
+
     // Each project in the matrix is one of the five layout profiles, so this
     // measures the twelve blocks at all of them across the run — on the same
     // baseline the distributor cell's blocks hold.
