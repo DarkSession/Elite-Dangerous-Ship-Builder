@@ -26,7 +26,7 @@ route and no build state.
 `strictTemplates: true`; SCSS; Node.js per the repository tooling configuration
 
 **Primary Dependencies**: Angular and Router (zoneless), Angular service worker, RxJS,
-`@jsverse/transloco` runtime localization, browser `Intl`, `@elite-dangerous-almanac/core` leaf i18n
+`@jsverse/transloco` runtime localization, browser `Intl`, `@elite-dangerous-almanac/core` leaf i18n _(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_
 exports, `@axe-core/playwright`, PostCSS and `postcss-scss`
 
 **Storage**: None. The browser language setting is the only locale input and is read on every start.
@@ -128,7 +128,7 @@ src/
     │   ├── game-text.presenter.ts
     │   ├── locale-registry.ts
     │   ├── locale.store.ts
-    │   └── message.service.ts         # application facade over Transloco
+    │   └── message.service.ts         # application facade over the message catalogue
     ├── application/
     │   └── updates/                   # what this session knows about its own version
     ├── platform/
@@ -186,7 +186,7 @@ outcomes are:
   canonical-game-text disclosure path; it is not claimed to have complete Almanac coverage. Their
   non-empty key sets and interpolation variables must remain identical across the whole application;
   every downstream message change updates both catalogues atomically.
-- Add Transloco as a runtime message engine behind an application-owned signal store/facade. A
+- Add Transloco as a runtime message engine behind an application-owned signal store/facade. _(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_ A
   browser-language match wins over bundled English; there is no third input. Locale publication is
   atomic and presentation-only.
 - Add and register the application's one Angular service worker here: shell and English are eager
@@ -259,7 +259,7 @@ constitutional exception**.
 
 No constitutional violation requires justification. The tooling-only Angular preview application is
 the minimum reliable way to render the real zoneless component library in both browser engines
-without adding product surface or a separate zone-based component runtime. Transloco supplies the
+without adding product surface or a separate zone-based component runtime. _(Superseded 2026-08-26: Transloco was removed; `interpolate` in `src/app/i18n/locale-registry.ts` is the message engine. `research.md` is left as it was written, being a dated record of what was decided at the time.)_ Transloco supplies the
 message engine; the application store owns only startup selection and atomic document state that
 the library cannot own. The service worker supplies the constitutional offline boundary for
 static locale assets.
