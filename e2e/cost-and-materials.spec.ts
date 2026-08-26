@@ -581,6 +581,11 @@ async function ownFigures(page: Page): Promise<number[]> {
 const READINGS = [
   '.block__heading',
   '.block__note',
+  // The row that sets the heading and the blueprint count at opposite ends.
+  // Listed as well as its two children: a collision between them moves the
+  // child boxes without moving either one's text outside itself, so only the
+  // row they share can see it.
+  '.block__head',
   '.block__footer',
   '.cost__label',
   '.cost__value',
@@ -789,7 +794,6 @@ test.describe('reading at another text size and direction', () => {
   test('right to left mirrors the blocks without reordering them', async ({ page }) => {
     await openStockBuild(page);
     await engineerTheDrive(page);
-    const order = await headingOrder(page);
     const before = await rowEdges(page);
     expect(before.length).toBeGreaterThan(0);
     // Left to right, the name opens each row and the count closes it.
@@ -816,7 +820,6 @@ test.describe('reading at another text size and direction', () => {
     // before the flip would be comparing it with itself. That the order is
     // `COST` then `MATERIALS` is asserted where it can fail, in "keeps both
     // blocks in canvas order at every width".
-    expect(order).toHaveLength(2);
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
     await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
     // Scoped to these two blocks rather than to the document. The application
