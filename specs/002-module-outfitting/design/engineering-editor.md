@@ -147,7 +147,12 @@ screen was headed `Engineer Hardpoint 1`. Four corrections:
   result as bordered plates on the screen's ground, each with the same hairline, panel ground and
   `13px 14px` inset the dashboard's blocks carry. The plate belongs to this placement rather than to
   the content: canvas 1c draws none, because inline the editor is already one bordered box with a
-  ruled bar and a box inside a box is a frame around a frame. The content is the same either way.
+  ruled bar and a box inside a box is a frame around a frame. The content is the same either way —
+  and that includes how the card stacks what is in it. Amended 2026-08-26: the stack was written into
+  the layer's rule together with the plate, so inline the recipe's menu and the grade bar under it
+  stood with nothing between them and the bar read as part of the control above it rather than as the
+  grade that control was set to. Only the plate is the layer's; the stack belongs to the card
+  (Commander request 2026-08-26).
 - **The grade is inside the recipe's plate**, under the hairline 1d rules between them, rather than
   on a plate of its own. It is the recipe's own grade, which is what the drawing now says: a grade
   with no recipe behind it was already a control over nothing.

@@ -81,6 +81,32 @@ under them — is the taller of the two readings at the moment a Commander is ma
 editor was the pane being scrolled. Not an even split: the canvas does draw the manifest the taller
 of the two, and this only narrows the margin (Commander request 2026-08-26).
 
+**Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
+track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
+the page to two hundred rows, and the plates fit that column: they are drawn at the hull's own
+proportions and ask for exactly the height they need. The four dashboard modes are not. Their height
+is whatever the build has to say, and `POWER AND THERMALS` exceeds the column on any screen shorter
+than 900px — at 1560 x 800 it was given 224px for 1053px of content. Wave 14 had it scroll that
+inside itself, which put a second scrollbar in a column that already had one, with the distributor's
+own pip blocks below the panel's fold and the page underneath refusing to move.
+
+So the column releases while a dashboard is open — `position: static`, its own content height, the
+bench released with it — and the page scrolls instead, exactly as a short viewport releases it. The
+plates keep the bound: they are the arrangement it was written for and they fit it. Which of the two
+is open is read off `edsb-hull-anatomy`'s own `anatomy--dashboard` host class rather than a flag
+beside it, so a mode that lands next is bounded or released by what it draws rather than by a list
+somebody remembered to add it to (Commander request 2026-08-26).
+
+**Ruled 2026-08-26 — the status rail's last block may have the rest of the column.** The rail is a
+column of a fixed height whose blocks are as tall as they are, and feature 009's material list closes
+it. Bounded at five rows by that feature's ruling G, the list stopped a third of the way down and
+left the foot of the track empty beside a scrollbar that was there to reach rows the column had room
+to show. The rail is now a stack: what sits above the list is fixed, the list takes what is left and
+scrolls only what will not fit, and it never falls below the measure ruling G set. Only where the
+rail is the canvas's third track — below that step it is a band under the bench with the page's own
+height to grow into, and a list that filled it there would run the whole shopping list down the
+screen (Commander request 2026-08-26; `specs/009-cost-and-materials/spec.md`, FR-007a).
+
 **What that height is, is measured, not declared.** `--edsb-layout-bar-height` is one row of controls
 at the target baseline — what the bar comes to on every screen that draws a plain title. This screen
 does not: FR-019's identity block is two 24px targets and a gap, so the workspace's bar is 74px, and

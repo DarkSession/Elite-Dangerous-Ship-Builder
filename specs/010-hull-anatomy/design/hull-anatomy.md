@@ -95,6 +95,16 @@ plate holds its whole document at its own ratio at every width.
   draws the same whole hull smaller, and there is no pan, no zoom, no drag matrix, no coordinate read
   off the DOM and no stored pan model — which is how both canvases draw the plates, and it is why
   FR-012 says nothing pans rather than making panning accessible.
+- **The plate has a width it does not grow past. Ruled 2026-08-26 (Commander request).** A plate's
+  height is its width over that ratio, and the ratio is the one thing here that cannot move — the
+  drawing's own `viewBox` is built to it, so a plate of any other shape would drift its marks off the
+  hull. Tracks that took every pixel they were given therefore grew the whole block with the window:
+  282px tall on canvas 1c's own 1560, 355px at 1920, 485px at 2560, which is more than half of a
+  wide screen given to two drawings that were already finished at the first of those. The two tracks
+  are now bounded at `--edsb-layout-anatomy-plate` and centred in whatever the column has beyond it.
+  The measure is canvas 1c's own: its 862px centre column, less the block's inset and the gap between
+  the plates, halved. Nothing moves at the width the canvas was drawn at, and past it the anatomy
+  stops taking room the ledger and the bench can use.
 - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel path data, and what a
   plate needs out of it is the drawing's box, the rectangle it draws in and the middle of every
   annotated mount — a few hundred bytes. Both halves are produced from the installed package at build
@@ -135,6 +145,14 @@ plate holds its whole document at its own ratio at every width.
 - Where the plates share a bounded column with feature 002's bench, the plates ask for the height
   their hulls need at that width and the bench takes everything else. A capability that stretched to
   fill the column and pushed the editor off it would have got its own priority backwards.
+- A dashboard mode is the other case, and it is not bounded at all. Its height is whatever the build
+  has to say rather than what a hull's proportions come to, so the region says all of it and the
+  column outside releases to carry it (`specs/002-module-outfitting/design/outfitting-workspace.md`,
+  "a detail panel is not bounded by the column"). It scrolled inside itself until 2026-08-26, which
+  on a 1560 x 800 screen meant 224px of panel for 1053px of content, in a second scrollbar inside a
+  column that already had one. The region reports which of the two it is showing — `isDashboard()`,
+  drawn as the `anatomy--dashboard` host class — and that is the whole of what the column outside
+  reads (Commander request 2026-08-26).
 
 ## Legend and visual language
 

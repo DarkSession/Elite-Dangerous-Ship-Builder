@@ -303,15 +303,35 @@ test.describe('the Merc Coin row', () => {
     await expect(list.locator('dl.rail-materials')).toHaveCount(1);
     await expect(list.locator('dl[role]')).toHaveCount(0);
 
+    // Ruling G amended 2026-08-26 (Commander request): the measure is a cap
+    // where the rail is a band with the page's height to grow into, and a floor
+    // where the rail is the canvas's own third track. That track is a column of
+    // a fixed height which this block closes, and capped at five rows the list
+    // stopped a third of the way down it and left the rest empty. Bounded
+    // either way — every row is still here and the box still scrolls.
     const bounded = await list.evaluate((node) => {
       const style = getComputedStyle(node);
+      const rail = node.closest('.outfitting__status-rail');
       return {
         overflow: style.overflowY,
-        capped: style.maxBlockSize !== 'none' && style.maxBlockSize !== '',
+        cap: style.maxBlockSize,
+        floor: style.minBlockSize,
+        // The rail scrolls inside itself only where it is a bounded column.
+        railBounded: rail !== null && getComputedStyle(rail).overflowY === 'auto',
+        height: node.clientHeight,
+        railHeight: rail === null ? 0 : rail.clientHeight,
       };
     });
     expect(bounded.overflow).toBe('auto');
-    expect(bounded.capped).toBe(true);
+    if (bounded.railBounded) {
+      expect(bounded.cap).toBe('none');
+      expect(bounded.floor).not.toBe('0px');
+      expect(bounded.floor).not.toBe('auto');
+      expect(bounded.height).toBeLessThanOrEqual(bounded.railHeight);
+    } else {
+      expect(bounded.cap).not.toBe('none');
+      expect(bounded.cap).not.toBe('');
+    }
   });
 
   test('is left out of the material type and unit counts', async ({ page }) => {

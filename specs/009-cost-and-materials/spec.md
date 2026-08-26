@@ -90,6 +90,18 @@ within itself. Every consolidated row is still present and still reachable — t
   instead of holding fewer rows at 200%. Because the box scrolls, it MUST be focusable and MUST
   carry an accessible name, which the block's own heading supplies.
 
+  **Amended 2026-08-26 (Commander request).** The measure is a floor as well as a bound, and which
+  of the two it acts as depends on what the block is sitting in. Where the rail is the canvas's own
+  third track it is a column of a fixed height — everything the command bar leaves — and this block
+  closes it; capped at five rows the list stopped a third of the way down and left the rest of the
+  column empty beside a scrollbar that was there to reach rows the column had room to show. So in
+  that column the box MUST take the space the blocks above it leave and scroll only what will not
+  fit, and it MUST NOT fall below the measure. Everywhere else — the rail as a band under the
+  bench, the compact Status stack, a released short viewport — the page has the height to grow into
+  and the measure stays the cap it was, or the whole shopping list runs down the screen. Bounded
+  either way: every consolidated row is still present, still reachable, and the two counts still
+  describe the whole list.
+
 - **FR-008**: A blueprint or effect the package cannot cost contributes nothing to the list. The
   canvas draws no missing-recipe wording and none is built.
 - **FR-009**: Fixed pre-engineering MUST contribute no craft cost. A Mercenary purchase grade is a

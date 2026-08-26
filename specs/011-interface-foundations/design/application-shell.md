@@ -121,3 +121,16 @@ the saved build or an export.
 Compose shared frame, product/route heading, navigation, visible-name actions/menu, labelled locale
 field/selector, status/error, adaptive layer and announcement outlet primitives. Shell styles contain
 no governed literal and shell templates contain no application-owned display literal.
+
+**The menu control draws its own mark. Ruled 2026-08-26 (Commander request).** A `select` left at the
+platform's own appearance drew the browser's chevron in the browser's ink — the one part of a field
+the theme could not reach, and on the engineering recipe it sat inside a control the canvas draws in
+the accent. The control now takes `appearance: none` and the field draws canvas 1c's own caret
+beside it (`eng-bp-btn`): a mono glyph at the trailing edge, in the field's own muted ink and the
+disabled ink when the control is disabled, with the control's trailing inset opened far enough that
+the longest option stops before the mark rather than running under it.
+
+A `select` is a replaced element and hosts no pseudo-element, so the mark is a box positioned over
+it. It is `pointer-events: none`, so the whole control still opens on a press anywhere across it, and
+`aria-hidden`, because the element already tells a reader it is a menu — a caret announced beside it
+would be a second, wordless claim about the same control.

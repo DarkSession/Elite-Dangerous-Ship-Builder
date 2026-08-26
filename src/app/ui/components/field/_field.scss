@@ -65,6 +65,42 @@
   text-transform: none;
 }
 
+// The reference's own menu control: the field's ground and hairline, its text
+// in the accent the control carries, and a mono caret at the trailing edge
+// (canvas 1c, `eng-bp-btn`). `appearance: none` is what makes that true — with
+// the platform's own appearance the browser drew its own chevron in its own
+// ink, which is the one part of the control the theme could not reach
+// (Commander request 2026-08-26).
+//
+// The trailing inset leaves room for the caret. It is the control's own inline
+// padding twice over plus the caret's width, so the longest option's text stops
+// before the mark rather than running under it.
+.field__select {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.field__control--select {
+  appearance: none;
+  padding-inline-end: calc(var(--edsb-space-control-inline) * 2 + 1ch);
+}
+
+.field__caret {
+  position: absolute;
+  inset-inline-end: var(--edsb-space-control-inline);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-caption);
+  line-height: var(--edsb-text-leading-flat);
+  color: var(--edsb-text-muted);
+  pointer-events: none;
+}
+
+.field__control--select:disabled + .field__caret {
+  color: var(--edsb-text-disabled);
+}
+
 .field__control option {
   background-color: var(--edsb-surface-panel);
   color: var(--edsb-text-primary);

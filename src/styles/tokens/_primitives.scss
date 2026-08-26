@@ -374,6 +374,22 @@
   // hull, so the region reserves its height before a schematic is fetched.
   --edsb-measure-plate-ratio: 720 / 292;
 
+  // How wide one anatomy plate is allowed to get.
+  //
+  // A plate's height is its width over the ratio above, and that ratio cannot
+  // move: the drawing's own `viewBox` is built to it, so the marks over the
+  // hull would drift off it if the box the plate draws in were any other shape.
+  // The width is therefore the only lever, and without one the block grew with
+  // the window — 282px of a 1560 screen, 355px at 1920, 485px at 2560, which is
+  // more than half of what a Commander can see given to two drawings that were
+  // finished at the first of those (Commander request 2026-08-26).
+  //
+  // The number is canvas 1c's own: its 862px centre column, less the block's
+  // inset and the gap between the plates, divided in two. So at the width the
+  // canvas was drawn at nothing moves, and past it the anatomy stops taking
+  // room the ledger and the bench below it can use.
+  --edsb-measure-anatomy-plate: 25.25rem;
+
   // The same node badge, set on the hull instead of in a ledger row. Canvas 1c
   // draws it `clamp(14px, 3.06cqw, 22px)` square with the number at
   // `clamp(7px, 1.39cqw, 10px)` and the engineering mark at

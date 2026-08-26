@@ -225,20 +225,39 @@
     flex: none;
   }
 
-  // A dashboard is not a pair of plates. The plates are drawn at the hull's own
-  // proportions and ask for exactly that height; the four dashboard modes are
-  // panels of figures whose height is whatever the build has to say, and the
-  // power one already exceeds this column. Asking for it anyway put the bottom
-  // of the panel below a column that cannot scroll and a page that has stopped
-  // scrolling — the distributor's own pip blocks were unreachable by pointer or
-  // touch at tablet portrait, which principle V does not allow.
+  // A dashboard is not a pair of plates.
   //
-  // So a dashboard region takes what the column has and scrolls what is left
-  // inside itself, exactly as the bench beside it does. The plates keep their
-  // own rule above, and both are released together on a short viewport.
-  .outfitting__centre edsb-hull-anatomy.anatomy--dashboard {
-    flex: 0 1 auto;
+  // The plates are drawn at the hull's own proportions and ask for exactly that
+  // height, so the column bounds them and hands the rest to the bench. The four
+  // dashboard modes are panels of figures whose height is whatever the build has
+  // to say, and the power one exceeds this column on any screen under 900px: at
+  // 1560 x 800 it was given 224px for 1053px of content.
+  //
+  // It scrolled that inside itself until 2026-08-26 — a second scrollbar in a
+  // column that already had one, with the distributor's pip blocks below its own
+  // fold and the page underneath refusing to move. So the column is released
+  // instead and the page carries the panel, exactly as a short viewport releases
+  // it (Commander request 2026-08-26). The plates keep the bound: they are the
+  // arrangement it was written for, and they fit it.
+  //
+  // Read off the region's own class rather than a flag beside it, so a mode that
+  // lands next is bounded or released by what it draws rather than by a list
+  // somebody remembered to add it to. `.anatomy--dashboard` is `edsb-hull-anatomy`'s
+  // own host class and this column holds nothing else that could carry it.
+  .outfitting__centre:has(> .anatomy--dashboard) {
+    position: static;
+    block-size: auto;
+  }
+
+  .outfitting__centre:has(> .anatomy--dashboard) .outfitting__bench {
+    flex: none;
     min-block-size: 0;
+    overflow: visible;
+  }
+
+  .outfitting__centre:has(> .anatomy--dashboard) edsb-module-replacement,
+  .outfitting__centre:has(> .anatomy--dashboard) edsb-engineering-editor {
+    flex: none;
   }
 
   // Named through the column so the base rule below, which resets both of these
@@ -312,6 +331,28 @@
     // The seam on this side is drawn by the rail itself, matching the ledger's
     // on the other side of the bench.
     border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    // A column of a fixed height whose last block may have the rest of it. The
+    // material list is bounded at five rows by ruling G, which left the foot of
+    // this track empty on any build the list could have filled (Commander
+    // request 2026-08-26). Stated here because a block cannot take space its
+    // column never offered: `cost-materials.scss` asks for it under the same
+    // container query.
+    display: flex;
+    flex-direction: column;
+  }
+
+  // What the rail holds above the list is as tall as it is. Left to shrink,
+  // every block in the column would give up a share of whatever the list asked
+  // for over the column's height, and `BUILD STATUS` would lose rows to the
+  // materials.
+  .outfitting__status-head,
+  .outfitting__status-band {
+    flex: none;
+  }
+
+  .outfitting__status-rail edsb-cost-materials {
+    flex: 1 1 auto;
+    min-block-size: 0;
   }
 }
 

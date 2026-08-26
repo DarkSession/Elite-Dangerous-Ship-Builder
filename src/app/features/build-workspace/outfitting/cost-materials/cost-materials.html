@@ -57,7 +57,7 @@
   </section>
 
   @if (materialsShown()) {
-    <section class="block" [attr.aria-labelledby]="materialsHeadingId">
+    <section class="block block--materials" [attr.aria-labelledby]="materialsHeadingId">
       <div class="block__head">
         <p class="block__heading" [id]="materialsHeadingId">{{ materialsHeading() }}</p>
         @if (blueprintCount(); as blueprints) {

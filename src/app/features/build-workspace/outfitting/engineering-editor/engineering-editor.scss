@@ -55,10 +55,17 @@
 // a ruled bar, and boxes inside a box is a frame around a frame. So the plate
 // belongs to this placement rather than to the content, and the content is the
 // same either way (reported 2026-08-26).
-.engineering--layer .engineering__card {
+// What a card holds is a stack at both placements. Only the plate around it is
+// the layer's. Inline, the recipe's menu and the grade bar under it stood with
+// nothing between them, so the bar read as part of the control above it rather
+// than as the grade that control was set to (Commander request 2026-08-26).
+.engineering__card {
   @include layout.stack(var(--edsb-space-stack));
 
   min-inline-size: 0;
+}
+
+.engineering--layer .engineering__card {
   padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
   background-color: var(--edsb-surface-panel);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);

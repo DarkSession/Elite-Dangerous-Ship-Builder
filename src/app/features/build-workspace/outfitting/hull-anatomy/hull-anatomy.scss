@@ -111,8 +111,14 @@
     padding-inline: var(--edsb-space-region);
   }
 
+  // Canvas 1c's two tracks, each bounded at the width the canvas gives it and
+  // centred in whatever it is given beyond that. A plate's height follows its
+  // width, so tracks that took every pixel of a 2560px column drew a block
+  // taller than half the screen for two drawings that were already finished at
+  // 1560 (Commander request 2026-08-26; `--edsb-measure-anatomy-plate`).
   .anatomy__plates {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, var(--edsb-layout-anatomy-plate)));
+    justify-content: center;
   }
 
   // Canvas 1c's strip: beside the rule rather than under it, and sized by its
@@ -192,28 +198,18 @@
   min-inline-size: 0;
 }
 
-// A bounded region hands its height down to the dashboard, which scrolls inside
-// itself rather than painting past the column that bounds it. Every link in the
-// chain needs `min-block-size: 0`: a flex item's automatic minimum is its
-// content, and one link left at `auto` restores the overflow this prevents.
+// A dashboard says everything the build has to say, at whatever height that
+// takes, and the page carries it.
 //
-// The region is only bounded where the workspace bounds it — the wide, sticky
-// composition. Everywhere else the host stays a block, the page scrolls, and
-// these rules do not apply.
-:host(.anatomy--dashboard) {
-  display: flex;
-  flex-direction: column;
-  min-block-size: 0;
-}
-
-:host(.anatomy--dashboard) .anatomy {
-  flex: 1 1 auto;
-  min-block-size: 0;
-}
-
-:host(.anatomy--dashboard) .anatomy__dashboard {
-  flex: 1 1 auto;
-  min-block-size: 0;
-  overflow: auto;
-  overscroll-behavior-block: contain;
-}
+// It used to take the height its column had and scroll the rest inside itself,
+// which is what the bench beside it does. On a 1560 x 800 screen that gave the
+// power panel 224px for 1053px of content: a scrollbar inside a column that
+// already had one, with the distributor's pip blocks below its fold and the
+// page underneath refusing to move. The workspace releases the column instead
+// (`outfitting-workspace.scss`, “A dashboard is not a pair of plates”), so the
+// region is unbounded here and there is nothing left to scroll against
+// (Commander request 2026-08-26).
+//
+// The host stays a block: `display: block` above is the whole arrangement, and
+// the flex chain that carried the height down to the panel went with the bound
+// it existed to serve.
