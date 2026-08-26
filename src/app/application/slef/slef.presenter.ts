@@ -183,9 +183,14 @@ export class SlefPresenter {
    *
    * The format is optional because the store's is sticky: a Commander who moved
    * to the link finds the link. A default here would look like the same
-   * behaviour and be the opposite of it — every open would reset the choice —
-   * so the argument is passed only by a caller that has a reason, which is what
-   * the refusal seam in `slef-fallback.adapter.ts` is.
+   * behaviour and be the opposite of it — every open would reset the choice.
+   *
+   * Nothing in the product calls this, or `openImport` above it. Both are the
+   * presenter's statement of the two intents; the shell and the refusal seam
+   * reach `SlefStore` directly instead, because opening a layer must not pull
+   * this presenter — and the Almanac, the serializer and the delivery ports
+   * behind it — into the bundle that draws the control
+   * (`slef-fallback.adapter.ts`).
    */
   openExport(mode?: SlefExportMode): void {
     if (mode !== undefined) {

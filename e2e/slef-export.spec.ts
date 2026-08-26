@@ -430,6 +430,20 @@ test.describe('the layer, against the canvas', () => {
       // Canvas 1c draws it at 1px, which is the hairline this system names.
       expect(parseFloat(rule.width)).toBe(1);
       expect(rule.colour).toContain('rgba(255, 140, 26');
+
+      // And it runs the height of the panel, which is the whole reason the
+      // layer's body hands its padding to the two regions. A rule that stopped
+      // at the taller region's content would be the drawn mark at the wrong
+      // length.
+      const spans = await formats.evaluate((node) => {
+        const region = node.closest('edsb-choice-group') ?? node;
+        const body = region.closest('.layer__body')!;
+        return Math.abs(
+          region.getBoundingClientRect().height - body.getBoundingClientRect().height,
+        );
+      });
+
+      expect(spans).toBeLessThanOrEqual(1);
     } else {
       expect(parseFloat(rule.width)).toBe(0);
     }

@@ -211,11 +211,18 @@ plate takes the reserved marker the canvas itself draws on the save dialog's cho
 and the wide arrangement joins the compact one in setting the chosen name in the heavier
 weight. Colour is what makes the state obvious; it is never what carries it.
 
-Two of the alphas resolve to the nearest named role rather than to a step of their own:
-the plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
-and the column's rule takes `--edsb-rule-grid` (`amber-a14`) against the drawn `amber-a16`.
-Both are roles this system already has, and a fourth and fifth amber hairline would be a
-second scale rather than a finer one.
+The alphas and inks resolve to the nearest named role rather than to steps of their own.
+The plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
+the chosen plate's takes `--edsb-border-control` (`amber-a40`) against the drawn `amber-a5`,
+the column's rule takes `--edsb-rule-grid` (`amber-a14`) against the drawn `amber-a16`, and
+the unchosen title takes `--edsb-text-secondary` (ink 0.80) against the drawn solid
+`--ink-2`. Four more amber hairlines and a fifth ink would be a second scale rather than a
+finer one.
+
+The fifth is not a rounding. The description takes `--edsb-text-subtle` (ink 0.62) against
+the drawn `--ink-48`, which sits inside the 0.32–0.50 band this system rejects for anything
+that is text rather than decoration — the same lift the type floor is, made for the same
+reason.
 
 ### Manifest row
 
