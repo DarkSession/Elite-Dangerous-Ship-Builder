@@ -402,6 +402,13 @@
 
   // Canvas 1c's power panel: `min-height: 328px`, and the 16px bars its
   // priority groups, module draws and heat scenarios are all drawn with.
+  // The column canvas 1d stands `H‑PTS` and `GRP n` in, at 40px, so the mode
+  // strip begins exactly where the bars under it begin. Wider here because
+  // neither label is abbreviated — the strip is named `Hardpoints` and a group
+  // is `Group n` — and stated as a floor rather than a width, so a translation
+  // longer than either still fits and the two only stop agreeing where one of
+  // them outgrows it.
+  --edsb-measure-band-name: 4.5rem;
   --edsb-measure-power-bar: 0.5625rem; // 9
 
   // Canvas 1c's drives panel: the mass bar is a 26px band, taller than any
@@ -531,6 +538,18 @@
   // `fr` says, because there is nothing left over for it to run away with once
   // the rail has its 216px.
   --edsb-measure-family-rail: 13.5rem;
+  // How wide that rail is allowed to get where the column has room to spare.
+  //
+  // 216px is the canvas's figure for the canvas's own 862px centre column — a
+  // quarter of it. Held at 216 everywhere the rail stopped being a quarter and
+  // started being a sliver: at 2560 the pane beside it was 1595px of mostly
+  // empty row while seventeen family names went on wrapping in 216
+  // (Commander request 2026-08-26). It now takes a quarter of what it is
+  // actually given, bounded — the bound is where a family name stops needing
+  // the width, and past it the rows beside it are the better home for the
+  // pixels.
+  --edsb-measure-family-rail-max: 20rem;
+  --edsb-measure-family-rail-share: 26%;
   --edsb-measure-family-gap: 0.875rem;
   --edsb-measure-manifest-pane: 29.375rem;
   --edsb-measure-candidate-class: 4.375rem;

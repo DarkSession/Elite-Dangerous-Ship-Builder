@@ -601,7 +601,7 @@
   "power.bands.offline": "Abgeschaltet",
   "power.summary.label": "Energiebilanz",
   "power.summary.plant": "Kraftwerksleistung",
-  "power.summary.draw": "Verbrauch",
+  "power.summary.draw": "Versorgter Verbrauch",
   "power.summary.unpowered": "Ohne Strom",
   "power.modules.heading": "Verbrauch nach Modul",
   "power.modules.column.name": "Modul",

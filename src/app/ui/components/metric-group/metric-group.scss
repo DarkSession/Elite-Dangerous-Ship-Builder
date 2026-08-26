@@ -96,6 +96,34 @@
   }
 }
 
+// The three-cell footer both canvases draw under the priority groups:
+// `repeat(3, 1fr)` at every width, on a smaller label and a smaller figure than
+// a metric cell ordinarily takes (canvas 1c `9px 10px / 7.5px / 13px`, canvas 1d
+// `8px 9px / 7px / 12px`). Sized by its own width instead, the group came out
+// two across with `UNPOWERED` alone under them on a phone, which is neither
+// artboard (Commander request 2026-08-26).
+//
+// Stated as a modifier rather than as another container step because it is not
+// a width: it is what this particular footer is drawn as, and the steps above
+// go on deciding for every other group.
+:host(.metric-group--tight) .metric-group {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:host(.metric-group--tight) .metric {
+  padding-block: var(--edsb-space-row);
+  padding-inline: var(--edsb-space-inline-tight);
+}
+
+:host(.metric-group--tight) .metric__number {
+  font-size: var(--edsb-text-size-compact);
+}
+
+// Three cells in three columns leave no last row to widen into.
+:host(.metric-group--tight) .metric:last-child:nth-child(odd) {
+  grid-column: auto;
+}
+
 // A group whose cells join a grid an ancestor owns.
 //
 // The canvas draws the status rail's six cells as one grid on one hairline

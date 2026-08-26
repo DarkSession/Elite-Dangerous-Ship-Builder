@@ -300,9 +300,18 @@
   // Canvas 1c's `#fit-table`: `grid-template-columns: 216px minmax(0, 1fr);
   // column-gap: 14px`. The head sits in column 2 row 1, over the pane alone;
   // the rail and the pane share row 2 and scroll independently.
+  //
+  // The rail's 216px is a quarter of the canvas's own centre column, and it is
+  // written here as a floor and a share rather than as the one number: held at
+  // 216 everywhere, a rail that is a quarter of the canvas became a sliver
+  // beside a pane of mostly empty row on a wide screen, while its family names
+  // went on wrapping (Commander request 2026-08-26). The share is bounded, so
+  // past the width a name needs the pixels go back to the rows.
   .candidates__manifest {
     display: grid;
-    grid-template-columns: var(--edsb-layout-family-rail) minmax(0, 1fr);
+    grid-template-columns:
+      minmax(var(--edsb-layout-family-rail), var(--edsb-layout-family-rail-max))
+      minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
     column-gap: var(--edsb-layout-family-gap);
     min-block-size: 0;

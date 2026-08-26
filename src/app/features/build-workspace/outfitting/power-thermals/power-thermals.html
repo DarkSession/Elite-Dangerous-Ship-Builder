@@ -28,7 +28,7 @@
         visible words and the announced words are the same words.
       -->
       <edsb-tab-group
-        class="power__hardpoints"
+        class="power__hardpoints tab-group-host--ruled"
         [label]="hardpointsLabel()"
         [labelVisible]="true"
         [tabs]="hardpointChoices()"
@@ -41,7 +41,6 @@
         @for (band of bandRows(); track band.id) {
           <li class="power__band" [class.power__band--offline]="band.offline">
             <span class="power__band-group">{{ band.group }}</span>
-            <span class="power__band-draw" data-bidi-isolate>{{ band.draw }}</span>
             <!--
               Two lengths and a mark, and no reading of its own: every figure it
               draws is the text on either side of it, which is what a reader who
@@ -62,6 +61,13 @@
               <span class="power__band-plant" [style.inset-inline-start.%]="plantMark() * 100">
               </span>
             </span>
+            <!--
+              The draw stands after the bar, which is where both canvases put it
+              — `GRP 1  [bar]  18.72 MW  60%`. Read before it, the figure pushed
+              every bar's leading edge past the mode strip above them, so the two
+              could not line up (Commander request 2026-08-26).
+            -->
+            <span class="power__band-draw" data-bidi-isolate>{{ band.draw }}</span>
             @if (band.offline) {
               <span class="power__band-state">{{ offlineLabel() }}</span>
             } @else {
@@ -71,8 +77,14 @@
         }
       </ol>
 
+      <!--
+        Both canvases draw this footer as three cells on one line, smaller than
+        an ordinary metric cell. `--tight` is what says so; the group's own
+        width steps would put two on a line and `UNPOWERED` alone under them at
+        the width a phone gives it (Commander request 2026-08-26).
+      -->
       <edsb-metric-group
-        class="power__summary"
+        class="power__summary metric-group--tight"
         [label]="summaryLabel()"
         [metrics]="summaryMetrics()"
       />

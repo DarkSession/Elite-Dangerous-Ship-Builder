@@ -601,7 +601,7 @@
   "power.bands.offline": "Offline",
   "power.summary.label": "Power budget",
   "power.summary.plant": "Plant output",
-  "power.summary.draw": "Draw",
+  "power.summary.draw": "Powered draw",
   "power.summary.unpowered": "Unpowered",
   "power.modules.heading": "Draw by module",
   "power.modules.column.name": "Module",

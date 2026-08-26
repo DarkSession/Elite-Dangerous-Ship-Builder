@@ -395,6 +395,10 @@
   // it draws between them is taken out (feature 001 build-library design).
   --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
   --edsb-layout-family-rail: var(--edsb-measure-family-rail);
+  --edsb-layout-family-rail-max: min(
+    var(--edsb-measure-family-rail-max),
+    var(--edsb-measure-family-rail-share)
+  );
   --edsb-layout-family-gap: var(--edsb-measure-family-gap);
   --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
@@ -407,6 +411,7 @@
   --edsb-layout-plate-ratio: var(--edsb-measure-plate-ratio);
   --edsb-layout-anatomy-plate: var(--edsb-measure-anatomy-plate);
   --edsb-layout-node-mark: var(--edsb-measure-node-mark);
+  --edsb-layout-band-name: var(--edsb-measure-band-name);
   --edsb-layout-power-bar: var(--edsb-measure-power-bar);
   --edsb-layout-mass-bar: var(--edsb-measure-mass-bar);
   --edsb-layout-mass-swatch: var(--edsb-measure-mass-swatch);

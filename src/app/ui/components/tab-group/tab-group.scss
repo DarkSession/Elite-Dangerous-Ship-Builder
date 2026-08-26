@@ -33,6 +33,15 @@
   flex: none;
 }
 
+// A caption that stands in a column the caller also draws rows in, so the strip
+// begins exactly where those rows' own second column begins. Canvas 1d does
+// this with the priority groups: `H‑PTS` and `GRP n` share one column and the
+// mode strip lines up with the bars (Commander request 2026-08-26). The width
+// is the caller's, named through a layout token it and the rows both read.
+:host(.tab-group-host--ruled) .tab-group__label {
+  min-inline-size: var(--edsb-layout-band-name);
+}
+
 // One amber hairline showing between the segments, and nothing around them:
 // `display: flex; gap: 1px; background: var(--amber-a16)` on both canvases.
 //

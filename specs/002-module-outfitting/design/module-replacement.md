@@ -66,6 +66,14 @@ manifest as one accordion. It draws `#fit-table` as
 - **column 2, row 2** — the selected family's rows, `border-left: 1px solid var(--amber-a16)`,
   bounded at the same `max-height: 470px` and scrolling on its own.
 
+**The rail's 216px is a floor and a share, amended 2026-08-26 (Commander request).** It is a quarter
+of the canvas's own 862px centre column, and held at that one number it stopped being a quarter the
+moment the column was wider: at 2560 the pane beside it ran 1595px of mostly empty row while
+seventeen family names went on wrapping inside 216. The rail now takes a quarter of what it is
+actually given, floored at the canvas's figure so nothing moves at the width the canvas was drawn at,
+and bounded at 20rem — past the width a family name needs, the pixels belong to the rows. 216 at 1440
+and 1560, 308 at 1920, 320 at 2560.
+
 **Selection is exclusive.** The revised script's rail branch shows the chosen family's `.fam-v` and
 hides every other, and returns before the accordion branch it replaced. Exactly one family is
 selected at all times, and the pane is never empty.
