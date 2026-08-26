@@ -289,7 +289,7 @@ describe('what feature 004 says out loud', () => {
     it('offers both drawn formats, with the selected one marked', () => {
       presenter.selectMode('slef');
 
-      expect(presenter.exportView().modes.map((mode) => mode.mode)).toEqual(['link', 'slef']);
+      expect(presenter.exportView().modes.map((mode) => mode.mode)).toEqual(['slef', 'link']);
       expect(presenter.exportView().modes.find((mode) => mode.selected)?.mode).toBe('slef');
     });
 

@@ -129,3 +129,175 @@
     cursor: not-allowed;
   }
 }
+
+// The card arrangement.
+//
+// Canvas 1c draws the export layer's formats as a column of plates: a tracked
+// condensed title over a Barlow description, on `--panel-2` inside an amber
+// hairline, and the chosen one washed amber with its title in amber too. Canvas
+// 1d draws the same formats above the payload instead, as a strip of tracked
+// chips that scrolls sideways rather than wrapping.
+//
+// One contract, two resolutions. Both are the native input and both carry
+// selection as its own checked state, so what a reader is told does not change
+// with the width.
+//
+// The two are keyed to the viewport rather than to this group's own box, which
+// is the exception the shared library makes for a composition the surrounding
+// layer also has to agree with: the export layer's grid is keyed to the
+// complementary `medium-up`, and a group that answered its own width would give
+// the 236px column canvas 1c draws the chips canvas 1d draws instead. A `cards`
+// group placed somewhere narrow at a wide viewport gets the plates.
+.choice-group__options[data-layout='cards'] {
+  @include layout.stack(var(--edsb-space-inline-tight));
+
+  // The plate is the control's own box: the input covers it, transparent and
+  // full size, so the target a pointer aims at is the thing being operated
+  // rather than a glyph beside it.
+  //
+  // Every plate reserves the marker on its leading edge, so choosing one moves
+  // a mark rather than reflowing the column.
+  .choice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--edsb-space-stack-tight);
+    min-block-size: var(--edsb-target-size);
+    padding-block: var(--edsb-space-control-block);
+    padding-inline: var(--edsb-space-lg);
+    background-color: var(--edsb-surface-panel-raised);
+    border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    border-inline-start: var(--edsb-border-width-marker) solid transparent;
+  }
+
+  // Selection follows the input's own checked state rather than a class
+  // somebody has to remember to set.
+  //
+  // The wash and the amber title are the echo, not the fact. A reader is told by
+  // the control's own checked state; an eye is told by the marker filling and
+  // the title thickening, both of which survive a monochrome rendering. The tint
+  // alone would be a state carried by colour, which is the one thing this design
+  // system does not do (AGENTS.md; canvas 1c draws the save dialog's chosen card
+  // with a filled marker for the same reason).
+  .choice:has(.choice__input:checked) {
+    background-color: var(--edsb-surface-accent-selected);
+    border-color: var(--edsb-border-control);
+    border-inline-start-color: var(--edsb-marker-selected);
+  }
+
+  .choice:has(.choice__input:focus-visible) {
+    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+    outline-offset: var(--edsb-focus-ring-offset);
+  }
+
+  .choice__input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    inline-size: 100%;
+    block-size: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .choice__label {
+    display: block;
+    min-block-size: 0;
+    font-family: var(--edsb-font-heading);
+    font-size: var(--edsb-text-size-compact);
+    font-weight: var(--edsb-text-weight-control);
+    line-height: var(--edsb-text-leading-control);
+    letter-spacing: var(--edsb-text-tracking-heading);
+    text-transform: uppercase;
+    color: var(--edsb-text-secondary);
+  }
+
+  .choice__input:checked + .choice__label {
+    font-weight: var(--edsb-text-weight-heading);
+    color: var(--edsb-text-accent-strong);
+  }
+
+  .choice__input:disabled + .choice__label {
+    color: var(--edsb-text-disabled);
+    cursor: not-allowed;
+  }
+
+  .choice__description {
+    text-wrap: pretty;
+  }
+
+  // A translated format name has no space to wrap at often enough that this is
+  // not a hypothetical: without it the plate takes its longest word's width and
+  // the column it is drawn in stops being the width it is drawn at.
+  .choice__label,
+  .choice__description {
+    overflow-wrap: anywhere;
+  }
+}
+
+// The compact resolution: one line of chips that scrolls rather than wraps, so
+// a strip too narrow for every format still reaches all of them and the
+// document never scrolls sideways (canvas 1d).
+@include layout.compact {
+  .choice-group__options[data-layout='cards'] {
+    @include layout.bounded-scroller;
+
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: var(--edsb-space-inline-tight);
+
+    .choice {
+      flex: none;
+      display: flex;
+      flex-direction: row;
+      gap: 0;
+      min-block-size: 0;
+      padding: 0;
+      background-color: transparent;
+      border: 0;
+    }
+
+    .choice:has(.choice__input:checked) {
+      background-color: transparent;
+      border-color: transparent;
+      border-inline-start-color: transparent;
+    }
+
+    // The chip wears the ring itself, so the outline follows the shape the eye
+    // is actually tracking.
+    .choice:has(.choice__input:focus-visible) {
+      outline: 0;
+    }
+
+    // The chip takes the shared control padding rather than the canvas's own
+    // 12px: it is a control, and one control's inline padding is not a place
+    // this system keeps a second scale.
+    .choice__label {
+      @include layout.control-base(var(--edsb-text-tracking-label));
+
+      background-color: var(--edsb-surface-control-quiet);
+      color: var(--edsb-text-subtle);
+      white-space: nowrap;
+    }
+
+    .choice__input:checked + .choice__label {
+      background-color: var(--edsb-surface-accent-solid);
+      color: var(--edsb-text-on-accent);
+      font-weight: var(--edsb-text-weight-heading);
+    }
+
+    .choice__input:focus-visible + .choice__label {
+      outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+      outline-offset: calc(-1 * var(--edsb-focus-ring-width));
+    }
+
+    // The chip carries the format's name and nothing else, as it is drawn. The
+    // description it has no room for stays in the accessibility tree, where it
+    // is still this choice's description rather than text that vanished with
+    // the layout.
+    .choice__description {
+      @include layout.visually-hidden;
+    }
+  }
+}

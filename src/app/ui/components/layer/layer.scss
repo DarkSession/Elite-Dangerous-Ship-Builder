@@ -69,13 +69,23 @@
   padding: var(--edsb-space-panel);
 }
 
+// A body whose content owns its own padding. What is inside then reaches the
+// panel's edges, so a rule between two regions runs the full height of the
+// layer rather than stopping short of it on all four sides (canvas 1c).
+.layer__body--flush {
+  padding: 0;
+}
+
 // The three presentations, as mixins, so the adaptive presentation composes
 // exactly the same rules rather than a second nearly-identical copy of them.
 
 // Centred dialog: bounded by a named measure, and never taller than the
 // viewport, so its own content scrolls instead of the document.
-@mixin dialog-presentation {
-  inline-size: min(var(--edsb-layout-layer-max), 100%);
+@mixin dialog-presentation($measure: var(--edsb-layout-layer-max)) {
+  // `inline-size`, not `max-inline-size`: the platform's own modal rule is a
+  // `max-width` that holds a dialog off the edges of the screen, and an author
+  // maximum here would beat it for every layer in the application.
+  inline-size: min($measure, 100%);
   max-block-size: 90vh;
   overflow-y: auto;
 }
@@ -124,8 +134,18 @@
   @include dialog-presentation;
 }
 
+// The width step, on the two bounded presentations. It is written as a compound
+// selector, and every rule that has to beat it below is written the same way —
+// so which layer is how wide is decided by specificity rather than by the order
+// these blocks happen to appear in.
+.layer--dialog.layer--wide,
+.layer--adaptive.layer--wide {
+  @include dialog-presentation(var(--edsb-layout-layer-wide));
+}
+
 @include layout.compact {
-  .layer--adaptive {
+  .layer--adaptive,
+  .layer--adaptive.layer--wide {
     @include sheet-presentation;
   }
 }
@@ -135,6 +155,7 @@
 // a 400% zoom looks like to the layout.
 @include layout.short-viewport {
   .layer--adaptive,
+  .layer--adaptive.layer--wide,
   .layer--sheet {
     @include full-height-presentation;
   }

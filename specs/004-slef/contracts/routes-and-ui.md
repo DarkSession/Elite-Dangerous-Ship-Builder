@@ -13,7 +13,9 @@ navigates to `/build` only after feature 001 commits the candidate.
 | `/builds`          | Shared shell action; accepted candidate navigates to `/build`     | No selected-row export; open a record as the active `/build` workspace first |
 
 The shared Export Build layer composes feature 001's Share Link mode and feature 004's SLEF mode with
-an accessible mode control. Journal/Markdown modes from `.design` are absent. There is one layer and
+an accessible mode control, in that order and opening on SLEF. Journal and Markdown modes are
+offered by neither the product nor `.design`: this repository is the source of truth for the canvas,
+so formats the application cannot produce were taken out of it. There is one layer and
 one responsive implementation, not feature-owned duplicate dialogs.
 
 ## Responsive composition

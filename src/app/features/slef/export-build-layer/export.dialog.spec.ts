@@ -91,14 +91,29 @@ describe('the export layer’s host', () => {
   it('offers the two drawn formats, and no others', () => {
     const fixture = render();
 
-    expect(fixture.componentInstance.modes().map((mode) => mode.value)).toEqual(['link', 'slef']);
+    expect(fixture.componentInstance.modes().map((mode) => mode.value)).toEqual(['slef', 'link']);
   });
 
-  it('starts on the format the canvas lists first', () => {
+  it('starts on the format the canvas draws first and draws selected', () => {
     const fixture = render();
 
-    expect(fixture.componentInstance.selectedMode()).toBe('link');
-    expect(fixture.componentInstance.selectedModes()).toEqual(['link']);
+    expect(fixture.componentInstance.selectedMode()).toBe('slef');
+    expect(fixture.componentInstance.selectedModes()).toEqual(['slef']);
+  });
+
+  it('composes the two-region layer canvas 1c draws', () => {
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
+
+    // The width step is what makes room for two regions beside each other, the
+    // flush body is what lets the rule between them run the height of the
+    // panel, and the arrangement is the canvas's list of plates.
+    expect(host.querySelector('dialog')?.className).toContain('layer--wide');
+    expect(host.querySelector('.layer__body')?.className).toContain('layer__body--flush');
+    expect(host.querySelector('.choice-group__options')?.getAttribute('data-layout')).toBe('cards');
+    // The canvas draws no question above the list; a reader still gets one.
+    expect(host.querySelector('legend')?.className).toContain('field__label--hidden');
+    expect(host.querySelector('legend')?.textContent?.trim().length).toBeGreaterThan(0);
   });
 
   it('moves the selection, and treats anything else as the link', () => {
@@ -127,6 +142,7 @@ describe('the export layer’s host', () => {
 
   it('generates nothing for a format that is not the payload', () => {
     commit();
+    store.selectExportMode('link');
     const fixture = render();
 
     store.openLayer('export');

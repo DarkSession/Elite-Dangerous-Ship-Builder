@@ -28,6 +28,26 @@ import { relationId } from '../../a11y/text-equivalence';
 export type LayerPresentation = 'adaptive' | 'dialog' | 'sheet' | 'full-height';
 
 /**
+ * How wide the layer is allowed to get before its content stops growing.
+ *
+ * A dialog's width is a property of what it holds rather than of which dialog it
+ * is. `default` is the one a layer of prose and a field takes, which is every
+ * layer in the application but one; `wide` is the layer that stands two regions
+ * side by side, which canvas 1c's export dialog is.
+ *
+ * Two members, not the ladder the tokens hold: a step nothing takes is a rule
+ * shipped in every bundle that never matches. The narrow step exists as
+ * `--edsb-layout-layer-narrow` for the surface that needs it to name it here.
+ *
+ * It bounds the centred presentations only. A sheet and a full-height layer own
+ * the width they are given, so the stylesheet pairs each step with the two
+ * presentations that have a width to bound and ignores it on the two that do
+ * not. The class is emitted either way, because what a layer was asked for is
+ * worth being able to read off the element.
+ */
+export type LayerWidth = 'default' | 'wide';
+
+/**
  * A modal layer: dialog, bottom sheet or full-height panel.
  *
  * Built on the native `<dialog>` element, which brings background inertness,
@@ -57,6 +77,18 @@ export class Layer {
 
   readonly open = input(false);
   readonly presentation = input<LayerPresentation>('adaptive');
+  readonly width = input<LayerWidth>('default');
+
+  /**
+   * Whether the body keeps its own padding.
+   *
+   * A layer whose content is one flow is padded here, so every such layer is
+   * inset by the same step. A layer whose content is two regions divided by a
+   * rule is not: canvas 1c's export dialog runs that rule from under the title
+   * bar to the foot of the panel, which is only true if each region carries its
+   * own padding and the body carries none.
+   */
+  readonly flush = input(false);
 
   /** The dismiss control's visible label. */
   readonly dismissLabel = input.required<string>();
@@ -66,7 +98,17 @@ export class Layer {
   readonly titleId = relationId('layer-title');
   readonly descriptionId = relationId('layer-description');
 
-  readonly presentationClass = computed(() => `layer layer--${this.presentation()}`);
+  readonly presentationClass = computed(() => {
+    const classes = ['layer', `layer--${this.presentation()}`];
+    if (this.width() !== 'default') {
+      classes.push(`layer--${this.width()}`);
+    }
+    return classes.join(' ');
+  });
+
+  readonly bodyClass = computed(() =>
+    this.flush() ? 'layer__body layer__body--flush' : 'layer__body',
+  );
 
   /** The control that opened the layer, so focus can be handed back to it. */
   #invoker: HTMLElement | null = null;

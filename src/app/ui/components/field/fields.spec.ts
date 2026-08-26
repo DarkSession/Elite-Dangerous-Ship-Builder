@@ -404,6 +404,32 @@ describe('ChoiceGroup', () => {
     expect(emitted).toEqual([['unladen']]);
   });
 
+  it('renders one set of controls whatever arrangement it is given', () => {
+    for (const layout of ['stack', 'segmented', 'cards'] as const) {
+      const fixture = renderComponent(ChoiceGroup, { legend: 'Format', choices, layout });
+      const options = query(fixture, '.choice-group__options');
+
+      expect(options.getAttribute('data-layout')).toBe(layout);
+      expect(element(fixture).querySelectorAll('input[type="radio"]').length).toBe(2);
+      expect(describedText(element(fixture).querySelectorAll<HTMLElement>('input')[1]!)).toContain(
+        'No cargo and no fuel.',
+      );
+    }
+  });
+
+  it('keeps the legend for a reader when it is not drawn', () => {
+    const fixture = renderComponent(ChoiceGroup, {
+      legend: 'Format',
+      choices,
+      layout: 'cards',
+      legendHidden: true,
+    });
+    const legend = query(fixture, 'legend');
+
+    expect(textOf(legend)).toBe('Format');
+    expect(legend.className).toContain('field__label--hidden');
+  });
+
   it('emits nothing while the group is disabled', () => {
     const fixture = renderComponent(ChoiceGroup, {
       legend: 'Measured under',

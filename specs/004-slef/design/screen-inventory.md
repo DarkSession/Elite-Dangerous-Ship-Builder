@@ -48,10 +48,10 @@ Host Import intent
 
 Active /build Export intent
   -> shared Export Build layer
-       ├── Share Link mode (feature 001)
-       └── SLEF mode (feature 004)
-            -> one revision-bound artifact
-            -> selectable text / Download / Copy / capability-gated Share
+       ├── SLEF mode (feature 004) — listed first and opened on, as `.design` draws it
+       │    -> one revision-bound artifact
+       │    -> selectable text / Download / Copy / capability-gated Share
+       └── Share Link mode (feature 001)
 ```
 
 Failure, cancel and supersession remain in the host state. Import provenance never reaches the SLEF

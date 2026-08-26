@@ -43,11 +43,14 @@ describe('what feature 001 reaches for', () => {
     expect(fallback().export()).toBe(true);
 
     expect(store.layer()).toBe('export');
-    expect(store.exportMode()).toBe('link');
+    expect(store.exportMode()).toBe('slef');
   });
 
   it('opens on the payload when the link is the thing that just failed', () => {
     commit();
+    // Moved off the payload first, so the refusal is what puts it back rather
+    // than the format the layer already opens on.
+    store.selectExportMode('link');
     active.setLink({ kind: 'refused', code: 'tooLong', slot: null });
 
     expect(fallback().export()).toBe(true);
@@ -57,10 +60,10 @@ describe('what feature 001 reaches for', () => {
 
   it('keeps whatever format the Commander last chose', () => {
     commit();
-    store.selectExportMode('slef');
+    store.selectExportMode('link');
 
     fallback().export();
 
-    expect(store.exportMode()).toBe('slef');
+    expect(store.exportMode()).toBe('link');
   });
 });

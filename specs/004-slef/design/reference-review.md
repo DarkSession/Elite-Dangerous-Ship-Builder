@@ -24,7 +24,9 @@ The source is a visual/interaction reference, not executable behavior or authori
 - Use one shared import layer on ship-selection/build/library hosts and one shared Export Build layer
   on the active workspace; no feature-local duplicate implementations.
 - Preserve the integrated export modes but keep only feature 001 Share Link and feature 004 SLEF.
-  Journal/Markdown are outside accepted scope.
+  Journal/Markdown are outside accepted scope, and `.design` no longer draws them: this repository is
+  the source of truth for the design tool it syncs with, so a format the application does not offer is
+  taken out of the canvas rather than left drawn beside two that are real.
 - Treat canvas dimensions as examples. Fluid max sizing chooses dialog, sheet or constrained
   full-height layer from available content/space; tablet, landscape, expansion, RTL and zoom keep all
   actions reachable.
@@ -68,11 +70,11 @@ Shared host action
 │   ├── explicit actions
 │   └── shared replacement confirmation -> commit -> workspace (002 notice, 003 rail)
 └── Export Build layer (active build only)
-    ├── Share Link mode (feature 001)
-    └── SLEF mode (feature 004)
-        ├── validation + labelled readonly artifact
-        ├── metadata/status
-        └── Download + Copy + optional Share
+    ├── SLEF mode (feature 004) — the format the canvas lists first and opens on
+    │   ├── validation + labelled readonly artifact
+    │   ├── metadata/status
+    │   └── Download + Copy + optional Share
+    └── Share Link mode (feature 001)
 ```
 
 ## What was built, against what was drawn
@@ -83,20 +85,32 @@ Written after the implementation, so the record is what happened rather than wha
 
 - **One exchange layer per direction**, opened from the command bar and adding no route and no
   history entry. The import layer is a 560px dialog on the desktop canvas and a bottom sheet on the
-  compact ones; the export layer is a 760px dialog with the format list down its leading edge. Both
-  are the shared `edsb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS.
+  compact ones; the export layer is a wider dialog with the format list down its leading edge, one
+  amber hairline dividing it from the payload and running the full height of the panel. Both are the
+  shared `edsb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS, and whose
+  width step and flush body are what let a two-region layer be wider than a one-region one and rule
+  itself edge to edge.
 - **The import layer's own composition**: description, one monospaced editable field, one status line
   that never says two things at once, and a ruled footer with what is accepted on one side and the
   actions on the other.
 - **The export layer's own composition**: format list, readonly monospaced payload, one metadata line
   (`SLEF v1 · n modules · size`), and the actions on the same row.
+- **The format list as the plates it is drawn as** — a tracked condensed title over a Barlow
+  description, the chosen one washed amber — and, where the width will not hold two regions, as
+  canvas 1d's scrolling chip strip above the payload. Both are the shared choice group's `cards`
+  arrangement, so both are the same native radios and selection is the control's own checked state
+  rather than a colour.
 - **Download and Copy together**, with Copy emphasised, exactly as `exp-dl`/`exp-copy` are drawn.
 
 ### Adapted, with the reason
 
-- **Two formats, not four.** `JOURNAL LOADOUT` and `MARKDOWN TABLE` are drawn and are not
-  capabilities this application has. A control for a format that cannot be produced is worse than no
-  control; the bundle is checked for their labels so neither can return by accident.
+- **Two formats, not four — in the canvas now as well as in the product.** `JOURNAL LOADOUT` and
+  `MARKDOWN TABLE` were drawn and are not capabilities this application has. A control for a format
+  that cannot be produced is worse than no control. They were first left drawn and not built, which
+  left the canvas and the product disagreeing about what the application offers; both are now removed
+  from `exp-modal` and `mexp-modal` in `.design/Ship Builder.dc.html`, along with their sample
+  payloads and the Export action's own tooltip. The bundle is still checked for their labels so
+  neither can return by accident. Import keeps its journal Loadout event — that one is real.
 - **Share is added by capability, never in place of Download.** The compact canvas draws `SHARE FILE`
   where the desktop draws `DOWNLOAD`. Treating them as the same control would take the always-working
   action away from exactly the platforms most likely to need it.
@@ -104,6 +118,14 @@ Written after the implementation, so the record is what happened rather than wha
   export that silently omits a link, or that hands over an invalid build without saying so, would be
   the "fake delivery feedback" this review already rejected. Both are ordinary status lines in the
   drawn content column — not new regions beside it.
+- **The chosen format is told apart by more than its tint.** Canvas 1c separates the chosen plate
+  from the others with a wash, an amber edge and an amber title, and nothing else — three ways of
+  saying the same thing in hue, at 1.19:1 on the fill and 1.11:1 on the title. A reader is told by
+  the control's own checked state either way, but an eye that does not read those hues apart is told
+  nothing. Every plate now reserves the marker the canvas draws on the save dialog's chosen card and
+  the chosen one fills it, and the chosen name is set in the heavier weight the compact chips already
+  used. Both survive a monochrome rendering, and reserving the marker means choosing a format moves a
+  mark rather than reflowing the column.
 - **A stale payload says why it went away.** The canvas has no state for a build edited after its
   export was made. An empty field with no explanation reads as broken.
 - **The one status line carries every import state.** The canvas draws `AWAITING INPUT`; the same line
@@ -129,3 +151,30 @@ Written after the implementation, so the record is what happened rather than wha
   the shell's Import action is one control away.
 - **Fixed pixel widths, the mock parser, immediate mutation and the fabricated metadata** — all as
   recorded above, none of them present in the delivered surfaces.
+
+### Corrected afterwards
+
+Written when the gap was found, so the record says what was wrong rather than only what was intended.
+
+- **The format list was not drawn as a list of plates.** The three entries above described the
+  arrangement this review accepted; what shipped was the choice group's default stacked radios inside
+  a layer of the ordinary width, with a gap where the rule belongs and the group's question drawn
+  above a list the canvas draws no question above. The canvas 1d chip strip was not built at all: the
+  compact layer stacked the same radios.
+
+  A design system whose components are perfectly tokenised can still compose them into an arrangement
+  the reference does not draw, which is the failure `e2e/design-reference.spec.ts` exists to catch and
+  did not catch here, because no assertion in it reached a layer that needs a build to open. The
+  export layer now has that block of its own in `e2e/slef-export.spec.ts`, measured against
+  `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
+
+- **The order and the opening format now follow the canvas.** They did not: the list was drawn Share
+  Link first and opened on it, justified in `slef-fallback.adapter.ts` by a comment that said this was
+  "where canvas 1c draws the list starting". Canvas 1c draws SLEF JSON first and draws it selected.
+  The comment was wrong, the resulting hierarchy above is corrected with it, and the layer now opens
+  on the payload. The choice stays sticky, so a Commander who moves to the link finds the link next
+  time.
+
+- **One thing the canvas does not draw is still drawn on purpose**, recorded so the next reading does
+  not take it for the same oversight: the payload's visible field label, which this review's "Adapt"
+  list added deliberately, along with the package's verdict and the link's absence above it.

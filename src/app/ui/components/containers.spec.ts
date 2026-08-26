@@ -451,4 +451,51 @@ describe('Layer', () => {
 
     expect(textOf(query(fixture, '.layer__dismiss'))).toBe('Schließen');
   });
+
+  it('bounds a centred layer by the width step it is given', () => {
+    for (const presentation of ['dialog', 'adaptive'] as const) {
+      const fixture = renderComponent(Layer, {
+        title: 'Export build',
+        dismissLabel: 'Close',
+        open: false,
+        presentation,
+        width: 'wide',
+      });
+
+      expect(query(fixture, 'dialog').className).toContain('layer--wide');
+    }
+  });
+
+  it('keeps the width step readable off the element whatever the presentation', () => {
+    const fixture = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+      presentation: 'sheet',
+      width: 'wide',
+    });
+
+    // The stylesheet pairs a step with the two presentations that have a width
+    // to bound, so a sheet is unaffected by one. What was asked for still shows
+    // on the element.
+    expect(query(fixture, 'dialog').className).toContain('layer--sheet');
+    expect(query(fixture, 'dialog').className).toContain('layer--wide');
+  });
+
+  it("hands the body's padding to its content when it is flush", () => {
+    const padded = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+    const flush = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+      flush: true,
+    });
+
+    expect(query(padded, '.layer__body').className).not.toContain('layer__body--flush');
+    expect(query(flush, '.layer__body').className).toContain('layer__body--flush');
+  });
 });

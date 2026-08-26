@@ -6,14 +6,15 @@ Generate and deliver one SLEF entry for the exact active revision. With no activ
 does not open: the host explains the prerequisite and offers Import/Create recovery with no stale
 payload.
 
-The layer is shared with feature 001. Its accessible mode selector contains Share Link (feature 001)
-and SLEF (feature 004); journal and Markdown modes from `.design` are absent. This document defines
-the SLEF mode only.
+The layer is shared with feature 001. Its accessible mode selector contains SLEF (feature 004) and
+Share Link (feature 001), in that order, and the layer opens on SLEF — both as `.design` draws them.
+The journal and Markdown modes the canvas once drew are gone from the canvas as well as from the
+product. This document defines the SLEF mode only.
 
 ## Composition
 
 - shared layer heading/description and safe package hull/name summary;
-- accessible Link/SLEF mode selector owned by the integrated exchange layer;
+- accessible SLEF/Share Link mode selector owned by the integrated exchange layer;
 - package validation summary, including invalid/incomplete warning without suppression;
 - labelled readonly selectable monospaced payload;
 - localized one-entry, fitted-module and UTF-8-byte metadata;
@@ -23,6 +24,25 @@ the SLEF mode only.
 
 Components receive immutable presentation state and emit select/generate/copy/download/share/close
 intents. They never access active/link state, package APIs or browser globals.
+
+## Arrangement
+
+The layer stands the mode selector and the selected mode's content side by side, as canvas 1c draws
+them: the formats down the leading edge, the content beside them, one amber hairline dividing the two
+and running the full height of the panel. Each region carries its own padding and the layer's body
+carries none, which is what gives that rule a full height to run. The layer takes the widest dialog
+step, because two regions need more room than one.
+
+Each format is a bordered plate carrying a tracked condensed title over a description
+(`specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards"), the selected one
+washed amber with its title in amber. The list carries no visible question above it — the canvas
+draws none — and its name stays in the accessibility tree for anyone reading the group aloud.
+
+Where the width will not hold two regions, the same choices become the scrolling chip strip canvas 1d
+draws above the payload: the same controls, the same names, the same checked state, and the
+description carried in the accessibility tree rather than beside the chip. The arrangement resolves
+in the stylesheet rather than from a measurement taken once, so it answers to zoom and text scale as
+well as to the viewport.
 
 ## States
 
@@ -42,9 +62,12 @@ intents. They never access active/link state, package APIs or browser globals.
 ## Responsive behavior
 
 Use the reference wide centered dialog when content fits and narrow bottom sheet on ordinary mobile
-portrait. Short landscape, 200% text, 400% zoom or expanded/RTL copy may promote the same content to a
-full-height vertically scrollable layer. Mode/actions wrap or stack and never disappear. JSON owns
-bounded wrapping/overflow; the page does not scroll horizontally.
+portrait. The mode selector's own two arrangements follow the same rule and are described above.
+Short landscape, 200% text, 400% zoom or expanded/RTL copy may promote the same content to a
+full-height vertically scrollable layer — a landscape phone is wide enough for the two regions and
+too short for a centred panel, so it keeps the formats beside the payload inside a layer that owns
+the viewport. Mode/actions wrap or stack and never disappear. JSON owns bounded wrapping/overflow;
+the page does not scroll horizontally.
 
 ## Accessibility, localization and previews
 

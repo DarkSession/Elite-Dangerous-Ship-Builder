@@ -3949,18 +3949,19 @@ registerPreview({
 const EXPORT_VIEW = {
   title: 'Export build · Anaconda',
   modeLabel: 'Format',
+  // The canvas's own order: the payload first, the link beside it.
   modes: [
-    {
-      mode: 'link',
-      label: 'Share link',
-      description: 'Read-only link to this exact loadout.',
-      selected: false,
-    },
     {
       mode: 'slef',
       label: 'SLEF JSON',
       description: 'Interchange format read by Coriolis, EDSY and Inara.',
       selected: true,
+    },
+    {
+      mode: 'link',
+      label: 'Share link',
+      description: 'Read-only link to this exact loadout.',
+      selected: false,
     },
   ],
   fieldLabel: 'SLEF payload',

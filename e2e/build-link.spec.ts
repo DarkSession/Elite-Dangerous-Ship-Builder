@@ -25,15 +25,20 @@ async function buildWithLink(page: Page, hull = 'Anaconda'): Promise<string> {
 }
 
 /**
- * Opens the export layer from the command bar.
+ * Opens the export layer from the command bar and asks it for the link.
  *
  * Canvas 1c draws `EXPORT` in the bar's action row, so that is where it is
  * reached — and at compact width the frame puts the same action behind the
- * named trigger, which `reachShellAction` knows about.
+ * named trigger, which `reachShellAction` knows about. The layer opens on the
+ * format the canvas draws first, which is the payload, so the link is chosen
+ * here rather than assumed.
  */
 async function openShare(page: Page): Promise<void> {
   await reachShellAction(page, /^export$/i);
-  await expect(page.getByRole('dialog')).toBeVisible();
+  const layer = page.getByRole('dialog');
+  await expect(layer).toBeVisible();
+  await layer.getByRole('radio', { name: /share link/i }).check();
+  await expect(layer.locator('.share-link__value')).toBeVisible();
 }
 
 /** The workspace has a build open when its ledger has mounts in it. */

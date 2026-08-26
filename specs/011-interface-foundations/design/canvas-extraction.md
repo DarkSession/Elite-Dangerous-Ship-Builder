@@ -159,6 +159,13 @@ over `rgba(6,6,7,.8)`. Body `background: var(--panel)`, `border: 1px solid var(-
 `--amber-3`, trailing `CLOSE ✕` in mono. Footer bar `background: var(--panel-2)`,
 `border-top: 1px solid var(--amber-a2)`, or an inline rule `border-top: 1px solid var(--amber-a14)`.
 
+Width is a property of what the dialog holds, not of which dialog it is: the canvases draw
+540 save, 560 import, 620 help and 760 export. A dialog of prose and a field takes the
+middle step; the one that stands two regions side by side — canvas 1c's export dialog —
+takes the widest, because two regions need the room. The canvas's fifth width, the 860px
+`SAVED BUILDS` modal, has no step: the library is a route here rather than a dialog, so
+nothing in this family sizes it.
+
 ### Buttons
 
 | Variant     | Canvas                                                                                                                                        |
@@ -175,6 +182,47 @@ A flex row with `gap: 1px` over `background: var(--amber-a18)`, so the gap rende
 hairline rule. Selected segment `background: var(--amber)`, `color: var(--bg)`,
 condensed 700; unselected `background: var(--panel-3)`, `color: var(--ink-55)`,
 condensed 600. Both tracked 0.12–0.16em.
+
+### Choice cards
+
+The list of formats down the leading edge of canvas 1c's export dialog, and the same
+choices above the payload in canvas 1d.
+
+Wide: a column with `gap: 6px`, each choice `padding: 11px 12px`,
+`background: var(--panel-2)`, `border: 1px solid var(--amber-a14)`, carrying a condensed
+600 title tracked 0.16em in `--ink-2` over a Barlow 300 10px description in `--ink-48`.
+The chosen one takes `background: var(--amber-a14)`, `border-color: var(--amber-a5)` and
+sets its title in `--amber-3`. The column is `236px` and is closed against the content
+beside it by `border-right: 1px solid var(--amber-a16)`, which runs from under the title
+bar to the foot of the panel — so the dialog's body carries no padding of its own and each
+region carries its own. The first choice is the one the layer opens on.
+
+Compact: the same choices as a `min-height: 38px` chip row with `gap: 6px` that scrolls
+sideways rather than wrapping, each chip condensed 600 tracked 0.14em on `--panel-3` in
+`--ink-62`, the chosen one `background: var(--amber)`, `color: var(--bg)`, condensed 700.
+The description the wide plate carries is not drawn on a chip.
+
+Three deviations, none of them extractions. The chip's `padding: 0 12px` and its
+`min-height: 38px` are not adopted: it is a control, so it takes the shared control padding
+and the 44px target baseline. And canvas 1c draws its export plates at condensed 600 with
+no marker on either, chosen or not — which would make the wash and the amber title the
+only thing separating them. FR-010 does not allow a state carried by tint, so the chosen
+plate takes the reserved marker the canvas itself draws on the save dialog's chosen card,
+and the wide arrangement joins the compact one in setting the chosen name in the heavier
+weight. Colour is what makes the state obvious; it is never what carries it.
+
+The alphas and inks resolve to the nearest named role rather than to steps of their own.
+The plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
+the chosen plate's takes `--edsb-border-control` (`amber-a40`) against the drawn `amber-a5`,
+the column's rule takes `--edsb-rule-grid` (`amber-a14`) against the drawn `amber-a16`, and
+the unchosen title takes `--edsb-text-secondary` (ink 0.80) against the drawn solid
+`--ink-2`. Four more amber hairlines and a fifth ink would be a second scale rather than a
+finer one.
+
+The fifth is not a rounding. The description takes `--edsb-text-subtle` (ink 0.62) against
+the drawn `--ink-48`, which sits inside the 0.32–0.50 band this system rejects for anything
+that is text rather than decoration — the same lift the type floor is, made for the same
+reason.
 
 ### Manifest row
 

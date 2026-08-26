@@ -15,7 +15,7 @@
     <p class="layer__description" [id]="descriptionId">{{ description() }}</p>
   }
 
-  <div class="layer__body">
+  <div [class]="bodyClass()">
     <ng-content />
   </div>
 </dialog>

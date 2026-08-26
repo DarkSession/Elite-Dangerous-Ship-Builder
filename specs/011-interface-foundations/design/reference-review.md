@@ -53,8 +53,9 @@ owned by their capability features; feature 011 owns the system those screens co
 - Material grade icons are requested from another origin. Runtime cannot make those requests; a
   released package/same-origin licensed asset may supplement a localized grade label, otherwise the
   label alone carries the meaning.
-- The canvas includes journal and Markdown export modes and a mock share URL. Those are feature 004/
-  001 decisions and do not expand this foundation's scope.
+- The canvas once included journal and Markdown export modes, and still includes a mock share URL.
+  Those are feature 004/001 decisions and do not expand this foundation's scope; the two export modes
+  have since been taken out of the canvas by feature 004, which owns them.
 - The compact design has no language control, and neither does the product: the browser language
   setting is the only input, so the omission is the decision rather than a gap to fill.
 

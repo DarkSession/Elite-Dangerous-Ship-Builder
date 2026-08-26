@@ -60,16 +60,18 @@ export class ExportDialog {
   readonly title = computed(() => this.slef.exportView().title);
   readonly dismissLabel = this.#messages.messageSignal('action.close');
 
+  /** The question the format list asks. The canvas draws no room for it. */
+  readonly modeLegend = computed(() => this.slef.exportView().modeLabel);
+
   /**
    * The formats the layer offers, as the reference sidebar draws them.
    *
-   * Two, not four. The canvas lists Journal Loadout and Markdown Table beside
-   * them; neither is a capability this application has, and drawing a format
-   * that cannot be produced is worse than not drawing it
-   * (`specs/004-slef/design/reference-review.md`).
+   * Two, in the canvas's own order: the payload first, the link beside it. The
+   * canvas once listed Journal Loadout and Markdown Table between them; neither
+   * is a capability this application has, and a control for a format that cannot
+   * be produced is worse than no control, so both were taken out of `.design`
+   * rather than left drawn (`specs/004-slef/design/reference-review.md`).
    */
-  readonly modeLegend = computed(() => this.slef.exportView().modeLabel);
-
   readonly modes = computed<readonly Choice[]>(() =>
     this.slef.exportView().modes.map((mode) => ({
       value: mode.mode,
@@ -79,7 +81,7 @@ export class ExportDialog {
   );
 
   readonly selectedMode = computed(
-    () => this.slef.exportView().modes.find((mode) => mode.selected)?.mode ?? 'link',
+    () => this.slef.exportView().modes.find((mode) => mode.selected)?.mode ?? 'slef',
   );
 
   readonly selectedModes = computed<readonly string[]>(() => [this.selectedMode()]);

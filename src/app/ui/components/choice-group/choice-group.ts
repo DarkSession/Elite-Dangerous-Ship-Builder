@@ -11,10 +11,20 @@ export type ChoiceKind = 'radio' | 'checkbox' | 'switch';
  * `stack` is one choice per row with room for a description. `segmented` is the
  * reference's abutted strip of tracked labels separated by hairline rules
  * (canvas 1a/1b, "Segmented choice"), for short sets of one-word choices that
- * need no description. Both render the same native inputs; only the arrangement
- * differs.
+ * need no description. `cards` is the reference's list of bordered plates, each
+ * a tracked condensed title over a description, the chosen one washed amber
+ * (canvas 1c, "Choice cards") — the export layer's format list is one.
+ *
+ * All three render the same native inputs; only the arrangement differs.
+ *
+ * `cards` resolves in CSS rather than in TypeScript, because the reference
+ * draws the same set of choices two ways: a column of plates beside the content
+ * where there is room for one, and the scrolling strip of tracked chips canvas
+ * 1d draws above the content where there is not. Resolving it in the stylesheet
+ * means it also answers to zoom and to text scale, which a measurement taken
+ * once at construction would not.
  */
-export type ChoiceLayout = 'stack' | 'segmented';
+export type ChoiceLayout = 'stack' | 'segmented' | 'cards';
 
 /** One choice. `description` is associated, not merely rendered nearby. */
 export interface Choice {

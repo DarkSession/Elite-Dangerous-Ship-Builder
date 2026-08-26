@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { expectNoDocumentOverflow, expectRelationship } from './accessibility/assertions';
 import { reachShellAction } from './shell';
 
 /**
@@ -254,13 +254,14 @@ test.describe('the layer’s semantics', () => {
     const link = layer(page).getByRole('radio', { name: /share link/i });
     const slef = layer(page).getByRole('radio', { name: /slef json/i });
 
-    await expect(link).toHaveJSProperty('checked', true);
-    await expect(slef).toHaveJSProperty('checked', false);
-
-    await slef.check();
-
+    // The layer opens on the format canvas 1c draws first and draws selected.
     await expect(slef).toHaveJSProperty('checked', true);
     await expect(link).toHaveJSProperty('checked', false);
+
+    await link.check();
+
+    await expect(link).toHaveJSProperty('checked', true);
+    await expect(slef).toHaveJSProperty('checked', false);
   });
 
   test('hands the payload over readonly, and never as a disabled field', async ({ page }) => {
@@ -337,6 +338,14 @@ test.describe('the layer’s semantics', () => {
       const box = await layer(page).getByRole('button', { name }).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
+
+    // The formats are controls too, in both arrangements. The plate and the chip
+    // are each the whole of their own input, so the box measured here is the box
+    // a pointer actually aims at.
+    for (const name of [/slef json/i, /share link/i]) {
+      const box = await layer(page).getByRole('radio', { name }).boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
   });
 
   test('says every state in words rather than in colour alone', async ({ page, context }) => {
@@ -355,6 +364,249 @@ test.describe('the layer’s semantics', () => {
         .getByText(/copied|could not be copied|copying/i)
         .first(),
     ).toBeVisible();
+  });
+});
+
+/**
+ * The layer, as canvas 1c and 1d draw it.
+ *
+ * `scripts/check-interface-foundations.mjs` proves no component holds a visual
+ * literal; it cannot prove the tokens are composed into the arrangement the
+ * reference draws. This block reads what the browser computes and compares it
+ * with what the canvases set, in the same spirit as `e2e/design-reference.spec.ts`
+ * and against the measurements recorded in
+ * `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
+ *
+ * Each assertion is made at whichever arrangement the running profile's width
+ * calls for, so all ten projects say something rather than five of them
+ * skipping.
+ */
+test.describe('the layer, against the canvas', () => {
+  /** The width at which the medium composition takes over (`_responsive.scss`). */
+  const MEDIUM = 768;
+  /** The height at or below which a layer is promoted to full height. */
+  const SHORT = 480;
+
+  test('stands the format list beside the payload, or above it when there is no room', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    await chooseSlef(page);
+
+    const formats = layer(page).getByRole('group', { name: /format/i });
+    const payload = layer(page).getByLabel(/slef payload/i);
+    const list = (await formats.boundingBox())!;
+    const field = (await payload.boundingBox())!;
+    const width = page.viewportSize()!.width;
+
+    if (width >= MEDIUM) {
+      // Canvas 1c: `grid-template-columns: 236px 1fr`. The two regions share a
+      // block band and divide the inline one.
+      expect(list.y).toBeLessThan(field.y + field.height);
+      expect(field.y).toBeLessThan(list.y + list.height);
+    } else {
+      // Canvas 1d: the strip sits above the payload in one column.
+      expect(list.y + list.height).toBeLessThanOrEqual(field.y + 1);
+    }
+  });
+
+  test('divides the two regions with one amber hairline, as drawn', async ({ page }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const formats = layer(page).getByRole('group', { name: /format/i });
+    const width = page.viewportSize()!.width;
+
+    // Canvas 1c: `border-right: 1px solid var(--amber-a16)` on the format
+    // column, running the height of the panel. Canvas 1d draws no rule.
+    const rule = await formats.evaluate((node) => {
+      // The rule closes the region the group is placed in, which is the
+      // component's own host element rather than its fieldset.
+      const style = getComputedStyle(node.closest('edsb-choice-group') ?? node);
+      return { width: style.borderInlineEndWidth, colour: style.borderInlineEndColor };
+    });
+
+    if (width >= MEDIUM) {
+      // Canvas 1c draws it at 1px, which is the hairline this system names.
+      expect(parseFloat(rule.width)).toBe(1);
+      expect(rule.colour).toContain('rgba(255, 140, 26');
+
+      // And it runs the height of the panel, which is the whole reason the
+      // layer's body hands its padding to the two regions. A rule that stopped
+      // at the taller region's content would be the drawn mark at the wrong
+      // length.
+      const spans = await formats.evaluate((node) => {
+        const region = node.closest('edsb-choice-group') ?? node;
+        const body = region.closest('.layer__body')!;
+        return Math.abs(
+          region.getBoundingClientRect().height - body.getBoundingClientRect().height,
+        );
+      });
+
+      expect(spans).toBeLessThanOrEqual(1);
+    } else {
+      expect(parseFloat(rule.width)).toBe(0);
+    }
+  });
+
+  test('draws each format as the canvas draws it: a plate, or a chip', async ({ page }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const slef = layer(page).getByRole('radio', { name: /slef json/i });
+    const title = layer(page)
+      .locator('label', { hasText: /slef json/i })
+      .first();
+    const width = page.viewportSize()!.width;
+
+    // Both arrangements set the name in tracked uppercase condensed, which is
+    // how every control label in the reference is set.
+    const label = await title.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        family: style.fontFamily,
+        transform: style.textTransform,
+        tracking: parseFloat(style.letterSpacing) / parseFloat(style.fontSize),
+      };
+    });
+
+    expect(label.family).toContain('Barlow Condensed');
+    expect(label.transform).toBe('uppercase');
+    // The exact step the canvas sets, as `e2e/design-reference.spec.ts` reads
+    // every other tracked label in the reference: 0.16em on the plate's title,
+    // 0.14em on the chip. A ratio, because the ramp is lifted and the sizes are
+    // not the canvas's own.
+    expect(Math.abs(label.tracking - (width >= MEDIUM ? 0.16 : 0.14))).toBeLessThan(0.005);
+
+    const plate = await slef.evaluate((node) => {
+      const card = node.closest('.choice')!;
+      const style = getComputedStyle(card);
+      return {
+        border: parseFloat(style.borderTopWidth),
+        height: card.getBoundingClientRect().height,
+      };
+    });
+
+    if (width >= MEDIUM) {
+      // Canvas 1c: `padding: 11px 12px` inside a `1px` amber edge, with the
+      // description under the title — taller than a chip, and bordered.
+      expect(plate.border).toBeGreaterThan(0);
+      await expect(layer(page).getByText(/interchange format read by/i)).toBeVisible();
+    } else {
+      // Canvas 1d: a chip carrying the name alone, on no plate of its own. The
+      // description it has no room for is hidden from the eye and kept for a
+      // reader, which is what `not.toBeVisible` over a present element says.
+      expect(plate.border).toBe(0);
+      // Canvas 1d draws a 38px chip; a control this system draws alone meets the
+      // 44px baseline, so the drawn figure is the floor and the baseline is the
+      // claim.
+      expect(plate.height).toBeGreaterThanOrEqual(44);
+      // Taken out of the layout rather than out of the document: the box it
+      // occupies is the hiding recipe's own pixel, and the text it holds is
+      // still this format's description.
+      const description = (await layer(page)
+        .getByText(/interchange format read by/i)
+        .boundingBox())!;
+      expect(description.width).toBeLessThanOrEqual(1);
+      await expectRelationship(page, slef, 'description', 'Interchange format');
+    }
+  });
+
+  test('washes the chosen format amber without making colour the only carrier', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    await chooseSlef(page);
+    const slef = layer(page).getByRole('radio', { name: /slef json/i });
+    const link = layer(page).getByRole('radio', { name: /share link/i });
+
+    // The wash is the echo; the fact is the control's own checked state, which
+    // is what a reader is told (canvas 1c fills the chosen plate).
+    await expect(slef).toHaveJSProperty('checked', true);
+    await expect(link).toHaveJSProperty('checked', false);
+
+    // And an eye is told by something a monochrome rendering keeps. Colour is
+    // never the only carrier of a state (011/FR-010), so the two are compared on
+    // what survives having the hue taken out of them: the marker's width on the
+    // plate, the label's weight on either.
+    const carriers = (radio: typeof slef) =>
+      radio.evaluate((node) => {
+        const choice = node.closest('.choice')!;
+        return {
+          marker: parseFloat(getComputedStyle(choice).borderInlineStartWidth),
+          weight: getComputedStyle(choice.querySelector('label')!).fontWeight,
+        };
+      });
+    const chosen = await carriers(slef);
+    const other = await carriers(link);
+
+    expect(chosen.weight).not.toBe(other.weight);
+    expect(chosen.marker === other.marker && chosen.weight === other.weight).toBe(false);
+
+    // Canvas 1c washes the chosen plate; canvas 1d fills the chosen chip, where
+    // the plate itself is not drawn. The fill is read from whichever of the two
+    // this width paints, so both arrangements are held to the same claim.
+    const fill = (radio: typeof slef) =>
+      radio.evaluate((node) => {
+        const choice = node.closest('.choice')!;
+        const plate = getComputedStyle(choice).backgroundColor;
+        const chip = getComputedStyle(choice.querySelector('label')!).backgroundColor;
+        return plate === 'rgba(0, 0, 0, 0)' ? chip : plate;
+      });
+
+    expect(await fill(slef)).not.toBe(await fill(link));
+  });
+
+  test('takes the width step the canvas draws, or the screen when that is narrower', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const { width, height } = page.viewportSize()!;
+    const dialog = (await layer(page).boundingBox())!;
+
+    // Canvas 1c draws the export dialog at 760px against the 560px it draws the
+    // import one at: two regions need more room than one. Below the medium
+    // composition the layer is a sheet and takes the screen, and a short
+    // viewport promotes it to a full-height panel that does the same — so the
+    // profile decides which of the two claims is made, and every profile makes
+    // one.
+    if (width >= MEDIUM && height > SHORT) {
+      // The platform holds a modal dialog off the edges of the screen, so a
+      // viewport only just wider than the step lands inside it rather than on
+      // it.
+      expect(dialog.width).toBeLessThanOrEqual(760);
+      expect(dialog.width).toBeGreaterThanOrEqual(Math.min(760, width) - 40);
+    } else {
+      expect(Math.round(dialog.width)).toBe(width);
+    }
+  });
+
+  test('reaches every format at the narrowest profile without scrolling the document', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const strip = layer(page).locator('.choice-group__options');
+
+    // Each format's own control is inside the strip that holds it — after being
+    // scrolled to, because canvas 1d's strip is allowed to scroll and a format
+    // reached by scrolling is still reached. `toBeVisible` says nothing here:
+    // the control is the transparent box over its plate, and Playwright counts a
+    // zero-opacity box with a size as visible wherever it happens to sit.
+    const bounds = (await strip.boundingBox())!;
+    for (const name of [/share link/i, /slef json/i]) {
+      const radio = layer(page).getByRole('radio', { name });
+      await radio.scrollIntoViewIfNeeded();
+      const box = (await radio.boundingBox())!;
+
+      expect(box.width).toBeGreaterThan(0);
+      expect(box.x).toBeGreaterThanOrEqual(bounds.x - 1);
+      expect(box.x + box.width).toBeLessThanOrEqual(bounds.x + bounds.width + 1);
+      expect(box.y).toBeGreaterThanOrEqual(bounds.y - 1);
+      expect(box.y + box.height).toBeLessThanOrEqual(bounds.y + bounds.height + 1);
+    }
+    await expectNoDocumentOverflow(page);
   });
 });
 
