@@ -32,8 +32,7 @@ describe('what feature 001 reaches for', () => {
     store = TestBed.inject(SlefStore);
   });
 
-  it('is unavailable, and opens nothing, with no build to pass on', () => {
-    expect(fallback().available).toBe(false);
+  it('opens nothing, and says so, with no build to pass on', () => {
     expect(fallback().export()).toBe(false);
     expect(store.layer()).toBe('none');
   });

@@ -14,7 +14,6 @@ import { FragmentPublisher } from './fragment-publisher';
 import { MAX_BUILD_LINK_LENGTH } from './fragment-recognizer';
 import { LinkErrorMapper, type LinkFailureCode } from './link-error.mapper';
 import { FIELDS_EXCLUDED_FROM_LINKS, linkPayloadSource } from './link-payload.allowlist';
-import { SLEF_FALLBACK, UNAVAILABLE_SLEF_FALLBACK } from './slef-fallback.port';
 
 function setup() {
   TestBed.resetTestingModule();
@@ -341,17 +340,5 @@ describe('LinkErrorMapper', () => {
       code: 'reconstructionFailed',
       slot: null,
     });
-  });
-});
-
-describe('the SLEF fallback seam', () => {
-  it('is explicitly unavailable until feature 004 lands', () => {
-    const {} = setup();
-
-    expect(TestBed.inject(SLEF_FALLBACK)).toBe(UNAVAILABLE_SLEF_FALLBACK);
-    expect(UNAVAILABLE_SLEF_FALLBACK.available).toBe(false);
-    // False rather than a silent no-op: the surface says the export does not
-    // exist in this version instead of offering a button that does nothing.
-    expect(UNAVAILABLE_SLEF_FALLBACK.export()).toBe(false);
   });
 });

@@ -84,8 +84,6 @@ export class BuildWorkspacePage {
   readonly emptyAction = this.#messages.messageSignal('workspace.empty.action');
   readonly shareLabel = this.#messages.messageSignal('workspace.actions.share');
 
-  /** Whether the export layer is open. */
-
   readonly hasBuild = computed(() => this.#active.loadout() !== null);
 
   /** What persistence is doing, as the shared state name. */

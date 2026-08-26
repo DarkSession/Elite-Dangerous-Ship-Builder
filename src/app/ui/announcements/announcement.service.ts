@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import type { MessageKey } from '../../i18n/locale-registry';
-import { MessageService, type MessageParams } from '../../i18n/message.service';
+import type { MessageKey, MessageParams } from '../../i18n/locale-registry';
+import { MessageService } from '../../i18n/message.service';
 
 /** How urgently an event interrupts. */
 export type AnnouncementUrgency = 'assertive' | 'polite';

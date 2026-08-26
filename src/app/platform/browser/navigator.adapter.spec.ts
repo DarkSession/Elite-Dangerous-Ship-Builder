@@ -73,22 +73,6 @@ describe('NavigatorAdapter', () => {
       expect(adapterFor({}).canShare()).toBe(false);
       expect(adapterFor(null).canShare()).toBe(false);
     });
-
-    it('treats a dismissed share sheet the same as a failed one', async () => {
-      const dismissed = { share: vi.fn().mockRejectedValue(new Error('AbortError')) };
-
-      // Both mean the link did not leave this way, so the one on screen is
-      // still the way out.
-      expect(await adapterFor(dismissed).share({ title: 'Build', url: '/b' })).toBe(false);
-      expect(await adapterFor({}).share({ title: 'Build', url: '/b' })).toBe(false);
-    });
-
-    it('shares the title and address it was given', async () => {
-      const share = vi.fn().mockResolvedValue(undefined);
-
-      expect(await adapterFor({ share }).share({ title: 'Build', url: '/b#b.abc' })).toBe(true);
-      expect(share).toHaveBeenCalledWith({ title: 'Build', url: '/b#b.abc' });
-    });
   });
 
   describe('handing a payload to the platform', () => {

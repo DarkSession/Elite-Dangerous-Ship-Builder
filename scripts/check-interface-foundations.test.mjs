@@ -9,6 +9,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { rules } from './check-interface-foundations.mjs';
 
 const ruleIds = (found) => found.map((violation) => violation.rule);
@@ -919,5 +920,36 @@ describe('extracted schematics', () => {
     });
 
     assert.deepEqual(ruleIds(found), ['copied-schematics']);
+  });
+});
+
+describe('the placeholder grammar', () => {
+  /**
+   * The gate and the runtime must spell a placeholder the same way.
+   *
+   * This file is `.mjs` and cannot import TypeScript, so `interpolationVariablesOf`
+   * above is a copy of `PLACEHOLDER` in `src/app/i18n/locale-registry.ts` kept by
+   * hand. When the two drifted apart, a catalogue whose English carried `{{}}`
+   * passed this gate and was then refused at runtime by `validateCatalogue` —
+   * the build going green on a locale that cannot load. Nothing caught it, so:
+   */
+  // Whatever the two say, they must say the same thing. Asserting a fixed
+  // literal here would make a *correct* change to the grammar fail with "the
+  // gate drifted", which is the wrong diagnosis and a third copy to maintain.
+  const spelling = (source) => source.match(/\/\\\{\\\{[^\n]*?\/g/)?.[0] ?? null;
+
+  it('is spelled identically in the gate and in the application', () => {
+    const gate = readFileSync(
+      new URL('./check-interface-foundations.mjs', import.meta.url),
+      'utf8',
+    );
+    const application = readFileSync(
+      new URL('../src/app/i18n/locale-registry.ts', import.meta.url),
+      'utf8',
+    );
+
+    const gateSpelling = spelling(gate);
+    assert.ok(gateSpelling, 'the gate no longer declares a placeholder pattern');
+    assert.equal(spelling(application), gateSpelling);
   });
 });

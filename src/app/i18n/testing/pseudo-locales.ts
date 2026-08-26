@@ -105,7 +105,15 @@ const ACCENTS: Readonly<Record<string, string>> = {
 /** Filler used to pad a message out to its expanded length. */
 const FILLER = 'ëẋţŕä ŵöŕðš ţö ƒïłł ţĥé łïñé ';
 
-/** Interpolation placeholders are carried through untouched. */
+/**
+ * Interpolation placeholders are carried through untouched.
+ *
+ * Deliberately not `locale-registry`'s `PLACEHOLDER`: `split` needs the whole
+ * placeholder captured rather than its name, and wrapping that pattern in a
+ * second group would make `split` emit both. It must stay able to match
+ * everything the shared one does — its inner class is a superset — so a
+ * placeholder the runtime substitutes can never be pseudo-localized here.
+ */
 const PLACEHOLDER = /(\{\{[^}]*\}\})/g;
 
 /**

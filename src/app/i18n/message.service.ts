@@ -1,17 +1,7 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { TRANSLOCO_TRANSPILER, type TranslocoTranspiler } from '@jsverse/transloco';
 import { resolveDocumentTitle } from './document-title';
 import { LocaleStore } from './locale.store';
-import { type MessageKey } from './locale-registry';
-
-/**
- * Interpolation parameters for a message.
- *
- * Values are language-neutral: a caller passes a number, not a formatted one,
- * and a formatted value only after the formatter registry has produced it for
- * the active locale. Nothing here may be a preformatted `en-US` string.
- */
-export type MessageParams = Readonly<Record<string, string | number>>;
+import { interpolate, type MessageKey, type MessageParams } from './locale-registry';
 
 /**
  * The application's only source of owned display text.
@@ -22,13 +12,11 @@ export type MessageParams = Readonly<Record<string, string | number>>;
  *
  * The active catalogue is whatever the store has committed, so a message
  * resolved during a locale switch is either entirely the old language or
- * entirely the new one — never a mix. Transloco supplies the interpolation
- * engine; the catalogue authority stays with the application.
+ * entirely the new one — never a mix.
  */
 @Injectable({ providedIn: 'root' })
 export class MessageService {
   readonly #store = inject(LocaleStore);
-  readonly #transpiler = inject<TranslocoTranspiler>(TRANSLOCO_TRANSPILER);
 
   /** The active catalogue, as a signal, so templates recompute on commit. */
   readonly catalogue = this.#store.catalogue;
@@ -47,7 +35,7 @@ export class MessageService {
    * the key, a blank string or a placeholder (localization contract, "Message
    * resolution").
    */
-  message(key: MessageKey, params?: MessageParams): string {
+  message(key: MessageKey, params: MessageParams = {}): string {
     const catalogue = this.#store.catalogue();
     const value = catalogue[key];
 
@@ -55,18 +43,10 @@ export class MessageService {
       return catalogue['message.unavailable'];
     }
 
-    if (params === undefined) {
-      return value;
-    }
-
-    const transpiled: unknown = this.#transpiler.transpile({
-      value,
-      params,
-      translation: catalogue,
-      key,
-    });
-
-    return typeof transpiled === 'string' ? transpiled : value;
+    // Interpolated even with no parameters. A caller that forgets them is an
+    // application defect, and the Commander's half of it must not be a screen
+    // reading `{{count}}` (localization contract, "Message resolution").
+    return interpolate(value, params);
   }
 
   /**
@@ -77,20 +57,7 @@ export class MessageService {
    * anything that needs to display or assert it, through the same rule.
    */
   documentTitle(page: string | null = null): string {
-    const catalogue = this.#store.catalogue();
-    return resolveDocumentTitle(
-      catalogue,
-      (pattern, params) => {
-        const transpiled: unknown = this.#transpiler.transpile({
-          value: pattern,
-          params,
-          translation: catalogue,
-          key: 'app.document-title',
-        });
-        return typeof transpiled === 'string' ? transpiled : pattern;
-      },
-      page,
-    );
+    return resolveDocumentTitle(this.#store.catalogue(), page);
   }
 
   /**
@@ -99,7 +66,7 @@ export class MessageService {
    * Prefer this in a component so the text re-resolves when a locale commits,
    * rather than being read once at construction.
    */
-  messageSignal(key: MessageKey, params?: MessageParams) {
+  messageSignal(key: MessageKey, params: MessageParams = {}) {
     return computed(() => this.message(key, params));
   }
 }

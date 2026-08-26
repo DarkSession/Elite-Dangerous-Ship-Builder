@@ -355,12 +355,12 @@ export type OverheatTime =
   { readonly kind: 'seconds'; readonly value: number } | { readonly kind: 'neverOverheats' };
 
 /** `Infinity` becomes the non-settling statement; every finite level stays one. */
-export function heatLevelValue(level: number): HeatLevelValue {
+function heatLevelValue(level: number): HeatLevelValue {
   return Number.isFinite(level) ? { kind: 'level', value: level } : { kind: 'doesNotSettle' };
 }
 
 /** `null` becomes the never-overheats statement; every number stays one. */
-export function overheatTime(seconds: number | null): OverheatTime {
+function overheatTime(seconds: number | null): OverheatTime {
   return seconds === null ? { kind: 'neverOverheats' } : { kind: 'seconds', value: seconds };
 }
 
@@ -397,7 +397,7 @@ export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditio
 }
 
 /** The plant summary and the groups this build uses, for one hardpoint state. */
-export function projectPower(budget: PowerBudget, hardpoints: HardpointState): PowerView {
+function projectPower(budget: PowerBudget, hardpoints: HardpointState): PowerView {
   const deployed = hardpoints === 'deployed';
   const scale = powerTrackScale(budget, deployed);
 
@@ -508,10 +508,7 @@ function projectBand(
  * consumers it was given: a passive fitting is absent rather than present at
  * zero.
  */
-export function projectModuleDraws(
-  budget: PowerBudget,
-  deployed: boolean,
-): readonly ModuleDrawRow[] {
+function projectModuleDraws(budget: PowerBudget, deployed: boolean): readonly ModuleDrawRow[] {
   const dark = new Set(
     budget.bands
       .filter((band) => !(deployed ? band.poweredDeployed : band.poweredRetracted))
@@ -590,7 +587,7 @@ function drawNow(consumer: PowerConsumerResult, deployed: boolean): number {
 }
 
 /** The three profile facts, the five scenarios, the spike and the sinks. */
-export function projectHeat(heat: HeatMetrics, fitted: readonly FittedModule[]): HeatView {
+function projectHeat(heat: HeatMetrics, fitted: readonly FittedModule[]): HeatView {
   const spike = shieldBankSpike(heat, fitted);
   const gauges = [
     ...HEAT_SCENARIOS.map((key) => gaugeOf(heat[key].gauge)),
@@ -694,7 +691,7 @@ function shieldBankSpike(
 }
 
 /** Every fitted heat sink launcher, and the charges they carry between them. */
-export function projectHeatSinks(fitted: readonly FittedModule[]): HeatSinkView {
+function projectHeatSinks(fitted: readonly FittedModule[]): HeatSinkView {
   // Matched on the symbol because the symbol is the module's identity: the
   // package publishes no "this is a heat sink launcher" flag, and a launcher
   // recognised by its stats would also recognise anything that happened to
@@ -731,7 +728,7 @@ function projectScenario(key: HeatScenarioKey, state: HeatState, scale: number):
  * for. They are the same today; reading them back is what keeps the screen
  * honest if the package ever normalises an allocation (FR-007).
  */
-export function projectDistributor(metrics: DistributorMetrics): DistributorView {
+function projectDistributor(metrics: DistributorMetrics): DistributorView {
   return {
     capacitors: CAPACITOR_KINDS.map((kind) => ({
       kind,

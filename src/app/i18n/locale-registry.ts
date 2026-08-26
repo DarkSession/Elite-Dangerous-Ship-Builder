@@ -16,6 +16,46 @@ export const BUNDLED_ENGLISH: MessageCatalogue = englishCatalogue;
 /** Every application message key, for validation and tests. */
 export const MESSAGE_KEYS = Object.keys(englishCatalogue) as readonly MessageKey[];
 
+/**
+ * Interpolation parameters for a message.
+ *
+ * Values are language-neutral: a caller passes a number, not a formatted one,
+ * and a formatted value only after the formatter registry has produced it for
+ * the active locale. Nothing here may be a preformatted `en-US` string.
+ */
+export type MessageParams = Readonly<Record<string, string | number>>;
+
+/**
+ * What a placeholder looks like, for everything that reads one.
+ *
+ * Declared once because two readers must agree on it: `interpolate` below
+ * substitutes them, and `interpolationVariables` collects them so
+ * `validateCatalogue` can hold every shipped locale to the same set.
+ *
+ * `check-interface-foundations.mjs` keeps a third copy by hand — it is `.mjs`
+ * and cannot import this — and that copy is spelled the same deliberately. Two
+ * spellings is a catalogue the gate passes and the runtime then refuses.
+ */
+export const PLACEHOLDER = /\{\{\s*([^{}]*?)\s*\}\}/g;
+
+/**
+ * Substitutes `{{ name }}` placeholders in a message pattern.
+ *
+ * A placeholder with no parameter resolves to nothing rather than to its own
+ * text: a Commander must never read `{{count}}`, and echoing the name would be
+ * the fabricated value the constitution forbids.
+ *
+ * The replacement is a function, so `$&` and `$1` inside a parameter value stay
+ * literal, and one pass, so a value that itself contains a placeholder cannot
+ * be re-interpolated — which also means a Commander's own build name is
+ * rendered as they typed it rather than being read as a pattern.
+ */
+export function interpolate(pattern: string, params: MessageParams): string {
+  return pattern.replace(PLACEHOLDER, (_, name: string) =>
+    Object.hasOwn(params, name) && params[name] != null ? String(params[name]) : '',
+  );
+}
+
 /** A language this build can actually display. */
 export interface ShippedLocale {
   /** Canonical BCP 47 tag and unique production identity. */
@@ -37,14 +77,6 @@ export interface ShippedLocale {
    * English is additionally bundled and never requested at all.
    */
   readonly assetPath: string;
-  /**
-   * Key resolving to the language's own name, in that language.
-   *
-   * Every catalogue carries every endonym, because a selector has to name the
-   * languages a Commander is *not* currently reading in. Endonyms are not
-   * translated: German is "Deutsch" on an English screen too, which is what a
-   * reader looking for their own language actually scans for.
-   */
   /** Exactly one shipped locale is the fallback. */
   readonly fallback: boolean;
 }
@@ -123,7 +155,7 @@ export const SHIPPED_LOCALES: readonly ShippedLocale[] = [
  * tag; a tag it rejects falls back to a lowercase comparison rather than
  * throwing, because a malformed browser entry must not break startup.
  */
-export function canonicalizeTag(tag: string): string {
+function canonicalizeTag(tag: string): string {
   try {
     return Intl.getCanonicalLocales(tag)[0] ?? tag;
   } catch {
@@ -132,7 +164,7 @@ export function canonicalizeTag(tag: string): string {
 }
 
 /** The base language of a tag: `de-DE` becomes `de`. */
-export function baseLanguage(tag: string): string {
+function baseLanguage(tag: string): string {
   return canonicalizeTag(tag).split('-')[0]?.toLowerCase() ?? '';
 }
 

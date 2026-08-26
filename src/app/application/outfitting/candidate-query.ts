@@ -397,7 +397,7 @@ export function groupFamilies(
  * indistinguishable rows still come out in the order the Almanac published them
  * (module-catalogue contract, "Families and order").
  */
-export function orderChoices(
+function orderChoices(
   choices: readonly ModuleChoice[],
   collator: Intl.Collator,
 ): readonly ModuleChoice[] {

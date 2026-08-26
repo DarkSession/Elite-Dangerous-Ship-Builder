@@ -105,11 +105,6 @@ export function previewDeclarations(): readonly PreviewDeclaration[] {
   return [...registry.values()];
 }
 
-/** One declaration by component id. */
-export function previewDeclaration(componentId: ComponentId): PreviewDeclaration | null {
-  return registry.get(componentId) ?? null;
-}
-
 /** A stable address for one component state, used by the preview app and tests. */
 export function previewAddress(componentId: ComponentId, state: ComponentState): string {
   return `${componentId}--${state}`;
@@ -178,11 +173,6 @@ export function validatePreviewManifest(
   }
 
   return violations;
-}
-
-/** Clears the registry. Test support only. */
-export function resetPreviewManifest(): void {
-  registry.clear();
 }
 
 // ---------------------------------------------------------------------------

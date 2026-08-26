@@ -61,10 +61,13 @@ export class LinkSharePresenter {
     if (url === null) {
       return;
     }
-    const shared = await this.#navigator.share({
-      title: this.#messages.message('link.title'),
-      url,
-    });
+    // A dismissal and a failure are the same answer for a link: it did not
+    // leave this way, so the one on screen is still the way out.
+    const shared =
+      (await this.#navigator.shareData({
+        title: this.#messages.message('link.title'),
+        url,
+      })) === 'shared';
     this.#feedback.set(shared ? 'idle' : 'share-failed');
   }
 

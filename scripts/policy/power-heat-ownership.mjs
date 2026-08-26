@@ -11,11 +11,9 @@
  * test. Exit code 0 means every rule passed; a violation prints its file, line
  * and reason.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
-import { extname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { ARITHMETIC, ROOT, filesUnder, runPolicy, runRules, scan } from './common.mjs';
 
 /** The one place that may ask the package about power, heat or the distributor. */
 export const PROJECTION = 'src/app/domain/power-heat';
@@ -87,80 +85,8 @@ export const FIGURE_FIELDS = [
 /** One of those fields, read off something. */
 const FIGURE_READ = new RegExp(`\\.(?:${FIGURE_FIELDS.join('|')})\\b`);
 
-/**
- * Arithmetic between two things, rather than a sign, a hyphen or a comment.
- *
- * The operator has to be spaced on both sides, which is how the formatter sets
- * every expression in this repository and is never how a kebab-cased class,
- * message key or data attribute is written.
- */
-const ARITHMETIC = /[a-zA-Z0-9_$)\]] [+\-*/%] [a-zA-Z0-9_$(]/;
-
-async function* walk(target) {
-  const info = await stat(target).catch(() => null);
-  if (info === null) {
-    return;
-  }
-  if (!info.isDirectory()) {
-    yield target;
-    return;
-  }
-  for (const entry of await readdir(target)) {
-    yield* walk(join(target, entry));
-  }
-}
-
-/**
- * Every file under a set of paths, excluding suites and fixtures.
- *
- * A suite asks the package the same question this application asks, for the
- * same build, and compares the two answers — which is the whole point of the
- * contract suite and of every component suite that refuses to write a megawatt
- * down. Holding them to the call-site rule would forbid the only test that can
- * prove the rule is being kept.
- */
-async function filesUnder(paths, extensions) {
-  const files = [];
-  for (const path of paths) {
-    for await (const found of walk(resolve(ROOT, path))) {
-      const name = relative(ROOT, found);
-      if (name.includes('.spec.') || name.includes('.fixtures.')) {
-        continue;
-      }
-      if (extensions.includes(extname(found))) {
-        files.push(name);
-      }
-    }
-  }
-  return [...new Set(files)].sort();
-}
-
 const isOwned = (name) => OWNED.some((owned) => name.startsWith(owned));
 const isProjection = (name) => name.startsWith(PROJECTION);
-
-/**
- * Reads a file line by line, skipping block documentation.
- *
- * A `/** … *\/` comment explains the code, and these files explain themselves
- * largely by naming what they refuse to do — a rule that read them would report
- * the sentence "nothing here divides one figure by another" as a division. A
- * `//` line beside code is not that: it is usually code somebody turned off,
- * which is exactly what these rules are for. `policy-allow:` covers the rest.
- */
-function scan(source, test) {
-  const found = [];
-  source.split('\n').forEach((line, index) => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('*') || trimmed.startsWith('/**') || line.includes('policy-allow:')) {
-      return;
-    }
-    const hit = test(line);
-    if (hit !== null && hit !== false && hit !== undefined) {
-      found.push({ line: index + 1, hit });
-    }
-  });
-  return found;
-}
 
 const RULES = [
   {
@@ -231,24 +157,6 @@ const RULES = [
   },
 ];
 
-export async function check() {
-  const violations = [];
-  for (const rule of RULES) {
-    await rule.run(violations);
-  }
-  return violations;
-}
+export const check = () => runRules(RULES);
 
-const invokedDirectly = process.argv[1] === fileURLToPath(import.meta.url);
-if (invokedDirectly) {
-  const violations = await check();
-  for (const violation of violations) {
-    console.error(`${violation.file}:${violation.line}: ${violation.reason}`);
-  }
-  console.log(
-    violations.length === 0
-      ? 'power and heat ownership policy: no violations'
-      : `power and heat ownership policy: ${violations.length} violation(s)`,
-  );
-  process.exit(violations.length === 0 ? 0 : 1);
-}
+await runPolicy('power and heat ownership policy', check, import.meta.url);

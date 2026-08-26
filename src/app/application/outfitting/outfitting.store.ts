@@ -654,7 +654,7 @@ export class OutfittingStore {
 }
 
 /** The mount an intent is about, where it is about one. */
-export function slotKeyOf(intent: BuildEditIntent): string | null {
+function slotKeyOf(intent: BuildEditIntent): string | null {
   return 'slotKey' in intent ? intent.slotKey : null;
 }
 

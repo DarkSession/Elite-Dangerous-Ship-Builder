@@ -39,7 +39,7 @@ application message change updates the complete English and German catalogues to
 **Purpose**: Add the dependencies, compiler strictness, assets and second Angular application the
 foundation needs before any source lands.
 
-- [x] T001 Add lockfile-compatible `@jsverse/transloco` and `@angular/service-worker` dependencies and `@axe-core/playwright`, `postcss` and `postcss-scss` development dependencies in `package.json`, then install and commit the updated `pnpm-lock.yaml`
+- [x] T001 Add lockfile-compatible `@jsverse/transloco` and `@angular/service-worker` dependencies and `@axe-core/playwright`, `postcss` and `postcss-scss` development dependencies in `package.json`, then install and commit the updated `pnpm-lock.yaml` _(Superseded 2026-08-26: Transloco was removed; the application owns interpolation in `src/app/i18n/locale-registry.ts`.)_
 - [x] T002 Enable `"strict": true` in `compilerOptions` and `"strictTemplates": true` in `angularCompilerOptions` in `tsconfig.json`, and repair every resulting error in `src/`, `e2e/` and `playwright.config.ts`
 - [x] T003 [P] Add the `ui:preview`, `e2e:preview`, `e2e:offline` and `policy` script entries to `package.json` so the new preview, offline and policy targets are runnable
 - [x] T004 [P] Vendor licensed Barlow, Barlow Condensed and JetBrains Mono WOFF2 subsets with their OFL licence files under `public/fonts/`
@@ -75,7 +75,7 @@ verification harness that every user story composes.
 - [x] T016 [P] Define the `ShippedLocale`, `LocaleCandidate` and `LocaleSnapshot` types and the `en`/`de` registry entries in `src/app/i18n/locale-registry.ts`
 - [x] T017 Seed the canonical English and German catalogues with reviewed shell, action, status, error, unavailable, disclosure and generic-unknown-key messages using identical key and interpolation-variable sets in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/de.json`
 - [x] T018 Implement the signal `LocaleStore` that commits exactly one bundled-English ready snapshot per revision in `src/app/i18n/locale.store.ts` with unit tests (depends on T016, T017)
-- [x] T019 Implement the typed message facade over Transloco in `src/app/i18n/message.service.ts` and register the localization providers in `src/app/app.config.ts` (depends on T016–T018)
+- [x] T019 Implement the typed message facade over Transloco in `src/app/i18n/message.service.ts` and register the localization providers in `src/app/app.config.ts` (depends on T016–T018) _(Superseded 2026-08-26: the facade interpolates with the repository's own `interpolate`, not Transloco.)_
 - [x] T020 [P] Implement the cached named `Intl` formatter registry (integer, decimal, fraction-percent, metre/kilometre unit, named date, collator, display name, and credit/light-year message patterns) in `src/app/i18n/formatters/` with unit tests
 
 ### Shared component and preview infrastructure

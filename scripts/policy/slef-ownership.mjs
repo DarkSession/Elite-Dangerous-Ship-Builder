@@ -12,11 +12,20 @@
  * line has no call site to test. Exit code 0 means every rule passed; a
  * violation prints its file, line and reason.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
-import { extname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { ROOT, filesUnder, lines, runPolicy, runRules } from './common.mjs';
 
-const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+/**
+ * What this feature's rules skip.
+ *
+ * Its test doubles live under `testing/` rather than in `.fixtures.` files, so
+ * the shared default would read them and the `/testing/` fragment would not be
+ * read by anything else. The three rules that pass `{ skip: [] }` want the
+ * suites in scope on purpose: a spec importing upstream, or reaching past a
+ * leaf, is exactly the drift they exist to catch.
+ */
+const SKIP = ['.spec.', '/testing/'];
 
 /** Feature 004's own source. Every rule below applies inside these. */
 export const OWNED = [
@@ -123,63 +132,6 @@ export const PRIVATE_PARSER = ['JSON.parse', 'JSON.stringify'];
  */
 export const DEPRECATED_CLIPBOARD = ['execCommand'];
 
-async function* walk(target) {
-  const info = await stat(target).catch(() => null);
-  if (info === null) {
-    return;
-  }
-  if (!info.isDirectory()) {
-    yield target;
-    return;
-  }
-  for (const entry of await readdir(target)) {
-    yield* walk(join(target, entry));
-  }
-}
-
-/** Every file under a set of paths, excluding specs, fixtures and test helpers. */
-export async function filesUnder(paths, extensions, { includeTests = false } = {}) {
-  const files = [];
-  for (const owned of paths) {
-    for await (const path of walk(resolve(ROOT, owned))) {
-      const name = relative(ROOT, path);
-      if (!includeTests && (name.includes('.spec.') || name.includes('/testing/'))) {
-        continue;
-      }
-      if (extensions.includes(extname(path))) {
-        files.push(name);
-      }
-    }
-  }
-  return [...new Set(files)].sort();
-}
-
-/**
- * Finds every line carrying one of a set of forbidden strings.
- *
- * Block documentation is skipped and nothing else is, for the same reason
- * feature 010's checker skips it: these files explain themselves largely by
- * naming what they refuse to do, and a rule that read the prose would report
- * the sentence about `navigator` as a use of `navigator`. `policy-allow:` on a
- * line covers anything else.
- */
-export function lines(source, matches) {
-  const found = [];
-  source.split('\n').forEach((line, index) => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('*') || trimmed.startsWith('/**') || line.includes('policy-allow:')) {
-      return;
-    }
-    for (const match of matches) {
-      const hit = typeof match === 'string' ? line.includes(match) : match.test(line);
-      if (hit) {
-        found.push({ line: index + 1, match: typeof match === 'string' ? match : String(match) });
-      }
-    }
-  });
-  return found;
-}
-
 /** Every feature-004 import found in a source file, with its line. */
 export function featureImports(source) {
   const found = [];
@@ -208,7 +160,7 @@ const RULES = [
   {
     name: 'nothing upstream imports feature 004',
     async run(violations) {
-      for (const name of await filesUnder(UPSTREAM, ['.ts'], { includeTests: true })) {
+      for (const name of await filesUnder(UPSTREAM, ['.ts'], { skip: [] })) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of featureImports(source)) {
           violations.push({
@@ -224,7 +176,7 @@ const RULES = [
   {
     name: 'the Almanac is reached only through its named leaves',
     async run(violations) {
-      for (const name of await filesUnder(OWNED, ['.ts'], { includeTests: true })) {
+      for (const name of await filesUnder(OWNED, ['.ts'], { skip: [] })) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of almanacImports(source)) {
           if (ALLOWED_ALMANAC_LEAVES.includes(hit.specifier)) {
@@ -242,7 +194,7 @@ const RULES = [
   {
     name: 'no surface reaches the package, the browser or a store',
     async run(violations) {
-      for (const name of await filesUnder(OWNED_SURFACES, ['.ts', '.html'])) {
+      for (const name of await filesUnder(OWNED_SURFACES, ['.ts', '.html'], { skip: SKIP })) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, SURFACE_FORBIDDEN)) {
           violations.push({
@@ -257,7 +209,7 @@ const RULES = [
   {
     name: 'feature 004 declares no storage key',
     async run(violations) {
-      for (const name of await filesUnder(OWNED, ['.ts'])) {
+      for (const name of await filesUnder(OWNED, ['.ts'], { skip: SKIP })) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, PERSISTENCE)) {
           violations.push({
@@ -272,10 +224,9 @@ const RULES = [
   {
     name: 'no deprecated clipboard fallback',
     async run(violations) {
-      for (const name of await filesUnder([...OWNED, 'src/app/platform/browser'], ['.ts'])) {
-        if (name.endsWith('.spec.ts')) {
-          continue;
-        }
+      for (const name of await filesUnder([...OWNED, 'src/app/platform/browser'], ['.ts'], {
+        skip: SKIP,
+      })) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, DEPRECATED_CLIPBOARD)) {
           violations.push({
@@ -290,7 +241,7 @@ const RULES = [
   {
     name: 'no private reader of the format',
     async run(violations) {
-      for (const name of await filesUnder(OWNED, ['.ts'])) {
+      for (const name of await filesUnder(OWNED, ['.ts'], { skip: SKIP })) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
         for (const hit of lines(source, PRIVATE_PARSER)) {
           violations.push({
@@ -304,24 +255,9 @@ const RULES = [
   },
 ];
 
-export async function check() {
-  const violations = [];
-  for (const rule of RULES) {
-    await rule.run(violations);
-  }
-  return violations;
-}
+/** Re-exported for this feature's own suite, which asserts the reading directly. */
+export { lines };
 
-const invokedDirectly = process.argv[1] === fileURLToPath(import.meta.url);
-if (invokedDirectly) {
-  const violations = await check();
-  for (const violation of violations) {
-    console.error(`${violation.file}:${violation.line}: ${violation.reason}`);
-  }
-  console.log(
-    violations.length === 0
-      ? 'slef ownership policy: no violations'
-      : `slef ownership policy: ${violations.length} violation(s)`,
-  );
-  process.exit(violations.length === 0 ? 0 : 1);
-}
+export const check = () => runRules(RULES);
+
+await runPolicy('slef ownership policy', check, import.meta.url);

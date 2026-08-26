@@ -1540,10 +1540,18 @@ export const REVIEWED_IDENTICAL_VALUES = {
   },
 };
 
-/** The interpolation variables a message pattern declares, sorted. */
+/**
+ * The interpolation variables a message pattern declares, sorted.
+ *
+ * A hand-kept copy of `PLACEHOLDER` in `src/app/i18n/locale-registry.ts`, which
+ * this file cannot import because it is `.mjs` and that is TypeScript. The two
+ * must be spelled the same: this gate decides whether a catalogue ships, and
+ * the runtime decides what it renders, so a pattern one of them sees and the
+ * other does not is a build that passes and a locale that then refuses to load.
+ */
 function interpolationVariablesOf(pattern) {
   const found = new Set();
-  for (const match of pattern.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)) {
+  for (const match of pattern.matchAll(/\{\{\s*([^{}]*?)\s*\}\}/g)) {
     found.add(match[1]);
   }
   return [...found].sort();

@@ -167,7 +167,7 @@ export class LocalRecordRepository {
 }
 
 /** Decodes one stored value into a listing entry, never throwing. */
-export function decodeEntry(id: string, raw: string): StoredRecordEntry {
+function decodeEntry(id: string, raw: string): StoredRecordEntry {
   const decoded = decodeAndMigrate(parseJson(raw), id);
 
   if (decoded.ok) {
