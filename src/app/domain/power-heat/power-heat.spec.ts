@@ -136,13 +136,22 @@ describe('projectPowerHeat', () => {
       const retracted = project(build, 'retracted').power.bands;
 
       expect(packageBands.length).toBeGreaterThan(0);
+      const budget = BuildMetrics.of(build).powerBudget();
+      const available = budget.available;
+      // The track both states' rows are measured on: whichever of that state's
+      // whole demand and the plant's output is larger, which is the same track
+      // the rail's own bar uses.
+      const deployedScale = Math.max(budget.deployed, available);
+      const retractedScale = Math.max(budget.retracted, available);
+
       packageBands.forEach((band, index) => {
-        const available = BuildMetrics.of(build).powerBudget().available;
         expect(deployed[index]).toEqual({
           priority: band.priority,
           draw: band.deployed,
           cumulativeDraw: band.deployedTotal,
           cumulativeShare: band.deployedTotal / available,
+          precedingShare: (band.deployedTotal - band.deployed) / deployedScale,
+          ownShare: band.deployed / deployedScale,
           powered: band.poweredDeployed,
         });
         expect(retracted[index]).toEqual({
@@ -150,9 +159,34 @@ describe('projectPowerHeat', () => {
           draw: band.retracted,
           cumulativeDraw: band.retractedTotal,
           cumulativeShare: band.retractedTotal / available,
+          precedingShare: (band.retractedTotal - band.retracted) / retractedScale,
+          ownShare: band.retracted / retractedScale,
           powered: band.poweredRetracted,
         });
       });
+    });
+
+    it('draws the groups additively: each row starts where the one above it ended', () => {
+      const build = divergentBandBuild();
+      const budget = BuildMetrics.of(build).powerBudget();
+      const bands = project(build, 'deployed').power.bands;
+      const scale = Math.max(budget.deployed, budget.available);
+
+      expect(bands.length).toBeGreaterThan(1);
+      expect(bands[0].precedingShare).toBe(0);
+
+      bands.forEach((band, index) => {
+        const above = bands[index - 1];
+        if (above) {
+          expect(band.precedingShare).toBeCloseTo(above.precedingShare + above.ownShare, 12);
+        }
+      });
+
+      // The last row ends where the whole demand does, on the same track the
+      // rail's bar marks the plant's output on.
+      const last = bands[bands.length - 1];
+      expect(last.precedingShare + last.ownShare).toBeCloseTo(budget.deployed / scale, 12);
+      expect(project(build, 'deployed').power.bar.plant).toBeCloseTo(budget.available / scale, 12);
     });
 
     it('reports a shed band as unpowered in both states when the package does', () => {

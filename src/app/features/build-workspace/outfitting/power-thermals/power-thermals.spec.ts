@@ -129,6 +129,56 @@ describe('PowerThermals', () => {
       );
     });
 
+    it('draws each group’s bar starting where the group above it ended', () => {
+      const build = shedBandBuild();
+      const { element } = render(build);
+
+      // The groups are cumulative, so each row carries two lengths: the wash is
+      // everything above it and the solid length is its own on the end of that.
+      // Read back as drawn, because a wash that started at zero on every row
+      // would state each group's own draw against the plant and call it the
+      // running total the column beside it reports.
+      const rows = [...element.querySelectorAll('.power__block--bands .power__band')].map(
+        (row) => ({
+          preceding: percent(row.querySelector<HTMLElement>('.power__band-preceding')),
+          own: percent(row.querySelector<HTMLElement>('.power__band-fill')),
+          start:
+            Number.parseFloat(
+              row.querySelector<HTMLElement>('.power__band-fill')?.style.insetInlineStart ?? '',
+            ) / 100,
+        }),
+      );
+
+      expect(rows.length).toBeGreaterThan(1);
+      expect(rows[0].preceding).toBe(0);
+      rows.forEach((row, index) => {
+        // The solid length starts at the end of the wash, not at the leading
+        // edge of the track.
+        expect(row.start).toBeCloseTo(row.preceding, 6);
+
+        const above = rows[index - 1];
+        if (above) {
+          expect(row.preceding).toBeCloseTo(above.preceding + above.own, 6);
+        }
+      });
+    });
+
+    it('marks the plant in the same place on every group’s bar', () => {
+      const build = shedBandBuild();
+      const { element } = render(build);
+
+      // One reading, drawn on every row: the mark is where the plant runs out
+      // on a track every row shares, so the group whose length crosses it is
+      // the group the plant ran out on.
+      const marks = [...element.querySelectorAll<HTMLElement>('.power__band-plant')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+
+      expect(marks.length).toBeGreaterThan(1);
+      expect(new Set(marks).size).toBe(1);
+      expect(marks[0]).toBeGreaterThan(0);
+    });
+
     it('states every group’s verdict in words, not only the shed one', () => {
       const build = shedBandBuild();
       const budget = BuildMetrics.of(build).powerBudget();
@@ -230,12 +280,41 @@ describe('PowerThermals', () => {
       expect(gathered[0]?.textContent).toContain(added.toFixed(2));
     });
 
-    it('states the whole list’s draw beside the heading, dark groups included', () => {
+    it('heads the list with the canvas’s two column names', () => {
+      const { element } = render(withinBudgetBuild());
+
+      // `MODULE` over the names and `MW` over the figures. The bar column
+      // between them is unheaded: the bar is the figure beside it drawn out,
+      // and a head over it would name a reading that is not there.
+      expect(element.querySelector('.modules__head-name')?.textContent?.trim()).toBe('Module');
+      expect(element.querySelector('.modules__head-draw')?.textContent?.trim()).toBe('MW');
+      // Three cells on the list's three tracks, and the middle one — over the
+      // bars — is empty: the bar is the figure beside it drawn out, and a head
+      // over it would name a reading that is not there.
+      const cells = element.querySelectorAll('.modules__head > *');
+      expect(cells).toHaveLength(3);
+      expect(cells[1]?.textContent?.trim()).toBe('');
+    });
+
+    it('closes the list with the whole list’s draw, dark groups included', () => {
       const build = withinBudgetBuild();
       const { element } = render(build);
 
-      const note = element.querySelector('.power__block--modules .power__note');
-      expect(note?.textContent).toContain(BuildMetrics.of(build).powerBudget().deployed.toFixed(2));
+      // The canvas's `TOTAL DRAW` row, which is what the lines above it add up
+      // to — and a different reading from the `POWERED DRAW` tile beside the
+      // priority groups, which leaves the dark groups out.
+      expect(element.querySelector('.modules__total-label')?.textContent?.trim()).toBe(
+        'Total draw',
+      );
+      expect(element.querySelector('.modules__total-draw')?.textContent).toContain(
+        BuildMetrics.of(build).powerBudget().deployed.toFixed(2),
+      );
+    });
+
+    it('carries no total beside the heading, where the canvas withdrew it', () => {
+      const { element } = render(withinBudgetBuild());
+
+      expect(element.querySelector('.power__block--modules .power__note')).toBeNull();
     });
 
     it('keeps a switched-off consumer on the list, at zero, and says it is off', () => {
@@ -292,11 +371,28 @@ describe('PowerThermals', () => {
     });
   });
 
+  describe('the hardpoint condition', () => {
+    it('draws its caption, and names the group by it rather than by a hidden string', () => {
+      const { element } = render(withinBudgetBuild());
+
+      const caption = element.querySelector('.tab-group__label');
+      const group = element.querySelector('.power__hardpoints [role="group"]');
+
+      // Drawn, not hidden — and the group is named *by* it, so the words a
+      // reader sees and the words a screen reader announces are one string.
+      expect(caption?.textContent?.trim()).toBe('Hardpoints');
+      expect(group?.getAttribute('aria-labelledby')).toBe(caption?.id);
+      expect(group?.getAttribute('aria-label')).toBeNull();
+    });
+  });
+
   describe('the heat profile', () => {
     it('draws the canvas’s bars, in its order, named as it names them', () => {
       const { element } = render(withinBudgetBuild());
 
-      const names = [...element.querySelectorAll('.heat__name')].map((node) => node.textContent);
+      const names = [...element.querySelectorAll('.heat__name')].map((node) =>
+        node.firstChild?.textContent?.trim(),
+      );
       // The five the package returns plus the cell-bank spike it declines to
       // publish as one, where a bank is fitted to spike.
       expect(names.slice(0, 5)).toEqual([
@@ -310,6 +406,41 @@ describe('PowerThermals', () => {
       if (names.length === 6) {
         expect(names[5]).toBe('Shield cell bank');
       }
+    });
+
+    it('says what each scenario name is shorthand for, drawn rather than hovered', () => {
+      const { element } = render(withinBudgetBuild());
+
+      const bars = [...element.querySelectorAll('.heat__bar')];
+      expect(bars.length).toBeGreaterThan(0);
+
+      for (const bar of bars) {
+        const description = bar.querySelector('.heat__description');
+
+        // Present, non-empty, and in the document rather than in a title or a
+        // data attribute: hover-only meaning is unreachable by touch.
+        expect(description?.textContent?.trim()).toBeTruthy();
+        expect(bar.querySelector('[title]')).toBeNull();
+        expect(bar.querySelector('[data-tip]')).toBeNull();
+      }
+
+      expect(element.querySelector('.heat__description')?.textContent?.trim()).toBe(
+        'Hardpoints stowed, no throttle',
+      );
+    });
+
+    it('draws the key above the four tiles it does not explain', () => {
+      const { element } = render(withinBudgetBuild());
+
+      const heat = element.querySelector('.heat');
+      const legend = heat?.querySelector('.heat__legend');
+      const facts = heat?.querySelector('.power__facts');
+
+      // Document order is what the stacked arrangement reads and what the wide
+      // one places from, so the key reading before the tiles is the assertion.
+      expect(legend).not.toBeNull();
+      expect(facts).not.toBeNull();
+      expect(legend?.compareDocumentPosition(facts as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
 
     it('reads each bar as the gauge reads it, beside the bar it drew', () => {
@@ -401,17 +532,27 @@ describe('PowerThermals', () => {
       expect(rows[0][4]).toBe(`${metrics?.systems.rechargeRate.toFixed(1)} MJ/s`);
     });
 
-    it('names the fitted distributor beside the heading', () => {
+    it('names the fitted distributor nowhere, where the canvas withdrew it', () => {
       const build = withinBudgetBuild();
       const distributor = build
         .fittedModules()
         .find((module) => /powerdistributor/iu.test(module.symbol));
       const { element } = render(build);
 
-      const note = element.querySelector('.power__block--distributor .power__note')?.textContent;
-      expect(note).toContain(
+      // The 2026-08-25 revision took the module's identity off this heading.
+      // The block heads itself and says nothing about what is fitted.
+      expect(element.querySelector('.power__block--distributor .power__note')).toBeNull();
+      expect(element.querySelector('.power__block--distributor')?.textContent).not.toContain(
         `${distributor?.effectiveStats?.class}${distributor?.effectiveStats?.rating}`,
       );
+    });
+
+    it('heads the block once, in the name the revision shortened it to', () => {
+      const { element } = render(withinBudgetBuild());
+
+      expect(
+        element.querySelector('.power__block--distributor .power__heading')?.textContent?.trim(),
+      ).toBe('Power distributor and pips');
     });
 
     it('draws four blocks per bank, filled to the allocation the package used', () => {
@@ -536,3 +677,8 @@ describe('PowerThermals', () => {
     expect(text).not.toContain('Heat capacity');
   });
 });
+
+/** One drawn length, as a fraction of the track it is on. */
+function percent(length: HTMLElement | null): number {
+  return Number.parseFloat(length?.style.inlineSize ?? '') / 100;
+}

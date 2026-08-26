@@ -43,10 +43,20 @@ Consequences, all binding:
 
 ## Panel layout
 
-**Not a 2×2 grid.** The panel is a two-column row holding blocks 1 and 2
+**Two rows of two.** The panel is two sibling two-column grids: the first
+(@416700) holds blocks 1 and 2
 (`grid-template-columns: 1fr 1fr; gap: 12px; min-height: 328px; align-items: stretch`),
-then block 3 across the full width beneath it (`margin-top: 12px`), then block 4
-across the full width beneath that.
+and the second (@465531) holds blocks 3 and 4 on the same two columns
+(`grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; align-items: stretch`).
+
+**Corrected 2026-08-26 (Commander request).** This section read "Not a 2×2 grid"
+and put blocks 3 and 4 across the full width, one under the other. The
+`margin-top: 12px` it quoted for block 3 belongs to the second grid, not to a
+full-width block — the reference draws the heat profile and the distributor side
+by side, and block 4 (@495234) is that grid's second child rather than a fifth
+row of the panel. Built as read, the distributor sat a whole panel below the
+fold of a region bounded by the column it sits in, where a Commander looking for
+the pips found the module list and nothing under it.
 
 All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 `background: var(--panel)`, `padding: 16px 18px`, `gap: 13px`.
@@ -61,7 +71,18 @@ All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
 - Four rows, each `GRP n` + draw in MW + cumulative percentage:
   `GRP 1  18.72 MW  60%` · `GRP 2  4.68 MW  75%` · `GRP 3  6.24 MW  95%` ·
   `GRP 4  7.80 MW  OFFLINE`
-- A plant marker across the bars reading `31.20 MW PLANT`. Not built (review note 2).
+- Each row's bar is **two lengths on one track**, because the percentages are
+  cumulative: a wash (`var(--amber-a18)`) from the leading edge to where the
+  groups above this one end, then this group's own draw solid (`var(--amber)`)
+  on the end of it. `GRP 2` is `left: 50%; width: 12.5%`, which is
+  `4.68 / 37.44` starting where `GRP 1`'s `18.72 / 37.44` stopped.
+- Both lengths are shares of the **whole demand** (`37.44 MW`), not of plant
+  output — which is why the percentage column and the bar disagree: `GRP 1` is
+  `60%` of the plant and half of the track.
+- A one-pixel `var(--ink-62)` mark stands on every row at the same place, `83.33%`
+  — `31.20 / 37.44`, where the plant runs out. Unlabelled: the words
+  `31.20 MW PLANT` are not in the canvas (see "Not in the canvas" below), and
+  the tile beneath says the figure.
 - Three tiles: `PLANT OUTPUT 31.20 MW` · `POWERED DRAW 29.64 MW` · `UNPOWERED 7.80 MW`,
   and no condition printed under them.
 
@@ -118,6 +139,12 @@ outfitting screen means by a cell bank's heat spike".
   (review note 8).
 - The four blocks take the width they need and no more, so the figures beside them
   keep their room (review note 9).
+- Each block is `flex: 1` at `height: 16px` across the `PIPS` column, with a 4px
+  gap — a chip in a row of four, not a button standing on its own. **Built at the
+  24-pixel target floor rather than at the project's 44-pixel baseline**
+  (2026-08-26, Commander request): four at 44 are a strip wider than the rest of
+  the table's figures put together. `.pips__step` is on `DENSE_TARGETS` in
+  `e2e/accessibility/assertions.ts`, which is the floor and not a waiver.
 - The canvas shows SYS 2 / ENG 1 / WEP 3 on desktop and `3 · 1 · 2 PIPS` on mobile
   (@986916) — both totalling six.
 
@@ -125,8 +152,13 @@ Pip rules, as stated by the repository owner:
 
 - Six pips in total, at most four to any one bank.
 - The allocation starts at `2 / 2 / 2`.
-- Raising one bank takes the pips from the other two evenly, in half-pip steps:
-  moving SYS to 3 gives `3 / 1.5 / 1.5`.
+- A Commander assigns a **whole** pip to one bank, and the other two pay **half a
+  pip each**: moving SYS to 3 gives `3 / 1.5 / 1.5`. Where only one of the two
+  has pips left to give it pays the whole of it — from `1 / 4 / 1`, SYS to 4
+  gives `4 / 2 / 0`. Taking pips back runs the same rule backwards, all of it to
+  one bank where the other is already at four. (Restated 2026-08-25; the earlier
+  wording said only "evenly, in half-pip steps", which the build had read as
+  redistributing the remainder rather than charging each of the other two.)
 
 The package accepts fractional pips in `[0, 4]` per bank and computes
 `ratedRecharge * (pips / 4) ^ 1.1`, so every allocation above is answerable.
@@ -143,6 +175,11 @@ The package accepts fractional pips in `[0, 4]` per bank and computes
   says what they are and not what pressing one does; they are ruled the same
   control the distributor cell carries, in a second place
   (`power-and-heat-detail.md`, "The rail's pip control").
+- Each `.pipbar` is `flex: 1` at `height: 14px` — about 21 CSS pixels wide in a
+  306-pixel rail. **Built at the 24-pixel target floor** (2026-08-26, Commander
+  request), like the distributor cell's blocks and for the same reason. Three
+  groups of four at that size do not share a 306-pixel line, so they wrap, which
+  is what this rail has always done with them.
 
 Nothing else in the rail belongs to this capability. The canvas draws no heat
 sentence in the rail.
@@ -175,7 +212,9 @@ These were built and are being removed. None of them appears anywhere in
 - Table presentations of the group, module and heat readings; the canvas draws
   bars for all three.
 - A subtitle under the region's title.
-- A `31.20 MW PLANT` marker line under the priority groups.
+- A `31.20 MW PLANT` marker line under the priority groups. The canvas marks the
+  plant on each row's own track, unlabelled, which is drawn; a labelled line
+  under the block is not in it.
 - A hardpoint-state condition printed under the summary tiles.
 - A caption on the distributor table repeating its own heading.
 - A priority group this build puts nothing in. The game has five and the package

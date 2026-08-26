@@ -303,26 +303,78 @@ surface owns, with the full browser matrix at the end of the phase.
 Recorded in `design/power-and-heat-detail.md`, "Canvas revision, 2026-08-25". Nothing here is a new
 package call: every figure is one the projection already returns.
 
-- [ ] T069 Draw the `H‑PTS` label in front of the two condition segments, and make it the group's
-      accessible name rather than a hidden string beside them
-- [ ] T070 Re-lay `DRAW BY MODULE`: withdraw the header's `MW · TOTAL n` note and
+> **Ruled 2026-08-25 (the owner), before T074 was built.** The specs disagreed with each other about
+> the pip step: `spec.md` FR-007 and wave 12's ruling C said whole pips, while `design/` and the
+> store said "half a pip at a time". The ruling settles it and is now FR-007's own block: **a
+> Commander assigns a whole pip, and the other two banks pay half a pip each** — or one of them pays
+> the whole of it where the other has nothing left to give, and the same rule runs backwards when
+> pips come back out. `PowerConditionsStore.setPips` was rebuilt to it (it had been redistributing
+> the _remainder_ evenly, which does not preserve where the other two stood), and `spec.md`,
+> `data-model.md`, `contracts/distributor-metrics.md`, `quickstart.md` and
+> `design/power-and-heat-detail.md` were corrected together.
+
+- [x] T069 Draw the `H‑PTS` label in front of the two condition segments, and make it the group's
+      accessible name rather than a hidden string beside them.
+      _Built through a new `labelVisible` input on the shared `edsb-tab-group` (feature 011's
+      layer), which swaps `aria-label` for `aria-labelledby` on the caption, so the visible name and
+      the accessible name are one string by construction. Drawn as the whole word rather than the
+      canvas's abbreviation, which is what this application already does with `GRP 1` and its column
+      heads — see `design/power-and-heat-detail.md`, "One departure from the drawing"._
+- [x] T070 Re-lay `DRAW BY MODULE`: withdraw the header's `MW · TOTAL n` note and
       `power.modules.total` with it, head the list `MODULE` against `MW` over the row tracks with
       the bar column unheaded, and close it with a `TOTAL DRAW` row carrying the same total. Canvas
       1d's second footer figure, `POWERED`, is not built — the priority-group block already draws it
-- [ ] T071 Move the heat key above the four tiles
-- [ ] T072 Add a description under each of the six heat scenario names, drawn rather than hovered
+- [x] T071 Move the heat key above the four tiles
+- [x] T072 Add a description under each of the six heat scenario names, drawn rather than hovered
       (011 FR-006), through the localization layer in both catalogues. The canvas's six `data-tip`
       strings are quoted in `design/power-and-heat-detail.md`, "Heat profile"
-- [ ] T073 Rename `power.distributor.heading` to `Power distributor and pips` in both catalogues, and
+- [x] T073 Rename `power.distributor.heading` to `Power distributor and pips` in both catalogues, and
       withdraw `distributorIdentity()` and its template line — the canvas no longer draws the fitted
-      distributor beside the heading
-- [ ] T074 Build the rail's pip control (FR-013's 2026-08-25 extension): three bank groups under
+      distributor beside the heading.
+      _`DistributorView.identity`, the `DistributorIdentity` type and the projection helper behind
+      them are withdrawn with it, on T037's precedent: nothing read them once the template line
+      went. `power.distributor.module` and its separator are gone from both catalogues and from the
+      translation-review ledger._
+- [x] T074 Build the rail's pip control (FR-013's 2026-08-25 extension): three bank groups under
       the `POWER` bar, four blocks each, filled from the leading edge, editing the one condition through the same store
       action the distributor cell uses. No half-pip block, no running total, no draft. Each group is
       named with the allocation it stands at
-- [ ] T075 [P] Extend `power-summary.spec.ts` for the rail control and assert the two surfaces move
+- [x] T075 [P] Extend `power-summary.spec.ts` for the rail control and assert the two surfaces move
       one condition — setting from the rail changes what the distributor table reads, and the reverse
-- [ ] T076 [P] Assert the rail control's target size and touch operation at all five layout
+- [x] T076 [P] Assert the rail control's target size and touch operation at all five layout
       profiles, on the same `--edsb-target-size` baseline the distributor cell holds
-- [ ] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
+- [x] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`
+
+## Wave 15 — three readings the Commander sent back (2026-08-26)
+
+> Three notes on the wave 14 build, each of them settled by re-reading
+> `.design/Ship Builder.dc.html` rather than by a new decision. Two of the three were documentation
+> defects as much as build defects: `canvas-contract.md` and `design/power-and-heat-detail.md` had
+> both recorded the panel as "not a 2×2 grid", and the build drew what they said. The reference is
+> two sibling two-column grids. See `design/reference-review.md`, "Wave 15".
+
+- [x] T078 Draw the priority-group bars additively, as the canvas draws them: a wash to where the
+      groups above the row end, then the row's own draw solid on the end of it, both measured
+      against whichever of the whole demand and the plant's output is larger.
+      _`PowerBandView` gains `precedingShare` and `ownShare`; the track scale is now shared with
+      `PowerDrawBar`, which is what lets one mark stand for the plant on every row. The percentage
+      column is unchanged — it is still cumulative draw over plant output, which is why it and the
+      bar beside it disagree._
+- [x] T079 Mark the plant on every group's bar, at the one place it falls on the shared track,
+      unlabelled — the words `31.20 MW PLANT` stay out of the canvas.
+- [x] T080 Size the pip blocks as the chips the canvas draws rather than as standalone buttons: the
+      24-pixel SC 2.5.8 floor, recorded on `DENSE_TARGETS`, with the blocks sharing the line between
+      them. The canvas's own 14 and 16 pixels stay unbuilt.
+- [x] T081 Keep the rail's pip control in the reference's own arrangement — three groups side by
+      side, the name over the blocks, wrapped when they do not fit — now that the blocks are 108
+      pixels a group rather than 188 and no longer scroll sideways inside their own row.
+- [x] T082 Lay the panel out as two rows of two, at the wide step rather than the medium one — a
+      pair is only a pair while both halves can hold what is in them, and half of the tablet
+      column is 209 pixels. Give the heat block its own container so that whether its bars and its
+      tiles stand side by side is decided by that box rather than by the panel around it.
+      _Correct `canvas-contract.md` and `design/power-and-heat-detail.md` with it: the
+      `margin-top: 12px` both quoted for a full-width block belongs to the second grid._
+- [x] T083 [P] Cover all four in tests: the additive geometry and the shared plant mark in the
+      projection and in the drawn DOM, the pip blocks' floor at all five layout profiles in both
+      places they are drawn, and the two rows of two as an invariant that holds stacked or paired.

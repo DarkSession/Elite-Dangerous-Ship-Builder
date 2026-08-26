@@ -95,10 +95,26 @@
       The capability the mode opened, in the space the plates left. Canvas 1c
       gives its panel `min-height: 328px` and lays it out as a 2x2 grid; that is
       the panel's own business, not this region's.
+
+      Each dashboard scrolls inside the bounded column (see the stylesheet), so
+      each is a scroll container and has to be reachable as one — named by the
+      region's own heading rather than by a second name for the same panel. It
+      is the treatment the distributor's table scroller already carries, for the
+      same reason.
     -->
-    <edsb-power-thermals class="anatomy__dashboard" />
+    <edsb-power-thermals
+      class="anatomy__dashboard"
+      role="group"
+      tabindex="0"
+      [attr.aria-labelledby]="headingId"
+    />
   } @else if (isOffence()) {
-    <edsb-offence-analysis class="anatomy__dashboard" />
+    <edsb-offence-analysis
+      class="anatomy__dashboard"
+      role="group"
+      tabindex="0"
+      [attr.aria-labelledby]="headingId"
+    />
   } @else if (isDefence()) {
     <!--
       Feature 006's two cards, in the same space. Canvas 1c gives its panel
@@ -109,7 +125,12 @@
       that nothing here claims should draw nothing, not the last capability in
       the chain under somebody else's heading.
     -->
-    <edsb-defence-analysis class="anatomy__dashboard" />
+    <edsb-defence-analysis
+      class="anatomy__dashboard"
+      role="group"
+      tabindex="0"
+      [attr.aria-labelledby]="headingId"
+    />
   } @else if (isDrives()) {
     <!--
       Feature 008's two cards, in the same space and on the same terms. Canvas
@@ -117,6 +138,11 @@
 
       Named for the reason the mode above it is, not left as the final `@else`.
     -->
-    <edsb-drives-mass class="anatomy__dashboard" />
+    <edsb-drives-mass
+      class="anatomy__dashboard"
+      role="group"
+      tabindex="0"
+      [attr.aria-labelledby]="headingId"
+    />
   }
 </section>

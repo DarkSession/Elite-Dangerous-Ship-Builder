@@ -10,6 +10,29 @@
   max-inline-size: 100%;
 }
 
+// A labelled strip lays its caption and its segments on one line, which is how
+// canvas 1c draws `H-PTS` in front of `DEPLOYED` / `RETRACTED`. The strip takes
+// what the caption leaves and may scroll inside it, so a long translation of
+// either shortens the other rather than pushing the document sideways.
+:host(.tab-group-host--labelled) {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+
+  .tab-group {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+}
+
+// The caption reads as a field label rather than as a segment: it is the name
+// of the control beside it, and it is never mistaken for one of the choices.
+.tab-group__label {
+  @include layout.micro-label;
+
+  flex: none;
+}
+
 // One amber hairline showing between the segments, and nothing around them:
 // `display: flex; gap: 1px; background: var(--amber-a16)` on both canvases.
 //

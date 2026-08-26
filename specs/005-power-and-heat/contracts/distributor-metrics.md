@@ -28,13 +28,21 @@ calls the standalone calculator or recharge scaler.
 The package takes any fraction from `0` to `4` per bank and asks for no total, so
 what it does not impose, the store does — because it is what happens in the ship:
 
-- `0`–`4` per bank on a half-pip step, six between the three;
+- a **whole** `0`–`4` for the bank being set, six between the three;
 - the opening allocation is an even `2 · 2 · 2`, which favours no bank. The
   artboard draws a different allocation in each canvas — `2 · 1 · 3` on 1c and
   `3 · 1 · 2` on 1d — so neither is _the_ opening state, and both come to six;
-- setting one bank moves the other two to pay for it: from `2 · 2 · 2`, three in
-  `SYS` leaves `1.5` in each of the others. The remainder is split in the
-  evenly between them, and each lands on a half pip;
+- **the other two pay half a pip each for every whole pip assigned** (owner's
+  ruling, 2026-08-25): from `2 · 2 · 2`, three in `SYS` leaves `1.5` in each of
+  the others. A bank with nothing left to give pays nothing and the other pays
+  the whole of it, so from `1 · 4 · 1` four in `SYS` gives `4 · 2 · 0`. Taking
+  pips back runs the same rule backwards, all of it going to one bank where the
+  other is already full. Where the split will not divide on the half step — the
+  bank being set was standing on a half — the odd half falls on whichever of the
+  two can better afford it;
+- the bank being set therefore always lands on a whole pip, and the two paying
+  for it land on the half step, which is what a block filled from its leading
+  edge draws;
 - pressing the block a bank already stands on steps it back one, which is the only
   way down to none through four blocks that each name a count.
 

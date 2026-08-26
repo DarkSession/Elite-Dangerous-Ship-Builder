@@ -7,10 +7,10 @@
 -->
 @if (shown()) {
   <!--
-    The sentence first, as the canvas stacks it under feature 003's issues, and
-    then the `POWER` line. A build with a plant that covers everything draws
-    only the line: silence about a group says strictly less than an all-clear
-    would, and that is what it has to say.
+    The sentence first, as the canvas stacks it under feature 003's issues, then
+    the `POWER` line, then the bar, then the pips. A build with a plant that
+    covers everything draws no sentence: silence about a group says strictly
+    less than an all-clear would, and that is what it has to say.
   -->
   @if (statements().length > 0) {
     <ul class="statements">
@@ -53,5 +53,45 @@
         [style.inset-inline-start.%]="bar.plant * 100"
       ></span>
     </span>
+  }
+
+  <!--
+    Canvas 1c's three `.pipset` groups under the bar, and the control they are:
+    pressing a block asks for that many pips in that bank, and the six there are
+    between the three move the other two to pay for it. It is the same single
+    condition the distributor table's cell edits — one allocation in two places,
+    with no draft, no running total and no confirmation step.
+  -->
+  @if (pipSets().length > 0) {
+    <div class="pipsets" role="group" [attr.aria-label]="pipsLabel()">
+      @for (set of pipSets(); track set.kind) {
+        <div class="pipset" [attr.data-bank]="set.kind">
+          <span class="pipset__name" aria-hidden="true">{{ set.name }}</span>
+
+          <!--
+            The group is named with the allocation it stands at, so the reading
+            is there for anyone who cannot see the blocks. That name is why the
+            bank's own name above may be hidden: it is inside this one already,
+            and announced twice it is noise.
+          -->
+          <div class="pips" role="group" [attr.aria-label]="set.label">
+            @for (step of set.steps; track step.id) {
+              <button
+                class="pips__step"
+                type="button"
+                [attr.aria-label]="step.label"
+                (click)="setPips(set.kind, step.value)"
+              >
+                <span
+                  class="pips__fill"
+                  aria-hidden="true"
+                  [style.inline-size.%]="step.fill * 100"
+                ></span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
   }
 }

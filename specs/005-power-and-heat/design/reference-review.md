@@ -223,9 +223,125 @@ None of these is in the artboard, and none is to return without a new ruling:
 
 ### Added to it
 
-- The six-pip rule: six between the three banks, four at most in one, half a pip at a time, and
-  setting one bank takes the pips out of the other two evenly.
+- The six-pip rule: six between the three banks, four at most in one, and setting one bank takes the
+  pips out of the other two. **Wave 14 corrected how**, below.
 - The `· 7.80 OFF` suffix on the rail's `POWER` line, over the lit draw rather than the demand.
 - Each module line reading what it draws in the state being read — `0.00 MW` for a stowed hardpoint
   and for a module switched off, the latter marked `· Off`.
 - All four panel blocks as the artboard's bounded plate.
+
+## Wave 14 — the 2026-08-25 canvas revision, built
+
+The revision's nine unbuilt rows (`design/power-and-heat-detail.md`, "Canvas revision, 2026-08-25")
+are built: the condition's visible caption, the module list's column heads and its `TOTAL DRAW`
+row in place of the header note, the heat key above the tiles, a drawn description under every
+scenario name, the shortened distributor heading with the fitted module's identity withdrawn, and
+the rail's pip control.
+
+### The pip rule, ruled
+
+Wave 13 recorded "half a pip at a time", `spec.md` FR-007 and wave 12's ruling C said whole pips, and
+the store implemented neither: it redistributed the _remainder_ evenly between the other two, which
+throws away where those two were standing — from `4 · 1 · 1`, two in engines gave `2 · 2 · 2` rather
+than charging each of the other two half a pip.
+
+The owner ruled on 2026-08-25, and the ruling is now FR-007's own block: **a Commander assigns a
+whole pip, and the other two banks pay half a pip each.** Where only one of the two has pips left to
+give, that one pays the whole of it; taking pips back out of a bank runs the same rule backwards,
+all of it going to one bank where the other is already at four. Where the split will not divide on
+the half step — the bank being set was standing on a half — the odd half falls on whichever of the
+two can better afford it.
+
+It follows that the bank being set always stands on a whole pip while the two paying for it stand on
+the half step, which is exactly what four blocks filled from the leading edge draw. No control offers
+a half pip directly, in either place one can be set.
+
+### The caption is a word, not the abbreviation
+
+The canvas draws `H‑PTS`. This draws the whole word and lets the design system set it in capitals,
+which is what the application already does wherever the canvas abbreviates a label it owns — `GRP 1`
+comes from `Group {{group}}`. The caption is the segment pair's accessible name now rather than a
+hidden string beside it, so the abbreviation would have been the announced name too. `SYS`, `ENG`
+and `WEP` stay abbreviated: those are the game's own marks on the pip display.
+
+### The pip control in two places
+
+The rail's control and the distributor cell are one control drawn twice. Both call the same store
+action, so neither can hold a reading the other does not have, and there is no second allocation, no
+draft and no running total. The rail's blocks are drawn from the standing allocation rather than
+from a `distributorMetrics()` result, because the rail is on screen for a build with no distributor
+fitted: the pips are a question being asked about the ship, and what an allocation does to a recharge
+is the distributor table's reading — which is where a `null` result is stated.
+
+### Withdrawn in this wave
+
+- `DistributorView.identity`, the `DistributorIdentity` type and the projection helper behind them,
+  on T037's precedent: the canvas stopped drawing the fitted distributor beside the heading, and
+  nothing read them afterwards.
+- `power.modules.total`, `power.distributor.module` and `power.distributor.module.separator`, from
+  both catalogues and from the translation-review ledger.
+
+## Wave 15 — three readings the Commander sent back
+
+Three notes on the wave 14 build, and what the reference says about each. Every one is a
+re-reading of `.design/Ship Builder.dc.html` rather than a new decision.
+
+### The priority-group bars are additive, and the canvas draws that
+
+The column beside them says `CUMULATIVE DRAW`, and the percentages climb — `60%`, `75%`, `95%` — so
+each row states its own draw and the running total both. The build drew one solid length to the
+running total, which said the total twice and never said what the row added.
+
+The reference draws each row as **two lengths on one track**: a wash to where the groups above this
+one end, then this group's own draw solid on the end of it. `GRP 2` is `left: 50%; width: 12.5%` —
+`4.68 / 37.44` starting where `GRP 1`'s `18.72 / 37.44` stopped. Both are shares of the whole
+demand rather than of plant output, which is why the bar and the percentage beside it disagree:
+`GRP 1` is sixty per cent of the plant and half of the track.
+
+A one-pixel mark stands on every row at `83.33%` — `31.20 / 37.44`, where the plant runs out. It is
+the same track and the same figure the rail's own bar marks, so the projection measures both on one
+scale and the group whose length crosses the mark is the group the plant ran out on. Unlabelled: the
+words `31.20 MW PLANT` remain out of the canvas.
+
+### The pip blocks are chips, not buttons
+
+The reference draws a pip block at 14 CSS pixels square in the rail and 16 in the distributor: a chip
+in a row of four. The build held every one to the project's 44-pixel design baseline, which put four
+of them across a strip wider than the rest of the distributor's figures put together and left three
+rail groups of four unable to share a 306-pixel column at all — the row scrolled sideways inside
+itself to hold them.
+
+Held to WCAG 2.2 SC 2.5.8's 24-pixel floor instead, recorded on `DENSE_TARGETS` beside the ledger's
+power chip and the segmented strip. That is the floor and not a waiver, and the reference's own 14
+pixels stay unbuilt. The rail keeps the reference's own arrangement — three groups side by side,
+the name over the blocks — and wraps them when they do not fit, which is what it has always done
+with them; at the floor a group is 108 pixels rather than 188.
+
+### The panel is two rows of two
+
+`canvas-contract.md` read the panel as a two-column row over two full-width blocks, and the build
+drew that. The reference has **two sibling two-column grids** — the priority groups beside the module
+list (@416700), the heat profile beside the distributor (@465531) — and the `margin-top: 12px` the
+contract quoted for a full-width block belongs to the second grid.
+
+Built as read, the distributor stood a whole panel below the fold of a region that is bounded by the
+column it sits in: a Commander opening `POWER` found the module list and nothing under it, and
+reported the block as missing. Laid out as the reference draws it, the dashboard is a third shorter
+and the distributor sits beside the heat profile on the second row.
+
+The pairing opens at the wide step rather than the medium one. A pair is only a pair while both
+halves can hold what is in them, and at the tablet column's 442 pixels each block came out at 209 —
+narrower than the minimum a single block is held to, with the distributor's five columns and the
+heat scenarios' names both wrapping a word at a time. Below that step all four stack, which is
+canvas 1d.
+
+The heat block now measures itself rather than the panel around it, because half of a wide panel is
+not a wide block: whether its bars and its tiles stand side by side is a question about that box.
+
+### Still standing after this wave
+
+The region is bounded by the column and scrolls what will not fit, which is what wave 14 settled and
+what keeps the distributor's own controls reachable. Two rows of two shortens the dashboard; it does
+not make it fit. At 1440×900 the panel is about 800 CSS pixels in a slot of about 325, so the second
+row is still reached by scrolling the region — the bench's own 26rem minimum is what bounds the slot,
+and that belongs to feature 002.

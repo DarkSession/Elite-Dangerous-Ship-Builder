@@ -216,6 +216,22 @@
     flex: none;
   }
 
+  // A dashboard is not a pair of plates. The plates are drawn at the hull's own
+  // proportions and ask for exactly that height; the four dashboard modes are
+  // panels of figures whose height is whatever the build has to say, and the
+  // power one already exceeds this column. Asking for it anyway put the bottom
+  // of the panel below a column that cannot scroll and a page that has stopped
+  // scrolling — the distributor's own pip blocks were unreachable by pointer or
+  // touch at tablet portrait, which principle V does not allow.
+  //
+  // So a dashboard region takes what the column has and scrolls what is left
+  // inside itself, exactly as the bench beside it does. The plates keep their
+  // own rule above, and both are released together on a short viewport.
+  .outfitting__centre edsb-hull-anatomy.anatomy--dashboard {
+    flex: 0 1 auto;
+    min-block-size: 0;
+  }
+
   // Named through the column so the base rule below, which resets both of these
   // for the unbounded compositions, does not win on source order.
   .outfitting__centre .outfitting__bench {

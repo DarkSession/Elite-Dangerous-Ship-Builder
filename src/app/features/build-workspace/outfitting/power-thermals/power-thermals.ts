@@ -53,14 +53,18 @@ interface BandRowView {
   readonly share: string | null;
   /** Whether the plant leaves this group dark, which the canvas words. */
   readonly offline: boolean;
-  /** How far the bar is filled, in `[0, 1]`. Decoration only. */
-  readonly fill: number;
+  /** Where this group's own length starts on the track, in `[0, 1]`. */
+  readonly preceding: number;
+  /** How much of the track that length takes, in `[0, 1]`. Decoration only. */
+  readonly own: number;
 }
 
 /** One bar of `HEAT PROFILE`: what it is, how hot it gets, and how far. */
 interface HeatBarView {
   readonly id: string;
   readonly label: string;
+  /** What the scenario's name is shorthand for, drawn under it. */
+  readonly description: string;
   /** The gauge reading, or the symbol for the level that never settles. */
   readonly level: string;
   /** What that symbol stands for, in words. `null` on a level that settles. */
@@ -109,6 +113,21 @@ const SCENARIO_LABELS = {
   firingDrained: 'power.heat.scenario.firing-drained',
 } as const satisfies Record<HeatScenarioKey, MessageKey>;
 
+/**
+ * What each scenario name is shorthand for, likewise written out.
+ *
+ * The canvas hangs these on hover. They are drawn instead: hover-only meaning
+ * is unreachable by touch (011 FR-006), and a scenario name is precisely the
+ * thing a Commander cannot be expected to expand for themselves.
+ */
+const SCENARIO_DESCRIPTIONS = {
+  idle: 'power.heat.scenario.idle.description',
+  thrusters: 'power.heat.scenario.thrusters.description',
+  fsdCharging: 'power.heat.scenario.fsd-charging.description',
+  firingSustained: 'power.heat.scenario.firing-sustained.description',
+  firingDrained: 'power.heat.scenario.firing-drained.description',
+} as const satisfies Record<HeatScenarioKey, MessageKey>;
+
 /** The bank names, likewise written out. */
 const BANK_LABELS = {
   systems: 'power.distributor.bank.systems',
@@ -137,6 +156,17 @@ const CANVAS_HEAT_SCALE = 1.6;
 
 /** The four blocks the canvas draws each bank's allocation across. */
 const PIP_STEPS = [1, 2, 3, 4] as const;
+
+/**
+ * A drawn length, held inside its track.
+ *
+ * The projection's shares are already fractions of one track, but a bar wider
+ * than the box it is in is a drawing error rather than a reading, so nothing
+ * leaves this without being inside it.
+ */
+function clamp(share: number): number {
+  return Math.min(1, Math.max(0, share));
+}
 
 /**
  * `POWER & THERMALS`: what the plant makes and what the build does with it.
@@ -241,12 +271,22 @@ export class PowerThermals {
           ? this.#formatters.percent(band.cumulativeShare)
           : null,
       offline: !band.powered,
-      // The bar is decoration; the figures beside it are what is read. It is
-      // clamped because a group can draw more than the plant makes, and a bar
-      // wider than its track is a drawing error rather than a reading.
-      fill: Math.min(1, Math.max(0, band.cumulativeShare ?? 0)),
+      // Two lengths on one track, as the canvas draws them: everything above
+      // this group in a wash, then this group's own draw solid on the end of
+      // it. Both are decoration; the figures either side are what is read.
+      preceding: clamp(band.precedingShare),
+      own: clamp(band.ownShare),
     })),
   );
+
+  /**
+   * Where the plant's output falls on the track the group bars are drawn on.
+   *
+   * The same mark the rail draws on its own bar, and the same one for every
+   * row: the projection measures both on the same track, so a group whose
+   * length crosses this line is the group the plant ran out on.
+   */
+  readonly plantMark = computed(() => this.#projection()?.power.bar.plant ?? 0);
 
   /**
    * The canvas's three tiles: `PLANT OUTPUT`, `POWERED DRAW`, `UNPOWERED`.
@@ -287,20 +327,28 @@ export class PowerThermals {
   });
 
   /**
-   * `MW · TOTAL n`, the canvas's own note beside the module heading.
+   * The list's own column names, and the name of the row that closes it.
+   *
+   * The 2026-08-25 canvas revision moved the header note down here: `MODULE`
+   * and `MW` over the tracks the list already had, and a `TOTAL DRAW` row at
+   * the foot carrying the figure the note used to carry beside the heading.
+   */
+  readonly moduleColumns = computed(() => ({
+    name: this.#messages.message('power.modules.column.name'),
+    draw: this.#messages.message('power.unit.megawatts'),
+    total: this.#messages.message('power.modules.total-draw'),
+  }));
+
+  /**
+   * The figure on the closing `TOTAL DRAW` row.
    *
    * The whole list's draw, the dark groups included — which is what the list
-   * below adds up to, and a different reading from the `POWERED DRAW` tile
+   * above it adds up to, and a different reading from the `POWERED DRAW` tile
    * beside the priority groups. The canvas states both, and so does this.
    */
   readonly modulesTotal = computed(() => {
     const power = this.#projection()?.power;
-    return power === undefined
-      ? null
-      : this.#messages.message('power.modules.total', {
-          unit: this.#messages.message('power.unit.megawatts'),
-          value: this.#formatters.decimal(power.draw, MW_DIGITS),
-        });
+    return power === undefined ? null : this.#megawatts(power.draw);
   });
 
   /**
@@ -329,6 +377,7 @@ export class PowerThermals {
     const scenarios = heat.scenarios.map((scenario) => ({
       id: scenario.key,
       label: this.#messages.message(SCENARIO_LABELS[scenario.key]),
+      description: this.#messages.message(SCENARIO_DESCRIPTIONS[scenario.key]),
       level: this.#heatLevel(scenario.gauge),
       levelMeaning: this.#heatLevelMeaning(scenario.gauge),
       within: scenario.within,
@@ -346,6 +395,7 @@ export class PowerThermals {
           {
             id: 'shieldBank',
             label: this.#messages.message('power.heat.scenario.shield-bank'),
+            description: this.#messages.message('power.heat.scenario.shield-bank.description'),
             level: this.#heatLevel(spike.gauge),
             levelMeaning: this.#heatLevelMeaning(spike.gauge),
             within: spike.within,
@@ -506,42 +556,6 @@ export class PowerThermals {
         },
       ];
     });
-  });
-
-  /**
-   * The fitted distributor, as the canvas names it beside the heading.
-   *
-   * Only the parts that are there: a stock distributor is `8A` and nothing else,
-   * because there is no recipe and no effect to name.
-   */
-  readonly distributorIdentity = computed(() => {
-    const identity = this.#projection()?.distributor?.identity ?? null;
-    if (identity === null) {
-      return null;
-    }
-
-    const parts = [
-      this.#messages.message('power.distributor.module', {
-        size: this.#formatters.integer(identity.size),
-        rating: identity.rating,
-      }),
-    ];
-
-    if (identity.blueprint !== null && identity.grade !== null) {
-      parts.push(
-        this.#messages.message('outfitting.slot.engineering', {
-          blueprint: this.#gameText.blueprintName(identity.blueprint).text ?? identity.blueprint,
-          grade: identity.grade,
-        }),
-      );
-    }
-    if (identity.experimental !== null) {
-      parts.push(
-        this.#gameText.experimentalEffectName(identity.experimental).text ?? identity.experimental,
-      );
-    }
-
-    return parts.join(this.#messages.message('power.distributor.module.separator'));
   });
 
   readonly distributorColumns = computed(() => ({

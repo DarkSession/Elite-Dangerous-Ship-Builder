@@ -163,7 +163,12 @@ describe('DefenceAnalysis', () => {
       detect();
       expect(component.shieldDamage().pipColumn).toBe('MJ × 4 SYS PIPS');
 
-      conditions.setPips('systems', 1.5);
+      // A bank lands on a half pip by paying for another one, which is the only
+      // way it can: a Commander assigns whole pips and the other two split the
+      // cost. Two pips into engines from an even allocation leaves systems on
+      // one and a half, and the column reads what it stands at.
+      conditions.setPips('systems', 2);
+      conditions.setPips('engines', 3);
       detect();
       expect(component.shieldDamage().pipColumn).toBe('MJ × 1.5 SYS PIPS');
     });

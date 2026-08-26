@@ -47,13 +47,27 @@ The canvas's order, at every width:
 Each of the four is a bounded plate on the panel ground, and they are all the same plate:
 `1px solid var(--amber-a2)` over `var(--panel)` at `16px 18px`.
 
-The arrangement is **not** a 2x2 grid. Canvas 1c draws 1 and 2 as a two-column row
-(`grid-template-columns: 1fr 1fr; min-height: 328px; align-items: stretch`), then 3 across the full
-width under it (`margin-top: 12px`), then 4 across the full width under that. The pair is stretched
-so the two plates square up against each other, and no further: the canvas's `min-height` is a
-measurement of its own sample build, and holding a real one to it rules a plate off around empty
-ground (review note, wave 13). Canvas 1d stacks all
-four. Which arrangement appears is decided in CSS from the space the region is given, so 400% zoom
+The arrangement is **two rows of two, corrected 2026-08-26 (Commander request)**. Canvas 1c draws
+two sibling two-column grids: 1 and 2 in the first
+(`grid-template-columns: 1fr 1fr; min-height: 328px; align-items: stretch`), 3 and 4 in the second
+on the same two columns (`grid-template-columns: 1fr 1fr; margin-top: 12px; align-items: stretch`).
+This was read as a two-column row over two full-width blocks, and the `margin-top: 12px` quoted for
+block 3 belongs to the second grid rather than to a full-width block. Built that way the distributor
+stood a whole panel below the fold of a region bounded by the column it sits in — a Commander opening
+`POWER` found the module list and nothing under it.
+
+The pairing opens at the wide step rather than the medium one, because a pair is only a pair while
+both halves can hold what is in them: at the tablet column's 442px each block came out at 209, which
+is narrower than the medium minimum a single block is held to, and the distributor's five columns
+and the heat scenarios' names were both wrapping a word at a time. Below the wide step all four
+stack, which is canvas 1d's arrangement. Each pair is stretched so its two plates square
+up against each other, and no further: the canvas's `min-height` is a measurement of its own sample
+build, and holding a real one to it rules a plate off around empty ground (review note, wave 13).
+Canvas 1d stacks all four.
+
+The heat block measures itself rather than the panel around it, because half of a wide panel is not
+a wide block: whether its bars and its tiles stand side by side is a question about that box, and
+asking the panel's width instead split a plate too narrow to be split. Which arrangement appears is decided in CSS from the space the region is given, so 400% zoom
 and an expanded translation choose the stacked one for the same reason a phone does. The DOM order
 is the list above at every width.
 
@@ -108,7 +122,20 @@ row's bar is hatched at 135 degrees, exactly as the canvas hatches the shed leng
 cumulative bar — a pattern rather than only a hue, so the two lengths are told apart by a reader who
 cannot tell amber from red. `DRAW BY MODULE` hatches a line in a shed group the same way.
 
-The `31.20 MW PLANT` marker the canvas sets across the bars is **not** drawn (review note 2).
+**The bars are additive, corrected 2026-08-26 (Commander request).** The column beside them says
+`CUMULATIVE DRAW` and the percentages climb, so each row states its own draw and the running total
+both. The build drew one solid length to the running total, which said the total twice and never
+said what the row added. The canvas draws two lengths on one track instead: a wash to where the
+groups above this one end, then this group's own draw solid on the end of it. Both are shares of the
+whole demand rather than of plant output — which is why the bar and the percentage beside it
+disagree, `GRP 1` being sixty per cent of the plant and half of the track — and the two shares are
+published as `precedingShare` and `ownShare` rather than worked out in the component.
+
+A one-pixel mark stands on every row where the plant runs out, at the same place on each: the
+projection measures the rows and the rail's own bar on one track, so `PowerDrawBar.plant` is that
+position and the group whose length crosses it is the group the plant ran out on. It carries no
+words — the labelled `31.20 MW PLANT` line the canvas sets across the bars is still **not** drawn
+(review note 2), and the tile beneath says the figure.
 
 ### The summary under it
 
@@ -244,16 +271,24 @@ lines above already says those words, and a table repeating its heading is the h
 (review note 8).
 
 The `PIPS` cell is the canvas's four blocks, and it is the control. The six pips are the ship's own
-rule rather than three independent dials: six between the three banks, four at most in any one, half
-a pip at a time. Setting one bank takes the pips out of the other two, split evenly between
-them — from `2 · 2 · 2`, three in systems leaves `1.5` in each of the others (review
-note 5 of the first pass). Pressing the block a bank already stands at gives the pip back. A block
-is filled from its leading edge, so half a pip fills half a block, and no block stands for a bank at
-1.5 pips.
+rule rather than three independent dials: six between the three banks, four at most in any one, and
+a **whole** pip assigned at a time. Setting one bank takes the pips out of the other two at half a
+pip each — from `2 · 2 · 2`, three in systems leaves `1.5` in each of the others (review note 5 of
+the first pass, and the owner's ruling of 2026-08-25). A bank with nothing left to give pays nothing
+and the other pays the whole of it, so from `1 · 4 · 1` four in systems gives `4 · 2 · 0`; taking
+pips back runs the same rule backwards, all of it going to one bank where the other is already full.
+Pressing the block a bank already stands at gives the pip back. A block is filled from its leading
+edge, so a bank standing on a half fills half a block, and no block stands for a bank at 1.5 pips.
 
-Each block holds the 44px target baseline and no more than that: given the row's spare width the
-four would take it all, and the recharge figures beside them would be wrapping two digits at a time
-(review note 9). The table scrolls inside its own bounded scroller when the four no longer fit.
+**Each block holds the 24px target floor, corrected 2026-08-26 (Commander request).** The canvas
+draws one at `flex: 1` by `height: 16px` — a chip in a row of four, not a button standing on its
+own — and four at the project's 44px design baseline came out a strip wider than the rest of the
+table's figures put together. `.pips__step` is recorded on `DENSE_TARGETS` in
+`e2e/accessibility/assertions.ts` beside the ledger's power chip and the segmented strip, which
+holds it to WCAG 2.2 SC 2.5.8's floor: the floor, not a waiver, and the canvas's own 16 pixels stay
+unbuilt. The blocks share the cell between them and no more of the row than that, so the recharge
+figures beside them keep their room (review note 9), and the table scrolls inside its own bounded
+scroller if even the floor no longer fits.
 
 Displayed pips come from the result, not from what was pressed. Capacity and rated recharge are
 properties of the fitted distributor and do not move. Zero pips is a genuine zero recharge and reads
@@ -286,10 +321,11 @@ over four `.pipbar` blocks, the filled ones solid and the rest at `0.14` alpha �
 pressing one does.
 
 They are **the same control the distributor table carries, in a second place**, not a second state:
-the allocation is one viewing condition, and this application already makes it editable. Nothing
-about the six-pip rule changes — six between the three banks, four at most in any one, half a pip at
-a time, the other two paying for the one that moves — and both surfaces show the pips the package
-returned rather than the ones that were pressed.
+the allocation is one viewing condition, this application already makes it editable, and both
+surfaces call the same store action, so neither can hold a reading the other does not have. Nothing
+about the six-pip rule changes — six between the three banks, four at most in any one, a whole pip
+assigned and half a pip taken from each of the other two — and both surfaces show the pips the
+package returned rather than the ones that were pressed.
 
 Two things make the second placement worth its own control rather than a read-out. The rail is on
 screen in every anatomy mode, and the distributor table is only in `POWER`; and since the 2026-08-25
@@ -297,10 +333,31 @@ revision two other regions read figures at an allocation — feature 006's `MJ �
 and feature 007's `CAP 61 MJ · WEP 3 PIPS` — which a Commander would otherwise have to leave the
 region to change.
 
+**The blocks hold the 24px target floor, corrected 2026-08-26 (Commander request).** Canvas 1c
+stands the three groups side by side with the name over the blocks, each block about 21 CSS pixels
+wide in a 306-pixel rail. Built at the project's 44px design baseline the three groups were 564
+pixels of blocks in a 306-pixel column, and the row scrolled sideways inside itself to hold them.
+At the floor they are 108 pixels a group, which the rail wraps the way it has always wrapped them.
+Same size as the distributor cell's blocks, so the two places a Commander can set the pips are the
+same to press.
+
 The rail draws no half-pip block and no running total: four blocks a bank, exactly as the
-distributor's cell draws them, filled from the leading edge so half a pip fills half a block. Each
-group is named with the allocation it stands at, which is the reading for anyone who cannot see the
-blocks.
+distributor's cell draws them, filled from the leading edge so a bank standing on a half fills half
+a block. Each group is named with the allocation it stands at, which is the reading for anyone who
+cannot see the blocks, and each block is named with the bank and the count pressing it asks for.
+
+The blocks draw **the pips the package returned**, exactly as the distributor cell draws them
+(FR-013): the projection reads them back out of `distributorMetrics()` rather than echoing the
+request, so a package that ever normalised an allocation would move both surfaces rather than leave
+the rail showing what was pressed.
+
+The standing condition stands in only where the package returned nothing to read — a distributor
+absent, switched off, unresolvable or shed by the retracted budget. The rail is on screen for those
+builds and the table is not, and the pips are still a question worth asking about them, so the
+control keeps working. Nothing is fabricated by that: the blocks show the condition being asked
+about, not a capacitor figure standing in for one the package declined to give, and what an
+allocation _does_ to a recharge is the distributor table's reading — which is where the `null` is
+stated and stays stated.
 
 Canvas 1d draws no pip control in its own rail. The application builds one DOM at both widths, and
 the control is the rail's; withdrawing it at one width would be the capability going missing at that
@@ -354,24 +411,32 @@ edit to the same condition and is announced the same way — which is to say, no
 
 ## Canvas revision, 2026-08-25
 
-| Change                                                                            | Status against the build                                     |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Visible `H‑PTS` label in front of the two condition segments                      | **Not built.** The label is passed to the group and hidden.  |
-| `DRAW BY MODULE` header note `MW · TOTAL n` withdrawn                             | **Not built.** `power.modules.total` still sits there.       |
-| `MODULE` / `MW` column head row over the module list                              | **Not built.**                                               |
-| `TOTAL DRAW` row closing the module list                                          | **Not built.**                                               |
-| Heat key moved above the four tiles                                               | **Not built.** It is drawn under them.                       |
-| A description under each of the six heat scenario names                           | **Not built.** No such string exists.                        |
-| `POWER DISTRIBUTOR & PIP ALLOCATION` → `POWER DISTRIBUTOR & PIPS`                 | **Not built.** `power.distributor.heading` is the long name. |
-| The distributor's fitted-module identity withdrawn                                | **Not built.** `distributorIdentity()` still draws it.       |
-| `SYS` · `ENG` · `WEP` pip control in the status rail                              | **Not built.** The rail carries the sentence and the bar.    |
-| Canvas 1d's priority groups gain the condition toggle and a share column          | **Already built.** One DOM at both widths.                   |
-| Canvas 1d's `TOP DRAW` becomes `DRAW BY MODULE`, five rows become every row       | **Already built.**                                           |
-| Canvas 1d's `THERMALS` becomes `HEAT PROFILE`, with all six scenarios and the key | **Already built.**                                           |
-| Canvas 1d's footer becomes `PLANT OUTPUT` / `POWERED DRAW` / `UNPOWERED`          | **Already built.** It is the summary group.                  |
+| Change                                                                            | Status against the build                                      |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Visible `H‑PTS` label in front of the two condition segments                      | **Built.** Drawn, and the group's own accessible name.        |
+| `DRAW BY MODULE` header note `MW · TOTAL n` withdrawn                             | **Built.** `power.modules.total` is gone with it.             |
+| `MODULE` / `MW` column head row over the module list                              | **Built.** On the list's own tracks; the bar column unheaded. |
+| `TOTAL DRAW` row closing the module list                                          | **Built.** Carrying the figure the header note carried.       |
+| Heat key moved above the four tiles                                               | **Built.**                                                    |
+| A description under each of the six heat scenario names                           | **Built.** Drawn beside the name, never hovered.              |
+| `POWER DISTRIBUTOR & PIP ALLOCATION` → `POWER DISTRIBUTOR & PIPS`                 | **Built.** In both catalogues.                                |
+| The distributor's fitted-module identity withdrawn                                | **Built.** Off the screen and out of the projection.          |
+| `SYS` · `ENG` · `WEP` pip control in the status rail                              | **Built.** Editing the same one allocation.                   |
+| Canvas 1d's priority groups gain the condition toggle and a share column          | **Already built.** One DOM at both widths.                    |
+| Canvas 1d's `TOP DRAW` becomes `DRAW BY MODULE`, five rows become every row       | **Already built.**                                            |
+| Canvas 1d's `THERMALS` becomes `HEAT PROFILE`, with all six scenarios and the key | **Already built.**                                            |
+| Canvas 1d's footer becomes `PLANT OUTPUT` / `POWERED DRAW` / `UNPOWERED`          | **Already built.** It is the summary group.                   |
 
 Every "already built" row is canvas 1d catching up to canvas 1c. That half of the revision changes
 nothing here: one DOM at both widths was this feature's answer, and the drawing now agrees.
+
+**One departure from the drawing, in the caption's wording.** The canvas abbreviates the condition's
+label to `H‑PTS` to save the line. This draws the full word and lets the design system set it in
+capitals, which is what this application already does everywhere the canvas abbreviates a label it
+owns — `GRP 1` is drawn from `Group {{group}}`, and the column heads are drawn from whole words too.
+The caption is now the group's accessible name rather than a hidden string beside it, so the
+abbreviation would have been the announced name as well. The bank names stay `SYS`, `ENG` and `WEP`:
+those are the game's own marks on the pip display, not this application's shorthand for a word.
 
 ## Requirement mapping
 

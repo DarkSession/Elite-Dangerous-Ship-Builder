@@ -34,6 +34,11 @@ const DENSE_TARGETS = [
   // The bar's identity block is 54px tall on the canvas, with two lines in it.
   // A 44px field cannot be one of two lines inside 54.
   '.identity-fields__input',
+  // A pip block is a chip in a row of four, drawn at 14 CSS pixels square on
+  // canvas 1c's rail and 16 in its distributor. Four at the 44px baseline are a
+  // strip wider than the rest of the distributor's figures put together, and
+  // three such rows do not share a 306-pixel status rail at all.
+  '.pips__step',
   // A segmented strip is drawn dense everywhere it appears: 23.5px beside
   // canvas 1c's `HULL ANATOMY` rule, 30px under canvas 1d's, 25px for 1d's side
   // selector and 38px for canvas 1a's catalogue filter. At 44 it stops being a

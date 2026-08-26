@@ -12,11 +12,15 @@ export const MIN_PIPS = 0;
 export const MAX_PIPS = 4;
 
 /**
- * The pips there are to go round, and the step they move in.
+ * The pips there are to go round, and the step the other two banks move in.
  *
- * Six between the three banks, four at most in any one of them, and half a pip
- * at a time — the game's own allocation, and the one both canvases draw: `2`,
- * `1` and `3` on 1c and `3 · 1 · 2 PIPS` on 1d both come to six.
+ * Six between the three banks and four at most in any one of them — the game's
+ * own allocation, and the one both canvases draw: `2`, `1` and `3` on 1c and
+ * `3 · 1 · 2 PIPS` on 1d both come to six.
+ *
+ * A Commander assigns a **whole** pip to the bank being set. The other two pay
+ * for it half a pip at a time, which is why the step exists at all: it is the
+ * grid the two paying banks land on, never a value the control asks for.
  */
 export const TOTAL_PIPS = 6;
 export const PIP_STEP = 0.5;
@@ -72,41 +76,91 @@ export class PowerConditionsStore {
   }
 
   /**
-   * Sets one bank's pips, and takes them evenly from the other two.
+   * Sets one bank to a whole pip count, and charges the other two for it.
    *
-   * There are six pips and no more, so asking for a third in one bank takes one
-   * from the rest: from `2 · 2 · 2`, three in systems leaves `1.5` in each of
-   * the others. What is left over is split evenly between the two, which is the
-   * rule as stated, and each lands on a half pip because that is the step the
-   * ship moves in.
+   * The ship's own rule, and the owner's ruling of 2026-08-25: a Commander
+   * assigns whole pips, and each whole pip that moves into a bank costs the
+   * other two **half a pip each**. A bank with nothing left to give pays
+   * nothing and the other pays the lot, which is what makes `4 · 2 · 0` reachable
+   * from `4 · 1 · 1` without a bank ever going negative. Taking pips back out of
+   * a bank runs the same rule backwards: half a pip to each of the other two,
+   * and all of it to one where the other is already full.
+   *
+   * The bank being set therefore always lands on a whole pip, and the two
+   * paying for it land on the half step — which is exactly what the four blocks
+   * draw, a filled block for a whole pip and a half-filled one for a half.
    *
    * Nothing here is a figure about the build: these are the pips the package is
    * then asked about, and it decides what they do to a recharge.
    */
   setPips(bank: CapacitorKind, pips: number): void {
     this.#pips.update((current) => {
-      const target = toStep(pips);
+      const target = toWholePip(pips);
       const [first, second] = CAPACITOR_KINDS.filter((kind) => kind !== bank);
-      const spare = TOTAL_PIPS - target;
-
-      // Half each, rounded to the step; the second takes the remainder, so the
-      // three always come to six however the rounding fell. Both are held inside
-      // the four a bank can hold, which the pair can always satisfy: the most
-      // they are ever asked to carry between them is six.
-      const held = Math.min(MAX_PIPS, Math.max(spare - MAX_PIPS, toStep(spare / 2)));
+      const [fromFirst, fromSecond] = share(
+        target - current[bank],
+        current[first],
+        current[second],
+      );
 
       return {
         ...current,
         [bank]: target,
-        [first]: held,
-        [second]: spare - held,
+        [first]: current[first] - fromFirst,
+        [second]: current[second] - fromSecond,
       };
     });
   }
 }
 
-/** A pip count on the half step the ship moves in, inside what a bank holds. */
+/**
+ * What each of the other two banks gives up so one of them can move.
+ *
+ * `moved` is what the bank being set gains, so a positive figure is the two of
+ * them paying and a negative one is the two of them being paid. Both are
+ * returned in that same direction, so a caller subtracts either way.
+ */
+function share(
+  moved: number,
+  firstHas: number,
+  secondHas: number,
+): readonly [first: number, second: number] {
+  const direction = Math.sign(moved);
+  const owed = Math.abs(moved);
+
+  // What each can actually part with in this direction: everything it holds
+  // when it is paying, and everything it has room for when it is being paid.
+  const firstCan = direction > 0 ? firstHas : MAX_PIPS - firstHas;
+  const secondCan = direction > 0 ? secondHas : MAX_PIPS - secondHas;
+
+  let first = toStep(owed / 2);
+  let second = owed - first;
+
+  // Half each will not divide on the step when the bank being set was standing
+  // on a half, and one of the two has to carry the odd half. It falls on
+  // whichever can better afford it rather than on whichever is named first.
+  if (first !== second && firstCan < secondCan) {
+    [first, second] = [second, first];
+  }
+
+  // A bank with less than its share gives what it has, and the other covers the
+  // rest. It always can: six pips between three banks that hold four each leave
+  // no allocation where neither of the two could.
+  if (first > firstCan) {
+    [first, second] = [firstCan, owed - firstCan];
+  } else if (second > secondCan) {
+    [first, second] = [owed - secondCan, secondCan];
+  }
+
+  return [direction * first, direction * second];
+}
+
+/** The whole pip a Commander assigns, inside what a bank can hold. */
+function toWholePip(pips: number): number {
+  return Math.min(MAX_PIPS, Math.max(MIN_PIPS, Math.round(pips)));
+}
+
+/** A pip count on the half step the two paying banks land on. */
 function toStep(pips: number): number {
-  const stepped = Math.round(pips / PIP_STEP) * PIP_STEP;
-  return Math.min(MAX_PIPS, Math.max(MIN_PIPS, stepped));
+  return Math.round(pips / PIP_STEP) * PIP_STEP;
 }

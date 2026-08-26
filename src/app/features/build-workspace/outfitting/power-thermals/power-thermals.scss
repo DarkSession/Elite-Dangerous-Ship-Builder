@@ -1,12 +1,18 @@
 @use '../../../../../styles/responsive' as layout;
 
 // Canvas 1c draws the dashboard in the space the plates leave, on the same page
-// ground the anatomy region uses: the priority groups beside the module list in
-// two fluid columns, then the heat profile and the distributor each across the
-// full width beneath them. Canvas 1d stacks all four. Which arrangement appears
-// is decided from the region's own inline size rather than the viewport's, so a
-// 400% zoom and an expanded translation choose the stacked one for the same
-// reason a phone does.
+// ground the anatomy region uses: two fluid columns, the priority groups beside
+// the module list and the heat profile beside the distributor. Canvas 1d stacks
+// all four. Which arrangement appears is decided from the region's own inline
+// size rather than the viewport's, so a 400% zoom and an expanded translation
+// choose the stacked one for the same reason a phone does.
+//
+// **Corrected 2026-08-26 (Commander request).** The lower pair used to run the
+// full width, one under the other. The reference draws the four blocks as two
+// rows of two — `grid-template-columns: 1fr 1fr` twice over — and stacking the
+// lower pair stood the distributor a full panel below the fold of a region that
+// is bounded by the column it sits in, where a Commander looking for the pips
+// found the module list and nothing under it.
 :host {
   display: block;
   container-type: inline-size;
@@ -20,25 +26,19 @@
   min-inline-size: 0;
 }
 
-// The wide arrangement. The pair the canvas draws is a grid rather than a
-// wrapping row, because a pair that wraps mid-block would put the module list
-// under the summary tiles it does not belong to. The two blocks below the pair
-// run the full width, as the canvas runs them.
-@include layout.container-medium-up(power) {
+// The wide arrangement. The two rows the canvas draws are a grid rather than a
+// wrapping row, because a row that wrapped mid-block would put the module list
+// under the summary tiles it does not belong to.
+@include layout.container-wide-up(power) {
   .power {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    // Stretched so the groups and the list square up against each other, and no
-    // taller than that: canvas 1c gives the pair a `min-height` its own sample
+    // Stretched so the two blocks in a row square up against each other, and no
+    // taller than that: canvas 1c gives each pair a `min-height` its own sample
     // build happens to fill, and holding a real build to it would leave one
     // plate ruled off around empty ground.
     align-items: stretch;
     gap: var(--edsb-space-region);
-  }
-
-  .power__block--heat,
-  .power__block--distributor {
-    grid-column: 1 / -1;
   }
 }
 
@@ -106,14 +106,47 @@
 // tracks let a longer draw on one line pull that line's bar shorter than the bar
 // above it, which reads as a difference in draw when it is only a difference in
 // digits.
-.modules {
+// The heads, the lines and the total share one set of tracks. The block owns
+// them and each of the three borrows them, so `MODULE` stands over the names and
+// `MW` over the figures whatever either column turns out to measure. The head
+// and the total are their own rows rather than list items: an `ol` takes
+// modules, and neither of those is one.
+.modules-block,
+.modules,
+.modules__head,
+.modules__total {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   column-gap: var(--edsb-space-inline);
   row-gap: var(--edsb-space-stack-tight);
   margin: 0;
   padding: 0;
+}
+
+.modules,
+.modules__head,
+.modules__total {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
   list-style: none;
+}
+
+.modules__head-draw,
+.modules__total-draw {
+  grid-column: 3;
+  text-align: end;
+}
+
+// The total is ruled off from the lines it adds up, which is the one thing that
+// makes it read as their sum rather than as another module.
+.modules__total {
+  padding-block-start: var(--edsb-space-stack-tight);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+}
+
+.modules__total-label {
+  grid-column: 1 / 3;
 }
 
 // The name column is fixed in the canvas and fluid here: a long module name at
@@ -134,11 +167,21 @@
 }
 
 .module__count,
-.module__group {
+.module__group,
+.modules__head-name,
+.modules__head-draw,
+.modules__total-label {
   @include layout.micro-label;
 }
 
-.module__track {
+// Every bar on the panel is drawn on the same track: the module list's, the
+// heat profile's and each priority group's. One rule, because they are the same
+// line at the same height on the same ground, and three copies of it drift.
+// Positioned, because two of the three lay their lengths over it.
+.module__track,
+.heat__track,
+.power__band-track {
+  position: relative;
   display: block;
   block-size: var(--edsb-layout-power-bar);
   background-color: var(--edsb-surface-inset);
@@ -150,7 +193,8 @@
   background-color: var(--edsb-surface-accent-solid);
 }
 
-.module__draw {
+.module__draw,
+.modules__total-draw {
   @include layout.metric-value(var(--edsb-text-size-body));
 
   text-align: end;
@@ -160,15 +204,8 @@
 // 135 degrees, which is what tells it from a lit one for a reader who cannot
 // tell amber from red; the group is named on the line as well, because a state
 // carried by a pattern alone is a state carried by nothing a reader can name.
-.module--offline {
-  .module__fill {
-    background-color: transparent;
-    background-image: var(--edsb-surface-overheat);
-  }
-
-  .module__group {
-    color: var(--edsb-text-danger);
-  }
+.module--offline .module__group {
+  color: var(--edsb-text-danger);
 }
 
 // Canvas 1c lays the heat block out as the bars beside their tiles, and stacks
@@ -177,12 +214,26 @@
   @include layout.stack(var(--edsb-space-stack));
 }
 
-@include layout.container-medium-up(power) {
+// The block measures itself rather than the panel around it. Half of a wide
+// panel is not a wide block, and the split below is decided by whether the bars
+// and the tiles both have room — which is a question about this box, not about
+// the two columns it is one of.
+.power__block--heat {
+  container-type: inline-size;
+  container-name: heat;
+}
+
+@include layout.container-medium-up(heat) {
   // One box split down the middle: the bars and the caption that belongs to them
-  // on one side, the four tiles on the other, and the key across the foot of
-  // both. Every position is stated, because leaving the tiles to auto-placement
-  // puts them under the bars rather than beside them the moment anything in the
-  // first column takes two rows.
+  // down one side, and the key over the four tiles down the other. Every
+  // position is stated, because leaving the tiles to auto-placement puts them
+  // under the bars rather than beside them the moment anything in the first
+  // column takes two rows.
+  //
+  // The key sits above the tiles rather than across the foot of both since the
+  // 2026-08-25 canvas revision, which is also the order the stacked arrangement
+  // reads it in: it explains the bars, and it explained them from below four
+  // figures that do not use it.
   .heat {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -192,15 +243,15 @@
   }
 
   .heat__profile {
-    grid-area: 1 / 1;
-  }
-
-  .power__facts {
-    grid-area: 1 / 2;
+    grid-area: 1 / 1 / span 2 / auto;
   }
 
   .heat__legend {
-    grid-area: 2 / 1 / auto / -1;
+    grid-area: 1 / 2;
+  }
+
+  .power__facts {
+    grid-area: 2 / 2;
   }
 }
 
@@ -239,11 +290,14 @@
   overflow-wrap: break-word;
 }
 
-.heat__track {
-  position: relative;
+// The gloss under the scenario's name, in the quieter ink. Drawn, not hovered:
+// it is the one thing a scenario name does not say, and hover-only meaning is
+// unreachable by touch (011 FR-006).
+.heat__description {
   display: block;
-  block-size: var(--edsb-layout-power-bar);
-  background-color: var(--edsb-surface-inset);
+  color: var(--edsb-text-faint);
+  font-size: var(--edsb-text-size-micro);
+  text-wrap: pretty;
 }
 
 .heat__within,
@@ -334,11 +388,6 @@
   background-color: var(--edsb-surface-accent-solid);
 }
 
-.heat__swatch--over {
-  background-color: transparent;
-  background-image: var(--edsb-surface-overheat);
-}
-
 // The distributor table. Its own element rather than the shared data table,
 // because one of its cells is a control and the shared one takes formatted
 // strings — and the control is the point of the block.
@@ -423,22 +472,25 @@
   @include bank-colour(var(--edsb-surface-bank-weapons));
 }
 
-// Four blocks side by side, each of them the control for that many pips.
+// Four blocks across the cell, each of them the control for that many pips.
 .pips {
   display: flex;
   gap: var(--edsb-space-inline-tight);
-  inline-size: max-content;
+  min-inline-size: 0;
 }
 
-// Each block stretches with the column, but never below the target baseline:
-// four of them at a phone's width would otherwise come out at 27px apiece. The
-// row they sit in scrolls inside the table's own scroller when the four no
-// longer fit, which is what that scroller is there for.
+// Each block stretches with the column, but never below the 24-pixel floor:
+// four at the 2.75rem design baseline are a strip wider than the rest of the
+// table's figures put together, and the canvas draws a pip block as a chip in a
+// row of them rather than as a button standing on its own. The rail draws the
+// same control the same size, and the row scrolls inside the table's own
+// scroller when even the floor no longer fits.
 .pips__step {
-  @include layout.target-baseline;
+  @include layout.target-floor;
 
   position: relative;
-  flex: 0 0 var(--edsb-target-size);
+  flex: 1 1 var(--edsb-target-size-floor);
+  min-inline-size: var(--edsb-target-size-floor);
   padding: 0;
   background-color: var(--edsb-surface-inset);
   border: var(--edsb-border-width-hairline) solid transparent;
@@ -500,22 +552,47 @@
   text-align: end;
 }
 
-.power__band-track {
+// The groups are additive, so each row's track carries two lengths rather than
+// one: the wash is what every group above this one draws between them, and the
+// solid length is this group's own on the end of it. Both are measured against
+// whichever of the whole demand and the plant's output is larger, which is why
+// the plant's mark can stand in the same place on every row.
+.power__band-preceding,
+.power__band-fill,
+.power__band-plant {
+  position: absolute;
+  inset-block: 0;
   display: block;
-  block-size: var(--edsb-layout-power-bar);
-  background-color: var(--edsb-surface-inset);
+}
+
+.power__band-preceding {
+  inset-inline-start: 0;
+  background-color: var(--edsb-surface-accent-selected);
 }
 
 .power__band-fill {
-  display: block;
-  block-size: 100%;
   background-color: var(--edsb-surface-accent-solid);
 }
 
-// A group the plant does not feed keeps its bar, hatched the way the canvas
-// hatches the shed length of its own: the length still says how much demand sits
-// there, and the hatch says the plant is not carrying it.
-.power__band--offline .power__band-fill {
+// Drawn just inside its own position rather than starting at it, so the mark
+// for a plant that covers the whole demand lands at the end of the track
+// instead of past it. The rail's bar draws its own the same way.
+.power__band-plant {
+  inline-size: var(--edsb-border-width-hairline);
+  margin-inline-start: calc(var(--edsb-border-width-hairline) * -1);
+  background-color: var(--edsb-text-numeric);
+}
+
+// Everything the plant does not carry, hatched at the canvas's own 135 degrees.
+// A shed group and a shed line keep their length — it still says how much demand
+// sits there — and the hatch says the plant is not carrying it; the key's second
+// swatch is the same hatch, standing for itself. The hatch is what tells these
+// from a lit length for a reader who cannot tell amber from red, and each one is
+// worded as well: `OFFLINE` on the group, the group's name on the line, and the
+// key's own label on the swatch.
+.module--offline .module__fill,
+.power__band--offline .power__band-fill,
+.heat__swatch--over {
   background-color: transparent;
   background-image: var(--edsb-surface-overheat);
 }

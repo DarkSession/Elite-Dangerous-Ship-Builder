@@ -142,6 +142,24 @@ export interface PowerBandView {
    * no share to state rather than an infinite one.
    */
   readonly cumulativeShare: number | null;
+  /**
+   * How far along the shared track this group's own length starts, in `[0, 1]`.
+   *
+   * The canvas draws each row as two lengths on one track: everything the
+   * groups above this one draw, in a wash, and then this group's own draw in
+   * the solid fill — so the row says both what it adds and what it adds to.
+   * This is the first of the two, and it is the previous row's
+   * {@link precedingShare} plus that row's {@link ownShare}.
+   */
+  readonly precedingShare: number;
+  /**
+   * What this group's own draw takes of the same track, in `[0, 1]`.
+   *
+   * Both lengths are shares of whichever of the whole demand and the plant's
+   * output is larger — the same track {@link PowerDrawBar} is measured on, so
+   * the plant's mark falls in the same place on every row.
+   */
+  readonly ownShare: number;
   /** Whether the plant keeps this group lit in the selected state. */
   readonly powered: boolean;
 }
@@ -305,29 +323,6 @@ export type CapacitorKind = (typeof CAPACITOR_KINDS)[number];
 
 export interface DistributorView {
   readonly capacitors: readonly CapacitorView[];
-  /**
-   * The fitted distributor, as the canvases name it beside the heading:
-   * `8A · CHARGE ENHANCED G5 · SUPER CONDUITS`.
-   *
-   * `null` where no distributor could be identified. Every part of it is an
-   * identity rather than a figure — a size, a grade letter, a recipe's name and
-   * an effect's — so nothing here is a reading about the build.
-   */
-  readonly identity: DistributorIdentity | null;
-}
-
-/** What the fitted distributor is, in the parts the canvases name it by. */
-export interface DistributorIdentity {
-  /** The module's size, `1`-`8`. */
-  readonly size: number;
-  /** Its grade letter, `A` best. */
-  readonly rating: string;
-  /** The applied recipe's journal name, or `null` where none is applied. */
-  readonly blueprint: string | null;
-  /** That recipe's grade, `1`-`5`, or `null` alongside no recipe. */
-  readonly grade: number | null;
-  /** The experimental effect's journal name, or `null` where none is applied. */
-  readonly experimental: string | null;
 }
 
 export interface CapacitorView {
@@ -397,29 +392,45 @@ export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditio
     power: projectPower(budget, conditions.hardpoints),
     modules: projectModuleDraws(budget, conditions.hardpoints === 'deployed'),
     heat: heat === null ? null : projectHeat(heat, fitted),
-    distributor: distributor === null ? null : projectDistributor(distributor, fitted),
+    distributor: distributor === null ? null : projectDistributor(distributor),
   });
 }
 
 /** The plant summary and the groups this build uses, for one hardpoint state. */
 export function projectPower(budget: PowerBudget, hardpoints: HardpointState): PowerView {
   const deployed = hardpoints === 'deployed';
+  const scale = powerTrackScale(budget, deployed);
 
   return {
     available: budget.available,
     draw: deployed ? budget.deployed : budget.retracted,
-    bands: occupiedBands(budget).map((band) => projectBand(band, deployed, budget.available)),
+    bands: occupiedBands(budget).map((band) =>
+      projectBand(band, deployed, budget.available, scale),
+    ),
     poweredDraw: (deployed ? budget.deployed : budget.retracted) - unpoweredDraw(budget, deployed),
     unpowered: unpoweredDraw(budget, deployed),
     bar: drawBar(budget, deployed),
   };
 }
 
+/**
+ * The track every bar drawn from this budget is measured on.
+ *
+ * Whichever of the whole demand and the plant's output is larger, so a build
+ * the plant covers puts the plant's mark at the end of the track rather than
+ * off it, and a build it does not covers the track and marks where it ran out.
+ * The rail's bar and each priority group's row share it, which is what lets one
+ * mark stand for the plant on all of them.
+ */
+function powerTrackScale(budget: PowerBudget, deployed: boolean): number {
+  return Math.max(deployed ? budget.deployed : budget.retracted, budget.available);
+}
+
 /** The rail's three lengths, over whichever of demand and output is larger. */
 function drawBar(budget: PowerBudget, deployed: boolean): PowerDrawBar {
   const draw = deployed ? budget.deployed : budget.retracted;
   const unpowered = unpoweredDraw(budget, deployed);
-  const scale = Math.max(draw, budget.available);
+  const scale = powerTrackScale(budget, deployed);
 
   // A ship with no plant and nothing fitted draws an empty track rather than a
   // division by nothing.
@@ -456,14 +467,24 @@ function unpoweredDraw(budget: PowerBudget, deployed: boolean): number {
   );
 }
 
-function projectBand(band: PowerBand, deployed: boolean, available: number): PowerBandView {
+function projectBand(
+  band: PowerBand,
+  deployed: boolean,
+  available: number,
+  scale: number,
+): PowerBandView {
   const cumulativeDraw = deployed ? band.deployedTotal : band.retractedTotal;
+  const draw = deployed ? band.deployed : band.retracted;
 
   return {
     priority: band.priority,
-    draw: deployed ? band.deployed : band.retracted,
+    draw,
     cumulativeDraw,
     cumulativeShare: available > 0 ? cumulativeDraw / available : null,
+    // A ship with no plant and nothing fitted draws an empty track rather than
+    // a division by nothing, exactly as the rail's own bar does.
+    precedingShare: scale > 0 ? (cumulativeDraw - draw) / scale : 0,
+    ownShare: scale > 0 ? draw / scale : 0,
     powered: deployed ? band.poweredDeployed : band.poweredRetracted,
   };
 }
@@ -672,30 +693,6 @@ function shieldBankSpike(
   };
 }
 
-/**
- * The fitted distributor, in the parts the canvases name it by.
- *
- * `null` where nothing is fitted, and `null` again where the fitted module's
- * stats did not resolve — a size and a grade nobody stated are not a size and a
- * grade of zero.
- */
-function distributorIdentity(fitted: readonly FittedModule[]): DistributorIdentity | null {
-  const module = fitted.find((entry) => /powerdistributor/iu.test(entry.symbol));
-  const stats = module?.effectiveStats ?? null;
-  if (module === undefined || stats === null) {
-    return null;
-  }
-
-  const engineering = module.engineering;
-  return {
-    size: stats.class,
-    rating: stats.rating,
-    blueprint: engineering?.BlueprintName ?? null,
-    grade: engineering?.Level ?? null,
-    experimental: engineering?.ExperimentalEffect ?? null,
-  };
-}
-
 /** Every fitted heat sink launcher, and the charges they carry between them. */
 export function projectHeatSinks(fitted: readonly FittedModule[]): HeatSinkView {
   // Matched on the symbol because the symbol is the module's identity: the
@@ -734,12 +731,8 @@ function projectScenario(key: HeatScenarioKey, state: HeatState, scale: number):
  * for. They are the same today; reading them back is what keeps the screen
  * honest if the package ever normalises an allocation (FR-007).
  */
-export function projectDistributor(
-  metrics: DistributorMetrics,
-  fitted: readonly FittedModule[],
-): DistributorView {
+export function projectDistributor(metrics: DistributorMetrics): DistributorView {
   return {
-    identity: distributorIdentity(fitted),
     capacitors: CAPACITOR_KINDS.map((kind) => ({
       kind,
       capacity: metrics[kind].capacity,

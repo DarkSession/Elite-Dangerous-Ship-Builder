@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
-import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
+import { expectNoDocumentOverflow, expectTargetSizes, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 
 /**
@@ -206,12 +206,29 @@ test.describe('reading the build', () => {
     // Heaviest first, as the canvas orders its list.
     expect(figures).toEqual([...figures].sort((left, right) => right - left));
 
-    // The note beside the heading is the whole list added up, so the two
-    // readings on this block have to agree without either being written down.
-    const note = await page.locator('.power__block--modules .power__note').innerText();
-    const total = Number((note.match(/[\d.]+/u) ?? ['0'])[0]);
+    // The row closing the list is the whole list added up, so the two readings
+    // on this block have to agree without either being written down.
+    const closing = await page.locator('.modules__total-draw').innerText();
+    const total = Number((closing.match(/[\d.]+/u) ?? ['0'])[0]);
     const added = figures.reduce((sum, figure) => sum + figure, 0);
     expect(Math.abs(added - total)).toBeLessThan(0.05 * drawn);
+  });
+
+  test('heads the list and closes it in the canvas’s own words', async ({ page }) => {
+    await openPower(page);
+
+    // `MODULE` against `MW` over the tracks, and `TOTAL DRAW` under them. The
+    // note that used to sit beside the heading is withdrawn with the revision.
+    expect(caps(await page.locator('.modules__head-name').innerText())).toBe(
+      caps(englishMessages['power.modules.column.name']),
+    );
+    expect(caps(await page.locator('.modules__head-draw').innerText())).toBe(
+      caps(englishMessages['power.unit.megawatts']),
+    );
+    expect(caps(await page.locator('.modules__total-label').innerText())).toBe(
+      caps(englishMessages['power.modules.total-draw']),
+    );
+    await expect(page.locator('.power__block--modules .power__note')).toHaveCount(0);
   });
 
   test('draws the heat bars the canvas names, its threshold and its four tiles', async ({
@@ -219,7 +236,11 @@ test.describe('reading the build', () => {
   }) => {
     await openPower(page);
 
-    const names = await page.locator('.power__block--heat .heat__name').allInnerTexts();
+    // The name only: the description drawn under it is its own element, and it
+    // is asserted on its own below.
+    const names = await page
+      .locator('.power__block--heat .heat__name')
+      .evaluateAll((nodes) => nodes.map((node) => node.firstChild?.textContent?.trim() ?? ''));
     expect(names.slice(0, 5)).toEqual([
       englishMessages['power.heat.scenario.idle'],
       englishMessages['power.heat.scenario.thrusters'],
@@ -288,6 +309,26 @@ test.describe('reading the build', () => {
     }
   });
 
+  test('says what every scenario name is shorthand for, drawn rather than hovered', async ({
+    page,
+  }) => {
+    await openPower(page);
+
+    const bars = page.locator('.power__block--heat .heat__bar');
+    const drawn = await bars.count();
+    expect(drawn).toBeGreaterThanOrEqual(5);
+
+    // One description per bar, in the document rather than behind a pointer:
+    // hover-only meaning is unreachable by touch (011 FR-006).
+    const descriptions = await bars.locator('.heat__description').allInnerTexts();
+    expect(descriptions).toHaveLength(drawn);
+    for (const description of descriptions) {
+      expect(description.trim()).not.toBe('');
+    }
+    expect(descriptions[0].trim()).toBe(englishMessages['power.heat.scenario.idle.description']);
+    await expect(bars.locator('[data-tip]')).toHaveCount(0);
+  });
+
   test('draws the three capacitors with their own figures', async ({ page }) => {
     await openPower(page);
 
@@ -306,6 +347,22 @@ test.describe('reading the build', () => {
 });
 
 test.describe('the conditions', () => {
+  test('draws the hardpoint caption and names the pair by it', async ({ page }) => {
+    await openPower(page);
+
+    const caption = page.locator('edsb-power-thermals .power__hardpoints .tab-group__label');
+    await expect(caption).toBeVisible();
+    expect(caps(await caption.innerText())).toBe(caps(englishMessages['power.hardpoints.label']));
+
+    // Named *by* the caption rather than by a string only a screen reader gets,
+    // so the visible name and the accessible name are one string.
+    const group = page.locator('edsb-power-thermals .power__hardpoints [role="group"]');
+    await expect(group).toHaveAttribute(
+      'aria-labelledby',
+      (await caption.getAttribute('id')) ?? '',
+    );
+  });
+
   test('stowing the hardpoints moves every figure and states what is missing', async ({ page }) => {
     await openPower(page);
     const bands = page.locator('.power__block--bands .power__band');
@@ -421,12 +478,123 @@ test.describe('the status rail', () => {
     await expect(bar.locator('.rail-bar__plant')).toBeVisible();
   });
 
-  test('holds no control in the block', async ({ page }) => {
+  test('keeps the sentence, the figures and the bar read-only', async ({ page }) => {
     await openPower(page);
 
-    await expect(
-      page.locator('edsb-power-summary button, edsb-power-summary a, edsb-power-summary input'),
-    ).toHaveCount(0);
+    // The pips under them are the block's only control; none of the three
+    // readings above it is interactive, exactly as the canvas draws them.
+    for (const selector of ['.statements', '.rail-power', '.rail-bar']) {
+      await expect(
+        page.locator(
+          `edsb-power-summary ${selector} button, edsb-power-summary ${selector} a, edsb-power-summary ${selector} input`,
+        ),
+      ).toHaveCount(0);
+    }
+  });
+});
+
+test.describe('the rail’s pip control', () => {
+  test('draws the canvas’s three banks over four blocks each', async ({ page }) => {
+    await openPower(page);
+
+    const sets = page.locator('edsb-power-summary .pipset');
+    await expect(sets).toHaveCount(3);
+    await expect(page.locator('edsb-power-summary .pips__step')).toHaveCount(12);
+
+    // Each group is named with the allocation it stands at, which is the
+    // reading for anyone who cannot see four rectangles.
+    for (const bank of ['systems', 'engines', 'weapons']) {
+      await expect(
+        page.locator(`edsb-power-summary .pipset[data-bank="${bank}"] .pips`),
+      ).toHaveAttribute('aria-label', /\d/u);
+    }
+  });
+
+  test('moves the same allocation the distributor table reads', async ({ page }) => {
+    await openPower(page);
+    const before = await rows(page, '.distributor');
+
+    // Pressed in the rail, read back in the dashboard: one condition, drawn in
+    // two places, rather than a second allocation of the rail's own.
+    await pressPip(
+      page,
+      page.locator('edsb-power-summary .pipset').first().locator('.pips__step').nth(3),
+    );
+
+    const after = await rows(page, '.distributor');
+    expect(after[0][4]).not.toBe(before[0][4]);
+    // The table's own blocks stand at the allocation the rail set, which is the
+    // reading its group carries — the cell itself holds buttons and no text.
+    await expect(page.locator('.distributor tbody tr').first().locator('.pips')).toHaveAttribute(
+      'aria-label',
+      /4/u,
+    );
+    // The other two paid for it, so their recharges moved as well.
+    expect(after[1][4]).not.toBe(before[1][4]);
+    expect(after[2][4]).not.toBe(before[2][4]);
+    // Capacity is a property of the fitted distributor, and no allocation
+    // moves it — from either surface.
+    expect(after[0][1]).toBe(before[0][1]);
+  });
+
+  test('redraws from an allocation the distributor table set', async ({ page }) => {
+    await openPower(page);
+    const rail = page.locator('edsb-power-summary .pipset').first().locator('.pips');
+    const standing = await rail.getAttribute('aria-label');
+
+    // The reverse direction. Both surfaces call the same action, so neither can
+    // hold a reading the other does not have.
+    await pressPip(
+      page,
+      page.locator('.distributor tbody tr').first().locator('.pips__step').nth(3),
+    );
+
+    await expect(rail).not.toHaveAttribute('aria-label', standing ?? '');
+  });
+
+  test('is on screen in every anatomy mode, which is why it is here', async ({ page }) => {
+    await openPower(page);
+    await expect(page.locator('edsb-power-summary .pipset')).toHaveCount(3);
+
+    // The distributor table is only in `POWER`; the rail is everywhere. Leaving
+    // the mode must not take the control with it.
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.mounts'] })
+      .click();
+
+    await expect(page.locator('edsb-power-thermals .power')).toHaveCount(0);
+    await expect(page.locator('edsb-power-summary .pipset')).toHaveCount(3);
+  });
+
+  test('holds the target floor on every block, at this project’s layout', async ({ page }) => {
+    await openPower(page);
+
+    // Counted before it is measured. `expectTargetSizes` asserts that nothing
+    // it found is undersized, which a selector matching nothing satisfies just
+    // as well — so without this the sweep would go green on a rail that drew no
+    // control at all.
+    await expect(page.locator('edsb-power-summary .pips__step')).toHaveCount(12);
+
+    // Each project in the matrix is one of the five layout profiles, so this
+    // measures the twelve blocks at all of them across the run. A pip block is
+    // one of a row of four chips — the canvas draws it at 14 CSS pixels square
+    // — so it is held to SC 2.5.8's 24-pixel floor rather than to the project's
+    // stricter 44, which is what `DENSE_TARGETS` records. The distributor
+    // cell's blocks hold the same size, and the sweep below measures those.
+    await expectTargetSizes(page, 'edsb-power-summary .pips__step');
+    await expectTargetSizes(page, 'edsb-power-thermals .pips__step');
+  });
+
+  test('offers no draft, no running total and no half-pip block', async ({ page }) => {
+    await openPower(page);
+
+    const block = page.locator('edsb-power-summary');
+    await expect(block).not.toContainText('Apply');
+    await expect(block).not.toContainText('Reset');
+    // Four blocks a bank and no more: a fifth for none, or a half-pip block,
+    // would be a control the canvas does not draw.
+    await expect(block.locator('.pipset').first().locator('.pips__step')).toHaveCount(4);
   });
 
   test('stands on the same inset as the cells it heads', async ({ page }) => {
@@ -461,6 +629,29 @@ test.describe('the status rail', () => {
 });
 
 test.describe('the conditions that break layouts', () => {
+  test('lays the four blocks out in two rows of the same width, whatever it has', async ({
+    page,
+  }) => {
+    await openPower(page);
+
+    // The reference draws the dashboard as two rows of two — the groups beside
+    // the module list, the heat profile beside the distributor — and stacks all
+    // four where there is no room for that. Whichever it picks, it picks it for
+    // both rows: this counts the columns each pair is drawn in and compares
+    // them, so a lower pair left running the full width under a paired upper
+    // one fails at every profile wide enough to pair anything. That is what
+    // stood the distributor a whole panel below the fold of a region bounded by
+    // the column it sits in.
+    const columns = await page
+      .locator('edsb-power-thermals .power__block')
+      .evaluateAll((blocks) =>
+        blocks.map((block) => Math.round(block.getBoundingClientRect().left)),
+      );
+
+    expect(columns).toHaveLength(4);
+    expect(new Set(columns.slice(2)).size).toBe(new Set(columns.slice(0, 2)).size);
+  });
+
   test('keeps every figure at doubled text without scrolling the document', async ({ page }) => {
     await withRootTextScale(page, DOUBLED_TEXT);
     await openPower(page);

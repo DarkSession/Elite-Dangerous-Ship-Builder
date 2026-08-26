@@ -22,9 +22,15 @@
         <p class="power__note power__note--inline">{{ cumulativeLabel() }}</p>
       </div>
 
+      <!--
+        The canvas's caption in front of the segments, drawn rather than hidden:
+        it names the pair, and it names them for a screen reader too, so the
+        visible words and the announced words are the same words.
+      -->
       <edsb-tab-group
         class="power__hardpoints"
         [label]="hardpointsLabel()"
+        [labelVisible]="true"
         [tabs]="hardpointChoices()"
         [selectedId]="hardpoints()"
         presentation="segmented"
@@ -37,12 +43,24 @@
             <span class="power__band-group">{{ band.group }}</span>
             <span class="power__band-draw" data-bidi-isolate>{{ band.draw }}</span>
             <!--
-              The bar carries no reading of its own: every figure it draws is
-              the text on either side of it, which is what a reader who cannot
-              see the fill gets instead.
+              Two lengths and a mark, and no reading of its own: every figure it
+              draws is the text on either side of it, which is what a reader who
+              cannot see the fill gets instead. The wash is what the groups above
+              this one draw between them, the solid length is this group's own on
+              the end of it, and the mark is where the plant runs out.
             -->
             <span class="power__band-track" aria-hidden="true">
-              <span class="power__band-fill" [style.inline-size.%]="band.fill * 100"></span>
+              <span
+                class="power__band-preceding"
+                [style.inline-size.%]="band.preceding * 100"
+              ></span>
+              <span
+                class="power__band-fill"
+                [style.inset-inline-start.%]="band.preceding * 100"
+                [style.inline-size.%]="band.own * 100"
+              ></span>
+              <span class="power__band-plant" [style.inset-inline-start.%]="plantMark() * 100">
+              </span>
             </span>
             @if (band.offline) {
               <span class="power__band-state">{{ offlineLabel() }}</span>
@@ -63,48 +81,74 @@
     <section class="power__block power__block--modules" [attr.aria-labelledby]="modulesHeadingId">
       <div class="power__head">
         <h4 class="power__heading" [id]="modulesHeadingId">{{ modulesHeading() }}</h4>
-        @if (modulesTotal(); as total) {
-          <p class="power__note power__note--inline" data-bidi-isolate>{{ total }}</p>
-        }
       </div>
 
-      <ol class="modules">
-        @for (row of moduleRows(); track row.id) {
-          <li class="module" [class.module--offline]="row.offline">
-            <span class="module__name">
-              @if (row.name; as name) {
-                <edsb-game-text
-                  [text]="name.text"
-                  [language]="name.language"
-                  [translationState]="name.translationState"
-                />
-              } @else {
-                {{ row.fallbackName }}
-              }
-              @if (row.count; as count) {
-                <span class="module__count" data-bidi-isolate>{{ count }}</span>
-              }
-              @if (row.group; as group) {
-                <span class="module__group">{{ group }}</span>
-              }
-              @if (row.state; as state) {
-                <span class="module__group">{{ state }}</span>
-              }
-            </span>
+      <!--
+        The heads, the lines and the total on one set of tracks, so `MODULE`
+        stands over the names and `MW` over the figures however long either
+        column turns out to be. The bar column between them is unheaded: the bar
+        is the figure beside it drawn out, and a head over it would name a
+        second reading that is not there.
+      -->
+      <div class="modules-block">
+        <p class="modules__head" aria-hidden="true">
+          <span class="modules__head-name">{{ moduleColumns().name }}</span>
+          <span></span>
+          <span class="modules__head-draw">{{ moduleColumns().draw }}</span>
+        </p>
 
-            <!--
-              The bar carries no reading of its own: what it is drawn from is
-              the figure on its right, which is what a reader who cannot see the
-              fill gets instead.
-            -->
-            <span class="module__track" aria-hidden="true">
-              <span class="module__fill" [style.inline-size.%]="row.fill * 100"></span>
-            </span>
+        <ol class="modules">
+          @for (row of moduleRows(); track row.id) {
+            <li class="module" [class.module--offline]="row.offline">
+              <span class="module__name">
+                @if (row.name; as name) {
+                  <edsb-game-text
+                    [text]="name.text"
+                    [language]="name.language"
+                    [translationState]="name.translationState"
+                  />
+                } @else {
+                  {{ row.fallbackName }}
+                }
+                @if (row.count; as count) {
+                  <span class="module__count" data-bidi-isolate>{{ count }}</span>
+                }
+                @if (row.group; as group) {
+                  <span class="module__group">{{ group }}</span>
+                }
+                @if (row.state; as state) {
+                  <span class="module__group">{{ state }}</span>
+                }
+              </span>
 
-            <span class="module__draw" data-bidi-isolate>{{ row.draw }}</span>
-          </li>
+              <!--
+                The bar carries no reading of its own: what it is drawn from is
+                the figure on its right, which is what a reader who cannot see the
+                fill gets instead.
+              -->
+              <span class="module__track" aria-hidden="true">
+                <span class="module__fill" [style.inline-size.%]="row.fill * 100"></span>
+              </span>
+
+              <span class="module__draw" data-bidi-isolate>{{ row.draw }}</span>
+            </li>
+          }
+        </ol>
+
+        <!--
+          The canvas's closing row: the whole list's draw, the dark groups
+          included, which is what the lines above it add up to. A different
+          reading from the `POWERED DRAW` tile beside the priority groups, and
+          the canvas states both. Canvas 1d's second footer figure, `POWERED`,
+          is not drawn here — the priority-group block already carries it.
+        -->
+        @if (modulesTotal(); as total) {
+          <p class="modules__total">
+            <span class="modules__total-label">{{ moduleColumns().total }}</span>
+            <span class="modules__total-draw" data-bidi-isolate>{{ total }}</span>
+          </p>
         }
-      </ol>
+      </div>
     </section>
 
     <section class="power__block power__block--heat" [attr.aria-labelledby]="heatHeadingId">
@@ -122,7 +166,16 @@
             <ol class="heat__bars">
               @for (bar of heatBars(); track bar.id) {
                 <li class="heat__bar" [class.heat__bar--over]="bar.overheats">
-                  <span class="heat__name">{{ bar.label }}</span>
+                  <span class="heat__name">
+                    {{ bar.label }}
+                    <!--
+                      What the scenario's name is shorthand for. The canvas hangs
+                      it on hover; this draws it, because hover-only meaning is
+                      unreachable by touch (011 FR-006) and a scenario is not
+                      something a Commander should have to point at to read.
+                    -->
+                    <span class="heat__description">{{ bar.description }}</span>
+                  </span>
 
                   <!--
                   Two lengths and a line, and no reading of its own: the level on
@@ -163,11 +216,11 @@
             </p>
           </div>
 
-          <edsb-metric-group class="power__facts" [label]="heatCaption()" [metrics]="heatFacts()" />
-
           <!--
-            The canvas's key. It names both fills in words, because the whole
-            difference between them is a colour and a hatch.
+            The canvas's key, above the tiles since the 2026-08-25 revision. It
+            names both fills in words, because the whole difference between them
+            is a colour and a hatch — and it now reads directly under the bars it
+            explains rather than after the four figures that do not use it.
           -->
           <ul class="heat__legend">
             @for (key of heatLegend(); track key.id) {
@@ -178,6 +231,8 @@
               </li>
             }
           </ul>
+
+          <edsb-metric-group class="power__facts" [label]="heatCaption()" [metrics]="heatFacts()" />
         </div>
       } @else {
         <!--
@@ -195,9 +250,6 @@
     >
       <div class="power__head">
         <h4 class="power__heading" [id]="distributorHeadingId">{{ distributorCaption() }}</h4>
-        @if (distributorIdentity(); as identity) {
-          <p class="power__note power__note--inline">{{ identity }}</p>
-        }
       </div>
 
       @if (distributorAvailable()) {

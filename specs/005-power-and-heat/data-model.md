@@ -52,11 +52,21 @@ interface PowerConditions {
 revision, or is persisted — no storage, no history, no URL fragment, no build
 link, no SLEF. Reopening the workspace opens on `deployed` and `2 · 2 · 2`.
 
-Pips are `0`–`4` per bank on a half-pip step, six between the three. The package
-accepts any fraction in range and imposes no total; the six are the ship's rule,
-so setting one bank moves the other two — the remainder is split evenly between
-them, and each lands on a half pip. There is no
-draft, no Apply, no Reset, no running total and no validation.
+Pips are `0`–`4` per bank, six between the three. The package accepts any
+fraction in range and imposes no total; the six are the ship's rule, and so is
+how they move.
+
+A Commander assigns a **whole** pip count to one bank, `0`–`4`, and the other two
+pay for it **half a pip each** — the ship's own rule (owner's ruling,
+2026-08-25). A bank with nothing left to give pays nothing and the other pays the
+whole of it, which is what makes `4 · 2 · 0` reachable without a bank ever going
+negative. Taking pips back out of a bank runs the same rule backwards: half a pip
+to each of the other two, and all of it to one where the other is already full.
+The bank being set therefore always stands on a whole pip and the two paying for
+it land on the half step — which is exactly what four blocks filled from the
+leading edge draw.
+
+There is no draft, no Apply, no Reset, no running total and no validation.
 
 ## PowerAndHeat
 
@@ -115,6 +125,8 @@ projection's reading of that, and it is one of the readings
 | `draw`            | number           | This group's own draw in the selected state         |
 | `cumulativeDraw`  | number           | Its and every higher group's, in the selected state |
 | `cumulativeShare` | `number \| null` | That over plant output; `null` with no output       |
+| `precedingShare`  | number           | Where this row's own length starts on the track     |
+| `ownShare`        | number           | What its own draw takes of the same track           |
 | `powered`         | boolean          | The selected state's package verdict                |
 
 The package always returns five bands, because five is what the game has. A
@@ -123,6 +135,15 @@ row saying `0.00 MW` about a group that does not exist here — so groups with n
 consumer in them are left out, and the drawn rows keep the package's ascending
 order. No field is calculated from another; a plant of zero has no share to state
 rather than an infinite one.
+
+`precedingShare` and `ownShare` are the two lengths the canvas draws on each
+row's track, and they are the one place this projection does arithmetic across
+rows: the groups are cumulative, so a row says both what it adds and what it
+adds to. Both are shares of the same track `PowerDrawBar` is measured on —
+whichever of the state's whole demand and the plant's output is larger — which
+is what lets one mark stand for the plant on every row. `precedingShare` is
+`cumulativeDraw - draw` over that track, so the first row starts at zero and
+each row after it starts where the one above it ended.
 
 ### PowerDrawBar
 
@@ -246,10 +267,9 @@ launchers are not one multiplication.
 switched-off, unresolvable or retracted-shed distributor — carrying no inferred
 cause and no catalogue figure. Power, heat and the conditions stay usable.
 
-| Field        | Type                          | Rule                                     |
-| ------------ | ----------------------------- | ---------------------------------------- |
-| `capacitors` | `readonly CapacitorView[]`    | `SYS`, `ENG`, `WEP`, in the canvas order |
-| `identity`   | `DistributorIdentity \| null` | What the fitted distributor is           |
+| Field        | Type                       | Rule                                     |
+| ------------ | -------------------------- | ---------------------------------------- |
+| `capacitors` | `readonly CapacitorView[]` | `SYS`, `ENG`, `WEP`, in the canvas order |
 
 ### CapacitorView
 

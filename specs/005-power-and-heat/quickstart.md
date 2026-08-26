@@ -72,8 +72,9 @@ Use a build whose deployed draw sheds a lower priority group while its retracted
    first two square up against each other and go no taller: neither is ruled off around empty
    ground.
 4. Confirm `DEPLOYED` is selected, on its own line under the `PRIORITY GROUPS` header rather than
-   inside it, behind the canvas's visible `H‑PTS` label, with no draft, Apply, Reset or error
-   state.
+   inside it, behind the caption the canvas abbreviates to `H‑PTS` — drawn here as the whole word,
+   set in capitals by the design system, and exposed as the segment pair's own accessible name
+   rather than as a hidden string beside it — with no draft, Apply, Reset or error state.
 5. Compare plant output, the powered draw, the unpowered remainder and every drawn group's own draw
    and cumulative share with the deployed `powerBudget()` result.
 6. Confirm the three tiles under the groups are `PLANT OUTPUT`, `POWERED DRAW` and `UNPOWERED`, and
@@ -115,7 +116,9 @@ For every returned `PowerBudget.consumers` entry:
 
 1. Compare the module name, its draw, its enabled state, its priority group and its deployed-only
    state.
-2. Confirm the list is complete at every width — no `TOP DRAW` truncation.
+2. Confirm the list is complete at every width — no `TOP DRAW` truncation — and that it is headed
+   `MODULE` against `MW` over its own tracks, with the bar column between them unheaded and no
+   total standing beside the block's heading.
 3. Confirm mounts carrying the same module in the same group and the same enabled state are drawn as
    one line with the canvas's `x2` count, and that the count is the number of mounts behind it.
 4. Confirm a deployed-only mount reads `0.00` while `RETRACTED` is selected, and that each state's
@@ -134,10 +137,11 @@ canvas draws it as a reading, and feature 002's ledger is where a mount is selec
    in no caption of its own.
 2. Compare `SYS`, `ENG` and `WEP` capacity, rated recharge, returned pips and recharge rate with
    `distributorMetrics()` at the opening `2/2/2`.
-3. Press each of a bank's four blocks. Confirm the bank lands on that count, that the six pips there
-   are between the three banks are held, and that the remainder is split between the other two in
-   evenly between them — from `2 · 2 · 2`, three in `SYS` leaves `1.5` in each of the others, on
-   the half step the ship moves in.
+3. Press each of a bank's four blocks. Confirm the bank lands on that **whole** count, that the six
+   pips there are between the three banks are held, and that the other two paid half a pip each —
+   from `2 · 2 · 2`, three in `SYS` leaves `1.5` in each of the others. Confirm a bank with nothing
+   left to give pays nothing and the other pays the whole pip: from `1 · 4 · 1`, four in `SYS`
+   gives `4 · 2 · 0`. Confirm no control offers a half pip directly.
 4. Confirm pressing the block a bank already stands on steps it back one, which is the only way down
    to none through four blocks that each name a count.
 5. Confirm capacity and rated recharge never move: they are properties of the fitted distributor.
@@ -162,10 +166,12 @@ For a ready heat profile:
 5. Repeat with a build the package returns `null` heat for.
 
 Then confirm the block is one plate split down the middle: the five bars and the threshold caption
-on the leading side, the canvas's `RESTING HEAT`, `PEAK SUSTAINED`, `DISSIPATION` and `HEAT SINKS`
-tiles in a column of equal width beside them, and the two-key legend under both. The caption sits
-under the threshold line drawn through the bars, and a level that never settles reads `∞` with the
-sentence it stands for carried beside it. `PEAK SUSTAINED` is the hottest of the bars drawn
+on the leading side, and the two-key legend over the canvas's `RESTING HEAT`, `PEAK SUSTAINED`,
+`DISSIPATION` and `HEAT SINKS` tiles in a column of equal width beside them. The key reads before
+the tiles at both arrangements — it explains the bars, not the four figures. Confirm each scenario
+name carries its description under it, drawn rather than hung on a pointer, and that none of the six
+is reachable only by hovering. The caption sits under the threshold line drawn through the bars, and
+a level that never settles reads `∞` with the sentence it stands for carried beside it. `PEAK SUSTAINED` is the hottest of the bars drawn
 beside it, picked out rather than worked out; `HEAT SINKS` is the count of what is fitted over the
 canvas's `2 x 3` breakdown, which is absent where the launchers do not all carry the same charges.
 
@@ -192,11 +198,24 @@ its own field. `null` remains unavailable, with no hull or catalogue figure stan
    plant instead, so the mark lands at the end of it rather than off it.
 6. Confirm the rail reads the deployed state whatever the dashboard is showing.
 7. Confirm the block is inset from both of the rail's seams, as the groups above and below it are.
-8. Confirm the block holds no control, and that no heat sentence is drawn here: what a build does
-   under sustained fire is stated in the heat profile, which is the block that draws it.
+8. Confirm the sentence, the `POWER` line and the bar hold no control between them, and that no heat
+   sentence is drawn here: what a build does under sustained fire is stated in the heat profile,
+   which is the block that draws it.
+9. Confirm the three pip groups under the bar — `SYS`, `ENG` and `WEP`, four blocks each, filled
+   from the leading edge — and that each is named with the allocation it stands at and each block
+   with the bank and the count pressing it asks for.
+10. Confirm the rail's control and the distributor cell move **one** allocation: set a bank from the
+    rail and read the change in the distributor table, then set it from the table and read the
+    change in the rail. Neither is a draft, and neither carries a running total.
+11. Confirm the pip control is still drawn after leaving `POWER` for another anatomy mode, which is
+    the whole reason it is in the rail: the distributor table goes with the mode and the rail does
+    not.
+12. Confirm every one of the rail's twelve blocks meets the same target baseline the distributor
+    cell's blocks meet, at all five layout profiles.
 
 Expected: the rail and the dashboard are two readings of one projection of one package answer, and
-they agree for the same build.
+they agree for the same build — including the allocation, which is one condition drawn in two
+places.
 
 ## 10. Validate responsive, accessibility and localization behavior
 
