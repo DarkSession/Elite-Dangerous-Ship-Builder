@@ -591,6 +591,11 @@ const READINGS = [
   '.cost__value',
   '.rail-material__name',
   '.rail-material__count',
+  // The rows and blocks that hold them. A reading can sit tidily inside its own
+  // box while the box itself is pushed out past the rail — mirrored, or widened
+  // by a long name — and only the container can see that.
+  '.rail-material',
+  '.block',
 ]
   .map((part) => `edsb-cost-materials ${part}`)
   .join(', ');
@@ -763,7 +768,7 @@ test.describe('reading at another text size and direction', () => {
     await expectNoDocumentOverflow(page);
   });
 
-  test('the longest material name this recipe draws is still read whole', async ({ page }) => {
+  test('a long material name wraps inside its row instead of widening it', async ({ page }) => {
     await withRootTextScale(page, DOUBLED_TEXT);
     await openStockBuild(page);
     await engineerTheDrive(page);
@@ -783,10 +788,13 @@ test.describe('reading at another text size and direction', () => {
     // would pass without having tested anything.
     expect(Math.max(...names.map((name) => name.length))).toBeGreaterThan(20);
 
-    // Measured, not read. These blocks set no `text-overflow`, so a name that
-    // does not fit is not marked with an ellipsis character that a text
-    // comparison could find — it overflows its box and paints over the count
-    // beside it, or pushes the row wider than the rail. Both are overflow.
+    // What is asserted is where the name goes, not that it is complete: these
+    // blocks set no `text-overflow` and `.game-text__value` sets `overflow-wrap:
+    // anywhere`, so a name that does not fit re-wraps mid-word rather than being
+    // cut — it is read whole at any width, and a test claiming to prove that
+    // would be proving a property of the stylesheet. What can go wrong is where
+    // the wrapping puts it: a row widened past the rail, or a name grown into
+    // the count beside it.
     expect(await overflowingReadings(page)).toEqual([]);
     await expectNoDocumentOverflow(page);
   });
@@ -965,7 +973,11 @@ async function engineerTheDrive(page: Page, messages = englishMessages): Promise
   await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
 
   await bringEditorOnScreen(page, exactly(messages['outfitting.capability.engineer']));
-  if (messages === englishMessages) {
+  // Dispatched on the language actually being read, not on which object was
+  // passed: an equal-but-distinct English catalogue would otherwise take the
+  // other branch and quietly change which recipe every assertion downstream
+  // measures.
+  if (messages['hullDetail.create'] === englishMessages['hullDetail.create']) {
     await chooseRecipe(page, /Increased Range/i);
   } else {
     // Blueprint names are the Almanac's game text, so a run in another language

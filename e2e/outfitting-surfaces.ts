@@ -330,7 +330,12 @@ export async function chooseRecipe(page: Page, name: string | RegExp): Promise<v
  */
 export async function chooseFirstRecipe(page: Page): Promise<void> {
   if (await surfacesAreLayers(page)) {
-    const row = page.locator('.blueprint:not(.blueprint--none)').first();
+    const cards = page.locator('.blueprint:not(.blueprint--none)');
+    // The same guard the dropdown branch below carries: a mount the package
+    // offers no recipe for should say so rather than wait out the timeout on a
+    // card that is never going to appear.
+    expect(await cards.count(), 'no blueprint is offered here').toBeGreaterThan(0);
+    const row = cards.first();
     await row.click();
     await expect(row.locator('input[type="radio"]')).toBeChecked();
     return;
