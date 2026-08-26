@@ -1,5 +1,4 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { TRANSLOCO_TRANSPILER, type TranslocoTranspiler } from '@jsverse/transloco';
 import { DocumentAdapter } from '../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
 import { CatalogueLoader } from './catalogue-loader';
@@ -41,7 +40,6 @@ export class LocaleStore {
   readonly #document = inject(DocumentAdapter);
   readonly #navigator = inject(NavigatorAdapter);
   readonly #loader = inject(CatalogueLoader);
-  readonly #transpiler = inject<TranslocoTranspiler>(TRANSLOCO_TRANSPILER);
 
   readonly #snapshot = signal<LocaleSnapshot>(bootstrapSnapshot());
 
@@ -224,19 +222,7 @@ export class LocaleStore {
   }
 
   #title(catalogue: MessageCatalogue): string {
-    return resolveDocumentTitle(
-      catalogue,
-      (pattern, params) => {
-        const transpiled: unknown = this.#transpiler.transpile({
-          value: pattern,
-          params,
-          translation: catalogue,
-          key: 'app.document-title',
-        });
-        return typeof transpiled === 'string' ? transpiled : pattern;
-      },
-      this.#page(),
-    );
+    return resolveDocumentTitle(catalogue, this.#page());
   }
 }
 

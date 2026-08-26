@@ -1,4 +1,4 @@
-import { type MessageCatalogue } from './locale-registry';
+import { interpolate, type MessageCatalogue } from './locale-registry';
 
 /**
  * The document title, resolved from the committed catalogue.
@@ -10,11 +10,7 @@ import { type MessageCatalogue } from './locale-registry';
  * would eventually produce a title in one language under a root `lang` in
  * another, which is the failure the atomic commit exists to prevent.
  */
-export function resolveDocumentTitle(
-  catalogue: MessageCatalogue,
-  interpolate: (pattern: string, params: Record<string, string>) => string,
-  page: string | null,
-): string {
+export function resolveDocumentTitle(catalogue: MessageCatalogue, page: string | null): string {
   const application = catalogue['app.document-title.default'];
 
   if (page === null || page.trim().length === 0) {

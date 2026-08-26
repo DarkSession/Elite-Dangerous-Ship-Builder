@@ -16,6 +16,28 @@ export const BUNDLED_ENGLISH: MessageCatalogue = englishCatalogue;
 /** Every application message key, for validation and tests. */
 export const MESSAGE_KEYS = Object.keys(englishCatalogue) as readonly MessageKey[];
 
+/**
+ * Substitutes `{{ name }}` placeholders in a message pattern.
+ *
+ * A placeholder with no parameter resolves to nothing rather than to its own
+ * text: a Commander must never read `{{count}}`, and echoing the name would be
+ * the fabricated value the constitution forbids. `validateCatalogue` and the
+ * repository policy checker both gate placeholder parity between locales, so a
+ * pattern reaching here declares only variables its caller passes.
+ *
+ * The replacement is a function, so `$&` and `$1` inside a parameter value stay
+ * literal, and one pass, so a value that itself contains a placeholder cannot
+ * be re-interpolated.
+ */
+export function interpolate(
+  pattern: string,
+  params: Readonly<Record<string, string | number>>,
+): string {
+  return pattern.replace(/\{\{\s*([^{}]*?)\s*\}\}/g, (_, name: string) =>
+    Object.hasOwn(params, name) && params[name] != null ? String(params[name]) : '',
+  );
+}
+
 /** A language this build can actually display. */
 export interface ShippedLocale {
   /** Canonical BCP 47 tag and unique production identity. */

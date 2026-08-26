@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { DefaultTranspiler, TRANSLOCO_TRANSPILER } from '@jsverse/transloco';
 import { DocumentAdapter } from '../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
 import { CatalogueLoader } from './catalogue-loader';
@@ -66,7 +65,6 @@ function setup(options?: {
       { provide: DocumentAdapter, useValue: document },
       { provide: NavigatorAdapter, useValue: new StubNavigatorAdapter(options?.browserLanguages) },
       { provide: CatalogueLoader, useValue: loader },
-      { provide: TRANSLOCO_TRANSPILER, useClass: DefaultTranspiler },
     ],
   });
   return { store: TestBed.inject(LocaleStore), document, loader };

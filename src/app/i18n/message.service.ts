@@ -1,8 +1,7 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { TRANSLOCO_TRANSPILER, type TranslocoTranspiler } from '@jsverse/transloco';
 import { resolveDocumentTitle } from './document-title';
 import { LocaleStore } from './locale.store';
-import { type MessageKey } from './locale-registry';
+import { interpolate, type MessageKey } from './locale-registry';
 
 /**
  * Interpolation parameters for a message.
@@ -22,13 +21,11 @@ export type MessageParams = Readonly<Record<string, string | number>>;
  *
  * The active catalogue is whatever the store has committed, so a message
  * resolved during a locale switch is either entirely the old language or
- * entirely the new one — never a mix. Transloco supplies the interpolation
- * engine; the catalogue authority stays with the application.
+ * entirely the new one — never a mix.
  */
 @Injectable({ providedIn: 'root' })
 export class MessageService {
   readonly #store = inject(LocaleStore);
-  readonly #transpiler = inject<TranslocoTranspiler>(TRANSLOCO_TRANSPILER);
 
   /** The active catalogue, as a signal, so templates recompute on commit. */
   readonly catalogue = this.#store.catalogue;
@@ -59,14 +56,7 @@ export class MessageService {
       return value;
     }
 
-    const transpiled: unknown = this.#transpiler.transpile({
-      value,
-      params,
-      translation: catalogue,
-      key,
-    });
-
-    return typeof transpiled === 'string' ? transpiled : value;
+    return interpolate(value, params);
   }
 
   /**
@@ -77,20 +67,7 @@ export class MessageService {
    * anything that needs to display or assert it, through the same rule.
    */
   documentTitle(page: string | null = null): string {
-    const catalogue = this.#store.catalogue();
-    return resolveDocumentTitle(
-      catalogue,
-      (pattern, params) => {
-        const transpiled: unknown = this.#transpiler.transpile({
-          value: pattern,
-          params,
-          translation: catalogue,
-          key: 'app.document-title',
-        });
-        return typeof transpiled === 'string' ? transpiled : pattern;
-      },
-      page,
-    );
+    return resolveDocumentTitle(this.#store.catalogue(), page);
   }
 
   /**
