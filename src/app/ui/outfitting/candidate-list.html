@@ -204,12 +204,17 @@
       Commander had just taken would be painted as taken while reporting
       unchecked — the state carried by the ground alone. The choice itself is
       one row down, inside its own family, where the group has it once.
+
+      The group's name is this manifest's own rather than a constant. Two
+      mounts of the same size are offered the same modules under the same keys,
+      so a constant name made every radio in the document one group and a
+      Commander arrowing through one mount's rows roamed into another's.
     -->
     @if (!pinned) {
       <input
         class="candidate__radio"
         type="radio"
-        name="module-choice"
+        [name]="groupName"
         [value]="choice.key"
         [checked]="selectedKey() === choice.key"
         [attr.aria-label]="resolved.actionLabel"

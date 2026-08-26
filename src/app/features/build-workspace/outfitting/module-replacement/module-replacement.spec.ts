@@ -168,6 +168,104 @@ describe('module replacement surface', () => {
     expect(active.revision()).toBe(revision + 1);
   });
 
+  it('marks the module already in the mount as the chosen row', () => {
+    // Opening a fitted mount already opened the right family and already
+    // scrolled the right row into view. What it did not do was say which row
+    // was chosen: every control in the group reported unchecked, and what is
+    // fitted was carried by the row's own ground alone (Commander request
+    // 2026-08-26).
+    const fixture = open(FIXTURE_SLOTS.fittedHardpoint);
+    const fitted = fixture.componentInstance
+      .query()
+      ?.choices.find((choice) => choice.key === fixture.componentInstance.markedChoiceKey());
+
+    expect(fixture.componentInstance.markedChoiceKey()).not.toBeNull();
+    expect(fitted).toBeDefined();
+
+    // And it is a mark, not a decision: the layer's commit control stays
+    // disarmed until a Commander actually takes a row, so pressing it cannot
+    // spend a press re-fitting what is already there.
+    expect(fixture.componentInstance.selectedChoiceKey()).toBeNull();
+    expect(fixture.componentInstance.canFit()).toBe(false);
+  });
+
+  it('marks nothing on a mount with nothing in it', () => {
+    const fixture = open(FIXTURE_SLOTS.hardpoint);
+
+    expect(fixture.componentInstance.markedChoiceKey()).toBeNull();
+  });
+
+  it('fits the same module to a second mount after fitting it to the first', () => {
+    // The reported case. Two hardpoints of the same size are offered the same
+    // modules under the same keys, so the row is the *same* row on both — and a
+    // pick that outlived the mount it was made for left that row marked, and
+    // the radio the browser had checked was never written back. Pressing it
+    // again changed nothing, so nothing happened (reported 2026-08-26).
+    //
+    // Selecting a mount spends no revision, which is why the revision check
+    // alone could not catch this: the pick has to be about a *mount* as well as
+    // about a build.
+    // Two mounts of one size on the reference hull, so both are offered the
+    // same modules and the row really is the same row.
+    const first = open('LargeHardpoint1');
+    const choice = firstChoice(first.componentInstance);
+    first.componentInstance.choose(choice.key);
+    first.detectChanges();
+
+    // The pick names the row that is now in that mount, so the marked row and
+    // the checked radio agree about which one it is.
+    expect(first.componentInstance.selectedChoiceKey()).toBe(choice.key);
+
+    const revision = active.revision();
+    const second = open('LargeHardpoint2');
+
+    // Nothing is carried over: this is a different mount, so no row is marked
+    // and the control that draws it is written back to unchecked.
+    expect(second.componentInstance.selectedChoiceKey()).toBeNull();
+
+    // The very same row, which is the whole of the report.
+    second.componentInstance.choose(choice.key);
+    second.detectChanges();
+
+    expect(active.revision()).toBe(revision + 1);
+    expect(second.componentInstance.selectedChoiceKey()).toBe(choice.key);
+  });
+
+  it('writes the row\u2019s control back to unchecked when the mount changes', () => {
+    // The same report, at the level it actually broke. One surface is kept and
+    // handed a different mount — which is what the workspace does — so the rows
+    // are re-rendered rather than rebuilt, and a row with the same key keeps its
+    // own element. Angular writes `checked` only when the bound expression
+    // *changes*, so a binding that reads `false` on both mounts leaves an input
+    // the browser has physically checked exactly as it was. Pressing it then
+    // fires no `change` event at all, and there is nothing for a handler to fix.
+    store.select('LargeHardpoint1');
+    const fixture = TestBed.createComponent(ModuleReplacement);
+    fixture.componentRef.setInput('slot', slotFor('LargeHardpoint1'));
+    fixture.detectChanges();
+
+    const choice = firstChoice(fixture.componentInstance);
+    const radioFor = (key: string): HTMLInputElement | null =>
+      [
+        ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLInputElement>(
+          'input.candidate__radio',
+        ),
+      ].find((input) => input.value === key) ?? null;
+
+    fixture.componentInstance.choose(choice.key);
+    fixture.detectChanges();
+    expect(radioFor(choice.key)?.checked).toBe(true);
+
+    // The Commander marks a different mount in the ledger. No revision is spent
+    // — nothing about the build changed — so only the mount tells the surface
+    // that the row it had marked is no longer the row in front of it.
+    store.select('LargeHardpoint2');
+    fixture.componentRef.setInput('slot', slotFor('LargeHardpoint2'));
+    fixture.detectChanges();
+
+    expect(radioFor(choice.key)?.checked).toBe(false);
+  });
+
   it('spends no revision on picking a row, and one on fitting it, as a layer', () => {
     // Canvas 1d is where the two-control bar is, because at that width the
     // chooser is a screen of its own and leaving it has to be a decision.

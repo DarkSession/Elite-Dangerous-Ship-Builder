@@ -103,6 +103,21 @@ export interface CandidateQueryState {
    */
   readonly fittedFamilyId: OutfittingFamilyId | null;
   /**
+   * The key of the exact choice already in the mount, where it offers one.
+   *
+   * The same `find` that yields the family above, kept rather than thrown away.
+   * It is what lets the chooser report the module in the mount as the row that
+   * is chosen: a radio group's checked option is the option currently in force,
+   * and a mount that already holds a module has one. Before it, opening a
+   * fitted mount opened the right family and scrolled the right row into view
+   * while leaving every row in the group reporting unchecked — the fitted state
+   * carried by the row's own ground alone (Commander request 2026-08-26).
+   *
+   * `null` on an empty mount, or where the article the mount carries is not
+   * among the choices offered back.
+   */
+  readonly fittedChoiceKey: string | null;
+  /**
    * The family the Commander had open on the mount before this one.
    *
    * Consulted only when this mount has no fitted family of its own to seed
@@ -165,6 +180,7 @@ export function openCandidateQuery(
   carriedFamilyId: OutfittingFamilyId | null = null,
 ): CandidateQueryState {
   const choices = orderChoices(membership.choices, collator);
+  const fittedChoice = choices.find((choice) => isFittedChoice(choice, fitted));
 
   return applyQuery(
     {
@@ -177,8 +193,8 @@ export function openCandidateQuery(
       results: choices,
       status: 'ready',
       canClear: false,
-      fittedFamilyId:
-        choices.find((choice) => isFittedChoice(choice, fitted))?.presentation.familyId ?? null,
+      fittedFamilyId: fittedChoice?.presentation.familyId ?? null,
+      fittedChoiceKey: fittedChoice?.key ?? null,
       carriedFamilyId,
       openFamilies: new Set(),
       // The accordion is the model a state arrives under; the composition that

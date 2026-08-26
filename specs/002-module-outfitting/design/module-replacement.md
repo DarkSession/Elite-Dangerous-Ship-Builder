@@ -121,6 +121,37 @@ which is a step _above_ the 8.5px the column headings take: at the heading's run
 smaller than their own labels, and at the metric rung they stood taller than the module names beside
 them.
 
+## The group is this manifest's rows, and its checked row is the module in the mount
+
+**Ruled 2026-08-26 (Commander request).** Three reported faults, all of them one thing: the radio
+group was not saying what it is a group of.
+
+**The group's name is the manifest's own, not a constant.** Every row's control used to be named
+`module-choice`, so every radio in the document was one group. Two mounts of the same size are
+offered the same modules under the same keys, so a Commander arrowing through one mount's rows
+roamed into rows belonging to another. A group is the set of options a reader chooses _between_, and
+that is this manifest's rows and no others.
+
+**A pick is about a mount as well as about a build.** The surface used to drop a pick only when the
+build moved under it. But selecting a different mount spends no revision — it changes what is being
+looked at, not the build — so a pick made on one mount survived into the next, and because the row
+is the same row on two mounts of a size, it was still the marked one there. The control the browser
+had physically checked was never written back to unchecked, pressing it fired no `change` event, and
+nothing happened: the reported case of a module that cannot be fitted to a second, empty hardpoint.
+It is the mount, not the row, that has to be checked, because a binding that reads the same on both
+mounts is a binding Angular never writes.
+
+**The row already in the mount is the checked row.** Opening a fitted mount already opened the right
+family and already scrolled the right row to the middle of the scroller. What it did not do was say
+which row was chosen: every control in the group reported unchecked, and what is fitted was carried
+by that row's own ground alone. A radio group's checked option is the option currently in force, and
+a mount holding a module has one.
+
+What is drawn and what is committed stay two different things. The mark is what the list draws; the
+_pick_ is a decision a Commander made, and it is what canvas 1d's `FIT MODULE` commits. Folded
+together, that control would arm itself on a mount nobody had touched, and pressing it would spend a
+press re-fitting the module already there.
+
 ## The cost cell carries two prices, and they do not add up
 
 **Ruled 2026-08-22 (wave 8, refined wave 9).** The column is headed `COST`, and every row writes its
