@@ -280,3 +280,63 @@ is the distributor table's reading — which is where a `null` result is stated.
   nothing read them afterwards.
 - `power.modules.total`, `power.distributor.module` and `power.distributor.module.separator`, from
   both catalogues and from the translation-review ledger.
+
+## Wave 15 — three readings the Commander sent back
+
+Three notes on the wave 14 build, and what the reference says about each. Every one is a
+re-reading of `.design/Ship Builder.dc.html` rather than a new decision.
+
+### The priority-group bars are additive, and the canvas draws that
+
+The column beside them says `CUMULATIVE DRAW`, and the percentages climb — `60%`, `75%`, `95%` — so
+each row states its own draw and the running total both. The build drew one solid length to the
+running total, which said the total twice and never said what the row added.
+
+The reference draws each row as **two lengths on one track**: a wash to where the groups above this
+one end, then this group's own draw solid on the end of it. `GRP 2` is `left: 50%; width: 12.5%` —
+`4.68 / 37.44` starting where `GRP 1`'s `18.72 / 37.44` stopped. Both are shares of the whole
+demand rather than of plant output, which is why the bar and the percentage beside it disagree:
+`GRP 1` is sixty per cent of the plant and half of the track.
+
+A one-pixel mark stands on every row at `83.33%` — `31.20 / 37.44`, where the plant runs out. It is
+the same track and the same figure the rail's own bar marks, so the projection measures both on one
+scale and the group whose length crosses the mark is the group the plant ran out on. Unlabelled: the
+words `31.20 MW PLANT` remain out of the canvas.
+
+### The pip blocks are chips, not buttons
+
+The reference draws a pip block at 14 CSS pixels square in the rail and 16 in the distributor: a chip
+in a row of four. The build held every one to the project's 44-pixel design baseline, which put four
+of them across a strip wider than the rest of the distributor's figures put together and left three
+rail groups of four unable to share a 306-pixel column at all — the row scrolled sideways inside
+itself to hold them.
+
+Held to WCAG 2.2 SC 2.5.8's 24-pixel floor instead, recorded on `DENSE_TARGETS` beside the ledger's
+power chip and the segmented strip. That is the floor and not a waiver, and the reference's own 14
+pixels stay unbuilt. Four blocks at 24 still do not stand side by side three times over in the rail,
+so the rail takes the arrangement the reference itself draws for this same block where the space is
+narrow (@1221528): one bank to a line, the bank's name on the line and the four blocks filling what
+is left of it.
+
+### The panel is two rows of two
+
+`canvas-contract.md` read the panel as a two-column row over two full-width blocks, and the build
+drew that. The reference has **two sibling two-column grids** — the priority groups beside the module
+list (@416700), the heat profile beside the distributor (@465531) — and the `margin-top: 12px` the
+contract quoted for a full-width block belongs to the second grid.
+
+Built as read, the distributor stood a whole panel below the fold of a region that is bounded by the
+column it sits in: a Commander opening `POWER` found the module list and nothing under it, and
+reported the block as missing. Laid out as the reference draws it, the dashboard is a third shorter
+and the distributor sits beside the heat profile on the second row.
+
+The heat block now measures itself rather than the panel around it, because half of a wide panel is
+not a wide block: whether its bars and its tiles stand side by side is a question about that box.
+
+### Still standing after this wave
+
+The region is bounded by the column and scrolls what will not fit, which is what wave 14 settled and
+what keeps the distributor's own controls reachable. Two rows of two shortens the dashboard; it does
+not make it fit. At 1440×900 the panel is about 800 CSS pixels in a slot of about 325, so the second
+row is still reached by scrolling the region — the bench's own 26rem minimum is what bounds the slot,
+and that belongs to feature 002.

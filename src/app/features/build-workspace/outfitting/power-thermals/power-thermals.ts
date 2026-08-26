@@ -53,8 +53,10 @@ interface BandRowView {
   readonly share: string | null;
   /** Whether the plant leaves this group dark, which the canvas words. */
   readonly offline: boolean;
-  /** How far the bar is filled, in `[0, 1]`. Decoration only. */
-  readonly fill: number;
+  /** Where this group's own length starts on the track, in `[0, 1]`. */
+  readonly preceding: number;
+  /** How much of the track that length takes, in `[0, 1]`. Decoration only. */
+  readonly own: number;
 }
 
 /** One bar of `HEAT PROFILE`: what it is, how hot it gets, and how far. */
@@ -154,6 +156,17 @@ const CANVAS_HEAT_SCALE = 1.6;
 
 /** The four blocks the canvas draws each bank's allocation across. */
 const PIP_STEPS = [1, 2, 3, 4] as const;
+
+/**
+ * A drawn length, held inside its track.
+ *
+ * The projection's shares are already fractions of one track, but a bar wider
+ * than the box it is in is a drawing error rather than a reading, so nothing
+ * leaves this without being inside it.
+ */
+function clamp(share: number): number {
+  return Math.min(1, Math.max(0, share));
+}
 
 /**
  * `POWER & THERMALS`: what the plant makes and what the build does with it.
@@ -258,12 +271,22 @@ export class PowerThermals {
           ? this.#formatters.percent(band.cumulativeShare)
           : null,
       offline: !band.powered,
-      // The bar is decoration; the figures beside it are what is read. It is
-      // clamped because a group can draw more than the plant makes, and a bar
-      // wider than its track is a drawing error rather than a reading.
-      fill: Math.min(1, Math.max(0, band.cumulativeShare ?? 0)),
+      // Two lengths on one track, as the canvas draws them: everything above
+      // this group in a wash, then this group's own draw solid on the end of
+      // it. Both are decoration; the figures either side are what is read.
+      preceding: clamp(band.precedingShare),
+      own: clamp(band.ownShare),
     })),
   );
+
+  /**
+   * Where the plant's output falls on the track the group bars are drawn on.
+   *
+   * The same mark the rail draws on its own bar, and the same one for every
+   * row: the projection measures both on the same track, so a group whose
+   * length crosses this line is the group the plant ran out on.
+   */
+  readonly plantMark = computed(() => this.#projection()?.power.bar.plant ?? 0);
 
   /**
    * The canvas's three tiles: `PLANT OUTPUT`, `POWERED DRAW`, `UNPOWERED`.

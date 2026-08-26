@@ -567,7 +567,7 @@ test.describe('the rail’s pip control', () => {
     await expect(page.locator('edsb-power-summary .pipset')).toHaveCount(3);
   });
 
-  test('holds the target baseline on every block, at this project’s layout', async ({ page }) => {
+  test('holds the target floor on every block, at this project’s layout', async ({ page }) => {
     await openPower(page);
 
     // Counted before it is measured. `expectTargetSizes` asserts that nothing
@@ -577,9 +577,13 @@ test.describe('the rail’s pip control', () => {
     await expect(page.locator('edsb-power-summary .pips__step')).toHaveCount(12);
 
     // Each project in the matrix is one of the five layout profiles, so this
-    // measures the twelve blocks at all of them across the run — on the same
-    // baseline the distributor cell's blocks hold.
+    // measures the twelve blocks at all of them across the run. A pip block is
+    // one of a row of four chips — the canvas draws it at 14 CSS pixels square
+    // — so it is held to SC 2.5.8's 24-pixel floor rather than to the project's
+    // stricter 44, which is what `DENSE_TARGETS` records. The distributor
+    // cell's blocks hold the same size, and the sweep below measures those.
     await expectTargetSizes(page, 'edsb-power-summary .pips__step');
+    await expectTargetSizes(page, 'edsb-power-thermals .pips__step');
   });
 
   test('offers no draft, no running total and no half-pip block', async ({ page }) => {
@@ -625,6 +629,29 @@ test.describe('the rail’s pip control', () => {
 });
 
 test.describe('the conditions that break layouts', () => {
+  test('lays the four blocks out in two rows of the same width, whatever it has', async ({
+    page,
+  }) => {
+    await openPower(page);
+
+    // The reference draws the dashboard as two rows of two — the groups beside
+    // the module list, the heat profile beside the distributor — and stacks all
+    // four where there is no room for that. Whichever it picks, it picks it for
+    // both rows: this counts the columns each pair is drawn in and compares
+    // them, so a lower pair left running the full width under a paired upper
+    // one fails at every profile wide enough to pair anything. That is what
+    // stood the distributor a whole panel below the fold of a region bounded by
+    // the column it sits in.
+    const columns = await page
+      .locator('edsb-power-thermals .power__block')
+      .evaluateAll((blocks) =>
+        blocks.map((block) => Math.round(block.getBoundingClientRect().left)),
+      );
+
+    expect(columns).toHaveLength(4);
+    expect(new Set(columns.slice(2)).size).toBe(new Set(columns.slice(0, 2)).size);
+  });
+
   test('keeps every figure at doubled text without scrolling the document', async ({ page }) => {
     await withRootTextScale(page, DOUBLED_TEXT);
     await openPower(page);

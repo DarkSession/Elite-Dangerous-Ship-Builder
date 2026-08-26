@@ -129,6 +129,56 @@ describe('PowerThermals', () => {
       );
     });
 
+    it('draws each group’s bar starting where the group above it ended', () => {
+      const build = shedBandBuild();
+      const { element } = render(build);
+
+      // The groups are cumulative, so each row carries two lengths: the wash is
+      // everything above it and the solid length is its own on the end of that.
+      // Read back as drawn, because a wash that started at zero on every row
+      // would state each group's own draw against the plant and call it the
+      // running total the column beside it reports.
+      const rows = [...element.querySelectorAll('.power__block--bands .power__band')].map(
+        (row) => ({
+          preceding: percent(row.querySelector<HTMLElement>('.power__band-preceding')),
+          own: percent(row.querySelector<HTMLElement>('.power__band-fill')),
+          start:
+            Number.parseFloat(
+              row.querySelector<HTMLElement>('.power__band-fill')?.style.insetInlineStart ?? '',
+            ) / 100,
+        }),
+      );
+
+      expect(rows.length).toBeGreaterThan(1);
+      expect(rows[0].preceding).toBe(0);
+      rows.forEach((row, index) => {
+        // The solid length starts at the end of the wash, not at the leading
+        // edge of the track.
+        expect(row.start).toBeCloseTo(row.preceding, 6);
+
+        const above = rows[index - 1];
+        if (above) {
+          expect(row.preceding).toBeCloseTo(above.preceding + above.own, 6);
+        }
+      });
+    });
+
+    it('marks the plant in the same place on every group’s bar', () => {
+      const build = shedBandBuild();
+      const { element } = render(build);
+
+      // One reading, drawn on every row: the mark is where the plant runs out
+      // on a track every row shares, so the group whose length crosses it is
+      // the group the plant ran out on.
+      const marks = [...element.querySelectorAll<HTMLElement>('.power__band-plant')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+
+      expect(marks.length).toBeGreaterThan(1);
+      expect(new Set(marks).size).toBe(1);
+      expect(marks[0]).toBeGreaterThan(0);
+    });
+
     it('states every group’s verdict in words, not only the shed one', () => {
       const build = shedBandBuild();
       const budget = BuildMetrics.of(build).powerBudget();
@@ -627,3 +677,8 @@ describe('PowerThermals', () => {
     expect(text).not.toContain('Heat capacity');
   });
 });
+
+/** One drawn length, as a fraction of the track it is on. */
+function percent(length: HTMLElement | null): number {
+  return Number.parseFloat(length?.style.inlineSize ?? '') / 100;
+}

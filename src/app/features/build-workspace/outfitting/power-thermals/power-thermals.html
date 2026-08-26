@@ -43,12 +43,24 @@
             <span class="power__band-group">{{ band.group }}</span>
             <span class="power__band-draw" data-bidi-isolate>{{ band.draw }}</span>
             <!--
-              The bar carries no reading of its own: every figure it draws is
-              the text on either side of it, which is what a reader who cannot
-              see the fill gets instead.
+              Two lengths and a mark, and no reading of its own: every figure it
+              draws is the text on either side of it, which is what a reader who
+              cannot see the fill gets instead. The wash is what the groups above
+              this one draw between them, the solid length is this group's own on
+              the end of it, and the mark is where the plant runs out.
             -->
             <span class="power__band-track" aria-hidden="true">
-              <span class="power__band-fill" [style.inline-size.%]="band.fill * 100"></span>
+              <span
+                class="power__band-preceding"
+                [style.inline-size.%]="band.preceding * 100"
+              ></span>
+              <span
+                class="power__band-fill"
+                [style.inset-inline-start.%]="band.preceding * 100"
+                [style.inline-size.%]="band.own * 100"
+              ></span>
+              <span class="power__band-plant" [style.inset-inline-start.%]="plantMark() * 100">
+              </span>
             </span>
             @if (band.offline) {
               <span class="power__band-state">{{ offlineLabel() }}</span>

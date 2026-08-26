@@ -142,6 +142,24 @@ export interface PowerBandView {
    * no share to state rather than an infinite one.
    */
   readonly cumulativeShare: number | null;
+  /**
+   * How far along the shared track this group's own length starts, in `[0, 1]`.
+   *
+   * The canvas draws each row as two lengths on one track: everything the
+   * groups above this one draw, in a wash, and then this group's own draw in
+   * the solid fill — so the row says both what it adds and what it adds to.
+   * This is the first of the two, and it is the previous row's
+   * {@link precedingShare} plus that row's {@link ownShare}.
+   */
+  readonly precedingShare: number;
+  /**
+   * What this group's own draw takes of the same track, in `[0, 1]`.
+   *
+   * Both lengths are shares of whichever of the whole demand and the plant's
+   * output is larger — the same track {@link PowerDrawBar} is measured on, so
+   * the plant's mark falls in the same place on every row.
+   */
+  readonly ownShare: number;
   /** Whether the plant keeps this group lit in the selected state. */
   readonly powered: boolean;
 }
@@ -381,22 +399,38 @@ export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditio
 /** The plant summary and the groups this build uses, for one hardpoint state. */
 export function projectPower(budget: PowerBudget, hardpoints: HardpointState): PowerView {
   const deployed = hardpoints === 'deployed';
+  const scale = powerTrackScale(budget, deployed);
 
   return {
     available: budget.available,
     draw: deployed ? budget.deployed : budget.retracted,
-    bands: occupiedBands(budget).map((band) => projectBand(band, deployed, budget.available)),
+    bands: occupiedBands(budget).map((band) =>
+      projectBand(band, deployed, budget.available, scale),
+    ),
     poweredDraw: (deployed ? budget.deployed : budget.retracted) - unpoweredDraw(budget, deployed),
     unpowered: unpoweredDraw(budget, deployed),
     bar: drawBar(budget, deployed),
   };
 }
 
+/**
+ * The track every bar drawn from this budget is measured on.
+ *
+ * Whichever of the whole demand and the plant's output is larger, so a build
+ * the plant covers puts the plant's mark at the end of the track rather than
+ * off it, and a build it does not covers the track and marks where it ran out.
+ * The rail's bar and each priority group's row share it, which is what lets one
+ * mark stand for the plant on all of them.
+ */
+function powerTrackScale(budget: PowerBudget, deployed: boolean): number {
+  return Math.max(deployed ? budget.deployed : budget.retracted, budget.available);
+}
+
 /** The rail's three lengths, over whichever of demand and output is larger. */
 function drawBar(budget: PowerBudget, deployed: boolean): PowerDrawBar {
   const draw = deployed ? budget.deployed : budget.retracted;
   const unpowered = unpoweredDraw(budget, deployed);
-  const scale = Math.max(draw, budget.available);
+  const scale = powerTrackScale(budget, deployed);
 
   // A ship with no plant and nothing fitted draws an empty track rather than a
   // division by nothing.
@@ -433,14 +467,24 @@ function unpoweredDraw(budget: PowerBudget, deployed: boolean): number {
   );
 }
 
-function projectBand(band: PowerBand, deployed: boolean, available: number): PowerBandView {
+function projectBand(
+  band: PowerBand,
+  deployed: boolean,
+  available: number,
+  scale: number,
+): PowerBandView {
   const cumulativeDraw = deployed ? band.deployedTotal : band.retractedTotal;
+  const draw = deployed ? band.deployed : band.retracted;
 
   return {
     priority: band.priority,
-    draw: deployed ? band.deployed : band.retracted,
+    draw,
     cumulativeDraw,
     cumulativeShare: available > 0 ? cumulativeDraw / available : null,
+    // A ship with no plant and nothing fitted draws an empty track rather than
+    // a division by nothing, exactly as the rail's own bar does.
+    precedingShare: scale > 0 ? (cumulativeDraw - draw) / scale : 0,
+    ownShare: scale > 0 ? draw / scale : 0,
     powered: deployed ? band.poweredDeployed : band.poweredRetracted,
   };
 }

@@ -125,6 +125,8 @@ projection's reading of that, and it is one of the readings
 | `draw`            | number           | This group's own draw in the selected state         |
 | `cumulativeDraw`  | number           | Its and every higher group's, in the selected state |
 | `cumulativeShare` | `number \| null` | That over plant output; `null` with no output       |
+| `precedingShare`  | number           | Where this row's own length starts on the track     |
+| `ownShare`        | number           | What its own draw takes of the same track           |
 | `powered`         | boolean          | The selected state's package verdict                |
 
 The package always returns five bands, because five is what the game has. A
@@ -133,6 +135,15 @@ row saying `0.00 MW` about a group that does not exist here — so groups with n
 consumer in them are left out, and the drawn rows keep the package's ascending
 order. No field is calculated from another; a plant of zero has no share to state
 rather than an infinite one.
+
+`precedingShare` and `ownShare` are the two lengths the canvas draws on each
+row's track, and they are the one place this projection does arithmetic across
+rows: the groups are cumulative, so a row says both what it adds and what it
+adds to. Both are shares of the same track `PowerDrawBar` is measured on —
+whichever of the state's whole demand and the plant's output is larger — which
+is what lets one mark stand for the plant on every row. `precedingShare` is
+`cumulativeDraw - draw` over that track, so the first row starts at zero and
+each row after it starts where the one above it ended.
 
 ### PowerDrawBar
 

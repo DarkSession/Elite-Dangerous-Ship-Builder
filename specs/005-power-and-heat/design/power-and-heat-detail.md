@@ -47,13 +47,21 @@ The canvas's order, at every width:
 Each of the four is a bounded plate on the panel ground, and they are all the same plate:
 `1px solid var(--amber-a2)` over `var(--panel)` at `16px 18px`.
 
-The arrangement is **not** a 2x2 grid. Canvas 1c draws 1 and 2 as a two-column row
-(`grid-template-columns: 1fr 1fr; min-height: 328px; align-items: stretch`), then 3 across the full
-width under it (`margin-top: 12px`), then 4 across the full width under that. The pair is stretched
-so the two plates square up against each other, and no further: the canvas's `min-height` is a
-measurement of its own sample build, and holding a real one to it rules a plate off around empty
-ground (review note, wave 13). Canvas 1d stacks all
-four. Which arrangement appears is decided in CSS from the space the region is given, so 400% zoom
+The arrangement is **two rows of two, corrected 2026-08-26 (Commander request)**. Canvas 1c draws
+two sibling two-column grids: 1 and 2 in the first
+(`grid-template-columns: 1fr 1fr; min-height: 328px; align-items: stretch`), 3 and 4 in the second
+on the same two columns (`grid-template-columns: 1fr 1fr; margin-top: 12px; align-items: stretch`).
+This was read as a two-column row over two full-width blocks, and the `margin-top: 12px` quoted for
+block 3 belongs to the second grid rather than to a full-width block. Built that way the distributor
+stood a whole panel below the fold of a region bounded by the column it sits in — a Commander opening
+`POWER` found the module list and nothing under it. Each pair is stretched so its two plates square
+up against each other, and no further: the canvas's `min-height` is a measurement of its own sample
+build, and holding a real one to it rules a plate off around empty ground (review note, wave 13).
+Canvas 1d stacks all four.
+
+The heat block measures itself rather than the panel around it, because half of a wide panel is not
+a wide block: whether its bars and its tiles stand side by side is a question about that box, and
+asking the panel's width instead split a plate too narrow to be split. Which arrangement appears is decided in CSS from the space the region is given, so 400% zoom
 and an expanded translation choose the stacked one for the same reason a phone does. The DOM order
 is the list above at every width.
 
@@ -108,7 +116,20 @@ row's bar is hatched at 135 degrees, exactly as the canvas hatches the shed leng
 cumulative bar — a pattern rather than only a hue, so the two lengths are told apart by a reader who
 cannot tell amber from red. `DRAW BY MODULE` hatches a line in a shed group the same way.
 
-The `31.20 MW PLANT` marker the canvas sets across the bars is **not** drawn (review note 2).
+**The bars are additive, corrected 2026-08-26 (Commander request).** The column beside them says
+`CUMULATIVE DRAW` and the percentages climb, so each row states its own draw and the running total
+both. The build drew one solid length to the running total, which said the total twice and never
+said what the row added. The canvas draws two lengths on one track instead: a wash to where the
+groups above this one end, then this group's own draw solid on the end of it. Both are shares of the
+whole demand rather than of plant output — which is why the bar and the percentage beside it
+disagree, `GRP 1` being sixty per cent of the plant and half of the track — and the two shares are
+published as `precedingShare` and `ownShare` rather than worked out in the component.
+
+A one-pixel mark stands on every row where the plant runs out, at the same place on each: the
+projection measures the rows and the rail's own bar on one track, so `PowerDrawBar.plant` is that
+position and the group whose length crosses it is the group the plant ran out on. It carries no
+words — the labelled `31.20 MW PLANT` line the canvas sets across the bars is still **not** drawn
+(review note 2), and the tile beneath says the figure.
 
 ### The summary under it
 
@@ -253,9 +274,15 @@ pips back runs the same rule backwards, all of it going to one bank where the ot
 Pressing the block a bank already stands at gives the pip back. A block is filled from its leading
 edge, so a bank standing on a half fills half a block, and no block stands for a bank at 1.5 pips.
 
-Each block holds the 44px target baseline and no more than that: given the row's spare width the
-four would take it all, and the recharge figures beside them would be wrapping two digits at a time
-(review note 9). The table scrolls inside its own bounded scroller when the four no longer fit.
+**Each block holds the 24px target floor, corrected 2026-08-26 (Commander request).** The canvas
+draws one at `flex: 1` by `height: 16px` — a chip in a row of four, not a button standing on its
+own — and four at the project's 44px design baseline came out a strip wider than the rest of the
+table's figures put together. `.pips__step` is recorded on `DENSE_TARGETS` in
+`e2e/accessibility/assertions.ts` beside the ledger's power chip and the segmented strip, which
+holds it to WCAG 2.2 SC 2.5.8's floor: the floor, not a waiver, and the canvas's own 16 pixels stay
+unbuilt. The blocks share the cell between them and no more of the row than that, so the recharge
+figures beside them keep their room (review note 9), and the table scrolls inside its own bounded
+scroller if even the floor no longer fits.
 
 Displayed pips come from the result, not from what was pressed. Capacity and rated recharge are
 properties of the fitted distributor and do not move. Zero pips is a genuine zero recharge and reads
@@ -299,6 +326,15 @@ screen in every anatomy mode, and the distributor table is only in `POWER`; and 
 revision two other regions read figures at an allocation — feature 006's `MJ × N SYS PIPS` column
 and feature 007's `CAP 61 MJ · WEP 3 PIPS` — which a Commander would otherwise have to leave the
 region to change.
+
+**One bank to a line, corrected 2026-08-26 (Commander request).** Canvas 1c stands the three groups
+side by side with the name over the blocks, each block about 21 CSS pixels wide in a 306-pixel rail.
+That is under the floor a target may not go below, and three groups of four 24-pixel blocks do not
+share that rail — built at the baseline they scrolled sideways inside their own row. The rail takes
+the arrangement the reference itself draws for this same block where the space is narrow (@1221528,
+the mobile `PIP ALLOCATION`): the bank's name on the line and the four blocks filling what is left
+of it. One column of names and one of blocks, owned by the group, so the three names square up and
+the twelve blocks all start on the same edge.
 
 The rail draws no half-pip block and no running total: four blocks a bank, exactly as the
 distributor's cell draws them, filled from the leading edge so a bank standing on a half fills half

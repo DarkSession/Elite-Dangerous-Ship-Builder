@@ -91,18 +91,29 @@
 }
 
 // Canvas 1c's three `.pipset` groups under the bar: a bank name in that bank's
-// own ink over four blocks. They wrap rather than scroll, because the rail is
-// narrow and three groups of four targets do not share a 306-pixel line at a
-// doubled text size.
+// own ink beside four blocks, one bank to a line.
+//
+// The canvas stands the three side by side with the name over the blocks, at
+// 14 CSS pixels square apiece. That is under the floor a target may not go
+// below, and three groups of four 24-pixel targets do not share a 306-pixel
+// rail — so this takes the arrangement the reference itself draws for this same
+// block where the space is narrow: the bank's name on the line, the four blocks
+// filling what is left of it. One column of names and one of blocks, owned by
+// the group rather than by each line, so the three names square up and the
+// twelve blocks all start on the same edge.
 .pipsets {
-  @include layout.wrapping-row(var(--edsb-space-inline));
-
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack-tight);
   margin-block-start: var(--edsb-space-stack);
 }
 
 .pipset {
-  @include layout.stack(var(--edsb-space-stack-tight));
-
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
   min-inline-size: 0;
 }
 
@@ -112,30 +123,29 @@
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
 }
 
-// Four blocks side by side, each of them the control for that many pips — the
-// same control the distributor's cell draws, at the same target size, so the
-// two places a Commander can set the pips are the same size to press.
+// Four blocks across the line, each of them the control for that many pips — the
+// same control the distributor's cell draws, at the same size, so the two places
+// a Commander can set the pips are the same to press.
 //
-// It scrolls inside itself rather than pushing the document sideways. Four
-// blocks at the 2.75rem target baseline are 388px at a doubled text size, and
-// the rail column is 318px: the blocks cannot shrink to fit without dropping
-// under the target size, which is a floor rather than a preference
-// (constitution V), so the row is bounded and the overflow is its own. The
-// distributor's cell answers the same arithmetic the same way, in its table
-// scroller, and the mode strip above does it too.
+// The blocks take the line between them rather than each holding the 2.75rem
+// design baseline: four of those are 176px before the gaps, and the canvas draws
+// a pip block as a chip in a row of them rather than as a button standing on its
+// own. They are held to the 24-pixel floor instead, which is the floor and not a
+// waiver — and the row stays bounded so that a text size which finally squeezes
+// even those scrolls the row rather than the document.
 .pips {
   @include layout.bounded-scroller;
 
   display: flex;
   gap: var(--edsb-space-inline-tight);
-  inline-size: max-content;
+  min-inline-size: 0;
 }
 
 .pips__step {
-  @include layout.target-baseline;
+  @include layout.target-floor;
 
   position: relative;
-  flex: 0 0 var(--edsb-target-size);
+  flex: 1 1 var(--edsb-target-size-floor);
   padding: 0;
   background-color: var(--edsb-surface-inset);
   border: var(--edsb-border-width-hairline) solid transparent;

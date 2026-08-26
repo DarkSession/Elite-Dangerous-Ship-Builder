@@ -345,3 +345,36 @@ package call: every figure is one the projection already returns.
       profiles, on the same `--edsb-target-size` baseline the distributor cell holds
 - [x] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`
+
+## Wave 15 — three readings the Commander sent back (2026-08-26)
+
+> Three notes on the wave 14 build, each of them settled by re-reading
+> `.design/Ship Builder.dc.html` rather than by a new decision. Two of the three were documentation
+> defects as much as build defects: `canvas-contract.md` and `design/power-and-heat-detail.md` had
+> both recorded the panel as "not a 2×2 grid", and the build drew what they said. The reference is
+> two sibling two-column grids. See `design/reference-review.md`, "Wave 15".
+
+- [x] T078 Draw the priority-group bars additively, as the canvas draws them: a wash to where the
+      groups above the row end, then the row's own draw solid on the end of it, both measured
+      against whichever of the whole demand and the plant's output is larger.
+      _`PowerBandView` gains `precedingShare` and `ownShare`; the track scale is now shared with
+      `PowerDrawBar`, which is what lets one mark stand for the plant on every row. The percentage
+      column is unchanged — it is still cumulative draw over plant output, which is why it and the
+      bar beside it disagree._
+- [x] T079 Mark the plant on every group's bar, at the one place it falls on the shared track,
+      unlabelled — the words `31.20 MW PLANT` stay out of the canvas.
+- [x] T080 Size the pip blocks as the chips the canvas draws rather than as standalone buttons: the
+      24-pixel SC 2.5.8 floor, recorded on `DENSE_TARGETS`, with the blocks sharing the line between
+      them. The canvas's own 14 and 16 pixels stay unbuilt.
+- [x] T081 Re-lay the rail's pip control one bank to a line — the bank's name on the line, the four
+      blocks filling what is left — which is the arrangement the reference draws for this same block
+      where the space is narrow (@1221528). Three groups of four 24-pixel blocks do not stand side
+      by side in a 306-pixel rail.
+- [x] T082 Lay the panel out as two rows of two, and give the heat block its own container so that
+      whether its bars and its tiles stand side by side is decided by that box rather than by the
+      panel around it.
+      _Correct `canvas-contract.md` and `design/power-and-heat-detail.md` with it: the
+      `margin-top: 12px` both quoted for a full-width block belongs to the second grid._
+- [x] T083 [P] Cover all four in tests: the additive geometry and the shared plant mark in the
+      projection and in the drawn DOM, the pip blocks' floor at all five layout profiles in both
+      places they are drawn, and the two rows of two as an invariant that holds stacked or paired.
