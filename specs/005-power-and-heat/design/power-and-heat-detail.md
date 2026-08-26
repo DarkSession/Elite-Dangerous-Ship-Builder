@@ -71,6 +71,16 @@ asking the panel's width instead split a plate too narrow to be split. Which arr
 and an expanded translation choose the stacked one for the same reason a phone does. The DOM order
 is the list above at every width.
 
+**Its split opens at the wide step too, corrected 2026-08-26 (Commander request).** It opened at the
+medium step, and 24rem is not a wide box: a 430-pixel phone hands this block about 25rem, so on a
+large phone the bars stood beside the tiles — two columns of about 12rem each — while the four power
+blocks around them, held to the wide step since wave 13, correctly stacked. Neither canvas draws it
+split at that width, and canvas 1c does not draw it split at any width; the split is this
+application's use of a genuinely wide box, so it is held to the width that makes it one. The same
+correction applies to `DRIVES & MASS`, `DEFENCE` and `OFFENCE`, which paired at the medium step for
+the same reason and are recorded with it in
+`specs/002-module-outfitting/design/outfitting-workspace.md`.
+
 ## The conditions
 
 Two segments, `DEPLOYED` and `RETRACTED`, **inside the priority groups block** — the canvas sets

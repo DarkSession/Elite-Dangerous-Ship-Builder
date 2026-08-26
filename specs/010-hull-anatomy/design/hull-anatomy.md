@@ -41,12 +41,21 @@ in landscape they may pair. Nothing required disappears in either orientation.
 Canvas 1d's composition: one labelled side at a time with a `TOP`/`BOTTOM` selector, drawn at the
 canvas's own dense height and held to SC 2.5.8's 24-pixel floor like every other segmented strip.
 
-Canvas 1d stacks the anatomy **above** feature 002's ledger; the workspace stacks it below, because
-the ledger, the centre track and the status rail are one grid whose source order is its wide
-left-to-right order and nothing re-orders it when it stacks. That deviation is feature 002's
-composition rather than this capability's placement — the anatomy sits in the centre track, which is
-where canvas 1c puts it — and moving it means giving that grid explicit columns so the DOM can be
-re-ordered without changing the wide arrangement. Recorded here rather than fixed here.
+Canvas 1d stacks the anatomy **above** feature 002's ledger, and so does the workspace. It did not
+until 2026-08-26: the ledger, the centre track and the status rail are one grid whose source order is
+its wide left-to-right order, and nothing re-ordered it when it stacked, so the ledger opened the
+narrow screen and the anatomy sat under it. That deviation was feature 002's composition rather than
+this capability's placement — the anatomy sits in the centre track, which is where canvas 1c puts it
+— and it was closed there, by ordering the compact grid rather than by moving the region
+(`specs/002-module-outfitting/design/outfitting-workspace.md`, "Narrow and 400%-zoom composition").
+
+**The block's inset belongs to its arrangement, not to a width (2026-08-26).** Canvas 1c pads the
+block `16px 20px 6px` around the header row and `10px 20px 14px` around the plates; canvas 1d pads
+its header row `12px 14px 8px` and runs the mode strip full-bleed under it. The narrow figure is the
+base and the roomy one is stated with the two-plate arrangement, at the same threshold the second
+plate opens at. Read the other way round, a one-plate block stood 8px further in than every other
+band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not line up with
+a mount name in the ledger below it — which is the misalignment reported that day.
 
 Selecting a mount selects its ledger row, which is what canvas 1d's bench then opens on. At 400%
 zoom and long or RTL text every group stacks, and no part of the document scrolls sideways — the

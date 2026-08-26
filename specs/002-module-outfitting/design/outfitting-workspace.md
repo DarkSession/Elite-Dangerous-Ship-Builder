@@ -210,6 +210,40 @@ omits its cell band at this width. Both are on screen together whenever `STATUS`
 reader meeting the same six figures twice on one screen has no way to tell which copy is the reading
 — the strip is the one that is always there, so it is the one that is kept.
 
+### The bands run to the glass
+
+Canvas 1d has no page inset. Every band paints to both edges of the screen and carries its own 14px
+inside it — the ledger rows, the category strip, the key figures, the anatomy's header row, the mode
+panels and the sticky foot alike, each closed by a hairline that runs the full width. The application
+frame gives its compact pages a 14px gutter, which is right for a page whose own blocks have no
+inset; this one's do, so **the workspace takes that gutter back** with a negative inline margin and
+each band pays for itself.
+
+Built the other way round the two insets added up: every band's closing hairline stopped 14px short
+of the glass, every reading inside one stood 28px in, and the anatomy — still on canvas 1c's roomier
+22px — stood 8px further in again, so the figures in `POWER & THERMALS` did not line up with the
+mount names in the ledger below them. That is the misalignment reported on 2026-08-26. Two things
+keep their inset, because they are not bands: the import notices, which are a labelled rule over
+prose and take it as padding, and the empty state, which is a bordered plate and takes it as margin
+so its border does not sit against the glass.
+
+The anatomy's own inset is stated with the arrangement rather than with a width: one plate takes the
+narrow canvas's 14px, two plates take the roomy canvas's 22px, and the threshold between them is the
+one the second plate already opens at (`specs/010-hull-anatomy`).
+
+### A pair is only a pair when both halves have room
+
+Four regions inside the anatomy draw two boxes side by side when they have the width for it:
+`DRIVES & MASS`, `DEFENCE`, `OFFENCE` and, inside `POWER & THERMALS`, the heat block's own split.
+All four now open at the **wide** container step, which is where the power dashboard's four blocks
+have always opened. Three of them opened at the medium step, and the medium step is 24rem: a
+430-pixel phone hands these regions about 25rem, so on a large phone `THRUSTER LOAD` sat beside
+`FRAME SHIFT DRIVE` and the heat bars sat beside their tiles, while the power blocks on the same
+screen correctly stacked. Both canvases draw all four as one column at the narrow width, and canvas
+1c draws the heat block as one column at _either_ width. Two cards of figures at 24rem are 12rem
+each once the gap is taken off, which is narrower than the readings they hold; the labels wrapped a
+word at a time and the pair was harder to read side by side than stacked (reported 2026-08-26).
+
 ### No `ALL` at compact width
 
 Canvas 1d's tab strip is `HARDPOINTS · CORE · OPTIONAL · UTILITY`, with no `ALL` and no counts on the

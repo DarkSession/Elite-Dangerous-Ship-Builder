@@ -18,7 +18,14 @@
   min-inline-size: 0;
 }
 
-@include layout.container-medium-up(defence) {
+// The width asked for is the one the pair needs, not the one it fits in. Two
+// cards of figures at 24rem are 12rem each once the gap is taken off, which
+// is narrower than the readings they hold: the labels wrap to three lines and
+// the pair is harder to read side by side than stacked. The threshold is the
+// same 40rem the power dashboard beside it has always used — this pair was left
+// at the narrower one, so on a large phone these two went side by side while the
+// same screen's power blocks correctly stacked (reported 2026-08-26).
+@include layout.container-wide-up(defence) {
   .defence {
     display: grid;
     // Two equal columns, as the canvas draws them: the shields and the hull are

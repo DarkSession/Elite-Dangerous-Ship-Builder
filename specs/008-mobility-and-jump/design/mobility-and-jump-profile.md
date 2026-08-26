@@ -133,6 +133,13 @@ from the viewport. A 400% zoom and a narrow window therefore select the stacked 
 same reason a phone does, and one DOM serves both. Every field, mark, issue and legend row is
 present at every width; nothing is dropped, collapsed behind a control or scrolled off sideways.
 
+**The pair opens at the wide container step, corrected 2026-08-26 (Commander request).** It opened at
+the medium one, and the medium step is 24rem: a 430-pixel phone hands this region about 25rem, so on
+a large phone the two cards went side by side where canvas 1d stacks them — two columns of about
+12rem each once the gap is taken off, narrower than the readings they hold, with the labels wrapping
+a word at a time. The wide step is the one feature 005's power dashboard has used since wave 13, and
+a pair is only a pair while both halves can hold what is in them.
+
 ## The three loads
 
 The package publishes three and the card draws three. Its `maximum`, `unladen` and `laden` are the

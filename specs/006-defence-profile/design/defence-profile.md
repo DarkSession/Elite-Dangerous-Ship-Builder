@@ -49,6 +49,13 @@ truncate, overflow or lose target size, they become one stack. Tablet behavior f
 inline space, not a device-name breakpoint. Landscape phones, expanded text and 400% zoom always use
 the complete stacked composition.
 
+**The pair opens at the wide container step, corrected 2026-08-26 (Commander request).** It opened at
+the medium one, and the medium step is 24rem: a 430-pixel phone hands this region about 25rem, so on
+a large phone the two cards went side by side where canvas 1d stacks them — two columns of about
+12rem each once the gap is taken off, narrower than the readings they hold, with the labels wrapping
+a word at a time. The wide step is the one feature 005's power dashboard has used since wave 13, and
+a pair is only a pair while both halves can hold what is in them.
+
 ## Shield and recovery
 
 - The headline is the package's own total strength. The four returned EHP values are the pools set

@@ -517,9 +517,6 @@
   inset-block-end: 0;
   z-index: 2;
   padding: var(--edsb-space-inline-loose);
-  // The frame's compact gutter is the page's; this plate is the canvas's
-  // full-bleed bar, so it takes that inset back and paints to both edges.
-  margin-inline: calc(var(--edsb-space-inline-loose) * -1);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
@@ -547,6 +544,7 @@
   grid-auto-columns: minmax(0, 1fr);
   gap: var(--edsb-space-inline-tight);
   padding-block: var(--edsb-space-stack-tight);
+  padding-inline: var(--edsb-space-inline-loose);
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
@@ -575,9 +573,31 @@
 // and the halves of this arrangement that are decided in the template read that
 // same answer (`composition.ts`, `observeComposition`).
 .outfitting[data-composition='compact'] {
-  .outfitting__feedback,
+  // The gutter is the frame's, and this screen does not want it.
+  //
+  // Canvas 1d has no page inset: every band paints to both edges of the screen
+  // and carries its own 14px inside — the ledger rows, the category strip, the
+  // key figures, the mode panels and the sticky foot alike, each closed by a
+  // hairline that runs the full width. Inset by the page as well, every one of
+  // those rules stopped 14px short of the glass and every reading inside them
+  // stood 28px in, which is the misalignment reported against this screen. The
+  // frame's gutter stays where it is right — a page whose own bands have no
+  // inset — and this one takes it back (reported 2026-08-26).
+  margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+
+  // The notices are a labelled rule over prose rather than a band, so they take
+  // the inset back as their own padding and their text stands where the ledger's
+  // does.
+  .outfitting__feedback {
+    order: 0;
+    padding-inline: var(--edsb-space-inline-loose);
+  }
+
+  // The empty state is a bordered plate, so it takes the inset back as margin:
+  // padding would inset its words and leave its border against the glass.
   .outfitting__empty {
     order: 0;
+    margin-inline: var(--edsb-space-inline-loose);
   }
 
   .outfitting__centre {

@@ -223,7 +223,13 @@
   container-name: heat;
 }
 
-@include layout.container-medium-up(heat) {
+// The split opens at the same wide step the panel around it uses. It used to
+// open at the medium one, and 24rem is not a wide box: a 430-pixel phone gives
+// this block about 25rem, so the bars and the tiles went side by side there —
+// two columns of 12rem each — while every canvas, roomy and narrow alike, draws
+// this block as one column. Above the wide step the split is what it was meant
+// to be, a genuinely wide box using its width (reported 2026-08-26).
+@include layout.container-wide-up(heat) {
   // One box split down the middle: the bars and the caption that belongs to them
   // down one side, and the key over the four tiles down the other. Every
   // position is stated, because leaving the tiles to auto-placement puts them
