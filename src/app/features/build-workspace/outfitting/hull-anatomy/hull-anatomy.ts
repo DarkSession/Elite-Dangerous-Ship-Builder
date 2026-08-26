@@ -78,6 +78,12 @@ function isAnatomyMode(value: string): value is AnatomyMode {
   templateUrl: './hull-anatomy.html',
   styleUrl: './hull-anatomy.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Which kind of content the region is showing, for the workspace column
+  // outside it. The plates ask for the height their hulls need; a dashboard
+  // takes what the column has and scrolls the rest. The column cannot tell
+  // these apart from the outside, and the difference decides whether the
+  // region may shrink.
+  host: { '[class.anatomy--dashboard]': 'isDashboard()' },
 })
 export class HullAnatomy {
   readonly #store = inject(AnatomyStore);
