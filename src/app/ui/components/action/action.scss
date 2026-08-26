@@ -29,6 +29,32 @@
   inline-size: 100%;
 }
 
+// Canvas 1d's `⋮` menu is a flat panel, not a panel of buttons: full-width
+// rows on the panel's own ground, ruled apart by the panel, with the one row a
+// Commander is most likely to want on an accent wash. The control stays a
+// button with a name, a role and a state; what it stops being is a chip inside
+// a panel of chips.
+:host([row]) {
+  display: flex;
+}
+
+:host([row]) .action {
+  inline-size: 100%;
+  min-block-size: var(--edsb-layout-menu-row);
+  justify-content: flex-start;
+  padding-inline: var(--edsb-space-inline-loose);
+  border-color: transparent;
+  background-color: transparent;
+}
+
+// Emphasis decides which row takes the wash, not position: the panel's order
+// changes with what the screen offers, and the row that matters is the one the
+// action itself says matters.
+:host([row]) .action--primary {
+  background-color: var(--edsb-surface-accent-selected);
+  color: var(--edsb-text-accent-strong);
+}
+
 .action__label {
   // Long translated labels wrap rather than pushing the page into overflow.
   overflow-wrap: break-word;
@@ -103,4 +129,12 @@
 
 .visually-hidden {
   @include layout.visually-hidden;
+}
+
+// A conventional mark set in front of the label, as canvas 1c sets the history
+// pair. Monospace, because the marks the canvas uses are drawn from its own
+// mono face and a proportional one gives them the wrong weight beside a word.
+.action__mark {
+  font-family: var(--edsb-font-metric);
+  line-height: var(--edsb-text-leading-flat);
 }

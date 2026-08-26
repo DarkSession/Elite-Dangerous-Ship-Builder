@@ -10,8 +10,58 @@
   [class.frame__banner--released]="bannerReleased()"
   [attr.aria-label]="bannerLabel()"
 >
+  <!--
+    The bar canvas 1b gives a screen opened over another one: the way back, the
+    layer's own name, and the line under it. Drawn beside the ordinary identity
+    and hidden at every width but compact, so one of the two is on screen and in
+    the accessibility tree at a time.
+  -->
+  @if (back(); as layer) {
+    <div class="frame__return">
+      <a
+        class="frame__return-back"
+        [href]="layer.back.href"
+        (click)="navigationSelected.emit({ entry: layer.back, event: $event })"
+      >
+        <span aria-hidden="true">&#8592;</span>
+        <span class="visually-hidden">{{ layer.back.label }}</span>
+      </a>
+      @if (layer.title; as name) {
+        <div class="frame__return-identity">
+          <h1 class="frame__title">{{ name }}</h1>
+          @if (layer.detail; as line) {
+            <p class="frame__return-detail">{{ line }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+
   <div class="frame__identity">
-    <span class="frame__flag" aria-hidden="true"></span>
+    <!--
+      The insignia. A link where the screen has somewhere for it to go, which is
+      where canvas 1c puts the trip the `SHIPYARD` chip used to carry; the mark
+      itself stays hidden from assistive technology and the link is named by the
+      screen it reaches, so the mark is never announced as a picture of nothing.
+    -->
+    @if (home(); as destination) {
+      <a
+        class="frame__flag frame__flag--home"
+        [href]="destination.href"
+        (click)="navigationSelected.emit({ entry: destination, event: $event })"
+      >
+        <span class="visually-hidden">{{ destination.label }}</span>
+      </a>
+    } @else {
+      <span class="frame__flag" aria-hidden="true"></span>
+    }
+
+    <!--
+      The release mark the 2026-08-26 canvas adds, between the insignia and the
+      screen's own identity on every artboard: a solid amber chip with the
+      bar's own ground as its ink.
+    -->
+    <span class="frame__beta">{{ betaLabel() }}</span>
     <!--
       The bar's title, or the screen's own identity where it publishes one.
       Canvas 1c and 1d both put the build's name where every other screen's
@@ -73,6 +123,8 @@
         <edsb-action-button
           [label]="action.label"
           [symbol]="action.symbol ?? null"
+          [mark]="action.mark ?? null"
+          [markPosition]="action.markPosition ?? 'leading'"
           [emphasis]="action.emphasis ?? 'secondary'"
           [disabled]="action.disabled ?? false"
           [description]="action.description ?? null"

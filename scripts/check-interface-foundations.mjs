@@ -1410,6 +1410,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'app.name': 'A product name, not a phrase to translate.',
     'app.document-title':
       'A composition pattern; both variables and the separator are language-neutral.',
+    'hullDetail.bar.detail':
+      'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',
@@ -1438,6 +1440,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The in-game term, used untranslated in the German community.',
     'anatomy.mount.name':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
+    'shell.beta':
+      'The release stage as a mark rather than a word: the canvas sets it in Latin capitals on every artboard, and it is read the same way in German. Translating it would rename the product on one of the two.',
     'outfitting.power.priority.absent':
       'A dash standing in for a group the package never published; not a word in either language.',
     'power.heat.does-not-settle':

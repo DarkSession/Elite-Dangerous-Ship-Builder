@@ -57,18 +57,30 @@ describe('App', () => {
         link.textContent?.trim(),
       );
 
-    // The reference's command bar offers the shipyard and the library, and
-    // never a chip for the build screen (canvas 1a/1b/1c).
-    const expected = [
-      BUNDLED_ENGLISH['navigation.catalogue'],
-      BUNDLED_ENGLISH['navigation.library'],
-    ];
+    // The reference's command bar offers the library as a chip, and never a
+    // chip for the build screen (canvas 1a/1b/1c).
+    const expected = [BUNDLED_ENGLISH['navigation.library']];
 
     // The same list in both placements: on the bar's trailing edge where there
     // is room (canvas 1c), and in the `⋮` menu where there is not (canvas 1d).
     // One is drawn at a time, and which one is a stylesheet's decision.
     expect(named('.frame__navigation a')).toEqual(expected);
     expect(named('.action-layer__navigation a')).toEqual(expected);
+  });
+
+  it('carries the way back to the shipyard on the bar\u2019s own insignia', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const insignia = element.querySelector('.frame__flag--home');
+
+    // The 2026-08-26 revision puts the mark where the `SHIPYARD` word used to
+    // be, so the mark is the control and the word is not drawn twice. It is a
+    // link, so it opens in a new tab and copies like any other address, and it
+    // says where it goes for a reader who cannot see the mark.
+    expect(insignia?.getAttribute('href')).toBe('/ships');
+    expect(insignia?.textContent?.trim()).toBe(BUNDLED_ENGLISH['navigation.catalogue']);
   });
 
   it('resolves its text through the message facade', () => {

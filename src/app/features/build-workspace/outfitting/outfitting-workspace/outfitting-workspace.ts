@@ -57,6 +57,16 @@ type Category = 'all' | SlotKind;
  * feature 001 and importing belongs to feature 004; this region says why it is
  * empty and stops there rather than offering an action it does not own (FR-001).
  */
+/**
+ * The marks canvas 1c sets beside the history pair — `↶ UNDO` and `REDO ↷`.
+ *
+ * Two conventional typographic arrows, not icons: the word is drawn beside each
+ * one either way, so nothing about either control has to be learned from a
+ * shape. They are hidden from a reader, who has the words.
+ */
+const HISTORY_UNDO_MARK = '\u21b6';
+const HISTORY_REDO_MARK = '\u21b7';
+
 @Component({
   selector: 'edsb-outfitting-workspace',
   imports: [
@@ -321,6 +331,7 @@ export class OutfittingWorkspace {
                 action: {
                   id: 'outfitting.undo',
                   label: this.undoLabel(),
+                  mark: HISTORY_UNDO_MARK,
                   disabled: !this.store.canUndo(),
                   description: this.#named(
                     'outfitting.history.undo.named',
@@ -333,6 +344,10 @@ export class OutfittingWorkspace {
                 action: {
                   id: 'outfitting.redo',
                   label: this.redoLabel(),
+                  mark: HISTORY_REDO_MARK,
+                  // `REDO ↷`, not `↷ REDO`: the canvas points each arrow
+                  // the way its action travels, so this one follows its word.
+                  markPosition: 'trailing' as const,
                   disabled: !this.store.canRedo(),
                   description: this.#named(
                     'outfitting.history.redo.named',

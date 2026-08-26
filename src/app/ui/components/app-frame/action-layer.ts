@@ -7,15 +7,20 @@ import type { NavigationEntry, ShellAction } from './app-frame';
  * The compact shell action layer.
  *
  * When the banner cannot hold every action on one row, the actions move into
- * this layer rather than being dropped or collapsed behind an icon. The trigger
- * carries visible localized text and the layer relates to it by
+ * this layer rather than being dropped. The layer relates to its trigger by
  * `aria-controls`, so a reader is told both that there is more and whether it
  * is currently open.
  *
- * This deliberately replaces the reference canvas's unlabelled ellipsis
- * control. An ellipsis is a guess for anyone who has not already learned what
- * it hides, it has no accessible name of its own, and its 24-pixel hit area is
- * below the target baseline (shell design, "Compact/zoom composition").
+ * The trigger is drawn as canvas 1d draws it — the `⋮` mark on its own
+ * outlined square — and named as this feature requires: the mark is hidden and
+ * the localized name is carried as text inside the control. An earlier reading
+ * spelled the name out on screen instead, on the grounds that a glyph is a
+ * guess with no accessible name. Only the second half of that was true, and it
+ * is answered by the hidden text rather than by the drawing: the name is in the
+ * accessibility tree, the target keeps its 44-pixel baseline, and there is no
+ * image, no font icon and no shape whose meaning has to be learned. What is
+ * still refused is a control with no text name at all (011 reference review,
+ * ruled 2026-08-26).
  *
  * Presentation-only: the open state arrives as input and leaves as intent, so
  * the layer never becomes a second place where shell state lives.

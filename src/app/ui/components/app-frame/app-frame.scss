@@ -84,6 +84,96 @@
   @include layout.command-flag;
 }
 
+// The same mark, as the way back to the shipyard. It is a link, so it takes a
+// focus ring and a pointer, and its target is the mark's own box — which is
+// already above the accessible floor at the size the canvas draws it.
+.frame__flag--home {
+  display: block;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+    outline-offset: var(--edsb-space-3xs);
+  }
+}
+
+// Canvas 3b's release mark: a solid amber chip, the bar's own ground as its
+// ink, condensed and widely tracked. It sits between the insignia and the
+// screen's identity on every artboard.
+.frame__beta {
+  flex: none;
+  padding-block: var(--edsb-space-3xs);
+  padding-inline: var(--edsb-space-2xs);
+  background-color: var(--edsb-surface-accent-solid);
+  color: var(--edsb-text-on-accent);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-micro);
+  font-weight: var(--edsb-text-weight-heading);
+  line-height: var(--edsb-text-leading-flat);
+  letter-spacing: var(--edsb-text-tracking-product);
+  text-transform: uppercase;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// Canvas 1b's sheet bar. One composition is rendered at a time, the same way
+// the wide action row and the compact action layer are: `display: none` is the
+// hide, so the bar that is not in use leaves the accessibility tree and the
+// document never carries two `h1`s or two ways back at once.
+.frame__return {
+  display: none;
+}
+
+@include layout.compact {
+  .frame__return {
+    @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+    min-inline-size: 0;
+    margin-inline-end: auto;
+  }
+
+  // Where the sheet is on screen the bar underneath it is not: canvas 1b draws
+  // the insignia, the release mark, the shipyard's name and its count on the
+  // shipyard's own bar, and none of them on the sheet's.
+  :host(.frame--returning) .frame__identity {
+    display: none;
+  }
+
+  // The canvas's bare arrow, pulled back to the bar's own inset so the glyph
+  // sits on the gutter line while the target keeps its full width.
+  .frame__return-back {
+    @include layout.target-baseline;
+
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--edsb-target-size);
+    margin-inline-start: calc(var(--edsb-space-2xs) * -1);
+    font-family: var(--edsb-font-metric);
+    font-size: var(--edsb-text-size-lg);
+    color: var(--edsb-text-accent);
+    text-decoration: none;
+
+    &:focus-visible {
+      outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+      outline-offset: var(--edsb-space-3xs);
+    }
+  }
+
+  .frame__return-identity {
+    @include layout.stack(var(--edsb-space-3xs));
+
+    min-inline-size: 0;
+  }
+
+  .frame__return-detail {
+    @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+  }
+}
+
 .frame__title {
   @include layout.display-title(
     var(--edsb-text-size-heading-md),
@@ -95,12 +185,12 @@
   @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
 }
 
-// Canvas 1c orders the bar's trailing edge by what the controls do to the
-// build: the history pair, the committing actions, then the way off the screen.
-// The navigation is therefore drawn after the actions, not before them.
-.frame__navigation {
-  order: 1;
-}
+// Canvas 1a draws the bar's trailing edge as `OPEN SAVED BUILD \u00b7 6`,
+// `IMPORT`, `?` — the screen a Commander can move to first, then what they can
+// do here, then help. It is the one artboard that draws a navigation chip at
+// all: canvas 1c's bar has none, so it settles the order of the actions among
+// themselves and says nothing about where a chip would go. The navigation
+// therefore leads, which is where the artboard that draws it puts it.
 
 .frame__navigation-list {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
@@ -205,4 +295,15 @@
   // Space reserved under the sticky banner so a target scrolled to by an
   // in-page link lands below it rather than behind it.
   scroll-margin-block-start: var(--edsb-layout-bar-height);
+
+  // The compact canvases *do* draw a gutter, and the same one everywhere: 14px
+  // each side, on the bar and on every band under it (canvas 1b's rows, search
+  // band and hull-detail column; canvas 1d's mode panels and ledger rows, all
+  // `0 14px` or `… 14px`). It is the bar's own inset carried down the page, so
+  // the page's content lines up with the identity in the bar above it rather
+  // than running to the glass. Only compact: the wide reading above stands, and
+  // this deliberately does not reinstate the 22px frame wave 9 removed.
+  @include layout.compact {
+    padding-inline: var(--edsb-space-inline-loose);
+  }
 }

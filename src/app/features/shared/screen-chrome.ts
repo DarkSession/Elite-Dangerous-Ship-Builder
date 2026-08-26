@@ -1,5 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
-import type { ScreenIdentity, ShellAction } from '../../ui/components/app-frame/app-frame';
+import type {
+  ScreenIdentity,
+  ScreenReturn,
+  ShellAction,
+} from '../../ui/components/app-frame/app-frame';
 import type { IdentityCommit, IdentityField } from '../../ui/outfitting/ship-identity-fields';
 
 /** The identity block one screen publishes, and what editing it does. */
@@ -88,6 +92,22 @@ export class ScreenChrome {
 
   readonly #actions = signal<readonly ScreenAction[]>([]);
   readonly #regionActions = signal<readonly ScreenAction[]>([]);
+
+  readonly #return = signal<ScreenReturn | null>(null);
+
+  /**
+   * The compact bar a screen opened over another one publishes, where one does.
+   *
+   * Only the hull sheet publishes it today: canvas 1b replaces the shipyard's
+   * bar with the sheet's own while the sheet is up. It is presentation, like
+   * the count and the actions beside it, and the frame decides at which width
+   * it is drawn at all.
+   */
+  readonly return = this.#return.asReadonly();
+
+  setReturn(layer: ScreenReturn | null): void {
+    this.#return.set(layer);
+  }
 
   readonly #identity = signal<ScreenIdentityChannel | null>(null);
 

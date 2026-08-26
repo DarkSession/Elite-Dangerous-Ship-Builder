@@ -33,12 +33,6 @@ export class AppNavigation {
   entries(currentPath: string): readonly NavigationEntry[] {
     const entries: readonly NavigationEntry[] = [
       {
-        id: 'catalogue',
-        label: this.#messages.message('navigation.catalogue'),
-        href: NAVIGATION_ROUTES.catalogue,
-        current: currentPath.startsWith(NAVIGATION_ROUTES.catalogue),
-      },
-      {
         id: 'library',
         label: this.#messages.message('navigation.library'),
         href: NAVIGATION_ROUTES.library,
@@ -46,6 +40,31 @@ export class AppNavigation {
       },
     ];
     return entries.filter((entry) => entry.current !== true);
+  }
+
+  /**
+   * The way back to the shipyard, carried by the bar's own insignia.
+   *
+   * No canvas draws a `SHIPYARD` chip on the outfitting bar. What every
+   * artboard draws on the leading edge is the mark, and the 2026-08-26 revision
+   * put it exactly where the word used to be — so the mark is the control, and
+   * the word is not drawn twice. It keeps its `href`, so it can be opened in a
+   * new tab and its address copied like any other link, and it carries the
+   * screen name it goes to as its accessible name.
+   *
+   * Absent on the shipyard itself: a link to the screen a Commander is already
+   * reading is not a way anywhere.
+   */
+  home(currentPath: string): NavigationEntry | null {
+    if (currentPath.startsWith(NAVIGATION_ROUTES.catalogue)) {
+      return null;
+    }
+    return {
+      id: 'catalogue',
+      label: this.#messages.message('navigation.catalogue'),
+      href: NAVIGATION_ROUTES.catalogue,
+      current: false,
+    };
   }
 
   /** The library entry point every screen offers as a shell action. */

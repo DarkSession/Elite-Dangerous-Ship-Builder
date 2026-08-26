@@ -8,29 +8,37 @@
   display: block;
 }
 
+// The canvas's outlined square holding the `⋮` mark. Square rather than
+// sized to words, because there are none drawn: the control's name is inside it
+// as text and only the mark is on screen.
 .action-layer__trigger {
   @include layout.target-baseline;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: var(--edsb-space-inline-loose);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
   border-radius: var(--edsb-shape-control);
   background-color: var(--edsb-surface-control);
   color: var(--edsb-text-accent);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-control);
-  text-transform: uppercase;
   transition:
     background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
     border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
 }
 
+.action-layer__trigger-mark {
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-lg);
+  font-weight: var(--edsb-text-weight-control);
+  line-height: var(--edsb-text-leading-flat);
+}
+
+.action-layer__trigger-label {
+  @include layout.visually-hidden;
+}
+
 .action-layer__panel {
-  @include layout.stack(var(--edsb-space-inline-tight));
+  @include layout.stack(0);
 
   position: absolute;
   inset-block-start: calc(100% + var(--edsb-space-inline-tight));
@@ -69,11 +77,17 @@
   max-block-size: 60dvh;
   overflow-y: auto;
   overscroll-behavior-block: contain;
-  padding: var(--edsb-space-inline-loose);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-dialog);
   border-radius: var(--edsb-shape-panel);
   background-color: var(--edsb-surface-menu);
   box-shadow: var(--edsb-elevation-menu);
+}
+
+// The canvas's hairline between one group of entries and the next.
+.action-layer__rule {
+  flex: none;
+  block-size: var(--edsb-border-width-hairline);
+  background-color: var(--edsb-rule-menu);
 }
 
 // `hidden` must win over the stacking display above, or a closed layer keeps
@@ -82,24 +96,32 @@
   display: none;
 }
 
-.action-layer__action {
-  display: block;
-}
-
-// A menu entry that navigates: canvas 1d sets every row of the `⋮` menu the
-// same way, whatever it does.
+// The rows run to the panel's own edges (canvas 1d): the ground behind a row is
+// the row's, so the panel keeps no inset of its own and each row carries its
+// padding instead.
 .action-layer__navigation {
-  @include layout.stack(var(--edsb-space-inline-tight));
+  @include layout.stack(0);
 }
 
+// A row that navigates is drawn exactly like a row that acts: canvas 1d sets
+// every entry of the menu the same way, whatever it does.
 .action-layer__link {
   @include layout.control-base(var(--edsb-text-tracking-heading));
-  @include layout.control-secondary;
 
+  display: flex;
   inline-size: 100%;
+  min-block-size: var(--edsb-layout-menu-row);
+  justify-content: flex-start;
+  padding-inline: var(--edsb-space-inline-loose);
+  border-color: transparent;
+  background-color: transparent;
+  color: var(--edsb-text-accent);
   text-decoration: none;
 }
 
+// The screen a Commander is already on. Named as such by `aria-current` too —
+// the wash is not the only carrier.
 .action-layer__link[aria-current='page'] {
-  @include layout.control-primary;
+  background-color: var(--edsb-surface-accent-selected);
+  color: var(--edsb-text-accent-strong);
 }

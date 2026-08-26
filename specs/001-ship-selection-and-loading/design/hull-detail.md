@@ -5,9 +5,9 @@
 
 ## Composition
 
-- Wide: canvas 1a's inspector rail beside the manifest. Narrow: canvas 1b's full-screen detail sheet with the bare back arrow the reference draws. Neither carries a page heading: the command bar names the screen (see [screen chrome](#screen-chrome-and-the-command-bar)).
+- Wide: canvas 1a's inspector rail beside the manifest. Narrow: canvas 1b's full-screen detail sheet, which replaces the shipyard's command bar with one of its own (see [the sheet's own bar](#the-sheets-own-bar)). Neither carries a page heading of its own: the bar names the screen (see [screen chrome](#screen-chrome-and-the-command-bar)).
 - `HullArtwork` on the hatched plate, loaded from the same-origin package asset path with reserved area and temporary-unavailable text.
-- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. The pad class is named as a pad class — `LARGE LANDING PAD`, not a bare `LARGE` — through `hullDetail.landing-pad`. Both facts keep their labels in the markup; only the eye sees the compressed line.
+- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. The pad class is named as a pad class — `LARGE LANDING PAD`, not a bare `LARGE` — through `hullDetail.landing-pad`. Both facts keep their labels in the markup; only the eye sees the compressed line. At compact width the same two facts are the bar's title and the line under it instead, and the body's block is not drawn — the canvas puts them in the bar and draws them once.
 - A ruled two-column `FactList` of the eight figures the reference's metric grid carries: speed, boost, shield, armour, hull mass, hardness, crew and mass lock, each with its localized unit where the reference draws one.
 - The mount classes the hull carries, under a section rule, as `<count> <CLASS>` chips with the classes it has none of left out.
 - One `HULL PRICE` row: the ready-to-fly cost, on a rule of its own.
@@ -38,6 +38,31 @@ Every figure in the grid is whole. The reference draws `400`, not `400.0`, and h
 The viewing condition — "at 4 ENG pips" — is gone with the rotation rates and the zero-pip endpoints that needed it. `SPEED` is the reference's one speed figure.
 
 `SlotLayout` is deleted. Canvas 1c's outfitting slot ledger is where the reference puts a slot layout, and that belongs to feature 002.
+
+### The sheet's own bar
+
+Canvas 1b draws no back arrow inside the sheet. It replaces the whole bar: a bare `←` on the leading
+edge, the hull's name where the screen's name goes on every other screen, and `MANUFACTURER · <PAD>
+LANDING PAD` under it — and no insignia, no release mark, no count. The sheet is not a screen a
+Commander navigated to; it is one they opened over the shipyard, and its bar says what they opened
+and how to close it.
+
+The screen therefore publishes that bar rather than drawing one, the same way the workspace publishes
+its build identity: the shell owns the bar, and a second one inside the page would be a second bar
+(011/`ScreenReturn`, `ScreenChrome.setReturn`). Which width draws it is the shell's decision — canvas
+1a's wide inspector still has the manifest beside it, keeps the shipyard's bar, and reaches the
+manifest by looking at it, so there is no back arrow at that width and never was.
+
+Two consequences follow, both recorded rather than assumed:
+
+- **The name is drawn once.** At compact width the body's identity block is not drawn, because the
+  bar is already carrying it. The labelled `dt`/`dd` pair survives at wide width, where the block is;
+  at compact the same two facts are stated in the bar's own line, unlabelled, exactly as the canvas
+  draws them. The text is there either way, which is what FR-010 of feature 011 asks for.
+- **A hull the package cannot name keeps its body block.** `ScreenReturn.title` admits `null`; the
+  bar then carries the way back alone and the body's block — which says what it could not name and
+  why — is what a Commander reads. A bar with an empty title and a body with nothing in it would be
+  a screen that says nothing about the hull it is showing.
 
 ## States
 
@@ -84,4 +109,4 @@ Measured from canvas 1a's inspector rail and canvas 1b's `sd-screen`.
 | Hardpoints     | A section rule — tracked label, a hairline filling the width, the total on the trailing edge — over count-and-size pills                                                                                                      |
 | Price          | Its own rule, the label on the leading edge and the value in large monospace amber with a quiet `cr` suffix                                                                                                                   |
 | Actions        | The stock-hull action filled amber, condensed 700 tracked 0.22em, full width. The reference's second rail button opens the saved-build library, which the command bar already offers on this screen, so it is not drawn twice |
-| Compact layout | The same stack as a full-screen layer with a back arrow in its command bar and the actions pinned to a footer plate                                                                                                           |
+| Compact layout | The same stack as a full-screen layer whose command bar is the sheet's own — `←`, the hull's name, its manufacturer line — with the actions pinned to a footer plate                                                          |

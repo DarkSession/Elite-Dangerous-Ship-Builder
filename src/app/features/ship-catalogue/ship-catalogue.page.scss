@@ -114,7 +114,21 @@
 // composition changes (hull-detail design, "Responsive and accessibility
 // notes").
 @include layout.compact {
+  // The frame supplies the compact gutter now, so the region only insets the
+  // block axis. Its own 22px would have doubled the 14px above it.
+  .catalogue__manifest-region {
+    padding-inline: 0;
+  }
+
   .catalogue--detail-open .catalogue__browse {
     display: none;
+  }
+
+  // With the manifest hidden, the region that held it is an empty band whose
+  // own inset still takes 36px above the hull detail — the gap reported after
+  // a ship is chosen. Nothing is in it, so it takes no room.
+  .catalogue--detail-open .catalogue__manifest-region {
+    padding-block: 0;
+    gap: 0;
   }
 }

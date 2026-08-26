@@ -13,9 +13,9 @@ export type ActionEmphasis = 'primary' | 'secondary' | 'quiet' | 'danger';
  *
  * The label is always the accessible name, and normally it is also the visible
  * text. There is no icon-only variant: an icon without words is a guess for
- * anyone who does not already know what it means, and the compact layouts keep
- * visible labels rather than collapsing to an unlabelled ellipsis (shell
- * design, "Compact/zoom composition").
+ * anyone who does not already know what it means. A mark may replace a word on
+ * screen; it may never replace the word in the accessibility tree (011
+ * reference review, ruled 2026-08-26).
  *
  * `symbol` is the one narrow exception, and it is not an icon. A caller may
  * draw a single conventional typographic mark — `?` — in place of the label,
@@ -44,6 +44,32 @@ export class ActionButton {
    * unchanged by drawing it this way.
    */
   readonly symbol = input<string | null>(null);
+
+  /**
+   * A conventional mark drawn *beside* the label, or `null` for none.
+   *
+   * The difference from `symbol` is what happens to the word: `symbol` draws
+   * the mark instead of it, `mark` draws the mark in front of it. Canvas 1c's
+   * history pair is the case — it draws `↶ UNDO`, not `↶` alone — and the two
+   * cannot be the same input, because one hides the label and the other does
+   * not. Like `symbol` it is hidden from the accessibility tree: it is a second
+   * rendering of a name the button already carries in text.
+   *
+   * The same narrow rule applies. One conventional typographic mark, no image,
+   * no font icon, and nothing whose meaning has to be learned to use the
+   * control — the word is right there either way.
+   */
+  readonly mark = input<string | null>(null);
+
+  /**
+   * Which side of the label the mark is drawn on.
+   *
+   * Canvas 1c draws the history pair as `↶ UNDO` and `REDO ↷` — the
+   * mark leads the word going back and follows it going forward, because each
+   * arrow points the way its action travels. That is the whole reason this
+   * exists; a caller with no such convention leaves it alone.
+   */
+  readonly markPosition = input<'leading' | 'trailing'>('leading');
 
   readonly emphasis = input<ActionEmphasis>('secondary');
 

@@ -7,7 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { ArtworkCoordinator } from '../../application/catalogue/artwork.coordinator';
 import { HullDetailFacade } from '../../application/catalogue/hull-detail.facade';
@@ -20,6 +20,7 @@ import { GameText } from '../../ui/components/game-text/game-text';
 import { HullArtwork } from '../../ui/components/hull-artwork/hull-artwork';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
+import { ScreenChrome } from '../shared/screen-chrome';
 import { CatalogueAnchorRestorer } from '../ship-catalogue/catalogue-anchor.restorer';
 import { HullDetailUnknownSymbol } from './hull-detail-unknown-symbol';
 import type { HullFactGroup } from '../../domain/catalogue/hull-facts';
@@ -68,15 +69,7 @@ export interface MountCount {
  */
 @Component({
   selector: 'edsb-hull-detail-page',
-  imports: [
-    ActionButton,
-    FactList,
-    GameText,
-    HullArtwork,
-    HullDetailUnknownSymbol,
-    RouterLink,
-    StatusNotice,
-  ],
+  imports: [ActionButton, FactList, GameText, HullArtwork, HullDetailUnknownSymbol, StatusNotice],
   templateUrl: './hull-detail.page.html',
   styleUrl: './hull-detail.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,11 +83,10 @@ export class HullDetailPage {
   readonly #announcements = inject(AnnouncementService);
   readonly #router = inject(Router);
   readonly #restorer = inject(CatalogueAnchorRestorer);
+  readonly #chrome = inject(ScreenChrome);
 
   /** The hull symbol, bound from the route's own parameter. */
   readonly symbol = input.required<string>();
-
-  readonly catalogueRoute = NAVIGATION_ROUTES.catalogue;
 
   readonly backLabel = this.#messages.messageSignal('hullDetail.back');
   readonly specificationsHeading = this.#messages.messageSignal('hullDetail.specifications');
@@ -106,6 +98,15 @@ export class HullDetailPage {
   readonly priceLabel = this.#messages.messageSignal('hullDetail.price');
 
   readonly view = this.#detail.view;
+
+  /**
+   * Whether the command bar is carrying this hull's name at compact width.
+   *
+   * When it is, the body does not draw it again; when the package could supply
+   * no name there is nothing in the bar to draw, and the body's own identity
+   * block — which says what it could not name — is what a Commander reads.
+   */
+  readonly barCarriesName = computed(() => this.#layerBar()?.title != null);
   readonly artworkState = this.#detail.artworkState;
   readonly artworkAttempt = this.#artwork.attempt;
 
@@ -145,7 +146,50 @@ export class HullDetailPage {
     return price === null ? null : this.#formatters.credits(price);
   });
 
+  /**
+   * The bar canvas 1b draws over the shipyard's while the sheet is up: the way
+   * back, the hull's name where the screen's name goes, and its manufacturer
+   * and pad size under that.
+   *
+   * Published rather than drawn here, for the reason the workspace publishes
+   * its own identity: the bar belongs to the shell, and a second one inside the
+   * page would be a second bar. The frame decides where it is drawn at all —
+   * canvas 1a's wide inspector has the manifest beside it and keeps the
+   * shipyard's bar, so this is a compact composition and the frame owns that.
+   */
+  readonly #layerBar = computed(() => {
+    const view = this.view();
+    if (view?.kind !== 'populated') {
+      return null;
+    }
+    const manufacturer = view.manufacturer.text;
+    const size = view.size;
+    return {
+      back: {
+        id: 'catalogue',
+        label: this.backLabel(),
+        href: NAVIGATION_ROUTES.catalogue,
+        current: false,
+      },
+      title: view.name.text,
+      detail:
+        manufacturer === null
+          ? size
+          : size === null
+            ? manufacturer
+            : this.#messages.message('hullDetail.bar.detail', { manufacturer, size }),
+    };
+  });
+
   constructor() {
+    // The sheet's own bar, for as long as the sheet is up. Cleared on the way
+    // out so the shipyard's bar is the shipyard's again — whichever way the
+    // Commander left, including the browser's own back.
+    effect((onCleanup) => {
+      this.#chrome.setReturn(this.#layerBar());
+      onCleanup(() => this.#chrome.setReturn(null));
+    });
+
     // The route parameter is the only input; everything else follows from it.
     // Leaving the route clears the selection, which is what tells the catalogue
     // the detail has closed — however it closed.

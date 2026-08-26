@@ -459,6 +459,13 @@
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 
+  // The insignia the command bar carries (canvas 3b, and the bar of every
+  // screen artboard). The canvas draws it in a 368x330 box at 26x23 on three
+  // artboards and 28x25 on the fourth; the smaller is taken, because the bar it
+  // sits on is the same height on all four.
+  --edsb-measure-insignia-width: 1.625rem;
+  --edsb-measure-insignia-height: 1.4375rem;
+
   // Both canvases draw five material rows against a footer that counts
   // eighteen types, so the list they draw is a bounded box rather than the
   // whole shopping list. Held in `rem` so the box grows with the Commander's
@@ -496,6 +503,7 @@
 
   // The compact action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
+  --edsb-measure-menu-row: 2.875rem;
   --edsb-measure-menu-min: 12.25rem;
   --edsb-measure-menu-max: 20rem;
 
