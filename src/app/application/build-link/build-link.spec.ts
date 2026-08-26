@@ -148,6 +148,7 @@ describe('BuildLinkCoordinator', () => {
       provenance: 'working',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     });
 
