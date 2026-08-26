@@ -162,7 +162,9 @@ over `rgba(6,6,7,.8)`. Body `background: var(--panel)`, `border: 1px solid var(-
 Width is a property of what the dialog holds, not of which dialog it is: the canvases draw
 540 save, 560 import, 620 help and 760 export. A dialog of prose and a field takes the
 middle step; the one that stands two regions side by side — canvas 1c's export dialog —
-takes the widest, because two regions need the room.
+takes the widest, because two regions need the room. The canvas's fifth width, the 860px
+`SAVED BUILDS` modal, has no step: the library is a route here rather than a dialog, so
+nothing in this family sizes it.
 
 ### Buttons
 
@@ -198,7 +200,12 @@ region carries its own. The first choice is the one the layer opens on.
 Compact: the same choices as a `min-height: 38px` chip row with `gap: 6px` that scrolls
 sideways rather than wrapping, each chip condensed 600 tracked 0.14em on `--panel-3` in
 `--ink-62`, the chosen one `background: var(--amber)`, `color: var(--bg)`, condensed 700.
-The description the wide plate carries is not drawn on a chip.
+The description the wide plate carries is not drawn on a chip. The chip's own `padding: 0 12px`
+is not adopted: it is a control, and a control's inline padding is the shared one.
+
+Neither arrangement lets the tint be the state. The chosen plate fills the marker the
+canvas draws on the save dialog's chosen card, and both arrangements set the chosen name
+in the heavier weight — colour is what makes the state obvious, never what carries it.
 
 ### Manifest row
 

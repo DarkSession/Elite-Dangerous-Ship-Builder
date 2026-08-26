@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { expectNoDocumentOverflow, expectRelationship } from './accessibility/assertions';
 import { reachShellAction } from './shell';
 
 /**
@@ -338,6 +338,14 @@ test.describe('the layer’s semantics', () => {
       const box = await layer(page).getByRole('button', { name }).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
+
+    // The formats are controls too, in both arrangements. The plate and the chip
+    // are each the whole of their own input, so the box measured here is the box
+    // a pointer actually aims at.
+    for (const name of [/slef json/i, /share link/i]) {
+      const box = await layer(page).getByRole('radio', { name }).boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
   });
 
   test('says every state in words rather than in colour alone', async ({ page, context }) => {
@@ -376,6 +384,8 @@ test.describe('the layer’s semantics', () => {
 test.describe('the layer, against the canvas', () => {
   /** The width at which the medium composition takes over (`_responsive.scss`). */
   const MEDIUM = 768;
+  /** The height at or below which a layer is promoted to full height. */
+  const SHORT = 480;
 
   test('stands the format list beside the payload, or above it when there is no room', async ({
     page,
@@ -463,8 +473,19 @@ test.describe('the layer, against the canvas', () => {
       expect(plate.border).toBeGreaterThan(0);
       await expect(layer(page).getByText(/interchange format read by/i)).toBeVisible();
     } else {
-      // Canvas 1d: a `min-height: 38px` chip carrying the name alone.
+      // Canvas 1d: a chip carrying the name alone, on no plate of its own. The
+      // description it has no room for is hidden from the eye and kept for a
+      // reader, which is what `not.toBeVisible` over a present element says.
+      expect(plate.border).toBe(0);
       expect(plate.height).toBeGreaterThanOrEqual(38);
+      // Taken out of the layout rather than out of the document: the box it
+      // occupies is the hiding recipe's own pixel, and the text it holds is
+      // still this format's description.
+      const description = (await layer(page)
+        .getByText(/interchange format read by/i)
+        .boundingBox())!;
+      expect(description.width).toBeLessThanOrEqual(1);
+      await expectRelationship(page, slef, 'description', 'Interchange format');
     }
   });
 
@@ -482,6 +503,24 @@ test.describe('the layer, against the canvas', () => {
     await expect(slef).toHaveJSProperty('checked', true);
     await expect(link).toHaveJSProperty('checked', false);
 
+    // And an eye is told by something a monochrome rendering keeps. Colour is
+    // never the only carrier of a state (011/FR-010), so the two are compared on
+    // what survives having the hue taken out of them: the marker's width on the
+    // plate, the label's weight on either.
+    const carriers = (radio: typeof slef) =>
+      radio.evaluate((node) => {
+        const choice = node.closest('.choice')!;
+        return {
+          marker: parseFloat(getComputedStyle(choice).borderInlineStartWidth),
+          weight: getComputedStyle(choice.querySelector('label')!).fontWeight,
+        };
+      });
+    const chosen = await carriers(slef);
+    const other = await carriers(link);
+
+    expect(chosen.weight).not.toBe(other.weight);
+    expect(chosen.marker === other.marker && chosen.weight === other.weight).toBe(false);
+
     // Canvas 1c washes the chosen plate; canvas 1d fills the chosen chip, where
     // the plate itself is not drawn. The fill is read from whichever of the two
     // this width paints, so both arrangements are held to the same claim.
@@ -496,19 +535,29 @@ test.describe('the layer, against the canvas', () => {
     expect(await fill(slef)).not.toBe(await fill(link));
   });
 
-  test('takes the wide dialog step where the viewport has room for it', async ({ page }) => {
+  test('takes the width step the canvas draws, or the screen when that is narrower', async ({
+    page,
+  }) => {
     await withStockBuild(page);
     await openExport(page);
-    const width = page.viewportSize()!.width;
+    const { width, height } = page.viewportSize()!;
     const dialog = (await layer(page).boundingBox())!;
 
     // Canvas 1c draws the export dialog at 760px against the 560px it draws the
-    // import one at: two regions need more room than one. The token step above
-    // 760 is what bounds it here, so the assertion is a floor and the viewport.
-    if (width >= 900) {
-      expect(dialog.width).toBeGreaterThanOrEqual(760);
+    // import one at: two regions need more room than one. Below the medium
+    // composition the layer is a sheet and takes the screen, and a short
+    // viewport promotes it to a full-height panel that does the same — so the
+    // profile decides which of the two claims is made, and every profile makes
+    // one.
+    if (width >= MEDIUM && height > SHORT) {
+      // The platform holds a modal dialog off the edges of the screen, so a
+      // viewport only just wider than the step lands inside it rather than on
+      // it.
+      expect(dialog.width).toBeLessThanOrEqual(760);
+      expect(dialog.width).toBeGreaterThanOrEqual(Math.min(760, width) - 40);
+    } else {
+      expect(Math.round(dialog.width)).toBe(width);
     }
-    expect(dialog.width).toBeLessThanOrEqual(width);
   });
 
   test('reaches every format at the narrowest profile without scrolling the document', async ({

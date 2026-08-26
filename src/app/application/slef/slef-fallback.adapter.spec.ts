@@ -48,6 +48,9 @@ describe('what feature 001 reaches for', () => {
 
   it('opens on the payload when the link is the thing that just failed', () => {
     commit();
+    // Moved off the payload first, so the refusal is what puts it back rather
+    // than the format the layer already opens on.
+    store.selectExportMode('link');
     active.setLink({ kind: 'refused', code: 'tooLong', slot: null });
 
     expect(fallback().export()).toBe(true);

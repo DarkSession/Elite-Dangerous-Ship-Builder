@@ -14,7 +14,7 @@ product. This document defines the SLEF mode only.
 ## Composition
 
 - shared layer heading/description and safe package hull/name summary;
-- accessible Link/SLEF mode selector owned by the integrated exchange layer;
+- accessible SLEF/Share Link mode selector owned by the integrated exchange layer;
 - package validation summary, including invalid/incomplete warning without suppression;
 - labelled readonly selectable monospaced payload;
 - localized one-entry, fitted-module and UTF-8-byte metadata;
@@ -62,9 +62,12 @@ well as to the viewport.
 ## Responsive behavior
 
 Use the reference wide centered dialog when content fits and narrow bottom sheet on ordinary mobile
-portrait. The mode selector's own two arrangements follow the same rule and are described above. Short landscape, 200% text, 400% zoom or expanded/RTL copy may promote the same content to a
-full-height vertically scrollable layer. Mode/actions wrap or stack and never disappear. JSON owns
-bounded wrapping/overflow; the page does not scroll horizontally.
+portrait. The mode selector's own two arrangements follow the same rule and are described above.
+Short landscape, 200% text, 400% zoom or expanded/RTL copy may promote the same content to a
+full-height vertically scrollable layer — a landscape phone is wide enough for the two regions and
+too short for a centred panel, so it keeps the formats beside the payload inside a layer that owns
+the viewport. Mode/actions wrap or stack and never disappear. JSON owns bounded wrapping/overflow;
+the page does not scroll horizontally.
 
 ## Accessibility, localization and previews
 

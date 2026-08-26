@@ -16,6 +16,11 @@
 }
 
 .export-dialog__modes {
+  // The track is bounded and so is the item in it: a grid item's automatic
+  // minimum is its own min-content width, so without this a long unbroken
+  // format name pushes the list past the width it is drawn at and takes the
+  // room from the payload beside it.
+  min-inline-size: 0;
   padding-block: var(--edsb-space-panel) 0;
   padding-inline: var(--edsb-space-panel);
 }

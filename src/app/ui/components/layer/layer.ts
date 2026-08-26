@@ -37,9 +37,11 @@ export type LayerPresentation = 'adaptive' | 'dialog' | 'sheet' | 'full-height';
  * asks one question; `wide` is the layer that stands two regions side by side,
  * which canvas 1c's export dialog is.
  *
- * It bounds the centred presentation only. A sheet and a full-height layer own
- * the width they are given, so the step has nothing to bound there and is not
- * emitted.
+ * It bounds the centred presentations only. A sheet and a full-height layer own
+ * the width they are given, so the stylesheet pairs each step with the two
+ * presentations that have a width to bound and ignores it on the two that do
+ * not. The class is emitted either way, because what a layer was asked for is
+ * worth being able to read off the element.
  */
 export type LayerWidth = 'default' | 'narrow' | 'wide';
 
@@ -96,11 +98,7 @@ export class Layer {
 
   readonly presentationClass = computed(() => {
     const classes = ['layer', `layer--${this.presentation()}`];
-    // Only the bounded presentations have a width to bound. Emitting the step
-    // on a sheet would cap a surface whose whole point is to fill the width it
-    // rises into.
-    const bounded = this.presentation() === 'adaptive' || this.presentation() === 'dialog';
-    if (bounded && this.width() !== 'default') {
+    if (this.width() !== 'default') {
       classes.push(`layer--${this.width()}`);
     }
     return classes.join(' ');

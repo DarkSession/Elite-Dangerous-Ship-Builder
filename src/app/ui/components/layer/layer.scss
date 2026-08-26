@@ -81,9 +81,11 @@
 
 // Centred dialog: bounded by a named measure, and never taller than the
 // viewport, so its own content scrolls instead of the document.
-@mixin dialog-presentation {
-  inline-size: 100%;
-  max-inline-size: min(var(--edsb-layout-layer-max), 100%);
+@mixin dialog-presentation($measure: var(--edsb-layout-layer-max)) {
+  // `inline-size`, not `max-inline-size`: the platform's own modal rule is a
+  // `max-width` that holds a dialog off the edges of the screen, and an author
+  // maximum here would beat it for every layer in the application.
+  inline-size: min($measure, 100%);
   max-block-size: 90vh;
   overflow-y: auto;
 }
@@ -132,19 +134,24 @@
   @include dialog-presentation;
 }
 
-// The width steps. Declared after every presentation and before the compact
-// ones, so a step bounds the centred dialog and the sheet below still fills the
-// screen: all three selectors carry one class, and the last one written wins.
-.layer--narrow {
-  max-inline-size: min(var(--edsb-layout-layer-narrow), 100%);
+// The width steps, on the two bounded presentations. Each step is written as a
+// compound selector, and every rule that has to beat one below is written the
+// same way — so which layer is how wide is decided by specificity rather than by
+// the order these blocks happen to appear in.
+.layer--dialog.layer--narrow,
+.layer--adaptive.layer--narrow {
+  @include dialog-presentation(var(--edsb-layout-layer-narrow));
 }
 
-.layer--wide {
-  max-inline-size: min(var(--edsb-layout-layer-wide), 100%);
+.layer--dialog.layer--wide,
+.layer--adaptive.layer--wide {
+  @include dialog-presentation(var(--edsb-layout-layer-wide));
 }
 
 @include layout.compact {
-  .layer--adaptive {
+  .layer--adaptive,
+  .layer--adaptive.layer--narrow,
+  .layer--adaptive.layer--wide {
     @include sheet-presentation;
   }
 }
@@ -154,6 +161,8 @@
 // a 400% zoom looks like to the layout.
 @include layout.short-viewport {
   .layer--adaptive,
+  .layer--adaptive.layer--narrow,
+  .layer--adaptive.layer--wide,
   .layer--sheet {
     @include full-height-presentation;
   }

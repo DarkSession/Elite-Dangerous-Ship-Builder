@@ -142,11 +142,14 @@
 // Both are the native input and both carry selection as its own checked state,
 // so what a reader is told does not change with the width.
 .choice-group__options[data-layout='cards'] {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--edsb-space-inline-tight));
 
   // The plate is the control's own box: the input covers it, transparent and
   // full size, so the target a pointer aims at is the thing being operated
   // rather than a glyph beside it.
+  //
+  // Every plate reserves the marker on its leading edge, so choosing one moves
+  // a mark rather than reflowing the column.
   .choice {
     position: relative;
     display: flex;
@@ -157,13 +160,22 @@
     padding-inline: var(--edsb-space-lg);
     background-color: var(--edsb-surface-panel-raised);
     border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    border-inline-start: var(--edsb-border-width-marker) solid transparent;
   }
 
   // Selection follows the input's own checked state rather than a class
   // somebody has to remember to set.
+  //
+  // The wash and the amber title are the echo, not the fact. A reader is told by
+  // the control's own checked state; an eye is told by the marker filling and
+  // the title thickening, both of which survive a monochrome rendering. The tint
+  // alone would be a state carried by colour, which is the one thing this design
+  // system does not do (AGENTS.md; canvas 1c draws the save dialog's chosen card
+  // with a filled marker for the same reason).
   .choice:has(.choice__input:checked) {
     background-color: var(--edsb-surface-accent-selected);
     border-color: var(--edsb-border-control);
+    border-inline-start-color: var(--edsb-marker-selected);
   }
 
   .choice:has(.choice__input:focus-visible) {
@@ -195,6 +207,7 @@
   }
 
   .choice__input:checked + .choice__label {
+    font-weight: var(--edsb-text-weight-heading);
     color: var(--edsb-text-accent-strong);
   }
 
@@ -206,6 +219,14 @@
   .choice__description {
     grid-column: auto;
     text-wrap: pretty;
+  }
+
+  // A translated format name has no space to wrap at often enough that this is
+  // not a hypothetical: without it the plate takes its longest word's width and
+  // the column it is drawn in stops being the width it is drawn at.
+  .choice__label,
+  .choice__description {
+    overflow-wrap: anywhere;
   }
 }
 
@@ -234,6 +255,7 @@
     .choice:has(.choice__input:checked) {
       background-color: transparent;
       border-color: transparent;
+      border-inline-start-color: transparent;
     }
 
     // The chip wears the ring itself, so the outline follows the shape the eye
@@ -242,8 +264,11 @@
       outline: 0;
     }
 
+    // The chip takes the shared control padding rather than the canvas's own
+    // 12px: it is a control, and one control's inline padding is not a place
+    // this system keeps a second scale.
     .choice__label {
-      @include layout.control-base(var(--edsb-text-tracking-heading));
+      @include layout.control-base(var(--edsb-text-tracking-label));
 
       background-color: var(--edsb-surface-control-quiet);
       color: var(--edsb-text-subtle);

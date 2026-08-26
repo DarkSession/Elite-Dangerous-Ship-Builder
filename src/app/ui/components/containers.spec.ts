@@ -466,7 +466,7 @@ describe('Layer', () => {
     }
   });
 
-  it('leaves a sheet unbounded, because it fills the width it rises into', () => {
+  it('keeps the width step readable off the element whatever the presentation', () => {
     const fixture = renderComponent(Layer, {
       title: 'Export build',
       dismissLabel: 'Close',
@@ -475,7 +475,11 @@ describe('Layer', () => {
       width: 'wide',
     });
 
-    expect(query(fixture, 'dialog').className).not.toContain('layer--wide');
+    // The stylesheet pairs a step with the two presentations that have a width
+    // to bound, so a sheet is unaffected by one. What was asked for still shows
+    // on the element.
+    expect(query(fixture, 'dialog').className).toContain('layer--sheet');
+    expect(query(fixture, 'dialog').className).toContain('layer--wide');
   });
 
   it("hands the body's padding to its content when it is flush", () => {
