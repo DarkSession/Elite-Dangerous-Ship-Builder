@@ -48,6 +48,23 @@ test.describe('help offline', () => {
     await page.goto('/builds');
     await expect(page.getByRole('main')).toBeVisible();
     await waitForController(page);
+
+    // The library is a layer over the frame now, and a layer makes the frame
+    // beneath it inert — help included. That is what a modal is for, so the way
+    // to help from here is the layer's own way out, which FR-011 requires it to
+    // have. Dismissed while the network is still there, so the screen it gives
+    // back is cached like any other completed load rather than half-drawn from
+    // a worker that never saw it.
+    await page
+      .getByRole('dialog')
+      .getByRole('button', {
+        name: new RegExp(`^${englishMessages['library.close']}$`, 'i'),
+      })
+      .first()
+      .click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByRole('main')).toBeVisible();
+
     await page.reload();
     await expect(page.getByRole('main')).toBeVisible();
 
@@ -55,8 +72,17 @@ test.describe('help offline', () => {
     await page.reload();
     await expect(page.getByRole('main')).toBeVisible();
 
+    // The frame is visible before the screen behind it has finished: the
+    // catalogue's own chunk and its illustrations are still arriving, from the
+    // worker's cache rather than the network, and they would be recorded below
+    // as though help had asked for them. The screen has to be *done*, not
+    // merely drawn, for the measurement underneath to mean anything.
+    await page.waitForLoadState('networkidle');
+
     // Recorded from here: what opening help costs on a screen that has finished
-    // loading, offline, before any hull artwork has been asked for.
+    // loading, offline. Everything it draws was asked for on the online loads
+    // above, and nothing on it is deferred, so a request inside this window is
+    // help's own.
     const requests: { url: string; type: string }[] = [];
     const failures: string[] = [];
     page.on('request', (request) =>
