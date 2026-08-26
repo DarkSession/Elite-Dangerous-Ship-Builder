@@ -361,7 +361,7 @@
   "outfitting.acquisition.short.eventReward": "Event-Belohnung",
   "outfitting.acquisition.short.notOrdinarilyAvailable": "Nicht verkauft",
   "outfitting.acquisition.short.entitlement": "Berechtigung",
-  "outfitting.engineering.title": "{{slot}} technisch verbessern",
+  "outfitting.engineering.layer-detail": "{{module}} · {{slot}}",
   "outfitting.engineering.heading": "Details und Technik",
   "outfitting.engineering.region": "Technik für {{slot}}",
   "outfitting.engineering.applied": "Angewandt",

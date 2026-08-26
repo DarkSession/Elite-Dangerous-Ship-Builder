@@ -131,6 +131,34 @@ do not mutate the active build until confirmed.
   where loss of Mercenary identity must be explained.
 - Closing without apply restores no build because only draft state changed.
 
+**Rebuilt against canvas 1d, 2026-08-26 (Commander request).** The layer had the content the artboard
+draws and not its drawing: the four groups stood as loose content on the screen's ground, and the
+screen was headed `Engineer Hardpoint 1`. Four corrections:
+
+- **Three plates, not four groups.** Canvas 1d draws `BLUEPRINT`, `EXPERIMENTAL EFFECT` and the
+  result as bordered plates on the screen's ground, each with the same hairline, panel ground and
+  `13px 14px` inset the dashboard's blocks carry. The plate belongs to this placement rather than to
+  the content: canvas 1c draws none, because inline the editor is already one bordered box with a
+  ruled bar and a box inside a box is a frame around a frame. The content is the same either way.
+- **The grade is inside the recipe's plate**, under the hairline 1d rules between them, rather than
+  on a plate of its own. It is the recipe's own grade, which is what the drawing now says: a grade
+  with no recipe behind it was already a control over nothing.
+- **The screen is called what the panel is called.** `DETAILS AND ENGINEERING` at both widths, which
+  is 1d's own title and 1c's own heading. One screen with two names across two widths is worse than
+  either name.
+- **What it is open on goes on the second line**, as `<module> · <mount>` — 1d's
+  `HUGE MULTI-CANNON 4A · HARDPOINT 1`. It is the dialog's description, so the mount is still
+  announced with the screen even though it left the title.
+
+The foot bar takes the artboard's inset and runs the width of the screen, rather than stopping short
+of both edges inside the body's own inset and reading as a fourth plate.
+
+Canvas 1d's summary line under each recipe — `DAMAGE ▲ · THERMAL LOAD ▲` — stays withdrawn for the
+reason it was withdrawn on 2026-08-21: the Almanac publishes no description for a blueprint and no
+direction for what one moves, so those lines would be a private claim about game mechanics
+(`reference-review.md`, "Blueprint option descriptions"). The experimental effect descriptions beside
+them are package text and are drawn.
+
 ## Operations
 
 | Commander action                   | Required result                                                                                                                                                                                                                                       |

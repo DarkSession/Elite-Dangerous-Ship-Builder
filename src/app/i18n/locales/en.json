@@ -361,7 +361,7 @@
   "outfitting.acquisition.short.eventReward": "Event reward",
   "outfitting.acquisition.short.notOrdinarilyAvailable": "Not sold",
   "outfitting.acquisition.short.entitlement": "Entitlement",
-  "outfitting.engineering.title": "Engineer {{slot}}",
+  "outfitting.engineering.layer-detail": "{{module}} · {{slot}}",
   "outfitting.engineering.heading": "Details and engineering",
   "outfitting.engineering.region": "Engineering for {{slot}}",
   "outfitting.engineering.applied": "Applied",

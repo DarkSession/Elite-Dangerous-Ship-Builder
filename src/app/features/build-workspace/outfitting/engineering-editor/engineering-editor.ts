@@ -282,9 +282,25 @@ export class EngineeringEditor {
       : this.#messages.message('outfitting.engineering.clear-consequence'),
   );
 
-  readonly heading = computed(() =>
-    this.#messages.message('outfitting.engineering.title', { slot: this.#slotLabel() }),
-  );
+  /**
+   * Canvas 1d's second line: the module and the mount, under the screen's name.
+   *
+   * The screen is called what canvas 1c calls the panel — `DETAILS AND
+   * ENGINEERING` — at both widths, because it is one screen and two names for
+   * it is worse than either. What it is open on goes here instead, which is
+   * where 1d draws it and what the dialog is described by, so the mount is still
+   * announced with the screen (reported 2026-08-26).
+   */
+  readonly layerDetail = computed(() => {
+    const module = this.slot().module;
+    if (module === null) {
+      return null;
+    }
+    return this.#messages.message('outfitting.engineering.layer-detail', {
+      module: module.displayName.text ?? module.symbol,
+      slot: this.#slotLabel(),
+    });
+  });
 
   readonly regionLabel = computed(() =>
     this.#messages.message('outfitting.engineering.region', { slot: this.#slotLabel() }),
