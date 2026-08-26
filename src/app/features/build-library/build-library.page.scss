@@ -64,6 +64,16 @@
   padding-inline: var(--edsb-space-panel);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
+
+  // Where the viewport is too short for the layer to bound its own list, the
+  // layer scrolls and a pinned foot floats over the rows passing beneath it. A
+  // row parked under this plate cannot be pressed and cannot be scrolled clear
+  // of it, so the foot stops pinning and becomes what it already is on a taller
+  // screen: the last row of the column. The outfitting replacement's foot gives
+  // way at the same bound, for the same reason.
+  @include layout.short-viewport {
+    position: static;
+  }
 }
 
 // The opening action sits at the trailing edge, whichever way the page reads.
