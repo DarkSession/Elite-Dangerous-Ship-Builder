@@ -674,7 +674,17 @@
     order: 0;
   }
 
+  // The column the wide grid needs is not a band the compact artboard draws.
+  // Canvas 1d puts its six key readings between the mode strip and
+  // `FITTING · HARDPOINT 1`, and those two are the anatomy and the bench — the
+  // two halves of this column. Kept as a box, no order could interleave a band
+  // that is its sibling; as `contents` both halves join the stack and take their
+  // own place in it (Commander request 2026-08-26).
   .outfitting__centre {
+    display: contents;
+  }
+
+  .outfitting__centre edsb-hull-anatomy {
     order: 1;
   }
 
@@ -689,12 +699,18 @@
     order: 3;
   }
 
-  .outfitting__ledger-region {
+  // The mount's own rule, over the tabs it names the contents of — which is
+  // where canvas 1d writes it, under the key figures and above the categories.
+  .outfitting__bench {
     order: 4;
   }
 
-  .outfitting__bench-actions {
+  .outfitting__ledger-region {
     order: 5;
+  }
+
+  .outfitting__bench-actions {
+    order: 6;
   }
 
   // Closed unless the strip has it open. Not `visibility` and not a wash:

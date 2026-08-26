@@ -198,6 +198,17 @@ panel this region does not draw; see "Divergence from canvas 1d — the sixth se
 
 Canvas 1d's strip is **not** the same control, and the difference is recorded below.
 
+What the two canvases do share is the segment, on two different insides: `padding: 7px 12px` on
+canvas 1c's strip and `10px 3px` on canvas 1d's, on the same six labels. That is the difference
+between a strip sized by its own labels and a strip dividing 362px between six of them, and it is not
+cosmetic — at the wide canvas's inside the six want 376px, so the phone drew a horizontal scrollbar
+under the strip for the fourteen pixels it was over (Commander request 2026-08-26). The strip is
+given the compact inside by default and the wide one inside the same container query that draws the
+second plate, through `--edsb-tab-inline` on the group's host. It is set here rather than in
+`edsb-tab-group` because it is a fact about this strip's two artboards; what the component keeps is
+the invariant — every segment shows its whole label and clears the 24px target — and its scroller
+remains the answer where even the tight inside will not fit.
+
 `MOUNTS` is this capability's own layer. `POWER`, `DRIVES`, `DEFENCE` and `OFFENCE` are the same
 plates read by features 005 to 008, and until one of those ships its segment is **disabled** rather
 than opening a panel with nothing in it — a segment that switched to an empty layer would be this

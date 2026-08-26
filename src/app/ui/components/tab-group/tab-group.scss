@@ -69,6 +69,14 @@
 // a German compound has no space to wrap at, and `Verteidigung` at a doubled
 // text size overflowed its segment far enough to paint across `Antriebe` beside
 // it and swallow that segment's taps — a disabled mode taking an enabled one's.
+// Letting the word break instead is no better: allowed to break anywhere, every
+// label in a six-segment strip takes an equal share and `MOUNTS` comes out as
+// `MOUNT` over `S` (measured 2026-08-26).
+//
+// What gives instead is the inside of the segment, which is what both canvases
+// vary: 12px each side on canvas 1c's mode strip, 3px on canvas 1d's, on the
+// same six labels. The caller sets the property below where its own strip is
+// drawn at the tighter of the two; the default is the wide canvas's.
 
 // The canvases draw this strip dense and never at the project's 44-pixel
 // baseline: 23.5px for canvas 1c's mode strip, 30px for canvas 1d's, 25px for
@@ -86,7 +94,7 @@
   justify-content: center;
   flex: 1 0 auto;
   padding-block: var(--edsb-space-control-block-dense);
-  padding-inline: var(--edsb-space-control-inline);
+  padding-inline: var(--edsb-tab-inline, var(--edsb-space-control-inline));
   border: 0;
   background-color: var(--edsb-surface-control-quiet);
   color: var(--edsb-text-subtle);

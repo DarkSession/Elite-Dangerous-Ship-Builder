@@ -62,6 +62,14 @@
 // query that draws the second plate.
 .anatomy__modes {
   inline-size: 100%;
+  // Canvas 1d's own segment inside: `padding: 10px 3px`, against canvas 1c's
+  // `7px 12px` on the same six labels. Six modes want 376px of the 362px this
+  // strip is given at 390px, so at the wide canvas's inside they overflowed and
+  // the phone drew a horizontal bar under the strip for fourteen pixels
+  // (Commander request 2026-08-26). The strip's own component holds every
+  // segment to its whole label and to the 24px target; what the two canvases
+  // vary is this.
+  --edsb-tab-inline: var(--edsb-space-inline-tight);
 }
 
 // The plates take their height from the hull they hold, the way canvas 1c's
@@ -121,10 +129,12 @@
     justify-content: center;
   }
 
-  // Canvas 1c's strip: beside the rule rather than under it, and sized by its
-  // own five labels rather than by the block.
+  // Canvas 1c's strip: beside the rule rather than under it, sized by its own
+  // five labels rather than by the block, and on the wider inside it sets them
+  // at.
   .anatomy__modes {
     inline-size: auto;
+    --edsb-tab-inline: var(--edsb-space-control-inline);
   }
 
   .anatomy__sides {

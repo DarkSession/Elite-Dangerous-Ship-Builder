@@ -217,8 +217,14 @@ STATUS`. Five of the six are the anatomy region's own; see "The status segment" 
    sixth.
 3. **The six key readings** — `DPS`, `SHIELD`, `ARMOUR`, `JUMP`, `SPEED`, `MASS` — on one strip,
    closed by a hairline. See "The compact key figures" below.
-4. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
-5. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
+4. **The marked mount's own rule** — `FITTING · HARDPOINT 1` — over the tabs it names the contents
+   of. Canvas 1d writes it between the key readings and the categories, and it stood above the key
+   readings here until 2026-08-26 because it is the head of the bench, and the bench is the other
+   half of the column the wide grid needs. At compact there is no column: `.outfitting__centre`
+   becomes `display: contents` so the anatomy and the bench each take their own place in the stack,
+   which is the only way a band that is their sibling can come between them.
+5. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
+6. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
    in the ledger above, `position: sticky; bottom: 0` on its own plate. Each opens its full-screen
    feature layer; back or cancel changes no build. It is drawn after the ledger rather than under the
    anatomy, which is where the artboard puts it and why it is not inside the bench — at this width
@@ -259,6 +265,12 @@ inside a box of its own and the plate sits below that box, which is how a phone'
 and what the artboard is actually drawing. That is a different arrangement from the single page-length
 column this region composes at compact width — the mode strip, the plates, the key figures and the
 ledger all scroll together today — so it is recorded here as the follow-up rather than half-built.
+
+**And it is also what was asked for (2026-08-26).** The Commander's own words for this were that the
+two actions should not appear until the modules do. Drawn in the flow they cannot: the plate is the
+last thing in the stack, under the ledger it acts on, so it comes into view with the end of that list
+and never before it. The pinned plate showed both actions over the hull plates, before there was a
+list on screen to have marked a mount in. Whatever the follow-up above builds has to keep that.
 
 ### The compact key figures
 
