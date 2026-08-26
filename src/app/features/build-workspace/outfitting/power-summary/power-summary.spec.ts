@@ -14,13 +14,17 @@ import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/local
 import { PowerSummary } from './power-summary';
 
 /**
- * The rail's two contributions, from the outside.
+ * The rail's two built contributions, from the outside.
  *
  * As much of this suite is about absence as about presence. The canvas draws
- * one sentence in this block and one `POWER` line under it, and nothing else:
- * no heat sentence, no severity word, and no all-clear line on a build whose
- * plant covers everything. Each of those comes back the moment somebody adds
- * it, and each has a test here that fails when it does.
+ * one sentence in this block and one `POWER` line under it, and — since its
+ * 2026-08-25 revision — a pip control this feature has not built yet
+ * (`specs/005-power-and-heat/tasks.md`, T074). What neither canvas draws is a
+ * severity word or an all-clear line on a build whose plant covers everything.
+ * The heat sentence is drawn — canvas 1d prints one — and is absent here
+ * because wave 13 withdrew that tier, not because nothing drew it. Each of those comes back the moment somebody adds it, and each
+ * has a test here that fails when it does; the pips are the one absence here
+ * that is an open task rather than a rule.
  */
 describe('PowerSummary', () => {
   let active: ActiveBuildStore;
@@ -209,8 +213,11 @@ describe('PowerSummary', () => {
   it('holds no control of any kind', () => {
     const element = render(shedBandBuild());
 
-    // The canvas draws none here, and at both widths the dashboard these
-    // sentences describe is one segment away.
+    // None is built here yet. The canvas draws one — the pip control of its
+    // 2026-08-25 revision — and this feature has not reached it (T074), so this
+    // holds until that task and is the assertion it has to update. Until then
+    // the dashboard these sentences describe is one segment away at both
+    // widths.
     expect(element.querySelectorAll('button, a, input, select, textarea')).toHaveLength(0);
   });
 });

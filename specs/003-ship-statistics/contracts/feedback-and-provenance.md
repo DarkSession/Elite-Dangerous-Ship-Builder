@@ -1,5 +1,21 @@
 # Feedback and Provenance Contract
 
+> **Superseded 2026-08-22 (wave 11). Partly built, and not as frozen here.** Three collisions
+> between the accepted specification and `.design/Ship Builder.dc.html` were surfaced before
+> implementation and **the design won all three**
+> ([design/reference-review.md](../design/reference-review.md)). The issue list survived and moved:
+> it is drawn in the rail under `BUILD STATUS`, not in a separate Status capability (ruling B). What
+> ruling A withdrew from it is withdrawn here too — the visible `LoadoutIssueCode`, the exact-slot
+> action, the issue and qualification counts, both none-reported statements, and the settled count
+> announcer with its polite region, because there are no counts to announce and a build the package
+> reports nothing about draws nothing at all.
+>
+> What survives, and what is built, is one semantic list item per package issue in package order,
+> each with its severity in words and its diagnostic through feature 011's presenter, with the
+> canonical fallback and its untranslated disclosure on a locale miss. That is stated in
+> [design/status-rail.md](../design/status-rail.md), which is the live record; this file is retained
+> as the record of what was ruled against and is left as it was written.
+
 ## Structural issue presentation
 
 The complete Status capability renders one semantic list item for each package

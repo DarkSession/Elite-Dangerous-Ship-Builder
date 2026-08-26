@@ -27,20 +27,33 @@ const MW_DIGITS = 2;
 /**
  * What the plant is doing, in the outfitting status rail.
  *
- * Canvas 1c draws exactly two things here, between feature 003's validation
- * issues and the six metric cells features 006 to 008 own: the sentence about a
- * group the plant cannot keep lit, and the `POWER` line — `29.64 / 31.20 MW ·
- * 7.80 OFF` over a bar of the same four figures. Canvas 1d draws the same two
- * in its Status mode. Nothing else stands here, and nothing that is not there
- * is added: no heat sentence, no severity word, no all-clear line.
+ * Canvas 1c draws three things here, between feature 003's validation issues
+ * and the six metric cells features 006 to 008 own: the sentence about a group
+ * the plant cannot keep lit, the `POWER` line — `29.64 / 31.20 MW · 7.80 OFF`
+ * over a bar of the same four figures — and, since the 2026-08-25 revision, the
+ * `SYS` / `ENG` / `WEP` pip control. **Two of the three are built.** The pips
+ * are this feature's own open task (`specs/005-power-and-heat/tasks.md`, T074;
+ * `design/power-and-heat-detail.md`, "The rail's pip control"), and they belong
+ * in this component when they land, because the allocation is one viewing
+ * condition and this is the rail's half of it. Canvas 1d draws the first two in
+ * its Status mode and no pip control at all.
+ *
+ * No severity word and no all-clear line, because neither canvas draws either.
+ * And no heat sentence — but that one is absent by ruling rather than for want
+ * of a drawing: canvas 1d does print `Sustained fire peaks at 131% heat` in its
+ * `BUILD STATUS` block, and this feature's wave-13 ruling withdrew that tier
+ * entirely (`specs/005-power-and-heat/design/reference-review.md`, "Tier 2 is
+ * withdrawn entirely").
  *
  * The bar's `79%`, `21%` and `83.3%` are the artboard's own figures over the
  * whole demand — `29.64`, `7.80` and `31.20` against `37.44` — so it is drawn
  * from the projection rather than reverse-engineered, and the projection is
  * where the division is done.
  *
- * Nothing in the block is interactive, exactly as feature 003's issue list
- * above it is not: the canvas draws no control in either, and at both widths
+ * Nothing **built** here is interactive yet. That is the pip control being
+ * absent rather than a rule: feature 003's issue list above it is not
+ * interactive by ruling, but this block's third contribution is a control, and
+ * the tests asserting the block holds none hold only until T074. At both widths
  * the dashboard these sentences describe is a segment away.
  *
  * The sentence is this application's own, not a package diagnostic, so it is

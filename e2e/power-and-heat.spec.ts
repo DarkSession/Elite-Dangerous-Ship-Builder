@@ -394,6 +394,36 @@ test.describe('the status rail', () => {
       page.locator('edsb-power-summary button, edsb-power-summary a, edsb-power-summary input'),
     ).toHaveCount(0);
   });
+
+  test('stands on the same inset as the cells it heads', async ({ page }) => {
+    await openPower(page);
+
+    // Canvas 1c draws this block and the six metric cells under it inside one
+    // padded block, which the workspace owns. So the figures start where the
+    // cells start: an inset of this block's own would be a second one inside
+    // that padding, and the reading would stand further in than the cells it
+    // heads (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
+    // are one block").
+    const line = page.locator('edsb-power-summary .rail-power');
+    const cells = page.locator('.outfitting__status-cells .metric');
+    await expect(line).toBeVisible();
+    await expect(cells).toHaveCount(6);
+
+    // The leading edge of the grid, not of its first cell in DOM order: the
+    // cells are two to a row, so mirrored the first of them is the one in the
+    // trailing column and its own edge is a column in from the block's.
+    // Both edges are read in the page, in one call: mixing Playwright's own
+    // box with an in-page rect would round two independently-derived numbers
+    // and leave a sub-pixel difference to land on.
+    const [lineStart, gridStart] = await line.evaluate((node, selector) => {
+      const cellStarts = [...document.querySelectorAll(selector)].map(
+        (cell) => cell.getBoundingClientRect().left,
+      );
+      return [(node as HTMLElement).getBoundingClientRect().left, Math.min(...cellStarts)];
+    }, '.outfitting__status-cells .metric');
+
+    expect(Math.round(lineStart)).toBe(Math.round(gridStart));
+  });
 });
 
 test.describe('the conditions that break layouts', () => {

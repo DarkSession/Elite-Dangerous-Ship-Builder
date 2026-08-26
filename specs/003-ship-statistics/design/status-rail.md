@@ -32,10 +32,26 @@ _Relocated here from `AGENTS.md` on 2026-08-25._ Features 006, 007 and 008 each 
 other through the gaps of a **single** `1fr 1fr` container, two to a row. Three grids stacked would
 rule three blocks off each other instead, and `DPS` and `JUMP` could not share a row.
 
-So `.outfitting__status-cells` in the workspace owns that grid, and each feature's summary flattens
+So the workspace owns that grid as `.outfitting__status-cells`, and each feature's summary flattens
 into it through `MetricGroup`'s `flow` input (`display: contents`). **Ownership does not move**: each
 feature still builds its own cells, and the `defence-ownership` and `offence-ownership` policy
 scripts still fence them. A feature adding a cell adds it to its own summary, never to the workspace.
+
+The grid carries the amber ground and nothing else — no inset. The canvas's ground is exactly the
+extent of the cells: it shows through the one-pixel gaps and nowhere else, so a ground carried by a
+padded element would be painted across that padding too and draw the six cells inside an amber band
+the canvas does not draw.
+
+## Items 3 to 5 are one block
+
+Canvas 1c does not rule the power line off the cells. It draws items 3, 4 and 5 — `POWER`, the pips
+and the six cells — inside a **single** padded block, closed by the same one-pixel amber rule that
+separates every block in the rail, and stacks them in it. The workspace owns that block as
+`.outfitting__status-band`, because four features draw into it and none of them owns it: it carries
+the inset once and the closing rule once, and feature 005's power block and this grid sit in it with
+no padding of their own. Two insets stacked would put the figures a block's padding further in than
+the cells they head, and a rule between them would read as a second reading rather than as the same
+one broken out.
 
 ## The issue block
 
