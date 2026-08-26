@@ -811,9 +811,12 @@ test.describe('reading at another text size and direction', () => {
     expect(after).toHaveLength(before.length);
     expect(after.every((row) => row.count < row.name)).toBe(true);
 
-    // And not reordered: the same headings, still in the document's own order,
-    // which is the read order (detail design, "Purpose and semantic order").
-    expect(await headingOrder(page)).toEqual(order);
+    // Nothing here re-asserts the document order: Playwright returns document
+    // order whichever way the page runs, so comparing it with the copy taken
+    // before the flip would be comparing it with itself. That the order is
+    // `COST` then `MATERIALS` is asserted where it can fail, in "keeps both
+    // blocks in canvas order at every width".
+    expect(order).toHaveLength(2);
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
     await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
     // Scoped to these two blocks rather than to the document. The application

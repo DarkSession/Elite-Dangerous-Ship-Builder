@@ -228,11 +228,19 @@ is not named, and that a build with no engineering draws no materials block at a
       untranslated disclosure, and the bundled English fallback works offline — across every shipped
       locale and the pseudo-locales in `src/app/i18n/testing/pseudo-locales.ts`, in
       `e2e/cost-and-materials.spec.ts` (depends on T022)
-      _Completed 2026-08-25, with two clauses corrected._ What had landed was the German number
-      formatting and the raw-key check; the untranslated-disclosure clause had not. It is now "names
-      every material through the shared game-text primitive", asserting that every row is drawn by
-      `edsb-game-text`, carries the language its text is actually in, and — where the package has
-      only canonical text — discloses that and binds the disclosure to the name.
+      _Completed 2026-08-25, with three clauses corrected._ What had landed was the German number
+      formatting and the raw-key check. It is now joined by "names every material through the shared
+      game-text primitive", asserting that every row is drawn by `edsb-game-text` and carries the
+      language its text is actually in — and that a row is tagged as canonical exactly when the
+      presenter fell back to English, which is what would catch a row tagged or left untagged
+      wrongly.
+      **The untranslated-disclosure clause is withdrawn as unreachable from here, not claimed.**
+      Every material of the blueprint this journey applies has a German name in the pinned Almanac,
+      so no row in it is ever canonical and the disclosure itself never renders. Deleting
+      `edsb-game-text`'s disclosure would leave this test green. Rather than pin a fixture to a
+      material the package happens not to translate — which the next catalogue could translate and
+      quietly make vacuous again — the disclosure stays covered where it is built and owned, by
+      feature 011's own tests for the primitive.
       **The pseudo-locale clause is withdrawn as unreachable.** `en-XA` and `ar-XB` are absent from
       the production registry by design and are applied only through the preview application's
       `variant` address; with no preview declaration for a feature component (T013) there is no

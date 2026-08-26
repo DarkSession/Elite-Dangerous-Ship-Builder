@@ -742,7 +742,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the blueprint count is stated once, opposite the heading',
       'no trace disclosure or contributing-selection list exists (ruling F)',
       'rarity uses the package grade, never a cross-origin icon',
-      'every name is drawn by the shared game-text primitive, in the language it resolved',
+      'every name is drawn by the shared game-text primitive, in the language it resolved, and is tagged canonical exactly when it fell back',
       'the longest name a build reaches through this journey fits its row at a doubled text size',
       'the block appears and follows an edit with the network gone',
       'no material, list or count of one reaches a SLEF export',

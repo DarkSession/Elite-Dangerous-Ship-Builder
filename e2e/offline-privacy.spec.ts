@@ -133,6 +133,12 @@ test.describe('offline capability', () => {
     const mount = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
     await mount.click();
     await expect(mount).toHaveAttribute('aria-pressed', 'true');
+    // The fitting has to be on screen before the editor is asked for: at the
+    // compact profiles this suite also runs, the editor is behind an action
+    // that only exists once a mount is marked, so asking immediately races it.
+    await expect(
+      page.locator('.replacement__title, .outfitting__bench-title').first(),
+    ).toBeVisible();
     await openEditor(page);
     await chooseRecipe(page, /Increased Range/i);
     await applyDraft(page);
@@ -155,13 +161,23 @@ test.describe('offline capability', () => {
     // who assumed otherwise would read the line above as a bug.
     expect(await page.locator('edsb-cost-materials .cost__value').allInnerTexts()).toEqual(credits);
 
-    // The material names and rarities came from the installed package, not from
-    // a fetch: a rarity mark drawn from another origin is exactly what
-    // constitution I forbids, and offline is where that would show.
-    await expect(rows.locator('edsb-material-grade').first()).toHaveAttribute(
-      'data-grade',
-      /^[1-5]$/,
-    );
+    // The reading itself came from the installed package rather than from a
+    // fetch: every row has a name and a count with the network gone.
+    //
+    // Deliberately not asserted here: that the rarity *pictures* paint. They are
+    // `<img alt="">` decoration whose meaning is carried by the
+    // `visually-hidden` label beside them, and `ngsw-config.json` precaches
+    // `/assets/ships/**` but not `/assets/icons/**` — so offline they do not
+    // load, and the row still reads. A `data-grade` assertion would say nothing
+    // about it either way: that attribute is a host binding rendered from the
+    // in-memory package result, present with or without a network.
+    const names = await rows.locator('.game-text__value').allInnerTexts();
+    const counts = await rows.locator('.rail-material__count').allInnerTexts();
+    expect(names).toHaveLength(await rows.count());
+    expect(counts).toHaveLength(await rows.count());
+    for (const reading of [...names, ...counts]) {
+      expect(reading.trim()).not.toBe('');
+    }
 
     await context.setOffline(false);
   });
