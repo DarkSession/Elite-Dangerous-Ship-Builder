@@ -159,6 +159,11 @@ over `rgba(6,6,7,.8)`. Body `background: var(--panel)`, `border: 1px solid var(-
 `--amber-3`, trailing `CLOSE ✕` in mono. Footer bar `background: var(--panel-2)`,
 `border-top: 1px solid var(--amber-a2)`, or an inline rule `border-top: 1px solid var(--amber-a14)`.
 
+Width is a property of what the dialog holds, not of which dialog it is: the canvases draw
+540 save, 560 import, 620 help, 760 export and 860 library. A dialog of prose and a field
+takes the middle step; the one that stands two regions side by side — canvas 1c's export
+dialog — takes the widest, because two regions need the room.
+
 ### Buttons
 
 | Variant     | Canvas                                                                                                                                        |
@@ -175,6 +180,25 @@ A flex row with `gap: 1px` over `background: var(--amber-a18)`, so the gap rende
 hairline rule. Selected segment `background: var(--amber)`, `color: var(--bg)`,
 condensed 700; unselected `background: var(--panel-3)`, `color: var(--ink-55)`,
 condensed 600. Both tracked 0.12–0.16em.
+
+### Choice cards
+
+The list of formats down the leading edge of canvas 1c's export dialog, and the same
+choices above the payload in canvas 1d.
+
+Wide: a column with `gap: 6px`, each choice `padding: 11px 12px`,
+`background: var(--panel-2)`, `border: 1px solid var(--amber-a14)`, carrying a condensed
+600 title tracked 0.16em in `--ink-2` over a Barlow 300 10px description in `--ink-48`.
+The chosen one takes `background: var(--amber-a14)`, `border-color: var(--amber-a5)` and
+sets its title in `--amber-3`. The column is `236px` and is closed against the content
+beside it by `border-right: 1px solid var(--amber-a16)`, which runs from under the title
+bar to the foot of the panel — so the dialog's body carries no padding of its own and each
+region carries its own.
+
+Compact: the same choices as a `min-height: 38px` chip row with `gap: 6px` that scrolls
+sideways rather than wrapping, each chip condensed 600 tracked 0.14em on `--panel-3` in
+`--ink-62`, the chosen one `background: var(--amber)`, `color: var(--bg)`, condensed 700.
+The description the wide plate carries is not drawn on a chip.
 
 ### Manifest row
 

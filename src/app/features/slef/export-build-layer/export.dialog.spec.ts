@@ -94,11 +94,30 @@ describe('the export layer’s host', () => {
     expect(fixture.componentInstance.modes().map((mode) => mode.value)).toEqual(['link', 'slef']);
   });
 
-  it('starts on the format the canvas lists first', () => {
+  it('starts on the format the accepted hierarchy lists first', () => {
     const fixture = render();
 
+    // The canvas lists SLEF, Journal, Markdown, Share Link; two of those four
+    // are not capabilities this application has, so the order it draws is not
+    // the order it has. The accepted one is in
+    // `specs/004-slef/design/reference-review.md`, "Resulting hierarchy".
     expect(fixture.componentInstance.selectedMode()).toBe('link');
     expect(fixture.componentInstance.selectedModes()).toEqual(['link']);
+  });
+
+  it('composes the two-region layer canvas 1c draws', () => {
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
+
+    // The width step is what makes room for two regions beside each other, the
+    // flush body is what lets the rule between them run the height of the
+    // panel, and the arrangement is the canvas's list of plates.
+    expect(host.querySelector('dialog')?.className).toContain('layer--wide');
+    expect(host.querySelector('.layer__body')?.className).toContain('layer__body--flush');
+    expect(host.querySelector('.choice-group__options')?.getAttribute('data-layout')).toBe('cards');
+    // The canvas draws no question above the list; a reader still gets one.
+    expect(host.querySelector('legend')?.className).toContain('field__label--hidden');
+    expect(host.querySelector('legend')?.textContent?.trim().length).toBeGreaterThan(0);
   });
 
   it('moves the selection, and treats anything else as the link', () => {

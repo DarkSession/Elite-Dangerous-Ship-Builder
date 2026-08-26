@@ -69,13 +69,21 @@
   padding: var(--edsb-space-panel);
 }
 
+// A body whose content owns its own padding. What is inside then reaches the
+// panel's edges, so a rule between two regions runs the full height of the
+// layer rather than stopping short of it on all four sides (canvas 1c).
+.layer__body--flush {
+  padding: 0;
+}
+
 // The three presentations, as mixins, so the adaptive presentation composes
 // exactly the same rules rather than a second nearly-identical copy of them.
 
 // Centred dialog: bounded by a named measure, and never taller than the
 // viewport, so its own content scrolls instead of the document.
 @mixin dialog-presentation {
-  inline-size: min(var(--edsb-layout-layer-max), 100%);
+  inline-size: 100%;
+  max-inline-size: min(var(--edsb-layout-layer-max), 100%);
   max-block-size: 90vh;
   overflow-y: auto;
 }
@@ -122,6 +130,17 @@
 // space that is actually available rather than by a device name.
 .layer--adaptive {
   @include dialog-presentation;
+}
+
+// The width steps. Declared after every presentation and before the compact
+// ones, so a step bounds the centred dialog and the sheet below still fills the
+// screen: all three selectors carry one class, and the last one written wins.
+.layer--narrow {
+  max-inline-size: min(var(--edsb-layout-layer-narrow), 100%);
+}
+
+.layer--wide {
+  max-inline-size: min(var(--edsb-layout-layer-wide), 100%);
 }
 
 @include layout.compact {

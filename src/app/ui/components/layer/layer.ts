@@ -28,6 +28,22 @@ import { relationId } from '../../a11y/text-equivalence';
 export type LayerPresentation = 'adaptive' | 'dialog' | 'sheet' | 'full-height';
 
 /**
+ * How wide the layer is allowed to get before its content stops growing.
+ *
+ * The canvases draw four dialog widths — 540 save, 560 import, 620 help, 760
+ * export, 860 library — over three named steps, because a dialog's width is a
+ * property of what it holds rather than of which dialog it is. `default` is the
+ * one a dialog of prose and a field takes; `narrow` is the confirmation that
+ * asks one question; `wide` is the layer that stands two regions side by side,
+ * which canvas 1c's export dialog is.
+ *
+ * It bounds the centred presentation only. A sheet and a full-height layer own
+ * the width they are given, so the step has nothing to bound there and is not
+ * emitted.
+ */
+export type LayerWidth = 'default' | 'narrow' | 'wide';
+
+/**
  * A modal layer: dialog, bottom sheet or full-height panel.
  *
  * Built on the native `<dialog>` element, which brings background inertness,
@@ -57,6 +73,18 @@ export class Layer {
 
   readonly open = input(false);
   readonly presentation = input<LayerPresentation>('adaptive');
+  readonly width = input<LayerWidth>('default');
+
+  /**
+   * Whether the body keeps its own padding.
+   *
+   * A layer whose content is one flow is padded here, so every such layer is
+   * inset by the same step. A layer whose content is two regions divided by a
+   * rule is not: canvas 1c's export dialog runs that rule from under the title
+   * bar to the foot of the panel, which is only true if each region carries its
+   * own padding and the body carries none.
+   */
+  readonly flush = input(false);
 
   /** The dismiss control's visible label. */
   readonly dismissLabel = input.required<string>();
@@ -66,7 +94,21 @@ export class Layer {
   readonly titleId = relationId('layer-title');
   readonly descriptionId = relationId('layer-description');
 
-  readonly presentationClass = computed(() => `layer layer--${this.presentation()}`);
+  readonly presentationClass = computed(() => {
+    const classes = ['layer', `layer--${this.presentation()}`];
+    // Only the bounded presentations have a width to bound. Emitting the step
+    // on a sheet would cap a surface whose whole point is to fill the width it
+    // rises into.
+    const bounded = this.presentation() === 'adaptive' || this.presentation() === 'dialog';
+    if (bounded && this.width() !== 'default') {
+      classes.push(`layer--${this.width()}`);
+    }
+    return classes.join(' ');
+  });
+
+  readonly bodyClass = computed(() =>
+    this.flush() ? 'layer__body layer__body--flush' : 'layer__body',
+  );
 
   /** The control that opened the layer, so focus can be handed back to it. */
   #invoker: HTMLElement | null = null;

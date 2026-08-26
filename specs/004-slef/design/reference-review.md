@@ -83,13 +83,21 @@ Written after the implementation, so the record is what happened rather than wha
 
 - **One exchange layer per direction**, opened from the command bar and adding no route and no
   history entry. The import layer is a 560px dialog on the desktop canvas and a bottom sheet on the
-  compact ones; the export layer is a 760px dialog with the format list down its leading edge. Both
-  are the shared `edsb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS.
+  compact ones; the export layer is a wider dialog with the format list down its leading edge, one
+  amber hairline dividing it from the payload and running the full height of the panel. Both are the
+  shared `edsb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS, and whose
+  width step and flush body are what let a two-region layer be wider than a one-region one and rule
+  itself edge to edge.
 - **The import layer's own composition**: description, one monospaced editable field, one status line
   that never says two things at once, and a ruled footer with what is accepted on one side and the
   actions on the other.
 - **The export layer's own composition**: format list, readonly monospaced payload, one metadata line
   (`SLEF v1 · n modules · size`), and the actions on the same row.
+- **The format list as the plates it is drawn as** — a tracked condensed title over a Barlow
+  description, the chosen one washed amber — and, where the width will not hold two regions, as
+  canvas 1d's scrolling chip strip above the payload. Both are the shared choice group's `cards`
+  arrangement, so both are the same native radios and selection is the control's own checked state
+  rather than a colour.
 - **Download and Copy together**, with Copy emphasised, exactly as `exp-dl`/`exp-copy` are drawn.
 
 ### Adapted, with the reason
@@ -129,3 +137,26 @@ Written after the implementation, so the record is what happened rather than wha
   the shell's Import action is one control away.
 - **Fixed pixel widths, the mock parser, immediate mutation and the fabricated metadata** — all as
   recorded above, none of them present in the delivered surfaces.
+
+### Corrected afterwards
+
+Written when the gap was found, so the record says what was wrong rather than only what was intended.
+
+- **The format list was not drawn as a list of plates.** The three entries above described the
+  arrangement this review accepted; what shipped was the choice group's default stacked radios inside
+  a layer of the ordinary width, with a gap where the rule belongs and the group's question drawn
+  above a list the canvas draws no question above. The canvas 1d chip strip was not built at all: the
+  compact layer stacked the same radios.
+
+  A design system whose components are perfectly tokenised can still compose them into an arrangement
+  the reference does not draw, which is the failure `e2e/design-reference.spec.ts` exists to catch and
+  did not catch here, because no assertion in it reached a layer that needs a build to open. The
+  export layer now has that block of its own in `e2e/slef-export.spec.ts`, measured against
+  `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
+
+- **Two things the canvas draws are still deliberately not drawn**, and are recorded here so the next
+  reading does not take them for the same oversight: the payload's visible field label, which this
+  review's "Adapt" list added on purpose, and the order of the two formats, which the resulting
+  hierarchy above puts Share Link first — the canvas's order is SLEF, Journal, Markdown, Share Link,
+  and removing the two formats that cannot be produced would leave the drawn order meaning something
+  it was never drawn to mean.

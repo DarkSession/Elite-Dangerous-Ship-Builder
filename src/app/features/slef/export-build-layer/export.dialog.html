@@ -2,17 +2,25 @@
   [title]="title()"
   [open]="open()"
   [dismissLabel]="dismissLabel()"
+  width="wide"
+  [flush]="true"
   (dismissed)="slef.closeLayer()"
 >
   <!--
     Canvas 1c: the format list on the leading edge, the chosen format's content
-    beside it. Both modes are the same layer, because passing a build on is one
-    decision with two answers rather than two screens.
+    beside it, one amber hairline between them running the height of the panel.
+    Both modes are the same layer, because passing a build on is one decision
+    with two answers rather than two screens.
+
+    The list carries no question above it, as it is drawn. The words stay for
+    anyone reading the group aloud.
   -->
   <div class="export-dialog">
     <edsb-choice-group
       class="export-dialog__modes"
+      layout="cards"
       [legend]="modeLegend()"
+      [legendHidden]="true"
       [choices]="modes()"
       [selected]="selectedModes()"
       (changed)="selectMode($event)"

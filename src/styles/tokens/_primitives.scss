@@ -475,4 +475,10 @@
   --edsb-measure-layer-sm: 33.75rem;
   --edsb-measure-layer-md: 38.75rem;
   --edsb-measure-layer-lg: 53.75rem;
+
+  // The list down the leading edge of a two-region layer: 236px in canvas 1c's
+  // export dialog, where the formats stand beside the payload rather than above
+  // it. Narrower than the compact action menu, because it holds a tracked title
+  // over a short description and nothing else.
+  --edsb-measure-layer-aside: 14.75rem;
 }

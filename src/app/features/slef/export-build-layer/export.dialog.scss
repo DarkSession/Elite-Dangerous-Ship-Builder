@@ -1,24 +1,52 @@
 @use '../../../../styles/responsive' as layout;
 
 /*
- * The reference's two-column layer: a fixed format list beside the content
- * (canvas 1c, `grid-template-columns: 236px 1fr`). Below the medium breakpoint
- * the list becomes the mode strip canvas 1d draws above the payload, which is
- * the same choice group in one column.
+ * The reference's two-region layer: a fixed format list beside the content
+ * (canvas 1c, `grid-template-columns: 236px 1fr`), divided by one amber
+ * hairline that runs from under the title bar to the foot of the panel. The
+ * layer's body is flush, so each region carries its own padding and the rule
+ * has a full height to run.
+ *
+ * Below the medium breakpoint the list becomes the strip canvas 1d draws above
+ * the payload, which is the same choice group in the same layer.
  */
 .export-dialog {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--edsb-space-section);
+}
+
+.export-dialog__modes {
+  padding-block: var(--edsb-space-panel) 0;
+  padding-inline: var(--edsb-space-panel);
 }
 
 .export-dialog__content {
-  min-width: 0;
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-stack) var(--edsb-space-panel);
+  padding-inline: var(--edsb-space-panel);
 }
 
 @include layout.medium-up {
   .export-dialog {
-    grid-template-columns: var(--edsb-layout-menu-max) 1fr;
-    align-items: start;
+    // Both tracks are bounded. An `auto` maximum on the list lets a translated
+    // format name take the width of its own longest line and leave the payload
+    // beside it with whatever is left.
+    //
+    // The measure is in `rem`, so it grows with the text — which is right until
+    // it is the larger half of the layer. The share of the panel it may take is
+    // the other bound, and at the declared text size it is the wider of the two,
+    // so the drawn width is what a Commander sees until the text is scaled.
+    grid-template-columns:
+      minmax(0, min(var(--edsb-layout-layer-aside), 35%))
+      minmax(0, 1fr);
+  }
+
+  .export-dialog__modes {
+    padding: var(--edsb-space-lg);
+    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+  }
+
+  .export-dialog__content {
+    padding: var(--edsb-space-panel);
   }
 }

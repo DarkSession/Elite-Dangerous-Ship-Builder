@@ -358,6 +358,171 @@ test.describe('the layer’s semantics', () => {
   });
 });
 
+/**
+ * The layer, as canvas 1c and 1d draw it.
+ *
+ * `scripts/check-interface-foundations.mjs` proves no component holds a visual
+ * literal; it cannot prove the tokens are composed into the arrangement the
+ * reference draws. This block reads what the browser computes and compares it
+ * with what the canvases set, in the same spirit as `e2e/design-reference.spec.ts`
+ * and against the measurements recorded in
+ * `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
+ *
+ * Each assertion is made at whichever arrangement the running profile's width
+ * calls for, so all ten projects say something rather than five of them
+ * skipping.
+ */
+test.describe('the layer, against the canvas', () => {
+  /** The width at which the medium composition takes over (`_responsive.scss`). */
+  const MEDIUM = 768;
+
+  test('stands the format list beside the payload, or above it when there is no room', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    await chooseSlef(page);
+
+    const formats = layer(page).getByRole('group', { name: /format/i });
+    const payload = layer(page).getByLabel(/slef payload/i);
+    const list = (await formats.boundingBox())!;
+    const field = (await payload.boundingBox())!;
+    const width = page.viewportSize()!.width;
+
+    if (width >= MEDIUM) {
+      // Canvas 1c: `grid-template-columns: 236px 1fr`. The two regions share a
+      // block band and divide the inline one.
+      expect(list.y).toBeLessThan(field.y + field.height);
+      expect(field.y).toBeLessThan(list.y + list.height);
+    } else {
+      // Canvas 1d: the strip sits above the payload in one column.
+      expect(list.y + list.height).toBeLessThanOrEqual(field.y + 1);
+    }
+  });
+
+  test('divides the two regions with one amber hairline, as drawn', async ({ page }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const formats = layer(page).getByRole('group', { name: /format/i });
+    const width = page.viewportSize()!.width;
+
+    // Canvas 1c: `border-right: 1px solid var(--amber-a16)` on the format
+    // column, running the height of the panel. Canvas 1d draws no rule.
+    const rule = await formats.evaluate((node) => {
+      // The rule closes the region the group is placed in, which is the
+      // component's own host element rather than its fieldset.
+      const style = getComputedStyle(node.closest('edsb-choice-group') ?? node);
+      return { width: style.borderInlineEndWidth, colour: style.borderInlineEndColor };
+    });
+
+    if (width >= MEDIUM) {
+      expect(parseFloat(rule.width)).toBeGreaterThan(0);
+      expect(rule.colour).toContain('rgba(255, 140, 26');
+    } else {
+      expect(parseFloat(rule.width)).toBe(0);
+    }
+  });
+
+  test('draws each format as the canvas draws it: a plate, or a chip', async ({ page }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const slef = layer(page).getByRole('radio', { name: /slef json/i });
+    const title = layer(page)
+      .locator('label', { hasText: /slef json/i })
+      .first();
+    const width = page.viewportSize()!.width;
+
+    // Both arrangements set the name in tracked uppercase condensed, which is
+    // how every control label in the reference is set.
+    const label = await title.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        family: style.fontFamily,
+        transform: style.textTransform,
+        tracking: parseFloat(style.letterSpacing) / parseFloat(style.fontSize),
+      };
+    });
+
+    expect(label.family).toContain('Barlow Condensed');
+    expect(label.transform).toBe('uppercase');
+    expect(label.tracking).toBeGreaterThan(0.1);
+
+    const plate = await slef.evaluate((node) => {
+      const card = node.closest('.choice')!;
+      const style = getComputedStyle(card);
+      return {
+        border: parseFloat(style.borderTopWidth),
+        height: card.getBoundingClientRect().height,
+      };
+    });
+
+    if (width >= MEDIUM) {
+      // Canvas 1c: `padding: 11px 12px` inside a `1px` amber edge, with the
+      // description under the title — taller than a chip, and bordered.
+      expect(plate.border).toBeGreaterThan(0);
+      await expect(layer(page).getByText(/interchange format read by/i)).toBeVisible();
+    } else {
+      // Canvas 1d: a `min-height: 38px` chip carrying the name alone.
+      expect(plate.height).toBeGreaterThanOrEqual(38);
+    }
+  });
+
+  test('washes the chosen format amber without making colour the only carrier', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    await chooseSlef(page);
+    const slef = layer(page).getByRole('radio', { name: /slef json/i });
+    const link = layer(page).getByRole('radio', { name: /share link/i });
+
+    // The wash is the echo; the fact is the control's own checked state, which
+    // is what a reader is told (canvas 1c fills the chosen plate).
+    await expect(slef).toHaveJSProperty('checked', true);
+    await expect(link).toHaveJSProperty('checked', false);
+
+    // Canvas 1c washes the chosen plate; canvas 1d fills the chosen chip, where
+    // the plate itself is not drawn. The fill is read from whichever of the two
+    // this width paints, so both arrangements are held to the same claim.
+    const fill = (radio: typeof slef) =>
+      radio.evaluate((node) => {
+        const choice = node.closest('.choice')!;
+        const plate = getComputedStyle(choice).backgroundColor;
+        const chip = getComputedStyle(choice.querySelector('label')!).backgroundColor;
+        return plate === 'rgba(0, 0, 0, 0)' ? chip : plate;
+      });
+
+    expect(await fill(slef)).not.toBe(await fill(link));
+  });
+
+  test('takes the wide dialog step where the viewport has room for it', async ({ page }) => {
+    await withStockBuild(page);
+    await openExport(page);
+    const width = page.viewportSize()!.width;
+    const dialog = (await layer(page).boundingBox())!;
+
+    // Canvas 1c draws the export dialog at 760px against the 560px it draws the
+    // import one at: two regions need more room than one. The token step above
+    // 760 is what bounds it here, so the assertion is a floor and the viewport.
+    if (width >= 900) {
+      expect(dialog.width).toBeGreaterThanOrEqual(760);
+    }
+    expect(dialog.width).toBeLessThanOrEqual(width);
+  });
+
+  test('reaches every format at the narrowest profile without scrolling the document', async ({
+    page,
+  }) => {
+    await withStockBuild(page);
+    await openExport(page);
+
+    for (const name of [/share link/i, /slef json/i]) {
+      await expect(layer(page).getByRole('radio', { name })).toBeVisible();
+    }
+    await expectNoDocumentOverflow(page);
+  });
+});
+
 test.describe('with no network at all', () => {
   test('imports and exports a build offline, with nothing leaving the origin', async ({
     page,
