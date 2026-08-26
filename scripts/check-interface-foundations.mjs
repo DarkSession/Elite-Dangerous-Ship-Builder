@@ -1419,6 +1419,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The canvas’s own one-word mark under the mass bar; German writes the same word.',
     'drives.thrusters.maximum-mass':
       'The canvas’s own abbreviation at the end of the mass bar; German abbreviates it the same way.',
+    'drives.thrusters.fuel.tank':
+      'The canvas’s own one-word qualifier beside the fuel segment; Tank is the ordinary German word.',
     'drives.rail.tonnes': 'The SI symbol for the tonne, identical in German.',
     'hullDetail.unit.shield': 'The SI symbol for the megajoule, identical in German.',
     'library.save.name.label': '"Name" is the ordinary German word.',

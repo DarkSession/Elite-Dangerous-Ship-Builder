@@ -10,7 +10,7 @@
   // writes its own. Without one the region grows to its content, nothing
   // scrolls inside it, and the actions below end up drawn over the foot of the
   // material list — over the control a Commander is reaching for.
-  max-block-size: calc(100svh - var(--edsb-layout-bar-height) - 2 * var(--edsb-space-region));
+  max-block-size: calc(100svh - var(--edsb-layout-bar-height));
 }
 
 // A viewport this short cannot divide into a scroller and a foot and still show
@@ -30,6 +30,13 @@
 .engineering {
   @include layout.stack(var(--edsb-space-stack));
 
+  // A containing block, so this scroller clips what it scrolls — the rule the
+  // ledger's rail and the chooser's manifest both state, for the reason they
+  // state it: text drawn only for a reader is positioned out of the page the
+  // standard way, and without a positioned scroller around it its containing
+  // block is whatever is positioned above the bench. The bench's own clipping
+  // never reaches it and the document runs down past the screen, invisibly.
+  position: relative;
   min-block-size: 0;
   flex: 1;
   overflow-y: auto;
@@ -64,6 +71,9 @@
 .engineering__body {
   @include layout.stack(var(--edsb-space-stack));
 
+  // As above: a scroller that is not a containing block clips nothing that was
+  // positioned out of the page inside it.
+  position: relative;
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;
@@ -116,6 +126,7 @@
 
   .engineering__choices,
   .engineering__result {
+    position: relative;
     min-block-size: 0;
     overflow-y: auto;
     // A column that reaches its end stops there rather than handing the scroll

@@ -27,6 +27,20 @@
 // shifted up so its lowest rung is 0.55, and the rungs above it keep their
 // order, so the hierarchy the canvas draws survives at readable weights.
 
+// Everything measured down from the command bar.
+//
+// A custom property substitutes its own `var()`s where it is *declared*, not
+// where it is read, so a figure derived from `--edsb-layout-bar-height` has to
+// be redeclared everywhere that height is. The frame republishes the height on
+// its own host from the bar it rendered; this is written once and included at
+// both, so the derivation stays one decision wherever it lands.
+@mixin bar-derived {
+  --edsb-layout-manifest-offset: calc(
+    var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
+      var(--edsb-border-width-hairline)
+  );
+}
+
 :root {
   // ---------------------------------------------------------------------------
   // Surfaces
@@ -295,7 +309,25 @@
   --edsb-layout-status-rail: var(--edsb-measure-status-rail);
 
   // What a region has to clear to sit below the sticky command bar.
+  //
+  // The declared figure is one row of controls at the target baseline, which is
+  // what the bar comes to on every screen that draws a plain title. It is a
+  // floor rather than the bar's height: the workspace draws an identity block
+  // of two 24px targets in the same bar, and any width where the bar wraps
+  // draws more rows than one. So the frame republishes this token on its own
+  // host from the bar it actually rendered (`sticky-banner.ts`), and the value
+  // here is what stands until that first reading. It stays in the token layer
+  // because the decision — *a region clears the bar* — is declared once, here;
+  // what the frame supplies is the measurement, which no query can ask for.
   --edsb-layout-bar-height: var(--edsb-measure-bar-height);
+
+  // The bar's own floor, which is not the same job and must not be the same
+  // token. What a region clears is republished from the bar that was drawn; if
+  // the bar sized itself from that reading it would never be able to shrink —
+  // a window widened until a wrapped bar unwraps would hold the wrapped height
+  // as its own minimum, and nothing would ever measure it again. The floor is
+  // the declared figure, always, and only the clearance moves.
+  --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller
   // clips the seam instead of showing the row behind through it.
@@ -305,32 +337,24 @@
   // then one target-height row of toolbar controls inside the hairline the
   // segmented strip is ruled with and the region's own block padding. Stated
   // here rather than on the screen so the two heights stay one decision.
-  --edsb-layout-manifest-offset: calc(
-    var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
-      var(--edsb-border-width-hairline)
-  );
-  // Canvas 1c's own `2.2fr 62px 74px 74px 78px 86px 128px`, at those measures.
-  // The figure columns are fixed so they line up across the whole manifest
-  // rather than being redistributed by whatever the widest cell happens to hold;
-  // the cost column is nearly twice a mass or a power draw because it holds nine
-  // digits and a unit.
+  @include bar-derived;
+  // Canvas 1c's manifest, as the 2026-08-25 revision draws it: `2.6fr 70px
+  // 150px` — the module, its class and rating, and its price, and no other
+  // column. The two fixed columns are the canvas's own pixels; the name takes
+  // what is left.
   //
-  // Two departures from the literal track list, both because the bench is wider
-  // than the canvas's: canvas 1c's workspace is `392px 1fr 306px` and the third
-  // track — live stats and export — is not built yet, so the centre column holds
-  // 306px the canvas never gave it. The name is therefore **capped** at the
-  // 436px the canvas resolves `2.2fr` to, instead of taking the surplus and
-  // running to 58% of the table; and the **figure columns share what is left in
-  // the canvas's own ratio** — their `fr` values are the canvas px over 100, so
-  // cost stays twice a mass and the whole set widens together, with each canvas
-  // measure still standing as its floor. Pooling the surplus into the cost
-  // column alone spanned the panel too, but opened a void between `DRAW WEP` and
-  // `COST` the width of the missing region; sharing it equally spanned it as
-  // well, but flattened the ratios that make a nine-digit column read as one.
-  // Both come out when the third column goes in (wave 9).
-  --edsb-layout-candidate-columns: minmax(0, 27.25rem) minmax(3.875rem, 0.62fr)
-    minmax(4.625rem, 0.74fr) minmax(4.625rem, 0.74fr) minmax(4.875rem, 0.78fr)
-    minmax(5.375rem, 0.86fr) minmax(8rem, 1.28fr);
+  // **The wave-9 cap is gone with them.** The name was capped at 27.25rem
+  // because the workspace's third track was not built and the centre column
+  // held 306px the canvas never gave it, which a `2.2fr` name column took the
+  // whole of. The third track is built, and this manifest now gives 216px of
+  // its own width to the family rail before the name sees any of it, so there
+  // is no surplus left to run away with (module-replacement design, "The
+  // manifest's own columns").
+  --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
+    var(--edsb-measure-candidate-cost);
+  --edsb-layout-family-rail: var(--edsb-measure-family-rail);
+  --edsb-layout-family-gap: var(--edsb-measure-family-gap);
+  --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
   --edsb-layout-defence-resist: var(--edsb-measure-defence-resist);
@@ -361,6 +385,20 @@
   --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);
 }
 
+// The bar the frame actually rendered, republished on its own host from the
+// measurement (`app-frame.ts`), because the declared height above is a floor
+// rather than a reading: the workspace draws an identity block of two 24px
+// targets in the same bar, and any width where the bar wraps draws more rows
+// than one. A region that offset by the declared figure there froze itself
+// behind the bar and stood its own foot short of the screen's by the difference
+// (Commander request 2026-08-25).
+//
+// Everything derived from that height has to be derived again beside it, since
+// a custom property substitutes its own `var()`s where it is declared.
+edsb-app-frame {
+  @include bar-derived;
+}
+
 // The command bar releases and travels with the page when what it would
 // otherwise freeze over is no longer a viewport anything can be stacked in
 // (`app-frame.scss`, `sticky-banner.ts`). With the bar travelling there is
@@ -372,7 +410,10 @@
 // The frame marks that state on its own host element. The rule is here rather
 // than in the frame's stylesheet because a token is declared in the token layer
 // and nowhere else: a component that set this one would be a second place the
-// same layout decision lives.
+// same layout decision lives. What the frame supplies inline is the
+// measurement, not the decision — and while it is released it states the same
+// nothing this rule does, because an inline value outranks a rule and the two
+// may not disagree.
 edsb-app-frame.frame--released {
   --edsb-layout-bar-height: 0px;
 }

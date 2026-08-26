@@ -110,6 +110,90 @@ test.describe('the composition this width has room for', () => {
     await expectNoDocumentOverflow(page);
   });
 
+  test('runs every frozen column from under the command bar to the foot of the screen', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    const drawn = await composition(page).getAttribute('data-composition');
+
+    // Canvas 1c draws the workspace as one grid row — `392px 1fr 306px` over a
+    // `min-height: 880px` — whose columns stretch to it, so the ledger's
+    // `border-right` and the status rail's `border-left` reach the foot of the
+    // screen whatever either column holds. Where this width stacks the regions
+    // instead, none of them is frozen and the page scrolls: that is the same
+    // rule, and it is asserted here too so neither composition can drift into
+    // the other's answer.
+    const measured = await page.evaluate(() => {
+      const frame = document.querySelector('edsb-app-frame')!;
+      const columns = [
+        '.outfitting__ledger-region',
+        '.outfitting__centre',
+        '.outfitting__status-rail',
+      ].map((selector) => {
+        const node = document.querySelector(selector)!;
+        return {
+          selector,
+          frozen: getComputedStyle(node).position === 'sticky',
+          height: node.getBoundingClientRect().height,
+        };
+      });
+
+      return {
+        columns,
+        viewport: window.innerHeight,
+        // What the token says a region has to clear, and what the bar it names
+        // actually came to. The declared figure is one row of controls at the
+        // target baseline; this screen's identity block is two 24px targets,
+        // and at any width where the bar wraps it is taller again (workspace
+        // design, "What that height is, is measured, not declared").
+        cleared: parseFloat(getComputedStyle(frame).getPropertyValue('--edsb-layout-bar-height')),
+        bar: document.querySelector('.frame__banner')!.getBoundingClientRect().height,
+        released: frame.classList.contains('frame--released'),
+      };
+    });
+
+    const drawnBar = measured.released ? 0 : measured.bar;
+    expect(Math.abs(measured.cleared - drawnBar)).toBeLessThan(1);
+
+    const frozen = measured.columns.filter((column) => column.frozen);
+    if (drawn === 'compact') {
+      expect(frozen).toEqual([]);
+    } else {
+      expect(frozen.length).toBeGreaterThanOrEqual(2);
+    }
+
+    for (const column of frozen) {
+      expect(Math.abs(column.height - (measured.viewport - measured.cleared))).toBeLessThan(1);
+    }
+
+    // And what it clears is the bar that is drawn: a column offsetting by a
+    // figure smaller than the bar freezes its own head behind it — 62px of the
+    // ledger's category strip, at tablet width, before this was measured. Only
+    // a column with somewhere to travel shows it: a sticky box cannot leave its
+    // own containing block, so where the grid is exactly one column tall there
+    // is no freeze to observe and the offset above is the whole claim.
+    const slack = await page.evaluate(() => {
+      const grid = document.querySelector('.outfitting')!.getBoundingClientRect().height;
+      const column = document
+        .querySelector('.outfitting__ledger-region')!
+        .getBoundingClientRect().height;
+      return Math.min(grid - column, document.documentElement.scrollHeight - window.innerHeight);
+    });
+
+    const ledgerFrozen = frozen.some((column) => column.selector === '.outfitting__ledger-region');
+
+    if (ledgerFrozen && slack > 1) {
+      await page.evaluate((distance) => window.scrollTo(0, distance), Math.min(slack, 200));
+
+      const seam = await page.evaluate(() => ({
+        bar: document.querySelector('.frame__banner')!.getBoundingClientRect().bottom,
+        ledger: document.querySelector('.outfitting__ledger-region')!.getBoundingClientRect().top,
+      }));
+
+      expect(Math.round(seam.ledger)).toBeGreaterThanOrEqual(Math.round(seam.bar) - 1);
+    }
+  });
+
   test('keeps the same source order in every composition', async ({ page }) => {
     await openStockBuild(page);
 

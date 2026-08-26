@@ -42,6 +42,26 @@ export type CandidateStatus =
 export type CandidateStatusOverride = 'loading' | 'stale' | 'refused';
 
 /**
+ * How this composition reveals a family.
+ *
+ * One model, two shapes. Canvas 1d draws an accordion: any number of families
+ * open at once, each with a caret, and none open at all is a state it draws.
+ * Canvas 1c, since the 2026-08-25 revision, draws a rail beside a variant pane
+ * — every family listed, exactly one selected, no caret, and a pane that is
+ * never empty. *Revealed* is the accordion's open family and the rail's
+ * selected one, which is the word the requirements are restated in
+ * (module-replacement design, "What exclusive selection does to FR-021, FR-022
+ * and FR-023").
+ *
+ * The difference is not arrangement, so it cannot live in a stylesheet: a rail
+ * that let two families be selected would draw two panes, and an accordion that
+ * closed the rest whenever one opened would take away a comparison canvas 1d
+ * offers. It is the reveal rule itself, and it belongs with the state that
+ * holds what is revealed.
+ */
+export type FamilyReveal = 'accordion' | 'rail';
+
+/**
  * One choice's searchable text, folded once when the index is built.
  *
  * Four fields and no fifth. A symbol, a blueprint id, an acquisition label, an
@@ -91,6 +111,15 @@ export interface CandidateQueryState {
    * needing an invalidation rule of its own (decision 15).
    */
   readonly openFamilies: ReadonlySet<OutfittingFamilyId>;
+  /**
+   * Which of the two reveal models this composition is under.
+   *
+   * Carried on the state rather than passed to each call, because every rule
+   * that seeds, searches or toggles the set has to agree about it — and a
+   * composition change is a re-seed, not a translation of the set that was
+   * there (FR-021).
+   */
+  readonly reveal: FamilyReveal;
 }
 
 /** One package family, with the choices it holds in the list's own order. */
@@ -140,9 +169,28 @@ export function openCandidateQuery(
       fittedFamilyId:
         choices.find((choice) => isFittedChoice(choice, fitted))?.presentation.familyId ?? null,
       openFamilies: new Set(),
+      // The accordion is the model a state arrives under; the composition that
+      // is actually drawing it says so a step later, through `withReveal`. It
+      // is the compact answer, which is the one every renderer can draw.
+      reveal: 'accordion',
     },
     '',
   );
+}
+
+/**
+ * The same ordered, indexed chooser under the other reveal model.
+ *
+ * Separate from `openCandidateQuery` so a composition change costs a re-seed
+ * and not a re-sort: the collator ran over every pair and the fold over every
+ * string when the mount was opened, and neither answer changes because the
+ * region grew wide enough for a rail (SC-002). Re-seeding is the point rather
+ * than a side effect — the default under a rail is not the default under an
+ * accordion, and a set carried across would be one composition's answer drawn
+ * in the other's shape.
+ */
+export function withReveal(state: CandidateQueryState, reveal: FamilyReveal): CandidateQueryState {
+  return state.reveal === reveal ? state : { ...state, reveal };
 }
 
 /**
@@ -175,20 +223,62 @@ export function applyQuery(
     // was asked for, and how many — and opening them all draws hundreds of rows
     // a Commander is about to type past anyway (FR-023). An empty query goes
     // back to the fitted module's family alone (FR-021).
-    openFamilies:
-      terms.length === 0
-        ? seedFamilies(state)
-        : matched.length > OPEN_ON_SEARCH_LIMIT
-          ? new Set()
-          : familiesOf(matched),
+    openFamilies: revealedAfterQuery(state, terms.length, matched),
   };
 }
 
-/** Opens or closes exactly one family, and changes nothing else. */
+/**
+ * Which families a query leaves revealed, under whichever model is drawing.
+ *
+ * The rail reveals the first family holding a match, whatever the match count.
+ * FR-023's screenful rule exists to stop one keystroke building several hundred
+ * cards, and a rail cannot do that at any count: it paints one family's rows and
+ * lists the rest as names. So the rule is the accordion's, and always was in
+ * effect — the measurement behind it was taken at 390px (module-replacement
+ * design, "Scoped to the compact composition on 2026-08-25").
+ *
+ * What both models keep is the part that mattered: a family holding a match is
+ * never absent, because `groupFamilies` renders exactly the families the results
+ * contain.
+ */
+function revealedAfterQuery(
+  state: CandidateQueryState,
+  terms: number,
+  matched: readonly ModuleChoice[],
+): ReadonlySet<OutfittingFamilyId> {
+  if (terms === 0) {
+    return seedFamilies(state);
+  }
+  if (state.reveal === 'rail') {
+    return firstFamilyOf(matched);
+  }
+  // A search that narrowed the list to something readable opens everything it
+  // found, so no match is hidden behind a control a Commander would have to
+  // guess at. A search that matched more than a screenful opens nothing: at
+  // that width the families themselves are the answer — which one holds what
+  // was asked for, and how many — and opening them all draws hundreds of rows
+  // a Commander is about to type past anyway (FR-023).
+  return matched.length > OPEN_ON_SEARCH_LIMIT ? new Set() : familiesOf(matched);
+}
+
+/**
+ * Reveals one family, and changes nothing else.
+ *
+ * Under the accordion this is a toggle: the family opens if it was closed and
+ * closes if it was open, and every other family stays as it was. Under the rail
+ * it is a selection, and selection is exclusive and total — the chosen family
+ * becomes the only revealed one, and choosing the one already selected leaves it
+ * selected rather than emptying the pane. The canvas's rail always has a
+ * selection and never paints an empty pane, so there is no state here for
+ * "none" to mean (FR-022).
+ */
 export function toggleFamily(
   state: CandidateQueryState,
   familyId: OutfittingFamilyId,
 ): CandidateQueryState {
+  if (state.reveal === 'rail') {
+    return { ...state, openFamilies: new Set([familyId]) };
+  }
   const open = new Set(state.openFamilies);
   if (!open.delete(familyId)) {
     open.add(familyId);
@@ -208,9 +298,29 @@ export function toggleFamily(
  */
 const OPEN_ON_SEARCH_LIMIT = 25;
 
-/** The default: the fitted choice's family alone, or nothing at all. */
+/**
+ * The default: the family holding the exact fitted choice, and no other.
+ *
+ * Where no available family holds it — an empty mount, or an article the package
+ * no longer offers back — the two models part. The accordion reveals nothing,
+ * which is a state canvas 1d draws. The rail reveals the first family in package
+ * order, because the canvas's rail always has a selection and an empty pane
+ * beside a full rail is a state it does not draw. That is not a substitute this
+ * application chose: it is what the drawing does (FR-021, and
+ * module-replacement design, "What exclusive selection does to FR-021, FR-022
+ * and FR-023").
+ */
 function seedFamilies(state: CandidateQueryState): ReadonlySet<OutfittingFamilyId> {
-  return state.fittedFamilyId === null ? new Set() : new Set([state.fittedFamilyId]);
+  if (state.fittedFamilyId !== null) {
+    return new Set([state.fittedFamilyId]);
+  }
+  return state.reveal === 'rail' ? firstFamilyOf(state.choices) : new Set();
+}
+
+/** The first family in the list's own order, which is the package's. */
+function firstFamilyOf(choices: readonly ModuleChoice[]): ReadonlySet<OutfittingFamilyId> {
+  const first = choices[0];
+  return first === undefined ? new Set() : new Set([first.presentation.familyId]);
 }
 
 function familiesOf(choices: readonly ModuleChoice[]): ReadonlySet<OutfittingFamilyId> {

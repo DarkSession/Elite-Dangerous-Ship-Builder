@@ -442,6 +442,19 @@
   // The canvas's manifest row: 13px of name between 11px of padding, plus the
   // 2px that separates one row from the next.
   --edsb-measure-candidate-row: 2.625rem;
+
+  // The 2026-08-25 revision of canvas 1c's manifest: `grid-template-columns:
+  // 216px minmax(0, 1fr); column-gap: 14px` for the rail beside its pane, both
+  // bounded at `max-height: 470px`, and `2.6fr 70px 150px` for the three
+  // columns a row is drawn in inside that pane. The rail and the two fixed
+  // columns are the canvas's own pixels; the name takes what is left, as its
+  // `fr` says, because there is nothing left over for it to run away with once
+  // the rail has its 216px.
+  --edsb-measure-family-rail: 13.5rem;
+  --edsb-measure-family-gap: 0.875rem;
+  --edsb-measure-manifest-pane: 29.375rem;
+  --edsb-measure-candidate-class: 4.375rem;
+  --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
 

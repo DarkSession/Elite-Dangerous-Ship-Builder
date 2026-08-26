@@ -1,17 +1,31 @@
 import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { commandBarActionState, openAllFamilies, openChooser } from './outfitting-surfaces';
+import {
+  acrossEveryFamily,
+  commandBarActionState,
+  familyControls,
+  manifestOf,
+  openChooser,
+  revealedFamilies,
+  revealedRows,
+} from './outfitting-surfaces';
 
 /**
- * The chooser's families, end to end (US2, wave 10).
+ * The chooser's families, end to end (US2, wave 10; revised 2026-08-25).
  *
  * The unit suites prove the seeding rules and the grouping against the package.
  * What only a browser can show is the rest: that a Commander opening a mount
- * lands on the family holding what is already fitted, that opening and closing
- * one costs nothing, that a search never leaves a match behind a closed
- * control, and that reading the screen in another language relabels the
+ * lands on the family holding what is already fitted, that revealing one costs
+ * nothing, that a search never leaves a match behind a control they would have
+ * to guess at, and that reading the screen in another language relabels the
  * families without moving a single choice between them.
+ *
+ * Since the 2026-08-25 canvas revision the two compositions differ in kind: a
+ * family rail beside one variant pane at canvas 1c's width, the accordion at
+ * canvas 1d's. Every claim below is written in the word both satisfy —
+ * *revealed* — and branches only where the two genuinely answer differently,
+ * which is where the requirement itself does.
  *
  * Nothing here writes down a family name. The Almanac's are the names on
  * screen, and a test that pinned one would fail on a package release that is
@@ -58,21 +72,13 @@ async function familyNames(page: Page): Promise<readonly string[]> {
     );
 }
 
-/** Which families are open right now, by their index in the list. */
-async function openIndices(page: Page): Promise<readonly number[]> {
-  const states = await page
-    .locator('.family')
-    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-expanded')));
-  return states.flatMap((state, index) => (state === 'true' ? [index] : []));
-}
-
 test.describe('module families', () => {
   test('opens the family holding the fitted module, and only that one', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, FITTED_MOUNT);
     await openChooser(page);
 
-    const open = await openIndices(page);
+    const open = await revealedFamilies(page);
     expect(open).toHaveLength(1);
 
     // It is the family the list itself marks as fitted, which is the whole
@@ -80,36 +86,47 @@ test.describe('module families', () => {
     // opening anything (FR-021, SC-007). Scoped to the families' own rows,
     // because the compact composition pins the same row a second time in canvas
     // 1d's `FITTED HERE` block above them.
-    const fitted = page.locator('.family__choices .candidate--fitted');
+    const fitted = page.locator('.candidates__choices .candidate--fitted');
     await expect(fitted).toHaveCount(1);
     await expect(fitted).toBeVisible();
 
     // Every other family is drawn and closed, contributing its bar and no rows:
     // what is in the document is exactly the open family's own count.
-    const total = await page.locator('.family').count();
+    const total = await familyControls(page).count();
     expect(total).toBeGreaterThan(1);
 
     const openCount = Number(
       (await page.locator('.family__count').nth(open[0]!).innerText()).replace(/\D+/gu, ''),
     );
     expect(openCount).toBeGreaterThan(0);
-    expect(await page.locator('.family__choices .candidate').count()).toBe(openCount);
+    expect(await revealedRows(page).count()).toBe(openCount);
   });
 
-  test('opens nothing when no available family holds the fitted choice', async ({ page }) => {
+  test('answers an unheld fitted choice in its own composition\u2019s terms', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, EMPTY_MOUNT);
     await openChooser(page);
 
-    // An empty mount has no fitted choice, so there is no family to open and
-    // the honest answer is all of them closed rather than an arbitrary first
-    // one (FR-021, SC-007).
-    await expect(page.locator('.family').first()).toBeVisible();
-    expect(await openIndices(page)).toHaveLength(0);
-    await expect(page.locator('.family__choices .candidate')).toHaveCount(0);
+    await expect(familyControls(page).first()).toBeVisible();
+
+    if ((await manifestOf(page)) === 'accordion') {
+      // An empty mount has no fitted choice, so there is no family to open and
+      // the honest answer is all of them closed rather than an arbitrary first
+      // one — which is a state canvas 1d draws (FR-021, SC-007).
+      expect(await revealedFamilies(page)).toHaveLength(0);
+      await expect(revealedRows(page)).toHaveCount(0);
+      return;
+    }
+
+    // The rail cannot say "none". Canvas 1c's rail always has a selection and
+    // never paints an empty pane, so it falls to the first family in package
+    // order — not a substitute this application chose, but what the drawing
+    // does (FR-021 as restated 2026-08-25).
+    expect(await revealedFamilies(page)).toEqual([0]);
+    expect(await revealedRows(page).count()).toBeGreaterThan(0);
   });
 
-  test('opens and closes on a tap, changing nothing about the build', async ({ page }) => {
+  test('reveals on a tap, changing nothing about the build', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, FITTED_MOUNT);
     await openChooser(page);
@@ -123,25 +140,44 @@ test.describe('module families', () => {
     const undo = commandBarActionState(page, /^undo$/i);
     const undoWasDisabled = await undo.isDisabled();
 
-    // Pinned by its own id, not by "the first closed one": that locator
-    // re-resolves after the press and would then be pointing at a different
-    // family altogether.
-    const id = await page.locator('.family[aria-expanded="false"]').first().getAttribute('id');
-    const closed = page.locator(`#${id}`);
-    const rows = page.locator('.family__choices .candidate');
+    const accordion = (await manifestOf(page)) === 'accordion';
+    const rows = revealedRows(page);
     const rowsBefore = await rows.count();
 
-    // A tap where the profile has touch and a click where it does not: the bar
-    // is the control, and it has to answer to a thumb as well as a pointer
-    // (FR-022). Both are exercised here — the second press is always a click.
-    const touch = test.info().project.use.hasTouch === true;
-    await (touch ? closed.tap() : closed.click());
-    await expect(closed).toHaveAttribute('aria-expanded', 'true');
-    expect(await rows.count()).toBeGreaterThan(rowsBefore);
+    // Pinned by its own id, not by "the first unrevealed one": that locator
+    // re-resolves after the press and would then be pointing at a different
+    // family altogether.
+    const state = accordion ? 'aria-expanded' : 'aria-pressed';
+    const id = await familyControls(page)
+      .and(page.locator(`[${state}="false"]`))
+      .first()
+      .getAttribute('id');
+    const control = page.locator(`#${id}`);
 
-    await closed.click();
-    await expect(closed).toHaveAttribute('aria-expanded', 'false');
-    expect(await rows.count()).toBe(rowsBefore);
+    // A tap where the profile has touch and a click where it does not: the
+    // control has to answer to a thumb as well as a pointer (FR-022). Both are
+    // exercised here — the second press is always a click.
+    const touch = test.info().project.use.hasTouch === true;
+    await (touch ? control.tap() : control.click());
+    await expect(control).toHaveAttribute(state, 'true');
+
+    if (accordion) {
+      // A disclosure: the family opens beside the one already open, and the
+      // same press closes it again.
+      expect(await rows.count()).toBeGreaterThan(rowsBefore);
+      await control.click();
+      await expect(control).toHaveAttribute(state, 'false');
+      expect(await rows.count()).toBe(rowsBefore);
+    } else {
+      // A selection: this family becomes the only revealed one, and pressing it
+      // a second time leaves it selected. A rail has no "none" for a second
+      // press to mean, and its pane is never empty.
+      expect(await revealedFamilies(page)).toHaveLength(1);
+      expect(await rows.count()).toBeGreaterThan(0);
+      await control.click();
+      await expect(control).toHaveAttribute(state, 'true');
+      expect(await revealedFamilies(page)).toHaveLength(1);
+    }
 
     // Looking is free. No revision reached the link, and undo did not become
     // available because nothing was decided (FR-021, SC-006).
@@ -149,54 +185,78 @@ test.describe('module families', () => {
     expect(await undo.isDisabled()).toBe(undoWasDisabled);
   });
 
-  test('opens every family a search matched, and restores the seed on clearing', async ({
+  test('leaves no family holding a match absent, and restores the seed on clearing', async ({
     page,
   }) => {
     await openStockBuild(page);
     await selectMount(page, FITTED_MOUNT);
     await openChooser(page);
 
-    const seeded = await openIndices(page);
-    const total = await page.locator('.family').count();
+    const seeded = await revealedFamilies(page);
+    const total = await familyControls(page).count();
 
     await page.locator('input[type="search"]').fill('laser');
     // Waited on the list actually narrowing rather than on it merely being
     // there: it was already there, so a visibility check proves nothing.
-    await expect(page.locator('.family')).not.toHaveCount(total);
+    await expect(familyControls(page)).not.toHaveCount(total);
 
-    const matched = await page.locator('.family').count();
+    const matched = await familyControls(page).count();
     expect(matched).toBeGreaterThan(0);
     expect(matched).toBeLessThan(total);
-    // Every family drawn is open, so no match is behind a closed control, and
-    // every family drawn holds at least one match (FR-023, SC-008).
-    expect(await openIndices(page)).toHaveLength(matched);
-    await expect(page.locator('.family[aria-expanded="false"]')).toHaveCount(0);
-    for (let index = 0; index < matched; index += 1) {
-      await expect(
-        page.locator('.family__choices').nth(index).locator('.candidate').first(),
-      ).toBeVisible();
+
+    if ((await manifestOf(page)) === 'accordion') {
+      // Every family drawn is open, so no match is behind a closed control, and
+      // every family drawn holds at least one match (FR-023, SC-008).
+      expect(await revealedFamilies(page)).toHaveLength(matched);
+      await expect(page.locator('.family[aria-expanded="false"]')).toHaveCount(0);
+      for (let index = 0; index < matched; index += 1) {
+        await expect(
+          page.locator('.family__choices').nth(index).locator('.candidate').first(),
+        ).toBeVisible();
+      }
+    } else {
+      // The rail narrows to the families holding matches and selects the first
+      // of them. It cannot open them all — it draws one family's rows — and it
+      // does not need to: what FR-023 protects is that a family holding a match
+      // is never absent, and the rail keeps every one of them listed and
+      // counted (FR-023 as scoped 2026-08-25, SC-008).
+      expect(await revealedFamilies(page)).toEqual([0]);
+      expect(await revealedRows(page).count()).toBeGreaterThan(0);
     }
 
     await page.locator('input[type="search"]').fill('');
-    await expect(page.locator('.family')).toHaveCount(total);
-    expect(await openIndices(page)).toEqual(seeded);
+    await expect(familyControls(page)).toHaveCount(total);
+    expect(await revealedFamilies(page)).toEqual(seeded);
   });
 
-  test('leaves every family closed when a search matched more than a screenful', async ({
+  test('answers a search past a screenful in its own composition\u2019s terms', async ({
     page,
   }) => {
     await openStockBuild(page);
     await selectMount(page, FITTED_MOUNT);
     await openChooser(page);
 
-    const total = await page.locator('.family').count();
+    const total = await familyControls(page).count();
+    const accordion = (await manifestOf(page)) === 'accordion';
 
-    // One letter matches most of the mount. A list of everything is not an
-    // answer a Commander can read, so what stays on screen is the families and
-    // their counts — and the rows nobody asked for are not built (FR-023).
+    // One letter matches most of the mount.
     await page.locator('input[type="search"]').fill('a');
-    await expect(page.locator('.family[aria-expanded="true"]')).toHaveCount(0);
-    await expect(page.locator('.family__choices .candidate')).toHaveCount(0);
+
+    if (accordion) {
+      // A list of everything is not an answer a Commander can read, so what
+      // stays on screen is the families and their counts — and the rows nobody
+      // asked for are not built (FR-023).
+      await expect(page.locator('.family[aria-expanded="true"]')).toHaveCount(0);
+      await expect(revealedRows(page)).toHaveCount(0);
+    } else {
+      // The rail paints one family's rows at any match count, so the screenful
+      // rule has nothing to protect against here: it reveals the first family
+      // holding a match, exactly as it does for a narrow one.
+      await expect(async () => {
+        expect(await revealedFamilies(page)).toEqual([0]);
+      }).toPass({ timeout: 10_000 });
+      expect(await revealedRows(page).count()).toBeGreaterThan(0);
+    }
 
     const counted = await page
       .locator('.family__count')
@@ -209,8 +269,8 @@ test.describe('module families', () => {
     expect(counted).toBeGreaterThan(25);
 
     // Not one family holding a match went missing, and the surface's own count
-    // still says how many there are: only the rows are withheld.
-    expect(await page.locator('.family').count()).toBeGreaterThan(0);
+    // still says how many there are — whichever manifest is drawing them.
+    expect(await familyControls(page).count()).toBeGreaterThan(0);
     const published = Number(
       (
         await page
@@ -222,7 +282,7 @@ test.describe('module families', () => {
     expect(published).toBe(counted);
 
     await page.locator('input[type="search"]').fill('');
-    await expect(page.locator('.family')).toHaveCount(total);
+    await expect(familyControls(page)).toHaveCount(total);
   });
 
   test('relabels every family in another language without moving a choice', async ({
@@ -299,11 +359,13 @@ test('freezes the family bar above the edge of its scroller, and still rules it'
   await selectMount(page, FITTED_MOUNT);
   await openChooser(page);
 
-  const bar = page.locator('.family[aria-expanded="true"]').first();
+  const bar = page.locator('.family[aria-expanded="true"], .family[aria-pressed="true"]').first();
   await expect(bar).toBeVisible();
 
   const frozen = await page.evaluate(() => {
-    const control = document.querySelector('.family[aria-expanded="true"]') as HTMLElement;
+    const control = document.querySelector(
+      '.family[aria-expanded="true"], .family[aria-pressed="true"]',
+    ) as HTMLElement;
     const style = getComputedStyle(control);
     const rule = getComputedStyle(control, '::before');
     return {
@@ -319,9 +381,11 @@ test('freezes the family bar above the edge of its scroller, and still rules it'
   });
 
   // The composition that scrolls its bars away with their own rows has no edge
-  // for one to be frozen against and no seam to cover. Stated as an assertion
-  // rather than passed over, because the day this becomes sticky is the day the
-  // branch below has to hold for it too.
+  // for one to be frozen against and no seam to cover, and neither has the rail:
+  // its names never scroll away from their rows, because the rows are in the
+  // pane beside them. Stated as an assertion rather than passed over, because
+  // the day either becomes sticky is the day the branch below has to hold for it
+  // too.
   if (frozen.position !== 'sticky') {
     expect(frozen.position).toBe('static');
     return;
@@ -365,16 +429,26 @@ async function familyList(
   // The compact composition reaches the chooser through a control named in the
   // language being read, so the German run asks for it by its German name.
   await openChooser(page, messages['outfitting.capability.replace']);
-  await openAllFamilies(page);
 
+  // Read family by family, because the rail draws one family's rows at a time
+  // and the accordion can draw them all: `acrossEveryFamily` is the one place
+  // that knows the difference. The order is the list's own either way, so the
+  // two readings line up index for index.
   const names = await familyNames(page);
-  const membership = await page.locator('.family__choices').evaluateAll((regions) =>
-    regions.map((region) =>
-      Array.from(region.querySelectorAll('input[type="radio"]'))
-        .map((radio) => (radio as HTMLInputElement).value)
-        .sort(),
-    ),
-  );
+  const membership: string[][] = [];
+  await acrossEveryFamily(page, async (rows) => {
+    membership.push(
+      (
+        await rows.evaluateAll((nodes) =>
+          nodes.flatMap((node) =>
+            Array.from(node.querySelectorAll('input[type="radio"]')).map(
+              (radio) => (radio as HTMLInputElement).value,
+            ),
+          ),
+        )
+      ).sort(),
+    );
+  });
 
   expect(membership.flat().length).toBeGreaterThan(0);
   return { names, membership };

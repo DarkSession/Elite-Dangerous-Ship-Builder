@@ -21,6 +21,7 @@ import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import { Layer } from '../../../../ui/components/layer/layer';
 import { CandidateList } from '../../../../ui/outfitting/candidate-list';
+import type { CandidateManifest } from '../../../../ui/outfitting/manifest';
 import { CandidateSearch } from '../../../../ui/outfitting/candidate-search';
 
 /** What the surface is showing, including the one state the query cannot know. */
@@ -244,6 +245,18 @@ export class ModuleReplacement {
    */
   toggleFamily(familyId: OutfittingFamilyId): void {
     this.store.toggleFamily(familyId);
+  }
+
+  /**
+   * Passes the manifest's own measurement on to the state that seeds families.
+   *
+   * The rail and the accordion do not reveal a family the same way, and the
+   * revealed set lives in the store — so the store has to be told which of the
+   * two is drawing. The measurement is the manifest's because the threshold is
+   * the manifest's container, not this region's (`manifest.ts`, FR-021).
+   */
+  setManifest(manifest: CandidateManifest): void {
+    this.store.setFamilyReveal(manifest === 'rail' ? 'rail' : 'accordion');
   }
 
   clear(): void {
