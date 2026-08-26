@@ -20,18 +20,21 @@ import { reachShellAction } from './shell';
 /** What the shell says when a newer version is waiting to be applied. */
 const UPDATE_NOTICE = 'A newer version of this application has been published.';
 
-/** What the overlay says while the restart is on its way. */
-const UPDATE_OVERLAY = 'this session is restarting on it';
+/** The overlay's own name, which is how a reader finds it. */
+const UPDATE_OVERLAY_TITLE = 'Updating';
 
 /**
  * The overlay a newer version puts up before it restarts the page under it.
  *
- * Found by its own sentence rather than by a role, because what matters to this
- * journey is that a Commander is told what is about to happen — the layer it is
- * drawn in is asserted where layers are.
+ * Found as the named modal rather than by its sentence, and both halves of that
+ * matter. The sentence is also published to the polite outlet, so text alone
+ * matches twice; and the layer is mounted beside the frame whether it is open or
+ * not, so a text match inside it finds a closed layer as readily as an open one.
+ * A dialog that is not open is not in the accessibility tree at all, which is
+ * what makes this the same locator for "it is up" and for "there is none".
  */
 function restartWarning(page: Page): Locator {
-  return page.getByText(UPDATE_OVERLAY);
+  return page.getByRole('dialog', { name: UPDATE_OVERLAY_TITLE });
 }
 
 /**
@@ -161,6 +164,11 @@ test.describe('a newly published version', () => {
 
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
+    // Everything below runs against a page with a countdown on it, so it runs
+    // in order of how long it takes: the sweep first, while the whole grace
+    // period is still ahead of it, and the short waits after. A scan that
+    // started late enough would be scanning the reload.
+    //
     // The overlay and the controls on it are a rendered product state like any
     // other, so they are scanned like any other.
     await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applying' });
@@ -182,6 +190,12 @@ test.describe('a newly published version', () => {
   });
 
   test('restarts the session on its own when the warning is left standing', async ({ page }) => {
+    // Slow because of what it does, not because of the machine: the grace
+    // period it waits out is twenty seconds of product behaviour, and two
+    // controlled loads bracket it. The default budget is calibrated on a test
+    // that does not wait for a clock (`playwright.config.ts`).
+    test.setTimeout(150_000);
+
     await openControlledSession(page);
 
     await publish(page);
@@ -214,6 +228,10 @@ test.describe('a newly published version', () => {
   test('is held back, and applied later, when the Commander says not now', async ({
     page,
   }, testInfo) => {
+    // Slow for the same reason, from the other side: proving the warning does
+    // not come back means outliving the countdown that would have brought it.
+    test.setTimeout(150_000);
+
     await openControlledSession(page);
 
     await publish(page);
@@ -241,6 +259,10 @@ test.describe('a newly published version', () => {
   });
 
   test('is what the next start is served, even when nobody applies it', async ({ page }) => {
+    // Two controlled loads and a ten-second absence window, on top of a warning
+    // that has to be answered before either.
+    test.setTimeout(120_000);
+
     await openControlledSession(page);
 
     await publish(page);
