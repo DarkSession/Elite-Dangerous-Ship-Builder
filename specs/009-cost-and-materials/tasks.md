@@ -195,9 +195,15 @@ is not named, and that a build with no engineering draws no materials block at a
       over the no-build, active-build, no-engineering, Mercenary-absent and Mercenary-present
       states, in `e2e/cost-and-materials.spec.ts` (depends on T022)
       _Completed 2026-08-25._ One sweep of the populated block was landed originally, which said
-      nothing about the four states that differ in what is on screen rather than in how it is styled.
-      `sweepOutfittingState` scans the page it is handed, so each state is now its own sweep in
-      "the accessibility sweep, state by state".
+      nothing about the other four — they differ in what is on screen rather than in how it is
+      styled. The five are now covered, though not all of them from here.
+      `sweepOutfittingState` scans the **whole document**, and the no-build and nothing-crafted
+      screens are already swept by `e2e/outfitting-accessibility.spec.ts` ("an empty workspace says
+      why it is empty") and `e2e/module-outfitting.spec.ts` ("is accessible in every rendered ledger
+      state"). Re-sweeping them from here would have added roughly twenty full scans a run against
+      a budget T034 already records as tight. So this file sweeps the two states nothing else
+      reaches — the populated block and the Merc-Coin row — and asserts the content of the other
+      two without a second scan of the same screen.
 - [x] T024 [P] Assert 200% text, actual 400% browser zoom, expanded translations, long canonical
       material names and RTL layout with no lost content, no lost label-to-value association and no
       document horizontal scrolling, in `e2e/cost-and-materials.spec.ts` (depends on T022)

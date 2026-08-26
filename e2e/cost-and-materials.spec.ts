@@ -619,10 +619,13 @@ async function overflowingReadings(page: Page): Promise<string[]> {
     nodes
       .map((node) => {
         const element = node as HTMLElement;
+        // Deliberately not skipped when the box has no width. `.cost__label` and
+        // `.rail-material__name` are `flex: 1` with `min-inline-size: 0`, so the
+        // way they fail is by being squeezed to nothing while their text goes on
+        // painting across the figure beside them — the exact case this exists to
+        // catch. An element that draws no text at all falls out below instead,
+        // on having no painted range.
         const box = element.getBoundingClientRect();
-        if (box.width === 0) {
-          return null;
-        }
 
         let left = Number.POSITIVE_INFINITY;
         let right = Number.NEGATIVE_INFINITY;
@@ -884,22 +887,25 @@ test.describe('in German, at a doubled text size', () => {
  * the build that crafts nothing, whose materials block is absent altogether.
  */
 test.describe('the accessibility sweep, state by state', () => {
-  test('with no build open', async ({ page }, testInfo) => {
+  test('with no build open, neither block is drawn', async ({ page }) => {
     await page.goto('/build');
     await expect(page.getByRole('main')).toBeVisible();
 
-    // Neither block is drawn without a build; the workspace already says why it
-    // is empty.
+    // The state is asserted, not swept: `sweepOutfittingState` scans the whole
+    // document, and this exact state is already swept by
+    // `e2e/outfitting-accessibility.spec.ts` ("an empty workspace says why it is
+    // empty"). A second full scan of the same screen buys nothing and costs a
+    // sweep in every project.
     await expect(page.locator('edsb-cost-materials .block')).toHaveCount(0);
-    await sweepOutfittingState(page, testInfo, 'cost and materials, no build');
   });
 
-  test('with a build that has crafted nothing', async ({ page }, testInfo) => {
+  test('with a build that has crafted nothing, only the cost block is drawn', async ({ page }) => {
     await openStockBuild(page);
 
+    // Swept already by `e2e/module-outfitting.spec.ts` ("is accessible in every
+    // rendered ledger state"), which opens the same stock build.
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
     await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
-    await sweepOutfittingState(page, testInfo, 'cost and materials, nothing engineered');
   });
 
   test('with a Merc-Coin article bought', async ({ page }, testInfo) => {
