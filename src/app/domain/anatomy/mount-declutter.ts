@@ -271,6 +271,21 @@ function alignedTurn(members: readonly PlatePoint[]): number {
   return Math.atan2(sin, cos);
 }
 
+/**
+ * Whether two segments properly cross.
+ *
+ * By the sign of the turn each endpoint makes about the other segment: they
+ * cross when each segment separates the other's two ends. Touching at an
+ * endpoint is not crossing, which is what the strict comparison gives.
+ */
+function crosses(a1: PlatePoint, a2: PlatePoint, b1: PlatePoint, b2: PlatePoint): boolean {
+  const turn = (p: PlatePoint, q: PlatePoint, r: PlatePoint): number =>
+    (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  return (
+    turn(a1, a2, b1) > 0 !== turn(a1, a2, b2) > 0 && turn(b1, b2, a1) > 0 !== turn(b1, b2, a2) > 0
+  );
+}
+
 /** How far a point is from a segment, measured the way the marks are. */
 function fromSegment(point: PlatePoint, from: PlatePoint, to: PlatePoint): number {
   const run = { x: to.x - from.x, y: to.y - from.y };
@@ -383,6 +398,7 @@ function arrange(
   const settle = (
     group: readonly number[],
     around: readonly PlatePoint[],
+    leaders: readonly (readonly [PlatePoint, PlatePoint])[],
   ): readonly PlatePoint[] | null => {
     const members = group.map((index) => anchors[index]);
     const middle = middleOf(members);
@@ -391,6 +407,18 @@ function arrange(
     const legible = Math.max(separating, reach + mark * LEAST_TRAVEL);
     const aligned = alignedTurn(members);
 
+    /**
+     * Whether a ring may be used at all.
+     *
+     * The last clause is the one that is easy to leave out and was: a crowd's
+     * own leaders must not cross **each other**. Handing the slots out in the
+     * members' own angular order guarantees that only while the ring sits where
+     * the mounts point, and the search below turns it away from there to find
+     * room. Turn a pair far enough and the two swap sides, so each mark is
+     * across the crowd from its own mount and the two lines make an X. That is
+     * what the Corsair's `MediumHardpoint1` and `MediumHardpoint2` did at any
+     * plate wider than about four hundred pixels.
+     */
     const fits = (ring: readonly PlatePoint[]): boolean =>
       ring.every(
         (one, index) =>
@@ -400,6 +428,20 @@ function arrange(
             one,
             ring.filter((_, other) => other !== index),
           ),
+      ) &&
+      ring.every((one, index) =>
+        ring.every(
+          (other, another) =>
+            index === another || !crosses(members[index], one, members[another], other),
+        ),
+      );
+
+    /** How many leaders already on the plate a ring's own would cross. */
+    const tangles = (ring: readonly PlatePoint[]): number =>
+      ring.reduce(
+        (count, one, index) =>
+          count + leaders.filter(([from, to]) => crosses(members[index], one, from, to)).length,
+        0,
       );
 
     // The best turn at one radius, or nothing if none of them fits. Every turn
@@ -410,6 +452,7 @@ function arrange(
     // and the arrangement stays deterministic.
     const bestAt = (radius: number): readonly PlatePoint[] | null => {
       let best: readonly PlatePoint[] | null = null;
+      let bestTangles = Infinity;
       let bestRoom = -Infinity;
       let bestSwing = Infinity;
 
@@ -419,10 +462,18 @@ function arrange(
         if (!fits(ring)) {
           continue;
         }
+        // Crossing a line already on the plate is a defect a reader sees before
+        // anything else, so it is ruled on before room is even compared; room
+        // and then closeness to the mounts' own direction settle the rest.
+        const tangled = tangles(ring);
         const room = roomAround(ring, members, around);
         const from = Math.abs(Math.atan2(Math.sin(swing), Math.cos(swing)));
-        if (room > bestRoom || (room === bestRoom && from < bestSwing)) {
+        const better =
+          tangled < bestTangles ||
+          (tangled === bestTangles && (room > bestRoom || (room === bestRoom && from < bestSwing)));
+        if (better) {
           best = ring;
+          bestTangles = tangled;
           bestRoom = room;
           bestSwing = from;
         }
@@ -453,6 +504,14 @@ function arrange(
   const rest = (group: readonly number[]): readonly PlatePoint[] =>
     marks.filter((_, index) => !group.includes(index));
 
+  /** Every leader already drawn for a mount outside `group`. */
+  const otherLeaders = (group: readonly number[]): readonly (readonly [PlatePoint, PlatePoint])[] =>
+    anchors.flatMap((anchor, index) =>
+      displaced[index] && !group.includes(index)
+        ? [[anchor, marks[index]] as readonly [PlatePoint, PlatePoint]]
+        : [],
+    );
+
   // Two passes. The first places each crowd against the crowds already placed,
   // largest first — but a crowd choosing its turn cannot see the marks of
   // crowds that have not been placed yet, so it can pick a side that a later
@@ -466,7 +525,7 @@ function arrange(
       if (group.length === 1) {
         continue;
       }
-      const ring = settle(group, rest(group));
+      const ring = settle(group, rest(group), otherLeaders(group));
       if (ring !== null) {
         group.forEach((index, member) => {
           marks[index] = ring[member];

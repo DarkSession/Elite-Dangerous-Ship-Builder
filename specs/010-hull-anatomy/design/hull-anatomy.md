@@ -361,8 +361,15 @@ crowd, so an inward-looking ring sent that mark left, straight over the two hard
 while the whole right side of the hull stood empty. Sixteen turns of the ring are tried and the one
 that leaves the most room wins — room measured for the leaders as well as the marks, because a mark
 can land in clear air and still have been reached by a line drawn across two of its neighbours. The
-slots are still handed out in the members' own angular order whatever the turn, so a crowd's own
-leaders never cross each other.
+slots are still handed out in the members' own angular order whatever the turn, which keeps a crowd's
+marks in the same cyclic order as its mounts — **but that is not enough on its own to stop two of its
+leaders crossing**, and believing it was is what let the Corsair's nodes 4 and 5 make an X at any
+plate wider than about four hundred pixels. Cyclic order holds the crossing off only while the ring
+sits where the mounts point; turn a pair far enough and the two swap sides, each mark ending up
+across the crowd from its own mount. So a candidate ring is refused outright if any two of its own
+leaders cross, and a ring that would cross a line already on the plate is ranked below one that
+would not — before room is even compared, because a line through a line is a defect a reader sees
+first.
 
 That question is asked twice. A crowd placed first cannot see the marks of crowds not yet placed, so
 it can choose a side that a later one then fills, or run a leader across a mount that is about to
@@ -397,12 +404,15 @@ underside is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pi
 even that will not fit does a crowd keep its mounts' own positions, and the front-on-hover rule
 answers the overlap.
 
-At the wide two-column plate a hundred and sixty-nine of four hundred and thirty-five marks move, all
-of them with a visible leader, the shortest ten pixels of line. No mark ends outside its frame and no
-pair of marks is left covering more than half of the other, at that width or at doubled text on a
-phone. Thirteen leaders still graze the edge of another mark, all of them on plates carrying nine or
-ten mounts, where every direction is somebody's; that is the residue rather than the rule, and it is
-recorded below.
+Measured across the ninety-six shipped plates at plate widths from two hundred to seven hundred and
+twenty pixels: no mark ends outside its frame, and no pair of marks is left covering more than half
+of the other, at any of those widths or at doubled text on a phone. From three hundred pixels of
+plate upward — every width the two-column and single-plate arrangements actually give — **no two
+leaders cross**, and the shortest visible leader runs from ten to sixteen pixels. Below about two
+hundred and fifty pixels the separation-only fallback takes over: a handful of leaders cross there
+and some are shorter than the marks they leave, which is the honest floor of a plate that small.
+Thirteen leaders graze the edge of another mark at the two-column width, all on plates carrying nine
+or ten mounts where every direction out of a crowd is already somebody's.
 
 **What the leader is not.** It carries no _mount state_: kind, fitted, engineering and side are all
 words in the button's own name, selection is `aria-pressed` and the ledger row, and the line is one amber

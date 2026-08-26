@@ -28,6 +28,15 @@ function apart(a: PlatePoint, b: PlatePoint): number {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }
 
+/** Whether two segments properly cross, by the turn each end makes about the other. */
+function cross(a1: PlatePoint, a2: PlatePoint, b1: PlatePoint, b2: PlatePoint): boolean {
+  const turn = (p: PlatePoint, q: PlatePoint, r: PlatePoint): number =>
+    (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  return (
+    turn(a1, a2, b1) > 0 !== turn(a1, a2, b2) > 0 && turn(b1, b2, a1) > 0 !== turn(b1, b2, a2) > 0
+  );
+}
+
 describe('placeMarks', () => {
   it('leaves a mount where the package drew it when nothing is near it', () => {
     const anchors = [
@@ -332,6 +341,35 @@ describe('placeMarks', () => {
 
     expect(placed.every((one) => one.displaced)).toBe(true);
     expect(apart(placed[0].mark, placed[1].mark)).toBeGreaterThan(apart(anchors[0], anchors[1]));
+  });
+
+  it('never lets two leaders cross each other', () => {
+    // The guarantee that slot order gives — a crowd's marks go round the ring
+    // in the same cyclic order its mounts go round the middle — holds only
+    // while the ring sits where the mounts point. The search turns it away from
+    // there to find room, and a pair turned far enough swaps sides: each mark
+    // ends up across the crowd from its own mount and the two lines make an X.
+    // The Corsair's nodes 4 and 5 did exactly that at any plate wider than
+    // about four hundred pixels.
+    const anchors = [
+      { x: 360, y: 140 },
+      { x: 360, y: 152 },
+      // A wall on one side, so the ring is pushed off its aligned turn.
+      { x: 300, y: 100 },
+      { x: 300, y: 146 },
+      { x: 300, y: 192 },
+    ];
+
+    const placed = placeMarks(anchors, FRAME).filter((one) => one.displaced);
+
+    for (let i = 0; i < placed.length; i += 1) {
+      for (let j = i + 1; j < placed.length; j += 1) {
+        expect(
+          cross(placed[i].anchor, placed[i].mark, placed[j].anchor, placed[j].mark),
+          `${i} and ${j}`,
+        ).toBe(false);
+      }
+    }
   });
 
   it('returns one placement per mount, in the order it was handed them', () => {

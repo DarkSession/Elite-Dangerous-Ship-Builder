@@ -390,7 +390,13 @@ said and the requirement is what changed.
       leaving the crowd alone. Refusing to move it kept the overlap this exists to remove, for a line
       nobody could have seen; it failed the doubled-text assertion on a phone, where the Anaconda's
       top plate is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate.
-- [x] T079 Cover all eight in the suites that gate the build: `placeMarks` in
+- [x] T087 Stop two leaders crossing each other — a candidate ring is refused if any two of its own
+      leaders cross, and one that would cross a line already on the plate is ranked below one that
+      would not, ahead of the room comparison. Slot order keeps a crowd's marks in its mounts' cyclic
+      order, which was taken for a no-crossing guarantee and is not one: it holds only while the ring
+      sits where the mounts point, and the turn search moves it. Reported on the Corsair, whose nodes
+      4 and 5 made an X at any plate wider than about four hundred pixels.
+- [x] T079 Cover all nine in the suites that gate the build: `placeMarks` in
       `src/app/domain/anatomy/mount-declutter.spec.ts`, the plate's own displacement, leader and
       filtered-box assertions in `src/app/ui/outfitting/hull-schematic.spec.ts`, and the two
       end-to-end assertions — leaders matching displaced marks on both plates, a selected utility
