@@ -1442,8 +1442,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'shell.beta':
       'The release stage as a mark rather than a word: the canvas sets it in Latin capitals on every artboard, and it is read the same way in German. Translating it would rename the product on one of the two.',
-    'outfitting.power.priority.absent':
-      'A dash standing in for a group the package never published; not a word in either language.',
     'power.heat.does-not-settle':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'offence.capacitor.endurance.sustained':

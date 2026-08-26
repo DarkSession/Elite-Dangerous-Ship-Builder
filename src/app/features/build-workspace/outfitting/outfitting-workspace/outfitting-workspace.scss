@@ -143,7 +143,16 @@
     // stands the notices above off the regions below them.
     column-gap: 0;
     row-gap: var(--edsb-space-region);
-    align-items: start;
+    // The columns reach the foot of the row, whichever of them is the tallest.
+    //
+    // `start` was invisible while every column carried a definite height — they
+    // were all `100svh` and there was nothing to stretch to. It bit on a short
+    // viewport, where the bounded columns are released and each takes its own
+    // content height: the ledger then stopped wherever its last row ended and
+    // took its ground and its seam with it, while the bench beside it ran on
+    // down a page twice as long (reported 2026-08-26). The canvas has one grid
+    // row and three columns stretched to it.
+    align-items: stretch;
   }
 
   .outfitting__empty,
@@ -250,8 +259,14 @@
   // the taller of the two. The share is set from the bench rather than from
   // what is in them: a manifest of two hundred rows measures a hundred times
   // the editor, and anything weighed by content leaves the editor a strip.
+  //
+  // Adjusted 2026-08-26: 1.25 to 1.1. The manifest was taking 56% of the bench
+  // against the editor's 44%, and an engineering pass — a grade, an effect and
+  // the attribute comparison under them — is the taller of the two readings at
+  // the moment a Commander is making it. Not an even split: the canvas does
+  // draw the manifest the taller, and this only narrows the margin.
   .outfitting__bench edsb-module-replacement {
-    flex: 1.25 1 0;
+    flex: 1.1 1 0;
   }
 
   .outfitting__bench edsb-engineering-editor {

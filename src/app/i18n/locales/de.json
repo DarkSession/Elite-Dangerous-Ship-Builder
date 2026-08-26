@@ -462,8 +462,6 @@
   "outfitting.engineering.materials.merc-coin": "Merc Coins",
   "outfitting.power.enabled": "{{module}} in {{slot}} ist mit Strom versorgt",
   "outfitting.power.priority": "Strompriorität für {{module}} in {{slot}}",
-  "outfitting.power.priority.absent": "—",
-  "outfitting.power.priority.unpublished": "Energiepriorität für {{module}} in {{slot}}, keine Gruppe veröffentlicht",
   "outfitting.ingress.refusal.title": "Dieser Build wurde nicht geöffnet",
   "outfitting.ingress.refusal.description": "Die Technik an {{count}} seiner Module konnte nicht vervollständigt werden; nichts davon wurde aktiviert und Ihr Build ist genau so, wie er war.",
   "outfitting.ingress.refusal.module": "{{slot}}: {{module}}, angekommen mit {{quality}} seiner Stufe. Der Grund ist mit {{code}} benannt.",

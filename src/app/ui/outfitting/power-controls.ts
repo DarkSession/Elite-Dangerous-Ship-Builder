@@ -34,10 +34,21 @@ const GROUPS: readonly PowerPriority[] = [0, 1, 2, 3, 4];
  * nothing downstream has to remember which convention it is holding (contract,
  * "Operations").
  *
- * An absent group is left absent. The package reports `undefined` for a module
- * whose source never stated one, and selecting a group on the Commander's
- * behalf so the control has something to show would be a decision nobody made
- * (FR-014, data model "FittedModuleView").
+ * A module whose source stated no group is drawn in the package's own default,
+ * which is group 1. Ruled 2026-08-26, reversing an earlier reading: this was
+ * drawn as a `\u2014` on the grounds that choosing a group for the Commander
+ * would be a decision nobody made. But nobody was being asked to make one —
+ * `PowerConsumer.priority` documents the absent case as defaulting to `1`, and
+ * `powerBudget()` had already put the module in band 1, where the power panel
+ * lists it and where it is shed. The chip was the one place in the application
+ * saying otherwise, and the case is not rare: the package resets `On` and
+ * `Priority` on every fresh mount, so every module a Commander fitted showed
+ * the dash (reported 2026-08-26).
+ *
+ * The absence survives where it means something. `FittedModuleView.priority` is
+ * still `undefined`, nothing writes a group into the build, and a build
+ * exported after this is drawn is the build that was imported. What changed is
+ * only what the chip reads: the group the module is actually in.
  */
 @Component({
   selector: 'edsb-power-controls',
@@ -73,14 +84,12 @@ export class PowerControls {
   readonly isOn = computed(() => this.enabled() ?? true);
 
   /**
-   * What the control shows when the package states no group at all.
+   * The group this module is in, as every other reading of the build has it.
    *
-   * A mark rather than a word: the canvas draws one digit in this chip, and
-   * spelling out `Unavailable` in it makes the chip wider than the row it sits
-   * in. The absence is said in full in the control's own name instead, so a
-   * reader still hears it (wave 4).
+   * The package's documented default for an unstated group, applied here once
+   * so the chip agrees with the power panel beside it.
    */
-  readonly absentLabel = this.#messages.messageSignal('outfitting.power.priority.absent');
+  readonly shownPriority = computed<PowerPriority>(() => this.priority() ?? 0);
 
   readonly enabledLabel = computed(() =>
     this.#messages.message('outfitting.power.enabled', {
@@ -90,12 +99,10 @@ export class PowerControls {
   );
 
   readonly priorityLabel = computed(() =>
-    this.#messages.message(
-      this.priority() === undefined
-        ? 'outfitting.power.priority.unpublished'
-        : 'outfitting.power.priority',
-      { module: this.moduleLabel(), slot: this.slotLabel() },
-    ),
+    this.#messages.message('outfitting.power.priority', {
+      module: this.moduleLabel(),
+      slot: this.slotLabel(),
+    }),
   );
 
   /** The group as a Commander reads it: one-based, exactly as the game shows. */

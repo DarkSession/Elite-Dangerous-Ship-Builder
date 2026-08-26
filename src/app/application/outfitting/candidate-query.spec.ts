@@ -1,4 +1,7 @@
-import { OUTFITTING_FAMILIES } from '@elite-dangerous-almanac/core/ships/module-families';
+import {
+  OUTFITTING_FAMILIES,
+  type OutfittingFamilyId,
+} from '@elite-dangerous-almanac/core/ships/module-families';
 import {
   FIXTURE_SLOTS,
   ROUTE_DISTINCT_SYMBOL,
@@ -37,6 +40,7 @@ function open(
   locale = 'en',
   revision = 1,
   fitted: FittedArticle | null = null,
+  carried: OutfittingFamilyId | null = null,
 ): CandidateQueryState {
   const loadout = defaultBuild();
   return openCandidateQuery(
@@ -44,6 +48,7 @@ function open(
     locale,
     collatorFor(locale),
     fitted,
+    carried,
   );
 }
 
@@ -566,5 +571,65 @@ describe('candidate index', () => {
     expect(isCurrent(english, FIXTURE_SLOTS.hardpoint, 1, 'de')).toBe(false);
     // The names really do differ, so a stale index would search the wrong text.
     expect(buildIndex(german.choices, 'de')[0]!.name).not.toBe(english.index[0]!.name);
+  });
+});
+
+describe('the family carried from the mount before', () => {
+  /** A family the empty fixture hardpoint actually offers. */
+  function offeredFamily(): OutfittingFamilyId {
+    return open(FIXTURE_SLOTS.hardpoint).choices[0]!.presentation.familyId;
+  }
+
+  it('opens the family the Commander was last reading on an empty mount', () => {
+    const carried = offeredFamily();
+    const state = open(FIXTURE_SLOTS.hardpoint, 'en', 1, null, carried);
+
+    // Working down a row of empty hardpoints means fitting the same kind of
+    // thing several times; closing the category on each one made a Commander
+    // open it again for every mount.
+    expect([...state.openFamilies]).toEqual([carried]);
+  });
+
+  it('never overrides the family the mount itself is carrying', () => {
+    const empty = open(FIXTURE_SLOTS.hardpoint);
+    const other = empty.choices[0]!.presentation.familyId;
+    const fittedState = open(FIXTURE_SLOTS.fittedHardpoint);
+    const fitted = fittedState.choices[0]!;
+
+    const state = open(
+      FIXTURE_SLOTS.fittedHardpoint,
+      'en',
+      1,
+      { symbol: fitted.module.symbol, variant: fitted.kind === 'variant' ? fitted.variant : null },
+      other,
+    );
+
+    // What is in the mount always wins: the carry is only consulted where the
+    // mount has nothing of its own to say.
+    expect(state.fittedFamilyId).not.toBeNull();
+    expect([...state.openFamilies]).toEqual([state.fittedFamilyId]);
+  });
+
+  it('drops a carry the mount does not offer at all', () => {
+    const hardpointFamilies = new Set(
+      open(FIXTURE_SLOTS.hardpoint).choices.map((choice) => choice.presentation.familyId),
+    );
+    const foreign = open(FIXTURE_SLOTS.optional)
+      .choices.map((choice) => choice.presentation.familyId)
+      .find((family) => !hardpointFamilies.has(family));
+
+    expect(foreign, 'the two fixture mounts share every family').toBeDefined();
+
+    const carried = open(FIXTURE_SLOTS.hardpoint, 'en', 1, null, foreign!);
+    const plain = open(FIXTURE_SLOTS.hardpoint);
+
+    expect([...carried.openFamilies]).toEqual([...plain.openFamilies]);
+  });
+
+  it('survives clearing a search, the way the fitted seed does', () => {
+    const carried = offeredFamily();
+    const state = open(FIXTURE_SLOTS.hardpoint, 'en', 1, null, carried);
+
+    expect([...applyQuery(applyQuery(state, 'zzz'), '').openFamilies]).toEqual([carried]);
   });
 });

@@ -3,6 +3,7 @@ import type { IngressNotice } from '../../domain/build/build-ingress-result';
 import { MessageService } from '../../i18n/message.service';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
+import { slotName } from './slot-naming';
 
 /**
  * What the Almanac completed while the build was being read in.
@@ -32,7 +33,7 @@ export class QualityCompletionNotice {
   readonly notices = input.required<readonly IngressNotice[]>();
   readonly revision = input.required<number>();
 
-  /** The mount labels, already localized, by exact slot key. */
+  /** The mount labels, already localized, keyed by the package's slot key. */
   readonly slotLabels = input<Readonly<Record<string, string>>>({});
 
   readonly dismissed = output<void>();
@@ -44,7 +45,7 @@ export class QualityCompletionNotice {
       id: notice.slotKey,
       messageKey: 'outfitting.notice.quality-completed' as const,
       params: {
-        slot: this.slotLabels()[notice.slotKey] ?? notice.slotKey,
+        slot: slotName(this.slotLabels(), notice.slotKey),
         quality: this.#formatters.percent(notice.previousQuality),
       },
     })),

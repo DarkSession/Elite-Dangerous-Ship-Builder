@@ -22,20 +22,16 @@
     <span class="visually-hidden" [id]="priorityId">{{ priorityLabel() }}</span>
     <!--
       Which option is current is carried by the options themselves rather than
-      by a value binding on the field: the absent case is a disabled option, and
-      a disabled option is not what a value binding lands on.
+      by a value binding on the field, so the selection survives the list being
+      rebuilt for a different module.
+
+      A module whose source stated no group is drawn in the package's own
+      default, group 1, because that is the group it is already in everywhere
+      else in the application — including the power panel that sheds it.
     -->
     <select class="power__priority" [attr.aria-labelledby]="priorityId" (change)="choose($event)">
-      @if (priority() === undefined) {
-        <!--
-          The package reports no group for this module, and the canvas draws no
-          case for that. Rather than write a group nobody chose, the control
-          says the value is unavailable and cannot be put back (constitution IV).
-        -->
-        <option value="" disabled selected>{{ absentLabel() }}</option>
-      }
       @for (group of groups; track group) {
-        <option [value]="group" [selected]="priority() === group">
+        <option [value]="group" [selected]="shownPriority() === group">
           {{ groupLabel(group) }}
         </option>
       }

@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Injectable, computed, inject, linkedSignal, signal, untracked } from '@angular/core';
 import type { OutfittingFamilyId } from '@elite-dangerous-almanac/core/ships/module-families';
 import {
   LoadoutEditError,
@@ -74,6 +74,19 @@ export class OutfittingStore {
   readonly #messages = inject(MessageService);
 
   readonly #selectedSlotKey = signal<string | null>(null);
+
+  /**
+   * The family the Commander had open on the mount they were last reading.
+   *
+   * Captured at the gesture that leaves a mount rather than watched, because a
+   * chooser's open set is derived from this and something watching it would be
+   * reading its own output. It survives exactly one step: the next mount either
+   * has a fitted family of its own, in which case this is never consulted, or
+   * it is empty and inherits what was open — which is what makes fitting the
+   * same kind of thing down a row of empty mounts one gesture per mount
+   * (FR-021, reported 2026-08-26).
+   */
+  readonly #carriedFamily = signal<OutfittingFamilyId | null>(null);
   readonly #surface = signal<OutfittingSurface>('workspace');
   readonly #lastEditFailure = signal<EditFailure | null>(null);
   readonly #query = signal('');
@@ -208,6 +221,10 @@ export class OutfittingStore {
       this.#gameText.locale,
       this.#formatters.collator(),
       fitted,
+      // Read untracked: it is a seed taken at the last selection, not an input
+      // this chooser follows. Tracked, capturing it would re-open the chooser
+      // that produced it.
+      untracked(() => this.#carriedFamily()),
     );
   });
 
@@ -245,9 +262,26 @@ export class OutfittingStore {
 
   /** Selects a mount by its exact package slot key. */
   select(slotKey: string | null): void {
+    this.#carryOpenFamily();
     this.#selectedSlotKey.set(slotKey);
     this.#query.set('');
     this.#surface.set('workspace');
+  }
+
+  /**
+   * Remembers the one family that was open, for the next mount to inherit.
+   *
+   * Only one: the carry is what a Commander was reading, and a set of three is
+   * not that. Nothing is carried out of a chooser showing more than one family
+   * or none — the next mount then falls back to its own default, which is the
+   * behaviour that was there before.
+   */
+  #carryOpenFamily(): void {
+    const open = untracked(() => this.#candidateQuery()?.openFamilies);
+    const only = open === undefined || open.size !== 1 ? null : [...open][0]!;
+    if (only !== null) {
+      this.#carriedFamily.set(only);
+    }
   }
 
   showSurface(surface: OutfittingSurface): void {

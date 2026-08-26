@@ -66,6 +66,21 @@ nothing to clear. Both are now the full height the bar leaves, and the status ra
 height rather than a cap so its seam is drawn whether or not the rail has that much to say
 (Commander request 2026-08-25).
 
+**Ruled 2026-08-26 — and they run the whole way down on a short viewport too.** The 2026-08-25 rule
+held only because every column carried the same definite height; the grid itself was aligned to
+`start`, which had nothing to bite on while that was true. It bit where the bounded columns are
+released — a short viewport, where the bar releases with them and the page scrolls instead. Each
+column then takes its own content height, and the ledger stopped wherever its last row ended, taking
+its ground and its seam with it while the bench beside it ran on down a page twice as long. The grid
+stretches its columns to the row, which is what canvas 1c's one grid row does and what the definite
+heights were already imitating (reported 2026-08-26).
+
+**The bench's share, adjusted 2026-08-26: 1.25 to 1.1.** The manifest was taking 56% of the bench to
+the editor's 44%. An engineering pass — a grade, an experimental effect and the attribute comparison
+under them — is the taller of the two readings at the moment a Commander is making it, and the
+editor was the pane being scrolled. Not an even split: the canvas does draw the manifest the taller
+of the two, and this only narrows the margin (Commander request 2026-08-26).
+
 **What that height is, is measured, not declared.** `--edsb-layout-bar-height` is one row of controls
 at the target baseline — what the bar comes to on every screen that draws a plain title. This screen
 does not: FR-019's identity block is two 24px targets and a gap, so the workspace's bar is 74px, and
@@ -222,6 +237,13 @@ package immovable reason. Do not make the card open replacement or engineering a
 - Groups use semantic lists; facts use definition lists. Exact slot keys are never visible text; they
   are always available to assistive technology through `visually-hidden` text beside the drawn label,
   which is the accessibility floor rather than an addition to the design.
+- **A notice names a mount the way the ledger does, whatever the source called it.** The ingress
+  notices carry the slot key the file, the link or the journal event used, and the package matches
+  slot keys without regard to case — so `slot08_size4` names the mount the ledger lists as
+  `Slot08_Size4`, and looking the label up by exact key missed and printed the raw key as visible
+  text (reported 2026-08-26). The lookup compares the way the package compares. A key with no label
+  at all still falls back to itself: a notice naming no mount would be worse than one naming it
+  awkwardly.
 - Switch and priority select names include the slot/module. One-based priority labels include the word
   “priority”; enabled state is not a colored dot alone.
 - Selection, invalid/incomplete/disabled/engineered/acquisition state includes text and programmatic
