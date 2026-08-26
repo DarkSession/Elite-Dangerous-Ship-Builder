@@ -115,7 +115,17 @@
 // Four blocks side by side, each of them the control for that many pips — the
 // same control the distributor's cell draws, at the same target size, so the
 // two places a Commander can set the pips are the same size to press.
+//
+// It scrolls inside itself rather than pushing the document sideways. Four
+// blocks at the 2.75rem target baseline are 388px at a doubled text size, and
+// the rail column is 318px: the blocks cannot shrink to fit without dropping
+// under the target size, which is a floor rather than a preference
+// (constitution V), so the row is bounded and the overflow is its own. The
+// distributor's cell answers the same arithmetic the same way, in its table
+// scroller, and the mode strip above does it too.
 .pips {
+  @include layout.bounded-scroller;
+
   display: flex;
   gap: var(--edsb-space-inline-tight);
   inline-size: max-content;
