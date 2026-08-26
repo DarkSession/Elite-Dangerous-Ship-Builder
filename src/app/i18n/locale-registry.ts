@@ -37,14 +37,6 @@ export interface ShippedLocale {
    * English is additionally bundled and never requested at all.
    */
   readonly assetPath: string;
-  /**
-   * Key resolving to the language's own name, in that language.
-   *
-   * Every catalogue carries every endonym, because a selector has to name the
-   * languages a Commander is *not* currently reading in. Endonyms are not
-   * translated: German is "Deutsch" on an English screen too, which is what a
-   * reader looking for their own language actually scans for.
-   */
   /** Exactly one shipped locale is the fallback. */
   readonly fallback: boolean;
 }
@@ -123,7 +115,7 @@ export const SHIPPED_LOCALES: readonly ShippedLocale[] = [
  * tag; a tag it rejects falls back to a lowercase comparison rather than
  * throwing, because a malformed browser entry must not break startup.
  */
-export function canonicalizeTag(tag: string): string {
+function canonicalizeTag(tag: string): string {
   try {
     return Intl.getCanonicalLocales(tag)[0] ?? tag;
   } catch {
@@ -132,7 +124,7 @@ export function canonicalizeTag(tag: string): string {
 }
 
 /** The base language of a tag: `de-DE` becomes `de`. */
-export function baseLanguage(tag: string): string {
+function baseLanguage(tag: string): string {
   return canonicalizeTag(tag).split('-')[0]?.toLowerCase() ?? '';
 }
 

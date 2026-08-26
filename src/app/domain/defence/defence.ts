@@ -435,7 +435,7 @@ function toArmourSnapshot(metrics: ArmourMetrics): ArmourSnapshot {
  * of zero is a row saying zero, and an unbounded pool stays `Infinity` for a
  * presenter that knows what the field means.
  */
-export function toDamageDefenceValues(
+function toDamageDefenceValues(
   resistances: Record<DamageType, number>,
   effectiveHitPoints: Record<DamageType, number>,
 ): readonly DamageDefenceValue[] {

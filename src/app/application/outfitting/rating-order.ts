@@ -26,9 +26,6 @@ const RATING_ORDER: Record<ModuleRating, number> = {
   I: 8,
 };
 
-/** Every rating the package publishes, in listing order. Tests read this. */
-export const RATINGS_IN_ORDER = Object.keys(RATING_ORDER) as readonly ModuleRating[];
-
 /** Orders two grade letters ascending, `A` first. */
 export function compareRating(left: ModuleRating, right: ModuleRating): number {
   return RATING_ORDER[left] - RATING_ORDER[right];

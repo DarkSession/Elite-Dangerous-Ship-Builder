@@ -26,7 +26,7 @@ import { SlefStore } from './slef.store';
  * active build: a layer that says nothing about nothing is worse than a control
  * that was honestly unavailable.
  */
-export function slefFallback(): SlefFallback {
+function slefFallback(): SlefFallback {
   const store = inject(SlefStore);
   const active = inject(ActiveBuildStore);
 

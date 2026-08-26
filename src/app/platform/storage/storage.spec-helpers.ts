@@ -50,11 +50,6 @@ export function quotaError(): DOMException {
   return new DOMException('exceeded', 'QuotaExceededError');
 }
 
-/** A blocked-store failure. */
-export function blockedError(): DOMException {
-  return new DOMException('denied', 'SecurityError');
-}
-
 /** Providers binding both storage ports to in-memory stores. */
 export function provideMemoryStorage(local: MemoryStorage, session = new MemoryStorage()) {
   const acquire = (storage: MemoryStorage) => () => {

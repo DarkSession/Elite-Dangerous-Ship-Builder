@@ -110,9 +110,6 @@ export const UNKNOWN_HULL_RECORD = `{
   "sourceNamed": null
 }`;
 
-/** A record stored under a key whose identity it does not match. */
-export const MISMATCHED_ID_RECORD = NAMED_RECORD_V1;
-
 /** The identity each fixture is stored under. */
 export const FIXTURE_IDS = {
   named: '11111111-1111-4111-8111-111111111111',

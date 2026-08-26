@@ -27,7 +27,7 @@ export type ComponentState = (typeof COMPONENT_STATES)[number];
  * Playwright projects, so a declaration never carries five copies of the same
  * state (preview catalogue contract).
  */
-export const COMPONENT_VARIANTS = [
+const COMPONENT_VARIANTS = [
   'normal',
   'expanded-copy',
   'rtl',
@@ -109,9 +109,4 @@ export interface UiComponentContract {
 export interface ComponentIntent<TKind extends string = string, TPayload = void> {
   readonly kind: TKind;
   readonly payload: TPayload;
-}
-
-/** Whether a value is one of the five required states. */
-export function isComponentState(value: string): value is ComponentState {
-  return (COMPONENT_STATES as readonly string[]).includes(value);
 }
