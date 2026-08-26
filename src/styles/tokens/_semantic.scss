@@ -123,10 +123,31 @@
   --edsb-surface-damage-absolute: var(--edsb-palette-cool);
   --edsb-surface-damage-unclassified: var(--edsb-palette-amber-a40);
 
-  // The gunsight's own two inks: a fixed mount and an aimed one. The word is in
-  // each shot's sentence; this only tells two dots apart at a glance.
-  --edsb-surface-mount-fixed: var(--edsb-palette-amber);
-  --edsb-surface-mount-aimed: var(--edsb-palette-cool);
+  // The gunsight's three inks: a mount with a weapon on it, a mount with none,
+  // and the mount the workspace has selected.
+  //
+  // The canvas's own two are a *fixed* mount against an aimed one, coloured by
+  // `mount === 'GIMBALLED'` and nothing finer. That distinction is withdrawn
+  // here (`design/canvas-contract.md`, review note 17): a plate that also has to
+  // say which mounts are empty and which one is being worked on has three things
+  // to separate where the canvas had one, and how a weapon aims is the one of
+  // them a reader has least use for on a diagram about where shots land. It is
+  // named in that mount's own sentence either way. What the cool ink says
+  // instead is *selected*, which is the question a Commander is asking of this
+  // plate while they fit something.
+  //
+  // Empty is a mark ink and not a text one. The hull schematics split an empty
+  // mount the same way — a quiet outline with `--edsb-text-muted` on its
+  // number — and the plate takes their text ink exactly, so an empty mount's
+  // numeral reads alike in both drawings and stays above the text contrast
+  // floor. The outline is a heavier ink than theirs, because on the plate it is
+  // the whole of a 7px mark rather than a hairline beside a 44px square.
+  //
+  // The word is in each mark's own sentence beside the plate; these only tell
+  // three dots apart at a glance.
+  --edsb-surface-mount-armed: var(--edsb-palette-amber);
+  --edsb-surface-mount-empty: var(--edsb-palette-ink-a45);
+  --edsb-surface-mount-selected: var(--edsb-palette-cool);
 
   // ---------------------------------------------------------------------------
   // Text — every role at or above 4.5:1 on all nine grounds
@@ -373,9 +394,9 @@
   --edsb-layout-offence-label: var(--edsb-measure-offence-label);
   --edsb-layout-offence-value: var(--edsb-measure-offence-value);
   --edsb-layout-weapon-figure: var(--edsb-measure-weapon-figure);
-  --edsb-layout-gunsight-ratio: var(--edsb-measure-gunsight-ratio);
+  --edsb-layout-weapon-module: var(--edsb-measure-weapon-module);
+  --edsb-layout-gunsight-plate: var(--edsb-measure-gunsight-plate);
   --edsb-layout-shot-dot: var(--edsb-measure-shot-dot);
-  --edsb-layout-shot-badge: var(--edsb-measure-shot-badge);
   --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);

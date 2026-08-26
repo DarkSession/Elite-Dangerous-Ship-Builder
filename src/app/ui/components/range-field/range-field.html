@@ -1,7 +1,18 @@
+<!--
+  The canvas's own order since its 2026-08-25 revision: the label and the value
+  it is set to on one row, the track beneath them, and the ends of the scale
+  under that. The value moved off the track's trailing side and onto the row
+  above it, which is also the order a reader hears — what this is, what it says,
+  then the control that changes it.
+-->
 <div class="range">
   <label class="range__label" [id]="relations.labelId" [attr.for]="relations.controlId">
     {{ label() }}
   </label>
+
+  <output class="range__value" [attr.for]="relations.controlId" data-bidi-isolate>
+    {{ valueText() }}
+  </output>
 
   <span class="range__track">
     <!--
@@ -26,10 +37,6 @@
       (input)="onInput($event)"
     />
   </span>
-
-  <output class="range__value" [attr.for]="relations.controlId" data-bidi-isolate>
-    {{ valueText() }}
-  </output>
 
   @if (minText() && maxText()) {
     <!--

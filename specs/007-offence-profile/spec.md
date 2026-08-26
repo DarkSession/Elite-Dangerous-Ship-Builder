@@ -48,15 +48,17 @@ because it is why the first implementation shipped a third of the canvas.
 
 ### Story 4 — See where the shots go (P2)
 
-1. The build's armed hardpoints are drawn on one gunsight view, at their published offsets from the
-   cockpit.
-2. A target range is chosen, and every shot moves as the range moves.
-3. The lateral span, the vertical span, the apparent spread and the widest mount are stated for the
-   chosen range.
-4. A hull the catalogue does not place is stated as such, rather than drawn from part of its mounts.
-5. A hull the catalogue does place is drawn even when the build has armed none of it: the plate
-   keeps its axes and its rings, takes no mark, and is given none of the four figures about a group
-   of armed mounts.
+1. Every one of the hull's hardpoints is drawn on one gunsight view, at its published offset from
+   the cockpit, with the ones nothing is fitted to told apart from the armed ones.
+2. The mount the workspace has open is marked, so the hardpoint being worked on can be found on the
+   plate.
+3. A target range is chosen, and every shot moves as the range moves.
+4. The lateral span, the vertical span, the apparent spread and the widest mount are stated for the
+   chosen range, across the armed mounts alone.
+5. A hull the catalogue does not place is stated as such, rather than drawn from part of its mounts.
+6. A hull the catalogue does place is drawn even when the build has armed none of it: the plate
+   keeps its axes, its rings and every one of its mounts, and is given none of the four figures
+   about a group of armed mounts.
 
 ## Requirements
 
@@ -108,8 +110,12 @@ because it is why the first implementation shipped a third of the canvas.
   not line up with its hardpoints MUST be stated unavailable rather than drawn in part.
 - **FR-011**: The gunsight view is a diagram. It MUST be hidden from assistive technology, and every
   mark it draws MUST also be stated as text beside it, including a shot the plate could not place at
-  its true position. Each armed mount is drawn as the canvas draws it: a mark where its shot lands,
-  and that mount's hardpoint numeral beside it.
+  its true position. Each mount is drawn as the canvas draws an armed one: a mark where its shot
+  lands, and that mount's hardpoint numeral beside it. Whether a mount is armed and whether it is the
+  mount the workspace has selected MUST each be carried by that mount's own sentence as well as by
+  the ink of its mark; no distinction on this plate rests on colour alone. How a weapon is aimed MUST
+  be stated in that sentence, and is not drawn at all
+  (`design/canvas-contract.md`, review note 17).
 
   > **Re-drawn 2026-08-25.** The plate the canvas draws changed in four ways at once, and the
   > requirement follows the drawing: the field of view is `40` milliradians rather than `115`; the
@@ -122,23 +128,38 @@ because it is why the first implementation shipped a third of the canvas.
   > moves a dot, and a moved dot is exactly the case where the sentence is the true reading
   > (`design/canvas-contract.md`, "Canvas revision, 2026-08-25").
 
-- FR-012 — _withdrawn 2026-08-24, and deliberately no longer declared._ This item required a
-  hardpoint the build has not filled to be
-  drawn on the same plate and stated beside it. It was written on the belief that the canvas's own
-  sample fills every hardpoint and so never faces an empty one, which is false: `wireConvergence`'s
-  mount array carries hardpoints 1, 2, 3, 4 and 6, and the same sample build's hull-anatomy plate
-  marks hardpoint 5 `data-kind="empty"`. The canvas does face an unfilled hardpoint on the gunsight
-  and draws nothing whatsoever for it — its marks are mapped off the armed mounts alone, as are its
-  two spans and its widest. A mark and a sentence for an empty mount were therefore an invention,
-  and both are removed (`design/canvas-contract.md`, review note 8).
+- **FR-012**: Every hardpoint the catalogue places MUST be drawn on the plate, whether or not the
+  build has armed it, at the offset the package publishes for that mount. A hardpoint with nothing
+  fitted MUST be told apart from an armed one by its mark, and MUST be named as empty in its own
+  sentence beside the plate rather than by that mark alone. No figure the block reports about the
+  group — the two spans, the widest mount and the apparent spread — may be measured across a
+  hardpoint that has nothing on it.
 
-  A hull the catalogue places is still drawn whether or not the build has armed any of it, because
-  saying the package publishes no geometry for a placed hull would be false. A build that has armed
-  nothing gets the plate with its axes and its rings and no marks at all, which is what the canvas's
-  own script draws when it has nothing to place.
+  > **Withdrawn 2026-08-24, reinstated 2026-08-26.** The withdrawal was correct about the drawing
+  > and is not being re-argued: `wireConvergence`'s mount array carries hardpoints 1, 2, 3, 4 and 6,
+  > the same sample build's hull-anatomy plate marks hardpoint 5 `data-kind="empty"`, and the
+  > canvas's marks, spans and widest are all mapped off the armed mounts alone. Neither canvas draws
+  > an empty mount on the gunsight.
+  >
+  > It is reinstated as a **sanctioned departure** at the maintainer's request, on a ground the
+  > canvas does not decide: a Commander who has not fitted a weapon yet is reading the plate to find
+  > out where a shot from that mount would go, and a plate showing only what is already fitted has
+  > nothing to say to them. The offsets are the package's own, published per hardpoint rather than
+  > per weapon, so nothing is derived to draw them, and every figure about the group stays measured
+  > across the armed mounts as the canvas measures them
+  > (`design/canvas-contract.md`, review note 8).
+  >
+  > The number is the one this requirement always had. Nothing renumbers, and the coverage ledger
+  > registers `007/FR-012` again.
 
-  The number is retired rather than reused: nothing renumbers, and the coverage ledger registers no
-  `007/FR-012`, because there is no drawn surface left for it to register.
+- **FR-013**: The mount the outfitting workspace currently has selected MUST be marked on the plate
+  and MUST be named as the selected mount in its own sentence beside it. The mark MUST NOT replace
+  what that mount's mark already reports — whether it is armed — and the selection MUST be read from
+  the same slot key feature 002's ledger and feature 010's hull schematics mark, so the three
+  drawings of one hull cannot disagree about which mount is open.
+
+  > **Added 2026-08-26**, and a sanctioned departure like FR-012: neither canvas relates its
+  > gunsight plate to the mount its ledger has open (`design/canvas-contract.md`, review note 17).
 
 ## Edge Cases
 
@@ -151,6 +172,15 @@ because it is why the first implementation shipped a third of the canvas.
 - A shot whose offset exceeds the plate's field of view at the chosen range is clamped to the
   frame's own margin and keeps its sentence, which states its true offset and angle. The field of
   view is a property of the drawing and never moves to accommodate a build.
+- A hull the catalogue places whose hardpoints are all empty draws every one of them and none of the
+  four figures beneath the plate: where a mount sits is a property of the hull, and a span, a widest
+  and a spread are all about a group of armed mounts.
+- The selected mount may be an empty hardpoint, and is marked as selected either way — that is the
+  state a Commander is in while they decide what to put in it. It stays visibly empty while it is
+  selected: whether a mount is armed is not what the selection ink says.
+- The target range reaches 5,000 m, past every maximum range the package publishes for a weapon on
+  this application's reference hull, so the track can be moved to the distance being asked about
+  rather than stopping short of it.
 
 ## Design Scope
 
@@ -158,9 +188,15 @@ because it is why the first implementation shipped a third of the canvas.
 canvas decides and this file records the outcome. Two such outcomes stand: the row disclosure and the
 per-row slot action that an earlier revision required of every weapon are withdrawn, because the
 canvas draws its weapon rows inert; and the whole-build firing cost, net drain and returned
-allocation are not read at all, because no canvas draws them. A third stands with them: FR-012's
-mark and sentence for an unfilled hardpoint are withdrawn, because the canvas faces an unfilled
-hardpoint on its own sample and draws nothing for it.
+allocation are not read at all, because no canvas draws them.
+
+A third outcome stood with them until 2026-08-26 — FR-012's mark and sentence for an unfilled
+hardpoint, withdrawn because the canvas faces an unfilled hardpoint on its own sample and draws
+nothing for it. It is reinstated, together with FR-013's mark for the selected mount, as **two
+sanctioned departures**: user-facing elements the template does not contain, asked for by the
+maintainer and recorded in `design/canvas-contract.md` under review notes 8 and 17 rather than
+settled in a stylesheet. Neither adds a figure the package did not publish, and neither moves a
+figure the canvas measures.
 
 **The canvas moved on 2026-08-25, and this file follows it.** FR-004 gained the `RANGE` column and
 FR-011 was re-drawn; the edge case for an off-axis shot changed from clipping to clamping. Two

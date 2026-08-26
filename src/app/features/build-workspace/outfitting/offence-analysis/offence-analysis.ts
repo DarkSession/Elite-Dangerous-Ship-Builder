@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import type { Convergence } from '../../../../domain/offence/convergence';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
@@ -23,7 +23,7 @@ import { ModuleIdentityBadge } from '../../../../ui/outfitting/module-identity-b
 import { ShotConvergence } from './shot-convergence/shot-convergence';
 
 /**
- * One weapon as the canvas's four columns.
+ * One weapon as the canvas's five columns.
  *
  * The row is inert, as the canvas draws it: no disclosure, no action and no
  * slot of its own (`design/canvas-contract.md`, "1. WEAPONS"). A mount is
@@ -45,6 +45,8 @@ export interface WeaponRowView {
   readonly damagePerSecond: string;
   /** The canvas's `PIERCE` column. `null` where the package returned none. */
   readonly piercing: string | null;
+  /** The canvas's `RANGE` column. `null` where the package returned none. */
+  readonly maximumRange: string | null;
   /** The canvas's `FALLOFF` column. `null` where the package returned none. */
   readonly falloff: string | null;
   /** Whether the weapon is switched off. Its row and its metrics stay either way. */
@@ -155,17 +157,50 @@ export class OffenceAnalysis {
   readonly capacitorHeading = this.#messages.messageSignal('offence.capacitor.heading');
   readonly rangeBandsHeading = this.#messages.messageSignal('offence.damage.range-bands');
   readonly convergenceHeading = this.#messages.messageSignal('offence.convergence.heading');
-  readonly convergenceNote = this.#messages.messageSignal('offence.convergence.note');
   readonly convergenceUnavailable = this.#messages.messageSignal('offence.convergence.unavailable');
   readonly damageBarLabel = this.#messages.messageSignal('offence.damage.bar');
 
-  /** The canvas's four column heads, in its order. */
+  /**
+   * The convergence plate, where it is drawn at all.
+   *
+   * Read for one figure only — the ring caption the canvas now puts on this
+   * block's heading line. Nothing is pushed the other way: the plate is handed
+   * its geometry as an input and decides everything else about itself.
+   */
+  protected readonly plate = viewChild(ShotConvergence);
+
+  /**
+   * The hardpoint the workspace currently has selected, if any.
+   *
+   * Handed to the convergence plate so the mount a Commander is working on is
+   * marked there as it already is on the hull schematics and in the ledger row.
+   * Read through rather than reached for by the plate itself: the selection
+   * belongs to the workspace, and a diagram that injected the store would be a
+   * component that cannot be previewed from its inputs.
+   */
+  readonly selectedSlot = this.#outfitting.selectedSlotKey;
+
+  /** The canvas's five column heads, in its order. */
   readonly columns = computed(() => ({
     module: this.#messages.message('offence.column.module'),
     damagePerSecond: this.#messages.message('offence.column.dps'),
     piercing: this.#messages.message('offence.column.pierce'),
+    maximumRange: this.#messages.message('offence.column.range'),
     falloff: this.#messages.message('offence.column.falloff'),
   }));
+
+  /**
+   * The convergence plate's ring caption, drawn on this block's heading line.
+   *
+   * The 2026-08-25 canvas revision moved it out of the plate and onto the
+   * heading, where the other two blocks carry their notes — but what it says
+   * moves with the target range, which is the plate's own state and belongs to
+   * the component that owns the slider. So the heading reads it back from
+   * there rather than the range being lifted out of the block it belongs to.
+   * Absent until the plate exists, which for a hull the catalogue does not
+   * place is never: there is no ring to caption.
+   */
+  readonly convergenceCaption = computed(() => this.plate()?.ringCaption() ?? null);
 
   /**
    * The projection for the active build at feature 005's WEP allocation.
@@ -445,6 +480,11 @@ export class OffenceAnalysis {
           ? null
           : engineeringSummary(mount.module, this.#gameText, this.#messages),
       damagePerSecond: this.#perSecond(fitted.metrics.damagePerSecond),
+      // The canvas's `RANGE` column, added by the 2026-08-25 revision. The
+      // package's own `maximumRange`, which the projection already carries for
+      // the range bands: nothing is derived from it here and nothing caps it.
+      maximumRange:
+        fitted.maximumRange === undefined ? null : this.#formatters.metres(fitted.maximumRange),
       // Absent is field-specific not-stated text, never a zero and never a dash
       // standing in for a number: the package returns no piercing factor for
       // some weapons and a genuine zero for others (FR-004).

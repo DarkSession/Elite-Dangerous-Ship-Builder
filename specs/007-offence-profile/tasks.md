@@ -545,36 +545,172 @@ not draw.
 
 ## Phase 7: The 2026-08-25 canvas revision
 
-The canvas changed after this feature shipped. Every item below is a divergence between
+The canvas changed after this feature shipped. Every item below was a divergence between
 `.design/Ship Builder.dc.html` and the built region, recorded in
-`design/canvas-contract.md`, "Canvas revision, 2026-08-25". Nothing here is a new capability: the
-package answers are all already in `src/app/domain/offence/`.
+`design/canvas-contract.md`, "Canvas revision, 2026-08-25". Nothing here was a new capability: the
+package answers were all already in `src/app/domain/offence/`, and no new package call was added to
+close any of it.
 
-- [ ] T044 Add the weapon list's `RANGE` column between `PIERCE` and `FALLOFF` — `maximumRange`,
+**Two things the revised drawing does that this phase deliberately did not build**, both recorded in
+`design/canvas-contract.md` under the revision, and both arrangements rather than figures.
+
+Canvas 1c stacks its four facts as label-left, value-right rows down the narrow column beside the
+plate, where the built region keeps the `repeat(4, 1fr)` cells its own build table sanctions. Same
+four labels, same four figures, arranged from the region's available space rather than from an
+artboard's fixed width — which is the responsive composition T033 owns.
+
+And the weapon list's aligned table is drawn only where five columns fit, which a 1440px desktop
+does not give this block: the figure tracks take their own heads out of the module track, leaving it
+83px in English and 40px in German, where a name renders one or two characters per line. The table
+promotes at 26rem and the compact arrangement carries the same five figures with the word that names
+each one below that. Nothing is dropped; what is lost is the alignment, at widths where alignment
+would have cost the name instead.
+
+_Phase 8 rebuilt those tracks and re-measured that threshold; the paragraph above is the record of
+what Phase 7 built, and 26rem is superseded by the 31rem T053 sets._
+
+The plate's **box** is not in that category and is built square, at the canvas's own width, with the
+range and the four cells beside it. T045 first took the revision's square-in-angle mapping while
+leaving the box `16 / 6`; that is a different diagram from either drawing, squashing every shot's
+height by `16 / 6` and clipping both rings past the plate. The box went square with the mapping,
+which is one change and not two.
+
+- [x] T044 Add the weapon list's `RANGE` column between `PIERCE` and `FALLOFF` — `maximumRange`,
       already carried on `FittedWeaponMetrics` for `damageFalloff()`. Add `offence.column.range` to
       both catalogues, extend the head row and the per-row figure list, and keep an absent maximum
       range as not-stated text rather than a dash or a zero (FR-004)
-- [ ] T045 Re-derive `src/app/domain/offence/convergence.ts` from the revised `wireConvergence`:
+- [x] T045 Re-derive `src/app/domain/offence/convergence.ts` from the revised `wireConvergence`:
       `FIELD_OF_VIEW_MILLIRADIANS = 40`, the plate square in angle with `PLATE_ASPECT` withdrawn,
       the rings sized from the box's own pixel aspect, and every dot clamped to the frame's `4%`–`96%`
       margin instead of leaving it. Update `convergence.spec.ts` to the new geometry, including a
-      shot far enough off-axis to be clamped
-- [ ] T046 Replace the plate's badge column with the script's own numeral placement — one dot and one
+      shot far enough off-axis to be clamped.
+      _The box goes square with the mapping. Taking the square-in-angle mapping while leaving the
+      plate's `16 / 6` box squashes every shot's height by exactly that proportion and pushes both
+      rings past the top and bottom of the plate — a diagram belonging to neither drawing. The
+      canvas's own box is `width: 172px; aspect-ratio: 1`, which is what makes its ring correction a
+      no-op; the plate is built that way, in a wrapping row with the range and the four cells beside
+      it (`design/canvas-contract.md`, "3. SHOT CONVERGENCE")._
+- [x] T046 Replace the plate's badge column with the script's own numeral placement — one dot and one
       hardpoint numeral per armed mount, the numeral at whichever of `[7,-14]`, `[7,5]`, `[-13,-14]`,
       `[-13,5]` stands furthest from every other dot. Remove `plate__leader`, `badgeLeft`,
       `badgeTop`, `leaderLength` and `leaderAngle`, and the 1600×600 plate-space they were written in
-- [ ] T047 Move the ring caption onto the `SHOT CONVERGENCE` heading line, drop `AT THIS RANGE` from
+- [x] T047 Move the ring caption onto the `SHOT CONVERGENCE` heading line, drop `AT THIS RANGE` from
       `offence.convergence.ring`, and withdraw `offence.convergence.note` and
       `offence.convergence.impact-plane` from both catalogues and from the template — neither is
       drawn any more. The caption stays in the shot sentences as well, because it is still the one
       plate figure the four cells do not repeat (FR-011)
-- [ ] T048 Re-lay the range field as the canvas draws it: `TARGET RANGE` and its value on the row
+- [x] T048 Re-lay the range field as the canvas draws it: `TARGET RANGE` and its value on the row
       above the track, the track's two end labels beneath it, then the four fact cells. Rename
       `offence.convergence.range` to `Target range` in both catalogues
-- [ ] T049 [P] Update `design/component-state-preview-matrix.md` and the convergence previews for the
-      clamped-shot state, which replaces the clipped-shot state
-- [ ] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
-      `pnpm run check`
+- [x] T049 [P] Update `design/component-state-preview-matrix.md` and the convergence previews for the
+      clamped-shot state, which replaces the clipped-shot state.
+      _The matrix's convergence row already read `clamped`; what was still stale was its weapon row,
+      which is now the canvas's four figure cells. There are no convergence previews to update: this
+      feature declares none, for the reason T018, T026 and T031 record — neither block is exported
+      from `src/app/ui/components`, so the `missing-preview` rule does not reach either. The one
+      preview the manifest does carry for this feature is `edsb-range-field`, whose three states now
+      name the canvas's own `Target range` (`design/component-state-preview-matrix.md`)._
+- [x] T050 Re-run the feature's own e2e specs in all ten projects with the axe scan, then
+      `pnpm run check`.
+      _Run in the five Chromium projects — 42 journeys per profile, 210 in all, with the axe scan
+      over every state, including one over the weapon list's promoted table, which no layout
+      profile's own width reaches. The five Firefox projects could not be run for the reason recorded at the
+      head of this document: `playwright install firefox` is still refused by this environment's
+      egress policy, and Firefox evidence is this branch's pull request's own
+      `End-to-end (shard 1..6)` checks. Locally `pnpm run check` was run as its parts — format check,
+      typecheck, build, policy, unit tests with coverage and the Chromium journeys — all green._
+
+---
+
+## Phase 8: Every hardpoint, and the mount being worked on
+
+Three things the maintainer asked for on 2026-08-26, after the region shipped. Two of them are
+**sanctioned departures from the canvas** rather than readings of it — neither canvas draws an empty
+mount on the gunsight, and neither relates the plate to the mount its ledger has open — so both are
+recorded in `design/canvas-contract.md` (review notes 8 and 17) before they are built, which is what
+SC-004 asks of anything user-facing the template does not contain. The third is a defect in what
+Phase 7 built.
+
+Nothing here adds a package call or a package figure. The gunsight already publishes an offset per
+hardpoint rather than per weapon — that was the half of the withdrawn FR-012's reasoning the
+withdrawal explicitly kept — and the selection is feature 002's own `selectedSlotKey`, already read
+by the ledger row and by feature 010's hull schematics.
+
+- [x] T051 Carry every placed hardpoint in the projection, armed or empty. `ConvergenceMount` gains a
+      nested `weapon: ConvergenceWeapon | null` and loses the three flattened weapon fields, and
+      `projectConvergence` walks the hull's enumerated hardpoints rather than the returned weapons,
+      matching a weapon onto a mount by its slot key. Both spans, `widest` and
+      `apparentSpreadMilliradians` are narrowed to the armed mounts, so no figure about the group
+      counts a mount that fires nothing (`data-model.md`, "Convergence"; `spec.md` FR-012).
+      _`src/app/domain/offence/convergence.ts`, `convergence.spec.ts`._
+- [x] T052 Draw the three states on the plate and state each in words. An empty mount takes a hollow
+      dot in the quiet ink the hull schematics give one, the selected mount takes a ring around
+      whichever dot it is, and the four sentences beside the plate — armed, armed and selected,
+      empty, empty and selected — are four whole catalogue entries rather than one with a state
+      appended, because where each part falls moves between languages. The plate is handed the
+      selection as an input; it does not reach for the store (`spec.md` FR-011, FR-012, FR-013).
+      _`shot-convergence.{ts,html,scss}` and its suite, `offence-analysis.{ts,html}` and its suite,
+      `src/styles/tokens/_semantic.scss`, both locale catalogues._
+- [x] T053 Give the weapon table's five columns the canvas's own proportion. `minmax(0, 1fr)` beside
+      four `auto` tracks gave every spare pixel to the module name and none to the figures — a name
+      with a field of empty ground after it and four figures crushed against the trailing edge — so
+      the five tracks are now `2fr` against `1fr` each above their floors. That changes what the
+      block has to be given before the table is worth drawing: a figure column has to be at least as
+      wide as the longer of its own head and its own figure, and `DURCHSCHLAG` is 73.3px, so the
+      threshold moves from 26rem to **31rem** (`design/canvas-contract.md`, "Canvas revision,
+      2026-08-25").
+      _`offence-analysis.scss`, `src/styles/tokens/_primitives.scss`, `_semantic.scss`._
+- [x] T054 Extend the end-to-end guards to what changed, and prove each fails on the regression it
+      names. The convergence journeys count the hull's hardpoints off feature 002's ledger rather
+      than off the weapon rows, classify every shot sentence against the catalogue template it was
+      rendered from, and follow the ledger's selection onto the plate; the table guard asserts the
+      four figure tracks are equal and every head fits on one line, and that the table is _not_
+      promoted at a width where a head would not fit.
+      _Reverting the track list to `minmax(0, 1fr) repeat(4, …auto)` fails the equal-track assertion
+      at 10.4px in English and 33.3px in German; lowering the threshold back to 26rem fails the
+      not-promoted-at-1780 assertion in both languages. `e2e/offence-profile.spec.ts`,
+      `e2e/coverage-ledger.ts`._
+- [x] T055 Re-run the feature's own e2e specs with the axe scan, and the checks the gate names.
+      _215 offence journeys across the five Chromium layout profiles, green, with the axe scan over
+      every state including the promoted table in both languages. The five Firefox projects rest on
+      this branch's pull request's `End-to-end (shard 1..6)` checks, for the reason recorded at the
+      head of this document._
+
+---
+
+## Phase 9: The plate's inks, its track and its size
+
+Three more things the maintainer asked for on 2026-08-26, after seeing Phase 8 drawn. All three are
+properties of the **drawing** rather than of any build: none changes a figure, and every reading the
+block gives is still the package's own answer. All three are departures from the canvas and are
+recorded as such before being built (`design/canvas-contract.md`, review notes 17 and 18).
+
+- [x] T056 Spend the canvas's second ink on selection instead of on how a weapon aims. The plate had
+      three things to separate — armed, empty, selected — where the canvas has one, and the cool ink
+      was drawing `mount === 'GIMBALLED'`, which every mount's own sentence already names. The
+      fixed-against-aimed distinction is withdrawn from the drawing, `--edsb-surface-mount-fixed`
+      becomes `--edsb-surface-mount-armed`, `--edsb-surface-mount-aimed` is retired, and
+      `--edsb-surface-mount-selected` takes the cool ink with its ring. Whether a mount is armed
+      stays with the fill against the outline, so a selected empty hardpoint is still visibly empty
+      (`spec.md` FR-011, FR-013).
+      _`src/styles/tokens/_semantic.scss`, `shot-convergence.{ts,html,scss}` and its suite._
+- [x] T057 Run the target-range track from 500 m to 5,000 m on a 100 m step, opening at 1,000 m. The
+      canvas's own `100`–`2000` on a `25` step could not be moved to the distance a Commander is
+      asking about: a Multi-Cannon on the reference hull states a maximum range of 3,000 m
+      (`data-model.md`, "Convergence"; `design/canvas-contract.md`, review note 18).
+      _`src/app/domain/offence/convergence.ts` and its suite, `e2e/offence-profile.spec.ts`._
+- [x] T058 Draw the plate at `8rem` rather than the canvas's `172px`. It is decorative in full and
+      was the tallest thing in the offence panel, setting the convergence block's whole height on its
+      own — 230px, against 186px now. Squareness is the property that matters, and every mark is
+      placed as a fraction of the plate, so it is the same diagram at either size; the numerals'
+      reference width follows it.
+      _`src/styles/tokens/_primitives.scss`, `shot-convergence.ts`._
+- [x] T059 Re-run the feature's own e2e specs with the axe scan, and the checks the gate names.
+      _The clamp assertions were the only ones the new track moved: at 500 m this hull runs out of
+      plate on the vertical axis rather than the horizontal one, so the unit assertion that the
+      clamp is reached now names either axis rather than the horizontal one alone. The five Firefox
+      projects rest on this branch's pull request's `End-to-end (shard 1..6)` checks, for the reason
+      recorded at the head of this document._
 
 ---
 
@@ -595,6 +731,10 @@ package answers are all already in `src/app/domain/offence/`.
 - Phase 6 depends on every story it verifies, and on Phase 5d.
 - Phase 7 depends on Phase 6 and re-verifies it. T045 blocks T046; T044, T047 and T048 are
   independent of both and of each other.
+- Phase 8 depends on Phase 7 and changes what it drew. T051 blocks T052; T053 is independent of
+  both; T054 depends on T052 and T053, and T055 on all four.
+- Phase 9 depends on Phase 8 and retunes what it drew. T056, T057 and T058 are independent of each
+  other; T059 depends on all three.
 
 ### Parallel opportunities
 
