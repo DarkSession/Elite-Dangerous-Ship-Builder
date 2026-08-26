@@ -191,14 +191,19 @@
 }
 
 // The canvas's `OPTIMAL 1,260 t` and `MAX 1,890 t`, each under the position it
-// marks. Both stay in the flow of this row rather than being pinned over it: at
-// a doubled text size in German the pair no longer fits on one line, and a row
-// that wraps drops the maximum to a line of its own instead of painting the two
-// readings across each other.
+// marks — and both on the one line the canvas draws them on, because the maximum
+// is the end of the track and belongs beside it rather than two lines below it.
+//
+// One grid cell holds both, so there is no line for either to be pushed off. An
+// earlier pass ran them through a wrapping flex row, on the reasoning that a
+// doubled text size in German would drop the maximum to a line of its own rather
+// than let the two paint across each other. Measured, that wrap was the ordinary
+// case and not the exception: an Anaconda centres `Optimal 1,296 t` on a tick
+// 240px along a 360px track, five pixels past where `Max 1,944 t` starts. The
+// guard is the cap below instead, which never costs the maximum its line.
 .drives__mass-marks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--edsb-space-inline);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -207,6 +212,7 @@
 .drives__mass-mark {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
+  grid-area: 1 / 1;
   min-inline-size: 0;
   // `Optimal` is one word in both languages, but the mass beside it is not, and
   // this row is the narrowest thing on the card.
@@ -226,11 +232,24 @@
 // The optimal mark is centred on its own tick, the way the canvas centres it:
 // the offset that puts it there is the margin, and the half-width that centres
 // it is the translation.
+//
+// The cap is what keeps it off the maximum at the end of the row. It is twice
+// the room between the tick and the words down there, because a centred label
+// spends that room in both directions at once — so where a long figure or a long
+// translation would reach them, the mark wraps its name over its own figure and
+// stays centred on the tick, rather than either reading being painted over the
+// other. The floor under the cap is set above the widest figure alone, so the
+// squeeze can cost a mark its line but never break a number across two.
 .drives__mass-mark--pinned {
   position: relative;
+  justify-content: center;
   transform: translateX(-50%);
+  margin-inline-start: var(--edsb-mass-mark-position, 0%);
   inline-size: max-content;
-  max-inline-size: 100%;
+  max-inline-size: max(
+    var(--edsb-layout-mass-mark-floor),
+    (100% - var(--edsb-mass-mark-position, 0%) - var(--edsb-layout-mass-mark-reserve)) * 2
+  );
 }
 
 // The offset above is logical and the translation that centres the mark on it is
@@ -242,10 +261,10 @@
   transform: translateX(50%);
 }
 
-// The maximum is where the track stops, so it is set against the end of the row
-// — on the first line while the pair fits, and on its own line once it does not.
+// The maximum is where the track stops, so it is set against the end of the row,
+// on the line under the bar and on no other.
 .drives__mass-mark--end {
-  margin-inline-start: auto;
+  justify-self: end;
 }
 
 // The canvas's two legends — the parts of the mass bar under one card, the

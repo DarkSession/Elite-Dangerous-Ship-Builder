@@ -420,6 +420,20 @@
   --edsb-measure-mass-bar: 1.625rem; // 26
   --edsb-measure-mass-swatch: 0.625rem; // 10
 
+  // The room `MAX 1,890 t` needs at the end of that bar's mark row, and the
+  // narrowest the `OPTIMAL 1,260 t` beside it may be squeezed to.
+  //
+  // The two share one line under the track, the optimal centred on its own tick
+  // and the maximum at the end, and the canvas draws them close enough to touch:
+  // at its own 296px track the pair is over by two pixels. So the optimal is
+  // capped at twice the room left between its tick and the reserve below, and
+  // wraps its name over its figure rather than reaching the maximum. The reserve
+  // is a little over the widest that row's maximum runs — `MAX 1,944 t` measures
+  // 74px — and the floor is set above the widest figure alone, so a mark may
+  // lose its line but never break a number across two.
+  --edsb-measure-mass-mark-reserve: 5rem; // 80
+  --edsb-measure-mass-mark-floor: 3.5rem; // 56
+
   // Canvas 1c's offence panel.
   //
   // The stacked damage bar is 22px — a band, not the 66px command bar the panel

@@ -134,6 +134,17 @@ inline notes below record each correction and why.
   when returned by package records or results. A parameter the canvas does not draw is not shown at
   all — the rule bounds what may appear, never what must.
 
+  > **The canvas's two comparisons, 2026-08-26.** Two of the canvas's readings are not parameters at
+  > all but comparisons of two parameters that are: `91% OF OPTIMAL MASS`, which is the loaded mass
+  > against the thrusters' `optMass`, and `658 T OF HEADROOM`, which is the drive's `optMass` less
+  > that same loaded mass. Both are drawn. Neither is a calculation this application performs on the
+  > game's behalf — nothing is modelled, nothing is fitted to a curve, and neither figure would
+  > survive being asked of anything but the two package answers it stands between. The first is the
+  > comparison the package's own `thrusters` getter prescribes; the second is what the canvas writes
+  > beside `FSD optimal mass`, and it is a reading a Commander about to fit a module is asking for.
+  > Both are guarded on both operands: a load the package could not settle leaves the comparison
+  > undrawn rather than measured against a mass that was assumed (constitution IV).
+
 - **FR-009**: The `JUMP`, `SPEED` and `MASS` cells of canvas 1c's status rail MUST be drawn, and each
   MUST carry the same figure, read at the same load and the same ENG allocation and printed at the
   same precision, as the card in the `DRIVES` mode that already states it. The rail closes with a
