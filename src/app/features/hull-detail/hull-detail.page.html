@@ -8,13 +8,7 @@
       line, the metric grid, the mounts, the price, and the two hull actions
       (canvas 1a rail, canvas 1b detail sheet).
     -->
-    <article class="detail">
-      <!-- The reference gives the compact sheet a way back and the wide rail
-           none: there the manifest is still on screen beside it. -->
-      <a class="detail__back" [routerLink]="catalogueRoute" [attr.aria-label]="backLabel()">
-        <span aria-hidden="true">←</span>
-      </a>
-
+    <article class="detail" [class.detail--named-by-bar]="barCarriesName()">
       <edsb-hull-artwork
         [source]="detail.artworkPath"
         [label]="detail.artworkLabel"

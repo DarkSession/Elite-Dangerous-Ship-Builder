@@ -71,6 +71,9 @@ export class App {
 
   readonly navigation = computed(() => this.#navigation.entries(this.#path()));
 
+  /** Where the bar's insignia goes: the shipyard, from every screen but itself. */
+  readonly home = computed(() => this.#navigation.home(this.#path()));
+
   /**
    * What the command bar shows: the screen's own name, and the one count that
    * belongs to it. The name is the same string the document title uses, so the
@@ -118,7 +121,6 @@ export class App {
         id: IMPORT_ACTION,
         label: this.#messages.message('slef.import.title'),
         emphasis: 'secondary' as const,
-        startsGroup: screen.length > 0,
       },
       {
         id: HELP_ACTION,
@@ -198,6 +200,9 @@ export class App {
 
   /** The open screen's own identity block, where it publishes one. */
   readonly identity = this.chrome.identity;
+
+  /** The compact bar a screen opened over another one publishes, where one does. */
+  readonly back = this.chrome.return;
 
   /**
    * Whether either exchange layer is wanted.

@@ -13,12 +13,16 @@
 }
 
 // The reference's header row: a search field with the count set in monospace
-// beside it, wrapping to its own line where the surface is narrow.
+// beside it, wrapping to its own line where the surface is narrow. Canvas 1a
+// closes it with a hairline, which is what separates the row that searches the
+// library from the rows that are the library (reported 2026-08-26).
 .library__header {
   @include layout.wrapping-row(var(--edsb-space-inline));
 
   align-items: flex-end;
   justify-content: space-between;
+  padding-block-end: var(--edsb-space-control-block);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
 }
 
 .library__search {

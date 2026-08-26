@@ -92,8 +92,9 @@ describe('ShotConvergence', () => {
     expect(shots.length).toBeGreaterThan(0);
     expect(shots.every((shot) => !shot.armed)).toBe(true);
     expect(element.querySelectorAll('.plate__dot--empty')).toHaveLength(shots.length);
-    // No armed group, so none of the four cells that measure one is drawn.
-    expect(component.facts()).toEqual([]);
+    // Where a mount sits is a property of the hull, so the plate still draws
+    // every hardpoint and still names each one as empty in its own sentence.
+    expect(element.querySelectorAll('.shots__entry')).toHaveLength(shots.length);
   });
 
   it('marks the mount the workspace has selected, and states it in words', () => {
@@ -167,47 +168,36 @@ describe('ShotConvergence', () => {
     const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
       (entry.textContent ?? '').trim(),
     );
-    // Every mark on the plate, and the ring caption with them: it is the one
-    // figure the plate draws that the four cells below do not repeat.
-    expect(stated).toHaveLength(component.shots().length + 1);
-    expect(stated).toContain(component.ringCaption());
+    // Every mark on the plate, and nothing else: the 2026-08-26 revision drops
+    // the ring caption, so there is no figure left beside the marks to state.
+    expect(stated).toHaveLength(component.shots().length);
     for (const sentence of stated) {
       expect(sentence).not.toBe('');
     }
   });
 
-  it('moves the shots and the spread when the target range moves, and the spans never', () => {
+  it('moves the shots when the target range moves', () => {
     const { component, detect } = render();
-    const spansOf = () =>
-      component
-        .facts()
-        .filter((fact) => fact.id === 'lateral' || fact.id === 'vertical')
-        .map((fact) => fact.value);
-    const spans = spansOf();
     const near = component.shots().map((shot) => shot.left);
-    const spread = component.facts().find((fact) => fact.id === 'spread')?.value;
 
     component.setTargetRange(2000);
     detect();
 
     // The mounts are where they are: their separation in metres is a property
-    // of the hull, and only what it subtends changes with range.
-    expect(spansOf()).toEqual(spans);
-    expect(component.facts().find((fact) => fact.id === 'spread')?.value).not.toBe(spread);
+    // of the hull, and only what it subtends at a distance changes with range.
     expect(component.shots().map((shot) => shot.left)).not.toEqual(near);
   });
 
-  it('draws each cell as a label and a figure, as the canvas draws all four', () => {
-    const { element, component } = render();
+  it('draws the boresight the hull points along, and no cells beneath the plate', () => {
+    const { element } = render();
 
-    // Two lines per cell and no third. The canvas's `APPARENT SPREAD` cell is a
-    // label over `33 mrad` and `wireConvergence` writes only that figure into
-    // it, so the range the spread was read at is not repeated here — the range
-    // field's own readout, directly above these cells, already says it.
-    expect(component.facts()).toHaveLength(4);
-    for (const cell of element.querySelectorAll('.fact')) {
-      expect(cell.querySelectorAll('span')).toHaveLength(2);
-    }
+    // The 2026-08-26 revision adds the ring and centre dot that mark where the
+    // ship itself is aimed, and withdraws the four cells — the two spans, the
+    // widest mount and the apparent spread — along with the ring caption.
+    expect(element.querySelector('.plate__boresight')).not.toBeNull();
+    expect(element.querySelector('.plate__boresight-centre')).not.toBeNull();
+    expect(element.querySelector('.fact')).toBeNull();
+    expect(element.querySelector('.facts')).toBeNull();
   });
 
   it('marks each mount with one dot and one hardpoint numeral, and no badge column', () => {
@@ -220,19 +210,31 @@ describe('ShotConvergence', () => {
     expect(marks).toBeGreaterThan(0);
     expect(element.querySelectorAll('.plate__dot')).toHaveLength(marks);
     expect(element.querySelectorAll('.plate__numeral')).toHaveLength(marks);
-    expect(element.querySelector('.plate__leader')).toBeNull();
     expect(element.querySelector('.plate__shot')).toBeNull();
 
-    // Each numeral is the mount's own hardpoint place, and it sits at one of
-    // the four corners the canvas offers, offset from its dot in pixels.
+    // Each numeral is the mount's own hardpoint place. It sits at one of the
+    // four corners the canvas offers unless the plate left it no room there,
+    // in which case it steps out and draws a leader back to its own dot.
     const numerals = [...element.querySelectorAll<HTMLElement>('.plate__numeral')];
     expect(numerals.map((numeral) => (numeral.textContent ?? '').trim())).toEqual(
       component.shots().map((shot) => shot.badge),
     );
     for (const shot of component.shots()) {
-      expect([7, -13]).toContain(shot.numeralLeft);
-      expect([-14, 5]).toContain(shot.numeralTop);
+      if (shot.displaced) {
+        expect(shot.leader).not.toBeNull();
+        continue;
+      }
+      expect(shot.leader).toBeNull();
+      // The canvas's four corners, each with the anchor's own `3, 4` inset
+      // already in it: the offset handed back is the offset drawn with.
+      expect([10, -10]).toContain(shot.numeralLeft);
+      expect([-10, 9]).toContain(shot.numeralTop);
     }
+
+    // A leader is drawn for exactly the numerals that moved, and no others.
+    expect(element.querySelectorAll('.plate__leader')).toHaveLength(
+      component.shots().filter((shot) => shot.displaced).length,
+    );
   });
 
   it('holds a shot outside the field of view at the frame, and states where it really goes', () => {
@@ -290,14 +292,15 @@ describe('ShotConvergence', () => {
     expect(parts).toEqual(['label', 'value', 'track', 'scale']);
   });
 
-  it('pairs every figure under the plate with the word that names it', () => {
+  it('leaves the range alone in the column beside the plate', () => {
     const { element } = render();
 
-    const cells = [...element.querySelectorAll('.fact')];
-    expect(cells.length).toBeGreaterThan(0);
-    for (const cell of cells) {
-      expect((cell.querySelector('.fact__label')?.textContent ?? '').trim()).not.toBe('');
-      expect((cell.querySelector('.fact__value')?.textContent ?? '').trim()).not.toBe('');
-    }
+    // The 2026-08-26 revision withdrew the four cells that used to stand under
+    // the range, so the readout column carries the range field and nothing
+    // else. Everything the cells reported is still in the plate's sentences.
+    const readout = element.querySelector('.convergence__readout');
+    expect(readout).not.toBeNull();
+    expect(readout?.querySelector('edsb-range-field')).not.toBeNull();
+    expect(readout?.querySelectorAll('.fact')).toHaveLength(0);
   });
 });

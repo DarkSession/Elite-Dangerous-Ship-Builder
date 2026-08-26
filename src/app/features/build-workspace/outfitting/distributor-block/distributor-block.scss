@@ -1,0 +1,230 @@
+@use '../../../../../styles/responsive' as layout;
+
+// The block asks its own width, because whether five columns fit is a question
+// about this box rather than about the panel or the screen around it.
+:host {
+  display: block;
+  container-type: inline-size;
+  container-name: distributor;
+  min-inline-size: 0;
+}
+
+// The same bounded plate on the panel ground the dashboard's other three blocks
+// stand on: `1px solid var(--amber-a2)` over `var(--panel)` at `16px 18px`.
+.block {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  padding-block: var(--edsb-space-2xl);
+  padding-inline: var(--edsb-space-panel);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.block__head {
+  @include layout.wrapping-row(var(--edsb-space-inline));
+
+  justify-content: space-between;
+}
+
+.block__heading {
+  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+}
+
+.table-scroller {
+  @include layout.bounded-scroller;
+}
+
+// The distributor table. Its own element rather than the shared data table,
+// because one of its cells is a control and the shared one takes formatted
+// strings — and the control is the point of the block.
+.distributor {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.distributor th,
+.distributor td {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-tight);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  text-align: start;
+  vertical-align: middle;
+}
+
+// The column's name, wherever it is drawn: once above the whole column, or —
+// where the header row is off screen — beside each figure that needs it.
+.distributor thead th,
+.distributor__label {
+  @include layout.micro-label;
+}
+
+.distributor__label {
+  display: none;
+}
+
+.distributor tbody th {
+  color: var(--edsb-text-accent);
+}
+
+// The elements are named in the selector because the rule they have to beat
+// carries a type, and a bare class does not outweigh one class plus one type:
+// `text-align: end` never applied and every figure sat at its column's start.
+.distributor th.distributor__cell--numeric,
+.distributor td.distributor__cell--numeric {
+  @include layout.metric-value(var(--edsb-text-size-body));
+
+  text-align: end;
+  white-space: nowrap;
+}
+
+// The pip column takes what its four blocks need and no more: given the row's
+// spare width it would take it all, and the recharge beside it would be wrapping
+// two digits at a time while the blocks sat in a strip wider than the table's
+// figures put together.
+.distributor__pips {
+  // A table cell asked for less than its contents need takes exactly what they
+  // need and no more, which is the whole of the intent here. Zero rather than
+  // the hairline token this used to borrow: that token means the width of a
+  // rule, and a retune of rules has no business moving a column.
+  inline-size: 0;
+}
+
+// The canvas's own colour per bank, on the bank's name and on its pip blocks.
+// It is decoration on top of the reading: the group is named with the allocation
+// it stands at, and the recharge beside it is the figure that matters.
+@mixin bank-colour($colour) {
+  .distributor__bank {
+    color: $colour;
+  }
+
+  .pips__fill {
+    background-color: $colour;
+  }
+
+  .pips__step:hover {
+    border-color: $colour;
+  }
+}
+
+[data-bank='systems'] {
+  @include bank-colour(var(--edsb-surface-bank-systems));
+}
+
+[data-bank='engines'] {
+  @include bank-colour(var(--edsb-surface-bank-engines));
+}
+
+[data-bank='weapons'] {
+  @include bank-colour(var(--edsb-surface-bank-weapons));
+}
+
+// Four blocks across the cell, each of them the control for that many pips.
+.pips {
+  display: flex;
+  gap: var(--edsb-space-inline-tight);
+  min-inline-size: 0;
+}
+
+// Each block stretches with the column, but never below the 24-pixel floor:
+// four at the 2.75rem design baseline are a strip wider than the rest of the
+// table's figures put together, and the canvas draws a pip block as a chip in a
+// row of them rather than as a button standing on its own. The rail draws the
+// same control the same size.
+.pips__step {
+  @include layout.target-floor;
+
+  position: relative;
+  flex: 1 1 var(--edsb-target-size-floor);
+  min-inline-size: var(--edsb-target-size-floor);
+  padding: 0;
+  background-color: var(--edsb-surface-inset);
+  border: var(--edsb-border-width-hairline) solid transparent;
+  cursor: pointer;
+}
+
+// Filled from the leading edge, so half a pip fills half a block.
+.pips__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: block;
+  background-color: var(--edsb-surface-accent-solid);
+}
+
+// ---------------------------------------------------------------------------
+// Canvas 1d's arrangement: three lines to a bank, not five columns to a row
+// ---------------------------------------------------------------------------
+
+// Five columns do not fit a phone: about 380 pixels of figures and blocks
+// against a block that has 360 to give, so the table met a Commander sideways
+// with the control they came for off the end of the scroller. Canvas 1d's
+// arrangement instead — the bank against its recharge, the four blocks across
+// the width, the banks stacked — plus the two readings the artboard drops,
+// which this application keeps and lets name themselves. Asked of the block in
+// rem, so doubled text and a cramped half-panel step down for the same reason a
+// phone does (`specs/005-power-and-heat/design/power-and-heat-detail.md`).
+@container distributor (max-width: 30rem) {
+  .distributor thead {
+    @include layout.visually-hidden;
+  }
+
+  .distributor tbody tr {
+    display: grid;
+    grid-template-areas:
+      'bank recharge'
+      'pips pips'
+      'capacity rated';
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+    padding-block: var(--edsb-space-control-block);
+    border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  }
+
+  // The row draws the one hairline that closes a bank, so its cells give up
+  // their own padding and rule.
+  .distributor tbody th,
+  .distributor tbody td {
+    padding: 0;
+    border-block-end: 0;
+  }
+
+  .distributor__bank {
+    grid-area: bank;
+  }
+
+  .distributor__cell--recharge {
+    grid-area: recharge;
+  }
+
+  // On its own line the cell takes the width, rather than only what four blocks
+  // need beside four columns of figures.
+  .distributor__pips {
+    grid-area: pips;
+    inline-size: auto;
+  }
+
+  // Each named, because the header row that named them is off screen.
+  .distributor__cell--capacity,
+  .distributor__cell--rated {
+    display: flex;
+    align-items: baseline;
+    gap: var(--edsb-space-inline-tight);
+  }
+
+  .distributor__cell--capacity {
+    grid-area: capacity;
+  }
+
+  .distributor__cell--rated {
+    grid-area: rated;
+    justify-content: flex-end;
+  }
+
+  .distributor__label {
+    display: inline;
+  }
+}

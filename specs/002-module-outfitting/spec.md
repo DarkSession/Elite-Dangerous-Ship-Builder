@@ -162,7 +162,17 @@ its ship name and ident — belongs here.
   Fixed pre-engineering MUST add no craft cost unless the package reports separately selected
   ordinary engineering.
 - **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
-  MUST use the Commander's one-based priority labels.
+  MUST use the Commander's one-based priority labels. Where the source states no group, presentation
+  MUST show the group the package puts the module in rather than reporting the value as unavailable;
+  the modelled field MUST stay absent, so nothing is written into the build.
+
+  > **Ruled 2026-08-26.** The chip drew a `—` for an unstated group, on the grounds that choosing one
+  > would be a decision nobody made. Nobody was being asked to: `PowerConsumer.priority` documents the
+  > absent case as defaulting to group 1, and `powerBudget()` had already put the module in band 1 —
+  > where the power panel lists it and where it is shed. The chip was the one place in the
+  > application saying otherwise, and `ShipLoadout` resets the group on every fresh mount, so it said
+  > it about every module a Commander had fitted.
+
 - **FR-016**: Undo and redo MUST restore all modelled fields exactly, recompute package results and
   cover module, engineering, power, ship name and ident edits. Captured purchase values MUST NOT be
   retained as modelled fields or history state.
@@ -186,9 +196,18 @@ its ship name and ident — belongs here.
   of the module it is built on. Every available choice MUST appear in exactly one family.
 - **FR-021**: When replacement choices are first presented or rebuilt, the family containing the
   exact fitted stock or variant choice MUST be the revealed one. If no available family contains that
-  exact fitted choice, the wide composition MUST reveal the first family in package order and the
-  compact composition MUST reveal none. Revealing a family is view state only and MUST NOT edit the
-  build or enter edit history.
+  exact fitted choice, the family revealed on the mount the Commander came from MUST be revealed
+  where this mount offers it; failing that, the wide composition MUST reveal the first family in
+  package order and the compact composition MUST reveal none. The carry MUST survive exactly one
+  step, MUST be consulted only where the mount has no fitted family of its own, and MUST NOT be
+  taken from a chooser revealing more or fewer than one family. Revealing a family is view state
+  only and MUST NOT edit the build or enter edit history.
+
+  > **Carry added 2026-08-26.** Fitting the same kind of thing down a row of empty hardpoints or
+  > utility mounts meant opening the same category once per mount, because an empty mount seeded from
+  > nothing. What is in the mount still wins outright; the carry only answers where the mount itself
+  > is silent.
+
 - **FR-022**: A Commander MUST be able to reveal any module family. Each family control MUST expose
   its localized family name, available-choice count and revealed state to sighted and screen-reader
   users, and MUST remain operable by touch and pointer on desktop, tablet and mobile.

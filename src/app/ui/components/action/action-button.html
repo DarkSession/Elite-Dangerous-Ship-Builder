@@ -14,11 +14,21 @@
     text, so the accessible name is the same string either way and nothing has
     to be inferred from a shape.
   -->
-  @if (symbol(); as mark) {
-    <span class="action__symbol" aria-hidden="true">{{ mark }}</span>
+  @if (symbol(); as only) {
+    <span class="action__symbol" aria-hidden="true">{{ only }}</span>
     <span class="visually-hidden">{{ label() }}</span>
   } @else {
-    <span class="action__label">{{ label() }}</span>
+    @if (mark(); as beside) {
+      @if (markPosition() === 'leading') {
+        <span class="action__mark" aria-hidden="true">{{ beside }}</span>
+      }
+      <span class="action__label">{{ label() }}</span>
+      @if (markPosition() === 'trailing') {
+        <span class="action__mark" aria-hidden="true">{{ beside }}</span>
+      }
+    } @else {
+      <span class="action__label">{{ label() }}</span>
+    }
   }
 </button>
 

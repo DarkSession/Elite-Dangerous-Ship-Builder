@@ -42,8 +42,34 @@
   overflow-y: auto;
 }
 
+// Canvas 1d's own screen: a scrolling body inset `12px 14px`, holding bordered
+// plates one under the other, and a sticky pair of actions below it.
 .engineering--layer {
-  padding: var(--edsb-space-panel);
+  padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
+}
+
+// Canvas 1d draws three plates on the screen's ground — `BLUEPRINT` with the
+// grade inside it, `EXPERIMENTAL EFFECT` and the result — each with the same
+// hairline border, panel ground and inset the dashboard's blocks carry. Canvas
+// 1c draws no plates at all: inline the editor is already one bordered box with
+// a ruled bar, and boxes inside a box is a frame around a frame. So the plate
+// belongs to this placement rather than to the content, and the content is the
+// same either way (reported 2026-08-26).
+.engineering--layer .engineering__card {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+  padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// The grade is inside the recipe's plate, under the hairline canvas 1d rules
+// between them: it is the recipe's own grade, not a choice standing beside it.
+.engineering--layer .engineering__grade {
+  display: block;
+  padding-block-start: var(--edsb-space-stack);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }
 
 // Inline, canvas 1c draws a bordered box rather than a heading over loose
@@ -107,8 +133,15 @@
   @include layout.stack(var(--edsb-space-stack));
 }
 
+// Inline only, which is canvas 1c's placement. Canvas 1d's screen is one
+// scrolling column of plates and draws no second column at all, and a wide but
+// short viewport reaches that screen too: the layer owns the whole of it, so a
+// grid drawn inside it would stand two columns in a box that is not bounded to
+// scroll them apart — both would simply grow and the layer would scroll them
+// together, which is the arrangement the rule below exists to replace
+// (`design/engineering-editor.md`, corrected 2026-08-26).
 @include layout.container-wide-up(engineering) {
-  .engineering__panes {
+  .engineering:not(.engineering--layer) .engineering__panes {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: 0;
@@ -124,8 +157,8 @@
     min-block-size: 0;
   }
 
-  .engineering__choices,
-  .engineering__result {
+  .engineering:not(.engineering--layer) .engineering__choices,
+  .engineering:not(.engineering--layer) .engineering__result {
     position: relative;
     min-block-size: 0;
     overflow-y: auto;
@@ -135,24 +168,25 @@
   }
 
   // The canvas rules the two columns apart rather than spacing them apart.
-  .engineering__choices {
+  .engineering:not(.engineering--layer) .engineering__choices {
     padding-inline-end: var(--edsb-space-panel);
     border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
   }
 
-  .engineering__result {
+  .engineering:not(.engineering--layer) .engineering__result {
     padding-inline-start: var(--edsb-space-panel);
   }
 }
 
 // The table heads its own column, so it is ruled off only where something
 // stands above it — which is the stacked composition, where the two columns
-// become one and the choices are directly above.
+// become one and the choices are directly above. On canvas 1d's screen the
+// plate around it already separates it, so no rule is drawn there.
 .engineering__attributes {
   display: block;
 }
 
-.engineering__attributes:not(:first-child) {
+.engineering:not(.engineering--layer) .engineering__attributes:not(:first-child) {
   padding-block-start: var(--edsb-space-stack);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }
@@ -170,7 +204,11 @@
   position: sticky;
   inset-block-end: 0;
   flex: none;
-  padding-block: var(--edsb-space-stack-tight);
+  // The bar runs the width of canvas 1d's screen and carries its own inset, so
+  // it takes back the body's — drawn inside it the plate stopped short of both
+  // edges and read as a fourth card rather than as the screen's foot.
+  margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+  padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
 }

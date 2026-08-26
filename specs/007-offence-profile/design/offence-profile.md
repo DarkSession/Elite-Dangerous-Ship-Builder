@@ -43,6 +43,13 @@ in the same order. The arrangement is chosen from the space
 the region is given, not from a device name — the same rule feature 005's dashboard follows. No value
 or action is omitted, abbreviated into ambiguity or moved to hover.
 
+**The pair opens at the wide container step, corrected 2026-08-26 (Commander request).** It opened at
+the medium one, and the medium step is 24rem: a 430-pixel phone hands this region about 25rem, so on
+a large phone the first two blocks went side by side where canvas 1d stacks them — two columns of about
+12rem each once the gap is taken off, narrower than the readings they hold, with the labels wrapping
+a word at a time. The wide step is the one feature 005's power dashboard has used since wave 13, and
+a pair is only a pair while both halves can hold what is in them.
+
 ## WEAPONS
 
 - The header carries the block name and the count of weapons the package returned, which is the
@@ -94,7 +101,7 @@ are fields no canvas ever drew.
 
 ### DPS by range band
 
-- The canvas's four distances — 500 m, 1,200 m, 1,800 m and 3,000 m — each carry what the enabled
+- The canvas's four distances — 500 m, 1,000 m, 2,000 m and 3,000 m — each carry what the enabled
   weapons together land there, from the package's own falloff at that distance.
 - Each row is filled against the strongest band, and states its own figure whether or not the bar
   reaches. A build landing nothing anywhere is given no track at all, rather than four empty ones:

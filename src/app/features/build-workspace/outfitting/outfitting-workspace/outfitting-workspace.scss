@@ -143,7 +143,16 @@
     // stands the notices above off the regions below them.
     column-gap: 0;
     row-gap: var(--edsb-space-region);
-    align-items: start;
+    // The columns reach the foot of the row, whichever of them is the tallest.
+    //
+    // `start` was invisible while every column carried a definite height — they
+    // were all `100svh` and there was nothing to stretch to. It bit on a short
+    // viewport, where the bounded columns are released and each takes its own
+    // content height: the ledger then stopped wherever its last row ended and
+    // took its ground and its seam with it, while the bench beside it ran on
+    // down a page twice as long (reported 2026-08-26). The canvas has one grid
+    // row and three columns stretched to it.
+    align-items: stretch;
   }
 
   .outfitting__empty,
@@ -250,8 +259,14 @@
   // the taller of the two. The share is set from the bench rather than from
   // what is in them: a manifest of two hundred rows measures a hundred times
   // the editor, and anything weighed by content leaves the editor a strip.
+  //
+  // Adjusted 2026-08-26: 1.25 to 1.1. The manifest was taking 56% of the bench
+  // against the editor's 44%, and an engineering pass — a grade, an effect and
+  // the attribute comparison under them — is the taller of the two readings at
+  // the moment a Commander is making it. Not an even split: the canvas does
+  // draw the manifest the taller, and this only narrows the margin.
   .outfitting__bench edsb-module-replacement {
-    flex: 1.25 1 0;
+    flex: 1.1 1 0;
   }
 
   .outfitting__bench edsb-engineering-editor {
@@ -489,15 +504,68 @@
   font-size: var(--edsb-text-size-compact);
 }
 
-// Canvas 1d's sticky bar, and only canvas 1d's: at wider compositions the two
+// Canvas 1d's sticky foot, and only canvas 1d's: at wider compositions the two
 // panels are drawn without a control that opens them.
+//
+// `position: sticky; bottom: 0` on its own plate, under the ledger it acts on —
+// so the mount a Commander marked is still on screen while they choose what to
+// do to it, however far down the list they marked it.
+// Canvas 1d's foot: `CHANGE MODULE` filled and `ENGINEER` outlined, on their
+// own plate at the end of the screen.
+//
+// Drawn in the flow, not pinned over it. The artboard pins the pair, and this
+// pinned them too until the automated gate measured what that costs: an opaque
+// bar 76px tall over a page-length ledger of 52px rows covers between a half and
+// the whole of whichever row falls at the foot of the viewport, at every scroll
+// position there is — 31.6px of 52px on an Anaconda's hardpoints, leaving a
+// 350×20.4px target where the rule asks for 24px (measured 2026-08-26). The
+// mount rows are this screen's primary targets, and a bar that permanently
+// covers one of them is not a bar that can be pinned over them.
+//
+// Pinning it properly means bounding the scroll: the stack above scrolls in a
+// box of its own and the plate sits below that box rather than over it. That is
+// a different arrangement from the one this region has, and it is recorded as
+// the follow-up rather than half-built here
+// (`design/outfitting-workspace.md`, "The foot is drawn, not pinned").
 .outfitting__bench-actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  padding: var(--edsb-space-inline-loose);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
 .outfitting__action {
   @include layout.control-secondary;
   @include layout.control-base;
+}
+
+// The canvas fills the first of the two and leaves the second outlined: the one
+// that changes what is fitted is the one a Commander came to the bar for, and
+// it takes the width that is left over.
+.outfitting__action--primary {
+  @include layout.control-primary;
+
+  flex: 1 1 auto;
+}
+
+// Canvas 1d's strip of six readings over the category tabs: label above figure,
+// evenly shared across the row, on the panel ground and closed by a hairline.
+// The cells themselves are features 006 to 008's, exactly as in the rail.
+.outfitting__key-figures {
+  // All six across, which is what canvas 1d draws — but as a track floor rather
+  // than as a count. Six columns of `minmax(0, 1fr)` hold their number at any
+  // text size, and a figure that no longer fits its share of 390px hangs over
+  // the edge of the screen instead: `1fr` with a zero floor shrinks the track
+  // and never the number inside it. `auto-fit` against the canvas's own 56px
+  // cell keeps the six on one row where they fit and drops to three on two rows
+  // where they do not, which is what a doubled text size needs (FR-014).
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-key-figure), 1fr));
+  gap: var(--edsb-space-inline-tight);
+  padding-block: var(--edsb-space-stack-tight);
+  padding-inline: var(--edsb-space-inline-loose);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
 // Why a mount cannot be emptied, and what the Almanac restricts it to. Neither
@@ -507,4 +575,106 @@
   @include layout.visually-hidden;
 
   margin: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Canvas 1d's order
+// ---------------------------------------------------------------------------
+
+// The compact artboard is not the wide one stacked. It opens with the mode
+// strip and whatever that has open, then the six key readings, then the
+// category tabs and the ledger, and closes with the sticky pair of actions for
+// whichever mount is marked. The DOM stays in the wide composition's order —
+// which is the reading order the three regions were written in — and this is
+// where the artboard's own order is asked for (Commander request 2026-08-26).
+// Keyed to the composition the region reports rather than to a container query
+// of its own. The two would disagree: a short viewport takes the compact
+// arrangement whatever the region's width is, which a width query cannot ask,
+// and the halves of this arrangement that are decided in the template read that
+// same answer (`composition.ts`, `observeComposition`).
+.outfitting[data-composition='compact'] {
+  // One column, whatever the container's width says.
+  //
+  // This arrangement and the wide grid above are decided by different questions.
+  // The grid asks the region's width; this asks `composition()`, which also
+  // answers `compact` on a short viewport at any width — a landscape phone, or
+  // 400% zoom. Where the two disagreed the grid stayed on and this block only
+  // re-ordered inside it, so on an 844x390 screen the two bands that exist only
+  // here — the key figures and the sticky foot — were auto-placed into a second
+  // column beside the ledger instead of stacking under it. The composition that
+  // decides the template's half of the arrangement decides the whole of it.
+  display: flex;
+  flex-direction: column;
+  gap: var(--edsb-space-region);
+
+  // The notices are a labelled rule over prose rather than a band, so they take
+  // the inset back as their own padding and their text stands where the ledger's
+  // does.
+  .outfitting__feedback {
+    order: 0;
+  }
+
+  .outfitting__empty {
+    order: 0;
+  }
+
+  .outfitting__centre {
+    order: 1;
+  }
+
+  // The panel canvas 1d's `STATUS` segment opens. It is the same rail, in the
+  // place the strip's own panel would have been, because the strip cannot draw
+  // a region it does not own (`hull-anatomy.ts`, `AnatomyGuestMode`).
+  .outfitting__status-rail {
+    order: 2;
+  }
+
+  .outfitting__key-figures {
+    order: 3;
+  }
+
+  .outfitting__ledger-region {
+    order: 4;
+  }
+
+  .outfitting__bench-actions {
+    order: 5;
+  }
+
+  // Closed unless the strip has it open. Not `visibility` and not a wash:
+  // the segment is a tab, and a panel that is not the open one is not on the
+  // page at all — or every reading in it would be announced twice, once here
+  // and once from the key figures above the tabs.
+  .outfitting__status-rail:not(.outfitting__status-rail--guest) {
+    display: none;
+  }
+
+  // The gutter is the frame's, and this screen does not want it.
+  //
+  // Canvas 1d has no page inset: every band paints to both edges of the screen
+  // and carries its own 14px inside — the ledger rows, the category strip, the
+  // key figures, the mode panels and the sticky foot alike, each closed by a
+  // hairline that runs the full width. Inset by the page as well, every one of
+  // those rules stopped 14px short of the glass and every reading inside them
+  // stood 28px in, which is the misalignment reported against this screen. The
+  // frame's gutter stays where it is right — a page whose own bands have no
+  // inset — and this one takes it back (reported 2026-08-26).
+  //
+  // Only where there is a gutter to take back. The frame draws one at the
+  // compact *width*; this block is also live on a short viewport at any width,
+  // and there a negative margin cancels nothing and instead pulls every band
+  // 14px past the page on both sides, where `overflow-x: hidden` clips it.
+  @include layout.compact {
+    margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+
+    .outfitting__feedback {
+      padding-inline: var(--edsb-space-inline-loose);
+    }
+
+    // The empty state is a bordered plate, so it takes the inset back as
+    // margin: padding would inset its words and leave its border on the glass.
+    .outfitting__empty {
+      margin-inline: var(--edsb-space-inline-loose);
+    }
+  }
 }

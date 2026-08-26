@@ -14,17 +14,32 @@ on. **The design won all six.** The rulings are recorded in
 on every requirement below. Do not re-derive them.
 
 In summary: the canvas's `TOTAL` and `REBUY 5%` rows are drawn, the canvas's aggregate counts are
-drawn, Merc Coin stays one row at the foot of `MATERIALS`, the material list shows every
-consolidated row, and every state the canvas does not draw — material traces, unpriced evidence,
-lower-bound, unavailable and missing-recipe wording — is **not built**.
+drawn, Merc Coin is one row ruled off under `REBUY` at the foot of `COST`, the material list holds
+every consolidated row, and every state the canvas does not draw — material traces, unpriced
+evidence, lower-bound, unavailable and missing-recipe wording — is **not built**.
+
+### Ruling C, re-decided (2026-08-26)
+
+The canvas moved and this file follows it. Ruling C put Merc Coin at the foot of `MATERIALS`
+because that is where the canvas drew it; the 2026-08-26 revision draws it **inside `COST`**, ruled
+off under `REBUY 5%`, with the `MATERIALS` block beginning below it. The reasoning survives the
+move — a purchase price is not a material, which is why it stays out of the list and out of the two
+counts — and the drawing now puts it with the other prices. Ruling C is superseded, not re-argued.
+
+### Ruling G (2026-08-26) — the material list is a bounded box
+
+Both canvases draw five material rows against a footer counting eighteen types, so the list they
+draw is a box with a scroll, not the whole shopping list laid out. The list is bounded and scrolls
+within itself. Every consolidated row is still present and still reachable — the earlier summary's
+"shows every consolidated row" is about what the list _holds_, not about how tall it grows.
 
 ## User Scenarios
 
 ### Story 1 — Read costs (P1)
 
 1. Hull, fitted-module, total and rebuy credits match the package build-cost result.
-2. When the package reports a Merc Coin charge for the current build, it appears as one row at the
-   foot of the materials block.
+2. When the package reports a Merc Coin charge for the current build, it appears as one row ruled
+   off at the foot of the cost block, under `REBUY 5%`.
 3. Builds with no package-reported Merc Coin charge show no Merc Coin row.
 
 ### Story 2 — Read engineering materials (P1)
@@ -56,7 +71,8 @@ lower-bound, unavailable and missing-recipe wording — is **not built**.
   `BuildMetrics.buildCost().mercCoins`; the application MUST NOT infer it from module identity,
   acquisition route, blueprint or experimental effect.
 - **FR-005**: The Merc Coin figure MUST be the literal `BuildMetrics.buildCost().mercCoins` total,
-  presented as one row at the foot of the materials block when greater than zero. Merc Coin MUST NOT
+  presented as one row ruled off at the foot of the cost block, under `REBUY 5%`, when greater than
+  zero (ruling C, re-decided 2026-08-26). Merc Coin MUST NOT
   be added to, converted into or compared with credits or rebuy, and MUST NOT be folded into the
   material-type or unit totals. Per-slot Merc Coin pricing is not presented.
 - **FR-006**: The Merc Coin row MUST be absent when the package total is zero. Fitting, removing or
@@ -66,6 +82,14 @@ lower-bound, unavailable and missing-recipe wording — is **not built**.
   `BuildMetrics.buildCost().materials` result. This feature reuses feature 002's `engineeringCost()`
   boundary only to count fitted modules that contribute a cost list and MUST NOT add a second cost
   classifier or consolidation path.
+- **FR-007a**: The material list MUST be drawn as a bounded box that scrolls within itself, as both
+  canvases draw it — five rows against a footer counting eighteen types (ruling G). Every
+  consolidated row MUST remain present and reachable; bounding the box MUST NOT drop a row, and the
+  two counts beneath it MUST continue to describe the whole list rather than the part in view. The
+  bound MUST be expressed in a text-relative unit so the box grows with the Commander's text size
+  instead of holding fewer rows at 200%. Because the box scrolls, it MUST be focusable and MUST
+  carry an accessible name, which the block's own heading supplies.
+
 - **FR-008**: A blueprint or effect the package cannot cost contributes nothing to the list. The
   canvas draws no missing-recipe wording and none is built.
 - **FR-009**: Fixed pre-engineering MUST contribute no craft cost. A Mercenary purchase grade is a

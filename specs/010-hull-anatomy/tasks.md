@@ -389,6 +389,11 @@ said and the requirement is what changed.
       Asked twice, because a crowd placed first cannot see the marks of crowds not yet placed.
       Reported on the Corsair: `LargeHardpoint1` sat on the left of its own crowd, so its mark was
       sent left across two hardpoints while the right side of the hull stood empty.
+      **Superseded 2026-08-26** (`design/hull-anatomy.md`, "A ring is turned to where its own
+      mounts point if it possibly can be"): the aligned turn is asked for across the whole radius
+      ladder before turns are scored by room, so this mark does go forward along the hull's own
+      axis after all — the ring grows one rung and clears the two hardpoints rather than turning
+      aside from them.
 - [x] T086 Prefer a short leader to a stacked mark — where a plate has no room for a ring far enough
       out to be legible, `placeMarks` falls back to one that merely separates the marks rather than
       leaving the crowd alone. Refusing to move it kept the overlap this exists to remove, for a line

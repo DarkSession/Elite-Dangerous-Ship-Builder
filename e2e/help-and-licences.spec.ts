@@ -18,7 +18,7 @@ import {
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { helpRouteCoverage, type HelpRouteRow } from './coverage-ledger';
-import { openChooser, openEditor } from './outfitting-surfaces';
+import { openChooser, openEditor, revealMount, revealStatusRail } from './outfitting-surfaces';
 import { openActionLayer, reachShellAction, reachShellLink } from './shell';
 
 /**
@@ -145,6 +145,9 @@ async function openMode(page: Page, label: string): Promise<void> {
 
 /** Selects a mount, however this width offers it. */
 async function selectSlot(page: Page, slotKey: string): Promise<void> {
+  // At compact width the ledger draws one category at a time, so the mount is
+  // brought into it before it is pressed (canvas 1d).
+  await revealMount(page, slotKey);
   await page.locator(`[data-slot-key="${slotKey}"] button`).first().click();
 }
 
@@ -256,7 +259,9 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   },
   'status-rail': async (page) => {
     await withStockBuild(page);
-    await expect(page.locator('.outfitting__status-rail')).toBeVisible();
+    // Canvas 1d keeps the rail behind the anatomy strip's `STATUS` segment
+    // rather than in a third track, so it is opened rather than waited for.
+    await revealStatusRail(page);
   },
   'import-layer': async (page) => {
     await page.goto('/build');
@@ -295,6 +300,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   },
   'cost-and-materials': async (page) => {
     await withStockBuild(page);
+    await revealStatusRail(page);
     await expect(page.locator('edsb-cost-materials .cost__row').first()).toBeVisible();
   },
   'hull-anatomy': async (page) => {

@@ -173,13 +173,17 @@ export function projectOffence(
 }
 
 /**
- * The distances canvas 1c heads its range-band rows with (@633215).
+ * The distances both canvases head their range-band rows with.
  *
  * Four fixed distances, in metres, exactly as the canvas draws them. They are a
  * property of the drawing rather than of the build — the canvas asks what this
  * loadout does at these four ranges, and every hull is asked the same four.
+ *
+ * Re-read from the 2026-08-26 revision, which heads the rows `500 m`,
+ * `1,000 m`, `2,000 m` and `3,000 m` in canvas 1c and canvas 1d alike. The
+ * earlier `1,200`/`1,800` pair was read off the revision before it.
  */
-export const RANGE_BANDS = [500, 1200, 1800, 3000] as const;
+export const RANGE_BANDS = [500, 1000, 2000, 3000] as const;
 
 /** The types that partition conventional damage, in the package's own field order. */
 const CONVENTIONAL_DAMAGE_TYPES = [

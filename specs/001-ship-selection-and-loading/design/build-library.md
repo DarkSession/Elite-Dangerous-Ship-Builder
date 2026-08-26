@@ -64,6 +64,29 @@ footer. Three differences from the drawing remain, deliberately:
 The remaining life of an unnamed record is stated on its own row, and naming is
 offered by choosing that row: the footer then reads "Save <build> under a name".
 
+### Three corrections to the drawing, 2026-08-26 (Commander request)
+
+The surface was the canvas's; the rows were not measured against it.
+
+- **The row's tracks are the canvas's own.** `1fr 150px 84px`, which is what
+  canvas 1a draws once the `Mcr` column between them is taken out. They were
+  three fluid parts, so the hull and the edited-at each held a third of the row
+  — two short monospace readings taking as much width as the name and the note
+  beside them — and the columns drifted with the surface, so no two sizes lined
+  the rows up the same way. The tracks are bounded rather than fixed, so a long
+  hull name or a doubled text size takes what it has instead of overflowing.
+- **`EDITED` sits against the trailing edge**, heading and figure alike, where
+  the canvas sets it: a column of dates is read down, and read down it should be
+  a column rather than a ragged edge.
+- **The header row closes with a hairline**, which is what separates the row that
+  searches the library from the rows that are the library.
+
+The **group headings** — unnamed working records above named saves — are not a
+divergence to close. The canvas's sample library is six named builds and needs no
+separation; this one holds a record for every build a Commander has opened
+(FR-008), and which of those they deliberately named is the distinction FR-010
+turns on. The headings stay.
+
 ## States
 
 | State                   | Required presentation and behavior                                                                                                                                                                                                                       |

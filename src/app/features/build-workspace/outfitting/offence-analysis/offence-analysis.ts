@@ -190,19 +190,6 @@ export class OffenceAnalysis {
   }));
 
   /**
-   * The convergence plate's ring caption, drawn on this block's heading line.
-   *
-   * The 2026-08-25 canvas revision moved it out of the plate and onto the
-   * heading, where the other two blocks carry their notes — but what it says
-   * moves with the target range, which is the plate's own state and belongs to
-   * the component that owns the slider. So the heading reads it back from
-   * there rather than the range being lifted out of the block it belongs to.
-   * Absent until the plate exists, which for a hull the catalogue does not
-   * place is never: there is no ring to caption.
-   */
-  readonly convergenceCaption = computed(() => this.plate()?.ringCaption() ?? null);
-
-  /**
    * The projection for the active build at feature 005's WEP allocation.
    *
    * `revision()` is read first because the loadout signal holds one mutable

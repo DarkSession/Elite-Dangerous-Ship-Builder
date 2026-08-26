@@ -536,6 +536,32 @@ describe('HullAnatomy', () => {
     expect(announced.map((event) => event.messageKey)).toEqual(['anatomy.announce.unavailable']);
   });
 
+  it('falls back to its own first segment when a guest segment is withdrawn', () => {
+    TestBed.inject(ActiveBuildStore).commit(candidate());
+    TestBed.tick();
+
+    const fixture = TestBed.createComponent(HullAnatomy);
+    const status = { id: 'status', label: 'Status', heading: 'Build status' };
+    fixture.componentRef.setInput('guestModes', [status]);
+    fixture.detectChanges();
+
+    fixture.componentInstance.showMode('status');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.guestMode()).toEqual(status);
+    expect(fixture.componentInstance.activeMode()).toBe('status');
+
+    // The segment belongs to the caller and the roomy arrangement does not offer
+    // it. Left standing on it, the region drew its rule and its strip and
+    // nothing under them, with no segment marked as the open one — which is what
+    // rotating a phone to landscape with `STATUS` open did.
+    fixture.componentRef.setInput('guestModes', []);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.guestMode()).toBeNull();
+    expect(fixture.componentInstance.activeMode()).toBe('mounts');
+    expect(fixture.componentInstance.isDashboard()).toBe(false);
+  });
+
   it('says a defective document is a defect, not a hiccup', async () => {
     TestBed.inject(ActiveBuildStore).commit(candidate());
     TestBed.tick();

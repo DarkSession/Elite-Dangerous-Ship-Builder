@@ -23,6 +23,11 @@ import { TabGroup, type TabItem } from '../../../../ui/components/tab-group/tab-
 import { TOTAL_PIPS } from '../../../../application/power-heat/power-conditions.store';
 import type { TableColumn, TableRow } from '../../../../ui/components/table/data-table';
 import { UnavailableValue } from '../../../../ui/components/unavailable-value/unavailable-value';
+import {
+  DistributorBlock,
+  type BankRowView,
+  type PipStepView,
+} from '../distributor-block/distributor-block';
 
 /** One line of `DRAW BY MODULE`: what it is, what it draws, and how far. */
 interface ModuleRowView {
@@ -74,28 +79,6 @@ interface HeatBarView {
   /** How far it runs past it, in `[0, 1]` of the track. `0` where it does not. */
   readonly over: number;
   readonly overheats: boolean;
-}
-
-/** One `SYS` / `ENG` / `WEP` row, and the four pip blocks the canvas draws it with. */
-interface BankRowView {
-  readonly kind: CapacitorKind;
-  readonly name: string;
-  readonly capacity: string;
-  readonly ratedRecharge: string;
-  readonly rechargeRate: string;
-  /** The bank's allocation, said in words for a reader who cannot see the blocks. */
-  readonly pipsLabel: string;
-  readonly steps: readonly PipStepView[];
-}
-
-/** One of the four blocks a bank's pips are drawn and set with. */
-interface PipStepView {
-  readonly id: string;
-  /** The pip count pressing it asks for. */
-  readonly value: number;
-  /** How much of this block the bank's allocation fills, in `[0, 1]`. */
-  readonly fill: number;
-  readonly label: string;
 }
 
 /**
@@ -193,7 +176,7 @@ function clamp(share: number): number {
  */
 @Component({
   selector: 'edsb-power-thermals',
-  imports: [GameText, MetricGroup, TabGroup, UnavailableValue],
+  imports: [DistributorBlock, GameText, MetricGroup, TabGroup, UnavailableValue],
   templateUrl: './power-thermals.html',
   styleUrl: './power-thermals.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -207,7 +190,6 @@ export class PowerThermals {
 
   readonly modulesHeadingId = relationId('power-modules');
   readonly heatHeadingId = relationId('power-heat');
-  readonly distributorHeadingId = relationId('power-distributor');
 
   readonly hardpointsLabel = this.#messages.messageSignal('power.hardpoints.label');
   readonly bandsHeadingId = relationId('power-bands');
@@ -507,10 +489,6 @@ export class PowerThermals {
   ]);
 
   readonly heatAvailable = computed(() => (this.#projection()?.heat ?? null) !== null);
-
-  readonly distributorAvailable = computed(
-    () => (this.#projection()?.distributor ?? null) !== null,
-  );
 
   /** `SYS`, `ENG` and `WEP`, in the canvas's order, each with its own steps. */
   readonly bankRows = computed<readonly BankRowView[]>(() => {

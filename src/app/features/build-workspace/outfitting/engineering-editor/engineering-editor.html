@@ -65,31 +65,42 @@
             <p class="engineering__state">{{ finalLabel() }}</p>
           }
           @default {
-            <edsb-blueprint-choice-list
-              [asDropdown]="!asLayer()"
-              [fixed]="fixedRecipe()"
-              [choices]="blueprintChoices()"
-              [selected]="selectedBlueprint()"
-              [clearConsequence]="clearConsequence()"
-              (chosen)="chooseBlueprint($event)"
-            />
-
             <!--
-              Everything under the recipe follows from it. A grade bar or an
-              effect menu with no recipe behind it is a control over nothing,
-              and neither canvas draws one (design-canvas rule).
+              The recipe and the grade are one card, because canvas 1d draws
+              them as one: `GRADE` sits inside the `BLUEPRINT` plate under a
+              hairline, not on a plate of its own. It is the same reading — a
+              grade with no recipe behind it is a control over nothing — and the
+              drawing now says so (reported 2026-08-26).
             -->
-            @if (grades().length > 0) {
-              <edsb-grade-selector
-                [grades]="grades()"
-                [lowest]="lowestGrade()"
-                [selected]="selectedGrade()"
-                (chosen)="chooseGrade($event)"
+            <div class="engineering__card">
+              <edsb-blueprint-choice-list
+                [asDropdown]="!asLayer()"
+                [fixed]="fixedRecipe()"
+                [choices]="blueprintChoices()"
+                [selected]="selectedBlueprint()"
+                [clearConsequence]="clearConsequence()"
+                (chosen)="chooseBlueprint($event)"
               />
-            }
+
+              <!--
+                Everything under the recipe follows from it. A grade bar or an
+                effect menu with no recipe behind it is a control over nothing,
+                and neither canvas draws one (design-canvas rule).
+              -->
+              @if (grades().length > 0) {
+                <edsb-grade-selector
+                  class="engineering__grade"
+                  [grades]="grades()"
+                  [lowest]="lowestGrade()"
+                  [selected]="selectedGrade()"
+                  (chosen)="chooseGrade($event)"
+                />
+              }
+            </div>
 
             @if (recipeChosen() && effectChoices().length > 0) {
               <edsb-experimental-effect-list
+                class="engineering__card"
                 [asDropdown]="!asLayer()"
                 [effects]="effectChoices()"
                 [selected]="selectedEffect()"
@@ -101,7 +112,7 @@
       </div>
 
       @if (attributes().length > 0) {
-        <div class="engineering__result">
+        <div class="engineering__result engineering__card">
           <!--
             Canvas 1c's `eng-right`: the article's own attributes, across the
             rule from the controls that change them. This supersedes wave 8,
@@ -144,7 +155,8 @@
 
 @if (asLayer()) {
   <edsb-layer
-    [title]="heading()"
+    [title]="panelHeading()"
+    [description]="layerDetail()"
     [open]="true"
     [dismissLabel]="closeLabel()"
     presentation="full-height"

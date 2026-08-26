@@ -123,22 +123,29 @@
 // reference's second rail button opens the library, which the command bar
 // already offers on this screen; it is not drawn twice.
 
-// The back control: a bare arrow on the compact sheet, and nothing at wide
-// widths, where the manifest is still beside it.
-.detail__back {
-  display: none;
-}
-
+// The way back and the hull's name are the command bar's at compact width: the
+// sheet publishes them and the shell draws them, exactly as canvas 1b draws the
+// sheet's own bar (011/`ScreenReturn`). So the sheet's body does not draw them
+// a second time — the name and the line under it are already the bar's title.
 @include layout.compact {
-  .detail__back {
-    @include layout.target-baseline;
+  // The name stays in the outline, hidden rather than dropped. The bar's title
+  // is an `h1` in the banner, and the sheet's own `HARDPOINTS` is an `h3`: take
+  // the `h2` between them off the page entirely and the article a reader lands
+  // in by landmark opens on a level it never reached, with nothing naming it
+  // (found 2026-08-26). The line under the name is the bar's alone — it is a
+  // fact and not a heading, so dropping it loses no structure.
+  // `contents` rather than a box: the block has nothing left to draw, and a box
+  // with nothing in it still takes a row's gap in the sheet's stack — which is
+  // the empty band this screen was reported for.
+  .detail--named-by-bar .detail__identity {
+    display: contents;
+  }
 
-    display: flex;
-    align-items: center;
-    inline-size: var(--edsb-target-size);
-    font-family: var(--edsb-font-metric);
-    font-size: var(--edsb-text-size-lg);
-    color: var(--edsb-text-accent);
-    text-decoration: none;
+  .detail--named-by-bar .detail__name {
+    @include layout.visually-hidden;
+  }
+
+  .detail--named-by-bar .detail__blurb {
+    display: none;
   }
 }

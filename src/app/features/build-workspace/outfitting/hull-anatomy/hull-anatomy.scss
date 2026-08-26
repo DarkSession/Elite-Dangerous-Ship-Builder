@@ -13,16 +13,23 @@
   background-color: var(--edsb-surface-root);
 }
 
-// Canvas 1c pads the block on all four sides: `16px 20px 6px` around the header
-// row, `10px 20px 14px` around the plates and `0 20px 14px` around the legend.
-// Without it the plates run to the column's own edges and the hull sits against
-// the ledger beside it.
+// The block pads itself on all four sides, or the plates run to the column's own
+// edges and the hull sits against whatever is beside it. How far in is the one
+// thing the two canvases disagree on, and they disagree by arrangement rather
+// than by device: canvas 1c, drawing two plates in a column of its own, sets
+// `16px 20px 6px` around the header row and `10px 20px 14px` around the plates;
+// canvas 1d, drawing one plate in a band that runs the width of the screen, sets
+// `12px 14px 8px`. The narrow inset is the base and the roomy one belongs to the
+// two-plate arrangement, so it is stated with it below — a one-plate block is
+// the same 14px in as every other band the screen stacks it among, and a reading
+// in it lines up with the ledger's rather than standing 8px further in
+// (reported 2026-08-26).
 .anatomy {
   @include layout.stack(var(--edsb-space-inline));
 
   min-block-size: 0;
   padding-block: var(--edsb-space-2xl) var(--edsb-space-xl);
-  padding-inline: var(--edsb-space-region);
+  padding-inline: var(--edsb-space-inline-loose);
 }
 
 // The rule on one side, the mode strip on the other, wrapping rather than
@@ -98,6 +105,12 @@
 // Both plates are drawn there, so there is nothing for the selector to choose
 // and it goes with them.
 @container anatomy (min-width: 41rem) {
+  // Canvas 1c's own inset, which belongs to this arrangement rather than to a
+  // width: a block wide enough for two plates is the one the roomy canvas draws.
+  .anatomy {
+    padding-inline: var(--edsb-space-region);
+  }
+
   .anatomy__plates {
     grid-template-columns: 1fr 1fr;
   }

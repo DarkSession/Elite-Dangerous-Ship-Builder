@@ -77,6 +77,9 @@
   --edsb-surface-accent-quiet: var(--edsb-palette-amber-a10);
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
+
+  // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
+  --edsb-surface-accent-underbar: var(--edsb-palette-amber-a50);
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
   --edsb-surface-danger-solid: var(--edsb-palette-hot);
 
@@ -219,6 +222,7 @@
   --edsb-rule-grid: var(--edsb-palette-amber-a14);
   --edsb-rule-section: var(--edsb-palette-amber-a14);
   --edsb-rule-panel: var(--edsb-palette-amber-a20);
+  --edsb-rule-menu: var(--edsb-palette-amber-a16);
 
   // The amber rule under the application command bar, and the marker on the
   // leading edge of a selected row.
@@ -385,6 +389,11 @@
   // manifest's own columns").
   --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
     var(--edsb-measure-candidate-cost);
+  // The saved-build row's tracks, and the column headings that stand over them.
+  // One declaration because the two have to agree exactly or the headings name
+  // the wrong columns; canvas 1a's own `1fr 150px 84px`, once the `Mcr` column
+  // it draws between them is taken out (feature 001 build-library design).
+  --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
   --edsb-layout-family-rail: var(--edsb-measure-family-rail);
   --edsb-layout-family-gap: var(--edsb-measure-family-gap);
   --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
@@ -410,7 +419,12 @@
   --edsb-layout-gunsight-plate: var(--edsb-measure-gunsight-plate);
   --edsb-layout-shot-dot: var(--edsb-measure-shot-dot);
   --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
+  --edsb-layout-insignia-width: var(--edsb-measure-insignia-width);
+  --edsb-layout-insignia-height: var(--edsb-measure-insignia-height);
+  --edsb-layout-material-list: var(--edsb-measure-material-list);
+  --edsb-layout-key-figure: var(--edsb-measure-key-figure);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
+  --edsb-layout-menu-row: var(--edsb-measure-menu-row);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);
   --edsb-layout-menu-max: var(--edsb-measure-menu-max);
   --edsb-layout-layer-max: var(--edsb-measure-layer-md);

@@ -343,26 +343,32 @@ describe('power controls', () => {
     expect(emitted).toEqual([{ kind: 'setPriority', priority: 4 }]);
   });
 
-  it('leaves an absent group absent rather than choosing one', () => {
+  it('draws an unstated group as the one the package puts it in', () => {
     const fixture = renderComponent(PowerControls, { ...NAMES, priority: undefined });
-    const emitted: unknown[] = [];
-    fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
 
     const select = query(fixture, '.power__priority') as HTMLSelectElement;
-    // Not group 1. The package stated no group, so the control states none —
-    // it says the value is unavailable, and that option cannot be chosen back
-    // because there is no package operation that unsets a group (FR-014).
-    expect(select.value).toBe('');
-    // A mark, not a word: the canvas draws one digit in this chip. The
-    // absence is spelled out in the control's own name instead (wave 4).
-    expect(textOf(select.options[0]!)).toBe('—');
-    expect(accessibleName(select)).toContain('no group published');
-    expect(select.options[0]!.disabled).toBe(true);
+    // Group 1, not a dash. `PowerConsumer.priority` documents the absent case
+    // as defaulting to 1, and `powerBudget()` has already put this module in
+    // band 1 — where the power panel lists it and where it is shed. The chip
+    // was the one place in the application saying otherwise, and the package
+    // resets the group on every fresh mount, so it said it about every module
+    // a Commander fitted (ruled 2026-08-26).
+    expect(select.value).toBe('0');
+    expect(textOf(select.options[0]!)).toBe('1');
+    expect(select.options).toHaveLength(5);
+    expect(select.options[0]!.disabled).toBe(false);
+  });
 
-    select.value = '';
-    select.dispatchEvent(new Event('change'));
+  it('offers the same five groups whether or not the source stated one', () => {
+    const stated = renderComponent(PowerControls, { ...NAMES, priority: 2 });
+    const unstated = renderComponent(PowerControls, { ...NAMES, priority: undefined });
 
-    expect(emitted).toEqual([]);
+    const drawn = (fixture: typeof stated) =>
+      [...(query(fixture, '.power__priority') as HTMLSelectElement).options].map((option) =>
+        textOf(option),
+      );
+
+    expect(drawn(unstated)).toEqual(drawn(stated));
   });
 
   it('reads an absent power field as on, the way the package does', () => {

@@ -1,7 +1,7 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { sweepOutfittingState } from './accessibility';
+import { everyPublishedSlotKey, sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 
@@ -99,9 +99,9 @@ function asSentence(message: string, capture?: string): RegExp {
  * gunsight places weapon hardpoints alone.
  */
 async function hardpointKeys(page: Page): Promise<string[]> {
-  const keys = await page
-    .locator('[data-slot-key]')
-    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-slot-key') ?? ''));
+  // Across the categories: canvas 1d draws one at a time, and a hull's
+  // hardpoints are not whichever tab happens to be open (`everyPublishedSlotKey`).
+  const keys = await everyPublishedSlotKey(page);
   return keys.filter((key) => /^(?:Huge|Large|Medium|Small)Hardpoint\d+$/u.test(key));
 }
 
@@ -792,21 +792,24 @@ test.describe('shot convergence', () => {
     const armed = await page.locator('edsb-offence-analysis .weapon').count();
     expect(mounts).toBeGreaterThan(armed);
 
-    // Every mark on the plate is a sentence beside it, and the ring caption
-    // with them — the one figure the plate draws that the four cells beneath it
-    // do not repeat (FR-011).
-    expect(await shots.count()).toBe(mounts + 1);
+    // Every mark on the plate is a sentence beside it, and only those: the ring
+    // caption was the one extra sentence, and the 2026-08-26 revision draws no
+    // caption to state (FR-011, `design/canvas-contract.md`).
+    expect(await shots.count()).toBe(mounts);
 
     // Every one of the hull's mounts is drawn as a dot where its shot lands and
     // the mount's own hardpoint numeral beside it. The badge column at the
-    // plate's edge and the leader lines back from it went with the 2026-08-25
-    // canvas revision.
+    // plate's edge went with the 2026-08-25 canvas revision and has not come
+    // back; what did come back, with the 2026-08-26 rebuild, is a leader — and
+    // only for a numeral that had to step away from its dot to stand clear of
+    // another mark, so there is never more than one a mount and usually fewer
+    // (review note 19).
     await block.locator('input[type="range"]').fill('2000');
     await settled(page);
     await expect(plate.locator('.plate__dot')).toHaveCount(mounts);
     await expect(plate.locator('.plate__numeral')).toHaveCount(mounts);
     await expect(plate.locator('.plate__shot')).toHaveCount(0);
-    await expect(plate.locator('.plate__leader')).toHaveCount(0);
+    expect(await plate.locator('.plate__leader').count()).toBeLessThanOrEqual(mounts);
   });
 
   test('draws the plate on one scale, so a ring means the same angle on both axes', async ({
@@ -888,7 +891,9 @@ test.describe('shot convergence', () => {
     // The sentence is the reading, and it is stated at both ranges alike: the
     // field of view decides what the picture shows, never what is said.
     expect(await block.locator('.shots__entry').count()).toBe(sentencesNear);
-    expect(sentencesNear).toBe(mounts + 1);
+    // One sentence a mark, and no extra: the ring caption the sentences used to
+    // carry is withdrawn with the 2026-08-26 revision.
+    expect(sentencesNear).toBe(mounts);
   });
 
   test('draws a hardpoint the build has not filled, in the empty mount’s own ink', async ({
@@ -916,7 +921,7 @@ test.describe('shot convergence', () => {
     // empty-mount sentence rather than a weapon's with the name left out
     // (011 FR-022).
     const stated = await block.locator('.shots__entry').allInnerTexts();
-    expect(stated).toHaveLength(mounts + 1);
+    expect(stated).toHaveLength(mounts);
     const empty = [
       asSentence(englishMessages['offence.convergence.empty']),
       asSentence(englishMessages['offence.convergence.empty.selected']),
@@ -1022,23 +1027,42 @@ test.describe('shot convergence', () => {
   test('names the four facts the canvas draws under the plate', async ({ page }) => {
     await openOffence(page);
 
-    const facts = await page
-      .locator('edsb-offence-analysis .fact')
-      .evaluateAll((cells) =>
-        cells.map((cell): [string, string] => [
-          cell.querySelector('.fact__label')?.textContent?.trim() ?? '',
-          cell.querySelector('.fact__value')?.textContent?.trim() ?? '',
-        ]),
-      );
-    expect(facts.map(([label]) => label)).toEqual([
-      englishMessages['offence.convergence.lateral'],
-      englishMessages['offence.convergence.vertical'],
-      englishMessages['offence.convergence.spread'],
-      englishMessages['offence.convergence.widest'],
-    ]);
-    for (const [, value] of facts) {
-      expect(digits(value)).not.toBe('');
+    // The 2026-08-26 canvas revision withdrew the four cells that used to
+    // stand under the plate — the two spans, the widest mount and the apparent
+    // spread — along with the ring caption. Nothing is drawn beneath the plate
+    // but the range, and every reading the cells carried is still in the
+    // plate's own sentences.
+    await expect(page.locator('edsb-offence-analysis .fact')).toHaveCount(0);
+    await expect(page.locator('edsb-offence-analysis .plate__boresight')).toHaveCount(1);
+
+    const stated = await page
+      .locator('edsb-offence-analysis .shots__entry')
+      .evaluateAll((entries) => entries.map((entry) => entry.textContent?.trim() ?? ''));
+    expect(stated.length).toBeGreaterThan(0);
+    for (const sentence of stated) {
+      expect(sentence).not.toBe('');
     }
+
+    // No two numerals drawn over each other, whatever the range is set to.
+    const overlapping = await page
+      .locator('edsb-offence-analysis .plate__numeral')
+      .evaluateAll((numerals) => {
+        const boxes = numerals.map((numeral) => numeral.getBoundingClientRect());
+        let worst = 0;
+        for (let index = 0; index < boxes.length; index += 1) {
+          for (let other = index + 1; other < boxes.length; other += 1) {
+            const one = boxes[index]!;
+            const two = boxes[other]!;
+            const overlapX = Math.min(one.right, two.right) - Math.max(one.left, two.left);
+            const overlapY = Math.min(one.bottom, two.bottom) - Math.max(one.top, two.top);
+            if (overlapX > 0 && overlapY > 0) {
+              worst = Math.max(worst, Math.min(overlapX, overlapY));
+            }
+          }
+        }
+        return worst;
+      });
+    expect(overlapping).toBe(0);
   });
 });
 
@@ -1227,7 +1251,9 @@ async function expectEveryBlock(page: Page): Promise<void> {
   await expect(panel.locator('.bars--range .bar')).toHaveCount(4);
   await expect(panel.locator('.bars--capacitor .bar')).toHaveCount(4);
   expect(await panel.locator('.split__entry').count()).toBeGreaterThan(0);
-  await expect(panel.locator('.fact')).toHaveCount(4);
+  // No fact cells: the two spans, the widest mount and the apparent spread are
+  // drawn nowhere in the canvas any more (withdrawn 2026-08-26).
+  await expect(panel.locator('.fact')).toHaveCount(0);
   expect(await panel.locator('.shots__entry').count()).toBeGreaterThan(0);
   await expect(panel.locator('input[type="range"]')).toBeVisible();
 }

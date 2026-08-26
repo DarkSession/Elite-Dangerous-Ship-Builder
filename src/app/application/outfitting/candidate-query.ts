@@ -103,6 +103,16 @@ export interface CandidateQueryState {
    */
   readonly fittedFamilyId: OutfittingFamilyId | null;
   /**
+   * The family the Commander had open on the mount before this one.
+   *
+   * Consulted only when this mount has no fitted family of its own to seed
+   * from, and only when it actually offers that family. Carried on the state
+   * beside `fittedFamilyId` because it is the same kind of thing — a seed the
+   * default open set is restored from every time a query is cleared, rather
+   * than a set that has to be kept in step (FR-021, FR-023).
+   */
+  readonly carriedFamilyId: OutfittingFamilyId | null;
+  /**
    * Which families are open right now.
    *
    * Seeded, not remembered. It is replaced wholesale on every rebuild and on
@@ -152,6 +162,7 @@ export function openCandidateQuery(
   locale: string,
   collator: Intl.Collator,
   fitted: FittedArticle | null = null,
+  carriedFamilyId: OutfittingFamilyId | null = null,
 ): CandidateQueryState {
   const choices = orderChoices(membership.choices, collator);
 
@@ -168,6 +179,7 @@ export function openCandidateQuery(
       canClear: false,
       fittedFamilyId:
         choices.find((choice) => isFittedChoice(choice, fitted))?.presentation.familyId ?? null,
+      carriedFamilyId,
       openFamilies: new Set(),
       // The accordion is the model a state arrives under; the composition that
       // is actually drawing it says so a step later, through `withReveal`. It
@@ -302,17 +314,29 @@ const OPEN_ON_SEARCH_LIMIT = 25;
  * The default: the family holding the exact fitted choice, and no other.
  *
  * Where no available family holds it — an empty mount, or an article the package
- * no longer offers back — the two models part. The accordion reveals nothing,
- * which is a state canvas 1d draws. The rail reveals the first family in package
- * order, because the canvas's rail always has a selection and an empty pane
- * beside a full rail is a state it does not draw. That is not a substitute this
- * application chose: it is what the drawing does (FR-021, and
+ * no longer offers back — the family the Commander was last reading takes over,
+ * if this mount offers it. Working down a row of empty hardpoints means fitting
+ * the same kind of thing several times, and closing the category on every mount
+ * made them open it again for each one (reported 2026-08-26). It is a carry, not
+ * a memory: it survives one step, is only ever consulted when the mount itself
+ * has nothing to say, and is dropped the moment this mount does not offer that
+ * family at all.
+ *
+ * Where neither has an answer the two models part. The accordion reveals
+ * nothing, which is a state canvas 1d draws. The rail reveals the first family
+ * in package order, because the canvas's rail always has a selection and an
+ * empty pane beside a full rail is a state it does not draw. That is not a
+ * substitute this application chose: it is what the drawing does (FR-021, and
  * module-replacement design, "What exclusive selection does to FR-021, FR-022
  * and FR-023").
  */
 function seedFamilies(state: CandidateQueryState): ReadonlySet<OutfittingFamilyId> {
   if (state.fittedFamilyId !== null) {
     return new Set([state.fittedFamilyId]);
+  }
+  const carried = state.carriedFamilyId;
+  if (carried !== null && familiesOf(state.choices).has(carried)) {
+    return new Set([carried]);
   }
   return state.reveal === 'rail' ? firstFamilyOf(state.choices) : new Set();
 }

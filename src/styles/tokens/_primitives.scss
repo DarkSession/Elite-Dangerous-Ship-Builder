@@ -454,10 +454,33 @@
   // that matters, not the number of pixels: every mark is placed as a fraction
   // of the plate rather than in pixels, so it is the same diagram at either
   // size (`design/canvas-contract.md`, review note 18).
-  --edsb-measure-gunsight-plate: 8rem;
+  --edsb-measure-gunsight-plate: 10.75rem;
   --edsb-measure-shot-dot: 0.4375rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
+
+  // The insignia the command bar carries (canvas 3b, and the bar of every
+  // screen artboard). The canvas draws it in a 368x330 box at 26x23 on three
+  // artboards and 28x25 on the fourth; the smaller is taken, because the bar it
+  // sits on is the same height on all four.
+  --edsb-measure-insignia-width: 1.625rem;
+  --edsb-measure-insignia-height: 1.4375rem;
+
+  // Both canvases draw five material rows against a footer that counts
+  // eighteen types, so the list they draw is a bounded box rather than the
+  // whole shopping list. Held in `rem` so the box grows with the Commander's
+  // text size instead of trapping more rows in the same pixels at 200%.
+  --edsb-measure-material-list: 11.5rem;
+
+  // One of canvas 1d's six key readings, at the narrowest it may be drawn.
+  //
+  // The artboard sets all six across a 390px screen: 362px once the band's own
+  // 14px inside is paid for, less five 6px gaps, is 55px a cell — so this is
+  // the canvas's own measure rounded down to the scale rather than a floor
+  // invented for it. Held in `rem` so a Commander reading at 200% gets three
+  // cells on two rows instead of six cells with their figures hanging over the
+  // glass.
+  --edsb-measure-key-figure: 3.25rem;
 
   // The two icons the canvas draws inline in a row — the engineered mark and
   // the Merc Coin — at 14 to 16px depending on the artboard.
@@ -490,6 +513,7 @@
 
   // The compact action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
+  --edsb-measure-menu-row: 2.875rem;
   --edsb-measure-menu-min: 12.25rem;
   --edsb-measure-menu-max: 20rem;
 

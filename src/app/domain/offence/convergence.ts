@@ -124,7 +124,7 @@ export const PLATE_MARGIN_FRACTION = 0.92;
  * changes no figure: every reading the block gives is the package's answer at
  * whatever distance the track is set to.
  */
-export const TARGET_RANGE = { min: 500, max: 5000, step: 100, initial: 1000 } as const;
+export const TARGET_RANGE = { min: 500, max: 5000, step: 50, initial: 1500 } as const;
 
 /** Radians to milliradians, so the conversion is named rather than a loose 1000. */
 const MILLIRADIANS_PER_RADIAN = 1000;

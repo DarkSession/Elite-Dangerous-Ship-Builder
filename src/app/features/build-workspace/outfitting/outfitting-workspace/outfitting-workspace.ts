@@ -32,11 +32,39 @@ import { DrivesSummary } from '../drives-summary/drives-summary';
 import { OffenceSummary } from '../offence-summary/offence-summary';
 import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
-import { HullAnatomy } from '../hull-anatomy/hull-anatomy';
+import { HullAnatomy, type AnatomyGuestMode } from '../hull-anatomy/hull-anatomy';
 import { ModuleReplacement } from '../module-replacement/module-replacement';
 
 /** The category controls the canvas draws above the ledger. */
 type Category = 'all' | SlotKind;
+
+/**
+ * Which mount kinds one category lists.
+ *
+ * `core` lists three. Canvas 1c counts `CORE 8` on an Anaconda whose seven core
+ * internals are followed by its cargo hatch, and canvas 1d's `CORE` panel draws
+ * that hatch as its last row — so the hatch is a core internal as far as both
+ * artboards are concerned, whatever the package's own `SlotKind` calls it.
+ * Armour joins it for the same reason and one more: without `ALL` there is no
+ * other tab it could be reached from (Commander request 2026-08-26).
+ */
+const CATEGORY_KINDS: Readonly<Record<SlotKind, SlotKind>> = {
+  hardpoint: 'hardpoint',
+  utility: 'utility',
+  optional: 'optional',
+  core: 'core',
+  armour: 'core',
+  cargoHatch: 'core',
+};
+
+/** The strip segment that opens the status rail at compact width. */
+const STATUS_MODE = 'status';
+
+/** The tabs canvas 1d draws, in its order. It offers no `ALL`. */
+const COMPACT_CATEGORIES = ['hardpoint', 'core', 'optional', 'utility'] as const;
+
+/** The chips canvas 1c draws, in its order. */
+const WIDE_CATEGORIES = ['all', ...COMPACT_CATEGORIES] as const;
 
 /**
  * The outfitting region inside feature 001's `/build`.
@@ -57,6 +85,16 @@ type Category = 'all' | SlotKind;
  * feature 001 and importing belongs to feature 004; this region says why it is
  * empty and stops there rather than offering an action it does not own (FR-001).
  */
+/**
+ * The marks canvas 1c sets beside the history pair — `↶ UNDO` and `REDO ↷`.
+ *
+ * Two conventional typographic arrows, not icons: the word is drawn beside each
+ * one either way, so nothing about either control has to be learned from a
+ * shape. They are hidden from a reader, who has the words.
+ */
+const HISTORY_UNDO_MARK = '\u21b6';
+const HISTORY_REDO_MARK = '\u21b7';
+
 @Component({
   selector: 'edsb-outfitting-workspace',
   imports: [
@@ -86,8 +124,37 @@ export class OutfittingWorkspace {
   readonly active = inject(ActiveBuildStore);
   readonly #chrome = inject(ScreenChrome);
 
-  /** Which mounts are listed. Visibility only; never build or history state. */
-  readonly category = signal<Category>('all');
+  /**
+   * The category a Commander asked for, or none — nobody has asked yet.
+   *
+   * Held apart from what is *shown* so that a value nobody chose can never
+   * outlive the offering that produced it. The composition reports `compact`
+   * until the observer has measured the region for the first time, so the
+   * offering a category is first read against is canvas 1d's four tabs even on
+   * a desktop window — and a chosen-value-wins rule would then latch
+   * `HARDPOINTS` a frame before `ALL` existed and keep it, because `HARDPOINTS`
+   * is offered at both widths. Wide width would open on one eighth of the
+   * ledger with `ALL` beside it unpressed.
+   */
+  readonly #chosenCategory = signal<Category | null>(null);
+
+  /**
+   * Which mounts are listed. Visibility only; never build or history state.
+   *
+   * A choice holds for as long as the width still offers it: narrowing while
+   * `ALL` is shown lands on the tab canvas 1d draws selected, and widening
+   * again returns to `ALL` — which nobody chose away from.
+   */
+  readonly category = computed<Category>(() => {
+    const offered = this.categories().map((entry) => entry.value);
+    const chosen = this.#chosenCategory();
+    return chosen !== null && offered.includes(chosen) ? chosen : offered[0]!;
+  });
+
+  /** Shows one category. The strip's own press, and nothing else's. */
+  showCategory(value: Category): void {
+    this.#chosenCategory.set(value);
+  }
 
   /**
    * Which identity field the command bar has open, if either.
@@ -110,6 +177,39 @@ export class OutfittingWorkspace {
   /** True where the bench has to become a layer rather than sit inline. */
   readonly benchIsLayer = computed(() => this.composition() === 'compact');
 
+  /**
+   * Which segment of the anatomy strip is open, as the strip reports it.
+   *
+   * The strip is the anatomy's; this is only what the workspace needs in order
+   * to draw the one segment the anatomy draws nothing for.
+   */
+  readonly #anatomyMode = signal<string>('mounts');
+
+  /**
+   * Canvas 1d's sixth segment, `STATUS`, and what it opens.
+   *
+   * Offered only where the artboard draws it. At wide width the rail is the
+   * third track of canvas 1c's grid and is on screen whatever the strip has
+   * open, so there is nothing for a segment to reveal (Commander request
+   * 2026-08-26).
+   */
+  readonly anatomyGuestModes = computed<readonly AnatomyGuestMode[]>(() =>
+    this.benchIsLayer()
+      ? [
+          {
+            id: STATUS_MODE,
+            label: this.statusModeLabel(),
+            heading: this.statusRailLabel(),
+          },
+        ]
+      : [],
+  );
+
+  /** Whether the compact strip currently has the status rail open. */
+  readonly statusModeOpen = computed(
+    () => this.benchIsLayer() && this.#anatomyMode() === STATUS_MODE,
+  );
+
   readonly regionHeadingId = relationId('outfitting-region');
   readonly statusRailHeadingId = relationId('status-rail');
 
@@ -117,6 +217,8 @@ export class OutfittingWorkspace {
   readonly ledgerLabel = this.#messages.messageSignal('outfitting.ledger.label');
   readonly statusRailLabel = this.#messages.messageSignal('outfitting.status-rail.label');
   readonly categoryLegend = this.#messages.messageSignal('outfitting.category.legend');
+  readonly statusModeLabel = this.#messages.messageSignal('outfitting.status-rail.mode');
+  readonly keyFiguresLabel = this.#messages.messageSignal('outfitting.key-figures.label');
   readonly noBuildTitle = this.#messages.messageSignal('outfitting.no-build.title');
   readonly noBuildDescription = this.#messages.messageSignal('outfitting.no-build.description');
   readonly replaceLabel = this.#messages.messageSignal('outfitting.capability.replace');
@@ -124,10 +226,17 @@ export class OutfittingWorkspace {
   readonly undoLabel = this.#messages.messageSignal('outfitting.history.undo');
   readonly redoLabel = this.#messages.messageSignal('outfitting.history.redo');
 
-  /** The category controls, in the order the canvas draws them. */
+  /**
+   * The category controls, in the order the canvas draws them.
+   *
+   * Four at compact width and five at wide. Canvas 1d draws `HARDPOINTS`,
+   * `CORE`, `OPTIONAL` and `UTILITY` and no `ALL`: at that width the ledger is
+   * one category at a time and a Commander says which, rather than being handed
+   * thirty-four mounts to scroll (Commander request 2026-08-26).
+   */
   readonly categories = computed(() =>
-    (['all', 'hardpoint', 'core', 'optional', 'utility'] as const).map((value) => ({
-      value,
+    (this.benchIsLayer() ? COMPACT_CATEGORIES : WIDE_CATEGORIES).map((value) => ({
+      value: value as Category,
       label: this.#messages.message(categoryKey(value)),
       count: this.#countFor(value),
     })),
@@ -139,7 +248,7 @@ export class OutfittingWorkspace {
     const groups: SlotGroupView[] = [];
 
     for (const slot of this.store.slots()) {
-      if (category !== 'all' && slot.kind !== category) {
+      if (category !== 'all' && CATEGORY_KINDS[slot.kind] !== category) {
         continue;
       }
       const last = groups.at(-1);
@@ -321,6 +430,7 @@ export class OutfittingWorkspace {
                 action: {
                   id: 'outfitting.undo',
                   label: this.undoLabel(),
+                  mark: HISTORY_UNDO_MARK,
                   disabled: !this.store.canUndo(),
                   description: this.#named(
                     'outfitting.history.undo.named',
@@ -333,6 +443,10 @@ export class OutfittingWorkspace {
                 action: {
                   id: 'outfitting.redo',
                   label: this.redoLabel(),
+                  mark: HISTORY_REDO_MARK,
+                  // `REDO ↷`, not `↷ REDO`: the canvas points each arrow
+                  // the way its action travels, so this one follows its word.
+                  markPosition: 'trailing' as const,
                   disabled: !this.store.canRedo(),
                   description: this.#named(
                     'outfitting.history.redo.named',
@@ -436,11 +550,16 @@ export class OutfittingWorkspace {
     this.store.showSurface('workspace');
   }
 
+  /** Records which segment of the anatomy strip is open. View state only. */
+  showAnatomyMode(mode: string): void {
+    this.#anatomyMode.set(mode);
+  }
+
   #countFor(category: Category): number {
     const slots = this.store.slots();
     return category === 'all'
       ? slots.length
-      : slots.filter((slot) => slot.kind === category).length;
+      : slots.filter((slot) => CATEGORY_KINDS[slot.kind] === category).length;
   }
 }
 

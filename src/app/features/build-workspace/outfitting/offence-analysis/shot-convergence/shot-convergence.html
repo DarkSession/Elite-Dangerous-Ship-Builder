@@ -1,20 +1,34 @@
 <!--
   Canvas 1c's `SHOT CONVERGENCE` block: the gunsight plate, the same diagram in
-  words, the range the plate is drawn at, and the four cells that report the
-  spread. The block's ring caption sits on the heading line the panel draws
-  above this, which is where the 2026-08-25 canvas revision moved it.
+  words, and the range the plate is drawn at.
+
+  Re-drawn for the 2026-08-26 revision, which took three things out and put one
+  in. Out went the ring caption and the four cells beneath the plate — the two
+  spans, the widest mount and the apparent spread — which the canvas no longer
+  draws anywhere. In came the boresight: the ring and centre dot that mark
+  where the ship itself is pointing, so a Commander reads convergence against
+  the axis rather than against the middle of a box.
 -->
 <div class="convergence">
   <!--
     The gunsight plate. Decorative in full: every shot on it is stated in
-    words in the list below, and the four figures under it are what
-    actually report the spread. A shot outside the plate's field of view
-    is held at the frame's own margin and keeps the sentence that states
-    where it really goes.
+    words in the list below, which is what actually reports the spread. A
+    shot outside the plate's field of view is held at the frame's own
+    margin and keeps the sentence that states where it really goes.
   -->
   <div class="plate" aria-hidden="true">
     <span class="plate__axis plate__axis--vertical"></span>
     <span class="plate__axis plate__axis--horizontal"></span>
+
+    <!--
+      The boresight the 2026-08-26 revision adds: a hairline ring on the axis
+      with a filled dot at its centre. It is where the hull points, so it is
+      what every shot is offset *from* — the one mark on this plate that is a
+      property of the drawing rather than of the build, which is why it takes
+      no state and needs no sentence of its own.
+    -->
+    <span class="plate__boresight"></span>
+    <span class="plate__boresight-centre"></span>
 
     <!--
       The two dashed rings. Each is a circle in *angle*, and on a box that is
@@ -50,6 +64,27 @@
       reading, and it states the offset and angle the shot really has
       (FR-011).
     -->
+    <!--
+      A leader for every numeral that had to leave its dot's four corners. Drawn
+      under the marks and over the ground, in the plate's own percentage
+      coordinates, so the line and the numeral can never disagree about where
+      they meet.
+    -->
+    <svg class="plate__leaders" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
+      @for (shot of shots(); track shot.id) {
+        @if (shot.leader; as leader) {
+          <line
+            class="plate__leader"
+            [attr.x1]="leader.x1"
+            [attr.y1]="leader.y1"
+            [attr.x2]="leader.x2"
+            [attr.y2]="leader.y2"
+            vector-effect="non-scaling-stroke"
+          />
+        }
+      }
+    </svg>
+
     @for (shot of shots(); track shot.id) {
       <span
         class="plate__dot"
@@ -75,22 +110,20 @@
     The same diagram in words. This is the reading; the plate above is the
     picture of it, and every mark on it is restated here — the empty
     hardpoints and the selected mount with the rest, because those are two
-    of the three things the plate's inks separate. The ring is a mark
-    like any other: its caption is drawn on the block's heading line, and it is
-    the one plate figure the four cells below do not repeat, so it is stated
-    with the shots as well.
+    of the three things the plate's inks separate. Each sentence carries the
+    offset and the angle that mount's shot really has, so a numeral moved
+    aside to keep the plate legible changes nothing that is read.
   -->
   <ul class="shots" [attr.aria-label]="plateLabel()">
     @for (shot of shots(); track shot.id) {
       <li class="shots__entry">{{ shot.statement }}</li>
     }
-    <li class="shots__entry">{{ ringCaption() }}</li>
   </ul>
 
   <!--
-    The range and the four cells, in one column beside the plate — the canvas's
-    own arrangement, which falls beneath the plate when there is no room to
-    stand there.
+    The range, in a column beside the plate — the canvas's own arrangement,
+    which falls beneath the plate when there is no room to stand there. The
+    2026-08-26 revision leaves the range alone in this column.
   -->
   <div class="convergence__readout">
     <edsb-range-field
@@ -105,24 +138,5 @@
       [maxText]="rangeMaxText()"
       (changed)="setTargetRange($event)"
     />
-
-    <!--
-      The canvas's four cells, in one hairline-gapped row of label-over-figure.
-      The row is this application's arrangement and not the canvas's — canvas 1c
-      stacks them as label-left, value-right rows down the column beside the
-      plate — and it carries the same four labels and the same four figures,
-      which is why the departure is sanctioned (`design/canvas-contract.md`,
-      "Canvas revision, 2026-08-25"). The two spans are the mounts' own
-      separation and do not move with the range; the spread is what that
-      separation subtends at the range the slider is set to, and says so.
-    -->
-    <ul class="facts">
-      @for (fact of facts(); track fact.id) {
-        <li class="fact">
-          <span class="fact__label">{{ fact.label }}</span>
-          <span class="fact__value" data-bidi-isolate>{{ fact.value }}</span>
-        </li>
-      }
-    </ul>
   </div>
 </div>

@@ -11,6 +11,8 @@ import {
   fitCommitted,
   openChooserRows,
   openEditor as bringEditorOnScreen,
+  revealMount,
+  revealStatusRail,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 import { reachShellAction } from './shell';
@@ -51,6 +53,10 @@ async function openStockBuild(page: Page, messages = englishMessages): Promise<v
   await page.goto(`/ships/${HULL}`);
   await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
+  // Both blocks live in the status rail, which canvas 1d keeps behind its
+  // `STATUS` segment rather than in the flow — so a compact run opens it, and a
+  // wide one finds it already there.
+  await revealStatusRail(page, exactly(messages['outfitting.status-rail.mode']));
   await expect(page.locator('edsb-cost-materials .cost__row').first()).toBeVisible();
 }
 
@@ -161,8 +167,10 @@ test.describe('the MATERIALS block', () => {
     await engineerTheDrive(page);
 
     // Above `TOTAL`, between the two blocks, above the counts, and above Merc
-    // Coin where there is one. The rule over `TOTAL` is structural: it is what
-    // makes that row read as the sum of the two above it.
+    // Coin where there is one — the last of which now rules inside COST rather
+    // than under the material list (ruling C, re-decided). The rule over
+    // `TOTAL` is structural: it is what makes that row read as the sum of the
+    // two above it.
     const ruled = await page
       .locator(
         'edsb-cost-materials .cost__row--total, edsb-cost-materials .block + .block, edsb-cost-materials .block__footer',
@@ -254,19 +262,56 @@ test.describe('the Merc Coin row', () => {
     expect(both).toBeGreaterThan(one);
   });
 
-  test('is named, and closes the block after every material row', async ({ page }) => {
+  test('is named, and closes the cost block under rebuy', async ({ page }) => {
     await openStockBuild(page);
     await engineerTheDrive(page);
     await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
 
-    // Ruling C put this row inside the materials block rather than in COST, and
-    // the canvas draws it last. A colour alone would not say what it is, so the
-    // row carries its own label as well (WCAG 1.4.1).
-    const rows = page.locator('edsb-cost-materials .rail-material');
-    await expect(rows.last()).toHaveClass(/rail-material--merc-coin/);
-    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toContainText(
-      /\p{L}/u,
-    );
+    // Ruling C, re-decided 2026-08-26: the canvas draws this row inside COST,
+    // ruled off under `REBUY 5%`, not at the foot of MATERIALS. A colour alone
+    // would not say what it is, so the row carries its own label (WCAG 1.4.1).
+    const coin = page.locator('edsb-cost-materials .rail-material--merc-coin');
+    await expect(coin).toHaveCount(1);
+    await expect(
+      page.locator('edsb-cost-materials .block').first().locator('.rail-material--merc-coin'),
+    ).toHaveCount(1);
+    await expect(
+      page.locator('edsb-cost-materials .materials-box .rail-material--merc-coin'),
+    ).toHaveCount(0);
+    await expect(coin).toContainText(/\p{L}/u);
+  });
+
+  test('bounds the material list and scrolls it rather than dropping a row', async ({ page }) => {
+    await openStockBuild(page);
+    await engineerTheDrive(page);
+
+    // Ruling G: the canvas draws five rows against a footer counting eighteen
+    // types, so the list is a box with a scroll. Ruling E still holds — every
+    // consolidated row is present, none is truncated away.
+    const list = page.locator('edsb-cost-materials .materials-box');
+    await expect(list).toHaveCount(1);
+    await expect(list).toHaveAttribute('tabindex', '0');
+
+    // A scroll box needs a name; the block's own heading supplies it.
+    const labelledBy = await list.getAttribute('aria-labelledby');
+    expect(labelledBy).toBeTruthy();
+    await expect(page.locator(`#${labelledBy}`)).toHaveCount(1);
+
+    // And the box is around the list, never the list itself: a `dl` given the
+    // box's own role stops being a description list, and its terms and figures
+    // stop being associated at all.
+    await expect(list.locator('dl.rail-materials')).toHaveCount(1);
+    await expect(list.locator('dl[role]')).toHaveCount(0);
+
+    const bounded = await list.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        overflow: style.overflowY,
+        capped: style.maxBlockSize !== 'none' && style.maxBlockSize !== '',
+      };
+    });
+    expect(bounded.overflow).toBe('auto');
+    expect(bounded.capped).toBe(true);
   });
 
   test('is left out of the material type and unit counts', async ({ page }) => {
@@ -967,6 +1012,7 @@ test.describe('the accessibility sweep, state by state', () => {
  * once a mount is marked, so clicking the row and asking immediately races it.
  */
 async function engineerTheDrive(page: Page, messages = englishMessages): Promise<void> {
+  await revealMount(page, 'FrameShiftDrive');
   const row = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
@@ -1007,6 +1053,7 @@ function exactly(label: string): RegExp {
  * by the module's name, which both rows carry.
  */
 async function fitMercenaryCargoRack(page: Page, slot: string): Promise<void> {
+  await revealMount(page, slot);
   const mount = page.locator(`[data-slot-key="${slot}"] button`).first();
   await mount.click();
   await expect(mount).toHaveAttribute('aria-pressed', 'true');

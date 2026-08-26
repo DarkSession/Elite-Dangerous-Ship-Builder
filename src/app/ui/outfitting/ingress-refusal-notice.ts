@@ -3,6 +3,7 @@ import type { PartialEngineeringFailure } from '../../domain/build/build-ingress
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
+import { slotName } from './slot-naming';
 
 /**
  * A build that was refused before it was ever activated.
@@ -41,7 +42,7 @@ export class IngressRefusalNotice {
   readonly failures = input.required<readonly PartialEngineeringFailure[]>();
   readonly revision = input.required<number>();
 
-  /** The mount labels, already localized, by exact slot key. */
+  /** The mount labels, already localized, keyed by the package's slot key. */
   readonly slotLabels = input<Readonly<Record<string, string>>>({});
 
   readonly dismissed = output<void>();
@@ -68,7 +69,7 @@ export class IngressRefusalNotice {
         id: source.slotKey,
         messageKey: 'outfitting.ingress.refusal.module',
         params: {
-          slot: this.slotLabels()[source.slotKey] ?? source.slotKey,
+          slot: slotName(this.slotLabels(), source.slotKey),
           module: source.moduleSymbol,
           quality: this.#formatters.percent(source.quality),
           // The package's own identifier for what it refused. Named, not

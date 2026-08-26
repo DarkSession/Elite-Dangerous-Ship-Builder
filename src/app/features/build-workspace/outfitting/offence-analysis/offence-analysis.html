@@ -252,17 +252,12 @@
       [attr.aria-labelledby]="convergenceHeadingId"
     >
       <!--
-        The ring caption sits on this heading line, which is where the
-        2026-08-25 canvas revision put it: `SHOT CONVERGENCE` left and
-        `RING 2 · 27 MRAD · 16.0 m` against it at the trailing edge, exactly as
-        the two blocks above set their own notes. It is absent until the plate
-        is drawn, because a hull the catalogue does not place has no ring.
+        The heading alone. The 2026-08-25 revision moved a ring caption onto
+        this line; the 2026-08-26 revision drops the caption altogether, and the
+        canvas heads this block with `SHOT CONVERGENCE` and nothing beside it.
       -->
       <div class="offence__head">
         <h4 class="offence__heading" [id]="convergenceHeadingId">{{ convergenceHeading() }}</h4>
-        @if (convergenceCaption(); as caption) {
-          <p class="offence__note" data-bidi-isolate>{{ caption }}</p>
-        }
       </div>
 
       @if (convergenceGeometry(); as geometry) {

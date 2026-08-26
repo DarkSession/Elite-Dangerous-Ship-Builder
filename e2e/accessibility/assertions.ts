@@ -395,22 +395,68 @@ export async function expectTargetSizes(
  * ledger row for the same slot, and that row is at least the baseline.
  */
 export async function expectEquivalentControls(page: Page): Promise<void> {
-  const missing = await page.evaluate((baseline) => {
-    const drawn = [...document.querySelectorAll('.schematic__mount')].map(
-      (node) => node.getAttribute('data-slot') ?? '',
-    );
+  const outstanding = new Set(
+    await page
+      .locator('.schematic__mount')
+      .evaluateAll((nodes) => [
+        ...new Set(nodes.map((node) => node.getAttribute('data-slot') ?? '')),
+      ]),
+  );
+  const undersized: string[] = [];
 
-    return [...new Set(drawn)].filter((key) => {
-      const row = document.querySelector(`[data-slot-key="${key}"] button`);
-      if (row === null) {
-        return true;
+  /** Takes the rows this screenful holds out of the claim, measuring each. */
+  async function measureShownRows(): Promise<void> {
+    const rows = await page.evaluate((baseline) => {
+      const measured: Record<string, boolean> = {};
+      for (const node of document.querySelectorAll('[data-slot-key]')) {
+        const row = node.querySelector('button');
+        if (row === null) {
+          continue;
+        }
+        const box = row.getBoundingClientRect();
+        measured[node.getAttribute('data-slot-key') ?? ''] =
+          box.width >= baseline && box.height >= baseline;
       }
-      const box = row.getBoundingClientRect();
-      return box.width < baseline || box.height < baseline;
-    });
-  }, TARGET_BASELINE_PX);
+      return measured;
+    }, TARGET_BASELINE_PX);
 
-  expect(missing, 'a drawn mount has no full-size equivalent in the ledger').toEqual([]);
+    for (const [key, atBaseline] of Object.entries(rows)) {
+      if (!outstanding.delete(key)) {
+        continue;
+      }
+      if (!atBaseline) {
+        undersized.push(key);
+      }
+    }
+  }
+
+  await measureShownRows();
+
+  // At compact width the ledger draws one category at a time, so the row that
+  // exempts a utility mount is not in the document while the hardpoint tab is
+  // open. The exception asks for an equivalent on the same screen, and the
+  // category strip is how this screen reaches it — so the claim is checked the
+  // way a Commander would make it good, by pressing through the tabs (canvas
+  // 1d; `design/outfitting-workspace.md`, "No `ALL` at compact width").
+  const categories = page.locator('.outfitting__category');
+  const total = await categories.count();
+  if (outstanding.size > 0 && total > 0) {
+    const opened = await categories.evaluateAll((nodes) =>
+      nodes.findIndex((node) => node.getAttribute('aria-pressed') === 'true'),
+    );
+    for (let index = 0; index < total && outstanding.size > 0; index += 1) {
+      await categories.nth(index).click();
+      await expect(categories.nth(index)).toHaveAttribute('aria-pressed', 'true');
+      await measureShownRows();
+    }
+    if (opened >= 0) {
+      await categories.nth(opened).click();
+      await expect(categories.nth(opened)).toHaveAttribute('aria-pressed', 'true');
+    }
+  }
+
+  expect([...outstanding], 'a drawn mount has no equivalent in the ledger').toEqual([]);
+  expect(undersized, 'a drawn mount’s ledger row is under the baseline').toEqual([]);
 }
 
 /**

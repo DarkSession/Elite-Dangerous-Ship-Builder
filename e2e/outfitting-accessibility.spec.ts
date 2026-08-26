@@ -16,6 +16,7 @@ import {
   openAllFamilies,
   openChooser,
   openEditor,
+  revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 
@@ -42,6 +43,7 @@ async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
 }
 
 async function selectMount(page: Page, slotKey: string): Promise<void> {
+  await revealMount(page, slotKey);
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
@@ -234,12 +236,14 @@ test.describe('the conditions that break layouts', () => {
       await (touch ? control.tap() : control.click());
     };
 
+    await revealMount(page, 'FrameShiftDrive');
     await press('[data-slot-key="FrameShiftDrive"] button');
     await expect(page.locator('[data-slot-key="FrameShiftDrive"] button').first()).toHaveAttribute(
       'aria-pressed',
       'true',
     );
 
+    await revealMount(page, 'SmallHardpoint1');
     await press('[data-slot-key="SmallHardpoint1"] .power__switch');
     await expect(
       page.locator('[data-slot-key="SmallHardpoint1"] .power__toggle'),

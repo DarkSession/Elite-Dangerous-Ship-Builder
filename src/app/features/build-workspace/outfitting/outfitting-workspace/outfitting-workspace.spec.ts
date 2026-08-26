@@ -152,3 +152,197 @@ describe('the outfitting workspace’s command-bar channel', () => {
     expect(store.canUndo()).toBe(false);
   });
 });
+
+/**
+ * Canvas 1d's arrangement, which is not canvas 1c's stacked.
+ *
+ * The renderer here has no `ResizeObserver`, so the region reports the compact
+ * composition — which is the one under test and the one every capability has to
+ * fit into (`composition.ts`, `observeComposition`).
+ */
+describe('the compact workspace', () => {
+  let active: ActiveBuildStore;
+  let store: OutfittingStore;
+
+  function render() {
+    const fixture = TestBed.createComponent(OutfittingWorkspace);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
+    });
+    active = TestBed.inject(ActiveBuildStore);
+    store = TestBed.inject(OutfittingStore);
+    active.commit(candidateFor(defaultBuild()));
+  });
+
+  it('offers four categories and no “all”, as canvas 1d’s tabs do', () => {
+    const fixture = render();
+
+    const values = fixture.componentInstance.categories().map((entry) => entry.value);
+
+    // At this width the ledger is one category at a time and a Commander says
+    // which, rather than being handed thirty-four mounts to scroll.
+    expect(values).toEqual(['hardpoint', 'core', 'optional', 'utility']);
+    expect(fixture.componentInstance.category()).toBe('hardpoint');
+  });
+
+  it('lists armour and the cargo hatch under core', () => {
+    const fixture = render();
+    const workspace = fixture.componentInstance;
+
+    workspace.showCategory('core');
+    fixture.detectChanges();
+
+    const kinds = workspace.groups().map((group) => group.kind);
+
+    // Canvas 1c counts `CORE 8` on a hull whose seven core internals are
+    // followed by its cargo hatch, and 1d's `CORE` panel draws that hatch as
+    // its last row. Armour joins them: with no `ALL` there is no other tab it
+    // could be reached from.
+    expect(kinds).toContain('core');
+    expect(kinds).toContain('armour');
+    expect(kinds).toContain('cargoHatch');
+    expect(workspace.categories().find((entry) => entry.value === 'core')?.count).toBe(
+      workspace.groups().reduce((total, group) => total + group.slots.length, 0),
+    );
+  });
+
+  it('draws the six key readings once, above the category tabs', () => {
+    const element = render().nativeElement as HTMLElement;
+
+    // Both the strip and the rail's cell band would state the same six
+    // figures, and both are on screen together whenever the status segment is
+    // open. The strip is the one that is always there, so it is the one kept.
+    expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(1);
+    expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(0);
+    expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
+  });
+
+  it('hands the anatomy strip a status segment, and draws the rail for it', () => {
+    const fixture = render();
+    const workspace = fixture.componentInstance;
+
+    expect(workspace.anatomyGuestModes().map((mode) => mode.id)).toEqual(['status']);
+    expect(workspace.statusModeOpen()).toBe(false);
+
+    workspace.showAnatomyMode('status');
+    fixture.detectChanges();
+
+    expect(workspace.statusModeOpen()).toBe(true);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.outfitting__status-rail--guest'),
+    ).not.toBeNull();
+  });
+
+  it('draws the two mount actions after the ledger, not inside the anatomy', () => {
+    const fixture = render();
+
+    store.select(FIXTURE_SLOTS.fittedHardpoint);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const actions = element.querySelector('.outfitting__bench-actions');
+
+    expect(actions).not.toBeNull();
+    // Canvas 1d's sticky foot sits under the ledger it acts on, so the mount a
+    // Commander marked is still on screen while they choose what to do to it.
+    expect(element.querySelector('.outfitting__centre')?.contains(actions!)).toBe(false);
+    expect(
+      element.querySelector('.outfitting__ledger-region')!.compareDocumentPosition(actions!) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+});
+
+/**
+ * Canvas 1c's arrangement, where the ledger is offered whole.
+ *
+ * The region measures its own box rather than the window, so a wide region is
+ * declared by reporting one — see `restoreAfterWideRegion` below.
+ */
+describe('the wide workspace’s categories', () => {
+  let active: ActiveBuildStore;
+
+  function render() {
+    const fixture = TestBed.createComponent(OutfittingWorkspace);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
+    });
+    active = TestBed.inject(ActiveBuildStore);
+    active.commit(candidateFor(defaultBuild()));
+  });
+
+  it('opens on “all” where the width offers it, not on the tab it opened compact with', () => {
+    // The region reports the compact composition until its observer has
+    // measured it for the first time, so the offering a category is first read
+    // against is canvas 1d's four tabs whatever the window is. A category that
+    // remembered that first reading would open a desktop ledger on eight of
+    // thirty-nine mounts with `ALL` beside it unpressed.
+    const wide = restoreAfterWideRegion(1440);
+    try {
+      const workspace = render().componentInstance;
+
+      expect(workspace.categories().map((entry) => entry.value)).toEqual([
+        'all',
+        'hardpoint',
+        'core',
+        'optional',
+        'utility',
+      ]);
+      expect(workspace.category()).toBe('all');
+    } finally {
+      wide();
+    }
+  });
+
+  it('holds the category a Commander chose, over the offering’s own first', () => {
+    const wide = restoreAfterWideRegion(1440);
+    try {
+      const workspace = render().componentInstance;
+
+      workspace.showCategory('optional');
+      expect(workspace.category()).toBe('optional');
+    } finally {
+      wide();
+    }
+  });
+});
+
+/**
+ * Reports one region width to `observeComposition`, and gives back the undo.
+ *
+ * The composition is measured from the host's own box rather than from the
+ * window, so a test about a wide region says how wide the box is rather than
+ * resizing anything. The observer is stubbed only so the measurement path is
+ * taken at all — the reading that matters is the synchronous one it makes
+ * before observing (`composition.ts`).
+ */
+function restoreAfterWideRegion(width: number): () => void {
+  const box = Element.prototype.getBoundingClientRect;
+  const observer = globalThis.ResizeObserver;
+
+  Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
+    // Spread rather than reconstructed: the renderer's own box carries every
+    // other edge, and only the inline size is being declared here.
+    return Object.assign(box.call(this), { width }) as DOMRect;
+  };
+  globalThis.ResizeObserver = class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  } as unknown as typeof ResizeObserver;
+
+  return () => {
+    Element.prototype.getBoundingClientRect = box;
+    globalThis.ResizeObserver = observer;
+  };
+}

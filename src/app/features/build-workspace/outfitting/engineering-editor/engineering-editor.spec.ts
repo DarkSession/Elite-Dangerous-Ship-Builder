@@ -5,6 +5,7 @@ import { ActiveBuildStore } from '../../../../application/active-build/active-bu
 import { BuildIngressCoordinator } from '../../../../application/active-build/build-ingress.coordinator';
 import { NO_BLUEPRINT } from '../../../../application/outfitting/engineering-draft';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
+import { BUNDLED_ENGLISH } from '../../../../i18n/locale-registry';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
 import {
   FIXED_REWARD_REGRESSION,
@@ -88,6 +89,45 @@ describe('engineering editor surface', () => {
     });
     active = TestBed.inject(ActiveBuildStore);
     store = TestBed.inject(OutfittingStore);
+  });
+
+  describe('canvas 1d’s own screen', () => {
+    it('is called what the panel is called, at both widths', () => {
+      commit(defaultBuild());
+
+      const fixture = open(FIXTURE_SLOTS.frameShiftDrive);
+
+      // One screen, one name. The layer's title and the inline panel's heading
+      // are the same words, which are the artboard's own.
+      expect(fixture.componentInstance.panelHeading()).toBe(
+        BUNDLED_ENGLISH['outfitting.engineering.heading'],
+      );
+    });
+
+    it('names what it is open on underneath, as the module and the mount', () => {
+      commit(defaultBuild());
+
+      const fixture = open(FIXTURE_SLOTS.frameShiftDrive);
+      const slot = slotFor(FIXTURE_SLOTS.frameShiftDrive);
+      const detail = fixture.componentInstance.layerDetail();
+
+      expect(slot.module).not.toBeNull();
+      expect(detail).toContain(slot.module?.displayName.text ?? '');
+      expect(detail).toContain(slot.displayName.text ?? slot.canonicalName);
+    });
+
+    it('has no second line over an empty mount, having nothing to name there', () => {
+      commit(defaultBuild());
+
+      const empty = store.slots().find((slot) => slot.module === null);
+      if (empty === undefined) {
+        // Every mount on the fixture hull's default build is filled, so there is
+        // nothing to assert against here rather than a case to assert wrongly.
+        return;
+      }
+
+      expect(open(empty.key).componentInstance.layerDetail()).toBeNull();
+    });
   });
 
   describe('an unengineered module', () => {

@@ -20,7 +20,13 @@ strip inside the anatomy region, choosing which layer is drawn over the plates. 
 segments switch whole compact screens, the anatomy being one of them and this block another, so
 building them means the compact workspace switches rather than stacks — feature 002's composition
 (`specs/010-hull-anatomy/design/hull-anatomy.md`, "Divergence from canvas 1d — the sixth segment").
-This ruling is unchanged: the blocks still stack, and there is still nothing here to switch.
+
+**Built 2026-08-26, and this ruling still stands.** Feature 002's compact composition now hands
+feature 010's strip a sixth segment and puts the status rail where that segment's panel would be
+(`specs/002-module-outfitting/design/outfitting-workspace.md`, "The status segment"). Nothing here
+changed: this feature builds no tab bar, publishes no Status capability, and draws the same blocks it
+already drew — the compact workspace decided where they go, which is what this ruling said it would.
+The wide-width Status mode is still withdrawn, and canvas 1c still draws five segments.
 
 Withdrawn with the capability, and recorded in
 [reference-review.md](./reference-review.md#what-these-rulings-withdraw): the structural-facts

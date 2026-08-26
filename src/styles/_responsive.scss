@@ -179,16 +179,54 @@ $container-wide-min: 40rem;
 }
 
 // The amber insignia on the leading edge of a command bar.
+//
+// Canvas 3b re-drew it on 2026-08-26: a **thin-line** wedge — the same outer
+// chevron with an inner one cut out of it — closed by a bar underneath. The
+// solid four-point wedge this used to draw is still the mark, but only below
+// 48px, where the cut-out would close up; the bar is dropped at that size too.
+// The command bar draws it at 26x23, which is well above that floor.
+//
+// Both halves are drawn from the accent wash rather than from an image, so the
+// mark follows the one theme and costs no asset request. The proportions are
+// percentages of the box, so the whole insignia scales as one thing.
 @mixin command-flag {
+  position: relative;
   flex: none;
-  inline-size: var(--edsb-space-4xl);
-  block-size: var(--edsb-space-4xl);
-  background-color: var(--edsb-surface-accent-solid);
+  inline-size: var(--edsb-layout-insignia-width);
+  block-size: var(--edsb-layout-insignia-height);
 
-  // The wedge insignia the canvases draw on the command bar, and the same shape
-  // the app icon is cut from (canvas 3b). Drawn from the accent wash rather
-  // than an image so it follows the one theme and needs no asset request.
-  clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%);
+  // The wedge. Ten points: the outer chevron, then back to the apex and around
+  // an inner one, which the non-zero fill rule cuts away to leave the outline.
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: 88%;
+    background-color: var(--edsb-surface-accent-solid);
+    clip-path: polygon(
+      50% 0,
+      100% 100%,
+      50% 74%,
+      0 100%,
+      50% 0,
+      50% 18%,
+      18% 82%,
+      50% 58%,
+      82% 82%,
+      50% 18%
+    );
+  }
+
+  // The bar the canvas closes the mark with, in a lighter wash than the wedge.
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: var(--edsb-border-width-thick);
+    background-color: var(--edsb-surface-accent-underbar);
+  }
 }
 
 // A screen or dialog title: condensed, uppercase, widely tracked, amber.

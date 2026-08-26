@@ -244,85 +244,12 @@
       }
     </section>
 
-    <section
-      class="power__block power__block--distributor"
-      [attr.aria-labelledby]="distributorHeadingId"
-    >
-      <div class="power__head">
-        <h4 class="power__heading" [id]="distributorHeadingId">{{ distributorCaption() }}</h4>
-      </div>
-
-      @if (distributorAvailable()) {
-        <div
-          class="table-scroller"
-          role="group"
-          tabindex="0"
-          [attr.aria-label]="distributorCaption()"
-        >
-          <!--
-            No caption: the block's own heading a few lines above says the same
-            words, and a table repeating its heading is the heading twice.
-          -->
-          <table class="distributor" [attr.aria-labelledby]="distributorHeadingId">
-            <thead>
-              <tr>
-                <th scope="col">{{ distributorColumns().bank }}</th>
-                <th scope="col" class="distributor__cell--numeric">
-                  {{ distributorColumns().capacity }}
-                </th>
-                <th scope="col" class="distributor__cell--numeric">
-                  {{ distributorColumns().rated }}
-                </th>
-                <th scope="col">{{ distributorColumns().pips }}</th>
-                <th scope="col" class="distributor__cell--numeric">
-                  {{ distributorColumns().recharge }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (bank of bankRows(); track bank.kind) {
-                <tr [attr.data-bank]="bank.kind">
-                  <th scope="row" class="distributor__bank">{{ bank.name }}</th>
-                  <td class="distributor__cell--numeric" data-bidi-isolate>{{ bank.capacity }}</td>
-                  <td class="distributor__cell--numeric" data-bidi-isolate>
-                    {{ bank.ratedRecharge }}
-                  </td>
-                  <td class="distributor__pips">
-                    <!--
-                      The canvas's four blocks, and the control as well: pressing
-                      one asks for that many pips in this bank, and the six there
-                      are between the three banks move the other two to pay for
-                      it. The group is named with the allocation it stands at, so
-                      the reading is there for anyone who cannot see the blocks.
-                    -->
-                    <div class="pips" role="group" [attr.aria-label]="bank.pipsLabel">
-                      @for (step of bank.steps; track step.id) {
-                        <button
-                          class="pips__step"
-                          type="button"
-                          [attr.aria-label]="step.label"
-                          (click)="setPips(bank.kind, step.value)"
-                        >
-                          <span
-                            class="pips__fill"
-                            aria-hidden="true"
-                            [style.inline-size.%]="step.fill * 100"
-                          ></span>
-                        </button>
-                      }
-                    </div>
-                  </td>
-                  <td class="distributor__cell--numeric" data-bidi-isolate>
-                    {{ bank.rechargeRate }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <edsb-unavailable-value [label]="distributorUnavailableLabel()" />
-      }
-    </section>
+    <edsb-distributor-block
+      [rows]="bankRows()"
+      [columns]="distributorColumns()"
+      [caption]="distributorCaption()"
+      [unavailableLabel]="distributorUnavailableLabel()"
+      (pipsRequested)="setPips($event.bank, $event.step)"
+    />
   </div>
 }

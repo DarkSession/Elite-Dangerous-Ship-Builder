@@ -1,0 +1,102 @@
+<section class="block" [attr.aria-labelledby]="headingId">
+  <div class="block__head">
+    <h4 class="block__heading" [id]="headingId">{{ caption() }}</h4>
+  </div>
+
+  @if (rows().length > 0) {
+    <div class="table-scroller" role="group" tabindex="0" [attr.aria-label]="caption()">
+      <!--
+        No caption: the block's own heading a few lines above says the same
+        words, and a table repeating its heading is the heading twice.
+
+        Every table role is stated rather than left implicit. The narrow
+        arrangement lays each row out as a block of three lines, and a `display`
+        other than the table ones takes the implicit roles with it — the rows,
+        the cells and the row headers would all leave the accessibility tree,
+        and with them the column each figure belongs to. Written out, the table
+        is a table at both widths and only its drawing changes (011/FR-010,
+        reported 2026-08-26).
+
+        `rowgroup` is stated on both sections for the same reason and is not
+        redundant: the header row is taken out of the page at the narrow width
+        (`visually-hidden` is `position: absolute`), which blockifies
+        `table-header-group` and drops its implicit role — and with it the
+        association between each heading and the column it names, at exactly the
+        width where the headings are the only thing carrying it.
+      -->
+      <table class="distributor" role="table" [attr.aria-labelledby]="headingId">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader" scope="col">{{ columns().bank }}</th>
+            <th role="columnheader" scope="col" class="distributor__cell--numeric">
+              {{ columns().capacity }}
+            </th>
+            <th role="columnheader" scope="col" class="distributor__cell--numeric">
+              {{ columns().rated }}
+            </th>
+            <th role="columnheader" scope="col">{{ columns().pips }}</th>
+            <th role="columnheader" scope="col" class="distributor__cell--numeric">
+              {{ columns().recharge }}
+            </th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (bank of rows(); track bank.kind) {
+            <tr role="row" [attr.data-bank]="bank.kind">
+              <th role="rowheader" scope="row" class="distributor__bank">{{ bank.name }}</th>
+              <td role="cell" class="distributor__cell--numeric distributor__cell--capacity">
+                <!--
+                  The column's own name beside the figure, drawn only where the
+                  header row is off screen. Canvas 1d drops these two readings;
+                  this application keeps every field at every width, so where the
+                  header cannot label them they label themselves. Hidden from a
+                  reader, who still has the header row either way.
+                -->
+                <span class="distributor__label" aria-hidden="true">{{ columns().capacity }}</span>
+                <span data-bidi-isolate>{{ bank.capacity }}</span>
+              </td>
+              <td role="cell" class="distributor__cell--numeric distributor__cell--rated">
+                <span class="distributor__label" aria-hidden="true">{{ columns().rated }}</span>
+                <span data-bidi-isolate>{{ bank.ratedRecharge }}</span>
+              </td>
+              <td role="cell" class="distributor__pips">
+                <!--
+                  The canvas's four blocks, and the control as well: pressing one
+                  asks for that many pips in this bank, and the six there are
+                  between the three banks move the other two to pay for it. The
+                  group is named with the allocation it stands at, so the reading
+                  is there for anyone who cannot see the blocks.
+                -->
+                <div class="pips" role="group" [attr.aria-label]="bank.pipsLabel">
+                  @for (step of bank.steps; track step.id) {
+                    <button
+                      class="pips__step"
+                      type="button"
+                      [attr.aria-label]="step.label"
+                      (click)="setPips(bank.kind, step.value)"
+                    >
+                      <span
+                        class="pips__fill"
+                        aria-hidden="true"
+                        [style.inline-size.%]="step.fill * 100"
+                      ></span>
+                    </button>
+                  }
+                </div>
+              </td>
+              <td
+                role="cell"
+                class="distributor__cell--numeric distributor__cell--recharge"
+                data-bidi-isolate
+              >
+                {{ bank.rechargeRate }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <edsb-unavailable-value [label]="unavailableLabel()" />
+  }
+</section>

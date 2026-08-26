@@ -96,7 +96,7 @@ cannot check (`design/canvas-contract.md`, ruled exception 2).
 ## Range bands
 
 ```ts
-export const RANGE_BANDS = [500, 1200, 1800, 3000] as const;
+export const RANGE_BANDS = [500, 1000, 2000, 3000] as const;
 
 export interface RangeBand {
   /** The distance to the target, in metres. */

@@ -1,14 +1,14 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { sweepOutfittingState } from './accessibility';
+import { everyPublishedSlotKey, sweepOutfittingState } from './accessibility';
 import {
   expectEquivalentControls,
   expectNoDocumentOverflow,
   settled,
 } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { openChooser } from './outfitting-surfaces';
+import { openChooser, revealMount } from './outfitting-surfaces';
 
 /**
  * Hull anatomy, end to end.
@@ -145,7 +145,7 @@ test.describe('the plates', () => {
 
     expect(
       names.every((name) =>
-        /^(top|bottom|try again|mounts|power|drives|defence|offence)$/i.test(name),
+        /^(top|bottom|try again|mounts|power|drives|defence|offence|status)$/i.test(name),
       ),
     ).toBe(true);
     expect(await page.locator('edsb-hull-anatomy a[href]').count()).toBe(0);
@@ -207,6 +207,9 @@ test.describe('moving between geometry and the ledger', () => {
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();
 
+    // At compact width the core mounts are a category the ledger is not opened
+    // on, so the row is pressed into view before it is pressed.
+    await revealMount(page, 'PowerPlant');
     await page.locator('edsb-slot-card [data-slot-key="PowerPlant"] .slot__select').first().click();
 
     await expect(
@@ -327,7 +330,10 @@ test.describe('when a schematic does not arrive', () => {
     await openStockBuild(page);
 
     await expect(page.locator('edsb-hull-anatomy .schematic__mount')).toHaveCount(0);
-    expect(await page.locator('edsb-slot-card').count()).toBeGreaterThan(20);
+    // Reachable, not on screen at once: at compact width the ledger draws one
+    // category at a time, so what proves nothing went down with the plates is
+    // every category's rows rather than this screenful's.
+    expect((await everyPublishedSlotKey(page)).length).toBeGreaterThan(20);
   });
 });
 

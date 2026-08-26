@@ -41,7 +41,7 @@ owned by their capability features; feature 011 owns the system those screens co
 | 14–40px interactive nodes/actions                                          | 44 CSS-pixel design target/hit area while preserving compact visible geometry                                | FR-012                     |
 | Amber/green/red, border position, bars and node shapes as sole status      | Visible/programmatically associated state, value, unit, condition and equivalent data                        | FR-007, FR-010             |
 | Hard-coded English, `en-US` formatting and no root language/direction      | Message facade, named active-locale formatters, `lang`/`dir`, logical CSS and bidi isolation                 | FR-014, FR-016–020         |
-| Mobile omissions/ellipsis action and question-mark help controls           | Every action remains available; compact overflow exposes visible localized action names                      | FR-006–007, FR-011         |
+| Mobile omissions and unnamed action/help controls                          | Every action remains available; the mark is drawn and the name is carried as text inside the control         | FR-006–007, FR-011         |
 | No loading previews and incomplete error/disabled coverage                 | Manifested populated/default, empty, loading, error and disabled states plus relevant unavailable/incomplete | FR-004, FR-024             |
 | Mock game facts, share URLs and behaviors                                  | Capability specs and Almanac package data/contracts remain authoritative                                     | Constitution II, IV and IX |
 
@@ -58,6 +58,32 @@ owned by their capability features; feature 011 owns the system those screens co
   have since been taken out of the canvas by feature 004, which owns them.
 - The compact design has no language control, and neither does the product: the browser language
   setting is the only input, so the omission is the decision rather than a gap to fill.
+
+## Ruling: the mark and the name (2026-08-26)
+
+An earlier reading of this feature replaced the canvas's `⋮` with a visibly named `MENU` control
+and its `?` with a spelled-out Help button, on the grounds that a glyph is a guess and has no
+accessible name. The first half of that is right; the second half was a mistake about how the glyph
+had to be drawn.
+
+The name and the drawing are separable. A control can render one conventional typographic mark and
+still carry its localized name as text inside itself, hidden from the eye and not from a reader —
+which is what `ActionButton.symbol` already does for `?` and what the compact menu trigger now does
+for `⋮`. The accessible name is unchanged, the target keeps its 44-pixel baseline, and nothing
+is an image, a font icon or a shape whose meaning has to be learned. What is not permitted is the
+thing the departure was actually aimed at: a control with no text name at all.
+
+So the canvas's drawing stands and the accessibility floor stands with it. Three consequences:
+
+- The compact bar's trigger is the `⋮` mark on its own outlined square. `MENU` is drawn on no
+  artboard, and a compact bar already carrying a build's name has no room for it.
+- The opened layer is a flat panel of full-width rows ruled apart at the canvas's group boundaries,
+  not a stack of chips. A row is still a button with a name, a role and a state.
+- The insignia is the way home, and the wide bar's `SHIPYARD` chip is not drawn a second time beside
+  it. Same rule: the mark is hidden, the link is named by the screen it reaches.
+
+The general form, for the next control that meets this: **a mark may replace a word on screen; it may
+never replace the word in the accessibility tree.**
 
 ## Acceptance rule
 

@@ -48,6 +48,22 @@ export interface ShellAction {
    * action layer goes on drawing it in words, as canvas 1d does.
    */
   readonly symbol?: string;
+  /**
+   * A conventional typographic mark drawn *beside* the words, or absent.
+   *
+   * Canvas 1c's history pair — `↶ UNDO` and `REDO ↷` — is what this is for.
+   * Unlike `symbol` it never replaces the label: the word is drawn either way,
+   * so the mark is a second rendering of a name the control already carries and
+   * is hidden from a reader for the same reason the divider is.
+   */
+  readonly mark?: string;
+  /**
+   * Which side of the label that mark is drawn on. Leading unless said.
+   *
+   * Canvas 1c draws `↶ UNDO` and `REDO ↷`: each arrow points the way
+   * its action travels, so the one going forward follows its word.
+   */
+  readonly markPosition?: 'leading' | 'trailing';
   readonly emphasis?: 'primary' | 'secondary' | 'quiet' | 'danger';
   readonly disabled?: boolean;
   /** What activating it would do, said only to a reader. Never drawn. */
@@ -88,6 +104,33 @@ export interface ScreenIdentity {
   readonly editing: 'name' | 'ident' | null;
 }
 
+/**
+ * A screen that is a layer over another one, at compact width.
+ *
+ * Canvas 1b's hull sheet replaces the shipyard's bar with one of its own: a
+ * bare `←` on the leading edge, the hull's name where the screen's name
+ * goes, and its manufacturer line under that. No insignia, no release mark and
+ * no count — the sheet is not a screen a Commander navigated to, it is one they
+ * opened, and its bar says what they opened and how to close it.
+ *
+ * Only compact width draws it. At wide width the same route is an inspector
+ * beside the manifest that is still on screen, so the bar goes on naming the
+ * shipyard and the way back is the manifest itself (canvas 1a).
+ */
+export interface ScreenReturn {
+  /** The way back, as a real link: an address that opens and copies. */
+  readonly back: NavigationEntry;
+  /**
+   * What the layer is showing, drawn where the screen's name would be, or
+   * `null` where the package could not supply a name at all — the bar then
+   * carries the way back alone and the screen goes on saying, in its own body,
+   * what it could not name.
+   */
+  readonly title: string | null;
+  /** The line under it, or none. */
+  readonly detail: string | null;
+}
+
 /** Visible route or global feedback, in ordinary reading order. */
 export interface ShellStatus {
   readonly tone: StatusTone;
@@ -117,6 +160,7 @@ export interface ShellStatus {
   // have to hear it too: what they have to clear is the bar's, and a released
   // bar is nothing to clear (`app-frame.scss`).
   host: {
+    '[class.frame--returning]': 'back() !== null',
     '[class.frame--released]': 'bannerReleased()',
     '[style.--edsb-layout-bar-height]': 'barHeight()',
   },
@@ -133,6 +177,26 @@ export class AppFrame {
   readonly routeCount = input<string | null>(null);
 
   readonly navigation = input<readonly NavigationEntry[]>([]);
+
+  /**
+   * Where the bar's own insignia goes, when it goes anywhere.
+   *
+   * Every canvas puts the mark on the leading edge of the bar, and the
+   * 2026-08-26 revision put it where the outfitting bar's `SHIPYARD` chip used
+   * to be. So the mark carries that trip, and the word is not drawn twice. A
+   * screen that supplies none draws the mark as the decoration it is.
+   */
+  readonly home = input<NavigationEntry | null>(null);
+
+  /**
+   * The compact bar a layered screen publishes, where one does.
+   *
+   * Rendered alongside the ordinary bar and hidden at the width it does not
+   * belong to, the way the wide action row and the compact action layer already
+   * are: `display: none` takes the composition that is not in use out of the
+   * accessibility tree, so exactly one `h1` and one way back are ever exposed.
+   */
+  readonly back = input<ScreenReturn | null>(null);
 
   /** The open screen's own identity block, where it publishes one. */
   readonly identity = input<ScreenIdentity | null>(null);
@@ -163,6 +227,7 @@ export class AppFrame {
   readonly navigationLabel = this.#messages.messageSignal('shell.navigation.label');
   readonly actionsLabel = this.#messages.messageSignal('shell.actions.label');
   readonly statusLabel = this.#messages.messageSignal('shell.status.label');
+  readonly betaLabel = this.#messages.messageSignal('shell.beta');
   readonly actionsOpenLabel = this.#messages.messageSignal('shell.actions.open');
   readonly actionsCloseLabel = this.#messages.messageSignal('shell.actions.close');
 

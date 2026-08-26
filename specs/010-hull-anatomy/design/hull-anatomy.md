@@ -41,12 +41,21 @@ in landscape they may pair. Nothing required disappears in either orientation.
 Canvas 1d's composition: one labelled side at a time with a `TOP`/`BOTTOM` selector, drawn at the
 canvas's own dense height and held to SC 2.5.8's 24-pixel floor like every other segmented strip.
 
-Canvas 1d stacks the anatomy **above** feature 002's ledger; the workspace stacks it below, because
-the ledger, the centre track and the status rail are one grid whose source order is its wide
-left-to-right order and nothing re-orders it when it stacks. That deviation is feature 002's
-composition rather than this capability's placement — the anatomy sits in the centre track, which is
-where canvas 1c puts it — and moving it means giving that grid explicit columns so the DOM can be
-re-ordered without changing the wide arrangement. Recorded here rather than fixed here.
+Canvas 1d stacks the anatomy **above** feature 002's ledger, and so does the workspace. It did not
+until 2026-08-26: the ledger, the centre track and the status rail are one grid whose source order is
+its wide left-to-right order, and nothing re-ordered it when it stacked, so the ledger opened the
+narrow screen and the anatomy sat under it. That deviation was feature 002's composition rather than
+this capability's placement — the anatomy sits in the centre track, which is where canvas 1c puts it
+— and it was closed there, by ordering the compact grid rather than by moving the region
+(`specs/002-module-outfitting/design/outfitting-workspace.md`, "Narrow and 400%-zoom composition").
+
+**The block's inset belongs to its arrangement, not to a width (2026-08-26).** Canvas 1c pads the
+block `16px 20px 6px` around the header row and `10px 20px 14px` around the plates; canvas 1d pads
+its header row `12px 14px 8px` and runs the mode strip full-bleed under it. The narrow figure is the
+base and the roomy one is stated with the two-plate arrangement, at the same threshold the second
+plate opens at. Read the other way round, a one-plate block stood 8px further in than every other
+band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not line up with
+a mount name in the ledger below it — which is the misalignment reported that day.
 
 Selecting a mount selects its ledger row, which is what canvas 1d's bench then opens on. At 400%
 zoom and long or RTL text every group stacks, and no part of the document scrolls sideways — the
@@ -166,7 +175,8 @@ Canvas 1c sets a strip of five segments beside the `HULL ANATOMY` rule — `MOUN
 `DRIVES`, `DEFENCE`, `OFFENCE` — selecting which layer is drawn over the plates. That strip is what
 is built, at every width: all five in that order, as feature 011's `edsb-tab-group` in the same
 segmented presentation the side selector uses, full width under the rule when the region is narrow
-and at its own label width beside it when there is room.
+and at its own label width beside it when there is room. A caller may add segments after them, for a
+panel this region does not draw; see "Divergence from canvas 1d — the sixth segment".
 
 Canvas 1d's strip is **not** the same control, and the difference is recorded below.
 
@@ -222,15 +232,25 @@ showing, with the anatomy as one of them and feature 003's `BUILD STATUS` block 
 arrangement of the same blocks", arriving "with the capability navigation it belongs to"
 (`specs/003-ship-statistics/design/status-capability.md`).
 
-That navigation is the compact workspace's, not this capability's. Building it means the compact
-workspace stops stacking its regions and starts switching between them, which is the same grid whose
-source order is already recorded above under "Narrow, mobile and zoomed", and which belongs to
-feature 002's composition. So this capability draws canvas 1c's anatomy-scoped strip at every width
-and borrows only 1d's shape for it — full width, under the rule.
+That navigation is the compact workspace's, not this capability's. So this capability draws canvas
+1c's anatomy-scoped strip at every width, borrows 1d's shape for it — full width, under the rule —
+and does not decide what a sixth segment would open.
 
-What is deliberately **not** done is drawing a sixth `STATUS` segment inside the anatomy's own strip.
-It would be an invention at wide width, where canvas 1c draws five; and drawn disabled it would say
-the build's status cannot be read while the status rail sits on the same screen saying it.
+**Built 2026-08-26 — the segment is drawn, and it is a guest.** The strip now carries segments a
+caller hands it: `guestModes` puts them after this region's own five, `modeChanged` reports which
+segment is open, and this region draws **nothing** for one of them. Feature 002's compact workspace
+passes `STATUS` and puts the status rail where the panel would have been. The two objections that
+held it back are answered rather than overruled:
+
+- _An invention at wide width._ The segment is passed only where canvas 1d draws it. At wide width
+  the caller passes none, the strip is canvas 1c's five, and there is nothing for a segment to reveal
+  because the rail is the third track of 1c's grid and already on screen.
+- _Disabled, it would deny a reading the same screen is giving._ It is never disabled. It is offered
+  exactly where it opens something.
+
+What is still **not** done is this capability deciding what `STATUS` means, drawing feature 003's
+blocks, or reaching for the rail. It carries a word and reports a press; the region that owns the
+panel draws the panel.
 
 ## Divergence from FR-008 — the selected mount's facts
 
@@ -356,15 +376,32 @@ its neighbours had been guessed at, when all of them are equally approximate. A 
 true: these mounts are too close together to draw apart, so here they all are, each tied back to its
 own point.
 
-**A ring is turned to where there is room, not only to where its own mounts point.** The turn that
-lines the ring up with the mounts — each member on its own side of the crowd — is where a crowd sits
-when nothing is around it, and it wins every tie. But a crowd sitting in the middle of a hull has
-other mounts on some sides and open air on others, and a ring that only looks inward cannot tell
-those apart. The Corsair's top plate is the case: its `LargeHardpoint1` sits on the left of its own
-crowd, so an inward-looking ring sent that mark left, straight over the two hardpoints beyond it,
-while the whole right side of the hull stood empty. Sixteen turns of the ring are tried and the one
-that leaves the most room wins — room measured for the leaders as well as the marks, because a mark
-can land in clear air and still have been reached by a line drawn across two of its neighbours. The
+**A ring is turned to where its own mounts point if it possibly can be, and to where there is room
+if it cannot.** The turn that lines the ring up with the mounts — each member on its own side of the
+crowd — is where a crowd sits when nothing is around it, and it is the arrangement a reader expects:
+the mark for a mount on the left goes left, the mark for one above goes up. It is asked for first,
+at every radius on the ladder, and taken as soon as one will hold it.
+
+That the aligned turn has to be asked for _across the whole ladder_ is the correction of
+2026-08-26. Searching turn-by-turn at one radius and growing only when none fits looks equivalent
+and is not: a crowd in the middle of a hull is blocked in the aligned direction by the very mounts
+it sits between, while a turn a quarter-circle away is free, so the search settles at the first
+radius on a turn that points nowhere in particular — and because room outranks closeness to the
+aligned turn, the radius that _would_ clear the obstruction is never asked for.
+
+The Corsair's top plate is the case. Its `LargeHardpoint1` sits on the centreline just ahead of two
+mirrored pairs, and the aligned ring sends that mark forward along the hull's own axis, which is
+where the eye looks for it. That ring is refused at the first fitting radius, because at that radius
+the mark lands between the two hardpoints ahead of it; one more rung of growth clears them. Before
+the correction the crowd settled a quarter-circle off — node 1's mark went down, node 4's went up
+and across the hull, node 5's went right — and _which_ quarter-circle was decided by a room
+difference of under two thousandths of a frame unit, an artefact of the package's own rounding of
+two mirrored mounts. A re-export could have flipped it. Now node 1 goes forward, node 4 up and node
+5 down, and nothing about that rests on a rounding error.
+
+Where no radius will hold the aligned turn, sixteen turns of the ring are tried and the one that
+leaves the most room wins — room measured for the leaders as well as the marks, because a mark can
+land in clear air and still have been reached by a line drawn across two of its neighbours. The
 slots are still handed out in the members' own angular order whatever the turn, which keeps a crowd's
 marks in the same cyclic order as its mounts — **but that is not enough on its own to stop two of its
 leaders crossing**, and believing it was is what let the Corsair's nodes 4 and 5 make an X at any
@@ -380,11 +417,14 @@ it can choose a side that a later one then fills, or run a leader across a mount
 move; a second pass re-asks with the whole plate visible. It is what the Corsair needed, and it is
 also what raised the shipped package's shortest visible leader from under a pixel to ten.
 
-A ring must also clear every published mount position that is _not_ in the crowd. Without that a mark
-can come to rest exactly where a different mount is, so a reader sees a numbered square sitting on
-mount B carrying mount A's number while A's leader runs off elsewhere — the precise failure the
-leader exists to prevent, committed by the thing meant to prevent it. It happened on two plates
-before the rule existed. Inside a crowd the question does not arise the same way: the mounts are
+A ring must also clear every published mount position that is _not_ in the crowd, **and the ring
+grows until it can**. Without the first half a mark can come to rest exactly where a different mount
+is, so a reader sees a numbered square sitting on mount B carrying mount A's number while A's leader
+runs off elsewhere — the precise failure the leader exists to prevent, committed by the thing meant
+to prevent it. It happened on two plates before the rule existed. Without the second half the rule
+does its job and costs the crowd its direction: the Corsair's node 1 was turned aside by exactly
+this clearance, when growing the ring one rung would have carried it past the obstruction on the
+turn it wanted. Inside a crowd the question does not arise the same way: the mounts are
 piled together by definition and the marks are arranged around them, which is what each member's own
 leader is there to tell apart.
 
@@ -408,9 +448,13 @@ underside is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pi
 even that will not fit does a crowd keep its mounts' own positions, and the front-on-hover rule
 answers the overlap.
 
-Measured across the ninety-six shipped plates at plate widths from two hundred to seven hundred and
+Measured across the shipped plates at plate widths from two hundred to seven hundred and
 twenty pixels: no mark ends outside its frame, and no pair of marks is left covering more than half
-of the other, at any of those widths or at doubled text on a phone. From three hundred pixels of
+of the other, at any of those widths or at doubled text on a phone. **Re-measured after the
+aligned-first correction of 2026-08-26**, over every shipped plate at six widths from two hundred
+and eighty to a thousand pixels: the same number of marks is displaced as before it, no leader
+crosses another, no mark leaves its frame, and the tightest pair on any plate is where it was. The
+correction changes which way a crowd faces, not how much it has to move. From three hundred pixels of
 plate upward — every width the two-column and single-plate arrangements actually give — **no two
 leaders cross**, and the shortest visible leader runs from ten to sixteen pixels. Below about two
 hundred and fifty pixels the separation-only fallback takes over: a handful of leaders cross there

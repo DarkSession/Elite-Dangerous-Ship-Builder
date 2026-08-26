@@ -1410,8 +1410,13 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'app.name': 'A product name, not a phrase to translate.',
     'app.document-title':
       'A composition pattern; both variables and the separator are language-neutral.',
+    'hullDetail.bar.detail':
+      'A composition pattern; both variables and the separator are language-neutral.',
+    'outfitting.engineering.layer-detail':
+      'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
     'shell.status.label': '"Status" is the ordinary German word.',
+    'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',
     'field.optional': '"Optional" is the ordinary German word.',
     'format.credits': 'CR is the in-game abbreviation and is not translated.',
@@ -1438,12 +1443,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The in-game term, used untranslated in the German community.',
     'anatomy.mount.name':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
-    'outfitting.power.priority.absent':
-      'A dash standing in for a group the package never published; not a word in either language.',
+    'shell.beta':
+      'The release stage as a mark rather than a word: the canvas sets it in Latin capitals on every artboard, and it is read the same way in German. Translating it would rename the product on one of the two.',
     'power.heat.does-not-settle':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
-    'offence.convergence.ring':
-      'The canvas’s own name for the outer ring, and two variables after it. “Ring” is the ordinary German word, and the separator is language-neutral. It reads identically since the 2026-08-25 canvas revision dropped the “at this range” it used to end on.',
     'offence.capacitor.endurance.sustained':
       'The mathematical symbol for infinity, which is not a word in either language. The reading it stands for is carried in words beside it, under its own key.',
     'outfitting.search.shortcut.apple':
@@ -1520,8 +1523,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A value and the SI symbol for the milliradian, identical in German.',
     'offence.damage.legend':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
-    'offence.convergence.widest.value':
-      'A composition pattern; "HP" is the abbreviation the canvas draws in this cell, a code like "4A" rather than a word, and the rest is a variable.',
     'drives.format.tonnes': 'A value and the SI symbol for the tonne, identical in German.',
     'drives.format.metres-per-second':
       'A value and the SI symbol for metres per second, identical in German.',

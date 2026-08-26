@@ -3406,7 +3406,7 @@ registerPreview({
       relationships: ['label'],
       textEquivalents: [
         'both controls named by module and mount, so a ledger row is identifiable',
-        'an absent priority group, left absent rather than chosen',
+        'an unstated priority group drawn as the group the package puts it in',
       ],
     },
     ['default', 'empty', 'disabled'],
@@ -3440,7 +3440,7 @@ registerPreview({
       },
       [
         'an absent power field reads as on, the way the package treats it',
-        'an absent group stays absent rather than being drawn as group 1',
+        'an unstated group is drawn as group 1, which is where the package puts it',
       ],
     ),
     state(

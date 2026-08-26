@@ -92,7 +92,6 @@ describe('PowerThermals', () => {
     expect(component.bankRows()).toEqual([]);
     expect(component.modulesTotal()).toBeNull();
     expect(component.heatAvailable()).toBe(false);
-    expect(component.distributorAvailable()).toBe(false);
   });
 
   describe('the priority groups', () => {
@@ -528,9 +527,46 @@ describe('PowerThermals', () => {
 
       const rows = cells(element, '.distributor');
       expect(rows.map((row) => row[0])).toEqual(['SYS', 'ENG', 'WEP']);
-      expect(rows[0][1]).toBe(`${metrics?.systems.capacity.toFixed(1)} MJ`);
-      expect(rows[0][2]).toBe(`${metrics?.systems.ratedRecharge.toFixed(1)} MJ/s`);
       expect(rows[0][4]).toBe(`${metrics?.systems.rechargeRate.toFixed(1)} MJ/s`);
+
+      // The two middle cells carry the column's own name beside the figure, for
+      // the arrangement where the header row is off screen, so the figure is
+      // read out of its own element rather than off the whole cell.
+      const systems = element.querySelector('[data-bank="systems"]');
+      const capacity = systems?.querySelector('.distributor__cell--capacity [data-bidi-isolate]');
+      const rated = systems?.querySelector('.distributor__cell--rated [data-bidi-isolate]');
+      expect(capacity?.textContent?.trim()).toBe(`${metrics?.systems.capacity.toFixed(1)} MJ`);
+      expect(rated?.textContent?.trim()).toBe(`${metrics?.systems.ratedRecharge.toFixed(1)} MJ/s`);
+    });
+
+    it('labels the two figures the narrow arrangement leaves without a header', () => {
+      const { element } = render(withinBudgetBuild());
+
+      const headings = [...element.querySelectorAll('.distributor thead th')].map((cell) =>
+        cell.textContent?.trim(),
+      );
+      const labels = [...element.querySelectorAll('[data-bank="systems"] .distributor__label')];
+
+      // Each label repeats its own column's heading, and each is hidden from a
+      // reader: the header row is still in the accessibility tree at every
+      // width, so a reader who met both would meet the column name twice.
+      expect(labels.map((label) => label.textContent?.trim())).toEqual([headings[1], headings[2]]);
+      expect(labels.every((label) => label.getAttribute('aria-hidden') === 'true')).toBe(true);
+    });
+
+    it('states every table role, so the narrow arrangement keeps the table', () => {
+      const { element } = render(withinBudgetBuild());
+
+      // The narrow arrangement lays a row out as a block of three lines, which
+      // takes the implicit table roles with it unless they are written out.
+      const table = element.querySelector('.distributor');
+      expect(table?.getAttribute('role')).toBe('table');
+      expect([...(table?.querySelectorAll('tr') ?? [])].every((row) => row.role === 'row')).toBe(
+        true,
+      );
+      expect(element.querySelector('[data-bank="systems"] th')?.role).toBe('rowheader');
+      expect(element.querySelector('[data-bank="systems"] td')?.role).toBe('cell');
+      expect(element.querySelector('.distributor thead th')?.role).toBe('columnheader');
     });
 
     it('names the fitted distributor nowhere, where the canvas withdrew it', () => {
@@ -542,8 +578,8 @@ describe('PowerThermals', () => {
 
       // The 2026-08-25 revision took the module's identity off this heading.
       // The block heads itself and says nothing about what is fitted.
-      expect(element.querySelector('.power__block--distributor .power__note')).toBeNull();
-      expect(element.querySelector('.power__block--distributor')?.textContent).not.toContain(
+      expect(element.querySelector('edsb-distributor-block .block__note')).toBeNull();
+      expect(element.querySelector('edsb-distributor-block')?.textContent).not.toContain(
         `${distributor?.effectiveStats?.class}${distributor?.effectiveStats?.rating}`,
       );
     });
@@ -552,7 +588,7 @@ describe('PowerThermals', () => {
       const { element } = render(withinBudgetBuild());
 
       expect(
-        element.querySelector('.power__block--distributor .power__heading')?.textContent?.trim(),
+        element.querySelector('edsb-distributor-block .block__heading')?.textContent?.trim(),
       ).toBe('Power distributor and pips');
     });
 
@@ -619,7 +655,7 @@ describe('PowerThermals', () => {
     it('states one unavailable group when the package publishes no distributor', () => {
       const { element } = render(distributorOffBuild());
 
-      const block = element.querySelector('.power__block--distributor');
+      const block = element.querySelector('edsb-distributor-block');
       expect(block?.querySelector('edsb-unavailable-value')).not.toBeNull();
       expect(block?.querySelector('.distributor')).toBeNull();
       // No diagnosis of which of the four reasons it was: the package gives none.

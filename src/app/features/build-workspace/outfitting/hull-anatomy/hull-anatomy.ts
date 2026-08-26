@@ -4,6 +4,8 @@ import {
   computed,
   effect,
   inject,
+  input,
+  output,
   signal,
   untracked,
 } from '@angular/core';
@@ -45,6 +47,23 @@ const MODE_HEADINGS = {
 
 function isAnatomyMode(value: string): value is AnatomyMode {
   return (ANATOMY_MODES as readonly string[]).includes(value);
+}
+
+/**
+ * A mode the strip offers on someone else's behalf.
+ *
+ * Canvas 1d's strip has a sixth segment, `STATUS`, and what it opens is the
+ * status rail — which is not this region's and is not drawn inside it. So the
+ * strip carries the segment, says which one is open, and draws nothing for it;
+ * the workspace that owns the rail reads the answer and puts the rail where the
+ * panel would have been (010 hull-anatomy design, "The mode strip").
+ */
+export interface AnatomyGuestMode {
+  readonly id: string;
+  /** The segment's own word. */
+  readonly label: string;
+  /** The rule above the strip while this segment is open. */
+  readonly heading: string;
 }
 
 /**
@@ -97,10 +116,45 @@ export class HullAnatomy {
   /** Monotonic across every side transition this session announces. */
   #transition = 0;
 
-  /** The mode the strip has open. Nothing about it is persisted or routed. */
-  readonly #mode = signal<AnatomyMode>('mounts');
+  /**
+   * Segments the strip offers for a region that is not this one.
+   *
+   * Empty at every width but the compact one, where canvas 1d adds `STATUS`.
+   * The strip draws the segment and reports it; what opens is the caller's.
+   */
+  readonly guestModes = input<readonly AnatomyGuestMode[]>([]);
 
-  readonly activeMode = this.#mode.asReadonly();
+  /** Which segment is open, for a caller drawing a guest mode's panel. */
+  readonly modeChanged = output<string>();
+
+  /** The mode last asked for. Nothing about it is persisted or routed. */
+  readonly #requested = signal<string>('mounts');
+
+  /**
+   * The mode the strip actually has open.
+   *
+   * A guest segment belongs to the caller and can be withdrawn — the compact
+   * arrangement offers `STATUS` and the roomy one does not — so a strip left
+   * standing on a segment nobody offers any more falls back to its own first
+   * one. Read straight off what was asked for instead, rotating a phone to
+   * landscape with `STATUS` open drew the region's rule and its strip and
+   * nothing under them, with no segment marked as the open one (reported
+   * 2026-08-26).
+   */
+  readonly #mode = computed(() => {
+    const requested = this.#requested();
+    if (isAnatomyMode(requested)) {
+      return requested;
+    }
+    return this.guestModes().some((mode) => mode.id === requested) ? requested : 'mounts';
+  });
+
+  readonly activeMode = this.#mode;
+
+  /** The guest segment currently open, or none — this region's own is. */
+  readonly guestMode = computed(
+    () => this.guestModes().find((mode) => mode.id === this.#mode()) ?? null,
+  );
 
   readonly isPower = computed(() => this.#mode() === 'power');
   readonly isDrives = computed(() => this.#mode() === 'drives');
@@ -125,7 +179,14 @@ export class HullAnatomy {
    * tell which layer they were looking at, and a line under it explaining the
    * panel is not something the artboard draws.
    */
-  readonly heading = computed(() => this.#messages.message(MODE_HEADINGS[this.#mode()]));
+  readonly heading = computed(() => {
+    const guest = this.guestMode();
+    if (guest !== null) {
+      return guest.heading;
+    }
+    const mode = this.#mode();
+    return this.#messages.message(MODE_HEADINGS[isAnatomyMode(mode) ? mode : 'mounts']);
+  });
   readonly modeLabel = this.#messages.messageSignal('anatomy.mode.label');
   readonly sideLabel = this.#messages.messageSignal('anatomy.side.label');
   readonly legendLabel = this.#messages.messageSignal('anatomy.legend.label');
@@ -157,11 +218,17 @@ export class HullAnatomy {
         { id: 'defence', key: 'anatomy.mode.defence', enabled: true },
         { id: 'offence', key: 'anatomy.mode.offence', enabled: true },
       ] as const
-    ).map((mode) => ({
-      id: mode.id,
-      label: this.#messages.message(mode.key),
-      disabled: !mode.enabled,
-    })),
+    )
+      .map((mode) => ({
+        id: mode.id as string,
+        label: this.#messages.message(mode.key),
+        disabled: !mode.enabled,
+      }))
+      // The guest segments follow this region's own, which is where canvas 1d
+      // draws `STATUS`: last.
+      .concat(
+        this.guestModes().map((mode) => ({ id: mode.id, label: mode.label, disabled: false })),
+      ),
   );
 
   /** The five entries canvas 1c draws, in the order it draws them. */
@@ -234,9 +301,11 @@ export class HullAnatomy {
    * active build: it is which layer of the same two plates is being read.
    */
   showMode(mode: string): void {
-    if (isAnatomyMode(mode)) {
-      this.#mode.set(mode);
+    if (!isAnatomyMode(mode) && !this.guestModes().some((guest) => guest.id === mode)) {
+      return;
     }
+    this.#requested.set(mode);
+    this.modeChanged.emit(mode);
   }
 
   /** Selects the mount's exact package slot key. Feature 002 owns what happens next. */

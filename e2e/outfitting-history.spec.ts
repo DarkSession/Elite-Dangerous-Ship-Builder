@@ -6,6 +6,7 @@ import {
   openChooser,
   openChooserRows,
   pressCommandBarAction,
+  revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
 import { savedToBrowser } from './shell';
@@ -34,6 +35,7 @@ const redo = (page: Page) => commandBarActionState(page, /^redo$/i);
 
 /** Selects one mount by its exact game slot key. */
 async function selectMount(page: Page, slotKey: string): Promise<void> {
+  await revealMount(page, slotKey);
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
@@ -59,6 +61,7 @@ function chip(page: Page, slotKey: string) {
 
 /** Puts one mount in a power group, which is one decision. */
 async function setGroup(page: Page, slotKey: string, value: string): Promise<void> {
+  await revealMount(page, slotKey);
   await chip(page, slotKey).selectOption({ value });
   await expect(chip(page, slotKey)).toHaveValue(value);
 }
@@ -180,6 +183,9 @@ test.describe('stepping back and forward', () => {
     // A mount that draws power, so it has a group to change. The power plant is
     // what everything else draws from and has no group at all (wave 4).
     const slot = 'FrameShiftDrive';
+    // Its category first: at compact width a mount nobody has asked for is not
+    // on the page at all (`revealMount`).
+    await revealMount(page, slot);
     const groups = chip(page, slot);
 
     // Twelve decisions here, and exactly a hundred and one in

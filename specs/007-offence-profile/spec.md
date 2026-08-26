@@ -128,12 +128,32 @@ because it is why the first implementation shipped a third of the canvas.
   > moves a dot, and a moved dot is exactly the case where the sentence is the true reading
   > (`design/canvas-contract.md`, "Canvas revision, 2026-08-25").
 
+  > **Re-drawn again 2026-08-26.** The plate gains the canvas's boresight — a hairline ring on the
+  > axis with a filled dot at its centre — which is where the hull itself points and therefore what
+  > every shot is offset from. It is a property of the drawing, carries no build state and needs no
+  > sentence of its own.
+  >
+  > The numeral rule is corrected in the same revision. Choosing the corner that stands furthest
+  > from every other _dot_ reads the wrong thing: two mounts far enough apart both score their
+  > inward corner well and each aims its numeral at the other's, so the dots stay apart and the
+  > numerals collide. **No two numerals may be drawn over each other.** A numeral MUST be placed
+  > clear of every dot on the plate and of every other numeral; where none of the four corners is
+  > clear it MUST step out until it is, and MUST then be tied back to its own dot by a leader, as
+  > feature 010's schematics explain a mark that has moved. The dot itself MUST NOT move to make
+  > room — a dot is where the shot lands, and that is the reading.
+
 - **FR-012**: Every hardpoint the catalogue places MUST be drawn on the plate, whether or not the
   build has armed it, at the offset the package publishes for that mount. A hardpoint with nothing
   fitted MUST be told apart from an armed one by its mark, and MUST be named as empty in its own
-  sentence beside the plate rather than by that mark alone. No figure the block reports about the
-  group — the two spans, the widest mount and the apparent spread — may be measured across a
-  hardpoint that has nothing on it.
+  sentence beside the plate rather than by that mark alone.
+
+  > **Amended 2026-08-26.** This requirement used to close by ruling that no figure the block
+  > reports about the group — the two spans, the widest mount and the apparent spread — may be
+  > measured across an empty hardpoint. The canvas revision of 2026-08-26 draws none of those four
+  > figures anywhere, and no caption for the ring either, so the block no longer reports a figure
+  > about the group at all and the sentence has nothing left to constrain. The rest of the
+  > requirement is untouched: the sanctioned departure that draws an unfilled hardpoint stands, and
+  > it is what a Commander deciding where to put a weapon is reading.
 
   > **Withdrawn 2026-08-24, reinstated 2026-08-26.** The withdrawal was correct about the drawing
   > and is not being re-argued: `wireConvergence`'s mount array carries hardpoints 1, 2, 3, 4 and 6,
@@ -172,9 +192,14 @@ because it is why the first implementation shipped a third of the canvas.
 - A shot whose offset exceeds the plate's field of view at the chosen range is clamped to the
   frame's own margin and keeps its sentence, which states its true offset and angle. The field of
   view is a property of the drawing and never moves to accommodate a build.
-- A hull the catalogue places whose hardpoints are all empty draws every one of them and none of the
-  four figures beneath the plate: where a mount sits is a property of the hull, and a span, a widest
-  and a spread are all about a group of armed mounts.
+- A hull the catalogue places whose hardpoints are all empty draws every one of them: where a mount
+  sits is a property of the hull, and it is exactly the reading a Commander with nothing fitted yet
+  is after. Nothing is reported beneath the plate either way — the 2026-08-26 canvas draws no
+  figures there.
+- A plate too crowded for a numeral to sit in any of its dot's four corners steps that numeral out
+  until it is clear of every other mark and draws a leader back to the dot it counts. The dot does
+  not move: two numerals sharing a few pixels is a drawing problem, and a dot in the wrong place
+  would be a wrong answer.
 - The selected mount may be an empty hardpoint, and is marked as selected either way — that is the
   state a Commander is in while they decide what to put in it. It stays visibly empty while it is
   selected: whether a mount is armed is not what the selection ink says.
@@ -189,6 +214,13 @@ canvas decides and this file records the outcome. Two such outcomes stand: the r
 per-row slot action that an earlier revision required of every weapon are withdrawn, because the
 canvas draws its weapon rows inert; and the whole-build firing cost, net drain and returned
 allocation are not read at all, because no canvas draws them.
+
+A fourth is recorded on 2026-08-26: the ring caption and the four figures beneath the plate — the
+lateral and vertical spans, the apparent spread and the widest mount — are **withdrawn**, because
+the canvas revision of that date draws none of them on either artboard. They were canvas-derived
+rather than sanctioned departures, so they go when the drawing does. Nothing they reported is lost
+to a reader: every mark on the plate is still stated in words beside it, with the offset and the
+angle that mount's shot really has.
 
 A third outcome stood with them until 2026-08-26 — FR-012's mark and sentence for an unfilled
 hardpoint, withdrawn because the canvas faces an unfilled hardpoint on its own sample and draws

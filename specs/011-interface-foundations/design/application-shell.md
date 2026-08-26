@@ -8,7 +8,7 @@ bars repeated across canvases 1a–1d.
 
 ## Semantic composition
 
-1. banner/header containing localized product identity;
+1. banner/header containing localized product identity — the insignia and the release mark;
 2. route context group containing visible localized screen/build identity supplied by the route;
 3. primary navigation when the route set provides it;
 4. contextual and global utility actions, including a visible Language entry;
@@ -18,6 +18,23 @@ bars repeated across canvases 1a–1d.
 
 The shell never synthesizes a duplicate route heading. Route context is immutable presentation input;
 the shell emits action/navigation/language intent and does not reach into a build store.
+
+## The bar's leading edge
+
+The 2026-08-26 canvas revision settles three things about it, and they hold at every width.
+
+- **The insignia is the way home.** Every artboard draws the mark on the leading edge, and the
+  revision put it exactly where the outfitting bar's `SHIPYARD` chip used to be. So the mark carries
+  that trip and the word is not drawn twice: it is a real link with the shipyard's own address, named
+  by the screen it reaches, with the mark itself hidden from assistive technology so it is never
+  announced as a picture of nothing. On the shipyard it is a link to nowhere and is drawn as the
+  decoration it is.
+- **The release mark follows it.** A solid amber chip reading `BETA`, with the bar's own ground as
+  its ink, between the insignia and the screen's identity on every artboard.
+- **A screen opened over another one replaces the group.** Canvas 1b's hull sheet draws a bare `←`,
+  its own name and one line under it, and no insignia, release mark or count. Both compositions are
+  in the document and the stylesheet shows one, so exactly one `h1` and one way back are ever exposed
+  (`ScreenReturn`).
 
 ## Wide composition
 
@@ -37,9 +54,19 @@ the shell emits action/navigation/language intent and does not reach into a buil
 
 ## Compact/zoom composition
 
-- Show the route/build identity and one visibly named Menu/Actions control, replacing the prototype's
-  unlabeled ellipsis. The opened layer lists every action with visible localized text, including
-  Language and Help.
+- Show the route/build identity and one Menu/Actions control drawn as the canvas's `⋮` mark on its
+  own outlined square, at this feature's 44px target baseline rather than the canvas's own 40. Ruled
+  2026-08-26, reversing an earlier reading: the word `MENU` is not drawn on any artboard, and a bar
+  already carrying a build's name has no room for it. The mark is
+  decoration and is hidden from assistive technology; the control's accessible name is the same
+  localized phrase the wide bar's group carries, so nothing is named by a glyph. The opened layer
+  lists every action with visible localized text, including Help.
+- The opened layer is the canvas's flat panel, not a stack of buttons: full-width rows separated by
+  hairline rules, the first of them on the accent wash the canvas gives the action a Commander is
+  most likely to want, and the rest bare. A row is still a control with a name, a role and a state;
+  what it is not is a chip inside a panel of chips (canvas 1d).
+- Route content keeps the same inline gutter as the bar above it. A compact screen whose content runs
+  to both edges of the viewport reads as a page that has come apart, and the canvas draws none.
 - The action layer is a sheet when its contents are simple and a full-height layer when content/
   expansion/short landscape requires it.
 - Fixed/sticky shell regions reserve their space and never cover route content at 200% text or 400%

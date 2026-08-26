@@ -4,9 +4,11 @@ import { expectNoDocumentOverflow, expectTargetSizes } from './accessibility/ass
 import {
   chooserOffered,
   editorOffered,
+  isCompactWorkspace,
   openChooser,
   openChooserRows,
   openEditor,
+  revealMount,
 } from './outfitting-surfaces';
 
 /**
@@ -81,6 +83,7 @@ test.describe('the composition this width has room for', () => {
 
   test('offers every capability at this width, whatever shape it is in', async ({ page }) => {
     await openStockBuild(page);
+    await revealMount(page, 'Slot03_Size6');
     const row = page.locator('[data-slot-key="Slot03_Size6"] button').first();
     await row.click();
     // Waited for: the bench answers about the mount that is selected, and
@@ -196,6 +199,14 @@ test.describe('the composition this width has room for', () => {
 
   test('keeps the same source order in every composition', async ({ page }) => {
     await openStockBuild(page);
+    const compact = await isCompactWorkspace(page);
+    // The two actions are drawn for whichever mount is marked, so at compact
+    // width one is marked before the order is read.
+    if (compact) {
+      const row = page.locator('[data-slot-key] button').first();
+      await row.click();
+      await expect(row).toHaveAttribute('aria-pressed', 'true');
+    }
 
     const order = await page
       .locator('.outfitting > *')
@@ -220,6 +231,12 @@ test.describe('the composition this width has room for', () => {
       // over the selected mount's bench, in one column so the bench stays under
       // the plates (feature 010).
       'outfitting__centre',
+      // Canvas 1d's six key readings and its two mount actions, drawn only at
+      // that width: the strip goes above the tabs and the actions under the
+      // ledger the canvas draws them under, and both are between the middle
+      // track and the rail in the document
+      // (`design/outfitting-workspace.md`, "The compact key figures").
+      ...(compact ? ['outfitting__key-figures', 'outfitting__bench-actions'] : []),
       // Canvas 1c's third track, and canvas 1d's Status stack. It is last in
       // the document at every width: a band under the bench until there is
       // room for the full `392px 1fr 306px` grid, and the trailing column after
@@ -241,6 +258,7 @@ test.describe('the composition this width has room for', () => {
 
     // A mount with something in it: the region opens on the first mount, and
     // the Anaconda's first hardpoint is empty, so there is nothing to engineer.
+    await revealMount(page, 'FrameShiftDrive');
     await page.locator('[data-slot-key="FrameShiftDrive"] button').first().click();
     await expect(
       page.locator('.replacement__title, .outfitting__bench-title').first(),

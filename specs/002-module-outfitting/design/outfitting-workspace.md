@@ -66,6 +66,21 @@ nothing to clear. Both are now the full height the bar leaves, and the status ra
 height rather than a cap so its seam is drawn whether or not the rail has that much to say
 (Commander request 2026-08-25).
 
+**Ruled 2026-08-26 — and they run the whole way down on a short viewport too.** The 2026-08-25 rule
+held only because every column carried the same definite height; the grid itself was aligned to
+`start`, which had nothing to bite on while that was true. It bit where the bounded columns are
+released — a short viewport, where the bar releases with them and the page scrolls instead. Each
+column then takes its own content height, and the ledger stopped wherever its last row ended, taking
+its ground and its seam with it while the bench beside it ran on down a page twice as long. The grid
+stretches its columns to the row, which is what canvas 1c's one grid row does and what the definite
+heights were already imitating (reported 2026-08-26).
+
+**The bench's share, adjusted 2026-08-26: 1.25 to 1.1.** The manifest was taking 56% of the bench to
+the editor's 44%. An engineering pass — a grade, an experimental effect and the attribute comparison
+under them — is the taller of the two readings at the moment a Commander is making it, and the
+editor was the pane being scrolled. Not an even split: the canvas does draw the manifest the taller
+of the two, and this only narrows the margin (Commander request 2026-08-26).
+
 **What that height is, is measured, not declared.** `--edsb-layout-bar-height` is one row of controls
 at the target baseline — what the bar comes to on every screen that draws a plain title. This screen
 does not: FR-019's identity block is two 24px targets and a gap, so the workspace's bar is 74px, and
@@ -149,16 +164,151 @@ hard to read.
 
 ## Narrow and 400%-zoom composition
 
-- Existing compact build identity/actions header, including the same ship name and ident fields.
-- Undo/redo in a clearly named action region or overflow menu with identical accessible names/state.
-- Complete accepted-normalization/edit-refusal notice.
-- Shared anatomy/status outlet and concise metric/power strip, then slot-kind/category controls and
-  semantic slot cards. This intentionally follows canvas 1d's source order. Categories change the
-  visible list but not build/history.
-- Selected slot exposes explicit `Change module` and `Engineer` actions. Each opens its full-screen
-  feature layer. Back/cancel changes no build.
-- Package validation and later calculation details remain available through their owning shared
-  outlets; no functionality is removed in landscape.
+**Restated 2026-08-26 against canvas 1d.** The compact artboard is not the wide one stacked, and the
+implementation had been reading it as though it were: the three regions came down the page in the
+wide composition's order, so the ledger opened the screen, the anatomy sat under it and the status
+rail closed it. Canvas 1d's own order is the list below, and these four corrections are what it asks
+for (Commander request 2026-08-26).
+
+In canvas 1d's order:
+
+1. Notices, unchanged: an accepted normalisation or a refused edit is above everything else.
+2. **The mode strip and whatever it has open.** `MOUNTS · POWER · DRIVES · DEFENCE · OFFENCE ·
+STATUS`. Five of the six are the anatomy region's own; see "The status segment" below for the
+   sixth.
+3. **The six key readings** — `DPS`, `SHIELD`, `ARMOUR`, `JUMP`, `SPEED`, `MASS` — on one strip,
+   closed by a hairline. See "The compact key figures" below.
+4. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
+5. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
+   in the ledger above, `position: sticky; bottom: 0` on its own plate. Each opens its full-screen
+   feature layer; back or cancel changes no build. It is drawn after the ledger rather than under the
+   anatomy, which is where the artboard puts it and why it is not inside the bench — at this width
+   the bench is the layer these two open.
+
+The DOM stays in the wide composition's order, which is the reading order the three regions were
+written in; the compact arrangement asks for the artboard's order in CSS. Undo and redo keep their
+place in the shell's own action menu with identical accessible names and state, and package
+validation and later calculation details remain available through their owning outlets — no
+capability is removed in landscape.
+
+### The status segment
+
+Canvas 1d's strip has a sixth segment, `STATUS`, and what it opens is the status rail — `BUILD
+STATUS`, the power line, cost and materials. That rail is not the anatomy region's and is not drawn
+inside it, so the strip carries the segment, reports which one is open, and draws nothing for it; the
+workspace puts the rail where the panel would have been (`hull-anatomy.ts`, `AnatomyGuestMode`). A
+panel that is not the open one is removed from the page rather than hidden visually — it is a tab.
+
+The segment is offered only at compact width. At wide width the rail is the third track of canvas
+1c's grid and is on screen whatever the strip has open, so there is nothing for a segment to reveal.
+
+### The foot is drawn, not pinned
+
+Canvas 1d draws `CHANGE MODULE` and `ENGINEER` on a plate at the foot of the screen, and the artboard
+pins that plate: it is drawn over the ledger, not after it. **The application draws it in the flow**,
+at the end of the stack where the artboard puts it, and does not pin it.
+
+The reason is measured rather than argued. An opaque plate 76px tall over a page-length ledger of
+52px rows covers between half and the whole of whichever row falls at the foot of the viewport, and
+it does so at every scroll position there is — there is no scroll offset at which nothing is behind
+it. On an Anaconda's hardpoints that left a mount row 350×20.4px against a 24px floor
+(`target-size`, `wcag22aa`, measured 2026-08-26). The mount rows are this screen's primary targets; a
+plate that permanently covers one of them cannot be pinned over them.
+
+Pinning it correctly means bounding the scroll rather than floating the plate: the stack above scrolls
+inside a box of its own and the plate sits below that box, which is how a phone's action bar is built
+and what the artboard is actually drawing. That is a different arrangement from the single page-length
+column this region composes at compact width — the mode strip, the plates, the key figures and the
+ledger all scroll together today — so it is recorded here as the follow-up rather than half-built.
+
+### The compact key figures
+
+The strip sets all six across, which at 390px is 55px a cell once its own 14px inside and the five
+gaps are paid for. That is a **track floor, not a column count**: six tracks of `minmax(0, 1fr)` hold
+their number at any text size and let the figure inside hang over the edge of the screen instead, and
+a doubled text size ran the page 34px wide of the glass on exactly that (found 2026-08-26). The
+tracks are `repeat(auto-fit, minmax(3.25rem, 1fr))`, so the six stay on one row where they fit and
+become three on two rows where they do not.
+
+Canvas 1d draws the same six readings twice: once in the strip above the category tabs and again
+inside the `STATUS` panel's cell band. **The application draws them once**, in the strip, and the rail
+omits its cell band at this width. Both are on screen together whenever `STATUS` is open, and a
+reader meeting the same six figures twice on one screen has no way to tell which copy is the reading
+— the strip is the one that is always there, so it is the one that is kept.
+
+### The bands run to the glass
+
+Canvas 1d has no page inset. Every band paints to both edges of the screen and carries its own inside
+it — the anatomy's header row, the key figures, the mode panels and the sticky foot at 14px, the
+ledger rows at the 16px canvas 1c gives them, the category strip full-bleed with its segments padded
+— each closed by a hairline that runs the full width. The application frame gives its compact pages a
+14px gutter, which is right for a page whose own blocks have no inset; this one's do, so **the
+workspace takes that gutter back** with a negative inline margin and each band pays for itself.
+
+The take-back is scoped to the compact _width_, not to the compact composition. The two are not the
+same: `composition()` also answers `compact` on a short viewport at any width, and the frame draws
+its gutter at the width alone — so a landscape phone would have had 14px pulled off each edge with no
+gutter to cancel, and `overflow-x: hidden` would have clipped it rather than showing it. The same
+block resets the wide grid for the same reason: the arrangement the composition decides in the
+template has to be the arrangement the stylesheet draws, or the two bands that exist only here are
+auto-placed into a second column beside the ledger.
+
+The ledger's rows keep canvas 1c's 16px, so a reading in them stands two pixels further in than one
+in the anatomy above. That is the artboards disagreeing with each other, not the double inset this
+section is about, and it is left where the roomy canvas puts it.
+
+Built the other way round the two insets added up: every band's closing hairline stopped 14px short
+of the glass, every reading inside one stood 28px in, and the anatomy — still on canvas 1c's roomier
+22px — stood 8px further in again, so the figures in `POWER & THERMALS` did not line up with the
+mount names in the ledger below them. That is the misalignment reported on 2026-08-26. Two things
+keep their inset, because they are not bands: the import notices, which are a labelled rule over
+prose and take it as padding, and the empty state, which is a bordered plate and takes it as margin
+so its border does not sit against the glass.
+
+The anatomy's own inset is stated with the arrangement rather than with a width: one plate takes the
+narrow canvas's 14px, two plates take the roomy canvas's 22px, and the threshold between them is the
+one the second plate already opens at (`specs/010-hull-anatomy`).
+
+### A pair is only a pair when both halves have room
+
+Four regions inside the anatomy draw two boxes side by side when they have the width for it:
+`DRIVES & MASS`, `DEFENCE`, `OFFENCE` and, inside `POWER & THERMALS`, the heat block's own split.
+All four now open at the **wide** container step, which is where the power dashboard's four blocks
+have always opened. Three of them opened at the medium step, and the medium step is 24rem: a
+430-pixel phone hands these regions about 25rem, so on a large phone `THRUSTER LOAD` sat beside
+`FRAME SHIFT DRIVE` and the heat bars sat beside their tiles, while the power blocks on the same
+screen correctly stacked. Both canvases draw all four as one column at the narrow width, and canvas
+1c draws the heat block as one column at _either_ width. Two cards of figures at 24rem are 12rem
+each once the gap is taken off, which is narrower than the readings they hold; the labels wrapped a
+word at a time and the pair was harder to read side by side than stacked (reported 2026-08-26).
+
+### No `ALL` at compact width
+
+Canvas 1d's tab strip is `HARDPOINTS · CORE · OPTIONAL · UTILITY`, with no `ALL` and no counts on the
+tabs. The `ALL` chip is canvas 1c's: at compact width the ledger is one category at a time and a
+Commander says which, rather than being handed thirty-four mounts to scroll. A window narrowing while
+`ALL` is chosen lands on the first tab, which is the one the artboard draws selected.
+
+**Which category is shown is a choice, not a memory (corrected 2026-08-26).** The shown category was
+first written as the last value that is still offered, falling back to the offering's own first. That
+reads correctly and is wrong, because of _when_ it is first read: the region reports the compact
+composition until its observer has measured it, so the first offering any width sees is canvas 1d's
+four tabs — and `HARDPOINTS`, latched a frame before `ALL` existed, is offered at both widths and
+therefore never let go of. Canvas 1c's ledger opened on eight of an Anaconda's thirty-nine mounts
+with `ALL` beside it unpressed, and every mount outside the hardpoints was unreachable without
+pressing a tab the artboard does not draw selected.
+
+So what is held is the category a Commander **asked** for, and nothing is held where nobody has
+asked. The shown category is that choice where the width still offers it and the offering's own first
+where it does not: `ALL` at wide, `HARDPOINTS` at compact. A choice survives a resize that keeps
+offering it; `ALL`, which nobody chose away from, comes back when the width offers it again.
+
+`CORE` lists three of the package's slot kinds. Canvas 1c counts `CORE 8` on an Anaconda whose seven
+core internals are followed by its cargo hatch, and canvas 1d's `CORE` panel draws that hatch as its
+last row — so the hatch is a core internal as far as both artboards are concerned, whatever
+`SlotKind` calls it. Armour joins it for the same reason and one more: with no `ALL` there is no other
+tab it could be reached from. The rule is the same at both widths, so a Commander who found armour
+under `CORE` on a phone finds it there on a desktop.
 
 ## Slot presentation
 
@@ -222,6 +372,13 @@ package immovable reason. Do not make the card open replacement or engineering a
 - Groups use semantic lists; facts use definition lists. Exact slot keys are never visible text; they
   are always available to assistive technology through `visually-hidden` text beside the drawn label,
   which is the accessibility floor rather than an addition to the design.
+- **A notice names a mount the way the ledger does, whatever the source called it.** The ingress
+  notices carry the slot key the file, the link or the journal event used, and the package matches
+  slot keys without regard to case — so `slot08_size4` names the mount the ledger lists as
+  `Slot08_Size4`, and looking the label up by exact key missed and printed the raw key as visible
+  text (reported 2026-08-26). The lookup compares the way the package compares. A key with no label
+  at all still falls back to itself: a notice naming no mount would be worse than one naming it
+  awkwardly.
 - Switch and priority select names include the slot/module. One-based priority labels include the word
   “priority”; enabled state is not a colored dot alone.
 - Selection, invalid/incomplete/disabled/engineered/acquisition state includes text and programmatic
