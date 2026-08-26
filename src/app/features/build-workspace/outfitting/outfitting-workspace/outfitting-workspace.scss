@@ -362,18 +362,36 @@
   margin: 0;
 }
 
+// The canvas's second rail block: the `POWER` line, its bar and its pips over
+// the six metric cells, in one inset, closed by the same one-pixel amber rule
+// that separates every block in the rail. One block and not two, because the
+// canvas stacks the cells under the power line inside a single padding — ruled
+// off it they would read as a separate reading rather than as the same one
+// broken out.
+//
+// The inset is here rather than on any of the four contributors: the canvas
+// insets the whole block once.
+.outfitting__status-band {
+  @include layout.stack(var(--edsb-space-stack));
+
+  padding: var(--edsb-space-panel);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
 // The canvas's six metric cells, as the one grid it draws them in: a single band
 // whose one-pixel gaps show the amber ground through as the only rules between
 // the cells. Two columns, because the rail is 306px wide and that is what the
 // canvas fits across it; the cells flow through them in the canvas's order, so
 // `DPS` and `JUMP` share a row across the two features that own them.
 //
-// The inset is here rather than on any of the three contributors, for the same
-// reason the grid is: the canvas insets the whole band once.
+// The ground is on this grid rather than on the block that insets it, because
+// the canvas's ground is exactly the extent of the cells: it shows through the
+// one-pixel gaps and nowhere else. Carried by the padded block instead, it
+// would also be painted across that inset, and the band would read as six
+// cells sitting on a tinted panel rather than as six cells ruled off each
+// other — a box the canvas draws around nothing.
 .outfitting__status-cells {
   @include layout.ruled-group(repeat(2, minmax(0, 1fr)));
-
-  padding: var(--edsb-space-panel);
 }
 
 .outfitting__ledger-region {

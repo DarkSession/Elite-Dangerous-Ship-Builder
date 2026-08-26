@@ -37,7 +37,7 @@ import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
  * number (constitution II and IV).
  */
 export interface Defence {
-  /** The SYS allocation every shield figure below was read at, in `[0, 4]`. */
+  /** The SYS allocation the capacitor and recovery below were read at, in `[0, 4]`. */
   readonly systemsPips: number;
   /**
    * The complete `ShieldMetrics`, or every package issue that prevented it.
@@ -53,8 +53,9 @@ export interface Defence {
    *
    * A second package call, `shieldCapacitorMetrics()`, over the same build. It
    * carries the resistance the pips contribute on their own and the effective
-   * pool behind them, and it is the only thing on this projection that moves
-   * with the allocation (FR-002's 2026-08-25 second column).
+   * pool behind them, and it is the only thing on the damage table that moves
+   * with the allocation (FR-002's 2026-08-25 second column). The recovery below
+   * moves with it too; the bare shield above does not.
    */
   readonly capacitor: CalculationView<CapacitorSnapshot>;
   /** Independently complete or unavailable: a shield may be one and this the other. */
@@ -78,11 +79,12 @@ export interface Defence {
 /** Everything the projection needs that is not the build. */
 export interface DefenceConditions {
   /**
-   * Pips to the systems capacitor, `0`–`4`, passed to both shield calls.
+   * Pips to the systems capacitor, `0`–`4`.
    *
    * Feature 005's store already holds the ship's own allocation on the half
    * step, in the units the package takes, so there is nothing to convert: the
-   * value it holds is handed to the package unchanged.
+   * value it holds is handed to the package unchanged — to the capacitor and
+   * the recovery, which are the two calls that take an allocation at all.
    */
   readonly systemsPips: number;
 }

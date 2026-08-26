@@ -1,5 +1,35 @@
 # Data Model: Ship Statistics and Status
 
+> **Superseded 2026-08-22 (wave 11). Nothing below is built.** Three collisions between the accepted
+> specification and `.design/Ship Builder.dc.html` were surfaced before implementation and **the
+> design won all three** ([design/reference-review.md](./design/reference-review.md)). `ViewingConditions`
+> went to feature 005 with ruling C, but the **encoding** under `## ViewingConditions` below did not
+> go with it. `HalfPips` — `0` to `8` a bank, three banks summing to `12`, halved again at each
+> provider's call boundary — was withdrawn outright with the control that produced it. The draft, the
+> running total and the field guidance counted in whole pips; Apply converted them into this encoding
+> and the providers were the only thing that read it, so once ruling C took the control there was
+> nothing left to convert into and nothing left to convert for ([contracts/viewing-conditions.md](./contracts/viewing-conditions.md);
+> `specs/005-power-and-heat/tasks.md`, T010's retirement). What feature 005 built is not this type
+> under another name: it holds `0` to `4` a bank **on the half step**, six between the three
+> (`src/app/application/power-heat/power-conditions.store.ts`,
+> `specs/005-power-and-heat/data-model.md`). The half pip survived; counting in halves of one did
+> not. The provider envelope, the revision
+> context, the composition transaction and the status lifecycle were **withdrawn rather than
+> reassigned**, and went nowhere: ruling B took the wide Status capability they were assembled for,
+> and ruling C removed this feature's dependency on features 005–009, so there is no owner result
+> left to compose and nothing for an envelope to carry. Feature 005 records the same withdrawal from
+> its own side (`specs/005-power-and-heat/contracts/integration-ports.md`), and this feature's
+> [tasks.md](./tasks.md#retired-tasks) retires them as withdrawn, not moved. The announcement state
+> went with ruling A, which withdrew the counts it announced. Feature 003 adds no domain type, no store and no port: `ShipLoadout.validation()`
+> is a call on the build feature 001 already holds in memory, and the one component reads it the way
+> `edsb-cost-materials` reads its own projection.
+>
+> This file is retained as the record of what was ruled against, which is why it is left as it was
+> written. The live design outputs are [design/reference-review.md](./design/reference-review.md),
+> [design/status-rail.md](./design/status-rail.md),
+> [design/screen-inventory.md](./design/screen-inventory.md) and
+> [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md).
+
 Feature 003 owns viewing, composition and feedback state. Game calculations and their semantic
 result unions remain owned by features 005–009. The types below reference those contracts instead of
 copying their fields.

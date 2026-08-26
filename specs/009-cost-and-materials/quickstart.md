@@ -134,7 +134,27 @@ Expected:
 
 After initial load, set the context offline and repeat both stories. Reject unexpected cross-origin
 requests — in particular, confirm no `edassets.org` or Google Fonts request is made. Verify no cost
-or material value occurs in local storage, browser history, URLs, build links or SLEF.
+or material value occurs in local storage, browser history, URLs or build links.
+
+Two notes on where this runs and what it can claim.
+
+The **offline half needs a service worker**, which exists only in a production build, so it runs
+under `pnpm run e2e:offline` — `e2e/offline-privacy.spec.ts`, beside feature 007's own offline
+journey — rather than in `e2e/cost-and-materials.spec.ts`. Going offline is not enough on its own:
+engineer a mount with the network gone and confirm the materials block appears from nothing, with
+its footer counting the rows beside it. That is what tells a live read from a painted one — the
+block is absent for a build that crafts nothing, so it can only appear by being built from the
+package's consolidated result.
+
+Expect the **credit figures not to move**. A blueprint is paid for in materials, and a module's
+catalogue price is what it is whether or not it has been engineered. Assert that too, rather than
+leaving it implicit: a reader who assumed otherwise would take the unchanged figures for a frozen
+screen.
+
+A **SLEF export legitimately carries `HullValue`, `ModulesValue` and `Rebuy`** — they are fields of
+the format, and feature 004 writes the package's current catalogue retail into them
+(`src/app/domain/slef/slef-export-pricing.spec.ts`). Do not assert their absence. What must be absent
+is what this feature owns: no material, no consolidated list and no Merc Coin figure.
 
 ## Scenario 7: responsive and accessibility matrix
 

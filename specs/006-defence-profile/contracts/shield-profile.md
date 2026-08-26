@@ -1,8 +1,9 @@
 # Shield and Recovery Contract
 
-> **Reconciled at implementation, 2026-08-24.** Feature 005's store already publishes the SYS pips
-> in the package's own `[0, 4]` units, so no halving is applied. Three scalar fields the canvas does
-> not draw — the mass-curve multiplier, the boost multiplier and the SYS resistance — are carried by
+> **Reconciled at implementation, 2026-08-24, and again for the 2026-08-25 revision.** Feature 005's
+> store already publishes the SYS pips in the package's own `[0, 4]` units, so no halving is applied.
+> The fields the canvas does not draw — the mass-curve multiplier, the boost multiplier, and
+> the capacitor's capacity, recharge rate, SYS resistance and pip-folded resistances — are carried by
 > the projection and not presented, and the broken regeneration rate goes with them: canvas 1c draws
 > the recharge rate and the two phases.
 
@@ -19,7 +20,8 @@ const recovery = metrics.shieldRecoveryResult({ systemsPips });
 
 Almanac 0.2.0 made the bare shield and what a SYS allocation is worth to it two calls.
 `shieldMetricsResult()` takes no allocation at all — it is the shield an outfitting screen shows —
-and every pip-dependent figure comes from `shieldCapacitorMetricsResult()`. The allocation is always
+and every pip-dependent figure on the damage table comes from `shieldCapacitorMetricsResult()`. The
+recovery is pip-dependent too, and is its own call. The allocation is always
 passed explicitly, because the package's own default is four pips and a standing allocation of none
 would otherwise be read as four. Components never call the package, and application code never calls
 standalone shield, resistance, EHP or recovery formulas.
@@ -66,10 +68,13 @@ that moves when a pip moves.
 | the allocation it was read at | `systemsPips`                                          | pips, `[0, 4]`   |
 | effective shield pools        | `effectiveHitPoints.kinetic/thermal/explosive/caustic` | MJ of raw damage |
 
-`capacity`, `rechargeRate` and `systemsResistance` are carried and not drawn, for the same reason.
-No pool is scaled, blended or apportioned between the two results: an unavailable capacitor result
-withdraws its column rather than borrowing the bare pool beside it, and an unavailable bare shield
-does not borrow the capacitor's.
+`capacity`, `rechargeRate`, `systemsResistance` and `effectiveResistances` are carried and not
+drawn, for the same reason. The last of those is the one to be careful with: it is the shield's
+resistances with the pips folded in, and drawing it anywhere would put a pip-moved percentage on a
+table whose `RESIST` column is a base value. The fifth column takes `effectiveHitPoints` and nothing
+else. No pool is scaled, blended or apportioned between the two results: an unavailable capacitor
+result withdraws its column rather than borrowing the bare pool beside it, and an unavailable bare
+shield does not borrow the capacitor's.
 
 ## Complete recovery mapping
 
@@ -114,6 +119,9 @@ No clamp, finite substitute, generic infinity label, truthiness check or mislead
   remain distinct package diagnoses.
 - Prove a retracted-powered/deployed-shed generator remains package-complete for shields.
 - Prove shield/recovery may differ without one result suppressing the other.
+- Prove the bare shield and the capacitor are independent in both directions: a refused capacitor
+  withdraws the fifth column and leaves the four bare ones whole, and neither result stands a figure
+  in for the other.
 - Prove zero, negative, unavailable, unbounded EHP and a non-finishing recovery phase remain
   distinct.
 - Prove shield unavailability never suppresses armour.

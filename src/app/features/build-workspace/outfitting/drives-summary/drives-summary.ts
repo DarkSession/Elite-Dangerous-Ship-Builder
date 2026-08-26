@@ -38,9 +38,11 @@ const MASS_DIGITS = 0;
  * envelope, and `MASS` the thruster card's own headline. One reading of one
  * build, so the rail and the card can never disagree.
  *
- * Nothing here is interactive, as nothing else in the rail is: the canvas draws
- * no control in it, and at both widths the two cards these figures come from
- * are a segment away.
+ * Nothing here is interactive, as none of the rail's six cells is: the canvas
+ * draws no control in that grid. The rail around it is another matter since
+ * the 2026-08-25 revision, which put feature 005's pip control in it
+ * (`specs/003-ship-statistics/design/status-rail.md`, item 4). At both widths
+ * the two cards these figures come from are a segment away.
  *
  * A figure the package could not settle has no value, and the cell says so
  * rather than standing at zero — a zero is a number a Commander might act on

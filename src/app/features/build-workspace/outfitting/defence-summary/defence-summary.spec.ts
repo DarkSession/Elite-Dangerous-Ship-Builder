@@ -89,7 +89,8 @@ describe('DefenceSummary', () => {
 
   it('re-reads on a SYS change, which the package answers with the same strength', () => {
     // The rail is read at the same allocation the dashboard is, and the package
-    // makes the pool independent of it — the resistances are what move.
+    // makes the pool independent of it. What the allocation does move — the
+    // capacitor's figures and the recovery — the rail does not draw.
     const build = fullyFittedBuild();
     const { component } = render(build);
     const atRest = component.cells()[0]?.value;

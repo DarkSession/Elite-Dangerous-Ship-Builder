@@ -120,8 +120,11 @@ precision. The rail and the cards are one reading of one build seen twice, and a
 the hold or rounded differently would put two numbers for one quantity on one screen with both
 looking like answers.
 
-Nothing in the rail is interactive, as nothing else in it is: the canvas draws no control there, and
-at both widths the cards these figures come from are a segment away.
+None of **these three cells** is interactive, as none of the six is: the canvas draws no control in
+that grid, and at both widths the cards these figures come from are a segment away. The rail around
+them is no longer entirely a read-out — the 2026-08-25 canvas revision put feature 005's
+`SYS` / `ENG` / `WEP` pip control in it — but that control is that feature's and it is not in this
+grid (`specs/003-ship-statistics/design/status-rail.md`, item 4).
 
 ## Responsive composition
 

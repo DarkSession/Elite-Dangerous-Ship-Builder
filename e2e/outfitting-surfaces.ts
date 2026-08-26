@@ -266,9 +266,15 @@ export async function openChooserRows(page: Page): Promise<void> {
   await openAllFamilies(page);
 }
 
-/** Brings the engineering editor for the selected mount on screen. */
-export async function openEditor(page: Page): Promise<void> {
-  const open = page.getByRole('button', { name: /^engineer$/i });
+/**
+ * Brings the engineering editor for the selected mount on screen.
+ *
+ * Named for the language the page is being read in, for the reason `openChooser`
+ * gives: at compact width the editor is behind an action, and that action is
+ * drawn in the active language rather than in English.
+ */
+export async function openEditor(page: Page, name: string | RegExp = /^engineer$/i): Promise<void> {
+  const open = page.getByRole('button', { name });
   const editor = page.locator('.engineering').first();
 
   // Waited for before it is counted, for the reason `openChooser` gives.
@@ -313,6 +319,37 @@ export async function chooseRecipe(page: Page, name: string | RegExp): Promise<v
     return;
   }
   await chooseFromSelect(page.locator('edsb-blueprint-choice-list select').first(), name);
+}
+
+/**
+ * The first recipe the package offers here, whatever it is called.
+ *
+ * The sibling of `chooseFirstEffect`, and it exists for the same reason: a
+ * blueprint name is the Almanac's game text, so a test running in another
+ * language cannot name one without pinning that language's catalogue.
+ */
+export async function chooseFirstRecipe(page: Page): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    const cards = page.locator('.blueprint:not(.blueprint--none)');
+    // The same guard the dropdown branch below carries: a mount the package
+    // offers no recipe for should say so rather than wait out the timeout on a
+    // card that is never going to appear.
+    expect(await cards.count(), 'no blueprint is offered here').toBeGreaterThan(0);
+    const row = cards.first();
+    await row.click();
+    await expect(row.locator('input[type="radio"]')).toBeChecked();
+    return;
+  }
+  const select = page.locator('edsb-blueprint-choice-list select').first();
+  const values = await select
+    .locator('option')
+    .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
+  // Index 1: the first option is the canvas's no-blueprint choice. Asserted
+  // rather than defaulted, because a mount the package offers no recipe for
+  // would otherwise select a value no option carries and wait out the timeout
+  // instead of saying what went wrong.
+  expect(values.length, `no blueprint is offered here: ${values.join(' | ')}`).toBeGreaterThan(1);
+  await select.selectOption(values[1]!);
 }
 
 /** Chooses one experimental effect, however this width offers them. */
@@ -398,13 +435,16 @@ export function effectOptions(page: Page): Locator {
  * Canvas 1d pins it to the foot of its own screen; canvas 1c puts it in the
  * panel head. Same control, same decision, one place that knows the difference.
  */
-export async function applyDraft(page: Page): Promise<void> {
+export async function applyDraft(
+  page: Page,
+  name: string | RegExp = /apply blueprint/i,
+): Promise<void> {
   if (!(await surfacesAreLayers(page))) {
     // Canvas 1c draws no apply and no revert: inline the choice is the
     // decision, and it has already been taken by the time this is called.
     return;
   }
-  await page.getByRole('button', { name: /apply blueprint/i }).click();
+  await page.getByRole('button', { name }).click();
   await editApplied(page);
 }
 

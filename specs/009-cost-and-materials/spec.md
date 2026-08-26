@@ -72,9 +72,12 @@ lower-bound, unavailable and missing-recipe wording — is **not built**.
   purchase, not ordinary crafted engineering; later ordinary grades retain their package material
   cost.
 - **FR-010**: Material identity, rarity grade and localised name MUST come from the Almanac.
-  Material names are rendered through feature 011's shared game-text primitive, exactly as feature
-  002's material rows already render them; this feature adds no game-text handling of its own and
-  MUST NOT maintain game-text translations.
+  Material names are rendered through feature 011's shared game-text primitive, which carries the
+  application's own canonical-text fallback and untranslated disclosure; this feature adds no
+  game-text handling of its own and MUST NOT maintain game-text translations. (This clause named
+  feature 002's material rows as the example to follow. Feature 002 withdrew that list in wave 11 —
+  neither canvas draws one — so these rows are now the application's only material list, rendered
+  the same way every other game name in it is.)
 
 ## Edge Cases
 
