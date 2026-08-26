@@ -571,13 +571,52 @@ worked out once, in the projection:
     `selectedSlotKey`, so a plate that ignored it was the odd one out among the
     three drawings of the same hull.
 
-    It is drawn as a ring around the dot rather than as a fourth fill, because
-    the fill already reports whether the mount is armed and how its weapon is
-    aimed; a selection colour would overwrite a reading with a state. The ink is
-    the brightest amber the scale holds rather than the accent the schematics
-    fill a selected mark with, because on this plate the accent is already the
-    fixed mount's own ink. Like every other mark here the ring is never the only
-    thing that says so: the selected mount's sentence beside the plate names it.
+    **It takes the canvas's second ink, and that ink stops meaning what the
+    canvas spends it on.** `wireConvergence` colours a mark by
+    `mount === 'GIMBALLED'` and nothing finer — one hue for an aimed mount, one
+    for everything else. This plate has three things to separate where the
+    canvas had one: a mount with a weapon on it, a mount with none, and the
+    mount being worked on. Asked on 2026-08-26 which of them the second hue
+    should say, the maintainer's answer was selection, and the fixed-against-
+    aimed distinction is withdrawn from the drawing with it.
+
+    Nothing is lost by that. A colour was never a reading here — how each weapon
+    aims has always been named in that mount's own sentence beside the plate,
+    and it still is, now as the only place it is said rather than as the
+    reinforcement of an ink. What is gained is that the one fact about this
+    diagram no other mark could carry — which mount a Commander currently has
+    open — is carried.
+
+    A ring in the same ink is drawn beside it, so the selected mark still stands
+    out where a reader cannot tell the two hues apart. Whether the mount is
+    armed stays with the fill against the outline rather than with the hue, so a
+    selected empty hardpoint is still visibly empty: a mark that filled itself in
+    to say "selected" would be reporting a weapon that is not there.
+
+18. **The target-range track and the plate's size are the maintainer's, not the
+    canvas's — 2026-08-26.** Two numbers, both properties of the drawing rather
+    than of any build, and neither changes a figure: every reading the block
+    gives is the package's own answer at whatever distance the track is set to,
+    drawn at whatever size the plate is.
+
+    `wireConvergence`'s track runs `100`–`2000` on a `25` step and opens at
+    `600`. It now runs **`500`–`5000` on a `100` step and opens at `1000`**. The
+    canvas's own sample never had to reach a real weapon's maximum range; a
+    Multi-Cannon on this application's reference hull states `3,000 m`, and a
+    track stopping at 2,000 m could not be moved to the distance a Commander was
+    asking about. The step follows the span — 25 m over 4,500 m is a finer
+    increment than a gunsight can be read at.
+
+    The plate is drawn at **`8rem`** rather than the canvas's `172px`. It is
+    decorative in full, and at the canvas's width it was the tallest thing in the
+    offence panel: it set the whole convergence block's height on its own, at
+    230px against the 186px it takes now. Squareness is the property that matters
+    on this plate — it is what makes a mapping that is square in angle level in
+    pixels — and every mark is placed as a fraction of the plate rather than in
+    pixels, so it is the same diagram at either size. The one pixel constant that
+    has to follow it is the reference width the hardpoint numerals' four corner
+    offsets are chosen against, which carries no reading: every mark on this
+    plate is stated in words beside it.
 
 ## States no canvas draws
 
@@ -587,8 +626,8 @@ unavailable hardpoint coverage, an all-disabled or genuine-zero weapon, absent
 immediate or infinite time to drain, a build dealing no conventional damage, a
 hull the gunsight catalogue does not place, a placed hull the build has armed
 nothing on, a hardpoint on the plate with nothing fitted to it, the mount the
-workspace has selected, or a shot far enough off-axis for the plate to clamp it
-to the frame. They are required all the same, and they come from
+workspace has selected, a target range past the canvas's own 2,000 m, or a shot
+far enough off-axis for the plate to clamp it to the frame. They are required all the same, and they come from
 [offence-profile.md](./offence-profile.md) and
 [component-state-preview-matrix.md](./component-state-preview-matrix.md), not
 from the mock.

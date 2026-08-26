@@ -109,8 +109,22 @@ export const FIELD_OF_VIEW_MILLIRADIANS = 40;
  */
 export const PLATE_MARGIN_FRACTION = 0.92;
 
-/** The target ranges the canvas's `RANGE` track runs between, and its step. */
-export const TARGET_RANGE = { min: 100, max: 2000, step: 25, initial: 600 } as const;
+/**
+ * The target ranges the `RANGE` track runs between, its step, and where it opens.
+ *
+ * The canvas's own track is `100`–`2000` on a `25` step, opening at `600`. These
+ * are the maintainer's, set on 2026-08-26: `500`–`5000` on a `100` step, opening
+ * at `1000`. The reason is what the track is for — a weapon's own maximum range
+ * reaches 3,000 m and beyond on this hull, so a track stopping at 2,000 m could
+ * not be moved to the distance a Commander is actually asking about, and a 25 m
+ * step over that span is finer than a gunsight can be read at.
+ *
+ * It is a property of the drawing like the field of view, and a departure from
+ * the canvas recorded as one (`design/canvas-contract.md`, review note 18). It
+ * changes no figure: every reading the block gives is the package's answer at
+ * whatever distance the track is set to.
+ */
+export const TARGET_RANGE = { min: 500, max: 5000, step: 100, initial: 1000 } as const;
 
 /** Radians to milliradians, so the conversion is named rather than a loose 1000. */
 const MILLIRADIANS_PER_RADIAN = 1000;

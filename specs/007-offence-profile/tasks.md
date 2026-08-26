@@ -678,6 +678,42 @@ by the ledger row and by feature 010's hull schematics.
 
 ---
 
+## Phase 9: The plate's inks, its track and its size
+
+Three more things the maintainer asked for on 2026-08-26, after seeing Phase 8 drawn. All three are
+properties of the **drawing** rather than of any build: none changes a figure, and every reading the
+block gives is still the package's own answer. All three are departures from the canvas and are
+recorded as such before being built (`design/canvas-contract.md`, review notes 17 and 18).
+
+- [x] T056 Spend the canvas's second ink on selection instead of on how a weapon aims. The plate had
+      three things to separate — armed, empty, selected — where the canvas has one, and the cool ink
+      was drawing `mount === 'GIMBALLED'`, which every mount's own sentence already names. The
+      fixed-against-aimed distinction is withdrawn from the drawing, `--edsb-surface-mount-fixed`
+      becomes `--edsb-surface-mount-armed`, `--edsb-surface-mount-aimed` is retired, and
+      `--edsb-surface-mount-selected` takes the cool ink with its ring. Whether a mount is armed
+      stays with the fill against the outline, so a selected empty hardpoint is still visibly empty
+      (`spec.md` FR-011, FR-013).
+      _`src/styles/tokens/_semantic.scss`, `shot-convergence.{ts,html,scss}` and its suite._
+- [x] T057 Run the target-range track from 500 m to 5,000 m on a 100 m step, opening at 1,000 m. The
+      canvas's own `100`–`2000` on a `25` step could not be moved to the distance a Commander is
+      asking about: a Multi-Cannon on the reference hull states a maximum range of 3,000 m
+      (`data-model.md`, "Convergence"; `design/canvas-contract.md`, review note 18).
+      _`src/app/domain/offence/convergence.ts` and its suite, `e2e/offence-profile.spec.ts`._
+- [x] T058 Draw the plate at `8rem` rather than the canvas's `172px`. It is decorative in full and
+      was the tallest thing in the offence panel, setting the convergence block's whole height on its
+      own — 230px, against 186px now. Squareness is the property that matters, and every mark is
+      placed as a fraction of the plate, so it is the same diagram at either size; the numerals'
+      reference width follows it.
+      _`src/styles/tokens/_primitives.scss`, `shot-convergence.ts`._
+- [x] T059 Re-run the feature's own e2e specs with the axe scan, and the checks the gate names.
+      _The clamp assertions were the only ones the new track moved: at 500 m this hull runs out of
+      plate on the vertical axis rather than the horizontal one, so the unit assertion that the
+      clamp is reached now names either axis rather than the horizontal one alone. The five Firefox
+      projects rest on this branch's pull request's `End-to-end (shard 1..6)` checks, for the reason
+      recorded at the head of this document._
+
+---
+
 ## Dependencies & execution order
 
 ### Phase dependencies
@@ -697,6 +733,8 @@ by the ledger row and by feature 010's hull schematics.
   independent of both and of each other.
 - Phase 8 depends on Phase 7 and changes what it drew. T051 blocks T052; T053 is independent of
   both; T054 depends on T052 and T053, and T055 on all four.
+- Phase 9 depends on Phase 8 and retunes what it drew. T056, T057 and T058 are independent of each
+  other; T059 depends on all three.
 
 ### Parallel opportunities
 

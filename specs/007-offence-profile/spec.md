@@ -111,9 +111,11 @@ because it is why the first implementation shipped a third of the canvas.
 - **FR-011**: The gunsight view is a diagram. It MUST be hidden from assistive technology, and every
   mark it draws MUST also be stated as text beside it, including a shot the plate could not place at
   its true position. Each mount is drawn as the canvas draws an armed one: a mark where its shot
-  lands, and that mount's hardpoint numeral beside it. Whether a mount is armed, how its weapon is
-  aimed and whether it is the mount the workspace has selected MUST each be carried by that mount's
-  own sentence as well as by the ink of its mark; no distinction on this plate rests on colour alone.
+  lands, and that mount's hardpoint numeral beside it. Whether a mount is armed and whether it is the
+  mount the workspace has selected MUST each be carried by that mount's own sentence as well as by
+  the ink of its mark; no distinction on this plate rests on colour alone. How a weapon is aimed MUST
+  be stated in that sentence, and is not drawn at all
+  (`design/canvas-contract.md`, review note 17).
 
   > **Re-drawn 2026-08-25.** The plate the canvas draws changed in four ways at once, and the
   > requirement follows the drawing: the field of view is `40` milliradians rather than `115`; the
@@ -152,9 +154,9 @@ because it is why the first implementation shipped a third of the canvas.
 
 - **FR-013**: The mount the outfitting workspace currently has selected MUST be marked on the plate
   and MUST be named as the selected mount in its own sentence beside it. The mark MUST NOT replace
-  what that mount's mark already reports — whether it is armed, and how its weapon is aimed — and
-  the selection MUST be read from the same slot key feature 002's ledger and feature 010's hull
-  schematics mark, so the three drawings of one hull cannot disagree about which mount is open.
+  what that mount's mark already reports — whether it is armed — and the selection MUST be read from
+  the same slot key feature 002's ledger and feature 010's hull schematics mark, so the three
+  drawings of one hull cannot disagree about which mount is open.
 
   > **Added 2026-08-26**, and a sanctioned departure like FR-012: neither canvas relates its
   > gunsight plate to the mount its ledger has open (`design/canvas-contract.md`, review note 17).
@@ -174,7 +176,11 @@ because it is why the first implementation shipped a third of the canvas.
   four figures beneath the plate: where a mount sits is a property of the hull, and a span, a widest
   and a spread are all about a group of armed mounts.
 - The selected mount may be an empty hardpoint, and is marked as selected either way — that is the
-  state a Commander is in while they decide what to put in it.
+  state a Commander is in while they decide what to put in it. It stays visibly empty while it is
+  selected: whether a mount is armed is not what the selection ink says.
+- The target range reaches 5,000 m, past every maximum range the package publishes for a weapon on
+  this application's reference hull, so the track can be moved to the distance being asked about
+  rather than stopping short of it.
 
 ## Design Scope
 

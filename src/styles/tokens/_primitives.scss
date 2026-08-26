@@ -446,7 +446,15 @@
   // would put a ring past the top and bottom of its own plate. The earlier
   // drawing kept a `16 / 6` box level by dividing its vertical axis by a
   // narrower field; the revision squares the box instead, and this follows it.
-  --edsb-measure-gunsight-plate: 10.75rem;
+  //
+  // Drawn at `8rem` rather than the canvas's own `172px`, from 2026-08-26. The
+  // plate is decorative in full — every mark on it is a sentence beside it — and
+  // at the canvas's width it was the tallest thing in the offence panel, setting
+  // the whole convergence block's height on its own. Squareness is the property
+  // that matters, not the number of pixels: every mark is placed as a fraction
+  // of the plate rather than in pixels, so it is the same diagram at either
+  // size (`design/canvas-contract.md`, review note 18).
+  --edsb-measure-gunsight-plate: 8rem;
   --edsb-measure-shot-dot: 0.4375rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);

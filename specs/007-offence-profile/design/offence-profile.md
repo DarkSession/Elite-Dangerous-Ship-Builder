@@ -136,9 +136,12 @@ are fields no canvas ever drew.
   the frame's own margin**, where the revised script puts it; its sentence still states its true
   offset and angle at that range, exactly as at any other. The field of view is a property of the
   drawing and never widens to fit a build.
-- The target range is a range field over the canvas's own bounds — 100 m to 2,000 m, starting at
-  600 m — announcing the distance as a Commander reads it rather than as a bare number. It is the one
-  control this panel owns, and it sets nothing outside the panel.
+- The target range is a range field over 500 m to 5,000 m on a 100 m step, starting at 1,000 m,
+  announcing the distance as a Commander reads it rather than as a bare number. Those are the
+  maintainer's bounds rather than the canvas's own 100 m–2,000 m: a weapon on this application's
+  reference hull states a maximum range of 3,000 m, and a track that stopped short of it could not
+  be moved to the distance being asked about (`design/canvas-contract.md`, review note 18). It is
+  the one control this panel owns, and it sets nothing outside the panel.
 - Four facts under the plate: the lateral span, the vertical span, the apparent spread at the chosen
   range, and the widest mount by its place in the hull's hardpoint order. The two spans are distances
   between mounts and do not move with the range; the spread does. All four are about a group of
@@ -154,12 +157,16 @@ are fields no canvas ever drew.
   schematics already give an empty mount, and its own sentence beside the plate names it as empty.
   Neither canvas draws this; it is a sanctioned departure asked for by the maintainer
   (`design/canvas-contract.md`, review note 8, and `spec.md` FR-012).
-- **The mount the workspace has selected is ringed**, in the brightest amber the scale holds, around
-  whichever mark it is. A ring rather than a fourth fill: the fill already reports whether the mount
-  is armed and how its weapon is aimed, and a selection colour would overwrite a reading with a
-  state. The selection is feature 002's own `selectedSlotKey`, the same one the ledger row and the
-  hull schematics mark, so the three drawings of one hull cannot disagree about which mount is open.
-  Its sentence beside the plate names it as the selected mount (`spec.md` FR-013).
+- **The mount the workspace has selected takes the plate's other ink**, and a ring in the same one
+  around whichever mark it is. That ink is the one the canvas spends on a gimballed mount; the
+  fixed-against-aimed distinction is withdrawn from the drawing with it, because this plate has three
+  things to separate where the canvas had one, and how a weapon aims is the one of them its own
+  sentence was already carrying (`design/canvas-contract.md`, review note 17). Whether a mount is
+  armed stays with the fill against the outline rather than with the hue, so a selected empty
+  hardpoint is still visibly empty. The selection is feature 002's own `selectedSlotKey`, the same
+  one the ledger row and the hull schematics mark, so the three drawings of one hull cannot disagree
+  about which mount is open. Its sentence beside the plate names it as the selected mount
+  (`spec.md` FR-013).
 - The plate never mirrors. Its marks are placed physically, as the hull schematic's are: a gunsight
   is a view out of the cockpit, and a right-to-left interface does not move a ship's port hardpoint
   to starboard.
@@ -192,7 +199,8 @@ are fields no canvas ever drew.
 | Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                              |
 | A placed hull with nothing armed         | The plate with its axes, its rings and every mount drawn empty; none of the four facts |
 | A hardpoint with nothing fitted to it    | A hollow mark in the quiet ink, and a sentence naming it as empty                      |
-| The mount the workspace has selected     | A ring around whichever mark it is, and a sentence naming it as selected               |
+| The mount the workspace has selected     | The plate's other ink and a ring in it, and a sentence naming it as selected           |
+| An empty hardpoint that is also selected | Still hollow, in the selected ink: the hue says selected, the outline says empty       |
 | A shot outside the plate's field of view | Held at the frame's own margin, and stated at its true angle beside it                 |
 
 ## Status contribution

@@ -128,16 +128,19 @@ the block's heading line.
 
 A hardpoint the build has not filled is drawn too, hollow and in a quieter ink, and its sentence
 names it as empty rather than naming a weapon: where a mount sits is a property of the hull, and it
-is what a Commander choosing what to fit is asking about. The mount the workspace has selected —
-the same one the ledger row and the hull schematics mark — is ringed in the brightest amber, and its
-own sentence says it is the selected one. Selecting a different hardpoint in the ledger moves the
-ring. The plate itself is hidden from assistive technology, so every one of those distinctions is
-read from the sentences rather than from the ink.
+is what a Commander choosing what to fit is asking about. The mount the workspace has selected — the
+same one the ledger row and the hull schematics mark — takes the plate's other ink with a ring in it,
+and its own sentence says it is the selected one; a selected hardpoint with nothing on it is still
+hollow. Selecting a different hardpoint in the ledger moves the mark. How each weapon is aimed is in
+its sentence and is not drawn at all. The plate itself is hidden from assistive technology, so every
+one of those distinctions is read from the sentences rather than from the ink.
 
-Moving the `TARGET RANGE` control moves every shot and every sentence, leaves the two spans alone,
-and moves the apparent spread. A mount far enough off the axis is clamped to the frame's margin at a
-near range and keeps its sentence, which states its true offset; moving the target out brings its
-mark back inside the frame.
+The `TARGET RANGE` control runs from 500 m to 5,000 m on a 100 m step and opens at 1,000 m — past
+every maximum range the package publishes for a weapon on this hull, so it reaches the distance being
+asked about. Moving it moves every shot and every sentence, leaves the two spans alone, and moves the
+apparent spread. A mount far enough off the axis is clamped to the frame's margin at a near range and
+keeps its sentence, which states its true offset; moving the target out brings its mark back inside
+the frame.
 
 On a hull the gunsight catalogue does not carry, the block says so and draws no partial spread. On a
 hull it does carry but the build has armed nothing on, the plate is drawn with its axes, its rings

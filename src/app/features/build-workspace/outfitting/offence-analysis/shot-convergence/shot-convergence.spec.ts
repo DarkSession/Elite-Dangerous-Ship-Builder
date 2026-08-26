@@ -106,9 +106,14 @@ describe('ShotConvergence', () => {
     expect(element.querySelectorAll('.plate__dot--selected')).toHaveLength(1);
     expect(element.querySelectorAll('.plate__numeral--selected')).toHaveLength(1);
 
-    // Selection is added to the mark rather than replacing what it already
-    // says: the dot keeps the fill that reports how the weapon is aimed.
+    // Selection is a hue and a ring; whether the mount is armed stays with the
+    // fill against the outline, so a selected empty hardpoint is still empty.
     expect(element.querySelector('.plate__dot--selected')?.classList).toContain('plate__dot');
+
+    // And the plate draws no ink for how a weapon aims any more: the canvas's
+    // second hue is spent on selection here, and the mount is named in words.
+    expect(element.querySelector('.plate__dot--aimed')).toBeNull();
+    expect(element.querySelector('.plate__numeral--aimed')).toBeNull();
 
     // And it is a sentence, not a ring alone.
     const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
@@ -117,6 +122,34 @@ describe('ShotConvergence', () => {
     expect(stated).toContain(selected[0]?.statement);
     const unselected = component.shots().find((shot) => !shot.selected);
     expect(selected[0]?.statement).not.toBe(unselected?.statement);
+  });
+
+  it('leaves a selected hardpoint with nothing on it visibly empty', () => {
+    // The stock build leaves this hull's Huge mount empty, and the workspace
+    // opens on it. Selection is a hue and a ring; whether a mount is armed is
+    // the fill against the outline, so the two states have to be legible at
+    // once — a mark that filled itself in to say "selected" would be reporting
+    // a weapon that is not there.
+    const { component, element } = render({
+      build: populatedBuild(),
+      selectedSlot: 'HugeHardpoint1',
+    });
+
+    const selected = component.shots().filter((shot) => shot.selected);
+    expect(selected).toHaveLength(1);
+    expect(selected[0]?.armed).toBe(false);
+    expect(element.querySelectorAll('.plate__dot--empty.plate__dot--selected')).toHaveLength(1);
+    expect(
+      element.querySelectorAll('.plate__numeral--empty.plate__numeral--selected'),
+    ).toHaveLength(1);
+
+    // And the sentence is the empty-and-selected one, not either single state's.
+    const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
+      (entry.textContent ?? '').trim(),
+    );
+    expect(stated).toContain(selected[0]?.statement);
+    const otherEmpty = component.shots().find((shot) => !shot.armed && !shot.selected);
+    expect(selected[0]?.statement).not.toBe(otherEmpty?.statement);
   });
 
   it('marks nothing when the workspace has no hardpoint selected', () => {
@@ -223,8 +256,15 @@ describe('ShotConvergence', () => {
       // And every one of them still says what it actually does.
       expect(shot.statement).not.toBe('');
     }
-    // The clamp is reached rather than being a bound nothing touches.
-    expect(marks.some((shot) => at(shot.left) === 4 || at(shot.left) === 96)).toBe(true);
+    // The clamp is reached rather than being a bound nothing touches — on
+    // whichever axis reaches it first. This hull's mounts sit far below the
+    // cockpit and much less far to either side of it, so at the track's own
+    // shortest range it is the vertical axis that runs out of plate.
+    expect(
+      marks.some((shot) =>
+        [shot.left, shot.top].some((fraction) => at(fraction) === 4 || at(fraction) === 96),
+      ),
+    ).toBe(true);
   });
 
   it('offers the range as a real control, with its value announced', () => {

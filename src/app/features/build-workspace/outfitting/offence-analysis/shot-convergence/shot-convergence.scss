@@ -129,7 +129,7 @@
   translate: -50% -50%;
   inline-size: var(--edsb-layout-shot-dot);
   block-size: var(--edsb-layout-shot-dot);
-  background-color: var(--edsb-surface-mount-fixed);
+  background-color: var(--edsb-surface-mount-armed);
   border-radius: 50%;
   box-shadow: 0 0 0 var(--edsb-border-width-thick) var(--edsb-surface-sunken);
 }
@@ -145,32 +145,27 @@
   font-size: var(--edsb-text-size-node-mark);
   font-weight: var(--edsb-text-weight-control);
   line-height: var(--edsb-text-leading-flat);
-  color: var(--edsb-surface-mount-fixed);
+  color: var(--edsb-surface-mount-armed);
 }
 
-// An aimed mount, a fixed one, an empty one and the selected one, told apart at
-// a glance. Every one of the four is written out in the mark's own sentence
-// below; this only separates the marks.
-.plate__numeral--aimed {
-  color: var(--edsb-surface-mount-aimed);
-}
-
-.plate__dot--aimed {
-  background-color: var(--edsb-surface-mount-aimed);
-}
-
+// An armed mount, an empty one and the selected one, told apart at a glance.
+// Every one of the three is written out in the mark's own sentence below; this
+// only separates the marks.
+//
 // The empty mount's numeral is text, and takes a text ink. The mark beside it
 // takes `--edsb-surface-mount-empty`, which is a non-text ink at the 3:1 that
 // asks of it; a 7px numeral set in the same one would be text below the 4.5:1
-// floor. The hull schematics split an empty mount exactly this way — a quiet
-// outline with `--edsb-text-muted` on its number — so one mount reads the same
-// way in both drawings, which is what the token's own note claims.
+// floor. The number is the schematics' own `--edsb-text-muted`, so an empty
+// mount's numeral reads the same in both drawings. The outline is not theirs:
+// they draw it dashed in `--edsb-border-quiet`, which is a hairline beside a
+// 44px square, where here it is the whole of a 7px mark and has to carry 3:1 on
+// its own.
 .plate__numeral--empty {
   color: var(--edsb-text-muted);
 }
 
-// The numeral follows the ring, so the selected mount is one mark rather than a
-// ringed dot beside a numeral in somebody else's ink. It is set after the empty
+// The numeral follows the mark, so the selected mount is one mark rather than a
+// blue dot beside a numeral in somebody else's ink. It is set after the empty
 // rule so a selected empty hardpoint reads as selected, which is the state a
 // Commander is looking at while they decide what to put in it.
 .plate__numeral--selected {
@@ -193,18 +188,32 @@
   border: var(--edsb-border-width-hairline) solid var(--edsb-surface-mount-empty);
 }
 
-// The mount the workspace has selected: a ring around whichever dot it is,
-// outside the ground halo that already separates the dot from the plate.
+// The mount the workspace has selected: the plate's other ink, and a ring around
+// the mark in the same one, outside the ground halo that already separates the
+// dot from the plate.
 //
-// A ring and not a fourth fill. The fill reports whether the mount is armed and
-// how it is aimed, which a selection colour would overwrite — a mark that says
-// less the more it has to say. `outline` follows `border-radius`, so this is a
-// circle without a second element to draw it, and it is drawn outside the box
-// so it moves none of the marks around it.
+// The ink is what the canvas spends on a gimballed mount. It is spent here
+// instead because this plate has three things to separate and the canvas had
+// one, and because how a weapon aims is a fact about the weapon that its own
+// sentence carries, where "this is the mount you have open" is a fact about the
+// plate that nothing else on it could say. The ring is kept beside the ink so
+// the mark still stands out where a reader cannot tell the two hues apart —
+// `outline` follows `border-radius`, so it is a circle without a second element
+// to draw it, and it is drawn outside the box so it moves no mark around it.
 .plate__dot--selected {
   z-index: 4;
+  background-color: var(--edsb-surface-mount-selected);
   outline: var(--edsb-border-width-thick) solid var(--edsb-surface-mount-selected);
   outline-offset: var(--edsb-space-3xs);
+}
+
+// A selected hardpoint that has nothing on it stays hollow: whether a mount is
+// armed is what the fill against the outline says, and selection is a hue. A
+// mark that filled itself in to say "selected" would be reporting a weapon that
+// is not there.
+.plate__dot--empty.plate__dot--selected {
+  background-color: var(--edsb-surface-sunken);
+  border-color: var(--edsb-surface-mount-selected);
 }
 
 // The plate in words. Kept out of sight rather than out of the document: it is

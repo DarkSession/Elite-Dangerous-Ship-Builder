@@ -89,20 +89,20 @@ function asSentence(message: string, capture?: string): RegExp {
 }
 
 /**
- * How many hardpoints the hull has, counted off feature 002's ledger.
+ * The hull's hardpoints, in the ledger's own order.
  *
  * The ledger is the other place in the workspace that carries every mount, and
- * it is built from the package's own slot enumeration — so counting there and
+ * it is built from the package's own slot enumeration — so reading it and
  * comparing with the plate is two parts of the same page having to agree, which
- * is what this suite checks instead of writing the number down. Utility mounts
+ * is what this suite checks instead of writing the answer down. Utility mounts
  * are excluded by their own key: the game calls them `TinyHardpoint`, and the
  * gunsight places weapon hardpoints alone.
  */
-async function hardpointCount(page: Page): Promise<number> {
+async function hardpointKeys(page: Page): Promise<string[]> {
   const keys = await page
     .locator('[data-slot-key]')
     .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-slot-key') ?? ''));
-  return keys.filter((key) => /^(?:Huge|Large|Medium|Small)Hardpoint\d+$/u.test(key)).length;
+  return keys.filter((key) => /^(?:Huge|Large|Medium|Small)Hardpoint\d+$/u.test(key));
 }
 
 /**
@@ -788,7 +788,7 @@ test.describe('shot convergence', () => {
     const plate = block.locator('.plate');
     await expect(plate).toHaveAttribute('aria-hidden', 'true');
     const shots = block.locator('.shots__entry');
-    const mounts = await hardpointCount(page);
+    const mounts = (await hardpointKeys(page)).length;
     const armed = await page.locator('edsb-offence-analysis .weapon').count();
     expect(mounts).toBeGreaterThan(armed);
 
@@ -848,7 +848,7 @@ test.describe('shot convergence', () => {
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
     const slider = block.locator('input[type="range"]');
-    const mounts = await hardpointCount(page);
+    const mounts = (await hardpointKeys(page)).length;
 
     // The plate spans a fixed field of view, as the canvas fixes it, so the
     // nearer the target the wider a mount's shot subtends. Since the 2026-08-25
@@ -878,7 +878,7 @@ test.describe('shot convergence', () => {
     // And the clamp is doing work — a mount is standing on the margin itself.
     expect(near.some((dot) => edge(dot) <= margin + slack)).toBe(true);
 
-    await slider.fill('2000');
+    await slider.fill((await slider.getAttribute('max')) ?? '');
     await settled(page);
     const far = await dotPlacements(page);
     expect(far.every(inside)).toBe(true);
@@ -897,7 +897,7 @@ test.describe('shot convergence', () => {
     await openOffence(page);
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
-    const mounts = await hardpointCount(page);
+    const mounts = (await hardpointKeys(page)).length;
     const armed = await page.locator('edsb-offence-analysis .weapon').count();
 
     // The stock hull arms two of its hardpoints and leaves the rest empty. Where
@@ -925,12 +925,13 @@ test.describe('shot convergence', () => {
       asSentence(englishMessages['offence.convergence.shot']),
       asSentence(englishMessages['offence.convergence.shot.selected']),
     ];
-    // The empty sentences are tried first, and the order matters for one pair.
-    // The armed *selected* sentence is `Hardpoint …, …, …, the selected mount:`,
-    // whose two open placeholders swallow `empty, the selected mount` whole, so
-    // an empty mount that happens to be selected matches it too. The unselected
-    // pair does not overlap: the armed sentence needs two `, ` before its colon
-    // and the empty one carries only one.
+    // The empty sentences are tried first, and the order is necessary. Measured
+    // over the four English templates, the loose one is the armed *unselected*
+    // sentence: `Hardpoint .+, .+, .+: …` matches its own, the armed selected
+    // one, and the empty selected one too, because `empty, the selected mount`
+    // supplies the second `, ` it is looking for. The two empty patterns match
+    // only their own sentences, so classifying against them first is what keeps
+    // an empty mount out of the armed count.
     const isEmpty = (line: string): boolean => empty.some((pattern) => pattern.test(line));
     expect(stated.filter(isEmpty)).toHaveLength(mounts - armed);
     expect(
@@ -953,11 +954,19 @@ test.describe('shot convergence', () => {
     const first = await numeral.innerText();
 
     // Selecting a different hardpoint in the ledger moves the mark, because both
-    // are reading one selection rather than each keeping their own.
-    await page.locator('[data-slot-key="LargeHardpoint2"] .slot__select').first().click();
+    // are reading one selection rather than each keeping their own — and it
+    // moves it to *that* mount. The numeral is the mount's place in the hull's
+    // own hardpoint order, which is the order the ledger lists them in, so the
+    // ledger says which numeral the ring has to be beside without this suite
+    // writing the number down.
+    const slot = 'LargeHardpoint2';
+    const place = (await hardpointKeys(page)).indexOf(slot) + 1;
+    expect(place).toBeGreaterThan(0);
+    await page.locator(`[data-slot-key="${slot}"] .slot__select`).first().click();
     await settled(page);
     await expect(numeral).toHaveCount(1);
     expect(await numeral.innerText()).not.toBe(first);
+    expect(await numeral.innerText()).toBe(String(place));
 
     // A ring is a picture; the mark's own sentence is the reading. Exactly one
     // mark is stated as the selected mount, and it is the one the ring is drawn

@@ -276,8 +276,8 @@
 // floor would make whether this table overflows its block a property of how long
 // a translation happens to be — and a table wider than its block is the
 // horizontal scrolling this application does not do. With lengths the five
-// tracks cannot cost more than 155px + 4 × 40px + four gutters = 395px, well
-// inside the 496px the container query already guarantees. Keeping the table
+// tracks cannot cost more than 155px + 4 × 40px + four 10px gutters = 355px,
+// well inside the 496px the container query already guarantees. Keeping the table
 // inside the block is that query's job; this floor only decides how narrow a
 // column may get within it.
 @container weapons (min-width: 31rem) {

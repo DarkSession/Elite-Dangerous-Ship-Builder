@@ -20,9 +20,11 @@ import { RangeField } from '../../../../../ui/components/range-field/range-field
  * withdrew both, and it is placed clear of the neighbouring dots instead.
  *
  * Every hardpoint gets one, armed or not. What each mark carries — whether a
- * weapon is on it, how that weapon is aimed, and whether it is the mount the
- * workspace currently has selected — is drawn as three inks and written out in
- * the mark's own sentence, because a colour is not a reading (011 FR-022).
+ * weapon is on it, and whether it is the mount the workspace currently has
+ * selected — is drawn as three inks and written out in the mark's own sentence,
+ * because a colour is not a reading (011 FR-022). How the weapon aims is in that
+ * sentence and nowhere else: the canvas's own second ink is spent on selection
+ * here (`design/canvas-contract.md`, review note 17).
  */
 export interface ShotView {
   readonly id: string;
@@ -43,24 +45,13 @@ export interface ShotView {
    */
   readonly armed: boolean;
   /**
-   * Whether the mount is gimballed — the canvas's second dot colour.
-   *
-   * Gimballed against everything else, which is the one distinction the plate's
-   * two inks draw: `wireConvergence` colours a mark by `mount === 'GIMBALLED'`
-   * and nothing finer, so a turret takes the fixed ink here as it would there.
-   * Which mount it actually is, turret included, is in the shot's own sentence,
-   * where a reader who is not looking at the diagram can find it.
-   */
-  readonly gimballed: boolean;
-  /**
    * Whether this is the mount the outfitting workspace currently has selected.
    *
    * The same selection the hull schematics mark and the ledger row carries, so
    * a Commander working on one hardpoint can see which mark on the plate is
-   * theirs. It is drawn as a ring around the dot rather than as a fourth fill,
-   * because the fill already reports whether the mount is armed and how it is
-   * aimed, and a state that overwrote another state would be a mark that says
-   * less the more it has to say.
+   * theirs. It takes the plate's other ink and a ring in the same one; whether
+   * the mount is armed stays with the fill against the outline, so a selected
+   * empty hardpoint is still visibly empty.
    */
   readonly selected: boolean;
   /** The whole mark in words, for a reader who is not looking at the diagram. */
@@ -110,12 +101,14 @@ const NUMERAL_OFFSETS: readonly (readonly [number, number])[] = [
  * The four offsets above are pixels and the dots are fractions of the plate, so
  * choosing between them means fixing the size the plate is being drawn at.
  * `wireConvergence` reads its own (`dots.offsetWidth || 173`) against the 172px
- * plate canvas 1c draws; this is that plate. Reading the built plate's real
+ * plate canvas 1c draws; this is the `8rem` plate this application draws in its
+ * place, and it has to be kept in step with `--edsb-measure-gunsight-plate`.
+ * Reading the built plate's real
  * width instead would mean measuring the DOM to place a numeral, and a numeral
  * carries no reading — every mark on this plate is stated in words beside it,
  * so which corner it takes changes nothing a Commander is told (FR-011).
  */
-const PLATE_REFERENCE_WIDTH = 172;
+const PLATE_REFERENCE_WIDTH = 128;
 
 /** The numeral's own ink box, which the canvas offsets from its top-left corner. */
 const NUMERAL_ANCHOR_LEFT = 3;
@@ -195,9 +188,10 @@ export class ShotConvergence {
    *
    * The plate is decorative: every mark on it is also stated in words below,
    * because a dot and a numeral are a picture, and a picture is not a reading
-   * (011 FR-022). That is what carries the three things the inks separate —
-   * armed against empty, fixed against aimed, and the selected mount against
-   * the rest — none of which may rest on a colour alone. Since the 2026-08-25
+   * (011 FR-022). That is what carries the two things the inks separate — armed
+   * against empty, and the selected mount against the rest — neither of which
+   * may rest on a colour alone, and it is the only place how a weapon aims is
+   * said at all. Since the 2026-08-25
    * canvas revision a shot outside the plate's field of view is held at the
    * frame's own margin rather than clipped out of it, so a moved dot is exactly
    * the case where its sentence — which carries the offset and the angle it
@@ -235,7 +229,6 @@ export class ShotConvergence {
         numeralLeft: numeral[0],
         numeralTop: numeral[1],
         armed: weapon !== null,
-        gimballed: weapon?.mount === 'Gimballed',
         selected,
         // Four whole sentences rather than one with a state appended to it.
         // Which weapon, whether the mount is empty and whether it is the
@@ -381,10 +374,11 @@ export class ShotConvergence {
    * How the weapon is aimed, in a word.
    *
    * The canvas draws a fixed mount and an aimed one in different colours and
-   * says nothing else about either. A colour is not a reading, so the word goes
-   * into the shot's own sentence and the colour is left as the reinforcement it
-   * is (011 FR-022). An unrecorded mount is named as unstated rather than
-   * guessed from the module's symbol.
+   * says nothing else about either. This plate spends that second ink on the
+   * selected mount instead, so the word here is not a reinforcement of a colour
+   * but the only place the mount is stated — which is where it belonged
+   * anyway, a colour never having been a reading (011 FR-022). An unrecorded
+   * mount is named as unstated rather than guessed from the module's symbol.
    */
   #mountName(mount: ModuleMount | null): string {
     switch (mount) {

@@ -109,27 +109,31 @@
   --edsb-surface-damage-absolute: var(--edsb-palette-cool);
   --edsb-surface-damage-unclassified: var(--edsb-palette-amber-a40);
 
-  // The gunsight's own inks. A fixed mount and an aimed one are the canvas's own
-  // two; the empty mount and the selected one are this application's, and they
-  // answer two questions the canvas's sample build never had to — the plate
-  // carries every hardpoint the hull has, and the workspace has one of them
-  // selected while a Commander works on it.
+  // The gunsight's three inks: a mount with a weapon on it, a mount with none,
+  // and the mount the workspace has selected.
   //
-  // Empty is a mark ink and not a text one: the hull schematics draw an empty
-  // mount as a quiet outline with `--edsb-text-muted` on its number, and the
-  // plate splits it the same way, so one mount reads alike in both drawings and
-  // the numeral stays above the text contrast floor. Selected takes the brightest
-  // amber rather than the accent the schematics fill a selected mark with: the
-  // plate's fill already reports whether a mount is armed and how it is aimed,
-  // so selection is drawn as a ring *around* that fill and needs an ink that
-  // stands apart from the fixed one it will most often be drawn around.
+  // The canvas's own two are a *fixed* mount against an aimed one, coloured by
+  // `mount === 'GIMBALLED'` and nothing finer. That distinction is withdrawn
+  // here (`design/canvas-contract.md`, review note 17): a plate that also has to
+  // say which mounts are empty and which one is being worked on has three things
+  // to separate where the canvas had one, and how a weapon aims is the one of
+  // them a reader has least use for on a diagram about where shots land. It is
+  // named in that mount's own sentence either way. What the cool ink says
+  // instead is *selected*, which is the question a Commander is asking of this
+  // plate while they fit something.
+  //
+  // Empty is a mark ink and not a text one. The hull schematics split an empty
+  // mount the same way — a quiet outline with `--edsb-text-muted` on its
+  // number — and the plate takes their text ink exactly, so an empty mount's
+  // numeral reads alike in both drawings and stays above the text contrast
+  // floor. The outline is a heavier ink than theirs, because on the plate it is
+  // the whole of a 7px mark rather than a hairline beside a 44px square.
   //
   // The word is in each mark's own sentence beside the plate; these only tell
-  // four dots apart at a glance.
-  --edsb-surface-mount-fixed: var(--edsb-palette-amber);
-  --edsb-surface-mount-aimed: var(--edsb-palette-cool);
+  // three dots apart at a glance.
+  --edsb-surface-mount-armed: var(--edsb-palette-amber);
   --edsb-surface-mount-empty: var(--edsb-palette-ink-a45);
-  --edsb-surface-mount-selected: var(--edsb-palette-amber-3);
+  --edsb-surface-mount-selected: var(--edsb-palette-cool);
 
   // ---------------------------------------------------------------------------
   // Text — every role at or above 4.5:1 on all nine grounds
