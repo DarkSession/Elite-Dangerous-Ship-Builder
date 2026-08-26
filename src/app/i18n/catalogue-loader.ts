@@ -4,6 +4,7 @@ import {
   BUNDLED_ENGLISH,
   FALLBACK_LOCALE,
   MESSAGE_KEYS,
+  PLACEHOLDER,
   type LocaleCandidate,
   type MessageCatalogue,
   type ShippedLocale,
@@ -40,7 +41,7 @@ export interface CatalogueValidation {
 /** The interpolation variables a message pattern declares, in a stable order. */
 export function interpolationVariables(pattern: string): readonly string[] {
   const found = new Set<string>();
-  for (const match of pattern.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)) {
+  for (const match of pattern.matchAll(PLACEHOLDER)) {
     const name = match[1];
     if (name !== undefined) {
       found.add(name);

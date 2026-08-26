@@ -11,7 +11,7 @@ import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../announcements/announcement.service';
 import { StatusNotice, type StatusTone } from '../components/status/status-notice';
 import type { MessageKey } from '../../i18n/locale-registry';
-import type { MessageParams } from '../../i18n/message.service';
+import type { MessageParams } from '../../i18n/locale-registry';
 
 /** One line of a notice: an application message and its scalar parameters. */
 export interface NoticeLine {

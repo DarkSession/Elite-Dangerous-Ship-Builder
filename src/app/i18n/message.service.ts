@@ -1,16 +1,7 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { resolveDocumentTitle } from './document-title';
 import { LocaleStore } from './locale.store';
-import { interpolate, type MessageKey } from './locale-registry';
-
-/**
- * Interpolation parameters for a message.
- *
- * Values are language-neutral: a caller passes a number, not a formatted one,
- * and a formatted value only after the formatter registry has produced it for
- * the active locale. Nothing here may be a preformatted `en-US` string.
- */
-export type MessageParams = Readonly<Record<string, string | number>>;
+import { interpolate, type MessageKey, type MessageParams } from './locale-registry';
 
 /**
  * The application's only source of owned display text.
@@ -44,7 +35,7 @@ export class MessageService {
    * the key, a blank string or a placeholder (localization contract, "Message
    * resolution").
    */
-  message(key: MessageKey, params?: MessageParams): string {
+  message(key: MessageKey, params: MessageParams = {}): string {
     const catalogue = this.#store.catalogue();
     const value = catalogue[key];
 
@@ -52,10 +43,9 @@ export class MessageService {
       return catalogue['message.unavailable'];
     }
 
-    if (params === undefined) {
-      return value;
-    }
-
+    // Interpolated even with no parameters. A caller that forgets them is an
+    // application defect, and the Commander's half of it must not be a screen
+    // reading `{{count}}` (localization contract, "Message resolution").
     return interpolate(value, params);
   }
 
@@ -76,7 +66,7 @@ export class MessageService {
    * Prefer this in a component so the text re-resolves when a locale commits,
    * rather than being read once at construction.
    */
-  messageSignal(key: MessageKey, params?: MessageParams) {
+  messageSignal(key: MessageKey, params: MessageParams = {}) {
     return computed(() => this.message(key, params));
   }
 }
