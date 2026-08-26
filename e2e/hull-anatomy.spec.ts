@@ -405,6 +405,62 @@ test.describe('targets and accessibility', () => {
     ).toBeGreaterThan(0);
   });
 
+  test('keeps a mark from disappearing under its neighbour at doubled text', async ({ page }) => {
+    // Before the first navigation: the scale is applied through an init script,
+    // and a scale applied after `goto` never reaches the page at all.
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+    await settled(page);
+
+    // The regression this exists for, and the limit of what it can promise.
+    //
+    // Separation used to be a fixed share of the plate, but a mark is
+    // `clamp(0.875rem, 3.06cqw, 1.375rem)` — its floor is an absolute length,
+    // so at doubled text a mark keeps its pixels while the plate loses them and
+    // its share of the frame grows. A constant therefore believed marks were
+    // further apart than they were drawn. The plate measures both now.
+    //
+    // What that cannot buy is full separation at every size: at 200% text on a
+    // phone the Anaconda's underside is eight 28px marks on a 228px plate, and
+    // no arrangement that keeps a mark near its own mount separates them all.
+    // What it does buy is that no mark is *lost* — every square keeps more than
+    // half of itself uncovered, so its number can be read and its own edge
+    // found (design/hull-anatomy.md, "Marks that would touch").
+    const sides = page.locator('edsb-hull-anatomy .anatomy__sides button');
+    const selectable = await sides.first().isVisible();
+
+    for (const [index, side] of ['top', 'bottom'].entries()) {
+      if (selectable) {
+        await sides.nth(index).click();
+        await settled(page);
+      }
+
+      const buried = await page
+        .locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__mount`)
+        .evaluateAll((nodes) => {
+          const boxes = nodes
+            .map((node) => node.getBoundingClientRect())
+            .filter((box) => box.width > 0);
+          let pairs = 0;
+          for (let i = 0; i < boxes.length; i += 1) {
+            for (let j = i + 1; j < boxes.length; j += 1) {
+              const a = boxes[i];
+              const b = boxes[j];
+              const uncovered =
+                Math.abs(a.left - b.left) >= a.width / 2 || Math.abs(a.top - b.top) >= a.height / 2;
+              if (!uncovered) {
+                pairs += 1;
+              }
+            }
+          }
+          return pairs;
+        });
+
+      expect(buried, `${side} plate at ${DOUBLED_TEXT}% text`).toBe(0);
+    }
+  });
+
   test('draws a selected utility in the utility hue, not the hardpoint one', async ({ page }) => {
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();

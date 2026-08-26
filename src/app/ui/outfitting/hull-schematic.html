@@ -19,7 +19,7 @@
     arriving late moves nothing on the page. It is also the positioning
     container for the marks, and its own container query is what scales them.
   -->
-  <div class="schematic__frame">
+  <div class="schematic__frame" #plateFrame>
     @if (showsDrawing()) {
       <!--
         The hull, turned a quarter turn and centred in the plate. `viewBox` and
@@ -109,6 +109,7 @@
           the same four facts the treatment draws and the name says.
         -->
         <button
+          #plateMark
           class="schematic__mount"
           type="button"
           [style.left.%]="mark.left"

@@ -176,13 +176,17 @@ interface MarkPlacement {
 Where one mount's numbered square is drawn, in the plate frame's own units. `anchor` is the
 occurrence's own centre turned with the hull and centred in the frame — the position the package
 published, and the position the plate is still stating. `mark` is where the square goes: the anchor,
-unless drawing it there would touch a square already placed, in which case it takes one deterministic
-step outward and `displaced` is true, and the plate draws a hairline from the mark to the anchor.
+unless drawing it there would touch a square already placed, in which case `displaced` is true, the
+square takes a deterministic step — outward from the middle of the plate where there is room, inward
+or sideways where there is not — and the plate draws a hairline from the mark back to the anchor.
 
-Every number is arithmetic over the coordinates the package published and the frame those
-coordinates were laid into; nothing is read off the rendered document (FR-003), and separation is a
-fraction of the frame rather than a pixel count, so one hull is one arrangement at every plate size
-(FR-012; design/hull-anatomy.md, "Marks that would touch").
+Every coordinate is the package's own or arithmetic over it; nothing about where a mount _is_ comes
+from the rendered document (FR-003). The one measured input is how far apart two marks must be, which
+is how wide the plate drew a mark plus a hairline: a mark's size has an absolute floor, so its share
+of the plate is not constant and cannot be assumed. That distance is a ceiling rather than a promise
+— asking for more room than a plate has produces a _tighter_ arrangement, so the search retreats
+until it finds the one that separated its marks best (FR-012; design/hull-anatomy.md, "Marks that
+would touch").
 
 ## AnatomyProjection
 

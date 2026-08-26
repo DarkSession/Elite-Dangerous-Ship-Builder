@@ -2,20 +2,25 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
+  viewChild,
+  viewChildren,
 } from '@angular/core';
 import type {
   MountOccurrence,
   SchematicSide,
   SideAssetState,
 } from '../../domain/anatomy/anatomy-model';
-import { placeMarks, type PlatePoint } from '../../domain/anatomy/mount-declutter';
+import { MARK_SEPARATION, placeMarks, type PlatePoint } from '../../domain/anatomy/mount-declutter';
 import { hullSchematicImagePath } from '../../platform/assets/hull-artwork-path';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
+import { ElementSizeAdapter, type ElementSize } from '../../platform/browser/element-size.adapter';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 import { ActionButton } from '../components/action/action-button';
@@ -41,6 +46,25 @@ export interface HullSchematicView {
  * `background-size: contain` puts it there.
  */
 const PLATE_RATIO = 720 / 292;
+
+/**
+ * How much room a mark asks for, as a multiple of its own width.
+ *
+ * A hairline of air, so two marks that clear it read as two marks rather than
+ * as one shape with a seam down it.
+ */
+const MARK_AIR = 1.15;
+
+/**
+ * The most of a plate one mark may claim before the plate stops decluttering.
+ *
+ * A guard, not a design decision. Past a fifth of the frame per mark the plate
+ * is so small — or the text so large — that no arrangement separates anything,
+ * and a separation that kept growing would fling every mark to the frame's edge
+ * and leave the hull covered in leaders. At that point the honest answer is the
+ * overlap and the front-on-hover rule, which is what falling back to this does.
+ */
+const MAX_SEPARATION = 0.2;
 
 /** One mount, and where its numbered square is drawn on the plate. */
 export interface PlateMark {
@@ -96,8 +120,11 @@ interface SchematicPlacement {
  *     does not tint the hull's own artwork — it sets a small square carrying
  *     the mount's node number over the hull at that mount's position. So the
  *     package's shapes stay inert in the artwork, and each occurrence becomes a
- *     named button positioned from the annotation's own centre, in the same
- *     four treatments the canvas draws and the legend explains.
+ *     named button anchored to the annotation's own centre, in the same four
+ *     treatments the canvas draws and the legend explains. Where the hull draws
+ *     two mounts closer together than a mark is wide, the square steps aside
+ *     and a hairline ties it back to its anchor; the anchor is what the package
+ *     published and it never moves.
  *
  * The whole document is always in view: the frame takes the hull's proportions
  * and the drawing fits itself into it, so nothing pans, zooms or scrolls.
@@ -251,16 +278,6 @@ export class HullSchematic {
     this.#failedSource.set(this.artworkSource());
   }
 
-  constructor() {
-    // The other half of the store's own `online` rule, for the half of a side
-    // the store cannot see. A picture that 404'd while offline is the uncached
-    // side's case exactly, and it says the same words — so it has to come back
-    // the same way, by itself, rather than waiting for a press the wording
-    // never asks for.
-    const stop = inject(ConnectivityAdapter).onOnline(() => this.#failedSource.set(null));
-    inject(DestroyRef).onDestroy(stop);
-  }
-
   /**
    * Ask for the side again.
    *
@@ -322,6 +339,88 @@ export class HullSchematic {
     };
   }
 
+  readonly #sizes = inject(ElementSizeAdapter);
+
+  /**
+   * The plate's own box, and one mark's, as the stylesheet actually drew them.
+   *
+   * TypeScript `private` rather than the `#` this file uses everywhere else:
+   * Angular refuses `viewChild` on an ES private field (NG1053), because it has
+   * to reach the member from generated code.
+   */
+  private readonly frameRef = viewChild<ElementRef<HTMLElement>>('plateFrame');
+  private readonly markRefs = viewChildren<ElementRef<HTMLElement>>('plateMark');
+
+  readonly #frameSize = signal<ElementSize>({ width: 0, height: 0 });
+  readonly #markSize = signal<ElementSize>({ width: 0, height: 0 });
+
+  /**
+   * How far apart two marks must be on *this* plate, as a share of its frame.
+   *
+   * The mark is `clamp(0.875rem, 3.06cqw, 1.375rem)`, so its share of the plate
+   * is not a constant: below about 457 CSS pixels of plate it stops shrinking
+   * and starts claiming more of the frame as the frame narrows, and enlarged
+   * text raises that threshold in proportion. A fixed fraction was the first
+   * attempt, and it silently separated nothing at 320-pixel reflow or 200% text
+   * — both of which this project requires — because it believed marks were
+   * further apart than they were drawn.
+   *
+   * So the plate measures what the stylesheet did: how wide its frame came out
+   * and how wide a mark came out on it. Neither is a fact about the hull, and no
+   * mount position is read through them — the anchors are still the package's
+   * own coordinates (FR-003; design/hull-anatomy.md, "Marks that would touch").
+   *
+   * Falls back to the module's own constant until the first measurement lands,
+   * so a plate's first frame is decluttered rather than stacked.
+   */
+  readonly #separation = computed(() => {
+    const plate = this.#frameSize().width;
+    const mark = this.#markSize().width;
+    if (plate <= 0 || mark <= 0) {
+      return MARK_SEPARATION;
+    }
+    return Math.min(MAX_SEPARATION, (mark * MARK_AIR) / plate);
+  });
+
+  constructor() {
+    // Re-observed rather than observed once: the frame exists only while a
+    // drawing does, and the mark list is rebuilt whenever the side or the build
+    // changes, so both references come and go.
+    this.#watch(() => this.frameRef(), this.#frameSize);
+    this.#watch(() => this.markRefs().at(0), this.#markSize);
+
+    // The other half of the store's own `online` rule, for the half of a side
+    // the store cannot see. A picture that 404'd while offline is the uncached
+    // side's case exactly, and it says the same words — so it has to come back
+    // the same way, by itself, rather than waiting for a press the wording
+    // never asks for.
+    const stop = inject(ConnectivityAdapter).onOnline(() => this.#failedSource.set(null));
+    inject(DestroyRef).onDestroy(stop);
+  }
+
+  /**
+   * Keeps `into` reporting the size of whichever element `of` currently names.
+   *
+   * The effect depends on the element reference and on nothing else — in
+   * particular it never reads `into`, which is what keeps a resize from
+   * re-entering it and rebuilding the observer it was reporting through. An
+   * earlier version did exactly that, and every plate reported a zero-width
+   * frame from its first resize onward.
+   */
+  #watch(
+    of: () => ElementRef<HTMLElement> | undefined,
+    into: ReturnType<typeof signal<ElementSize>>,
+  ): void {
+    effect((onCleanup) => {
+      const element = of()?.nativeElement;
+      if (element === undefined) {
+        into.set({ width: 0, height: 0 });
+        return;
+      }
+      onCleanup(this.#sizes.observe(element, (size) => into.set(size)));
+    });
+  }
+
   /**
    * Every mark's drawn position, and the leaders back to the mounts that moved.
    *
@@ -356,6 +455,7 @@ export class HullSchematic {
       const placements = placeMarks(
         occurrences.map((occurrence) => this.#anchorOf(laid, occurrence.centre)),
         { width: laid.frameWidth, height: laid.frameHeight },
+        this.#separation(),
       );
 
       const marks = occurrences.map((occurrence, index) => ({

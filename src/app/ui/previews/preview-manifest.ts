@@ -3656,9 +3656,9 @@ registerPreview({
             mountOccurrence('SmallHardpoint2', 'hardpoint', true, false, 2, { x: 680, y: 300 }),
             mountOccurrence('MediumHardpoint1', 'hardpoint', false, false, 3, { x: 520, y: 520 }),
             mountOccurrence('TinyHardpoint1', 'utility', true, false, 1, { x: 680, y: 520 }),
-            // Twenty units from the mount above it, which is closer than a mark
-            // is wide: the Almanac's own case, where a utility sits inside a
-            // hardpoint's footprint. This mark steps aside and draws a leader
+            // Twenty units from `MediumHardpoint1`, which is closer than a
+            // mark is wide: the Almanac's own case, where a utility sits inside
+            // a hardpoint's footprint. This mark steps aside and draws a leader
             // back to the point the package published.
             mountOccurrence('TinyHardpoint2', 'utility', true, false, 2, { x: 500, y: 520 }),
           ],

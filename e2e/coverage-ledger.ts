@@ -954,7 +954,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'every mount names its slot, kind, side, fitted state and engineering in words',
       'a utility is presented as a utility, never as a hardpoint',
-      'a selected utility keeps the utility hue: the fill says selected, the hue says which kind',
+      'a selected utility fills differently from a selected hardpoint: the fill says selected, the hue says which kind',
       'a mount drawn on both sides is one build identity in one state',
       'the legend is the five entries the reference draws, and only those',
       'no state is carried by colour, dash, fill or position alone',
@@ -1001,6 +1001,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'every mount is activated on its own from the keyboard, at every layout profile',
       'a mark that would touch its neighbour steps aside and is tied back to its own mount by a leader',
+      'no mark loses more than half of itself under a neighbour, at doubled text, on either plate',
       'the mark being worked with is raised above the ones it overlaps, so package geometry never moves',
       'every drawn mount has a full-baseline equivalent in the ledger, which is what SC 2.5.8’s Equivalent exception requires',
       'the capability publishes no provenance control of its own; help owns it',

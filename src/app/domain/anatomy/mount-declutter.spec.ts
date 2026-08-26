@@ -99,9 +99,11 @@ describe('placeMarks', () => {
   });
 
   it('scales its answer with the frame rather than with a pixel count', () => {
-    // The same hull, drawn into a frame ten times the size. Marks that stepped
-    // aside step aside by the same share of the plate, so the arrangement a
-    // Commander sees does not change when the window does.
+    // The same hull in a frame ten times the size, at the same separation
+    // fraction, is the same arrangement scaled — the frame's units are the
+    // package's, so nothing here depends on how many pixels a plate got. What
+    // *does* move a mark between two plate sizes is the caller measuring a
+    // different separation, which the case below covers.
     const anchors = [
       { x: 300, y: 150 },
       { x: 303, y: 150 },
@@ -154,6 +156,57 @@ describe('placeMarks', () => {
         expect(one.mark).toEqual(one.anchor);
       }
     }
+  });
+
+  it('never parks a displaced mark on a different mount’s published position', () => {
+    // The failure this rules out: mark A steps onto mount B's own position, so a
+    // reader sees a numbered square exactly where B is, carrying A's number,
+    // while A's leader runs off somewhere else. The candidate has to clear every
+    // other mount's anchor, not just the marks already placed.
+    const anchors = [
+      { x: 300, y: 150 },
+      { x: 305, y: 150 },
+      // Where the second mark would otherwise have been pushed.
+      { x: 305 - GAP, y: 150 + GAP },
+    ];
+
+    const placed = placeMarks(anchors, FRAME);
+
+    for (const one of placed) {
+      if (!one.displaced) {
+        continue;
+      }
+      for (const anchor of anchors) {
+        if (anchor === one.anchor) {
+          continue;
+        }
+        expect(apart(one.mark, anchor)).toBeGreaterThanOrEqual(GAP - SLACK);
+      }
+    }
+  });
+
+  it('gives up the anchor rule rather than leaving a mark stacked', () => {
+    // Twelve mounts on one point: nothing can clear every foreign anchor, so the
+    // second pass drops that requirement rather than refusing to move at all.
+    const anchors = Array.from({ length: 12 }, () => ({ x: 360, y: 146 }));
+
+    const placed = placeMarks(anchors, FRAME);
+
+    expect(placed.filter((one) => one.displaced).length).toBeGreaterThan(0);
+  });
+
+  it('takes the separation it is given rather than one of its own', () => {
+    // The mark's own floor is an absolute length, so its share of the plate
+    // grows as the plate narrows or the text grows. The caller measures both and
+    // passes the real fraction; a pair clear at one separation can be touching
+    // at another.
+    const anchors = [
+      { x: 300, y: 150 },
+      { x: 340, y: 150 },
+    ];
+
+    expect(placeMarks(anchors, FRAME, 0.03).map((one) => one.displaced)).toEqual([false, false]);
+    expect(placeMarks(anchors, FRAME, 0.12).map((one) => one.displaced)).toEqual([false, true]);
   });
 
   it('returns one placement per mount, in the order it was handed them', () => {

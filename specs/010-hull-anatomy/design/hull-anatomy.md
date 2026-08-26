@@ -104,13 +104,18 @@ plate holds its whole document at its own ratio at every width.
 - The drawing's own ink is a near-black navy on a near-black plate, so the schematic takes its own
   filter: an additive lift rather than a multiplied brightness, which raises the structure to a
   legible step without blowing the package's seven bright feature hues out to white. **The filter is
-  declared on an ordinary box around the drawing, not on a group inside it.** A CSS filter function
-  on an SVG container element is not applied by every engine — WebKit on iPadOS leaves it off, and
-  what a Commander then sees is the package's own ink, a hull drawn in that navy over the seven
-  bright hues of its feature panels. Reported as "on iPad OS the hulls are blue", and it was exactly
-  that: the drawing arriving unfiltered. On a plain box every engine applies it, and the marks and
-  the leaders stay outside that box, where they keep the interface's own colours rather than being
-  pushed through a lift meant for package ink.
+  declared on an ordinary box around the drawing, not on a group inside it**, and the reason is a
+  defect this repository cannot reproduce. The symptom reported was "on iPad OS the hulls are blue";
+  unfiltered, the package's own ink is exactly that — a hull drawn in near-black navy over seven
+  bright feature hues — so the drawing arriving unfiltered is the likely cause, and the likely reason
+  for that is a CSS filter _function_ on an SVG container element, which WebKit is understood not to
+  apply. **None of that was verified here.** Constitution principle VIII fixes the engine matrix at
+  Chromium and Firefox, both of which apply the filter in either position, so the change is a no-op
+  in every test this project runs and no automated test covers the engine the defect was in.
+  Declaring it on a plain box removes the engine-dependent case rather than working around it; the
+  marks and the leaders stay outside that box, where they keep the interface's own colours rather
+  than being pushed through a lift meant for package ink. Confirming the fix is a manual check on the
+  device, and until someone runs it this is a plausible diagnosis and not a closed defect.
 - A side that has not arrived carries the hull illustration's own loading mark, in the place the
   drawing will be, with the words spoken rather than drawn. Prose in the frame and a hull after it is
   a plate that changes height when the fetch lands.
@@ -121,8 +126,9 @@ plate holds its whole document at its own ratio at every width.
 ## Legend and visual language
 
 The legend is the reference's, entry for entry: `SELECTED`, `FITTED`, `EMPTY`, `UTILITY`,
-`ENGINEERED`. Each entry draws the same treatment the mounts it explains draw, and uses the same
-localized words as their accessible names.
+`ENGINEERED`, and uses the same localized words as the mounts' accessible names. Each entry draws the
+treatment the mounts it explains draw, with one deliberate exception recorded below: `SELECTED` draws
+the accent fill a selected hardpoint takes, and a selected utility fills in the cool hue instead.
 
 The reference's node treatments are the mark's, not the package's own shapes: a fitted mount takes
 the accent hairline, an empty one the dashed neutral hairline, a utility one the informational hue
@@ -133,11 +139,13 @@ The fill and the hue compose rather than one replacing the other: **the fill say
 hue says _which kind_**, so a selected hardpoint is a filled amber square and a selected utility a
 filled cool one. The canvas's `data-kind="sel"` is one treatment because the canvas selects a
 hardpoint in it; a utility that went amber on selection would be the one place on the plate where
-the kind of a mount stopped being legible, and the kind is what the legend gives its fourth entry
-to. The legend's `SELECTED` swatch stays amber — it explains the fill, and the entry beside it
-explains the hue. The icon
-needs no measurement: it is placed against the mark, which the plate positions, and never against
-the package's drawing, which nothing measures (FR-003).
+the kind of a mount stopped being legible, and the kind is what the legend gives its `UTILITY` entry
+to. The legend's `SELECTED` swatch stays amber: it explains the fill, and the `UTILITY` entry
+explains the hue. Neither distinction rests on colour — a mount's kind is a word in its accessible
+name and its selection is `aria-pressed` and the marked ledger row.
+
+The engineering icon needs no measurement: it is placed against the mark, which the plate positions,
+and never against the package's drawing, which nothing measures (FR-003).
 
 No colour, fill, stroke, dash, opacity, shape or animation carries meaning alone: every occurrence's
 accessible name states its node number, its kind, its side, its fitted state and its engineering
@@ -313,13 +321,22 @@ geometry:
   plate's own frame, in `src/app/domain/anatomy/mount-declutter.ts` — the same kind of arithmetic
   that turns the hull and centres it in the frame. There is no `getBBox`, no `getScreenCTM` and no
   read off anything rendered (FR-003).
-- **The arrangement does not depend on the plate's size.** Separation is a fraction of the frame, not
-  a pixel count, and it is set at the widest share a mark ever takes: `clamp(0.875rem, 3.06cqw,
-1.375rem)` is 3.06% of a wide plate and about 4.7% of the ~300px frame a phone in portrait gives
-  it. So one hull is one arrangement at every width, and marks do not slide around under a finger as
-  a window is resized. The floating-point tolerance in that module exists for the same reason: a
-  candidate placed at exactly one separation must not be admitted on one frame size and refused on
-  another because the rounding fell differently.
+- **The plate measures how big its own marks came out, and nothing else.** This is the part that was
+  got wrong first and is worth stating carefully. The mark is `clamp(0.875rem, 3.06cqw, 1.375rem)`:
+  its middle term is a share of the plate, but its floor is an absolute length, so once a plate is
+  narrower than about 457 CSS pixels the mark stops shrinking and its share of the frame _grows_ as
+  the frame narrows — without bound, and faster still at enlarged text. The first implementation used
+  a fixed 5.5% of the frame and was documented as "the widest share a mark ever takes", which is not
+  a thing that exists. Below about 255 pixels of plate, or at 200% text, it believed marks were
+  further apart than they were drawn and separated nothing at all — at 320-pixel reflow and doubled
+  text, which are both requirements. So the plate now measures its frame and one mark through
+  `ElementSizeAdapter` and passes the real fraction in. Those are CSS facts about this application's
+  own boxes, not facts about the hull: no mount position is read through them, and the anchors are
+  still the package's own coordinates. The cost is that one hull is no longer one arrangement — a
+  plate that crosses a size threshold re-settles its marks — and that is the trade, because marks
+  that hold still and overlap at the sizes an accessibility requirement names are worse than marks
+  that move when the window does. The floating-point tolerance in the module is separate and smaller:
+  a candidate placed at exactly one separation must not then read as being under it.
 
 The order is the package's own drawing order, greedy and one pass: the first mount keeps its
 position, and each one after it keeps its position unless that would touch a mark already placed, in
@@ -332,13 +349,33 @@ front-on-hover rule already handles the honest overlap.
 Forty-one of the package's ninety-six plates move at least one mark; the Anaconda's underside moves
 five of its eight, which is the plate that put a utility inside a large hardpoint's floor.
 
-**What the leader is not.** It carries no state: it is `aria-hidden`, it is drawn in one quiet amber
-hairline whatever the mount is, and every fact about the mount is still in the button's own name. It
-is also not a convergence line, a range or any other assertion about the ship — it is one segment
-between a mark and the anchor that mark belongs to.
+**What the leader is not.** It carries no _mount state_: kind, fitted, engineering and side are all
+words in the button's own name, selection is `aria-pressed` and the ledger row, and the hairline is
+one quiet amber whatever the mount is. It is `aria-hidden` for that reason, not because it means
+nothing — it plainly means something, which is _this mark belongs to that point_. What makes it
+decoration is that the point was never information a Commander had to have. It is also not a
+convergence line, a range or any other assertion about the ship — it is one segment between a mark
+and the anchor that mark belongs to.
 
-**Left open.** Nothing. A hull whose mounts are far enough apart never displaces a mark and never
-draws a leader, which is most of them.
+**Left open.** Three things, all real.
+
+**Full separation is not achievable at every size.** At 200% text on a phone the Anaconda's underside
+is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate, and no arrangement
+that keeps a mark anywhere near its own mount separates them all. What the search guarantees there is
+weaker and still worth having: no mark loses more than half of itself, so every number can be read
+and every square's own edge found. The complete ledger is the equivalent that does not degrade.
+
+**A leader can end underneath another mark.** Where the package genuinely draws two mounts closer
+together than a mark is wide, the displaced mark's leader has to terminate inside the other mount's
+square, and because the leaders are drawn under the marks its last segment disappears beneath it.
+What a reader sees is a line running between two marks rather than a line pointing at a mount. It
+happens on about a dozen plates. It is inherent rather than a defect in the placement — the anchor is
+where it is — and if it proves to matter the answer is a leader that stops at the other mark's edge.
+
+**A mark's position is a sighted-only cue**, which is not new and not load-bearing: a mount's
+position on the hull was never exposed to assistive technology, and feature 002's ledger is the
+enumerable equivalent SC-003 asks for. It is the reason the leader can be decoration without anything
+being lost.
 
 ## Divergence from FR-012 — the size of a mount target
 
@@ -351,17 +388,18 @@ SC 2.5.8's 24-pixel minimum both. Neither is reachable, and neither is the crite
 exception. The Almanac draws real mounts closer together than any mark is wide: the Anaconda's two
 small hardpoints are **six CSS pixels apart** on the plate two columns have room for, and the
 canvas's own mark is fourteen. A mark large enough to pass would sit on top of its neighbour and
-take that mount out of reach entirely. Widening the gap would mean moving package geometry, which
-FR-003 refuses.
+take that mount out of reach entirely. Widening the gap between the _marks_ is what "Marks that would
+touch" above now does — which moves this application's own squares and not the package's geometry,
+and is why FR-012 was amended rather than FR-003 bent.
 
 **What survives.** Two things, and they are what FR-012 is actually for.
 
 First, every mount is separately operable at every plate size — from the keyboard, where each mark is
 its own stop in its own order and nothing can be in front of anything. Marks that would touch now
 step aside and are tied back to their mounts ("Marks that would touch" above), which removes most of
-the overlap outright; where a hull is packed tighter than any arrangement of squares can separate,
-the mark being pointed at, moved to or currently selected comes to the front, so whichever mount a
-Commander is working with is the whole square rather than the sliver its neighbour left uncovered. That is the edge case the specification states — "nearby or overlapping mounts remain
+the overlap outright; where a plate is too small for any arrangement to separate them, the mark being
+pointed at, moved to or currently selected comes to the front, so whichever mount a Commander is
+working with is the whole square rather than the sliver its neighbour left uncovered. That is the edge case the specification states — "nearby or overlapping mounts remain
 separately operable" — and `keeps nearby mounts separately operable` in `e2e/hull-anatomy.spec.ts`
 walks every drawn mount to prove it.
 
@@ -417,9 +455,12 @@ document says so in words, in place of the document, and nothing else on the scr
 
 Feature 010 adds one presentation component to the outfitting set feature 002 established in
 `src/app/ui/outfitting/`: the schematic plate, which renders one validated document, its mount
-occurrences, the leaders to any mark that stepped aside, and its side-local status. Where a mark
-goes is decided outside it, by `src/app/domain/anatomy/mount-declutter.ts` — a pure function over
-published coordinates, testable without rendering anything (constitution III). The side selector reuses feature 011's `edsb-tab-group` in
+occurrences, the leaders to any mark that stepped aside, and its side-local status. It works out each
+mount's anchor itself — the same arithmetic that turns the hull — and hands those anchors to
+`src/app/domain/anatomy/mount-declutter.ts`, which decides which marks step aside: a pure function
+over published coordinates, testable without rendering anything (constitution III). The one thing it
+needs a browser for, how wide its own frame and its own marks came out, comes through
+`ElementSizeAdapter` in the platform layer. The side selector reuses feature 011's `edsb-tab-group` in
 its segmented presentation, and the legend is five static rows in the capability's own template.
 
 The plate accepts immutable view state, emits a typed slot intent, owns its own semantics and its

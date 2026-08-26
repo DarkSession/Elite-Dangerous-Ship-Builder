@@ -31,16 +31,23 @@ real hardware.
 
 - Q: What happens where the package draws mounts so close together that their marks touch? → A: The
   mark steps aside and a hairline ties it back to the point the package published. The anchor never
-  moves, the step is arithmetic over the package's own coordinates, and it is the same share of the
-  plate at every width. FR-012 and the overlap edge case are restated in those terms; the front-on-
-  hover rule stays for the hulls no arrangement of squares can separate.
+  moves and the step is arithmetic over the package's own coordinates. How far apart two marks must
+  be is the mark's own drawn width, which the plate measures — a mark's size has an absolute floor,
+  so its share of the plate grows as the plate narrows or the text enlarges, and a fixed fraction
+  separated nothing at 320-pixel reflow or 200% text. **FR-012 is amended rather than clarified**:
+  the requirement as written put a mount's control at the published position, and this moves it. The
+  front-on-hover rule stays for the plates too small for any arrangement to separate.
 - Q: Should a selected utility mount take the accent fill a selected hardpoint takes? → A: No. The
   fill says _selected_ and the hue says _which kind_, so a selected utility is filled in the
   informational hue the legend's `UTILITY` entry draws. Selection remains carried by `aria-pressed`
   and by the ledger row as well as by the fill.
-- Q: iPadOS draws the hulls in the package's own blue. → A: The schematic filter was declared on an
-  SVG container element, which WebKit does not apply. It moves to an ordinary box around the
-  drawing; the marks and leaders stay outside it. Recorded in
+- Q: iPadOS draws the hulls in the package's own blue. → A: **Not reproduced, and recorded as a
+  diagnosis rather than a fixed defect.** Unfiltered, the package's own ink is exactly the reported
+  blue, and the likeliest reason for the filter not applying is that it was declared on an SVG
+  container element, which WebKit is understood not to filter. It moves to an ordinary box around
+  the drawing, which removes the engine-dependent case; the marks and leaders stay outside it. The
+  engine matrix is Chromium and Firefox by constitutional mandate, so no automated test covers this
+  and confirming it needs a manual check on the device. Recorded in
   [design/hull-anatomy.md](./design/hull-anatomy.md), "Schematic regions".
 
 ## User Scenarios
@@ -95,12 +102,17 @@ real hardware.
   identified as temporarily unavailable.
 - **FR-011**: Artwork provenance and applicable media terms MUST be reachable from the application's
   help capability. Hull anatomy MUST NOT publish a provenance control of its own.
-- **FR-012**: Each interactive hardpoint and utility mount MUST be a separately operable named
-  control anchored to the position the package published, and MUST NOT be enlarged by moving that
-  geometry. Where the package draws two mounts closer together than a mark is wide, a mark MAY be
-  displaced from its anchor by a deterministic amount computed from the package's own published
-  coordinates, provided the anchor is unchanged, a leader joins the mark to it, and the displacement
-  is the same at every plate size (design/hull-anatomy.md, "Marks that would touch").
+- **FR-012** _(amended 2026-08-25; the original required a mount to be operable "at the position the
+  package published", which the displacement below contradicts — this is a change of requirement,
+  not a clarification of one)_: Each interactive hardpoint and utility mount MUST be a separately
+  operable named control anchored to the position the package published, and MUST NOT be enlarged by
+  moving that geometry. A mark MAY be drawn away from its anchor to keep it clear of another mark,
+  provided the anchor is unchanged, a leader joins the mark to its anchor, the displacement is
+  computed only from coordinates the package published and the application's own measurement of how
+  large it drew the mark, and the result is deterministic for a given hull and plate size. The
+  minimum distance between two marks is the mark's own drawn width plus a hairline; because that
+  width does not scale with the plate at every size, it MUST be measured rather than assumed
+  (design/hull-anatomy.md, "Marks that would touch").
   The marks are drawn at the canvas's own size, below the project's 44-pixel baseline: the size
   criterion is met through SC 2.5.8's Equivalent exception, by feature 002's complete ledger offering
   every one of the same mounts at the full baseline on the same screen, whether or not the artwork
@@ -113,7 +125,9 @@ real hardware.
   Reporting it is the installed-package audit's, which fails the build rather than telling a
   Commander about a file they cannot fix.
 - Nearby or overlapping mounts remain separately operable, and a mark displaced to keep them so
-  still shows the mount's published position through its leader.
+  still shows the mount's published position through its leader. Where a plate is too small for any
+  arrangement to separate its marks, they overlap rather than being flung away from their mounts,
+  and the complete slot list remains the equivalent.
 - Position, colour and shape never carry mount state alone.
 - Schematic failure never removes the full slot list.
 
