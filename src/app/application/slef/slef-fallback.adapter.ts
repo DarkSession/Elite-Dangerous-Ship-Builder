@@ -31,9 +31,6 @@ function slefFallback(): SlefFallback {
   const active = inject(ActiveBuildStore);
 
   return {
-    get available(): boolean {
-      return active.loadout() !== null;
-    },
     export(): boolean {
       if (active.loadout() === null) {
         return false;
@@ -52,7 +49,7 @@ function slefFallback(): SlefFallback {
   };
 }
 
-/** Replaces the "not available yet" default with the delivered capability. */
+/** Binds feature 001's seam to the delivered exchange layer. */
 export const SLEF_FALLBACK_PROVIDER: Provider = {
   provide: SLEF_FALLBACK,
   useFactory: slefFallback,

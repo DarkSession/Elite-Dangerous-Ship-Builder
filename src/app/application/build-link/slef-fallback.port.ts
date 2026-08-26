@@ -1,24 +1,17 @@
 import { InjectionToken } from '@angular/core';
-import type { SlefFallback } from '../active-build/commit-sinks.port';
-
-export type { SlefFallback };
 
 /**
- * What a refusal reaches for when a build cannot be a link.
+ * The alternative offered when a build cannot be represented as a link.
  *
- * Until feature 004 lands, this is an explicit "not available yet" rather than
- * a silent no-op. The difference matters at the surface: an unavailable export
- * is *said*, so a Commander whose build cannot be shared as a link learns that
- * the alternative does not exist in this version instead of pressing a button
- * that does nothing (build-link contract, "Active-edit synchronization").
+ * Feature 004 owns SLEF export; feature 001 owns the refusal that reaches for
+ * it. The seam is what keeps the two from knowing about each other — the
+ * workspace's Export action and a link refusal both come through here
+ * (build-link contract, "Active-edit synchronization").
  */
-export const UNAVAILABLE_SLEF_FALLBACK: SlefFallback = {
-  available: false,
-  export: () => false,
-};
+export interface SlefFallback {
+  /** Starts the export. Returns false when there was nothing to start. */
+  export(): boolean;
+}
 
-/** Feature 004 replaces this provider with the delivered export action. */
-export const SLEF_FALLBACK = new InjectionToken<SlefFallback>('SLEF_FALLBACK', {
-  providedIn: 'root',
-  factory: () => UNAVAILABLE_SLEF_FALLBACK,
-});
+/** Bound to feature 004's exchange layer by `SLEF_FALLBACK_PROVIDER`. */
+export const SLEF_FALLBACK = new InjectionToken<SlefFallback>('SLEF_FALLBACK');

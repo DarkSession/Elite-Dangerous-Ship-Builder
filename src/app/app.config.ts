@@ -25,8 +25,8 @@ export const appConfig: ApplicationConfig = {
     // tab's language cannot lag the page's.
     { provide: TitleStrategy, useClass: RouteTitleStrategy },
     provideLocalization(),
-    // Feature 004 replaces feature 001's "no SLEF export in this build yet"
-    // default with the delivered exchange layer.
+    // Feature 001 declares the seam a link refusal reaches for; feature 004
+    // is what it reaches.
     SLEF_FALLBACK_PROVIDER,
     // Every browser store is reached through a port with an exception
     // boundary, so a blocked or full one changes persistence and nothing else.
