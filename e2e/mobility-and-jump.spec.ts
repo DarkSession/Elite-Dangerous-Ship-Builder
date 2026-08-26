@@ -582,17 +582,25 @@ test.describe('Drives & Mass', () => {
     const headings = await page
       .locator('edsb-drives-mass .drives__section-heading')
       .allTextContents();
-    const expected = [
-      englishMessages['drives.thrusters.envelope'],
-      englishMessages['drives.fsd.range-by-load'],
-    ].map(caps);
+    const expected = [englishMessages['drives.fsd.range-by-load']].map(caps);
 
     for (const label of expected) {
       expect(headings.map((heading) => caps(heading.trim())).join(' | ')).toContain(label);
     }
 
-    // The mass block is not one of them: neither canvas heads it, so its name
-    // is the list's accessible name and never a line on the screen.
+    // The speed envelope stopped being one of them on 2026-08-26 (Commander
+    // request): the canvas draws the bars under the legend with no line over
+    // them, and the words stayed as the list's own name rather than as ink.
+    await expect(page.locator('edsb-drives-mass .drives__envelope')).toHaveAttribute(
+      'aria-label',
+      englishMessages['drives.thrusters.envelope'],
+    );
+    expect(headings.map((heading) => heading.trim())).not.toContain(
+      englishMessages['drives.thrusters.envelope'],
+    );
+
+    // The mass block is not one of them either: neither canvas heads it, so its
+    // name is the list's accessible name and never a line on the screen.
     await expect(
       page.locator('edsb-drives-mass .drives__card:first-child .drives__legend'),
     ).toHaveAttribute('aria-label', englishMessages['drives.thrusters.mass']);

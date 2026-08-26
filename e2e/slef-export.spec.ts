@@ -66,12 +66,16 @@ test.describe('exporting a build as SLEF', () => {
     await expect(layer(page).getByText(/SLEF v1 · \d+ modules · /)).toBeVisible();
   });
 
-  test('says whether a link travelled with it', async ({ page }) => {
+  test('says nothing about the link that travelled with it', async ({ page }) => {
+    // Narrowed 2026-08-26 (Commander request). A link travelling with the
+    // payload is the ordinary case, and the dialog used to spend a sentence
+    // saying so. Only the *omission* is worth stating, because only the
+    // omission is something a Commander did not get.
     await withStockBuild(page);
     await openExport(page);
     await chooseSlef(page);
 
-    await expect(layer(page).getByText(/carries (a|no) link/i)).toBeVisible();
+    await expect(layer(page).getByText(/carries a link/i)).toHaveCount(0);
   });
 
   test('always offers Download, and Copy beside it', async ({ page }) => {

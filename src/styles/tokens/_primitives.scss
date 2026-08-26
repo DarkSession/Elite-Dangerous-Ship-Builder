@@ -429,10 +429,16 @@
   // capped at twice the room left between its tick and the reserve below, and
   // wraps its name over its figure rather than reaching the maximum. The reserve
   // is a little over the widest that row's maximum runs — `MAX 1,944 t` measures
-  // 74px — and the floor is set above the widest figure alone, so a mark may
-  // lose its line but never break a number across two.
+  // 74px.
+  //
+  // There is no floor beside it, and there was: 3.5rem, set above the widest
+  // figure so a squeezed mark could lose its line but never break a number
+  // across two. Measured on the card as it is actually drawn, the floor was
+  // the collision — the cap works out at 40px there and the floor held the
+  // label at 56, eight pixels past where the maximum's words begin, and twelve
+  // past at a doubled text size. The room either side of a tick is whatever the
+  // bar leaves, which is not a quantity a floor can promise anything about.
   --edsb-measure-mass-mark-reserve: 5rem; // 80
-  --edsb-measure-mass-mark-floor: 3.5rem; // 56
 
   // Canvas 1c's offence panel.
   //

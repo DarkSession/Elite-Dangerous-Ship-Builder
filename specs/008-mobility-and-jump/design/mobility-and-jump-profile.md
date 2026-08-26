@@ -113,6 +113,15 @@ translation wraps `Optimal` over its own figure — two short lines still centre
 it can reach the words at the end. The tick on the track carries the position; the words under it
 carry the two figures; neither is ever painted over the other.
 
+**The cap has no floor under it, corrected 2026-08-26.** One was written first — set above the widest
+figure, so a squeezed mark could lose its line but never break a number across two lines. Measured on
+the card as it is actually drawn, the floor was itself the collision the cap exists to prevent: the
+cap works out at 40px at that width and the floor held the label at 56, which put its box eight
+pixels past where `Max` begins, and twelve past at a doubled text size. The room either side of a
+tick is whatever the bar leaves it, and that is not a quantity a floor can promise anything about. A
+number that wraps is worse-looking than one that does not; two readings painted over each other are
+not readable at all, and that is the comparison that settles it.
+
 ### The headroom under the optimal mass
 
 The canvas writes `6A + MASS MANAGER · 658 T OF HEADROOM` beside `FSD optimal mass`. The first half

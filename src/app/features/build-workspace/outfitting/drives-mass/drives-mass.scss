@@ -238,8 +238,19 @@
 // spends that room in both directions at once — so where a long figure or a long
 // translation would reach them, the mark wraps its name over its own figure and
 // stays centred on the tick, rather than either reading being painted over the
-// other. The floor under the cap is set above the widest figure alone, so the
-// squeeze can cost a mark its line but never break a number across two.
+// other.
+//
+// **No floor under it, and the floor is why this is written down.** One was
+// tried, set above the widest figure so a squeeze could cost a mark its line but
+// never break a number across two. Measured, it was the thing doing the damage:
+// at the width this card is actually given the cap works out at 40px and the
+// floor held the label at 56, which put its box eight pixels past where the
+// maximum's own words begin — and at a doubled text size, twelve. A floor is a
+// promise that a box will not get smaller than a number, and this row cannot
+// keep it: the room either side of the tick is whatever the bar leaves, and past
+// a certain size there is not enough of it for the figure at all. Between a
+// number that wraps and two readings painted over each other, the wrap is the
+// one a Commander can still read.
 // Unprefixed on purpose. The `--edsb-` names are design tokens — decisions the
 // token layer owns and every stylesheet reads — and this is nothing of the kind:
 // it is one element's own position, written on that element by the template and
@@ -253,7 +264,7 @@
   margin-inline-start: var(--mass-mark-position, 0%);
   inline-size: max-content;
   max-inline-size: max(
-    var(--edsb-layout-mass-mark-floor),
+    0%,
     (100% - var(--mass-mark-position, 0%) - var(--edsb-layout-mass-mark-reserve)) * 2
   );
 }
