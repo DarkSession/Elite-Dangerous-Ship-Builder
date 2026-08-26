@@ -303,8 +303,14 @@ export class App {
           kind: 'app.update',
           revision,
           urgency: state === 'unusable' ? 'assertive' : 'polite',
-          messageKey:
-            state === 'unusable' ? 'update.unusable.announcement' : 'update.applying.notice',
+          // The durable fact, not the thing about to happen. A restart can be
+          // called off, and an announcement is spoken once and cannot be taken
+          // back — so "this session is restarting on it" would be left standing
+          // as a statement that turned out to be false, with nothing to correct
+          // it (postponing changes no revision, and so publishes no event). The
+          // overlay says the rest: it is a modal layer, so it takes focus and
+          // its description is read where it stands.
+          messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
         }),
       );
     });

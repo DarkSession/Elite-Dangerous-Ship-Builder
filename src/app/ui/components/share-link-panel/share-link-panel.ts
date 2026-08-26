@@ -90,6 +90,17 @@ export class ShareLinkPanel {
   );
 
   /**
+   * The same answer, for a reader rather than for a look.
+   *
+   * The label swap is the visible answer and the only one on the screen. What
+   * it is not is a reliable spoken one: an accessible-name change on the
+   * control that already has focus is announced differently by every reader,
+   * and by some not at all. This is the same word in a region that draws
+   * nothing, so the answer arrives either way and the panel still says it once.
+   */
+  readonly copiedAnnouncement = this.#copiedLabel;
+
+  /**
    * What went wrong with the last attempt, in words.
    *
    * Only failures. A failure says what to do instead — select the text and copy

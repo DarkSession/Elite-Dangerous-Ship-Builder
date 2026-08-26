@@ -31,9 +31,15 @@
           sentence is not drawn is a mark with no way to ask what it means
           (Commander request 2026-08-26). It is the row's own sentence rather
           than a shorter phrase beside it: one restriction, one wording,
-          whether it is drawn, hovered or read. The mark stays presentational,
-          so the tip adds a way to see the sentence and never a second
-          announcement of it.
+          whether it is drawn, hovered or read.
+
+          `aria-hidden` is what actually keeps the mark presentational, and it
+          is not belt and braces. An `img` with an empty `alt` maps to
+          presentation only while it has no `title`; give it one and it is
+          exposed as an image named by that title, which beside the sentence
+          the row already carries is the same restriction announced twice.
+          Hidden from the tree, the tip is what it was meant to be: a way to
+          *see* the sentence, on a mark whose meaning a reader already has.
         -->
         @switch (label.marker) {
           @case ('communityGoal') {
@@ -41,6 +47,7 @@
               class="acquisition__route"
               src="assets/icons/community-goal.svg"
               alt=""
+              aria-hidden="true"
               [attr.title]="label.explanation"
               width="14"
               height="14"
@@ -51,6 +58,7 @@
               class="acquisition__route"
               src="assets/icons/powerplay.svg"
               alt=""
+              aria-hidden="true"
               [attr.title]="label.explanation"
               width="14"
               height="14"
@@ -61,6 +69,7 @@
               class="acquisition__route acquisition__route--broker"
               src="assets/icons/tech-broker.svg"
               alt=""
+              aria-hidden="true"
               [attr.title]="label.explanation"
               width="14"
               height="14"
@@ -71,6 +80,7 @@
               class="acquisition__coin"
               src="assets/icons/merc-coin.png"
               alt=""
+              aria-hidden="true"
               [attr.title]="label.explanation"
               width="14"
               height="14"

@@ -48,3 +48,9 @@
 .share-link__actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 }
+
+// The copy's spoken answer. Per component, never global: this is the one
+// element in the panel that is heard and not seen.
+.visually-hidden {
+  @include layout.visually-hidden;
+}

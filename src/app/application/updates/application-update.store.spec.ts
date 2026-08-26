@@ -235,6 +235,44 @@ describe('ApplicationUpdateStore', () => {
     expect(store.state()).toBe('ready');
   });
 
+  it('warns again when a further version is published after a "not now"', () => {
+    // One "not now" answers for the version it was said to. A version published
+    // behind it is a different question, and a session that stopped asking it
+    // would be exactly the stale session this whole mechanism exists to
+    // prevent — reached through the one control that was meant to be harmless
+    // (FR-025).
+    const { store, updates } = setup();
+    updates.report('ready');
+    store.postpone();
+    expect(store.overlay()).toBe(false);
+
+    updates.report('ready');
+
+    expect(store.overlay()).toBe(true);
+    expect(updates.grace).toBe(UPDATE_OVERLAY_MS);
+    // And still one thing to say: the sentence on the shell was already true,
+    // so nothing interrupts a reader to repeat it.
+    expect(store.snapshot()).toEqual({ state: 'ready', revision: 1 });
+  });
+
+  it('calls off a restart a Commander dismissed while the worker was activating', async () => {
+    // Activation is a round trip, and the overlay can be dismissed while it is
+    // in the air. This is the one path where the way out has to hold: it is the
+    // whole reason the time limit is allowed to stand at all (WCAG 2.2.1).
+    const { store, updates } = setup();
+    updates.report('ready');
+
+    const restarting = store.apply();
+    store.postpone();
+    await restarting;
+
+    expect(updates.calls).toEqual(['activate']);
+    expect(store.state()).toBe('ready');
+    // And the control that applies it is armed again, rather than left disabled
+    // for the rest of the session.
+    expect(store.applying()).toBe(false);
+  });
+
   it('never puts the overlay over a cached version it cannot repair', () => {
     // An error is not an improvement. Its restart is a repair a Commander asks
     // for, and there is no working page underneath to protect from the reload.

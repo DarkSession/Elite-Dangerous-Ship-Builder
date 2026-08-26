@@ -29,11 +29,13 @@
 // marker on the leading edge and a hairline under each — and beside the
 // artboard the difference is the whole look of the card (Commander request
 // 2026-08-26). The chosen one carries the canvas's own amber wash and an amber
-// edge; there is no marker, because a plate that is filled and edged has already
-// said it.
+// edge; the plate also carries a
+// marker inside its leading edge, because filled and edged is a difference in
+// colour and a state may never rest on one.
 .blueprint {
   @include layout.target-baseline;
 
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--edsb-space-inline);
@@ -46,6 +48,28 @@
 .blueprint[data-selected='true'] {
   background-color: var(--edsb-surface-accent-selected);
   border-color: var(--edsb-border-accent);
+}
+
+// The wash and the amber edge are the echo, not the fact. A reader is told by
+// the radio's own checked state; an eye needs something that survives a
+// monochrome rendering, and a tint on its own does not — a state carried by
+// colour is the one thing this design system does not do (canvas extraction,
+// "Colour is what makes the state obvious; it is never what carries it").
+//
+// Drawn inside the plate rather than as a border on it, exactly as the choice
+// group draws its cards, so the plate keeps the shape canvas 1d gives it: a
+// complete box either way, with the mark laid against its padding box.
+.blueprint[data-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--edsb-border-width-marker);
+  background-color: var(--edsb-marker-selected);
+}
+
+.blueprint[data-selected='true'] .blueprint__name {
+  font-weight: var(--edsb-text-weight-heading);
 }
 
 // The canvas draws the no-blueprint row dashed, so it reads as the way out

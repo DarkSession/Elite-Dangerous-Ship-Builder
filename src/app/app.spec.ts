@@ -323,22 +323,25 @@ describe('App and a newly published version', () => {
     expect(updates.reloads).toBe(1);
   });
 
-  it('announces a waiting version politely, once', () => {
+  it('announces a waiting version politely, once, and says only what stays true', () => {
+    // The published version, not the restart. An announcement is spoken once
+    // and cannot be taken back, and the restart can be called off — so the
+    // sentence that reaches the outlet is the one that survives a "not now".
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
 
-    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.applying.notice']);
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
     expect(announcements.assertive()).toBe('');
 
     updates.report('ready');
     fixture.detectChanges();
-    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.applying.notice']);
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
   });
 
   it('does not republish the version event when a locale commits behind it', () => {
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
-    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.applying.notice']);
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
 
     const published = vi.spyOn(announcements, 'announce');
 

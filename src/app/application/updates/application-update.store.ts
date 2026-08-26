@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import {
   ApplicationUpdateAdapter,
   type VersionEvent,
@@ -108,6 +108,17 @@ export class ApplicationUpdateStore {
   /** Calls off the scheduled restart. `null` when none is scheduled. */
   #countdown: (() => void) | null = null;
 
+  /**
+   * Which restart is the wanted one.
+   *
+   * A restart is not instantaneous: activating the waiting version is a round
+   * trip to the worker, and a Commander can dismiss the overlay while it is in
+   * the air. Without this the page reloaded anyway, under a warning that was
+   * already gone — and it is the one path where the way out has to hold, being
+   * the whole reason the limit is allowed to stand (WCAG 2.2.1).
+   */
+  #restart = 0;
+
   readonly state = this.#state.asReadonly();
 
   /** Whether a restart has been asked for and is on its way. */
@@ -145,6 +156,11 @@ export class ApplicationUpdateStore {
     this.#connectivity.onOnline(() => void this.#updates.check());
 
     void this.#updates.check();
+
+    // The countdown is the one thing here that reaches out and replaces the
+    // page. A pending one firing into a torn-down injector would restart a
+    // session nobody is running any more.
+    inject(DestroyRef).onDestroy(() => this.#stopCountdown());
   }
 
   /**
@@ -167,14 +183,23 @@ export class ApplicationUpdateStore {
 
     this.#stopCountdown();
     this.#applying.set(true);
+    const attempt = ++this.#restart;
 
     if (this.#state() === 'ready') {
       await this.#updates.activate();
     }
 
+    if (attempt !== this.#restart) {
+      // Called off while the worker was activating. The version stays ready and
+      // the shell offers it again; what must not happen is the page starting
+      // over after a Commander said not to.
+      this.#applying.set(false);
+      return;
+    }
+
     if (!this.#updates.reload()) {
       this.#applying.set(false);
-      this.#overlay.set(false);
+      this.#lowerOverlay();
     }
   }
 
@@ -196,6 +221,14 @@ export class ApplicationUpdateStore {
    * the stale-session failure this whole mechanism exists to prevent (FR-025).
    */
   postpone(): void {
+    // Anything already on its way is no longer wanted, including a restart that
+    // is mid-activation.
+    this.#restart += 1;
+    this.#lowerOverlay();
+  }
+
+  /** Takes the warning down and stops the clock, wanting nothing else. */
+  #lowerOverlay(): void {
     this.#stopCountdown();
     this.#overlay.set(false);
   }
@@ -249,7 +282,10 @@ export class ApplicationUpdateStore {
     if (state === 'ready') {
       this.#warnBeforeRestarting();
     } else {
-      this.postpone();
+      // The warning comes down, but a restart already under way is left alone:
+      // it is on its way to a fresh copy of the application, which is what an
+      // unrepairable cache needs too.
+      this.#lowerOverlay();
     }
   }
 }
