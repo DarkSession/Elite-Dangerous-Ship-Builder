@@ -221,13 +221,17 @@ Every one of them:
   or a catalogue;
 - names its destination in the visible words a Commander reads, so they are told before they leave
   and not after (constitution I);
+- says the same thing on screen as it says to a reader. The visible words are the whole accessible
+  name — no appended sentence only some people get, and nothing for voice control to miss;
 - carries `target="_blank"` and `rel="noopener noreferrer"`, so the opened tab cannot reach back and
   no referrer — no route, no query, nothing around the build in the URL — reaches the other origin;
 - draws no address as text. What a Commander reads is which document it is, not where it is.
 
-The two read alike on screen, because both are an MIT licence on GitHub and saying otherwise would
-be dressing up a fact. What differs is which document each covers, and that is carried for a reader
-in text appended to the link's accessible name, so two links in one list never announce identically.
+The two read alike, because both are an MIT licence on GitHub and saying otherwise would be dressing
+up a fact. Which document each covers is the line's own leading label — `App ·` against `Library ·`
+— so the link does not repeat it. **Corrected 2026-08-26:** an earlier revision appended that
+distinction to each link's accessible name. It made a two-word link into a spoken sentence, and the
+label in front of it was already saying the same thing.
 
 **Amendment history.** **2026-08-25:** the modal carried one destination, a warned
 repository-`LICENSE` action, and it was withdrawn along with the `WarnedExternalLink` component the

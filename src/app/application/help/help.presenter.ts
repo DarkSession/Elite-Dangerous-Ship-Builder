@@ -65,8 +65,6 @@ export interface HelpLicenceIndexEntry {
 export interface HelpLicenceLink {
   /** The visible words. They name the destination, because it leaves the app. */
   readonly label: string;
-  /** Said to a reader after the label; never drawn. */
-  readonly detail: string;
   readonly href: string;
 }
 
@@ -242,12 +240,10 @@ export class HelpPresenter {
       index: [
         this.#licenceLine('application', 'help.licence.index.application', {
           label: this.#messages.message('help.licence.link.application'),
-          detail: this.#messages.message('help.licence.link.application.detail'),
           href: destinations.repositoryLicense.url,
         }),
         this.#licenceLine('library', 'help.licence.index.library', {
           label: this.#messages.message('help.licence.link.library'),
-          detail: this.#messages.message('help.licence.link.library.detail'),
           href: destinations.almanacLicense.url,
         }),
         this.#licenceLine('gameData', 'help.licence.index.gameData', null),

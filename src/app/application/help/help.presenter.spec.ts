@@ -49,7 +49,7 @@ describe('HelpPresenter', () => {
       ...view.licence.index.flatMap((entry) => [
         entry.before,
         entry.after,
-        ...(entry.link === null ? [] : [entry.link.label, entry.link.detail]),
+        ...(entry.link === null ? [] : [entry.link.label]),
       ]),
       ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
@@ -278,18 +278,19 @@ describe('HelpPresenter', () => {
       }
     });
 
-    it('names each destination distinctly for a reader', () => {
+    it('names each destination in the words it draws, and adds nothing to them', () => {
       const index = presenter().view().licence.index;
       const links = index.flatMap((entry) => (entry.link === null ? [] : [entry.link]));
 
-      // The two links read the same on screen, which is right: both are an MIT
-      // licence on GitHub. What they are the licence *of* differs, and that is
-      // what the detail carries — so a reader moving between links is told
-      // which document each one is, rather than hearing the same phrase twice.
-      expect(new Set(links.map((link) => link.detail)).size).toBe(links.length);
+      // Both links read alike, which is right: both are an MIT licence on
+      // GitHub. Which document each covers is the line's own leading label —
+      // `App ·` against `Library ·` — so the link does not repeat it, and a
+      // reader is not read a second sentence they cannot see.
+      expect(Object.keys(links[0]).sort()).toEqual(['href', 'label']);
       for (const link of links) {
-        expect(link.detail.trim()).not.toBe('');
+        expect(link.label).toContain('GitHub');
       }
+      expect(index[0].before.trim()).not.toBe(index[1].before.trim());
     });
 
     it('keeps the excerpt out of the catalogue that would translate it', () => {

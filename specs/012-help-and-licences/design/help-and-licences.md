@@ -118,6 +118,9 @@ design:
 
 - The reference's licence block is four compact lines. A row of buttons under them is a different
   screen; a few underlined words inside a line is the same one.
+- The link's visible words are the whole of its accessible name. Both lines link an MIT licence on
+  GitHub and say so in the same words; which document each covers is the line's own leading label,
+  so the link does not repeat it into a sentence only a reader hears.
 - A localised sentence decides where its own link sits. The presenter resolves the line with a
   marker standing in for the link and cuts it there, so a German line that wants the link in the
   middle gets it in the middle. A template that appended the link would quietly move it.

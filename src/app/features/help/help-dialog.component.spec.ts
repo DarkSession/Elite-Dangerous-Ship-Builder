@@ -22,8 +22,7 @@ const LICENCE = {
       id: 'application',
       before: 'App · ',
       link: {
-        label: 'MIT licence on GitHub',
-        detail: "the complete terms for Ship Builder's own code, opens in a new tab",
+        label: 'MIT licence, full detail on GitHub',
         href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE',
       },
       after: '',
@@ -32,8 +31,7 @@ const LICENCE = {
       id: 'library',
       before: 'Library · ',
       link: {
-        label: 'MIT licence on GitHub',
-        detail: 'the complete terms for the bundled Almanac, opens in a new tab',
+        label: 'MIT licence, full detail on GitHub',
         href: 'https://github.com/DarkSession/Elite-Dangerous-Almanac/blob/main/LICENSE',
       },
       after: ', and nothing else',
@@ -276,9 +274,11 @@ describe('HelpDialog', () => {
       // honoured: a template that appended the link would put ", and nothing
       // else" before it rather than after.
       expect(link).not.toBeNull();
-      expect(visibleTextOf(library)).toBe('Library · MIT licence on GitHub, and nothing else');
+      expect(visibleTextOf(library)).toBe(
+        'Library · MIT licence, full detail on GitHub, and nothing else',
+      );
       expect(library.textContent?.indexOf('and nothing else')).toBeGreaterThan(
-        library.textContent?.indexOf('MIT licence on GitHub') ?? 0,
+        library.textContent?.indexOf('full detail on GitHub') ?? 0,
       );
     });
 
@@ -341,16 +341,14 @@ describe('HelpDialog', () => {
       }
     });
 
-    it('gives each link a name a reader can tell apart from the other', () => {
+    it('says the same thing on screen as it says to a reader', () => {
       const links = [...element(render()).querySelectorAll('a')];
-      const names = links.map((link) => accessibleName(link));
 
-      // Both read "MIT licence on GitHub" on screen, which is correct — both
-      // are one. The detail says which document each is, so the accessible
-      // names differ while still containing the visible words.
-      expect(new Set(names).size).toBe(links.length);
-      for (const [index, name] of names.entries()) {
-        expect(name).toContain(links[index].textContent?.split(',')[0]?.trim());
+      // No reader-only sentence appended to the name. The words a Commander
+      // sees are the words a Commander hears, and voice control can act on
+      // exactly what is on the screen.
+      for (const link of links) {
+        expect(accessibleName(link)).toBe(visibleTextOf(link));
       }
     });
 

@@ -4070,7 +4070,6 @@ const HELP_LICENCE = {
       before: BUNDLED_ENGLISH['help.licence.index.application'].replace('{{licence}}', ''),
       link: {
         label: BUNDLED_ENGLISH['help.licence.link.application'],
-        detail: BUNDLED_ENGLISH['help.licence.link.application.detail'],
         href: HELP_MANIFEST.destinations.repositoryLicense.url,
       },
       after: '',
@@ -4080,7 +4079,6 @@ const HELP_LICENCE = {
       before: BUNDLED_ENGLISH['help.licence.index.library'].replace('{{licence}}', ''),
       link: {
         label: BUNDLED_ENGLISH['help.licence.link.library'],
-        detail: BUNDLED_ENGLISH['help.licence.link.library.detail'],
         href: HELP_MANIFEST.destinations.almanacLicense.url,
       },
       after: '',
@@ -4204,14 +4202,10 @@ registerPreview({
     'inline-link',
     {
       role: 'link',
-      // The visible words are the start of the accessible name rather than the
-      // whole of it: `detail` extends the name so two links that read alike on
-      // screen are still told apart by a reader. What is drawn is contained in
-      // what is announced, which is the parity that actually matters.
-      visibleNameMatchesAccessibleName: false,
+      visibleNameMatchesAccessibleName: true,
       exposedStates: [],
       relationships: [],
-      textEquivalents: ['which document the link leads to, and that it opens elsewhere'],
+      textEquivalents: [],
     },
     ['default'],
   ),
@@ -4221,7 +4215,6 @@ registerPreview({
       {
         label: BUNDLED_ENGLISH['help.licence.link.application'],
         href: HELP_MANIFEST.destinations.repositoryLicense.url,
-        detail: BUNDLED_ENGLISH['help.licence.link.application.detail'],
       },
       [
         'the destination is named in the visible words, so a Commander is told before they leave',

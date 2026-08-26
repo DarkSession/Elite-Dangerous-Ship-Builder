@@ -1014,17 +1014,17 @@ test.describe('the two documents the modal points at', () => {
     expect(text).not.toContain('edsb:');
   });
 
-  test('tells the two links apart for a reader, though they read alike', async ({ page }) => {
+  test('says the same thing on screen as it says to a reader', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
 
-    const links = await helpModal(page).getByRole('link').all();
-    const names = await Promise.all(links.map((link) => link.evaluate((node) => node.textContent)));
-
-    // Both are drawn as an MIT licence on GitHub, which is what both are. What
-    // each is the licence *of* is carried for a reader, so two links in one
-    // list never announce identically.
-    expect(new Set(names).size).toBe(names.length);
+    // No reader-only sentence appended to either name. Both links read alike,
+    // which is what they are — an MIT licence on GitHub — and which document
+    // each covers is the line's own leading label rather than a second
+    // sentence only some people get.
+    for (const link of await helpModal(page).getByRole('link').all()) {
+      await expect(link).toHaveAccessibleName((await link.textContent())?.trim() ?? '');
+    }
   });
 });
 

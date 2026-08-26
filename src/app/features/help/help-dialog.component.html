@@ -70,7 +70,7 @@
         -->
         @for (entry of licence().index; track entry.id) {
           <!-- prettier-ignore -->
-          <li class="help-dialog__licence-line">{{ entry.before }}@if (entry.link; as link) {<edsb-inline-link [label]="link.label" [href]="link.href" [detail]="link.detail" />}{{ entry.after }}</li>
+          <li class="help-dialog__licence-line">{{ entry.before }}@if (entry.link; as link) {<edsb-inline-link [label]="link.label" [href]="link.href" />}{{ entry.after }}</li>
         }
       </ul>
 

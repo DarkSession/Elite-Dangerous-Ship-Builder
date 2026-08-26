@@ -15,10 +15,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  *
  * Every instance leaves the application, because there is nowhere inside the
  * application a sentence would link to — routes are navigated, not read about.
- * So the destination is named in the visible text the caller supplies, and
- * `detail` adds what only a reader needs: which of two similarly-worded links
- * this is, and that it opens elsewhere. Constitution I asks that a Commander be
- * told before they leave, never after.
+ * So the destination is named in the visible words the caller supplies, and
+ * those words are the whole of the accessible name: a Commander is told where
+ * they are going before they go (constitution I), and told it once.
  */
 @Component({
   selector: 'edsb-inline-link',
@@ -31,12 +30,4 @@ export class InlineLink {
   readonly label = input.required<string>();
 
   readonly href = input.required<string>();
-
-  /**
-   * Said to a reader after the label, and never drawn.
-   *
-   * It extends the accessible name rather than replacing it, so the name still
-   * contains the visible words and voice control can act on what is on screen.
-   */
-  readonly detail = input<string | null>(null);
 }
