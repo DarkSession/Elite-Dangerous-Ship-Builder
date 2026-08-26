@@ -276,8 +276,10 @@ test.describe('what resets the tape', () => {
     await setGroup(page, 'SmallHardpoint1', '1');
     await expect(undo(page)).toBeEnabled();
 
+    // Nothing is asked before the link replaces what is on screen: the build it
+    // replaces has a record of its own (feature 001, FR-008).
     await page.goto(`/build${incoming}`);
-    await page.getByRole('button', { name: 'Discard and open' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     await expect(undo(page)).toBeDisabled();

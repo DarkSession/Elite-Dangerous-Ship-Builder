@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openFirstHullFromManifest, reachShellLink, savedToBrowser } from './shell';
+import { openFirstHullFromManifest, reachShellLink } from './shell';
 
 /**
  * The interface still looks like the reference canvas.
@@ -380,7 +380,18 @@ test.describe('the saved-build surface', () => {
   async function withOneBuild(page: Page): Promise<void> {
     await page.goto('/ships/Anaconda');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
-    await savedToBrowser(page);
+    // Waited for by the record itself rather than by the status line: autosave
+    // coalesces, and a status still reading "ready" is a write that is owed
+    // rather than one that failed.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+          ),
+        { timeout: 10_000 },
+      )
+      .toBe(1);
     await reachShellLink(page, 'Open saved build');
     await expect(page.locator('[data-record-id]').first()).toBeVisible();
   }

@@ -60,7 +60,12 @@ async function withStockBuild(page: Page): Promise<void> {
 
 test.describe('importing a build', () => {
   test('is offered from every screen, with no build and no chosen hull', async ({ page }) => {
-    for (const route of ['/ships', '/ships/Anaconda', '/build', '/builds']) {
+    // `/builds` is not on this list since 2026-08-25: the library is a modal
+    // layer over the screen it was opened from, and a modal makes the frame
+    // behind it inert — which is what a modal is for. The import action is
+    // offered by that screen, reached by closing the library (feature 001,
+    // build-library design, "Composition").
+    for (const route of ['/ships', '/ships/Anaconda', '/build']) {
       await page.goto(route);
       await openImport(page);
       await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();
@@ -69,6 +74,16 @@ test.describe('importing a build', () => {
         .first()
         .click();
     }
+  });
+
+  test('is offered from the screen the library was opened over', async ({ page }) => {
+    await page.goto('/builds');
+    await expect(page.getByRole('dialog', { name: /saved builds/i })).toBeVisible();
+
+    await page.getByRole('button', { name: /^close saved builds$/i }).click();
+    await openImport(page);
+
+    await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();
   });
 
   test('turns a bare journal event into the active build', async ({ page }) => {
@@ -82,7 +97,7 @@ test.describe('importing a build', () => {
   });
 
   test('accepts a one-entry SLEF envelope the same way', async ({ page }) => {
-    await page.goto('/builds');
+    await page.goto('/ships');
     await openImport(page);
     await paste(page, SLEF_ENVELOPE);
     await submit(page);
