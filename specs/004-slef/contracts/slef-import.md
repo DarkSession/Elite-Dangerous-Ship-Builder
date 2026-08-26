@@ -49,9 +49,17 @@ do not parse, trim, measure, normalize, construct or commit.
 
 ## Normalization boundary
 
-The shared feature 002 ingress normalizer owns ordering and outcomes for stock, record, link, reload
-and SLEF ingress. Feature 004 supplies inspected source evidence; it does not implement another loop.
+The shared feature 002 ingress normalizer owns ordering and outcomes for record, link, reload and
+SLEF ingress. A stock build does not pass through it: it is the package's own default loadout, which
+arrives on the package's hull symbol with no partial roll and every fixed mount populated, so there
+is nothing for the gate to do. Feature 004 supplies inspected source evidence; it does not implement
+another loop.
 
+- The hull is constructed on the package's own `Ship.symbol` for whatever the source spelled. A
+  journal `Loadout` event names the hull in lower case — `sidewinder` for `SideWinder` — and a build
+  that keeps that spelling asks feature 010 for `assets/ships/sidewinder/`, a directory no host
+  serves. Nothing is repaired: the symbol is the package's answer to the source's own string, and a
+  hull the package does not carry still refuses exactly as before.
 - Only finite source quality in `[0, 1)` requests completion. Absent or quality-1 engineering stays as
   the package modelled it and is not passed to `completeEngineeringGrade()`.
 - A module the package resolved to a final article — its `preEngineeredVariant.engineeringLocked` —

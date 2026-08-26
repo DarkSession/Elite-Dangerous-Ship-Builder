@@ -1,4 +1,5 @@
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
 import type {
   IngressNotice,
@@ -10,12 +11,17 @@ import type {
 /**
  * The one gate every incoming build passes through.
  *
- * Creating a stock build, opening a record, loading a link, importing SLEF and
- * restoring on reload all arrive here, and all of them get the same six steps
- * in the same order. Having one pipeline rather than five is the reason no
- * ingress path can activate a build that skipped a check, and the reason a
- * refusal costs the Commander nothing: everything happens on a candidate the
- * application is not looking at yet.
+ * Opening a record, loading a link, importing SLEF and restoring on reload all
+ * arrive here, and all of them get the same steps in the same order. Having one
+ * pipeline rather than four is the reason no ingress path can activate a build
+ * that skipped a check, and the reason a refusal costs the Commander nothing:
+ * everything happens on a candidate the application is not looking at yet.
+ *
+ * Creating a stock hull does not come through, and does not need to: it is the
+ * package's own default loadout, built on `getShipBySymbol(symbol).symbol`, so
+ * its hull is already a package identity, it carries no partial roll to
+ * complete and no fixed mount to populate (import contract, "Normalization
+ * boundary").
  *
  * The order matters and is not incidental:
  *
@@ -41,10 +47,11 @@ export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   // Step 1. Read the source's partial rolls before construction consumes them.
   const partials = sourcePartials(event);
 
-  // Step 2. Construct. The package owns the hull check and the fixed defaults.
+  // Step 2. Construct, on the package's own identity for the hull the source
+  // named. The package owns the hull check and the fixed defaults.
   let candidate: ShipLoadout;
   try {
-    candidate = ShipLoadout.fromLoadout(event);
+    candidate = ShipLoadout.fromLoadout(withPackageHullIdentity(event));
   } catch (error) {
     return { kind: 'unusable', reason: error instanceof Error ? error.message : String(error) };
   }
@@ -64,6 +71,40 @@ export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
  * check the others make (contract, "Mandatory ingress normalization").
  */
 export function normalizeReconstructedBuild(candidate: ShipLoadout): IngressResult {
+  // The hull identity the event door resolves, checked rather than assumed on
+  // the doors that arrive already built. There is nothing to resolve here — a
+  // constructed candidate's hull cannot be renamed without rebuilding it — so
+  // a candidate that did not come through a door that resolved it is refused
+  // instead. Reading a package answer, not repairing one: whoever built this
+  // is where the identity belongs (constitution II).
+  //
+  // No door reaches this today — the snapshot reconstructor resolves the hull
+  // and the link codec names it from a table of the package's own symbols — so
+  // it is an invariant stated where it can be checked rather than a Commander's
+  // outcome. Its `reason` is an English sentence, which the sibling ingress
+  // paths also write — `record-open.service.ts`, `build-link.coordinator.ts`,
+  // `stock-build.creator.ts`. Only the first is both reachable in ordinary use
+  // and rendered to a Commander, framed by `library.open.failed`, so only that
+  // one is owed a catalogued message: `build-link.coordinator.ts` publishes a
+  // `LinkFailure` code the message layer frames and never renders its `reason`,
+  // and `stock-build.creator.ts` writes its reasons behind the same kind of
+  // guard as this one. This reason is not owed a catalogue entry because no
+  // door reaches it, and a translated string for a state nobody can arrive at
+  // is a string never read — not because of where it would be rendered, which
+  // is that same frame. The other `unusable` reason here is no precedent
+  // either: that one is the package's own diagnostic, which principle VI
+  // leaves to the package. A door that stopped resolving would make this
+  // Commander-facing and would need a code the message layer can frame
+  // (constitution VI).
+  if (getShipBySymbol(candidate.shipSymbol)?.symbol !== candidate.shipSymbol) {
+    return {
+      kind: 'unusable',
+      reason:
+        `Reconstructed build carries "${candidate.shipSymbol}", ` +
+        `which is not the package's identity for that hull.`,
+    };
+  }
+
   return completePartials(candidate, builtPartials(candidate));
 }
 
@@ -144,6 +185,44 @@ function completePartials(
   }
 
   return { kind: 'accepted', candidate, notices };
+}
+
+/**
+ * The same event, naming its hull the way the package names it.
+ *
+ * A journal `Loadout` event writes the hull in lower case — `sidewinder`,
+ * `federation_corvette` — and the package carries `SideWinder` and
+ * `Federation_Corvette`. `ShipLoadout` keeps whatever string it was handed, so
+ * a build that arrived from a journal capture or somebody else's SLEF export
+ * carries a `shipSymbol` that is not the package's symbol for that hull.
+ *
+ * Every package lookup matches case-insensitively, which is why this stayed
+ * invisible for as long as a hull symbol was only ever handed back to the
+ * package. It stops being invisible the moment the application compares one
+ * itself, or spells one into a path. Feature 010's plates are drawn from
+ * `assets/ships/<symbol>/`, directories named for the package's own symbol, so
+ * `assets/ships/sidewinder/...` is a 404 on any case-sensitive host and both
+ * of an imported build's plates report as unavailable — the symptom this was
+ * found by. One other reader compares a hull symbol itself rather than handing
+ * it back, and it is the second symptom: `linkIdentity` in the build-link
+ * coordinator folds module symbols and not the hull's. A reload restores this
+ * tab's working record and then reads the fragment that arrived with the page;
+ * the record said `anaconda`, the link's codec table said `Anaconda`, the two
+ * identities compared unequal, and the Commander was asked whether to replace
+ * their build with an identical one.
+ *
+ * Resolved here, at the one gate, rather than at each reader: one build carries
+ * one hull identity, and a reader that has to re-resolve it is a reader that
+ * can forget to. This corrects nothing the package returned — the symbol
+ * written in is the package's own `Ship.symbol`, asked for by the string the
+ * source used (constitution II, AGENTS.md "Identities come from the package").
+ *
+ * A hull the package does not carry is handed over exactly as it arrived, so
+ * the refusal a Commander reads is the package's own and names what they sent.
+ */
+function withPackageHullIdentity(event: LoadoutEvent): LoadoutEvent {
+  const hull = getShipBySymbol(event.Ship);
+  return hull === null || hull.symbol === event.Ship ? event : { ...event, Ship: hull.symbol };
 }
 
 /**

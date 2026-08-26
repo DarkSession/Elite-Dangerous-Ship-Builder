@@ -71,7 +71,14 @@ package.
 
 ## Runtime request boundary
 
-The loader receives only a resolved hull symbol and side. It:
+The loader receives only a resolved hull symbol and side. "Resolved" means the package's own
+`Ship.symbol`, which is what the asset directories are named — not whatever string the build's source
+spelled the hull with. A journal `Loadout` event, and every SLEF export made from one, names the hull
+in lower case; the shared ingress gate resolves that to the package's symbol before the build is
+activated (`specs/002-module-outfitting/contracts/outfitting-editor.md`, "Mandatory ingress
+normalization"), so this feature reads `shipSymbol` and asks for nothing further.
+
+The loader then:
 
 1. chooses the fixed side filename;
 2. URI-encodes the symbol as one path segment;

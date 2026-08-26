@@ -30,6 +30,19 @@ describe('snapshot reconstruction', () => {
     expect(result.ok && toBuildSnapshotV1(result.loadout)).toEqual(original);
   });
 
+  it('gives back the package own hull identity, whatever the snapshot spelled', () => {
+    // A record written from a build that arrived through a journal capture
+    // carries the hull the way the game logs it. Reopening it is where the
+    // identity is resolved, so nothing downstream has to spell it twice.
+    const original = toBuildSnapshotV1(ShipLoadout.default('Anaconda'));
+    const journalCased: BuildSnapshotV1 = { ...original, shipSymbol: 'anaconda' };
+
+    const result = reconstructFromSnapshot(journalCased);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.loadout.shipSymbol).toBe('Anaconda');
+  });
+
   it('round-trips ordinary engineering, ship name and ident', () => {
     const loadout = ShipLoadout.default('Anaconda');
     loadout.applyBlueprint('FrameShiftDrive', 'FSD_LongRange', {

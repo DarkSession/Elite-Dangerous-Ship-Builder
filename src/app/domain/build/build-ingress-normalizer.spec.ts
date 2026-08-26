@@ -36,6 +36,34 @@ describe('incoming build normalization', () => {
     expect(result.reason).toContain(UNKNOWN_HULL_PAYLOAD.Ship);
   });
 
+  it('gives an incoming build the package own identity for its hull', () => {
+    // A journal `Loadout` event, and every SLEF export made from one, writes the
+    // hull the way the game logs it. The package carries `Anaconda`, and the
+    // symbol a build is activated with is the one every asset directory in this
+    // application is named for, so it has to be the package's.
+    const result = normalizeIncomingBuild({
+      event: 'Loadout',
+      Ship: FIXTURE_HULL.toLowerCase(),
+      Modules: [],
+    });
+
+    expect(result.kind).toBe('accepted');
+    if (result.kind !== 'accepted') {
+      return;
+    }
+    expect(result.candidate.shipSymbol).toBe(FIXTURE_HULL);
+  });
+
+  it('leaves a hull the package already names alone', () => {
+    const result = normalizeIncomingBuild({ event: 'Loadout', Ship: FIXTURE_HULL, Modules: [] });
+
+    expect(result.kind).toBe('accepted');
+    if (result.kind !== 'accepted') {
+      return;
+    }
+    expect(result.candidate.shipSymbol).toBe(FIXTURE_HULL);
+  });
+
   it('accepts an absent fixed mount already populated by the package', () => {
     const result = normalizeIncomingBuild(OMITTED_FIXED_MOUNTS);
 
@@ -220,6 +248,23 @@ describe('incoming build normalization', () => {
 
     expect(reopened.kind).toBe('accepted');
     expect(reopened.kind === 'accepted' ? reopened.notices : null).toEqual([]);
+  });
+
+  it('refuses a reconstructed candidate whose hull is not a package identity', () => {
+    // Nothing to resolve on this door: a built candidate's hull cannot be
+    // renamed without rebuilding it. The gate says so rather than letting a
+    // build through that would draw no schematics — the identity belongs to
+    // whoever reconstructed it.
+    const built = ShipLoadout.fromLoadout({
+      event: 'Loadout',
+      Ship: FIXTURE_HULL.toLowerCase(),
+      Modules: [],
+    });
+
+    const result = normalizeReconstructedBuild(built);
+
+    expect(result.kind).toBe('unusable');
+    expect(result.kind === 'unusable' ? result.reason : '').toContain(FIXTURE_HULL.toLowerCase());
   });
 
   it('touches nothing outside the candidate it was given', () => {
