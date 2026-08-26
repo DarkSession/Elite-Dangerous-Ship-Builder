@@ -374,7 +374,12 @@
 // which is less than one candidate card. It releases with the command bar, at
 // the command bar's own threshold, and the page scrolls instead.
 @include layout.short-viewport {
-  .outfitting__centre {
+  // The three bounded regions are released together, because a short viewport
+  // releases them for one reason: there is no share of the screen left to
+  // divide, so the page carries what the columns were carrying.
+  .outfitting__centre,
+  .outfitting__ledger-region,
+  .outfitting__status-rail {
     position: static;
     block-size: auto;
   }
@@ -401,18 +406,11 @@
     min-block-size: 0;
   }
 
-  .outfitting__ledger-region {
-    position: static;
-    block-size: auto;
-  }
-
   .outfitting__ledger {
     overflow-y: visible;
   }
 
   .outfitting__status-rail {
-    position: static;
-    block-size: auto;
     max-block-size: none;
     overflow-y: visible;
   }
@@ -666,10 +664,7 @@
   // The notices are a labelled rule over prose rather than a band, so they take
   // the inset back as their own padding and their text stands where the ledger's
   // does.
-  .outfitting__feedback {
-    order: 0;
-  }
-
+  .outfitting__feedback,
   .outfitting__empty {
     order: 0;
   }
