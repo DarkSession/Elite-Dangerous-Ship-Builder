@@ -37,9 +37,9 @@ export function slefFallback(): SlefFallback {
       }
       // The format is chosen by which of the two moments this was: a link that
       // has just been refused is the reason the other way out is being reached
-      // for, so the layer opens on it. An ordinary Export opens where canvas 1c
-      // draws the list starting — on the share link — and the Commander moves
-      // if they want the payload.
+      // for, so the layer opens on it whatever was last chosen. An ordinary
+      // Export opens on whatever the store holds, which starts where canvas 1c
+      // draws the list starting — on the payload.
       if (active.link().kind === 'refused') {
         store.selectExportMode('slef');
       }

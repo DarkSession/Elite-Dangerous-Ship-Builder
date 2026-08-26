@@ -6,9 +6,10 @@ Generate and deliver one SLEF entry for the exact active revision. With no activ
 does not open: the host explains the prerequisite and offers Import/Create recovery with no stale
 payload.
 
-The layer is shared with feature 001. Its accessible mode selector contains Share Link (feature 001)
-and SLEF (feature 004); journal and Markdown modes from `.design` are absent. This document defines
-the SLEF mode only.
+The layer is shared with feature 001. Its accessible mode selector contains SLEF (feature 004) and
+Share Link (feature 001), in that order, and the layer opens on SLEF — both as `.design` draws them.
+The journal and Markdown modes the canvas once drew are gone from the canvas as well as from the
+product. This document defines the SLEF mode only.
 
 ## Composition
 

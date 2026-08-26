@@ -178,7 +178,7 @@ export class SlefPresenter {
     this.#store.openLayer('import');
   }
 
-  openExport(mode: SlefExportMode = 'link'): void {
+  openExport(mode: SlefExportMode = 'slef'): void {
     this.#store.selectExportMode(mode);
     this.#store.openLayer('export');
     this.prepareExport();
@@ -396,7 +396,8 @@ export class SlefPresenter {
 
   #modes(): readonly SlefExportModeView[] {
     const selected = this.#store.exportMode();
-    return (['link', 'slef'] as const).map((mode) => ({
+    // The order the canvas lists them in: the payload first, the link beside it.
+    return (['slef', 'link'] as const).map((mode) => ({
       mode,
       label: this.#messages.message(`slef.export.mode.${mode}` as MessageKey),
       description: this.#messages.message(`slef.export.mode.${mode}.description` as MessageKey),

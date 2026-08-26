@@ -254,13 +254,14 @@ test.describe('the layer’s semantics', () => {
     const link = layer(page).getByRole('radio', { name: /share link/i });
     const slef = layer(page).getByRole('radio', { name: /slef json/i });
 
-    await expect(link).toHaveJSProperty('checked', true);
-    await expect(slef).toHaveJSProperty('checked', false);
-
-    await slef.check();
-
+    // The layer opens on the format canvas 1c draws first and draws selected.
     await expect(slef).toHaveJSProperty('checked', true);
     await expect(link).toHaveJSProperty('checked', false);
+
+    await link.check();
+
+    await expect(link).toHaveJSProperty('checked', true);
+    await expect(slef).toHaveJSProperty('checked', false);
   });
 
   test('hands the payload over readonly, and never as a disabled field', async ({ page }) => {

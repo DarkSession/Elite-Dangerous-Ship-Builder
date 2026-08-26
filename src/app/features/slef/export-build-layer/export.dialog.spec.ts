@@ -91,18 +91,14 @@ describe('the export layer’s host', () => {
   it('offers the two drawn formats, and no others', () => {
     const fixture = render();
 
-    expect(fixture.componentInstance.modes().map((mode) => mode.value)).toEqual(['link', 'slef']);
+    expect(fixture.componentInstance.modes().map((mode) => mode.value)).toEqual(['slef', 'link']);
   });
 
-  it('starts on the format the accepted hierarchy lists first', () => {
+  it('starts on the format the canvas draws first and draws selected', () => {
     const fixture = render();
 
-    // The canvas lists SLEF, Journal, Markdown, Share Link; two of those four
-    // are not capabilities this application has, so the order it draws is not
-    // the order it has. The accepted one is in
-    // `specs/004-slef/design/reference-review.md`, "Resulting hierarchy".
-    expect(fixture.componentInstance.selectedMode()).toBe('link');
-    expect(fixture.componentInstance.selectedModes()).toEqual(['link']);
+    expect(fixture.componentInstance.selectedMode()).toBe('slef');
+    expect(fixture.componentInstance.selectedModes()).toEqual(['slef']);
   });
 
   it('composes the two-region layer canvas 1c draws', () => {
@@ -146,6 +142,7 @@ describe('the export layer’s host', () => {
 
   it('generates nothing for a format that is not the payload', () => {
     commit();
+    store.selectExportMode('link');
     const fixture = render();
 
     store.openLayer('export');

@@ -160,9 +160,9 @@ over `rgba(6,6,7,.8)`. Body `background: var(--panel)`, `border: 1px solid var(-
 `border-top: 1px solid var(--amber-a2)`, or an inline rule `border-top: 1px solid var(--amber-a14)`.
 
 Width is a property of what the dialog holds, not of which dialog it is: the canvases draw
-540 save, 560 import, 620 help, 760 export and 860 library. A dialog of prose and a field
-takes the middle step; the one that stands two regions side by side — canvas 1c's export
-dialog — takes the widest, because two regions need the room.
+540 save, 560 import, 620 help and 760 export. A dialog of prose and a field takes the
+middle step; the one that stands two regions side by side — canvas 1c's export dialog —
+takes the widest, because two regions need the room.
 
 ### Buttons
 
@@ -193,7 +193,7 @@ The chosen one takes `background: var(--amber-a14)`, `border-color: var(--amber-
 sets its title in `--amber-3`. The column is `236px` and is closed against the content
 beside it by `border-right: 1px solid var(--amber-a16)`, which runs from under the title
 bar to the foot of the panel — so the dialog's body carries no padding of its own and each
-region carries its own.
+region carries its own. The first choice is the one the layer opens on.
 
 Compact: the same choices as a `min-height: 38px` chip row with `gap: 6px` that scrolls
 sideways rather than wrapping, each chip condensed 600 tracked 0.14em on `--panel-3` in

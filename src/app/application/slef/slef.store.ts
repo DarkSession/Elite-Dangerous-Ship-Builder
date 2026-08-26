@@ -180,7 +180,10 @@ export class SlefStore {
   // ---- layer -------------------------------------------------------------
 
   readonly #layer = signal<SlefLayer>('none');
-  readonly #exportMode = signal<SlefExportMode>('link');
+  // The format the layer opens on: the one canvas 1c draws first and draws
+  // selected. It is sticky afterwards, so a Commander who moved to the link
+  // finds the link the next time they open it.
+  readonly #exportMode = signal<SlefExportMode>('slef');
 
   readonly layer = this.#layer.asReadonly();
   readonly exportMode = this.#exportMode.asReadonly();

@@ -24,7 +24,9 @@ The source is a visual/interaction reference, not executable behavior or authori
 - Use one shared import layer on ship-selection/build/library hosts and one shared Export Build layer
   on the active workspace; no feature-local duplicate implementations.
 - Preserve the integrated export modes but keep only feature 001 Share Link and feature 004 SLEF.
-  Journal/Markdown are outside accepted scope.
+  Journal/Markdown are outside accepted scope, and `.design` no longer draws them: this repository is
+  the source of truth for the design tool it syncs with, so a format the application does not offer is
+  taken out of the canvas rather than left drawn beside two that are real.
 - Treat canvas dimensions as examples. Fluid max sizing chooses dialog, sheet or constrained
   full-height layer from available content/space; tablet, landscape, expansion, RTL and zoom keep all
   actions reachable.
@@ -68,11 +70,11 @@ Shared host action
 │   ├── explicit actions
 │   └── shared replacement confirmation -> commit -> workspace (002 notice, 003 rail)
 └── Export Build layer (active build only)
-    ├── Share Link mode (feature 001)
-    └── SLEF mode (feature 004)
-        ├── validation + labelled readonly artifact
-        ├── metadata/status
-        └── Download + Copy + optional Share
+    ├── SLEF mode (feature 004) — the format the canvas lists first and opens on
+    │   ├── validation + labelled readonly artifact
+    │   ├── metadata/status
+    │   └── Download + Copy + optional Share
+    └── Share Link mode (feature 001)
 ```
 
 ## What was built, against what was drawn
@@ -102,9 +104,13 @@ Written after the implementation, so the record is what happened rather than wha
 
 ### Adapted, with the reason
 
-- **Two formats, not four.** `JOURNAL LOADOUT` and `MARKDOWN TABLE` are drawn and are not
-  capabilities this application has. A control for a format that cannot be produced is worse than no
-  control; the bundle is checked for their labels so neither can return by accident.
+- **Two formats, not four — in the canvas now as well as in the product.** `JOURNAL LOADOUT` and
+  `MARKDOWN TABLE` were drawn and are not capabilities this application has. A control for a format
+  that cannot be produced is worse than no control. They were first left drawn and not built, which
+  left the canvas and the product disagreeing about what the application offers; both are now removed
+  from `exp-modal` and `mexp-modal` in `.design/Ship Builder.dc.html`, along with their sample
+  payloads and the Export action's own tooltip. The bundle is still checked for their labels so
+  neither can return by accident. Import keeps its journal Loadout event — that one is real.
 - **Share is added by capability, never in place of Download.** The compact canvas draws `SHARE FILE`
   where the desktop draws `DOWNLOAD`. Treating them as the same control would take the always-working
   action away from exactly the platforms most likely to need it.
@@ -154,9 +160,13 @@ Written when the gap was found, so the record says what was wrong rather than on
   export layer now has that block of its own in `e2e/slef-export.spec.ts`, measured against
   `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
 
-- **Two things the canvas draws are still deliberately not drawn**, and are recorded here so the next
-  reading does not take them for the same oversight: the payload's visible field label, which this
-  review's "Adapt" list added on purpose, and the order of the two formats, which the resulting
-  hierarchy above puts Share Link first — the canvas's order is SLEF, Journal, Markdown, Share Link,
-  and removing the two formats that cannot be produced would leave the drawn order meaning something
-  it was never drawn to mean.
+- **The order and the opening format now follow the canvas.** They did not: the list was drawn Share
+  Link first and opened on it, justified in `slef-fallback.adapter.ts` by a comment that said this was
+  "where canvas 1c draws the list starting". Canvas 1c draws SLEF JSON first and draws it selected.
+  The comment was wrong, the resulting hierarchy above is corrected with it, and the layer now opens
+  on the payload. The choice stays sticky, so a Commander who moves to the link finds the link next
+  time.
+
+- **One thing the canvas does not draw is still drawn on purpose**, recorded so the next reading does
+  not take it for the same oversight: the payload's visible field label, which this review's "Adapt"
+  list added deliberately, along with the package's verdict and the link's absence above it.
