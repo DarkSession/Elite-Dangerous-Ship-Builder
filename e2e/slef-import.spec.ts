@@ -248,7 +248,11 @@ test.describe('what the layer refuses, and what it leaves alone', () => {
 
     await expect(page.getByRole('dialog', { name: /replace/i })).toHaveCount(0);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
-    expect(await page.evaluate(() => location.hash)).not.toBe(before);
+
+    // The canonical link is republished by an effect after the build commits,
+    // not by the commit itself, so the first slot can be on screen a frame
+    // before the fragment catches up. Read until it does rather than once.
+    await expect.poll(() => page.evaluate(() => location.hash)).not.toBe(before);
   });
 });
 
