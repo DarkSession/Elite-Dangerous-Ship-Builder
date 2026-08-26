@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { revealMount } from './outfitting-surfaces';
 
 /**
  * SC-002: the chooser keeps up with typing, on the largest list there is.
@@ -46,6 +47,11 @@ test.describe('candidate search timing', () => {
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
 
+    // The mobile viewport draws canvas 1d's ledger, which is one category at a
+    // time: the largest list belongs to an optional internal, which is not the
+    // category the ledger opens on. The press is not part of the measurement —
+    // the clock below starts after the chooser is open.
+    await revealMount(page, LARGEST.slot);
     const row = page.locator(`[data-slot-key="${LARGEST.slot}"] button`).first();
     await row.click();
     await expect(row).toHaveAttribute('aria-pressed', 'true');
