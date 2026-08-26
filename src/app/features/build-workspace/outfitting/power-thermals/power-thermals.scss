@@ -223,12 +223,10 @@
   container-name: heat;
 }
 
-// The split opens at the same wide step the panel around it uses. It used to
-// open at the medium one, and 24rem is not a wide box: a 430-pixel phone gives
-// this block about 25rem, so the bars and the tiles went side by side there —
-// two columns of 12rem each — while every canvas, roomy and narrow alike, draws
-// this block as one column. Above the wide step the split is what it was meant
-// to be, a genuinely wide box using its width (reported 2026-08-26).
+// The split opens at the same wide step the panel around it uses. The medium
+// one is 24rem, and a 430-pixel phone gives this block about 25rem, so the bars
+// went beside the tiles there while every canvas draws this block as one column
+// (reported 2026-08-26).
 @include layout.container-wide-up(heat) {
   // One box split down the middle: the bars and the caption that belongs to them
   // down one side, and the key over the four tiles down the other. Every
@@ -394,123 +392,10 @@
   background-color: var(--edsb-surface-accent-solid);
 }
 
-// The distributor table. Its own element rather than the shared data table,
-// because one of its cells is a control and the shared one takes formatted
-// strings — and the control is the point of the block.
-.table-scroller {
-  @include layout.bounded-scroller;
-}
-
-.distributor {
-  inline-size: 100%;
-  border-collapse: collapse;
-}
-
-.distributor th,
-.distributor td {
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-inline-tight);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
-  text-align: start;
-  vertical-align: middle;
-}
-
-.distributor thead th {
-  @include layout.micro-label;
-}
-
-.distributor tbody th {
-  color: var(--edsb-text-accent);
-}
-
-// The elements are named in the selector because the rule they have to beat
-// carries a type, and a bare class does not outweigh one class plus one type:
-// `text-align: end` never applied and every figure sat at its column's start.
-// Count these with Angular's scoping attribute in mind — every compound
-// selector is emitted with an `[_ngcontent-…]` — which is what still leaves
-// `.distributor thead th` a type ahead of this rule and its headings labelled.
-.distributor th.distributor__cell--numeric,
-.distributor td.distributor__cell--numeric {
-  @include layout.metric-value(var(--edsb-text-size-body));
-
-  text-align: end;
-}
-
-// The pip column takes what its four blocks need and no more: given the row's
-// spare width it would take it all, and the recharge beside it would be wrapping
-// two digits at a time while the blocks sat in a strip wider than the table's
-// figures put together.
-.distributor__pips {
-  inline-size: var(--edsb-border-width-hairline);
-}
-
-// Every figure in this table is short and none of them reads as two lines.
-.distributor__cell--numeric {
-  white-space: nowrap;
-}
-
-// The canvas's own colour per bank, on the bank's name and on its pip blocks.
-// It is decoration on top of the reading: the group is named with the allocation
-// it stands at, and the recharge beside it is the figure that matters.
-@mixin bank-colour($colour) {
-  .distributor__bank {
-    color: $colour;
-  }
-
-  .pips__fill {
-    background-color: $colour;
-  }
-
-  .pips__step:hover {
-    border-color: $colour;
-  }
-}
-
-[data-bank='systems'] {
-  @include bank-colour(var(--edsb-surface-bank-systems));
-}
-
-[data-bank='engines'] {
-  @include bank-colour(var(--edsb-surface-bank-engines));
-}
-
-[data-bank='weapons'] {
-  @include bank-colour(var(--edsb-surface-bank-weapons));
-}
-
-// Four blocks across the cell, each of them the control for that many pips.
-.pips {
-  display: flex;
-  gap: var(--edsb-space-inline-tight);
-  min-inline-size: 0;
-}
-
-// Each block stretches with the column, but never below the 24-pixel floor:
-// four at the 2.75rem design baseline are a strip wider than the rest of the
-// table's figures put together, and the canvas draws a pip block as a chip in a
-// row of them rather than as a button standing on its own. The rail draws the
-// same control the same size, and the row scrolls inside the table's own
-// scroller when even the floor no longer fits.
-.pips__step {
-  @include layout.target-floor;
-
-  position: relative;
-  flex: 1 1 var(--edsb-target-size-floor);
-  min-inline-size: var(--edsb-target-size-floor);
-  padding: 0;
-  background-color: var(--edsb-surface-inset);
-  border: var(--edsb-border-width-hairline) solid transparent;
-  cursor: pointer;
-}
-
-// Filled from the leading edge, so half a pip fills half a block.
-.pips__fill {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  display: block;
-  background-color: var(--edsb-surface-accent-solid);
-}
+// The distributor and its pips are their own component
+// (`../distributor-block`): the table, the four blocks and the arrangement that
+// stacks them were a third of this stylesheet, and none of the other three
+// blocks touch any of it.
 
 // ---------------------------------------------------------------------------
 // The priority groups, as bars

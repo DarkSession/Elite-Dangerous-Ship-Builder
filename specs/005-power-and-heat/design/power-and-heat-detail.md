@@ -304,6 +304,51 @@ Displayed pips come from the result, not from what was pressed. Capacity and rat
 properties of the fitted distributor and do not move. Zero pips is a genuine zero recharge and reads
 as one.
 
+### Three lines to a bank where five columns do not fit (2026-08-26)
+
+Five columns do not fit a phone. `SYS`, a capacity, a rated recharge, four pip blocks at their
+24-pixel floor and a recharge come to about 380 pixels before the text is scaled at all, and a
+430-pixel phone gives this block about 400 — a 390-pixel one about 360. Built as one table at every
+width it met a Commander sideways in its own bounded scroller, with the control they came for off the
+end of it, and the screen inventory's long-standing promise of "the same five fields per bank,
+stacked" had never been built. That is the report of 2026-08-26.
+
+Canvas 1d does not draw a table here. It gives each bank the bank's name against its recharge, the
+four blocks across the full width below them, and stacks the three banks. **The narrow arrangement is
+that, plus the two readings the artboard drops**: `CAPACITY` and `MAX RCH` go on a third line, each
+beside its own column name, because this application keeps every field at every width and a figure
+whose header row is off screen has to name itself. The extra names are `aria-hidden` — the header row
+is still in the accessibility tree, so a reader who met both would meet the column name twice.
+
+**Every table role is written out.** The narrow arrangement lays a row out as a grid, and a `display`
+other than the table ones takes the implicit roles with it: the rows, the cells and the row headers
+would all leave the accessibility tree, and with them the column each figure belongs to. `role="table"`,
+`role="row"`, `role="columnheader"`, `role="rowheader"` and `role="cell"` are stated, so the table is a
+table at both widths and only its drawing changes.
+
+**Which arrangement appears is asked of the block, not of the device.** The threshold is 30rem — the
+width five columns need at a size they can be read at — so a doubled text size steps down to the
+stacked arrangement for the same reason a phone does, and a half-panel too cramped for five columns
+takes it at any screen size. The canvas's own table fits its half-panel because the canvas draws a pip
+block 16 pixels wide; this application draws it at SC 2.5.8's 24-pixel floor, which is 38 more pixels
+across the four, and that is the difference between a table that fits a cramped column and one that
+does not.
+
+**The block is its own component** (`outfitting/distributor-block`). The table, the four pip blocks
+and the arrangement that stacks them were a third of the dashboard's stylesheet — enough of it that
+the panel crossed the project's 10kB per-component style ceiling when the stacked arrangement was
+added — and none of the panel's other three blocks touch any of it. It is presentation only: the rows
+arrive already formatted and a press leaves as intent, so the one pip condition stays where it lives.
+It is feature 005's own source and is fenced as such in `scripts/policy/power-heat-ownership.mjs`.
+
+Canvas 1d heads this block `PIP ALLOCATION` and sets `DISTRIBUTOR 8A` beside it. Neither is built.
+The name was settled by the 2026-08-25 revision at `POWER DISTRIBUTOR & PIPS`, and one block with two
+names across two widths is worse than either name; the identity was withdrawn by that same revision
+and 1d's short form does not reopen it. Canvas 1d's foot line — `3 · 1 · 2 PIPS` and
+`WEP DRAIN 6.4 MJ/s · NET −0.6` — is also unbuilt: the pip triple is the three rows read across, and
+the weapon drain is feature 007's reading of the weapon capacitor, which the power and heat ownership
+fence keeps out of this block. Recorded rather than built.
+
 `distributorMetrics()` returns `null` when the distributor is absent, switched off, unresolvable or
 shed by the retracted power budget. That is one unavailable group, with no capacitor figures in it
 and no diagnosis of which of those four it was. The rest of the dashboard stays usable.
