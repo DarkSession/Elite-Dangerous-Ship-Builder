@@ -417,6 +417,30 @@ it can choose a side that a later one then fills, or run a leader across a mount
 move; a second pass re-asks with the whole plate visible. It is what the Corsair needed, and it is
 also what raised the shipped package's shortest visible leader from under a pixel to ten.
 
+**The ladder is climbed in small rungs, because the ladder is what decides whether the aligned turn
+is reachable at all.** This is the correction of 2026-08-26, and it is the second half of the
+Corsair's story above. Every rung is a multiple of a floor computed from the separation the plate
+asked for, and that separation moves with the plate's own width — so a coarse ladder tries a
+_different set of radii_ at every width. The rung that clears the two hardpoints blocking node 1's
+aligned turn exists at one plate width and is stepped straight over at the next, and where it is
+stepped over the room-scored search takes the arrangement instead and turns the ring wherever the
+plate has space. The two answers are a quarter of the ship apart. Measured on the Corsair's top
+plate before the correction, node 1's mark crossed the hull between 180 and 185 CSS pixels of plate,
+crossed back at 190, and again at 245, 250 and 255 — the drawing reshuffling itself while a
+Commander resized their window _(Commander request 2026-08-26)_. Twenty rungs of about a twelfth
+reach the same distance eight rungs of a quarter did, and the aligned answer is reachable at every
+width instead of at some of them. Eight more rings of a dozen marks is nothing to compute.
+
+**Between arrangements that separate their marks equally well, the one that moved them less wins.**
+The search tries the requested separation and then retreats from it, and used to keep whichever
+attempt separated its marks best by the barest margin. That made the choice a knife edge for the
+same reason: a hundredth of a frame unit decided it, and the attempts differ in the _turn_ their
+rings take as well as in their radius. So a spread now has to be two per cent roomier to win on
+room, and spreads inside that band are settled by total travel. Both halves move smoothly with the
+plate's width, which is what stops a small change in the request choosing a wholly different
+picture — and of two equally legible arrangements, the truer one is the one that stayed nearer the
+mounts it is a drawing of.
+
 A ring must also clear every published mount position that is _not_ in the crowd, **and the ring
 grows until it can**. Without the first half a mark can come to rest exactly where a different mount
 is, so a reader sees a numbered square sitting on mount B carrying mount A's number while A's leader

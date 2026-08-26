@@ -93,15 +93,29 @@ export const MARK_SEPARATION = 0.055;
 /**
  * How far a cluster's ring may be grown before the search gives up on it.
  *
- * Each step is a quarter wider than the last, so eight of them reach about five
- * times the ring a cluster starts with. A cluster still with nowhere to go
- * after that is on a plate too small for any arrangement, and its marks stay on
- * their mounts: a mount flung far enough that only the leader says where it is
- * has been made harder to read, not easier, and the plate's own front-on-hover
- * rule already handles the honest overlap.
+ * Twenty steps of about a twelfth reach the same six times the ring a cluster
+ * starts with that eight steps of a quarter used to. A cluster still with
+ * nowhere to go after that is on a plate too small for any arrangement, and its
+ * marks stay on their mounts: a mount flung far enough that only the leader says
+ * where it is has been made harder to read, not easier, and the plate's own
+ * front-on-hover rule already handles the honest overlap.
+ *
+ * **The step is fine rather than coarse because the ladder is what decides
+ * whether the aligned ring is reachable at all.** Every rung is a multiple of a
+ * floor computed from the requested separation, so a coarse ladder tries a
+ * *different set of radii* for every plate width — and a radius that clears the
+ * mounts blocking the aligned turn at one width is stepped straight over at the
+ * next. Where that happened the room-scored search below took the arrangement
+ * instead, and it turns the ring wherever the plate has space rather than where
+ * the mounts point. On the Corsair's top plate the two answers are a quarter of
+ * the ship apart, and it flipped between them at 185, 210 and 250 pixels of
+ * plate — the drawing reshuffling itself as a Commander resized their window
+ * (reported 2026-08-26). A ladder fine enough not to skip the working radius is
+ * what keeps the aligned answer reachable at every width, and eight extra rings
+ * of a dozen marks is nothing to compute.
  */
-const GROWTH = 1.25;
-const GROWTH_STEPS = 8;
+const GROWTH = 1.0925;
+const GROWTH_STEPS = 20;
 
 /**
  * How many turns of a crowd's ring are tried before one is chosen.
@@ -579,6 +593,22 @@ function arrange(
   }));
 }
 
+/**
+ * How far an arrangement moved its marks in total, in the frame's own units.
+ *
+ * The tie-break between arrangements that separate their marks equally well.
+ * An arrangement is a picture of where the mounts are, so of two that are
+ * equally legible the truer one is the one that moved less — and a mark that
+ * travels the length of the hull to gain a hundredth of a unit of clearance has
+ * bought nothing and lost the reading.
+ */
+function travelled(placements: readonly MarkPlacement[]): number {
+  return placements.reduce(
+    (total, placement) => total + separation(placement.anchor, placement.mark),
+    0,
+  );
+}
+
 /** The smallest pairwise distance in an arrangement; `Infinity` for one mark. */
 function tightest(placements: readonly MarkPlacement[]): number {
   let closest = Infinity;
@@ -599,6 +629,25 @@ function tightest(placements: readonly MarkPlacement[]): number {
  */
 const RETREAT = 0.8;
 const ATTEMPTS = 8;
+
+/**
+ * How much better one arrangement's spread has to be to count as better at all.
+ *
+ * Two per cent. Comparing raw spreads made the choice between eight attempts a
+ * knife edge: a hundredth of a unit decided it, the winner changed with every
+ * few pixels of plate width, and because the attempts differ in the *turn* their
+ * rings take as well as in their radius, the mark that had been drawn forward of
+ * the hull was suddenly drawn aft of it. Measured on the Corsair's top plate,
+ * hardpoint 1's mark crossed the whole ship between 180 and 185 pixels of plate,
+ * crossed back at 190, and again at 245, 250 and 255 — a drawing that reshuffled
+ * itself as a Commander resized their window (reported 2026-08-26).
+ *
+ * So a spread has to be meaningfully roomier to win on room, and spreads inside
+ * the band are settled by which arrangement moved its marks less. Both halves
+ * are continuous in the plate's width, which is what stops the flip: a small
+ * change in the request can no longer choose a wholly different picture.
+ */
+const MEANINGFUL_SPREAD = 1.02;
 
 /**
  * Every mark's drawn position: the best arrangement this search can find.
@@ -630,8 +679,7 @@ export function placeMarks(
   separationFraction: number = MARK_SEPARATION,
   markFraction: number = separationFraction / 2,
 ): readonly MarkPlacement[] {
-  let best: readonly MarkPlacement[] | null = null;
-  let bestSpread = -Infinity;
+  let best: { placements: readonly MarkPlacement[]; spread: number; travel: number } | null = null;
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {
     const placements = arrange(
@@ -641,11 +689,19 @@ export function placeMarks(
       markFraction * frame.width,
     );
     const spread = tightest(placements);
-    if (spread > bestSpread) {
-      best = placements;
-      bestSpread = spread;
+    const travel = travelled(placements);
+
+    // Room first, but only where the difference in room is one a reader could
+    // see. Inside the band the arrangement that moved its marks least wins, and
+    // an exact tie keeps the roomier request, which is the earlier attempt.
+    const roomier = best === null || spread > best.spread * MEANINGFUL_SPREAD;
+    const poorer = best !== null && best.spread > spread * MEANINGFUL_SPREAD;
+    const closer = best !== null && !poorer && travel < best.travel - 1e-9;
+
+    if (roomier || closer) {
+      best = { placements, spread, travel };
     }
   }
 
-  return best ?? [];
+  return best?.placements ?? [];
 }

@@ -13,10 +13,17 @@
  *
  * So this measures what actually overlaps: the numeral's own ink box against
  * every dot on the plate and against every numeral already placed. A corner
- * that clears them all is taken. When no corner does, the numeral is pushed
- * out along the line from the plate's centre through its dot until it is
- * clear, and reports that it moved — which is what earns it the leader line
- * back to the dot, the way feature 010's schematics explain a displaced mark.
+ * that clears them all is taken.
+ *
+ * **When one numeral cannot be placed, none of them stays.** The whole plate
+ * moves to a ring just inside its frame, every numeral on it, each tied back to
+ * its own dot by a leader. Pushing out only the numeral that failed was the
+ * earlier rule, and it produced a plate read two ways at once: most numerals
+ * beside their dots, one of them out on its own with a line, and no way to see
+ * that the odd one out is the same kind of mark as the rest. A ring is one
+ * rule applied once — every numeral the same distance out, every one with a
+ * leader, and the crowded middle of the plate left to the dots, which are the
+ * reading (Commander request 2026-08-26).
  *
  * **The dot never moves.** On a hull schematic the mark *is* the mount and may
  * be walked to where there is room; here the dot is the reading — it is where
@@ -92,27 +99,14 @@ const CORNERS: readonly (readonly [number, number])[] = [
 const ANCHOR_LEFT = 3;
 const ANCHOR_TOP = 4;
 
-/** How far each push moves a numeral that no corner could place, in pixels. */
-const PUSH_STEP = 3;
-
-/** How many times it may be pushed before the plate is simply too full. */
-const PUSH_LIMIT = 24;
-
 /**
- * The bearings tried at each distance, as turns from the outward one.
+ * The air the ring keeps between itself and the edge of the plate.
  *
- * Nearest-first and alternating side to side, so a numeral leaves along the
- * line from the plate's centre through its dot wherever that line is free, and
- * swings only as far aside as it must. Sixteen of them close the circle.
+ * A numeral drawn hard against the frame reads as clipped even when every
+ * pixel of it is inside, so the ring stands one clearance in from the edge the
+ * corner rule already measures against.
  */
-const BEARINGS: readonly number[] = (() => {
-  const step = (2 * Math.PI) / 16;
-  const turns: number[] = [0];
-  for (let index = 1; index <= 8; index += 1) {
-    turns.push(index * step, -index * step);
-  }
-  return turns;
-})();
+const RING_INSET = 1;
 
 interface Box {
   readonly left: number;
@@ -171,31 +165,199 @@ function room(box: Box, dots: readonly NumeralAnchor[], placed: readonly Box[]):
   return least;
 }
 
+/** An angle brought back into `-pi` to `pi`, so two of them can be compared. */
+function wrapped(angle: number): number {
+  return Math.atan2(Math.sin(angle), Math.cos(angle));
+}
+
 /**
- * The direction a numeral is pushed when no corner will hold it.
+ * Angles as near the ones asked for as a minimum spacing allows.
  *
- * Outward from the plate's centre through the dot, which is away from the
- * crowd on a plate whose mounts straddle the axis. A dot sitting exactly on
- * the centre has no such line, and is pushed straight up — the one direction
- * the four corners between them leave least covered.
+ * The crowd's own directions are what a leader is read against, so a ring that
+ * spaces its numerals evenly throws away the only thing that ties a numeral to
+ * its dot at a glance. What is wanted instead is the nearest arrangement that
+ * is still legible: minimise how far each numeral moves from its own bearing,
+ * subject to consecutive ones standing at least `step` apart.
+ *
+ * Substituting `q(i) = angle(i) - i * step` turns "at least one step apart"
+ * into "not decreasing", which is isotonic regression — and the pool-adjacent-
+ * violators algorithm below solves it exactly in one pass: each new value is
+ * merged with the block before it for as long as that block sits above it, and
+ * a merged block takes the mean of what went into it.
  */
-function pushDirection(dot: NumeralAnchor, metrics: NumeralMetrics): readonly [number, number] {
+function spread(wanted: readonly number[], step: number): readonly number[] {
+  const levels: number[] = [];
+  const counts: number[] = [];
+
+  wanted.forEach((angle, index) => {
+    let level = angle - index * step;
+    let weight = 1;
+    while (levels.length > 0 && levels[levels.length - 1]! > level) {
+      const previousWeight = counts.pop()!;
+      const previousLevel = levels.pop()!;
+      level = (level * weight + previousLevel * previousWeight) / (weight + previousWeight);
+      weight += previousWeight;
+    }
+    levels.push(level);
+    counts.push(weight);
+  });
+
+  const angles: number[] = [];
+  levels.forEach((level, block) => {
+    for (let member = 0; member < counts[block]!; member += 1) {
+      angles.push(level);
+    }
+  });
+  return angles.map((level, index) => level + index * step);
+}
+
+/**
+ * The fallback: every numeral an equal share of the circle.
+ *
+ * Reached only when the nearest arrangement would run right round the ring and
+ * meet itself. Turned to wherever best matches the bearings asked for, which
+ * has a closed form — the circular mean of each bearing less the slot it takes.
+ */
+function even(wanted: readonly number[], step: number): readonly number[] {
+  let sin = 0;
+  let cos = 0;
+  wanted.forEach((angle, index) => {
+    sin += Math.sin(angle - index * step);
+    cos += Math.cos(angle - index * step);
+  });
+  const rotation = Math.atan2(sin, cos);
+  return wanted.map((_, index) => rotation + index * step);
+}
+
+/**
+ * Every numeral out on a ring just inside the plate, each keeping its own side.
+ *
+ * The arrangement a crowded plate takes as a whole. Three things decide it, in
+ * this order:
+ *
+ *   * **the radius** is the largest that still draws every numeral wholly on
+ *     the plate — as far from the dots as there is room for, because the middle
+ *     of a crowded plate is exactly what the ring is clearing.
+ *   * **the order** is the numerals' own angular order about the plate's
+ *     centre, so a mount on the left of the plate keeps a numeral on the left
+ *     and no two leaders cross.
+ *   * **the spacing** is the smallest turn that keeps two boxes apart on that
+ *     radius, or an even share of the circle where even that will not fit. A
+ *     numeral is then no further from its own bearing than the crowd forces it
+ *     to be.
+ *
+ * The one remaining freedom is where the whole ring is turned to, and that is
+ * closed in the loop below: every rotation is scored by how far it moves each
+ * numeral from the direction its own dot actually lies in, and the best is
+ * taken. The optimum for a given cut has a closed form — the circular mean of
+ * each bearing less the slot it would take — so the search is over the `n`
+ * places the ring can be cut and nothing more.
+ */
+function ringPlacements(
+  anchors: readonly NumeralAnchor[],
+  metrics: NumeralMetrics,
+): readonly NumeralPlacement[] {
   const middle = metrics.plate / 2;
-  const dx = dot.x - middle;
-  const dy = dot.y - middle;
-  const length = Math.hypot(dx, dy);
-  if (length < 1e-6) {
-    return [0, -1];
+  const halfBox = Math.max(metrics.width, metrics.height) / 2;
+  // Never smaller than the box itself: a plate too small to hold a ring still
+  // draws one rather than stacking every numeral on the centre.
+  const radius = Math.max(middle - halfBox - metrics.clearance - RING_INSET, halfBox);
+
+  const bearingOf = (anchor: NumeralAnchor): number => {
+    const dx = anchor.x - middle;
+    const dy = anchor.y - middle;
+    // A dot on the plate's own centre lies in no direction, and takes the one
+    // the four corners leave least covered.
+    return Math.hypot(dx, dy) < 1e-6 ? -Math.PI / 2 : Math.atan2(dy, dx);
+  };
+
+  const round = [...anchors].sort(
+    (one, other) =>
+      bearingOf(one) - bearingOf(other) ||
+      one.order - other.order ||
+      one.id.localeCompare(other.id),
+  );
+  const count = round.length;
+
+  // The turn that holds two boxes apart on this radius, as the chord between
+  // them: `chord = 2r sin(step / 2)`.
+  //
+  // The chord is the box's *diagonal* rather than its widest side. Two boxes
+  // miss each other when they are clear on either axis, so the shapes that
+  // still overlap at a given distance are the ones inside a rectangle of the
+  // box's own width and height — and the longest line that fits in that
+  // rectangle is its diagonal. A chord measured on the widest side alone
+  // separates a pair standing square to each other and fails the pair standing
+  // corner to corner, which at sixteen numerals on a ring is most of them.
+  const chord = Math.hypot(metrics.width, metrics.height) + metrics.clearance;
+  const required = 2 * Math.asin(Math.min(1, chord / (2 * radius)));
+  const step = Math.min(required, (2 * Math.PI) / count);
+
+  let best: { cut: number; angles: readonly number[]; cost: number } | null = null;
+  for (let cut = 0; cut < count; cut += 1) {
+    // The bearings unrolled from this cut, so they increase rather than jumping
+    // at the wrap from pi to -pi.
+    const wanted: number[] = [];
+    let previous = bearingOf(round[cut]!);
+    wanted.push(previous);
+    for (let index = 1; index < count; index += 1) {
+      let bearing = bearingOf(round[(cut + index) % count]!);
+      while (bearing < previous) {
+        bearing += 2 * Math.PI;
+      }
+      wanted.push(bearing);
+      previous = bearing;
+    }
+
+    const angles = spread(wanted, step);
+
+    // The one constraint the run above cannot see: the last numeral on the arc
+    // and the first are neighbours too, around the back of the ring. An arc
+    // that has grown too long for that is given up on and spaced evenly.
+    const span = angles[count - 1]! - angles[0]!;
+    const settled = span <= 2 * Math.PI - step + 1e-9 ? angles : even(wanted, step);
+
+    let cost = 0;
+    settled.forEach((angle, index) => {
+      const away = wrapped(angle - wanted[index]!);
+      cost += away * away;
+    });
+
+    // Ties keep the earliest cut, so one plate is one arrangement.
+    if (best === null || cost < best.cost - 1e-12) {
+      best = { cut, angles: settled, cost };
+    }
   }
-  return [dx / length, dy / length];
+
+  const settled = best ?? { cut: 0, angles: [-Math.PI / 2], cost: 0 };
+  const placements = new Map<string, NumeralPlacement>();
+  for (let index = 0; index < count; index += 1) {
+    const anchor = round[(settled.cut + index) % count]!;
+    const angle = settled.angles[index] ?? 0;
+    const centreX = middle + radius * Math.cos(angle);
+    const centreY = middle + radius * Math.sin(angle);
+    placements.set(anchor.id, {
+      id: anchor.id,
+      left: centreX - metrics.width / 2 - anchor.x,
+      top: centreY - metrics.height / 2 - anchor.y,
+      displaced: true,
+    });
+  }
+
+  return anchors.map(
+    (anchor) => placements.get(anchor.id) ?? { id: anchor.id, left: 0, top: 0, displaced: false },
+  );
 }
 
 /**
  * Place every numeral so that none is drawn over a dot or over another numeral.
  *
- * Deterministic: the same plate produces the same answer every time, because
- * the mounts are placed in hardpoint order and every choice below is decided by
- * arithmetic on their published positions.
+ * Two arrangements, and the plate is wholly in one of them. Every numeral takes
+ * one of its dot's four corners, or — the moment one of them cannot — every
+ * numeral goes out to the ring. Deterministic either way: the same plate
+ * produces the same answer every time, because the mounts are considered in
+ * hardpoint order and every choice below is decided by arithmetic on their
+ * published positions.
  */
 export function placeNumerals(
   anchors: readonly NumeralAnchor[],
@@ -232,77 +394,20 @@ export function placeNumerals(
       }
     }
 
-    if (chosen !== null) {
-      placements.set(anchor.id, {
-        id: anchor.id,
-        left: chosen.offset[0] + ANCHOR_LEFT,
-        top: chosen.offset[1] + ANCHOR_TOP,
-        displaced: false,
-      });
-      placed.push(chosen.box);
-      continue;
+    // One numeral with nowhere to stand settles the whole plate: it goes to the
+    // ring, and so does every other, so a reader meets one kind of mark rather
+    // than two (Commander request 2026-08-26).
+    if (chosen === null) {
+      return ringPlacements(anchors, metrics);
     }
 
-    // No corner had room. Walk the numeral out around its own dot: each step
-    // further out, and at each distance the bearings nearest the outward one
-    // first, so it leaves along the line from the plate's centre through this
-    // dot whenever that line is free and only swings aside when it is not.
-    const [dx, dy] = pushDirection(anchor, metrics);
-    const outward = Math.atan2(dy, dx);
-    // Far enough out that the numeral clears its *own* dot. The distance is
-    // measured centre to centre, so the dot's radius and the clearance alone
-    // put the box's near edge half a numeral inside the mark its leader points
-    // back to — at the built metrics, an 11px numeral spanning 1px to 12px from
-    // the centre of a 5px dot. `others` excludes the anchor deliberately, so
-    // nothing downstream rejects it (reported 2026-08-26).
-    const start = Math.max(
-      metrics.dotRadius + metrics.clearance + Math.max(metrics.width, metrics.height) / 2,
-      PUSH_STEP,
-    );
-    let fallback: { left: number; top: number; box: Box } | null = null;
-    let settled = false;
-    for (let step = 0; step < PUSH_LIMIT && !settled; step += 1) {
-      const distance = start + step * PUSH_STEP;
-      for (const bearing of BEARINGS) {
-        const angle = outward + bearing;
-        const centreX = anchor.x + Math.cos(angle) * distance;
-        const centreY = anchor.y + Math.sin(angle) * distance;
-        const left = centreX - metrics.width / 2;
-        const top = centreY - metrics.height / 2;
-        const box = boxAt(left, top, metrics);
-        if (!inside(box, metrics)) {
-          continue;
-        }
-        // Remembered so a plate with no clear position anywhere still draws the
-        // numeral somewhere on the plate rather than off it.
-        fallback ??= { left, top, box };
-        if (others.some((dot) => touchesDot(box, dot, metrics))) {
-          continue;
-        }
-        if (placed.some((other) => overlaps(box, other, metrics.clearance))) {
-          continue;
-        }
-        fallback = { left, top, box };
-        settled = true;
-        break;
-      }
-    }
-
-    // A plate with no room at all keeps the numeral against its dot rather than
-    // dropping it: the mark is still stated in words beside the plate, and a
-    // numeral drawn nowhere would be the one mark with no reading.
-    const resting = fallback ?? {
-      left: anchor.x + ANCHOR_LEFT,
-      top: anchor.y + ANCHOR_TOP,
-      box: boxAt(anchor.x + ANCHOR_LEFT, anchor.y + ANCHOR_TOP, metrics),
-    };
     placements.set(anchor.id, {
       id: anchor.id,
-      left: resting.left - anchor.x,
-      top: resting.top - anchor.y,
-      displaced: true,
+      left: chosen.offset[0] + ANCHOR_LEFT,
+      top: chosen.offset[1] + ANCHOR_TOP,
+      displaced: false,
     });
-    placed.push(resting.box);
+    placed.push(chosen.box);
   }
 
   // Handed back in the order they arrived, so the caller's list still lines up.
