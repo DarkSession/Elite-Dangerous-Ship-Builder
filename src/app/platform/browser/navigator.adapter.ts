@@ -109,11 +109,12 @@ export class NavigatorAdapter {
   /**
    * Opens the share sheet and says which of the three things happened.
    *
-   * `copyText` and `share` above collapse a dismissal into a failure, because
-   * for a link both mean "it did not leave this way". A SLEF export has to tell
-   * them apart: a Commander who dismissed the chooser did not hit a problem,
-   * and reporting one would be an error message about a decision they made
-   * (delivery contract, "Platform share").
+   * Three outcomes rather than a boolean, because a SLEF export has to tell a
+   * dismissal from a problem: a Commander who dismissed the chooser did not hit
+   * one, and reporting an error about a decision they made would be wrong
+   * (delivery contract, "Platform share"). A caller that does not need the
+   * distinction — sharing a link, where a dismissal and a failure both mean it
+   * did not leave this way — collapses it against `'shared'`.
    *
    * The payload is built by the caller and handed straight to `share`, with no
    * awaited step in between, so the gesture's transient activation is still
@@ -129,27 +130,6 @@ export class NavigatorAdapter {
       return 'shared';
     } catch (error) {
       return error instanceof Error && error.name === 'AbortError' ? 'cancelled' : 'failed';
-    }
-  }
-
-  /**
-   * Opens the platform share sheet.
-   *
-   * A Commander who dismisses the sheet cancels the share, and the rejection
-   * that reports it is indistinguishable from a failure. Both return false,
-   * because both mean the same thing here: the link did not leave this way, so
-   * the one on screen is still the way out.
-   */
-  async share(payload: { title: string; url: string }): Promise<boolean> {
-    const navigator = this.#window?.navigator;
-    if (typeof navigator?.share !== 'function') {
-      return false;
-    }
-    try {
-      await navigator.share(payload);
-      return true;
-    } catch {
-      return false;
     }
   }
 }

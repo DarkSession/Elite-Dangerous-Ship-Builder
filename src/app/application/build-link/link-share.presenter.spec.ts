@@ -20,7 +20,7 @@ class StubNavigator {
   copied: string | null = null;
   shared: unknown = null;
   copyResult = true;
-  shareResult = true;
+  shareResult: 'shared' | 'cancelled' | 'failed' = 'shared';
   hasShare = true;
 
   languages(): readonly string[] {
@@ -36,8 +36,8 @@ class StubNavigator {
     return this.hasShare;
   }
 
-  async share(payload: unknown): Promise<boolean> {
-    this.shared = payload;
+  async shareData(data: ShareData): Promise<'shared' | 'cancelled' | 'failed'> {
+    this.shared = data;
     return this.shareResult;
   }
 }
@@ -141,16 +141,21 @@ describe('the share link, and every way passing it on can fail', () => {
     ).toBe(false);
   });
 
-  it('treats a dismissed share sheet as a share that did not happen', async () => {
-    const { dialog, active } = setup((navigator) => {
-      navigator.shareResult = false;
-    });
-    active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
+  it.each(['cancelled', 'failed'] as const)(
+    'treats a %s share sheet as a share that did not happen',
+    async (outcome) => {
+      const { dialog, active } = setup((navigator) => {
+        navigator.shareResult = outcome;
+      });
+      active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
 
-    await dialog.share();
+      await dialog.share();
 
-    expect(dialog.feedback()).toBe('share-failed');
-  });
+      // The presenter collapses the two on purpose: for a link both mean it did
+      // not leave this way, so the one on screen is still the way out.
+      expect(dialog.feedback()).toBe('share-failed');
+    },
+  );
 
   it('shares the address and stays quiet when it worked', async () => {
     const { dialog, active, navigator } = setup();
