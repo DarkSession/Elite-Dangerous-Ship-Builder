@@ -238,15 +238,19 @@
 // figures. That is also what keeps the German heads out of the module's track:
 // `DURCHSCHLAG` at 73px and `REICHWEITE` at 67px were pulling `auto` tracks wide
 // enough to starve the name to 40px — one or two characters a line — and a
-// flexible track takes its share instead of its content, so the long head wraps
-// inside its own column, which is what the heads are marked decorative for.
+// flexible track takes its share instead of its content, so a long head can no
+// longer take a column's width out of its neighbour. What it needs for itself
+// is what the threshold below is measured from.
 //
 // The threshold follows from the columns rather than from an argument: the table
 // appears where all five of them can be read, which means the module cell at its
 // 155px and each figure column at least as wide as the longer of its own head
-// and its own figure. In German that is `DURCHSCHLAG` at 73px, against about
-// 50px for `3,000 m`; in English every head is shorter than its figures. So
-// 155px + 4 × 73px + four gutters ≈ 479px, and the threshold is 30rem.
+// and its own figure. In German that is `DURCHSCHLAG`, whose min-content is
+// 73.3px, against about 50px for `3,000 m`; in English every head is shorter
+// than its own figures. So 155px + 4 × 73.3px + four 10px gutters ≈ 488px — the
+// gutter being `--edsb-space-inline`, which resolves to 0.625rem — and the
+// threshold is the next whole rem above that: 31rem, which leaves each figure
+// track 75px.
 //
 // A narrower table is not a tighter one — it is a broken word. The floors hold
 // the module cell at 155px and hand what is left to the four figure tracks, so
@@ -263,10 +267,19 @@
 //
 // The figure floor stays 2.5rem, which is inside the 30–56px canvas 1d narrows
 // its own columns to. At this threshold the figures resolve well above it, so it
-// is not what sizes them: it is the guard that keeps the five tracks inside the
-// block if a translation ever grew past what the threshold was measured against,
-// because a table wider than its block is the horizontal scrolling this
-// application does not do.
+// is not what sizes them: it is the width below which a figure column stops
+// being a column at all, and a floor is what a flexible track may not be
+// squeezed under.
+//
+// It is deliberately a length rather than `min-content`. A `minmax()` minimum is
+// the one thing that can push a grid past its own container, so a content-derived
+// floor would make whether this table overflows its block a property of how long
+// a translation happens to be — and a table wider than its block is the
+// horizontal scrolling this application does not do. With lengths the five
+// tracks cannot cost more than 155px + 4 × 40px + four gutters = 395px, well
+// inside the 496px the container query already guarantees. Keeping the table
+// inside the block is that query's job; this floor only decides how narrow a
+// column may get within it.
 @container weapons (min-width: 31rem) {
   // One grid for the whole table, borrowed by the heads and by every row
   // through `subgrid`. Declaring the same track list on each row instead lets a

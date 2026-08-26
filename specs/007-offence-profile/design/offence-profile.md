@@ -211,8 +211,12 @@ the panel speaks.
 
 ## Requirement mapping
 
-The capability owns FR-001–FR-011, and records FR-012 as withdrawn. `WEAPONS` owns FR-002 and FR-005 with the collection owning
-FR-004; `DAMAGE PROFILE` owns FR-003 for the bar and its legend, FR-008 for the range bands,
-and FR-006 and FR-007 for the capacitor; `SHOT CONVERGENCE` owns FR-010 and FR-011; FR-012 is withdrawn. FR-009 is owned
+The capability owns FR-001–FR-013. `WEAPONS` owns FR-002 and FR-005 with the collection owning
+FR-004; `DAMAGE PROFILE` owns FR-003 for the bar and its legend, FR-008 for the range bands, and
+FR-006 and FR-007 for the capacitor; `SHOT CONVERGENCE` owns FR-010 to FR-013 — the projection, the
+sentences beside the plate, every hardpoint on it and the ring on the selected one. FR-009 is owned
 wherever a bar is drawn, which is the range bands and two of the four capacitor rows. The whole panel
-and the rail cell enforce FR-001's package-only boundary, and the canvas contract enforces SC-004.
+and the rail cell enforce FR-001's package-only boundary, and the canvas contract enforces SC-004,
+including the two departures FR-012 and FR-013 are (review notes 8 and 17).
+
+FR-012 was withdrawn on 2026-08-24 and reinstated on 2026-08-26; `spec.md` carries the whole of why.

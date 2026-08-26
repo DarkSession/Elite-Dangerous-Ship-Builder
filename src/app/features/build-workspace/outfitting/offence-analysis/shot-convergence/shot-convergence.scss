@@ -159,8 +159,14 @@
   background-color: var(--edsb-surface-mount-aimed);
 }
 
+// The empty mount's numeral is text, and takes a text ink. The mark beside it
+// takes `--edsb-surface-mount-empty`, which is a non-text ink at the 3:1 that
+// asks of it; a 7px numeral set in the same one would be text below the 4.5:1
+// floor. The hull schematics split an empty mount exactly this way — a quiet
+// outline with `--edsb-text-muted` on its number — so one mount reads the same
+// way in both drawings, which is what the token's own note claims.
 .plate__numeral--empty {
-  color: var(--edsb-surface-mount-empty);
+  color: var(--edsb-text-muted);
 }
 
 // The numeral follows the ring, so the selected mount is one mark rather than a
@@ -178,8 +184,9 @@
 // outline against a fill is the difference a reader sees first, and the ink
 // confirms it. What it is is written out in the mark's own sentence either way.
 //
-// The fill is the plate's ground rather than `transparent`, so a dashed ring or
-// an axis running under the mark does not read as something inside it.
+// The fill is the same ground the armed dot's own halo is drawn in rather than
+// `transparent`, so a dashed ring or an axis running under the mark does not
+// read as something inside it.
 .plate__dot--empty {
   z-index: 1;
   background-color: var(--edsb-surface-sunken);

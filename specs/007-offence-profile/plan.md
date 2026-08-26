@@ -192,7 +192,7 @@ The complete decisions and runtime probes are in [research.md](./research.md). T
   boundary, the four drawn fields and the zero/infinity wording.
 - [contracts/workspace-integration.md](./contracts/workspace-integration.md) freezes the mode strip,
   the rail cell and the inert weapon row.
-- [design/screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-011 to the drawn blocks, and records FR-012 as withdrawn.
+- [design/screen-inventory.md](./design/screen-inventory.md) maps FR-001–FR-013 to the drawn blocks. FR-012 was withdrawn on 2026-08-24 and reinstated on 2026-08-26, with FR-013 added beside it; both are sanctioned departures from the canvas rather than readings of it.
 - [design/offence-profile.md](./design/offence-profile.md) defines information order, composition and
   every semantic state.
 - [design/component-state-preview-matrix.md](./design/component-state-preview-matrix.md) records the

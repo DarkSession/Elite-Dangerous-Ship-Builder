@@ -21,7 +21,9 @@ import { ShotConvergence } from './shot-convergence';
  * release that changed what the package publishes.
  */
 describe('ShotConvergence', () => {
-  function geometryOf(loadout: ShipLoadout = everyStateBuild()) {
+  function geometryOf(
+    loadout: ShipLoadout = everyStateBuild(),
+  ): Extract<Convergence, { kind: 'available' }> {
     const convergence = projectConvergence(
       OFFENCE_FIXTURE_HULL,
       BuildMetrics.of(loadout).weaponMetrics().weapons,
@@ -29,7 +31,7 @@ describe('ShotConvergence', () => {
     if (convergence.kind !== 'available') {
       throw new Error('expected an available convergence for the fixture hull');
     }
-    return convergence satisfies Extract<Convergence, { kind: 'available' }>;
+    return convergence;
   }
 
   function render(options: { build?: ShipLoadout; selectedSlot?: string } = {}) {

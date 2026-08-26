@@ -115,8 +115,10 @@
   // carries every hardpoint the hull has, and the workspace has one of them
   // selected while a Commander works on it.
   //
-  // Empty takes the same quiet ink the hull schematics give an empty mount, so
-  // one mount reads the same way in both drawings. Selected takes the brightest
+  // Empty is a mark ink and not a text one: the hull schematics draw an empty
+  // mount as a quiet outline with `--edsb-text-muted` on its number, and the
+  // plate splits it the same way, so one mount reads alike in both drawings and
+  // the numeral stays above the text contrast floor. Selected takes the brightest
   // amber rather than the accent the schematics fill a selected mark with: the
   // plate's fill already reports whether a mount is armed and how it is aimed,
   // so selection is drawn as a ring *around* that fill and needs an ink that

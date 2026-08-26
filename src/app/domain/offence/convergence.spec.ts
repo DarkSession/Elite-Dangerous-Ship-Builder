@@ -10,6 +10,7 @@ import {
 } from './convergence';
 import {
   everyStateBuild,
+  innerMountsBuild,
   noWeaponsBuild,
   OFFENCE_FIXTURE_HULL,
   populatedBuild,
@@ -96,22 +97,31 @@ describe('projectConvergence', () => {
   });
 
   it('measures the spans and the widest across the armed mounts alone', () => {
-    // The stock build arms this hull's two Small mounts and nothing else, so
-    // every figure below would move if an empty mount were counted — the Huge
-    // and Large hardpoints stand much further out than either Small one.
-    const weapons = BuildMetrics.of(populatedBuild()).weaponMetrics().weapons;
+    // Armed on a Large and a Medium, with the hull's two outermost mounts — its
+    // Smalls — left empty. Every figure below therefore has a different answer
+    // over the armed group than over the hull, which is what makes the
+    // assertions discriminate: on a build that arms the outermost mount the two
+    // answers coincide and the same assertions would pass either way.
+    const weapons = BuildMetrics.of(innerMountsBuild()).weaponMetrics().weapons;
 
     const convergence = available(projectConvergence(OFFENCE_FIXTURE_HULL, weapons));
 
     const armed = convergence.mounts.filter((mount) => mount.weapon !== null);
+    expect(armed.length).toBeGreaterThan(1);
     const across = armed.map((mount) => mount.offset[0]);
     const up = armed.map((mount) => mount.offset[1]);
     expect(convergence.lateralSpanMetres).toBeCloseTo(Math.max(...across) - Math.min(...across), 9);
     expect(convergence.verticalSpanMetres).toBeCloseTo(Math.max(...up) - Math.min(...up), 9);
-    expect(convergence.widest?.offsetMetres).toBe(Math.max(...armed.map((m) => m.offsetMetres)));
 
-    // And that is genuinely narrower than the whole hull, so the assertions
-    // above are about the armed group rather than about every mount.
+    // The widest is an armed mount, and it is not the hull's own outermost one.
+    const furthestArmed = Math.max(...armed.map((mount) => mount.offsetMetres));
+    const furthestOfHull = Math.max(...convergence.mounts.map((mount) => mount.offsetMetres));
+    expect(furthestArmed).toBeLessThan(furthestOfHull);
+    expect(convergence.widest?.offsetMetres).toBe(furthestArmed);
+    expect(convergence.widest?.weapon).not.toBeNull();
+
+    // And the spans are genuinely narrower than the hull's, so they too are
+    // about the armed group rather than about every mount.
     const everyMount = convergence.mounts.map((mount) => mount.offset[0]);
     expect(convergence.lateralSpanMetres).toBeLessThan(
       Math.max(...everyMount) - Math.min(...everyMount),

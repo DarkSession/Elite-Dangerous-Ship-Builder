@@ -66,6 +66,9 @@ async function plateMarks(page: Page): Promise<string[]> {
 /**
  * One catalogue sentence as a pattern its rendered form has to match.
  *
+ * With `capture`, the named placeholder becomes a capturing group, so a rendered
+ * sentence can also be read back for the value that was put into it.
+ *
  * The four shot sentences differ only in the words the catalogue puts between
  * their placeholders — whether a weapon is named, and whether the mount is the
  * selected one — so which sentence a mark got is exactly which template it was
@@ -73,15 +76,16 @@ async function plateMarks(page: Page): Promise<string[]> {
  * the words here keeps the check on the catalogue's own wording and works in any
  * language the application is read in.
  */
-function asSentence(message: string): RegExp {
+function asSentence(message: string, capture?: string): RegExp {
   const literal = (part: string): string => part.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-  return new RegExp(
-    `^${message
-      .split(/\{\{\w+\}\}/u)
-      .map(literal)
-      .join('.+')}$`,
-    'u',
-  );
+  const marked = capture === undefined ? message : message.split(`{{${capture}}}`).join('\u0000');
+  const pattern = marked
+    .split(/\{\{\w+\}\}/u)
+    .map(literal)
+    .join('.+')
+    .split('\u0000')
+    .join('(.+?)');
+  return new RegExp(`^${pattern}$`, 'u');
 }
 
 /**
@@ -407,13 +411,23 @@ test.describe('inspecting the weapons', () => {
               .gridTemplateColumns.split(' ')
               .map((track) => Number.parseFloat(track)),
             heads: head === null ? [] : rights(head),
-            // Each head's own box, to see whether the word inside it fitted.
+            // Each head's own box against the box the same head would have on
+            // one line. Comparing the five heads with each other only catches a
+            // wrap while at least one of them is unwrapped, which is an
+            // accident of `MODULE` being short rather than the property meant.
             headBoxes:
               head === null
                 ? []
                 : [...head.querySelectorAll(':scope > *')].map((cell) => {
-                    const box = cell.getBoundingClientRect();
-                    return { width: box.width, height: box.height };
+                    const probe = cell.cloneNode(true) as HTMLElement;
+                    probe.style.position = 'absolute';
+                    probe.style.visibility = 'hidden';
+                    probe.style.inlineSize = 'max-content';
+                    probe.style.whiteSpace = 'nowrap';
+                    head.append(probe);
+                    const single = probe.getBoundingClientRect().height;
+                    probe.remove();
+                    return { height: cell.getBoundingClientRect().height, single };
                   }),
             rows: [...node.querySelectorAll('.weapon')].map((row) =>
               [...row.querySelectorAll('.weapon__figure')].map((cell) =>
@@ -447,9 +461,9 @@ test.describe('inspecting the weapons', () => {
       // across two lines inside its own word is not a column head, and that is
       // what the promotion width is measured to avoid.
       expect(table.headBoxes).toHaveLength(5);
-      const lines = table.headBoxes.map((box) => box.height);
-      for (const height of lines) {
-        expect(Math.abs(height - Math.min(...lines))).toBeLessThanOrEqual(1);
+      for (const box of table.headBoxes) {
+        expect(box.single).toBeGreaterThan(0);
+        expect(box.height).toBeLessThanOrEqual(box.single + 1);
       }
 
       // And every row borrows the table's own tracks, so each figure ends where
@@ -911,9 +925,12 @@ test.describe('shot convergence', () => {
       asSentence(englishMessages['offence.convergence.shot']),
       asSentence(englishMessages['offence.convergence.shot.selected']),
     ];
-    // The empty sentences are tried first: a weapon's name is whatever the
-    // package returned, so the sentence that names one is the looser pattern and
-    // an empty mount's own words fit inside it.
+    // The empty sentences are tried first, and the order matters for one pair.
+    // The armed *selected* sentence is `Hardpoint …, …, …, the selected mount:`,
+    // whose two open placeholders swallow `empty, the selected mount` whole, so
+    // an empty mount that happens to be selected matches it too. The unselected
+    // pair does not overlap: the armed sentence needs two `, ` before its colon
+    // and the empty one carries only one.
     const isEmpty = (line: string): boolean => empty.some((pattern) => pattern.test(line));
     expect(stated.filter(isEmpty)).toHaveLength(mounts - armed);
     expect(
@@ -947,12 +964,18 @@ test.describe('shot convergence', () => {
     // around (011 FR-022).
     const stated = await block.locator('.shots__entry').allInnerTexts();
     const patterns = [
-      asSentence(englishMessages['offence.convergence.shot.selected']),
-      asSentence(englishMessages['offence.convergence.empty.selected']),
+      asSentence(englishMessages['offence.convergence.shot.selected'], 'hardpoint'),
+      asSentence(englishMessages['offence.convergence.empty.selected'], 'hardpoint'),
     ];
     const selected = stated.filter((line) => patterns.some((pattern) => pattern.test(line)));
     expect(selected).toHaveLength(1);
-    expect(selected[0]).toContain(await numeral.innerText());
+
+    // Read the hardpoint back out of the sentence's own `{{hardpoint}}` slot and
+    // compare it with the numeral the ring is drawn beside. A `toContain` here
+    // would pass on any sentence that happens to carry the digit anywhere —
+    // `13.3 m off the axis` carries a `3` — which is most of them.
+    const named = patterns.map((pattern) => pattern.exec(selected[0] ?? '')?.[1]).find(Boolean);
+    expect(named).toBe(await numeral.innerText());
   });
 
   test('moves the shots when the target range moves', async ({ page }) => {
