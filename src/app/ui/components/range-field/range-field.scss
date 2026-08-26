@@ -2,21 +2,33 @@
 
 // A labelled slider with its value beside it.
 //
-// The reference draws it as a tracked monospace label, a flat inset track with
-// an amber fill behind the thumb, and the figure set large to the trailing
-// side (canvas 1c, `SHOT CONVERGENCE`). The control itself is a native range
-// input; everything here is appearance, and none of it changes what the
-// platform reports.
+// The reference draws it as a tracked monospace label with the figure set large
+// against it, a flat inset track on the row beneath the two, and the ends of
+// the scale under that (canvas 1c, `SHOT CONVERGENCE`, as its 2026-08-25
+// revision re-laid it). The control itself is a native range input; everything
+// here is appearance, and none of it changes what the platform reports.
 
 :host {
   display: block;
 }
 
+// Two columns for the row the label and the figure share, and everything below
+// it spanning both. The figure is set against the label rather than beside the
+// track, so the track is the full measure of the control at every width — which
+// is what let the canvas take the slider down to a phone without the readout
+// squeezing it.
 .range {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--edsb-space-inline);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--edsb-space-inline);
+  row-gap: var(--edsb-space-stack-tight);
+}
+
+.range__track,
+.range__scale,
+.range__description {
+  grid-column: 1 / -1;
 }
 
 .range__label {
@@ -121,7 +133,6 @@
 
 // The ends of the scale, printed under the track they belong to.
 .range__scale {
-  grid-column: 2;
   display: flex;
   justify-content: space-between;
   font-family: var(--edsb-font-metric);
@@ -131,7 +142,6 @@
 }
 
 .range__description {
-  grid-column: 1 / -1;
   font-size: var(--edsb-text-size-compact);
   line-height: var(--edsb-text-leading-body);
   color: var(--edsb-text-subtle);

@@ -498,7 +498,7 @@ registerPreview({
     state(
       'default',
       {
-        label: 'Range',
+        label: 'Target range',
         min: 100,
         max: 2000,
         step: 25,
@@ -519,7 +519,7 @@ registerPreview({
     ),
     state(
       'empty',
-      { label: 'Range', min: 100, max: 2000, step: 25, value: 100, valueText: '100 m' },
+      { label: 'Target range', min: 100, max: 2000, step: 25, value: 100, valueText: '100 m' },
       [
         'keeps its label with no scale ends and no description',
         'a value at the minimum still reads as a value, not as an empty control',
@@ -528,7 +528,7 @@ registerPreview({
     state(
       'disabled',
       {
-        label: 'Range',
+        label: 'Target range',
         min: 100,
         max: 2000,
         step: 25,

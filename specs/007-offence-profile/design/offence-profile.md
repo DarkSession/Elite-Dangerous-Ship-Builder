@@ -57,7 +57,7 @@ or action is omitted, abbreviated into ambiguity or moved to hover.
 
 ### The weapon collection
 
-The canvas's four columns, one row per returned weapon, in package order. The collection neither
+The canvas's five columns, one row per returned weapon, in package order. The collection neither
 sorts nor merges: two mounts carrying the same module are two rows, as the canvas draws them.
 
 Summary content, which is the canvas's row exactly:
@@ -65,9 +65,10 @@ Summary content, which is the canvas's row exactly:
 - the module's localized package name, with disclosed canonical fallback and an unavailable state;
 - the code line beneath it — the module's class and rating, its mount, and any engineering summary
   after them — drawn by the same badge feature 002 draws on a ledger row;
-- damage per second, armour piercing, and falloff range.
+- damage per second, armour piercing, maximum range, and falloff range.
 
-Piercing and falloff are frequently absent. An absent field is field-specific not-stated text, never
+Piercing, maximum range and falloff are frequently absent. An absent field is field-specific
+not-stated text, never
 a zero and never an em dash standing in for a number.
 
 A disabled weapon keeps its row and its own figures, and is marked as off.
@@ -135,9 +136,12 @@ are fields no canvas ever drew.
   the frame's own margin**, where the revised script puts it; its sentence still states its true
   offset and angle at that range, exactly as at any other. The field of view is a property of the
   drawing and never widens to fit a build.
-- The target range is a range field over the canvas's own bounds — 100 m to 2,000 m, starting at
-  600 m — announcing the distance as a Commander reads it rather than as a bare number. It is the one
-  control this panel owns, and it sets nothing outside the panel.
+- The target range is a range field over 500 m to 5,000 m on a 100 m step, starting at 1,000 m,
+  announcing the distance as a Commander reads it rather than as a bare number. Those are the
+  maintainer's bounds rather than the canvas's own 100 m–2,000 m: a weapon on this application's
+  reference hull states a maximum range of 3,000 m, and a track that stopped short of it could not
+  be moved to the distance being asked about (`design/canvas-contract.md`, review note 18). It is
+  the one control this panel owns, and it sets nothing outside the panel.
 - Four facts under the plate: the lateral span, the vertical span, the apparent spread at the chosen
   range, and the widest mount by its place in the hull's hardpoint order. The two spans are distances
   between mounts and do not move with the range; the spread does. All four are about a group of
@@ -145,10 +149,24 @@ are fields no canvas ever drew.
 - A hull the gunsight catalogue does not carry, or one whose gunsight does not line up with its
   hardpoints, says so. A convergence drawn from part of the mounts would be a spread nobody has.
   A hull the catalogue _does_ carry is drawn whether or not the build has armed any of it: saying
-  the package publishes no geometry for a placed hull would be false. It keeps its axes and its
-  rings and takes no mark, which is what the canvas's own script draws with nothing to place. A
-  hardpoint the build has not filled is not drawn at all: the canvas faces one on its own sample
-  build and says nothing whatsoever about it.
+  the package publishes no geometry for a placed hull would be false. It keeps its axes, its rings
+  and every one of its mounts, drawn empty.
+- **Every hardpoint the catalogue places is drawn, armed or not.** Where a mount sits is a property
+  of the hull rather than of what is on it, and a Commander deciding what to fit is asking exactly
+  where a shot from that mount would go. An empty one is drawn hollow, in the quiet ink the hull
+  schematics already give an empty mount, and its own sentence beside the plate names it as empty.
+  Neither canvas draws this; it is a sanctioned departure asked for by the maintainer
+  (`design/canvas-contract.md`, review note 8, and `spec.md` FR-012).
+- **The mount the workspace has selected takes the plate's other ink**, and a ring in the same one
+  around whichever mark it is. That ink is the one the canvas spends on a gimballed mount; the
+  fixed-against-aimed distinction is withdrawn from the drawing with it, because this plate has three
+  things to separate where the canvas had one, and how a weapon aims is the one of them its own
+  sentence was already carrying (`design/canvas-contract.md`, review note 17). Whether a mount is
+  armed stays with the fill against the outline rather than with the hue, so a selected empty
+  hardpoint is still visibly empty. The selection is feature 002's own `selectedSlotKey`, the same
+  one the ledger row and the hull schematics mark, so the three drawings of one hull cannot disagree
+  about which mount is open. Its sentence beside the plate names it as the selected mount
+  (`spec.md` FR-013).
 - The plate never mirrors. Its marks are placed physically, as the hull schematic's are: a gunsight
   is a view out of the cockpit, and a right-to-left interface does not move a ship's port hardpoint
   to starboard.
@@ -164,23 +182,26 @@ are fields no canvas ever drew.
 
 ## State behavior
 
-| State                                    | Presentation                                                             |
-| ---------------------------------------- | ------------------------------------------------------------------------ |
-| Workspace no build                       | Feature 001's no-build state; this panel draws nothing and calls nothing |
-| Complete populated                       | Exact totals, damage types, capacitor and every returned weapon field    |
-| Confirmed no fitted weapons              | Explicit empty meaning, with the package's own zero totals beside it     |
-| Coverage unavailable                     | Explicit qualification; no fabricated output and no false empty claim    |
-| Some or all returned weapons disabled    | Full rows with exact enabled flags and the package's own totals          |
-| Genuine zero weapon                      | Complete row including numeric zero in every drawn column                |
-| Unclassified absent                      | No segment, no legend line and no stated zero — and never unavailable    |
-| Range or piercing member absent          | Field-specific not stated, never numeric zero                            |
-| No conventional damage dealt             | No bar and no legend: nothing is drawn and no zero is stated             |
-| Nothing landing at any range band        | Four stated figures and no track at all, rather than four empty bars     |
-| Finite, immediate or infinite endurance  | The exact field, or `∞` with what it stands for said beside it           |
-| Zero capacity                            | The package's own zero, with no cause attached                           |
-| Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                |
-| A placed hull with nothing armed         | The plate with its axes and rings, no marks, and none of the four facts  |
-| A shot outside the plate's field of view | Clipped from the drawing, and kept in the sentences beside it            |
+| State                                    | Presentation                                                                           |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| Workspace no build                       | Feature 001's no-build state; this panel draws nothing and calls nothing               |
+| Complete populated                       | Exact totals, damage types, capacitor and every returned weapon field                  |
+| Confirmed no fitted weapons              | Explicit empty meaning, with the package's own zero totals beside it                   |
+| Coverage unavailable                     | Explicit qualification; no fabricated output and no false empty claim                  |
+| Some or all returned weapons disabled    | Full rows with exact enabled flags and the package's own totals                        |
+| Genuine zero weapon                      | Complete row including numeric zero in every drawn column                              |
+| Unclassified absent                      | No segment, no legend line and no stated zero — and never unavailable                  |
+| Range or piercing member absent          | Field-specific not stated, never numeric zero                                          |
+| No conventional damage dealt             | No bar and no legend: nothing is drawn and no zero is stated                           |
+| Nothing landing at any range band        | Four stated figures and no track at all, rather than four empty bars                   |
+| Finite, immediate or infinite endurance  | The exact field, or `∞` with what it stands for said beside it                         |
+| Zero capacity                            | The package's own zero, with no cause attached                                         |
+| Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                              |
+| A placed hull with nothing armed         | The plate with its axes, its rings and every mount drawn empty; none of the four facts |
+| A hardpoint with nothing fitted to it    | A hollow mark in the quiet ink, and a sentence naming it as empty                      |
+| The mount the workspace has selected     | The plate's other ink and a ring in it, and a sentence naming it as selected           |
+| An empty hardpoint that is also selected | Still hollow, in the selected ink: the hue says selected, the outline says empty       |
+| A shot outside the plate's field of view | Held at the frame's own margin, and stated at its true angle beside it                 |
 
 ## Status contribution
 
@@ -198,8 +219,12 @@ the panel speaks.
 
 ## Requirement mapping
 
-The capability owns FR-001–FR-011, and records FR-012 as withdrawn. `WEAPONS` owns FR-002 and FR-005 with the collection owning
-FR-004; `DAMAGE PROFILE` owns FR-003 for the bar and its legend, FR-008 for the range bands,
-and FR-006 and FR-007 for the capacitor; `SHOT CONVERGENCE` owns FR-010 and FR-011; FR-012 is withdrawn. FR-009 is owned
+The capability owns FR-001–FR-013. `WEAPONS` owns FR-002 and FR-005 with the collection owning
+FR-004; `DAMAGE PROFILE` owns FR-003 for the bar and its legend, FR-008 for the range bands, and
+FR-006 and FR-007 for the capacitor; `SHOT CONVERGENCE` owns FR-010 to FR-013 — the projection, the
+sentences beside the plate, every hardpoint on it and the ring on the selected one. FR-009 is owned
 wherever a bar is drawn, which is the range bands and two of the four capacitor rows. The whole panel
-and the rail cell enforce FR-001's package-only boundary, and the canvas contract enforces SC-004.
+and the rail cell enforce FR-001's package-only boundary, and the canvas contract enforces SC-004,
+including the two departures FR-012 and FR-013 are (review notes 8 and 17).
+
+FR-012 was withdrawn on 2026-08-24 and reinstated on 2026-08-26; `spec.md` carries the whole of why.
