@@ -75,6 +75,12 @@ export function withNameAndIdent(
 ): ShipLoadout {
   return ShipLoadout.fromLoadout({
     ...build.toLoadoutEvent({ moduleOrder: 'fitted' }),
+    // The package's serializer writes the hull the way the game logs it, and
+    // construction keeps whatever string it is handed — so a fixture that took
+    // the event's own spelling would carry a hull identity no ingress path in
+    // this application can produce. Carried over from the build being named,
+    // where it is already the package's own symbol.
+    Ship: build.shipSymbol,
     ShipName: name,
     ShipIdent: ident,
   });

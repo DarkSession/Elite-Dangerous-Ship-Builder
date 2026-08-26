@@ -85,7 +85,11 @@ through the package, export again and compare package-modelled fields under only
 constitutional normalizations plus documented package output normalization:
 
 - completed engineering quality and fixed stock fill may differ from the original input;
-- identity casing/header/whitespace may be normalized;
+- identity casing, header and whitespace may be normalized: the package's serializer writes the hull
+  in journal case, so a build reconstructed straight from the payload carries that spelling. A build
+  reconstructed through the shared ingress gate instead carries the package's own `Ship.symbol`
+  exactly (`specs/002-module-outfitting/contracts/outfitting-editor.md`, "Mandatory ingress
+  normalization"), which is what the import round trip compares;
 - derived top-level figures may be recomputed or omitted;
 - capture-only fields are outside application-model equality;
 - current package-derived module integrity remains equal after reconstruction.

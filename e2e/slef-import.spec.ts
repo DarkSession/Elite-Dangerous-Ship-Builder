@@ -91,6 +91,29 @@ test.describe('importing a build', () => {
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
+  test('draws the hull own schematics, however the source spelled it', async ({ page }) => {
+    await page.goto('/ships');
+    await openImport(page);
+    await paste(page, JOURNAL_EVENT);
+    await submit(page);
+
+    await expect(page).toHaveURL(/\/build($|[#?])/);
+
+    // A journal event names its hull the way the game logs it — `anaconda` —
+    // and feature 010 draws from `assets/ships/<symbol>/`, a directory named
+    // for the package's own symbol. A build that kept the source's spelling
+    // asks for a directory no host serves, and both plates report the hull as
+    // temporarily unavailable for a build that is perfectly whole.
+    for (const side of ['top', 'bottom']) {
+      const plate = page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"]`);
+      await expect(plate).toHaveAttribute('data-state', 'ready');
+      await expect(plate.locator('.schematic__artwork image')).toHaveAttribute(
+        'href',
+        `assets/ships/Anaconda/schematic-${side}.png`,
+      );
+    }
+  });
+
   test('adds no route and no history entry of its own', async ({ page }) => {
     await page.goto('/ships');
     const before = await page.evaluate(() => history.length);
