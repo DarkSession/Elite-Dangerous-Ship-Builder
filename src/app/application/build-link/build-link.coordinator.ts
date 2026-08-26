@@ -9,10 +9,10 @@ import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import {
-  ReplacementCoordinator,
+  BuildIngressCoordinator,
   type CandidateOutcome,
-  type ReplacementResult,
-} from '../active-build/replacement-coordinator';
+  type CommitResult,
+} from '../active-build/build-ingress.coordinator';
 import { recognizeBuildLinkFragment } from './fragment-recognizer';
 import { normalizeReconstructedBuild } from '../../domain/build/build-ingress-normalizer';
 import { LinkErrorMapper, type LinkFailure } from './link-error.mapper';
@@ -36,7 +36,7 @@ export type IngressResult =
   /** Already the active build's own published link; nothing to do. */
   | { readonly kind: 'unchanged' }
   | { readonly kind: 'refused'; readonly failure: LinkFailure }
-  | { readonly kind: 'replacement'; readonly result: ReplacementResult };
+  | { readonly kind: 'replacement'; readonly result: CommitResult };
 
 /**
  * The one way a build link becomes a build.
@@ -44,18 +44,19 @@ export type IngressResult =
  * Initial app start, a pasted address, a back navigation and an in-app
  * fragment change all arrive here, at the same method, in the same order:
  * recognize, bound, decode, reconstruct, refuse or offer. Four entry points
- * with four implementations would be four chances for one of them to skip the
- * replacement question (build-link contract, "Ingress pipeline").
+ * with four implementations would be four chances for one of them to commit a
+ * build the others would have refused (build-link contract, "Ingress
+ * pipeline").
  *
  * Nothing here touches the active build. A candidate is constructed in full and
- * handed to the shared replacement coordinator, so a link that turns out to be
+ * handed to the shared ingress coordinator, so a link that turns out to be
  * unreadable costs a Commander nothing — including the build they were already
  * editing (FR-018).
  */
 @Injectable({ providedIn: 'root' })
 export class BuildLinkCoordinator {
   readonly #location = inject(HistoryLocationAdapter);
-  readonly #replacement = inject(ReplacementCoordinator);
+  readonly #ingress = inject(BuildIngressCoordinator);
   readonly #active = inject(ActiveBuildStore);
   readonly #gameText = inject(GameTextPresenter);
   readonly #errors = inject(LinkErrorMapper);
@@ -144,7 +145,7 @@ export class BuildLinkCoordinator {
     this.#token += 1;
     const token = this.#token;
 
-    const result = await this.#replacement.replace(async () =>
+    const result = await this.#ingress.commit(async () =>
       this.#construct(recognized.fragment, token),
     );
 
@@ -233,6 +234,7 @@ export class BuildLinkCoordinator {
         provenance: 'link',
         qualityNotices: ingress.notices,
         sourceNamed: null,
+        autosaveRecordId: null,
         // A link build is saved nowhere a Commander could get it back from, so
         // it arrives dirty and the next replacement asks before discarding it.
         baseline: null,

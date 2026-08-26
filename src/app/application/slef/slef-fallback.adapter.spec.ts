@@ -21,6 +21,7 @@ describe('what feature 001 reaches for', () => {
       provenance: 'working',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     });
   }

@@ -21,21 +21,36 @@
       <edsb-status-notice tone="warning" [message]="reason" />
     }
 
+    <!--
+      Each commitment says what it does to the stored builds. Only where there
+      is a choice to make: with nothing to replace, the single action stores
+      this build and removes nothing, which the dialog's own title already says.
+    -->
     <div class="save__actions">
       @if (canOverwrite()) {
-        <edsb-action-button
-          [label]="overwriteLabel()"
-          emphasis="primary"
-          [disabled]="!canSave()"
-          (activated)="save(true)"
-        />
+        <div class="save__choice">
+          <edsb-action-button
+            [label]="overwriteLabel()"
+            emphasis="primary"
+            [disabled]="!canSave()"
+            [attr.aria-describedby]="overwriteOutcomeId"
+            (activated)="save(true)"
+          />
+          <p class="save__outcome" [id]="overwriteOutcomeId">{{ overwriteOutcome() }}</p>
+        </div>
       }
-      <edsb-action-button
-        [label]="asNewLabel()"
-        [emphasis]="canOverwrite() ? 'secondary' : 'primary'"
-        [disabled]="!canSave()"
-        (activated)="save(false)"
-      />
+      <div class="save__choice">
+        <edsb-action-button
+          [label]="asNewLabel()"
+          [emphasis]="canOverwrite() ? 'secondary' : 'primary'"
+          [disabled]="!canSave()"
+          [attr.aria-describedby]="canOverwrite() ? asNewOutcomeId : null"
+          (activated)="save(false)"
+        />
+        @if (canOverwrite()) {
+          <p class="save__outcome" [id]="asNewOutcomeId">{{ asNewOutcome() }}</p>
+        }
+      </div>
     </div>
   </div>
 </edsb-layer>

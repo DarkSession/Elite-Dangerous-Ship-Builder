@@ -2,13 +2,13 @@
 
 ## Routes
 
-| Route                         | Outcome                                                                                        |
-| ----------------------------- | ---------------------------------------------------------------------------------------------- |
-| `/`                           | Replace-navigation redirect to `/ships`; no payload                                            |
-| `/ships`                      | Hull catalogue with per-tab session state and no required hull selection                       |
-| `/ships/:symbol`              | Exact package hull detail: wide inspector or narrow full-screen layer; unknown is a safe error |
-| `/build` with optional `#b.…` | Active workspace; recognized fragment passes through the shared ingress pipeline               |
-| `/builds`                     | Record library: route-backed wide modal or narrow full-screen view                             |
+| Route                         | Outcome                                                                                               |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `/`                           | Replace-navigation redirect to `/ships`; no payload                                                   |
+| `/ships`                      | Hull catalogue with per-tab session state and no required hull selection                              |
+| `/ships/:symbol`              | Exact package hull detail: wide inspector or narrow full-screen layer; unknown is a safe error        |
+| `/build` with optional `#b.…` | Active workspace; recognized fragment passes through the shared ingress pipeline                      |
+| `/builds`                     | Record library: route-backed wide modal over an inert originating screen, or narrow full-screen layer |
 
 Catalogue constraints and scroll are deliberately absent from route query/fragment and build state. A detail back action restores the catalogue session anchor. Build links use only the `/build` fragment.
 
@@ -20,10 +20,10 @@ Required intent entry points:
 
 - catalogue: change search/facet/sort, open hull;
 - detail: back to catalogue, retry artwork, request stock creation;
-- workspace: save/name, share/copy, open library, retry persistence, accept/cancel replacement;
-- library: open, name/rename, duplicate, delete, resolve conflict, manage/discard, retry.
+- workspace: save/name, share/copy, open library, retry persistence;
+- library: search, choose a record, open, name/rename, duplicate, delete, resolve conflict, manage/discard, retry, close. The reference commits from a footer, so choosing a row is its own intent and the footer's actions act on what was chosen (revised 2026-08-25).
 
-Stock creation, record open and link load all call the same replacement coordinator. Candidate failure or cancel cannot mutate active state.
+Stock creation, record open, link load and SLEF import all call the same ingress coordinator, which constructs a candidate first and commits exactly once. Candidate failure cannot mutate active state. Since 2026-08-25 the coordinator asks nothing before committing: every build it replaces is already recoverable from a record (FR-008, FR-009). A candidate with no record of its own mints one at commit; a candidate opened from a record writes nothing until the first edit forks one, so autosave never reaches a named record.
 
 ## Shared presentation components
 
@@ -32,7 +32,7 @@ Screens compose feature 011's `AppShell`, landmark/page heading, navigation, act
 - `CollectionToolbar`: search, segmented size filter, additional fact filters, sort, active constraints and match count;
 - `ResponsiveCatalogueView`: semantic sortable manifest at wide widths and semantic stacked record cards at narrow widths;
 - `HullSummaryCard`, `FactList`, `UnavailableValue`, `HullArtwork` and `SlotLayout`;
-- `ResponsiveRecordList` and `SavedBuildCard`;
+- `ResponsiveRecordList` and `SavedBuildCard`, and the library's own modal frame, search-and-count header, column headers and committing footer;
 - `ShareLinkPanel`, `ConfirmDialog` and three-choice `ChoiceDialog`.
 
 Every shared component has default/populated, empty, loading, error and disabled previews where meaningful at desktop, tablet and mobile widths. Components use only design tokens and input/output state.

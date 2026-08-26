@@ -1,7 +1,7 @@
 # Hull Detail Screen
 
 **Route**: `/ships/:symbol`  
-**Requirements**: FR-001, FR-003, FR-004, FR-005, FR-006, FR-007, FR-009
+**Requirements**: FR-001, FR-003, FR-004, FR-005, FR-006, FR-007
 
 ## Composition
 
@@ -47,7 +47,6 @@ The viewing condition — "at 4 ENG pips" — is gone with the rotation rates an
 | Artwork loading                  | Facts and stock action remain usable; the loading mark is drawn inside the artwork plate so nothing below it moves when the illustration arrives, and the plate carries the mark alone — a hull that is no longer the hull being asked for is hidden rather than held up until the new one decodes. The load state stays textually available beside the mark. |
 | Artwork missing/offline uncached | Temporary same-origin asset absence is explained; the artwork coordinator retries when connectivity returns without a page reload; action remains usable.                                                                                                                                                                                                     |
 | Unknown symbol                   | Named error, catalogue-return action, no facts guessed, no build mutation/action.                                                                                                                                                                                                                                                                             |
-| Replacement confirmation         | Current unsaved work and incoming stock hull are named; confirm commits candidate, cancel retains current build and detail.                                                                                                                                                                                                                                   |
 | Package factory failure          | Blocking error is announced once; current build and route state remain.                                                                                                                                                                                                                                                                                       |
 
 ## Creation transaction
@@ -55,10 +54,13 @@ The viewing condition — "at 4 ENG pips" — is gone with the rotation rates an
 1. Confirm the route symbol resolves and a package default record exists.
 2. Construct `ShipLoadout.default(symbol)` as a detached candidate.
 3. Confirm every fixed mount is package-populated and read package validation.
-4. Ask replacement confirmation only after candidate success when active work is unsaved.
-5. On acceptance, commit to `ActiveBuildStore`, copy to this tab's working record, publish the fragment if representable and navigate to `/build`.
+4. Commit to `ActiveBuildStore`, mint an unnamed record for the new build and autosave it there,
+   publish the fragment if representable and navigate to `/build`.
 
-No image state participates in these steps.
+No image state participates in these steps, and no step asks a question. The replacement
+confirmation this screen used to raise at step 4 is withdrawn (screen inventory, "Cross-screen
+ingress rule"; Commander request 2026-08-25): the build a Commander leaves behind here is recoverable
+from a record `/builds` lists, so creating a stock hull takes nothing from them.
 
 ## Responsive and accessibility notes
 
@@ -67,8 +69,7 @@ No image state participates in these steps.
 - Hardness, crew, mass lock and armour are drawn bare, as the reference draws them, rather than being given an invented unit; every figure that has a unit names it.
 - Canonical package text is marked untranslated when appropriate.
 - The canvas's hard-coded mock values are visual references only; every displayed value is read from the active package record. Runtime art is the package `illustration.svg` rasterised to PNG by `scripts/convert-ship-artwork.mjs` and served from this application's origin, matching the reference's own `assets/ships/*.png`.
-- Component previews cover populated, missing-fact, artwork-loading/error, unknown-symbol and
-  confirmation states.
+- Component previews cover populated, missing-fact, artwork-loading/error and unknown-symbol states.
 
 ## Reference composition
 

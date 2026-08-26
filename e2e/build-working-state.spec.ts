@@ -10,6 +10,13 @@ import { savedToBrowser, reachShellLink } from './shell';
  * a reload that keeps the build, two windows that do not fight over one
  * autosave, and a browser that refuses to store anything without taking the
  * build down with it.
+ *
+ * **Rewritten 2026-08-25.** Every build has a record of its own from the moment
+ * it exists, so nothing is asked before one build replaces another, and the one
+ * a Commander leaves behind is still on the library's list. What is asserted
+ * here is that arithmetic: four builds leave four records, opening a save writes
+ * nothing to it, the first edit forks, and naming or overwriting returns the
+ * count to where it belongs (FR-008, FR-009).
  */
 
 /** Creates a stock build and lands in the workspace. */
@@ -17,6 +24,55 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await page.getByRole('button', { name: 'Build stock hull' }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
+}
+
+/**
+ * Chooses a library row, which is what the footer's actions act on.
+ *
+ * A row is named by its own words rather than by a label over them, so it is
+ * found by its title — anchored, because "Anaconda" would otherwise also match
+ * "Anaconda explorer" (WCAG 2.5.3).
+ */
+async function chooseRecord(page: Page, title: string): Promise<void> {
+  const row = page.getByRole('button', { name: new RegExp(`^${title}\\b`, 'i') });
+  await expect(async () => {
+    await row.click({ timeout: 2_000 });
+    await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+}
+
+/** Renames the ship, which is a modelled edit and therefore forks a record. */
+async function renameShip(page: Page, name: string): Promise<void> {
+  // The title is the field, and leaving it is confirming it — the canvas draws
+  // no control beside it (feature 002, "click to rename").
+  await page.getByRole('button', { name: /Rename the ship/ }).click();
+  const field = page.locator('.identity-fields__input');
+  await field.fill(name);
+  await field.press('Enter');
+  await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
+}
+
+/** How many records this browser is holding, whatever their kind. */
+async function recordCount(page: Page): Promise<number> {
+  return page.evaluate(
+    () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+  );
+}
+
+/**
+ * Waits until this browser holds exactly this many records.
+ *
+ * Polled rather than read once: autosave coalesces its writes, and the status
+ * line still reads "saved" from the previous build while the next one's write
+ * is still owed.
+ */
+async function expectRecords(page: Page, count: number): Promise<void> {
+  await expect.poll(() => recordCount(page), { timeout: 5_000 }).toBe(count);
+}
+
+/** The exact bytes one record is stored as, so "untouched" can be checked. */
+async function recordBytes(page: Page, id: string): Promise<string | null> {
+  return page.evaluate((key) => localStorage.getItem(key), `edsb:record:${id}`);
 }
 
 /** The owned keys currently in this browser. */
@@ -38,7 +94,7 @@ test.describe('the tab’s working build', () => {
 
     await page.reload();
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
     // The same record, not a second one.
     expect((await storedKeys(page)).records).toEqual(before.records);
@@ -114,7 +170,7 @@ test.describe('the tab’s working build', () => {
     await duplicate.goto('/build');
     await duplicate.evaluate((state) => sessionStorage.setItem('edsb:tab', state!), tabState);
     await duplicate.reload();
-    await expect(duplicate.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(duplicate.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await reachShellLink(duplicate, 'Shipyard');
     await duplicate.goto('/ships/SideWinder');
     await duplicate.getByRole('button', { name: 'Build stock hull' }).click();
@@ -167,7 +223,7 @@ test.describe('the tab’s working build', () => {
     // command bar's identity line, where canvas 1c puts it.
     await expect(page.getByRole('banner').getByText('Anaconda').first()).toBeVisible();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
 
     await context.close();
   });
@@ -193,6 +249,112 @@ test.describe('the tab’s working build', () => {
     await expect(page.getByRole('button', { name: 'Choose builds to discard' })).toBeVisible();
 
     await context.close();
+  });
+
+  test('leaves four builds in a row as four records, asking nothing', async ({ page }) => {
+    // The withdrawn replacement question in one assertion: each build replaces
+    // the last on screen and none of them is lost, because each has a record
+    // (FR-008, FR-009, ruled 2026-08-25).
+    let expected = 0;
+    for (const hull of ['Anaconda', 'SideWinder', 'Eagle', 'Python']) {
+      await createBuild(page, hull);
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      expected += 1;
+      await expectRecords(page, expected);
+    }
+  });
+
+  test('writes nothing to a saved build when it is opened', async ({ page }) => {
+    // A build, a named save, and an open — three journeys' worth of waiting on
+    // one page, which runs past the default budget on a loaded machine.
+    test.slow();
+    await createBuild(page);
+    await savedToBrowser(page);
+    await reachShellLink(page, 'Open saved build');
+    await chooseRecord(page, 'Anaconda');
+    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Save this build' });
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
+    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
+    await expect(page.getByText('Explorer').first()).toBeVisible();
+
+    const id = await page.evaluate(() =>
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('edsb:record:'))[0]!
+        .replace('edsb:record:', ''),
+    );
+    const saved = await recordBytes(page, id);
+
+    // Opening it again writes nothing at all: the build is already recoverable
+    // from what was opened.
+    await chooseRecord(page, 'Explorer');
+    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await expect(page).toHaveURL(/\/build(#|$)/);
+
+    expect(await recordBytes(page, id)).toBe(saved);
+    expect(await recordCount(page)).toBe(1);
+  });
+
+  test('forks an unnamed record at the first edit, leaving the save untouched', async ({
+    page,
+  }) => {
+    test.slow();
+    await createBuild(page);
+    await savedToBrowser(page);
+    await reachShellLink(page, 'Open saved build');
+    await chooseRecord(page, 'Anaconda');
+    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Save this build' });
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
+    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
+    await expect(page.getByText('Explorer').first()).toBeVisible();
+
+    const id = await page.evaluate(() =>
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('edsb:record:'))[0]!
+        .replace('edsb:record:', ''),
+    );
+    const saved = await recordBytes(page, id);
+
+    await chooseRecord(page, 'Explorer');
+    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await expect(page).toHaveURL(/\/build(#|$)/);
+    await renameShip(page, 'Vindicator');
+
+    // A second record now holds the edits, and the save is byte-identical.
+    await expectRecords(page, 2);
+    expect(await recordBytes(page, id)).toBe(saved);
+  });
+
+  test('returns the count to where it was when the save is replaced', async ({ page }) => {
+    test.slow();
+    await createBuild(page);
+    await savedToBrowser(page);
+    await reachShellLink(page, 'Open saved build');
+    await chooseRecord(page, 'Anaconda');
+    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Save this build' });
+    await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
+    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
+    // Naming consumes the record the build was already in: one record, not two.
+    await expectRecords(page, 1);
+
+    await chooseRecord(page, 'Explorer');
+    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await expect(page).toHaveURL(/\/build(#|$)/);
+    await renameShip(page, 'Vindicator');
+    await expectRecords(page, 2);
+
+    await reachShellLink(page, 'Open saved build');
+    await chooseRecord(page, 'Vindicator');
+    await page.getByRole('button', { name: 'Save Vindicator under a name' }).click();
+    const replace = page.getByRole('dialog', { name: 'Save this build' });
+    await replace.getByRole('textbox', { name: 'Name' }).fill('Explorer');
+    await replace.getByRole('button', { name: 'Replace the build I opened' }).click();
+
+    // The unsaved entry these edits were in is consumed by the save that
+    // replaced the build they came from.
+    await expectRecords(page, 1);
   });
 
   test('is structurally sound and free of accessibility violations', async ({ page }, testInfo) => {

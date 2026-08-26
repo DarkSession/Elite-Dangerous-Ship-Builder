@@ -40,6 +40,7 @@ describe('PowerThermals', () => {
       provenance: 'stock',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }

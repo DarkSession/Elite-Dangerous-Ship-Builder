@@ -14,21 +14,25 @@ const hull = {
 function build(overrides: Partial<SavedBuild> = {}): SavedBuild {
   return {
     id: 'r1',
-    name: 'Anaconda explorer',
+    title: 'Anaconda explorer',
+    named: true,
     hull,
     modified: '2 Jan 2026, 03:04',
     validation: { label: 'Valid', tone: 'success' },
+    issues: null,
+    remaining: null,
+    current: false,
+    currentLabel: 'Current build',
+    chooseLabel: 'Choose Anaconda explorer',
     note: null,
-    actions: [
-      { id: 'open', label: 'Open Anaconda explorer', emphasis: 'secondary' },
-      { id: 'delete', label: 'Delete Anaconda explorer', emphasis: 'danger' },
-    ],
     ...overrides,
   };
 }
 
+const COLUMNS = { build: 'Build', hull: 'Hull', modified: 'Edited' } as const;
+
 describe('SavedBuildCard', () => {
-  it('shows the local name, hull, modified instant and recorded state', () => {
+  it('shows the title, hull, modified instant and recorded state', () => {
     const fixture = renderComponent(SavedBuildCard, { build: build() });
     const text = textOf(element(fixture));
 
@@ -38,11 +42,16 @@ describe('SavedBuildCard', () => {
     expect(text).toContain('Valid');
   });
 
-  it('says a working build is a working build, rather than inventing a name', () => {
-    const fixture = renderComponent(SavedBuildCard, { build: build({ name: null }) });
+  it('sets a derived title apart from a name a Commander gave', () => {
+    const named = renderComponent(SavedBuildCard, { build: build() });
+    const derived = renderComponent(SavedBuildCard, {
+      build: build({ title: 'Sidewinder', named: false }),
+    });
 
-    expect(textOf(query(fixture, 'h3'))).toBe('Working build');
-    expect(textOf(element(fixture))).not.toContain('Untitled');
+    expect(query(named, '.record__title').classList.contains('record__title--derived')).toBe(false);
+    expect(query(derived, '.record__title').classList.contains('record__title--derived')).toBe(
+      true,
+    );
   });
 
   it('carries the recorded state in words and not only in colour', () => {
@@ -58,33 +67,62 @@ describe('SavedBuildCard', () => {
     }
   });
 
+  it('says the record is the current one in words as well as in the marker', () => {
+    const fixture = renderComponent(SavedBuildCard, { build: build({ current: true }) });
+    const row = query(fixture, 'button');
+
+    expect(row.getAttribute('aria-current')).toBe('true');
+    expect(textOf(element(fixture))).toContain('Current build');
+    // Named by its own words rather than by an aria-label over the top of them.
+    expect(row.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('draws no marker on a record the workspace is not holding', () => {
+    const fixture = renderComponent(SavedBuildCard, { build: build() });
+
+    expect(query(fixture, 'button').hasAttribute('aria-current')).toBe(false);
+  });
+
+  it('gives an issue count its own words rather than only a plate', () => {
+    const fixture = renderComponent(SavedBuildCard, {
+      build: build({ issues: { count: '2', label: '2 issues recorded' } }),
+    });
+
+    expect(textOf(query(fixture, '.record__issues'))).toBe('2');
+    // The plate is decoration; the count's own words are in the row's text, so
+    // a reader is told what a colour and a number alone would not say.
+    expect(query(fixture, '.record__issues').getAttribute('aria-hidden')).toBe('true');
+    expect(textOf(element(fixture))).toContain('2 issues recorded');
+  });
+
+  it('states remaining life where a record has a deadline', () => {
+    const fixture = renderComponent(SavedBuildCard, {
+      build: build({ remaining: 'Deleted in 6 days unless it is saved' }),
+    });
+
+    expect(textOf(element(fixture))).toContain('Deleted in 6 days');
+  });
+
   it('shows a local note when there is one', () => {
     const fixture = renderComponent(SavedBuildCard, { build: build({ note: 'Long-range fit.' }) });
 
     expect(textOf(element(fixture))).toContain('Long-range fit.');
   });
 
-  it('names the record in every action, so none of them is a bare verb', () => {
+  it('emits the record it was chosen by, never the translated label', () => {
     const fixture = renderComponent(SavedBuildCard, { build: build() });
+    const chosen: string[] = [];
+    fixture.componentInstance.chose.subscribe((id) => chosen.push(id));
 
-    for (const button of element(fixture).querySelectorAll('button')) {
-      expect(textOf(button)).toContain('Anaconda explorer');
-    }
+    query(fixture, 'button').click();
+
+    expect(chosen).toEqual(['r1']);
   });
 
-  it('emits the record and the action, never the translated label', () => {
-    const fixture = renderComponent(SavedBuildCard, { build: build() });
-    const events: unknown[] = [];
-    fixture.componentInstance.actionSelected.subscribe((event) => events.push(event));
+  it('says whether it is the row the footer would act on', () => {
+    const fixture = renderComponent(SavedBuildCard, { build: build(), chosen: true });
 
-    for (const button of element(fixture).querySelectorAll('button')) {
-      (button as HTMLButtonElement).click();
-    }
-
-    expect(events).toEqual([
-      { recordId: 'r1', actionId: 'open' },
-      { recordId: 'r1', actionId: 'delete' },
-    ]);
+    expect(query(fixture, 'button').getAttribute('aria-pressed')).toBe('true');
   });
 });
 
@@ -92,8 +130,8 @@ describe('ResponsiveRecordList', () => {
   const groups: readonly RecordListGroup[] = [
     {
       id: 'working',
-      label: 'Working builds',
-      builds: [build({ id: 'w1', name: null })],
+      label: 'Unnamed builds',
+      builds: [build({ id: 'w1', title: 'Sidewinder', named: false })],
       emptyLabel: 'Nothing here yet.',
     },
     {
@@ -105,17 +143,38 @@ describe('ResponsiveRecordList', () => {
   ];
 
   it('labels each group and keeps one reading order', () => {
-    const fixture = renderComponent(ResponsiveRecordList, { label: 'Saved builds', groups });
+    const fixture = renderComponent(ResponsiveRecordList, {
+      label: 'Saved builds',
+      columns: COLUMNS,
+      groups,
+    });
 
-    expect([...element(fixture).querySelectorAll('h2')].map(textOf)).toEqual([
-      'Working builds',
+    expect([...element(fixture).querySelectorAll('h3')].map(textOf)).toEqual([
+      'Unnamed builds',
       'Named builds',
     ]);
     expect(element(fixture).querySelectorAll('edsb-saved-build-card')).toHaveLength(2);
   });
 
+  it('draws the column headers once, and not into every row', () => {
+    const fixture = renderComponent(ResponsiveRecordList, {
+      label: 'Saved builds',
+      columns: COLUMNS,
+      groups,
+    });
+    const headers = query(fixture, '.records__columns');
+
+    expect([...headers.querySelectorAll('span')].map(textOf)).toEqual(['Build', 'Hull', 'Edited']);
+    // Every row names its own parts, so the headers are not read again per row.
+    expect(headers.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('presents each group as a semantic list', () => {
-    const fixture = renderComponent(ResponsiveRecordList, { label: 'Saved builds', groups });
+    const fixture = renderComponent(ResponsiveRecordList, {
+      label: 'Saved builds',
+      columns: COLUMNS,
+      groups,
+    });
 
     expect(element(fixture).querySelectorAll('ul')).toHaveLength(2);
   });
@@ -123,6 +182,7 @@ describe('ResponsiveRecordList', () => {
   it('says an empty group is empty rather than showing nothing at all', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
+      columns: COLUMNS,
       groups: [{ ...groups[0]!, builds: [] }],
     });
 
@@ -132,6 +192,7 @@ describe('ResponsiveRecordList', () => {
   it('lists a record it cannot open, with what is known about it', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
+      columns: COLUMNS,
       groups,
       unavailableLabel: 'Unavailable build',
       unavailable: [
@@ -149,21 +210,41 @@ describe('ResponsiveRecordList', () => {
     expect(text).toContain('Anaconda');
   });
 
-  it('passes an action through with the record it belongs to', () => {
-    const fixture = renderComponent(ResponsiveRecordList, { label: 'Saved builds', groups });
-    const events: unknown[] = [];
-    fixture.componentInstance.actionSelected.subscribe((event) => events.push(event));
+  it('passes a chosen record through by identity', () => {
+    const fixture = renderComponent(ResponsiveRecordList, {
+      label: 'Saved builds',
+      columns: COLUMNS,
+      groups,
+    });
+    const chosen: string[] = [];
+    fixture.componentInstance.chose.subscribe((id) => chosen.push(id));
 
     query(fixture, '[data-record-id="n1"] button').click();
 
-    expect(events).toEqual([{ recordId: 'n1', actionId: 'open' }]);
+    expect(chosen).toEqual(['n1']);
+  });
+
+  it('marks only the chosen row as the one the footer would act on', () => {
+    const fixture = renderComponent(ResponsiveRecordList, {
+      label: 'Saved builds',
+      columns: COLUMNS,
+      groups,
+      chosen: 'n1',
+    });
+
+    expect(query(fixture, '[data-record-id="n1"] button').getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    expect(query(fixture, '[data-record-id="w1"] button').getAttribute('aria-pressed')).toBe(
+      'false',
+    );
   });
 });
 
 describe('RecordManager', () => {
   const records: readonly ManageableRecord[] = [
-    { id: 'w1', label: 'Working build', detail: 'Anaconda · 2 Jan 2026' },
-    { id: 'w2', label: 'Working build', detail: 'Sidewinder · 3 Jan 2026' },
+    { id: 'w1', label: 'Unnamed build', detail: 'Anaconda · 2 Jan 2026' },
+    { id: 'w2', label: 'Unnamed build', detail: 'Sidewinder · 3 Jan 2026' },
   ];
 
   it('lists every record for individual selection, with nothing preselected', () => {

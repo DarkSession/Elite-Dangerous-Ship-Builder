@@ -5,13 +5,13 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
 import { ActiveBuildStore } from './active-build.store';
-import { ReplacementCoordinator } from './replacement-coordinator';
+import { BuildIngressCoordinator } from './build-ingress.coordinator';
 import { StockBuildCreator } from './stock-build.creator';
 
 function setup(): {
   creator: StockBuildCreator;
   store: ActiveBuildStore;
-  coordinator: ReplacementCoordinator;
+  coordinator: BuildIngressCoordinator;
 } {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -20,7 +20,7 @@ function setup(): {
   return {
     creator: TestBed.inject(StockBuildCreator),
     store: TestBed.inject(ActiveBuildStore),
-    coordinator: TestBed.inject(ReplacementCoordinator),
+    coordinator: TestBed.inject(BuildIngressCoordinator),
   };
 }
 
@@ -68,28 +68,19 @@ describe('StockBuildCreator', () => {
     expect(store.loadout()).toBe(before);
   });
 
-  it('asks before replacing unsaved work, and cancelling changes nothing', async () => {
-    const { creator, store, coordinator } = setup();
+  it('replaces unsaved work without asking, because it is not lost', async () => {
+    // Creating a second stock build leaves the first one where it is: in its own
+    // record, on the library's list (FR-008, ruled 2026-08-25).
+    const { creator, store } = setup();
     await creator.create('Anaconda');
-    coordinator.setConfirmer(async () => false);
 
     const result = await creator.create('SideWinder');
 
-    expect(result.kind).toBe('cancelled');
-    expect(store.loadout()?.shipSymbol).toBe('Anaconda');
-  });
-
-  it('replaces once the Commander confirms', async () => {
-    const { creator, store, coordinator } = setup();
-    await creator.create('Anaconda');
-    coordinator.setConfirmer(async () => true);
-
-    await creator.create('SideWinder');
-
+    expect(result.kind).toBe('committed');
     expect(store.loadout()?.shipSymbol).toBe('SideWinder');
   });
 
-  it('names the hull in the Commander’s language, for the replacement question', async () => {
+  it('names the hull in the Commander’s language', async () => {
     const { creator, store } = setup();
 
     await creator.create('Empire_Trader');
@@ -106,7 +97,6 @@ describe('StockBuildCreator', () => {
 
   it('creates a stock build for every installed hull', async () => {
     const { creator, coordinator } = setup();
-    coordinator.setConfirmer(async () => true);
 
     for (const ship of SHIPS) {
       const result = await creator.create(ship.symbol);

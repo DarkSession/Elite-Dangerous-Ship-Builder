@@ -6,7 +6,7 @@ import { StatusNotice } from '../status/status-notice';
 /** One labelled group of stored builds. */
 export interface RecordListGroup {
   readonly id: string;
-  /** The group's own heading: "Working builds", "Named builds". */
+  /** The group's own heading: "Unnamed builds", "Named builds". */
   readonly label: string;
   readonly builds: readonly SavedBuild[];
   /** Shown instead of an empty group. */
@@ -22,13 +22,27 @@ export interface UnavailableRecord {
   readonly detail: string | null;
 }
 
+/** The column headers the reference draws over the rows. */
+export interface RecordColumns {
+  readonly build: string;
+  readonly hull: string;
+  readonly modified: string;
+}
+
 /**
  * Every stored build, in one reading order.
  *
- * Working and named builds are separate groups because they behave
- * differently, but they are one list: the groups do not become columns that a
- * reader has to move between, and the narrow and wide compositions present the
- * same records in the same order.
+ * Unnamed and named builds are separate groups because they behave differently,
+ * but they are one list: the groups do not become columns that a reader has to
+ * move between, and the narrow and wide compositions present the same records
+ * in the same order.
+ *
+ * **Rebuilt to the canvas 2026-08-25.** The grid of cards became the reference's
+ * dense rows under one plate of column headers, in a single scrolling body. The
+ * headers are drawn once for the whole list rather than repeated inside every
+ * row, and they are `aria-hidden` because a row already names each of its own
+ * parts — a reader hearing "BUILD HULL EDITED" before every row would be worse
+ * served, not better (build-library design, "Reference composition").
  *
  * Records this build cannot open are listed last, with what is known about
  * them. Hiding them would make a Commander's build appear to have vanished;
@@ -45,12 +59,26 @@ export class ResponsiveRecordList {
   /** What the list contains. Becomes its accessible name. */
   readonly label = input.required<string>();
   readonly groups = input.required<readonly RecordListGroup[]>();
+  readonly columns = input.required<RecordColumns>();
   readonly unavailable = input<readonly UnavailableRecord[]>([]);
+
+  /** The record the footer's actions would act on. */
+  readonly chosen = input<string | null>(null);
 
   /** The heading for the unavailable group, when there is one. */
   readonly unavailableLabel = input<string | null>(null);
 
-  readonly actionSelected = output<{ recordId: string; actionId: string }>();
+  /**
+   * The one sentence to draw instead of the groups when a search matched
+   * nothing.
+   *
+   * On the body's own ground, with no panel and nothing else removed: every
+   * control stays where it was, so widening the search needs no separate action
+   * (build-library design, "No match").
+   */
+  readonly noMatch = input<string | null>(null);
+
+  readonly chose = output<string>();
 
   readonly listId = relationId('record-list');
 

@@ -111,6 +111,50 @@ export class LocalRecordRepository {
    * The whole record is serialized before storage is touched, so a serializer
    * that throws cannot leave a partial value behind.
    */
+  /**
+   * Whether the record under this id is one the Commander has named.
+   *
+   * Asked of storage rather than of the page's own belief about what it holds:
+   * a record named in another tab is named here too, and autosave has to find
+   * that out from the bytes rather than from a signal it set earlier (FR-008).
+   *
+   * An unreadable or absent record answers `false`. It is not a named record,
+   * and refusing to write on the strength of bytes that cannot be decoded would
+   * make one corrupt entry stop a Commander saving anything at all.
+   */
+  isNamed(recordId: string): boolean {
+    const opened = this.open(recordId);
+    return opened.ok && opened.value !== null && opened.value.record.kind === 'named';
+  }
+
+  /**
+   * The unnamed record already holding exactly this modelled state, if there is
+   * one.
+   *
+   * The comparison is the serialized snapshot — the same value the baseline
+   * fingerprint uses — so "identical" means what a Commander would mean by it
+   * and not what two object references would. Named records are excluded
+   * because taking one over would make autosave write to it.
+   *
+   * Ties go to the oldest entry, so repeating an ingress lands on the record a
+   * Commander has had longest rather than shuffling between duplicates.
+   */
+  findUnnamedMatching(fingerprint: string): string | null {
+    const listed = this.list();
+    if (!listed.ok) {
+      return null;
+    }
+
+    const matches = listed.value
+      .filter((entry) => entry.available && entry.record.kind === 'working')
+      .map((entry) => (entry.available ? entry.record : null))
+      .filter((record): record is LocalRecordV1 => record !== null)
+      .filter((record) => JSON.stringify(record.build) === fingerprint)
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+
+    return matches[0]?.id ?? null;
+  }
+
   write(draft: RecordDraft): RepositoryResult<void> {
     const json = serializeLocalRecord(draft);
     return this.#storage.write(recordKey(draft.id), json);

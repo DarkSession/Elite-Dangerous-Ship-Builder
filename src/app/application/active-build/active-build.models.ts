@@ -28,7 +28,6 @@ export type PersistenceStatus =
   | 'ready'
   | 'saving'
   | 'saved'
-  | 'retention-limit'
   | 'quota-full'
   | 'unavailable'
   | 'write-failed'
@@ -86,8 +85,8 @@ export interface BuildCandidate {
    *
    * It travels with the candidate rather than being looked up when it is
    * displayed, because the package's game-text leaves are half a megabyte and
-   * the surface that shows this name — the replacement question — is mounted
-   * on every screen, including the ones that never open a build.
+   * the surfaces that show this name — the command bar, the library's rows —
+   * are mounted on screens that never open a build.
    */
   readonly hullName: string;
   readonly provenance: BuildProvenance;
@@ -101,6 +100,14 @@ export interface BuildCandidate {
   readonly qualityNotices: readonly IngressNotice[];
   /** The named record this candidate came from, when it came from one. */
   readonly sourceNamed: NamedSource | null;
+  /**
+   * The unnamed record this candidate already lives in, when it came from one.
+   *
+   * Only an unnamed record can be one: autosave has no path to a named record,
+   * so a build opened from a named save arrives with `null` here and forks its
+   * own record at the first modelled edit (FR-008).
+   */
+  readonly autosaveRecordId: string | null;
   /**
    * The fingerprint this candidate is already saved against, or `null`.
    *
@@ -125,7 +132,7 @@ export interface ActiveBuildState {
   readonly loadout: ShipLoadout | null;
   readonly hullName: string | null;
   readonly provenance: BuildProvenance;
-  readonly workingRecordId: string | null;
+  readonly autosaveRecordId: string | null;
   readonly sourceNamed: NamedSource | null;
   readonly baselineFingerprint: string | null;
   readonly dirty: boolean;

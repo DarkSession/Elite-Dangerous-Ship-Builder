@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
+import { openRecordFromLibrary } from './shell';
 
 /**
  * The `BUILD STATUS` block, end to end.
@@ -83,8 +84,7 @@ async function openStockBuild(page: Page): Promise<void> {
 /** Opens a seeded record and lands in the workspace with the rail rendered. */
 async function openSeededBuild(page: Page, id: string): Promise<void> {
   await page.goto('/builds');
-  await page.getByRole('button', { name: `Open Build ${id}` }).click();
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await openRecordFromLibrary(page, `Build ${id}`);
   await expect(rail(page)).toBeVisible();
 }
 

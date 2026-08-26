@@ -1,4 +1,4 @@
-import { baselineFingerprint, isDirty } from './replacement-policy';
+import { baselineFingerprint, isDirty } from './build-fingerprint';
 import type { BuildSnapshotV1 } from './build-snapshot';
 
 function snapshot(overrides: Partial<BuildSnapshotV1> = {}): BuildSnapshotV1 {

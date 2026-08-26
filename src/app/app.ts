@@ -8,10 +8,6 @@ import {
   untracked,
 } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import {
-  ReplacementCoordinator,
-  type ReplacementQuestion,
-} from './application/active-build/replacement-coordinator';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
@@ -27,7 +23,6 @@ import {
   type ShellAction,
   type ShellStatus,
 } from './ui/components/app-frame/app-frame';
-import { ConfirmDialog } from './ui/components/confirm-dialog/confirm-dialog';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
 
@@ -39,12 +34,6 @@ export const HELP_ACTION = 'help.open';
 
 /** The shell action that starts the application over on a newer version. */
 export const UPDATE_ACTION = 'app.update';
-
-/** A replacement question waiting for an answer. */
-interface PendingReplacement {
-  readonly question: ReplacementQuestion;
-  readonly answer: (replace: boolean) => void;
-}
 
 /**
  * The application root.
@@ -62,7 +51,7 @@ interface PendingReplacement {
  */
 @Component({
   selector: 'app-root',
-  imports: [AppFrame, ConfirmDialog, ExportDialog, HelpDialog, ImportDialog, RouterOutlet],
+  imports: [AppFrame, ExportDialog, HelpDialog, ImportDialog, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,14 +62,12 @@ export class App {
   readonly chrome = inject(ScreenChrome);
   readonly #router = inject(Router);
   readonly #messages = inject(MessageService);
-  readonly #replacement = inject(ReplacementCoordinator);
   readonly #slef = inject(SlefStore);
   readonly help = inject(HelpPresenter);
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #announcements = inject(AnnouncementService);
 
   readonly #path = signal(this.#router.url);
-  readonly #pending = signal<PendingReplacement | null>(null);
 
   readonly navigation = computed(() => this.#navigation.entries(this.#path()));
 
@@ -222,48 +209,12 @@ export class App {
    */
   readonly exchangeWanted = computed(() => this.#slef.layer() !== 'none');
 
-  readonly replacementOpen = computed(() => this.#pending() !== null);
-  readonly replacementTitle = this.#messages.messageSignal('workspace.replace.title');
-  readonly replacementConfirm = this.#messages.messageSignal('workspace.replace.confirm');
-  readonly replacementCancel = this.#messages.messageSignal('workspace.replace.cancel');
-  readonly dismissLabel = this.#messages.messageSignal('action.close');
-
-  /**
-   * What is about to be lost, and what is arriving — both named.
-   *
-   * A confirmation that says only "you have unsaved changes" makes a Commander
-   * guess which build they are about to discard.
-   */
-  readonly replacementDescription = computed(() => {
-    const pending = this.#pending();
-    if (pending === null) {
-      return null;
-    }
-    return this.#messages.message('workspace.replace.description', {
-      current: pending.question.currentHull ?? this.#messages.message('unavailable.value'),
-      incoming: pending.question.incomingHull,
-    });
-  });
-
   constructor() {
     this.#router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.#path.set(event.urlAfterRedirects);
       }
     });
-
-    this.#replacement.setConfirmer(
-      (question) =>
-        new Promise<boolean>((resolve) => {
-          this.#pending.set({
-            question,
-            answer: (replace) => {
-              this.#pending.set(null);
-              resolve(replace);
-            },
-          });
-        }),
-    );
 
     // One announcement per version revision. A waiting version is a settled,
     // nonblocking change and waits its turn; a cached version that cannot be
@@ -298,10 +249,6 @@ export class App {
         }),
       );
     });
-  }
-
-  answerReplacement(replace: boolean): void {
-    this.#pending()?.answer(replace);
   }
 
   /**

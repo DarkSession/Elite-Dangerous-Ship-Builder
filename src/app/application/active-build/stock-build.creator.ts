@@ -5,10 +5,10 @@ import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import { emptyFixedMounts } from '../../domain/build/fixed-mounts';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import {
-  ReplacementCoordinator,
+  BuildIngressCoordinator,
   type CandidateOutcome,
-  type ReplacementResult,
-} from './replacement-coordinator';
+  type CommitResult,
+} from './build-ingress.coordinator';
 
 /**
  * Creating a stock build, as one transaction.
@@ -17,14 +17,14 @@ import {
  * the symbol must resolve, the package must actually carry a default loadout
  * for it, the factory must produce a build, and that build must arrive with
  * every fixed mount populated. Only then is the candidate handed to the shared
- * replacement coordinator, which decides whether the Commander is asked first.
+ * ingress coordinator, which commits it exactly once.
  *
  * The illustration is not among those four. Artwork is decoration with a text
  * equivalent; a hull whose picture failed to load can still be flown (FR-006).
  */
 @Injectable({ providedIn: 'root' })
 export class StockBuildCreator {
-  readonly #coordinator = inject(ReplacementCoordinator);
+  readonly #coordinator = inject(BuildIngressCoordinator);
   readonly #gameText = inject(GameTextPresenter);
 
   /** Whether a stock build can be created for this hull at all. */
@@ -33,8 +33,8 @@ export class StockBuildCreator {
   }
 
   /** Creates the build, asking about unsaved work first where there is any. */
-  async create(symbol: string): Promise<ReplacementResult> {
-    return this.#coordinator.replace(() => this.#construct(symbol));
+  async create(symbol: string): Promise<CommitResult> {
+    return this.#coordinator.commit(() => this.#construct(symbol));
   }
 
   #construct(symbol: string): CandidateOutcome {
@@ -78,8 +78,9 @@ export class StockBuildCreator {
         // ingress gate has nothing to complete and nothing to report.
         qualityNotices: [],
         sourceNamed: null,
+        autosaveRecordId: null,
         // A build that exists only in this tab, with no copy anywhere: unsaved
-        // by definition, so the next replacement asks before discarding it.
+        // by definition, so autosave mints it a record at its first write.
         baseline: null,
       },
     };

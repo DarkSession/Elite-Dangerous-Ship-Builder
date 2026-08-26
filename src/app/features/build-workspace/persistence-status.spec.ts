@@ -48,6 +48,7 @@ function render(status: Status) {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
   active.setPersistence(status);
@@ -67,7 +68,6 @@ const buttons = (fixture: { nativeElement: unknown }) => [
 describe('PersistenceStatus', () => {
   it('names every state a Commander has to act on, never by colour alone', () => {
     const expected: readonly (readonly [Status, string])[] = [
-      ['retention-limit', 'recoverable working builds'],
       ['quota-full', 'storage is full'],
       ['unavailable', 'not allowing the application to store'],
       ['write-failed', 'last save did not go through'],
@@ -93,12 +93,7 @@ describe('PersistenceStatus', () => {
   });
 
   it('says editing still works in every failure state', () => {
-    for (const status of [
-      'quota-full',
-      'unavailable',
-      'write-failed',
-      'retention-limit',
-    ] as const) {
+    for (const status of ['quota-full', 'unavailable', 'write-failed'] as const) {
       const { fixture, active } = render(status);
 
       expect(textOf(fixture), status).toMatch(/still works|Editing/i);
@@ -126,14 +121,15 @@ describe('PersistenceStatus', () => {
     );
   });
 
-  it('offers management and a retry when there is no room', () => {
-    for (const status of ['quota-full', 'retention-limit'] as const) {
-      const { fixture } = render(status);
-      const labels = buttons(fixture).map((button) => button.textContent?.trim());
+  it('offers management and a retry when the browser store is full', () => {
+    // A full quota, and nothing else. The twenty-record limit that also reached
+    // this state was withdrawn on 2026-08-25, and the expiry that replaced it is
+    // never offered as a way out of a full store (FR-013).
+    const { fixture } = render('quota-full');
+    const labels = buttons(fixture).map((button) => button.textContent?.trim());
 
-      expect(labels, status).toContain('Choose builds to discard');
-      expect(labels, status).toContain('Try saving again');
-    }
+    expect(labels).toContain('Choose builds to discard');
+    expect(labels).toContain('Try saving again');
   });
 
   it('requires an explicit resume after the record was discarded elsewhere', () => {

@@ -21,6 +21,7 @@ export type FormatterKind =
   | 'kilobytes'
   | 'date'
   | 'date-time'
+  | 'relative-time'
   | 'collator'
   | 'display-name';
 
@@ -36,6 +37,13 @@ export const ABSOLUTE_TIMEZONE = 'UTC';
 
 /** Where a duration stops being read in seconds and starts being read in minutes. */
 const SECONDS_PER_MINUTE = 60;
+
+/** The units a relative time is expressed in, longest first. */
+const RELATIVE_UNITS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
+  ['day', 24 * 60 * 60 * 1000],
+  ['hour', 60 * 60 * 1000],
+  ['minute', 60 * 1000],
+];
 
 /** Raised when a value that is not a finite number reaches a numeric formatter. */
 export class UnformattableValueError extends Error {
@@ -214,6 +222,36 @@ export class Formatters {
     }).format(value);
   }
 
+  /**
+   * How far `target` is from `from`, in the committed locale's own words.
+   *
+   * The unit is chosen by the distance rather than by the caller — days beyond
+   * a day, hours beyond an hour, minutes below that — so a row counting down
+   * does not shift between two shapes a reader is comparing. `Intl` supplies
+   * the unit label and the direction, which is the point of using it: "in 6
+   * days" and "vor 2 Stunden" are one call, and a count of days assembled in a
+   * template would be an English string no catalogue could reach (principle
+   * VI).
+   *
+   * Where the runtime has no `Intl.RelativeTimeFormat` at all, the absolute date
+   * is given instead. It answers the same question less conveniently, in the
+   * same locale, and inventing an English "in 6 days" there would be worse than
+   * a date (localization contract, "Named formatters").
+   */
+  relativeTime(target: Date, from: Date): string {
+    this.#assertValidDate(target);
+    this.#assertValidDate(from);
+
+    const difference = target.getTime() - from.getTime();
+    const [unit, size] = RELATIVE_UNITS.find(([, span]) => Math.abs(difference) >= span) ??
+      RELATIVE_UNITS[RELATIVE_UNITS.length - 1] ?? ['minute', 60 * 1000];
+
+    const formatter = this.#relativeFormat();
+    return formatter === null
+      ? this.date(target)
+      : formatter.format(Math.trunc(difference / size), unit);
+  }
+
   /** A collator for sorting display text in the active locale. */
   collator(options: Intl.CollatorOptions = { sensitivity: 'base', numeric: true }): Intl.Collator {
     return this.#cached('collator', options, () => new Intl.Collator(this.locale, options));
@@ -246,6 +284,23 @@ export class Formatters {
 
   #numberFormat(kind: FormatterKind, options: Intl.NumberFormatOptions): Intl.NumberFormat {
     return this.#cached(kind, options, () => new Intl.NumberFormat(this.locale, options));
+  }
+
+  /**
+   * The relative-time formatter, or `null` where the runtime has none.
+   *
+   * `numeric: 'auto'` so a locale that has a word for "yesterday" uses it
+   * rather than counting to one.
+   */
+  #relativeFormat(): Intl.RelativeTimeFormat | null {
+    const options: Intl.RelativeTimeFormatOptions = { numeric: 'auto' };
+    return this.#cached('relative-time', options, () => {
+      try {
+        return new Intl.RelativeTimeFormat(this.locale, options);
+      } catch {
+        return null;
+      }
+    });
   }
 
   #dateFormat(kind: FormatterKind, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {

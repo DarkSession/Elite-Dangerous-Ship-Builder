@@ -125,10 +125,9 @@ capability or applicable surface is a release failure; representative sampling i
 | Hull catalogue `/ships`                      | 001   | visible               | FR-001, FR-002, FR-011 |
 | Hull detail `/ships/:symbol`                 | 001   | visible               | FR-001, FR-002, FR-011 |
 | Build workspace `/build`, including no-build | 001   | visible               | FR-001, FR-011         |
-| Build library `/builds`                      | 001   | visible               | FR-001, FR-011         |
+| Build library `/builds`                      | 001   | obscured, dismissible | FR-001, FR-011         |
 | Save-build layer                             | 001   | obscured, dismissible | FR-011                 |
 | Build-library delete confirmation            | 001   | obscured, dismissible | FR-011                 |
-| Shared replacement confirmation              | 001   | obscured, dismissible | FR-011                 |
 | Outfitting workspace ledger                  | 002   | visible               | FR-002                 |
 | Module replacement layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
 | Engineering editor layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
@@ -149,8 +148,7 @@ capability or applicable surface is a release failure; representative sampling i
 | Global feedback/announcement host            | 011   | visible               | FR-011                 |
 
 The **Applies** column carries this feature's requirement IDs; **Owner** carries the feature that
-owns the surface. The shared replacement confirmation is feature 001's overlay reused by feature
-004's import hosts, so it is owned by 001. The application frame's own row records `visible` like any
+owns the surface. The application frame's own row records `visible` like any
 other: it is the surface that draws the action, which the Owner column already says, and a third
 frame-entry value describing the same availability would be one the transcription could not carry.
 

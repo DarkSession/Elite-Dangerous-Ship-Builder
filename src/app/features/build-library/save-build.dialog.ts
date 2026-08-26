@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { MessageService } from '../../i18n/message.service';
+import { relationId } from '../../ui/a11y/text-equivalence';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { ActionButton } from '../../ui/components/action/action-button';
 import { Layer } from '../../ui/components/layer/layer';
@@ -30,6 +31,14 @@ export interface SaveRequest {
  * who types a name that already exists gets a warning and a new record — never
  * a silent overwrite of a build with the same label (build-workspace design,
  * "Composition").
+ *
+ * **Revised 2026-08-25.** Since a save consumes the unsaved entry these edits
+ * were autosaved into, the two choices no longer differ only in which record is
+ * written: replacing removes that entry, and saving as new keeps both builds.
+ * One of them therefore ends with a record fewer than it started with, which is
+ * exactly the sort of thing a Commander has to be told before they press it and
+ * not after — so each choice states its outcome in visible, associated words,
+ * the same way the conflict dialog does (FR-008, T150a).
  */
 @Component({
   selector: 'edsb-save-build-dialog',
@@ -65,7 +74,12 @@ export class SaveBuildDialog {
   readonly nameDescription = this.#messages.messageSignal('library.save.name.description');
   readonly overwriteLabel = this.#messages.messageSignal('library.save.overwrite');
   readonly asNewLabel = this.#messages.messageSignal('library.save.as-new');
+  readonly overwriteOutcome = this.#messages.messageSignal('library.save.overwrite.outcome');
+  readonly asNewOutcome = this.#messages.messageSignal('library.save.as-new.outcome');
   readonly dismissLabel = this.#messages.messageSignal('action.close');
+
+  readonly overwriteOutcomeId = relationId('save-overwrite-outcome');
+  readonly asNewOutcomeId = relationId('save-as-new-outcome');
 
   /** The name currently typed. Starts from the source record's own. */
   readonly name = signal('');

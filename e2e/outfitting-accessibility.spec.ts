@@ -256,6 +256,13 @@ test.describe('the conditions that break layouts', () => {
    * (FR-020–FR-023).
    */
   test('passes an accessibility scan in every family state', async ({ page }, testInfo) => {
+    // Four whole-page scans of the fullest screen the product draws, in one
+    // test. Each one alone costs a good part of the default budget on an
+    // unloaded machine, and the ten-project matrix never runs one test alone.
+    // The budget is what gives way, not the coverage: dropping a state would
+    // leave a state unscanned, which is the thing this test exists to prevent.
+    test.slow();
+
     await openStockBuild(page);
     await selectMount(page, 'SmallHardpoint1');
     await openChooser(page);

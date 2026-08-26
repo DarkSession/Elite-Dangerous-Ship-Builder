@@ -5,7 +5,7 @@ import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localizatio
 import { captureCheckpoint } from '../../domain/build/modeled-build-checkpoint';
 import { FIXTURE_SLOTS, defaultBuild } from '../../domain/outfitting/outfitting.fixtures';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import type { BuildCandidate } from '../active-build/active-build.models';
 import { OutfittingStore } from './outfitting.store';
 
@@ -27,6 +27,7 @@ function candidateFor(loadout = defaultBuild()): BuildCandidate {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   };
 }
@@ -34,18 +35,17 @@ function candidateFor(loadout = defaultBuild()): BuildCandidate {
 describe('outfitting store', () => {
   let store: OutfittingStore;
   let active: ActiveBuildStore;
-  let coordinator: ReplacementCoordinator;
+  let coordinator: BuildIngressCoordinator;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
     });
     active = TestBed.inject(ActiveBuildStore);
-    coordinator = TestBed.inject(ReplacementCoordinator);
+    coordinator = TestBed.inject(BuildIngressCoordinator);
     store = TestBed.inject(OutfittingStore);
     // Replacing an unsaved build asks first, so the tests that replace one
     // answer yes. That question is feature 001's and is not what is under test.
-    coordinator.setConfirmer(() => Promise.resolve(true));
     active.commit(candidateFor());
   });
 
@@ -96,7 +96,7 @@ describe('outfitting store', () => {
     store.showSurface('engineering');
     store.setQuery('plant');
 
-    await coordinator.replace(() => ({ ok: true, candidate: candidateFor() }));
+    await coordinator.commit(() => ({ ok: true, candidate: candidateFor() }));
 
     // Back to where the canvas opens: the first mount of the new build, not a
     // bench with nothing in it — the reference draws no such screen.
@@ -111,7 +111,7 @@ describe('outfitting store', () => {
     store.showSurface('replacement');
     store.setQuery('plant');
 
-    const result = await coordinator.replace(() => ({ ok: false, reason: 'refused' }));
+    const result = await coordinator.commit(() => ({ ok: false, reason: 'refused' }));
 
     expect(result.kind).toBe('failed');
     // Nothing arrived, so nothing about what the Commander was doing changed.
@@ -161,7 +161,6 @@ describe('outfitting store - fitting', () => {
       providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
     });
     active = TestBed.inject(ActiveBuildStore);
-    TestBed.inject(ReplacementCoordinator).setConfirmer(() => Promise.resolve(true));
     store = TestBed.inject(OutfittingStore);
     active.commit(candidateFor());
   });

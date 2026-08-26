@@ -4,36 +4,74 @@
   display: block;
   container-type: inline-size;
   container-name: records;
+  min-block-size: 0;
 }
 
 .records {
-  @include layout.stack(var(--edsb-space-section));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-block-size: 0;
+}
+
+// The reference's column headers: monospace, tracked, on a slightly lighter
+// plate above one scrolling body.
+.records__columns {
+  display: none;
+  gap: var(--edsb-space-inline);
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-row);
+  background-color: var(--edsb-surface-panel-raised);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+}
+
+.records__columns span {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+}
+
+.records__body {
+  @include layout.bounded-scroller;
+  @include layout.stack(var(--edsb-space-stack));
 }
 
 .records__group {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--edsb-space-stack-tight));
 }
 
 .records__heading {
   @include layout.section-rule;
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-control));
+
+  margin: 0;
 }
 
 .records__list {
   display: grid;
-  gap: var(--edsb-space-stack);
+  gap: var(--edsb-border-width-hairline);
   grid-template-columns: 1fr;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-// Wider containers hold more than one record across without the identities
-// wrapping. The reading order does not change with the number of columns.
-@include layout.container-wide-up(records) {
-  .records__list {
-    grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-rail-min), 1fr));
+// Where the surface is wide enough, the headers appear and the rows take the
+// same three tracks. Narrow, each row stacks and the headers step aside rather
+// than being read as labels for a shape that is not there.
+@include layout.container-medium-up(records) {
+  .records__columns {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr);
+    padding-inline-start: calc(var(--edsb-space-row) + var(--edsb-border-width-marker));
   }
+}
+
+// One centred sentence on the body's own ground: no panel, and nothing else
+// removed, so widening the search needs no separate action.
+.records__no-match {
+  padding-block: var(--edsb-space-section);
+  margin: 0;
+  font-weight: var(--edsb-text-weight-prose);
+  text-align: center;
+  color: var(--edsb-text-subtle);
 }
 
 .records__empty {

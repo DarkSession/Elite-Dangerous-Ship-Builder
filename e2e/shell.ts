@@ -60,6 +60,37 @@ export async function openActionLayer(page: Page): Promise<void> {
  * otherwise — so a journey that waited for one was waiting on a screen the
  * design does not have (canvas 1c, "Build status").
  */
+/**
+ * Opens a stored record from the library, as the surface now offers it.
+ *
+ * Since 2026-08-25 the library commits from a footer that acts on the row it
+ * has chosen, so opening a record is two presses: choose the row, then open it.
+ * Retried as one unit, because the listing re-reads storage after any write and
+ * the row a press was aimed at can be replaced a frame later.
+ *
+ * Both presses are scoped to the library's own layer, and a retry that finds the
+ * workspace already open simply stops. Without either, a retry after a
+ * navigation that has already landed would press the workspace's own title —
+ * which is a button too, and carries the same name as the row.
+ */
+export async function openRecordFromLibrary(page: Page, title: string): Promise<void> {
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const surface = page.getByRole('dialog', { name: /^saved builds$/i });
+  const row = surface.getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
+  const open = surface.getByRole('button', { name: `Open ${title}` });
+
+  await expect(async () => {
+    if (/\/build(#|$)/.test(page.url())) {
+      return;
+    }
+    await row.click({ timeout: 5_000 });
+    await open.click({ timeout: 5_000 });
+    await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
+
+  await expect(page).toHaveURL(/\/build(#|$)/);
+}
+
 export async function savedToBrowser(page: Page | Locator): Promise<void> {
   await expect(page.locator('edsb-build-workspace-page')).toHaveAttribute(
     'data-persistence',

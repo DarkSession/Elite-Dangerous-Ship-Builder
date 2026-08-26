@@ -55,6 +55,7 @@ describe('the build status block', () => {
       provenance: 'stock',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }

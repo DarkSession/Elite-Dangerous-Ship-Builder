@@ -1,8 +1,15 @@
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  isDevMode,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { routes } from './app.routes';
+import { RetentionService } from './application/build-library/retention.service';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
 import { SLEF_FALLBACK_PROVIDER } from './application/slef/slef-fallback.adapter';
 import { provideLocalization } from './i18n/i18n.providers';
@@ -24,6 +31,14 @@ export const appConfig: ApplicationConfig = {
     // Every browser store is reached through a port with an exception
     // boundary, so a blocked or full one changes persistence and nothing else.
     ...WEB_STORAGE_PROVIDERS,
+    // One of the expiry's two moments; the other is every listing read. An
+    // initializer rather than a timer, and rather than something the shell
+    // component does: a record that outlives its deadline until the next start
+    // costs nothing, and a row vanishing under a Commander reading the library
+    // costs trust (FR-013, ruled 2026-08-25).
+    provideAppInitializer(() => {
+      inject(RetentionService).sweep();
+    }),
     // The application's only service worker, and its only cache owner.
     //
     // It exists for one reason: complete English and the shell must be readable

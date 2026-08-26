@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectRelationship } from './accessibility/assertions';
-import { reachShellAction } from './shell';
+import { reachShellAction, savedToBrowser } from './shell';
 
 /**
  * A build, handed over as a file rather than as a link.
@@ -654,10 +654,8 @@ test.describe('with no network at all', () => {
       .getByLabel(/slef payload/i)
       .fill(JSON.stringify({ event: 'Loadout', Ship: 'anaconda', Modules: [] }));
     await importLayer.getByRole('button', { name: /^load build$/i }).click();
-    // The stock build is unsaved, so feature 001 asks before replacing it.
-    const question = page.getByRole('dialog', { name: /replace the build/i });
-    await expect(question).toBeVisible();
-    await question.getByRole('button', { name: /discard and open/i }).click();
+    // Nothing is asked: the stock build being replaced is in a record of its
+    // own, so the import lands straight in the workspace (feature 001, FR-008).
     await expect(page).toHaveURL(/\/build($|[#?])/);
 
     // From here on, nothing but static files. The import landed in the
@@ -726,6 +724,10 @@ test.describe('what is never trusted', () => {
       });
       Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
     });
+    // The reload has to come after the build is in its record, not merely on
+    // screen: autosave coalesces its writes, so a page reloaded in the window
+    // before the first one lands restores nothing and comes back empty.
+    await savedToBrowser(page);
     await page.reload();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 

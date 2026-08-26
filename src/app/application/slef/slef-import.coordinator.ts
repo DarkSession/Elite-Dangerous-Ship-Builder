@@ -4,11 +4,19 @@ import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { importSlef } from '../../domain/slef/slef-import';
 import type { SlefImportCandidate } from '../../domain/slef/slef-import.models';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import type { CandidateOutcome } from '../active-build/replacement-coordinator';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import type { CandidateOutcome } from '../active-build/build-ingress.coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { SlefStore } from './slef.store';
 
-/** How one submitted draft ended, from the layer's point of view. */
+/**
+ * How one submitted draft ended, from the layer's point of view.
+ *
+ * `cancelled` has had no producer since feature 001 withdrew its replacement
+ * question on 2026-08-25: nothing between a valid draft and a committed build
+ * asks the Commander anything any more. It is kept as an ending the layer still
+ * knows how to render, because abandoning a submission is feature 004's own
+ * behaviour to define and this feature does not get to delete it from here.
+ */
 export type SlefImportSubmission =
   | { readonly kind: 'committed' }
   | { readonly kind: 'failed' }
@@ -19,7 +27,7 @@ export type SlefImportSubmission =
  * The one path from a pasted draft to an active build.
  *
  * Everything up to the handoff happens on a candidate nobody is looking at, and
- * the handoff itself is feature 001's `ReplacementCoordinator` — the single
+ * the handoff itself is feature 001's `BuildIngressCoordinator` — the single
  * place in the application where the active build changes. Feature 004 writes
  * no active state, no record, no fragment and no history entry of its own; if
  * it did, there would be two ways to replace a build and one of them would
@@ -32,7 +40,7 @@ export type SlefImportSubmission =
 @Injectable({ providedIn: 'root' })
 export class SlefImportCoordinator {
   readonly #store = inject(SlefStore);
-  readonly #replacement = inject(ReplacementCoordinator);
+  readonly #ingress = inject(BuildIngressCoordinator);
   readonly #active = inject(ActiveBuildStore);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
@@ -56,22 +64,23 @@ export class SlefImportCoordinator {
 
     this.#store.setImportStatus('awaitingReplacement');
 
-    const replacement = await this.#replacement.replace((): CandidateOutcome =>
+    const ingress = await this.#ingress.commit((): CandidateOutcome =>
       this.#store.isCurrent(token)
         ? { ok: true, candidate: this.#candidate(result.candidate) }
         : { ok: false, reason: SUPERSEDED },
     );
 
     // Feature 001's answer is the last word. The token guards the handoff, not
-    // what follows it: once the Commander has answered the replacement question
-    // for this candidate and feature 001 has committed, a token issued while
-    // that question was on screen cannot un-commit the build, and reporting
-    // anything but `committed` would describe an active build as one that never
-    // arrived. The dangerous case — a slow paste landing on a build opened
-    // afterwards — is a newer replacement, which feature 001's own token
-    // supersedes before it commits.
-    if (replacement.kind !== 'committed') {
-      return this.#settle(replacement.kind === 'cancelled' ? 'cancelled' : 'superseded');
+    // what follows it: once feature 001 has committed, a token issued during the
+    // handoff cannot un-commit the build, and reporting anything but `committed`
+    // would describe an active build as one that never arrived. The dangerous
+    // case — a slow paste landing on a build opened afterwards — is a newer
+    // ingress, which feature 001's own token supersedes before it commits.
+    //
+    // Since 2026-08-25 the only ending here is a superseded one: nothing is
+    // asked before a build is replaced, so nothing can be declined (FR-008).
+    if (ingress.kind !== 'committed') {
+      return this.#settle('superseded');
     }
 
     // The workspace, then the draft, then the layer — in that order.
@@ -112,8 +121,8 @@ export class SlefImportCoordinator {
    * The candidate, in feature 001's own shape.
    *
    * `working` provenance and no baseline: an imported build exists nowhere a
-   * Commander could get it back from, so it arrives dirty and the next
-   * replacement asks before discarding it. Nothing else about where it came
+   * Commander could get it back from, so it arrives dirty and autosave mints it
+   * a record of its own at the first write. Nothing else about where it came
    * from — the producer the envelope named, the draft — goes with it: neither
    * is build state.
    *
@@ -138,11 +147,12 @@ export class SlefImportCoordinator {
         quality: completion.quality,
       })),
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }
 
-  #settle(kind: 'cancelled' | 'superseded'): SlefImportSubmission {
+  #settle(kind: 'superseded'): SlefImportSubmission {
     this.#store.setImportEnding(kind);
     return { kind };
   }
@@ -153,7 +163,7 @@ export class SlefImportCoordinator {
  *
  * A stable code rather than a sentence. Feature 004 discards it — the layer's
  * own status line says what happened, in the message layer's words — but
- * sibling features render `ReplacementResult.reason` directly, and an English
+ * sibling features render `CommitResult.reason` directly, and an English
  * sentence written here would be an owned string that never passed through a
  * catalogue (FR-014).
  */

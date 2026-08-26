@@ -151,7 +151,7 @@ async function selectSlot(page: Page, slotKey: string): Promise<void> {
 /** Dismisses whatever layer is covering the frame, by its own visible control. */
 const WAY_OUT = new RegExp(
   `^(${englishMessages['action.close']}|${englishMessages['action.cancel']}` +
-    `|${englishMessages['workspace.replace.cancel']}` +
+    `|${englishMessages['library.close']}` +
     `|${englishMessages['library.delete.cancel']})$`,
   'i',
 );
@@ -159,10 +159,10 @@ const WAY_OUT = new RegExp(
 /**
  * Dismisses every layer covering the frame, by each one's own visible control.
  *
- * A layer may cover a layer — feature 001's replacement question stands over
- * the import layer that provoked it — so this works down the stack until the
- * frame is back. It presses named controls only: falling back to whatever
- * button happens to be last would let a layer with no visible way out pass.
+ * A layer may cover a layer — a delete confirmation stands over the library
+ * that raised it — so this works down the stack until the frame is back. It
+ * presses named controls only: falling back to whatever button happens to be
+ * last would let a layer with no visible way out pass.
  */
 async function dismissLayer(page: Page): Promise<void> {
   for (let depth = 0; depth < 4; depth += 1) {
@@ -204,8 +204,13 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await expect(page.locator('edsb-build-workspace-page')).toBeVisible();
   },
   'build-library': async (page) => {
+    // The library is a framed layer over the screen it was opened from, so what
+    // is waited for is the layer rather than the route component's own host —
+    // which has no box of its own once its content is in the top layer.
     await page.goto('/builds');
-    await expect(page.locator('edsb-build-library-page')).toBeVisible();
+    await expect(
+      page.getByRole('dialog', { name: englishMessages['library.title'] }),
+    ).toBeVisible();
   },
   'save-build-layer': async (page) => {
     await withStockBuild(page);
@@ -215,15 +220,10 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await withStockBuild(page);
     await openSaveLayer(page);
     await saveAs(page, 'Ledger build');
+    // The saved row is the one the footer acts on, so deleting it is the
+    // footer's own action.
     await page.getByRole('button', { name: /^delete ledger build$/i }).click();
-    await expect(layers(page)).toHaveCount(1);
-  },
-  'replacement-confirmation': async (page) => {
-    // Feature 001 asks before an incoming build replaces unsaved work, which
-    // is what makes an ordinary import the way to reach the question.
-    await withStockBuild(page);
-    await pasteImport(page, JOURNAL_EVENT);
-    await expect(page.getByRole('dialog', { name: /replace the build/i })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /ledger build/i })).toBeVisible();
   },
   'outfitting-ledger': async (page) => {
     await withStockBuild(page);
@@ -319,9 +319,6 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   },
 };
 
-/** One valid journal Loadout event for a stock hull, as another tool exports it. */
-const JOURNAL_EVENT = JSON.stringify({ event: 'Loadout', Ship: HULL.toLowerCase(), Modules: [] });
-
 /**
  * The two partial-roll payloads feature 002 already tests the package against.
  *
@@ -368,23 +365,31 @@ const UNSUPPORTED_PARTIAL_QUALITY = {
   ],
 };
 
-/** Opens the layer that saves the working build under a name. */
+/** Opens the layer that names the build in hand. */
 async function openSaveLayer(page: Page): Promise<void> {
   // The layer belongs to the library screen, which is where feature 001 draws
-  // the control that names a working build. Reached by the shell's own link
-  // rather than by loading the address: a fresh document has no open build, and
-  // the save the library offers is of the build the Commander has in hand.
+  // the control that names a build. Reached by the shell's own link rather than
+  // by loading the address: a fresh document has no open build, and the save the
+  // library offers is of the build the Commander has in hand.
+  //
+  // Since 2026-08-25 the library commits from a footer that acts on the row it
+  // has chosen, and the row it starts on is the record the workspace is holding
+  // — so the action is named after that build rather than after a word.
   await reachShellLink(page, /^open saved build$/i);
-  await page.getByRole('button', { name: /^Save Working build under a name$/i }).click();
-  await expect(layers(page)).toHaveCount(1);
+  await page.getByRole('button', { name: /^Save .+ under a name$/i }).click();
+  await expect(
+    page.getByRole('dialog', { name: englishMessages['library.save.title'] }),
+  ).toBeVisible();
 }
 
 /** Saves the open build under a name, from the layer that is already open. */
 async function saveAs(page: Page, name: string): Promise<void> {
-  const layer = layers(page);
+  const layer = page.getByRole('dialog', { name: englishMessages['library.save.title'] });
   await layer.getByRole('textbox', { name: /^name$/i }).fill(name);
   await layer.getByRole('button', { name: /^save as a new build$/i }).click();
-  await expect(layers(page)).toHaveCount(0);
+  // The save dialog closes; the library layer it stood over stays open, which
+  // is where the saved record is now listed.
+  await expect(layer).toHaveCount(0);
 }
 
 /** Pastes a payload into the import layer and submits it. */
@@ -406,12 +411,9 @@ async function importPayload(page: Page, payload: string): Promise<void> {
   await page.goto('/build');
   await pasteImport(page, payload);
 
-  // An empty workspace has nothing to lose, so feature 001 asks nothing. A
-  // workspace that does is answered here rather than left holding the question.
-  const question = page.getByRole('dialog', { name: /replace the build/i });
-  if ((await question.count()) > 0) {
-    await question.getByRole('button', { name: /discard and open/i }).click();
-  }
+  // Nothing is asked before an import replaces what is on screen: since
+  // 2026-08-25 the build being replaced has a record of its own, so there is
+  // no question here to answer (feature 001, FR-008).
 
   // What this journey wants is the surface beneath, so it waits for the frame
   // to be uncovered and dismisses nothing. Feature 004 closes its own layer

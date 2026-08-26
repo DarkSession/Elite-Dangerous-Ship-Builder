@@ -21,6 +21,7 @@ function commit(active: ActiveBuildStore, loadout = ShipLoadout.default(FIXTURE_
     provenance: 'working',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   });
 }
@@ -185,7 +186,7 @@ describe('the export artifact’s life', () => {
       expect(payload).not.toContain('previousQuality');
       expect(payload).not.toContain('requestToken');
       expect(payload).not.toContain('provenance');
-      expect(payload).not.toContain('workingRecordId');
+      expect(payload).not.toContain('autosaveRecordId');
     });
   });
 });

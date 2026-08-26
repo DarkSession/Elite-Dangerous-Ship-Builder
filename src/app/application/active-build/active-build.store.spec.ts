@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { baselineFingerprint } from '../../domain/build/replacement-policy';
+import { baselineFingerprint } from '../../domain/build/build-fingerprint';
 import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
 import { ActiveBuildStore } from './active-build.store';
 import type { BuildCandidate } from './active-build.models';
@@ -19,6 +19,7 @@ function candidate(overrides: Partial<BuildCandidate> = {}): BuildCandidate {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
     ...overrides,
   };
@@ -129,13 +130,13 @@ describe('ActiveBuildStore', () => {
 
     active.setPersistence('quota-full');
     active.setLink({ kind: 'published', fragment: 'b.abc', revision: 1 });
-    active.setWorkingRecordId('w1');
+    active.setAutosaveRecordId('w1');
 
     expect(active.state()).toMatchObject({
       loadout: incoming.loadout,
       persistence: 'quota-full',
       link: { kind: 'published', fragment: 'b.abc', revision: 1 },
-      workingRecordId: 'w1',
+      autosaveRecordId: 'w1',
     });
   });
 
@@ -168,5 +169,23 @@ describe('ActiveBuildStore', () => {
 
     active.commit(candidate());
     expect(active.qualityCompletionNotices()).toEqual([]);
+  });
+
+  it('clears the build when the record it lives in is deleted here', () => {
+    const active = store();
+    active.commit(candidate({ autosaveRecordId: 'held' }));
+
+    expect(active.clearIfHolding('held')).toBe(true);
+    expect(active.loadout()).toBeNull();
+    expect(active.autosaveRecordId()).toBeNull();
+  });
+
+  it('keeps the build when some other record is deleted', () => {
+    const active = store();
+    active.commit(candidate({ autosaveRecordId: 'held' }));
+
+    expect(active.clearIfHolding('someone-elses')).toBe(false);
+    expect(active.loadout()).not.toBeNull();
+    expect(active.autosaveRecordId()).toBe('held');
   });
 });

@@ -60,7 +60,12 @@ async function withStockBuild(page: Page): Promise<void> {
 
 test.describe('importing a build', () => {
   test('is offered from every screen, with no build and no chosen hull', async ({ page }) => {
-    for (const route of ['/ships', '/ships/Anaconda', '/build', '/builds']) {
+    // `/builds` is not on this list since 2026-08-25: the library is a modal
+    // layer over the screen it was opened from, and a modal makes the frame
+    // behind it inert — which is what a modal is for. The import action is
+    // offered by that screen, reached by closing the library (feature 001,
+    // build-library design, "Composition").
+    for (const route of ['/ships', '/ships/Anaconda', '/build']) {
       await page.goto(route);
       await openImport(page);
       await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();
@@ -69,6 +74,16 @@ test.describe('importing a build', () => {
         .first()
         .click();
     }
+  });
+
+  test('is offered from the screen the library was opened over', async ({ page }) => {
+    await page.goto('/builds');
+    await expect(page.getByRole('dialog', { name: /saved builds/i })).toBeVisible();
+
+    await page.getByRole('button', { name: /^close saved builds$/i }).click();
+    await openImport(page);
+
+    await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();
   });
 
   test('turns a bare journal event into the active build', async ({ page }) => {
@@ -82,7 +97,7 @@ test.describe('importing a build', () => {
   });
 
   test('accepts a one-entry SLEF envelope the same way', async ({ page }) => {
-    await page.goto('/builds');
+    await page.goto('/ships');
     await openImport(page);
     await paste(page, SLEF_ENVELOPE);
     await submit(page);
@@ -219,7 +234,11 @@ test.describe('what the layer refuses, and what it leaves alone', () => {
     expect(await page.evaluate(() => location.hash)).toBe(before);
   });
 
-  test('asks before replacing unsaved work, and cancelling changes nothing', async ({ page }) => {
+  test('replaces unsaved work without asking, and spends the draft doing it', async ({ page }) => {
+    // Withdrawn on 2026-08-25: the stock build being replaced is in a record of
+    // its own, so there is nothing to warn about (feature 001, FR-008). What is
+    // asserted instead is that no question stands between the draft and the
+    // build, and that the draft is spent only by the commit.
     await withStockBuild(page);
     const before = await page.evaluate(() => location.hash);
 
@@ -227,15 +246,13 @@ test.describe('what the layer refuses, and what it leaves alone', () => {
     await paste(page, JOURNAL_EVENT);
     await submit(page);
 
-    const question = page.getByRole('dialog', { name: /replace/i });
-    await expect(question).toBeVisible();
-    await question
-      .getByRole('button', { name: /cancel|keep/i })
-      .first()
-      .click();
+    await expect(page.getByRole('dialog', { name: /replace/i })).toHaveCount(0);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
-    expect(await page.evaluate(() => location.hash)).toBe(before);
-    await expect(layer(page).getByLabel(/slef payload/i)).toHaveValue(JOURNAL_EVENT);
+    // The canonical link is republished by an effect after the build commits,
+    // not by the commit itself, so the first slot can be on screen a frame
+    // before the fragment catches up. Read until it does rather than once.
+    await expect.poll(() => page.evaluate(() => location.hash)).not.toBe(before);
   });
 });
 

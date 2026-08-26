@@ -17,6 +17,15 @@ export interface SaveConflict {
   readonly attempted: NamedSaveRequest & { recordId: string };
   /** What is actually stored right now. */
   readonly observed: LocalRecordV1;
+  /**
+   * The unnamed record these edits were autosaved into, if there is one.
+   *
+   * Carried through the question because the answer decides what happens to it:
+   * replacing the stored version consumes it, keeping both names it in place,
+   * and cancelling leaves it exactly where it is — which is what makes cancel
+   * safe (FR-008).
+   */
+  readonly consumes: string | null;
 }
 
 /** The three ways out, and nothing else. */
@@ -55,8 +64,11 @@ export class SaveConflictService {
   /**
    * Attempts a named save, raising a conflict rather than losing a version.
    */
-  async save(request: NamedSaveRequest & { recordId: string }): Promise<NamedSaveResult> {
-    const result = await this.#named.overwriteNamed(request);
+  async save(
+    request: NamedSaveRequest & { recordId: string },
+    consumes: string | null = null,
+  ): Promise<NamedSaveResult> {
+    const result = await this.#named.overwriteNamed(request, consumes);
 
     if (result.kind === 'conflict') {
       this.#conflict.set({
@@ -65,6 +77,7 @@ export class SaveConflictService {
         observedRevisionId: result.observed.revisionId,
         attempted: request,
         observed: result.observed,
+        consumes,
       });
     }
 
@@ -87,22 +100,37 @@ export class SaveConflictService {
 
       case 'keep-both': {
         this.#conflict.set(null);
-        return this.#named.createNamed({
-          name: conflict.attempted.name,
-          note: conflict.attempted.note,
-          build: conflict.attempted.build,
-          validation: conflict.attempted.validation,
-          now: conflict.attempted.now,
-        });
+        // Both versions survive, and this one is named where it already lives:
+        // the unnamed record these edits were in becomes the second named
+        // record, rather than a third entry being written beside it (FR-008).
+        return conflict.consumes === null
+          ? this.#named.createNamed({
+              name: conflict.attempted.name,
+              note: conflict.attempted.note,
+              build: conflict.attempted.build,
+              validation: conflict.attempted.validation,
+              now: conflict.attempted.now,
+            })
+          : this.#named.nameHeldRecord({
+              recordId: conflict.consumes,
+              name: conflict.attempted.name,
+              note: conflict.attempted.note,
+              build: conflict.attempted.build,
+              validation: conflict.attempted.validation,
+              now: conflict.attempted.now,
+            });
       }
 
       case 'overwrite': {
         // Replace exactly the revision the Commander was shown. A third one
         // that appeared while they decided produces a refreshed question.
-        const result = await this.#named.overwriteNamed({
-          ...conflict.attempted,
-          expectedRevisionId: conflict.observedRevisionId,
-        });
+        const result = await this.#named.overwriteNamed(
+          {
+            ...conflict.attempted,
+            expectedRevisionId: conflict.observedRevisionId,
+          },
+          conflict.consumes,
+        );
 
         if (result.kind === 'conflict') {
           this.#conflict.set({
@@ -111,6 +139,7 @@ export class SaveConflictService {
             observedRevisionId: result.observed.revisionId,
             attempted: conflict.attempted,
             observed: result.observed,
+            consumes: conflict.consumes,
           });
           return result;
         }

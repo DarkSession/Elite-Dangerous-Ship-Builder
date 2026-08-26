@@ -213,7 +213,7 @@ test.describe('the ship’s name and ident', () => {
 
   test('names the ship, sets the ident, and undoes each back to absence', async ({ page }) => {
     await openStockBuild(page);
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
 
     await rename(page, 'Pacifier');
     await expect(page.getByRole('heading', { level: 1, name: 'Pacifier' })).toBeVisible();
@@ -237,7 +237,7 @@ test.describe('the ship’s name and ident', () => {
     await expect(page.locator('.identity-fields__plate')).toHaveCount(0);
 
     await pressCommandBarAction(page, /^undo$/i);
-    await expect(page.getByRole('heading', { level: 1, name: 'Build' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await expect(undo(page)).toBeDisabled();
   });
 
@@ -276,8 +276,10 @@ test.describe('what resets the tape', () => {
     await setGroup(page, 'SmallHardpoint1', '1');
     await expect(undo(page)).toBeEnabled();
 
+    // Nothing is asked before the link replaces what is on screen: the build it
+    // replaces has a record of its own (feature 001, FR-008).
     await page.goto(`/build${incoming}`);
-    await page.getByRole('button', { name: 'Discard and open' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     await expect(undo(page)).toBeDisabled();

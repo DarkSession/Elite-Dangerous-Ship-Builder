@@ -290,4 +290,70 @@ describe('Formatters', () => {
       expect(() => formatters.percent(Number.NaN)).toThrow(/percent/);
     });
   });
+
+  describe('relative time', () => {
+    const AT = new Date('2026-08-25T12:00:00.000Z');
+    const after = (ms: number) => new Date(AT.getTime() + ms);
+    const DAY = 24 * 60 * 60 * 1000;
+
+    it('counts whole days while more than a day is left', () => {
+      const formatters = setup('en');
+
+      expect(formatters.relativeTime(after(6 * DAY + 3 * 60 * 60 * 1000), AT)).toBe('in 6 days');
+    });
+
+    it('counts hours below a day and minutes below an hour', () => {
+      const formatters = setup('en');
+
+      expect(formatters.relativeTime(after(5 * 60 * 60 * 1000), AT)).toBe('in 5 hours');
+      expect(formatters.relativeTime(after(90 * 1000), AT)).toBe('in 1 minute');
+    });
+
+    it('says so when the instant has already passed', () => {
+      const formatters = setup('en');
+
+      expect(formatters.relativeTime(after(-2 * 60 * 60 * 1000), AT)).toBe('2 hours ago');
+    });
+
+    it('takes its unit label and its direction from the committed locale', () => {
+      // The reason this goes through `Intl` at all: a count of days assembled
+      // in a template would be an English word no catalogue could reach.
+      const german = setup('de');
+
+      expect(german.relativeTime(after(6 * DAY), AT)).toBe(
+        new Intl.RelativeTimeFormat('de', { numeric: 'auto' }).format(6, 'day'),
+      );
+    });
+
+    it('never rounds a deadline further away than it is', () => {
+      // Truncated, not rounded: a record with six days and twenty-three hours
+      // left has six days left, and saying seven would promise a day nobody has.
+      const formatters = setup('en');
+
+      expect(formatters.relativeTime(after(6 * DAY + 23 * 60 * 60 * 1000), AT)).toBe('in 6 days');
+    });
+
+    it('gives the absolute date where the runtime has no relative formatter', () => {
+      const formatters = setup('en');
+      const relative = Intl.RelativeTimeFormat;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Intl as any).RelativeTimeFormat = undefined;
+
+      try {
+        const target = after(6 * DAY);
+        expect(formatters.relativeTime(target, AT)).toBe(formatters.date(target));
+      } finally {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (Intl as any).RelativeTimeFormat = relative;
+      }
+    });
+
+    it('refuses an instant that is not one', () => {
+      const formatters = setup('en');
+
+      expect(() => formatters.relativeTime(new Date('nonsense'), AT)).toThrow(
+        UnformattableValueError,
+      );
+    });
+  });
 });

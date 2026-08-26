@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
-import { ReplacementCoordinator } from '../../../../application/active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../../../../application/active-build/build-ingress.coordinator';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import { FIXTURE_SLOTS, defaultBuild } from '../../../../domain/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
@@ -27,6 +27,7 @@ function candidateFor(loadout: ShipLoadout): BuildCandidate {
     provenance: 'stock',
     qualityNotices: [],
     sourceNamed: null,
+    autosaveRecordId: null,
     baseline: null,
   };
 }
@@ -47,7 +48,6 @@ describe('the outfitting workspace’s command-bar channel', () => {
       providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
     });
     active = TestBed.inject(ActiveBuildStore);
-    TestBed.inject(ReplacementCoordinator).setConfirmer(() => Promise.resolve(true));
     store = TestBed.inject(OutfittingStore);
     chrome = TestBed.inject(ScreenChrome);
   });
@@ -103,7 +103,11 @@ describe('the outfitting workspace’s command-bar channel', () => {
 
     expect(chrome.identity()).toEqual({
       name: null,
-      detail: 'Anaconda',
+      // Titled by what the build calls itself where it has no name of its own,
+      // exactly as the library titles the same record's row — and the hull is
+      // then not repeated beneath that title (FR-010).
+      fallbackName: 'Anaconda',
+      detail: null,
       ident: null,
       editing: null,
     });
@@ -126,6 +130,7 @@ describe('the outfitting workspace’s command-bar channel', () => {
     expect(store.loadout()?.shipName).toBe('Pacifier');
     expect(chrome.identity()).toEqual({
       name: 'Pacifier',
+      fallbackName: 'Anaconda',
       detail: 'Anaconda',
       ident: null,
       editing: null,

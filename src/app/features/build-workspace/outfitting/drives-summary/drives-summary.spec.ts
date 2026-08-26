@@ -38,6 +38,7 @@ describe('DrivesSummary', () => {
       provenance: 'stock',
       qualityNotices: [],
       sourceNamed: null,
+      autosaveRecordId: null,
       baseline: null,
     };
   }

@@ -11,6 +11,9 @@ export class MemoryStorage implements Storage {
   /** Set to throw from acquisition, to exercise a blocked store. */
   accessError: Error | null = null;
 
+  /** Set to throw from `removeItem`, to exercise a removal that fails. */
+  removeError: Error | null = null;
+
   get length(): number {
     return this.entries.size;
   }
@@ -31,6 +34,9 @@ export class MemoryStorage implements Storage {
   }
 
   removeItem(key: string): void {
+    if (this.removeError) {
+      throw this.removeError;
+    }
     this.entries.delete(key);
   }
 

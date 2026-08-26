@@ -277,7 +277,7 @@ integration closure and the documented validation run.
 - [x] T106 [P] Verify search, filter and sort over the complete installed hull catalogue, working-build restoration before interactivity, autosave coalescing and sub-50 ms codec encode/decode against the plan's performance goals in `e2e/performance.spec.ts`
 - [x] T107 Confirm the built asset tree contains no `.design/` mock data or assets, no Google Fonts request and no `/b/<name>#h=…` sample link, and record the reconciliation outcome in `specs/001-ship-selection-and-loading/design/reference-review.md`
 - [x] T108 [P] Document the working-record retention limit, owned key space, supported record versions and published link versions in `docs/persistence-and-links.md`
-- [ ] T109 Close the feature 004 SLEF integration by replacing the placeholder fallback with the delivered export action in `src/app/application/build-link/slef-fallback.port.ts` and its workspace wiring (depends on T093, feature 004)
+- [x] T109 Close the feature 004 SLEF integration by replacing the placeholder fallback with the delivered export action in `src/app/application/build-link/slef-fallback.port.ts` and its workspace wiring (depends on T093, feature 004) — delivered by `src/app/application/slef/slef-fallback.adapter.ts` and provided as `SLEF_FALLBACK_PROVIDER` in `app.config.ts`; the port keeps its "not available yet" default for tests and for a shell built without feature 004
 - [x] T110 Run `pnpm run check` and execute every scenario in `specs/001-ship-selection-and-loading/quickstart.md`, confirming at least 80% statements, branches, functions and lines with no skipped or quarantined test
 
 ---
@@ -436,12 +436,82 @@ brought to the drawing.
 
 ---
 
+## Phase 11: A record for every build, and the library the canvas draws
+
+**Goal**: close the two Commander corrections raised on 2026-08-25 after the reserved-track ruling.
+Autosave stops being one record per tab that the next build writes over and becomes one record per
+build, minted by the page that writes it and never a named one, which withdraws the replacement
+question from every ingress path while leaving a named save exactly where its Commander put it; and
+`/builds` stops being a grid of cards on a plain page and becomes the surface both canvases draw.
+
+`spec.md` (FR-008 to FR-013), `contracts/persistence.md`, `contracts/build-link.md`,
+`contracts/routes-and-ui.md`, `data-model.md`, `quickstart.md` and the four design records were
+revised on 2026-08-25 and are the specification these tasks build to. The clarification session of
+the same date settled two of them: an ingress identical to a stored unnamed record takes it over
+rather than duplicating it, and the twenty-record count limit is replaced by a seven-day expiry that
+a name stops. No requirement id is minted:
+the coverage ledger registers ids against journeys that exist, so the change is amendments inside
+FR-008, FR-009, FR-010, FR-012 and FR-013.
+
+### A record for every build (FR-008, FR-009)
+
+- [x] T148 Mint a record per build rather than per tab, reusing rather than duplicating: wherever a record is taken for a build, at commit or at the first edit that forks one, an unnamed record already holding identical modelled state is taken over instead of a second copy being written. The comparison is the serialized snapshot, taking a record over does not touch `modifiedAt`, and records that already exist are never merged by a later edit (clarification 2026-08-25). `commit` in `src/app/application/active-build/active-build.store.ts` mints a fresh unnamed record identity for a candidate that has none, `src/app/application/build-library/autosave.service.ts` writes only to that identity, and `TabDescriptorV1` carries it alongside the record the build was opened from (data model, "ActiveBuildState"; persistence contract, "Autosaved records")
+- [x] T149 Fork on first edit, not on open, in `src/app/application/build-library/record-open.service.ts` and `autosave.service.ts`: opening a record writes nothing and holds it as `sourceNamed`, and the first modelled edit mints an unnamed record and directs every write there. Assert in a unit test that a named record's bytes are unchanged by opening it and unchanged by editing it (depends on T148)
+- [x] T149a Refuse a named record as an autosave target in `src/app/application/build-library/autosave.service.ts`, whatever the page is holding, so a record named in another tab or arriving from before this ruling cannot be written by a coalesced edit (depends on T149)
+- [x] T150 Consume the unnamed record on manual save in `src/app/application/build-library/named-record.service.ts`: naming it writes `name` onto that same key and flips `kind` under its own lock — same id, fresh `revisionId`, nothing left behind — while writing the build into the record it came from writes that record under its lock and only then `removeItem`s the unnamed one, so a failed write never leaves the build without a copy. "Save as a copy" mints a record and leaves the original where it is (depends on T148)
+- [x] T150a Say what the save choices now do in `src/app/features/build-library/save-build.dialog.*` and both locale catalogues: "overwrite existing" replaces the saved version and discards the unsaved entry these edits were in, "save as new" keeps both (depends on T150)
+- [x] T151 Withdraw the replacement question: delete `ReplacementConfirmer`, the `dirty()` gate and the `setConfirmer` seam from `src/app/application/active-build/replacement-coordinator.ts`, its dialog wiring in `src/app/app.ts`, and `workspace.replace.*` from both locale catalogues. Rename the coordinator for what it now does — construct, commit once, notify — and delete `src/app/domain/build/replacement-policy.ts` if nothing reads the fingerprint after T148 (depends on T148, T149)
+- [x] T152 [P] Announce each newly minted autosave record from `src/app/application/build-library/tab-ownership.coordinator.ts`, not only the one claimed at start, so a cloned `sessionStorage` still forks before either page writes. Two pages holding one named record open is no longer a collision and must not fork (FR-012) (depends on T149)
+- [x] T152a [P] Add the clock port `src/app/platform/browser/clock.adapter.ts` with its unit tests, and replace `AutosaveService.now` — a public mutable field a test assigns — with it, so the one place that stamps an instant and the one that reads a deadline share a seam. Every other injected browser API already has one (plan, "Revision 2026-08-25")
+- [x] T153 Replace the count limit with the seven-day expiry in `src/app/application/build-library/retention.service.ts`: the deadline is `modifiedAt` plus seven days read through the clock port and derived rather than stored, the sweep runs at application start and on every listing read, it skips named records and any record a live page announces as its autosave target, and it says nothing when it has run. Delete the `retention-limit` persistence status with the limit it reported (FR-013, clarification 2026-08-25) (depends on T150, T152a)
+- [x] T153a State an unnamed record's remaining life on its own row, with naming offered from the row, so the one removal a Commander did not press is the one they can see coming (FR-010, FR-013) (depends on T153, T159)
+- [x] T153a1 [P] Add the relative-time formatter the countdown needs to `src/app/i18n/formatters/formatters.ts` with unit tests: `Intl.RelativeTimeFormat` in the committed locale, with its unit label translated where `Intl` has none. The layer has an absolute date formatter and no relative one, and a count of days assembled in a template would be the untranslatable string principle VI forbids (depends on T153)
+- [x] T153c [P] Clear the workspace to its no-build state when the Commander deletes the record this page is autosaving into, in `src/app/features/build-library/build-library.page.ts` and `src/app/application/active-build/active-build.store.ts`, and keep `record-deleted-externally` for a deletion another page made — the build stays, autosave pauses, resuming is explicit (FR-009, FR-012, clarification 2026-08-25) (depends on T148)
+- [x] T153b [P] Keep the quota path and separate it from expiry in `src/app/ui/components/record-manager/`: a full quota still removes nothing until the Commander selects records, and expiry is never offered as a way out of one. An edit that cannot fork because the quota is full leaves the named record it came from untouched (depends on T153)
+- [x] T154 [P] Rename the deliberate-write lock from `edsb:named:<record-id>` to `edsb:record:<record-id>` in the lock-name builder in `src/app/platform/storage/storage-keys.ts`, its callers in `src/app/application/build-library/`, and their tests: it guards any record now, and a Web Locks name is not stored bytes
+- [x] T155 Say "unnamed", not "working", in `src/app/i18n/locales/{en,de}.json` and in every view model that carries the word to a Commander, and name the record an unnamed one was forked from on its library row, so unsaved edits to a saved build read as what they are (depends on T150)
+- [x] T155a [P] Title an unnamed row from the build rather than from a word: its ship name, else its ident, else the hull, read each time the row is drawn, never written onto the record, and set apart from a Commander-given name (FR-010, clarification 2026-08-25). The workspace command bar titles an unnamed build the same way (depends on T155, T159)
+- [x] T156 Rewrite `e2e/build-working-state.spec.ts` and the `001/FR-007`, `001/FR-008` and `001/FR-009` assertion lines in `e2e/coverage-ledger.ts` around the new behaviour — four builds in a row leave four records, no ingress asks anything, opening a save writes nothing to it, editing one forks, naming leaves the count unchanged and overwriting returns it to where it was — and move `001/FR-009` off the `ships/:symbol/create-stock-build` surface, which no longer carries a dialog (depends on T151, T150a)
+
+### The library the canvas draws (FR-010, FR-013)
+
+- [x] T157 Give `/builds` the reference's frame: compose `src/app/ui/components/layer/` in `src/app/features/build-library/build-library.page.html` as canvas 1a's centred dialog over an inert originating screen and canvas 1b's full-screen layer, with the title bar's `SAVED BUILDS` and monospace dismiss, and keep the route addressable and in history
+- [x] T158 Add the header row the reference draws — one search field over the records beside a monospace record count — with the count leaving the command bar for it, and narrow the listing over the fields a row shows, announced politely (depends on T157)
+- [x] T159 Replace the card grid with the reference's rows: `BUILD` / `HULL` / `Mcr` / `EDITED` column headers on their own plate over one scrolling body, the name over a one-line note, and the hull, cost and edited-at in monospace, in `src/app/ui/components/record-list/` and `src/app/ui/components/saved-build-card/` (depends on T157)
+- [x] T160 [P] Draw the 3px leading marker on every row and fill it amber with the leading-edge wash on the record the workspace holds, carried in words and in `aria-current` as well as in the wash (depends on T159)
+- [x] T161 [P] Replace the per-row `StatusNotice` with the reference's monospace issue count on its warm plate, keeping the recorded validation state in words (depends on T159)
+- [x] T162 [P] Give the surface the committing footer both canvases draw — the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge — pinned at the compact composition (depends on T157)
+- [x] T163 Register the library surface's search, no-match, current-record and expiring states in `e2e/coverage-ledger.ts`, restate the `001/FR-013` assertion lines around expiry rather than a count, and assert the frame, header, columns, marker, badge and footer in `e2e/design-reference.spec.ts` and `e2e/build-library.spec.ts`. Seed record ages through the storage port rather than waiting (depends on T158, T159, T160, T161, T162, T153a)
+- [x] T164a [P] Bring `docs/persistence-and-links.md` to the new record model: it still documents `edsb:tab` as the working record a tab owns and a `WORKING_RECORD_LIMIT` of twenty with what happens at the twenty-first. Replace both with the record-per-build model, the three removal causes and the seven-day expiry; the owned key space and the published record and link versions are unchanged (depends on T153)
+- [x] T164 Cover every new and changed state in `src/app/ui/previews/preview-manifest.ts` — current record, unsaved edits to a saved build, searched, no match, issue badge, retention with naming offered — at desktop, tablet and mobile widths (depends on T159, T163)
+- [x] T165 Run `pnpm run check` and fix every divergence across the ten Playwright projects, then walk `quickstart.md` scenarios 2, 3, 4, 5, 7 and 10 (depends on T148, T149, T149a, T150, T150a, T151, T152, T152a, T153, T153a, T153a1, T153b, T153c, T155, T155a, T156, T157, T158, T159, T163, T164, T164a)
+
+Two parts of that gate could not be answered in the development container, and
+both were checked far enough to say why rather than left as a pass:
+
+- The five Firefox projects cannot run: `npx playwright install firefox` fails
+  against the proxy and no binary is present. The five Chromium projects run
+  clean (2843 passed), and the offline suite runs clean on all five Chromium
+  projects (75 passed). CI is where the Firefox half is answered.
+- `e2e:timing`'s candidate-search budget fails here on the first two keystrokes
+  (194.9, 201.2 ms against 100 ms) and fails the same way on this feature's
+  merge base (193.9, 229.4 ms), so it measures this container rather than
+  anything in this feature. The keystrokes after the cold render are inside the
+  budget in both.
+
+---
+
 ## Notes
 
 - [P] tasks touch different files and have no dependency on incomplete work
 - Every game-bearing value comes from `@elite-dangerous-almanac/core`; no task adds a local hull fact, calculation or replacement rule
 - Every browser API is reached through an injected port so domain behavior stays render-free and testable
 - Candidate-first is absolute: no loader mutates active state before its candidate has parsed, constructed and validated
-- No record is ever deleted, repaired or overwritten except by an explicit, individually confirmed Commander action
+- Since 2026-08-25 exactly three things remove a record — a confirmed deletion, the manual save that consumes the unnamed record it saved from, and the seven-day expiry of an unnamed record that its own row stated beforehand — and autosave never writes to a named record at all
 - Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
+- T151 kept the fingerprint module rather than deleting it, and renamed it: `isDirty` is what T148
+  made autosave's own trigger, so `src/app/domain/build/replacement-policy.ts` is now
+  `src/app/domain/build/build-fingerprint.ts`. `ReplacementCoordinator` became
+  `BuildIngressCoordinator`, and the layer ledger row for the withdrawn confirmation was removed from
+  `e2e/coverage-ledger.ts` and from feature 012's screen inventory, which transcribes it
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently

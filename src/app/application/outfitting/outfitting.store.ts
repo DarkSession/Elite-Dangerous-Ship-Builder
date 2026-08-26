@@ -27,7 +27,7 @@ import {
 } from '../../domain/outfitting/session-edit-history';
 import type { MessageKey } from '../../i18n/locale-registry';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
@@ -68,7 +68,7 @@ import { slotViews, type SlotView } from './slot-view';
 @Injectable({ providedIn: 'root' })
 export class OutfittingStore {
   readonly #active = inject(ActiveBuildStore);
-  readonly #coordinator = inject(ReplacementCoordinator);
+  readonly #coordinator = inject(BuildIngressCoordinator);
   readonly #gameText = inject(GameTextPresenter);
   readonly #formatters = inject(Formatters);
   readonly #messages = inject(MessageService);

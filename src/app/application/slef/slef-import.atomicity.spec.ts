@@ -11,7 +11,7 @@ import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { BuildCandidate } from '../active-build/active-build.models';
-import { ReplacementCoordinator } from '../active-build/replacement-coordinator';
+import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { OutfittingStore } from '../outfitting/outfitting.store';
 import { SlefImportCoordinator } from './slef-import.coordinator';
 import { SlefStore } from './slef.store';
@@ -48,7 +48,7 @@ function session(active: ActiveBuildStore, outfitting: OutfittingStore): string 
     revision: active.revision(),
     hullName: active.hullName(),
     provenance: active.provenance(),
-    workingRecordId: active.workingRecordId(),
+    workingRecordId: active.autosaveRecordId(),
     sourceNamed: active.sourceNamed(),
     baseline: active.baselineFingerprint(),
     dirty: active.dirty(),
@@ -66,7 +66,7 @@ describe('what an import that does not happen costs', () => {
   let active: ActiveBuildStore;
   let outfitting: OutfittingStore;
   let store: SlefStore;
-  let replacement: ReplacementCoordinator;
+  let replacement: BuildIngressCoordinator;
   let coordinator: SlefImportCoordinator;
   let router: Router;
   let committed: BuildCandidate[];
@@ -82,9 +82,10 @@ describe('what an import that does not happen costs', () => {
       provenance: 'working',
       qualityNotices: [],
       sourceNamed: { recordId: 'record-1', baseRevisionId: 'rev-1' },
+      autosaveRecordId: null,
       baseline: null,
     });
-    active.setWorkingRecordId('working-1');
+    active.setAutosaveRecordId('working-1');
     active.markSaved({ recordId: 'record-1', baseRevisionId: 'rev-1' });
     outfitting.select(FIXTURE_SLOTS.hardpoint);
     const choice = outfitting.candidateQuery()?.choices[0];
@@ -120,7 +121,7 @@ describe('what an import that does not happen costs', () => {
     active = TestBed.inject(ActiveBuildStore);
     outfitting = TestBed.inject(OutfittingStore);
     store = TestBed.inject(SlefStore);
-    replacement = TestBed.inject(ReplacementCoordinator);
+    replacement = TestBed.inject(BuildIngressCoordinator);
     coordinator = TestBed.inject(SlefImportCoordinator);
     router = TestBed.inject(Router);
     committed = [];
@@ -129,7 +130,6 @@ describe('what an import that does not happen costs', () => {
         committed.push(candidate);
       },
     });
-    replacement.setConfirmer(() => Promise.resolve(true));
   });
 
   describe('every refusal', () => {
@@ -155,61 +155,48 @@ describe('what an import that does not happen costs', () => {
     });
   });
 
-  describe('a cancelled replacement', () => {
-    it('changes nothing, and keeps the draft', async () => {
-      seed();
-      const before = session(active, outfitting);
-      replacement.setConfirmer(() => Promise.resolve(false));
-      store.setDraft(VALID);
-
-      expect(await coordinator.submit()).toEqual({ kind: 'cancelled' });
-
-      expect(session(active, outfitting)).toBe(before);
-      expect(store.draft().text).toBe(VALID);
-      expect(committed).toHaveLength(0);
-    });
-  });
-
-  describe('a request the Commander already answered', () => {
-    it('stands by the commit even if the layer closed straight after', async () => {
+  describe('a committed handoff', () => {
+    it('stands by the commit even if the layer closes as it lands', async () => {
+      // A token issued after feature 001 has written the store cannot un-commit
+      // the build, and reporting anything but `committed` would describe an
+      // active build as one that never arrived.
       seed();
       store.setDraft(VALID);
-      replacement.setConfirmer(async () => {
-        coordinator.abandon();
-        store.closeLayer();
-        return true;
-      });
-
-      // A yes about this exact candidate. A token issued after the answer
-      // cannot un-commit feature 001's build, and reporting anything but
-      // `committed` would describe the active build as one that never arrived.
-      expect(await coordinator.submit()).toEqual({ kind: 'committed' });
-      expect(committed).toHaveLength(1);
-    });
-
-    it('stands by it when a newer submit is issued after the answer', async () => {
-      seed();
-      store.setDraft(VALID);
-      replacement.setConfirmer(() => {
-        store.issueToken();
-        return Promise.resolve(true);
+      const stop = replacement.addSink({
+        onCommitted: () => {
+          coordinator.abandon();
+          store.closeLayer();
+        },
       });
 
       expect(await coordinator.submit()).toEqual({ kind: 'committed' });
       expect(committed).toHaveLength(1);
+      stop();
     });
 
-    it('stands by it when the Commander navigates after the answer', async () => {
+    it('stands by it when a newer submit is issued as it lands', async () => {
       seed();
       store.setDraft(VALID);
-      replacement.setConfirmer(async () => {
-        await router.navigateByUrl('/build');
-        coordinator.abandon();
-        return true;
+      const stop = replacement.addSink({ onCommitted: () => store.issueToken() });
+
+      expect(await coordinator.submit()).toEqual({ kind: 'committed' });
+      expect(committed).toHaveLength(1);
+      stop();
+    });
+
+    it('stands by it when the Commander navigates as it lands', async () => {
+      seed();
+      store.setDraft(VALID);
+      const stop = replacement.addSink({
+        onCommitted: () => {
+          void router.navigateByUrl('/build');
+          coordinator.abandon();
+        },
       });
 
       expect(await coordinator.submit()).toEqual({ kind: 'committed' });
       expect(committed).toHaveLength(1);
+      stop();
     });
   });
 
@@ -219,13 +206,10 @@ describe('what an import that does not happen costs', () => {
       const before = session(active, outfitting);
       store.setDraft(VALID);
       // The guard is the candidate supplier, which feature 001 calls before it
-      // asks anything. A stale token there produces no candidate at all, so
-      // there is nothing for a confirmation to be asked about.
-      replacement.setConfirmer(() => {
-        throw new Error('nothing should have been asked');
-      });
+      // touches the store. A stale token there produces no candidate at all, so
+      // there is nothing to commit.
       const stale = store.requestToken - 1;
-      const result = await replacement.replace(() => {
+      const result = await replacement.commit(() => {
         expect(store.isCurrent(stale)).toBe(false);
         return { ok: false, reason: 'stale' };
       });
@@ -235,7 +219,10 @@ describe('what an import that does not happen costs', () => {
       expect(committed).toHaveLength(0);
     });
 
-    it('loses to a newer replacement decided while its question was on screen', async () => {
+    it('loses to a newer ingress started while it was in flight', async () => {
+      // Feature 001's own token decides: the newer request wins, the older one
+      // is superseded rather than committed, and the draft it came from is
+      // still exactly as it was typed.
       seed();
       const other: BuildCandidate = {
         loadout: ShipLoadout.default('Eagle'),
@@ -243,17 +230,15 @@ describe('what an import that does not happen costs', () => {
         provenance: 'stock',
         qualityNotices: [],
         sourceNamed: null,
+        autosaveRecordId: null,
         baseline: null,
       };
       store.setDraft(VALID);
-      replacement.setConfirmer(async () => {
-        replacement.setConfirmer(() => Promise.resolve(true));
-        await replacement.replace(() => ({ ok: true, candidate: other }));
-        return true;
-      });
 
-      expect(await coordinator.submit()).toEqual({ kind: 'superseded' });
+      const inFlight = coordinator.submit();
+      await replacement.commit(() => ({ ok: true, candidate: other }));
 
+      expect(await inFlight).toEqual({ kind: 'superseded' });
       expect(active.hullName()).toBe('Eagle');
       expect(committed).toEqual([other]);
       expect(store.draft().text).toBe(VALID);

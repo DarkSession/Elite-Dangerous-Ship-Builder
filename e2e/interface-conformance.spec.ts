@@ -118,7 +118,11 @@ test.describe('cross-route semantics', () => {
     }
   });
 
-  test('raises one prompt for one blocking condition, and no more', async ({ page }) => {
+  test('raises no prompt where nothing is at stake', async ({ page }) => {
+    // Feature 001 withdrew its replacement question on 2026-08-25: a build being
+    // replaced has a record of its own, so there is nothing to warn about and no
+    // question to ask. The blocking condition this asserted no longer exists,
+    // and asserting that it does not is what is left to check.
     await openScreen(page, 'workspace');
 
     await reachShellLink(page, 'Shipyard');
@@ -126,11 +130,8 @@ test.describe('cross-route semantics', () => {
     await openFirstHullFromManifest(page);
     await page.getByRole('button', { name: 'Build stock hull' }).click();
 
-    // One question, asked once, naming both outcomes in its own words.
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toHaveCount(1);
-    await expect(dialog.getByRole('button', { name: 'Discard and open' })).toBeVisible();
-    await expect(dialog.getByRole('button', { name: 'Keep what I have' })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 });
 
