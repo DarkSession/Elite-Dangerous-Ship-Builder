@@ -42,6 +42,20 @@ export interface ApplicationVersionSnapshot {
 export const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
+ * How long the overlay stands before the page restarts under it.
+ *
+ * Twenty seconds, and the number is a requirement rather than a taste. A
+ * restart that happens on a clock is a time limit, and WCAG 2.2.1 lets one
+ * stand only where a Commander can turn it off, adjust it, or is warned before
+ * it expires and given **at least twenty seconds** to extend it by a simple
+ * action. The overlay is that warning and `postpone()` is that action, so the
+ * grace period cannot be shorter than the rule's own floor — and it is not
+ * padding either: a Commander who looks up mid-outfitting has to read one
+ * sentence and find one control in it.
+ */
+export const UPDATE_OVERLAY_MS = 20 * 1000;
+
+/**
  * Whether the version a Commander is reading is the version that was published.
  *
  * The application is static files served from behind a service worker, which is
@@ -51,13 +65,30 @@ export const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
  * alone, that is a Commander sitting on last week's build with no way of
  * knowing, and a cache-defeating reload as the only cure.
  *
- * So the session asks, and when the answer is yes it says so and offers to
- * restart. It never restarts on its own. A reload replaces everything on
- * screen, and deciding that for someone in the middle of outfitting a hull is
- * the one thing this must not do — the same rule that keeps shell navigation
- * from reloading the page (`src/app/app.ts`, `navigateFromShell`). A Commander
- * who never presses it loses nothing either: the worker has already downloaded
- * the newer version, and the next start of the application is served it.
+ * So the session asks, and when the answer is yes it applies it: an overlay
+ * says what is about to happen, stands for {@link UPDATE_OVERLAY_MS}, and the
+ * page restarts on the newer version under it (Commander request 2026-08-26).
+ *
+ * **Reversed from "never on its own".** Until that request this waited for a
+ * Commander to press a control, on the reading that a reload replaces
+ * everything on screen and deciding that for someone mid-outfitting is the one
+ * thing it must not do. What that produced in practice is a fleet of sessions
+ * sitting on old builds behind a notice nobody presses, which is the failure
+ * the whole mechanism exists to prevent. The reload is no longer the loss it
+ * was reasoned against, either: what a Commander is working on is in the link
+ * in the address bar and in this browser's own store, and both survive it.
+ *
+ * What does not change is that nothing happens without warning and nothing
+ * happens that cannot be stopped. The overlay is the warning; `postpone()` is
+ * the way out of it, and taking it puts the session back exactly where it was —
+ * a notice on the shell and a control that applies the update whenever the
+ * Commander is ready. A session that postpones and never comes back loses
+ * nothing: the worker has the newer version downloaded, and the next start of
+ * the application is served it.
+ *
+ * A cached version the worker cannot repair is **not** applied on a clock. It
+ * is an error rather than an improvement, its restart is a repair a Commander
+ * asks for, and there is no working page under an overlay to protect.
  *
  * The store owns the policy and holds no view state; the adapter beneath it
  * owns the browser and knows nothing about what any of it means
@@ -72,11 +103,24 @@ export class ApplicationUpdateStore {
   readonly #state = signal<ApplicationVersionState>('current');
   readonly #revision = signal(0);
   readonly #applying = signal(false);
+  readonly #overlay = signal(false);
+
+  /** Calls off the scheduled restart. `null` when none is scheduled. */
+  #countdown: (() => void) | null = null;
 
   readonly state = this.#state.asReadonly();
 
   /** Whether a restart has been asked for and is on its way. */
   readonly applying = this.#applying.asReadonly();
+
+  /**
+   * Whether the overlay is standing over the page.
+   *
+   * Up from the moment a newer version is ready until the page restarts under
+   * it or a Commander postpones it. It is what makes the restart something that
+   * is announced before it happens rather than something that happens.
+   */
+  readonly overlay = this.#overlay.asReadonly();
 
   readonly snapshot = computed<ApplicationVersionSnapshot>(() => ({
     state: this.#state(),
@@ -121,6 +165,7 @@ export class ApplicationUpdateStore {
       return;
     }
 
+    this.#stopCountdown();
     this.#applying.set(true);
 
     if (this.#state() === 'ready') {
@@ -129,7 +174,31 @@ export class ApplicationUpdateStore {
 
     if (!this.#updates.reload()) {
       this.#applying.set(false);
+      this.#overlay.set(false);
     }
+  }
+
+  /**
+   * Calls off the restart and puts the session back where it was.
+   *
+   * The way out of the one time limit this application has, and the reason the
+   * limit is allowed to exist at all (WCAG 2.2.1). It leaves the version state
+   * alone: the newer version is still ready, the shell still says so, and the
+   * control beside that sentence still applies it — so postponing is deferring
+   * rather than declining.
+   *
+   * Nothing schedules the overlay a second time for the same version. A
+   * Commander who has said "not now" once has answered, and asking again twenty
+   * seconds later would be the interruption this was supposed to replace.
+   */
+  postpone(): void {
+    this.#stopCountdown();
+    this.#overlay.set(false);
+  }
+
+  #stopCountdown(): void {
+    this.#countdown?.();
+    this.#countdown = null;
   }
 
   /**
@@ -152,5 +221,16 @@ export class ApplicationUpdateStore {
 
     this.#state.set(state);
     this.#revision.update((revision) => revision + 1);
+
+    // A newer version applies itself; a broken one waits to be repaired. The
+    // overlay goes up first and the restart is scheduled behind it, so there is
+    // always a warning and always a way out of it before anything is replaced.
+    if (state === 'ready') {
+      this.#overlay.set(true);
+      this.#stopCountdown();
+      this.#countdown = this.#updates.after(UPDATE_OVERLAY_MS, () => void this.apply());
+    } else {
+      this.postpone();
+    }
   }
 }

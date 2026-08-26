@@ -1,3 +1,20 @@
+@use '../styles/responsive' as layout;
+
 :host {
   display: contents;
+}
+
+// The update overlay's body: one sentence and the control that goes now rather
+// than waiting out the grace period. The layer around it carries the title, the
+// notice and the way out, so this is only what stands under them.
+.app__update-detail {
+  margin: 0;
+  color: var(--edsb-text-muted);
+}
+
+.app__update-now {
+  @include layout.control-primary;
+  @include layout.control-base;
+
+  margin-block-start: var(--edsb-space-stack);
 }

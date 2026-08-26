@@ -114,6 +114,21 @@ placeholder parity; runtime validation protects against a stale/corrupt asset. S
 Duplicating English in TypeScript and JSON creates two sources. Publishing a partial secondary
 catalogue creates a mixed-language document with a false root language.
 
+**Amended 2026-08-26 (Commander request: "cache images, icons and other assets in the service worker
+and only clear them during a version update").** Marks, the loader and the site icon are now an eager
+asset group of their own, prefetched with the shell rather than fetched the first time a screen draws
+one. They are what the interface is made of — every screen carries several — so a first offline visit
+that reached for one and found nothing was drawing an interface with holes in it. The ship artwork
+stays lazy: it is large, a session sees one ship's worth of it, and prefetching the whole fleet is a
+download nobody asked for.
+
+Neither group's lifetime changes, and neither needs to be told when to clear. An asset group is keyed
+by the build's own hash manifest, so an entry lives exactly as long as the version that shipped it
+and is replaced when a version replaces it — which is the "only during a version update" that was
+asked for, already guaranteed by the mechanism rather than by a rule written on top of it. Nothing is
+cached by response: a `dataGroups` entry would be a second cache owner with a lifetime of its own,
+and the ownership rule forbids one.
+
 ## Locale-aware formatting
 
 **Decision**: Provide cached named operations over `Intl.NumberFormat`, `Intl.DateTimeFormat`,

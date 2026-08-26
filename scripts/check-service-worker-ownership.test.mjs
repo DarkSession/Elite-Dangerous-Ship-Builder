@@ -63,8 +63,41 @@ describe('service-worker ownership across features', () => {
       'app-shell',
       'fonts-and-bundled-english',
       'translations',
+      'icons-and-marks',
       'ship-artwork',
     ]);
+  });
+
+  it('prefetches the marks and the loader with the shell they are drawn in', () => {
+    // 56kB of icons, the artwork loader and the favicon. They are chrome rather
+    // than content: an acquisition mark, a material grade, the engineered ring
+    // — every screen draws some of them, so waiting to meet one before fetching
+    // it is a request on the way in for a file already smaller than the fetch
+    // (Commander request 2026-08-26). Prefetched, they are in the version's own
+    // cache before anything is drawn and stay there until a version replaces it.
+    const icons = config.assetGroups.find((group) => group.name === 'icons-and-marks');
+
+    assert.equal(icons.installMode, 'prefetch');
+    assert.equal(icons.updateMode, 'prefetch');
+    assert.deepEqual(icons.resources.files, [
+      '/assets/icons/**',
+      '/assets/loader.svg',
+      '/favicon.ico',
+    ]);
+  });
+
+  it('caches every static asset the build ships, and nothing by response', () => {
+    // The rule the Commander asked for: what is cached is cleared by a version
+    // and by nothing else. Every group here is an `assetGroup`, which the worker
+    // keys by the build's own hash manifest and drops only when a new version
+    // takes over; a `dataGroup` would cache responses on a clock or a count
+    // instead, and the ownership rule already refuses one.
+    const files = config.assetGroups.flatMap((group) => group.resources.files);
+
+    assert.ok(files.includes('/assets/icons/**'));
+    assert.ok(files.includes('/assets/ships/**'));
+    assert.ok(files.includes('/fonts/**'));
+    assert.equal(config.dataGroups, undefined);
   });
 
   it('leaves feature 011’s app-shell and locale groups untouched', () => {

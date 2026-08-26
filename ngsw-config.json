@@ -27,6 +27,14 @@
       }
     },
     {
+      "name": "icons-and-marks",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["/assets/icons/**", "/assets/loader.svg", "/favicon.ico"]
+      }
+    },
+    {
       "name": "ship-artwork",
       "installMode": "lazy",
       "updateMode": "prefetch",

@@ -25,6 +25,7 @@ import {
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
+import { Layer } from './ui/components/layer/layer';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
@@ -51,7 +52,7 @@ export const UPDATE_ACTION = 'app.update';
  */
 @Component({
   selector: 'app-root',
-  imports: [AppFrame, ExportDialog, HelpDialog, ImportDialog, RouterOutlet],
+  imports: [AppFrame, ExportDialog, HelpDialog, ImportDialog, Layer, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -159,6 +160,13 @@ export class App {
     if (state === 'current') {
       return null;
     }
+    if (state === 'ready' && this.#updates.overlay()) {
+      // The overlay is already the control, and a shell action beside it would
+      // be a second copy of it that a Commander cannot reach: the layer is
+      // modal and the shell under it is inert. It comes back the moment the
+      // overlay is postponed, which is what makes postponing a deferral.
+      return null;
+    }
     return {
       id: UPDATE_ACTION,
       label: this.#messages.message(
@@ -196,6 +204,11 @@ export class App {
     if (state === 'current') {
       return null;
     }
+    if (state === 'ready' && this.#updates.overlay()) {
+      // Same sentence, said by the overlay. On the shell as well it would be
+      // the notice a reader meets twice for one event (feedback contract).
+      return null;
+    }
     if (state === 'unusable') {
       return {
         tone: 'error' as const,
@@ -209,6 +222,31 @@ export class App {
       detail: this.#messages.message('update.ready.detail'),
     };
   });
+
+  /**
+   * The overlay that stands over the page while the restart is coming.
+   *
+   * Everything about it is here rather than in a component of its own: it is
+   * one layer, mounted beside the frame like the help dialog, and what it says
+   * is the shell's own account of the version this session is running
+   * (Commander request 2026-08-26).
+   */
+  readonly updateOverlay = computed(() => this.#updates.overlay());
+  readonly updateOverlayTitle = this.#messages.messageSignal('update.applying.title');
+  readonly updateOverlayNotice = this.#messages.messageSignal('update.applying.notice');
+  readonly updateOverlayDetail = this.#messages.messageSignal('update.applying.detail');
+  readonly updateOverlayNow = this.#messages.messageSignal('update.applying.now');
+  readonly updateOverlayPostpone = this.#messages.messageSignal('update.applying.postpone');
+
+  /** Applies the waiting version now rather than at the end of the grace period. */
+  applyUpdateNow(): void {
+    void this.#updates.apply();
+  }
+
+  /** Calls the restart off. The version stays ready and the shell says so again. */
+  postponeUpdate(): void {
+    this.#updates.postpone();
+  }
 
   /** The open screen's own identity block, where it publishes one. */
   readonly identity = this.chrome.identity;
@@ -262,7 +300,8 @@ export class App {
           kind: 'app.update',
           revision,
           urgency: state === 'unusable' ? 'assertive' : 'polite',
-          messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
+          messageKey:
+            state === 'unusable' ? 'update.unusable.announcement' : 'update.applying.notice',
         }),
       );
     });
