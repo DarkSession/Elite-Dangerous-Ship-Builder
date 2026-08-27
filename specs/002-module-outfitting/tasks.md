@@ -643,8 +643,9 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
 - [x] T159 Bring a revealed family into the rail's own visible box. Opening a fitted mount already
       centred the module in the pane and left the rail showing whichever ten of the seventy-seven
       families it happened to be scrolled to, so the rows changed and nothing said which family they
-      belonged to. The rail centres a revealed row that is outside its box and leaves one that is
-      already in it exactly where it is, so a Commander's own press never moves the list under them
+      belonged to. The rail centres a family the application revealed and leaves one the Commander
+      pressed exactly where they pressed it; a revealed row already whole in the box is left alone too,
+      as restraint rather than as the rule (corrected 2026-08-27 — see T165)
       (`candidate-list.ts`; spec FR-021, SC-007; `design/module-replacement.md`, "The rail scrolls to
       the family it was told to select")
 - [x] T160 Order a family's choices by class descending and then by the package's price descending,
@@ -680,3 +681,12 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       brought into view programmatically landed behind it (`candidate-list.scss`;
       `design/module-replacement.md`, "The fieldset needs a height of its own" and "Room under the
       command bar")
+- [x] T165 Spend a family press before the reveal effect can return, correct the rule the design doc
+      states, and pay for the two measurements that were missing. A press made under the accordion —
+      which is every press in the compact layer — was never spent, because the read sat after the
+      manifest guard; the id then outlived its manifest and the first rail reveal after a rotation
+      read a stale press, silently not scrolling. The design doc still called the in-view test "the
+      rule" after the code stopped treating it as one, and the `scroll-margin` comment cited a frozen
+      family bar wave 9 removed. Adds the fieldset's own spill assertion, the variant branch of the
+      power carry, and the scroller's block-start border to both centring sums
+      (`candidate-list.ts`, `candidate-list.scss`, `design/module-replacement.md`)

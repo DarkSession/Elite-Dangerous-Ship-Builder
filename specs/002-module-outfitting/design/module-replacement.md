@@ -85,12 +85,21 @@ selecting `Shield Generators` for a mount that carries one changed every row in 
 rail went on showing `Armour` through `Bulkheads` — the answer was on screen and the question was
 not, and the seam between them was the one control that says which family is being read.
 
-So the rail brings its selected row into its own visible box, and only where it is not already in it.
-That second half is the rule, not an optimisation: a Commander pressing a family row is looking
-straight at it, and centring on every selection would move the list under the press that made it —
-which is the fault above, drawn in the other direction. A row already in view is left exactly where
-it is; a row outside the box is centred, the same way and for the same reason the pane centres the
-fitted module.
+So the rail brings the revealed row into its own visible box — and the rule has two halves, because
+_who_ revealed it decides. **A family the application revealed is centred; a family the Commander
+pressed is left exactly where they pressed it.** Centring on every selection would move the list
+under the press that made it, which is the fault above drawn in the other direction.
+
+**Corrected 2026-08-27: the rule is about who, not about where.** It was first written as "scroll it
+unless the row is already in the box", on the reading that a Commander pressing a row must be looking
+at it. They need not be: the rail is a 470px box of 44px rows, so the row at either edge is routinely
+clipped, and pressing a clipped row is the ordinary case rather than the awkward one. The component
+records its own press instead and the reveal weighs that, which is the rule FR-021 and SC-007 state.
+
+The in-view test survives as _restraint_ and not as the rule: a family the application revealed that
+is already whole in the box is left alone, because there is nothing to bring into view and moving it
+would be motion with nothing to show for it. A row outside the box is centred, the same way and for
+the same reason the pane centres the fitted module.
 
 It scrolls the rail's own box rather than delegating to the platform's `scrollIntoView`, for the
 reason the pane does: at a short viewport the region deliberately stops bounding itself and the page
@@ -337,9 +346,14 @@ reaching 74px, with the bar answering the press meant for the control.
 
 Both carry `scroll-margin-block-start: var(--edsb-layout-bar-height)`, which is
 the reservation `.frame__main` already makes for an in-page link, made here for
-the two things in this list that get scrolled to. It counts inside the
-manifest's own scroller as well, where it is the frozen family bar rather than
-the command bar that would otherwise stand over the row.
+the two things in this list that get scrolled to.
+
+`scroll-margin` cannot be told which scroller it is for, so the reservation is
+paid inside the manifest's own scroller as well — where nothing stands over the
+row, because the sticky family bar went with the accordion's seam in wave 9. The
+price is a lead-in of the bar's height on a scroll nobody made with a thumb, set
+against a control that would otherwise be behind the bar and unpressable. It is
+worth stating as a trade rather than dressing up as a second bar.
 
 ## The scroller is a containing block, or it clips nothing
 

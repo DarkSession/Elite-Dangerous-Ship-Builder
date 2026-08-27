@@ -72,9 +72,14 @@
 // answering the press meant for it.
 //
 // The same reservation `.frame__main` already makes for an in-page link, made
-// here for the two things in this list that get scrolled to. It counts inside
-// this component's own scroller too, where it is the frozen family bar rather
-// than the command bar that would otherwise stand over the row.
+// here for the two things in this list that get scrolled to.
+//
+// `scroll-margin` cannot be told which scroller it is for, so it is paid inside
+// this component's own scroller as well — where nothing stands over the row,
+// because the sticky family bar went with the accordion's seam in wave 9. The
+// price is a lead-in of the bar's height on a scroll nobody made with a thumb,
+// against a control that would otherwise be behind the bar and unpressable.
+// That trade is worth stating rather than dressing up as a second bar.
 .family,
 .candidate {
   scroll-margin-block-start: var(--edsb-layout-bar-height);

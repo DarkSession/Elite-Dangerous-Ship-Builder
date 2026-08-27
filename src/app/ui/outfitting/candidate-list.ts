@@ -138,7 +138,12 @@ export class CandidateList {
     // 2026-08-27).
     const listBox = list.getBoundingClientRect();
     const rowBox = row.getBoundingClientRect();
-    list.scrollTop += rowBox.top - listBox.top - (list.clientHeight - rowBox.height) / 2;
+    // `clientTop` is the scroller's own block-start border, which stands
+    // between the box a rect measures from and the padding box `clientHeight`
+    // describes. It is zero on every scroller here today; subtracting it is
+    // what keeps that from being load-bearing the day one of them takes a rule.
+    list.scrollTop +=
+      rowBox.top - listBox.top - list.clientTop - (list.clientHeight - rowBox.height) / 2;
   });
 
   /**
@@ -174,18 +179,25 @@ export class CandidateList {
    * panel head off screen to bring a family row into view.
    */
   readonly #revealFamily = afterRenderEffect(() => {
+    const revealed = this.revealedFamily();
+
+    // Spent before anything else can return, and whether or not it matches: a
+    // press answers for the reveal it caused and for no later one. Read after
+    // the early return, it was never spent under the accordion at all — where
+    // every press is made in the compact layer — so the id outlived the
+    // manifest it belonged to and the first rail reveal after a rotation or a
+    // resize read a stale press. The family it named is the one `seedFamilies`
+    // seeds, so the rail silently did not scroll, which is the fault this
+    // effect exists to remove (reported in review, 2026-08-27).
+    const pressed = this.#pressedFamily;
+    this.#pressedFamily = null;
+
     // The accordion draws its families and their rows in one scroller, so the
     // fitted-row centring above already carries its revealed family with it.
     // Only the rail lists the families in a box of their own.
-    const revealed = this.revealedFamily();
     if (this.manifest() !== 'rail' || revealed === null) {
       return;
     }
-
-    // Spent whether or not it matches: a press answers for the reveal it
-    // caused and for no later one.
-    const pressed = this.#pressedFamily;
-    this.#pressedFamily = null;
 
     // The rule itself, and not a proxy for it: a family the Commander revealed
     // is not scrolled to. Asking instead whether the row is already in view
@@ -215,7 +227,8 @@ export class CandidateList {
       return;
     }
 
-    rail.scrollTop += rowBox.top - railBox.top - (rail.clientHeight - rowBox.height) / 2;
+    rail.scrollTop +=
+      rowBox.top - railBox.top - rail.clientTop - (rail.clientHeight - rowBox.height) / 2;
   });
 
   /** Resolved row text and figures, kept for as long as their records live. */

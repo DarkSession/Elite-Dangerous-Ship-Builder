@@ -261,6 +261,33 @@ test.describe('module families', () => {
     expect(pricesFell).toBe(true);
   });
 
+  test('scrolls the manifest inside its own box rather than over the panel below', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await selectMount(page, FITTED_MOUNT);
+    await openChooser(page);
+
+    // The measurement that was missing when this went wrong. A `fieldset` hands
+    // its anonymous content box a height only when it has a definite one, and
+    // releasing the workspace column turned the panel's definite share into a
+    // maximum — so the scroller inside grew to its content instead of scrolling,
+    // and with the bench no longer clipping, the rows were painted over the
+    // engineering panel below, where they answered presses meant for a family
+    // control (`design/module-replacement.md`, "The fieldset needs a height of
+    // its own"). Nothing about the rows says so; only the boxes do.
+    const spill = await page.locator('.candidates').evaluate((node) => ({
+      fieldset: node.scrollHeight - node.clientHeight,
+      list: (() => {
+        const host = node.closest('edsb-candidate-list') as HTMLElement;
+        return host.scrollHeight - host.clientHeight;
+      })(),
+    }));
+
+    expect(spill.fieldset).toBeLessThanOrEqual(1);
+    expect(spill.list).toBeLessThanOrEqual(1);
+  });
+
   test('reveals on a tap, changing nothing about the build', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, FITTED_MOUNT);

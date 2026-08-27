@@ -246,6 +246,30 @@ describe('outfitting store - fitting', () => {
     expect(active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.symbol).toBe(fitted);
   });
 
+  it('carries the mount\u2019s power state onto a pre-engineered variant too', () => {
+    // `setPreEngineeredVariant` is the other package operation a fit can be,
+    // and it resets the mount exactly as `setModule` does. Same carry, same
+    // code path — asserted because "same code path" is a claim about today.
+    store.select(FIXTURE_SLOTS.frameShiftDrive);
+    store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.frameShiftDrive, priority: 2 });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.frameShiftDrive, enabled: false });
+
+    const variant = store.membership()!.choices.find((candidate) => candidate.kind === 'variant');
+    expect(variant).toBeDefined();
+
+    const result = store.dispatch({
+      kind: 'fitVariant',
+      slotKey: FIXTURE_SLOTS.frameShiftDrive,
+      choiceKey: variant!.key,
+    });
+
+    expect(result.kind).toBe('committed');
+    const fitted = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.frameShiftDrive)!;
+    expect(fitted.preEngineeredVariant).not.toBeNull();
+    expect(fitted.priority).toBe(2);
+    expect(fitted.on).toBe(false);
+  });
+
   it('writes no power field a replaced module did not carry', () => {
     store.select(FIXTURE_SLOTS.thrusters);
 
