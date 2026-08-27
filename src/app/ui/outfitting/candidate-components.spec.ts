@@ -209,7 +209,10 @@ describe('acquisition badge', () => {
     // already states in words, never a second announcement of it.
     expect(mark.getAttribute('alt')).toBe('');
     expect(tooltip.getAttribute('aria-hidden')).toBe('true');
-    expect(tooltip.querySelector('button')?.getAttribute('tabindex')).toBe('-1');
+    // No control of any kind inside the mark. The badge is projected into the
+    // ledger row's own select button, so a button here would be a button inside
+    // a button — invalid, and `nested-interactive` to an accessibility scan.
+    expect(tooltip.querySelector('button, [role="button"], [tabindex]')).toBeNull();
     expect(textOf(item as HTMLElement)).toContain(
       englishCatalogue['outfitting.acquisition.powerplay'],
     );

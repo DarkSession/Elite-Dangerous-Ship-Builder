@@ -139,10 +139,20 @@ export async function chooserOffered(page: Page): Promise<boolean> {
   );
 }
 
+/**
+ * The English name of the action that opens the editor, as one place.
+ *
+ * Anchored at both ends so it cannot also match some other control that happens
+ * to contain the word. Two helpers looked for `Engineer` and both stopped
+ * finding the control when it was renamed, which at compact width is every test
+ * that reaches the editor at all.
+ */
+const ENGINEER_ACTION = /^engineering and details$/i;
+
 /** Whether the selected mount offers the engineering editor, at this width. */
 export async function editorOffered(page: Page): Promise<boolean> {
   return (
-    (await page.getByRole('button', { name: /^engineer$/i }).count()) > 0 ||
+    (await page.getByRole('button', { name: ENGINEER_ACTION }).count()) > 0 ||
     (await page.locator('.engineering').count()) > 0
   );
 }
@@ -378,7 +388,10 @@ export async function openChooserRows(page: Page): Promise<void> {
  * gives: at compact width the editor is behind an action, and that action is
  * drawn in the active language rather than in English.
  */
-export async function openEditor(page: Page, name: string | RegExp = /^engineer$/i): Promise<void> {
+export async function openEditor(
+  page: Page,
+  name: string | RegExp = ENGINEER_ACTION,
+): Promise<void> {
   const open = page.getByRole('button', { name });
   const editor = page.locator('.engineering').first();
 
