@@ -1,9 +1,15 @@
-# Runs the gate `pnpm run check` runs, split into individual steps so a failure
-# names the stage that broke: formatting, types, the script tests, build, unit
-# tests (with the 80% coverage thresholds from angular.json) and the Playwright
-# end-to-end suite across the desktop, tablet and mobile viewports. It has one
-# stage of its own, between the checks and the build: the version stamp, which
-# only a deployable build needs.
+# Runs most of the gate `pnpm run check` runs, split into individual steps so a
+# failure names the stage that broke: formatting, types, the script tests,
+# build, unit tests (with the 80% coverage thresholds from angular.json) and the
+# Playwright end-to-end suite across the desktop, tablet and mobile viewports.
+# It has one stage of its own, between the checks and the build: the version
+# stamp, which only a deployable build needs.
+#
+# Most, not all. `pnpm run policy`, `help:artifacts:check`, `build:preview`,
+# `codec:capacity`, `e2e:timing` and `e2e:offline` are in `check` and not here,
+# so they are a contributor's gate rather than this one's (README, "Run
+# `pnpm run check` before proposing a change"). Said plainly because a header
+# claiming to be the whole gate is how a check stops being run at all.
 #
 # The end-to-end suite is **sharded across parallel jobs**, which is the one
 # thing the verification contract permits a CI run to do with the matrix: shard

@@ -205,7 +205,7 @@ describe('HelpPresenter', () => {
     it('carries neither the import promise nor the retained-partial-roll claim', () => {
       // The two reference answers this application cannot make. The generator
       // refuses a catalogue that reintroduces the second; the first is a topic
-      // feature 004 owns and is simply not one of the seven.
+      // feature 004 owns and is not one of the two here.
       const answers = presenter()
         .view()
         .topics.map((topic) => topic.answer)

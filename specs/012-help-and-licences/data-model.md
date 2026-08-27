@@ -222,8 +222,8 @@ HelpDialogViewModel {
   title: LocalisedText
   purpose: LocalisedText
   sections: { about: LocalisedText; faq: LocalisedText; licence: LocalisedText }
-  about: { facts: VersionFact[2] }
-  topics: LocalisedHelpTopic[7]
+  about: { maintainer: LocalisedText; provenance: LocalisedText; facts: VersionFact[2] }
+  topics: LocalisedHelpTopic[2]
   licence: {
     index: { id: "application" | "gameData" | "typefaces"; text: LocalisedText }[3]
     excerpt: string
@@ -235,8 +235,10 @@ HelpDialogViewModel {
 Rules:
 
 - The three section headings are the reference's own `ABOUT`, `FAQ` and `LICENCE`, in that order.
-- `about.purpose`, `about.maintainer` and `about.provenance` are the three sentences of that
-  section, in that order, ahead of the facts.
+- `purpose`, `about.maintainer` and `about.provenance` are the three sentences of that section, in
+  that order, ahead of the facts. `purpose` sits beside `about` rather than inside it because it is
+  what the application is, which the title row and the reference both read before the section
+  begins; the other two are the section's own.
 - `about.facts` is exactly the application and Almanac versions, each with its own label. There is
   no third fact: build kind and build identifier are build evidence, not content.
 - `topics` is the two of FR-010 in their declared order, each already resolved to a question and

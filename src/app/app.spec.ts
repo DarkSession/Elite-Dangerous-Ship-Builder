@@ -385,12 +385,22 @@ describe('App and a newly published version', () => {
 
     // A further version behind the first is the same sentence for the same
     // revision, and the overlay going up and down again does not repeat it.
+    // Asserted on what the service did with the request, not on what the outlet
+    // holds: a republished event writes the same string, so reading the outlet
+    // again would pass either way. The effect does re-run — the overlay going
+    // up and coming down is a change it tracks — and the identity is what
+    // refuses it, which is the half worth proving.
+    const published = vi.spyOn(announcements, 'announce');
+
     updates.report('ready');
     fixture.detectChanges();
     updates.expire();
     await settled();
     fixture.detectChanges();
+
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
+    expect(published.mock.calls.length).toBeGreaterThan(0);
+    expect(published.mock.results.map(({ value }) => value)).not.toContain(true);
   });
 
   it('does not republish the version event when a locale commits behind it', async () => {

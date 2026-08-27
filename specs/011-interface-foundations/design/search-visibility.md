@@ -181,8 +181,11 @@ Where that gate actually stands is worth being exact about: `pnpm run policy` ru
 `pnpm run check`, which this repository asks a contributor to run before proposing a change
 (README, "Run `pnpm run check` before proposing a change"). The CI workflow does not run it — it
 never has, for any of the eight checkers. What does run on every deployment is the deploy step's
-own guards: it fails the run if the sitemap advertises no routes, if an address is not under the
-declared origin, if a route would need a directory, or if the canonical substitution did not take.
+own guards: it fails the run if the sitemap advertises no routes, if its first address is not
+absolute, if any address is not under the declared origin, if a route ends in a slash, or if the
+canonical or `og:url` substitution did not take. A route below the root is published rather than
+refused — `/ships/Anaconda` becomes `ships/Anaconda.html` — since that is an address, not a
+directory redirect.
 So the four-file agreement is checked where a change is written, and the one-file-per-route
 publication is checked where it is published. Putting `pnpm run policy` in CI as well is the
 obvious follow-up, and it is a decision about every checker rather than about this one.

@@ -1422,22 +1422,6 @@ const REQUIRED_MANIFEST_MEMBERS = [
 const UNLISTABLE_ROUTES = new Set(['', '**']);
 
 /**
- * Checks that nothing drifts between the four files that state where this
- * application lives and what each of its pages is.
- *
- * The production origin is repeated in `src/index.html`, `public/robots.txt`
- * and `public/sitemap.xml`; the route list is repeated in `app.routes.ts` and
- * the sitemap. Every one of those repetitions is a silent regression waiting to
- * happen — a route added with no sitemap entry, a domain moved in one file and
- * not the other three — and none of them fails anything at runtime. They fail
- * months later, in a search result nobody is looking at (011/FR-027).
- *
- * `input` is `{ origin, index, robots, sitemap, manifest, domain, routes,
- * locales }`, each the text of its file except `routes`, which is the paths
- * parsed out of the route table, and `locales`, the tags this build ships. An empty input is itself a violation: a rule that passes when there is
- * nothing to inspect is not a gate.
- */
-/**
  * One `<meta>` element's content, whichever quote character delimits it.
  *
  * Delimiter-aware rather than "anything that is not a quote": a sentence with
@@ -1477,6 +1461,23 @@ function linkHref(document, rel) {
   return tag?.[3] ?? null;
 }
 
+/**
+ * Checks that nothing drifts between the four files that state where this
+ * application lives and what each of its pages is.
+ *
+ * The production origin is repeated in `src/index.html`, `public/robots.txt`
+ * and `public/sitemap.xml`; the route list is repeated in `app.routes.ts` and
+ * the sitemap. Every one of those repetitions is a silent regression waiting to
+ * happen — a route added with no sitemap entry, a domain moved in one file and
+ * not the other three — and none of them fails anything at runtime. They fail
+ * months later, in a search result nobody is looking at (011/FR-027).
+ *
+ * `input` is `{ origin, index, robots, sitemap, manifest, domain, routes,
+ * locales }`, each the text of its file except `routes`, which is the paths
+ * parsed out of the route table, and `locales`, the tags this build ships. An
+ * empty input is itself a violation: a rule that passes when there is nothing
+ * to inspect is not a gate.
+ */
 export function searchMetadataViolations(input) {
   const found = [];
   const fail = (file, message) => found.push({ file, line: 0, rule: 'search-metadata', message });

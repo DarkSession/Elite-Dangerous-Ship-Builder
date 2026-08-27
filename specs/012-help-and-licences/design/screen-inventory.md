@@ -29,7 +29,7 @@ The frame surrounds every capability, so the frame's action is the route from al
 | FR-005      | —                       | renders the generated exact excerpt                         | release fails on source mismatch |
 | FR-006      | —                       | localised labels; excerpt marked in its own language        | byte/hash verification           |
 | FR-007      | —                       | separate application and Almanac versions in `ABOUT`        | manifest identity checks         |
-| FR-008      | —                       | no currency claim; ownership stated by the `FAQ` topic      | wording/manifest tests           |
+| FR-008      | —                       | no currency claim; ownership stated once in `ABOUT`         | wording/manifest tests           |
 | FR-009      | —                       | _withdrawn — no package-defect action is rendered_          | —                                |
 | FR-010      | opens complete help     | both accepted topics in `FAQ`                               | catalogue completeness           |
 | FR-011      | universal route         | complete common destination                                 | inventory coverage check         |

@@ -437,8 +437,14 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the restarted session states that the update was applied and names the version it is running',
       'that statement is dismissed by its own named control and does not return on a later navigation',
       'a session that never applies it is served the newer version the next time it starts, and says nothing about it over a window in which it would have',
-      'exactly one polite announcement is published per version revision',
     ],
+    // No polite announcement is on that list, and its absence is the rule
+    // rather than an omission. The overlay is modal, so the outlet inside the
+    // frame is inert while it stands and nothing is published there; the one
+    // state that does publish is the restart that could not be carried out,
+    // which the note below explains no journey can reach. It is asserted over
+    // the port in `app.spec.ts` instead.
+
     // The shell state where the restart could not be carried out — the polite
     // notice and the named control beside it — is not swept by axe as one
     // composition anywhere, and that is a known gap rather than an assumed
