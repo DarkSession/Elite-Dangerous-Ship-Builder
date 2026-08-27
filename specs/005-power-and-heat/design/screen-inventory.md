@@ -79,7 +79,8 @@ draws, and to the status rail feature 003 already draws, one read-only block and
 - A semantic table scrolls only inside its own labelled container, and its figures keep their
   columns: the pip blocks take the space they need and no more.
 - Controls work by pointer and by touch and use the shared target-size tokens. Nothing required
-  depends on hover.
+  depends on hover: the heat scenarios' glosses open on a press as well as on a hover, and are
+  related to the names they explain by `aria-describedby` whether or not they are drawn.
 - Powered, shed, disabled, deployed-only, unavailable and overheating states are text, visible and
   programmatic. No bar, fill, hue or position carries one.
 - Owned strings use messages; megawatts, megajoules, megajoules per second, percentages, pips and

@@ -253,11 +253,45 @@ stowed` · `Heat while spooling the frame shift drive` · `Every weapon fired at
 volley` · `Trigger held down continuously` · `Heat spike from activating a cell bank`. They say what
 the package's five scenario names are shorthand for, which is the one thing a scenario name does not.
 
-The canvas hangs them on hover. This application does not: hover-only meaning is unreachable by
-touch (011 FR-006), and a scenario is not something a Commander should have to point at to
-understand. Each description is drawn beside its own scenario name, in the quieter ink, and read
-with it. They are this application's own strings — the package names its scenarios and does not
-gloss them — so they go through the localization layer like every other owned string.
+The canvas hangs them on a `data-tip`. They are this application's own strings — the package names
+its scenarios and does not gloss them — so they go through the localization layer like every other
+owned string.
+
+**Drawn under the name until 2026-08-27, and in a tooltip since.** The first pass drew each gloss
+under its own scenario name, reasoning that hover-only meaning is unreachable by touch (011 FR-006).
+The reasoning holds; what it ruled out was a `title` attribute, not a tooltip. Six glosses under six
+names is also six extra lines on the tallest block of the panel, for a reading a Commander wants
+once and then knows. So the gloss moved into the design system's own `edsb-tooltip`
+(Commander request 2026-08-27), which is not a `title` and does not behave like one:
+
+- it opens on hover, on focus **and on a press** — the last because touch has no hover at all, so a
+  tip only a mouse could reach would be the `title` this replaces;
+- the gloss is related to its scenario name by `aria-describedby` whether or not it is drawn, so a
+  reader who is told the interface never has to find a control to hear it;
+- whether it is drawn is on the trigger as `aria-expanded`, rather than left to be inferred from
+  what is visible (011 FR-010); and
+- it satisfies success criterion 1.4.13 in all three parts. **Dismissible**: `Escape` is heard on
+  the document rather than on the tooltip, because a tip a hover opened leaves the focus elsewhere
+  and a listener on the tooltip's own element would never see the key — which is the one case that
+  part of the criterion exists for. **Hoverable**: the bubble stands off its trigger by a gap, and
+  the gap is bridged by the bubble's own `::before`, because `pointerleave` fires on geometry rather
+  than on parentage and an unbridged gap collapses the tip on the way to reading it.
+  **Persistent**: nothing times out.
+
+The scenario name keeps a dotted rule under it. That rule is an affordance and not the reading:
+what says there is more here is the native `button` role and the description permanently attached to
+it, because a line style can no more carry meaning on its own than a colour can (011 FR-010, and the
+semantics contract's "line style" clause). It is still the thing that identifies a control, so it
+owes SC 1.4.11's 3:1 and takes a border ink rather than a decorative one — measured 3.69:1 against
+the panel, where the decorative ink measured 1.56.
+
+The trigger takes the project's full 44-pixel target baseline rather than SC 2.5.8's 24-pixel floor.
+The floor is for controls the reference itself draws dense, and the canvas draws no control here at
+all. Measured at 390 pixels, a heat row is 24 pixels with the trigger at the floor and 44 at the
+baseline, against the 45 the drawn name-and-gloss took — so the baseline is still shorter than the
+arrangement it replaced. By one pixel a row, not by seven: the target the trigger owes takes back
+most of the line the gloss gave up, and the block closes 461.81 pixels against 466.81. The row does
+not grow, so there was nothing here worth holding to a floor for.
 
 Each bar carries all five `HeatState` fields' meaning: `thermalLoad`, `heatLevel`, `gauge`,
 `overheats` and `secondsToOverheat`.
@@ -495,21 +529,21 @@ edit to the same condition and is announced the same way — which is to say, no
 
 ## Canvas revision, 2026-08-25
 
-| Change                                                                            | Status against the build                                      |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Visible `H‑PTS` label in front of the two condition segments                      | **Built.** Drawn, and the group's own accessible name.        |
-| `DRAW BY MODULE` header note `MW · TOTAL n` withdrawn                             | **Built.** `power.modules.total` is gone with it.             |
-| `MODULE` / `MW` column head row over the module list                              | **Built.** On the list's own tracks; the bar column unheaded. |
-| `TOTAL DRAW` row closing the module list                                          | **Built.** Carrying the figure the header note carried.       |
-| Heat key moved above the four tiles                                               | **Built.**                                                    |
-| A description under each of the six heat scenario names                           | **Built.** Drawn beside the name, never hovered.              |
-| `POWER DISTRIBUTOR & PIP ALLOCATION` → `POWER DISTRIBUTOR & PIPS`                 | **Built.** In both catalogues.                                |
-| The distributor's fitted-module identity withdrawn                                | **Built.** Off the screen and out of the projection.          |
-| `SYS` · `ENG` · `WEP` pip control in the status rail                              | **Built.** Editing the same one allocation.                   |
-| Canvas 1d's priority groups gain the condition toggle and a share column          | **Already built.** One DOM at both widths.                    |
-| Canvas 1d's `TOP DRAW` becomes `DRAW BY MODULE`, five rows become every row       | **Already built.**                                            |
-| Canvas 1d's `THERMALS` becomes `HEAT PROFILE`, with all six scenarios and the key | **Already built.**                                            |
-| Canvas 1d's footer becomes `PLANT OUTPUT` / `POWERED DRAW` / `UNPOWERED`          | **Already built.** It is the summary group.                   |
+| Change                                                                            | Status against the build                                              |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Visible `H‑PTS` label in front of the two condition segments                      | **Built.** Drawn, and the group's own accessible name.                |
+| `DRAW BY MODULE` header note `MW · TOTAL n` withdrawn                             | **Built.** `power.modules.total` is gone with it.                     |
+| `MODULE` / `MW` column head row over the module list                              | **Built.** On the list's own tracks; the bar column unheaded.         |
+| `TOTAL DRAW` row closing the module list                                          | **Built.** Carrying the figure the header note carried.               |
+| Heat key moved above the four tiles                                               | **Built.**                                                            |
+| A description on each of the six heat scenario names                              | **Built.** In the system's tooltip since 2026-08-27, never a `title`. |
+| `POWER DISTRIBUTOR & PIP ALLOCATION` → `POWER DISTRIBUTOR & PIPS`                 | **Built.** In both catalogues.                                        |
+| The distributor's fitted-module identity withdrawn                                | **Built.** Off the screen and out of the projection.                  |
+| `SYS` · `ENG` · `WEP` pip control in the status rail                              | **Built.** Editing the same one allocation.                           |
+| Canvas 1d's priority groups gain the condition toggle and a share column          | **Already built.** One DOM at both widths.                            |
+| Canvas 1d's `TOP DRAW` becomes `DRAW BY MODULE`, five rows become every row       | **Already built.**                                                    |
+| Canvas 1d's `THERMALS` becomes `HEAT PROFILE`, with all six scenarios and the key | **Already built.**                                                    |
+| Canvas 1d's footer becomes `PLANT OUTPUT` / `POWERED DRAW` / `UNPOWERED`          | **Already built.** It is the summary group.                           |
 
 Every "already built" row is canvas 1d catching up to canvas 1c. That half of the revision changes
 nothing here: one DOM at both widths was this feature's answer, and the drawing now agrees.

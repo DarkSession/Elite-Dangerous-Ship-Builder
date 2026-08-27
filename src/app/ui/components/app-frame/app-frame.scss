@@ -98,6 +98,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  // The bar's own ink rather than the user agent's link blue. The mark is drawn
+  // as a background and the link's only child is the name it carries for a
+  // reader, so nothing here is ever seen in this colour — but an inherited
+  // `#0000EE` is still a colour this design system did not choose, and it is
+  // measured as one (011/FR-009).
+  color: var(--edsb-text-primary);
   // Taken back out of the bar, so a 44px press does not open a 44px gap beside
   // an insignia the canvas sets 26px wide.
   margin-inline: calc((var(--edsb-target-size) - var(--edsb-layout-insignia-width)) / -2);

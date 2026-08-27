@@ -128,6 +128,38 @@ describe('projectMobilityAndJump', () => {
       }
     });
 
+    it('leaves a rotation the game holds flat exactly as flat as the package leaves it', () => {
+      // A Commander asked why roll and yaw look unaffected by the pips
+      // (2026-08-27). They are not treated differently: the package
+      // interpolates all four allocation-bearing readings the same way, over
+      // the hull's own two ends. On 47 of the 48 hulls the catalogue carries,
+      // `minRoll` equals `roll`; on 42 of them `minYaw` equals `yaw`. Where the
+      // two ends are one number, every allocation lands on that number.
+      //
+      // So this is the guard against the fix nobody should make: a flat reading
+      // is the Almanac's answer, and correcting, scaling or substituting one
+      // here would be this application inventing a rotation rate the game does
+      // not have (constitution II and IV).
+      const anaconda = build('Anaconda');
+      const idle = projectMobilityAndJump(anaconda, 0).thrusters.capacitor;
+      const full = projectMobilityAndJump(anaconda, 4).thrusters.capacitor;
+
+      expect(idle?.roll).toBe(full?.roll);
+      expect(idle?.yaw).toBe(full?.yaw);
+      expect(idle?.speed).not.toBe(full?.speed);
+      expect(idle?.pitch).not.toBe(full?.pitch);
+
+      // And where the game does give the two ends room, the same call moves all
+      // four — which is what shows the flatness above is the data and not the
+      // reading of it.
+      const cobra = build('CobraMkV');
+      const cobraIdle = projectMobilityAndJump(cobra, 0).thrusters.capacitor;
+      const cobraFull = projectMobilityAndJump(cobra, 4).thrusters.capacitor;
+
+      expect(cobraIdle?.roll).not.toBe(cobraFull?.roll);
+      expect(cobraIdle?.yaw).not.toBe(cobraFull?.yaw);
+    });
+
     it('leaves the four-pip envelope still whatever the allocation stands at', () => {
       const loadout = build();
       const four = projectMobilityAndJump(loadout, 4).thrusters.mobility;

@@ -1,0 +1,19 @@
+<!--
+  The trigger carries the word; the bubble carries what it is shorthand for.
+  `aria-describedby` holds whether or not the bubble is drawn, so the gloss is
+  never behind a pointer for a reader who is told the interface rather than
+  shown it (011 FR-006).
+-->
+<button
+  class="tooltip__trigger"
+  type="button"
+  [attr.aria-describedby]="tipId"
+  [attr.aria-expanded]="shown() ? 'true' : 'false'"
+  (click)="toggle()"
+>
+  {{ label() }}
+</button>
+
+<span class="tooltip__tip" role="tooltip" [id]="tipId" [class.tooltip__tip--shown]="shown()">
+  {{ tip() }}
+</span>
