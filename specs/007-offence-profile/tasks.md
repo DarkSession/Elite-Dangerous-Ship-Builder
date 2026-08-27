@@ -863,6 +863,13 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       them already was.
       _`convergence.ts`, `shot-convergence.{ts,html}`, `e2e/offence-profile.spec.ts`,
       `e2e/coverage-ledger.ts`, `spec.md`, `design/canvas-contract.md`._
+- [x] T074 Put back the assertion T073 deleted by accident. Taking the vacuous `.fact__value`
+      comparison out of the range test took the live line above it as well, which left a test that
+      opened the panel, moved the track and asserted nothing at all — the same defect it was fixing,
+      one line further up. The sentences are read back and compared again, and the three remaining
+      dead selectors — two more `.fact__value` and the convergence block's `.offence__note` — are
+      out of the two unions that still named them.
+      _`e2e/offence-profile.spec.ts`._
 
 ---
 
@@ -894,7 +901,7 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
   what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
   T069 and does the same again; T071 answers a review of T070, which found no defect in the code; T072 answers a review of T071,
   which found none either; T073 answers a review of T072, which found one unmeasured figure and one
-  assertion that could not fail.
+  assertion that could not fail; T074 restores the assertion T073 deleted with it.
 
 ### Parallel opportunities
 

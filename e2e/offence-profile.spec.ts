@@ -1122,9 +1122,11 @@ test.describe('shot convergence', () => {
     await slider.fill('2000');
     await settled(page);
 
-    // The mounts have not moved; what they subtend at the target has. The span
-    // cells that used to be read back beside this went with the 2026-08-26
-    // canvas revision, and reading them was an assertion over an empty list.
+    // The mounts have not moved; what they subtend at the target has, so every
+    // sentence beside the plate is rewritten. The span cells that used to be
+    // read back beside this went with the 2026-08-26 canvas revision, and
+    // reading them was an assertion over an empty list.
+    expect(await block.locator('.shots__entry').allInnerTexts()).not.toEqual(before);
   });
 
   test('announces the range as a Commander reads it, not as a bare number', async ({ page }) => {
@@ -1179,7 +1181,7 @@ async function everyFigure(page: Page): Promise<string[]> {
     .locator(
       'edsb-offence-analysis .headline__value, edsb-offence-analysis .headline__note, ' +
         'edsb-offence-analysis .weapon__figure, edsb-offence-analysis .split__entry, ' +
-        'edsb-offence-analysis .bar__value, edsb-offence-analysis .fact__value',
+        'edsb-offence-analysis .bar__value',
     )
     .evaluateAll((nodes) => nodes.map((node) => (node.textContent ?? '').trim()));
 }
@@ -1197,8 +1199,6 @@ test.describe('the units on the screen', () => {
     const rendered = await page
       .locator(
         'edsb-offence-analysis .bar__label, edsb-offence-analysis .bar__value, ' +
-          'edsb-offence-analysis .fact__value, ' +
-          'edsb-offence-analysis .offence__block--convergence .offence__note, ' +
           'edsb-offence-analysis .range__scale span, edsb-offence-analysis .range__value',
       )
       .evaluateAll((nodes) =>
