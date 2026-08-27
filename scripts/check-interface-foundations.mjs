@@ -1462,21 +1462,27 @@ function linkHref(document, rel) {
 }
 
 /**
- * Checks that nothing drifts between the four files that state where this
- * application lives and what each of its pages is.
+ * Checks that nothing drifts between the files that state where this
+ * application lives, what each of its pages is, and what colour it is.
  *
- * The production origin is repeated in `src/index.html`, `public/robots.txt`
- * and `public/sitemap.xml`; the route list is repeated in `app.routes.ts` and
- * the sitemap. Every one of those repetitions is a silent regression waiting to
- * happen — a route added with no sitemap entry, a domain moved in one file and
- * not the other three — and none of them fails anything at runtime. They fail
- * months later, in a search result nobody is looking at (011/FR-027).
+ * The production origin is repeated in `src/index.html`, `public/robots.txt`,
+ * `public/sitemap.xml` and `public/manifest.webmanifest`, and again as the host
+ * in `public/CNAME`; the route list is repeated in `app.routes.ts` and the
+ * sitemap; the background colour is repeated in the head's `theme-color` and in
+ * two members of the manifest. Every one of those repetitions is a silent
+ * regression waiting to happen — a route added with no sitemap entry, a domain
+ * moved in one file and not the others, a palette token changed under a
+ * manifest nobody reopened — and none of them fails anything at runtime. They
+ * fail months later, in a search result nobody is looking at (011/FR-027).
  *
- * `input` is `{ origin, index, robots, sitemap, manifest, domain, routes,
- * locales }`, each the text of its file except `routes`, which is the paths
- * parsed out of the route table, and `locales`, the tags this build ships. An
- * empty input is itself a violation: a rule that passes when there is nothing
- * to inspect is not a gate.
+ * `input` is `{ origin, index, robots, sitemap, manifest, domain, tokens,
+ * routes, locales }`. Each is the text of its file except `routes`, the paths
+ * parsed out of the route table, and `locales`, the tags this build ships;
+ * `origin` is `site-address.ts`, `domain` is `public/CNAME` and `tokens` is the
+ * primitives stylesheet the theme colour is read from. Every one of them is
+ * read, and a caller that omits one loses the checks that need it. An empty
+ * input is itself a violation: a rule that passes when there is nothing to
+ * inspect is not a gate.
  */
 export function searchMetadataViolations(input) {
   const found = [];

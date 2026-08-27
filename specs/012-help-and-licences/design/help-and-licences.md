@@ -190,8 +190,9 @@ it is recorded here for the pass that resolves it.
 **Conformance for this screen reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11.”** That is feature 011's qualified statement and it is repeated here rather than
 referred to, because a conformance claim a reader has to follow a link to qualify is a claim that
-gets quoted without its qualification. The exclusions are the keyboard and focus-order criteria the
-application does not claim; everything below is claimed.
+gets quoted without its qualification. Seven of the exclusions are the keyboard and focus-order
+criteria the application does not claim; the eighth, 2.2.1 Timing Adjustable, is narrower still and
+belongs to the update restart alone, which this screen does not draw. Everything below is claimed.
 
 - One labelled dialog; background content is isolated while open. The layer is a native `dialog`
   opened with `showModal()`, so modality is the element's own `:modal` state rather than an

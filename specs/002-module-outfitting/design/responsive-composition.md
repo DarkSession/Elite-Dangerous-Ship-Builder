@@ -131,5 +131,6 @@ cover the final focus/reading target.
 Run Chromium and Firefox at 1440×900, 834×1112, 1112×834, 390×844 and 844×390. For every meaningful
 workspace, chooser, editor, notice and refusal state, run axe plus semantic-order, 44px touch-target,
 no-document-overflow, 200%-text, 400%-zoom, expanded/RTL and reduced-motion assertions. Conformance is
-WCAG 2.2 AA except the constitutionally excluded keyboard criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1,
-2.4.3, 2.4.7 and 2.4.11.
+WCAG 2.2 AA except the constitutionally excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
+2.4.7 and 2.4.11 — seven of keyboard operation, and 2.2.1 Timing Adjustable for the update restart
+alone.

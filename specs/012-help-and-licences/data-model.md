@@ -225,7 +225,7 @@ HelpDialogViewModel {
   about: { maintainer: LocalisedText; provenance: LocalisedText; facts: VersionFact[2] }
   topics: LocalisedHelpTopic[2]
   licence: {
-    index: { id: "application" | "gameData" | "typefaces"; text: LocalisedText }[3]
+    index: { id: string; before: string; link: HelpLicenceLink | null; after: string }[4]
     excerpt: string
     excerptLanguage: string
   }
@@ -243,8 +243,11 @@ Rules:
   no third fact: build kind and build identifier are build evidence, not content.
 - `topics` is the two of FR-010 in their declared order, each already resolved to a question and
   an answer. No governing reference is projected.
-- `licence.index` is the reference's three-line summary of what covers what, resolved from the
-  catalogue because it is application-owned text.
+- `licence.index` is the summary of what covers what, resolved from the catalogue because it is
+  application-owned text. Four lines, not the reference's three: the reference draws application,
+  game data and typefaces, and the bundled Almanac's own licence is a fourth this application owes
+  and the reference had no reason to. Each line arrives already cut around the link its own
+  translation placed, so the template never parses a sentence.
 - The excerpt is passed unchanged to a text-only region carrying `excerptLanguage` as `lang`. It is
   never a catalogue entry, because a translated legal notice is not the notice.
 - The view model has no action of any kind, no destination and no external navigation. Closing is

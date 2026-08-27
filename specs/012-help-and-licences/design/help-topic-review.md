@@ -58,7 +58,9 @@ For each topic:
 
 ## Excluded from the reference mock
 
-Three of the reference FAQ's four questions are not topics here, and none is an oversight:
+Two of the reference FAQ's four questions are not topics here, and neither is an oversight. A third
+entry follows them because the reference's _answer_ to a question that is a topic here cannot be
+carried either:
 
 - **"What can I import?"** describes an import behaviour feature 004 owns. Its reference answer is
   not in fact unsupportable — feature 004 FR-007 accepts pasted SLEF JSON or one journal `Loadout`

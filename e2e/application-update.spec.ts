@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { reachShellLink } from './shell';
+import { HELP_MANIFEST } from '../src/app/platform/build/help-manifest.generated';
 
 /**
  * The update journey (US4).
@@ -223,6 +224,11 @@ test.describe('a newly published version', () => {
     const applied = appliedNotice(page);
     await expect(applied).toBeVisible();
     await expect(applied).toContainText(UPDATE_APPLIED_NOTICE);
+    // And which version it landed on, which is the half that tells a Commander
+    // the restart delivered something rather than merely happened. Read from
+    // the manifest this build was made with rather than written here, so a
+    // stamped patch number does not have to be kept in step by hand.
+    await expect(applied).toContainText(HELP_MANIFEST.build.applicationVersion);
     await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applied' });
 
     // Dismissed by its own named control, and gone for good: a later navigation
