@@ -725,3 +725,10 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       what the rule says: every region drawing a seam is frozen, and runs the full height the command
       bar leaves (`e2e/outfitting-responsive.spec.ts`; workspace design, "the centre column is not
       one of the frozen ones")
+- [x] T170 Give the editor's accessibility journey the budget its two scans now need. The panel no
+      longer scrolls inside itself, so there is more rendered tree for axe to walk and fewer manifest
+      rows `content-visibility` can skip: measured idle at 1112x834, twice each, 6.8s before the
+      change and 10.3s after. `playwright.config.ts` distinguishes a test that is slow because of the
+      machine from one that is slow because of how much it does, and says the second extends its own
+      budget — this one scans twice and, unlike the sweeps that add `SWEEP_BUDGET_MS` per state, was
+      extending nothing (`e2e/outfitting-accessibility.spec.ts`)
