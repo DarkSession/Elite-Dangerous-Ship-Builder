@@ -105,7 +105,7 @@ const DAMAGE_TYPE_LABELS = {
 
 /** Damage rates to one place, as the canvas sets every figure in this panel. */
 const DAMAGE_DIGITS = 1;
-/** Megajoules, their rates and megawatts to two, as feature 005 sets them. */
+/** Capacitor figures to two places, as feature 005 sets every one of them. */
 const ENERGY_DIGITS = 2;
 /** Durations to one, which is the place canvas 1c's `FULL FIRE 14.2 s` sets. */
 const SECONDS_DIGITS = 1;
@@ -310,7 +310,7 @@ export class OffenceAnalysis {
    * `WEAPON CAPACITOR`: the four fields a canvas draws, as the canvas's rows.
    *
    * Canvas 1c draws three rows — `DRAW`, `RECHARGE`, `FULL FIRE`, in that
-   * order — and canvas 1d's `WEP CAP 61 MJ` chip supplies the capacity behind
+   * order — and canvas 1d's `WEP CAP` chip supplies the capacity behind
    * them, so four is what the canvases between them ask for and this is the
    * arrangement they ask for it in. `netDrainRate` and the
    * package's echoed `weaponsPips` are not selected at all — the rule feature
@@ -318,15 +318,18 @@ export class OffenceAnalysis {
    *
    * Only two of the four get a bar. `DRAW` and `RECHARGE` are the same quantity
    * in the same unit, and which of them is larger is the whole question the
-   * block answers, so they are drawn against the larger of the two. A capacity
-   * in megajoules and a duration in seconds share a scale with nothing on the
-   * screen; the canvas gives each of them a bar anyway, against a ceiling it
-   * never states, and a length that measures nothing is not a reading
+   * block answers, so they are drawn against the larger of the two. A stored
+   * pool and a duration share a scale with nothing on the screen; the canvas
+   * gives each of them a bar anyway, against a ceiling it never states, and a
+   * length that measures nothing is not a reading
    * (`design/canvas-contract.md`, review note 6).
    *
-   * The units are the package's. Canvas 1c labels `DRAW` and `RECHARGE` as
-   * `MW`; the package returns megajoules per second for both, and the package
-   * wins (`contracts/capacitor-endurance.md`).
+   * `DRAW` and `RECHARGE` carry the package's own unit: canvas 1c labels both
+   * `MW` and the package returns megajoules per second for both, so the
+   * package wins. `CAPACITY` is the one exception, and it is not a package
+   * unit at all — it is the game's, which writes `MW` after a capacitor pool
+   * in the panel a Commander cross-checks (`contracts/capacitor-endurance.md`,
+   * ruled 2026-08-27).
    *
    * Nothing here says why a figure is what it is. A zero capacity is the
    * package's own result, the package documents several ways to reach one and
@@ -363,7 +366,7 @@ export class OffenceAnalysis {
       {
         id: 'capacity',
         label: this.#messages.message('offence.capacitor.capacity'),
-        value: this.#megajoules(capacitor.capacity),
+        value: this.#megawatts(capacitor.capacity),
         fill: null,
         meaning: null,
       },
@@ -486,8 +489,17 @@ export class OffenceAnalysis {
     };
   }
 
-  #megajoules(value: number): string {
-    return this.#messages.message('offence.format.megajoules', {
+  /**
+   * The capacitor's capacity, in the unit the game's own panel writes after it.
+   *
+   * The same reading, and the same reasoning, as feature 005's distributor
+   * table: the figure is the package's `capacity` untouched, and only the unit
+   * after it moved from `MJ` to the `MW` the outfitting panel writes (ruled
+   * 2026-08-27). The two blocks state one quantity and now state it in one
+   * unit; `DRAW` and `RECHARGE` keep the `MJ/s` they are actually in.
+   */
+  #megawatts(value: number): string {
+    return this.#messages.message('offence.format.megawatts', {
       value: this.#formatters.decimal(value, ENERGY_DIGITS),
     });
   }

@@ -120,8 +120,8 @@ export interface Capacitor {
    *
    * The canvas gives those two rows a bar each and the other two none: draw
    * and recharge are the same quantity in the same unit and which is larger is
-   * the question the block answers, while a capacity in megajoules and a
-   * duration in seconds share a scale with nothing beside them.
+   * the question the block answers, while a stored capacity and a duration
+   * share a scale with nothing beside them.
    *
    * `null` for both where the larger is itself zero — a nothing-against-nothing
    * track reads as a figure of nothing, which is a different statement — and

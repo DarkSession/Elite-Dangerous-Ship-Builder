@@ -64,6 +64,16 @@ conditions here, because the design draws them inside this capability and nowher
   > on the half step, and that four blocks filled from the leading edge draw every allocation the
   > control can reach. No control MUST offer a half pip directly.
 
+  > **Ruled 2026-08-27 — the capacity is written in the game's unit, not SI's.** A bank's capacity
+  > MUST be written `MW`, and both recharge figures `MJ/s`. A capacity is a stored pool and its SI
+  > unit is the megajoule — which is what this capability wrote until this ruling, and what canvas 1d
+  > draws — but the outfitting panel a Commander cross-checks these figures against writes `MW` after
+  > it, and one figure written in two units across two panels reads as two figures. The game's unit
+  > wins over both the canvas and SI, for this one column. The figure itself MUST NOT change: it is
+  > the package's `capacity`, copied, with no conversion, scale or factor applied — this ruling
+  > reaches the unit and nothing else. The same capacity is stated by feature 007's `WEAPON
+CAPACITOR` block, which MUST write the same unit.
+
 - **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
 - **FR-009**: Heat MUST use `BuildMetrics.heatMetrics()` and show the five returned scenarios, their

@@ -25,12 +25,12 @@ Feature 007 never sets the allocation. The canvas draws the pip control in `POWE
 
 Four of the six returned fields are drawn by a canvas and are retained and presented exactly:
 
-| Package field              | Required meaning                                         | Drawn as                    |
-| -------------------------- | -------------------------------------------------------- | --------------------------- |
-| `capacity`                 | Powered deployed WEP capacity in MJ                      | Canvas 1d's `WEP CAP 61 MJ` |
-| `rechargeRate`             | Actual allocation-scaled recharge in MJ/s                | Canvas 1c's `RECHARGE`      |
-| `sustainedEnergyPerSecond` | Powered, enabled, deployed sustained firing draw         | Canvas 1c's `DRAW`          |
-| `timeToDrain`              | Seconds from full to empty, or package positive infinity | Canvas 1c's `FULL FIRE`     |
+| Package field              | Required meaning                                         | Drawn as                   |
+| -------------------------- | -------------------------------------------------------- | -------------------------- |
+| `capacity`                 | Powered deployed WEP capacity, a stored pool             | Canvas 1d's `WEP CAP` chip |
+| `rechargeRate`             | Actual allocation-scaled recharge in MJ/s                | Canvas 1c's `RECHARGE`     |
+| `sustainedEnergyPerSecond` | Powered, enabled, deployed sustained firing draw         | Canvas 1c's `DRAW`         |
+| `timeToDrain`              | Seconds from full to empty, or package positive infinity | Canvas 1c's `FULL FIRE`    |
 
 No field is calculated from another, and none is combined with another.
 
@@ -39,8 +39,22 @@ the allocation back — so nothing downstream can blank, dash or zero either. Th
 005 set for `headroom`, `utilisation` and `withinBudget`
 (`specs/005-power-and-heat/design/reference-review.md`).
 
-The units are the package's. Canvas 1c labels `DRAW` and `RECHARGE` as `MW`; both fields are MJ/s,
-and the package wins.
+`DRAW` and `RECHARGE` are written in the package's unit. Canvas 1c labels both `MW`; both fields are
+MJ/s, and the package wins.
+
+> **Ruled 2026-08-27 — `CAPACITY` is written `MW`, and it is the game's unit rather than the
+> package's.** The capacity is a stored pool and its SI unit is the megajoule, which is what this
+> block wrote until this ruling and what canvas 1d's chip draws. The game writes `MW` after a
+> capacitor pool in the outfitting panel a Commander cross-checks, and one figure written in two
+> units across two panels reads as two figures. So this one row takes the game's unit over both the
+> canvas's and SI's, while `DRAW` and `RECHARGE` keep the package's `MJ/s` as above.
+>
+> The figure does not move: `capacity` is copied from the package to the same two decimal places,
+> with no conversion or factor applied. The ruling is feature 005's — its distributor table states
+> this same quantity for `WEP` and had to answer the same question first
+> (`specs/005-power-and-heat/spec.md`, FR-007, and
+> `specs/005-power-and-heat/contracts/distributor-metrics.md`). The two blocks state one quantity
+> and must not state it in two units, so 007 follows 005 here rather than ruling separately.
 
 ## Duration semantics
 
@@ -92,19 +106,23 @@ hardpoint state feature 005's dashboard is showing.
 
 ## Localization and accessibility
 
-- MJ, MJ/s and seconds use feature 011's active-locale formatters.
+- MW, MJ/s and seconds use feature 011's active-locale formatters.
 - Immediate and no-drain phrases use application message keys.
 - The allocation the figures were read at is named in words beside them, without a control.
 - Every text value remains available at narrow widths and 400% zoom, and every one of the four is
   written in words whether or not it carries a bar.
 - `DRAW` and `RECHARGE` are both MJ/s, share one scale, and are filled against the larger of the two.
-  `CAPACITY` is MJ and `FULL FIRE` is seconds; neither shares a scale with anything beside it, so
-  neither is filled (`design/canvas-contract.md`, review note 6).
+  `CAPACITY` is a stored pool and `FULL FIRE` a duration; neither shares a scale with anything beside
+  it, so neither is filled (`design/canvas-contract.md`, review note 6). The unit `CAPACITY` is
+  written in does not change that — it is `MW` by the ruling above and still not a rate, so it is
+  still measured against nothing on this screen.
 
 ## Verification
 
 - Deep-equal the four fields at WEP allocations `0`, `0.5`, `2` and `4`.
 - Prove the store's allocation reaches the package unchanged, with no division, rounding or clamp.
+- Prove `CAPACITY` is written `MW` and both rates `MJ/s`, and that no other row in the block acquires
+  the capacity's unit.
 - Prove `netDrainRate` and `weaponsPips` appear in no projection, template or message.
 - Cover finite duration, immediate drain and the infinite result.
 - Cover positive-draw and zero-draw zero-capacity results, and prove neither states a cause.

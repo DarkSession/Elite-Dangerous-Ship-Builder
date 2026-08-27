@@ -83,8 +83,9 @@ draws, and to the status rail feature 003 already draws, one read-only block and
   related to the names they explain by `aria-describedby` whether or not they are drawn.
 - Powered, shed, disabled, deployed-only, unavailable and overheating states are text, visible and
   programmatic. No bar, fill, hue or position carries one.
-- Owned strings use messages; megawatts, megajoules, megajoules per second, percentages, pips and
-  durations use the active-locale formatters.
+- Owned strings use messages; megawatts, megajoules per second, percentages, pips and
+  durations use the active-locale formatters. The distributor's capacity is written in megawatts too,
+  which is the game's unit for it rather than SI's (ruled 2026-08-27); its figure is the package's.
 - Module and slot text comes from the Almanac through feature 011's presenter, with its canonical
   fallback disclosed.
 - Every state is exercised in Chromium and Firefox across the five layout profiles, with axe plus

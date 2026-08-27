@@ -413,3 +413,36 @@ package call: every figure is one the projection already returns.
       in `e2e/power-and-heat.spec.ts` — hover, the crossing to the bubble, a press on whichever
       pointer the profile has, `Escape`, and no sideways scrolling with a tip open at a doubled text
       size.
+
+## Phase: the capacity takes the game's unit, 2026-08-27
+
+> A Commander read the distributor table beside the game's own outfitting panel and found the two
+> disagreeing about what a bank's capacity is written in: the panel says `MW`, this table said `MJ`.
+> Both are the same number, and a Commander holding two panels that write one figure in two units
+> reads two figures. The owner's ruling is that the game's unit wins here — over canvas 1d, which
+> draws `34.0 MJ`, and over SI, which is right that a stored pool is megajoules. It reaches the unit
+> and nothing else: no conversion, no factor, no change to a package figure.
+
+- [x] T088 Write a bank's capacity `MW` in `POWER DISTRIBUTOR & PIPS`, leaving `MAX RCH` and
+      `RECHARGE` in the `MJ/s` they are actually in and the canvas draws. `power.format.megajoules`
+      goes with it — it had this one call site — and the capacity reuses `power.format.megawatts`
+      with the distributor's own single decimal place rather than the two the power figures take, so
+      the figure a Commander reads is the one the table already showed.
+      _`MJ_DIGITS` becomes `DISTRIBUTOR_DIGITS`: it now sets a column of megawatts and two of
+      megajoules per second, and a name saying megajoules would be wrong about the first._
+- [x] T089 Record the ruling where the departure has to be found: `spec.md` under FR-007,
+      `contracts/distributor-metrics.md` as a unit table beside the field mapping, and
+      `design/power-and-heat-detail.md` as the one cell in this block where the canvas loses.
+      Correct `design/screen-inventory.md`'s formatter list with it.
+- [x] T090 [P] Cover it in both places: the unit on the capacity cell in `power-thermals.spec.ts`,
+      read out of the cell's own element rather than off the whole cell, and the three columns'
+      units in `e2e/power-and-heat.spec.ts` — including the 400% zoom case, which is the one that
+      reads the capacity at the narrowest width the matrix runs.
+
+## Phase: the scenario glosses on hover, re-checked 2026-08-27
+
+- [x] T091 Confirm, rather than rebuild, that the heat scenarios say what they are shorthand for on
+      hover through `edsb-tooltip` and not through a `title` attribute. T084 to T087 built this on
+      2026-08-27 and it is intact: the six glosses reach `edsb-tooltip` from `heatBars()`, the
+      component draws a real bubble from the token layer, and no `title` attribute appears anywhere
+      in this capability's templates. `e2e/power-and-heat.spec.ts` asserts the absence by name.
