@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { renderComponent } from '../ui-component.spec-helpers';
 import { observeBanner } from './sticky-banner';
+import { declareMeasurement, declareResizeObserver } from '../../measurement.spec-helpers';
 
 /**
  * The banner keeps the top of the screen only while it can afford to.
@@ -30,23 +31,22 @@ class StickyBannerHost {
   readonly height: Signal<number | null> = this.#banner.height;
 }
 
-/** The prototype's own measurement, so the patch below can be undone. */
-const MEASURE = HTMLElement.prototype.getBoundingClientRect;
 const HEIGHT = Object.getOwnPropertyDescriptor(window, 'innerHeight');
+
+/** The undo for whatever this test declared, run after it. */
+let restore: (() => void) | null = null;
 
 /**
  * Sets the bar's measured height, since jsdom lays nothing out on its own.
  *
- * `writable` matters here for the same reason it does in the composition spec:
- * a prototype property defined without it makes a *later* spec's own assignment
- * throw, which is a failure with nothing to do with the file it lands in.
+ * Declared through `measurement.spec-helpers`, which owns the rule about which
+ * prototype the patch goes on and what putting it back means — undoing one of
+ * these by assignment leaves the genuine method behind as an own property,
+ * shadowing the level other specs patch.
  */
 function withBarHeight(height: number): void {
-  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
-    configurable: true,
-    writable: true,
-    value: () => ({ width: 0, height, top: 0, left: 0, right: 0, bottom: height }),
-  });
+  restore?.();
+  restore = declareMeasurement({ height, bottom: height });
 }
 
 /** The window the bar is taking a share of. */
@@ -60,24 +60,24 @@ function withRootFontSize(px: number): void {
 }
 
 describe('the sticky banner', () => {
+  let observed: (() => void) | null = null;
+
   beforeEach(() => {
     // The measurement under test observes resizes; the initial reading is the
     // synchronous one, which is what these thresholds are about. A no-op
     // observer keeps that path honest without simulating a resize.
-    (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
-      observe(): void {}
-      disconnect(): void {}
-      unobserve(): void {}
-    };
+    observed = declareResizeObserver();
   });
 
   afterEach(() => {
     document.documentElement.style.fontSize = '';
-    HTMLElement.prototype.getBoundingClientRect = MEASURE;
+    restore?.();
+    restore = null;
     if (HEIGHT !== undefined) {
       Object.defineProperty(window, 'innerHeight', HEIGHT);
     }
-    delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+    observed?.();
+    observed = null;
   });
 
   it('keeps its place while it leaves a viewport that can still be stacked in', () => {

@@ -21,6 +21,7 @@ import {
 import { AcquisitionBadge } from './acquisition-badge';
 import { CandidateList } from './candidate-list';
 import { CandidateSearch } from './candidate-search';
+import { declareMeasurement, declareResizeObserver } from '../measurement.spec-helpers';
 
 /**
  * What the chooser promises a reader.
@@ -69,24 +70,22 @@ function familiesFor(
  * thing under test, and a component that decided its own manifest from a flag
  * would not be testing the decision at all.
  */
-const MEASURE = HTMLElement.prototype.getBoundingClientRect;
+let declared: readonly (() => void)[] = [];
 
 function withHostWidth(width: number): void {
-  (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
-    observe(): void {}
-    disconnect(): void {}
-    unobserve(): void {}
-  };
-  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
-    configurable: true,
-    writable: true,
-    value: () => ({ width, height: 0, top: 0, left: 0, right: width, bottom: 0 }),
-  });
+  withoutHostWidth();
+  // Both declarations, and the rule about which prototype carries the width,
+  // come from `measurement.spec-helpers`: undoing one of these by assignment
+  // leaves the genuine method behind as an own property on
+  // `HTMLElement.prototype`, shadowing the level other specs patch.
+  declared = [declareResizeObserver(), declareMeasurement({ width, right: width })];
 }
 
 function withoutHostWidth(): void {
-  HTMLElement.prototype.getBoundingClientRect = MEASURE;
-  delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+  for (const undo of declared) {
+    undo();
+  }
+  declared = [];
 }
 
 /** Every choice a family list holds, flattened. */
