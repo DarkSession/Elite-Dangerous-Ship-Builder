@@ -679,9 +679,9 @@ test.describe('reading the firing endurance', () => {
     // `RECHARGE` as `MW`, both package fields are MJ/s, and the package wins.
     // The capacity takes the game's `MW`, the same unit feature 005's
     // distributor table writes after a bank's capacity (ruled 2026-08-27).
-    expect(drawn[0][1]).toMatch(/MJ\/s$/u);
-    expect(drawn[1][1]).toMatch(/MJ\/s$/u);
-    expect(drawn[3][1]).toMatch(/ MW$/u);
+    expect(drawn[0][1]).toMatch(/\d MJ\/s$/u);
+    expect(drawn[1][1]).toMatch(/\d MJ\/s$/u);
+    expect(drawn[3][1]).toMatch(/\d MW$/u);
     // And nowhere else: the two rates are the rows that used to be argued over,
     // and neither of them may quietly acquire the capacity's unit.
     const capacitor = await page.locator('.bars--capacitor').innerText();

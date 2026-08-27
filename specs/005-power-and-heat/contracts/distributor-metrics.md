@@ -91,9 +91,9 @@ does not compute or assert a capacity transformation.
 Nothing about the figure changes: `capacity` is copied from the package exactly
 as before, to the same one decimal place, and no conversion, scale or factor is
 applied. Only the unit written after it moved, which is what keeps the departure
-to a label. The two recharge columns keep
-`MJ/s`, which is both the unit they are actually in and the unit the canvas
-draws, so the pool and the two rates no longer share a unit — which is the
+to a label. The two recharge columns keep `MJ/s`, which is both the unit they
+are actually in and the unit the canvas draws, so the pool and the two rates no
+longer share a unit — which is the
 second thing the ruling buys, because `MJ` beside `MJ/s` invited the pool to be
 read as a third rate.
 

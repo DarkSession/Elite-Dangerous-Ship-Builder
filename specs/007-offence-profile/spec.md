@@ -108,8 +108,9 @@ because it is why the first implementation shipped a third of the canvas.
   >
   > The departure is from the package as well as from SI: the Almanac documents this field as
   > `/** WEP-capacitor capacity, in megajoules. */`
-  > (`node_modules/@elite-dangerous-almanac/core/dist/ships/weapons-capacitor.d.ts`), and the
-  > constitution makes that package the source of truth. Nothing in this repository or in the package
+  > (`node_modules/@elite-dangerous-almanac/core/dist/ships/weapons-capacitor.d.ts`, the module
+  > imported as `@elite-dangerous-almanac/core/ships/weapons-capacitor`), and the constitution makes
+  > that package the source of truth. Nothing in this repository or in the package
   > records what the game's own panel writes, so the evidence for `MW` is the owner's ruling and
   > nothing else.
   >
