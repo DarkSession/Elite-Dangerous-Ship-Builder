@@ -870,8 +870,11 @@ test.describe('shot convergence', () => {
     });
 
     expect(measured.block.width).toBeGreaterThan(0);
-    // The rounding a fractional layout leaves, and nothing wider.
-    expect(measured.block.width).toBeLessThanOrEqual(509);
+    // Never wider than the bound or than the row it stands in, whichever is
+    // smaller — the bound only exists in the wide arrangement, so a narrow
+    // profile is held to the row instead. The one is the canvas's, the other
+    // the rounding a fractional layout leaves.
+    expect(measured.block.width).toBeLessThanOrEqual(Math.min(measured.row.width, 509) + 1);
 
     // Where the row is wider than the bound, the block takes the bound — not
     // less, and not the row.
@@ -961,9 +964,12 @@ test.describe('shot convergence', () => {
     // The mark is filled rather than outlined, in an ink of its own: the hollow
     // empty mount went with the numerals (2026-08-27), so what separates the
     // three states is three fills of one shape. Read off the rendered mark,
-    // because it is the one visual property the request was about.
+    // because it is the one visual property the request was about — and off an
+    // empty mount that is *not* the selected one, because on this hull the
+    // workspace opens on an empty hardpoint, so the first empty mark on the
+    // plate carries the selection ink rather than the stale one.
     const emptyMark = await block
-      .locator('.plate__dot--empty')
+      .locator('.plate__dot--empty:not(.plate__dot--selected)')
       .first()
       .evaluate((dot) => {
         const style = getComputedStyle(dot);
@@ -976,6 +982,20 @@ test.describe('shot convergence', () => {
       .evaluate((dot) => getComputedStyle(dot).backgroundColor);
     expect(emptyMark.fill).not.toBe(armedFill);
     expect(emptyMark.fill).not.toBe('rgba(0, 0, 0, 0)');
+
+    // And where the selected mount is the empty one — which is the state the
+    // workspace opens in on this hull — the selection ink wins over the stale
+    // one. One mark carries one fill, and which fill it is rests on the order
+    // two rules of equal specificity are declared in, so it is read off the
+    // rendered mark rather than assumed.
+    const selectedEmpty = block.locator('.plate__dot--empty.plate__dot--selected');
+    if ((await selectedEmpty.count()) > 0) {
+      const fill = await selectedEmpty
+        .first()
+        .evaluate((dot) => getComputedStyle(dot).backgroundColor);
+      expect(fill).not.toBe(emptyMark.fill);
+      expect(fill).not.toBe(armedFill);
+    }
 
     // And the ink is never the only thing that says so: an empty mount's own
     // sentence stands beside the plate with the rest, and it is the catalogue's

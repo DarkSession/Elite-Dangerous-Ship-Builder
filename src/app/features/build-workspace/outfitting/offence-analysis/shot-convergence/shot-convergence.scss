@@ -27,16 +27,21 @@
 // cannot be.
 //
 // The basis is what is actually left beside the plate in the block the canvas
-// bounds: 508px, less the block's two 18px insets, less the 224px plate and the
-// 22px gap, is 224px. A flex line breaks on the *un-shrunk* basis rather than on
-// what the item would shrink to, so the 15rem this asked for — 16px more than
-// the line has — dropped the range under the plate at exactly the width the
-// canvas draws the two side by side, and left 224px of empty plate row beside
-// it. Below that the row wraps, which is the compact arrangement.
+// bounds: a 470px content box, less the 224px plate and the 22px gap, is 224px.
+// A flex line breaks on the *un-shrunk* basis rather than on what the item would
+// shrink to, so the 15rem this asked for — 16px more than the line has — dropped
+// the range under the plate at exactly the width the canvas draws the two side
+// by side, and left the plate's own row half empty. Below that the row wraps,
+// which is the compact arrangement.
+//
+// `13.5rem` rather than the 224px exactly, and the eight pixels are the point: a
+// basis equal to the space leaves the arrangement one pixel of a hairline or one
+// step of a spacing token away from wrapping again. It grows into the 224px it
+// is given either way, so the drawn layout is the same one.
 .convergence__readout {
   @include layout.stack(var(--edsb-space-stack));
 
-  flex: 1 1 14rem;
+  flex: 1 1 13.5rem;
   min-inline-size: 0;
 }
 

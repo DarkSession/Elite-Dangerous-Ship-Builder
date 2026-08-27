@@ -161,7 +161,8 @@ because it is why the first implementation shipped a third of the canvas.
   > and marks the selected row by inverting its node badge — a solid ground, an inverted ink and a
   > heavier weight, with the word itself for a reader who is told. This panel's own `WEAPONS` block
   > lists what is fitted. A Commander who cannot separate the plate's three hues loses no reading,
-  > which is what 011 FR-022 is for; a plate that were the only statement of any of it would not be
+  > which is what the constitution's principle V asks — "free of any information carried by colour,
+  > shape or position alone". A plate that were the only statement of any of it would not be
   > allowed.
   >
   > The three states become three fills of one shape. The outline that told an empty hardpoint from
@@ -243,11 +244,12 @@ because it is why the first implementation shipped a third of the canvas.
   state a Commander is in while they decide what to put in it. The mark then says _selected_ and its
   sentence says both, because since 2026-08-27 one mark carries one fill: whether a mount is armed
   is stated in words rather than drawn twice.
-- The target range reaches 3,000 m, the longest maximum range the package publishes for a weapon on
-  this application's reference hull, so the track can be moved to the distance being asked about
-  rather than stopping short of it — and no further, because past the range a weapon reaches the
-  plate answers a question nobody is asking. _Amended 2026-08-27: the ceiling was 5,000 m from
-  2026-08-26._
+- The target range reaches 3,000 m, so the track can be moved to the distance being asked about
+  rather than stopping at the canvas's own 2,000 m. The ceiling is the maintainer's preference and
+  not a package fact: the package publishes 4,000 m for a multi-cannon and 4,500 m for a cannon, and
+  a build carrying either can be fired further than this track goes. What the track is for is
+  watching the shots close on the axis, and an offset subtends less and less of the plate as the
+  range grows. _Amended 2026-08-27: the ceiling was 5,000 m from 2026-08-26._
 
 ## Design Scope
 

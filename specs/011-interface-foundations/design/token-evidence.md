@@ -75,7 +75,10 @@ told, and every fact the hues carry is carried visibly elsewhere in the same
 workspace without resting on colour there either — feature 002's ledger names
 each hardpoint's module or prints its emptiness as a word, and marks the
 selected row by inverting its node badge (solid ground, inverted ink, heavier
-weight) rather than by tinting it (`specs/007-offence-profile/spec.md` FR-011).
+weight) rather than by tinting it. The rule being met is the constitution's own —
+principle V, "free of any information carried by colour, shape or position
+alone" — and the argument for this plate is written out in
+`specs/007-offence-profile/spec.md` FR-011.
 
 ## Inverted pair
 

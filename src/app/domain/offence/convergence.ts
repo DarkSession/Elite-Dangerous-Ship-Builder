@@ -117,14 +117,19 @@ export const PLATE_MARGIN_FRACTION = 0.92;
  * The target ranges the `RANGE` track runs between, its step, and where it opens.
  *
  * The canvas's own track is `100`–`2000` on a `25` step, opening at `600`. These
- * are the maintainer's: `500`–`3000` on a `50` step, opening at `1500`. The
- * reason is what the track is for — a weapon's own maximum range reaches 3,000 m
- * on this hull, so a track stopping at 2,000 m could not be moved to the
- * distance a Commander is actually asking about, and a 25 m step over that span
- * is finer than a gunsight can be read at. The ceiling was 5,000 m between
- * 2026-08-26 and 2026-08-27 and comes back to the longest range a weapon here
- * actually reaches: past it every shot has converged and the plate says the same
- * thing at every step.
+ * are the maintainer's: `500`–`3000` on a `50` step, opening at `1500`. A track
+ * stopping at 2,000 m could not be moved to the distance a Commander is actually
+ * asking about, and a 25 m step over that span is finer than a gunsight can be
+ * read at.
+ *
+ * The ceiling is a preference and not a fact about the package: it was 5,000 m
+ * between 2026-08-26 and 2026-08-27, and 3,000 m is what was asked for on the
+ * 27th. It is **not** every weapon's reach — the package publishes 4,000 m for a
+ * multi-cannon and 4,500 m for a cannon, and both fit this hull — so a build
+ * carrying one can be fired further than this track goes. What the track is for
+ * is watching the shots close on the axis, and a mount's offset subtends less
+ * and less of the plate as the range grows, so the last thousand metres of a
+ * cannon's reach move the marks least.
  *
  * It is a property of the drawing like the field of view, and a departure from
  * the canvas recorded as one (`design/canvas-contract.md`, review note 18). It

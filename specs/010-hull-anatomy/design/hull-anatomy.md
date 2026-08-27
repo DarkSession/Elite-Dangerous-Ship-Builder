@@ -118,9 +118,10 @@ plate holds its whole document at its own ratio at every width.
   side and the `10px` between the plates, halved: 404px at 1560, 584px at 1920, 904px at 2560 — the
   first of which is this token's own value, which is how the derivation is checked. The heights
   above are the **block's**, plate plus the header and legend around it: 164 + 118 = 282 at 1560,
-  237 + 118 = 355 at 1920, 367 + 118 = 485 at 2560. So the new bound binds from 1560 up, and at
-  1440 — the width the end-to-end desktop project runs at — neither bound is reached and nothing
-  moves.
+  237 + 118 = 355 at 1920, 367 + 118 = 485 at 2560. The two bounds therefore bite at different
+  widths: the old 404px from 1560 up, the new 565.6px from about 1884 up. At 1440 — the width the
+  end-to-end desktop project runs at — the column hands each plate 344px and neither bound is
+  reached, so nothing moves there at all.
 
 - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel path data, and what a
   plate needs out of it is the drawing's box, the rectangle it draws in and the middle of every

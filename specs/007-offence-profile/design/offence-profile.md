@@ -34,11 +34,10 @@ capacitor sustains them — without selecting a target or leaving the active bui
 1. `WEAPONS` — the returned weapon count, the two damage totals, and the weapon collection;
 2. `DAMAGE PROFILE` — the stacked damage bar and its legend, the four range bands, then the weapon
    capacitor;
-3. `SHOT CONVERGENCE` — the gunsight plate and its shot sentences, the target-range control, and the
-   four facts.
+3. `SHOT CONVERGENCE` — the gunsight plate and its shot sentences, and the range it is drawn at.
 
-At roomy widths the first two blocks are the canvas's `1fr 1fr` pair and the third runs the full
-width beneath them. At narrow widths, landscape phones, expanded text and 400% zoom all three stack
+At roomy widths the first two blocks are the canvas's `1fr 1fr` pair and the third takes a row of
+its own beneath them, bounded at the canvas's 508px rather than running the width. At narrow widths, landscape phones, expanded text and 400% zoom all three stack
 in the same order. The arrangement is chosen from the space
 the region is given, not from a device name — the same rule feature 005's dashboard follows. No value
 or action is omitted, abbreviated into ambiguity or moved to hover.
@@ -168,12 +167,13 @@ are fields no canvas ever drew.
   than a figure the block is withholding.
 - The target range is a range field over 500 m to 3,000 m on a 50 m step, starting at 1,500 m,
   announcing the distance as a Commander reads it rather than as a bare number. Those are the
-  maintainer's bounds rather than the canvas's own 100 m–2,000 m: a weapon on this application's
-  reference hull states a maximum range of 3,000 m, and a track that stopped short of it could not
-  be moved to the distance being asked about (`design/canvas-contract.md`, review notes 18 and 21).
-  It stops there rather than at the 5,000 m it reached between 2026-08-26 and 2026-08-27, because
-  past the range a weapon reaches every shot has converged and each further step draws the same
-  picture. It is the one control this panel owns, and it sets nothing outside the panel.
+  maintainer's bounds rather than the canvas's own 100 m–2,000 m, which could not be moved to the
+  distance being asked about (`design/canvas-contract.md`, review notes 18 and 21). The 3,000 m
+  ceiling is a preference and not a package fact: a cannon states 4,500 m and a multi-cannon
+  4,000 m, so a build carrying one can be fired past the end of this track. It stops there rather
+  than at the 5,000 m it reached between 2026-08-26 and 2026-08-27 because an offset subtends less
+  and less of the plate as the range grows, so those are the steps that move the marks least. It is
+  the one control this panel owns, and it sets nothing outside the panel.
 - ~~Four facts under the plate.~~ **Withdrawn with the 2026-08-26 canvas revision**, which draws no
   lateral span, vertical span, apparent spread or widest mount anywhere, and no ring caption either.
   Nothing stands beneath the plate but the range. The projection still computes the four, and they
@@ -191,10 +191,10 @@ are fields no canvas ever drew.
   as another kind of mark rather than as the absence of a weapon.
   Neither canvas draws this; it is a sanctioned departure asked for by the maintainer
   (`design/canvas-contract.md`, review note 8, and `spec.md` FR-012).
-- **The mount the workspace has selected takes the plate's other ink**, and nothing else. The ring
-  that used to be drawn around that mark is withdrawn _(Commander request 2026-08-26)_: a crowded
-  plate now draws a ring of numerals with leaders across it, and a second circle around one dot in
-  the middle of that reads as a third kind of mark rather than as emphasis. Nothing a reader had is
+- **The mount the workspace has selected takes the plate's third ink**, and nothing else. The ring
+  that used to be drawn around that mark is withdrawn _(Commander request 2026-08-26)_: a second
+  circle around one dot reads as a third kind of mark rather than as emphasis — and since
+  2026-08-27, on a plate of nothing but dots, it would read as one even more plainly. Nothing a reader had is
   lost, because the ring only ever repeated what the mark's own sentence beside the plate already
   says — which is where the fact has to live in any case, a colour never having been a reading
   (011 FR-022). That ink is the one the canvas spends on a gimballed mount; the

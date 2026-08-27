@@ -750,8 +750,9 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
 
 - [x] T063 Draw the plate at `14rem` — 224px against the canvas's 172px. With the block bounded at
       508px the plate no longer sets the panel's height, and 172px inside that frame is a small
-      drawing with air around it. 224px is what the bounded block has room for: 508 less its two
-      18px insets and the 22px gap leaves 226px for the range column beside it.
+      drawing with air around it. 224px is half of what the bounded block holds: 508 less its two
+      18px insets and its two hairlines is a 470px content box, and less the 22px gap that is 448px
+      for the plate and the range column to share.
       _`src/styles/tokens/_primitives.scss`._
 - [x] T064 Leave a shot outside the field of view **off the plate** instead of holding it at the
       frame. `PLATE_MARGIN_FRACTION` stops being a clamp and becomes the bound past which a mount is
@@ -761,9 +762,10 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       that is text-only (`spec.md` FR-011, FR-012).
       _`src/app/domain/offence/convergence.ts` and its suite, `shot-convergence.{ts,html}` and its
       suite, `e2e/offence-profile.spec.ts`, `e2e/coverage-ledger.ts`._
-- [x] T065 Stop the target-range track at 3,000 m. Review note 18's 5,000 m reached past a weapon's
-      maximum range; 3,000 m _is_ the longest the package publishes for a weapon on this hull, and
-      past it every shot has converged and each further step draws the same picture.
+- [x] T065 Stop the target-range track at 3,000 m, and record the ceiling as the preference it is.
+      Review note 18's 5,000 m reached past a weapon's maximum range; 3,000 m does not — a cannon
+      states 4,500 m and a multi-cannon 4,000 m — so what is written down is that the steps past
+      3,000 m move the marks least, not that no weapon reaches them.
       _`src/app/domain/offence/convergence.ts` and its suite._
 - [x] T066 Withdraw the filled dot at the boresight's centre. The canvas draws one; on a plate whose
       only marks are dots it reads as a shot landing dead on the axis. The ring stays.
@@ -788,6 +790,25 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       the two side by side. The end-to-end guard gains the lower bound, the plate's own rendered
       width and the range's position beside it — without them both defects were green.
       _`offence-analysis.scss`, `shot-convergence.scss`, `e2e/offence-profile.spec.ts`._
+- [x] T069 Close the third review, which found no defect in the code and eight statements that were
+      not true of it. The 3,000 m ceiling was written down as the longest range the package
+      publishes for a weapon on this hull; measured against the pinned package a cannon states
+      4,500 m and a multi-cannon 4,000 m, so the ceiling is recorded as the preference it is, in all
+      eight places — including review note 18's own claim about a multi-cannon, corrected in note 21
+      rather than edited where it was written. The block's inner width is 470px and not 472: the
+      block is `border-box` and its two hairlines count, which makes the range column's share 224px
+      exactly. Its flex basis becomes `13.5rem` so the arrangement is not one pixel of a hairline
+      away from wrapping. `--edsb-measure-anatomy-plate`'s two bounds bite at different widths — the
+      old from 1560, the new from about 1884 — and the design record says so. The plate's rendered
+      block width is asserted against the row rather than unconditionally, and the selected-empty
+      mark's fill, which rests on declaration order alone, is read off the rendered mark. Four more
+      stale statements in `design/offence-profile.md` and `quickstart.md`, and the colour-alone rule
+      cited to the constitution's principle V rather than to 011 FR-022, which is about the
+      automated checks.
+      _`convergence.ts` and its suite, `shot-convergence.scss`, `e2e/offence-profile.spec.ts`,
+      `spec.md`, `data-model.md`, `quickstart.md`, `design/{canvas-contract,offence-profile}.md`,
+      `specs/010-hull-anatomy/design/hull-anatomy.md`,
+      `specs/011-interface-foundations/design/token-evidence.md`._
 
 ---
 
@@ -816,7 +837,7 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
   independent of each other; T062 depends on both.
 - Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
   Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
-  what T061 and T063 drew.
+  what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down.
 
 ### Parallel opportunities
 

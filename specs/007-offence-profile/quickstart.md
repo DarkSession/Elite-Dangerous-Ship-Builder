@@ -138,8 +138,8 @@ plate itself is hidden from assistive technology, so every one of those distinct
 sentences rather than from the ink.
 
 The `TARGET RANGE` control runs from 500 m to 3,000 m on a 50 m step and opens at 1,500 m — the
-longest maximum range the package publishes for a weapon on this hull, so it reaches the distance
-being asked about and stops where the question does. Moving it moves every shot and every sentence.
+maintainer's own bounds, past the canvas's 2,000 m so it reaches the distance being asked about, and
+stopped at 3,000 m by preference rather than by any package figure (a cannon states 4,500 m). Moving it moves every shot and every sentence.
 A mount far enough off the axis is **not drawn** at a near range and keeps its sentence, which states
 its true offset; moving the target out brings its mark back onto the plate.
 
@@ -178,7 +178,7 @@ pnpm exec playwright test offence-profile.spec.ts ui-preview.spec.ts
   both engines and shards the whole matrix, so that is where the Firefox evidence comes from — see
   the engine-coverage note at the head of [tasks.md](./tasks.md). The requirement is not waived by
   being unrunnable somewhere.
-- At roomy widths the first two blocks are the canvas's fluid pair and convergence runs full width
+- At roomy widths the first two blocks are the canvas's fluid pair and convergence takes its own row
   beneath them; at narrow widths, landscape phones, 200% text and actual 400% zoom all three stack,
   with no document-level horizontal scroll.
 - The target-range field is a control at feature 011's target size, operable by pointer, touch and

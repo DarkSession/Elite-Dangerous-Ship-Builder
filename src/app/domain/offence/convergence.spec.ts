@@ -294,11 +294,12 @@ describe('convergenceAt', () => {
     }
   });
 
-  it('runs the target-range track to the longest range a weapon here reaches', () => {
-    // The maintainer's bounds, and the ceiling came back to 3,000 m on
-    // 2026-08-27: past the longest maximum range the package publishes for a
-    // weapon on this hull, every shot has converged and the plate says the same
-    // thing at every further step.
+  it('runs the target-range track over the bounds the maintainer set', () => {
+    // The maintainer's own numbers, not the canvas's and not the package's: the
+    // ceiling came back to 3,000 m on 2026-08-27, from the 5,000 m of the day
+    // before. It is short of what some weapons reach — the package publishes
+    // 4,000 m for a multi-cannon and 4,500 m for a cannon — and that is a
+    // preference about the drawing rather than a claim about the build.
     expect(TARGET_RANGE).toEqual({ min: 500, max: 3000, step: 50, initial: 1500 });
   });
 

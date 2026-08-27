@@ -198,10 +198,11 @@ export const TARGET_RANGE = { min: 500, max: 3000, step: 50, initial: 1500 } as 
 These are properties of the **drawing**. The first two are the canvas's own
 script's (`wireConvergence`), and the 2026-08-25 canvas revision changed both.
 The third is not: the canvas's track runs `100`–`2000` on a `25` step and opens
-at `600`, and these bounds are the maintainer's: the track reaches the longest
-maximum range the package publishes for a weapon on this hull and stops there,
-because past it every shot has converged (`design/canvas-contract.md`, review
-notes 18 and 21; the ceiling was `5000` between 2026-08-26 and 2026-08-27). None of the three changes a figure — each decides what the plate shows
+at `600`, and these bounds are the maintainer's: far enough past the canvas's
+own ceiling to be moved to the distance being asked about, and stopped at
+3,000 m by preference rather than by a package fact — a cannon states 4,500 m
+and a multi-cannon 4,000 m (`design/canvas-contract.md`, review notes 18 and 21;
+the ceiling was `5000` between 2026-08-26 and 2026-08-27). None of the three changes a figure — each decides what the plate shows
 and at what distance the package is asked, never what it answers. The plate is square in _angle_ — both axes map over the same field of
 view — and the box it is drawn in is square too, which is what makes that
 mapping level: a milliradian then covers the same number of pixels up as

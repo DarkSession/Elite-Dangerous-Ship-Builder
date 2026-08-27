@@ -502,9 +502,9 @@
   // 172px later the same day with the block still unbounded. Now that the block
   // stops at the canvas's own 508px, the plate is no longer setting a whole
   // panel's height, and 172px inside a 508px frame is a small drawing with air
-  // around it. 224px is what the bounded block has room for: 508 less its two
-  // 18px insets and the 22px gap leaves 226px for the range column beside it,
-  // which is about what that column asks for.
+  // around it. 224px is exactly half of what the bounded block holds: 508 less
+  // its two 18px insets and its two hairlines is a 470px content box, and less
+  // the 22px gap that is 448px for the plate and the range column to share.
   //
   // Squareness is the property that matters, not the number of pixels: every
   // mark is placed as a fraction of the plate rather than in pixels, so it is

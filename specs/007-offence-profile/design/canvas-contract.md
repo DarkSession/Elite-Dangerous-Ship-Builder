@@ -776,8 +776,9 @@ worked out once, in the projection:
     **The plate is drawn at `14rem` — 224px — against the canvas's 172px.** With
     the block bounded at 508px (review note 20) the plate is no longer setting
     the panel's height, and 172px inside that frame is a small drawing with air
-    around it. 224px is what the bounded block has room for: 508 less its two
-    18px insets and the 22px gap leaves 226px for the range column beside it.
+    around it. 224px is half of what the bounded block holds: 508 less its two
+    18px insets and its two hairlines is a 470px content box, and less the 22px
+    gap that is 448px shared by the plate and the range column.
     Squareness is what matters and every mark is a fraction of the plate, so it
     is the same diagram at 128, 172 or 224 pixels.
 
@@ -792,10 +793,17 @@ worked out once, in the projection:
     FR-011).
 
     **The track stops at 3,000 m.** Review note 18 took the ceiling to 5,000 m
-    to reach past a weapon's maximum range; 3,000 m _is_ the longest maximum
-    range the package publishes for a weapon on this hull, and past the range a
-    weapon reaches the plate answers a question nobody is asking — every shot
-    has converged and each further step draws the same picture.
+    to reach past a weapon's maximum range, and this brings it back to 3,000 m
+    as a preference about the drawing — stated as one, because it is not a
+    package fact: a cannon states 4,500 m and a multi-cannon 4,000 m, both of
+    which fit this hull, so a build carrying one can be fired past the end of
+    this track. What the track is for is watching the shots close on the axis,
+    and an offset subtends less and less of the plate as the range grows, so the
+    steps past 3,000 m are the ones that move the marks least. Note 18's own
+    line that "a Multi-Cannon on this application's reference hull states a
+    maximum range of 3,000 m" is wrong on the same figures, and is corrected
+    here rather than edited there: it is the stock hull's _pulse lasers_ that
+    state 3,000 m.
 
     **The boresight loses its centre dot.** The canvas draws a filled 3px dot
     inside the boresight ring. On a plate whose marks were dots beside numerals
@@ -806,7 +814,7 @@ worked out once, in the projection:
     **One canvas fact recorded here is deliberately not adopted**: block 3's
     tighter `13px 14px` inset. Every `.offence__block` takes the panel's one
     inset, `16px 18px`, so the three blocks are the same plate; at 508px that
-    leaves 472px inside, still within the canvas's own 480px inner bound.
+    leaves a 470px content box, still within the canvas's own 480px inner bound.
 
 ## States no canvas draws
 
