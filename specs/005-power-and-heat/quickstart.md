@@ -242,8 +242,7 @@ numbers and units use active-locale formatting, and module names come from the A
 feature 011's game-text presenter.
 
 If conformance is stated, name the exclusions: WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4,
-2.2.1,
-2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 ## 11. Run the complete gate
 

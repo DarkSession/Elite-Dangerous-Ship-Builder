@@ -6,8 +6,8 @@
   This file is also the route list the deployment publishes as real addresses.
   Pages would otherwise serve each of these from `404.html`, and a crawler drops
   a 404 whatever the body says — so the deploy step reads the addresses below
-  and writes an `index.html` under each. Adding a `<loc>` here publishes it;
-  there is no second list to keep in step.
+  and writes `<route>.html` for each, which answers 200 with no redirect. Adding
+  a `<loc>` here publishes it; there is no second list to keep in step.
 
   Hull pages (`/ships/<symbol>`) are absent, and their absence is deliberate
   rather than forgotten: the set of hulls belongs to the Almanac, and a

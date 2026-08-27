@@ -184,9 +184,7 @@ fallback.
   published, the application announces a restart and then carries it out. The
   announcement offers nothing that calls the restart off, so a Commander who
   needs longer than the announcement stands cannot have it, which meets none of
-  2.2.1's conditions. This is the owner's decision of 2026-08-27, taken over the
-  alternative it replaces: an overlay that asked whether to restart, which is
-  what a Commander is no longer asked. The restart is the application's **only**
+  2.2.1's conditions. The restart is the application's **only**
   time limit. Introducing a second one MUST amend this principle rather than
   read itself into this exclusion, and no other capability MUST impose a limit
   on how long a Commander has to act.

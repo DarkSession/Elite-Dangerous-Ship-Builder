@@ -86,9 +86,12 @@ answer. GitHub Pages serves a single-page application's deep links from `404.htm
 status — and a crawler drops a 404 whatever the body contains, canonical link and all. Every URL in
 the sitemap would have been reported as an error and none of the per-route head above would have
 counted for the three routes it was built for. The deployment now publishes each advertised route as
-a real `index.html` that answers 200, alongside the `404.html` that still catches everything else,
-and it reads the route list out of `sitemap.xml` rather than repeating it: a fifth copy of that list
-would drift silently, because the site would keep working and only the crawl would stop.
+`<route>.html`, which Pages answers with a 200 and no redirect, alongside the `404.html` that still
+catches everything else. `<route>/index.html` would have answered 301 to `<route>/`, which is the
+same defect one step smaller: the address the sitemap and the canonical both name would still not be
+the address that answers. The route list is read out of `sitemap.xml` rather than repeated: a fifth
+copy of it would drift silently, because the site would keep working and only the crawl would
+stop.
 
 **The second omission, also named.** The sitemap does not list hull pages, and those are the
 long-tail content: forty-odd `/ships/<symbol>` addresses, one per hull, each with real numbers on

@@ -104,6 +104,10 @@ export class Layer {
    * dismissible" flag can disagree and this cannot: a layer that offers no way
    * out has no control to name, and a layer that has one always names it.
    *
+   * Required rather than defaulted, because `null` is a decision. A layer that
+   * a Commander cannot leave is the strongest thing this component does, and it
+   * should not be reachable by forgetting an input.
+   *
    * No label also stops Escape and the ground closing it, so the two routes a
    * reader can find are absent together with the control. The third, a direct
    * `close()` on the element, is not blocked and does not need to be: nothing
@@ -112,7 +116,7 @@ export class Layer {
    * version restarts the page under it, where there is nothing to cancel
    * because the restart is not a question (011/FR-025).
    */
-  readonly dismissLabel = input<string | null>(null);
+  readonly dismissLabel = input.required<string | null>();
 
   readonly dismissed = output<void>();
 

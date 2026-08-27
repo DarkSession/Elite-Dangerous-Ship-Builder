@@ -4,7 +4,7 @@ import { provideLocalization } from '../../../i18n/i18n.providers';
 
 /** Canvas 1b's sheet bar, as the hull sheet publishes it. */
 const HULL_SHEET: ScreenReturn = {
-  back: { id: 'catalogue', label: 'Back to the shipyard', href: '/ships', current: false },
+  back: { id: 'catalogue', label: 'Back to Ship Builder', href: '/ships', current: false },
   title: 'Anaconda',
   detail: 'Faulcon deLacy · Large landing pad',
 };
@@ -41,7 +41,7 @@ describe('AppFrame', () => {
     // A real link: an address that opens in a new tab and copies, named by
     // where it goes rather than by the arrow drawn in it.
     expect(back?.getAttribute('href')).toBe('/ships');
-    expect(back?.textContent).toContain('Back to the shipyard');
+    expect(back?.textContent).toContain('Back to Ship Builder');
 
     const identity = element.querySelector('.frame__return-identity');
     expect(identity?.querySelector('h1')?.textContent?.trim()).toBe('Anaconda');

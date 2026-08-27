@@ -43,8 +43,14 @@ export const SCOPE = {
   catalogues: 'src/app/i18n/locales',
   /** The application's one service-worker configuration. */
   serviceWorkerConfig: 'ngsw-config.json',
-  /** Files that may state the conformance target on the project's behalf. */
-  conformanceDocuments: ['README.md', 'AGENTS.md'],
+  /**
+   * Files that may state the conformance target on the project's behalf.
+   *
+   * The constitution is among them because it is where the excluded set is
+   * defined: a rule that reads every document quoting the target and not the
+   * one that sets it has a hole in the middle of it.
+   */
+  conformanceDocuments: ['README.md', 'AGENTS.md', '.specify/memory/constitution.md'],
   /**
    * Feature documentation whose conformance statements are also qualified.
    *
@@ -889,7 +895,11 @@ async function checkSearchMetadata() {
       sitemap: await read(SEARCH_METADATA_FILES.sitemap),
       manifest: await read(SEARCH_METADATA_FILES.manifest),
       domain: await read(SEARCH_METADATA_FILES.domain),
+      tokens: await read(SEARCH_METADATA_FILES.tokens),
       routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
+      locales: [
+        ...(await read('src/app/i18n/locale-registry.ts')).matchAll(/^\s{4}tag: '([^']+)',$/gm),
+      ].map((match) => match[1]),
     }),
   );
 }
@@ -1360,6 +1370,8 @@ export const SEARCH_METADATA_FILES = {
    * answers on — and nothing would notice.
    */
   domain: 'public/CNAME',
+  /** The one file permitted to declare the colour the application is drawn on. */
+  tokens: 'src/styles/tokens/_primitives.scss',
 };
 
 /** Head tags `index.html` must carry for a crawler that runs no script. */
@@ -1411,11 +1423,35 @@ const UNLISTABLE_ROUTES = new Set(['', '**']);
  * not the other three — and none of them fails anything at runtime. They fail
  * months later, in a search result nobody is looking at (011/FR-027).
  *
- * `input` is `{ origin, index, robots, sitemap, manifest, domain, routes }`,
- * each the text of its file except `routes`, which is the paths parsed out of
- * the route table. An empty input is itself a violation: a rule that passes when there is
+ * `input` is `{ origin, index, robots, sitemap, manifest, domain, routes,
+ * locales }`, each the text of its file except `routes`, which is the paths
+ * parsed out of the route table, and `locales`, the tags this build ships. An empty input is itself a violation: a rule that passes when there is
  * nothing to inspect is not a gate.
  */
+/**
+ * One `<meta>` element's content, whichever quote character delimits it.
+ *
+ * Delimiter-aware rather than "anything that is not a quote": a sentence with
+ * an apostrophe in it truncates under the simpler pattern, and two tags that
+ * differ only after the apostrophe compare equal.
+ */
+function headContent(document, attribute, key) {
+  const tag = new RegExp(
+    `<meta\\b[^>]*?\\b${attribute}\\s*=\\s*(["'])${key}\\1[^>]*?\\bcontent\\s*=\\s*(["'])([\\s\\S]*?)\\2`,
+    'i',
+  ).exec(document);
+  return tag?.[3] ?? null;
+}
+
+/** One `<link>` element's href, by its relationship. */
+function linkHref(document, rel) {
+  const tag = new RegExp(
+    `<link\\b[^>]*?\\brel\\s*=\\s*(["'])${rel}\\1[^>]*?\\bhref\\s*=\\s*(["'])([\\s\\S]*?)\\2`,
+    'i',
+  ).exec(document);
+  return tag?.[3] ?? null;
+}
+
 export function searchMetadataViolations(input) {
   const found = [];
   const fail = (file, message) => found.push({ file, line: 0, rule: 'search-metadata', message });
@@ -1447,11 +1483,8 @@ export function searchMetadataViolations(input) {
   // `index.html`: the head a crawler that runs no script is served.
   const index = input.index ?? '';
   for (const { attribute, key } of REQUIRED_HEAD_TAGS) {
-    const tag = new RegExp(
-      `<meta\\b[^>]*?\\b${attribute}\\s*=\\s*["']${key}["'][^>]*?\\bcontent\\s*=\\s*["']([^"']+)["']`,
-      'is',
-    );
-    if (!tag.test(index)) {
+    const content = headContent(index, attribute, key);
+    if (content === null || content.length === 0) {
       fail(
         SEARCH_METADATA_FILES.index,
         `The head carries no non-empty <meta ${attribute}="${key}">, so a crawler that runs no script reads none.`,
@@ -1462,27 +1495,74 @@ export function searchMetadataViolations(input) {
   // The href, not just the element. A relative `href="/"` satisfies "a canonical
   // exists" and is exactly the mistake `SITE_ORIGIN` exists to prevent: served
   // from a preview sub-path it canonicalises the preview to itself.
-  const canonical =
-    /<link\b[^>]*?\brel\s*=\s*["']canonical["'][^>]*?\bhref\s*=\s*["']([^"']*)["']/i.exec(index);
+  const canonical = linkHref(index, 'canonical');
   if (canonical === null) {
     fail(
       SEARCH_METADATA_FILES.index,
       'The head declares no canonical link, so every preview deployment is a duplicate of the site.',
     );
-  } else if (canonical[1] !== `${origin}/`) {
+  } else if (canonical !== `${origin}/`) {
     fail(
       SEARCH_METADATA_FILES.index,
-      `The canonical link is "${canonical[1]}"; it must be the absolute "${origin}/".`,
+      `The canonical link is "${canonical}"; it must be the absolute "${origin}/".`,
     );
   }
-  if (!/<link\b[^>]*?\brel\s*=\s*["']manifest["']/i.test(index)) {
-    fail(SEARCH_METADATA_FILES.index, 'The head links no web app manifest.');
+
+  // `og:url` is the canonical by another name, and a crawler reading only the
+  // card block reads this one. Presence alone would let it say "/".
+  const declaredUrl = headContent(index, 'property', 'og:url');
+  if (declaredUrl !== null && declaredUrl !== `${origin}/`) {
+    fail(SEARCH_METADATA_FILES.index, `og:url is "${declaredUrl}"; it must be "${origin}/".`);
   }
-  if (!/<script\b[^>]*?\btype\s*=\s*["']application\/ld\+json["']/i.test(index)) {
+
+  // The manifest link is held to the rule its own paths are held to: a leading
+  // slash resolves at the host root, which is not where a preview lives.
+  const manifestHref = linkHref(index, 'manifest');
+  if (manifestHref === null) {
+    fail(SEARCH_METADATA_FILES.index, 'The head links no web app manifest.');
+  } else if (manifestHref.startsWith('/')) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      `The manifest is linked as "${manifestHref}". A root-absolute path breaks every preview deployment; make it relative.`,
+    );
+  }
+
+  // The structured data is parsed rather than spotted. A block that does not
+  // parse states exactly as much as no block at all, and says so to nobody.
+  const structured =
+    /<script\b[^>]*?\btype\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i.exec(
+      index,
+    );
+  if (structured === null) {
     fail(
       SEARCH_METADATA_FILES.index,
       'The head carries no JSON-LD, so nothing states in machine-readable form what this is.',
     );
+  } else {
+    let node = null;
+    try {
+      node = JSON.parse(structured[1]);
+    } catch {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        'The JSON-LD block does not parse, so no crawler reads it.',
+      );
+    }
+    if (node !== null) {
+      if (node.url !== `${origin}/`) {
+        fail(
+          SEARCH_METADATA_FILES.index,
+          `The JSON-LD names "${node.url}" rather than "${origin}/".`,
+        );
+      }
+      const declaredLanguages = [node.inLanguage ?? []].flat().join(',');
+      if (input.locales !== undefined && declaredLanguages !== input.locales.join(',')) {
+        fail(
+          SEARCH_METADATA_FILES.index,
+          `The JSON-LD declares languages "${declaredLanguages}" but this build ships "${input.locales.join(',')}".`,
+        );
+      }
+    }
   }
 
   // The three description tags say one thing. They drift the moment one is
@@ -1490,13 +1570,9 @@ export function searchMetadataViolations(input) {
   // is absent is left out of the comparison: it is already reported above as
   // missing, and reporting it twice makes one fault look like two.
   const descriptions = new Set(
-    DESCRIPTION_TAGS.map(({ attribute, key }) => {
-      const tag = new RegExp(
-        `<meta\\b[^>]*?\\b${attribute}\\s*=\\s*["']${key}["'][^>]*?\\bcontent\\s*=\\s*["']([^"']*)["']`,
-        'is',
-      ).exec(index);
-      return tag?.[1] ?? null;
-    }).filter((value) => value !== null),
+    DESCRIPTION_TAGS.map(({ attribute, key }) => headContent(index, attribute, key)).filter(
+      (value) => value !== null,
+    ),
   );
   if (descriptions.size > 1) {
     fail(
@@ -1562,6 +1638,26 @@ export function searchMetadataViolations(input) {
     }
   }
 
+  // The dark ground, stated three times: in the token layer that draws it, in
+  // the head that tells a browser what to paint before the styles land, and in
+  // the manifest that colours an installed window. `src/index.html` is outside
+  // the template scan, so nothing else would notice them diverging.
+  const ground = /--edsb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(input.tokens ?? '');
+  if (ground === null) {
+    fail(
+      SEARCH_METADATA_FILES.tokens,
+      'No --edsb-palette-bg is declared to take a theme colour from.',
+    );
+  } else {
+    const declared = headContent(index, 'name', 'theme-color');
+    if (declared !== null && declared.toLowerCase() !== ground[1].toLowerCase()) {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        `theme-color is "${declared}" but the token layer draws ${ground[1]}.`,
+      );
+    }
+  }
+
   // `manifest.webmanifest`: parses, complete, and reachable from a sub-path.
   let manifest = null;
   try {
@@ -1575,11 +1671,33 @@ export function searchMetadataViolations(input) {
         fail(SEARCH_METADATA_FILES.manifest, `The manifest declares no "${member}".`);
       }
     }
+
+    if (ground !== null) {
+      for (const member of ['theme_color', 'background_color']) {
+        const value = manifest[member];
+        if (typeof value === 'string' && value.toLowerCase() !== ground[1].toLowerCase()) {
+          fail(
+            SEARCH_METADATA_FILES.manifest,
+            `"${member}" is "${value}" but the token layer draws ${ground[1]}.`,
+          );
+        }
+      }
+    }
     // Same reason the locale catalogues' paths are relative: a preview is
     // served from a sub-path of a Pages site, and a leading slash would look
     // for the scope, the start URL and every icon at the host root.
+    // `id` is deliberately absent rather than relative: the specification
+    // resolves it against the manifest's *origin*, so `./` and `/` name the
+    // same identity and neither can be per-deployment. Omitted, the identity
+    // defaults to the resolved `start_url`, which is.
+    if (manifest.id !== undefined) {
+      fail(
+        SEARCH_METADATA_FILES.manifest,
+        'The manifest declares an "id". It resolves against the origin, so it collides every deployment into one installed application; omit it and let the resolved start_url be the identity.',
+      );
+    }
+
     for (const [member, value] of [
-      ['id', manifest.id],
       ['start_url', manifest.start_url],
       ['scope', manifest.scope],
       ...(Array.isArray(manifest.icons) ? manifest.icons : []).map((icon, index) => [
@@ -1713,7 +1831,15 @@ export function conformanceClaimViolations(sources) {
         continue;
       }
 
-      const missing = EXCLUDED_CRITERIA.filter((criterion) => !paragraph.includes(criterion));
+      // Bounded by digits rather than matched as a substring. `2.4.1` occurs
+      // inside `2.4.11`, so a plain `includes` accepts a statement that names
+      // seven criteria and omits 2.4.1 — a different seven from the one FR-015
+      // calls out, and exactly the half-carried amendment this rule exists to
+      // fail.
+      const missing = EXCLUDED_CRITERIA.filter(
+        (criterion) =>
+          !new RegExp(`(?<!\\d)${criterion.replace(/\./g, '\\.')}(?!\\d)`).test(paragraph),
+      );
       if (missing.length > 0) {
         found.push({
           file,

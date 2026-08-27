@@ -8,8 +8,8 @@ import { openFirstHullFromManifest } from './shell';
  * What this application says about itself to something that is not a Commander.
  *
  * A search engine, and a chat client unfurling a pasted link, read the head and
- * never the screen. Both were previously served the same four sentences for
- * four different screens. This is the journey that holds the head to the route
+ * never the screen. This is the journey that holds the head to the route a
+ * Commander is actually on, rather than to the application in general
  * (011/FR-027, 011/SC-008).
  *
  * The static half — `robots.txt`, `sitemap.xml`, the manifest and the head as

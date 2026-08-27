@@ -131,15 +131,22 @@ jobs:
         working-directory: dist/elite-dangerous-ship-builder/browser
         run: |
           cp index.html 404.html
-          routes="$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed 's|<loc>https\?://[^/]*/||; s|</loc>||')"
+          # `<route>.html`, not `<route>/index.html`. Pages serves `/ships` from
+          # `ships.html` with a 200 and no redirect; from a directory it answers
+          # 301 to `/ships/`, which would make the address the sitemap and the
+          # canonical both advertise the one address that does not answer.
+          routes="$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed -n 's|<loc>https\?://[^/]*/\([^<]\{1,\}\)</loc>|\1|p')"
           if [ -z "$routes" ]; then
-            echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> to publish."
+            echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> with a path to publish."
             exit 1
           fi
           for route in $routes; do
-            mkdir -p "$route"
-            cp index.html "$route/index.html"
-            echo "::notice title=Route published::/$route answers 200."
+            case "$route" in
+              */) echo "::error title=Unpublishable route::\"$route\" ends in a slash." && exit 1 ;;
+            esac
+            mkdir -p "$(dirname "$route")"
+            cp index.html "$route.html"
+            echo "::notice title=Route published::/$route answers 200 from $route.html."
           done
 
       - name: Upload the build as a Pages artifact

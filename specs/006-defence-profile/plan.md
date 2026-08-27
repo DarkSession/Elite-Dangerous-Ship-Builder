@@ -48,8 +48,7 @@ preserves the existing production bundle budgets.
 power formula; no generator-state reconstruction, hull fallback, source-contribution inference,
 clamp or estimate; no stale mixed revision; all owned text and formatting localized; one tokenized
 dark theme; no document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4,
-2.2.1,
-2.4.1, 2.4.3, 2.4.7 and 2.4.11
+2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active package loadout and its complete slot set; four shield damage rows, four
 armour damage rows, a recharge rate, two recovery phases, the cell-bank reserve, hull hardness,

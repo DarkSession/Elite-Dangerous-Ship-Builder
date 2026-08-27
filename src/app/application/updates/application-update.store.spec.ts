@@ -222,16 +222,14 @@ describe('ApplicationUpdateStore', () => {
     expect(updates.calls).toEqual(['activate', 'reload']);
   });
 
-  it('stands the overlay long enough for its sentence to be read', () => {
-    // The number is not a rule any more. WCAG 2.2.1's twenty-second floor
-    // applied while the overlay carried a control that called the restart off;
-    // there is none, the criterion is excluded for this mechanism, and what
-    // sets the period now is one sentence at reading speed.
-    const { updates } = setup();
-
-    updates.report('ready');
-
-    expect(updates.grace).toBeGreaterThanOrEqual(3_000);
+  it('stands the overlay long enough for its sentences to be read', () => {
+    // No rule sets this number: nothing on the overlay calls the restart off,
+    // so 2.2.1 imposes no floor and the criterion is excluded for this
+    // mechanism. What is left is reading speed. Two sentences of roughly twenty
+    // words at a deliberately unhurried 150 words a minute is about eight
+    // seconds, and the Commander this costs the most is the one who looks up
+    // partway through and has nothing to press.
+    expect(UPDATE_OVERLAY_MS).toBeGreaterThanOrEqual(8_000);
   });
 
   it('leaves the marker the session after the restart reads, and only for an update', async () => {

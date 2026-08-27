@@ -162,6 +162,12 @@ Two details make the deployment behave on Pages:
   is not a file with its own 404 page, which would break a deep link into a
   client-side route; serving the application from `404.html` hands those paths to
   the Angular router instead, with no redirect and no hash fragment.
+- Each route `public/sitemap.xml` advertises is also copied to `<route>.html`.
+  `404.html` alone catches every address, but Pages serves it with a 404 status,
+  and a crawler drops a 404 whatever the body says — so a sitemap of paths that
+  only `404.html` answers is a sitemap of errors. `<route>.html` answers 200 with
+  no redirect, where `<route>/index.html` would answer 301 to `<route>/`. The
+  route list is read out of the sitemap rather than repeated in the workflow.
 
 The repository has to be set up once for this to work: **Settings → Pages →
 Build and deployment → Source** set to **GitHub Actions**, and a DNS `CNAME`

@@ -153,11 +153,18 @@ describe('HelpPresenter', () => {
       const provenance = presenter().view().about.provenance;
 
       expect(provenance).toMatch(/almanac/i);
-      expect(provenance.length).toBeGreaterThan(0);
+      expect(provenance).toBe(englishMessages['help.provenance']);
     });
 
-    it('names who maintains the application', () => {
-      expect(presenter().view().about.maintainer.length).toBeGreaterThan(0);
+    it('names who maintains the application, in its own sentence', () => {
+      // Three sentences from three keys, and the presenter's whole job here is
+      // putting each in its own field. A length check would pass with all three
+      // resolving to the same string.
+      const view = presenter().view();
+
+      expect(view.about.maintainer).toBe(englishMessages['help.maintainer']);
+      expect(view.about.maintainer).not.toBe(view.purpose);
+      expect(view.about.maintainer).not.toBe(view.about.provenance);
     });
   });
 

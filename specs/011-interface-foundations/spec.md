@@ -163,7 +163,7 @@ offered and therefore carries no way to hold the page.
   root language, direction and document title, a description of itself and the canonical address of
   its route, both resolved in the committed locale. The application MUST additionally ship, as
   same-origin static files, a crawl policy that permits indexing, a sitemap naming every addressable
-  route, a web app manifest, and machine-readable structured data describing the application. The
+  route the application can enumerate without restating package data, a web app manifest, and machine-readable structured data describing the application. The
   document served before the application starts MUST carry the complete set in bundled English, so a
   reader that executes no script is not served a document that says nothing. A canonical address
   MUST name the production site rather than wherever the document happens to be served from, and

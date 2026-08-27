@@ -991,6 +991,26 @@ describe('the placeholder grammar', () => {
   });
 });
 
+describe('the excluded-criteria enumeration', () => {
+  it('rejects a claim that omits 2.4.1, which hides inside 2.4.11', () => {
+    const found = rules.conformanceClaimViolations({
+      'X.md': 'WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
+    assert.match(found[0].message, /2\.4\.1(?!\d)/);
+  });
+
+  it('accepts the complete enumeration', () => {
+    const found = rules.conformanceClaimViolations({
+      'Y.md':
+        'WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(found, []);
+  });
+});
+
 describe('search metadata', () => {
   const ORIGIN = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
 
@@ -1008,7 +1028,7 @@ describe('search metadata', () => {
     '<meta property="og:locale" content="en" />',
     '<link rel="canonical" href="https://sb.edct.dev/" />',
     '<link rel="manifest" href="manifest.webmanifest" />',
-    '<script type="application/ld+json">{"@context":"https://schema.org"}</script>',
+    '<script type="application/ld+json">{"@context":"https://schema.org","url":"https://sb.edct.dev/","inLanguage":["en","de"]}</script>',
   ].join('\n');
 
   const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n';
@@ -1018,10 +1038,11 @@ describe('search metadata', () => {
     <url><loc>https://sb.edct.dev/build</loc></url>
   </urlset>`;
 
+  const TOKENS = '  --edsb-palette-bg: #0b0b0c;\n';
+
   const MANIFEST = JSON.stringify({
     name: 'Elite Dangerous Ship Builder',
     short_name: 'Elite Dangerous Ship Builder',
-    id: './',
     description: 'What this is.',
     start_url: './',
     scope: './',
@@ -1038,6 +1059,8 @@ describe('search metadata', () => {
     sitemap: SITEMAP,
     manifest: MANIFEST,
     domain: 'sb.edct.dev\n',
+    tokens: TOKENS,
+    locales: ['en', 'de'],
     routes: ['', 'ships', ':symbol', 'build', '**'],
     ...overrides,
   });
@@ -1219,9 +1242,91 @@ describe('search metadata', () => {
     assert.match(found[0].message, /cdn\.example/);
   });
 
-  it('rejects a root-absolute manifest id, which collides every preview into one app', () => {
-    const rooted = { ...JSON.parse(MANIFEST), id: '/' };
-    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
+  it('rejects a root-absolute manifest link, for the reason its own paths are relative', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace('href="manifest.webmanifest"', 'href="/manifest.webmanifest"'),
+      }),
+    );
+
+    assert.match(found[0].message, /root-absolute/);
+  });
+
+  it('rejects structured data that does not parse, which states as much as none', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('"@context"', 'nope') }),
+    );
+
+    assert.match(found[0].message, /does not parse/);
+  });
+
+  it('rejects structured data naming an address that is not the site root', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace('"url":"https://sb.edct.dev/"', '"url":"https://sb.edct.dev/ships"'),
+      }),
+    );
+
+    assert.match(found[0].message, /JSON-LD names/);
+  });
+
+  it('rejects structured data that has not kept up with a shipped language', () => {
+    const found = rules.searchMetadataViolations(complete({ locales: ['en', 'de', 'fr'] }));
+
+    assert.match(found[0].message, /declares languages/);
+  });
+
+  it('rejects an og:url that is not the canonical it restates', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('content="https://sb.edct.dev/" />', 'content="/" />') }),
+    );
+
+    assert.match(found[0].message, /og:url/);
+  });
+
+  it('sees description drift that begins after an apostrophe', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          '<meta name="description" content="What this is." />',
+          `<meta name="description" content="A page's one." />`,
+        )
+          .replace(
+            '<meta property="og:description" content="What this is." />',
+            `<meta property="og:description" content="A page's two." />`,
+          )
+          .replace(
+            '<meta name="twitter:description" content="What this is." />',
+            `<meta name="twitter:description" content="A page's three." />`,
+          ),
+      }),
+    );
+
+    assert.match(found[0].message, /do not say the same thing/);
+  });
+
+  it('rejects a theme colour the token layer does not draw', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('content="#0b0b0c"', 'content="#101010"') }),
+    );
+
+    assert.match(found[0].message, /theme-color/);
+  });
+
+  it('rejects a manifest colour the token layer does not draw', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        manifest: MANIFEST.replace('"theme_color":"#0b0b0c"', '"theme_color":"#101010"'),
+      }),
+    );
+
+    assert.match(found[0].message, /theme_color/);
+  });
+
+  it('rejects a manifest id, which resolves against the origin and cannot be per-deployment', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: JSON.stringify({ ...JSON.parse(MANIFEST), id: './' }) }),
+    );
 
     assert.match(found[0].message, /"id"/);
   });

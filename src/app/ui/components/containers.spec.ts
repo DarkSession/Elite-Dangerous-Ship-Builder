@@ -640,14 +640,18 @@ describe('Layer', () => {
     expect(dismissals).toBe(1);
   });
 
-  it('draws no way out at all when it is given no dismiss label', () => {
+  it('draws no way out at all when its dismiss label is null', () => {
     // One input rather than two, because a label and a separate flag can
-    // disagree and this cannot. Exactly one layer takes it: the overlay that
-    // stands while a published version restarts the page under it, where there
-    // is nothing to cancel because the restart is not a question (011/FR-025).
+    // disagree and this cannot. The input is required, so a layer with no way
+    // out says so with `null` rather than by omission — the caller states the
+    // decision instead of inheriting it. Exactly one layer does: the overlay
+    // that stands while a published version restarts the page under it, where
+    // there is nothing to cancel because the restart is not a question
+    // (011/FR-025).
     const fixture = renderComponent(Layer, {
       title: 'Updating',
       description: 'This session is restarting on the newer version.',
+      dismissLabel: null,
       open: false,
     });
 
@@ -678,7 +682,7 @@ describe('Layer', () => {
 
   it('refuses the native cancel a layer with no way out must not honour', () => {
     let dismissals = 0;
-    const fixture = renderComponent(Layer, { title: 'Updating', open: false });
+    const fixture = renderComponent(Layer, { title: 'Updating', dismissLabel: null, open: false });
     fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
 
     // Escape reaches the element as `cancel`, and a layer that closed on it
@@ -692,7 +696,7 @@ describe('Layer', () => {
 
   it('ignores the ground around a layer with no way out', () => {
     let dismissals = 0;
-    const fixture = renderComponent(Layer, { title: 'Updating', open: false });
+    const fixture = renderComponent(Layer, { title: 'Updating', dismissLabel: null, open: false });
     fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
     const dialog = query(fixture, 'dialog');
     dialog.getBoundingClientRect = () =>

@@ -95,7 +95,7 @@ describe('DocumentAdapter', () => {
     );
   });
 
-  it('cards the standing title when the caller supplies none', () => {
+  it('carries the standing title into both card blocks when the caller supplies none', () => {
     adapter.commitRootState(state({ title: null }));
 
     expect(content('meta[property="og:title"]')).toBe('initial');

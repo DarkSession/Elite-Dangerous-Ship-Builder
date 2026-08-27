@@ -63,6 +63,13 @@ export class DocumentAdapter {
    * blank. The guard is what makes the adapter safe to call directly — an empty
    * `<meta name="description">` is worse than none, because a search engine
    * reads it as the page having nothing to say.
+   *
+   * `og:locale` is written as a bare language tag, not Open Graph's documented
+   * `language_TERRITORY` form. The shipped locales are `en` and `de` and neither
+   * is a regional variant: there is no territory to name, and inventing one
+   * (`en_US`, `de_DE`) would claim a spelling and a set of conventions this
+   * application does not have. A consumer that cannot parse the short form
+   * falls back to the document language, which says the same thing.
    */
   commitRootState(state: RootDocumentState): void {
     const root = this.#document.documentElement;
