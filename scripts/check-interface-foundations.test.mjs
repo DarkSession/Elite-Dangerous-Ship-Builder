@@ -1134,6 +1134,21 @@ describe('search metadata', () => {
     assert.match(found[0].message, /nested or contains/);
   });
 
+  it('refuses the HTML comment terminator, which closes nothing in XML', () => {
+    // `--!>` ends a comment in HTML and ends nothing here, so a file holding
+    // one means something different to whoever reads it next. Both readers
+    // refuse it rather than guess which of the two the author meant.
+    const html = `<urlset>
+      <!-- gone <loc>https://sb.edct.dev/ghost</loc> --!>
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <url><loc>https://sb.edct.dev/build</loc></url>
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: html }));
+
+    assert.match(found[0].message, /nested or contains/);
+  });
+
   it('refuses a comment that one pass reassembles into another', () => {
     // What a single strip cannot do, and why the leftovers are checked rather
     // than cut again: removing the inner `<!-- -->` here joins `<!` to `--`

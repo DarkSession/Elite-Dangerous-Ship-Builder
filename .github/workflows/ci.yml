@@ -159,8 +159,12 @@ jobs:
           # than `searchMetadataViolations` cuts there, which is the drift the
           # two are written to avoid — so the leftovers are checked instead,
           # and a file that leaves any fails the deployment by name.
+          # `--!>` ends a comment in HTML and ends nothing in XML; a sitemap
+          # holding one is malformed either way, and this refuses rather than
+          # cuts, so naming it can only turn an unreadable file into a named
+          # failure. `searchMetadataViolations` refuses the same three.
           case "$body" in
-            *'<!--'*|*'-->'*)
+            *'<!--'*|*'-->'*|*'--!>'*)
               echo "::error title=Unreadable sitemap::a comment in sitemap.xml is nested or contains \"--\", so the file does not say what it appears to."
               exit 1
               ;;

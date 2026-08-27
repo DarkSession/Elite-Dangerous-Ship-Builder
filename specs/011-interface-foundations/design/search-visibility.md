@@ -193,7 +193,9 @@ inside what the next reader takes for live markup. Cutting twice is not the fix 
 in the checker than `sed` cuts in the deployment, which is exactly the drift the single pass exists
 to prevent. So neither reader trusts its own cut: both refuse a file that still holds `<!--` or
 `-->` afterwards, in the same words, and a sitemap whose comments are malformed fails by name
-instead of quietly meaning something other than it appears to. A route below the root is published rather than
+instead of quietly meaning something other than it appears to. `--!>` is refused alongside them:
+it ends a comment in HTML and ends nothing in XML, so a file holding one means different things to
+different readers, and refusing it costs nothing that a well-formed sitemap wanted. A route below the root is published rather than
 refused — `/ships/Anaconda` becomes `ships/Anaconda.html` — since that is an address, not a
 directory redirect. So the agreement between those files is checked where a change is written, and
 the one-file-per-route publication is checked where it is published. Putting `pnpm run policy` in CI

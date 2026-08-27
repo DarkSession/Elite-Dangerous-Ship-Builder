@@ -1460,11 +1460,10 @@ function headContent(document, attribute, key) {
  * words.
  */
 function withoutXmlComments(document) {
-  // codeql[js/incomplete-multi-character-sanitization] Deliberately one pass,
-  // to stay identical to the deployment's `sed`. This is not a sanitiser and
-  // nothing downstream treats it as one: both callers refuse a document that
-  // still holds a delimiter afterwards.
-  return document.replace(/<!--(?:[^-]|-[^-])*-->/g, '');
+  // One pass, to stay identical to the deployment's `sed`. Deliberately not a
+  // sanitiser, and nothing downstream treats it as one: both callers refuse a
+  // document that still holds a delimiter once this has run.
+  return document.replace(/<!--(?:[^-]|-[^-])*-->/g, ''); // codeql[js/incomplete-multi-character-sanitization]
 }
 
 /**
@@ -1696,7 +1695,12 @@ export function searchMetadataViolations(input) {
   // here than there, which is the drift they are written to avoid — so what
   // is left over is checked instead of cut, and a file that leaves anything
   // over fails by name.
-  if (/<!--|-->/.test(body)) {
+  //
+  // `--!>` is named alongside `-->` because it ends a comment in HTML and ends
+  // nothing in XML. A sitemap holding one is malformed either way, and this is
+  // a refusal rather than a cut, so covering both can only turn a file nobody
+  // can read from an accepted one into a named failure.
+  if (/<!--|--!?>/.test(body)) {
     fail(
       SEARCH_METADATA_FILES.sitemap,
       'A comment here is nested or contains "--", so the file does not say what it appears to. ' +
