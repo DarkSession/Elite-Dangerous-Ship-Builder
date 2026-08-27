@@ -813,7 +813,8 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
 - [x] T070 Close the fourth review, which found no code defect and five more statements that were
       not true — one of them a regression this phase introduced. The canvas's own track is
       `500`–`5000` on a `50` step opening at `1500`, which `wireConvergence` declares at offset
-      1516348; `100`–`2000` on a `25` step is the _pre_-2026-08-25 drawing, and T065's note had
+      1516348; `100`–`2000` on a `25` step is the 2026-08-25 drawing, moved by the revision of the
+      26th, and T065's note had
       overwritten the one place that read the current one correctly. Only the **ceiling** departs
       from the canvas, and nine places said otherwise. `011 FR-022` is the automated-checks
       requirement; the colour-alone rule is `011 FR-010`, and every citation of it in this feature
@@ -826,6 +827,19 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       _`convergence.ts`, `offence-analysis.{html,scss}`, `shot-convergence.{ts,scss}` and its suite,
       `e2e/offence-profile.spec.ts`, `spec.md`, `data-model.md`, `quickstart.md`,
       `design/{canvas-contract,offence-profile}.md`._
+- [x] T071 Close the fifth review, which found no code defect and four more statements out of step
+      with what is around them. The track's move is dated to the 2026-08-26 canvas revision, not the
+      25th's — `git show de44f1b` still declares `MIN = 100, MAX = 2000` and `2ae9838` is what
+      changed it, which is also what this document's own §3 says. The end-to-end selection test
+      compares a mark's place among the dots with its sentence's place in the list, and this phase
+      broke the correspondence it rests on: the dots are the sentences filtered by `onPlate`, so at
+      a short range the lists are different lengths. The test asserts they are equal before it
+      compares a place, and says why. `ConvergencePoint.hardpoint` no longer calls itself the
+      plate's numeral. The 508px bound is moved out of the departures list in `spec.md`, because
+      review note 20 rules it a correction of a bound this application had missed rather than a
+      departure from one. And the contract's "two things the built region deliberately does not do"
+      is one thing: the four fact cells it named are drawn by neither side since 2026-08-26.
+      _`convergence.ts`, `e2e/offence-profile.spec.ts`, `spec.md`, `design/canvas-contract.md`._
 
 ---
 
@@ -855,7 +869,7 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
 - Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
   Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
   what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
-  T069 and does the same again.
+  T069 and does the same again; T071 answers a review of T070, which found no defect in the code.
 
 ### Parallel opportunities
 

@@ -120,8 +120,9 @@ export const PLATE_MARGIN_FRACTION = 0.92;
  * `MIN = 500, MAX = 5000`, opens at `1500` and quantises to `50`, so the minimum,
  * the step and the initial value here are the drawing's rather than a departure
  * from it. (Its *earlier* track — `100`–`2000` on a `25` step, opening at `600` —
- * is the pre-2026-08-25 canvas, and is what the two 2,000 m arguments elsewhere
- * in this feature's record were written against.)
+ * is the 2026-08-25 canvas; the 2026-08-26 revision is what moved it, and it is
+ * what the two 2,000 m arguments elsewhere in this feature's record were written
+ * against.)
  *
  * The ceiling is a preference and not a fact about the package: it was 5,000 m
  * between 2026-08-26 and 2026-08-27, and 3,000 m is what was asked for on the
@@ -129,8 +130,9 @@ export const PLATE_MARGIN_FRACTION = 0.92;
  * multi-cannon and 4,500 m for a cannon, and both fit this hull — so a build
  * carrying one can be fired further than this track goes. What the track is for
  * is watching the shots close on the axis, and a mount's offset subtends less
- * and less of the plate as the range grows, so the last thousand metres of a
- * cannon's reach move the marks least.
+ * and less of the plate as the range grows, so the steps past 3,000 m are the
+ * ones that move the marks least (`design/canvas-contract.md`, review notes 18
+ * and 21).
  *
  * It is a property of the drawing like the field of view, and a departure from
  * the canvas recorded as one (`design/canvas-contract.md`, review note 18). It
@@ -174,7 +176,7 @@ export interface ConvergenceRing {
 
 /** One hardpoint, placed on the plate. */
 export interface ConvergencePoint {
-  /** The hull's own 1-based hardpoint place — the plate's numeral. */
+  /** The hull's own 1-based hardpoint place — the number this mount's sentence names. */
   readonly hardpoint: number;
   /** The mount this mark stands for. Its `weapon` is `null` where it is empty. */
   readonly mount: ConvergenceMount;

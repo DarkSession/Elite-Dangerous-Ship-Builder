@@ -274,12 +274,13 @@ maintainer and recorded in `design/canvas-contract.md` under review notes 8 and 
 settled in a stylesheet. Neither adds a figure the package did not publish, and neither moves a
 figure the canvas measures.
 
-**The plate departs from the canvas in five more ways from 2026-08-27, all of them the maintainer's
+**The plate departs from the canvas in four more ways from 2026-08-27, all of them the maintainer's
 and all recorded before being built** (`design/canvas-contract.md`, review notes 20 and 21): the
 hardpoint numerals are withdrawn and each mount is one dot; an empty mount is a fill rather than an
 outline; a shot outside the field of view is left off the plate where the canvas clamps it to the
-frame; the plate is drawn at `14rem` and its block bounded at the canvas's own 508px; and the filled
-dot at the boresight's centre is withdrawn. None of them adds or moves a figure — every reading the
+frame; the plate is drawn at `14rem`; and the filled dot at the boresight's centre is withdrawn.
+The block's 508px bound arrived with them and is **not** one of the five: the canvas draws that bound
+and this application had missed it, so it is a correction (review note 20). None of them adds or moves a figure — every reading the
 block gives is still the package's own answer, and every fact the drawing separates is stated in the
 sentences beside it.
 

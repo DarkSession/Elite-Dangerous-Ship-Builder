@@ -1037,10 +1037,14 @@ test.describe('shot convergence', () => {
      * Which mark on the plate is drawn as the selected one, by its place among
      * the dots.
      *
-     * The dots and the sentences beside them are one list rendered twice, in
-     * one order, so a place in the first is the same mount as that place in the
-     * second. That is what ties a mark to its sentence now that the numeral
-     * which used to print the mount's number on the plate is withdrawn.
+     * The dots are the sentence list filtered by whether the plate can hold the
+     * mark, in one order, so a place in the first is the same mount as that
+     * place in the second **only while every mount is drawn**. That is what
+     * ties a mark to its sentence now that the numeral which used to print the
+     * mount's number on the plate is withdrawn — and it is why the counts are
+     * asserted equal before any place is compared: at a short enough range the
+     * plate leaves marks off, and two lists of different lengths would compare
+     * different mounts without failing.
      */
     const selectedMark = async (): Promise<number> =>
       dots.evaluateAll((marks) =>
@@ -1074,6 +1078,10 @@ test.describe('shot convergence', () => {
     // one — so the plate marks it from the moment it is drawn, and the mark is
     // on the same mount the sentence names (011 FR-010).
     await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
+    // The precondition the place comparison rests on: at the range the block
+    // opens at, this hull's every mount is inside the field of view, so the two
+    // lists are the same length and a place in one is a place in the other.
+    expect(await dots.count()).toBe(await block.locator('.shots__entry').count());
     const first = await selectedMark();
     expect(first).toBeGreaterThanOrEqual(0);
     expect(first).toBe((await selectedSentence()).place);
@@ -1096,7 +1104,9 @@ test.describe('shot convergence', () => {
     // selected before. It fails about once in a shard under CI load.
     await expect.poll(async () => (await selectedSentence()).hardpoint).toBe(String(place));
 
-    // The mark moved with it, and it is still the mark that sentence counts.
+    // The mark moved with it, and it is still the mark that sentence counts —
+    // the range has not moved, so the two lists still line up.
+    expect(await dots.count()).toBe(await block.locator('.shots__entry').count());
     const moved = await selectedMark();
     expect(moved).not.toBe(first);
     expect(moved).toBe((await selectedSentence()).place);

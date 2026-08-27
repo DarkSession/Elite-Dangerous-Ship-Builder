@@ -643,9 +643,9 @@ worked out once, in the projection:
     drawn at whatever size the plate is.
 
     `wireConvergence`'s track ran `100`–`2000` on a `25` step and opened at
-    `600` when this note was written; the 2026-08-25 revision took it to
-    `500`–`5000` on a `50` step opening at `1500`, which is what the file
-    declares today. The built track now runs **`500`–`3000` on a `50` step and
+    `600` when this note was written; the same 2026-08-26 revision this note
+    records took it to `500`–`5000` on a `50` step opening at `1500`, which is
+    what the file declares today. The built track now runs **`500`–`3000` on a `50` step and
     opens at `1500`** — the ceiling was `5000` between 2026-08-26 and
     2026-08-27, and the step and the
     initial value are the ones the code has carried throughout. The
@@ -864,16 +864,13 @@ aspect, its clamping and its marks are `wireConvergence`'s own, and the built
 plate mirrored the old script exactly. It was rebuilt by re-deriving
 `convergence.ts` from the new script rather than by patching a constant.
 
-**Two things the revised drawing does that the built region deliberately does
-not**, and both are arrangements rather than figures: the four fact cells below,
-and the weapon list's aligned table after them.
+**One thing the revised drawing does that the built region deliberately does
+not**, and it is an arrangement rather than a figure: the weapon list's aligned
+table.
 
-Canvas 1c stacks the four facts as label-left, value-right rows down the narrow
-column beside the plate; the built region keeps the `repeat(4, 1fr)` cells this
-document's own build table sanctions. That is responsive composition — the same
-four labels and the same four figures, arranged from the region's available
-space rather than from an artboard's fixed width (T033) — and neither
-arrangement carries a figure the other does not.
+_(The four fact cells stood here too, as the second of the two. The 2026-08-26
+canvas draws none of them and neither does the built region, so the comparison
+has nothing left to make — see the build table above and review note 21.)_
 
 **The weapon list's aligned table is drawn only where five columns fit, which on
 a 1440px desktop is not this block.** Canvas 1c draws its five columns in a card
