@@ -257,11 +257,15 @@ test.describe('a newly published version', () => {
 
     await openControlledSession(page);
 
-    // Published, and the session starts again before it has looked: the tab is
-    // never returned to, so no check fires and no overlay comes up. That is the
-    // session that never applies it, and what it is served next is the clause
-    // under test (FR-025).
+    // Published and noticed, so the worker has the newer version downloaded and
+    // the overlay is up. Then the page is started again from under it, well
+    // inside the ten seconds the overlay stands: nobody waits the restart out,
+    // and the session never applies it. What that session is served next is
+    // the clause under test (FR-025).
     await publish(page);
+    await returnToTheTab(page);
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
+
     await page.reload();
     await expect(page.getByRole('main')).toBeVisible();
     await waitForController(page);
@@ -272,7 +276,8 @@ test.describe('a newly published version', () => {
     // superseded version would ask, find the newer manifest and say so within
     // it.
     await staysAbsent(page);
-    // And it did not restart onto anything, so it has nothing to announce.
+    // And it was started again by hand rather than restarted onto anything, so
+    // it has nothing to announce.
     await expect(appliedNotice(page)).toHaveCount(0);
 
     // It is watching again from there: a further deployment is noticed.
