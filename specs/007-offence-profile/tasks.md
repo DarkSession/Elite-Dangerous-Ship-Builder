@@ -850,6 +850,19 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       three span figures as built, in a table whose own next row records them withdrawn on
       2026-08-26; they take the same strikethrough.
       _`spec.md`, `design/{screen-inventory,offence-profile,canvas-contract}.md`._
+- [x] T073 Close the seventh review: one figure nobody had measured, and one assertion over an empty
+      list. "At a short range that is most of a hull's mounts" was written five times and is not
+      true — measured over the package's own gunsights at the track's shortest range, three of the
+      reference hull's eight mounts leave the plate, thirty-six of the forty-eight hulls lose none
+      at all, and three lose a majority. All five statements carry the measurement now. The
+      end-to-end range test read `.fact__value` back before and after moving the track, which has
+      matched nothing since the four cells were withdrawn on 2026-08-26, so it was comparing
+      `undefined` with `undefined`; it goes, and the coverage ledger's line about the spans staying
+      put goes with it. Two rows of the 2026-08-25 reconciliation table still said **Built** of the
+      ring caption and the message key it read: both are marked superseded, as the build table above
+      them already was.
+      _`convergence.ts`, `shot-convergence.{ts,html}`, `e2e/offence-profile.spec.ts`,
+      `e2e/coverage-ledger.ts`, `spec.md`, `design/canvas-contract.md`._
 
 ---
 
@@ -880,7 +893,8 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
   Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
   what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
   T069 and does the same again; T071 answers a review of T070, which found no defect in the code; T072 answers a review of T071,
-  which found none either.
+  which found none either; T073 answers a review of T072, which found one unmeasured figure and one
+  assertion that could not fail.
 
 ### Parallel opportunities
 

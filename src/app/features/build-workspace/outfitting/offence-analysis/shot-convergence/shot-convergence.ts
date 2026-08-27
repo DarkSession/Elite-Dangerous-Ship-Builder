@@ -37,9 +37,10 @@ export interface ShotView {
    * Whether this mount is drawn on the plate at all.
    *
    * A shot further off-axis than the plate shows is left off it rather than
-   * pinned to the frame (Commander request 2026-08-27) — at a short range that
-   * is most of a hull's mounts, and a row of dots along the edge reported a
-   * spread no build has. The mount keeps its sentence below either way, and
+   * pinned to the frame (Commander request 2026-08-27): a row of dots along the
+   * edge reported a spread no build has. At the track's shortest range that is
+   * three of the reference hull's eight mounts, and nothing at all on
+   * thirty-six of the package's forty-eight hulls. The mount keeps its sentence below either way, and
    * that sentence carries the offset and the angle it really has, so the
    * reading is the same whether or not the plate can show the mark (FR-011).
    */

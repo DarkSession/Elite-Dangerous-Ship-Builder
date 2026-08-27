@@ -195,7 +195,10 @@ export interface ConvergencePoint {
    * Whether this mount's mark stands, whole, inside the plate's frame.
    *
    * `false` where the shot is further off-axis than `PLATE_MARGIN_FRACTION` on
-   * either axis, which at a short range is most of a hull's mounts. The mount is
+   * either axis. How many that is depends on the hull and the range: at the
+   * track's shortest, three of the reference hull's eight, and nothing at all on
+   * thirty-six of the package's forty-eight hulls, three of which drop a
+   * majority. The mount is
    * then not drawn at all — it is still in this list, and still stated in words
    * beside the plate, because where the shot really goes is the reading (FR-011).
    */

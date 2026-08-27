@@ -230,8 +230,9 @@ because it is why the first implementation shipped a third of the canvas.
   keeps its sentence, which states its true offset and angle. The field of view is a property of the
   drawing and never moves to accommodate a build, and a mark held at the frame's own margin — which
   is what the canvas does, and what was built until 2026-08-27 — reports a shot landing somewhere it
-  does not. At the short end of the track that leaves most of a hull's mounts off the plate, which is
-  the honest picture of a target too close for the shots to have converged.
+  does not. At the short end of the track that leaves three of the reference hull's eight mounts off
+  the plate — and nothing at all off thirty-six of the package's forty-eight hulls — which is the
+  honest picture of a target too close for those shots to have converged.
 - A hull the catalogue places whose hardpoints are all empty draws every one of them: where a mount
   sits is a property of the hull, and it is exactly the reading a Commander with nothing fitted yet
   is after. Nothing is reported beneath the plate either way — the 2026-08-26 canvas draws no

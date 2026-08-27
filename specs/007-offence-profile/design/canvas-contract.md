@@ -788,9 +788,11 @@ worked out once, in the projection:
 
     **A shot outside the field of view is left off the plate.** The canvas
     clamps every dot to `4%`–`96%` and this followed it. Held at the margin, a
-    dot says a shot lands where it does not — and at a short range most of a
-    hull's mounts pile up along the frame, which reads as a spread the build
-    does not have. `PLATE_MARGIN_FRACTION` becomes the bound past which a mount
+    dot says a shot lands where it does not, and the mounts that reach the margin
+    pile up along it as a spread the build does not have. Measured over the
+    package's own gunsights at the track's shortest range: three of the reference
+    hull's eight mounts leave the plate, thirty-six of the forty-eight hulls lose
+    none at all, and three lose a majority. `PLATE_MARGIN_FRACTION` becomes the bound past which a mount
     is **not drawn**: its sentence beside the plate stays, carrying the offset
     and the angle it really has, so nothing is lost but a misleading mark. This
     is the first thing on this plate that is only in the text (`spec.md`
@@ -847,8 +849,8 @@ each one is built as rather than what it was waiting on.
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | `RANGE` column added to the weapon list, before `FALLOFF`    | **Built.** `maximumRange` on the row between `PIERCE` and `FALLOFF`; absent stays not-stated text.           |
 | `GUNSIGHT VIEW AT TARGET RANGE` note removed                 | **Built.** `offence.convergence.note` is withdrawn from both catalogues.                                     |
-| Ring caption moved onto the block's heading line             | **Built.** The panel reads it from the plate and sets it against the heading, as the other blocks set notes. |
-| `AT THIS RANGE` dropped from the ring caption                | **Built.** `offence.convergence.ring` ends at the distance.                                                  |
+| Ring caption moved onto the block's heading line             | **Superseded 2026-08-26**: the caption is drawn nowhere in the canvas, and the block's heading stands alone. |
+| `AT THIS RANGE` dropped from the ring caption                | **Superseded 2026-08-26**: the caption is withdrawn whole, and `offence.convergence.ring` with it.           |
 | `IMPACT PLANE` rule removed                                  | **Built.** `offence.convergence.impact-plane` is withdrawn from both catalogues.                             |
 | Field of view `115 mrad` → `40 mrad`                         | **Built.** `FIELD_OF_VIEW_MILLIRADIANS = 40`.                                                                |
 | Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Built.** `PLATE_ASPECT` is gone, and the box is the canvas's own square one, so a ring is a pixel circle.  |
