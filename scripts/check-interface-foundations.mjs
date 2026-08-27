@@ -1452,9 +1452,20 @@ function headContent(document, attribute, key) {
   return tag?.[3] ?? null;
 }
 
-/** A document with its XML comments removed, so nothing inside one is read. */
+/**
+ * A document with its XML comments removed, so nothing inside one is read.
+ *
+ * The body is "anything but `--`" rather than a lazy `[\s\S]*?`, so that this
+ * matches character for character what the deployment's `sed` can express
+ * (`.github/workflows/ci.yml`, "Serve client-side routes as real addresses").
+ * XML forbids `--` inside a comment, and neither reader validates the file, so
+ * a malformed one has to fail the same way in both: the lazy form would strip
+ * it here and publish a route from inside it there. This form strips neither,
+ * and the address then reaches the route comparison below as a `<loc>` that no
+ * route serves, which is a build failure rather than a silent extra page.
+ */
 function withoutXmlComments(document) {
-  return document.replace(/<!--[\s\S]*?-->/g, '');
+  return document.replace(/<!--(?:[^-]|-[^-])*-->/g, '');
 }
 
 /** One `<link>` element's href, by its relationship. */

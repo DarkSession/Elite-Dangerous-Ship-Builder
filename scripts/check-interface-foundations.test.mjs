@@ -1108,6 +1108,24 @@ describe('search metadata', () => {
     }
   });
 
+  it('refuses a malformed comment rather than reading past it the deploy cannot', () => {
+    // `--` is illegal inside an XML comment and nothing here validates the
+    // file, so a lazy strip would cut this one and the deployment's `sed`,
+    // which cannot express one, would not — and would publish `/ghost` with a
+    // canonical of its own. Neither reader strips it, so the address arrives
+    // here as a `<loc>` no route serves and the build stops.
+    const malformed = `<urlset>
+      <!-- old -- gone <loc>https://sb.edct.dev/ghost</loc> -->
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <url><loc>https://sb.edct.dev/build</loc></url>
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: malformed }));
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /ghost/);
+  });
+
   it('still misses a route that a comment is the only thing listing it', () => {
     // The other direction of the same rule: commenting a route out is removing
     // it, and an addressable route that nothing lists is the drift this exists

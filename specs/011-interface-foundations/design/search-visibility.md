@@ -175,4 +175,14 @@ form what the previous six findings only imply.
 
 The last row is the point. Four files now repeat the production origin and the route list, and a
 route added without a sitemap entry, or an origin changed in one file and not the others, is a
-silent regression that nobody would notice for months. The checker fails the build instead.
+silent regression that nobody would notice for months. The checker refuses it instead.
+
+Where that gate actually stands is worth being exact about: `pnpm run policy` runs inside
+`pnpm run check`, which this repository asks a contributor to run before proposing a change
+(README, "Run `pnpm run check` before proposing a change"). The CI workflow does not run it — it
+never has, for any of the eight checkers. What does run on every deployment is the deploy step's
+own guards: it fails the run if the sitemap advertises no routes, if an address is not under the
+declared origin, if a route would need a directory, or if the canonical substitution did not take.
+So the four-file agreement is checked where a change is written, and the one-file-per-route
+publication is checked where it is published. Putting `pnpm run policy` in CI as well is the
+obvious follow-up, and it is a decision about every checker rather than about this one.

@@ -32,12 +32,11 @@ const UPDATE_APPLIED_NOTICE = 'This session restarted on the newer version that 
 /**
  * The overlay a newer version puts up before it restarts the page under it.
  *
- * Found as the named modal rather than by its sentence, and both halves of that
- * matter. The sentence is also published to the polite outlet, so text alone
- * matches twice; and the layer is mounted beside the frame whether it is open or
- * not, so a text match inside it finds a closed layer as readily as an open one.
- * A dialog that is not open is not in the accessibility tree at all, which is
- * what makes this the same locator for "it is up" and for "there is none".
+ * Found as the named modal rather than by its sentence, because the layer is
+ * mounted beside the frame whether it is open or not: a text match inside it
+ * finds a closed layer as readily as an open one. A dialog that is not open is
+ * not in the accessibility tree at all, which is what makes this the same
+ * locator for "it is up" and for "there is none".
  */
 function restartWarning(page: Page): Locator {
   return page.getByRole('dialog', { name: UPDATE_OVERLAY_TITLE });

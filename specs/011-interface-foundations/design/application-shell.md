@@ -131,19 +131,19 @@ the saved build or an export.
 
 ## Shell states
 
-| State                            | Presentation/behavior                                                                                                   |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Initial English bootstrap        | Bundled localized shell appears with no raw-key flash                                                                   |
-| Browser-matched German           | Complete catalogue/root metadata commit before German route render                                                      |
-| Unsupported browser language     | English appears as the ordinary default                                                                                 |
-| Locale candidate loading         | Current complete snapshot remains; nothing partial is shown                                                             |
-| Locale load/validation fallback  | Complete English snapshot plus one bounded fallback notice/retry intent                                                 |
-| Route loading/empty/ready        | Route owns its state inside `main`; shell landmarks/actions remain stable                                               |
-| Route blocking error             | Visible named error and one assertive event; unaffected shell navigation remains usable                                 |
-| Newer version published          | Modal overlay stating the restart with nothing to press, one polite event; the page restarts under it after ten seconds |
-| Restarted on the newer version   | Modal notice naming the version now running, dismissed by its own control, and not drawn again in that session          |
-| Restart could not be carried out | Overlay closes, the page is untouched; visible nonblocking notice and one named restart action remain on the bar        |
-| Cached version unrepairable      | Visible named error, one named restart action and one assertive event summarizing rather than repeating it              |
+| State                            | Presentation/behavior                                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Initial English bootstrap        | Bundled localized shell appears with no raw-key flash                                                                              |
+| Browser-matched German           | Complete catalogue/root metadata commit before German route render                                                                 |
+| Unsupported browser language     | English appears as the ordinary default                                                                                            |
+| Locale candidate loading         | Current complete snapshot remains; nothing partial is shown                                                                        |
+| Locale load/validation fallback  | Complete English snapshot plus one bounded fallback notice/retry intent                                                            |
+| Route loading/empty/ready        | Route owns its state inside `main`; shell landmarks/actions remain stable                                                          |
+| Route blocking error             | Visible named error and one assertive event; unaffected shell navigation remains usable                                            |
+| Newer version published          | Modal overlay stating the restart with nothing to press and no event beside it; the page restarts under it after ten seconds       |
+| Restarted on the newer version   | Modal notice naming the version now running, dismissed by its own control, and not drawn again in that session                     |
+| Restart could not be carried out | Overlay closes, the page is untouched; visible nonblocking notice, one polite event and one named restart action remain on the bar |
+| Cached version unrepairable      | Visible named error, one named restart action and one assertive event summarizing rather than repeating it                         |
 
 ## Component composition
 
