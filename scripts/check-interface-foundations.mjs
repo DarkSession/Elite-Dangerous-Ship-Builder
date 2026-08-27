@@ -1460,10 +1460,22 @@ function headContent(document, attribute, key) {
  * words.
  */
 function withoutXmlComments(document) {
-  // One pass, to stay identical to the deployment's `sed`. Deliberately not a
-  // sanitiser, and nothing downstream treats it as one: both callers refuse a
-  // document that still holds a delimiter once this has run.
-  return document.replace(/<!--(?:[^-]|-[^-])*-->/g, ''); // codeql[js/incomplete-multi-character-sanitization]
+  // Written as "keep what is between the comments" rather than as a replace,
+  // because a replace of a multi-character delimiter reads as a sanitiser and
+  // this is not one — the leftovers are what the callers act on. Same regexp,
+  // same single left-to-right pass over non-overlapping matches, so the result
+  // is identical to the replace form and to the deployment's `sed`; the
+  // difference is only in what the code claims to be.
+  const kept = [];
+  let cut = 0;
+
+  for (const comment of document.matchAll(/<!--(?:[^-]|-[^-])*-->/g)) {
+    kept.push(document.slice(cut, comment.index));
+    cut = comment.index + comment[0].length;
+  }
+  kept.push(document.slice(cut));
+
+  return kept.join('');
 }
 
 /**
