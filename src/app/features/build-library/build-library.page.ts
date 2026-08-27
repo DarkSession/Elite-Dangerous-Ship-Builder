@@ -11,14 +11,8 @@ import { Router } from '@angular/router';
 import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
-import { NamedRecordService } from '../../application/build-library/named-record.service';
-import { RecordDuplicationService } from '../../application/build-library/record-duplication.service';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
-import {
-  SaveConflictService,
-  type ConflictChoice,
-} from '../../application/build-library/save-conflict.service';
 import { RetentionService } from '../../application/build-library/retention.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
@@ -26,7 +20,6 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { ActionButton } from '../../ui/components/action/action-button';
-import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { ConfirmDialog } from '../../ui/components/confirm-dialog/confirm-dialog';
 import {
   RecordManager,
@@ -36,7 +29,6 @@ import { AnnouncementService } from '../../ui/announcements/announcement.service
 import {
   ResponsiveRecordList,
   type RecordColumns,
-  type RecordListGroup,
   type UnavailableRecord,
 } from '../../ui/components/record-list/responsive-record-list';
 import { TextField } from '../../ui/components/text-field/text-field';
@@ -44,15 +36,17 @@ import { Layer } from '../../ui/components/layer/layer';
 import type { SavedBuild } from '../../ui/components/saved-build-card/saved-build-card';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
-import { SaveBuildDialog, type SaveRequest } from './save-build.dialog';
 
 /**
  * One action the committing footer offers on the record that was chosen.
  *
  * The actions left the rows on 2026-08-25 and became shared: the reference
- * draws dense rows and commits from a footer, and four buttons repeated into
- * every row is what made the built version a wall of panels rather than a
+ * draws dense rows and commits from a footer, and a stack of buttons repeated
+ * into every row is what made the built version a wall of panels rather than a
  * library (build-library design, "The library is not built to the canvas").
+ * Two of them are left since 2026-08-27 — delete, and open in outfitting —
+ * because naming, renaming and duplicating are the workspace's own `SAVE`
+ * (FR-009, ruled 2026-08-27).
  */
 interface RecordAction {
   readonly id: string;
@@ -84,12 +78,10 @@ interface PendingDelete {
   selector: 'edsb-build-library-page',
   imports: [
     ActionButton,
-    ChoiceDialog,
     ConfirmDialog,
     Layer,
     RecordManager,
     ResponsiveRecordList,
-    SaveBuildDialog,
     StatusNotice,
     TextField,
   ],
@@ -100,9 +92,6 @@ interface PendingDelete {
 export class BuildLibraryPage {
   readonly #library = inject(BuildLibraryStore);
   readonly #open = inject(RecordOpenService);
-  readonly #named = inject(NamedRecordService);
-  readonly #duplication = inject(RecordDuplicationService);
-  readonly #conflicts = inject(SaveConflictService);
   readonly #invalidation = inject(RecordInvalidationService);
   readonly #records = inject(LocalRecordRepository);
   readonly #retention = inject(RetentionService);
@@ -122,7 +111,6 @@ export class BuildLibraryPage {
   readonly dismissLabel = this.#messages.messageSignal('action.close');
   readonly deleteConfirmLabel = this.#messages.messageSignal('library.delete.confirm');
   readonly deleteCancelLabel = this.#messages.messageSignal('library.delete.cancel');
-  readonly conflictTitle = this.#messages.messageSignal('library.conflict.title');
   readonly searchLabel = this.#messages.messageSignal('library.search.label');
   readonly searchDescription = this.#messages.messageSignal('library.search.description');
   readonly nothingChosen = this.#messages.messageSignal('library.chosen.none');
@@ -133,14 +121,11 @@ export class BuildLibraryPage {
   readonly #search = signal('');
   readonly #chosen = signal<string | null>(null);
   readonly #pendingDelete = signal<PendingDelete | null>(null);
-  readonly #saveOpen = signal(false);
-  readonly #saveName = signal('');
   readonly #managing = signal(false);
   readonly #failure = signal<string | null>(null);
 
   readonly search = this.#search.asReadonly();
   readonly pendingDelete = this.#pendingDelete.asReadonly();
-  readonly saveOpen = this.#saveOpen.asReadonly();
   readonly managing = this.#managing.asReadonly();
   readonly failure = this.#failure.asReadonly();
 
@@ -176,11 +161,7 @@ export class BuildLibraryPage {
    * row, and a header that said "3 of 4" while four rows were on screen would be
    * counting something a Commander cannot see (FR-010).
    */
-  readonly matchCount = computed(
-    () =>
-      this.groups().reduce((total, group) => total + group.builds.length, 0) +
-      this.unavailable().length,
-  );
+  readonly matchCount = computed(() => this.builds().length + this.unavailable().length);
 
   /** True when there are records but the search matches none of them. */
   readonly noMatch = computed(
@@ -197,7 +178,16 @@ export class BuildLibraryPage {
     return chosen !== null && this.#library.find(chosen) !== null ? chosen : null;
   });
 
-  /** What each footer action would do, named for the record it would do it to. */
+  /**
+   * What each footer action would do, named for the record it would do it to.
+   *
+   * The canvas's two, and nothing else. Naming, renaming and saving a copy were
+   * here until 2026-08-27 and are the workspace's own `SAVE` now: a library
+   * answers "which of these builds", and what should become of one is asked
+   * where a Commander is working in it. Nothing they could do is gone — a
+   * record is renamed by opening it and saving it over the save it came from,
+   * and copied by opening it and saving it as a new build (FR-009).
+   */
   readonly chosenActions = computed<readonly RecordAction[]>(() => {
     const record = this.chosen() === null ? null : this.#library.find(this.chosen()!);
     if (record === null) {
@@ -205,24 +195,11 @@ export class BuildLibraryPage {
     }
 
     const build = record.name ?? this.#derivedTitle(record);
-    const unnamed = record.kind === 'working';
     return [
       {
         id: 'delete',
         label: this.#messages.message('library.action.delete', { build }),
         emphasis: 'danger' as const,
-      },
-      {
-        id: unnamed ? 'name' : 'rename',
-        label: this.#messages.message(unnamed ? 'library.action.name' : 'library.action.rename', {
-          build,
-        }),
-        emphasis: 'quiet' as const,
-      },
-      {
-        id: 'duplicate',
-        label: this.#messages.message('library.action.duplicate', { build }),
-        emphasis: 'quiet' as const,
       },
       {
         id: 'open',
@@ -238,20 +215,15 @@ export class BuildLibraryPage {
       : null,
   );
 
-  readonly groups = computed<readonly RecordListGroup[]>(() => [
-    {
-      id: 'working',
-      label: this.#messages.message('library.group.unnamed'),
-      builds: this.#listed(this.#library.working()),
-      emptyLabel: this.#messages.message('library.empty.description'),
-    },
-    {
-      id: 'named',
-      label: this.#messages.message('library.group.named'),
-      builds: this.#listed(this.#library.named()),
-      emptyLabel: this.#messages.message('library.empty.description'),
-    },
-  ]);
+  /**
+   * Every readable record the search leaves listed, newest first.
+   *
+   * One list. `Unnamed builds` and `Named builds` were two headings saying what
+   * each row beneath them already says in its own title, and they split one
+   * order into two — so the build edited most recently was not reliably the row
+   * at the top (FR-010, clarification 2026-08-27).
+   */
+  readonly builds = computed<readonly SavedBuild[]>(() => this.#listed(this.#library.records()));
 
   readonly unavailable = computed<readonly UnavailableRecord[]>(() => {
     const query = this.#query();
@@ -278,50 +250,6 @@ export class BuildLibraryPage {
         .filter((entry) => query.length === 0 || this.#contains(entry.detail, query))
     );
   });
-
-  /** The record the Commander is being asked to keep, replace or duplicate. */
-  readonly conflict = this.#conflicts.conflict;
-
-  readonly conflictDescription = computed(() => {
-    const conflict = this.#conflicts.conflict();
-    return conflict === null
-      ? null
-      : this.#messages.message('library.conflict.description', {
-          name: conflict.observed.name ?? conflict.observed.hullSymbol,
-        });
-  });
-
-  readonly conflictChoices = computed<readonly DialogChoice[]>(() => {
-    const choices: DialogChoice[] = [];
-
-    if (this.#conflicts.canOverwrite) {
-      choices.push({
-        id: 'overwrite',
-        label: this.#messages.message('library.conflict.overwrite'),
-        outcome: this.#messages.message('library.conflict.overwrite.outcome'),
-      });
-    }
-    choices.push({
-      id: 'keep-both',
-      label: this.#messages.message('library.conflict.keep-both'),
-      outcome: this.#messages.message('library.conflict.keep-both.outcome'),
-    });
-    choices.push({
-      id: 'cancel',
-      label: this.#messages.message('library.conflict.cancel'),
-      outcome: this.#messages.message('library.conflict.cancel.outcome'),
-      emphasis: 'quiet',
-    });
-
-    return choices;
-  });
-
-  /** Shown when in-place replacement is impossible in this browser. */
-  readonly overwriteUnavailable = computed(() =>
-    this.#conflicts.canOverwrite
-      ? null
-      : this.#messages.message('library.conflict.locks-unavailable'),
-  );
 
   readonly deleteTitle = computed(() => {
     const pending = this.#pendingDelete();
@@ -377,10 +305,6 @@ export class BuildLibraryPage {
   readonly #selectedForDiscard = signal<readonly string[]>([]);
   readonly selectedForDiscard = this.#selectedForDiscard.asReadonly();
 
-  readonly saveName = computed(() => this.#saveName());
-  readonly duplicateCount = computed(() => this.#library.countByName(this.#saveName()));
-  readonly canOverwriteSource = computed(() => this.#active.sourceNamed() !== null);
-
   constructor() {
     // The count left the command bar on 2026-08-25: the reference draws it in
     // this surface's own header row, beside the search that changes it, and one
@@ -418,8 +342,50 @@ export class BuildLibraryPage {
     });
   }
 
+  /**
+   * Dismisses the library, returning to the screen it was opened over.
+   *
+   * The canvas draws this surface as a layer over an inert originating screen,
+   * and a layer that is dismissed puts a Commander back where they were. It
+   * used to send everyone to the shipyard, which took a Commander who glanced
+   * at their saved builds out of the build they were working in — a screen they
+   * had chosen nothing to leave (Commander request 2026-08-27).
+   *
+   * The browser's own back does this already; this is the same journey under
+   * the dismiss the canvas draws.
+   */
   close(): void {
-    void this.#router.navigateByUrl(NAVIGATION_ROUTES.catalogue);
+    void this.#router.navigateByUrl(this.#origin());
+  }
+
+  /**
+   * Where dismissing goes.
+   *
+   * The address this navigation came from, whatever it was. A library reached
+   * by its own address has no such screen behind it: then the build in hand is
+   * the honest destination, and the shipyard where there is no build — which
+   * is also where a Commander goes when the build they came from is the one
+   * they have just deleted.
+   *
+   * Without its fragment. The router records an address as it was when it
+   * navigated, and the workspace's link is written over it with `replaceState`
+   * afterwards — so a remembered fragment is the build as it stood before the
+   * edits that followed. The workspace publishes its own the moment it is back
+   * (FR-020).
+   */
+  #origin(): string {
+    const hasBuild = this.#active.loadout() !== null;
+    const fallback = hasBuild ? NAVIGATION_ROUTES.build : NAVIGATION_ROUTES.catalogue;
+    const previous = this.#router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl;
+    if (previous === undefined) {
+      return fallback;
+    }
+
+    const url = this.#router.serializeUrl(previous).split('#')[0] ?? '';
+    if (url === '' || url.startsWith(NAVIGATION_ROUTES.library)) {
+      return fallback;
+    }
+    return url.startsWith(NAVIGATION_ROUTES.build) && !hasBuild ? fallback : url;
   }
 
   /** Narrows the list. Changes no record, no order and nothing stored. */
@@ -464,27 +430,6 @@ export class BuildLibraryPage {
         if (result.kind === 'committed') {
           void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
         }
-        return;
-      }
-
-      case 'duplicate': {
-        if (record === null) {
-          return;
-        }
-        this.#duplication.duplicate(
-          recordId,
-          record.name ?? this.#messages.message('library.record.unnamed'),
-          new Date().toISOString(),
-        );
-        this.#library.refresh();
-        this.#invalidation.announceWrite(recordId, record.revisionId);
-        return;
-      }
-
-      case 'rename':
-      case 'name': {
-        this.#saveName.set(record?.name ?? '');
-        this.#saveOpen.set(true);
         return;
       }
 
@@ -533,104 +478,6 @@ export class BuildLibraryPage {
     this.#pendingDelete.set(null);
   }
 
-  changeSaveName(name: string): void {
-    this.#saveName.set(name);
-  }
-
-  async requestSave({ name, overwrite }: SaveRequest): Promise<void> {
-    const snapshot = this.#active.snapshot();
-    const validation = this.#active.validation();
-    if (snapshot === null || validation === null) {
-      this.#saveOpen.set(false);
-      return;
-    }
-
-    const now = new Date().toISOString();
-    const source = this.#active.sourceNamed();
-    // The unnamed record these edits have been autosaved into, if any. Saving
-    // consumes it: replacing a saved build removes it once that write has
-    // succeeded, and naming the build promotes it in place (FR-008).
-    const held = this.#active.autosaveRecordId();
-
-    const result =
-      overwrite && source !== null
-        ? await this.#conflicts.save(
-            {
-              recordId: source.recordId,
-              expectedRevisionId: source.baseRevisionId,
-              name,
-              note: null,
-              build: snapshot,
-              validation,
-              now,
-            },
-            held,
-          )
-        : held !== null
-          ? await this.#named.nameHeldRecord({
-              recordId: held,
-              name,
-              note: null,
-              build: snapshot,
-              validation,
-              now,
-            })
-          : await this.#named.createNamed({
-              name,
-              note: null,
-              build: snapshot,
-              validation,
-              now,
-            });
-
-    this.#saveOpen.set(false);
-
-    if (result.kind === 'saved') {
-      this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
-    }
-
-    this.#library.refresh();
-  }
-
-  /**
-   * Takes up the named record a save produced, and lets go of the unnamed one.
-   *
-   * Letting go is the part that matters. The page now holds a named record, and
-   * autosave has no path to one — so the id it was writing to is cleared and the
-   * next modelled edit forks a fresh unnamed record, rather than autosave
-   * silently going idle against a record it is no longer allowed to touch
-   * (FR-008, persistence contract, "Autosaved records").
-   */
-  #adoptSavedRecord(recordId: string, revisionId: string, held: string | null): void {
-    this.#active.markSaved({ recordId, baseRevisionId: revisionId });
-    this.#active.setAutosaveRecordId(null);
-    this.#invalidation.announceWrite(recordId, revisionId);
-
-    if (held !== null && held !== recordId) {
-      // Consumed, not deleted by anyone: other pages listing it need to stop
-      // showing it, and the page that had it open is this one.
-      this.#invalidation.announceDelete(held);
-    }
-  }
-
-  dismissSave(): void {
-    this.#saveOpen.set(false);
-  }
-
-  async resolveConflict(choice: string): Promise<void> {
-    const held = this.#active.autosaveRecordId();
-    const result = await this.#conflicts.resolve(choice as ConflictChoice);
-
-    if (result?.kind === 'saved') {
-      this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
-    }
-    this.#library.refresh();
-  }
-
-  dismissConflict(): void {
-    this.#conflicts.clear();
-  }
-
   openManager(): void {
     this.#managing.set(true);
   }
@@ -667,7 +514,10 @@ export class BuildLibraryPage {
       title,
       named: record.name !== null,
       hull: this.#gameText.shipName(record.hullSymbol),
-      modified: this.#instant(record.modifiedAt),
+      modified: this.#howLongAgo(record.modifiedAt),
+      modifiedExact: this.#messages.message('library.record.modified.exact', {
+        instant: this.#instant(record.modifiedAt),
+      }),
       validation: this.#validationOf(record.validation),
       issues: this.#issuesOf(record.validation),
       remaining: this.#remainingLife(record),
@@ -739,7 +589,7 @@ export class BuildLibraryPage {
     return { count, label: this.#messages.message('library.record.issues', { count }) };
   }
 
-  /** The rows one group contributes, narrowed by whatever is being searched for. */
+  /** The rows the library draws, narrowed by whatever is being searched for. */
   #listed(entries: readonly StoredRecordEntry[]): readonly SavedBuild[] {
     const query = this.#query();
     return entries
@@ -804,6 +654,19 @@ export class BuildLibraryPage {
 
   #instant(iso: string): string {
     return this.#formatters.dateTime(new Date(iso));
+  }
+
+  /**
+   * How long ago the record was last edited, in the reader's own words.
+   *
+   * What the column is read for. `19 Aug 2026, 14:32` makes a reader do the
+   * arithmetic on every row to find the build they were last in; `3 weeks ago`
+   * is the answer, and the canvas draws exactly that (FR-010, clarification
+   * 2026-08-27). The instant itself is kept beside it, unread by the eye and
+   * available to a reader who needs it exactly.
+   */
+  #howLongAgo(iso: string): string {
+    return this.#formatters.relativeTime(new Date(iso), this.#clock.now());
   }
 
   #hullName(symbol: string): string {

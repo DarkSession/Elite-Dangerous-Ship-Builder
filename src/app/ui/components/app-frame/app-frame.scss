@@ -228,6 +228,21 @@
   @include layout.control-primary;
 }
 
+// The same hover the bar's actions take. A link and a button sitting in one row
+// and reacting differently to the pointer reads as one of them being inert, and
+// the reference draws no such distinction between the bar's controls (Commander
+// request 2026-08-27). Hover is an enhancement either way: nothing is only
+// reachable through it, because a touch device has no hover at all.
+@media (hover: hover) {
+  .frame__navigation-link:hover {
+    background-color: var(--edsb-surface-accent-selected);
+  }
+
+  .frame__navigation-link[aria-current='page']:hover {
+    background-color: var(--edsb-text-accent-strong);
+  }
+}
+
 .frame__actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 }

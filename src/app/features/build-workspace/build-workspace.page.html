@@ -1,8 +1,8 @@
 <!--
   Canvas 1c draws the workspace as the command bar and then the regions: the
-  build's name and hull are the bar's identity block, `EXPORT` and the history
-  controls are the bar's actions, and nothing stands between the bar and the
-  ledger. A hull line, a provenance line, a saved-state line and a "this build
+  build's name and hull are the bar's identity block, the history controls with
+  `EXPORT` and a filled `SAVE` are its actions, and nothing stands between the
+  bar and the ledger. A hull line, a provenance line, a saved-state line and a "this build
   is valid" banner were none of them drawn — the canvas reports problems and
   says nothing when there are none (design-canvas rule).
 -->
@@ -39,3 +39,37 @@
     />
   </div>
 }
+
+<!--
+  Canvas 1c's `SAVE BUILD`, opened from the command bar's filled action. It is
+  this screen's rather than the library's since 2026-08-27: a library answers
+  "which of these builds", and what should become of one is asked where a
+  Commander is working in it (FR-009).
+-->
+<edsb-save-build-dialog
+  [open]="saveOpen()"
+  [initialName]="saveInitialName()"
+  [initialNote]="saveInitialNote()"
+  [source]="saveSource()"
+  [duplicateCount]="saveDuplicateCount()"
+  [failure]="saveFailure()"
+  [saving]="saving()"
+  (nameChanged)="changeSaveName($event)"
+  (saveRequested)="requestSave($event)"
+  (dismissed)="dismissSave()"
+/>
+
+<!--
+  The save's own conflict: another page wrote the record after this one opened
+  it. Three answers, each stating which versions survive, and no lock is held
+  while it is on screen (FR-012).
+-->
+<edsb-choice-dialog
+  [open]="conflict() !== null"
+  [title]="conflictTitle()"
+  [description]="conflictDescription()"
+  [choices]="conflictChoices()"
+  [dismissLabel]="dismissLabel()"
+  (chosen)="resolveConflict($event)"
+  (dismissed)="dismissConflict()"
+/>

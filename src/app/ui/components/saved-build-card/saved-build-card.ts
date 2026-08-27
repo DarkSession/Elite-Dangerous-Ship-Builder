@@ -18,8 +18,26 @@ export interface SavedBuild {
   /** The one line beneath the title: a note, or which save these edits are of. */
   readonly note: string | null;
   readonly hull: GameTextPresentation;
-  /** The last-modified instant, already formatted for the active locale. */
+  /**
+   * How long ago the build was last edited, in the active locale's own words.
+   *
+   * The column is read to tell the recent build from the old one, and a column
+   * of absolute instants makes a reader do that arithmetic on every row — which
+   * is why the canvas draws `2 d ago` there and why this row does now
+   * (FR-010, clarification 2026-08-27).
+   */
   readonly modified: string;
+
+  /**
+   * The instant itself, as a sentence naming what it is.
+   *
+   * Read rather than drawn, with the row's other read-not-drawn facts: "3 weeks
+   * ago" answers which of these is the recent one and not when exactly, and the
+   * exact answer is not something to lose to a shorter column. A sentence
+   * rather than a bare date, because the column header that would name it is
+   * `aria-hidden` and every other fact in that span says what it is.
+   */
+  readonly modifiedExact: string;
   /** The package's verdict when the build was saved, in words. */
   readonly validation: { readonly label: string; readonly tone: 'success' | 'warning' | 'error' };
   /** How many issues that verdict counted, or `null` where it counted none. */

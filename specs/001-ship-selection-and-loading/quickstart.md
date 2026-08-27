@@ -67,7 +67,8 @@ still unchanged by the edit — the edit is a new unnamed record naming the one 
 
 ## Scenario 4: Manage named and unnamed records
 
-1. Name/save the current build, then open, rename and duplicate it.
+1. Save the current build under a name from the workspace's `SAVE`, then open it from the library
+   and use `SAVE` again to rename it and to save a copy of it.
 2. Count the records before and after naming one.
 3. Open a named record, edit it, and choose "overwrite existing". Count the records again and read
    the named record's revision.
@@ -83,7 +84,9 @@ still unchanged by the edit — the edit is a new unnamed record naming the one 
    editing anything.
 10. Fill the storage quota, select records in the manager, confirm deletion and retry persistence.
 
-Expected: IDs remain independent of names; naming an unnamed record leaves the count unchanged and
+Expected: the library's footer offers exactly open and delete, and every naming path is the
+workspace's `SAVE`; the list is one list, ordered by last edit, with no group headings; IDs remain
+independent of names; naming an unnamed record leaves the count unchanged and
 leaves no unnamed copy behind; overwriting takes the named record to a fresh revision and removes the
 unnamed record the edits were in, and does so only after the write succeeds; saving as new leaves the
 original named record untouched; duplicate names are preserved after warning; cancel deletes nothing.

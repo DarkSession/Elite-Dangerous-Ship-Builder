@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
-import { savedToBrowser, reachShellLink } from './shell';
+import { reachShellAction, savedToBrowser, reachShellLink } from './shell';
 
 /**
  * Work that survives — and work that is never silently lost.
@@ -24,6 +24,28 @@ async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await page.getByRole('button', { name: 'Build stock hull' }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
+}
+
+/**
+ * Saves the build the workspace is holding, from the workspace's own `SAVE`.
+ *
+ * The library commits open and delete since 2026-08-27; what should become of a
+ * build is asked where a Commander is working in it (FR-009).
+ */
+async function saveActiveBuild(
+  page: Page,
+  name: string,
+  mode: 'new' | 'overwrite' = 'new',
+): Promise<void> {
+  await reachShellAction(page, /^Save$/);
+  const dialog = page.getByRole('dialog', { name: 'Save build' });
+  await dialog.getByRole('textbox', { name: 'Build name' }).fill(name);
+  if (mode === 'overwrite') {
+    await dialog.getByRole('radio', { name: /^Overwrite/ }).check();
+  } else {
+    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+  }
+  await dialog.getByRole('button', { name: 'Save build' }).click();
 }
 
 /**
@@ -270,12 +292,8 @@ test.describe('the tab’s working build', () => {
     test.slow();
     await createBuild(page);
     await savedToBrowser(page);
+    await saveActiveBuild(page, 'Explorer');
     await reachShellLink(page, 'Open saved build');
-    await chooseRecord(page, 'Anaconda');
-    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Save this build' });
-    await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
-    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
     await expect(page.getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
@@ -301,12 +319,8 @@ test.describe('the tab’s working build', () => {
     test.slow();
     await createBuild(page);
     await savedToBrowser(page);
+    await saveActiveBuild(page, 'Explorer');
     await reachShellLink(page, 'Open saved build');
-    await chooseRecord(page, 'Anaconda');
-    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Save this build' });
-    await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
-    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
     await expect(page.getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
@@ -330,14 +344,10 @@ test.describe('the tab’s working build', () => {
     test.slow();
     await createBuild(page);
     await savedToBrowser(page);
-    await reachShellLink(page, 'Open saved build');
-    await chooseRecord(page, 'Anaconda');
-    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Save this build' });
-    await dialog.getByRole('textbox', { name: 'Name' }).fill('Explorer');
-    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
+    await saveActiveBuild(page, 'Explorer');
     // Naming consumes the record the build was already in: one record, not two.
     await expectRecords(page, 1);
+    await reachShellLink(page, 'Open saved build');
 
     await chooseRecord(page, 'Explorer');
     await page.getByRole('button', { name: 'Open Explorer' }).click();
@@ -345,12 +355,7 @@ test.describe('the tab’s working build', () => {
     await renameShip(page, 'Vindicator');
     await expectRecords(page, 2);
 
-    await reachShellLink(page, 'Open saved build');
-    await chooseRecord(page, 'Vindicator');
-    await page.getByRole('button', { name: 'Save Vindicator under a name' }).click();
-    const replace = page.getByRole('dialog', { name: 'Save this build' });
-    await replace.getByRole('textbox', { name: 'Name' }).fill('Explorer');
-    await replace.getByRole('button', { name: 'Replace the build I opened' }).click();
+    await saveActiveBuild(page, 'Explorer', 'overwrite');
 
     // The unsaved entry these edits were in is consumed by the save that
     // replaced the build they came from.

@@ -585,7 +585,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'build',
-    requirements: ['001/FR-008', '001/FR-009', '001/FR-010', '001/FR-014'],
+    requirements: ['001/FR-008', '001/FR-010', '001/FR-014'],
     journey: 'product/build-working-state',
     axe: true,
     assertions: [
@@ -600,21 +600,43 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'screen-reader',
   },
   {
+    // Its own entry since 2026-08-27, the way `build/share-link` is: the save
+    // layer left the library that used to draw it, and the journeys that reach
+    // it are round trips — open a saved build in the workspace, save it, and
+    // read what the library is holding afterwards — so they are written where
+    // that listing is asserted rather than beside the autosave arithmetic.
+    surfaceId: 'build/save',
+    requirements: ['001/FR-009', '001/FR-011', '001/FR-012'],
+    journey: 'product/build-library',
+    axe: true,
+    assertions: [
+      'one save names, renames and duplicates: the mode is chosen before one commit, never guessed',
+      'the save of a build opened from a save offers replacing it first, and says when it was saved',
+      'a name already in use warns only where saving would create a record, and then proceeds',
+      'a name typed and then dismissed is not what the next build’s save opens with',
+      'the note is written with the build, and never enters a build link or a SLEF export',
+      'two pages saving one named record are offered overwrite, keep both and cancel',
+      'a save that writes nothing says so and keeps the layer open on what was typed',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
     surfaceId: 'builds',
-    requirements: ['001/FR-010', '001/FR-011', '001/FR-012', '001/FR-013', '001/SC-002'],
+    requirements: ['001/FR-010', '001/FR-011', '001/FR-013', '001/SC-002'],
     journey: 'product/build-library',
     axe: true,
     assertions: [
       'the surface is a framed layer with a title bar, a header row, column headers and a footer',
-      'rows carry the title or what the build calls itself, hull, edited instant and recorded state',
+      'rows carry the title or what the build calls itself, hull, how long ago it was edited and recorded state',
+      'named and unnamed records stand in one list in one order, most recently edited first',
+      'the edited column is how long ago, and the instant itself stays as text on the row',
       'the record the workspace holds is marked in words and in aria-current, not only in amber',
-      'an unnamed row states its remaining life, and naming is offered from the row that was chosen',
+      'an unnamed row states its remaining life, and the row the workspace holds is the one chosen first',
       'a recorded issue is a count on its own plate with words beside it, never a colour',
       'the search narrows over the fields a row shows, announces the count and changes no record',
       'nothing matching says so in one sentence, leaving every control reachable',
-      'name, rename, duplicate and delete each act on a record identity, never a display name',
-      'a duplicate name warns and then proceeds, creating a separate record',
-      'two pages saving one named record are offered overwrite, keep both and cancel',
+      'the footer commits two things only: deleting the chosen record and opening it in outfitting',
+      'deleting acts on the record identity the row carries, never on a display name',
       'a full quota offers explicit discard and never evicts automatically; expiry is not a way out',
       'notes and record identities never enter a build link or a SLEF export',
     ],

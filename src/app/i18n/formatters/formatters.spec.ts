@@ -309,6 +309,30 @@ describe('Formatters', () => {
       expect(formatters.relativeTime(after(90 * 1000), AT)).toBe('in 1 minute');
     });
 
+    it('reads a week, a month and a year in the units a reader would use', () => {
+      // The library's edited column reads these: without them a record edited a
+      // month ago said "31 days ago", where the canvas draws "1 mo ago"
+      // (FR-010, clarification 2026-08-27).
+      const formatters = setup('en');
+
+      expect(formatters.relativeTime(after(-16 * DAY), AT)).toBe('2 weeks ago');
+      expect(formatters.relativeTime(after(-70 * DAY), AT)).toBe('2 months ago');
+      expect(formatters.relativeTime(after(-800 * DAY), AT)).toBe('2 years ago');
+      // `Intl`'s own phrasing for exactly one of a unit, which is what a
+      // reader says: `last week`, not `1 week ago`.
+      expect(formatters.relativeTime(after(-9 * DAY), AT)).toBe('last week');
+    });
+
+    it('keeps the unit below each of them at the boundary', () => {
+      // The longest unit that the distance already exceeds, and never one it
+      // does not: six days is not a week and three weeks is not a month.
+      const formatters = setup('en');
+
+      expect(formatters.relativeTime(after(-6 * DAY), AT)).toBe('6 days ago');
+      expect(formatters.relativeTime(after(-21 * DAY), AT)).toBe('3 weeks ago');
+      expect(formatters.relativeTime(after(-300 * DAY), AT)).toBe('9 months ago');
+    });
+
     it('says so when the instant has already passed', () => {
       const formatters = setup('en');
 

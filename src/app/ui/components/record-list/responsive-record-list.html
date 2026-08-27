@@ -14,35 +14,26 @@
     @if (noMatch(); as sentence) {
       <p class="records__no-match">{{ sentence }}</p>
     } @else {
-      @for (group of groups(); track group.id) {
-        <section
-          class="records__group"
-          [attr.data-record-group]="group.id"
-          [attr.aria-labelledby]="groupId(group.id)"
-        >
-          <h3 class="records__heading" [id]="groupId(group.id)">{{ group.label }}</h3>
-
-          @if (group.builds.length > 0) {
-            <ul class="records__list">
-              @for (build of group.builds; track build.id) {
-                <li [attr.data-record-id]="build.id">
-                  <edsb-saved-build-card
-                    [build]="build"
-                    [chosen]="build.id === chosen()"
-                    (chose)="chose.emit($event)"
-                  />
-                </li>
-              }
-            </ul>
-          } @else {
-            <p class="records__empty">{{ group.emptyLabel }}</p>
-          }
-        </section>
-      }
+      <!--
+        One list, in one order. The heading that used to divide named saves from
+        unnamed working records went on 2026-08-27: each row's own title already
+        says which it is, and the division cost the order (FR-010).
+      -->
+      <ul class="records__list">
+        @for (build of builds(); track build.id) {
+          <li [attr.data-record-id]="build.id">
+            <edsb-saved-build-card
+              [build]="build"
+              [chosen]="build.id === chosen()"
+              (chose)="chose.emit($event)"
+            />
+          </li>
+        }
+      </ul>
 
       @if (hasUnavailable() && unavailableLabel()) {
-        <section class="records__group" [attr.aria-labelledby]="groupId('unavailable')">
-          <h3 class="records__heading" [id]="groupId('unavailable')">{{ unavailableLabel() }}</h3>
+        <section class="records__group" [attr.aria-labelledby]="unavailableId">
+          <h3 class="records__heading" [id]="unavailableId">{{ unavailableLabel() }}</h3>
           <ul class="records__list">
             @for (record of unavailable(); track record.id) {
               <li [attr.data-record-id]="record.id">

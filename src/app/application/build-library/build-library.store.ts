@@ -8,12 +8,6 @@ import { RetentionService } from './retention.service';
 /** What the library is currently able to show. */
 export type LibraryStatus = 'ready' | 'unavailable';
 
-/** One group of records, in the order the screen lists them. */
-export interface RecordGroup {
-  readonly kind: 'working' | 'named';
-  readonly entries: readonly StoredRecordEntry[];
-}
-
 /**
  * Every stored build, as the library screen sees it.
  *
@@ -41,11 +35,30 @@ export class BuildLibraryStore {
   readonly status = this.#status.asReadonly();
   readonly failure = this.#failure.asReadonly();
 
-  /** Working builds, newest first. */
-  readonly working = computed(() => this.#grouped('working'));
+  /**
+   * Every readable record, newest first.
+   *
+   * One list rather than two groups since 2026-08-27. Named and unnamed records
+   * differ in what they are, and every row says which it is in its own title; a
+   * heading above a group said it a second time and split one order into two,
+   * so the build edited most recently was not reliably the row at the top
+   * (FR-010, clarification 2026-08-27).
+   */
+  readonly records = computed(() => this.#ordered(this.#entries()));
 
-  /** Named builds, newest first. */
-  readonly named = computed(() => this.#grouped('named'));
+  /**
+   * Unnamed builds, newest first.
+   *
+   * Not a group the library draws any more. It is what the quota manager offers
+   * for discard, which is a different question from how the library lists
+   * records: a named save is what a Commander asked to keep, so a full store
+   * offers the ones nothing has asked to keep first (FR-013).
+   */
+  readonly working = computed(() =>
+    this.#ordered(
+      this.#entries().filter((entry) => entry.available && entry.record.kind === 'working'),
+    ),
+  );
 
   /** Records this build cannot open, listed rather than hidden. */
   readonly unavailable = computed(() => this.#entries().filter((entry) => !entry.available));
@@ -107,9 +120,9 @@ export class BuildLibraryStore {
     ).length;
   }
 
-  #grouped(kind: 'working' | 'named'): readonly StoredRecordEntry[] {
-    return this.#entries()
-      .filter((entry) => entry.available && entry.record.kind === kind)
+  #ordered(entries: readonly StoredRecordEntry[]): readonly StoredRecordEntry[] {
+    return entries
+      .filter((entry) => entry.available)
       .sort((left, right) => {
         if (!left.available || !right.available) {
           return 0;
