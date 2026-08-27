@@ -419,6 +419,32 @@ export function groupFamilies(
 }
 
 /**
+ * Two choices on price, dearest first, with the unpriced last.
+ *
+ * The package publishes no credit price for every article — one sold only for
+ * Merc Coin has a price, and it is not in credits — and `null` cannot be
+ * subtracted from a number without deciding what it is worth. It is worth
+ * nothing that can be compared against a price, so it goes after every priced
+ * choice of the same class rather than sorting as though it were free
+ * (FR-003). Two unpriced choices are equal here and fall to the keys below.
+ *
+ * Written as branches rather than as a sentinel standing in for `null`: the
+ * sentinel that says "after everything" is `-Infinity`, and subtracting one
+ * `-Infinity` from another is `NaN`, which a comparator hands to `sort` as an
+ * order it cannot use.
+ */
+function comparePrice(left: ModuleChoice, right: ModuleChoice): number {
+  const leftCost = left.presentation.facts.cost;
+  const rightCost = right.presentation.facts.cost;
+
+  if (leftCost === rightCost) return 0;
+  if (leftCost === null) return 1;
+  if (rightCost === null) return -1;
+
+  return rightCost - leftCost;
+}
+
+/**
  * The contract's order, as one comparator.
  *
  * The collator is passed in rather than constructed here: it belongs to the
@@ -429,13 +455,20 @@ export function groupFamilies(
  *
  * The package's family first, in the package's own order, so every choice in a
  * family is one run and the runs come out as the Almanac lists them. Then the
- * name a Commander reads, compared with the active locale's own rules at base
- * sensitivity so `Multi-Cannon` and `multi-cannon` sort as one module rather
- * than two. Then class descending — the biggest module a mount takes is the one
- * being looked for — rating ascending, and the stock article before the rewards
- * built on it. The package's own ordinals settle the rest, so two
- * indistinguishable rows still come out in the order the Almanac published them
- * (module-catalogue contract, "Families and order").
+ * two keys a mount is actually shopped by: class descending — the biggest
+ * module the mount takes is the one being looked for — and then the package's
+ * own price for the article, descending, because the best of a size is the
+ * dearest of it. The name led both of these until 2026-08-27, which sorted
+ * `Beam Laser` before `Burst Laser` before `Cannon` and made a Commander read
+ * down a whole family for the size they were fitting (Commander request).
+ *
+ * The name is still here, one key lower, compared with the active locale's own
+ * rules at base sensitivity so `Multi-Cannon` and `multi-cannon` sort as one
+ * module rather than two. Rating ascending, the stock article before the
+ * rewards built on it, and the package's own ordinals settle the rest, so two
+ * indistinguishable rows still come out in the order the Almanac published
+ * them and the order stays total (module-catalogue contract, "Families and
+ * order").
  */
 function orderChoices(
   choices: readonly ModuleChoice[],
@@ -445,11 +478,14 @@ function orderChoices(
     const byFamily = familyRank(left) - familyRank(right);
     if (byFamily !== 0) return byFamily;
 
-    const byName = collator.compare(nameOf(left), nameOf(right));
-    if (byName !== 0) return byName;
-
     const byClass = right.presentation.class - left.presentation.class;
     if (byClass !== 0) return byClass;
+
+    const byPrice = comparePrice(left, right);
+    if (byPrice !== 0) return byPrice;
+
+    const byName = collator.compare(nameOf(left), nameOf(right));
+    if (byName !== 0) return byName;
 
     const byRating = compareRating(left.presentation.rating, right.presentation.rating);
     if (byRating !== 0) return byRating;

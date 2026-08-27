@@ -6,39 +6,44 @@
   container-type: inline-size;
   container-name: engineering;
 
-  // Shrinkable below its content, so the boxes inside scroll rather than the
-  // panel pushing its neighbour off the bench. The floor below is what stops
-  // that where the bench is bounded.
+  // Shrinkable below its content only where something above bounds it. The
+  // floor below is what stops it being a strip.
   min-block-size: 0;
 
-  // The bound the panel gives way against, written the way the bench above
-  // writes its own. Without one the region grows to its content, nothing
-  // scrolls inside it, and the actions below end up drawn over the foot of the
-  // material list — over the control a Commander is reaching for.
-  max-block-size: calc(100svh - var(--edsb-layout-bar-height));
+  // **No bound of its own. Ruled 2026-08-27 (Commander request).** There used
+  // to be one — the bench's, written the same way — and inside it wave 11 gave
+  // each of the panel's two halves a scroller. That left a Commander reading a
+  // weapon's seventy attribute rows four at a time, in the innermost of three
+  // nested boxes. Nothing here bounds itself now: each half is as tall as its
+  // content, the panel is as tall as its taller half, the workspace column
+  // releases to hold it and the page carries the result
+  // (`design/engineering-editor.md`, "Nothing here scrolls"). The full-screen
+  // placement is untouched: it sits in a `full-height` layer, and the layer is
+  // what scrolls.
 }
 
 // How short this panel may get before it stops being one: a recipe, the grade
 // under it and the first of the comparisons. It is the smaller of the bench's
-// two floors — this is the panel that can be read a line at a time — and it is
-// what the manifest measures its own floor against, so the two together never
-// exceed the bench they are in (`module-replacement.scss`; Commander request
-// 2026-08-26).
+// two floors — this is the panel that can be read a line at a time — and since
+// 2026-08-27 it is only a floor. The manifest used to measure its own against
+// it, because the two divided a bench of a fixed height; the column releases
+// while a mount is selected now, so there is no fixed bench to divide and this
+// figure answers one question only: how short before an article with nothing to
+// engineer stops being a panel (`module-replacement.scss`; Commander requests
+// 2026-08-26 and 2026-08-27).
 @container outfitting (min-width: 47rem) {
   :host {
     min-block-size: var(--edsb-layout-editor-panel);
   }
 }
 
-// A viewport this short cannot divide into a scroller and a foot and still show
-// one choice. The region stops bounding itself, the actions stop sticking, and
-// the page scrolls — the same release the command bar and the bench make at the
-// same threshold, and what keeps the whole of it readable at 400% zoom (FR-011).
+// A viewport this short cannot divide a screen into a scroller and a foot and
+// still show one choice, so the layer's actions stop sticking and the layer's
+// own scroller carries them — the same release the command bar and the bench
+// make at the same threshold, and what keeps the whole of it readable at 400%
+// zoom (FR-011). The host's own release went with the bound it released: there
+// is no longer one to lift.
 @include layout.short-viewport {
-  :host {
-    max-block-size: none;
-  }
-
   .engineering__actions {
     position: static;
   }
@@ -47,16 +52,15 @@
 .engineering {
   @include layout.stack(var(--edsb-space-stack));
 
-  // A containing block, so this scroller clips what it scrolls — the rule the
-  // ledger's rail and the chooser's manifest both state, for the reason they
-  // state it: text drawn only for a reader is positioned out of the page the
-  // standard way, and without a positioned scroller around it its containing
-  // block is whatever is positioned above the bench. The bench's own clipping
-  // never reaches it and the document runs down past the screen, invisibly.
+  // A containing block for the text drawn only for a reader, which is
+  // positioned out of the page the standard way: without something positioned
+  // around it, its containing block is whatever is positioned above the bench
+  // and a hundred such boxes measure from there rather than from here. It is
+  // no longer a scroller — see the host above — and this is the half of the
+  // rule that outlives the scrolling.
   position: relative;
   min-block-size: 0;
   flex: 1;
-  overflow-y: auto;
 }
 
 // Canvas 1d's own screen: a scrolling body inset `12px 14px`, holding bordered
@@ -98,11 +102,16 @@
 
 // Inline, canvas 1c draws a bordered box rather than a heading over loose
 // content: a hairline amber edge, the panel's own ground inside it, and a ruled
-// bar across the top. What scrolls is the body under that bar, so the bar stays
-// where the canvas puts it (wave 7).
+// bar across the top (wave 7). The bar used to stay where the canvas puts it
+// because the body under it was the scroller; it stays there now because
+// nothing moves — the whole panel is drawn at the height of what it holds.
+//
+// The `overflow: hidden` that went with that scroller is gone with it. It
+// clipped what the body scrolled, and a box sized by its own content has
+// nothing to clip; left in place it would be a scroll container that never
+// scrolls, which is the one arrangement that can hide content outright.
 .engineering--panel {
   gap: 0;
-  overflow: hidden;
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
   background-color: var(--edsb-surface-panel);
 }
@@ -121,12 +130,11 @@
 .engineering__body {
   @include layout.stack(var(--edsb-space-stack));
 
-  // As above: a scroller that is not a containing block clips nothing that was
-  // positioned out of the page inside it.
+  // As above: a containing block for what is positioned out of the page inside
+  // it, and no longer a scroller.
   position: relative;
   flex: 1;
   min-block-size: 0;
-  overflow-y: auto;
   padding: var(--edsb-space-xl);
 }
 
@@ -169,26 +177,24 @@
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: 0;
-    // Stretched rather than started, and given the height its parent has left:
-    // each column then scrolls inside itself. Under one shared scroller the
-    // attribute table — seventy rows on a weapon — pushed the material list off
-    // the bottom, so a Commander choosing a grade could not see what it cost
-    // while the controls that chose it were still on screen. The two halves of
-    // `DETAILS AND ENGINEERING` are read side by side; they now scroll that way
-    // too, and the rule between them runs the whole height (canvas 1c).
+    // Stretched, so the rule the canvas draws between the two halves runs the
+    // whole height of the taller of them. Wave 11 stretched them for a
+    // different reason — to give each its own scroller inside a bounded panel,
+    // because one shared scroller measured both halves against the taller and
+    // reaching the end of the attribute table carried the recipe controls off
+    // the top. 2026-08-27 took the scrollers and the bound away instead: each
+    // column is as tall as its own content, the row is as tall as the taller
+    // column, and a panel with no scroller in it cannot carry anything off
+    // anywhere (canvas 1c; `design/engineering-editor.md`, "Nothing here
+    // scrolls").
     align-items: stretch;
-    flex: 1;
-    min-block-size: 0;
   }
 
   .engineering:not(.engineering--layer) .engineering__choices,
   .engineering:not(.engineering--layer) .engineering__result {
+    // A containing block for what each column positions out of the page, and
+    // nothing else: neither column scrolls.
     position: relative;
-    min-block-size: 0;
-    overflow-y: auto;
-    // A column that reaches its end stops there rather than handing the scroll
-    // to the panel behind it, which would drag the other column away.
-    overscroll-behavior: contain;
   }
 
   // The canvas rules the two columns apart rather than spacing them apart.
