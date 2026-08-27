@@ -382,10 +382,19 @@ export class BuildLibraryPage {
     }
 
     const url = this.#router.serializeUrl(previous).split('#')[0] ?? '';
-    if (url === '' || url.startsWith(NAVIGATION_ROUTES.library)) {
+    if (url === '') {
       return fallback;
     }
-    return url.startsWith(NAVIGATION_ROUTES.build) && !hasBuild ? fallback : url;
+
+    // By whole first segment, never by prefix. `/builds` starts with `/build`,
+    // so a prefix test answers both questions for this screen's own address and
+    // reads whichever way the two tests happen to be ordered — a trap that goes
+    // off silently the day someone swaps the lines.
+    const root = `/${(url.split('?')[0] ?? '').split('/')[1] ?? ''}`;
+    if (root === NAVIGATION_ROUTES.library) {
+      return fallback;
+    }
+    return root === NAVIGATION_ROUTES.build && !hasBuild ? fallback : url;
   }
 
   /** Narrows the list. Changes no record, no order and nothing stored. */

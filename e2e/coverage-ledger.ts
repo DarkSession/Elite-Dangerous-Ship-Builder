@@ -617,6 +617,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the note is written with the build, and never enters a build link or a SLEF export',
       'two pages saving one named record are offered overwrite, keep both and cancel',
       'a save that writes nothing says so and keeps the layer open on what was typed',
+      'an answer to the conflict that writes nothing says so too, on the name typed before it',
     ],
     manualRecord: 'screen-reader',
   },

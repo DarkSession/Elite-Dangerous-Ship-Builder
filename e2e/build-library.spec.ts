@@ -62,22 +62,34 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
  * application decided. The quota is the only bound left on records since the
  * twenty-record limit was withdrawn on 2026-08-25 (FR-013).
  */
-async function fillStorage(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    // Coarse first, then finer, so what is left over is smaller than anything
-    // the application would write. A megabyte of headroom would leave the store
-    // full in name only.
-    for (const size of [64 * 1024, 1024, 64, 1]) {
-      const chunk = 'x'.repeat(size);
-      for (let index = 0; ; index += 1) {
-        try {
-          localStorage.setItem(`filler:${size}:${index}`, chunk);
-        } catch {
-          break;
-        }
+const FILL_STORAGE = (): void => {
+  // Coarse first, then finer, so what is left over is smaller than anything
+  // the application would write. A megabyte of headroom would leave the store
+  // full in name only.
+  for (const size of [64 * 1024, 1024, 64, 1]) {
+    const chunk = 'x'.repeat(size);
+    for (let index = 0; ; index += 1) {
+      try {
+        localStorage.setItem(`filler:${size}:${index}`, chunk);
+      } catch {
+        break;
       }
     }
-  });
+  }
+};
+
+async function fillStorage(page: Page): Promise<void> {
+  await page.addInitScript(FILL_STORAGE);
+}
+
+/**
+ * Fills the store on the page as it stands, without a reload.
+ *
+ * `addInitScript` runs on the next navigation, which is no use where the store
+ * has to go full *while* a layer is open and holding what a Commander typed.
+ */
+async function fillStorageNow(page: Page): Promise<void> {
+  await page.evaluate(FILL_STORAGE);
 }
 
 /** How many records this browser is holding, whatever their kind. */
@@ -661,6 +673,53 @@ test.describe('the build library', () => {
     // Neither version disappeared.
     expect(names).toContain('From the other page');
     expect(names).toContain('From this page');
+
+    await context.close();
+  });
+
+  test('reopens the save on what was typed when answering the conflict wrote nothing', async ({
+    browser,
+  }) => {
+    // The same journey as the question above, carried one step further: what a
+    // Commander sees when the answer is refused. It is the same length, and
+    // slow for the same reason.
+    test.slow();
+    const context = await browser.newContext();
+    const first = await context.newPage();
+    const second = await context.newPage();
+
+    await createBuild(first);
+    await saveActiveBuild(first, 'Shared build');
+    await reachShellLink(first, 'Open saved build');
+    await expect(first.getByText('Shared build').first()).toBeVisible();
+
+    // Both pages open the record before either saves, so both hold one
+    // baseline and the collision is between two deliberate saves (FR-012).
+    await second.goto('/builds');
+    await openRecordFromLibrary(second, 'Shared build');
+    await first.goto('/builds');
+    await openRecordFromLibrary(first, 'Shared build');
+
+    await saveActiveBuild(second, 'From the other page', 'overwrite');
+    await saveActiveBuild(first, 'From this page', 'overwrite');
+
+    const conflict = first.getByRole('dialog', { name: /changed in another tab/i });
+    await expect(conflict).toBeVisible();
+
+    // The store goes full with the question already on screen, so answering it
+    // is refused for the reason a save is refused. Keeping both versions writes
+    // a record, and there is no room to write one.
+    await fillStorageNow(first);
+    await conflict.getByRole('button', { name: 'Keep both versions' }).click();
+
+    // Closing over this is the one way an edit is lost without being reported:
+    // the build on screen is identical whether the answer landed or not.
+    const dialog = first.getByRole('dialog', { name: 'Save build' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(/could not be saved/i);
+    // What was typed before the conflict was raised, not the record's own name
+    // and not an empty field (FR-009).
+    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('From this page');
 
     await context.close();
   });

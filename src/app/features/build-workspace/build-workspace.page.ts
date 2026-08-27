@@ -529,7 +529,7 @@ export class BuildWorkspacePage {
     if (result?.kind === 'saved') {
       this.#lastRequest.set(null);
       this.#adoptSavedRecord(result.record.id, result.record.revisionId, held);
-    } else if (result !== null && result !== undefined && result.kind !== 'conflict') {
+    } else if (result !== null && result.kind !== 'conflict') {
       // Reopening resets the layer's drafts, so the attempt that was refused is
       // what it reopens on — the name and note the Commander typed before the
       // conflict, not the record's own (FR-009).
