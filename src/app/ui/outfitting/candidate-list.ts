@@ -126,7 +126,116 @@ export class CandidateList {
     // (module-replacement, the short-viewport release) — so delegating would
     // take the search field and the `FITTED HERE` block off screen to centre a
     // row, which is the opposite of what this is for.
-    list.scrollTop = row.offsetTop - list.offsetTop - (list.clientHeight - row.offsetHeight) / 2;
+    //
+    // Measured as two rects and a delta, which is the same arithmetic the rail
+    // below does. It was `row.offsetTop - list.offsetTop`, and those two are
+    // not in the same coordinate system: both scrollers are positioned, so they
+    // are the row's own `offsetParent` and `row.offsetTop` is already measured
+    // from the scroller — while `list.offsetTop` is the scroller's offset
+    // inside whatever is positioned above it. Subtracting the second undershot
+    // the centre by however far the box sat down the page, and the release of
+    // the workspace column moved that distance again (reported in review,
+    // 2026-08-27).
+    const listBox = list.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    // `clientTop` is the scroller's own block-start border, which stands
+    // between the box a rect measures from and the padding box `clientHeight`
+    // describes. It is zero on every scroller here today; subtracting it is
+    // what keeps that from being load-bearing the day one of them takes a rule.
+    list.scrollTop +=
+      rowBox.top - listBox.top - list.clientTop - (list.clientHeight - rowBox.height) / 2;
+  });
+
+  /**
+   * The family this manifest's own press last asked for.
+   *
+   * A plain field rather than a signal, deliberately: nothing renders from it
+   * and nothing should re-run because of it. It is set on the press and read
+   * once by the reveal that press causes — the store answers with a fresh
+   * family list either way, so the effect always runs and always spends it.
+   */
+  #pressedFamily: OutfittingFamilyId | null = null;
+
+  /**
+   * Brings the revealed family into the rail's own visible box.
+   *
+   * The pane already scrolls to the module in the mount; the rail did not move
+   * at all. It is bounded at the canvas's 470px, which holds about ten of the
+   * Almanac's seventy-seven families, so revealing the family of what is fitted
+   * could change every row in the pane while the rail went on showing the ten
+   * it happened to be scrolled to — the rows changed and nothing on screen said
+   * which family they now belonged to (Commander request 2026-08-27).
+   *
+   * **Who revealed it decides.** A family the application revealed is centred;
+   * a family the Commander pressed is left exactly where they pressed it,
+   * because moving the list under the press that made it is this same fault in
+   * the other direction. Asking instead whether the row is already in view
+   * looks like the same rule and is not: the rail is a 470px box of 44px rows,
+   * so the row at either edge is routinely clipped and pressing a clipped row
+   * is the ordinary case (corrected 2026-08-27).
+   *
+   * The in-view test survives below as restraint rather than as the rule — a
+   * revealed row already whole in the box has nothing to be brought into.
+   *
+   * The rail's own box is scrolled rather than `scrollIntoView`, for the reason
+   * the pane's is: that walks every scrollable ancestor up to the document, and
+   * at a short viewport the region deliberately stops bounding itself and the
+   * page is what scrolls — so delegating would take the search field and the
+   * panel head off screen to bring a family row into view.
+   */
+  readonly #revealFamily = afterRenderEffect(() => {
+    const revealed = this.revealedFamily();
+
+    // Spent before anything else can return, and whether or not it matches: a
+    // press answers for the reveal it caused and for no later one. Read after
+    // the early return, it was never spent under the accordion at all — which
+    // the compact layer always draws, and which the inline composition draws
+    // too wherever the bench is under this component's own rail threshold. So
+    // the id outlived the manifest it belonged to, and the first rail reveal
+    // after a resize past that threshold read a stale press. The family it
+    // named is the one `seedFamilies` seeds, so the rail silently did not
+    // scroll, which is the fault this effect exists to remove (reported in
+    // review, 2026-08-27).
+    const pressed = this.#pressedFamily;
+    this.#pressedFamily = null;
+
+    // The accordion draws its families and their rows in one scroller, so the
+    // fitted-row centring above already carries its revealed family with it.
+    // Only the rail lists the families in a box of their own.
+    if (this.manifest() !== 'rail' || revealed === null) {
+      return;
+    }
+
+    // The rule itself, and not a proxy for it: a family the Commander revealed
+    // is not scrolled to. Asking instead whether the row is already in view
+    // gets this wrong for exactly the row it matters for — the rail is a 470px
+    // box of 44px rows, so the row at either edge is routinely clipped, and
+    // pressing a clipped row would re-centre the list under the finger that
+    // pressed it (reported in review, 2026-08-27).
+    if (pressed === revealed.familyId) {
+      return;
+    }
+
+    const rail = this.#host.nativeElement.querySelector<HTMLElement>('.candidates__rail');
+    // Read off the pressed state the rail publishes rather than off the
+    // computed id, so what is scrolled to and what is marked are the same row
+    // by construction.
+    const row = rail?.querySelector<HTMLElement>('.family--rail[aria-pressed="true"]');
+    if (!rail || !row) {
+      return;
+    }
+
+    const railBox = rail.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    // Restraint rather than rule: what is already whole and in the box needs no
+    // bringing into it, and moving it would be motion with nothing to show for
+    // it.
+    if (rowBox.top >= railBox.top && rowBox.bottom <= railBox.bottom) {
+      return;
+    }
+
+    rail.scrollTop +=
+      rowBox.top - railBox.top - rail.clientTop - (rail.clientHeight - rowBox.height) / 2;
   });
 
   /** Resolved row text and figures, kept for as long as their records live. */
@@ -219,6 +328,18 @@ export class CandidateList {
 
   /** One family opened or closed. View state; it changes no build. */
   readonly familyToggled = output<OutfittingFamilyId>();
+
+  /**
+   * A Commander pressing a family control, in either manifest.
+   *
+   * It asks for the family exactly as the bare output did, and records that the
+   * ask was theirs. What the reveal rule does with that is above; what it must
+   * not do is scroll a list a Commander is already looking at.
+   */
+  revealFamily(familyId: OutfittingFamilyId): void {
+    this.#pressedFamily = familyId;
+    this.familyToggled.emit(familyId);
+  }
 
   /** The prefix every family control and region id is built from. */
   readonly #idBase = relationId('candidate-family');

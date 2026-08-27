@@ -72,9 +72,17 @@ build identity, plus direct undo/redo. That control is an **in-place edit**, exa
 draw it: the title _is_ the control, it turns into a field where it stands, and leaving the field
 confirms it. Neither canvas draws a labelled field pair, a dialog or a row of Save and Cancel
 controls, so none of them exists (wave 4); export, save and help
-remain owned composition actions. Mounts anatomy may show top and bottom together. Ledger, manifest
-and center regions may scroll internally; any wide fact table has a labeled overflow container. The
-document itself never scrolls horizontally.
+remain owned composition actions. Mounts anatomy may show top and bottom together. The ledger and the
+manifest may scroll internally; any wide fact table has a labeled overflow container. The document
+itself never scrolls horizontally.
+
+**Amended 2026-08-27 (Commander request) — the centre column is not one of them.** The details and
+engineering panel expands to the whole of what it holds and the centre column releases to carry it,
+so the page is what scrolls while a mount is selected, exactly as it already does while an anatomy
+dashboard is open and as it does at every short viewport. The ledger keeps its own scroller beside it
+and the manifest keeps its own inside it, because a 478-choice list is the one thing here that would
+otherwise run the page down two hundred rows (`design/outfitting-workspace.md`, "a bench is not
+bounded by the column either").
 
 ## Tablet interpolation
 

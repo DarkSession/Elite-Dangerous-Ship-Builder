@@ -939,3 +939,26 @@ installed, per the engine-coverage note at the head of this document.
 - WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, stated with the
   exclusion wherever conformance is claimed.
 - Nothing user-facing that `design/canvas-contract.md` does not sanction.
+
+## Phase 10: The capacitor's capacity follows feature 005's unit, 2026-08-27
+
+Feature 005's distributor table and this block state the same quantity — the WEP capacitor's stored
+pool — and on 2026-08-27 the owner ruled that it is written in the game's unit, `MW`, rather than the
+package's `MJ` (`specs/005-power-and-heat/spec.md`, FR-007). One quantity written in two units across
+one workspace reads as two quantities, so this block follows rather than ruling separately. Nothing
+about any figure changes.
+
+- [x] T060 Write `CAPACITY` in `MW`, leaving `DRAW` and `RECHARGE` in the package's `MJ/s` — the
+      units argued over in `contracts/capacitor-endurance.md` and settled for the package. The
+      capacity is the one row that takes neither the package's unit nor the canvas's label but the
+      game's, and it keeps the two decimal places it already had.
+      _`offence.format.megajoules` becomes `offence.format.megawatts`; it had this one call site._
+- [x] T061 Record it in `contracts/capacitor-endurance.md` beside the existing units paragraph, and
+      correct the three living documents that state the old unit as fact: `data-model.md`,
+      `design/offence-profile.md` and `design/canvas-contract.md`'s review note 6, plus the
+      formatter lists in `design/screen-inventory.md` and `quickstart.md`. The bar rule is untouched
+      — a pool written `MW` is still not a rate and still measures against nothing on this screen.
+- [x] T062 [P] Cover it in both places: `offence-analysis.spec.ts` asserts the three units by
+      pattern rather than by substring, and `e2e/offence-profile.spec.ts` asserts that `MW` appears
+      exactly once in the block — the row that is meant to have it, and no rate that quietly
+      acquires it.

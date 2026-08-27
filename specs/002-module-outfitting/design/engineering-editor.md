@@ -41,13 +41,42 @@ do not mutate the active build until confirmed.
   bar rather than flush against its top; that is the whole price, and it is paid against the bar's
   own gradient.
 
-- **Each half scrolls in its own column. Ruled 2026-08-23 (wave 11, Commander request).** Side by
+- **Each half scrolls in its own column. Ruled 2026-08-23 (wave 11, Commander request), and
+  superseded 2026-08-27 — see "Nothing here scrolls" below.** Side by
   side, one shared scroller still measured both halves against the taller of them: the attribute
   table set the height, so reaching its end carried the recipe controls off the top with it. The
   halves are read side by side and now scroll
   that way, each bounded by the panel rather than by the other, and the rule the canvas draws between
   them runs the whole height. Stacked, the two halves are one column and one scroller — which is
   what the compact canvas draws, not a fault to correct.
+- **Nothing here scrolls. Ruled 2026-08-27 (Commander request), superseding both rulings above.**
+  The panel inherited three nested boxes: a workspace column bounded to the screen, a panel bounded
+  to its share of that column's bench, and — after wave 11 — a scroller inside each of the panel's
+  two halves. What a Commander was actually reading was the innermost of the three. A weapon
+  publishes around seventy attribute rows and the right half showed four of them at 900px, with the
+  recipe beside it in a second short window; two short windows side by side are not the comparison
+  the two columns were drawn for, and giving each its own bar did not make either of them taller.
+
+  So none of the three bounds is left in the inline placement. Each half is as tall as its content,
+  the panel is as tall as the taller half, the workspace's middle column releases to hold it, and the
+  page is what scrolls. This is not a new mechanism: the anatomy region's dashboards already release
+  that column for exactly this reason, and a short viewport already releases the whole workspace the
+  same way (`outfitting-workspace.md`, "a detail panel is not bounded by the column"). The rule the
+  canvas draws between the two halves still runs their whole height — there is simply more of it.
+
+  Wave 11's diagnosis stands and is what makes this safe: its fault was one shared scroller measuring
+  both halves against the taller of them. A panel with no scroller at all cannot do that either, and
+  the recipe controls are no longer carried anywhere by the table beside them, because nothing moves
+  them.
+
+  **The attribute table keeps its own horizontal scroll.** It is a labelled wide fact table and that
+  is the one internal scroll the responsive rules allow; it is across, not down, and it is what keeps
+  the document from scrolling horizontally.
+
+  **The full-screen composition is untouched.** It owns the whole viewport, has no page to grow into,
+  and already draws the two halves as one column of plates; the layer around it is what scrolls, as
+  every full-height layer in the application does.
+
 - **The two columns are canvas 1c's placement only. Corrected 2026-08-26.** The arrangement above was
   written against the container's width alone, so a wide but short viewport — a phone held sideways,
   or any window at 400% zoom — drew it inside canvas 1d's full-height screen as well. That screen is
@@ -202,13 +231,13 @@ design").** The plates above were built and the drawing inside them was not:
 
 ## Operations
 
-| Commander action                   | Required result                                                                                                                                                                                                                                       |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Apply/replace blueprint and grade  | One package operation at explicit quality 1; optional selected effect included; one history step.                                                                                                                                                     |
-| Add/replace/remove only effect     | Released operation preserves blueprint/grade, fixed identity and base modifiers while recomputing effect-dependent stats; one step.                                                                                                                   |
-| Clear ordinary engineering         | Selecting the blueprint list's `None — stock module` option and applying. Dispatches `clearEngineering`; removes blueprint/effect together; follows package loss of Mercenary identity; one step, one history frame.                                  |
-| Cancel/revert draft                | Layer composition only. Active build and history unchanged. Inline there is no draft: undo is the route back.                                                                                                                                         |
-| Return a purchase to its own grade | Dispatches `restorePurchase`, which the store performs as `setPreEngineeredVariant`. A bespoke recipe's table starts above the purchase, so `applyBlueprint` refuses that grade outright — coming back down is the article again, not a job (wave 6). |
+| Commander action                   | Required result                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Apply/replace blueprint and grade  | One package operation at explicit quality 1; optional selected effect included; one history step.                                                                                                                                                                                                                   |
+| Add/replace/remove only effect     | Released operation preserves blueprint/grade, fixed identity and base modifiers while recomputing effect-dependent stats; one step.                                                                                                                                                                                 |
+| Clear ordinary engineering         | Selecting the blueprint list's `None — stock module` option and applying. Dispatches `clearEngineering`; removes blueprint/effect together; follows package loss of Mercenary identity; one step, one history frame.                                                                                                |
+| Cancel/revert draft                | Layer composition only. Active build and history unchanged. Inline there is no draft: undo is the route back.                                                                                                                                                                                                       |
+| Return a purchase to its own grade | Dispatches `restorePurchase`, performed as `setPreEngineeredVariant` followed by the mount's power carry, for the reason a variant fit carries it. A bespoke recipe's table starts above the purchase, so `applyBlueprint` refuses that grade outright — coming back down is the article again, not a job (wave 6). |
 
 The editor calls the installed package's structured `setExperimentalEffect()` for fixed-reward
 effect-only edits. It never merges raw modifiers locally. `updated`, `unchanged` and `unsupported`

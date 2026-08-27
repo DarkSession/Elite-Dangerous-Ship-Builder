@@ -126,6 +126,174 @@ test.describe('module families', () => {
     expect(await revealedRows(page).count()).toBeGreaterThan(0);
   });
 
+  test('brings the revealed family into the rail, and leaves a pressed one alone', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await selectMount(page, FITTED_MOUNT);
+    await openChooser(page);
+
+    if ((await manifestOf(page)) !== 'rail') {
+      // The accordion draws its families and their rows in one scroller, so the
+      // fitted row being on screen already carries its family with it. Only the
+      // rail lists the families in a box of their own, which is the box this
+      // rule is about (`design/module-replacement.md`, "The rail scrolls to the
+      // family it was told to select").
+      return;
+    }
+
+    const rail = page.locator('.candidates__rail');
+    const selected = page.locator('.family--rail[aria-pressed="true"]');
+    await expect(selected).toHaveCount(1);
+
+    // The rail is bounded at the canvas's 470px and the Almanac publishes
+    // seventy-seven families, so the revealed one can be well past the fold.
+    // Wherever it landed, it is inside the box a Commander is reading
+    // (FR-021, SC-007).
+    const railBox = (await rail.boundingBox())!;
+    const selectedBox = (await selected.boundingBox())!;
+    expect(selectedBox.y).toBeGreaterThanOrEqual(railBox.y - 1);
+    expect(selectedBox.y + selectedBox.height).toBeLessThanOrEqual(railBox.y + railBox.height + 1);
+
+    // And a family the Commander reveals is left where they pressed it. The row
+    // has to be one the rail would otherwise scroll to, or the restraint that
+    // leaves an already-visible row alone answers first and the press is never
+    // weighed — a test that pressed a row whole in the box would pass with the
+    // press tracking deleted outright.
+    const rows = page.locator('.family--rail');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(1);
+
+    let clipped: { index: number; offset: number } | null = null;
+    for (let index = 0; index < count; index += 1) {
+      const box = await rows.nth(index).boundingBox();
+      if (box === null) {
+        continue;
+      }
+      if (box.y + box.height > railBox.y + railBox.height) {
+        clipped = { index, offset: box.y - railBox.y };
+        break;
+      }
+    }
+    expect(clipped).not.toBeNull();
+
+    // Dispatched rather than clicked: Playwright scrolls a target into view
+    // before pressing it, which would move the rail before the rule under test
+    // ever ran.
+    await rows.nth(clipped!.index).evaluate((node: HTMLElement) => node.click());
+    await expect(rows.nth(clipped!.index)).toHaveAttribute('aria-pressed', 'true');
+
+    // Measured inside the rail rather than in the window. Revealing a family
+    // redraws the pane beside it, which changes the panel's height and reflows
+    // everything above it — so a viewport figure moves for reasons that have
+    // nothing to do with the rail scrolling.
+    const railAfter = (await rail.boundingBox())!;
+    const after = (await rows.nth(clipped!.index).boundingBox())!;
+    expect(Math.abs(after.y - railAfter.y - clipped!.offset)).toBeLessThanOrEqual(1);
+  });
+
+  test('orders a family\u2019s rows by class, then by what they cost', async ({ page }) => {
+    await openStockBuild(page);
+    // A medium mount, because it takes more than one class: a small hardpoint
+    // offers class 1 and nothing else, and a family drawn there could not show
+    // the class key doing any work.
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    // The compact composition reveals no family on a mount holding nothing, so
+    // the first one is revealed here to have rows to read. Which family it is
+    // does not matter — the order is a rule about every family.
+    if ((await revealedRows(page).count()) === 0) {
+      await familyControls(page).first().click();
+    }
+    await expect(revealedRows(page).first()).toBeVisible();
+
+    // Read off the drawn rows rather than off the state: what the contract
+    // fixes is the order a Commander sees, and both figures are on the row
+    // (FR-005, SC-006).
+    const rows = await revealedRows(page).evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        code: (node.querySelector('.candidate__class')?.textContent ?? '').trim(),
+        cost: (node.querySelector('.candidate__cost')?.textContent ?? '').trim(),
+      })),
+    );
+
+    expect(rows.length).toBeGreaterThan(1);
+
+    /** The leading digits of a cell, or `null` where it states no figure. */
+    const figure = (text: string): number | null => {
+      const found = /\d[\d,.\u00a0\u202f ]*/u.exec(text);
+      if (found === null) {
+        return null;
+      }
+      const digits = found[0].replace(/\D/gu, '');
+      return digits.length === 0 ? null : Number(digits);
+    };
+
+    let classesFell = false;
+    let pricesFell = false;
+
+    for (let index = 1; index < rows.length; index += 1) {
+      const previousClass = figure(rows[index - 1]!.code);
+      const currentClass = figure(rows[index]!.code);
+      if (previousClass === null || currentClass === null) {
+        continue;
+      }
+
+      expect(previousClass).toBeGreaterThanOrEqual(currentClass);
+      if (previousClass !== currentClass) {
+        classesFell = true;
+        continue;
+      }
+
+      // Same class: the price falls, and a row the package publishes no price
+      // for never stands above one it prices. The cost cell can carry a second
+      // Merc Coin line under the credits, so only the first figure is read.
+      const previousCost = figure(rows[index - 1]!.cost);
+      const currentCost = figure(rows[index]!.cost);
+      if (previousCost === null) {
+        expect(currentCost).toBeNull();
+        continue;
+      }
+      if (currentCost !== null && previousCost !== currentCost) {
+        expect(previousCost).toBeGreaterThan(currentCost);
+        pricesFell = true;
+      }
+    }
+
+    // Neither key is asserted vacuously: this family really does hold more than
+    // one class, and more than one price inside a class.
+    expect(classesFell).toBe(true);
+    expect(pricesFell).toBe(true);
+  });
+
+  test('scrolls the manifest inside its own box rather than over the panel below', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await selectMount(page, FITTED_MOUNT);
+    await openChooser(page);
+
+    // The measurement that was missing when this went wrong. A `fieldset` hands
+    // its anonymous content box a height only when it has a definite one, and
+    // releasing the workspace column turned the panel's definite share into a
+    // maximum — so the scroller inside grew to its content instead of scrolling,
+    // and with the bench no longer clipping, the rows were painted over the
+    // engineering panel below, where they answered presses meant for a family
+    // control (`design/module-replacement.md`, "The fieldset needs a height of
+    // its own"). Nothing about the rows says so; only the boxes do.
+    const spill = await page.locator('.candidates').evaluate((node) => ({
+      fieldset: node.scrollHeight - node.clientHeight,
+      list: (() => {
+        const host = node.closest('edsb-candidate-list') as HTMLElement;
+        return host.scrollHeight - host.clientHeight;
+      })(),
+    }));
+
+    expect(spill.fieldset).toBeLessThanOrEqual(1);
+    expect(spill.list).toBeLessThanOrEqual(1);
+  });
+
   test('reveals on a tap, changing nothing about the build', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, FITTED_MOUNT);

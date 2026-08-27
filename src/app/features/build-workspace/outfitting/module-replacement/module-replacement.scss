@@ -29,23 +29,29 @@
 // How short this panel may get before it stops being one.
 //
 // Canvas 1c draws the workspace over a `min-height: 880px`, which leaves the
-// bench 574px under the plates and gives this panel 292 of it: the head, the
-// manifest's column rule and five rows. Sized by its share of the bench alone
-// the panel followed the window down instead — four rows at 900px, two at 700 —
-// which is a glimpse of a list rather than a list (Commander request
-// 2026-08-26).
+// bench 574px under the plates and gives this panel 292 of it. Sized by its
+// share of the bench alone the panel followed the window down instead — four
+// rows at 900px, two at 700 — which is a glimpse of a list rather than a list
+// (Commander request 2026-08-26). The floor itself was raised from five rows to
+// eight on 2026-08-27, and the token carries why.
 //
-// Measured against the editor's own floor, so the two can never ask for more
-// than the bench holds: the bench is what the column bounds and it clips what
-// overflows it, so a floor that did not leave the editor its own would put a
-// panel where nothing can reach it. Asked of the workspace's container, because
-// this is the arrangement that shares a bench — the compact one is a layer with
-// the screen to itself, and the bench releases it on a short viewport.
+// **The guard against the editor's floor is gone with the bench that needed
+// it.** It subtracted the editor's floor from the bench's height so the two
+// could never ask for more than the box they shared. There is no shared box:
+// the workspace column releases while a mount is selected and the page carries
+// both panels, so the editor is no longer waiting on what this one leaves
+// (`design/outfitting-workspace.md`, "a bench is not bounded by the column
+// either"). What is left is a floor that cannot exceed the window it is in —
+// `min-block-size` beats `max-block-size` in CSS, so a floor stated on its own
+// would stand this panel past the foot of a short screen.
+//
+// Asked of the workspace's container, because this is the inline arrangement:
+// the compact one is a layer with the screen to itself.
 @container outfitting (min-width: 47rem) {
   :host {
     min-block-size: min(
       var(--edsb-layout-fitting-panel),
-      calc(100% - var(--edsb-layout-editor-panel) - var(--edsb-space-stack))
+      calc(100svh - var(--edsb-layout-bar-height))
     );
   }
 }

@@ -32,6 +32,7 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import type { BuildEditIntent, BuildEditResult, EditFailure } from './build-edit-intent';
+import { carryPower, powerStateOf } from './power-carry';
 import {
   candidateMembership,
   resolveChoice,
@@ -600,6 +601,11 @@ export class OutfittingStore {
           return null;
         }
 
+        // Read before the fit, applied after it, and inside the same operation:
+        // the package documents a fit as a fresh mount and says to set these
+        // again where a screen keeps them across a swap (`carryPower`).
+        const carried = powerStateOf(current.fittedModuleAt(intent.slotKey));
+
         // A stock fit and a variant fit are different package operations, and
         // the key says which one the Commander pressed. A mismatch between the
         // two is a refusal, not a guess.
@@ -607,12 +613,14 @@ export class OutfittingStore {
           return choice.kind === 'stock'
             ? (candidate) => {
                 candidate.setModule(intent.slotKey, choice.module);
+                carryPower(candidate, intent.slotKey, carried);
               }
             : null;
         }
         return choice.kind === 'variant'
           ? (candidate) => {
               candidate.setPreEngineeredVariant(intent.slotKey, choice.variant);
+              carryPower(candidate, intent.slotKey, carried);
             }
           : null;
       }

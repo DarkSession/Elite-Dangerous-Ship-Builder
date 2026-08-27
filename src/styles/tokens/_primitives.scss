@@ -538,22 +538,29 @@
   // text size instead of trapping more rows in the same pixels at 200%.
   --edsb-measure-material-list: 11.5rem;
 
-  // What each of the bench's two panels needs before it is a panel rather than
-  // a strip.
+  // How short each of the bench's two panels may get before it stops being one.
   //
   // Canvas 1c draws the workspace over a `min-height: 880px`, which leaves the
   // bench 574px under the plates and divides it into a 292px fitting panel and
-  // a 266px editor. The first of those is the head, the manifest's column rule
-  // and five rows — the point at which the list is a list rather than a
-  // glimpse. Held to a ratio alone the panel followed the window down instead:
-  // at 900px it drew four rows and at 700px it drew two (Commander request
-  // 2026-08-26).
+  // a 266px editor. Held to that ratio alone the panel followed the window down
+  // instead: at 900px it drew four rows and at 700px it drew two, which is a
+  // glimpse of a list rather than a list (Commander request 2026-08-26). So
+  // each states a floor.
   //
+  // **Raised 2026-08-27: 18rem to 26rem.** The canvas's own 292px is the head,
+  // the manifest's column rule and five rows, and on the screens this is drawn
+  // on it was the floor doing the work rather than the share — five rows of a
+  // 478-choice manifest is a list a Commander pages through rather than reads.
+  // 26rem is eight rows over the same head, rule and foot, and it is affordable
+  // now because the editor below no longer takes its height out of the same
+  // fixed bench: the workspace column releases while a mount is selected and
+  // the page carries what will not fit (Commander request 2026-08-27;
+  // `design/outfitting-workspace.md`, "Five rows is still a glimpse").
+  --edsb-measure-fitting-panel: 26rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It
-  // is what the fitting panel's floor is measured against, so the two can never
-  // add up to more than the bench they are in.
-  --edsb-measure-fitting-panel: 18rem;
+  // is now only a floor — nothing measures a share against it — and it is what
+  // keeps an article with nothing to engineer a panel rather than a strip.
   --edsb-measure-editor-panel: 10rem;
 
   // One of canvas 1d's six key readings, at the narrowest it may be drawn.

@@ -152,7 +152,8 @@ and every one of its mounts in the empty ink, and nothing stands beneath it but 
 ### 7. Read endurance at an allocation
 
 `WEAPON CAPACITOR` draws four rows in the canvases' own order — sustained draw, recharge, time to
-drain, then `WEP CAP` capacity — in MJ/s and MJ, under the WEP allocation they were read at. Draw and
+drain, then `WEP CAP` capacity — the first two in MJ/s and the capacity in the game's own `MW`
+(ruled 2026-08-27), under the WEP allocation they were read at. Draw and
 recharge carry a bar each, because those two share one scale; the other two carry none. Changing WEP
 in the `POWER` mode and returning to `OFFENCE` moves recharge and time to drain and leaves capacity
 alone. The capacitor result does not change when the dashboard's hardpoint state changes.
@@ -184,7 +185,7 @@ pnpm exec playwright test offence-profile.spec.ts ui-preview.spec.ts
   with no document-level horizontal scroll.
 - The target-range field is a control at feature 011's target size, operable by pointer, touch and
   keyboard, announcing the distance in words.
-- Owned strings resolve from message keys; damage rates, MJ, MJ/s, seconds, metres, milliradians,
+- Owned strings resolve from message keys; damage rates, MW, MJ/s, seconds, metres, milliradians,
   percentages, counts and ratings use active-locale formatters; a German catalogue changes no package
   number.
 - An RTL root keeps every value with its label.

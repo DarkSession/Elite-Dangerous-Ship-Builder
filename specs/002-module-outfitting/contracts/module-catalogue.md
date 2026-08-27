@@ -52,11 +52,21 @@ package's own text.
 Families appear in the order the package's family declaration gives them, and there is no grouping
 level above them. Within a family, arrange by:
 
-1. displayed package module name using active-locale `Intl.Collator` with base sensitivity;
-2. numeric class descending;
-3. package `ModuleRating` order ascending (`A` through `I`);
-4. stock before variants;
-5. package stock ordinal, then variant ordinal.
+1. numeric class descending;
+2. package article price descending, with a choice the package publishes no price for after every
+   priced choice of the same class;
+3. displayed package module name using active-locale `Intl.Collator` with base sensitivity;
+4. package `ModuleRating` order ascending (`A` through `I`);
+5. stock before variants;
+6. package stock ordinal, then variant ordinal.
+
+**Amended 2026-08-27 (Commander request): class and price lead, and the name is a tie-break.** The
+price is `CandidateFacts.cost` — the package's own catalogue figure for that exact article, and the
+same value the row's `COST` cell states. It is read, never computed: a Merc Coin price is not
+converted into it and not weighed against it, so an article the package prices only in coin has no
+credit price and takes the unpriced place rather than sorting as though it were free (FR-003). The
+remaining four keys are unchanged and still make the order total, so the same package and the same
+locale produce the same list every time.
 
 The rating comparator is exhaustive over the imported package type. A newly introduced value fails
 type/tests and requires package review rather than being silently placed. `OutfittingFamilyId` is checked

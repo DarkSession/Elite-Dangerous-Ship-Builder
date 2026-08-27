@@ -207,6 +207,158 @@ describe('outfitting store - fitting', () => {
     expect(active.loadout()?.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering).toBeUndefined();
   });
 
+  it('carries the mount\u2019s power group and off state into a replacement', () => {
+    store.select(FIXTURE_SLOTS.thrusters);
+
+    // A Commander's two decisions about this mount, made through the store so
+    // they are exactly the edits the power controls dispatch.
+    store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.thrusters, priority: 3 });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.thrusters, enabled: false });
+
+    const fitted = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.symbol;
+    const choice = store
+      .membership()!
+      .choices.find(
+        (candidate) => candidate.kind === 'stock' && candidate.module.symbol !== fitted,
+      )!;
+    const revision = active.revision();
+
+    const result = store.dispatch({
+      kind: 'fitStock',
+      slotKey: FIXTURE_SLOTS.thrusters,
+      choiceKey: choice.key,
+    });
+
+    // The package resets all three of `On`, `Priority` and `Health` on a fit
+    // and says to set them again where a screen keeps a group across a swap.
+    // This one does: the group is the mount's, not the article's
+    // (FR-015, Commander request 2026-08-27).
+    expect(result.kind).toBe('committed');
+    const swapped = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(swapped.symbol).toBe(choice.module.symbol);
+    expect(swapped.priority).toBe(3);
+    expect(swapped.on).toBe(false);
+
+    // And it is one decision, not three: the carry rides inside the fit's own
+    // operation, so one undo puts the whole swap back.
+    expect(active.revision()).toBe(revision + 1);
+    store.undo();
+    expect(active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.symbol).toBe(fitted);
+  });
+
+  it('carries the mount\u2019s power state onto a pre-engineered variant too', () => {
+    // `setPreEngineeredVariant` is the other package operation a fit can be,
+    // and it resets the mount exactly as `setModule` does. Same carry, same
+    // code path — asserted because "same code path" is a claim about today.
+    store.select(FIXTURE_SLOTS.frameShiftDrive);
+    store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.frameShiftDrive, priority: 2 });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.frameShiftDrive, enabled: false });
+
+    const variant = store.membership()!.choices.find((candidate) => candidate.kind === 'variant');
+    expect(variant).toBeDefined();
+
+    const result = store.dispatch({
+      kind: 'fitVariant',
+      slotKey: FIXTURE_SLOTS.frameShiftDrive,
+      choiceKey: variant!.key,
+    });
+
+    expect(result.kind).toBe('committed');
+    const fitted = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.frameShiftDrive)!;
+    expect(fitted.preEngineeredVariant).not.toBeNull();
+    expect(fitted.priority).toBe(2);
+    expect(fitted.on).toBe(false);
+  });
+
+  it('keeps the mount\u2019s power state when a purchase is put back', () => {
+    // `restorePurchase` re-applies the article's own variant, which is the same
+    // package call a variant fit makes and resets the mount the same way. It is
+    // reached from the engineering panel rather than the chooser, and a
+    // Commander does not think of it as replacing anything — which is exactly
+    // why losing the group there would be harder to notice, not easier.
+    store.select(FIXTURE_SLOTS.frameShiftDrive);
+    const variant = store.membership()!.choices.find((candidate) => candidate.kind === 'variant');
+    expect(variant).toBeDefined();
+    store.dispatch({
+      kind: 'fitVariant',
+      slotKey: FIXTURE_SLOTS.frameShiftDrive,
+      choiceKey: variant!.key,
+    });
+
+    store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.frameShiftDrive, priority: 4 });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.frameShiftDrive, enabled: false });
+
+    store.dispatch({ kind: 'restorePurchase', slotKey: FIXTURE_SLOTS.frameShiftDrive });
+
+    const fitted = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.frameShiftDrive)!;
+    expect(fitted.preEngineeredVariant).not.toBeNull();
+    expect(fitted.priority).toBe(4);
+    expect(fitted.on).toBe(false);
+  });
+
+  it('carries a stated on-state as readily as a stated off one', () => {
+    // Switched off and on again, which is how a mount comes to state `On: true`
+    // without an import — every journal and SLEF loadout states it on every
+    // module, so this is the ordinary case rather than the odd one.
+    store.select(FIXTURE_SLOTS.thrusters);
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.thrusters, enabled: false });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.thrusters, enabled: true });
+
+    const before = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(before.on).toBe(true);
+
+    const choice = store
+      .membership()!
+      .choices.find(
+        (candidate) => candidate.kind === 'stock' && candidate.module.symbol !== before.symbol,
+      )!;
+    store.dispatch({
+      kind: 'fitStock',
+      slotKey: FIXTURE_SLOTS.thrusters,
+      choiceKey: choice.key,
+    });
+
+    // Writing it back preserves a field the build had; it does not add one.
+    // Carrying only an explicit `false` turned a stated `true` into an absence,
+    // so an imported build exported one field fewer than it was read from
+    // (FR-015; reported in review 2026-08-27).
+    expect(active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.on).toBe(true);
+  });
+
+  it('writes no power field a replaced module did not carry', () => {
+    store.select(FIXTURE_SLOTS.thrusters);
+
+    // A mount that really is occupied, and a module that really does say
+    // nothing about its power. Both matter: on an empty mount every assertion
+    // below reads `undefined` off a `null`, and on a choice that is already
+    // fitted the transaction returns `unchanged` and edits nothing — either way
+    // the test would pass without the rule holding.
+    const before = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(before.priority).toBeUndefined();
+    expect(before.on).toBeUndefined();
+
+    const choice = store
+      .membership()!
+      .choices.find(
+        (candidate) => candidate.kind === 'stock' && candidate.module.symbol !== before.symbol,
+      )!;
+    const result = store.dispatch({
+      kind: 'fitStock',
+      slotKey: FIXTURE_SLOTS.thrusters,
+      choiceKey: choice.key,
+    });
+
+    // An unstated group is group 1 and an unstated `on` is on, both answered by
+    // the package. Carrying them across as written values would put fields in
+    // the build that no Commander set (FR-015).
+    expect(result.kind).toBe('committed');
+    const swapped = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(swapped.symbol).toBe(choice.module.symbol);
+    expect(swapped.symbol).not.toBe(before.symbol);
+    expect(swapped.priority).toBeUndefined();
+    expect(swapped.on).toBeUndefined();
+  });
+
   it('fits a pre-engineered variant through the package own operation', () => {
     store.select(FIXTURE_SLOTS.frameShiftDrive);
     const variant = store.membership()!.choices.find((candidate) => candidate.kind === 'variant');

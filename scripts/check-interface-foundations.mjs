@@ -1485,7 +1485,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'WEP is the in-game abbreviation on the pip display and is not translated.',
     'power.unit.megawatts': 'The SI symbol for the megawatt, identical in German.',
     'power.format.megawatts': 'A value and the SI symbol for the megawatt, identical in German.',
-    'power.format.megajoules': 'A value and the SI symbol for the megajoule, identical in German.',
     'power.format.megajoules-per-second':
       'A value and the SI symbol for megajoules per second, identical in German.',
     'format.seconds': 'A value and the SI symbol for the second, identical in German.',
@@ -1516,8 +1515,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A value and the in-game abbreviation for hull points, used untranslated in the German community.',
     'defence.rail.megajoules': 'The SI symbol for the megajoule, identical in German.',
     'offence.format.seconds': 'A value and the SI symbol for the second, identical in German.',
-    'offence.format.megajoules':
-      'A value and the SI symbol for the megajoule, identical in German.',
+    'offence.format.megawatts': 'A value and the SI symbol for the megawatt, identical in German.',
     'offence.format.megajoules-per-second':
       'A value and the SI symbol for megajoules per second, identical in German.',
     'offence.format.milliradians':

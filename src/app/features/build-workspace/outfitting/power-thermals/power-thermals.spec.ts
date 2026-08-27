@@ -566,7 +566,11 @@ describe('PowerThermals', () => {
       const systems = element.querySelector('[data-bank="systems"]');
       const capacity = systems?.querySelector('.distributor__cell--capacity [data-bidi-isolate]');
       const rated = systems?.querySelector('.distributor__cell--rated [data-bidi-isolate]');
-      expect(capacity?.textContent?.trim()).toBe(`${metrics?.systems.capacity.toFixed(1)} MJ`);
+      // `MW`, not the `MJ` a stored pool is actually in: the unit is the one
+      // the game's own outfitting panel writes after a bank's capacity, so the
+      // two panels state one figure rather than appearing to state two (ruled
+      // 2026-08-27). The number is the package's, untouched.
+      expect(capacity?.textContent?.trim()).toBe(`${metrics?.systems.capacity.toFixed(1)} MW`);
       expect(rated?.textContent?.trim()).toBe(`${metrics?.systems.ratedRecharge.toFixed(1)} MJ/s`);
     });
 

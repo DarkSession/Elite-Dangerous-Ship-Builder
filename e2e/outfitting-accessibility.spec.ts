@@ -369,6 +369,20 @@ test.describe('the conditions that break layouts', () => {
   test('passes an accessibility scan with the editor open in every layer', async ({
     page,
   }, testInfo) => {
+    // Two scans, and both got dearer on 2026-08-27. `DETAILS AND ENGINEERING`
+    // no longer scrolls inside itself: it expands, the workspace column
+    // releases and the page carries it, so there is more rendered tree for axe
+    // to walk and fewer rows the manifest's `content-visibility` can skip.
+    // Measured on one machine at 1112x834, idle, twice each: 6.8s before the
+    // change and 10.3s after. That is the test being slow because of how much
+    // it does, which is the case `playwright.config.ts` says extends its own
+    // budget rather than the one it says to leave alone — and unlike the
+    // sweeps, which add `SWEEP_BUDGET_MS` per state, this one scans twice
+    // through `expectNoAccessibilityViolations` and was extending nothing at
+    // all. 20 seconds is the allowance `help-and-licences` takes for the same
+    // shape of test.
+    testInfo.setTimeout(testInfo.timeout + 20_000);
+
     await openStockBuild(page);
     await selectMount(page, 'FrameShiftDrive');
     await openChooser(page);

@@ -12,6 +12,7 @@ import {
 import type { BuildEditIntent } from './build-edit-intent';
 import { engineeringView, type EngineeringView } from './engineering-view';
 import { fittedModuleView, type ModuleTextResolver } from './fitted-module-view';
+import { carryPower, powerStateOf } from './power-carry';
 
 /**
  * The Commander choosing the package's explicit no-blueprint entry.
@@ -621,9 +622,20 @@ export function engineeringOperation(
 
     case 'restorePurchase':
       return (candidate) => {
-        const variant = candidate.fittedModuleAt(intent.slotKey)?.preEngineeredVariant;
+        const fitted = candidate.fittedModuleAt(intent.slotKey);
+        const variant = fitted?.preEngineeredVariant;
         if (variant != null) {
+          // The same package call a variant fit makes, and it resets the mount
+          // the same way: `On`, `Priority` and `Health` go back to a fresh
+          // mount's. So the same carry, for the same reason — a Commander who
+          // put this article in group 3 and switched it off decided that about
+          // the mount, and putting the purchase back is not a decision to undo
+          // it. Reached from the engineering panel rather than the chooser,
+          // which is why losing it here would be the harder of the two to
+          // notice (reported in review, 2026-08-27; FR-015).
+          const carried = powerStateOf(fitted);
           candidate.setPreEngineeredVariant(intent.slotKey, variant);
+          carryPower(candidate, intent.slotKey, carried);
         }
       };
 

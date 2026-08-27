@@ -78,6 +78,34 @@ and 1560, 308 at 1920, 320 at 2560.
 hides every other, and returns before the accordion branch it replaced. Exactly one family is
 selected at all times, and the pane is never empty.
 
+**The rail scrolls to the family it was told to select. Ruled 2026-08-27 (Commander request).** The
+pane already scrolled: opening a fitted mount brought the module in the mount to the middle of the
+rows. The rail did not. Its own `max-height: 470px` holds about ten of the seventy-seven families, so
+selecting `Shield Generators` for a mount that carries one changed every row in the pane while the
+rail went on showing `Armour` through `Bulkheads` — the answer was on screen and the question was
+not, and the seam between them was the one control that says which family is being read.
+
+So the rail brings the revealed row into its own visible box — and the rule has two halves, because
+_who_ revealed it decides. **A family the application revealed is centred; a family the Commander
+pressed is left exactly where they pressed it.** Centring on every selection would move the list
+under the press that made it, which is the fault above drawn in the other direction.
+
+**Corrected 2026-08-27: the rule is about who, not about where.** It was first written as "scroll it
+unless the row is already in the box", on the reading that a Commander pressing a row must be looking
+at it. They need not be: the rail is a 470px box of 44px rows, so the row at either edge is routinely
+clipped, and pressing a clipped row is the ordinary case rather than the awkward one. The component
+records its own press instead and the reveal weighs that, which is the rule FR-021 and SC-007 state.
+
+The in-view test survives as _restraint_ and not as the rule: a family the application revealed that
+is already whole in the box is left alone, because there is nothing to bring into view and moving it
+would be motion with nothing to show for it. A row outside the box is centred, the same way and for
+the same reason the pane centres the fitted module.
+
+It scrolls the rail's own box rather than delegating to the platform's `scrollIntoView`, for the
+reason the pane does: at a short viewport the region deliberately stops bounding itself and the page
+is what scrolls, so walking every scrollable ancestor would carry the search field and the panel head
+off the screen to bring a family row into it.
+
 The accordion is not gone — canvas 1d still draws it, unchanged, with its badge, its variants
 summary and its caret. So the two compositions now differ in kind and not only in arrangement: a
 rail with one pane at wide, an accordion at compact. What that costs FR-021 to FR-023 is ruled in
@@ -283,6 +311,49 @@ screen in German is what showed it: `Unterflächenverdrängungsraketen` wraps to
 three lines, seventeen families no longer fit in the canvas's 470px, and every
 row was squeezed until the names printed over one another. A scroller is what a
 list does when it has more than it can show; shrinking its rows is not.
+
+## The fieldset needs a height of its own, and the released column is how we found out
+
+**Ruled 2026-08-27.** The manifest's scroller sits inside the `fieldset` that
+carries the radio group's legend, and a fieldset lays its children out in an
+anonymous box no stylesheet here can name. That box takes the fieldset's height
+only when the fieldset has a **definite** one. A `flex: 1` share of a definite
+parent is definite; a `max-block-size` on an ancestor whose own height comes
+from its content is not.
+
+Until 2026-08-27 the chain was definite all the way down — the bench divided a
+fixed column between two panels — so nothing showed. Releasing the column for a
+selected mount made the panel's height a maximum rather than a share, and the
+scroller inside the fieldset stopped scrolling and simply grew: measured at
+1112x834, a 680px fieldset with 1100px of rows laid out inside it.
+
+It was invisible for one more step, because the bench clipped what overflowed
+it. The release stopped the clipping too, and then the rows were painted
+straight over the engineering panel below — where they answered a press meant
+for a family control. So the fieldset states `block-size: 100%`, which is the
+definite height its anonymous box needs, and every box in the chain is back to
+the height it resolved to.
+
+## Room under the command bar for anything scrolled to
+
+**Ruled 2026-08-27.** The command bar is sticky over the page, and since the
+workspace column releases for a selected mount, the page is what scrolls. A
+family control or a candidate row brought into view by anything other than a
+Commander's own thumb — the platform's `scrollIntoView`, moving focus, an
+assistive technology — then landed flush against the top of the window, which is
+behind the bar: measured at 1112x834, a family control at 0-44px under a bar
+reaching 74px, with the bar answering the press meant for the control.
+
+Both carry `scroll-margin-block-start: var(--edsb-layout-bar-height)`, which is
+the reservation `.frame__main` already makes for an in-page link, made here for
+the two things in this list that get scrolled to.
+
+`scroll-margin` cannot be told which scroller it is for, so the reservation is
+paid inside the manifest's own scroller as well — where nothing stands over the
+row, because the sticky family bar went with the accordion's seam in wave 9. The
+price is a lead-in of the bar's height on a scroll nobody made with a thumb, set
+against a control that would otherwise be behind the bar and unpressable. It is
+worth stating as a trade rather than dressing up as a second bar.
 
 ## The scroller is a containing block, or it clips nothing
 

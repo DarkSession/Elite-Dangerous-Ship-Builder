@@ -640,3 +640,105 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       it, and it was a different one in each profile — so the sweep is taken where a Commander who
       reached this width meets the arrangement. `accessibility.ts` now says that the state a sweep
       judges includes where the page stands (`e2e/mobility-and-jump.spec.ts`, `e2e/accessibility.ts`)
+- [x] T159 Bring a revealed family into the rail's own visible box. Opening a fitted mount already
+      centred the module in the pane and left the rail showing whichever ten of the seventy-seven
+      families it happened to be scrolled to, so the rows changed and nothing said which family they
+      belonged to. The rail centres a family the application revealed and leaves one the Commander
+      pressed exactly where they pressed it; a revealed row already whole in the box is left alone too,
+      as restraint rather than as the rule (corrected 2026-08-27 — see T165)
+      (`candidate-list.ts`; spec FR-021, SC-007; `design/module-replacement.md`, "The rail scrolls to
+      the family it was told to select")
+- [x] T160 Order a family's choices by class descending and then by the package's price descending,
+      with a choice the package publishes no price for after the priced ones of its class. The name
+      that used to lead becomes a tie-break above rating, stock-before-variant and the package's
+      ordinals, so the order stays total (`candidate-query.ts`; spec FR-005, SC-006;
+      `contracts/module-catalogue.md`, "Families and order")
+- [x] T161 Raise the fitting panel's floor from five rows to eight — `--edsb-measure-fitting-panel`
+      18rem to 26rem — and drop the guard that measured it against the editor's floor, which the
+      release in T162 leaves nothing to guard. The floor is bounded by what the command bar leaves of
+      the screen so it can never exceed the window (`styles/tokens/_primitives.scss`,
+      `module-replacement.scss`; workspace design, "Five rows is still a glimpse")
+- [x] T162 Let the details and engineering panel expand instead of scroll. The two column scrollers,
+      the panel body's scroller and the panel's own bound are gone; the workspace's middle column
+      releases while a mount is selected, exactly as it releases for an anatomy dashboard, and the
+      page carries the panel. The full-screen composition is untouched — the layer around it is what
+      scrolls (`engineering-editor.scss`, `outfitting-workspace.*`; spec FR-012b;
+      `design/engineering-editor.md`, "Nothing here scrolls")
+- [x] T163 Carry a mount's power priority group and off state through a replacement. `setModule` and
+      `setPreEngineeredVariant` document a fit as a fresh mount whose `On`, `Priority` and `Health`
+      are reset, and direct a screen that keeps a group across a swap to set them again: this one
+      does, inside the fit's own operation, so it stays one revision and one history decision. Only
+      what the outgoing module actually carried is written — an unstated group and an unstated
+      on-state stay unstated — and `health` is not carried because no surface here reads it
+      (`outfitting.store.ts`; spec FR-015, SC-003a; `contracts/outfitting-editor.md`, "The power
+      carry")
+- [x] T164 Give the manifest's `fieldset` a definite height, and keep the command bar off anything
+      scrolled to. Two faults the T162 release uncovered rather than caused: a fieldset hands its
+      anonymous content box a height only when it has a definite one, so the scroller inside stopped
+      scrolling and grew — 1100px of rows in a 680px box at 1112x834 — and with the bench no longer
+      clipping, those rows were painted over the engineering panel, where they answered presses meant
+      for a family control. The second is the sticky command bar: with the page scrolling, a control
+      brought into view programmatically landed behind it (`candidate-list.scss`;
+      `design/module-replacement.md`, "The fieldset needs a height of its own" and "Room under the
+      command bar")
+- [x] T165 Spend a family press before the reveal effect can return, correct the rule the design doc
+      states, and pay for the two measurements that were missing. A press made under the accordion —
+      which the compact layer always draws, and which the inline composition draws too wherever the
+      bench is under the rail threshold — was never spent, because the read sat after the manifest
+      guard; the id then outlived its manifest and the first rail reveal after a resize past that
+      threshold read a stale press, silently not scrolling. The design doc still called the in-view test "the
+      rule" after the code stopped treating it as one, and the `scroll-margin` comment cited a frozen
+      family bar wave 9 removed. Adds the fieldset's own spill assertion, the variant branch of the
+      power carry, and the scroller's block-start border to both centring sums
+      (`candidate-list.ts`, `candidate-list.scss`, `design/module-replacement.md`)
+- [x] T166 Carry the mount's power state through `restorePurchase` too. Putting a purchase back
+      re-applies the article's own variant, which is the same `setPreEngineeredVariant` call a
+      variant fit makes and resets `On` and `Priority` the same way — so a Commander who had put the
+      article in a group and switched it off lost both, from the engineering panel rather than the
+      chooser, which is the harder of the two to notice. `powerStateOf` and `carryPower` move to
+      `power-carry.ts` because the store and the engineering draft both need them and the store
+      already imports from the draft (`power-carry.ts`, `engineering-draft.ts`,
+      `outfitting.store.ts`; spec FR-015, SC-003a)
+- [x] T167 Press a rail row the reveal would otherwise scroll to. The journey pressed a row already
+      whole in the rail's box, where the restraint answers first and the press rule is never weighed
+      — it passed with the press tracking deleted outright. It now finds a clipped row and dispatches
+      the press rather than clicking it, because Playwright scrolls a target into view before
+      pressing and that would move the rail before the rule ran. Names the manifest-spill and
+      power-carry journeys in the coverage ledger, and scopes FR-012b to the block axis so the
+      attribute table's own labelled inline scroller is not read as a contradiction
+      (`e2e/outfitting-families.spec.ts`, `e2e/coverage-ledger.ts`, `spec.md`)
+- [x] T168 Carry a stated on-state, not only a stated off one, and write down the restore. The carry
+      wrote `On` back only when the outgoing module was explicitly off, on the reading that writing
+      `true` would add a field nobody set. It would not — a build that states `On: true` has that
+      field, and every journal and SLEF loadout states it on every module, which is the same case the
+      priority branch already handled correctly by carrying a stated group 0. So a swap turned a
+      stated `true` into an absence, an export carried one field fewer than the file it was read
+      from, and re-fitting the same module spent a revision on a change nobody could see. FR-015,
+      SC-003a and the editor contract now cover all three operations the package treats as a fresh
+      mount rather than the two they named (`power-carry.ts`, `spec.md`,
+      `contracts/outfitting-editor.md`, `design/engineering-editor.md`)
+- [x] T169 Name the frozen columns rather than counting them. The seams this region draws are the
+      ledger's and the status rail's; the centre column between them draws neither and releases
+      whenever a mount is selected, so a journey asking for two frozen columns at any non-compact
+      width read that release as a lost seam — at the two-pane width, where the status rail is a band
+      under both columns and draws no vertical seam either, the count came to one. It now asserts
+      what the rule says: every region drawing a seam is frozen, and runs the full height the command
+      bar leaves (`e2e/outfitting-responsive.spec.ts`; workspace design, "the centre column is not
+      one of the frozen ones")
+- [x] T170 Give the editor's accessibility journey the budget its two scans now need. The panel no
+      longer scrolls inside itself, so there is more rendered tree for axe to walk and fewer manifest
+      rows `content-visibility` can skip: measured idle at 1112x834, twice each, 6.8s before the
+      change and 10.3s after. `playwright.config.ts` distinguishes a test that is slow because of the
+      machine from one that is slow because of how much it does, and says the second extends its own
+      budget — this one scans twice and, unlike the sweeps that add `SWEEP_BUDGET_MS` per state, was
+      extending nothing (`e2e/outfitting-accessibility.spec.ts`)
+- [x] T171 Let the accessibility sweep say where the page stands, once, rather than inheriting an
+      offset from whatever was last pressed. Forty-odd callers reach their state by pressing
+      something, and a press scrolls whatever it must to land — including the document, now that the
+      workspace column releases and the page is the tall thing. Selecting the cargo hatch at 834x1112
+      parked the anatomy 233px up under the command bar, and `target-size` read the bar's own `?` as
+      a target zero pixels from the mount marks beneath it. The sweep stands at the top now, which is
+      where a Commander meets the arrangement — they reach a mount by scrolling the ledger's own
+      rail — and a control a sticky bar covers at some offset is 2.4.11, one of the seven criteria
+      the constitution excludes, not the 2.5.8 spacing the rule is about (`e2e/accessibility.ts`;
+      the same `scrollTo(0, 0)` `mobility-and-jump` already takes for T158)

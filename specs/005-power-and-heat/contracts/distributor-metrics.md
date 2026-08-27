@@ -64,6 +64,69 @@ When the package returns a result, present SYS, ENG and WEP in that order:
 All figures are copied. A pip change may alter actual recharge; the application
 does not compute or assert a capacity transformation.
 
+### The units the four are written in
+
+> **Ruled 2026-08-27 — capacity is written `MW`.** A bank's capacity is a stored
+> pool and its SI unit is the megajoule, which is what this table used to write
+> and what canvas 1c draws (`34.0 MJ`). The game does not: the outfitting panel
+> a Commander cross-checks this table against writes `MW` after a bank's
+> capacity, and a table that disagreed with that panel about the unit reads as a
+> second, different figure rather than the same one. The owner's ruling is that
+> the game's unit wins here, taken so the two readings a Commander holds side by
+> side agree.
+>
+> It wins over three things, and the record names all of them. Over the canvas.
+> Over SI. And over the package, which is the one that matters: the Almanac
+> documents this very field as
+> `/** Energy the capacitor holds when full, in megajoules. */`
+> (`node_modules/@elite-dangerous-almanac/core/dist/ships/distributor.d.ts`,
+> the module imported as `@elite-dangerous-almanac/core/ships/distributor`), and
+> the constitution makes that package the source of truth. This is a departure
+> from the source of truth's own documentation of the field being drawn.
+>
+> Nothing in this repository or in the package records what the outfitting panel
+> writes. The whole of the evidence for `MW` is the owner's ruling, made against
+> the stated alternative of keeping `MJ`.
+
+Nothing about the figure changes: `capacity` is copied from the package exactly
+as before, to the same one decimal place, and no conversion, scale or factor is
+applied. Only the unit written after it moved, which is what keeps the departure
+to a label. The two recharge columns keep `MJ/s`, which is both the unit they
+are actually in and the unit the canvas draws, so the pool and the two rates no
+longer share a unit — which is the
+second thing the ruling buys, because `MJ` beside `MJ/s` invited the pool to be
+read as a third rate.
+
+| View field      | Unit written |
+| --------------- | ------------ |
+| capacity        | `MW`         |
+| rated recharge  | `MJ/s`       |
+| actual recharge | `MJ/s`       |
+
+Feature 007's `WEAPON CAPACITOR` block states the same capacity, and the same
+ruling reaches it: see `specs/007-offence-profile/contracts/capacitor-endurance.md`
+and `specs/007-offence-profile/spec.md`, FR-006. The two blocks state one
+quantity and must not state it in two units.
+
+**They do still state it to two different decimal places**, and the ruling did
+not change that. Each block writes all its energy figures to one precision, and
+the two landed on different ones: this table took the single place its own
+canvas draws, and feature 007's block took the two places canvas 1c gives its
+`DRAW` and `RECHARGE` rates and applied them to the capacity as well. Two places
+is a precision the artboard never uses for a capacity anywhere — it draws this
+same WEP capacity as `38.4 MJ` in this very table, to one place, and chips it on
+canvas 1d as `CAP 61 MJ`, whole. So one build's capacity reads `48.0 MW` here
+and `48.00 MW` there, and if it is ever unified the artboard says which way.
+
+That predates this ruling and is left standing rather than settled in passing:
+changing it would move a drawn figure, which is the one thing this ruling
+promised not to do, and it would do so under cover of a unit change. The two
+blocks are in different anatomy modes and never appear together, so the
+divergence costs a mode switch to notice rather than contradicting itself on one
+screen. Unifying it is a design decision and should be made as one. It is
+written down here so the next reader finds it recorded rather than discovering
+it, and `contracts/capacitor-endurance.md` records the other half.
+
 ## Availability and zero
 
 `null` maps to one `unavailable` result with no capacitor figures. Null alone
@@ -97,7 +160,7 @@ history, URL, a build link or SLEF.
 - The table's rows and columns expose capacity, rated recharge, returned pips and
   recharge rate as labelled text at every size. The block's heading names it once;
   the table adds no caption repeating it.
-- MJ, MJ/s and pip values use active-locale formatters.
+- MW, MJ/s and pip values use active-locale formatters.
 - Zero and unavailable have distinct visual and programmatic meaning.
 - Nothing here is announced: the control reports its own state and the figures it
   changes are on screen beside it.
@@ -109,6 +172,9 @@ history, URL, a build link or SLEF.
   leaves `0`–`4`.
 - The pips shown are the pips the result carries, not the ones pressed.
 - Capacity and rated recharge never move with an allocation.
+- Capacity is written `MW` and both recharge columns `MJ/s`, in every locale and
+  at every width, including the narrow arrangement where the column labels
+  itself.
 - Zero-pip recharge remains numeric zero.
 - Every package null renders unavailable without catalogue values or inferred
   cause, and power, heat and the conditions stay usable beside it.

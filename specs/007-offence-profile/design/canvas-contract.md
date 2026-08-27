@@ -237,7 +237,7 @@ bare figure: the canvas gives it no unit, no second figure and no condition.
 | `DPS BY RANGE BAND` and its four rows                  | `damageFalloff()` applied to every enabled weapon at 500 m, 1,000 m, 2,000 m and 3,000 m.                                                                                                                                                              |
 | The four range-band bars                               | Each band filled against the strongest band — one scale, and every figure is stated (review note 6).                                                                                                                                                   |
 | `WEAPON CAPACITOR` `DRAW` / `RECHARGE` / `FULL FIRE`   | `sustainedEnergyPerSecond`, `rechargeRate` and `timeToDrain`, in package units.                                                                                                                                                                        |
-| Canvas 1d's `WEP CAP 61 MJ`                            | `capacity`, as a fourth row of the same block.                                                                                                                                                                                                         |
+| Canvas 1d's `WEP CAP 61 MJ`                            | `capacity`, as a fourth row of the same block, written `MW` (ruled 2026-08-27).                                                                                                                                                                        |
 | The capacitor bars                                     | `DRAW` and `RECHARGE` only: those two share MJ/s. `CAPACITY` and `FULL FIRE` do not (review note 6).                                                                                                                                                   |
 | `SHOT CONVERGENCE`                                     | The third block's heading, alone on its line, on a row of its own bounded at the canvas's own 508px. The ring caption is withdrawn with the 2026-08-26 revision, which draws none.                                                                     |
 | `#cv-ring1`, `#cv-ring2`, `#cv-dots`                   | A square gunsight plate over the canvas's own **40 mrad** field of view, drawn at `14rem`. A shot outside that field is left off the plate rather than clamped to it (review note 21).                                                                 |
@@ -284,16 +284,16 @@ Nothing else is added.
 
 ## What is not built, and why
 
-| Canvas element                                   | Why not                                                                                                         |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| The stacked bar's `title` tooltips               | Hover-only meaning, unreachable by touch (011 FR-006). The legend beside the bar states both figures.           |
-| A damage-type list with a figure for each type   | No canvas draws one. The bar and its legend are the whole reading (review note 7).                              |
-| `VS 45% RESIST`, `ALPHA`, `VS SHIELD`, `VS HULL` | **No canvas draws them any more** (2026-08-25 revision). They were target simulation while they were drawn.     |
-| `CORROSIVE +30%`                                 | An effect bonus no package field publishes.                                                                     |
-| `MW` on `DRAW` and `RECHARGE`                    | The package returns MJ/s for both. Package units win.                                                           |
-| `OUTPUT, RANGE, CONVERGENCE`                     | A mobile-only sub-line the desktop switching script does not carry.                                             |
-| `PIERCE` drawn in two colours                    | The canvas states no rule for the difference, so there is nothing to build (review note 3).                     |
-| Every sample figure                              | Non-authoritative. Desktop calls 248.6 burst and 186.4 sustained; mobile calls 248.6 sustained and 318.4 burst. |
+| Canvas element                                   | Why not                                                                                                                                                       |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The stacked bar's `title` tooltips               | Hover-only meaning, unreachable by touch (011 FR-006). The legend beside the bar states both figures.                                                         |
+| A damage-type list with a figure for each type   | No canvas draws one. The bar and its legend are the whole reading (review note 7).                                                                            |
+| `VS 45% RESIST`, `ALPHA`, `VS SHIELD`, `VS HULL` | **No canvas draws them any more** (2026-08-25 revision). They were target simulation while they were drawn.                                                   |
+| `CORROSIVE +30%`                                 | An effect bonus no package field publishes.                                                                                                                   |
+| `MW` on `DRAW` and `RECHARGE`                    | The package returns MJ/s for both. Package units win. `CAPACITY` is the one row that takes `MW`, and from the game rather than the canvas (ruled 2026-08-27). |
+| `OUTPUT, RANGE, CONVERGENCE`                     | A mobile-only sub-line the desktop switching script does not carry.                                                                                           |
+| `PIERCE` drawn in two colours                    | The canvas states no rule for the difference, so there is nothing to build (review note 3).                                                                   |
+| Every sample figure                              | Non-authoritative. Desktop calls 248.6 burst and 186.4 sustained; mobile calls 248.6 sustained and 318.4 burst.                                               |
 
 ## Fields the package returns and no canvas draws
 
@@ -402,10 +402,13 @@ worked out once, in the projection:
 6. **A bar only where a scale exists.** The canvas draws seven bars: four range
    bands and three capacitor rows. The four bands share one scale — damage per
    second at four distances — and are drawn. `DRAW` and `RECHARGE` are both MJ/s
-   and share one, and are drawn. `CAPACITY` is MJ and `FULL FIRE` is seconds;
-   neither shares a scale with anything beside it, so both keep their figure and
-   lose their bar. This is feature 006's established rule, and it takes no figure
-   off the screen: every capacitor value is stated in words either way.
+   and share one, and are drawn. `CAPACITY` is a stored pool and `FULL FIRE` is a
+   duration; neither shares a scale with anything beside it, so both keep their
+   figure and lose their bar. The 2026-08-27 ruling writes `CAPACITY` in `MW`,
+   which changes the unit after the figure and not what it is: a pool is still
+   not a rate, and still has nothing here to be measured against. This is
+   feature 006's established rule, and it takes no figure off the screen: every
+   capacitor value is stated in words either way.
 
 7. **The damage-type enumeration is withdrawn.** An earlier revision drew two
    `edsb-metric-group` lists — burst by type and sustained by type — with a line

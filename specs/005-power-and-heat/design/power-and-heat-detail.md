@@ -319,12 +319,29 @@ Headed `POWER DISTRIBUTOR & PIPS` since the 2026-08-25 canvas revision, which sh
 The canvas's table, whole: a `BANK` column and `CAPACITY`, `MAX RCH`, `PIPS` and `RECHARGE` across
 `SYS`, `ENG` and `WEP` in that order.
 
-| Column     | Package field                                         |
-| ---------- | ----------------------------------------------------- |
-| `CAPACITY` | `capacity`                                            |
-| `MAX RCH`  | `ratedRecharge`                                       |
-| `PIPS`     | `pips.systems` / `.engines` / `.weapons`, as returned |
-| `RECHARGE` | `rechargeRate`                                        |
+| Column     | Package field                                         | Unit written |
+| ---------- | ----------------------------------------------------- | ------------ |
+| `CAPACITY` | `capacity`                                            | `MW`         |
+| `MAX RCH`  | `ratedRecharge`                                       | `MJ/s`       |
+| `PIPS`     | `pips.systems` / `.engines` / `.weapons`, as returned | —            |
+| `RECHARGE` | `rechargeRate`                                        | `MJ/s`       |
+
+> **Ruled 2026-08-27 — `CAPACITY` is written `MW`, against the canvas.** The canvas draws `34.0 MJ`,
+> and a stored pool really is in megajoules, so `MJ` is both what the drawing says and what SI says.
+> The game says otherwise: the outfitting panel a Commander reads these three rows beside writes
+> `MW` after a bank's capacity. Two panels writing one figure in two units read as two figures, and
+> of the two readings the Commander is holding, the game's is the one that cannot be changed. So the
+> canvas loses this cell — the only cell in this block where it does — and the two recharge columns
+> keep the `MJ/s` the canvas draws and the package returns.
+>
+> Only the unit moved. The figure is `capacity` copied from the package, to the same one decimal
+> place, with no conversion or factor: `34.0 MJ` and `34.0 MW` are the same number written twice.
+> The ruling also stops the three columns sharing a unit, which is worth having on its own — `MJ`
+> standing beside two columns of `MJ/s` invited the pool to be read as a third rate.
+>
+> Feature 007's `WEAPON CAPACITOR` states this same capacity and takes the same unit
+> (`specs/007-offence-profile/contracts/capacitor-endurance.md`). One quantity, one unit, wherever
+> the workspace draws it.
 
 The block's header carries the heading and nothing else. **The fitted distributor's identity —
 the canvas's `8A · CHARGE ENHANCED G5 · SUPER CONDUITS` — is withdrawn**, because the 2026-08-25

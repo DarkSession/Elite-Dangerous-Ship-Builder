@@ -199,9 +199,16 @@
 
   // The middle column follows the mount a Commander is looking at rather than
   // scrolling away from it, and is bounded by what is left of the viewport
-  // below the command bar so the bench's manifest scrolls inside itself rather
-  // than growing the page to two hundred rows. `svh` is layout syntax, not a
-  // measurement taken off the canvas.
+  // below the command bar. `svh` is layout syntax, not a measurement taken off
+  // the canvas.
+  //
+  // This is the column with nothing in its bench: an anatomy of plates, and the
+  // bench empty under them. The two rules at the foot of this block release it
+  // for the two things that do not fit a column — a dashboard, and a mount's
+  // own bench — and between them that is most of the time the region is being
+  // used. It is written this way round because the bound is the canvas's
+  // arrangement and the release is the exception to it, however often the
+  // exception is the one drawn.
   .outfitting__centre {
     position: sticky;
     inset-block-start: var(--edsb-layout-bar-height);
@@ -218,9 +225,14 @@
   // Canvas 1c draws each plate at the hull's own proportions, so the anatomy
   // asks for exactly the height its two ships need at the column's width and
   // never stretches to fill what is left. Everything left over is the bench's,
-  // down to its own minimum: the two panels each need a heading, a field and a
-  // few rows before they are a panel rather than a strip, which is 26rem
-  // together.
+  // down to its own minimum.
+  //
+  // That minimum used to be the two panels' floors added up. It is not any
+  // more: since the release below, the bench is bounded only while **no** mount
+  // is selected, which is the one state it holds neither panel. What the figure
+  // now reserves is the empty bench itself, so the column does not collapse to
+  // the plates and leave the region without the box a Commander is about to
+  // fill (restated 2026-08-27).
   .outfitting__centre edsb-hull-anatomy {
     flex: none;
   }
@@ -228,43 +240,31 @@
   // Named through the column so the base rule below, which resets both of these
   // for the unbounded compositions, does not win on source order.
   .outfitting__centre .outfitting__bench {
-    // A zero basis, not the bench's content: with a basis of `auto` a bench
-    // holding an open chooser asks for a thousand rows, and the shrink that
-    // follows takes them out of the plates as well as out of the bench. From
-    // zero the bench takes what the plates leave, down to its own minimum, and
-    // the column looks the same whether a mount is selected or not.
+    // A zero basis, not the bench's content. The argument for it was a bench
+    // holding an open chooser asking for a thousand rows; since the release
+    // below that bench is released instead, and what is left here is the empty
+    // one. The basis still matters for it: from zero the bench takes what the
+    // plates leave down to the minimum above, so an empty column looks the same
+    // whatever hull is drawn over it (restated 2026-08-27).
     flex: 1 1 0;
     min-block-size: min(26rem, 100%);
     overflow: hidden;
     border-inline-start: 0;
   }
 
-  // Canvas 1c draws both panels down the bench at once, the manifest a little
-  // the taller of the two. The share is set from the bench rather than from
-  // what is in them: a manifest of two hundred rows measures a hundred times
-  // the editor, and anything weighed by content leaves the editor a strip.
-  //
-  // Adjusted 2026-08-26: 1.25 to 1.1. The manifest was taking 56% of the bench
-  // against the editor's 44%, and an engineering pass — a grade, an effect and
-  // the attribute comparison under them — is the taller of the two readings at
-  // the moment a Commander is making it. Not an even split: the canvas does
-  // draw the manifest the taller, and this only narrows the margin.
-  //
-  // A ratio alone is not enough, though: it is a share of whatever the bench
-  // has, and on a shorter screen the share is smaller than the panel. At 900px
-  // the manifest drew four rows and at 700px it drew two, which is a glimpse of
-  // a list rather than a list (Commander request 2026-08-26). Each panel states
-  // its own floor, in its own stylesheet — how short a panel may get before it
-  // stops being one is the panel's statement, not the bench's — and the
-  // manifest measures its floor against the editor's so the two can never ask
-  // for more than the bench holds.
-  .outfitting__bench edsb-module-replacement {
-    flex: 1.1 1 0;
-  }
-
-  .outfitting__bench edsb-engineering-editor {
-    flex: 1 1 0;
-  }
+  // **The bench's `1.1 : 1` share is withdrawn. Ruled 2026-08-27 (Commander
+  // request).** It divided a bench of a fixed height between the two panels,
+  // and it was never a good division of one: a share is a fraction of whatever
+  // the bench has, so at 900px the manifest drew four rows and at 700px it drew
+  // two, and each panel had to state a floor to stop it. There is no fixed
+  // bench to divide any more — the release below hands the column its content's
+  // height while a mount is selected — so each panel simply takes what it asks
+  // for. The manifest keeps its own bound so a 478-choice list still scrolls
+  // inside a screenful rather than running the page down two hundred rows, and
+  // each panel keeps its own floor, which is the part of the 2026-08-26 ruling
+  // that survives: how short a panel may get before it stops being one is the
+  // panel's own statement (`design/outfitting-workspace.md`, "a bench is not
+  // bounded by the column either").
 
   // Two columns is not yet enough room for the canvas's third track, so the
   // rail runs under both of them instead of squeezing the bench.
@@ -294,22 +294,54 @@
   // `anatomy--dashboard`; the workspace carries the same reading on the section
   // it owns, which is what these rules can name. They are stated last in this
   // arrangement because two of them weigh the same as the rules they release.
-  .outfitting--dashboard .outfitting__centre {
+  //
+  // And a bench is not a pair of plates either. Ruled 2026-08-27 (Commander
+  // request).
+  //
+  // The same release, for the same reason, about the other thing this column
+  // holds. `DETAILS AND ENGINEERING` is drawn inline for whichever mount is
+  // marked — canvas 1c gives it no opening control, so it is simply there — and
+  // its height is whatever the article has to say: around seventy attribute
+  // rows on a weapon, beside the recipe that would change them. Wave 11
+  // answered that by scrolling each of the panel's two halves in its own
+  // column, which put two more bars inside a column that already had one and
+  // left the reading four rows tall. That is the answer wave 14 gave the
+  // dashboards, and it is wrong here for the reason it was wrong there
+  // (`design/engineering-editor.md`, "Nothing here scrolls").
+  //
+  // So the column releases while a mount is selected too, and the page carries
+  // the bench. Keyed on the mount rather than on the panel because inline the
+  // two describe the same frames, and the mount is the one the region already
+  // knows about. The two releases are written as one rule because they are one
+  // rule: this column bounds an anatomy of plates over an empty bench, and
+  // anything else in it is carried by the page.
+  .outfitting--dashboard .outfitting__centre,
+  .outfitting--bench .outfitting__centre {
     position: static;
     block-size: auto;
   }
 
-  .outfitting--dashboard .outfitting__bench {
+  .outfitting--dashboard .outfitting__bench,
+  .outfitting--bench .outfitting__bench {
     flex: none;
     min-block-size: 0;
     overflow: visible;
   }
 
-  .outfitting--dashboard edsb-module-replacement,
-  .outfitting--dashboard edsb-engineering-editor {
-    flex: none;
-    min-block-size: 0;
-  }
+  // **The dashboard's own rule for the two panels is gone with the share it
+  // overrode.** It was `flex: none; min-block-size: 0` on both, and neither
+  // half survives the two changes above. `flex: none` overrode the `1.1 : 1`
+  // share, and with no share left the flex initial value already means "as tall
+  // as your content". `min-block-size: 0` zeroed each panel's own floor — and
+  // it would now zero them in the one state they are drawn in: the panels
+  // render only for a marked mount, a marked mount is what `--bench` means, and
+  // a Commander can perfectly well have a dashboard open with a mount marked.
+  // Left in place it beat the raised fitting-panel floor on specificity and
+  // undid it silently (reported in review, 2026-08-27).
+  //
+  // Scoped to `:not(.outfitting--bench)` it would instead be a rule that can
+  // never match anything: without a marked mount there are no panels for it to
+  // be about. So it is removed rather than narrowed.
 }
 
 // The canvas's full `392px 1fr 306px`. Its own threshold, because the three

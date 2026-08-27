@@ -75,8 +75,9 @@ Expected:
 2. Compare choice membership to `modulesForSlot(slotKey)` plus every
    `getPreEngineeredVariants(symbol)` result.
 3. Use a module with multiple route-distinct variants.
-4. Verify package family grouping and order, and inside a family: name groups, class descending,
-   rating ascending, stock-before-variant and deterministic ties. Confirm no section heading is drawn
+4. Verify package family grouping and order, and inside a family: class descending, price
+   descending, an unpriced choice after the priced ones of its class, and then name, rating,
+   stock-before-variant and deterministic ties. Confirm no section heading is drawn
    and that a unique reward sits in the family of the module it is built on.
 5. Search with mixed case, accents and multiple whitespace-separated terms spanning name, class,
    rating and mount.

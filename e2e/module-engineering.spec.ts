@@ -387,9 +387,7 @@ test.describe('engineering costs', () => {
     ).toBeVisible();
   });
 
-  test('scrolls the details and the engineering apart, each in its own column', async ({
-    page,
-  }) => {
+  test('expands the details and the engineering instead of scrolling either', async ({ page }) => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
     await chooseRecipe(page, /increased range/i);
@@ -398,34 +396,53 @@ test.describe('engineering costs', () => {
     const panes = page.locator('.engineering__panes');
     await expect(panes).toBeVisible();
     if ((await panes.evaluate((node) => getComputedStyle(node).display)) !== 'grid') {
-      // Stacked, the two halves are one column and one scroller — which is the
-      // composition the canvas draws at that width, not a fault to assert on.
+      // The full-screen composition owns the viewport and has no page to grow
+      // into: it draws the two halves as one column and the layer around it is
+      // what scrolls. That is the canvas at that width, not a fault to assert
+      // on (`design/engineering-editor.md`, "Nothing here scrolls").
       return;
     }
 
-    // Side by side, the halves have to scroll apart. Under one scroller the
-    // attribute table set the height of both columns, so reaching the end of
-    // it carried the recipe controls and the material list off the top with
-    // it — a Commander choosing a grade could not see what it would cost.
-    const moved = await panes.evaluate((node) => {
-      const choices = node.querySelector('.engineering__choices') as HTMLElement;
-      const result = node.querySelector('.engineering__result') as HTMLElement;
-      const before = choices.getBoundingClientRect().top;
-      result.scrollTop = result.scrollHeight;
+    // Nothing inside the panel is a scroller, and nothing inside it is hidden.
+    // Wave 11 gave each half its own, inside a panel bounded to a share of a
+    // column that was itself bounded to the screen — three nested boxes, and a
+    // weapon's seventy attribute rows read four at a time in the innermost of
+    // them (FR-012b; Commander request 2026-08-27).
+    const measured = await panes.evaluate((node) => {
+      const box = (element: Element) => ({
+        overflow: getComputedStyle(element).overflowY,
+        hidden: element.scrollHeight - element.clientHeight,
+        height: element.getBoundingClientRect().height,
+      });
+
+      const choices = node.querySelector('.engineering__choices')!;
+      const result = node.querySelector('.engineering__result')!;
+
       return {
-        resultScrolled: result.scrollTop > 0,
-        choicesOverflow: getComputedStyle(choices).overflowY,
-        choicesMoved: Math.abs(choices.getBoundingClientRect().top - before),
-        choicesScrollTop: choices.scrollTop,
+        choices: box(choices),
+        result: box(result),
+        body: box(node.closest('.engineering__body')!),
+        panel: box(node.closest('.engineering')!),
+        // The column that used to bound the panel releases while a mount is
+        // selected, exactly as it releases for an anatomy dashboard
+        // (`design/outfitting-workspace.md`).
+        centre: getComputedStyle(document.querySelector('.outfitting__centre')!).position,
       };
     });
 
-    expect(moved.resultScrolled).toBe(true);
-    expect(moved.choicesScrollTop).toBe(0);
-    expect(moved.choicesMoved).toBeLessThanOrEqual(1);
-    // And the left column is a scroller in its own right rather than a box the
-    // panel scrolls for it, whether or not its own content overflows today.
-    expect(moved.choicesOverflow).toBe('auto');
+    for (const region of [measured.choices, measured.result, measured.body, measured.panel]) {
+      expect(region.overflow).toBe('visible');
+      // A box that is not a scroller and has something outside it is a box
+      // hiding content outright, which is the one outcome worse than scrolling.
+      expect(region.hidden).toBeLessThanOrEqual(1);
+    }
+
+    // The panel is as tall as the taller of its two halves, which is what
+    // "expands" means once neither of them can give way.
+    expect(measured.panel.height + 1).toBeGreaterThanOrEqual(
+      Math.max(measured.choices.height, measured.result.height),
+    );
+    expect(measured.centre).toBe('static');
   });
 });
 

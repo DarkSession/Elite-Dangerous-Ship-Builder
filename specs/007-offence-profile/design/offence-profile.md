@@ -111,8 +111,11 @@ are fields no canvas ever drew.
 
 - The four fields a canvas draws, in the order the canvases draw them: sustained draw while firing,
   recharge rate and time to drain — canvas 1c's own three rows — with canvas 1d's `WEP CAP` capacity
-  behind them. Each is a labelled fact in package units — megajoules and megajoules per second, not
-  the canvas's mislabelled megawatts.
+  behind them. Each is a labelled fact. Draw and recharge are in package units — megajoules per
+  second, not the canvas's `MW` — and the capacity is in the game's own unit for a capacitor pool,
+  `MW`, which is neither the package's nor SI's (ruled 2026-08-27, with feature 005's distributor
+  table, which states the same quantity). Only the unit is the game's; every figure is the
+  package's.
 - The allocation those figures were read at is feature 005's, and the panel names the condition
   without offering to change it.
 - Time to drain carries one of three meanings, each read off its own field: a positive finite result
@@ -122,8 +125,9 @@ are fields no canvas ever drew.
 - Zero capacity is the package's own result and is shown as one. No cause is stated, offered or
   implied: the package does not say which of its reasons it was, so neither does this.
 - Draw and recharge are the same quantity in the same unit, share one scale, and carry a bar each.
-  Capacity is megajoules and time to drain is seconds; neither shares a scale with anything beside
-  it, so neither is filled. Every one of the four is written in words either way.
+  Capacity is a stored pool and time to drain a duration; neither shares a scale with anything
+  beside it, so neither is filled — the unit written after the capacity does not make it a rate.
+  Every one of the four is written in words either way.
 
 ## SHOT CONVERGENCE
 

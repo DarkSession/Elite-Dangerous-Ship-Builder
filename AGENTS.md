@@ -159,6 +159,54 @@ planning ship loadouts.
   `scripts/policy/*-ownership.mjs` script — read the script before crossing the
   boundary it guards, because it will fail the build rather than argue.
 
+## Communication style
+
+Use [ASD-STE-100](https://www.asd-ste100.org/) (Simplified Technical English)
+when you speak to the operator.
+
+- One idea per sentence. Keep instructions to 20 words and descriptions to 25.
+- Active voice, present tense. Name who or what does the thing.
+- One word, one meaning. Choose a term and keep it; do not vary it for style.
+- Use the simplest verb that is correct. No metaphor, no idiom, no jargon the
+  operator did not use first.
+- Write a procedure as numbered steps in the order you do them. Give the
+  condition before the action: "If the build fails, read the policy output."
+- Keep a paragraph to six sentences. Split what is longer.
+
+The same rules make good comments, documentation and pull requests, together
+with the language rules below.
+
+## Language and documentation
+
+- **Write in plain, common language.** Code, comments, documentation, commit
+  messages, pull requests and replies to the person you are working with all
+  use ordinary words a contributor can skim. Name a thing what it is. No
+  literary phrasing, no metaphor, no rhetorical build-up, no marketing
+  adjectives, no emoji: "add a tooltip to the heat glosses" beats "the glosses
+  find their voice at last". Identifiers, test names and headings follow the
+  same rule — descriptive, not clever.
+- **Say it once, and say it directly.** Short sentences, active voice, concrete
+  nouns. Drop throat-clearing openers ("it is worth noting that"),
+  self-assessment ("comprehensive", "robust", "seamless") and hedging that
+  carries no information. If deleting a sentence loses nothing, delete it.
+- **Documentation describes the current state, not the change that produced
+  it.** Git already records what moved, when and by whom; a reader opening a
+  file wants to know how the thing works now. Keep changelog residue out of
+  comments, docs, `README.md` and this file — no "previously", "now", "was
+  changed to", "new", "updated", "as of <date>", no diff narration, no dated
+  superseded notes. Write the rule, the behaviour and the reason it holds, in
+  the present tense, as though it had always been so.
+- **Delete rather than annotate.** Code and prose that no longer apply are
+  removed, not labelled obsolete and left in place. Commented-out code, "kept
+  for reference" blocks and "(deprecated)" markers on things nothing uses all
+  go; git holds the old version.
+- **Two deliberate exceptions.** A `specs/<NNN>-…/tasks.md` entry is a dated
+  record of work, and the dated notes already there stay as they were written.
+  And where a decision cannot be understood without its history — a persisted
+  format that keeps an old field name, a workaround for a known upstream defect
+  — record the reason rather than the chronology, in the one sentence that stops
+  someone undoing it.
+
 ## Commit Identity — no personal data in git metadata
 
 **Commit as whoever git is already configured as. Never set an identity yourself.** The environment configures `user.name` / `user.email` (and, where signing is enabled, the signing key) before you start. Do not pass `-c user.name=…` / `-c user.email=…` to `git commit`, do not `git config` a different one, and do not use `--reset-author` to change _who_ a commit is by. An agent that substitutes its own choice produces commits GitHub marks **Unverified**, because the identity no longer matches the key that signed them.
@@ -177,7 +225,35 @@ The same rule covers everything else you author. Commit messages, PR titles and 
 
 ## Pull requests
 
-**Before opening any PR, have a subagent re-review the complete change.** Address every actionable finding, then ask a subagent to review the updated change again. Repeat this review-and-fix cycle until the subagent reports no actionable findings; only then may the PR be opened.
+A pull request describes the change, not the process that produced it. Write for
+a reviewer who has not seen the conversation: what is different, why it is
+wanted, and the evidence that it works.
+[`.github/pull_request_template.md`](./.github/pull_request_template.md) is the
+layout to fill in.
+
+- **The title says what changed**, in one plain line — no metaphor, no
+  wordplay, no subtitle after a dash. "Add a tooltip to the heat glosses", not
+  "the glosses find their voice at last".
+- **What and why, in that order.** Open with the change in a few sentences:
+  what behaviour, screen or capability is different, and what problem that
+  solves. Name the feature and spec directory it belongs to, and link the issue
+  it closes.
+- **Confirm what was validated.** Say that `pnpm run check` passed, or name the
+  commands that were run, what was left out and why. "Tests pass" without
+  saying which is not evidence. For a visual change or a new journey, say which
+  viewports and engines were exercised and attach the manual protocol record
+  when one was required.
+- **Leave the making-of out.** No account of how the work was carried out, no
+  review-and-fix log, no list of what a subagent review found and how each
+  finding was answered, no commit-by-commit walkthrough, no self-assessment of
+  quality, no wishlist of what could be done later. A finding that mattered is
+  already fixed in the diff; one that still matters is a follow-up issue, not a
+  paragraph.
+- **Length follows the change.** A one-line fix gets a few lines of pull
+  request. Do not inflate a small change into a report, and do not compress a
+  large one into a headline.
+
+**Before opening any PR, have a subagent re-review the complete change.** Address every actionable finding, then ask a subagent to review the updated change again. Repeat this review-and-fix cycle until the subagent reports no actionable findings; only then may the PR be opened. The cycle is how the change gets good; it is not material for the description.
 
 ## Spec-driven development
 
