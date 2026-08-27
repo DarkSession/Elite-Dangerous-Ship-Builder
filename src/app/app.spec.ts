@@ -354,24 +354,53 @@ describe('App and a newly published version', () => {
     expect(fixture.componentInstance.updateApplied()).toBe(false);
   });
 
-  it('announces a waiting version politely, once, and says only what stays true', () => {
-    // The published version, not the restart. An announcement is spoken once
-    // and cannot be taken back, and a restart that could not be carried out
-    // would leave a sentence about one standing with nothing to correct it.
+  it('says nothing into the outlet while the overlay stands over it', () => {
+    // The overlay is a modal layer, so the page behind it — the outlet
+    // included, it is mounted inside the frame — is inert and out of the
+    // accessibility tree. An announcement published here is one no reader is
+    // ever offered, and the overlay is what speaks in that state.
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
+
+    expect(fixture.componentInstance.updateOverlay()).toBe(true);
+    expect(announcements.polite()).toBe('');
+    expect(announcements.assertive()).toBe('');
+  });
+
+  it('announces a waiting version politely, once, and says only what stays true', async () => {
+    // The published version, not the restart. An announcement is spoken once
+    // and cannot be taken back, so this waits for the overlay to come down on
+    // a restart that could not be carried out: only then is there a reader to
+    // hear it and a sentence that stays true.
+    updates.restartable = false;
+    const fixture = render('ready');
+    const announcements = TestBed.inject(AnnouncementService);
+
+    updates.expire();
+    await settled();
+    fixture.detectChanges();
 
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
     expect(announcements.assertive()).toBe('');
 
+    // A further version behind the first is the same sentence for the same
+    // revision, and the overlay going up and down again does not repeat it.
     updates.report('ready');
+    fixture.detectChanges();
+    updates.expire();
+    await settled();
     fixture.detectChanges();
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
   });
 
-  it('does not republish the version event when a locale commits behind it', () => {
+  it('does not republish the version event when a locale commits behind it', async () => {
+    updates.restartable = false;
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
+
+    updates.expire();
+    await settled();
+    fixture.detectChanges();
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
 
     const published = vi.spyOn(announcements, 'announce');

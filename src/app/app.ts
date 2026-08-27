@@ -301,13 +301,32 @@ export class App {
     // step 16 of `e2e/manual/screen-reader.protocol.md` is where it is settled,
     // and where a reader disagreeing sends this split back for a decision.
     //
-    // The version is the only thing this depends on. Announcing resolves a
-    // message, which reads the catalogue — tracked, that would make a committed
-    // locale re-run this effect and republish an event that already happened,
-    // over whatever the outlet was carrying.
+    // The version and whether the overlay stands are the only things this
+    // depends on. Announcing resolves a message, which reads the catalogue —
+    // tracked, that would make a committed locale re-run this effect and
+    // republish an event that already happened, over whatever the outlet was
+    // carrying.
     effect(() => {
       const { state, revision } = this.#updates.snapshot();
       if (state === 'current') {
+        return;
+      }
+
+      // Not while the overlay stands. It opens with `showModal()` in the same
+      // tick the state arrives, which makes everything outside the dialog
+      // inert — the outlet included, since it is mounted inside the frame — so
+      // an announcement published here would be one no reader is ever offered.
+      // The overlay is the announcement in that state: it takes focus and its
+      // description is read where it stands.
+      //
+      // Tracked rather than read in `untracked`, because the overlay coming
+      // down is exactly when this has something to say. A restart that could
+      // not be carried out lowers it without moving the state or the revision,
+      // and the notice left on the shell is the one thing telling a reader the
+      // session is behind. `(kind, revision, urgency)` is the dedupe identity,
+      // so a later version raising and lowering the overlay again does not say
+      // it twice.
+      if (state === 'ready' && this.#updates.overlay()) {
         return;
       }
 
@@ -317,11 +336,9 @@ export class App {
           revision,
           urgency: state === 'unusable' ? 'assertive' : 'polite',
           // The durable fact, not the thing about to happen. An announcement
-          // is spoken once and cannot be taken back, and a restart that could
-          // not be carried out — no page to start over — would leave "this
-          // session is restarting on it" standing as a statement nothing
-          // corrects. The overlay says the rest: it is a modal layer, so it
-          // takes focus and its description is read where it stands.
+          // is spoken once and cannot be taken back, and this only reaches a
+          // reader once the restart has already failed, where "this session is
+          // restarting on it" would be a statement nothing corrects.
           messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
         }),
       );

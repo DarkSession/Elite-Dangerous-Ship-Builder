@@ -38,10 +38,14 @@ export function resolveDocumentTitle(catalogue: MessageCatalogue, page: string |
  *
  * On whole words rather than on substrings, because `Build` sits inside
  * `Builder`: a plain `includes` would collapse the workspace's title into the
- * product name and lose the one word that says which screen it is. The
- * boundary is "not a letter and not a digit" rather than `\b`, which is
- * defined on ASCII word characters and would put a boundary inside `Aufbau`
- * where German needs none.
+ * product name and lose the one word that says which screen it is.
+ *
+ * The boundary is "not a letter and not a digit" rather than `\b`, which is
+ * defined on the ASCII word characters and finds an edge wherever one meets a
+ * letter it does not know. In an application named `Bauübersicht`, `\b` sees a
+ * boundary between `u` and `ü` and so reads `übersicht` as a whole word of it,
+ * collapsing a page title that shares no word with the name at all. The
+ * character class knows the letter and finds no edge.
  */
 function namesTheApplication(page: string, application: string): boolean {
   const name = page.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

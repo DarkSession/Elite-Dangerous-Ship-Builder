@@ -44,17 +44,33 @@ describe('resolveDocumentTitle', () => {
     );
   });
 
-  it('reads the boundary in the language the catalogue is in', () => {
-    // `\b` is defined on ASCII word characters, so it would find an edge inside
-    // `Aufbau` and collapse a German page title that shares no word with the
-    // application name at all.
-    const german = catalogue({ 'app.name': 'Elite Dangerous Schiffsbaukasten' });
+  it('reads a word boundary the ASCII one gets wrong', () => {
+    // The case that separates `[^\p{L}\p{N}]` from `\b`, which is defined on
+    // the ASCII word characters: `\b` sees an edge between `u` and `ü`, so it
+    // reads `übersicht` as a whole word of `Bauübersicht` and would publish the
+    // application name alone for a page that shares no word with it.
+    const german = catalogue({ 'app.name': 'Elite Dangerous Bauübersicht' });
 
-    expect(resolveDocumentTitle(german, 'Aufbau')).toBe(
-      'Aufbau · Elite Dangerous Schiffsbaukasten',
+    expect(resolveDocumentTitle(german, 'übersicht')).toBe(
+      'übersicht · Elite Dangerous Bauübersicht',
     );
-    expect(resolveDocumentTitle(german, 'Schiffsbaukasten')).toBe(
+
+    // And the real word still collapses, in the same catalogue.
+    expect(resolveDocumentTitle(german, 'Bauübersicht')).toBe(
       BUNDLED_ENGLISH['app.document-title.default'],
+    );
+  });
+
+  it('collapses in the other shipped locale too, where the name is the same', () => {
+    // `app.name` is a product name and is never translated, so the German
+    // catalogue names the catalogue screen `Ship Builder` as well.
+    const german = catalogue({ 'app.name': 'Elite Dangerous Ship Builder' });
+
+    expect(resolveDocumentTitle(german, 'Ship Builder')).toBe(
+      BUNDLED_ENGLISH['app.document-title.default'],
+    );
+    expect(resolveDocumentTitle(german, 'Gespeicherte Aufbauten')).toBe(
+      'Gespeicherte Aufbauten · Elite Dangerous Ship Builder',
     );
   });
 

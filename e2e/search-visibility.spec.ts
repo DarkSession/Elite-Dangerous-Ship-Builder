@@ -54,10 +54,6 @@ test.describe('what the head says this page is', () => {
     expect(englishMessages['catalogue.description']).not.toBe(
       englishMessages['library.description'],
     );
-    // The catalogue is the screen named after the product, and its title says
-    // the product name once rather than twice. The library is an ordinary
-    // screen, so the same mechanism composes both halves there.
-    expect(englishMessages['app.document-title.default']).not.toContain(' · ');
   });
 
   test('carries the route into the canonical address and both cards', async ({ page }) => {

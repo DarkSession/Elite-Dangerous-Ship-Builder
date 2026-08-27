@@ -854,6 +854,23 @@ describe('production output', () => {
     assert.deepEqual(ruleIds(found), ['production-output']);
   });
 
+  it('rejects a request to a vocabulary the search-metadata rule names as a string', () => {
+    // `schema.org` and `sitemaps.org` are exempt from the search-metadata rule,
+    // where they appear as a `@context` and an `xmlns` and are never fetched.
+    // Exempting them here as well would let the shipped bundle open a
+    // connection nobody is told about, which is the whole of this rule.
+    for (const contents of [
+      'fetch("https://schema.org/WebApplication");',
+      '<script src="https://www.sitemaps.org/x.js"></script>',
+    ]) {
+      assert.deepEqual(
+        ruleIds(rules.productionOutputViolations({ 'dist/app/browser/x': contents })),
+        ['production-output'],
+        contents,
+      );
+    }
+  });
+
   it('rejects a stylesheet, script or font loaded from another origin', () => {
     for (const contents of [
       '<script src="https://cdn.example/app.js"></script>',
@@ -1067,6 +1084,43 @@ describe('search metadata', () => {
 
   it('accepts four files that agree with each other and with the routes', () => {
     assert.deepEqual(rules.searchMetadataViolations(complete()), []);
+  });
+
+  it('reads no route out of an XML comment, in either of its shapes', () => {
+    // The deployment publishes one file per `<loc>` and cuts comments before it
+    // reads them. A `<loc>` this rule counted and the deploy skipped would be a
+    // route that passes the gate and never gets a file.
+    for (const commented of [
+      `<urlset>
+        <!-- <loc>https://sb.edct.dev/ghost</loc> -->
+        <url><loc>https://sb.edct.dev/ships</loc></url>
+        <url><loc>https://sb.edct.dev/build</loc></url>
+      </urlset>`,
+      `<urlset>
+        <!--
+          <loc>https://sb.edct.dev/ghost</loc>
+        -->
+        <url><loc>https://sb.edct.dev/ships</loc></url>
+        <url><loc>https://sb.edct.dev/build</loc></url>
+      </urlset>`,
+    ]) {
+      assert.deepEqual(rules.searchMetadataViolations(complete({ sitemap: commented })), []);
+    }
+  });
+
+  it('still misses a route that a comment is the only thing listing it', () => {
+    // The other direction of the same rule: commenting a route out is removing
+    // it, and an addressable route that nothing lists is the drift this exists
+    // to catch.
+    const commented = `<urlset>
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <!-- <url><loc>https://sb.edct.dev/build</loc></url> -->
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: commented }));
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /\/build/);
   });
 
   it('fails when nothing states where the application is published', () => {

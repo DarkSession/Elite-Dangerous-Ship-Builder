@@ -1131,20 +1131,29 @@ const BUNDLE_REMNANTS = [
 /**
  * Origins that appear as namespace or documentation strings, never as requests.
  *
- * `schema.org` is the JSON-LD vocabulary the head declares itself against and
- * `sitemaps.org` is the sitemap's XML namespace. Neither is fetched: a
- * `@context` names a vocabulary and an `xmlns` names a schema, and both would
- * be identical strings if the site were served from the moon.
+ * Deliberately short, and deliberately not shared with the search-metadata
+ * rule: this list exempts a host from the constitution-I gate on the shipped
+ * bundle, so anything added here is a host the output may reach without anyone
+ * being told. The vocabularies the head and the sitemap declare themselves
+ * against are named in {@link DECLARED_VOCABULARIES} instead, which exempts
+ * them from that rule alone.
+ */
+const NON_REQUEST_ORIGINS = [/^https?:\/\/www\.w3\.org\//];
+
+/**
+ * Vocabularies the crawler-facing files name without ever fetching them.
+ *
+ * `schema.org` is what the JSON-LD block declares itself against and
+ * `sitemaps.org` is the sitemap's XML namespace. A `@context` names a
+ * vocabulary and an `xmlns` names a schema; both would be identical strings if
+ * the site were served from the moon, so neither is the site's origin moving
+ * out from under the other files.
  *
  * Each entry is written with its trailing slash, because the addresses these
  * are tested against are full URLs. A caller holding a bare origin appends one
  * before testing.
  */
-const NON_REQUEST_ORIGINS = [
-  /^https?:\/\/www\.w3\.org\//,
-  /^https?:\/\/schema\.org\//,
-  /^https?:\/\/www\.sitemaps\.org\//,
-];
+const DECLARED_VOCABULARIES = [/^https?:\/\/schema\.org\//, /^https?:\/\/www\.sitemaps\.org\//];
 
 /** Ways a bundle can actually reach another origin. */
 const CROSS_ORIGIN_REQUEST = [
@@ -1443,6 +1452,11 @@ function headContent(document, attribute, key) {
   return tag?.[3] ?? null;
 }
 
+/** A document with its XML comments removed, so nothing inside one is read. */
+function withoutXmlComments(document) {
+  return document.replace(/<!--[\s\S]*?-->/g, '');
+}
+
 /** One `<link>` element's href, by its relationship. */
 function linkHref(document, rel) {
   const tag = new RegExp(
@@ -1588,11 +1602,11 @@ export function searchMetadataViolations(input) {
     const file = SEARCH_METADATA_FILES[key];
     for (const match of (input[key] ?? '').matchAll(/https?:\/\/[a-z0-9.-]+/gi)) {
       const address = match[0];
-      // A bare origin gains the trailing slash `NON_REQUEST_ORIGINS` is
+      // A bare origin gains the trailing slash `DECLARED_VOCABULARIES` is
       // written against, so a vocabulary named without a path still matches.
       if (
         address !== origin &&
-        !NON_REQUEST_ORIGINS.some((allowed) => allowed.test(`${address}/`))
+        !DECLARED_VOCABULARIES.some((allowed) => allowed.test(`${address}/`))
       ) {
         fail(
           file,
@@ -1618,8 +1632,14 @@ export function searchMetadataViolations(input) {
   }
 
   // `sitemap.xml`: exactly the addressable routes, no more and no fewer.
+  //
+  // Comments are cut first, because the deployment cuts them: this file is also
+  // the route list `.github/workflows/ci.yml` publishes from, and a `<loc>` the
+  // two read differently is a route that passes here and never gets a file.
   const listed = new Set(
-    [...(input.sitemap ?? '').matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]),
+    [...withoutXmlComments(input.sitemap ?? '').matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(
+      (match) => match[1],
+    ),
   );
   const addressable = (input.routes ?? []).filter(
     (route) => !UNLISTABLE_ROUTES.has(route) && !route.includes(':'),

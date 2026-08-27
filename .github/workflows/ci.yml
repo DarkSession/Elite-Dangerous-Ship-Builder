@@ -132,14 +132,22 @@ jobs:
         run: |
           set -o pipefail
           cp index.html 404.html
-          # Comments are cut before the addresses are read, and the surrounding
-          # whitespace is tolerated, so that reformatting the sitemap cannot
-          # quietly remove a route from this list while leaving the policy
-          # checker — which is lenient about both — green.
-          locations="$(sed '/<!--/,/-->/d' sitemap.xml \
-            | tr '\n' ' ' \
+          # The lines are joined and the comments cut before the addresses are
+          # read, so that reformatting the sitemap cannot quietly remove a route
+          # from this list. `searchMetadataViolations` in
+          # scripts/check-interface-foundations.mjs does both as well: a `<loc>`
+          # the two read differently is a route that passes the gate and never
+          # gets a file. A comment body cannot contain `--`, which is what lets
+          # one cut both the one-line and the many-line form without a parser.
+          #
+          # `|| true` because `grep` reports "no match" as a failure and this
+          # pipeline runs under `pipefail`: without it an empty sitemap aborts
+          # the step on the assignment, and the message below — the one that
+          # says what is actually wrong — is never printed.
+          locations="$(tr '\n' ' ' < sitemap.xml \
+            | sed 's/<!--\([^-]\|-[^-]\)*-->//g' \
             | grep -o '<loc>[[:space:]]*[^<[:space:]]\{1,\}[[:space:]]*</loc>' \
-            | sed -e 's|<loc>[[:space:]]*||' -e 's|[[:space:]]*</loc>||')"
+            | sed -e 's|<loc>[[:space:]]*||' -e 's|[[:space:]]*</loc>||' || true)"
           if [ -z "$locations" ]; then
             echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> to publish."
             exit 1

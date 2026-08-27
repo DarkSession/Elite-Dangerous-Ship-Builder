@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 6
+**Version**: 7
 
 ## What is automated, and what is left
 
@@ -153,6 +153,13 @@ disagrees or where the announcement is correct but unusable.
     to find **nothing to press inside it** — no dismiss, no confirm, no "not
     now". The restart is not a question and the layer offers no answer to one.
 
+    Nothing is published to the live region while it stands, and that is
+    deliberate rather than an omission: the layer is modal, so the outlet
+    inside the frame is inert and out of the tree, and a sentence put there
+    would be one no reader is offered. The layer is the announcement. So expect
+    to hear its title and description **once**, from the layer, and expect
+    **no** second sentence about a published version alongside it.
+
     Stay on it and expect the page to restart by itself, roughly ten seconds
     in, with nothing having been activated. This is the step that carries the
     cost of excluding WCAG 2.2.1 for this mechanism (constitution V): a time
@@ -163,20 +170,25 @@ disagrees or where the announcement is correct but unusable.
     `UPDATE_OVERLAY_MS` in `src/app/application/updates/application-update.store.ts`
     is where it lives. Record the rate and the setting alongside the verdict.
 
-    The session that comes up says so: expect a notice announced once,
-    **Updated**, naming the version now running, and expect it to be findable
-    on the page afterwards rather than only having been spoken. It carries a
-    named control (**Continue**) that only dismisses the notice. Expect the
-    announcement **not** to repeat on the next load of that session.
+    The session that comes up says so, in a second modal layer rather than in
+    the live region: expect **Updated** announced by name as it takes focus,
+    naming the version now running, and expect that text to be readable in
+    place rather than only having been spoken. It carries one named control
+    (**Continue**), which dismisses the layer and nothing else. Expect it
+    **not** to come back on the next navigation, or on the next load of that
+    session.
 
-    Then the state where the restart could not be carried out: the layer is
-    gone, and the shell carries a polite notice that a newer version was
-    published, beside a named control (**Update now**) with its description.
-    Expect the notice to be announced once without interrupting what is being
-    read, expect it to stay findable on the page, and expect the control to be
-    announced as a button named the way it reads on screen. Expect the notice
-    **not** to be announced again when a further version is published behind
-    the first.
+    Then the state where the restart could not be carried out: the layer comes
+    down without the page starting over, and the shell is left carrying a
+    polite notice that a newer version was published, beside a named control
+    (**Update now**) with its description. This is the one moment the live
+    region has something to say, because it is the first moment a reader can
+    reach it — so expect the notice spoken once, politely, without cutting off
+    what is being read; expect it to stay findable on the page rather than only
+    having been spoken; and expect the control announced as a button named the
+    way it reads on screen. Expect the notice **not** to be spoken again when a
+    further version is published behind the first, however many times the layer
+    goes up and comes back down.
 
     Then the unrepairable state, which the shell exposes as an alert rather
     than as a status. Expect the notice to be spoken once as it arrives, expect
