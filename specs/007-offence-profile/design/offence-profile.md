@@ -184,7 +184,8 @@ are fields no canvas ever drew.
   A hull the catalogue _does_ carry is drawn whether or not the build has armed any of it: saying
   the package publishes no geometry for a placed hull would be false. It keeps its axes, its rings
   and every one of its mounts, drawn empty.
-- **Every hardpoint the catalogue places is drawn, armed or not.** Where a mount sits is a property
+- **Every hardpoint the catalogue places is drawn, armed or not — whenever the plate can hold its
+  mark.** Where a mount sits is a property
   of the hull rather than of what is on it, and a Commander deciding what to fit is asking exactly
   where a shot from that mount would go. An empty one is the same dot in the armed mount's own hue
   gone stale — filled, not hollow, since 2026-08-27 — and its own sentence beside the plate names it

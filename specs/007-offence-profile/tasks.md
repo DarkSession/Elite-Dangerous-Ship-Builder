@@ -840,6 +840,16 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       departure from one. And the contract's "two things the built region deliberately does not do"
       is one thing: the four fact cells it named are drawn by neither side since 2026-08-26.
       _`convergence.ts`, `e2e/offence-profile.spec.ts`, `spec.md`, `design/canvas-contract.md`._
+- [x] T072 Close the sixth review, which found no code defect and three statements the phase had left
+      behind it. The departures paragraph in `spec.md` counted four and listed five — the 508px bound
+      was never a clause of its own, so taking it out of the list did not take a clause with it.
+      FR-012's one-line summary in `design/screen-inventory.md`, and the bullet that restates it in
+      `design/offence-profile.md`, both still said every placed hardpoint is drawn, four bullets
+      after the one that says a shot outside the field of view is not; both carry the condition now.
+      And four rows of the canvas contract's build table still described the ring caption and the
+      three span figures as built, in a table whose own next row records them withdrawn on
+      2026-08-26; they take the same strikethrough.
+      _`spec.md`, `design/{screen-inventory,offence-profile,canvas-contract}.md`._
 
 ---
 
@@ -869,7 +879,8 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
 - Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
   Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
   what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
-  T069 and does the same again; T071 answers a review of T070, which found no defect in the code.
+  T069 and does the same again; T071 answers a review of T070, which found no defect in the code; T072 answers a review of T071,
+  which found none either.
 
 ### Parallel opportunities
 

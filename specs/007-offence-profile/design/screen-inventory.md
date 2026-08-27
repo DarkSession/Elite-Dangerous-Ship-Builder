@@ -31,7 +31,7 @@ inside feature 001's `/build` workspace, and one cell to the outfitting status r
 | FR-009      | A bar is drawn only where its figures share one scale, and every figure is written in words whether or not it carries one.                                                   |
 | FR-010      | Convergence reads the hull's published gunsight and the package's own projection; a mismatched hull is stated unavailable whole.                                             |
 | FR-011      | The plate is hidden from assistive technology, and every one of the hull's mounts — drawn or left off — is a sentence beside it.                                             |
-| FR-012      | Every hardpoint the catalogue places is drawn, the empty ones in their own ink and named as empty in words; no figure about the group counts one.                            |
+| FR-012      | Every hardpoint the catalogue places is drawn whenever its shot is inside the field of view, the empty ones in their own ink and named as empty in words either way.         |
 | FR-013      | The mount the workspace has selected takes the plate's third ink, with no ring and no outline, and is named as selected in its own sentence, from the ledger's own slot key. |
 | SC-004      | Nothing user-facing exists that the canvas contract does not sanction; the contract records every departure.                                                                 |
 
