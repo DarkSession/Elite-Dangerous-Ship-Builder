@@ -52,6 +52,8 @@ describe('HelpPresenter', () => {
         ...(entry.link === null ? [] : [entry.link.label]),
       ]),
       ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
+      view.about.maintainer,
+      view.about.provenance,
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
     ];
 
@@ -121,6 +123,8 @@ describe('HelpPresenter', () => {
       const view = presenter().view();
       const everything = [
         view.purpose,
+        view.about.maintainer,
+        view.about.provenance,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
       ].join(' ');
 
@@ -132,16 +136,33 @@ describe('HelpPresenter', () => {
       const view = presenter().view();
       const everything = [
         view.purpose,
+        view.about.maintainer,
+        view.about.provenance,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
         ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ].join(' ');
 
       expect(everything).not.toMatch(/live game|live catalogue|up to date|latest version/i);
     });
+
+    // The once-per-application Almanac credit feature 002's voice ruling put in
+    // this feature. It lived in a FAQ answer until that answer was withdrawn;
+    // it is `ABOUT` prose again, and around thirty strings elsewhere say
+    // nothing about the package because this sentence does (FR-008).
+    it('credits the bundled Almanac for the catalogue, the checks and the calculations', () => {
+      const provenance = presenter().view().about.provenance;
+
+      expect(provenance).toMatch(/almanac/i);
+      expect(provenance.length).toBeGreaterThan(0);
+    });
+
+    it('names who maintains the application', () => {
+      expect(presenter().view().about.maintainer.length).toBeGreaterThan(0);
+    });
   });
 
   describe('the topic projection', () => {
-    it('publishes all seven topics, once each, in the declared order', () => {
+    it('publishes every topic, once each, in the declared order', () => {
       const topics = presenter().view().topics;
 
       expect(topics.map((topic) => topic.id)).toEqual([...HELP_TOPIC_IDS]);

@@ -12,13 +12,18 @@
   <div class="help-dialog">
     <!--
       The reference's own ABOUT: one sentence saying what this is, and the
-      version line under it. Nothing else — the reference draws nothing else,
-      and the provenance paragraphs an earlier revision added here are
-      withdrawn.
+      version line under it. Two sentences stand between them that the
+      reference does not draw — who builds this, and where the game values come
+      from. The first is the owner's request of 2026-08-27; the second is the
+      once-per-application Almanac credit feature 002's voice ruling put in this
+      feature, which lived in a FAQ answer until that answer was withdrawn on
+      the same day (FR-008).
     -->
     <section class="help-dialog__section" [attr.aria-labelledby]="aboutId">
       <h3 class="help-dialog__heading" [id]="aboutId">{{ sections().about }}</h3>
       <p class="help-dialog__purpose">{{ view().purpose }}</p>
+      <p class="help-dialog__maintainer">{{ about().maintainer }}</p>
+      <p class="help-dialog__provenance">{{ about().provenance }}</p>
 
       <edsb-version-facts [facts]="about().facts" />
     </section>
@@ -26,8 +31,8 @@
     <!--
       The reference's FAQ: question, then answer, in one reading sequence. Each
       question is a heading under the section's own, so a reader moving by
-      heading meets the seven questions rather than one undifferentiated block
-      of prose.
+      heading meets the questions rather than one undifferentiated block of
+      prose.
     -->
     <section class="help-dialog__section" [attr.aria-labelledby]="faqId">
       <h3 class="help-dialog__heading" [id]="faqId">{{ sections().faq }}</h3>

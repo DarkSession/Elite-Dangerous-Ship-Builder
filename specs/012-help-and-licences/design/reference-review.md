@@ -35,7 +35,7 @@ versions, application behavior, legal facts, dependencies or CSS literals.
 | Four copied overlay bodies and `wireHelp` instances                                          | One shared frame-owned modal opened by one frame action                                         | Prevents content/state drift and serves every capability                                                                                                        |
 | `APP VERSION 4.2.1 · LIBRARY VERSION 3.8.0.3`                                                | Two separate labelled facts, `App version` and `Library version`, read off the build            | Only the reference's invented values are a departure; its two terms are adopted (see 2026-08-26)                                                                |
 | “Imported modules keep their real roll”                                                      | Completed 100% grades; supported partial imports are completed or the candidate is refused      | Reference contradicts the constitution and feature 002                                                                                                          |
-| “What can I import?” reference FAQ                                                           | The seven FR-010 topics only                                                                    | Import behavior is owned by feature 004 and not part of this concise modal requirement                                                                          |
+| “What can I import?” reference FAQ                                                           | The FR-010 topics only                                                                          | Import behavior is owned by feature 004 and not part of this concise modal requirement                                                                          |
 | `SHIP LINE ART & MATERIAL ICONS · EDASSETS.ORG, CC BY-NC-SA 4.0` — the summary's second line | Same line, naming Frontier's media-usage rules for the game data and imagery                    | Neither half is supportable: ship art reaches this application from the Almanac under Frontier's rules, and no CC BY-NC-SA grant for the icons is recorded here |
 | Generic unofficial-fan disclaimer                                                            | Exact project-specific repository wording, unchanged and marked in its own language             | FR-005/FR-006 require source traceability and verbatim presentation                                                                                             |
 | `?` with title-only naming                                                                   | The reference's own `?` on the wide bar, carrying its localised name as text inside the control | Only the title-only naming is a departure; the mark itself is adopted (see 2026-08-26)                                                                          |
@@ -65,7 +65,7 @@ that no canvas of the reference draws.
 
 | Withdrawn addition                                         | What it is replaced by                                                                     | Requirement amended |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
-| Two provenance sentences after the `ABOUT` version facts   | The `almanacOwnership` topic, and the licence summary's Frontier line                      | FR-008              |
+| Two provenance sentences after the `ABOUT` version facts   | One `ABOUT` provenance sentence before them, and the licence summary's Frontier line       | FR-008              |
 | A third identity fact carrying release state and build ID  | Two version facts, as the reference draws. Generator classification is untouched           | FR-007              |
 | Prose licence framing above the excerpt                    | The reference's own three-line summary of what covers what                                 | FR-003              |
 | Two sentences naming the excerpt's source and its language | The excerpt's `lang`, which is the same fact as a property rather than as prose            | FR-006              |
@@ -80,11 +80,12 @@ rendered.
 
 **A consequence to keep in view.** Feature 002's voice ruling of 2026-08-22 stopped ~30
 Commander-facing strings naming the Almanac, on the grounds that the credit belonged to this
-feature's provenance statement, once per application. That statement is now withdrawn. The credit
-did not go with it — the `almanacOwnership` topic says the bundled Almanac supplies the catalogue,
-the checks and the calculations, and that this application neither maintains nor corrects those game
-values — but it now lives in a FAQ answer rather than in `ABOUT`. That satisfies the ruling; a later
-pass that removed or reworded that topic would not, and should read this paragraph first.
+feature's provenance statement, once per application. On 2026-08-25 that statement was withdrawn and
+the credit moved to the `almanacOwnership` topic. On 2026-08-27 that topic was withdrawn in turn,
+and the paragraph above did its job: the credit came back to `ABOUT` as the one provenance sentence
+FR-008 now requires, rather than being dropped with the answer that had been holding it. The warning
+stands for whoever edits that sentence next — around thirty strings elsewhere say nothing about the
+Almanac because this one does.
 
 ## Visual translation into the repository design system
 
@@ -133,10 +134,11 @@ now meets a `?` where they used to meet two words. The canvas's judgement is tha
 symbol that convention has made legible without instruction, and this feature takes it.
 
 **What the second one does not give up.** The Almanac is still credited once per application: the
-`almanacOwnership` topic names it as the source of the catalogue, the checks and the calculations,
-and the licence summary names Frontier for the game data and imagery. The version label was never
-where that credit lived — it names the library the build was compiled against, which is what someone
-comparing two builds is reading it for. The standing feature 002 ruling of 2026-08-22 is unaffected.
+`ABOUT` provenance sentence names it as the source of the catalogue, the checks and the
+calculations, and the licence summary names Frontier for the game data and imagery. The version
+label was never where that credit lived — it names the library the build was compiled against, which
+is what someone comparing two builds is reading it for. The standing feature 002 ruling of
+2026-08-22 is unaffected.
 
 ## A defect the wide bar's mark exposed, 2026-08-26
 

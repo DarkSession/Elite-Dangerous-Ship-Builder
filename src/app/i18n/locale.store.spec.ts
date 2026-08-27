@@ -323,9 +323,9 @@ describe('LocaleStore document title', () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 
-    store.setPage('Shipyard');
+    store.setPage('Ship Builder');
 
-    expect(document.commits.at(-1)?.title).toContain('Shipyard');
+    expect(document.commits.at(-1)?.title).toContain('Ship Builder');
     expect(document.commits.at(-1)?.title).toContain(BUNDLED_ENGLISH['app.name']);
   });
 
@@ -340,12 +340,12 @@ describe('LocaleStore document title', () => {
 
   it('re-publishes the title in the language that commits with it', async () => {
     const { store, document } = setup({ browserLanguages: ['de'] });
-    store.setPage('Shipyard');
+    store.setPage('Ship Builder');
 
     await store.start();
 
     const last = document.commits.at(-1);
     expect(last?.language).toBe('de');
-    expect(last?.title).toContain('Shipyard');
+    expect(last?.title).toContain('Ship Builder');
   });
 });

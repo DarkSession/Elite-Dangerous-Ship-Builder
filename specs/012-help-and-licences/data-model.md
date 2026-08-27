@@ -168,15 +168,10 @@ type GoverningReference =
 
 Required IDs, in modal order:
 
-1. `buildLinkPrivacy`
-2. `accountsUploadsTelemetry`
-3. `browserPersistence`
-4. `offlineAssets`
-5. `completedEngineeringGrades`
-6. `hullFactsAndBuildResults`
-7. `almanacOwnership`
+1. `browserPersistence`
+2. `completedEngineeringGrades`
 
-Governing references are not displayed or bundled. Build-time checks require the exact seven-ID set,
+Governing references are not displayed or bundled. Build-time checks require the exact declared ID set,
 one definition per ID, a non-empty resolvable reference set per definition and non-empty question and
 answer messages in every shipped application locale. A missing, duplicate or unreferenced
 definition fails mechanically; a contradictory or unsupported definition fails required content

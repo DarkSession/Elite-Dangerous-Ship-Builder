@@ -63,7 +63,7 @@ Seven question/answer records remain visible in one reading sequence:
 6. What is a hull fact and what is a build result?
 7. Where do the game values and calculations come from?
 
-Each is a heading over its own answer, so a reader moving by heading meets seven questions rather
+Each is a heading over its own answer, so a reader moving by heading meets the questions rather
 than one block of prose. A question sits closer to its own answer than the pairs sit to each other,
 which is the reference's own 4-against-11-pixel rhythm expressed in stack tokens.
 
@@ -78,7 +78,7 @@ A semantic fact group inside `ABOUT` presents two facts, which is what the refer
 
 - App version; and
 - Library version — the reference's own term for the bundled Almanac, adopted on 2026-08-26. The
-  package is credited by name in the `almanacOwnership` topic and in the licence summary; a version
+  package is credited by name in the `ABOUT` provenance sentence and in the licence summary; a version
   label is not where that credit lives.
 
 Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
@@ -176,16 +176,16 @@ it is recorded here for the pass that resolves it.
 
 ## States
 
-| State                    | Presentation                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| Closed                   | current capability plus the frame's visible Help entry; no hidden duplicate dialog landmark |
-| Open                     | complete content: purpose, two version facts, seven topics, summary and disclaimer          |
-| Global invocation        | normal top-of-modal position                                                                |
-| Offline                  | identical help, facts, topics and disclaimer; nothing left to fetch and no network warning  |
-| Alternate locale         | all owned text translated; exact disclaimer unchanged and marked English                    |
-| Expanded/RTL fixture     | expanded/RTL section reflows around a stable English source region without truncation       |
-| Reduced motion           | no essential transition; state change remains immediate and textual                         |
-| Missing/invalid artifact | no runtime state; generation/release fails                                                  |
+| State                    | Presentation                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| Closed                   | current capability plus the frame's visible Help entry; no hidden duplicate dialog landmark       |
+| Open                     | complete content: three `ABOUT` sentences, two version facts, both topics, summary and disclaimer |
+| Global invocation        | normal top-of-modal position                                                                      |
+| Offline                  | identical help, facts, topics and disclaimer; nothing left to fetch and no network warning        |
+| Alternate locale         | all owned text translated; exact disclaimer unchanged and marked English                          |
+| Expanded/RTL fixture     | expanded/RTL section reflows around a stable English source region without truncation             |
+| Reduced motion           | no essential transition; state change remains immediate and textual                               |
+| Missing/invalid artifact | no runtime state; generation/release fails                                                        |
 
 ## Accessibility behavior
 
@@ -201,7 +201,7 @@ application does not claim; everything below is claimed.
   it, and asserted that way in the journey.
 - Heading levels create a complete order for ABOUT, FAQ and LICENCE.
 - Heading levels nest: each `FAQ` question is a heading under the section's own, so heading
-  navigation reaches the seven questions.
+  navigation reaches every question.
 - Version facts use semantic terms/definitions. Every fact is text, not color or position.
 - The disclaimer's language is declared on the region itself, so it is announced in the language it
   was written in whatever the interface language is.

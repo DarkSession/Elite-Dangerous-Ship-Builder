@@ -125,7 +125,7 @@ test.describe('cross-route semantics', () => {
     // and asserting that it does not is what is left to check.
     await openScreen(page, 'workspace');
 
-    await reachShellLink(page, 'Shipyard');
+    await reachShellLink(page, 'Ship Builder');
     await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('Sidewinder');
     await openFirstHullFromManifest(page);
     await page.getByRole('button', { name: 'Build stock hull' }).click();

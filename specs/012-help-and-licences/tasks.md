@@ -280,6 +280,43 @@ request of any origin.
 - [x] T080 [P] Amend [spec.md](./spec.md) (scope, two clarifications, Story 1, FR-003, FR-005, SC-001, the edge case and Almanac Coverage), [contracts/help-navigation.md](./contracts/help-navigation.md), [design/reference-review.md](./design/reference-review.md) and [design/help-and-licences.md](./design/help-and-licences.md) so the withdrawal of 2026-08-25 and its reversal are both on the record with the reasoning that separates a control from a linked word
 - [x] T081 Re-run the gate. **Run 2026-08-26:** format, artifacts check, typecheck, `build` at 406.90 kB raw / 102.56 kB transfer, `build:preview`, eight policy checkers, 287 generator tests, 160 unit files / 2203 tests at 85.83 / 84.29 / 89.42 / 86.09, all five Chromium projects at 2889 of 2890, and `e2e:offline` 80 of 80 in Chromium. The one Chromium failure is feature 006's doubled-text reflow assertion, which passes 3 of 3 on its own and which nothing here touches; `e2e:timing` fails on feature 002's keystroke budget exactly as it did before this change. Firefox is still unrunnable here. Recorded in [design/quickstart-walk.md](./design/quickstart-walk.md#re-run-of-2026-08-26-for-the-licence-links) (depends on T073, T074, T075, T076, T077, T078, T078a, T079, T080)
 
+## Phase 9: What `ABOUT` says, and the questions the FAQ stopped asking, 2026-08-27
+
+> The owner read the modal and made two calls. The purpose sentence should name what this is
+> without leading on "offline", and the application should say who builds it. And the FAQ had grown
+> into a list a reader skips: five of its seven answers restated something the interface, the
+> licence summary or `ABOUT` already carried.
+
+- [x] T068 Reword `help.purpose` to "Ship Builder is an Elite Dangerous outfitting bench." in both
+      shipped locales, and add `help.maintainer` beside it. `ABOUT` draws the maintainer sentence
+      after the purpose and before the version facts.
+- [x] T069 Withdraw `buildLinkPrivacy`, `accountsUploadsTelemetry`, `offlineAssets`,
+      `hullFactsAndBuildResults` and `almanacOwnership` from `HELP_TOPIC_IDS`,
+      `scripts/help-topic-definitions.mjs` and both locale catalogues. `browserPersistence` and
+      `completedEngineeringGrades` remain, in that order.
+      _Each withdrawn answer failed the test the two survivors pass: it answered something no
+      Commander has to open help to learn._
+- [x] T070 Return the once-per-application Almanac credit to `ABOUT` as `help.provenance`, drawn
+      after the maintainer sentence. Feature 002's voice ruling of 2026-08-22 is why it has to
+      exist somewhere in this feature; the topic that had been holding it since 2026-08-25 is gone
+      with T069, and dropping the credit with it would leave around thirty deliberately uncredited
+      strings elsewhere with nothing behind them.
+- [x] T071 Amend the specification to match: the scope sentence, the 2026-08-20 comparison-set
+      answer, story 2 item 3, story 3 item 1, FR-008, FR-010, SC-003, SC-004 and the offline edge
+      case. Record the three questions and answers of the 2026-08-27 session above them.
+- [x] T072 [P] Carry the same change into `contracts/help-navigation.md` (the reading order, the
+      topic bullets, the governing-reference table and the content-review gate),
+      `design/help-topic-review.md` (the five reviews go; the two that ship stay),
+      `design/reference-review.md` (both paragraphs that warned a later pass about the credit),
+      `design/help-and-licences.md`, `design/screen-inventory.md`, `data-model.md`, `quickstart.md`
+      and `plan.md`.
+- [x] T073 [P] Cover it: the `ABOUT` prose order in `help-dialog.component.spec.ts` and
+      `e2e/help-and-licences.spec.ts`, the credit and the maintainer line in
+      `help.presenter.spec.ts`, the two-topic set in `help-topic.spec.ts` and
+      `scripts/check-help-topics.test.mjs`, the five withdrawn questions asserted absent in
+      `e2e/help-and-licences.spec.ts`, and the three sentences offline in `e2e/help-offline.spec.ts`.
+      Reconcile `e2e/coverage-ledger.ts` with all of it.
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

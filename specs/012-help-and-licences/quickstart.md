@@ -128,19 +128,19 @@ Expected:
 
 ## 4. Validate accepted help and provenance
 
-Confirm the modal contains all seven topics from
+Confirm the modal contains every topic from
 [contracts/help-navigation.md](./contracts/help-navigation.md): build-link privacy,
 accounts/uploads/telemetry, browser persistence/clearing, offline assets, completed engineering
 grades, hull facts versus build results and Almanac ownership.
 
 Expected:
 
-- the IDs form the exact seven-topic set with no duplicate, and every topic has a non-empty resolved
+- the IDs form the exact declared topic set with no duplicate, and every topic has a non-empty resolved
   governing-reference set matching the contract map;
 - every topic matches accepted current behavior;
 - no reference-only import promise appears;
 - no answer says partial engineering rolls are retained;
-- the `almanacOwnership` answer says the bundled Almanac supplies the catalogue, the checks and the
+- the `ABOUT` provenance sentence says the bundled Almanac supplies the catalogue, the checks and the
   calculations and that this application neither maintains nor corrects those game values — this is
   where the once-per-application credit now lives, the `ABOUT` provenance paragraph having been
   withdrawn with the rest of what the reference does not draw;
@@ -185,7 +185,7 @@ capability. Open the modal before opening any hull artwork.
 
 Expected:
 
-- all seven topics, both version facts, the three-line licence summary and the exact disclaimer are
+- both topics, all three `ABOUT` sentences, both version facts, the licence summary and the exact disclaimer are
   present;
 - opening/reading/closing causes no request and has no loading/error/stale state;
 - there is nothing to follow: the modal has no external action offline or online;

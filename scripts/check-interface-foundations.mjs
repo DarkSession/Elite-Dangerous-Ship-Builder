@@ -1417,6 +1417,9 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
+    'catalogue.title':
+      'The product name. The screen the application opens on is named after the product, ruled 2026-08-27, and a product renamed in one language is a different product.',
+    'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',

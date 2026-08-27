@@ -1680,6 +1680,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'they are two separately labelled facts with distinct terms, never one run-together line',
       'there is no third fact: nothing in the modal names a release classification or a build id',
       'no label calls either value the live game or the live catalogue version',
+      'the section reads three sentences before the facts: what this is, who maintains it, and where the game values come from',
+      'the provenance sentence names the bundled Almanac and claims no currency with the live game',
       'long identities wrap within the measure rather than scrolling the modal sideways',
     ],
     manualRecord: 'screen-reader',
@@ -1690,7 +1692,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/help',
     axe: true,
     assertions: [
-      'all seven accepted topics are present exactly once, in the declared order',
+      'both accepted topics are present exactly once, in the declared order',
+      'no withdrawn topic returns: nothing asks about share links, accounts, offline, hull facts or where values come from',
       'each question is a heading over its own answer, nested under the FAQ section’s own heading',
       'no answer carries a raw key, a blank value, an unresolved interpolation or markup',
       'neither reference claim this application cannot support appears: no import promise, no retained partial roll',
@@ -1720,7 +1723,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: false,
     assertions: [
       'after one completed online load and with the network disabled, the modal opens complete',
-      'the purpose, both version facts, all seven topics in order and the exact disclaimer are all present',
+      'all three ABOUT sentences, both version facts, both topics in order and the exact disclaimer are all present',
       'no request is made and there is no loading, missing or stale state to be in',
     ],
     manualRecord: null,

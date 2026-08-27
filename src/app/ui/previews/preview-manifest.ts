@@ -1222,7 +1222,7 @@ registerPreview({
       {
         routeContext: 'Anaconda explorer',
         navigation: [
-          { id: 'ships', label: 'Shipyard', href: '/ships', current: true },
+          { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
           { id: 'builds', label: 'Saved builds', href: '/builds' },
         ],
         actions: [
@@ -4236,14 +4236,18 @@ const HELP_ABOUT_FACTS = [
   },
 ];
 
-const HELP_ABOUT = { facts: HELP_ABOUT_FACTS };
+const HELP_ABOUT = {
+  maintainer: BUNDLED_ENGLISH['help.maintainer'],
+  provenance: BUNDLED_ENGLISH['help.provenance'],
+  facts: HELP_ABOUT_FACTS,
+};
 
 /**
- * All seven questions, read from the generated catalogue and the bundled
- * English messages rather than typed in here.
+ * Every question, read from the generated catalogue and the bundled English
+ * messages rather than typed in here.
  *
  * A catalogue page that listed its own copy of the questions would keep
- * rendering seven of them on the day the modal started rendering six.
+ * rendering the old set on the day the modal started rendering a new one.
  */
 const HELP_TOPIC_VIEWS = HELP_TOPICS.map((topic) => ({
   id: topic.id,

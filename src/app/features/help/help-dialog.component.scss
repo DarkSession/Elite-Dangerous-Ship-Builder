@@ -25,7 +25,9 @@
   @include layout.micro-label(var(--edsb-text-accent));
 }
 
-.help-dialog__purpose {
+.help-dialog__purpose,
+.help-dialog__maintainer,
+.help-dialog__provenance {
   font-weight: var(--edsb-text-weight-prose);
   line-height: var(--edsb-text-leading-body);
   color: var(--edsb-text-subtle);

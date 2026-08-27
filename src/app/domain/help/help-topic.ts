@@ -1,5 +1,5 @@
 /**
- * The seven questions the modal answers, as identities rather than as text.
+ * The two questions the modal answers, as identities rather than as text.
  *
  * The wording lives in the locale catalogues, because it is application-owned
  * text and every application-owned string in this repository is translatable
@@ -7,23 +7,18 @@
  * order, and the rule that says a catalogue missing one of them is not a
  * catalogue to publish.
  *
- * The reference canvas asks four questions, two of which this application
- * cannot answer honestly — it promises an import behaviour feature 004 owns,
- * and it says imported modules keep their real roll, which contradicts
- * constitution IV and feature 002. The accepted set replaces them
+ * The set is the two a Commander cannot answer by reading the interface. Where
+ * a build is stored and why an engineered figure differs from the game are both
+ * facts about how this application behaves, and neither is written on any
+ * screen. The five questions the set used to carry were withdrawn on 2026-08-27
+ * at the owner's request: each answered something the interface, the licence
+ * summary or the `ABOUT` section already says, and a FAQ that repeats the
+ * screen behind it is a FAQ a reader learns to skip
  * (`contracts/help-navigation.md`, "Required help topics").
  */
 
-/** The exact seven identities, in the order the modal reads them. */
-export const HELP_TOPIC_IDS = [
-  'buildLinkPrivacy',
-  'accountsUploadsTelemetry',
-  'browserPersistence',
-  'offlineAssets',
-  'completedEngineeringGrades',
-  'hullFactsAndBuildResults',
-  'almanacOwnership',
-] as const;
+/** The exact two identities, in the order the modal reads them. */
+export const HELP_TOPIC_IDS = ['browserPersistence', 'completedEngineeringGrades'] as const;
 
 export type HelpTopicId = (typeof HELP_TOPIC_IDS)[number];
 
@@ -44,12 +39,13 @@ export interface BrowserHelpTopic {
 }
 
 /**
- * Checks that a catalogue is the complete seven, once each, in order.
+ * Checks that a catalogue is the complete set, once each, in order.
  *
  * "Or throws" rather than "or filters": a modal that quietly drops a topic it
  * could not resolve looks exactly like a modal for an application that does not
- * do that thing. A Commander reading a help section with no answer about build
- * links would reasonably conclude there was nothing to say about build links.
+ * do that thing. A Commander reading a help section with no answer about where
+ * their builds are kept would reasonably conclude there was nothing to say
+ * about it.
  */
 export function assertCompleteHelpTopicCatalogue(
   topics: readonly BrowserHelpTopic[],

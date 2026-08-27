@@ -47,7 +47,7 @@ test.describe('offline capability', () => {
     await page.reload();
 
     await expect(page.getByRole('main')).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1, name: 'Shipyard' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Ship Builder' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     // The catalogue is installed with the package rather than fetched, so every
     // hull is still there.
