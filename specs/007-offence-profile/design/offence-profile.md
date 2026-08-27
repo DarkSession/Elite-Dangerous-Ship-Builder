@@ -167,9 +167,10 @@ are fields no canvas ever drew.
   than a figure the block is withholding.
 - The target range is a range field over 500 m to 3,000 m on a 50 m step, starting at 1,500 m,
   announcing the distance as a Commander reads it rather than as a bare number. Those are the
-  maintainer's bounds rather than the canvas's own 100 m–2,000 m, which could not be moved to the
-  distance being asked about (`design/canvas-contract.md`, review notes 18 and 21). The 3,000 m
-  ceiling is a preference and not a package fact: a cannon states 4,500 m and a multi-cannon
+  canvas's own minimum, step and initial value — `wireConvergence` declares `MIN = 500, MAX = 5000`,
+  opens at `1500` and quantises to `50` — with the ceiling alone departing
+  (`design/canvas-contract.md`, review notes 18 and 21). The 3,000 m ceiling is a preference and not
+  a package fact: a cannon states 4,500 m and a multi-cannon
   4,000 m, so a build carrying one can be fired past the end of this track. It stops there rather
   than at the 5,000 m it reached between 2026-08-26 and 2026-08-27 because an offset subtends less
   and less of the plate as the range grows, so those are the steps that move the marks least. It is
@@ -197,7 +198,7 @@ are fields no canvas ever drew.
   2026-08-27, on a plate of nothing but dots, it would read as one even more plainly. Nothing a reader had is
   lost, because the ring only ever repeated what the mark's own sentence beside the plate already
   says — which is where the fact has to live in any case, a colour never having been a reading
-  (011 FR-022). That ink is the one the canvas spends on a gimballed mount; the
+  (011 FR-010). That ink is the one the canvas spends on a gimballed mount; the
   fixed-against-aimed distinction is withdrawn from the drawing with it, because this plate has three
   things to separate where the canvas had one, and how a weapon aims is the one of them its own
   sentence was already carrying (`design/canvas-contract.md`, review note 17). A selected hardpoint

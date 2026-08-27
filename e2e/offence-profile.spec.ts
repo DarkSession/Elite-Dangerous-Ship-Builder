@@ -1000,7 +1000,7 @@ test.describe('shot convergence', () => {
     // And the ink is never the only thing that says so: an empty mount's own
     // sentence stands beside the plate with the rest, and it is the catalogue's
     // empty-mount sentence rather than a weapon's with the name left out
-    // (011 FR-022).
+    // (011 FR-010).
     const stated = await block.locator('.shots__entry').allInnerTexts();
     expect(stated).toHaveLength(mounts);
     const empty = [
@@ -1072,7 +1072,7 @@ test.describe('shot convergence', () => {
 
     // The workspace always has a mount selected — the ledger opens on the first
     // one — so the plate marks it from the moment it is drawn, and the mark is
-    // on the same mount the sentence names (011 FR-022).
+    // on the same mount the sentence names (011 FR-010).
     await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
     const first = await selectedMark();
     expect(first).toBeGreaterThanOrEqual(0);
@@ -1130,7 +1130,9 @@ test.describe('shot convergence', () => {
     await expect(page.locator('edsb-offence-analysis .range__value')).toHaveText(announced ?? '');
   });
 
-  test('names the four facts the canvas draws under the plate', async ({ page }) => {
+  test('draws nothing under the plate but the range, and no dot in the boresight', async ({
+    page,
+  }) => {
     await openOffence(page);
 
     // The 2026-08-26 canvas revision withdrew the four cells that used to

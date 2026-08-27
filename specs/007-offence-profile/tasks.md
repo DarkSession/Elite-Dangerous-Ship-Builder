@@ -804,11 +804,28 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       mark's fill, which rests on declaration order alone, is read off the rendered mark. Four more
       stale statements in `design/offence-profile.md` and `quickstart.md`, and the colour-alone rule
       cited to the constitution's principle V rather than to 011 FR-022, which is about the
-      automated checks.
+      automated checks. _(The citation was only half corrected here: T070 finishes it, and 011's own
+      requirement for the rule is FR-010.)_
       _`convergence.ts` and its suite, `shot-convergence.scss`, `e2e/offence-profile.spec.ts`,
       `spec.md`, `data-model.md`, `quickstart.md`, `design/{canvas-contract,offence-profile}.md`,
       `specs/010-hull-anatomy/design/hull-anatomy.md`,
       `specs/011-interface-foundations/design/token-evidence.md`._
+- [x] T070 Close the fourth review, which found no code defect and five more statements that were
+      not true — one of them a regression this phase introduced. The canvas's own track is
+      `500`–`5000` on a `50` step opening at `1500`, which `wireConvergence` declares at offset
+      1516348; `100`–`2000` on a `25` step is the _pre_-2026-08-25 drawing, and T065's note had
+      overwritten the one place that read the current one correctly. Only the **ceiling** departs
+      from the canvas, and nine places said otherwise. `011 FR-022` is the automated-checks
+      requirement; the colour-alone rule is `011 FR-010`, and every citation of it in this feature
+      now says so. The plate's own stylesheet still said it takes the canvas's width, the panel
+      template still said the block runs the full width, and the canvas contract's departures
+      paragraph still had the four cells beside the plate. The dead
+      `.offence__block--convergence .offence__note` rule and its fourteen-line comment about a ring
+      caption withdrawn on 2026-08-26 are deleted, and the end-to-end test that asserts none of the
+      four facts is drawn is no longer titled as though it names them.
+      _`convergence.ts`, `offence-analysis.{html,scss}`, `shot-convergence.{ts,scss}` and its suite,
+      `e2e/offence-profile.spec.ts`, `spec.md`, `data-model.md`, `quickstart.md`,
+      `design/{canvas-contract,offence-profile}.md`._
 
 ---
 
@@ -837,7 +854,8 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
   independent of each other; T062 depends on both.
 - Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
   Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
-  what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down.
+  what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
+  T069 and does the same again.
 
 ### Parallel opportunities
 

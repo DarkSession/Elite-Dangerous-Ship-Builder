@@ -116,11 +116,12 @@ export const PLATE_MARGIN_FRACTION = 0.92;
 /**
  * The target ranges the `RANGE` track runs between, its step, and where it opens.
  *
- * The canvas's own track is `100`–`2000` on a `25` step, opening at `600`. These
- * are the maintainer's: `500`–`3000` on a `50` step, opening at `1500`. A track
- * stopping at 2,000 m could not be moved to the distance a Commander is actually
- * asking about, and a 25 m step over that span is finer than a gunsight can be
- * read at.
+ * Three of the four are the canvas's own. `wireConvergence` declares
+ * `MIN = 500, MAX = 5000`, opens at `1500` and quantises to `50`, so the minimum,
+ * the step and the initial value here are the drawing's rather than a departure
+ * from it. (Its *earlier* track — `100`–`2000` on a `25` step, opening at `600` —
+ * is the pre-2026-08-25 canvas, and is what the two 2,000 m arguments elsewhere
+ * in this feature's record were written against.)
  *
  * The ceiling is a preference and not a fact about the package: it was 5,000 m
  * between 2026-08-26 and 2026-08-27, and 3,000 m is what was asked for on the

@@ -24,7 +24,7 @@ import { RangeField } from '../../../../../ui/components/range-field/range-field
  * What each mark carries — whether a weapon is on it, and whether it is the
  * mount the workspace currently has selected — is drawn as three inks and
  * written out in the mark's own sentence, because a colour is not a reading
- * (011 FR-022). How the weapon aims is in that sentence and nowhere else: the
+ * (011 FR-010). How the weapon aims is in that sentence and nowhere else: the
  * canvas's own second ink is spent on selection here
  * (`design/canvas-contract.md`, review note 17).
  */
@@ -144,7 +144,7 @@ export class ShotConvergence {
    * Each hardpoint, as a position on the plate and as a sentence.
    *
    * The plate is decorative: every mark on it is also stated in words below,
-   * because a dot is a picture, and a picture is not a reading (011 FR-022).
+   * because a dot is a picture, and a picture is not a reading (011 FR-010).
    * That is what carries the two things the inks separate — armed against
    * empty, and the selected mount against the rest — neither of which may rest
    * on a colour alone, and it is the only place how a weapon aims is said at
@@ -217,7 +217,7 @@ export class ShotConvergence {
    * says nothing else about either. This plate spends that second ink on the
    * selected mount instead, so the word here is not a reinforcement of a colour
    * but the only place the mount is stated — which is where it belonged
-   * anyway, a colour never having been a reading (011 FR-022). An unrecorded
+   * anyway, a colour never having been a reading (011 FR-010). An unrecorded
    * mount is named as unstated rather than guessed from the module's symbol.
    */
   #mountName(mount: ModuleMount | null): string {

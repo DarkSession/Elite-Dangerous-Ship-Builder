@@ -97,23 +97,6 @@
   margin: 0;
 }
 
-// The convergence block's note is the ring caption, and it carries two figures
-// with their units — `RING 2 · 27 MRAD · 16.0 m`. The mixin's uppercase would
-// print that metre as `M` and state the mega prefix instead of the metre, so it
-// is lifted here for the same reason it is lifted off a bar label that carries a
-// figure rather than a word.
-//
-// The canvas sets the caption uppercase apart from that one symbol, and the mix
-// is not reproduced: `text-transform` is all-or-nothing over a text node, and
-// the caption is one sentence whose parts move between languages, so splitting
-// it into a transformed span and an untransformed one would fix English word
-// order into the markup. Sentence case is the departure taken instead — a
-// lowercase word is a typographic difference, a metre printed `M` is a
-// different unit (`design/canvas-contract.md`, review note 15).
-.offence__block--convergence .offence__note {
-  text-transform: none;
-}
-
 // What the collection means, in prose voice rather than the mono numeric voice
 // of the figures above it.
 .offence__statement {

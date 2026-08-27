@@ -65,10 +65,10 @@
 // the earlier `16 / 6` band went with the earlier mapping that levelled it
 // (`design/canvas-contract.md`, "3. SHOT CONVERGENCE").
 //
-// It takes the canvas's own width and shrinks with the block rather than
-// growing to fill it: a square plate given a whole panel's width is a diagram
-// several screens tall, and the field of view it draws does not get wider for
-// having more room.
+// It is drawn at `--edsb-measure-gunsight-plate` — 224px, against the canvas's
+// own 172 — and shrinks with the block rather than growing to fill it: a square
+// plate given a whole panel's width is a diagram several screens tall, and the
+// field of view it draws does not get wider for having more room.
 //
 // Every mark on it is placed with physical `left` and `top`, deliberately, as
 // the hull schematic places its mounts: a gunsight is a view out of the

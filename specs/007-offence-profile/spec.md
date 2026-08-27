@@ -244,8 +244,8 @@ because it is why the first implementation shipped a third of the canvas.
   state a Commander is in while they decide what to put in it. The mark then says _selected_ and its
   sentence says both, because since 2026-08-27 one mark carries one fill: whether a mount is armed
   is stated in words rather than drawn twice.
-- The target range reaches 3,000 m, so the track can be moved to the distance being asked about
-  rather than stopping at the canvas's own 2,000 m. The ceiling is the maintainer's preference and
+- The target range reaches 3,000 m, short of the canvas's own 5,000 m ceiling and well past the
+  2,000 m of the drawing before it. The ceiling is the maintainer's preference and
   not a package fact: the package publishes 4,000 m for a multi-cannon and 4,500 m for a cannon, and
   a build carrying either can be fired further than this track goes. What the track is for is
   watching the shots close on the axis, and an offset subtends less and less of the plate as the

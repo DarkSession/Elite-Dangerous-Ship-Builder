@@ -138,8 +138,9 @@ plate itself is hidden from assistive technology, so every one of those distinct
 sentences rather than from the ink.
 
 The `TARGET RANGE` control runs from 500 m to 3,000 m on a 50 m step and opens at 1,500 m — the
-maintainer's own bounds, past the canvas's 2,000 m so it reaches the distance being asked about, and
-stopped at 3,000 m by preference rather than by any package figure (a cannon states 4,500 m). Moving it moves every shot and every sentence.
+canvas's own minimum, step and initial value, with the ceiling alone departing: 3,000 m by
+preference rather than by any package figure, where the canvas draws 5,000 m (a cannon states
+4,500 m). Moving it moves every shot and every sentence.
 A mount far enough off the axis is **not drawn** at a near range and keeps its sentence, which states
 its true offset; moving the target out brings its mark back onto the plate.
 

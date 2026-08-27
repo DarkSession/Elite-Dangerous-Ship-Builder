@@ -75,7 +75,7 @@ describe('ShotConvergence', () => {
 
     // The ink is never the only thing that says so: each empty mount's own
     // sentence is in the list beside the plate, and it is not the sentence an
-    // armed one gets (011 FR-022).
+    // armed one gets (011 FR-010).
     const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
       (entry.textContent ?? '').trim(),
     );
@@ -128,7 +128,7 @@ describe('ShotConvergence', () => {
     // The stock build leaves this hull's Huge mount empty, and the workspace
     // opens on it. One mark cannot carry two fills, so the plate says
     // *selected* and the mark's own sentence says both — which is where the
-    // reading was all along (011 FR-022).
+    // reading was all along (011 FR-010).
     const { component, element } = render({
       build: populatedBuild(),
       selectedSlot: 'HugeHardpoint1',
