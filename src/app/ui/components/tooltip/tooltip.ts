@@ -145,7 +145,14 @@ export class Tooltip {
    * therefore always be a press that closes it, and on a keyboard the tip could
    * not be closed at all.
    */
-  toggle(): void {
+  toggle(event?: Event): void {
+    // A presentational mark hands its press the event, because the row under it
+    // is a control: `preventDefault` stops a wrapping `label` from activating
+    // the radio it is for, and `stopPropagation` stops a ledger row's own
+    // select handler. Without both, asking what a mark means changes the build.
+    event?.preventDefault();
+    event?.stopPropagation();
+
     const pinning = !this.#pressed();
     this.#dismissed.set(false);
     this.#hovered.set(false);

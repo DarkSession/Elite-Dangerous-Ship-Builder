@@ -329,10 +329,6 @@ export class OutfittingStore {
     this.#reveal.set(reveal);
   }
 
-  dismissFailure(): void {
-    this.#lastEditFailure.set(null);
-  }
-
   /** Clears every editing field. Called after an accepted replacement. */
   resetForReplacement(): void {
     this.#selectedSlotKey.set(null);

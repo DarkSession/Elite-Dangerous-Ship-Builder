@@ -14,8 +14,13 @@
     either: the host is `aria-hidden`, and the restriction is already a sentence
     on the row. What it adds is a way to *see* that sentence by pointer or
     thumb, which is the whole of what the `title` it replaced was for.
+
+    The press is taken here and goes no further. A mark is projected into rows
+    that act on a press: a chooser row is a `label` around its own radio, and
+    taking one at wide width *fits the module*. Bubbling, a tap asking what an
+    icon means would fit the article it is drawn on.
   -->
-  <span class="tooltip__trigger tooltip__trigger--mark" (click)="toggle()">
+  <span class="tooltip__trigger tooltip__trigger--mark" (click)="toggle($event)">
     <ng-content />
   </span>
 } @else {

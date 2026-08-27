@@ -99,13 +99,19 @@ export class BuildStatus {
   );
 
   /**
-   * True where the package answered and had nothing to report.
+   * The package's own `valid`, read and not derived.
+   *
+   * `LoadoutValidation` publishes the verdict beside the issues, so this line is
+   * the package's answer rather than this component's reading of how many issues
+   * came back. The two are not the same claim: `incomplete` is a severity, and a
+   * build carrying only those is one the package calls valid. Counting issues
+   * would have withheld the confirmation there, on a verdict of our own
+   * (constitution II).
    *
    * `validation()` is `null` until a build is open, and no build is not a valid
-   * build. The two are told apart here so the confirmation is never drawn over
-   * an empty workspace.
+   * build, so the confirmation is never drawn over an empty workspace.
    */
-  readonly valid = computed(() => this.#active.validation() !== null && this.issues().length === 0);
+  readonly valid = computed(() => this.#active.validation()?.valid === true);
 
   readonly validLabel = this.#messages.messageSignal('build-status.valid');
 }

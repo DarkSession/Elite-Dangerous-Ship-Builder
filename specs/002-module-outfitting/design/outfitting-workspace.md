@@ -294,26 +294,39 @@ panel that is not the open one is removed from the page rather than hidden visua
 The segment is offered only at compact width. At wide width the rail is the third track of canvas
 1c's grid and is on screen whatever the strip has open, so there is nothing for a segment to reveal.
 
-### The foot is pinned, and the ledger pays for it
+### The foot is drawn, not pinned
 
-Canvas 1d draws `CHANGE MODULE` and `ENGINEER` on a plate at the foot of the screen, and pins it over
-the ledger. **The application pins it too** — `position: sticky; inset-block-end: 0` — so the two
-actions for the marked mount are on screen wherever a Commander has scrolled to
-(Commander request 2026-08-27).
+Canvas 1d draws `CHANGE MODULE` and `ENGINEER` on a plate at the foot of the screen, and the artboard
+pins that plate: it is drawn over the ledger, not after it. **The application draws it in the flow**,
+at the end of the stack where the artboard puts it, and does not pin it.
 
-What pinning costs was measured before it was built. An opaque plate 76px tall over a page-length
-ledger of 52px rows covers between half and the whole of whichever row falls at the foot of the
-viewport; on an Anaconda's hardpoints that left a mount row 350×20.4px against a 24px floor
-(`target-size`, `wcag22aa`, measured 2026-08-26). The ledger is therefore given the plate's own
-height as end padding: every row can be scrolled clear of the plate, so no row is permanently
-covered, and the end of the list is reachable rather than half-hidden. The row a Commander has
-scrolled the plate over is covered while it is there and one flick away from not being — which is
-what a pinned action bar is. Obscuring under focus is SC 2.4.11, one of the seven the constitution
-excludes.
+The reason is measured rather than argued. An opaque plate 76px tall over a page-length ledger of
+52px rows covers between half and the whole of whichever row falls at the foot of the viewport, and
+it does so at every scroll position there is — there is no scroll offset at which nothing is behind
+it. On an Anaconda's hardpoints that left a mount row 350×20.4px against a 24px floor
+(`target-size`, `wcag22aa`, measured 2026-08-26). The mount rows are this screen's primary targets; a
+plate that permanently covers one of them cannot be pinned over them.
 
-This reverses the 2026-08-26 ruling that drew the plate in the flow, and with it that ruling's second
-reading — that the two actions should not appear until the modules do. Pinned, they appear as soon as
-a mount is marked, which is what marking one is for.
+Pinning it correctly means bounding the scroll rather than floating the plate: the stack above scrolls
+inside a box of its own and the plate sits below that box, which is how a phone's action bar is built
+and what the artboard is actually drawing. That is a different arrangement from the single page-length
+column this region composes at compact width — the mode strip, the plates, the key figures and the
+ledger all scroll together today — so it is recorded here as the follow-up rather than half-built.
+
+**Tried, and reverted, on 2026-08-27.** A Commander asked for the plate to be on screen wherever they
+had scrolled to, and `position: sticky; inset-block-end: 0` was fitted with the ledger carrying the
+plate's height as end padding. The padding clears the _last_ rows only; at every other scroll
+position the plate still covered whichever row was at the foot of the viewport, and axe reported
+`target-size` (serious) against that row's `.slot__select` in both engines, across eight specs at
+mobile portrait. The criterion is **SC 2.5.8**, which is in scope — not SC 2.4.11, which is one of
+the seven the constitution excludes and which the reverted note wrongly cited. The follow-up above
+is the way in; there is no version of this that floats an opaque plate over the rows.
+
+**And it is also what was asked for (2026-08-26).** The Commander's own words for this were that the
+two actions should not appear until the modules do. Drawn in the flow they cannot: the plate is the
+last thing in the stack, under the ledger it acts on, so it comes into view with the end of that list
+and never before it. The pinned plate showed both actions over the hull plates, before there was a
+list on screen to have marked a mount in. Whatever the follow-up above builds has to keep that.
 
 ### The compact key figures
 
@@ -454,7 +467,7 @@ package immovable reason. Do not make the card open replacement or engineering a
 | Unsupported module ingress        | Outside the supported application import contract.                                                                                                                                     |
 | Non-removable                     | Localized package reason and no remove action.                                                                                                                                         |
 | Cargo hatch                       | Facts and power only.                                                                                                                                                                  |
-| Accepted normalized ingress       | The build carries what the package completed and nothing announces it; package-returned fixed defaults have no separate repair/provenance state; undo excludes normalization.          |
+| Accepted normalized ingress       | Notice reports quality completion; package-returned fixed defaults have no separate repair/provenance state; undo excludes normalization.                                              |
 | Refused incoming normalization    | Not rendered as the rejected workspace. Owning ingress surface names every partial slot/identity/package reason and states that the current build/history are unchanged.               |
 | Edit refusal                      | Structured localized notice; active build, calculations and history unchanged.                                                                                                         |
 | History available/unavailable     | Direct or menu actions reflect `canUndo`/`canRedo`; new branch clears redo immediately.                                                                                                |

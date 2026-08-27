@@ -217,6 +217,37 @@ describe('acquisition badge', () => {
       englishCatalogue['outfitting.acquisition.powerplay'],
     );
   });
+
+  it('acts on the mark and never on the row the mark is drawn in', () => {
+    // A chooser row is a `label` around its own radio, and taking one at wide
+    // width fits the module. A tap asking what an icon means must not fit the
+    // article it is drawn on, so the press stops at the mark.
+    const fixture = renderComponent(AcquisitionBadge, {
+      labels: [
+        {
+          kind: 'powerplay',
+          packageValue: 'powerplay',
+          messageKey: 'outfitting.acquisition.powerplay',
+          params: null,
+        },
+      ],
+    });
+
+    const mark = element(fixture).querySelector<HTMLElement>('.tooltip__trigger--mark')!;
+    const press = new MouseEvent('click', { bubbles: true, cancelable: true });
+    let reachedTheRow = false;
+    element(fixture).addEventListener('click', () => {
+      reachedTheRow = true;
+    });
+
+    mark.dispatchEvent(press);
+    fixture.detectChanges();
+
+    expect(reachedTheRow).toBe(false);
+    expect(press.defaultPrevented).toBe(true);
+    // And it still did its own job.
+    expect(element(fixture).querySelector('.tooltip__tip--shown')).not.toBeNull();
+  });
 });
 
 describe('candidate list', () => {
