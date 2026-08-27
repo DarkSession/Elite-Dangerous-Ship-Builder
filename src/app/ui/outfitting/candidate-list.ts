@@ -183,12 +183,14 @@ export class CandidateList {
 
     // Spent before anything else can return, and whether or not it matches: a
     // press answers for the reveal it caused and for no later one. Read after
-    // the early return, it was never spent under the accordion at all — where
-    // every press is made in the compact layer — so the id outlived the
-    // manifest it belonged to and the first rail reveal after a rotation or a
-    // resize read a stale press. The family it named is the one `seedFamilies`
-    // seeds, so the rail silently did not scroll, which is the fault this
-    // effect exists to remove (reported in review, 2026-08-27).
+    // the early return, it was never spent under the accordion at all — which
+    // the compact layer always draws, and which the inline composition draws
+    // too wherever the bench is under this component's own rail threshold. So
+    // the id outlived the manifest it belonged to, and the first rail reveal
+    // after a resize past that threshold read a stale press. The family it
+    // named is the one `seedFamilies` seeds, so the rail silently did not
+    // scroll, which is the fault this effect exists to remove (reported in
+    // review, 2026-08-27).
     const pressed = this.#pressedFamily;
     this.#pressedFamily = null;
 

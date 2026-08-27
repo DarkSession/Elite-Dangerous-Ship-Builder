@@ -156,34 +156,40 @@ test.describe('module families', () => {
     expect(selectedBox.y + selectedBox.height).toBeLessThanOrEqual(railBox.y + railBox.height + 1);
 
     // And a family the Commander reveals is left where they pressed it. The row
-    // is picked by where it sits rather than by which family it is: one at the
-    // far edge of the box is the case the rule exists for, because re-centring
-    // it would move the list under the press that chose it.
+    // has to be one the rail would otherwise scroll to, or the restraint that
+    // leaves an already-visible row alone answers first and the press is never
+    // weighed — a test that pressed a row whole in the box would pass with the
+    // press tracking deleted outright.
     const rows = page.locator('.family--rail');
     const count = await rows.count();
     expect(count).toBeGreaterThan(1);
 
-    let pressed = null;
+    let clipped: { index: number; offset: number } | null = null;
     for (let index = 0; index < count; index += 1) {
       const box = await rows.nth(index).boundingBox();
-      if (box !== null && box.y >= railBox.y && box.y + box.height <= railBox.y + railBox.height) {
-        pressed = { index, box };
+      if (box === null) {
+        continue;
+      }
+      if (box.y + box.height > railBox.y + railBox.height) {
+        clipped = { index, offset: box.y - railBox.y };
+        break;
       }
     }
-    expect(pressed).not.toBeNull();
+    expect(clipped).not.toBeNull();
 
-    const before = pressed!.box.y - railBox.y;
-
-    await rows.nth(pressed!.index).click();
-    await expect(rows.nth(pressed!.index)).toHaveAttribute('aria-pressed', 'true');
+    // Dispatched rather than clicked: Playwright scrolls a target into view
+    // before pressing it, which would move the rail before the rule under test
+    // ever ran.
+    await rows.nth(clipped!.index).evaluate((node: HTMLElement) => node.click());
+    await expect(rows.nth(clipped!.index)).toHaveAttribute('aria-pressed', 'true');
 
     // Measured inside the rail rather than in the window. Revealing a family
     // redraws the pane beside it, which changes the panel's height and reflows
     // everything above it — so a viewport figure moves for reasons that have
     // nothing to do with the rail scrolling.
     const railAfter = (await rail.boundingBox())!;
-    const after = (await rows.nth(pressed!.index).boundingBox())!;
-    expect(Math.abs(after.y - railAfter.y - before)).toBeLessThanOrEqual(1);
+    const after = (await rows.nth(clipped!.index).boundingBox())!;
+    expect(Math.abs(after.y - railAfter.y - clipped!.offset)).toBeLessThanOrEqual(1);
   });
 
   test('orders a family\u2019s rows by class, then by what they cost', async ({ page }) => {

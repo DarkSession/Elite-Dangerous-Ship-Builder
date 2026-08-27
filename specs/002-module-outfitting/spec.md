@@ -167,8 +167,10 @@ its ship name and ident — belongs here.
   MUST be presented for every fitted article, including one the package will accept no further
   engineering for.
 - **FR-012b**: Where the surface draws the details and the engineering inline, neither the surface nor
-  either side of it MAY scroll within itself: both sides MUST expand to the whole of what they hold,
-  the surface MUST be as tall as the taller of them, and the page MUST carry the result. Both sides
+  either side of it MAY scroll within itself in the block axis: both sides MUST expand to the whole of
+  what they hold, the surface MUST be as tall as the taller of them, and the page MUST carry the
+  result. A labelled wide fact table keeps its own inline-axis scroller, which is the one internal
+  scroll the responsive rules allow and what keeps the document from scrolling horizontally. Both sides
   MUST keep their positions for every fitted article: where there is nothing to engineer, the side
   that would carry the controls MUST state why, and the attributes MUST stay on the side they occupy
   otherwise.

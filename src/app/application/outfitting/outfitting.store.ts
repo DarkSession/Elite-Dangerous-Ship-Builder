@@ -2,7 +2,6 @@ import { Injectable, computed, inject, linkedSignal, signal, untracked } from '@
 import type { OutfittingFamilyId } from '@elite-dangerous-almanac/core/ships/module-families';
 import {
   LoadoutEditError,
-  type FittedModule,
   type ShipLoadout,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
@@ -33,6 +32,7 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import type { BuildEditIntent, BuildEditResult, EditFailure } from './build-edit-intent';
+import { carryPower, powerStateOf } from './power-carry';
 import {
   candidateMembership,
   resolveChoice,
@@ -766,65 +766,5 @@ function summaryOf(intent: BuildEditIntent): HistoryIntentSummary {
           intent.value === null ? 'outfitting.history.ident.cleared' : 'outfitting.history.ident',
         params: {},
       };
-  }
-}
-
-/**
- * What a mount's power assignment is, as the two fields a Commander set.
- *
- * `undefined` on either means the build says nothing there, which is not the
- * same as saying the default: the package answers an absent priority as group 1
- * and an absent `on` as on, and writing either down would put a field in the
- * build nobody chose (FR-015).
- */
-interface CarriedPowerState {
-  readonly on: boolean | undefined;
-  readonly priority: number | undefined;
-}
-
-/** The mount's power assignment before a fit replaces what is in it. */
-function powerStateOf(fitted: FittedModule | null): CarriedPowerState {
-  return { on: fitted?.on, priority: fitted?.priority };
-}
-
-/**
- * Puts a mount's power assignment back onto whatever was just fitted into it.
- *
- * `setModule` and `setPreEngineeredVariant` document a fit as a fresh mount —
- * "the slot's `On`, `Priority` and `Health` are reset. Set them again if your
- * screen keeps a priority group across a swap." This screen does: a Commander
- * who put their shield generator in group 3 and switched a heat sink off has
- * made a decision about the mount, not about the article that happened to be in
- * it, and a size upgrade is not a reason to undo it (Commander request
- * 2026-08-27). Engineering deliberately does not carry, and the difference is
- * the point: a blueprint is a job done to an article, and a priority group is
- * where a Commander decided that mount sits in the shed order.
- *
- * Called inside the fit's own operation, so the carry is the same package edit,
- * the same revision and the same history decision as the fit it belongs to.
- *
- * Nothing unstated is written. `health` is the third field the package resets
- * and the only one of the three no surface here reads or writes, so there is
- * nothing of a Commander's to carry.
- */
-function carryPower(candidate: ShipLoadout, slotKey: string, carried: CarriedPowerState): void {
-  // The setter's own documented domain, and the reason this is a condition
-  // rather than a straight call: it throws a `RangeError` outside `0`-`4`, and
-  // a group the package does not recognize is not a group there is anything to
-  // carry. Dropping it leaves the fit standing; passing it would refuse the fit
-  // over a value no Commander here set.
-  if (
-    carried.priority !== undefined &&
-    Number.isInteger(carried.priority) &&
-    carried.priority >= 0 &&
-    carried.priority <= 4
-  ) {
-    candidate.setModulePriority(slotKey, carried.priority);
-  }
-
-  // Only an explicit off. An absent or `true` `on` already reads as on, so
-  // writing `true` would add a field rather than preserve a state.
-  if (carried.on === false) {
-    candidate.setModuleEnabled(slotKey, false);
   }
 }

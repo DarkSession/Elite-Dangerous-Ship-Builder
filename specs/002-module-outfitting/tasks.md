@@ -683,10 +683,27 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       command bar")
 - [x] T165 Spend a family press before the reveal effect can return, correct the rule the design doc
       states, and pay for the two measurements that were missing. A press made under the accordion —
-      which is every press in the compact layer — was never spent, because the read sat after the
-      manifest guard; the id then outlived its manifest and the first rail reveal after a rotation
-      read a stale press, silently not scrolling. The design doc still called the in-view test "the
+      which the compact layer always draws, and which the inline composition draws too wherever the
+      bench is under the rail threshold — was never spent, because the read sat after the manifest
+      guard; the id then outlived its manifest and the first rail reveal after a resize past that
+      threshold read a stale press, silently not scrolling. The design doc still called the in-view test "the
       rule" after the code stopped treating it as one, and the `scroll-margin` comment cited a frozen
       family bar wave 9 removed. Adds the fieldset's own spill assertion, the variant branch of the
       power carry, and the scroller's block-start border to both centring sums
       (`candidate-list.ts`, `candidate-list.scss`, `design/module-replacement.md`)
+- [x] T166 Carry the mount's power state through `restorePurchase` too. Putting a purchase back
+      re-applies the article's own variant, which is the same `setPreEngineeredVariant` call a
+      variant fit makes and resets `On` and `Priority` the same way — so a Commander who had put the
+      article in a group and switched it off lost both, from the engineering panel rather than the
+      chooser, which is the harder of the two to notice. `powerStateOf` and `carryPower` move to
+      `power-carry.ts` because the store and the engineering draft both need them and the store
+      already imports from the draft (`power-carry.ts`, `engineering-draft.ts`,
+      `outfitting.store.ts`; spec FR-015, SC-003a)
+- [x] T167 Press a rail row the reveal would otherwise scroll to. The journey pressed a row already
+      whole in the rail's box, where the restraint answers first and the press rule is never weighed
+      — it passed with the press tracking deleted outright. It now finds a clipped row and dispatches
+      the press rather than clicking it, because Playwright scrolls a target into view before
+      pressing and that would move the rail before the rule ran. Names the manifest-spill and
+      power-carry journeys in the coverage ledger, and scopes FR-012b to the block axis so the
+      attribute table's own labelled inline scroller is not read as a contradiction
+      (`e2e/outfitting-families.spec.ts`, `e2e/coverage-ledger.ts`, `spec.md`)

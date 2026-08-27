@@ -270,6 +270,32 @@ describe('outfitting store - fitting', () => {
     expect(fitted.on).toBe(false);
   });
 
+  it('keeps the mount\u2019s power state when a purchase is put back', () => {
+    // `restorePurchase` re-applies the article's own variant, which is the same
+    // package call a variant fit makes and resets the mount the same way. It is
+    // reached from the engineering panel rather than the chooser, and a
+    // Commander does not think of it as replacing anything — which is exactly
+    // why losing the group there would be harder to notice, not easier.
+    store.select(FIXTURE_SLOTS.frameShiftDrive);
+    const variant = store.membership()!.choices.find((candidate) => candidate.kind === 'variant');
+    expect(variant).toBeDefined();
+    store.dispatch({
+      kind: 'fitVariant',
+      slotKey: FIXTURE_SLOTS.frameShiftDrive,
+      choiceKey: variant!.key,
+    });
+
+    store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.frameShiftDrive, priority: 4 });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.frameShiftDrive, enabled: false });
+
+    store.dispatch({ kind: 'restorePurchase', slotKey: FIXTURE_SLOTS.frameShiftDrive });
+
+    const fitted = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.frameShiftDrive)!;
+    expect(fitted.preEngineeredVariant).not.toBeNull();
+    expect(fitted.priority).toBe(4);
+    expect(fitted.on).toBe(false);
+  });
+
   it('writes no power field a replaced module did not carry', () => {
     store.select(FIXTURE_SLOTS.thrusters);
 
