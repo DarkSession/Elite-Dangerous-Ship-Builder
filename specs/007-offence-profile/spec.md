@@ -104,7 +104,13 @@ because it is why the first implementation shipped a third of the canvas.
   > this block wrote and what SI says — but the outfitting panel a Commander cross-checks writes `MW`
   > after the pool, and one figure written in two units across two panels reads as two figures. The
   > figure itself MUST NOT change: it is the package's `capacity`, copied, with no conversion, scale
-  > or factor applied, at the two decimal places canvas 1c draws this block to.
+  > or factor applied, at the two decimal places this block already wrote it to.
+  >
+  > The departure is from the package as well as from SI: the Almanac documents this field as
+  > `/** WEP-capacitor capacity, in megajoules. */` (`dist/ships/weapons-capacitor.d.ts`), and the
+  > constitution makes that package the source of truth. Nothing in this repository or in the package
+  > records what the game's own panel writes, so the evidence for `MW` is the owner's ruling and
+  > nothing else. Both facts are stated rather than softened.
   >
   > The ruling is feature 005's, whose distributor table states this same quantity for `WEP` and met
   > the question first (`specs/005-power-and-heat/spec.md`, FR-007). It is recorded here because this

@@ -105,7 +105,14 @@ const DAMAGE_TYPE_LABELS = {
 
 /** Damage rates to one place, as the canvas sets every figure in this panel. */
 const DAMAGE_DIGITS = 1;
-/** Capacitor figures to two places, which is what canvas 1c draws them to. */
+/**
+ * Every capacitor figure to two places, which is what canvas 1c draws its two
+ * rates to. The capacity takes the same precision by being in the same block,
+ * not by being drawn that way: the artboard's only capacity is canvas 1d's
+ * `CAP 61 MJ`, whole. Feature 005's distributor writes its own capacity to one
+ * place, and the split is recorded rather than settled
+ * (`specs/005-power-and-heat/contracts/distributor-metrics.md`).
+ */
 const ENERGY_DIGITS = 2;
 /** Durations to one, which is the place canvas 1c's `FULL FIRE 14.2 s` sets. */
 const SECONDS_DIGITS = 1;

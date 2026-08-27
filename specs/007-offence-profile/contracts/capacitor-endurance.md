@@ -46,8 +46,16 @@ MJ/s, and the package wins.
 > package's.** The capacity is a stored pool and its SI unit is the megajoule, which is what this
 > block wrote until this ruling and what canvas 1d's chip draws. The game writes `MW` after a
 > capacitor pool in the outfitting panel a Commander cross-checks, and one figure written in two
-> units across two panels reads as two figures. So this one row takes the game's unit over both the
-> canvas's and SI's, while `DRAW` and `RECHARGE` keep the package's `MJ/s` as above.
+> units across two panels reads as two figures. So this one row takes the game's unit over the
+> canvas's, over SI's, and over the package's — the Almanac documents this very field as
+> `/** WEP-capacitor capacity, in megajoules. */` (`dist/ships/weapons-capacitor.d.ts`), and the
+> constitution makes the package the source of truth, so the departure is from the source of truth's
+> own documentation of the field and is recorded as that rather than as a quarrel with SI. `DRAW` and
+> `RECHARGE` keep the package's `MJ/s` as above.
+>
+> The evidence for `MW` is the owner's ruling and nothing else: nothing in this repository or in the
+> package records what the game's panel writes. That is the whole of the record, stated rather than
+> implied.
 >
 > The figure does not move: `capacity` is copied from the package to the same two decimal places,
 > with no conversion or factor applied. The ruling is feature 005's — its distributor table states
@@ -55,6 +63,15 @@ MJ/s, and the package wins.
 > (`specs/005-power-and-heat/spec.md`, FR-007, and
 > `specs/005-power-and-heat/contracts/distributor-metrics.md`). The two blocks state one quantity
 > and must not state it in two units, so 007 follows 005 here rather than ruling separately.
+>
+> **They do still write it to different decimal places.** This block writes two — the precision
+> canvas 1c gives its two rates, taken by the capacity for being in the same block rather than for
+> being drawn that way, since the artboard's only capacity is canvas 1d's `CAP 61 MJ`, whole. The
+> distributor table writes one, which is the precision its own canvas draws. So one build reads
+> `48.00 MW` here and `48.0 MW` there. It predates this ruling and is left standing rather than
+> settled in passing, because changing it would move a drawn figure — the one thing this ruling
+> promised not to do. `specs/005-power-and-heat/contracts/distributor-metrics.md` records the other
+> half; a reader arriving from either side finds it written down.
 
 ## Duration semantics
 

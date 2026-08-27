@@ -72,9 +72,21 @@ does not compute or assert a capacity transformation.
 > a Commander cross-checks this table against writes `MW` after a bank's
 > capacity, and a table that disagreed with that panel about the unit reads as a
 > second, different figure rather than the same one. The game's unit wins here,
-> against both the canvas and SI. The owner's ruling is recorded as what it is —
-> a deliberate departure from the physically correct unit, taken so the two
-> readings a Commander holds side by side agree.
+> against both the canvas and SI. It is also against the package: the Almanac's
+> own typings document this field as
+> `/** Energy the capacitor holds when full, in megajoules. */`
+> (`dist/ships/distributor.d.ts`), and the constitution makes that package the
+> source of truth. So this is a departure from the declared source of truth's
+> explicit documentation of the field being drawn, and the record says so rather
+> than softening it to a quarrel with SI.
+>
+> What it is not is a reading of the game taken from anything in this repository.
+> Nothing here or in the package documents what the outfitting panel writes; the
+> whole of the evidence is the owner's ruling, made against the stated
+> alternative of keeping `MJ`. Recorded as what it is — a deliberate departure
+> from the documented unit, taken so the two readings a Commander holds side by
+> side agree. The figure is untouched either way, which is what keeps the
+> departure to a label.
 
 Nothing about the figure changes: `capacity` is copied from the package exactly
 as before, to the same one decimal place, and no conversion, scale or factor is
@@ -96,13 +108,22 @@ and `specs/007-offence-profile/spec.md`, FR-006. The two blocks state one
 quantity and must not state it in two units.
 
 **They do still state it to two different decimal places**, and the ruling did
-not change that: this table writes the `WEP` capacity to one place and that
-block writes it to two, because each takes the precision its own canvas draws.
-So one build's capacity reads `48.0 MW` here and `48.00 MW` there. That
-predates this ruling and is left standing rather than settled in passing — the
-canvases set precision per block, and unifying it is a design decision, not a
-consequence of a unit. It is written down here so the next reader finds it
-recorded rather than discovering it.
+not change that. Each block writes all its energy figures to one precision, and
+the two blocks landed on different ones: this table took the single place its
+own canvas draws (`34.0 MJ`), and feature 007's block took the two places
+canvas 1c gives its `DRAW` and `RECHARGE` rates and applies them to the capacity
+as well — which is not a precision either canvas draws for a capacity, because
+the only capacity on the artboard is canvas 1d's `CAP 61 MJ`, drawn whole. So
+one build's capacity reads `48.0 MW` here and `48.00 MW` there.
+
+That predates this ruling and is left standing rather than settled in passing:
+changing it would move a drawn figure, which is the one thing this ruling
+promised not to do, and it would do so under cover of a unit change. The two
+blocks are in different anatomy modes and never appear together, so the
+divergence costs a mode switch to notice rather than contradicting itself on one
+screen. Unifying it is a design decision and should be made as one. It is
+written down here so the next reader finds it recorded rather than discovering
+it, and `contracts/capacitor-endurance.md` records the other half.
 
 ## Availability and zero
 
