@@ -52,6 +52,14 @@
   .offence__block--convergence {
     grid-column: 1 / -1;
     justify-self: start;
+    // Both, and neither is redundant. `justify-self: start` puts the block at
+    // the row's leading edge, and on its own it also makes the block size to
+    // its contents — a grid item that is not stretched is shrink-to-fit, so the
+    // bound below never binds and the block came out 203px wide with a 165px
+    // plate inside it, which is *smaller* than the unbounded block it replaced.
+    // The explicit `100%` is what asks for the row's width; the bound is what
+    // stops it there.
+    inline-size: 100%;
     max-inline-size: var(--edsb-layout-convergence-block);
   }
 }

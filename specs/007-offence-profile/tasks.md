@@ -778,6 +778,16 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       block's own bound, and the empty mark being filled rather than outlined.
       _`spec.md`, `design/canvas-contract.md`, `specs/011-interface-foundations/design/token-evidence.md`,
       `specs/010-hull-anatomy/design/hull-anatomy.md`, `e2e/offence-profile.spec.ts`._
+- [x] T068 Close the second review: the bounded block was sizing to its own contents, not to the
+      bound. `justify-self: start` makes a grid item shrink-to-fit, so `max-inline-size` never bound
+      anything and the block came out 203px wide with a 165px plate in it — a _smaller_ plate than
+      the unbounded block drew, which is the opposite of what T063 asked for. An explicit
+      `inline-size: 100%` is what asks for the row. The range column's flex basis goes from `15rem`
+      to `14rem` in the same fix: a flex line breaks on the un-shrunk basis, so 240px asked of the
+      224px left beside the plate dropped the range under it at exactly the width the canvas draws
+      the two side by side. The end-to-end guard gains the lower bound, the plate's own rendered
+      width and the range's position beside it — without them both defects were green.
+      _`offence-analysis.scss`, `shot-convergence.scss`, `e2e/offence-profile.spec.ts`._
 
 ---
 
@@ -805,7 +815,8 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
 - Phase 10 depends on Phase 9 and withdraws part of what Phases 7 to 9 drew. T060 and T061 are
   independent of each other; T062 depends on both.
 - Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
-  Phase 10 and touches what T060 and T061 wrote.
+  Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
+  what T061 and T063 drew.
 
 ### Parallel opportunities
 

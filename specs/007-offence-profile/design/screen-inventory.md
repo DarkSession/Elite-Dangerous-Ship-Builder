@@ -18,22 +18,22 @@ inside feature 001's `/build` workspace, and one cell to the outfitting status r
 
 ## Requirement ownership
 
-| Requirement | Planned behavior                                                                                                                                                 |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | One projection retains two `ShipLoadout` results; presentation creates no game value and combines no two figures.                                                |
-| FR-002      | Whole-build damage, per-weapon output and the rail cell all select exact `weaponMetrics()` fields.                                                               |
-| FR-003      | The legend states each conventional type the build deals with its exact amount and share; a type it does not deal takes no line.                                 |
-| FR-004      | Every returned weapon is one inert row carrying its module, damage per second, piercing, maximum range and falloff, with absence stated per field.               |
-| FR-005      | Disabled rows remain; package totals are untouched; feature 002's coverage separates confirmed empty from unavailable.                                           |
-| FR-006      | The WEP allocation feature 005 holds is passed to the package unchanged, and the four drawn fields are shown as returned.                                        |
-| FR-007      | Zero capacity and each duration meaning are stated in the package's own terms, with no cause attached to either.                                                 |
-| FR-008      | Each band applies the package's `damageFalloff()` to every enabled weapon at the canvas's own four distances.                                                    |
-| FR-009      | A bar is drawn only where its figures share one scale, and every figure is written in words whether or not it carries one.                                       |
-| FR-010      | Convergence reads the hull's published gunsight and the package's own projection; a mismatched hull is stated unavailable whole.                                 |
-| FR-011      | The plate is hidden from assistive technology, and every one of the hull's mounts — drawn or left off — is a sentence beside it.                                 |
-| FR-012      | Every hardpoint the catalogue places is drawn, the empty ones in their own ink and named as empty in words; no figure about the group counts one.                |
-| FR-013      | The mount the workspace has selected takes the plate's other ink and a ring in it, and is named as selected in its own sentence, from the ledger's own slot key. |
-| SC-004      | Nothing user-facing exists that the canvas contract does not sanction; the contract records every departure.                                                     |
+| Requirement | Planned behavior                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | One projection retains two `ShipLoadout` results; presentation creates no game value and combines no two figures.                                                            |
+| FR-002      | Whole-build damage, per-weapon output and the rail cell all select exact `weaponMetrics()` fields.                                                                           |
+| FR-003      | The legend states each conventional type the build deals with its exact amount and share; a type it does not deal takes no line.                                             |
+| FR-004      | Every returned weapon is one inert row carrying its module, damage per second, piercing, maximum range and falloff, with absence stated per field.                           |
+| FR-005      | Disabled rows remain; package totals are untouched; feature 002's coverage separates confirmed empty from unavailable.                                                       |
+| FR-006      | The WEP allocation feature 005 holds is passed to the package unchanged, and the four drawn fields are shown as returned.                                                    |
+| FR-007      | Zero capacity and each duration meaning are stated in the package's own terms, with no cause attached to either.                                                             |
+| FR-008      | Each band applies the package's `damageFalloff()` to every enabled weapon at the canvas's own four distances.                                                                |
+| FR-009      | A bar is drawn only where its figures share one scale, and every figure is written in words whether or not it carries one.                                                   |
+| FR-010      | Convergence reads the hull's published gunsight and the package's own projection; a mismatched hull is stated unavailable whole.                                             |
+| FR-011      | The plate is hidden from assistive technology, and every one of the hull's mounts — drawn or left off — is a sentence beside it.                                             |
+| FR-012      | Every hardpoint the catalogue places is drawn, the empty ones in their own ink and named as empty in words; no figure about the group counts one.                            |
+| FR-013      | The mount the workspace has selected takes the plate's third ink, with no ring and no outline, and is named as selected in its own sentence, from the ledger's own slot key. |
+| SC-004      | Nothing user-facing exists that the canvas contract does not sanction; the contract records every departure.                                                                 |
 
 ## Cross-feature composition
 

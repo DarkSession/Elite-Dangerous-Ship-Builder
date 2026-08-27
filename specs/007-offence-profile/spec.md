@@ -156,11 +156,13 @@ because it is why the first implementation shipped a third of the canvas.
   > left standing over a drawing that does not support it: on the plate itself the three states are
   > three hues. What holds instead is that **the plate states nothing on its own** — it is
   > `aria-hidden` decoration whose every mount is restated in text beside it, and every fact those
-  > hues separate is also drawn in visible text elsewhere in the same workspace: feature 002's
-  > ledger carries one row per hardpoint with its module or its emptiness and marks the selected
-  > one, and this panel's own `WEAPONS` block lists what is fitted. A Commander who cannot separate
-  > the hues loses no reading, which is what 011 FR-022 is for; a plate that were the only statement
-  > of any of it would not be allowed.
+  > hues separate is carried visibly elsewhere in the same workspace, and not by colour there
+  > either: feature 002's ledger names each hardpoint's module or prints its emptiness as a word,
+  > and marks the selected row by inverting its node badge — a solid ground, an inverted ink and a
+  > heavier weight, with the word itself for a reader who is told. This panel's own `WEAPONS` block
+  > lists what is fitted. A Commander who cannot separate the plate's three hues loses no reading,
+  > which is what 011 FR-022 is for; a plate that were the only statement of any of it would not be
+  > allowed.
   >
   > The three states become three fills of one shape. The outline that told an empty hardpoint from
   > an armed one is withdrawn in the same request — a 7px mark cannot carry a shape difference and

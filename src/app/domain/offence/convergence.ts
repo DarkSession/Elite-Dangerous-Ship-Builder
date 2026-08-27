@@ -89,8 +89,8 @@ export interface ConvergenceWeapon {
  * The canvas's own script fixes it (`wireConvergence`, `FOV = 40`) and draws
  * both rings and every dot against it. It is a property of the drawing, not of
  * the build: it decides how much sky the plate shows, and nothing else — a
- * build never widens it to fit, which is why a shot outside it is clamped
- * rather than accommodated.
+ * build never widens it to fit, which is why a shot outside it is left off the
+ * plate rather than accommodated.
  *
  * The 2026-08-25 canvas revision cut it from `115`, so the same offsets now
  * subtend nearly three times as much of the plate.

@@ -151,14 +151,21 @@ are fields no canvas ever drew.
   the panel's width _(Commander request 2026-08-27; `design/canvas-contract.md`, review note 20)_.
   The plate inside it is a fixed square, so a block given the whole row stood a 172px drawing in the
   middle of an 862px frame with the range field stretched beside it.
-- **The plate is a diagram and is hidden from assistive technology.** Every mark it draws is also a
-  sentence beside it: a shot naming its weapon, its place in the hull's hardpoint order, how it is
-  aimed and where its shot goes; and the ring caption, which is the one figure the plate draws that
-  nothing beside it repeats. A shot the field of view does not reach is **not drawn at all**
-  _(Commander request 2026-08-27)_; its sentence still states its true offset and angle at that
-  range, exactly as at any other, and for that mount it is the only statement there is. The field of
-  view is a property of the drawing and never widens to fit a build, and a mark held at the frame —
-  which is what the canvas's own script does — reports a shot landing where it does not.
+- **The plate is a diagram and is hidden from assistive technology.** Every one of the hull's
+  mounts is a sentence beside it: naming its weapon, its place in the hull's hardpoint order, how it
+  is aimed and where its shot goes. The ring caption that used to stand with them went with the
+  2026-08-26 revision, which draws none, so the sentences are exactly the mounts. A shot the field of
+  view does not reach is **not drawn at all** _(Commander request 2026-08-27)_; its sentence still
+  states its true offset and angle at that range, exactly as at any other. The field of view is a
+  property of the drawing and never widens to fit a build, and a mark held at the frame — which is
+  what the canvas's own script does — reports a shot landing where it does not.
+- **The sentences are read out, not drawn.** The list is `visually-hidden`: it is the plate in words
+  for a reader who is told, and it is the whole of what a mount left off the plate gets. Nothing
+  visible replaces the mark, because the canvas draws nothing there and an added line would be a
+  screen that is not the design. What a sighted Commander still has for that mount is the ledger row
+  beside the panel, which names its module or prints its emptiness as a word, and the offset the
+  plate could not show is a picture of a target too close for the shots to have converged rather
+  than a figure the block is withholding.
 - The target range is a range field over 500 m to 3,000 m on a 50 m step, starting at 1,500 m,
   announcing the distance as a Commander reads it rather than as a bare number. Those are the
   maintainer's bounds rather than the canvas's own 100 m–2,000 m: a weapon on this application's
@@ -167,10 +174,10 @@ are fields no canvas ever drew.
   It stops there rather than at the 5,000 m it reached between 2026-08-26 and 2026-08-27, because
   past the range a weapon reaches every shot has converged and each further step draws the same
   picture. It is the one control this panel owns, and it sets nothing outside the panel.
-- Four facts under the plate: the lateral span, the vertical span, the apparent spread at the chosen
-  range, and the widest mount by its place in the hull's hardpoint order. The two spans are distances
-  between mounts and do not move with the range; the spread does. All four are about a group of
-  armed mounts, so a build that has armed none of them is given none of them.
+- ~~Four facts under the plate.~~ **Withdrawn with the 2026-08-26 canvas revision**, which draws no
+  lateral span, vertical span, apparent spread or widest mount anywhere, and no ring caption either.
+  Nothing stands beneath the plate but the range. The projection still computes the four, and they
+  have no consumer — a dead surface this feature has not yet swept.
 - A hull the gunsight catalogue does not carry, or one whose gunsight does not line up with its
   hardpoints, says so. A convergence drawn from part of the mounts would be a spread nobody has.
   A hull the catalogue _does_ carry is drawn whether or not the build has armed any of it: saying

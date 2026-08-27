@@ -108,10 +108,10 @@ async function hardpointKeys(page: Page): Promise<string[]> {
 /**
  * Where each shot dot is put, as a fraction of the plate's own box.
  *
- * Since the 2026-08-25 canvas revision nothing lands outside `[0, 1]`: a shot
- * beyond the plate's field of view is held at the frame's own `4%` margin
- * rather than clipped out of it, so what a near range moves is how far out the
- * dot sits, not whether it is drawn.
+ * Only the marks the plate actually draws: since 2026-08-27 a shot beyond the
+ * field of view is left off it rather than held at the frame's own `4%` margin,
+ * so what a near range moves is how many dots there are as well as how far out
+ * they sit.
  */
 async function dotPlacements(page: Page): Promise<{ left: number; top: number }[]> {
   return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
@@ -119,7 +119,7 @@ async function dotPlacements(page: Page): Promise<{ left: number; top: number }[
     // percentage of the box its offset parent gives it, which excludes the
     // hairline border. Measuring against the border box instead puts every
     // fraction out by a pixel, which is exactly the width of the margin a
-    // clamped mark is meant to be standing on.
+    // mark at the frame's own margin is meant to be standing on.
     const box = plate.getBoundingClientRect();
     const origin = { left: box.left + plate.clientLeft, top: box.top + plate.clientTop };
     return [...plate.querySelectorAll('.plate__dot')].map((node) => {
@@ -844,30 +844,49 @@ test.describe('shot convergence', () => {
     }
   });
 
-  test('stops the block at the canvas’s own width rather than running the row', async ({
+  test('draws the block at the canvas’s own width, with the range beside the plate', async ({
     page,
   }) => {
     await openOffence(page);
 
     // Canvas 1c bounds this block at `max-width: 508px; align-self: flex-start`
-    // and the application ran it across the whole panel row until 2026-08-27,
-    // which stood a small square plate in the middle of a wide frame. The bound
-    // is a `max-inline-size`, so it holds at every width the block is given.
+    // and puts the plate and the range side by side inside it. Both halves are
+    // asserted, and both have been wrong: built across the whole panel row it
+    // stood a small square plate in the middle of a wide frame, and bounded by
+    // `justify-self` alone it shrank to its contents and drew a *smaller* plate
+    // than the unbounded block had. A `max-inline-size` with no lower bound
+    // under it cannot tell those two apart.
     const measured = await page.locator('edsb-offence-analysis').evaluate((panel) => {
-      const block = panel.querySelector('.offence__block--convergence');
-      const row = panel.querySelector('.offence');
+      const box = (selector: string): { width: number; top: number; bottom: number } => {
+        const rect = panel.querySelector(selector)?.getBoundingClientRect();
+        return { width: rect?.width ?? 0, top: rect?.top ?? 0, bottom: rect?.bottom ?? 0 };
+      };
       return {
-        block: block?.getBoundingClientRect().width ?? 0,
-        row: row?.getBoundingClientRect().width ?? 0,
+        block: box('.offence__block--convergence'),
+        row: box('.offence'),
+        plate: box('.plate'),
+        readout: box('.convergence__readout'),
       };
     });
 
-    expect(measured.block).toBeGreaterThan(0);
+    expect(measured.block.width).toBeGreaterThan(0);
     // The rounding a fractional layout leaves, and nothing wider.
-    expect(measured.block).toBeLessThanOrEqual(509);
-    // And where the row has more width than that, the block does not take it.
-    if (measured.row > 512) {
-      expect(measured.block).toBeLessThan(measured.row);
+    expect(measured.block.width).toBeLessThanOrEqual(509);
+
+    // Where the row is wider than the bound, the block takes the bound — not
+    // less, and not the row.
+    if (measured.row.width > 512) {
+      expect(measured.block.width).toBeGreaterThanOrEqual(500);
+      expect(measured.block.width).toBeLessThan(measured.row.width);
+
+      // And the plate is drawn at its own token width rather than at whatever
+      // the block happened to leave it.
+      expect(measured.plate.width).toBeGreaterThanOrEqual(223);
+      expect(measured.plate.width).toBeLessThanOrEqual(225);
+
+      // The range stands beside the plate in that block, as the canvas draws
+      // it, rather than wrapping under it and leaving the plate's row empty.
+      expect(measured.readout.top).toBeLessThan(measured.plate.bottom);
     }
   });
 

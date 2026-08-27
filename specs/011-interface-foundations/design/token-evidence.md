@@ -70,10 +70,12 @@ is held to.
 
 The three are hues of one shape, so a reader who cannot separate them separates
 nothing on the plate. That is allowed here and nowhere else: the plate is
-`aria-hidden` decoration, every mount is restated in text beside it, and every
-fact the hues carry is also drawn in visible text in the same workspace — the
-ledger's own row per hardpoint, and the panel's `WEAPONS` list
-(`specs/007-offence-profile/spec.md` FR-011).
+`aria-hidden` decoration, every mount is restated in text for a reader who is
+told, and every fact the hues carry is carried visibly elsewhere in the same
+workspace without resting on colour there either — feature 002's ledger names
+each hardpoint's module or prints its emptiness as a word, and marks the
+selected row by inverting its node badge (solid ground, inverted ink, heavier
+weight) rather than by tinting it (`specs/007-offence-profile/spec.md` FR-011).
 
 ## Inverted pair
 

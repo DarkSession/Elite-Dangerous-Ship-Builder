@@ -390,9 +390,11 @@
   // The bound was set to stop the block growing without limit on a wide screen
   // and it did that too hard: two hulls drawn at the canvas's own width on a
   // 2560 screen are a schematic a Commander has to lean into. A cap of 40%
-  // over it still stops the runaway — 566px against the 583px a 1920 column
-  // would otherwise hand each plate, and against 800px at 2560 — while giving
-  // the drawing the room the screen actually has.
+  // over it still stops the runaway — 566px against the 584px a 1920 column
+  // would otherwise hand each plate, and against 904px at 2560 — while giving
+  // the drawing the room the screen actually has. The derivation is in
+  // `specs/010-hull-anatomy/design/hull-anatomy.md`, and it reproduces this
+  // token's own pre-raise 404px at the 1560 the canvas was drawn at.
   --edsb-measure-anatomy-plate: 35.35rem;
 
   // The same node badge, set on the hull instead of in a ledger row. Canvas 1c

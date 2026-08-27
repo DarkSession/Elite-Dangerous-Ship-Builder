@@ -24,13 +24,19 @@
 }
 
 // The range: a column beside the plate, and the whole width beneath it once it
-// cannot be. The basis is what the range field needs before its label, its value
-// and its two end labels start wrapping over each other; below that the row
-// wraps and the range takes the width under the plate instead.
+// cannot be.
+//
+// The basis is what is actually left beside the plate in the block the canvas
+// bounds: 508px, less the block's two 18px insets, less the 224px plate and the
+// 22px gap, is 224px. A flex line breaks on the *un-shrunk* basis rather than on
+// what the item would shrink to, so the 15rem this asked for — 16px more than
+// the line has — dropped the range under the plate at exactly the width the
+// canvas draws the two side by side, and left 224px of empty plate row beside
+// it. Below that the row wraps, which is the compact arrangement.
 .convergence__readout {
   @include layout.stack(var(--edsb-space-stack));
 
-  flex: 1 1 15rem;
+  flex: 1 1 14rem;
   min-inline-size: 0;
 }
 
