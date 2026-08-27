@@ -197,7 +197,6 @@ import { ChoiceDialog } from '../components/choice-dialog/choice-dialog';
 import { CollectionToolbar } from '../components/collection-toolbar/collection-toolbar';
 import { ConfirmDialog } from '../components/confirm-dialog/confirm-dialog';
 import { RecordManager } from '../components/record-manager/record-manager';
-import { RecordNoteEditor } from '../components/note-editor/record-note-editor';
 import { ResponsiveRecordList } from '../components/record-list/responsive-record-list';
 import { SavedBuildCard } from '../components/saved-build-card/saved-build-card';
 import { ShareLinkPanel } from '../components/share-link-panel/share-link-panel';
@@ -211,6 +210,7 @@ import { AppFrame } from '../components/app-frame/app-frame';
 import { ChoiceGroup } from '../components/choice-group/choice-group';
 import { Collection } from '../components/collection/collection';
 import { Disclosure } from '../components/disclosure/disclosure';
+import { Tooltip } from '../components/tooltip/tooltip';
 import { GameText } from '../components/game-text/game-text';
 import { Layer } from '../components/layer/layer';
 import { MetricGroup } from '../components/metric-group/metric-group';
@@ -255,6 +255,7 @@ import { UnavailableFact } from '../outfitting/unavailable-fact';
 import { DiagnosticList } from '../technical/diagnostic-list';
 import { InlineLink } from '../components/inline-link/inline-link';
 import { HelpDialog } from '../../features/help/help-dialog.component';
+import { SaveBuildDialog } from '../../features/build-workspace/save-build.dialog';
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
 import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
 import { LegalExcerpt } from '../components/legal-excerpt/legal-excerpt';
@@ -1108,6 +1109,49 @@ registerPreview({
     state('disabled', { label: 'Why is this unavailable?', disabled: true }, [
       'exposes the disabled state natively',
     ]),
+  ],
+});
+
+registerPreview({
+  componentId: 'tooltip',
+  group: 'Containers',
+  component: Tooltip,
+  contract: contract(
+    'tooltip',
+    {
+      role: 'button',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['expanded'],
+      relationships: ['description'],
+      textEquivalents: ['the gloss the trigger stands for'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { label: 'Idle', tip: 'Hardpoints stowed, no throttle', open: true },
+      [
+        'the gloss is drawn beside the word it explains',
+        'the drawn state is exposed as aria-expanded rather than by visibility alone',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
+    ),
+    state(
+      'empty',
+      { label: 'Idle', tip: 'Hardpoints stowed, no throttle' },
+      [
+        'an undrawn gloss is still related to its trigger by aria-describedby',
+        'the gloss is reachable by press as well as by hover, so touch is not left out',
+      ],
+      ['normal', 'rtl'],
+    ),
+    notApplicable('loading', 'A gloss is text the component is handed; it never waits for one.'),
+    notApplicable('error', 'A tooltip reports no error of its own.'),
+    notApplicable(
+      'disabled',
+      'The gloss is available whether or not it is drawn, so there is nothing a disabled state could withhold.',
+    ),
   ],
 });
 
@@ -1991,7 +2035,8 @@ const NAMED_BUILD = {
   title: 'Anaconda explorer',
   named: true,
   hull: ANACONDA_NAME,
-  modified: '12 August 2026, 14:20',
+  modified: '2 weeks ago',
+  modifiedExact: 'Edited 12 August 2026, 14:20',
   validation: { label: 'Complete', tone: 'success' },
   issues: null,
   remaining: null,
@@ -2104,7 +2149,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: true,
       exposedStates: [],
       relationships: ['label'],
-      textEquivalents: ['group membership', 'why a record cannot be opened'],
+      textEquivalents: ['why a record cannot be opened'],
     },
     ['default', 'empty', 'error'],
   ),
@@ -2115,31 +2160,20 @@ registerPreview({
         label: 'Saved builds',
         columns: RECORD_COLUMNS,
         chosen: 'record-current',
-        groups: [
-          {
-            id: 'working',
-            label: 'Unnamed builds',
-            builds: [WORKING_BUILD],
-            emptyLabel: 'No unnamed builds.',
-          },
-          {
-            id: 'named',
-            label: 'Named builds',
-            builds: [
-              CURRENT_BUILD,
-              NAMED_BUILD,
-              ISSUE_BUILD,
-              { ...NAMED_BUILD, id: 'record-2', title: 'Krait combat' },
-            ],
-            emptyLabel: 'No named builds yet.',
-          },
+        builds: [
+          CURRENT_BUILD,
+          WORKING_BUILD,
+          NAMED_BUILD,
+          ISSUE_BUILD,
+          { ...NAMED_BUILD, id: 'record-2', title: 'Krait combat' },
         ],
       },
       [
         'the column headers are drawn once over the body rather than into every row',
-        'each group carries its own heading and stays in one reading order',
+        'named and unnamed records are one list in one order, under no group heading',
         'the record the workspace holds is marked in words as well as in the wash',
         'an unnamed row states which save its edits are of, and how long it has left',
+        'the edited column reads how long ago, and the instant itself stays in words',
         'the narrow and wide compositions present the same records in the same order',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
@@ -2150,14 +2184,7 @@ registerPreview({
         label: 'Saved builds',
         columns: RECORD_COLUMNS,
         noMatch: 'Nothing here matches “neutron”.',
-        groups: [
-          {
-            id: 'named',
-            label: 'Named builds',
-            builds: [],
-            emptyLabel: 'No builds are saved in this browser.',
-          },
-        ],
+        builds: [],
       },
       [
         'a search that matched nothing says so in one centred sentence on the body’s own ground',
@@ -2174,14 +2201,7 @@ registerPreview({
       {
         label: 'Saved builds',
         columns: RECORD_COLUMNS,
-        groups: [
-          {
-            id: 'named',
-            label: 'Named builds',
-            builds: [NAMED_BUILD],
-            emptyLabel: 'No named builds yet.',
-          },
-        ],
+        builds: [NAMED_BUILD],
         unavailableLabel: 'Builds this version cannot open',
         unavailable: [
           {
@@ -2268,43 +2288,99 @@ registerPreview({
   ],
 });
 
+/** The save a build was opened from, as the layer states it. */
+const SAVE_SOURCE = {
+  name: 'Anaconda explorer',
+  lastSaved: '2 weeks ago',
+  replaceable: true,
+} as const;
+
 registerPreview({
-  componentId: 'record-note-editor',
-  group: 'Library',
-  component: RecordNoteEditor,
+  componentId: 'save-build-layer',
+  group: 'Workspace',
+  component: SaveBuildDialog,
   contract: contract(
-    'record-note-editor',
+    'save-build-layer',
     {
-      role: 'textbox',
+      role: 'dialog',
       visibleNameMatchesAccessibleName: true,
       exposedStates: ['disabled'],
       relationships: ['label', 'description'],
-      textEquivalents: [],
+      textEquivalents: ['what each save mode does to the stored builds'],
     },
-    ['default', 'empty', 'disabled'],
+    ['default', 'empty', 'error', 'disabled'],
   ),
   states: [
     state(
       'default',
-      { note: 'Neutron route to Colonia. Swap the AFMU before the return leg.' },
+      {
+        open: true,
+        initialName: 'Anaconda explorer',
+        initialNote: 'Neutron route to Colonia. Swap the AFMU before the return leg.',
+        source: SAVE_SOURCE,
+      },
       [
-        'the note has its own save action, so editing one never marks the build as changed',
-        'the label is programmatically associated with the control',
+        'the two modes are bordered cards, the replacing one selected first',
+        'each mode states in associated words what it does to the stored builds',
+        'the replacing mode says when the save it would replace was last written',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+      // Isolated: an open modal makes everything behind it inert, which is
+      // correct behaviour and incompatible with sharing a catalogue page.
+      true,
     ),
-    state('empty', { note: null }, ['renders with no note and keeps its label and description']),
+    state(
+      'empty',
+      { open: true, initialName: '', initialNote: null, source: null },
+      [
+        'a build that came from nowhere is offered one mode, and it still says what saving does',
+        'the name starts empty rather than filled in with a name nobody gave',
+        'Save build is unavailable until the build has a name',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+      true,
+    ),
     notApplicable(
       'loading',
-      'A note is read from this browser’s own storage with the record it belongs to.',
+      'The layer writes to this browser’s own storage under a short lock; there is no wait to render.',
     ),
-    notApplicable(
+    state(
       'error',
-      'Any text is a valid note: it is local metadata, never part of a build, a link or an export, so there is nothing for it to fail.',
+      {
+        open: true,
+        initialName: 'Anaconda explorer',
+        initialNote: null,
+        source: { ...SAVE_SOURCE, replaceable: false },
+        duplicateCount: 2,
+      },
+      [
+        'a browser that cannot replace a save safely is told so, in the line the canvas draws',
+        'saving as a new build stays available, because only the unsafe half went',
+        'the duplicate-name warning stands beside that reason rather than behind it',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+      true,
     ),
-    state('disabled', { note: 'Neutron route to Colonia.', disabled: true }, [
-      'exposes the disabled state natively on the control and its save action',
-    ]),
+    state(
+      'disabled',
+      {
+        open: true,
+        initialName: '  ',
+        initialNote: null,
+        source: SAVE_SOURCE,
+        // A write that did nothing is the one sentence on this line a
+        // Commander must not read past, so the state that renders it is the
+        // one the sweep measures for contrast as well as for structure.
+        failure:
+          'This build could not be saved and nothing was written. Your build is unchanged — try again, or free some room in this browser.',
+      },
+      [
+        'the commit is disabled natively while there is no name to save under',
+        'a save that wrote nothing says so in words rather than in colour alone',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+      true,
+    ),
   ],
 });
 

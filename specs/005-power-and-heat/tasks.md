@@ -378,3 +378,38 @@ package call: every figure is one the projection already returns.
 - [x] T083 [P] Cover all four in tests: the additive geometry and the shared plant mark in the
       projection and in the drawn DOM, the pip blocks' floor at all five layout profiles in both
       places they are drawn, and the two rows of two as an invariant that holds stacked or paired.
+
+## Phase: the scenario glosses become a tooltip, 2026-08-27
+
+> A Commander asked for the six heat-scenario glosses on hover, as a tooltip and explicitly not as a
+> `title` attribute. T072 drew them under their names instead, and its reasoning — hover-only meaning
+> is unreachable by touch (011 FR-006) — was sound about `title` attributes and never actually about
+> tooltips. That record stands as written; this is what replaced it.
+
+- [x] T084 Add `edsb-tooltip` to the design system: a real trigger and bubble drawn from the token
+      layer, opening on hover, on focus and on a press, dismissed with `Escape`, with the gloss
+      related to its trigger by `aria-describedby` whether or not it is drawn and the drawn state on
+      the trigger as `aria-expanded`. Register its preview declaration.
+      _The press is what makes it reachable by touch, which is the whole of T072's objection. The
+      `Escape` listener is on the document rather than on the host: a tip a hover opened leaves the
+      focus elsewhere, so a host listener would never see the key — which is the one case
+      SC 1.4.13's dismissal exists for._
+- [x] T085 Bridge the gap between the trigger and its bubble with the bubble's own `::before`, so
+      the pointer can travel from one to the other without the tip collapsing on the way
+      (SC 1.4.13, "hoverable"). Being a child of the host is not enough: `pointerleave` fires on
+      geometry, not on parentage.
+- [x] T086 Move the six glosses onto that component and take the drawn line back out of the block.
+      Give the dotted rule under the word a border ink rather than a decorative one — as the thing
+      that identifies a control it owes 1.4.11's 3:1, and the decorative ink measured 1.56:1 against
+      the panel; the border ink measures 3.69:1.
+      _The trigger takes the project's 44-pixel baseline, not the SC 2.5.8 floor T080 recorded for
+      the pip blocks. The floor is for controls the reference draws dense and the canvas draws no
+      control here at all, so the case would have had to be made on height — and it does not hold:
+      at 390 pixels a heat row is 24 pixels at the floor and 44 at the baseline, against the 45 the
+      drawn name-and-gloss took. The baseline is still shorter than what it replaced — by one pixel,
+      which is a thinner case than a floor would need to overturn, and the row does not grow._
+- [x] T087 [P] Cover it in both places: the state machine's four ways in and four ways out as unit
+      tests, including an `Escape` delivered the way a browser delivers it, and the drawn behaviour
+      in `e2e/power-and-heat.spec.ts` — hover, the crossing to the bubble, a press on whichever
+      pointer the profile has, `Escape`, and no sideways scrolling with a tip open at a doubled text
+      size.

@@ -5,6 +5,7 @@ import { MetricGroup } from './metric-group/metric-group';
 import { Panel } from './panel/panel';
 import { DataTable } from './table/data-table';
 import { TabGroup } from './tab-group/tab-group';
+import { Tooltip } from './tooltip/tooltip';
 import {
   describedText,
   element,
@@ -377,6 +378,203 @@ describe('Disclosure', () => {
     fixture.componentInstance.toggle();
 
     expect(emissions).toBe(0);
+  });
+});
+
+describe('Tooltip', () => {
+  const mouse = (type: 'pointerenter' | 'pointerleave') =>
+    new PointerEvent(type, { pointerType: 'mouse' });
+  const touch = (type: 'pointerenter' | 'pointerleave') =>
+    new PointerEvent(type, { pointerType: 'touch' });
+  /**
+   * `Escape`, delivered the way a browser delivers it.
+   *
+   * On the document, because a key goes to whatever holds the focus and bubbles
+   * from there — and a tip a hover opened holds no focus at all. Dispatching on
+   * the host instead would prove only that a host listener fires, which is the
+   * one thing the browser will never do in that state.
+   */
+  const escape = () =>
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  const expanded = (fixture: ReturnType<typeof renderComponent<Tooltip>>) =>
+    query(fixture, 'button').getAttribute('aria-expanded');
+
+  it('relates the gloss to the word it explains whether or not it is drawn', () => {
+    const fixture = renderComponent(Tooltip, {
+      label: 'Idle',
+      tip: 'Hardpoints stowed, no throttle',
+    });
+    const trigger = query(fixture, 'button');
+    const tip = query(fixture, '[role="tooltip"]');
+
+    // Undrawn, not absent. A gloss behind a pointer is unreachable by touch and
+    // unreliable to a screen reader, which is why this component exists at all.
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger.getAttribute('aria-describedby')).toBe(tip.getAttribute('id'));
+    expect(textOf(tip)).toBe('Hardpoints stowed, no throttle');
+  });
+
+  it('draws the gloss for a mouse that arrives, and takes it back when it leaves', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    host.dispatchEvent(mouse('pointerleave'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+  });
+
+  it('opens on a press, which is what touch has instead of a hover', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    // A tap fires `pointerenter` too. Admitted as a hover it would open the tip
+    // and the press that follows would shut it again, so the tip would never
+    // open on a touch device at all.
+    host.dispatchEvent(touch('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+
+    query(fixture, 'button').click();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    query(fixture, 'button').click();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+  });
+
+  it('draws the gloss for focus, and takes it back when focus leaves', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    // The other half of "on hover or focus". A press clears it rather than
+    // adding to it, because a browser focuses the button it is pressed on and
+    // two reasons to stay open would make the second press do nothing.
+    host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    query(fixture, 'button').click();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    query(fixture, 'button').click();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+
+    host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    host.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+  });
+
+  it('dismisses on escape while a hover holds it open, with the focus elsewhere', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    // Success criterion 1.4.13's dismissal, and the case it exists for: a tip
+    // the pointer opened, with nothing inside it focused for a key to reach.
+    escape();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+
+    // The pointer leaving is what forgets it, so the next hover works.
+    host.dispatchEvent(mouse('pointerleave'));
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+  });
+
+  it('does not bring a dismissed gloss back when the pointer leaves a focused trigger', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    host.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    escape();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+
+    // Two reasons were holding it open and only one has gone. Forgetting the
+    // dismissal here would put back, unasked, exactly what was just dismissed.
+    host.dispatchEvent(mouse('pointerleave'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+
+    // Once the other one goes too, the dismissal has nothing left to hold.
+    host.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+  });
+
+  it('ignores an escape meant for something else', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    // The key is heard on the document, so every tooltip on the page hears
+    // every `Escape`. One pressed at a dialog must not leave the six glosses of
+    // a heat profile refusing the hover that comes next.
+    escape();
+    fixture.detectChanges();
+
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+  });
+
+  it('takes the next hover after an escape that shut a pinned tip', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+
+    // A press pins, and clears the hover and the focus so it is pinning rather
+    // than racing them. So once the pointer moves on, the pin is the only thing
+    // holding the tip open.
+    host.dispatchEvent(mouse('pointerenter'));
+    query(fixture, 'button').click();
+    host.dispatchEvent(mouse('pointerleave'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+
+    // Unpinning it is therefore the last reason going, and nothing is left on
+    // the way to notice — no pointer to leave, no focus to lose. A dismissal
+    // held past this would outlive the tip it dismissed and swallow the hover
+    // that came next.
+    escape();
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('false');
+
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+    expect(expanded(fixture)).toBe('true');
+  });
+
+  it('lets a press shut a tip that was drawn open', () => {
+    const fixture = renderComponent(Tooltip, {
+      label: 'Idle',
+      tip: 'Hardpoints stowed',
+      open: true,
+    });
+
+    expect(expanded(fixture)).toBe('true');
+
+    query(fixture, 'button').click();
+    fixture.detectChanges();
+
+    // Seeded rather than asserted: an input that went on asserting itself would
+    // make the trigger a control that does nothing.
+    expect(expanded(fixture)).toBe('false');
   });
 });
 

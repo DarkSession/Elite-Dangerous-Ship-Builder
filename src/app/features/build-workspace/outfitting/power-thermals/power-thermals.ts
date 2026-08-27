@@ -20,6 +20,7 @@ import { GameText } from '../../../../ui/components/game-text/game-text';
 import type { Metric } from '../../../../ui/components/metric-group/metric-group';
 import { MetricGroup } from '../../../../ui/components/metric-group/metric-group';
 import { TabGroup, type TabItem } from '../../../../ui/components/tab-group/tab-group';
+import { Tooltip } from '../../../../ui/components/tooltip/tooltip';
 import { TOTAL_PIPS } from '../../../../application/power-heat/power-conditions.store';
 import type { TableColumn, TableRow } from '../../../../ui/components/table/data-table';
 import { UnavailableValue } from '../../../../ui/components/unavailable-value/unavailable-value';
@@ -68,7 +69,7 @@ interface BandRowView {
 interface HeatBarView {
   readonly id: string;
   readonly label: string;
-  /** What the scenario's name is shorthand for, drawn under it. */
+  /** What the scenario's name is shorthand for, glossed on the name itself. */
   readonly description: string;
   /** The gauge reading, or the symbol for the level that never settles. */
   readonly level: string;
@@ -99,9 +100,11 @@ const SCENARIO_LABELS = {
 /**
  * What each scenario name is shorthand for, likewise written out.
  *
- * The canvas hangs these on hover. They are drawn instead: hover-only meaning
- * is unreachable by touch (011 FR-006), and a scenario name is precisely the
- * thing a Commander cannot be expected to expand for themselves.
+ * The canvas hangs these on a `data-tip`, and so does this — on the design
+ * system's own `edsb-tooltip` rather than on a `title`, which opens by press as
+ * well as by hover and carries the gloss on `aria-describedby` whether it is
+ * drawn or not. Hover-only meaning would still be unreachable by touch
+ * (011 FR-006); this is not hover-only.
  */
 const SCENARIO_DESCRIPTIONS = {
   idle: 'power.heat.scenario.idle.description',
@@ -176,7 +179,7 @@ function clamp(share: number): number {
  */
 @Component({
   selector: 'edsb-power-thermals',
-  imports: [DistributorBlock, GameText, MetricGroup, TabGroup, UnavailableValue],
+  imports: [DistributorBlock, GameText, MetricGroup, TabGroup, Tooltip, UnavailableValue],
   templateUrl: './power-thermals.html',
   styleUrl: './power-thermals.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -163,33 +163,6 @@ export class NamedRecordService {
     }
   }
 
-  /** Renames a record in place, under the same precondition as any other write. */
-  async rename(
-    recordId: string,
-    name: string,
-    expectedRevisionId: string,
-    now: string,
-  ): Promise<NamedSaveResult> {
-    const current = this.#records.open(recordId);
-    if (!current.ok) {
-      return { kind: 'failed', code: current.code };
-    }
-    if (current.value === null) {
-      return { kind: 'missing' };
-    }
-
-    const record = current.value.record;
-    return this.overwriteNamed({
-      recordId,
-      expectedRevisionId,
-      name,
-      note: record.note,
-      build: record.build,
-      validation: record.validation,
-      now,
-    });
-  }
-
   /** Removes one record. Only ever called after an explicit confirmation. */
   async remove(recordId: string): Promise<NamedSaveResult> {
     const removed = this.#records.remove(recordId);

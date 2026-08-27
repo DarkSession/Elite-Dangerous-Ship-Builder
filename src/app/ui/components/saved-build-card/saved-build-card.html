@@ -48,12 +48,18 @@
       row — that notice is now read aloud rather than drawn, and a Commander
       who does not use a screen reader sees a record's last days only if they
       go looking. The request was explicit and the spec records the trade.
+
+      A fourth joined them on 2026-08-27 and loses nothing: the edited column
+      became how long ago rather than when, which is what the canvas draws and
+      what the column is read for, and the instant itself stays here for the
+      reader who needs it exactly.
     -->
     <span class="record__states">
       @if (build().current) {
         <span>{{ build().currentLabel }}</span>
       }
       <span>{{ build().validation.label }}</span>
+      <span>{{ build().modifiedExact }}</span>
       @if (build().remaining; as remaining) {
         <span>{{ remaining }}</span>
       }

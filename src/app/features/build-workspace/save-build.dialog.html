@@ -1,0 +1,85 @@
+<edsb-layer
+  [open]="open()"
+  [title]="title()"
+  [dismissLabel]="dismissLabel()"
+  presentation="adaptive"
+  (dismissed)="dismissed.emit()"
+>
+  <div class="save">
+    <edsb-text-field
+      [label]="nameLabel()"
+      [value]="name()"
+      [description]="nameDescription()"
+      [required]="true"
+      (changed)="changeName($event)"
+    />
+
+    <!--
+      One local note, saved with the build rather than by a control of its own.
+      It never enters a build link or a SLEF export, and typing one is not an
+      edit to the build (FR-011).
+    -->
+    <edsb-textarea-field
+      [label]="noteLabel()"
+      [value]="note()"
+      [description]="noteDescription()"
+      [rows]="3"
+      (changed)="changeNote($event)"
+    />
+
+    <!--
+      The canvas's two bordered cards: the selected one washed amber with a
+      filled square marker, each stating in associated words what it does to the
+      stored builds. Where there is nothing to replace there is one card, and it
+      still says what saving will do.
+
+      The legend is read but not drawn: the canvas puts the two cards straight
+      under the note field with no heading over them, and a group of radios a
+      reader arrives at unannounced is the one thing that arrangement would cost
+      (WCAG 1.3.1).
+    -->
+    <edsb-choice-group
+      class="save__modes"
+      [legend]="modeLegend()"
+      [legendHidden]="true"
+      kind="radio"
+      layout="cards"
+      [choices]="modes()"
+      [selected]="selectedMode()"
+      (changed)="changeMode($event)"
+    />
+
+    <div class="save__footer">
+      <!--
+        The canvas's monospace message line. `status` rather than `alert`: it
+        reports what a name a Commander is still typing would do, and an
+        assertive interruption on every keystroke would be worse than silence.
+      -->
+      <p class="save__message" [class.save__message--failure]="failure() !== null" role="status">
+        @if (message(); as sentence) {
+          {{ sentence }}
+        }
+      </p>
+
+      <div class="save__actions">
+        <edsb-action-button
+          [label]="cancelLabel()"
+          emphasis="secondary"
+          (activated)="dismissed.emit()"
+        />
+        <!--
+          The message line is not wired to this button as a description: it is a
+          `status` region, so it is announced when it changes, and a description
+          repeated on every focus of the button would say the same sentence
+          twice.
+        -->
+        <edsb-action-button
+          [label]="confirmLabel()"
+          emphasis="primary"
+          [disabled]="!canSave() || saving()"
+          (activated)="save()"
+        />
+      </div>
+    </div>
+  </div>
+</edsb-layer>

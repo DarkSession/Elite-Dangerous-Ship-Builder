@@ -71,7 +71,11 @@ system override every sample number, label, interaction and CSS literal.
 ### Interaction and implementation
 
 - Clickable `div` tabs/state choices, title-only meaning and tiny targets
-  become shared semantic controls with visible matching names/states.
+  become shared semantic controls with visible matching names/states. The heat
+  scenarios' `data-tip` glosses became the design system's own `edsb-tooltip` on
+  2026-08-27 — a real control that opens on hover, on focus and on a press, with
+  the gloss related to its name by `aria-describedby` whether or not it is
+  drawn. A `title` is none of those things, which is why none is built.
 - Color, fill, pattern, position and hover never carry a state without text.
 - Fixed widths, ellipsis, tiny type, hard-coded English, number formatting,
   Google Fonts and remote asset references are not copied.

@@ -99,11 +99,14 @@ test.describe('restoring a build from a link', () => {
     await expect(incoming.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await buildIsOpen(incoming);
 
-    // A link is not a save. The named group exists as a heading either way; what
-    // matters is that opening a link put nothing in it.
+    // A link is not a save. Opening one leaves a working record whose title is
+    // derived from the hull, so what matters is that nothing in the library
+    // carries a name a Commander gave it.
     await incoming.goto('/builds');
-    const named = incoming.locator('[data-record-group="named"]');
-    await expect(named.locator('edsb-saved-build-card')).toHaveCount(0);
+    await expect(incoming.locator('edsb-saved-build-card').first()).toBeVisible();
+    await expect(
+      incoming.locator('edsb-saved-build-card .record__title:not(.record__title--derived)'),
+    ).toHaveCount(0);
     await incoming.close();
   });
 

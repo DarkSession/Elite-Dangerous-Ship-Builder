@@ -1433,7 +1433,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'The canvas’s own one-word qualifier beside the fuel segment; Tank is the ordinary German word.',
     'drives.rail.tonnes': 'The SI symbol for the tonne, identical in German.',
     'hullDetail.unit.shield': 'The SI symbol for the megajoule, identical in German.',
-    'library.save.name.label': '"Name" is the ordinary German word.',
     'catalogue.hardpoint.code.medium':
       'The mount codes are single initials of the German class names; Mittel and medium share one.',
     'catalogue.price.unit':

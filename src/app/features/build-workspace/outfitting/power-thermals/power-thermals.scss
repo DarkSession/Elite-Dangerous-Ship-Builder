@@ -311,14 +311,22 @@
   overflow-wrap: break-word;
 }
 
-// The gloss under the scenario's name, in the quieter ink. Drawn, not hovered:
-// it is the one thing a scenario name does not say, and hover-only meaning is
-// unreachable by touch (011 FR-006).
+// The gloss on the scenario's name — the one thing the name does not say.
+//
+// It was drawn under every name until 2026-08-27, on the reasoning that
+// hover-only meaning is unreachable by touch (011 FR-006). It still is, which
+// is why this is the system's own tooltip and not a `title`: it opens on
+// hover, on focus and on a press, and the gloss is related to the name by
+// `aria-describedby` whether or not it is drawn. What the change buys back is
+// a line under every scenario name; the 44-pixel target the trigger owes takes
+// most of that back, so the block ends five pixels shorter rather than six
+// lines (Commander request 2026-08-27).
 .heat__description {
+  // The whole of the name's cell rather than a word inside a line: this is the
+  // only thing in it, so the trigger wraps against the column the bars are laid
+  // out on and the bubble hangs from that column's leading edge.
   display: block;
-  color: var(--edsb-text-faint);
-  font-size: var(--edsb-text-size-micro);
-  text-wrap: pretty;
+  min-inline-size: 0;
 }
 
 .heat__within,

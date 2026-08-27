@@ -43,7 +43,7 @@ Every relevant declaration adds:
 
 Preview the shell/context heading/navigation; visible-name actions/menu; labelled input/select/search/
 textarea; segmented/choice/tab controls; panel/card; semantic list/table shells; definition/metric
-groups; status/notice/error/unavailable; disclosure; dialog/sheet/full-height layer; language
+groups; status/notice/error/unavailable; disclosure; tooltip; dialog/sheet/full-height layer; language
 selector; game-text provenance; and announcement outlets. Later capability components join the same
 manifest before use.
 

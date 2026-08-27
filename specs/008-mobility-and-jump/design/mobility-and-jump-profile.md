@@ -239,6 +239,20 @@ the curve is measured against, and its two multipliers are not drawn. An incompl
 of them — presents the package's exact issues in the package's order, whose fields and reasons distinguish absent, disabled, shed,
 package-unresolved and invalid-input thrusters.
 
+**Roll and yaw usually do not move with the pips, and that is the game's answer rather than a
+defect (checked 2026-08-27).** The package interpolates all four allocation-bearing readings the
+same way — `min + (max − min) × pips / 4`, then the rotation mass-curve multiplier — so the pips
+reach roll and yaw exactly as they reach top speed and pitch. What differs is the hull data they are
+interpolated over: across the 48 hulls the catalogue carries, `minimumSpeed` differs from
+`maximumSpeed` and `minPitch` from `pitch` on **every** one, while `minRoll` equals `roll` on 47 of
+them and `minYaw` equals `yaw` on 42. Where the two ends are the same number, the interpolation is
+that number at every allocation and the drawn figure stands still. It moves where the hull gives it
+room to: a Cobra Mk V rolls 111 °/s at no pips and 122 °/s at four, and six hulls — Type-7, Type-8,
+Cobra Mk V, Corsair, Panther Clipper Mk II and Kestrel Mk II — yaw faster with the engines fed. Roll
+and yaw still move with mass on every hull, through the rotation mass-curve multiplier. So nothing
+is clamped, defaulted or dropped on this side of the boundary: the card prints
+`mobilityCapacitorMetricsResult` unchanged, and a flat reading is the Almanac's own.
+
 The hull's own catalogue speed and rotation exist and are deliberately not reached for: a catalogue
 speed is not this build's speed (FR-005). Nothing stands in.
 

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
-import { openRecordFromLibrary, savedToBrowser, reachShellLink } from './shell';
+import { openRecordFromLibrary, reachShellAction, savedToBrowser, reachShellLink } from './shell';
 
 /**
  * Managing what this browser is holding.
@@ -62,22 +62,34 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
  * application decided. The quota is the only bound left on records since the
  * twenty-record limit was withdrawn on 2026-08-25 (FR-013).
  */
-async function fillStorage(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    // Coarse first, then finer, so what is left over is smaller than anything
-    // the application would write. A megabyte of headroom would leave the store
-    // full in name only.
-    for (const size of [64 * 1024, 1024, 64, 1]) {
-      const chunk = 'x'.repeat(size);
-      for (let index = 0; ; index += 1) {
-        try {
-          localStorage.setItem(`filler:${size}:${index}`, chunk);
-        } catch {
-          break;
-        }
+const FILL_STORAGE = (): void => {
+  // Coarse first, then finer, so what is left over is smaller than anything
+  // the application would write. A megabyte of headroom would leave the store
+  // full in name only.
+  for (const size of [64 * 1024, 1024, 64, 1]) {
+    const chunk = 'x'.repeat(size);
+    for (let index = 0; ; index += 1) {
+      try {
+        localStorage.setItem(`filler:${size}:${index}`, chunk);
+      } catch {
+        break;
       }
     }
-  });
+  }
+};
+
+async function fillStorage(page: Page): Promise<void> {
+  await page.addInitScript(FILL_STORAGE);
+}
+
+/**
+ * Fills the store on the page as it stands, without a reload.
+ *
+ * `addInitScript` runs on the next navigation, which is no use where the store
+ * has to go full *while* a layer is open and holding what a Commander typed.
+ */
+async function fillStorageNow(page: Page): Promise<void> {
+  await page.evaluate(FILL_STORAGE);
 }
 
 /** How many records this browser is holding, whatever their kind. */
@@ -120,13 +132,27 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
   }).toPass({ timeout: 15_000 });
 }
 
-/** Chooses the first row of the unnamed group, whatever it is titled. */
-async function chooseFirstUnnamed(page: Page): Promise<void> {
-  const row = page.locator('[data-record-group="working"] .record').first();
-  await expect(async () => {
-    await row.click({ timeout: 2_000 });
-    await expect(row).toHaveAttribute('aria-pressed', 'true', { timeout: 2_000 });
-  }).toPass({ timeout: 15_000 });
+/**
+ * Saves the build the workspace is holding, from the workspace's own `SAVE`.
+ *
+ * Naming, renaming and saving a copy all go through here since 2026-08-27:
+ * the library commits open and delete, and what should become of a build is
+ * asked where a Commander is working in it (FR-009).
+ */
+async function saveActiveBuild(
+  page: Page,
+  name: string,
+  mode: 'new' | 'overwrite' = 'new',
+): Promise<void> {
+  await reachShellAction(page, /^Save$/);
+  const dialog = page.getByRole('dialog', { name: 'Save build' });
+  await dialog.getByRole('textbox', { name: 'Build name' }).fill(name);
+  if (mode === 'overwrite') {
+    await dialog.getByRole('radio', { name: /^Overwrite/ }).check();
+  } else {
+    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+  }
+  await dialog.getByRole('button', { name: 'Save build' }).click();
 }
 
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
@@ -153,7 +179,6 @@ test.describe('the build library', () => {
     await reachShellLink(page, 'Open saved build');
 
     await expect(library(page)).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Unnamed builds' })).toBeVisible();
     // Titled by what the build calls itself — here the hull, since a stock
     // build has neither a ship name nor an ident yet (FR-010).
     await expect(page.getByText('Anaconda').first()).toBeVisible();
@@ -161,20 +186,74 @@ test.describe('the build library', () => {
     await expect(page.getByText(/Current build/).first()).toBeVisible();
   });
 
+  test('lists named and unnamed records as one list, under no group heading', async ({ page }) => {
+    // One list since 2026-08-27: the row's own title says which it is, and two
+    // groups made the most recently edited build not reliably the first row
+    // (FR-010, clarification 2026-08-27).
+    // The unnamed one is dated within its seven days, since an older working
+    // record is swept on the listing read rather than shown (FR-013).
+    const recent = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    await seed(page, [
+      seedRecord('named-one', { name: 'Anaconda explorer' }),
+      seedRecord('unnamed-one', { kind: 'working', name: null, modifiedAt: recent }),
+    ]);
+    await page.goto('/builds');
+    await expect(library(page)).toBeVisible();
+
+    await expect(page.getByRole('heading', { name: 'Unnamed builds' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Named builds' })).toHaveCount(0);
+    await expect(page.locator('.records__list')).toHaveCount(1);
+    await expect(page.locator('[data-record-id]')).toHaveCount(2);
+    // One order, and it is the edited instant: the unnamed record was touched
+    // an hour ago and the named one in January, so it leads.
+    await expect(page.locator('[data-record-id]').first()).toHaveAttribute(
+      'data-record-id',
+      'unnamed-one',
+    );
+  });
+
+  test('reads the edited column as how long ago, keeping the instant in words', async ({
+    page,
+  }) => {
+    // What the column is read for. The canvas draws `2 d ago` there, and the
+    // instant is not lost — it stays with the row's other read-not-drawn facts
+    // (FR-010, clarification 2026-08-27).
+    const modifiedAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer', modifiedAt })]);
+    await page.goto('/builds');
+
+    await expect(page.locator('[data-record-id="a"] .record__modified')).toHaveText(/ago/i);
+    await expect(page.locator('[data-record-id="a"] .record__modified')).not.toHaveText(/2026/);
+    // Named where it is read: the column header that would say what the date
+    // is is hidden from the accessibility tree, so the fact says it itself.
+    await expect(page.locator('[data-record-id="a"] .record__states')).toContainText(
+      /Edited .*20\d\d/,
+    );
+  });
+
+  test('commits exactly open and delete on the record that was chosen', async ({ page }) => {
+    // The canvas's two, and nothing else. Naming, renaming and saving a copy
+    // are the workspace's own `SAVE` since 2026-08-27 (FR-009).
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+
+    await chooseRecord(page, 'Anaconda explorer');
+    const footer = page.locator('.library__footer');
+
+    await expect(footer.getByRole('button')).toHaveCount(2);
+    await expect(footer.getByRole('button', { name: 'Delete Anaconda explorer' })).toBeVisible();
+    await expect(footer.getByRole('button', { name: 'Open Anaconda explorer' })).toBeVisible();
+  });
+
   test('names the record the build is already in, leaving nothing behind', async ({ page }) => {
     // Revised 2026-08-25: a manual save consumes the unnamed record these edits
     // were autosaved into, rather than copying the build beside it. A Commander
     // who saves their work finds one entry, not the same build twice (FR-008).
     await createBuild(page);
+
+    await saveActiveBuild(page, 'Anaconda explorer');
+
     await reachShellLink(page, 'Open saved build');
-
-    await chooseRecord(page, 'Anaconda');
-    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Save this build' });
-    await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
-    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
-
-    await expect(page.getByRole('heading', { name: 'Named builds', exact: true })).toBeVisible();
     await expect(page.getByText('Anaconda explorer').first()).toBeVisible();
     expect(await recordCount(page)).toBe(1);
   });
@@ -182,35 +261,151 @@ test.describe('the build library', () => {
   test('warns about a duplicate name and still saves a separate build', async ({ page }) => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
     await createBuild(page);
-    await reachShellLink(page, 'Open saved build');
 
-    // The seeded save is also titled "Anaconda …", so the row is taken from the
-    // unnamed group rather than by a title both rows start with.
-    await chooseFirstUnnamed(page);
-    await page.getByRole('button', { name: 'Save Anaconda under a name' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Save this build' });
-    await dialog.getByRole('textbox', { name: 'Name' }).fill('Anaconda explorer');
+    await reachShellAction(page, /^Save$/);
+    const dialog = page.getByRole('dialog', { name: 'Save build' });
+    await dialog.getByRole('textbox', { name: 'Build name' }).fill('Anaconda explorer');
 
-    await expect(dialog.getByText(/already use this name/i)).toBeVisible();
-    await dialog.getByRole('button', { name: 'Save as a new build' }).click();
+    // One build carries the name, so the layer says so in words rather than
+    // counting to one.
+    await expect(dialog.getByText(/Another saved build already uses this name/i)).toBeVisible();
+    await dialog.getByRole('button', { name: 'Save build' }).click();
 
     // The build that was already stored, and the record this build was in,
     // which the save named rather than duplicated.
     expect(await recordCount(page)).toBe(2);
   });
 
-  test('duplicates a build under a new identity', async ({ page }) => {
-    await seed(page, [seedRecord('a')]);
+  test('opens on replacing the save the build came from, and says when it was written', async ({
+    page,
+  }) => {
+    // Canvas 1c draws the replacing card selected and its own line under it.
+    // A Commander who opened a save and pressed SAVE means that save; the
+    // alternative is one press away (FR-009).
+    const modifiedAt = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer', modifiedAt })]);
     await page.goto('/builds');
+    await openRecordFromLibrary(page, 'Anaconda explorer');
 
-    await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Duplicate Build a' }).click();
+    await reachShellAction(page, /^Save$/);
+    const dialog = page.getByRole('dialog', { name: 'Save build' });
 
-    const stored = await page.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
+    await expect(dialog.getByRole('radio', { name: /^Overwrite/ })).toBeChecked();
+    await expect(dialog).toContainText('Last saved 2 days ago');
+  });
+
+  test('does not open the next save with a name that was typed and dismissed', async ({ page }) => {
+    // A closed dialog still holds what is in it, so opening has to be a reset:
+    // otherwise the next Commander to press SAVE finds an abandoned name in the
+    // field, under a duplicate count worked out for a different one.
+    await createBuild(page);
+
+    await reachShellAction(page, /^Save$/);
+    const dialog = page.getByRole('dialog', { name: 'Save build' });
+    await dialog.getByRole('textbox', { name: 'Build name' }).fill('Abandoned');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+
+    await reachShellAction(page, /^Save$/);
+    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('');
+  });
+
+  test('writes the note with the build, and keeps it out of the link', async ({ page }) => {
+    await createBuild(page);
+
+    await reachShellAction(page, /^Save$/);
+    const dialog = page.getByRole('dialog', { name: 'Save build' });
+    await dialog.getByRole('textbox', { name: 'Build name' }).fill('Anaconda explorer');
+    await dialog.getByRole('textbox', { name: 'Note' }).fill('Neutron route to Colonia.');
+    await dialog.getByRole('button', { name: 'Save build' }).click();
+
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Object.keys(localStorage)
+            .filter((key) => key.startsWith('edsb:record:'))
+            .map((key) => (JSON.parse(localStorage.getItem(key)!) as { note: string | null }).note),
+        ),
+      )
+      .toEqual(['Neutron route to Colonia.']);
+
+    // A note is this browser's own. Nothing about it reaches the address a
+    // Commander shares (FR-011).
+    expect(page.url()).not.toContain('Neutron');
+  });
+
+  test('says a save wrote nothing, and keeps what was typed on screen', async ({ page }) => {
+    // The one outcome a Commander cannot notice for themselves: the build on
+    // screen is identical whether the write landed or not (FR-009).
+    await fillStorage(page);
+    await openWorkspaceWithBuild(page);
+
+    await reachShellAction(page, /^Save$/);
+    const dialog = page.getByRole('dialog', { name: 'Save build' });
+    await dialog.getByRole('textbox', { name: 'Build name' }).fill('Anaconda explorer');
+    await dialog.getByRole('button', { name: 'Save build' }).click();
+
+    await expect(dialog).toContainText(/could not be saved/i);
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue(
+      'Anaconda explorer',
     );
-    expect(stored).toHaveLength(2);
-    expect(stored).toContain('edsb:record:a');
+  });
+
+  test('returns to the build it was opened over rather than to the shipyard', async ({ page }) => {
+    // Dismissing a layer puts a Commander back where they were. It used to send
+    // everyone to the shipyard, which took a Commander who glanced at their
+    // saved builds out of a build they had chosen nothing to leave (Commander
+    // request 2026-08-27).
+    await createBuild(page);
+    await reachShellLink(page, 'Open saved build');
+    await expect(library(page)).toBeVisible();
+
+    await page.getByRole('button', { name: 'Close saved builds' }).click();
+
+    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
+  });
+
+  test('copies a saved build by saving the one that was opened as a new build', async ({
+    page,
+  }) => {
+    // Duplicating left the library's footer on 2026-08-27. The capability did
+    // not: a record is copied by opening it and saving it as a new build, which
+    // leaves the original exactly where it was (FR-009).
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+    await openRecordFromLibrary(page, 'Anaconda explorer');
+
+    await saveActiveBuild(page, 'Anaconda explorer copy');
+
+    const names = await page.evaluate(() =>
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('edsb:record:'))
+        .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name),
+    );
+    expect(names).toContain('Anaconda explorer');
+    expect(names).toContain('Anaconda explorer copy');
+    expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).not.toBeNull();
+  });
+
+  test('renames a saved build by saving it over the save it was opened from', async ({ page }) => {
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+    await openRecordFromLibrary(page, 'Anaconda explorer');
+
+    await saveActiveBuild(page, 'Deep black', 'overwrite');
+
+    // The same local identity, under a new name: identity is a UUID and never a
+    // label (FR-009).
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const raw = localStorage.getItem('edsb:record:a');
+          return raw === null ? null : (JSON.parse(raw) as { name: string | null }).name;
+        }),
+      )
+      .toBe('Deep black');
+    expect(await recordCount(page)).toBe(1);
   });
 
   test('confirms a deletion, names the record, and cancelling keeps it', async ({ page }) => {
@@ -443,12 +638,8 @@ test.describe('the build library', () => {
     // Waiting for the save is the precondition, not a convenience: the library
     // lists what is stored, and autosave coalesces before it writes.
     await createBuild(first);
+    await saveActiveBuild(first, 'Shared build');
     await reachShellLink(first, 'Open saved build');
-    await chooseRecord(first, 'Anaconda');
-    await first.getByRole('button', { name: 'Save Anaconda under a name' }).click();
-    const saveDialog = first.getByRole('dialog', { name: 'Save this build' });
-    await saveDialog.getByRole('textbox', { name: 'Name' }).fill('Shared build');
-    await saveDialog.getByRole('button', { name: 'Save as a new build' }).click();
     await expect(first.getByText('Shared build').first()).toBeVisible();
 
     // The other page opens the same named record, so both hold the same baseline.
@@ -458,26 +649,12 @@ test.describe('the build library', () => {
     await first.goto('/builds');
     await openRecordFromLibrary(first, 'Shared build');
 
-    // One page saves; the other's baseline is now stale.
-    await reachShellLink(second, 'Open saved build');
-    await chooseRecord(second, 'Shared build');
-    await second.getByRole('button', { name: 'Rename Shared build' }).click();
-    const otherDialog = second.getByRole('dialog', { name: 'Save this build' });
-    await otherDialog.getByRole('textbox', { name: 'Name' }).fill('From the other page');
-    await otherDialog.getByRole('button', { name: 'Replace the build I opened' }).click();
+    // One page saves; the other's baseline is now stale. Both pages hold the
+    // same record, and neither autosaves into it, so the collision is only ever
+    // between two deliberate saves (FR-012).
+    await saveActiveBuild(second, 'From the other page', 'overwrite');
 
-    await reachShellLink(first, 'Open saved build');
-    // By the time this page looks, the listing has already re-read storage and
-    // shows the other page's name — which is the point: the *record* is the
-    // same one, and this page's baseline is the stale part.
-    await chooseRecord(first, 'From the other page');
-    await first
-      .getByRole('button', { name: /^Rename / })
-      .first()
-      .click();
-    const mineDialog = first.getByRole('dialog', { name: 'Save this build' });
-    await mineDialog.getByRole('textbox', { name: 'Name' }).fill('From this page');
-    await mineDialog.getByRole('button', { name: 'Replace the build I opened' }).click();
+    await saveActiveBuild(first, 'From this page', 'overwrite');
 
     const conflict = first.getByRole('dialog', { name: /changed in another tab/i });
     await expect(conflict).toBeVisible();
@@ -500,6 +677,53 @@ test.describe('the build library', () => {
     await context.close();
   });
 
+  test('reopens the save on what was typed when answering the conflict wrote nothing', async ({
+    browser,
+  }) => {
+    // The same journey as the question above, carried one step further: what a
+    // Commander sees when the answer is refused. It is the same length, and
+    // slow for the same reason.
+    test.slow();
+    const context = await browser.newContext();
+    const first = await context.newPage();
+    const second = await context.newPage();
+
+    await createBuild(first);
+    await saveActiveBuild(first, 'Shared build');
+    await reachShellLink(first, 'Open saved build');
+    await expect(first.getByText('Shared build').first()).toBeVisible();
+
+    // Both pages open the record before either saves, so both hold one
+    // baseline and the collision is between two deliberate saves (FR-012).
+    await second.goto('/builds');
+    await openRecordFromLibrary(second, 'Shared build');
+    await first.goto('/builds');
+    await openRecordFromLibrary(first, 'Shared build');
+
+    await saveActiveBuild(second, 'From the other page', 'overwrite');
+    await saveActiveBuild(first, 'From this page', 'overwrite');
+
+    const conflict = first.getByRole('dialog', { name: /changed in another tab/i });
+    await expect(conflict).toBeVisible();
+
+    // The store goes full with the question already on screen, so answering it
+    // is refused for the reason a save is refused. Keeping both versions writes
+    // a record, and there is no room to write one.
+    await fillStorageNow(first);
+    await conflict.getByRole('button', { name: 'Keep both versions' }).click();
+
+    // Closing over this is the one way an edit is lost without being reported:
+    // the build on screen is identical whether the answer landed or not.
+    const dialog = first.getByRole('dialog', { name: 'Save build' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(/could not be saved/i);
+    // What was typed before the conflict was raised, not the record's own name
+    // and not an empty field (FR-009).
+    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('From this page');
+
+    await context.close();
+  });
+
   test('is structurally sound and free of accessibility violations', async ({ page }, testInfo) => {
     await seed(page, [
       seedRecord('a'),
@@ -516,5 +740,22 @@ test.describe('the build library', () => {
     await page.getByRole('button', { name: 'Delete Build a' }).click();
     await expect(page.getByRole('dialog', { name: /Build a/ })).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-delete-confirmation' });
+  });
+
+  test('scans the save layer over the build it names', async ({ page }, testInfo) => {
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+    await openRecordFromLibrary(page, 'Anaconda explorer');
+
+    await reachShellAction(page, /^Save$/);
+    const dialog = page.getByRole('dialog', { name: 'Save build' });
+    // The state with the most to get wrong: two modes, each with its own
+    // associated outcome, and a message line that reports on what is typed.
+    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+    await expect(dialog).toContainText('already use');
+
+    await expectSingleVisibleH1(page);
+    await expectNoDocumentOverflow(page);
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'save-build-layer' });
   });
 });

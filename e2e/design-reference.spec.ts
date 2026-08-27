@@ -470,7 +470,10 @@ test.describe('the saved-build surface', () => {
     const footer = page.locator('.library__footer');
     await expect(footer).toBeVisible();
 
+    // Two, since 2026-08-27: the canvas draws no naming or duplicating here,
+    // and both are reached from the save of the build in hand instead (FR-009).
     const labels = await footer.locator('button').allInnerTexts();
+    expect(labels).toHaveLength(2);
     expect(labels[0]).toMatch(/^DELETE/i);
     expect(labels[labels.length - 1]).toMatch(/^OPEN/i);
 
@@ -479,5 +482,146 @@ test.describe('the saved-build surface', () => {
     const remove = footer.locator('button').first();
     expect(await style(remove, 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(await style(remove, 'border-inline-start-width')).toBe('1px');
+  });
+
+  test('reacts to the pointer on the bar’s link exactly as it does on its buttons', async ({
+    page,
+  }) => {
+    // A link and a button sitting in one command bar and reacting differently
+    // to the pointer reads as one of them being inert, and the reference draws
+    // no such distinction (Commander request 2026-08-27).
+    //
+    // Read out of the cascade rather than by putting a pointer on each control.
+    // A headless engine has no input device, so a synthesised move never puts
+    // an element into `:hover` at all — an assertion on the computed ground
+    // would pass by reading the resting one. What both controls declare is the
+    // claim, and it is the thing a regression would change.
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(
+      page.getByRole('banner').getByRole('link', { name: 'Open saved build' }),
+    ).toBeVisible();
+
+    const hoverGrounds = await page.evaluate(() => {
+      const declared: Record<string, string> = {};
+      const walk = (rules: CSSRuleList) => {
+        for (const rule of [...rules]) {
+          const group = rule as CSSMediaRule;
+          if (group.cssRules && group.conditionText !== undefined) {
+            walk(group.cssRules);
+            continue;
+          }
+          const styled = rule as CSSStyleRule;
+          if (typeof styled.selectorText !== 'string' || !styled.selectorText.includes(':hover')) {
+            continue;
+          }
+          const ground = styled.style.getPropertyValue('background-color');
+          if (ground === '') {
+            continue;
+          }
+          // The encapsulation attribute sits between the class and the
+          // pseudo-class, so the class is matched on its own.
+          if (/\.frame__navigation-link\[[^\]]*\]:hover$/.test(styled.selectorText)) {
+            declared['link'] = ground;
+          }
+          if (/\.action-layer__link\[[^\]]*\]:hover$/.test(styled.selectorText)) {
+            declared['compactLink'] = ground;
+          }
+          if (/^\.action\[[^\]]*\]:hover/.test(styled.selectorText)) {
+            declared['button'] = ground;
+          }
+        }
+      };
+      for (const sheet of [...document.styleSheets]) {
+        try {
+          walk(sheet.cssRules);
+        } catch {
+          // A stylesheet this document may not read is not one this application
+          // wrote.
+        }
+      }
+      return declared;
+    });
+
+    expect(hoverGrounds['button']).toBeTruthy();
+    expect(hoverGrounds['link']).toBe(hoverGrounds['button']);
+    // The same control in the compact menu, which is where a Commander reaches
+    // it at narrow widths and where the complaint was first made.
+    expect(hoverGrounds['compactLink']).toBe(hoverGrounds['button']);
+  });
+});
+
+test.describe('the save-build surface', () => {
+  // Canvas 1c draws it at 540px over the workspace, so it is asserted at a
+  // width that draws the framed composition.
+  test.use({ viewport: { width: 1320, height: 900 } });
+
+  /**
+   * A stock build, with canvas 1c's `SAVE BUILD` opened over it and named.
+   *
+   * Named, because the reference draws the commit filled: an unnamed build has
+   * nothing to save under and the control is natively disabled, which is a
+   * different thing for the canvas to draw.
+   */
+  async function withSaveOpen(page: Page): Promise<Locator> {
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('banner').getByRole('button', { name: 'Save' }).click();
+    const layer = page.getByRole('dialog', { name: 'Save build' });
+    await expect(layer).toBeVisible();
+    await layer.getByRole('textbox', { name: 'Build name' }).fill('Anaconda explorer');
+    return layer;
+  }
+
+  test('titles the layer in tracked uppercase over a monospace dismiss', async ({ page }) => {
+    const layer = await withSaveOpen(page);
+
+    const title = layer.locator('.layer__title').first();
+    const size = parseFloat(await style(title, 'font-size'));
+    expect(parseFloat(await style(title, 'letter-spacing')) / size).toBeGreaterThan(0.15);
+    expect(await style(title, 'text-transform')).toBe('uppercase');
+    expect(await style(layer.locator('.layer__dismiss'), 'font-family')).toContain(
+      'JetBrains Mono',
+    );
+  });
+
+  test('draws the modes as bordered cards, washing and marking only the selected one', async ({
+    page,
+  }) => {
+    // Canvas 1c: two bordered cards, the selected one washed amber with a
+    // filled square marker and the other left on the panel ground.
+    const layer = await withSaveOpen(page);
+    const cards = layer.locator('.save__modes .choice');
+    // A build that came from nowhere has one mode, and it is the selected one.
+    await expect(cards).toHaveCount(1);
+
+    const only = cards.first();
+    expect(await style(only, 'border-block-start-width')).toBe('1px');
+    expect(await style(only, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    // The legend is read, not drawn: the canvas puts the cards straight under
+    // the note field with no heading over them. Still in the accessibility
+    // tree, so it takes a box of a pixel rather than none.
+    const legend = await layer.locator('.choice-group__legend').boundingBox();
+    expect(legend?.height ?? 0).toBeLessThanOrEqual(1);
+  });
+
+  test('closes the layer with a hairline over a monospace message line', async ({ page }) => {
+    // Canvas 1c: a rule, then the message on the leading edge and the two
+    // commitments on the trailing one, cancel bordered and save filled amber.
+    const layer = await withSaveOpen(page);
+
+    const footer = layer.locator('.save__footer');
+    expect(await style(footer, 'border-block-start-width')).toBe('1px');
+    expect(await style(layer.locator('.save__message'), 'font-family')).toContain('JetBrains Mono');
+
+    const labels = await layer.locator('.save__actions button').allInnerTexts();
+    expect(labels).toHaveLength(2);
+    expect(labels[0]).toMatch(/^CANCEL/i);
+    expect(labels[1]).toMatch(/^SAVE BUILD/i);
+
+    // Polled, because the control fades from its disabled ground to the filled
+    // one as the build takes a name.
+    const commit = layer.locator('.save__actions button').last();
+    await expect.poll(() => style(commit, 'background-color')).toBe(AMBER);
   });
 });

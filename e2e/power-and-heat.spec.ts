@@ -268,11 +268,11 @@ test.describe('reading the build', () => {
   }) => {
     await openPower(page);
 
-    // The name only: the description drawn under it is its own element, and it
-    // is asserted on its own below.
+    // The trigger's own text, which is the only thing the row draws. The gloss
+    // behind it is the tooltip's and is asserted on its own below.
     const names = await page
-      .locator('.power__block--heat .heat__name')
-      .evaluateAll((nodes) => nodes.map((node) => node.firstChild?.textContent?.trim() ?? ''));
+      .locator('.power__block--heat .heat__name button')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
     expect(names.slice(0, 5)).toEqual([
       englishMessages['power.heat.scenario.idle'],
       englishMessages['power.heat.scenario.thrusters'],
@@ -354,7 +354,7 @@ test.describe('reading the build', () => {
     }
   });
 
-  test('says what every scenario name is shorthand for, drawn rather than hovered', async ({
+  test('says what every scenario name is shorthand for, in a tooltip rather than a title', async ({
     page,
   }) => {
     await openPower(page);
@@ -363,15 +363,89 @@ test.describe('reading the build', () => {
     const drawn = await bars.count();
     expect(drawn).toBeGreaterThanOrEqual(5);
 
-    // One description per bar, in the document rather than behind a pointer:
-    // hover-only meaning is unreachable by touch (011 FR-006).
-    const descriptions = await bars.locator('.heat__description').allInnerTexts();
-    expect(descriptions).toHaveLength(drawn);
-    for (const description of descriptions) {
-      expect(description.trim()).not.toBe('');
+    // One gloss per bar, related to the name it explains and in the document
+    // rather than in a `title` or a `data-tip` — those are unreachable by touch
+    // and unreliably announced (011 FR-006).
+    const tips = bars.locator('.heat__description [role="tooltip"]');
+    await expect(tips).toHaveCount(drawn);
+    const texts = await tips.evaluateAll((nodes) =>
+      nodes.map((node) => node.textContent?.trim() ?? ''),
+    );
+    for (const text of texts) {
+      expect(text).not.toBe('');
     }
-    expect(descriptions[0].trim()).toBe(englishMessages['power.heat.scenario.idle.description']);
+    expect(texts[0]).toBe(englishMessages['power.heat.scenario.idle.description']);
     await expect(bars.locator('[data-tip]')).toHaveCount(0);
+    await expect(bars.locator('[title]')).toHaveCount(0);
+
+    const first = bars.first();
+    const trigger = first.locator('.heat__description button');
+    const tip = first.locator('.heat__description [role="tooltip"]');
+
+    // Related to its trigger whether or not it is drawn, so a reader who is
+    // told the interface has the gloss without having to find a control. Which
+    // is also why the closed state is asserted on the class and the trigger's
+    // own `aria-expanded` rather than on visibility: undrawn here means the
+    // same screen-reader-only text every other text equivalent in this
+    // application is, not an element taken out of the page.
+    expect(await trigger.getAttribute('aria-describedby')).toBe(await tip.getAttribute('id'));
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(tip).not.toHaveClass(/tooltip__tip--shown/);
+
+    // Hover draws it: the reading the canvas hangs on its `data-tip`, and the
+    // one a pointer expects.
+    await trigger.hover();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(tip).toHaveClass(/tooltip__tip--shown/);
+    const bubble = await tip.boundingBox();
+    expect(bubble?.width ?? 0).toBeGreaterThan(1);
+
+    // Drawn, it never pushes the document sideways.
+    await expectNoDocumentOverflow(page);
+
+    // And the pointer can travel from the name to the bubble to read it —
+    // SC 1.4.13's "hoverable". The crossing is the interesting part: the bubble
+    // stands off its trigger by a gap, and an unbridged gap collapses the tip
+    // the instant the pointer enters it, which is a failure no amount of DOM
+    // parentage prevents.
+    const name = await trigger.boundingBox();
+    expect(name).not.toBeNull();
+    expect(bubble).not.toBeNull();
+    for (const y of [(name?.y ?? 0) + (name?.height ?? 0) + 1, (bubble?.y ?? 0) + 1]) {
+      await page.mouse.move((bubble?.x ?? 0) + (bubble?.width ?? 0) / 2, y);
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    }
+
+    // The pointer leaving takes it back.
+    await page.mouse.move(0, 0);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    // `Escape` puts away a tip a hover opened, with nothing inside it focused —
+    // which is the case that criterion's dismissal exists for, and the case a
+    // listener on the tooltip's own element would never hear.
+    await trigger.hover();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    // Dismissed, not disabled: the pointer leaving and coming back draws it again.
+    await page.mouse.move(0, 0);
+    await trigger.hover();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await page.mouse.move(0, 0);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    // A press reaches the same gloss, because touch has no hover at all — a tap
+    // where the profile has touch, a click where it does not. A press pins the
+    // tip open whichever pointer it came from, and a press on a pinned tip puts
+    // it away, so the control reads the same on a phone as on a desk.
+    const touch = test.info().project.use.hasTouch === true;
+    const press = async () => (touch ? trigger.tap() : trigger.click());
+
+    await press();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await press();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('draws the three capacitors with their own figures', async ({ page }) => {
@@ -792,6 +866,29 @@ test.describe('the conditions that break layouts', () => {
     await expectNoDocumentOverflow(page);
 
     await context.close();
+  });
+
+  test('holds a drawn gloss inside the page at a doubled text size and mirrored', async ({
+    page,
+  }) => {
+    // The bubble is capped against the viewport and hung off the leading edge
+    // of its trigger, and both of those are the kind of measurement a text
+    // scale or a mirrored direction breaks. Neither is exercised by the tip
+    // being closed, so each is checked with one open.
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openPower(page);
+
+    const trigger = page.locator('.power__block--heat .heat__description button').first();
+    await trigger.hover();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expectNoDocumentOverflow(page);
+
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await settled(page);
+    await page.mouse.move(0, 0);
+    await trigger.hover();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expectNoDocumentOverflow(page);
   });
 
   test('mirrors the layout without losing a figure', async ({ page }) => {

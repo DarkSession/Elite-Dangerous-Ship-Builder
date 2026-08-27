@@ -3,16 +3,6 @@ import { relationId } from '../../a11y/text-equivalence';
 import { SavedBuildCard, type SavedBuild } from '../saved-build-card/saved-build-card';
 import { StatusNotice } from '../status/status-notice';
 
-/** One labelled group of stored builds. */
-export interface RecordListGroup {
-  readonly id: string;
-  /** The group's own heading: "Unnamed builds", "Named builds". */
-  readonly label: string;
-  readonly builds: readonly SavedBuild[];
-  /** Shown instead of an empty group. */
-  readonly emptyLabel: string;
-}
-
 /** A record this build cannot open, listed rather than hidden. */
 export interface UnavailableRecord {
   readonly id: string;
@@ -32,10 +22,14 @@ export interface RecordColumns {
 /**
  * Every stored build, in one reading order.
  *
- * Unnamed and named builds are separate groups because they behave differently,
- * but they are one list: the groups do not become columns that a reader has to
- * move between, and the narrow and wide compositions present the same records
- * in the same order.
+ * **One list since 2026-08-27.** Named and unnamed records were two labelled
+ * groups, on the argument that they behave differently and that a library
+ * holding a record for every build should say which of them a Commander named.
+ * Every row already says it — a name they typed is set in the title's own
+ * weight, and a title read from the build is set apart from one — so the
+ * heading said it twice, and it cost the thing a library is read for: with two
+ * groups, the build edited most recently is not reliably the row at the top
+ * (FR-010, clarification 2026-08-27).
  *
  * **Rebuilt to the canvas 2026-08-25.** The grid of cards became the reference's
  * dense rows under one plate of column headers, in a single scrolling body. The
@@ -58,7 +52,7 @@ export interface RecordColumns {
 export class ResponsiveRecordList {
   /** What the list contains. Becomes its accessible name. */
   readonly label = input.required<string>();
-  readonly groups = input.required<readonly RecordListGroup[]>();
+  readonly builds = input.required<readonly SavedBuild[]>();
   readonly columns = input.required<RecordColumns>();
   readonly unavailable = input<readonly UnavailableRecord[]>([]);
 
@@ -69,8 +63,7 @@ export class ResponsiveRecordList {
   readonly unavailableLabel = input<string | null>(null);
 
   /**
-   * The one sentence to draw instead of the groups when a search matched
-   * nothing.
+   * The one sentence to draw instead of the list when a search matched nothing.
    *
    * On the body's own ground, with no panel and nothing else removed: every
    * control stays where it was, so widening the search needs no separate action
@@ -84,7 +77,12 @@ export class ResponsiveRecordList {
 
   readonly hasUnavailable = computed(() => this.unavailable().length > 0);
 
-  groupId(id: string): string {
-    return `${this.listId}-${id}`;
-  }
+  /**
+   * The heading id for the unavailable records.
+   *
+   * They keep a heading of their own, where the readable records lost theirs:
+   * "this could not be read" is not something a row says for itself, and the
+   * entries beneath it are notices rather than builds.
+   */
+  readonly unavailableId = `${this.listId}-unavailable`;
 }
