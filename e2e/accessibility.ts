@@ -65,9 +65,27 @@ const SWEEP_BUDGET_MS = 15_000;
  * The state includes where the page stands. Two of the rules scanned here are
  * geometric — a target's size and its distance from its neighbours — and both
  * are read against the viewport, so a control parked behind the sticky command
- * bar is an obscured target for as long as the page is left at that offset. A
- * caller that has scrolled the document, or resized it after scrolling, is
- * therefore choosing the state it sweeps and should say where it stands.
+ * bar is an obscured target for as long as the page is left at that offset.
+ *
+ * **So the sweep says where it stands, rather than each caller saying it.
+ * Ruled 2026-08-27.** It stands at the top. Forty-odd callers reach their state
+ * by pressing something, and a press scrolls whatever it has to in order to
+ * land — including the document, once the workspace column releases and the
+ * page is the tall thing. That left the sweep judging an offset nobody chose:
+ * selecting the cargo hatch at 834x1112 parked the anatomy 233px up, under the
+ * command bar, and `target-size` read the bar's own `?` as a target zero pixels
+ * from the mount marks beneath it. At the top the same sweep is clean.
+ *
+ * It is the state a Commander meets, too. They reach a mount by scrolling the
+ * ledger's own rail, which is what the rail is for; the document moving under
+ * them is the test harness reaching a row, not a Commander reading a screen.
+ * And a control that a sticky bar covers at some offset is
+ * `2.4.11 Focus Not Obscured`, one of the seven criteria the constitution
+ * excludes — it is not the spacing `2.5.8` is about, which is whether two
+ * targets can be told apart by a thumb.
+ *
+ * A caller that means to sweep a scrolled state scrolls after this and says so,
+ * which is what `mobility-and-jump` already does for the state it is about.
  */
 export async function sweepOutfittingState(
   page: Page,
@@ -76,6 +94,7 @@ export async function sweepOutfittingState(
 ): Promise<void> {
   testInfo.setTimeout(testInfo.timeout + SWEEP_BUDGET_MS);
 
+  await page.evaluate(() => window.scrollTo(0, 0));
   await settled(page);
   await expectNoAccessibilityViolations(page, testInfo, { label });
   await expectOrderedHeadings(page);

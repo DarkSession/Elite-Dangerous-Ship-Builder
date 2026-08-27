@@ -732,3 +732,13 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       machine from one that is slow because of how much it does, and says the second extends its own
       budget — this one scans twice and, unlike the sweeps that add `SWEEP_BUDGET_MS` per state, was
       extending nothing (`e2e/outfitting-accessibility.spec.ts`)
+- [x] T171 Let the accessibility sweep say where the page stands, once, rather than inheriting an
+      offset from whatever was last pressed. Forty-odd callers reach their state by pressing
+      something, and a press scrolls whatever it must to land — including the document, now that the
+      workspace column releases and the page is the tall thing. Selecting the cargo hatch at 834x1112
+      parked the anatomy 233px up under the command bar, and `target-size` read the bar's own `?` as
+      a target zero pixels from the mount marks beneath it. The sweep stands at the top now, which is
+      where a Commander meets the arrangement — they reach a mount by scrolling the ledger's own
+      rail — and a control a sticky bar covers at some offset is 2.4.11, one of the seven criteria
+      the constitution excludes, not the 2.5.8 spacing the rule is about (`e2e/accessibility.ts`;
+      the same `scrollTo(0, 0)` `mobility-and-jump` already takes for T158)
