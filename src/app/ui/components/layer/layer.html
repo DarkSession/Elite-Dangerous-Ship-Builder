@@ -8,7 +8,7 @@
   [class]="presentationClass()"
   [attr.aria-labelledby]="titleId"
   [attr.aria-describedby]="description() ? descriptionId : null"
-  (close)="dismiss()"
+  (close)="closed()"
   (mousedown)="pressOn($event)"
   (click)="dismissFromBackdrop($event)"
 >
