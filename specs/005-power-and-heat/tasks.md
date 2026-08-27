@@ -419,7 +419,7 @@ package call: every figure is one the projection already returns.
 > A Commander read the distributor table beside the game's own outfitting panel and found the two
 > disagreeing about what a bank's capacity is written in: the panel says `MW`, this table said `MJ`.
 > Both are the same number, and a Commander holding two panels that write one figure in two units
-> reads two figures. The owner's ruling is that the game's unit wins here — over canvas 1d, which
+> reads two figures. The owner's ruling is that the game's unit wins here — over canvas 1c, which
 > draws `34.0 MJ`, and over SI, which is right that a stored pool is megajoules. It reaches the unit
 > and nothing else: no conversion, no factor, no change to a package figure.
 

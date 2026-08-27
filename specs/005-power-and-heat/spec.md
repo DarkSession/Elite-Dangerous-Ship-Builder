@@ -66,7 +66,7 @@ conditions here, because the design draws them inside this capability and nowher
 
   > **Ruled 2026-08-27 — the capacity is written in the game's unit, not SI's.** A bank's capacity
   > MUST be written `MW`, and both recharge figures `MJ/s`. A capacity is a stored pool and its SI
-  > unit is the megajoule — which is what this capability wrote until this ruling, and what canvas 1d
+  > unit is the megajoule — which is what this capability wrote until this ruling, and what canvas 1c
   > draws — but the outfitting panel a Commander cross-checks these figures against writes `MW` after
   > it, and one figure written in two units across two panels reads as two figures. The game's unit
   > wins over both the canvas and SI, for this one column. The figure itself MUST NOT change: it is

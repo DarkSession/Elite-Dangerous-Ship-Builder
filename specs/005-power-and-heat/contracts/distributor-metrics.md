@@ -68,29 +68,30 @@ does not compute or assert a capacity transformation.
 
 > **Ruled 2026-08-27 — capacity is written `MW`.** A bank's capacity is a stored
 > pool and its SI unit is the megajoule, which is what this table used to write
-> and what canvas 1d draws (`34.0 MJ`). The game does not: the outfitting panel
+> and what canvas 1c draws (`34.0 MJ`). The game does not: the outfitting panel
 > a Commander cross-checks this table against writes `MW` after a bank's
 > capacity, and a table that disagreed with that panel about the unit reads as a
-> second, different figure rather than the same one. The game's unit wins here,
-> against both the canvas and SI. It is also against the package: the Almanac's
-> own typings document this field as
-> `/** Energy the capacitor holds when full, in megajoules. */`
-> (`dist/ships/distributor.d.ts`), and the constitution makes that package the
-> source of truth. So this is a departure from the declared source of truth's
-> explicit documentation of the field being drawn, and the record says so rather
-> than softening it to a quarrel with SI.
+> second, different figure rather than the same one. The owner's ruling is that
+> the game's unit wins here, taken so the two readings a Commander holds side by
+> side agree.
 >
-> What it is not is a reading of the game taken from anything in this repository.
-> Nothing here or in the package documents what the outfitting panel writes; the
-> whole of the evidence is the owner's ruling, made against the stated
-> alternative of keeping `MJ`. Recorded as what it is — a deliberate departure
-> from the documented unit, taken so the two readings a Commander holds side by
-> side agree. The figure is untouched either way, which is what keeps the
-> departure to a label.
+> It wins over three things, and the record names all of them. Over the canvas.
+> Over SI. And over the package, which is the one that matters: the Almanac
+> documents this very field as
+> `/** Energy the capacitor holds when full, in megajoules. */`
+> (`node_modules/@elite-dangerous-almanac/core/dist/ships/distributor.d.ts`,
+> the module imported as `@elite-dangerous-almanac/core/ships/distributor`), and
+> the constitution makes that package the source of truth. This is a departure
+> from the source of truth's own documentation of the field being drawn.
+>
+> Nothing in this repository or in the package records what the outfitting panel
+> writes. The whole of the evidence for `MW` is the owner's ruling, made against
+> the stated alternative of keeping `MJ`.
 
 Nothing about the figure changes: `capacity` is copied from the package exactly
 as before, to the same one decimal place, and no conversion, scale or factor is
-applied. Only the unit written after it moved. The two recharge columns keep
+applied. Only the unit written after it moved, which is what keeps the departure
+to a label. The two recharge columns keep
 `MJ/s`, which is both the unit they are actually in and the unit the canvas
 draws, so the pool and the two rates no longer share a unit — which is the
 second thing the ruling buys, because `MJ` beside `MJ/s` invited the pool to be
@@ -109,12 +110,13 @@ quantity and must not state it in two units.
 
 **They do still state it to two different decimal places**, and the ruling did
 not change that. Each block writes all its energy figures to one precision, and
-the two blocks landed on different ones: this table took the single place its
-own canvas draws (`34.0 MJ`), and feature 007's block took the two places
-canvas 1c gives its `DRAW` and `RECHARGE` rates and applies them to the capacity
-as well — which is not a precision either canvas draws for a capacity, because
-the only capacity on the artboard is canvas 1d's `CAP 61 MJ`, drawn whole. So
-one build's capacity reads `48.0 MW` here and `48.00 MW` there.
+the two landed on different ones: this table took the single place its own
+canvas draws, and feature 007's block took the two places canvas 1c gives its
+`DRAW` and `RECHARGE` rates and applied them to the capacity as well. Two places
+is a precision the artboard never uses for a capacity anywhere — it draws this
+same WEP capacity as `38.4 MJ` in this very table, to one place, and chips it on
+canvas 1d as `CAP 61 MJ`, whole. So one build's capacity reads `48.0 MW` here
+and `48.00 MW` there, and if it is ever unified the artboard says which way.
 
 That predates this ruling and is left standing rather than settled in passing:
 changing it would move a drawn figure, which is the one thing this ruling
