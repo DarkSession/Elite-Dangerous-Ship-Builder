@@ -127,7 +127,8 @@ are fields no canvas ever drew.
   implied: the package does not say which of its reasons it was, so neither does this.
 - Draw and recharge are the same quantity in the same unit, share one scale, and carry a bar each.
   Capacity is a stored pool and time to drain a duration; neither shares a scale with anything
-  beside it, so neither is filled — the unit written after the capacity does not make it a rate. Every one of the four is written in words either way.
+  beside it, so neither is filled — the unit written after the capacity does not make it a rate.
+  Every one of the four is written in words either way.
 
 ## SHOT CONVERGENCE
 

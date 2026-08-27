@@ -1488,7 +1488,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'offence/capacitor',
     axe: true,
     assertions: [
-      'the four drawn fields are shown in the package’s own megajoules, not the canvas’s megawatts',
+      'the two rates are shown in the package’s own megajoules per second, and the capacity in the game’s megawatts',
       'the WEP allocation the figures were read at is named beside them, and no pip control appears',
       'moving the allocation in POWER moves the recharge and the endurance and nothing else',
       'a recharge that keeps pace draws the symbol, with what it stands for said beside it',

@@ -97,6 +97,21 @@ because it is why the first implementation shipped a third of the canvas.
   behaviour.
 - **FR-006**: Capacitor endurance MUST use `BuildMetrics.weaponsCapacitorMetrics()` for the WEP pips
   feature 005's shared conditions hold. The application MUST NOT calculate endurance or pip scaling.
+
+  > **Ruled 2026-08-27 — the capacity takes the game's unit, the two rates the package's.** The
+  > capacity MUST be written `MW`; `DRAW` and `RECHARGE` MUST keep `MJ/s`. A capacitor pool is
+  > megajoules and the package returns megajoules per second for the two rates, so `MJ` was both what
+  > this block wrote and what SI says — but the outfitting panel a Commander cross-checks writes `MW`
+  > after the pool, and one figure written in two units across two panels reads as two figures. The
+  > figure itself MUST NOT change: it is the package's `capacity`, copied, with no conversion, scale
+  > or factor applied, at the two decimal places canvas 1c draws this block to.
+  >
+  > The ruling is feature 005's, whose distributor table states this same quantity for `WEP` and met
+  > the question first (`specs/005-power-and-heat/spec.md`, FR-007). It is recorded here because this
+  > region is this feature's to constrain, and the two blocks MUST NOT state one quantity in two
+  > units. It does not disturb FR-009: a pool written `MW` is still not a rate, still shares a scale
+  > with nothing beside it, and still carries no bar.
+
 - **FR-007**: Infinite duration and zero capacity MUST be expressed by their package meaning, and
   MUST NOT be given a cause the package did not state.
 - **FR-008**: Damage at a range band MUST apply the package's `damageFalloff()` to each enabled

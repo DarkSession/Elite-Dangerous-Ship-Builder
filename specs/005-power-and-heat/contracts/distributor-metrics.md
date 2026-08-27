@@ -91,8 +91,18 @@ read as a third rate.
 | actual recharge | `MJ/s`       |
 
 Feature 007's `WEAPON CAPACITOR` block states the same capacity, and the same
-ruling reaches it: see `specs/007-offence-profile/contracts/capacitor-endurance.md`.
-The two blocks state one quantity and must not state it in two units.
+ruling reaches it: see `specs/007-offence-profile/contracts/capacitor-endurance.md`
+and `specs/007-offence-profile/spec.md`, FR-006. The two blocks state one
+quantity and must not state it in two units.
+
+**They do still state it to two different decimal places**, and the ruling did
+not change that: this table writes the `WEP` capacity to one place and that
+block writes it to two, because each takes the precision its own canvas draws.
+So one build's capacity reads `48.0 MW` here and `48.00 MW` there. That
+predates this ruling and is left standing rather than settled in passing — the
+canvases set precision per block, and unifying it is a design decision, not a
+consequence of a unit. It is written down here so the next reader finds it
+recorded rather than discovering it.
 
 ## Availability and zero
 

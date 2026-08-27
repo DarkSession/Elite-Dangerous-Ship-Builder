@@ -463,9 +463,9 @@ test.describe('reading the build', () => {
       // read as one figure, and the rates keep the unit they are actually in
       // (ruled 2026-08-27). The three columns no longer share a unit, which is
       // what stopped the pool reading as a third rate.
-      expect(bank[1]).toMatch(/MW$/u);
-      expect(bank[2]).toMatch(/MJ\/s$/u);
-      expect(bank[4]).toMatch(/MJ\/s$/u);
+      expect(bank[1]).toMatch(/\d MW$/u);
+      expect(bank[2]).toMatch(/\d MJ\/s$/u);
+      expect(bank[4]).toMatch(/\d MJ\/s$/u);
     }
   });
 });
@@ -853,7 +853,7 @@ test.describe('the conditions that break layouts', () => {
     expect((await bandRows(page)).length).toBeGreaterThan(0);
     expect(await page.locator('.heat__bar').count()).toBeGreaterThanOrEqual(5);
     const banks = await rows(page, '.distributor');
-    expect(banks[0][1]).toMatch(/MW$/u);
+    expect(banks[0][1]).toMatch(/\d MW$/u);
     await expectNoDocumentOverflow(page);
   });
 

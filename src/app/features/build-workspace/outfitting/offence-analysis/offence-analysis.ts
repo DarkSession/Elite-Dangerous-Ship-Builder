@@ -105,7 +105,7 @@ const DAMAGE_TYPE_LABELS = {
 
 /** Damage rates to one place, as the canvas sets every figure in this panel. */
 const DAMAGE_DIGITS = 1;
-/** Capacitor figures to two places, as feature 005 sets every one of them. */
+/** Capacitor figures to two places, which is what canvas 1c draws them to. */
 const ENERGY_DIGITS = 2;
 /** Durations to one, which is the place canvas 1c's `FULL FIRE 14.2 s` sets. */
 const SECONDS_DIGITS = 1;

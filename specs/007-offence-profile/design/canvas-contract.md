@@ -395,8 +395,9 @@ worked out once, in the projection:
    duration; neither shares a scale with anything beside it, so both keep their
    figure and lose their bar. The 2026-08-27 ruling writes `CAPACITY` in `MW`,
    which changes the unit after the figure and not what it is: a pool is still
-   not a rate, and still has nothing here to be measured against. This is feature 006's established rule, and it takes no figure
-   off the screen: every capacitor value is stated in words either way.
+   not a rate, and still has nothing here to be measured against. This is
+   feature 006's established rule, and it takes no figure off the screen: every
+   capacitor value is stated in words either way.
 
 7. **The damage-type enumeration is withdrawn.** An earlier revision drew two
    `edsb-metric-group` lists — burst by type and sustained by type — with a line

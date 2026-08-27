@@ -661,7 +661,9 @@ test.describe('the status rail', () => {
 });
 
 test.describe('reading the firing endurance', () => {
-  test('draws the four capacitor fields in the package’s own units', async ({ page }) => {
+  test('draws the four capacitor fields in the units each of them is ruled to take', async ({
+    page,
+  }) => {
     await openOffence(page);
 
     const drawn = await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar');
@@ -757,8 +759,8 @@ test.describe('reading the firing endurance', () => {
     expect(box?.height ?? Infinity).toBeLessThanOrEqual(2);
 
     // The draw and the recharge are the same quantity in the same unit and get
-    // a track each. A capacity in megajoules and a duration in seconds share a
-    // scale with nothing here, so neither gets one.
+    // a track each. A stored pool and a duration share a scale with nothing
+    // here, so neither gets one.
     await expect(capacitor.locator('.bar__track')).toHaveCount(2);
     await expect(capacitor.locator('.bar__track-absent')).toHaveCount(2);
   });

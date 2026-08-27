@@ -469,7 +469,7 @@ describe('OffenceAnalysis', () => {
       ]);
     });
 
-    it('shows each field as the package returned it, in the package’s own units', () => {
+    it('shows each field as the package returned it, in the unit each one is ruled to take', () => {
       const loadout = populatedBuild();
       const { component } = render(loadout);
       const returned = BuildMetrics.of(loadout).weaponsCapacitorMetrics({ weaponsPips: 2 });

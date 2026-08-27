@@ -71,8 +71,12 @@ conditions here, because the design draws them inside this capability and nowher
   > it, and one figure written in two units across two panels reads as two figures. The game's unit
   > wins over both the canvas and SI, for this one column. The figure itself MUST NOT change: it is
   > the package's `capacity`, copied, with no conversion, scale or factor applied — this ruling
-  > reaches the unit and nothing else. The same capacity is stated by feature 007's `WEAPON
-CAPACITOR` block, which MUST write the same unit.
+  > reaches the unit and nothing else, the decimal place this table already used included.
+  >
+  > Feature 007's `WEAPON CAPACITOR` states this same quantity, and its spec carries the same ruling
+  > for its own region (`specs/007-offence-profile/spec.md`, FR-006). It is recorded there rather
+  > than imposed from here: this spec constrains this capability, and one quantity written in two
+  > units across one workspace is a thing both specs have to say.
 
 - **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
