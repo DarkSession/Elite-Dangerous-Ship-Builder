@@ -1,7 +1,7 @@
 {
   "app.name": "Elite Dangerous Ship Builder",
   "app.tagline": "Schiffsausrüstungen planen.",
-  "app.description": "Plane Elite-Dangerous-Ausrüstungen im Browser. Wähle einen Rumpf, rüste ihn aus, lies die Werte und teile einen Build als Link. Kein Konto, nichts wird hochgeladen.",
+  "app.description": "Plane Elite-Dangerous-Ausrüstungen. Wähle einen Rumpf, rüste ihn aus, lies die Werte und teile einen Build als Link.",
   "app.document-title": "{{page}} · {{app}}",
   "app.document-title.default": "Elite Dangerous Ship Builder",
   "shell.banner.label": "Anwendung",

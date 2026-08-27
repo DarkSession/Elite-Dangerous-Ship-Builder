@@ -93,9 +93,12 @@ this page.
 
 ### 5. The application was not installable _(fixed)_
 
-`public/manifest.webmanifest` declares the name, the short name (`Ship Builder`, matching what the
-first screen is now called), the description, the dark theme colours taken from the token layer, and
-`display: standalone`. Its `start_url`, `scope` and icon paths are relative, for the same reason the
+`public/manifest.webmanifest` declares the name, the short name, the description, the dark theme
+colours taken from the token layer, and `display: standalone`. Both names are
+`Elite Dangerous Ship Builder` (owner's ruling, 2026-08-27): `Ship Builder` is what the first
+_screen_ is called, not what the application is called, and an installed icon captioned with the
+screen name would be the one place the two are confused. Nothing else in the head names the
+application in the short form either. Its `start_url`, `scope` and icon paths are relative, for the same reason the
 locale catalogues' paths are: a preview is served from a sub-path, and a leading slash would look at
 the host root.
 

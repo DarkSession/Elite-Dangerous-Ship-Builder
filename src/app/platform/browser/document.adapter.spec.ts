@@ -8,7 +8,7 @@ function state(overrides: Partial<RootDocumentState> = {}): RootDocumentState {
     language: 'en',
     direction: 'ltr',
     title: 'Ship Builder · Elite Dangerous Ship Builder',
-    description: 'Plan Elite Dangerous loadouts in your browser.',
+    description: 'Plan Elite Dangerous loadouts.',
     canonical: `${SITE_ORIGIN}/ships`,
     ...overrides,
   };

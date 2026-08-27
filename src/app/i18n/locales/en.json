@@ -1,7 +1,7 @@
 {
   "app.name": "Elite Dangerous Ship Builder",
   "app.tagline": "Plan ship loadouts.",
-  "app.description": "Plan Elite Dangerous loadouts in your browser. Pick a hull, outfit it, read the numbers, and share a build as a link. No account, nothing uploaded.",
+  "app.description": "Plan Elite Dangerous loadouts. Pick a hull, outfit it, read the numbers, and share a build as a link.",
   "app.document-title": "{{page}} · {{app}}",
   "app.document-title.default": "Elite Dangerous Ship Builder",
   "shell.banner.label": "Application",
