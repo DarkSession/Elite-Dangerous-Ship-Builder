@@ -223,8 +223,9 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await withStockBuild(page);
     await openSaveLayer(page);
     await saveAs(page, 'Ledger build');
-    // The saved row is the one the footer acts on, so deleting it is the
-    // footer's own action.
+    // Deleting is the library's, and the row it acts on is the one the
+    // workspace is holding — the build just saved.
+    await reachShellLink(page, /^open saved build$/i);
     await page.getByRole('button', { name: /^delete ledger build$/i }).click();
     await expect(page.getByRole('dialog', { name: /ledger build/i })).toBeVisible();
   },
@@ -381,28 +382,21 @@ const UNSUPPORTED_PARTIAL_QUALITY = {
 
 /** Opens the layer that names the build in hand. */
 async function openSaveLayer(page: Page): Promise<void> {
-  // The layer belongs to the library screen, which is where feature 001 draws
-  // the control that names a build. Reached by the shell's own link rather than
-  // by loading the address: a fresh document has no open build, and the save the
-  // library offers is of the build the Commander has in hand.
-  //
-  // Since 2026-08-25 the library commits from a footer that acts on the row it
-  // has chosen, and the row it starts on is the record the workspace is holding
-  // — so the action is named after that build rather than after a word.
-  await reachShellLink(page, /^open saved build$/i);
-  await page.getByRole('button', { name: /^Save .+ under a name$/i }).click();
+  // The layer is the workspace's since 2026-08-27, reached from the command
+  // bar's filled `SAVE`: a library answers "which of these builds", and what
+  // should become of one is asked where a Commander is working in it (FR-009).
+  await reachShellAction(page, /^save$/i);
   await expect(
-    page.getByRole('dialog', { name: englishMessages['library.save.title'] }),
+    page.getByRole('dialog', { name: englishMessages['workspace.save.title'] }),
   ).toBeVisible();
 }
 
 /** Saves the open build under a name, from the layer that is already open. */
 async function saveAs(page: Page, name: string): Promise<void> {
-  const layer = page.getByRole('dialog', { name: englishMessages['library.save.title'] });
-  await layer.getByRole('textbox', { name: /^name$/i }).fill(name);
-  await layer.getByRole('button', { name: /^save as a new build$/i }).click();
-  // The save dialog closes; the library layer it stood over stays open, which
-  // is where the saved record is now listed.
+  const layer = page.getByRole('dialog', { name: englishMessages['workspace.save.title'] });
+  await layer.getByRole('textbox', { name: /^build name$/i }).fill(name);
+  await layer.getByRole('radio', { name: /^save as a new build$/i }).check();
+  await layer.getByRole('button', { name: englishMessages['workspace.save.confirm'] }).click();
   await expect(layer).toHaveCount(0);
 }
 

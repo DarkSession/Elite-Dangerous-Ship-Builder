@@ -123,6 +123,23 @@ export class Layer {
   /** Whether the press that produces the next click landed on the ground. */
   #pressedOnGround = false;
 
+  /**
+   * Whether the close now in flight is this component's own doing.
+   *
+   * A native `dialog` fires `close` however it was closed, `close()` called
+   * here among the ways — and the event is queued rather than dispatched
+   * inline, so it arrives after the call that caused it has returned. Reported
+   * as a dismissal it tells the owner a Commander cancelled something the owner
+   * itself had just closed, which is how the save layer stepping aside for a
+   * conflict question lost the attempt it was holding: closing to ask the
+   * question read back as abandoning it.
+   *
+   * Set where `open` drives the close and consumed by the event it queued, so
+   * `dismissed` says what it has always meant — Escape, the ground, or the
+   * dismiss control — and says it once rather than twice.
+   */
+  #closingFromInput = false;
+
   constructor() {
     effect(() => {
       const dialog = this.#dialog();
@@ -135,6 +152,7 @@ export class Layer {
         this.#invoker = this.#document.activeElement as HTMLElement | null;
         dialog.showModal();
       } else if (!this.open() && dialog.open) {
+        this.#closingFromInput = true;
         dialog.close();
         // Restore the invoking context rather than dropping the reader at the
         // top of the document.
@@ -145,6 +163,22 @@ export class Layer {
   }
 
   dismiss(): void {
+    this.dismissed.emit();
+  }
+
+  /**
+   * The native `close`, whoever caused it.
+   *
+   * Escape is the case this exists for: the element honours it itself, and it
+   * reaches the owner as the cancel it is. A close the owner asked for by
+   * lowering `open` is consumed here instead, having already been accounted
+   * for by whatever lowered it.
+   */
+  closed(): void {
+    if (this.#closingFromInput) {
+      this.#closingFromInput = false;
+      return;
+    }
     this.dismissed.emit();
   }
 

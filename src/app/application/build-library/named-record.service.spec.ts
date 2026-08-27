@@ -215,7 +215,10 @@ describe('NamedRecordService', () => {
   });
 
   it('renames without disturbing the build or its recorded validation', async () => {
-    const { named } = setup();
+    // Renaming is a save under a different name since 2026-08-27: there is no
+    // rename operation of its own, so what has to hold is that writing the same
+    // build under a new name leaves the build and its recorded verdict alone.
+    const { named, records } = setup();
     const created = await named.createNamed(
       request({ validation: { valid: false, complete: false } }),
     );
@@ -223,20 +226,25 @@ describe('NamedRecordService', () => {
       throw new Error('expected a save');
     }
 
-    const renamed = await named.rename(
-      created.record.id,
-      'A better name',
-      created.record.revisionId,
-      LATER,
+    const renamed = await named.overwriteNamed(
+      overwrite(created.record.id, created.record.revisionId, {
+        name: 'A better name',
+        build: created.record.build,
+        validation: created.record.validation,
+        now: LATER,
+      }),
     );
 
     expect(renamed.kind).toBe('saved');
-    if (renamed.kind !== 'saved') {
-      return;
-    }
-    expect(renamed.record.name).toBe('A better name');
-    expect(renamed.record.build).toEqual(created.record.build);
-    expect(renamed.record.validation).toEqual({ valid: false, complete: false });
+    // Read back out of storage rather than trusted from the result: what the
+    // record now holds is the claim, not what the caller handed in.
+    const stored = records.open(created.record.id);
+    expect(stored.ok && stored.value?.record.name).toBe('A better name');
+    expect(stored.ok && stored.value?.record.build).toEqual(created.record.build);
+    expect(stored.ok && stored.value?.record.validation).toEqual({
+      valid: false,
+      complete: false,
+    });
   });
 
   it('says so when the record it was asked to write is gone', async () => {

@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
 import {
   FIXTURE_IDS,
   MALFORMED_RECORD,
@@ -19,7 +18,6 @@ import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/stor
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { BuildLibraryStore } from './build-library.store';
-import { RecordDuplicationService } from './record-duplication.service';
 import { RecordOpenService } from './record-open.service';
 import { RetentionService, UNNAMED_RECORD_LIFETIME_MS } from './retention.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
@@ -82,7 +80,6 @@ function setup(seed: (storage: MemoryStorage) => void = () => {}) {
     clock,
     library: TestBed.inject(BuildLibraryStore),
     open: TestBed.inject(RecordOpenService),
-    duplication: TestBed.inject(RecordDuplicationService),
     retention: TestBed.inject(RetentionService),
     ownership: TestBed.inject(TabOwnershipCoordinator),
     records: TestBed.inject(LocalRecordRepository),
@@ -131,15 +128,27 @@ describe('BuildLibraryStore', () => {
     expect(library.status()).toBe('ready');
   });
 
-  it('groups working and named records separately', () => {
+  it('lists named and unnamed records as one list', () => {
+    // One list since 2026-08-27: the row says which it is, and two groups made
+    // the most recently edited build not reliably the first row (FR-010).
     const { library } = setup((storage) => {
       storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1);
       storage.setItem(recordKey(FIXTURE_IDS.working), WORKING_RECORD_V1);
     });
 
-    expect(library.named()).toHaveLength(1);
-    expect(library.working()).toHaveLength(1);
+    expect(library.records()).toHaveLength(2);
     expect(library.total()).toBe(2);
+  });
+
+  it('keeps the unnamed records the quota manager offers for discard', () => {
+    // Not a group the library draws. A full store offers the records nothing
+    // has asked to keep, which is a different question from how records list.
+    const { library } = setup((storage) => {
+      storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1);
+      storage.setItem(recordKey(FIXTURE_IDS.working), WORKING_RECORD_V1);
+    });
+
+    expect(library.working()).toHaveLength(1);
   });
 
   it('orders by modified instant, newest first, with a stable tie-breaker', () => {
@@ -163,7 +172,8 @@ describe('BuildLibraryStore', () => {
     });
 
     expect(library.unavailable()).toHaveLength(2);
-    expect(library.named()).toHaveLength(1);
+    // The readable one still lists; one unreadable record never hides another.
+    expect(library.records()).toHaveLength(1);
   });
 
   it('reports an unavailable store without pretending it is empty', () => {
@@ -434,80 +444,5 @@ describe('RecordOpenService', () => {
     await open.open(FIXTURE_IDS.named);
 
     expect(active.hullName()).toBe('Anaconda');
-  });
-});
-
-describe('RecordDuplicationService', () => {
-  it('copies a record under a fresh record and revision identity', () => {
-    const { duplication, records } = setup((storage) =>
-      storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1),
-    );
-
-    const result = duplication.duplicate(FIXTURE_IDS.named, 'Anaconda explorer', NOW);
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) {
-      return;
-    }
-    expect(result.record.id).not.toBe(FIXTURE_IDS.named);
-    expect(result.record.revisionId).not.toBe('22222222-2222-4222-8222-222222222222');
-    // A duplicate name is allowed: identity is a UUID, not a label (FR-009).
-    expect(result.record.name).toBe('Anaconda explorer');
-    const listed = records.list();
-    expect(listed.ok && listed.value).toHaveLength(2);
-  });
-
-  it('preserves the source record and its recorded validation', () => {
-    const { duplication, records } = setup((storage) =>
-      storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1),
-    );
-
-    const result = duplication.duplicate(FIXTURE_IDS.named, 'A copy', NOW);
-
-    const source = records.open(FIXTURE_IDS.named);
-    expect(source.ok && source.value?.record.name).toBe('Anaconda explorer');
-    expect(result.ok && result.record.validation).toEqual({ valid: true, complete: true });
-    expect(result.ok && result.record.build).toEqual(source.ok ? source.value?.record.build : null);
-  });
-
-  it('names a working build as a new named record, leaving the working one alone', () => {
-    const { duplication, records } = setup((storage) =>
-      storage.setItem(recordKey(FIXTURE_IDS.working), WORKING_RECORD_V1),
-    );
-
-    const result = duplication.duplicate(FIXTURE_IDS.working, 'Now it has a name', NOW);
-
-    expect(result.ok && result.record.kind).toBe('named');
-    const working = records.open(FIXTURE_IDS.working);
-    expect(working.ok && working.value?.record.kind).toBe('working');
-  });
-
-  it('copies a live build that has never been stored', () => {
-    const { duplication } = setup();
-    const source = {
-      format: 'edsb.local-record' as const,
-      version: 1 as const,
-      id: 'unstored',
-      kind: 'working' as const,
-      revisionId: 'r',
-      createdAt: NOW,
-      modifiedAt: NOW,
-      name: null,
-      note: null,
-      hullSymbol: 'Anaconda',
-      validation: { valid: true, complete: true },
-      build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
-      sourceNamed: null,
-      autosaveRecordId: null,
-    };
-
-    expect(duplication.copy(source, 'Saved at last', NOW).ok).toBe(true);
-  });
-
-  it('says so when the record to copy is not there', () => {
-    expect(setup().duplication.duplicate('never-written', 'A copy', NOW)).toEqual({
-      ok: false,
-      code: 'missing',
-    });
   });
 });

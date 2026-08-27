@@ -125,3 +125,13 @@
   background-color: var(--edsb-surface-accent-selected);
   color: var(--edsb-text-accent-strong);
 }
+
+// The same hover the menu's buttons take. A link and a button in one menu
+// reacting differently to the pointer reads as one of them being inert
+// (Commander request 2026-08-27). Hover is an enhancement either way: nothing
+// is only reachable through it, because a touch device has no hover at all.
+@media (hover: hover) {
+  .action-layer__link:hover {
+    background-color: var(--edsb-surface-accent-selected);
+  }
+}

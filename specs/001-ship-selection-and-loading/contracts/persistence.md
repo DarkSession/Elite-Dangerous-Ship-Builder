@@ -105,6 +105,12 @@ Naming, renaming, duplicating and deleting use `navigator.locks.request('edsb:re
 
 Autosave does not take the lock. The claim handshake above guarantees this page is the only live writer of the record it holds, and a lock per coalesced edit would serialize writes against a contender that cannot exist.
 
+Naming, renaming and duplicating are asked for on the build that is open rather than on a row of the
+library (FR-009, ruled 2026-08-27). Nothing about the writes changes: the same lock, the same
+`revisionId` precondition, the same consumption of the unnamed record the save came from. A record's
+one local note is written by the same save, so a note reaches storage only through a deliberate write
+and never through a coalesced edit.
+
 On a stale revision, return a conflict without writing and offer exactly:
 
 - **Overwrite**: reacquire the lock and replace only the observed revision shown to the Commander. A newer third revision produces another conflict.

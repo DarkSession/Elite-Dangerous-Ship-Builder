@@ -1,6 +1,5 @@
 import { RecordManager, type ManageableRecord } from './record-manager/record-manager';
-import { RecordNoteEditor } from './note-editor/record-note-editor';
-import { ResponsiveRecordList, type RecordListGroup } from './record-list/responsive-record-list';
+import { ResponsiveRecordList } from './record-list/responsive-record-list';
 import { SavedBuildCard, type SavedBuild } from './saved-build-card/saved-build-card';
 import { element, query, renderComponent, textOf } from './ui-component.spec-helpers';
 
@@ -17,7 +16,8 @@ function build(overrides: Partial<SavedBuild> = {}): SavedBuild {
     title: 'Anaconda explorer',
     named: true,
     hull,
-    modified: '2 Jan 2026, 03:04',
+    modified: '2 days ago',
+    modifiedExact: 'Edited 2 Jan 2026, 03:04',
     validation: { label: 'Valid', tone: 'success' },
     issues: null,
     remaining: null,
@@ -32,14 +32,24 @@ function build(overrides: Partial<SavedBuild> = {}): SavedBuild {
 const COLUMNS = { build: 'Build', hull: 'Hull', modified: 'Edited' } as const;
 
 describe('SavedBuildCard', () => {
-  it('shows the title, hull, modified instant and recorded state', () => {
+  it('shows the title, hull, how long ago it was edited and recorded state', () => {
     const fixture = renderComponent(SavedBuildCard, { build: build() });
     const text = textOf(element(fixture));
 
     expect(text).toContain('Anaconda explorer');
     expect(text).toContain('Anaconda');
-    expect(text).toContain('2 Jan 2026, 03:04');
     expect(text).toContain('Valid');
+    // The column the canvas draws is how long ago, not when.
+    expect(textOf(query(fixture, '.record__modified'))).toBe('2 days ago');
+  });
+
+  it('keeps the instant itself where a reader can still reach it', () => {
+    // Drawn as `2 days ago`, which answers which of these is the recent one and
+    // not when exactly. The exact answer is not lost to the shorter column
+    // (FR-010, clarification 2026-08-27).
+    const fixture = renderComponent(SavedBuildCard, { build: build() });
+
+    expect(textOf(query(fixture, '.record__states'))).toContain('2 Jan 2026, 03:04');
   });
 
   it('sets a derived title apart from a name a Commander gave', () => {
@@ -135,40 +145,35 @@ describe('SavedBuildCard', () => {
 });
 
 describe('ResponsiveRecordList', () => {
-  const groups: readonly RecordListGroup[] = [
-    {
-      id: 'working',
-      label: 'Unnamed builds',
-      builds: [build({ id: 'w1', title: 'Sidewinder', named: false })],
-      emptyLabel: 'Nothing here yet.',
-    },
-    {
-      id: 'named',
-      label: 'Named builds',
-      builds: [build({ id: 'n1' })],
-      emptyLabel: 'Nothing here yet.',
-    },
+  const builds: readonly SavedBuild[] = [
+    build({ id: 'w1', title: 'Sidewinder', named: false }),
+    build({ id: 'n1' }),
   ];
 
-  it('labels each group and keeps one reading order', () => {
+  it('lists every record in one order, under no group heading', () => {
+    // One list since 2026-08-27. The row's own title says whether a Commander
+    // named it, and two groups made the most recently edited build not
+    // reliably the row at the top (FR-010).
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
       columns: COLUMNS,
-      groups,
+      builds,
     });
 
-    expect([...element(fixture).querySelectorAll('h3')].map(textOf)).toEqual([
-      'Unnamed builds',
-      'Named builds',
-    ]);
+    expect([...element(fixture).querySelectorAll('h3')].map(textOf)).toEqual([]);
     expect(element(fixture).querySelectorAll('edsb-saved-build-card')).toHaveLength(2);
+    expect(
+      [...element(fixture).querySelectorAll('[data-record-id]')].map((row) =>
+        row.getAttribute('data-record-id'),
+      ),
+    ).toEqual(['w1', 'n1']);
   });
 
   it('draws the column headers once, and not into every row', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
       columns: COLUMNS,
-      groups,
+      builds,
     });
     const headers = query(fixture, '.records__columns');
 
@@ -177,31 +182,21 @@ describe('ResponsiveRecordList', () => {
     expect(headers.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('presents each group as a semantic list', () => {
+  it('presents the records as one semantic list', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
       columns: COLUMNS,
-      groups,
+      builds,
     });
 
-    expect(element(fixture).querySelectorAll('ul')).toHaveLength(2);
-  });
-
-  it('says an empty group is empty rather than showing nothing at all', () => {
-    const fixture = renderComponent(ResponsiveRecordList, {
-      label: 'Saved builds',
-      columns: COLUMNS,
-      groups: [{ ...groups[0]!, builds: [] }],
-    });
-
-    expect(textOf(element(fixture))).toContain('Nothing here yet.');
+    expect(element(fixture).querySelectorAll('ul')).toHaveLength(1);
   });
 
   it('lists a record it cannot open, with what is known about it', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
       columns: COLUMNS,
-      groups,
+      builds,
       unavailableLabel: 'Unavailable build',
       unavailable: [
         {
@@ -222,7 +217,7 @@ describe('ResponsiveRecordList', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
       columns: COLUMNS,
-      groups,
+      builds,
     });
     const chosen: string[] = [];
     fixture.componentInstance.chose.subscribe((id) => chosen.push(id));
@@ -236,7 +231,7 @@ describe('ResponsiveRecordList', () => {
     const fixture = renderComponent(ResponsiveRecordList, {
       label: 'Saved builds',
       columns: COLUMNS,
-      groups,
+      builds,
       chosen: 'n1',
     });
 
@@ -299,40 +294,5 @@ describe('RecordManager', () => {
     const fixture = renderComponent(RecordManager, { records: [] });
 
     expect(textOf(element(fixture))).toContain('Nothing is stored yet');
-  });
-});
-
-describe('RecordNoteEditor', () => {
-  it('labels the note and says it stays on this device', () => {
-    const fixture = renderComponent(RecordNoteEditor, { note: 'Long-range fit.' });
-    const text = textOf(element(fixture));
-
-    expect(text).toContain('Note');
-    expect(text).toContain('Only you can see this');
-  });
-
-  it('emits the draft as it is typed, and again when it is saved', () => {
-    const fixture = renderComponent(RecordNoteEditor, { note: '' });
-    const changes: string[] = [];
-    const saves: string[] = [];
-    fixture.componentInstance.changed.subscribe((value) => changes.push(value));
-    fixture.componentInstance.saveRequested.subscribe((value) => saves.push(value));
-
-    const field = query(fixture, 'textarea') as HTMLTextAreaElement;
-    field.value = 'A note';
-    field.dispatchEvent(new Event('input'));
-    [...element(fixture).querySelectorAll('button')]
-      .find((button) => textOf(button) === 'Save note')!
-      .click();
-
-    expect(changes).toEqual(['A note']);
-    expect(saves).toEqual(['A note']);
-  });
-
-  it('disables the editor without hiding the note', () => {
-    const fixture = renderComponent(RecordNoteEditor, { note: 'Long-range fit.', disabled: true });
-
-    expect((query(fixture, 'textarea') as HTMLTextAreaElement).disabled).toBe(true);
-    expect(textOf(element(fixture))).toContain('Note');
   });
 });

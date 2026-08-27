@@ -2,13 +2,13 @@
 
 ## Routes
 
-| Route                         | Outcome                                                                                               |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `/`                           | Replace-navigation redirect to `/ships`; no payload                                                   |
-| `/ships`                      | Hull catalogue with per-tab session state and no required hull selection                              |
-| `/ships/:symbol`              | Exact package hull detail: wide inspector or narrow full-screen layer; unknown is a safe error        |
-| `/build` with optional `#b.…` | Active workspace; recognized fragment passes through the shared ingress pipeline                      |
-| `/builds`                     | Record library: route-backed wide modal over an inert originating screen, or narrow full-screen layer |
+| Route                         | Outcome                                                                                                                                                                                                                                                                                                          |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                           | Replace-navigation redirect to `/ships`; no payload                                                                                                                                                                                                                                                              |
+| `/ships`                      | Hull catalogue with per-tab session state and no required hull selection                                                                                                                                                                                                                                         |
+| `/ships/:symbol`              | Exact package hull detail: wide inspector or narrow full-screen layer; unknown is a safe error                                                                                                                                                                                                                   |
+| `/build` with optional `#b.…` | Active workspace; recognized fragment passes through the shared ingress pipeline                                                                                                                                                                                                                                 |
+| `/builds`                     | Record library: route-backed wide modal over an inert originating screen, or narrow full-screen layer. Dismissing returns to that originating screen, address and fragment intact; reached by its own address it returns to the build in hand, or to `/ships` where there is none (Commander request 2026-08-27) |
 
 Catalogue constraints and scroll are deliberately absent from route query/fragment and build state. A detail back action restores the catalogue session anchor. Build links use only the `/build` fragment.
 
@@ -20,8 +20,8 @@ Required intent entry points:
 
 - catalogue: change search/facet/sort, open hull;
 - detail: back to catalogue, retry artwork, request stock creation;
-- workspace: save/name, share/copy, open library, retry persistence;
-- library: search, choose a record, open, name/rename, duplicate, delete, resolve conflict, manage/discard, retry, close. The reference commits from a footer, so choosing a row is its own intent and the footer's actions act on what was chosen (revised 2026-08-25).
+- workspace: save the open build — under a name, over the save it came from, or as a new build beside it — resolve a save conflict, share/copy, open library, retry persistence;
+- library: search, choose a record, open, delete, manage/discard, retry, close. The reference commits from a footer, so choosing a row is its own intent and the footer's actions act on what was chosen (revised 2026-08-25). Naming, renaming and duplicating left this list on 2026-08-27 for the workspace's own save, which is where the build they act on is (FR-009).
 
 Stock creation, record open, link load and SLEF import all call the same ingress coordinator, which constructs a candidate first and commits exactly once. Candidate failure cannot mutate active state. Since 2026-08-25 the coordinator asks nothing before committing: every build it replaces is already recoverable from a record (FR-008, FR-009). A candidate with no record of its own mints one at commit; a candidate opened from a record writes nothing until the first edit forks one, so autosave never reaches a named record.
 

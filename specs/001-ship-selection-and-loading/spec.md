@@ -28,6 +28,27 @@ browser and share builds by URL. SLEF import and export are specified in
   were removed? → A: No. The remaining time on each entry is the notice, given while there is still
   something to do about it; nothing is said after the fact.
 
+### Session 2026-08-27
+
+- Q: Should the library keep unnamed builds and named builds in two labelled groups? → A: No. One
+  list in one order. The distinction is on the row itself — a name a Commander gave, or a title read
+  from the build — and a heading above a group says a second time what every row already says.
+- Q: Should a row state when it was last edited as an instant, or as how long ago that was? → A: How
+  long ago, in the active locale's own words. The instant stays as text for a reader, because "3
+  weeks ago" is the answer to "which of these is the recent one" and not to "when exactly".
+- Q: Where does a Commander name, rename or duplicate a build, now that the library commits only
+  opening and deleting? → A: On the build itself. The workspace saves the build that is open — under
+  a new name, or over the save it was opened from — and the library is where saved builds are found
+  again rather than where they are named.
+- Q: Where does dismissing the library go? → A: Back to the screen it was opened over. It is drawn
+  as a layer over an inert originating screen, and sending every dismissal to the shipyard took a
+  Commander who glanced at their saved builds out of a build they had chosen nothing to leave. A
+  library reached by its own address has no such screen behind it: then it is the build in hand, and
+  the shipyard where there is no build.
+- Q: Should the command bar's link to the library react to the pointer the way the bar's buttons do?
+  → A: Yes. A link and a button sitting in one row and reacting differently reads as one of them
+  being inert, and the reference draws no such distinction between the bar's controls.
+
 ## User Scenarios
 
 ### Story 1 — Create a stock build (P1)
@@ -42,8 +63,10 @@ browser and share builds by URL. SLEF import and export are specified in
 ### Story 2 — Resume local work (P1)
 
 1. Reloading restores the build the tab was working on.
-2. Every build worked on is listed, named or not, and can be opened, named, renamed, duplicated and
-   deleted. Editing a named build never moves it; the edits are their own entry until they are saved.
+2. Every build worked on is listed, named or not, in one list. From the list a build is opened or
+   deleted; from the build that is open it is named, renamed under another name, or kept beside the
+   save it came from. Editing a named build never moves it; the edits are their own entry until they
+   are saved.
 3. A conflicting save from another tab offers overwrite, keep both and cancel; neither version is
    silently lost.
 4. An unnamed build clears itself seven days after it was last changed. The entry says how long it
@@ -121,10 +144,36 @@ browser and share builds by URL. SLEF import and export are specified in
   MUST delete the unnamed record afterwards. Saving a copy under another name MUST create a further
   record and leave the original where it is. Replacing the active build MUST NOT be confirmed,
   because FR-008 leaves nothing to lose.
+
+  **Ruled 2026-08-27 (Commander request).** Naming, renaming and saving a copy MUST be offered on the
+  build that is open, and MUST NOT be offered as actions on a row of the library. The library MUST
+  commit exactly two: open the record that was chosen, and delete it. Every one of the operations
+  above survives the move — a record is renamed by opening it and saving it under another name over
+  the save it came from, and copied by opening it and saving it as a new build — so this changes
+  where a Commander goes to do them and not what they can do.
+
+  The reason is that the two lists of actions were never one list. Open and delete answer "which of
+  these builds", and a library is the surface that asks that question; name, rename and duplicate
+  answer "what should become of this build", which is a question about the build a Commander is
+  working in and is answered where they are working. Five buttons under a list made the fourth and
+  fifth act on a build the Commander had not opened and could not see, and made the first three read
+  as though they were the same kind of thing.
+
+  A save that writes nothing MUST say so, and MUST leave what the Commander typed on screen for
+  them to try again with. A build looks the same whether its save landed or not, so a layer that
+  closes over a full store, a lock it could not take or a record removed in another tab is the one
+  way an edit is lost without anyone being told. The same holds for an answer to a save conflict,
+  which fails for the same reasons and just as invisibly.
+
 - **FR-010**: Stored entries MUST state their name or that they have none, hull, last-modified time
   and the validation state recorded at that time. An unnamed entry MUST also state how long it has
   before it expires, and MUST be titled by the build's own ship name, by its ident where there is no
   ship name, or by the hull name where there is neither.
+
+  Entries MUST be listed as one list in one order, and MUST NOT be divided into a group of named
+  records and a group of unnamed ones. The last-modified time MUST be stated as how long ago the
+  entry was edited, in the active locale's own words; the instant itself MUST remain available as
+  text, so that nothing is lost to a reader who needs it exactly.
 
   **Ruled 2026-08-26 (Commander request).** "State" rather than "show": the recorded validation, the
   remaining life and the marker on the record the workspace holds are all read but not drawn. The
@@ -134,6 +183,14 @@ browser and share builds by URL. SLEF import and export are specified in
   the one on the amber edge and carries `aria-current`, and a build with issues carries their count
   where the canvas puts it, while a build with none carries nothing, which is what a clean build
   looks like.
+
+  **Amended 2026-08-27 (Commander request).** The groups went the same way and for the same reason.
+  `Unnamed builds` and `Named builds` were two headings saying what each row beneath them already
+  said in its own title — a name a Commander typed, or a title read from the build and set apart from
+  one — and they split one order into two, so the build edited most recently was not reliably the row
+  at the top. One list restores that. What it costs is that a Commander scanning for their saves
+  reads past their working records to find them; the search above the list is what answers that, and
+  it narrows over the title either way.
 
   The remaining life is the one that costs something, and FR-013 below records what. That title MUST be read from the build
   rather than stored on the record, MUST NOT be a name the application invented, and MUST be

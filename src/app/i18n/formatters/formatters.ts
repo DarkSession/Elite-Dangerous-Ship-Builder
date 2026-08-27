@@ -38,9 +38,27 @@ export const ABSOLUTE_TIMEZONE = 'UTC';
 /** Where a duration stops being read in seconds and starts being read in minutes. */
 const SECONDS_PER_MINUTE = 60;
 
-/** The units a relative time is expressed in, longest first. */
+/** One day, in milliseconds. Every longer unit below is a multiple of it. */
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * The units a relative time is expressed in, longest first.
+ *
+ * The three longest are approximations and are meant to be: a month is not a
+ * fixed span and a year is not either, so `365 / 12` days is the month a reader
+ * means when they say "about a month ago". They are only ever chosen for a
+ * distance that already exceeds them, so the approximation decides which word
+ * is used and never how far away something is.
+ *
+ * Weeks, months and years joined the list on 2026-08-27, because the library's
+ * edited column reads them: without them a record edited a month ago said
+ * "31 days ago", where the canvas draws "1 mo ago" (FR-010).
+ */
 const RELATIVE_UNITS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
-  ['day', 24 * 60 * 60 * 1000],
+  ['year', 365 * DAY_MS],
+  ['month', Math.round((365 / 12) * DAY_MS)],
+  ['week', 7 * DAY_MS],
+  ['day', DAY_MS],
   ['hour', 60 * 60 * 1000],
   ['minute', 60 * 1000],
 ];

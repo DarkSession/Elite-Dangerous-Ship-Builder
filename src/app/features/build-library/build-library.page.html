@@ -43,7 +43,7 @@
       <edsb-responsive-record-list
         [label]="listLabel()"
         [columns]="columns()"
-        [groups]="groups()"
+        [builds]="builds()"
         [chosen]="chosen()"
         [unavailable]="unavailable()"
         [unavailableLabel]="unavailableLabel()"
@@ -65,7 +65,9 @@
 
   <!-- The committing footer both canvases draw: the destructive action bordered
        warm on the leading edge, the opening action filled amber on the
-       trailing edge, pinned where the surface is compact. -->
+       trailing edge, pinned where the surface is compact. Two actions, which is
+       what the canvas draws — naming, renaming and saving a copy are the
+       workspace's own SAVE since 2026-08-27 (FR-009). -->
   <div class="library__footer">
     @if (chosenActions().length === 0) {
       <p class="library__footer-hint">{{ nothingChosen() }}</p>
@@ -92,25 +94,4 @@
   [destructive]="true"
   (confirmed)="confirmDelete()"
   (cancelled)="cancelDelete()"
-/>
-
-<edsb-save-build-dialog
-  [open]="saveOpen()"
-  [initialName]="saveName()"
-  [duplicateCount]="duplicateCount()"
-  [canOverwrite]="canOverwriteSource()"
-  [overwriteUnavailable]="overwriteUnavailable()"
-  (nameChanged)="changeSaveName($event)"
-  (saveRequested)="requestSave($event)"
-  (dismissed)="dismissSave()"
-/>
-
-<edsb-choice-dialog
-  [open]="conflict() !== null"
-  [title]="conflictTitle()"
-  [description]="conflictDescription()"
-  [choices]="conflictChoices()"
-  [dismissLabel]="dismissLabel()"
-  (chosen)="resolveConflict($event)"
-  (dismissed)="dismissConflict()"
 />
