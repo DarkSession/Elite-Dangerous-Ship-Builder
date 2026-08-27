@@ -390,8 +390,10 @@ describe('PowerThermals', () => {
     it('draws the canvas’s bars, in its order, named as it names them', () => {
       const { element } = render(withinBudgetBuild());
 
+      // The trigger's own text, which is what the row draws. The gloss beside
+      // it is the tooltip's and is asserted where the tooltip is.
       const names = [...element.querySelectorAll('.heat__name')].map((node) =>
-        node.firstChild?.textContent?.trim(),
+        node.querySelector('button')?.textContent?.trim(),
       );
       // The five the package returns plus the cell-bank spike it declines to
       // publish as one, where a bank is fitted to spike.
@@ -408,25 +410,54 @@ describe('PowerThermals', () => {
       }
     });
 
-    it('says what each scenario name is shorthand for, drawn rather than hovered', () => {
+    it('says what each scenario name is shorthand for, in a tooltip rather than a title', () => {
       const { element } = render(withinBudgetBuild());
 
       const bars = [...element.querySelectorAll('.heat__bar')];
       expect(bars.length).toBeGreaterThan(0);
 
       for (const bar of bars) {
-        const description = bar.querySelector('.heat__description');
+        const trigger = bar.querySelector('.heat__description button');
+        const tip = bar.querySelector('.heat__description [role="tooltip"]');
 
-        // Present, non-empty, and in the document rather than in a title or a
-        // data attribute: hover-only meaning is unreachable by touch.
-        expect(description?.textContent?.trim()).toBeTruthy();
+        // In the document and related to the name it glosses, rather than in a
+        // `title` or a `data-tip`: those are unreachable by touch and
+        // unreliably announced, which is the whole reason this is a component
+        // and not an attribute.
+        expect(tip?.textContent?.trim()).toBeTruthy();
+        expect(trigger?.getAttribute('aria-describedby')).toBe(tip?.getAttribute('id'));
         expect(bar.querySelector('[title]')).toBeNull();
         expect(bar.querySelector('[data-tip]')).toBeNull();
       }
 
-      expect(element.querySelector('.heat__description')?.textContent?.trim()).toBe(
-        'Hardpoints stowed, no throttle',
-      );
+      expect(
+        element.querySelector('.heat__description [role="tooltip"]')?.textContent?.trim(),
+      ).toBe('Hardpoints stowed, no throttle');
+    });
+
+    it('draws a scenario gloss only once it is asked for', () => {
+      const { element, detect } = render(withinBudgetBuild());
+
+      const trigger = element.querySelector<HTMLButtonElement>('.heat__description button');
+      const tip = element.querySelector('.heat__description [role="tooltip"]');
+
+      // Closed to begin with — the name is what the row draws — and the state
+      // is on the trigger rather than left to be inferred from what is visible.
+      expect(trigger?.getAttribute('aria-expanded')).toBe('false');
+      expect(tip?.classList.contains('tooltip__tip--shown')).toBe(false);
+
+      // A press is what a touch has instead of a hover, so a press opens it.
+      trigger?.click();
+      detect();
+
+      expect(
+        element.querySelector('.heat__description button')?.getAttribute('aria-expanded'),
+      ).toBe('true');
+      expect(
+        element
+          .querySelector('.heat__description [role="tooltip"]')
+          ?.classList.contains('tooltip__tip--shown'),
+      ).toBe(true);
     });
 
     it('draws the key above the four tiles it does not explain', () => {

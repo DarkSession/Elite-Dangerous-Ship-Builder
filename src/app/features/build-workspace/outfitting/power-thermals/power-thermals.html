@@ -179,14 +179,20 @@
               @for (bar of heatBars(); track bar.id) {
                 <li class="heat__bar" [class.heat__bar--over]="bar.overheats">
                   <span class="heat__name">
-                    {{ bar.label }}
                     <!--
                       What the scenario's name is shorthand for. The canvas hangs
-                      it on hover; this draws it, because hover-only meaning is
-                      unreachable by touch (011 FR-006) and a scenario is not
-                      something a Commander should have to point at to read.
+                      it on a `data-tip`; this hangs it on the design system's own
+                      tooltip, which draws it on hover, on focus and on a press —
+                      the last because touch has no hover, and hover-only meaning
+                      is unreachable by touch (011 FR-006). Drawn or not, it is
+                      related to the name by `aria-describedby`, so a reader who
+                      is told the interface has it without asking.
                     -->
-                    <span class="heat__description">{{ bar.description }}</span>
+                    <edsb-tooltip
+                      class="heat__description"
+                      [label]="bar.label"
+                      [tip]="bar.description"
+                    />
                   </span>
 
                   <!--

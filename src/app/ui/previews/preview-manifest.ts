@@ -211,6 +211,7 @@ import { AppFrame } from '../components/app-frame/app-frame';
 import { ChoiceGroup } from '../components/choice-group/choice-group';
 import { Collection } from '../components/collection/collection';
 import { Disclosure } from '../components/disclosure/disclosure';
+import { Tooltip } from '../components/tooltip/tooltip';
 import { GameText } from '../components/game-text/game-text';
 import { Layer } from '../components/layer/layer';
 import { MetricGroup } from '../components/metric-group/metric-group';
@@ -1108,6 +1109,49 @@ registerPreview({
     state('disabled', { label: 'Why is this unavailable?', disabled: true }, [
       'exposes the disabled state natively',
     ]),
+  ],
+});
+
+registerPreview({
+  componentId: 'tooltip',
+  group: 'Containers',
+  component: Tooltip,
+  contract: contract(
+    'tooltip',
+    {
+      role: 'button',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['expanded'],
+      relationships: ['description'],
+      textEquivalents: ['the gloss the trigger stands for'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { label: 'Idle', tip: 'Hardpoints stowed, no throttle', open: true },
+      [
+        'the gloss is drawn beside the word it explains',
+        'the drawn state is exposed as aria-expanded rather than by visibility alone',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
+    ),
+    state(
+      'empty',
+      { label: 'Idle', tip: 'Hardpoints stowed, no throttle' },
+      [
+        'an undrawn gloss is still related to its trigger by aria-describedby',
+        'the gloss is reachable by press as well as by hover, so touch is not left out',
+      ],
+      ['normal', 'rtl'],
+    ),
+    notApplicable('loading', 'A gloss is text the component is handed; it never waits for one.'),
+    notApplicable('error', 'A tooltip reports no error of its own.'),
+    notApplicable(
+      'disabled',
+      'The gloss is available whether or not it is drawn, so there is nothing a disabled state could withhold.',
+    ),
   ],
 });
 

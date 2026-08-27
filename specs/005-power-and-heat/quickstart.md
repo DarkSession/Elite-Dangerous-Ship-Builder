@@ -169,8 +169,12 @@ Then confirm the block is one plate split down the middle: the five bars and the
 on the leading side, and the two-key legend over the canvas's `RESTING HEAT`, `PEAK SUSTAINED`,
 `DISSIPATION` and `HEAT SINKS` tiles in a column of equal width beside them. The key reads before
 the tiles at both arrangements — it explains the bars, not the four figures. Confirm each scenario
-name carries its description under it, drawn rather than hung on a pointer, and that none of the six
-is reachable only by hovering. The caption sits under the threshold line drawn through the bars, and
+name carries its description in the system's own tooltip rather than in a `title`: hover one and it
+is drawn, press one and it is drawn, press it again and it is put away, and `Escape` puts away
+whichever is on screen. Confirm the pointer can travel from the name onto the bubble without it
+collapsing on the way. Then confirm none of the six is reachable _only_ by hovering — every gloss is
+related to its own name by `aria-describedby` whether or not it is drawn, so a screen reader reads
+it without touching a control. The caption sits under the threshold line drawn through the bars, and
 a level that never settles reads `∞` with the sentence it stands for carried beside it. `PEAK SUSTAINED` is the hottest of the bars drawn
 beside it, picked out rather than worked out; `HEAT SINKS` is the count of what is fitted over the
 canvas's `2 x 3` breakdown, which is absent where the launchers do not all carry the same charges.

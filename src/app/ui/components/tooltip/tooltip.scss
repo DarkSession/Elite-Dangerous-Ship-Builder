@@ -1,0 +1,95 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  // The bubble is hung off the trigger, so the trigger's own box is what it is
+  // measured from. `inline-block` rather than `block`: this is a word inside a
+  // line of other words wherever it is used.
+  position: relative;
+  display: inline-block;
+  max-inline-size: 100%;
+}
+
+// A word, set as the words around it are set, with a dotted rule under it. The
+// rule is an affordance and not the reading: what says there is more here is
+// the native button role and the description permanently attached to it, so
+// nothing rests on a line style (011 FR-010). It still owes 1.4.11's 3:1 as the
+// thing that identifies a control, which is why it takes a border ink rather
+// than a decorative one.
+.tooltip__trigger {
+  // The project's full baseline, not SC 2.5.8's 24-pixel floor. The floor is
+  // for controls the reference itself draws dense, and the canvas draws no
+  // control here at all — it sets the name as text and hangs the gloss on a
+  // `data-tip`. Measured at 390 pixels, a heat row is 24 pixels with this at
+  // the floor and 44 with it at the baseline, against the 45 the drawn
+  // name-and-gloss took: the baseline is still shorter than the arrangement it
+  // replaced — by a pixel, not by a margin, but the row does not grow and so
+  // there is nothing here worth widening a gate for.
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--edsb-border-strong);
+  text-underline-offset: var(--edsb-space-hair);
+  overflow-wrap: break-word;
+  cursor: help;
+}
+
+// Not drawn is not the same as not there: closed, the gloss is the same
+// screen-reader-only text every other text equivalent in this system is, which
+// is what keeps `aria-describedby` pointing at something a reader can be given.
+.tooltip__tip {
+  @include layout.visually-hidden;
+}
+
+.tooltip__tip--shown {
+  position: absolute;
+  z-index: 3;
+  inset-block-start: calc(100% + var(--edsb-space-inline-tight));
+  inset-inline-start: 0;
+  inline-size: max-content;
+  block-size: auto;
+  // The same bound the action menu takes, and for the same reason: a rem-based
+  // width becomes wider than a phone once a text scale is applied to it, and a
+  // bubble hung off the leading edge of its trigger would then run off the
+  // trailing edge of the screen — where the page would have to scroll
+  // sideways to reach it, which it never does (011 FR-011).
+  max-inline-size: min(100vw - 2 * var(--edsb-space-region), var(--edsb-layout-menu-max));
+  margin: 0;
+  padding-block: var(--edsb-space-2xs);
+  padding-inline: var(--edsb-space-xs);
+  overflow: visible;
+  border: var(--edsb-border-width-hairline) solid var(--edsb-rule-menu);
+  border-radius: var(--edsb-shape-control);
+  background-color: var(--edsb-surface-menu);
+  box-shadow: var(--edsb-elevation-menu);
+  clip-path: none;
+  color: var(--edsb-text-secondary);
+  font-size: var(--edsb-text-size-caption);
+  white-space: normal;
+  text-wrap: pretty;
+}
+
+// The gap above the bubble, made part of the bubble.
+//
+// 1.4.13's "hoverable" is about geometry, not about the DOM: the bubble being a
+// child of the host does not help when the pointer has to cross ground that
+// belongs to neither. Unbridged, `pointerleave` fires on the host the instant
+// the pointer enters the gap and the tip is gone before it can be read — and
+// the gap is the offset above, which doubles with the text scale. This strip is
+// invisible, belongs to the bubble, and closes the crossing.
+.tooltip__tip--shown::before {
+  content: '';
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline: calc(-1 * var(--edsb-border-width-hairline));
+  block-size: calc(var(--edsb-space-inline-tight) + var(--edsb-border-width-hairline));
+}
