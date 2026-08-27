@@ -68,9 +68,22 @@ export function carryPower(
     candidate.setModulePriority(slotKey, carried.priority);
   }
 
-  // Only an explicit off. An absent or `true` `on` already reads as on, so
-  // writing `true` would add a field rather than preserve a state.
-  if (carried.on === false) {
-    candidate.setModuleEnabled(slotKey, false);
+  // Whatever the outgoing module stated, and nothing where it stated nothing.
+  //
+  // This carried only an explicit `false` until 2026-08-27, on the reading that
+  // writing `true` would add a field nobody set. It would not: a build that
+  // states `On: true` has that field, and writing it back preserves it rather
+  // than inventing it — which is exactly what the priority branch above already
+  // does for a stated group 0, the package's own default. Every journal and
+  // SLEF loadout states `On` on every module, so the two branches disagreed
+  // about every imported build: a swap turned a stated `true` into an absence,
+  // an export then carried one field fewer than the file that was read in, and
+  // re-fitting the same module spent a revision on a change nobody could see
+  // (reported in review, 2026-08-27).
+  //
+  // The rule FR-015 states is unchanged and is what both branches now follow:
+  // carry what the outgoing module carried, and write nothing it did not.
+  if (carried.on !== undefined) {
+    candidate.setModuleEnabled(slotKey, carried.on);
   }
 }

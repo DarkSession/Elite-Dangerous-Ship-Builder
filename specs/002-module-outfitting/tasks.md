@@ -707,3 +707,13 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       power-carry journeys in the coverage ledger, and scopes FR-012b to the block axis so the
       attribute table's own labelled inline scroller is not read as a contradiction
       (`e2e/outfitting-families.spec.ts`, `e2e/coverage-ledger.ts`, `spec.md`)
+- [x] T168 Carry a stated on-state, not only a stated off one, and write down the restore. The carry
+      wrote `On` back only when the outgoing module was explicitly off, on the reading that writing
+      `true` would add a field nobody set. It would not — a build that states `On: true` has that
+      field, and every journal and SLEF loadout states it on every module, which is the same case the
+      priority branch already handled correctly by carrying a stated group 0. So a swap turned a
+      stated `true` into an absence, an export carried one field fewer than the file it was read
+      from, and re-fitting the same module spent a revision on a change nobody could see. FR-015,
+      SC-003a and the editor contract now cover all three operations the package treats as a fresh
+      mount rather than the two they named (`power-carry.ts`, `spec.md`,
+      `contracts/outfitting-editor.md`, `design/engineering-editor.md`)

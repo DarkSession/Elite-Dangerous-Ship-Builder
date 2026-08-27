@@ -207,12 +207,13 @@ its ship name and ident — belongs here.
 - **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
   MUST use the Commander's one-based priority labels. Where the source states no group, presentation
   MUST show the group the package puts the module in rather than reporting the value as unavailable;
-  the modelled field MUST stay absent, so nothing is written into the build. Replacing the module in a
-  mount MUST carry the mount's power state onto the article that lands there: a group the outgoing
-  module was assigned MUST be set again on the incoming one, and a module that was switched off MUST
-  be switched off again. The carry MUST be part of the same package edit and the same Commander
-  decision as the fit, and MUST write no field the outgoing module did not carry — an unstated group
-  and an unstated on-state stay unstated, because the package already answers both.
+  the modelled field MUST stay absent, so nothing is written into the build. Any edit that re-fits a mount — a fit, a
+  variant fit, or putting a purchase back — MUST carry the mount's power state onto the article that
+  lands there: a group the outgoing module was assigned MUST be set again on the incoming one, and
+  the on/off state it stated MUST be stated again. The carry MUST be part of the same package edit
+  and the same Commander decision as the edit that reset it, and MUST write no field the outgoing
+  module did not carry — an unstated group and an unstated on-state stay unstated, because the
+  package already answers both.
 
   > **Ruled 2026-08-26.** The chip drew a `—` for an unstated group, on the grounds that choosing one
   > would be a decision nobody made. Nobody was being asked to: `PowerConsumer.priority` documents the
@@ -391,8 +392,8 @@ No game rule, value or variant-recognition heuristic is application-owned.
   Chromium-only because CPU throttling has no equivalent in the other supported engine; the search
   behaviour it measures is verified in both.
 - **SC-003**: Undo and redo reproduce every retained intermediate modelled build exactly.
-- **SC-003a**: Replacing the module in a mount that carried a power priority group or an off state
-  leaves both as they were, in one decision that one undo reverses.
+- **SC-003a**: Any edit that re-fits a mount which carried a power priority group or a stated on/off
+  state leaves both as they were, in one decision that one undo reverses.
 - **SC-004**: No application-owned fitting, engineering or variant-recognition rule exists.
 - **SC-005**: Every incoming build with losslessly normalisable partial engineering reaches quality
   100%; every unsupported partial-quality candidate is rejected without changing the active build.

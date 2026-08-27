@@ -166,11 +166,16 @@ export class CandidateList {
    * it happened to be scrolled to — the rows changed and nothing on screen said
    * which family they now belonged to (Commander request 2026-08-27).
    *
-   * **Only where the row is not already in view.** A Commander who presses a
-   * family row is looking straight at it, and centring on every selection would
-   * move the list under the press that made it — which is the fault above,
-   * drawn in the other direction. A row already inside the box is left exactly
-   * where it stands.
+   * **Who revealed it decides.** A family the application revealed is centred;
+   * a family the Commander pressed is left exactly where they pressed it,
+   * because moving the list under the press that made it is this same fault in
+   * the other direction. Asking instead whether the row is already in view
+   * looks like the same rule and is not: the rail is a 470px box of 44px rows,
+   * so the row at either edge is routinely clipped and pressing a clipped row
+   * is the ordinary case (corrected 2026-08-27).
+   *
+   * The in-view test survives below as restraint rather than as the rule — a
+   * revealed row already whole in the box has nothing to be brought into.
    *
    * The rail's own box is scrolled rather than `scrollIntoView`, for the reason
    * the pane's is: that walks every scrollable ancestor up to the document, and

@@ -296,6 +296,35 @@ describe('outfitting store - fitting', () => {
     expect(fitted.on).toBe(false);
   });
 
+  it('carries a stated on-state as readily as a stated off one', () => {
+    // Switched off and on again, which is how a mount comes to state `On: true`
+    // without an import — every journal and SLEF loadout states it on every
+    // module, so this is the ordinary case rather than the odd one.
+    store.select(FIXTURE_SLOTS.thrusters);
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.thrusters, enabled: false });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.thrusters, enabled: true });
+
+    const before = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(before.on).toBe(true);
+
+    const choice = store
+      .membership()!
+      .choices.find(
+        (candidate) => candidate.kind === 'stock' && candidate.module.symbol !== before.symbol,
+      )!;
+    store.dispatch({
+      kind: 'fitStock',
+      slotKey: FIXTURE_SLOTS.thrusters,
+      choiceKey: choice.key,
+    });
+
+    // Writing it back preserves a field the build had; it does not add one.
+    // Carrying only an explicit `false` turned a stated `true` into an absence,
+    // so an imported build exported one field fewer than it was read from
+    // (FR-015; reported in review 2026-08-27).
+    expect(active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.on).toBe(true);
+  });
+
   it('writes no power field a replaced module did not carry', () => {
     store.select(FIXTURE_SLOTS.thrusters);
 
