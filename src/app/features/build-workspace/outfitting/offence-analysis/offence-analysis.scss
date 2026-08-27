@@ -42,12 +42,25 @@
     gap: var(--edsb-space-region);
   }
 
-  // Canvas 1c runs `SHOT CONVERGENCE` across the full width beneath the pair.
-  // The plate itself is a fixed square that does not grow with the block; what
-  // needs the width is the row it stands in, so the range and the four cells
-  // sit beside it rather than under it.
+  // Canvas 1c puts `SHOT CONVERGENCE` on its own row beneath the pair, at
+  // `max-width: 508px; align-self: flex-start` — a row of its own, but not the
+  // panel's whole width. The plate inside it is a fixed square that does not
+  // grow with the block, so a block given the full row stood a 172px plate in
+  // the middle of an 862px frame with the range field stretched out beside it
+  // (Commander request 2026-08-27). Bounded and set at the leading edge, the
+  // block is the plate, the range beside it and the canvas's own air.
   .offence__block--convergence {
     grid-column: 1 / -1;
+    justify-self: start;
+    // Both, and neither is redundant. `justify-self: start` puts the block at
+    // the row's leading edge, and on its own it also makes the block size to
+    // its contents — a grid item that is not stretched is shrink-to-fit, so the
+    // bound below never binds and the block came out 203px wide with a 165px
+    // plate inside it, which is *smaller* than the unbounded block it replaced.
+    // The explicit `100%` is what asks for the row's width; the bound is what
+    // stops it there.
+    inline-size: 100%;
+    max-inline-size: var(--edsb-layout-convergence-block);
   }
 }
 
@@ -82,23 +95,6 @@
   @include layout.micro-label;
 
   margin: 0;
-}
-
-// The convergence block's note is the ring caption, and it carries two figures
-// with their units — `RING 2 · 27 MRAD · 16.0 m`. The mixin's uppercase would
-// print that metre as `M` and state the mega prefix instead of the metre, so it
-// is lifted here for the same reason it is lifted off a bar label that carries a
-// figure rather than a word.
-//
-// The canvas sets the caption uppercase apart from that one symbol, and the mix
-// is not reproduced: `text-transform` is all-or-nothing over a text node, and
-// the caption is one sentence whose parts move between languages, so splitting
-// it into a transformed span and an untransformed one would fix English word
-// order into the markup. Sentence case is the departure taken instead — a
-// lowercase word is a typographic difference, a metre printed `M` is a
-// different unit (`design/canvas-contract.md`, review note 15).
-.offence__block--convergence .offence__note {
-  text-transform: none;
 }
 
 // What the collection means, in prose voice rather than the mono numeric voice

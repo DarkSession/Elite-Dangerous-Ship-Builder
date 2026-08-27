@@ -59,7 +59,7 @@ async function plateMarks(page: Page): Promise<string[]> {
         round((mark.top - box.top) / box.height),
       ].join(' ');
     };
-    return [...plate.querySelectorAll('.plate__dot, .plate__numeral')].map(place);
+    return [...plate.querySelectorAll('.plate__dot')].map(place);
   });
 }
 
@@ -108,10 +108,10 @@ async function hardpointKeys(page: Page): Promise<string[]> {
 /**
  * Where each shot dot is put, as a fraction of the plate's own box.
  *
- * Since the 2026-08-25 canvas revision nothing lands outside `[0, 1]`: a shot
- * beyond the plate's field of view is held at the frame's own `4%` margin
- * rather than clipped out of it, so what a near range moves is how far out the
- * dot sits, not whether it is drawn.
+ * Only the marks the plate actually draws: since 2026-08-27 a shot beyond the
+ * field of view is left off it rather than held at the frame's own `4%` margin,
+ * so what a near range moves is how many dots there are as well as how far out
+ * they sit.
  */
 async function dotPlacements(page: Page): Promise<{ left: number; top: number }[]> {
   return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
@@ -119,7 +119,7 @@ async function dotPlacements(page: Page): Promise<{ left: number; top: number }[
     // percentage of the box its offset parent gives it, which excludes the
     // hairline border. Measuring against the border box instead puts every
     // fraction out by a pixel, which is exactly the width of the margin a
-    // clamped mark is meant to be standing on.
+    // mark at the frame's own margin is meant to be standing on.
     const box = plate.getBoundingClientRect();
     const origin = { left: box.left + plate.clientLeft, top: box.top + plate.clientTop };
     return [...plate.querySelectorAll('.plate__dot')].map((node) => {
@@ -803,19 +803,19 @@ test.describe('shot convergence', () => {
     // caption to state (FR-011, `design/canvas-contract.md`).
     expect(await shots.count()).toBe(mounts);
 
-    // Every one of the hull's mounts is drawn as a dot where its shot lands and
-    // the mount's own hardpoint numeral beside it. The badge column at the
-    // plate's edge went with the 2026-08-25 canvas revision and has not come
-    // back; what did come back, with the 2026-08-26 rebuild, is a leader — and
-    // only for a numeral that had to step away from its dot to stand clear of
-    // another mark, so there is never more than one a mount and usually fewer
-    // (review note 19).
-    await block.locator('input[type="range"]').fill('2000');
+    // Every one of the hull's mounts is drawn as one dot where its shot lands,
+    // and nothing else. The badge column at the plate's edge went with the
+    // 2026-08-25 canvas revision; the numeral that replaced it and the leaders
+    // a crowded plate drew back to it went on 2026-08-27, so the mount's number
+    // is carried by its sentence alone (review note 20). The range is taken to
+    // the far end of the track, where every one of this hull's shots is inside
+    // the field of view and therefore drawn.
+    await block.locator('input[type="range"]').fill('3000');
     await settled(page);
     await expect(plate.locator('.plate__dot')).toHaveCount(mounts);
-    await expect(plate.locator('.plate__numeral')).toHaveCount(mounts);
     await expect(plate.locator('.plate__shot')).toHaveCount(0);
-    expect(await plate.locator('.plate__leader').count()).toBeLessThanOrEqual(mounts);
+    await expect(plate.locator('.plate__numeral')).toHaveCount(0);
+    await expect(plate.locator('.plate__leader')).toHaveCount(0);
   });
 
   test('draws the plate on one scale, so a ring means the same angle on both axes', async ({
@@ -850,7 +850,56 @@ test.describe('shot convergence', () => {
     }
   });
 
-  test('clamps a shot the field of view does not reach, and keeps its sentence', async ({
+  test('draws the block at the canvas’s own width, with the range beside the plate', async ({
+    page,
+  }) => {
+    await openOffence(page);
+
+    // Canvas 1c bounds this block at `max-width: 508px; align-self: flex-start`
+    // and puts the plate and the range side by side inside it. Both halves are
+    // asserted, and both have been wrong: built across the whole panel row it
+    // stood a small square plate in the middle of a wide frame, and bounded by
+    // `justify-self` alone it shrank to its contents and drew a *smaller* plate
+    // than the unbounded block had. A `max-inline-size` with no lower bound
+    // under it cannot tell those two apart.
+    const measured = await page.locator('edsb-offence-analysis').evaluate((panel) => {
+      const box = (selector: string): { width: number; top: number; bottom: number } => {
+        const rect = panel.querySelector(selector)?.getBoundingClientRect();
+        return { width: rect?.width ?? 0, top: rect?.top ?? 0, bottom: rect?.bottom ?? 0 };
+      };
+      return {
+        block: box('.offence__block--convergence'),
+        row: box('.offence'),
+        plate: box('.plate'),
+        readout: box('.convergence__readout'),
+      };
+    });
+
+    expect(measured.block.width).toBeGreaterThan(0);
+    // Never wider than the bound or than the row it stands in, whichever is
+    // smaller — the bound only exists in the wide arrangement, so a narrow
+    // profile is held to the row instead. The one is the canvas's, the other
+    // the rounding a fractional layout leaves.
+    expect(measured.block.width).toBeLessThanOrEqual(Math.min(measured.row.width, 509) + 1);
+
+    // Where the row is wider than the bound, the block takes the bound — not
+    // less, and not the row.
+    if (measured.row.width > 512) {
+      expect(measured.block.width).toBeGreaterThanOrEqual(500);
+      expect(measured.block.width).toBeLessThan(measured.row.width);
+
+      // And the plate is drawn at its own token width rather than at whatever
+      // the block happened to leave it.
+      expect(measured.plate.width).toBeGreaterThanOrEqual(223);
+      expect(measured.plate.width).toBeLessThanOrEqual(225);
+
+      // The range stands beside the plate in that block, as the canvas draws
+      // it, rather than wrapping under it and leaving the plate's row empty.
+      expect(measured.readout.top).toBeLessThan(measured.plate.bottom);
+    }
+  });
+
+  test('leaves a shot the field of view does not reach off the plate, and keeps its sentence', async ({
     page,
   }) => {
     await openOffence(page);
@@ -860,17 +909,15 @@ test.describe('shot convergence', () => {
     const mounts = (await hardpointKeys(page)).length;
 
     // The plate spans a fixed field of view, as the canvas fixes it, so the
-    // nearer the target the wider a mount's shot subtends. Since the 2026-08-25
-    // revision a shot that outruns the plate is held at the frame's own margin
-    // rather than clipped out of it, so nothing ever leaves the box — what a
-    // near range does is push the dot out to that margin, where a far range
-    // leaves it well inside (FR-011, spec.md, "A shot whose offset exceeds the
-    // plate's field of view").
+    // nearer the target the wider a mount's shot subtends. A shot that outruns
+    // the plate is **not drawn** (2026-08-27): held at the frame's own margin,
+    // as the canvas holds it and as this drew until then, it was a dot standing
+    // where its shot does not go (FR-011, spec.md, "A shot whose offset exceeds
+    // the plate's field of view").
     // The frame's own margin, and the slack a mark measured off a rendered box
     // needs: a dot is centred by a half-pixel translate on a plate whose height
     // is itself fractional, so "on the margin" arrives a few tenths of a pixel
-    // off it. This is wide enough to absorb that and far narrower than the gap
-    // between a clamped mark and one the field of view actually holds.
+    // off it.
     const margin = 0.04;
     const slack = 0.005;
     const edge = ({ left, top }: { left: number; top: number }): number =>
@@ -881,24 +928,23 @@ test.describe('shot convergence', () => {
     await settled(page);
     const near = await dotPlacements(page);
     const sentencesNear = await block.locator('.shots__entry').count();
-    expect(near).toHaveLength(mounts);
-    // Nothing is dropped and nothing escapes: every mark is still on the plate.
+    // Marks are left off at this range — the rule is doing work rather than
+    // being a bound nothing reaches — and every one that is drawn is inside the
+    // frame's own margin rather than pinned to it.
+    expect(near.length).toBeLessThan(mounts);
     expect(near.every(inside)).toBe(true);
-    // And the clamp is doing work — a mount is standing on the margin itself.
-    expect(near.some((dot) => edge(dot) <= margin + slack)).toBe(true);
 
     await slider.fill((await slider.getAttribute('max')) ?? '');
     await settled(page);
     const far = await dotPlacements(page);
-    expect(far.every(inside)).toBe(true);
-    // At the far end nothing is against the frame any more.
+    // At the far end every mount is back, and none of them is against the frame.
+    expect(far).toHaveLength(mounts);
     expect(far.every((dot) => edge(dot) > margin + slack)).toBe(true);
 
     // The sentence is the reading, and it is stated at both ranges alike: the
-    // field of view decides what the picture shows, never what is said.
+    // field of view decides what the picture shows, never what is said. A mount
+    // the plate cannot show is exactly the one its sentence is the whole of.
     expect(await block.locator('.shots__entry').count()).toBe(sentencesNear);
-    // One sentence a mark, and no extra: the ring caption the sentences used to
-    // carry is withdrawn with the 2026-08-26 revision.
     expect(sentencesNear).toBe(mounts);
   });
 
@@ -915,17 +961,54 @@ test.describe('shot convergence', () => {
     // a mount sits is a property of the hull rather than of what is on it, so
     // every one of them is placed, and the unfilled ones are drawn in the quiet
     // ink the hull schematics already give an empty mount.
-    await block.locator('input[type="range"]').fill('2000');
+    await block.locator('input[type="range"]').fill('3000');
     await settled(page);
     expect(mounts).toBeGreaterThan(armed);
     await expect(block.locator('.plate__dot')).toHaveCount(mounts);
-    await expect(block.locator('.plate__numeral')).toHaveCount(mounts);
     await expect(block.locator('.plate__dot--empty')).toHaveCount(mounts - armed);
+
+    // The mark is filled rather than outlined, in an ink of its own: the hollow
+    // empty mount went with the numerals (2026-08-27), so what separates the
+    // three states is three fills of one shape. Read off the rendered mark,
+    // because it is the one visual property the request was about — and off an
+    // empty mount that is *not* the selected one, because on this hull the
+    // workspace opens on an empty hardpoint, so the first empty mark on the
+    // plate carries the selection ink rather than the stale one.
+    const emptyMark = await block
+      .locator('.plate__dot--empty:not(.plate__dot--selected)')
+      .first()
+      .evaluate((dot) => {
+        const style = getComputedStyle(dot);
+        return { border: style.borderStyle, fill: style.backgroundColor };
+      });
+    expect(emptyMark.border).toBe('none');
+    const armedFill = await block
+      .locator('.plate__dot:not(.plate__dot--empty):not(.plate__dot--selected)')
+      .first()
+      .evaluate((dot) => getComputedStyle(dot).backgroundColor);
+    expect(emptyMark.fill).not.toBe(armedFill);
+    expect(emptyMark.fill).not.toBe('rgba(0, 0, 0, 0)');
+
+    // And where the selected mount is the empty one — which is the state the
+    // workspace opens in on this hull — the selection ink wins over the stale
+    // one. One mark carries one fill, and which fill it is rests on the order
+    // two rules of equal specificity are declared in, so it is read off the
+    // rendered mark rather than assumed.
+    // Asserted to exist rather than checked for: the state is this hull's, at a
+    // range where every mount is drawn, so a plate without it is the regression
+    // this is here to catch and a skipped branch would report it as a pass.
+    const selectedEmpty = block.locator('.plate__dot--empty.plate__dot--selected');
+    await expect(selectedEmpty).toHaveCount(1);
+    const selectedFill = await selectedEmpty.evaluate(
+      (dot) => getComputedStyle(dot).backgroundColor,
+    );
+    expect(selectedFill).not.toBe(emptyMark.fill);
+    expect(selectedFill).not.toBe(armedFill);
 
     // And the ink is never the only thing that says so: an empty mount's own
     // sentence stands beside the plate with the rest, and it is the catalogue's
     // empty-mount sentence rather than a weapon's with the name left out
-    // (011 FR-022).
+    // (011 FR-010).
     const stated = await block.locator('.shots__entry').allInnerTexts();
     expect(stated).toHaveLength(mounts);
     const empty = [
@@ -956,50 +1039,85 @@ test.describe('shot convergence', () => {
     await openOffence(page);
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
-    const numeral = block.locator('.plate__numeral--selected');
+    const dots = block.locator('.plate__dot');
+
+    /**
+     * Which mark on the plate is drawn as the selected one, by its place among
+     * the dots.
+     *
+     * The dots are the sentence list filtered by whether the plate can hold the
+     * mark, in one order, so a place in the first is the same mount as that
+     * place in the second **only while every mount is drawn**. That is what
+     * ties a mark to its sentence now that the numeral which used to print the
+     * mount's number on the plate is withdrawn — and it is why the counts are
+     * asserted equal before any place is compared: at a short enough range the
+     * plate leaves marks off, and two lists of different lengths would compare
+     * different mounts without failing.
+     */
+    const selectedMark = async (): Promise<number> =>
+      dots.evaluateAll((marks) =>
+        marks.findIndex((mark) => mark.classList.contains('plate__dot--selected')),
+      );
+
+    /**
+     * The sentence that names its mount as the selected one: its place in the
+     * list, and the hardpoint it names, read out of the catalogue template's
+     * own `{{hardpoint}}` slot. Reading the slot rather than searching the
+     * sentence for a digit is what keeps this honest — `13.3 m off the axis`
+     * carries a `3`, and so does most of the rest of it.
+     */
+    const selectedSentence = async (): Promise<{ place: number; hardpoint: string }> => {
+      const stated = await block.locator('.shots__entry').allInnerTexts();
+      const patterns = [
+        asSentence(englishMessages['offence.convergence.shot.selected'], 'hardpoint'),
+        asSentence(englishMessages['offence.convergence.empty.selected'], 'hardpoint'),
+      ];
+      const found = stated
+        .map((line, place) => ({
+          place,
+          hardpoint: patterns.map((pattern) => pattern.exec(line)?.[1]).find(Boolean),
+        }))
+        .filter((entry): entry is { place: number; hardpoint: string } => Boolean(entry.hardpoint));
+      expect(found).toHaveLength(1);
+      return found[0] ?? { place: -1, hardpoint: '' };
+    };
 
     // The workspace always has a mount selected — the ledger opens on the first
-    // one — so the plate marks it from the moment it is drawn.
+    // one — so the plate marks it from the moment it is drawn, and the mark is
+    // on the same mount the sentence names (011 FR-010).
     await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
-    await expect(numeral).toHaveCount(1);
-    const first = await numeral.innerText();
+    // The precondition the place comparison rests on: at the range the block
+    // opens at, this hull's every mount is inside the field of view, so the two
+    // lists are the same length and a place in one is a place in the other.
+    expect(await dots.count()).toBe(await block.locator('.shots__entry').count());
+    const first = await selectedMark();
+    expect(first).toBeGreaterThanOrEqual(0);
+    expect(first).toBe((await selectedSentence()).place);
 
     // Selecting a different hardpoint in the ledger moves the mark, because both
     // are reading one selection rather than each keeping their own — and it
-    // moves it to *that* mount. The numeral is the mount's place in the hull's
-    // own hardpoint order, which is the order the ledger lists them in, so the
-    // ledger says which numeral the ring has to be beside without this suite
+    // moves it to *that* mount. The sentence names the mount's place in the
+    // hull's own hardpoint order, which is the order the ledger lists them in,
+    // so the ledger says which mount the mark has to be on without this suite
     // writing the number down.
     const slot = 'LargeHardpoint2';
     const place = (await hardpointKeys(page)).indexOf(slot) + 1;
     expect(place).toBeGreaterThan(0);
     await page.locator(`[data-slot-key="${slot}"] .slot__select`).first().click();
     await settled(page);
-    await expect(numeral).toHaveCount(1);
+    await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
     // Polled rather than read once. `settled` waits for animations, and the
-    // numeral is rewritten by the change detection the click schedules, which
-    // is not one — so a bare read races the redraw and returns the mount that
-    // was selected before. It fails about once in a shard under CI load.
-    expect(String(place)).not.toBe(first);
-    await expect(numeral).toHaveText(String(place));
+    // plate is redrawn by the change detection the click schedules, which is
+    // not one — so a bare read races the redraw and returns the mount that was
+    // selected before. It fails about once in a shard under CI load.
+    await expect.poll(async () => (await selectedSentence()).hardpoint).toBe(String(place));
 
-    // A ring is a picture; the mark's own sentence is the reading. Exactly one
-    // mark is stated as the selected mount, and it is the one the ring is drawn
-    // around (011 FR-022).
-    const stated = await block.locator('.shots__entry').allInnerTexts();
-    const patterns = [
-      asSentence(englishMessages['offence.convergence.shot.selected'], 'hardpoint'),
-      asSentence(englishMessages['offence.convergence.empty.selected'], 'hardpoint'),
-    ];
-    const selected = stated.filter((line) => patterns.some((pattern) => pattern.test(line)));
-    expect(selected).toHaveLength(1);
-
-    // Read the hardpoint back out of the sentence's own `{{hardpoint}}` slot and
-    // compare it with the numeral the ring is drawn beside. A `toContain` here
-    // would pass on any sentence that happens to carry the digit anywhere —
-    // `13.3 m off the axis` carries a `3` — which is most of them.
-    const named = patterns.map((pattern) => pattern.exec(selected[0] ?? '')?.[1]).find(Boolean);
-    expect(named).toBe(await numeral.innerText());
+    // The mark moved with it, and it is still the mark that sentence counts —
+    // the range has not moved, so the two lists still line up.
+    expect(await dots.count()).toBe(await block.locator('.shots__entry').count());
+    const moved = await selectedMark();
+    expect(moved).not.toBe(first);
+    expect(moved).toBe((await selectedSentence()).place);
   });
 
   test('moves the shots when the target range moves', async ({ page }) => {
@@ -1007,15 +1125,16 @@ test.describe('shot convergence', () => {
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
     const before = await block.locator('.shots__entry').allInnerTexts();
-    const spans = await block.locator('.fact__value').allInnerTexts();
 
     const slider = block.locator('input[type="range"]');
     await slider.fill('2000');
     await settled(page);
 
-    // The mounts have not moved; what they subtend at the target has.
+    // The mounts have not moved; what they subtend at the target has, so every
+    // sentence beside the plate is rewritten. The span cells that used to be
+    // read back beside this went with the 2026-08-26 canvas revision, and
+    // reading them was an assertion over an empty list.
     expect(await block.locator('.shots__entry').allInnerTexts()).not.toEqual(before);
-    expect((await block.locator('.fact__value').allInnerTexts())[0]).toBe(spans[0]);
   });
 
   test('announces the range as a Commander reads it, not as a bare number', async ({ page }) => {
@@ -1030,7 +1149,9 @@ test.describe('shot convergence', () => {
     await expect(page.locator('edsb-offence-analysis .range__value')).toHaveText(announced ?? '');
   });
 
-  test('names the four facts the canvas draws under the plate', async ({ page }) => {
+  test('draws nothing under the plate but the range, and no dot in the boresight', async ({
+    page,
+  }) => {
     await openOffence(page);
 
     // The 2026-08-26 canvas revision withdrew the four cells that used to
@@ -1040,6 +1161,9 @@ test.describe('shot convergence', () => {
     // plate's own sentences.
     await expect(page.locator('edsb-offence-analysis .fact')).toHaveCount(0);
     await expect(page.locator('edsb-offence-analysis .plate__boresight')).toHaveCount(1);
+    // The canvas's filled dot at the boresight's centre is withdrawn: on a
+    // plate whose marks are dots it read as a shot landing dead on the axis.
+    await expect(page.locator('edsb-offence-analysis .plate__boresight-centre')).toHaveCount(0);
 
     const stated = await page
       .locator('edsb-offence-analysis .shots__entry')
@@ -1049,26 +1173,13 @@ test.describe('shot convergence', () => {
       expect(sentence).not.toBe('');
     }
 
-    // No two numerals drawn over each other, whatever the range is set to.
-    const overlapping = await page
-      .locator('edsb-offence-analysis .plate__numeral')
-      .evaluateAll((numerals) => {
-        const boxes = numerals.map((numeral) => numeral.getBoundingClientRect());
-        let worst = 0;
-        for (let index = 0; index < boxes.length; index += 1) {
-          for (let other = index + 1; other < boxes.length; other += 1) {
-            const one = boxes[index]!;
-            const two = boxes[other]!;
-            const overlapX = Math.min(one.right, two.right) - Math.max(one.left, two.left);
-            const overlapY = Math.min(one.bottom, two.bottom) - Math.max(one.top, two.top);
-            if (overlapX > 0 && overlapY > 0) {
-              worst = Math.max(worst, Math.min(overlapX, overlapY));
-            }
-          }
-        }
-        return worst;
-      });
-    expect(overlapping).toBe(0);
+    // And the plate itself carries no text at all: the numerals that used to
+    // stand beside each dot are withdrawn (2026-08-27), so every word about
+    // this diagram is in the sentences beside it.
+    const drawn = await page
+      .locator('edsb-offence-analysis .plate')
+      .evaluate((plate) => (plate.textContent ?? '').trim());
+    expect(drawn).toBe('');
   });
 });
 
@@ -1078,7 +1189,7 @@ async function everyFigure(page: Page): Promise<string[]> {
     .locator(
       'edsb-offence-analysis .headline__value, edsb-offence-analysis .headline__note, ' +
         'edsb-offence-analysis .weapon__figure, edsb-offence-analysis .split__entry, ' +
-        'edsb-offence-analysis .bar__value, edsb-offence-analysis .fact__value',
+        'edsb-offence-analysis .bar__value',
     )
     .evaluateAll((nodes) => nodes.map((node) => (node.textContent ?? '').trim()));
 }
@@ -1096,8 +1207,6 @@ test.describe('the units on the screen', () => {
     const rendered = await page
       .locator(
         'edsb-offence-analysis .bar__label, edsb-offence-analysis .bar__value, ' +
-          'edsb-offence-analysis .fact__value, ' +
-          'edsb-offence-analysis .offence__block--convergence .offence__note, ' +
           'edsb-offence-analysis .range__scale span, edsb-offence-analysis .range__value',
       )
       .evaluateAll((nodes) =>
@@ -1220,6 +1329,11 @@ test.describe('the conditions that break layouts', () => {
     await openOffence(page);
     const before = await everyFigure(page);
     const plateBefore = await plateMarks(page);
+    // A plate with no marks on it compares equal to itself, and since a shot the
+    // field of view does not reach is left off the drawing, an empty plate is a
+    // state this suite can reach. At the range the block opens at it is not this
+    // one.
+    expect(plateBefore.length).toBeGreaterThan(0);
 
     await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
     await settled(page);
@@ -1229,8 +1343,7 @@ test.describe('the conditions that break layouts', () => {
 
     // Neither does the gunsight. It is a view out of the cockpit, and a
     // right-to-left interface does not move a ship's port hardpoint to
-    // starboard, so every dot keeps its place inside the plate and every
-    // hardpoint numeral keeps the side of its own dot it was placed on
+    // starboard, so every dot keeps its place inside the plate
     // (design/offence-profile.md, "The plate never mirrors").
     expect(await plateMarks(page)).toEqual(plateBefore);
 

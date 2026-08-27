@@ -243,7 +243,7 @@ describe('convergenceAt', () => {
     const geometry = convergence();
 
     // Far enough out that this hull's widest mount is well inside the field of
-    // view, so every mark is where its shot is and none of them is clamped.
+    // view, so every mount is drawn and every mark is where its shot is.
     const view = convergenceAt(geometry, TARGET_RANGE.max);
 
     // The plate is square in angle since the 2026-08-25 revision: a milliradian
@@ -252,46 +252,61 @@ describe('convergenceAt', () => {
     for (const point of view.points) {
       const up = point.vertical * FIELD_OF_VIEW_MILLIRADIANS;
       const across = point.horizontal * FIELD_OF_VIEW_MILLIRADIANS;
+      expect(point.onPlate).toBe(true);
       expect(Math.abs(point.horizontal)).toBeLessThan(PLATE_MARGIN_FRACTION);
       expect(point.milliradians).toBeCloseTo(Math.hypot(across, up), 6);
     }
   });
 
-  it('clamps a shot outside the field of view to the frame, and keeps its true angle', () => {
+  it('leaves a shot outside the field of view off the plate, and keeps its true angle', () => {
     const geometry = convergence();
 
-    // At a hundred metres this hull's widest mount stands nearly a hundred
-    // milliradians off the axis, against a plate that shows forty.
+    // At the track's shortest range this hull's widest mounts stand far more
+    // than forty milliradians off the axis, against a plate that shows forty.
     const view = convergenceAt(geometry, TARGET_RANGE.min);
 
-    // Nothing leaves the frame, on either axis.
+    // A mount is drawn exactly when its mark stands inside the frame's own
+    // margin on both axes. Held at the margin instead — which is what the
+    // canvas does and what this drew until 2026-08-27 — it was a dot standing
+    // where its shot does not go.
     for (const point of view.points) {
-      expect(Math.abs(point.horizontal)).toBeLessThanOrEqual(PLATE_MARGIN_FRACTION);
-      expect(Math.abs(point.vertical)).toBeLessThanOrEqual(PLATE_MARGIN_FRACTION);
+      const outside =
+        Math.max(Math.abs(point.horizontal), Math.abs(point.vertical)) > PLATE_MARGIN_FRACTION;
+      expect(point.onPlate).toBe(!outside);
     }
 
-    // And at this range something actually had to be held there, so the margin
-    // above is a clamp rather than a bound nothing reaches.
-    const clamped = view.points.filter(
-      (point) =>
-        Math.max(Math.abs(point.horizontal), Math.abs(point.vertical)) === PLATE_MARGIN_FRACTION,
-    );
-    expect(clamped.length).toBeGreaterThan(0);
-    for (const point of clamped) {
-      // The angle it is stated at is the one it actually makes, not the one it
-      // was drawn at: the sentence beside the plate reads the true offset.
+    // And at this range something is actually left off, so the rule is a rule
+    // rather than a bound nothing reaches.
+    const dropped = view.points.filter((point) => !point.onPlate);
+    expect(dropped.length).toBeGreaterThan(0);
+    for (const point of dropped) {
+      // The angle it is stated at is the one it actually makes: the fraction is
+      // never held to the frame, so the sentence beside the plate reads the true
+      // offset whether or not there is a mark for it.
       const drawn = Math.hypot(
         point.horizontal * FIELD_OF_VIEW_MILLIRADIANS,
         point.vertical * FIELD_OF_VIEW_MILLIRADIANS,
       );
-      expect(point.milliradians).toBeGreaterThan(drawn);
+      expect(point.milliradians).toBeCloseTo(drawn, 6);
+      expect(point.milliradians).toBeGreaterThan(
+        PLATE_MARGIN_FRACTION * FIELD_OF_VIEW_MILLIRADIANS,
+      );
     }
+  });
+
+  it('runs the target-range track over the bounds the maintainer set', () => {
+    // The maintainer's own numbers, not the canvas's and not the package's: the
+    // ceiling came back to 3,000 m on 2026-08-27, from the 5,000 m of the day
+    // before. It is short of what some weapons reach — the package publishes
+    // 4,000 m for a multi-cannon and 4,500 m for a cannon — and that is a
+    // preference about the drawing rather than a claim about the build.
+    expect(TARGET_RANGE).toEqual({ min: 500, max: 3000, step: 50, initial: 1500 });
   });
 
   it('puts a shot and a ring at the same angle the same distance from the axis', () => {
     const geometry = convergence();
 
-    // Far enough out that nothing is clamped, so every mark is where its shot is.
+    // Far enough out that every mount is drawn, so every mark is where its shot is.
     const view = convergenceAt(geometry, TARGET_RANGE.max);
 
     // One scale for the whole plate. A shot's distance from the axis, measured

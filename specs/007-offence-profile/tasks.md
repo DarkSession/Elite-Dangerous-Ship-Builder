@@ -712,6 +712,172 @@ recorded as such before being built (`design/canvas-contract.md`, review notes 1
       projects rest on this branch's pull request's `End-to-end (shard 1..6)` checks, for the reason
       recorded at the head of this document._
 
+## Phase 10: One mark a mount, and the block's own width
+
+Two more things the maintainer asked for on 2026-08-27, after seeing Phase 9 drawn. Both are
+properties of the **drawing**: no figure moves and every reading the block gives is still the
+package's own answer. The first is a departure recorded before it was built; the second is a canvas
+bound this document's own reading had missed (`design/canvas-contract.md`, review note 20).
+
+- [x] T060 Draw each hardpoint as one dot and nothing else. The numeral beside every mark goes, and
+      with it `src/app/domain/offence/numeral-placement.ts` and its suite, the leaders, the ring a
+      crowded plate sent them out on and the plate's own query container — a gunsight 172px across
+      carrying a numeral for every hardpoint was a page of digits over a diagram, and each of them
+      was already the first thing that mount's sentence says. The three states become three fills of
+      one shape: the empty mount's outline goes with the numerals and
+      `--edsb-surface-mount-empty` becomes the armed amber gone stale
+      (`--edsb-palette-amber-deep`, 3.62:1 against the worst stripe of the plate's hatch) rather
+      than a text ink, and the
+      selection ink wins over it where a selected hardpoint is empty. Every fact stays in the
+      mount's own sentence, unchanged (`spec.md` FR-011, FR-012, FR-013).
+      _`src/styles/tokens/_semantic.scss`, `shot-convergence.{ts,html,scss}` and its suite,
+      `offence-analysis.spec.ts`, `e2e/offence-profile.spec.ts`, `e2e/coverage-ledger.ts`._
+- [x] T061 Stop the convergence block at the canvas's own `max-width: 508px`, at the leading edge of
+      its row. The block was built across the full width beneath the pair, which stood a 172px plate
+      in the middle of an 862px frame with the range field stretched out beside it. The bound is the
+      canvas's (@660195); `--edsb-measure-convergence-block` carries it.
+      _`src/styles/tokens/_{primitives,semantic}.scss`, `offence-analysis.scss`._
+- [x] T062 Re-run the feature's own e2e specs with the axe scan, and the checks the gate names.
+      _The selection assertion was the one that had to be rebuilt rather than trimmed: it read the
+      selected mount's number off the numeral drawn beside its dot. It now ties the mark to its
+      sentence by their shared place in one list rendered twice, and reads the hardpoint out of the
+      catalogue template's own `{{hardpoint}}` slot._
+
+## Phase 11: The plate a Commander actually reads
+
+Four more from the same day, after seeing Phase 10 drawn, plus the findings a review of it raised.
+All four are the drawing again; no figure moves (`design/canvas-contract.md`, review note 21).
+
+- [x] T063 Draw the plate at `14rem` — 224px against the canvas's 172px. With the block bounded at
+      508px the plate no longer sets the panel's height, and 172px inside that frame is a small
+      drawing with air around it. 224px is half of what the bounded block holds: 508 less its two
+      18px insets and its two hairlines is a 470px content box, and less the 22px gap that is 448px
+      for the plate and the range column to share.
+      _`src/styles/tokens/_primitives.scss`._
+- [x] T064 Leave a shot outside the field of view **off the plate** instead of holding it at the
+      frame. `PLATE_MARGIN_FRACTION` stops being a clamp and becomes the bound past which a mount is
+      not drawn: `ConvergencePoint` gains `onPlate`, `horizontal` and `vertical` carry the shot's own
+      unbounded fraction, and the template draws the marks that fit. Every mount keeps its sentence,
+      which is now the only statement of a shot the plate cannot show — the first thing on this plate
+      that is text-only (`spec.md` FR-011, FR-012).
+      _`src/app/domain/offence/convergence.ts` and its suite, `shot-convergence.{ts,html}` and its
+      suite, `e2e/offence-profile.spec.ts`, `e2e/coverage-ledger.ts`._
+- [x] T065 Stop the target-range track at 3,000 m, and record the ceiling as the preference it is.
+      Review note 18's 5,000 m reached past a weapon's maximum range; 3,000 m does not — a cannon
+      states 4,500 m and a multi-cannon 4,000 m — so what is written down is that the steps past
+      3,000 m move the marks least, not that no weapon reaches them.
+      _`src/app/domain/offence/convergence.ts` and its suite._
+- [x] T066 Withdraw the filled dot at the boresight's centre. The canvas draws one; on a plate whose
+      only marks are dots it reads as a shot landing dead on the axis. The ring stays.
+      _`shot-convergence.{html,scss}` and its suite, `e2e/offence-profile.spec.ts`._
+- [x] T067 Close the review's findings on Phase 10: the empty ink's contrast is stated as measured
+      (3.62:1 against the worst stripe of the plate's hatch, not the 4.08:1 first written down) and
+      recorded in feature 011's `design/token-evidence.md` beside the other two mount inks; FR-011's
+      "no distinction rests on colour alone" is withdrawn and replaced by what is actually true of
+      this plate; the stale comments Phase 10 left in `_primitives.scss`, `shot-convergence.scss`
+      and `hull-anatomy.scss` are corrected; the canvas's `13px 14px` inset for block 3 is recorded
+      as deliberately not adopted; and the two layout numbers now have end-to-end guards — the
+      block's own bound, and the empty mark being filled rather than outlined.
+      _`spec.md`, `design/canvas-contract.md`, `specs/011-interface-foundations/design/token-evidence.md`,
+      `specs/010-hull-anatomy/design/hull-anatomy.md`, `e2e/offence-profile.spec.ts`._
+- [x] T068 Close the second review: the bounded block was sizing to its own contents, not to the
+      bound. `justify-self: start` makes a grid item shrink-to-fit, so `max-inline-size` never bound
+      anything and the block came out 203px wide with a 165px plate in it — a _smaller_ plate than
+      the unbounded block drew, which is the opposite of what T063 asked for. An explicit
+      `inline-size: 100%` is what asks for the row. The range column's flex basis goes from `15rem`
+      to `14rem` in the same fix: a flex line breaks on the un-shrunk basis, so 240px asked of the
+      224px left beside the plate dropped the range under it at exactly the width the canvas draws
+      the two side by side. The end-to-end guard gains the lower bound, the plate's own rendered
+      width and the range's position beside it — without them both defects were green.
+      _`offence-analysis.scss`, `shot-convergence.scss`, `e2e/offence-profile.spec.ts`._
+- [x] T069 Close the third review, which found no defect in the code and eight statements that were
+      not true of it. The 3,000 m ceiling was written down as the longest range the package
+      publishes for a weapon on this hull; measured against the pinned package a cannon states
+      4,500 m and a multi-cannon 4,000 m, so the ceiling is recorded as the preference it is, in all
+      eight places — including review note 18's own claim about a multi-cannon, corrected in note 21
+      rather than edited where it was written. The block's inner width is 470px and not 472: the
+      block is `border-box` and its two hairlines count, which makes the range column's share 224px
+      exactly. Its flex basis becomes `13.5rem` so the arrangement is not one pixel of a hairline
+      away from wrapping. `--edsb-measure-anatomy-plate`'s two bounds bite at different widths — the
+      old from 1560, the new from about 1884 — and the design record says so. The plate's rendered
+      block width is asserted against the row rather than unconditionally, and the selected-empty
+      mark's fill, which rests on declaration order alone, is read off the rendered mark. Four more
+      stale statements in `design/offence-profile.md` and `quickstart.md`, and the colour-alone rule
+      cited to the constitution's principle V rather than to 011 FR-022, which is about the
+      automated checks. _(The citation was only half corrected here: T070 finishes it, and 011's own
+      requirement for the rule is FR-010.)_
+      _`convergence.ts` and its suite, `shot-convergence.scss`, `e2e/offence-profile.spec.ts`,
+      `spec.md`, `data-model.md`, `quickstart.md`, `design/{canvas-contract,offence-profile}.md`,
+      `specs/010-hull-anatomy/design/hull-anatomy.md`,
+      `specs/011-interface-foundations/design/token-evidence.md`._
+- [x] T070 Close the fourth review, which found no code defect and five more statements that were
+      not true — one of them a regression this phase introduced. The canvas's own track is
+      `500`–`5000` on a `50` step opening at `1500`, which `wireConvergence` declares at offset
+      1516348; `100`–`2000` on a `25` step is the 2026-08-25 drawing, moved by the revision of the
+      26th, and T065's note had
+      overwritten the one place that read the current one correctly. Only the **ceiling** departs
+      from the canvas, and nine places said otherwise. `011 FR-022` is the automated-checks
+      requirement; the colour-alone rule is `011 FR-010`, and every citation of it in this feature
+      now says so. The plate's own stylesheet still said it takes the canvas's width, the panel
+      template still said the block runs the full width, and the canvas contract's departures
+      paragraph still had the four cells beside the plate. The dead
+      `.offence__block--convergence .offence__note` rule and its fourteen-line comment about a ring
+      caption withdrawn on 2026-08-26 are deleted, and the end-to-end test that asserts none of the
+      four facts is drawn is no longer titled as though it names them.
+      _`convergence.ts`, `offence-analysis.{html,scss}`, `shot-convergence.{ts,scss}` and its suite,
+      `e2e/offence-profile.spec.ts`, `spec.md`, `data-model.md`, `quickstart.md`,
+      `design/{canvas-contract,offence-profile}.md`._
+- [x] T071 Close the fifth review, which found no code defect and four more statements out of step
+      with what is around them. The track's move is dated to the 2026-08-26 canvas revision, not the
+      25th's — `git show de44f1b` still declares `MIN = 100, MAX = 2000` and `2ae9838` is what
+      changed it, which is also what this document's own §3 says. The end-to-end selection test
+      compares a mark's place among the dots with its sentence's place in the list, and this phase
+      broke the correspondence it rests on: the dots are the sentences filtered by `onPlate`, so at
+      a short range the lists are different lengths. The test asserts they are equal before it
+      compares a place, and says why. `ConvergencePoint.hardpoint` no longer calls itself the
+      plate's numeral. The 508px bound is moved out of the departures list in `spec.md`, because
+      review note 20 rules it a correction of a bound this application had missed rather than a
+      departure from one. And the contract's "two things the built region deliberately does not do"
+      is one thing: the four fact cells it named are drawn by neither side since 2026-08-26.
+      _`convergence.ts`, `e2e/offence-profile.spec.ts`, `spec.md`, `design/canvas-contract.md`._
+- [x] T072 Close the sixth review, which found no code defect and three statements the phase had left
+      behind it. The departures paragraph in `spec.md` counted four and listed five — the 508px bound
+      was never a clause of its own, so taking it out of the list did not take a clause with it.
+      FR-012's one-line summary in `design/screen-inventory.md`, and the bullet that restates it in
+      `design/offence-profile.md`, both still said every placed hardpoint is drawn, four bullets
+      after the one that says a shot outside the field of view is not; both carry the condition now.
+      And four rows of the canvas contract's build table still described the ring caption and the
+      three span figures as built, in a table whose own next row records them withdrawn on
+      2026-08-26; they take the same strikethrough.
+      _`spec.md`, `design/{screen-inventory,offence-profile,canvas-contract}.md`._
+- [x] T073 Close the seventh review: one figure nobody had measured, and one assertion over an empty
+      list. "At a short range that is most of a hull's mounts" was written five times and is not
+      true — measured over the package's own gunsights at the track's shortest range, three of the
+      reference hull's eight mounts leave the plate, thirty-six of the forty-eight hulls lose none
+      at all, and three lose a majority. All five statements carry the measurement now. The
+      end-to-end range test read `.fact__value` back before and after moving the track, which has
+      matched nothing since the four cells were withdrawn on 2026-08-26, so it was comparing
+      `undefined` with `undefined`; it goes, and the coverage ledger's line about the spans staying
+      put goes with it. Two rows of the 2026-08-25 reconciliation table still said **Built** of the
+      ring caption and the message key it read: both are marked superseded, as the build table above
+      them already was.
+      _`convergence.ts`, `shot-convergence.{ts,html}`, `e2e/offence-profile.spec.ts`,
+      `e2e/coverage-ledger.ts`, `spec.md`, `design/canvas-contract.md`._
+- [x] T074 Put back the assertion T073 deleted by accident. Taking the vacuous `.fact__value`
+      comparison out of the range test took the live line above it as well, which left a test that
+      opened the panel, moved the track and asserted nothing at all — the same defect it was fixing,
+      one line further up. The sentences are read back and compared again, and the three remaining
+      dead selectors — two more `.fact__value` and the convergence block's `.offence__note` — are
+      out of the two unions that still named them.
+      _`e2e/offence-profile.spec.ts`._
+- [x] T075 Take the last two ways an assertion on this branch could decline to run. The
+      selected-empty mark's fill was read inside `if (count > 0)`, so a plate that stopped marking
+      the selected mount would skip the only check of it and pass; the mark is asserted to exist
+      instead. And the right-to-left test compares the plate's marks before and after, which two
+      empty lists satisfy — an empty plate being a reachable state since a shot outside the field of
+      view is left off it — so the list is asserted non-empty first.
+      _`e2e/offence-profile.spec.ts`._
+
 ---
 
 ## Dependencies & execution order
@@ -735,6 +901,15 @@ recorded as such before being built (`design/canvas-contract.md`, review notes 1
   both; T054 depends on T052 and T053, and T055 on all four.
 - Phase 9 depends on Phase 8 and retunes what it drew. T056, T057 and T058 are independent of each
   other; T059 depends on all three.
+- Phase 10 depends on Phase 9 and withdraws part of what Phases 7 to 9 drew. T060 and T061 are
+  independent of each other; T062 depends on both.
+- Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
+  Phase 10 and touches what T060 and T061 wrote; T068 answers a review of T063 to T067 and corrects
+  what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
+  T069 and does the same again; T071 answers a review of T070, which found no defect in the code; T072 answers a review of T071,
+  which found none either; T073 answers a review of T072, which found one unmeasured figure and one
+  assertion that could not fail; T074 restores the assertion T073 deleted with it; T075 closes the two branches
+  that could skip themselves.
 
 ### Parallel opportunities
 

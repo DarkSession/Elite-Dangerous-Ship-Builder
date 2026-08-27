@@ -47,6 +47,39 @@ Surfaces measured: `surface-root`, `surface-sunken`, `surface-panel`, `surface-p
 | `--edsb-border-info`    | `--edsb-palette-cool`    | Informational indicator boundary          | 3:1      | 10.85        | 10.92          | 10.50         | 10.16                | 10.34        | 10.25         | 9.42          | **9.42:1** | PASS    |
 | `--edsb-focus-ring`     | `--edsb-palette-amber-2` | Focus indicator                           | 3:1      | 10.06        | 10.12          | 9.73          | 9.42                 | 9.59         | 9.50          | 8.73          | **8.73:1** | PASS    |
 
+### The gunsight plate's three marks
+
+Feature 007's plate is the one surface these three appear on, and it is not one
+of the seven grounds above: it is the hatch `--edsb-texture-plate` draws, over
+which each mark carries a halo in `--edsb-surface-sunken`. So they are measured
+against the hatch's two stripes and against that halo, which is every ground a
+mark on this plate ever meets. Since 2026-08-27 they are the whole of what the
+drawing separates — armed, empty, and the mount the workspace has open — and
+nothing on the plate is text any more, so 3:1 is the whole requirement.
+
+| Token                           | Primitive                   | Role                          | Required | hatch #161616 | hatch #111111 | halo #0a0a0b | Min        | Verdict |
+| ------------------------------- | --------------------------- | ----------------------------- | -------- | ------------- | ------------- | ------------ | ---------- | ------- |
+| `--edsb-surface-mount-armed`    | `--edsb-palette-amber`      | A hardpoint with a weapon     | 3:1      | 7.77          | 8.11          | 8.50         | **7.77:1** | PASS    |
+| `--edsb-surface-mount-empty`    | `--edsb-palette-amber-deep` | A hardpoint with none         | 3:1      | 3.62          | 3.78          | 3.96         | **3.62:1** | PASS    |
+| `--edsb-surface-mount-selected` | `--edsb-palette-cool`       | The mount the ledger has open | 3:1      | 9.98          | 10.42         | 10.92        | **9.98:1** | PASS    |
+
+`amber-deep` is listed below as a **rejected reference pair** — and it is, as
+_text_: 2.9:1 is under 4.5 and it carries no text role anywhere. This is a mark
+ink at 3.62:1 on its own ground, which is a different requirement and the one it
+is held to.
+
+The three are hues of one shape, so a reader who cannot separate them separates
+nothing on the plate. That is allowed here and nowhere else: the plate is
+`aria-hidden` decoration, every mount is restated in text for a reader who is
+told, and every fact the hues carry is carried visibly elsewhere in the same
+workspace without resting on colour there either — feature 002's ledger names
+each hardpoint's module or prints its emptiness as a word, and marks the
+selected row by inverting its node badge (solid ground, inverted ink, heavier
+weight) rather than by tinting it. The rule being met is the constitution's own —
+principle V, "free of any information carried by colour, shape or position
+alone" — and the argument for this plate is written out in
+`specs/007-offence-profile/spec.md` FR-011.
+
 ## Inverted pair
 
 | Token                   | Foreground                       | Background                            | Required | Measured   | Verdict |

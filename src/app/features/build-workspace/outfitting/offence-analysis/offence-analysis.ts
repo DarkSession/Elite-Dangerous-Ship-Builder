@@ -267,7 +267,7 @@ export class OffenceAnalysis {
    * The segments are the projection's: each is a package amount over the sum of
    * the amounts drawn beside it. The legend states every segment's amount and
    * its share in words, so the bar carries nothing that is not also written
-   * down — a length and a colour are not a reading on their own (011 FR-022).
+   * down — a length and a colour are not a reading on their own (011 FR-010).
    */
   readonly damageSegments = computed<readonly DamageSegmentView[]>(() =>
     (this.projection()?.damageSegments ?? []).map((segment) => ({

@@ -143,17 +143,19 @@
   // instead is *selected*, which is the question a Commander is asking of this
   // plate while they fit something.
   //
-  // Empty is a mark ink and not a text one. The hull schematics split an empty
-  // mount the same way — a quiet outline with `--edsb-text-muted` on its
-  // number — and the plate takes their text ink exactly, so an empty mount's
-  // numeral reads alike in both drawings and stays above the text contrast
-  // floor. The outline is a heavier ink than theirs, because on the plate it is
-  // the whole of a 7px mark rather than a hairline beside a 44px square.
+  // Empty is the stale amber of the same mark rather than a grey outline
+  // (Commander request 2026-08-27): a hardpoint with nothing on it is still a
+  // hardpoint, so it is the armed mount's own hue gone dull, which reads as
+  // *this mount, unfitted* where a neutral ink read as a different kind of
+  // thing. It is a mark ink and not a text one — measured 3.62:1 against the
+  // worst stripe of the plate's own hatch and 3.96:1 against the ground its halo
+  // is drawn in — and the plate draws no text at all since the numerals were
+  // withdrawn with it, so nothing here owes a text floor.
   //
   // The word is in each mark's own sentence beside the plate; these only tell
   // three dots apart at a glance.
   --edsb-surface-mount-armed: var(--edsb-palette-amber);
-  --edsb-surface-mount-empty: var(--edsb-palette-ink-a45);
+  --edsb-surface-mount-empty: var(--edsb-palette-amber-deep);
   --edsb-surface-mount-selected: var(--edsb-palette-cool);
 
   // ---------------------------------------------------------------------------
@@ -424,6 +426,7 @@
   --edsb-layout-weapon-figure: var(--edsb-measure-weapon-figure);
   --edsb-layout-weapon-module: var(--edsb-measure-weapon-module);
   --edsb-layout-gunsight-plate: var(--edsb-measure-gunsight-plate);
+  --edsb-layout-convergence-block: var(--edsb-measure-convergence-block);
   --edsb-layout-shot-dot: var(--edsb-measure-shot-dot);
   --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
   --edsb-layout-insignia-width: var(--edsb-measure-insignia-width);

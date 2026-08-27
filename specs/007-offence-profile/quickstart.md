@@ -29,7 +29,7 @@ Confirms against the installed Almanac that:
   carrying an exact `slot`, `symbol`, `name` and `enabled`, and the sparse `maximumRange`,
   `falloffRange` and `armourPiercing` left undefined rather than zero where the article has none;
 - the returned weapons arrive in the hull's own slot order, which is what the panel's rows and the
-  gunsight's hardpoint numerals both depend on. The package documents unknown or unmapped slots as appended in
+  hardpoint each convergence sentence names both depend on. The package documents unknown or unmapped slots as appended in
   source order after them; that path is the package's own to prove, and nothing here exercises it,
   because no build this application can make reaches it;
 - `DamageSplit.unclassified` is absent exactly when it is zero, and `antiXeno` is always present;
@@ -121,31 +121,33 @@ Two mounts carrying the same module are two rows, in package order, unmerged.
 
 ### 6. Read where the shots go
 
-`SHOT CONVERGENCE` draws the gunsight plate with, per hardpoint the hull has, a mark where that
-mount's shot lands and its hardpoint numeral beside it — and one sentence beside the plate naming
-the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption, which sits on
-the block's heading line.
+`SHOT CONVERGENCE` draws the gunsight plate with, per hardpoint the hull has, one mark where that
+mount's shot lands and nothing beside it — and one sentence beside the plate naming the weapon, its
+hardpoint, its mount and where its shot goes. The block stops at the canvas's own 508px rather than
+running the panel's width, and the plate itself draws no text at all: the hardpoint numerals were
+withdrawn on 2026-08-27.
 
-A hardpoint the build has not filled is drawn too, hollow and in a quieter ink, and its sentence
-names it as empty rather than naming a weapon: where a mount sits is a property of the hull, and it
-is what a Commander choosing what to fit is asking about. The mount the workspace has selected — the
-same one the ledger row and the hull schematics mark — takes the plate's other ink with a ring in it,
-and its own sentence says it is the selected one; a selected hardpoint with nothing on it is still
-hollow. Selecting a different hardpoint in the ledger moves the mark. How each weapon is aimed is in
-its sentence and is not drawn at all. The plate itself is hidden from assistive technology, so every
-one of those distinctions is read from the sentences rather than from the ink.
+A hardpoint the build has not filled is drawn too, in the armed mount's own hue gone stale, and its
+sentence names it as empty rather than naming a weapon: where a mount sits is a property of the hull,
+and it is what a Commander choosing what to fit is asking about. The mount the workspace has
+selected — the same one the ledger row and the hull schematics mark — takes the plate's third ink,
+with no ring and no outline, and its own sentence says it is the selected one; a selected hardpoint
+with nothing on it takes that ink too and its sentence says both. Selecting a different hardpoint in
+the ledger moves the mark. How each weapon is aimed is in its sentence and is not drawn at all. The
+plate itself is hidden from assistive technology, so every one of those distinctions is read from the
+sentences rather than from the ink.
 
-The `TARGET RANGE` control runs from 500 m to 5,000 m on a 100 m step and opens at 1,000 m — past
-every maximum range the package publishes for a weapon on this hull, so it reaches the distance being
-asked about. Moving it moves every shot and every sentence, leaves the two spans alone, and moves the
-apparent spread. A mount far enough off the axis is clamped to the frame's margin at a near range and
-keeps its sentence, which states its true offset; moving the target out brings its mark back inside
-the frame.
+The `TARGET RANGE` control runs from 500 m to 3,000 m on a 50 m step and opens at 1,500 m — the
+canvas's own minimum, step and initial value, with the ceiling alone departing: 3,000 m by
+preference rather than by any package figure, where the canvas draws 5,000 m (a cannon states
+4,500 m). Moving it moves every shot and every sentence.
+A mount far enough off the axis is **not drawn** at a near range and keeps its sentence, which states
+its true offset; moving the target out brings its mark back onto the plate.
 
 On a hull the gunsight catalogue does not carry, the block says so and draws no partial spread. On a
 hull it does carry but the build has armed nothing on, the plate is drawn with its axes, its rings
-and every one of its mounts in the empty ink, and none of the four cells appears — a span, a widest
-and a spread are all figures about a group of armed mounts.
+and every one of its mounts in the empty ink, and nothing stands beneath it but the range: the
+2026-08-26 canvas draws no figure about the group at all.
 
 ### 7. Read endurance at an allocation
 
@@ -178,7 +180,7 @@ pnpm exec playwright test offence-profile.spec.ts ui-preview.spec.ts
   both engines and shards the whole matrix, so that is where the Firefox evidence comes from — see
   the engine-coverage note at the head of [tasks.md](./tasks.md). The requirement is not waived by
   being unrunnable somewhere.
-- At roomy widths the first two blocks are the canvas's fluid pair and convergence runs full width
+- At roomy widths the first two blocks are the canvas's fluid pair and convergence takes its own row
   beneath them; at narrow widths, landscape phones, 200% text and actual 400% zoom all three stack,
   with no document-level horizontal scroll.
 - The target-range field is a control at feature 011's target size, operable by pointer, touch and

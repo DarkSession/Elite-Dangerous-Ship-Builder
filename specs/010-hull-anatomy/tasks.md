@@ -416,6 +416,21 @@ said and the requirement is what changed.
 
 ---
 
+## Phase 7: The plate's width, 2026-08-27
+
+One number, at the Commander's request, after living with what Phase 6 and the 2026-08-26 bound left.
+
+- [x] T089 Raise `--edsb-measure-anatomy-plate` from `25.25rem` to `35.35rem` — the same measure plus
+      two fifths. The 2026-08-26 bound stopped two plates growing with the window and stopped them
+      too short: at 1920 and above the column has room the drawing was refusing. Nothing else moves —
+      not the `720/292` ratio, not the marks placed over it, not the 41rem threshold at which the
+      second plate appears — so a plate is the same drawing with more pixels, and the block still
+      stops taking room the ledger and the bench can use. `design/hull-anatomy.md` records the
+      raise beside the ruling it amends.
+      _`src/styles/tokens/_primitives.scss`._
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase dependencies

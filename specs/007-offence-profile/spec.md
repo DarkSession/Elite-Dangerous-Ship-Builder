@@ -131,14 +131,15 @@ because it is why the first implementation shipped a third of the canvas.
   (`ships/gunsights`) and its own projection at range. The application MUST NOT derive an offset,
   model a projectile path or place a mount the catalogue does not publish. A hull whose gunsight does
   not line up with its hardpoints MUST be stated unavailable rather than drawn in part.
-- **FR-011**: The gunsight view is a diagram. It MUST be hidden from assistive technology, and every
-  mark it draws MUST also be stated as text beside it, including a shot the plate could not place at
-  its true position. Each mount is drawn as the canvas draws an armed one: a mark where its shot
-  lands, and that mount's hardpoint numeral beside it. Whether a mount is armed and whether it is the
-  mount the workspace has selected MUST each be carried by that mount's own sentence as well as by
-  the ink of its mark; no distinction on this plate rests on colour alone. How a weapon is aimed MUST
-  be stated in that sentence, and is not drawn at all
-  (`design/canvas-contract.md`, review note 17).
+- **FR-011**: The gunsight view is a diagram. It MUST be hidden from assistive technology, and
+  **every one of the hull's mounts MUST be stated as text beside it** — including a mount the plate
+  does not draw at all. Each mount that is drawn is drawn as **one mark and no other**: a dot where
+  its shot lands. A shot further off-axis than the plate shows MUST NOT be drawn; it MUST NOT be
+  held at the frame either, because a mark on the margin says a shot lands where it does not.
+  Whether a mount is armed and whether it is the mount the workspace has selected MUST each be
+  carried by that mount's own sentence as well as by the ink of its mark. How a weapon is aimed, and
+  which hardpoint a mark counts, MUST be stated in that sentence, and neither is drawn at all
+  (`design/canvas-contract.md`, review notes 17, 20 and 21).
 
   > **Re-drawn 2026-08-25.** The plate the canvas draws changed in four ways at once, and the
   > requirement follows the drawing: the field of view is `40` milliradians rather than `115`; the
@@ -165,10 +166,40 @@ because it is why the first implementation shipped a third of the canvas.
   > feature 010's schematics explain a mark that has moved. The dot itself MUST NOT move to make
   > room — a dot is where the shot lands, and that is the reading.
 
-- **FR-012**: Every hardpoint the catalogue places MUST be drawn on the plate, whether or not the
-  build has armed it, at the offset the package publishes for that mount. A hardpoint with nothing
-  fitted MUST be told apart from an armed one by its mark, and MUST be named as empty in its own
-  sentence beside the plate rather than by that mark alone.
+  > **The numerals are withdrawn, 2026-08-27** (maintainer's request), and with them the whole
+  > paragraph above: the placement, the leaders and the ring a crowded plate put them out on. A
+  > gunsight 172px across carrying a numeral for every hardpoint was a page of digits over a
+  > diagram, and every one of them was already the first thing that mount's own sentence says. What
+  > is left is one dot a mount, so the plate draws **no text at all**, and which mount a mark counts
+  > is read where the offset and the angle are read.
+  >
+  > **What "not on colour alone" means here, stated exactly.** This requirement used to close by
+  > ruling that no distinction on the plate rests on colour alone, which was true while an outline
+  > told an armed mount from an empty one. It no longer is, so the claim is withdrawn rather than
+  > left standing over a drawing that does not support it: on the plate itself the three states are
+  > three hues. What holds instead is that **the plate states nothing on its own** — it is
+  > `aria-hidden` decoration whose every mount is restated in text beside it, and every fact those
+  > hues separate is carried visibly elsewhere in the same workspace, and not by colour there
+  > either: feature 002's ledger names each hardpoint's module or prints its emptiness as a word,
+  > and marks the selected row by inverting its node badge — a solid ground, an inverted ink and a
+  > heavier weight, with the word itself for a reader who is told. This panel's own `WEAPONS` block
+  > lists what is fitted. A Commander who cannot separate the plate's three hues loses no reading,
+  > which is what the constitution's principle V asks — "free of any information carried by colour,
+  > shape or position alone". A plate that were the only statement of any of it would not be
+  > allowed.
+  >
+  > The three states become three fills of one shape. The outline that told an empty hardpoint from
+  > an armed one is withdrawn in the same request — a 7px mark cannot carry a shape difference and
+  > an ink difference legibly, and an outline read as another kind of mark rather than as the
+  > absence of a weapon. An empty mount takes the armed mount's own hue gone stale, so it reads as
+  > _this mount, nothing on it_; the selected mount keeps the cool ink and takes it over either.
+  > Neither fact rests on the mark: both are in the mount's own sentence, which is unchanged.
+
+- **FR-012**: Every hardpoint the catalogue places MUST be drawn on the plate whenever its shot is
+  inside the field of view, whether or not the build has armed it, at the offset the package
+  publishes for that mount. A hardpoint with nothing fitted MUST be told apart from an armed one by
+  its mark, and MUST be named as empty in its own sentence beside the plate rather than by that mark
+  alone — which is also how it is reported at a range too short for the plate to hold it (FR-011).
 
   > **Amended 2026-08-26.** This requirement used to close by ruling that no figure the block
   > reports about the group — the two spans, the widest mount and the apparent spread — may be
@@ -196,13 +227,19 @@ because it is why the first implementation shipped a third of the canvas.
   > registers `007/FR-012` again.
 
 - **FR-013**: The mount the outfitting workspace currently has selected MUST be marked on the plate
-  and MUST be named as the selected mount in its own sentence beside it. The mark MUST NOT replace
-  what that mount's mark already reports — whether it is armed — and the selection MUST be read from
-  the same slot key feature 002's ledger and feature 010's hull schematics mark, so the three
-  drawings of one hull cannot disagree about which mount is open.
+  and MUST be named as the selected mount in its own sentence beside it. Whether that mount is armed
+  MUST still be stated in the same sentence, and the selection MUST be read from the same slot key
+  feature 002's ledger and feature 010's hull schematics mark, so the three drawings of one hull
+  cannot disagree about which mount is open.
 
   > **Added 2026-08-26**, and a sanctioned departure like FR-012: neither canvas relates its
   > gunsight plate to the mount its ledger has open (`design/canvas-contract.md`, review note 17).
+
+  > **Amended 2026-08-27.** This requirement used to rule that the selection mark may not replace
+  > what the mount's mark already reports, which was a rule about a plate that drew armed against
+  > empty as a fill against an outline. With the outline withdrawn (FR-011) a mark carries one fill,
+  > so the selected mount takes the selection ink whether or not it is armed and the sentence
+  > carries both facts — which is where the requirement always put the reading.
 
 ## Edge Cases
 
@@ -212,23 +249,31 @@ because it is why the first implementation shipped a third of the canvas.
 - A build dealing no conventional damage draws no damage bar, and no range band claims a share of a
   zero strongest band: with nothing to be read against, no band is given a track at all.
 - A recharge that keeps pace is drawn as `∞`, with what the symbol stands for stated beside it.
-- A shot whose offset exceeds the plate's field of view at the chosen range is clamped to the
-  frame's own margin and keeps its sentence, which states its true offset and angle. The field of
-  view is a property of the drawing and never moves to accommodate a build.
+- A shot whose offset exceeds the plate's field of view at the chosen range is **not drawn**, and
+  keeps its sentence, which states its true offset and angle. The field of view is a property of the
+  drawing and never moves to accommodate a build, and a mark held at the frame's own margin — which
+  is what the canvas does, and what was built until 2026-08-27 — reports a shot landing somewhere it
+  does not. At the short end of the track that leaves three of the reference hull's eight mounts off
+  the plate — and nothing at all off thirty-six of the package's forty-eight hulls — which is the
+  honest picture of a target too close for those shots to have converged.
 - A hull the catalogue places whose hardpoints are all empty draws every one of them: where a mount
   sits is a property of the hull, and it is exactly the reading a Commander with nothing fitted yet
   is after. Nothing is reported beneath the plate either way — the 2026-08-26 canvas draws no
   figures there.
-- A plate too crowded for a numeral to sit in any of its dot's four corners steps that numeral out
-  until it is clear of every other mark and draws a leader back to the dot it counts. The dot does
-  not move: two numerals sharing a few pixels is a drawing problem, and a dot in the wrong place
-  would be a wrong answer.
+- A plate crowded enough that two dots overlap draws them overlapping. A dot is where the shot
+  lands, and moving one to make it legible would be a wrong answer; the mount's own sentence states
+  the offset and the angle exactly, which is the reading either way. _Restated 2026-08-27: this edge
+  case used to describe stepping a crowded numeral out on a leader, and the numerals are withdrawn._
 - The selected mount may be an empty hardpoint, and is marked as selected either way — that is the
-  state a Commander is in while they decide what to put in it. It stays visibly empty while it is
-  selected: whether a mount is armed is not what the selection ink says.
-- The target range reaches 5,000 m, past every maximum range the package publishes for a weapon on
-  this application's reference hull, so the track can be moved to the distance being asked about
-  rather than stopping short of it.
+  state a Commander is in while they decide what to put in it. The mark then says _selected_ and its
+  sentence says both, because since 2026-08-27 one mark carries one fill: whether a mount is armed
+  is stated in words rather than drawn twice.
+- The target range reaches 3,000 m, short of the canvas's own 5,000 m ceiling and well past the
+  2,000 m of the drawing before it. The ceiling is the maintainer's preference and
+  not a package fact: the package publishes 4,000 m for a multi-cannon and 4,500 m for a cannon, and
+  a build carrying either can be fired further than this track goes. What the track is for is
+  watching the shots close on the axis, and an offset subtends less and less of the plate as the
+  range grows. _Amended 2026-08-27: the ceiling was 5,000 m from 2026-08-26._
 
 ## Design Scope
 
@@ -252,6 +297,16 @@ sanctioned departures**: user-facing elements the template does not contain, ask
 maintainer and recorded in `design/canvas-contract.md` under review notes 8 and 17 rather than
 settled in a stylesheet. Neither adds a figure the package did not publish, and neither moves a
 figure the canvas measures.
+
+**The plate departs from the canvas in five more ways from 2026-08-27, all of them the maintainer's
+and all recorded before being built** (`design/canvas-contract.md`, review notes 20 and 21): the
+hardpoint numerals are withdrawn and each mount is one dot; an empty mount is a fill rather than an
+outline; a shot outside the field of view is left off the plate where the canvas clamps it to the
+frame; the plate is drawn at `14rem`; and the filled dot at the boresight's centre is withdrawn.
+The block's 508px bound arrived with them and is **not** a sixth: the canvas draws that bound and
+this application had missed it, so it is a correction (review note 20). None of them adds or moves a figure — every reading the
+block gives is still the package's own answer, and every fact the drawing separates is stated in the
+sentences beside it.
 
 **The canvas moved on 2026-08-25, and this file follows it.** FR-004 gained the `RANGE` column and
 FR-011 was re-drawn; the edge case for an off-axis shot changed from clipping to clamping. Two

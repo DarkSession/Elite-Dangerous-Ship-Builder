@@ -75,7 +75,7 @@ describe('ShotConvergence', () => {
 
     // The ink is never the only thing that says so: each empty mount's own
     // sentence is in the list beside the plate, and it is not the sentence an
-    // armed one gets (011 FR-022).
+    // armed one gets (011 FR-010).
     const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
       (entry.textContent ?? '').trim(),
     );
@@ -105,16 +105,15 @@ describe('ShotConvergence', () => {
     expect(selected).toHaveLength(1);
     expect(selected[0]?.id).toBe(selectedSlot);
     expect(element.querySelectorAll('.plate__dot--selected')).toHaveLength(1);
-    expect(element.querySelectorAll('.plate__numeral--selected')).toHaveLength(1);
 
-    // Selection is a hue and a ring; whether the mount is armed stays with the
-    // fill against the outline, so a selected empty hardpoint is still empty.
+    // Selection is one of the mark's three fills, and the mark is the same dot
+    // every other mount gets — no ring, no outline, no numeral beside it.
     expect(element.querySelector('.plate__dot--selected')?.classList).toContain('plate__dot');
+    expect(element.querySelectorAll('.plate__numeral')).toHaveLength(0);
 
     // And the plate draws no ink for how a weapon aims any more: the canvas's
     // second hue is spent on selection here, and the mount is named in words.
     expect(element.querySelector('.plate__dot--aimed')).toBeNull();
-    expect(element.querySelector('.plate__numeral--aimed')).toBeNull();
 
     // And it is a sentence, not a ring alone.
     const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
@@ -125,12 +124,11 @@ describe('ShotConvergence', () => {
     expect(selected[0]?.statement).not.toBe(unselected?.statement);
   });
 
-  it('leaves a selected hardpoint with nothing on it visibly empty', () => {
+  it('states a selected hardpoint with nothing on it as empty as well as selected', () => {
     // The stock build leaves this hull's Huge mount empty, and the workspace
-    // opens on it. Selection is a hue and a ring; whether a mount is armed is
-    // the fill against the outline, so the two states have to be legible at
-    // once — a mark that filled itself in to say "selected" would be reporting
-    // a weapon that is not there.
+    // opens on it. One mark cannot carry two fills, so the plate says
+    // *selected* and the mark's own sentence says both — which is where the
+    // reading was all along (011 FR-010).
     const { component, element } = render({
       build: populatedBuild(),
       selectedSlot: 'HugeHardpoint1',
@@ -140,9 +138,6 @@ describe('ShotConvergence', () => {
     expect(selected).toHaveLength(1);
     expect(selected[0]?.armed).toBe(false);
     expect(element.querySelectorAll('.plate__dot--empty.plate__dot--selected')).toHaveLength(1);
-    expect(
-      element.querySelectorAll('.plate__numeral--empty.plate__numeral--selected'),
-    ).toHaveLength(1);
 
     // And the sentence is the empty-and-selected one, not either single state's.
     const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
@@ -188,85 +183,76 @@ describe('ShotConvergence', () => {
     expect(component.shots().map((shot) => shot.left)).not.toEqual(near);
   });
 
-  it('draws the boresight the hull points along, and no cells beneath the plate', () => {
+  it('draws the boresight ring the hull points along, and nothing at its centre', () => {
     const { element } = render();
 
-    // The 2026-08-26 revision adds the ring and centre dot that mark where the
-    // ship itself is aimed, and withdraws the four cells — the two spans, the
-    // widest mount and the apparent spread — along with the ring caption.
+    // The 2026-08-26 revision adds the ring that marks where the ship itself is
+    // aimed, and withdraws the four cells — the two spans, the widest mount and
+    // the apparent spread — along with the ring caption. The canvas's filled dot
+    // at the ring's centre went on 2026-08-27: on a plate whose marks are dots
+    // it read as a shot landing dead on the axis.
     expect(element.querySelector('.plate__boresight')).not.toBeNull();
-    expect(element.querySelector('.plate__boresight-centre')).not.toBeNull();
+    expect(element.querySelector('.plate__boresight-centre')).toBeNull();
     expect(element.querySelector('.fact')).toBeNull();
     expect(element.querySelector('.facts')).toBeNull();
   });
 
-  it('marks each mount with one dot and one hardpoint numeral, and no badge column', () => {
+  it('marks each mount with one dot and nothing beside it', () => {
     const { element, component } = render();
 
     // The 2026-08-25 canvas revision withdrew the badge parked at the plate's
-    // edge and the leader line back to it. What is left is the dot where the
-    // shot lands and the mount's numeral placed beside it.
-    const marks = component.shots().length;
+    // edge and the leader line back to it; the 2026-08-27 request withdrew the
+    // numeral that replaced them, along with the leaders a crowded plate drew
+    // to reach one. What is left is one dot a mount, and the mount's number is
+    // in its own sentence beside the plate.
+    const marks = component.shots().filter((shot) => shot.onPlate).length;
     expect(marks).toBeGreaterThan(0);
     expect(element.querySelectorAll('.plate__dot')).toHaveLength(marks);
-    expect(element.querySelectorAll('.plate__numeral')).toHaveLength(marks);
     expect(element.querySelector('.plate__shot')).toBeNull();
+    expect(element.querySelector('.plate__numeral')).toBeNull();
+    expect(element.querySelector('.plate__leader')).toBeNull();
+    expect(element.querySelector('.plate__leaders')).toBeNull();
 
-    // Each numeral is the mount's own hardpoint place. It sits at one of the
-    // four corners the canvas offers unless the plate left it no room there,
-    // in which case it steps out and draws a leader back to its own dot.
-    const numerals = [...element.querySelectorAll<HTMLElement>('.plate__numeral')];
-    expect(numerals.map((numeral) => (numeral.textContent ?? '').trim())).toEqual(
-      component.shots().map((shot) => shot.badge),
-    );
-    for (const shot of component.shots()) {
-      if (shot.displaced) {
-        expect(shot.leader).not.toBeNull();
-        continue;
-      }
-      expect(shot.leader).toBeNull();
-      // The canvas's four corners, each with the anchor's own `3, 4` inset
-      // already in it: the offset handed back is the offset drawn with.
-      expect([10, -10]).toContain(shot.numeralLeft);
-      expect([-10, 9]).toContain(shot.numeralTop);
-    }
-
-    // A leader is drawn for exactly the numerals that moved, and no others.
-    expect(element.querySelectorAll('.plate__leader')).toHaveLength(
-      component.shots().filter((shot) => shot.displaced).length,
-    );
+    // Nothing on the plate carries text at all now, which is what lets an empty
+    // mount take a mark ink rather than a text one.
+    expect((element.querySelector('.plate')?.textContent ?? '').trim()).toBe('');
   });
 
-  it('holds a shot outside the field of view at the frame, and states where it really goes', () => {
-    const { component, detect } = render();
+  it('leaves a shot outside the field of view off the plate, and still states it', () => {
+    const { component, element, detect } = render();
 
-    // A hundred metres puts this hull's widest mounts far outside the plate's
-    // forty milliradians.
+    // The track's shortest range puts this hull's widest mounts far outside the
+    // plate's forty milliradians.
     component.setTargetRange(component.rangeBounds.min);
     detect();
 
-    // The margin, to the place a percentage of a plate is drawn at.
-    const at = (percent: number) => Math.round(percent * 1e6) / 1e6;
     const marks = component.shots();
-    for (const shot of marks) {
-      // Nothing leaves the plate: the canvas clamps to a 4% margin, so no mark
-      // is drawn outside it and none is dropped.
+    const drawn = marks.filter((shot) => shot.onPlate);
+
+    // Something is actually left off at this range — the rule is a rule rather
+    // than a bound nothing reaches — and only the marks that fit are drawn.
+    expect(drawn.length).toBeLessThan(marks.length);
+    expect(element.querySelectorAll('.plate__dot')).toHaveLength(drawn.length);
+
+    // Every mark that is drawn stands inside the frame's own 4% margin.
+    const at = (percent: number) => Math.round(percent * 1e6) / 1e6;
+    for (const shot of drawn) {
       expect(at(shot.left)).toBeGreaterThanOrEqual(4);
       expect(at(shot.left)).toBeLessThanOrEqual(96);
       expect(at(shot.top)).toBeGreaterThanOrEqual(4);
       expect(at(shot.top)).toBeLessThanOrEqual(96);
-      // And every one of them still says what it actually does.
-      expect(shot.statement).not.toBe('');
     }
-    // The clamp is reached rather than being a bound nothing touches — on
-    // whichever axis reaches it first. This hull's mounts sit far below the
-    // cockpit and much less far to either side of it, so at the track's own
-    // shortest range it is the vertical axis that runs out of plate.
-    expect(
-      marks.some((shot) =>
-        [shot.left, shot.top].some((fraction) => at(fraction) === 4 || at(fraction) === 96),
-      ),
-    ).toBe(true);
+
+    // And every mount is still stated in words, drawn or not: a shot the plate
+    // cannot show is exactly the one whose sentence is the only reading of it.
+    const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
+      (entry.textContent ?? '').trim(),
+    );
+    expect(stated).toHaveLength(marks.length);
+    for (const shot of marks) {
+      expect(shot.statement).not.toBe('');
+      expect(stated).toContain(shot.statement);
+    }
   });
 
   it('offers the range as a real control, with its value announced', () => {

@@ -384,11 +384,18 @@
   // more than half of what a Commander can see given to two drawings that were
   // finished at the first of those (Commander request 2026-08-26).
   //
-  // The number is canvas 1c's own: its 862px centre column, less the block's
-  // inset and the gap between the plates, divided in two. So at the width the
-  // canvas was drawn at nothing moves, and past it the anatomy stops taking
-  // room the ledger and the bench below it can use.
-  --edsb-measure-anatomy-plate: 25.25rem;
+  // The number was canvas 1c's own — its 862px centre column, less the block's
+  // inset and the gap between the plates, divided in two — and is now that
+  // measure **raised by two fifths** at the Commander's request (2026-08-27).
+  // The bound was set to stop the block growing without limit on a wide screen
+  // and it did that too hard: two hulls drawn at the canvas's own width on a
+  // 2560 screen are a schematic a Commander has to lean into. A cap of 40%
+  // over it still stops the runaway — 566px against the 584px a 1920 column
+  // would otherwise hand each plate, and against 904px at 2560 — while giving
+  // the drawing the room the screen actually has. The derivation is in
+  // `specs/010-hull-anatomy/design/hull-anatomy.md`, and it reproduces this
+  // token's own pre-raise 404px at the 1560 the canvas was drawn at.
+  --edsb-measure-anatomy-plate: 35.35rem;
 
   // The same node badge, set on the hull instead of in a ledger row. Canvas 1c
   // draws it `clamp(14px, 3.06cqw, 22px)` square with the number at
@@ -477,8 +484,7 @@
   --edsb-measure-weapon-module: 9.6875rem;
 
   // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
-  // box square in pixels, and a 7px dot where each shot lands with the mount's
-  // hardpoint numeral set beside it.
+  // box square in pixels, with a 7px dot where each shot lands.
   //
   // The box is square because the plate is square in *angle* — the script maps
   // both axes over the same field of view and corrects a ring's height by the
@@ -489,15 +495,33 @@
   // drawing kept a `16 / 6` box level by dividing its vertical axis by a
   // narrower field; the revision squares the box instead, and this follows it.
   //
-  // Drawn at `8rem` rather than the canvas's own `172px`, from 2026-08-26. The
-  // plate is decorative in full — every mark on it is a sentence beside it — and
-  // at the canvas's width it was the tallest thing in the offence panel, setting
-  // the whole convergence block's height on its own. Squareness is the property
-  // that matters, not the number of pixels: every mark is placed as a fraction
-  // of the plate rather than in pixels, so it is the same diagram at either
-  // size (`design/canvas-contract.md`, review note 18).
-  --edsb-measure-gunsight-plate: 10.75rem;
+  // Drawn at `14rem` — 224px — rather than the canvas's own 172px, from
+  // 2026-08-27 (Commander request). The size has moved twice before: `8rem` on
+  // 2026-08-26, because at the canvas's width the plate was the tallest thing in
+  // an offence panel that then ran the full width of the column, and back to
+  // 172px later the same day with the block still unbounded. Now that the block
+  // stops at the canvas's own 508px, the plate is no longer setting a whole
+  // panel's height, and 172px inside a 508px frame is a small drawing with air
+  // around it. 224px is exactly half of what the bounded block holds: 508 less
+  // its two 18px insets and its two hairlines is a 470px content box, and less
+  // the 22px gap that is 448px for the plate and the range column to share.
+  //
+  // Squareness is the property that matters, not the number of pixels: every
+  // mark is placed as a fraction of the plate rather than in pixels, so it is
+  // the same diagram at every size it has been drawn at
+  // (`design/canvas-contract.md`, review notes 18 and 21).
+  --edsb-measure-gunsight-plate: 14rem;
   --edsb-measure-shot-dot: 0.4375rem;
+
+  // How wide the `SHOT CONVERGENCE` block itself is allowed to get.
+  //
+  // Canvas 1c's own `max-width: 508px; align-self: flex-start` on the block
+  // (@660195): it is drawn beneath the `WEAPONS` and `DAMAGE PROFILE` pair and
+  // spans neither of them, so a plate 172px across stands in a block a little
+  // over half the panel's width rather than in one running its whole 862px.
+  // The application gave it the full row and drew the canvas's plate marooned
+  // in the middle of it (Commander request 2026-08-27).
+  --edsb-measure-convergence-block: 31.75rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 
