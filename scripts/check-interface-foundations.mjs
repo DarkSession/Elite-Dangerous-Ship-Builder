@@ -1483,8 +1483,8 @@ function linkHref(document, rel) {
  * nobody is looking at (011/FR-027).
  *
  * The manifest states the origin nowhere, and that absence is checked too: a
- * root-absolute `start_url`, `scope` or icon would be a fifth copy of it, and
- * an `id` a sixth.
+ * `start_url`, `scope` or icon that is absolute or root-absolute would be a
+ * fifth copy of it, and an `id` a sixth.
  *
  * `input` is `{ origin, index, robots, sitemap, manifest, domain, tokens,
  * routes, locales }`. Each is the text of its file except `routes`, the paths
@@ -1754,7 +1754,19 @@ export function searchMetadataViolations(input) {
         icon?.src,
       ]),
     ]) {
-      if (typeof value === 'string' && value.startsWith('/')) {
+      if (typeof value !== 'string') {
+        continue;
+      }
+      // Absolute as well as root-absolute. An address naming the production
+      // origin passes every other rule here — it is the declared origin, after
+      // all — and still pins the installed application to production from a
+      // preview, which is the one thing these three members must not do.
+      if (/^[a-z][a-z0-9+.-]*:/i.test(value) || value.startsWith('//')) {
+        fail(
+          SEARCH_METADATA_FILES.manifest,
+          `"${member}" is "${value}". An absolute address installs a preview as the production site; make it relative.`,
+        );
+      } else if (value.startsWith('/')) {
         fail(
           SEARCH_METADATA_FILES.manifest,
           `"${member}" is "${value}". A root-absolute path breaks every preview deployment; make it relative.`,

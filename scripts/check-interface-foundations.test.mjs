@@ -1264,6 +1264,50 @@ describe('search metadata', () => {
 
     assert.match(found.at(-1).message, /icons\[0\]\.src/);
   });
+  it('rejects an absolute path even when it names the declared origin', () => {
+    // The one that slips past everything else: `https://sb.edct.dev/` is the
+    // declared origin, so the foreign-address sweep is content with it and the
+    // root-absolute rule never sees a leading slash. It still pins a preview's
+    // installed application to production, which is the whole reason these
+    // three members are relative.
+    for (const member of ['start_url', 'scope']) {
+      const pinned = { ...JSON.parse(MANIFEST), [member]: 'https://sb.edct.dev/' };
+      const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(pinned) }));
+
+      assert.deepEqual(ruleIds(found), ['search-metadata'], member);
+      assert.match(found[0].message, /absolute address installs a preview/);
+    }
+
+    const pinnedIcon = {
+      ...JSON.parse(MANIFEST),
+      icons: [{ src: 'https://sb.edct.dev/favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+    };
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: JSON.stringify(pinnedIcon) }),
+    );
+
+    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+  });
+
+  it('accepts a protocol-relative path nowhere either', () => {
+    const pinned = { ...JSON.parse(MANIFEST), start_url: '//sb.edct.dev/' };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(pinned) }));
+
+    assert.match(found[0].message, /absolute address installs a preview/);
+  });
+
+  it('still accepts the relative forms a manifest is supposed to carry', () => {
+    for (const value of ['./', '.', 'index.html', './icons/a.png']) {
+      const relative = { ...JSON.parse(MANIFEST), start_url: value };
+
+      assert.deepEqual(
+        rules.searchMetadataViolations(complete({ manifest: JSON.stringify(relative) })),
+        [],
+        value,
+      );
+    }
+  });
+
   it('rejects a site served from a domain SITE_ORIGIN does not name', () => {
     const found = rules.searchMetadataViolations(complete({ domain: 'shipbuilder.example\n' }));
 
