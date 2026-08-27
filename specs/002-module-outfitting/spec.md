@@ -59,16 +59,22 @@ its ship name and ident — belongs here.
    the workspace becomes active.
 2. A slot offers exactly the modules the Almanac reports as fittable for the current build.
 3. Fitting, replacing or removing a module updates the build and all Almanac results.
+   Replacing keeps the mount's power priority group and on/off state; the new module arrives in the
+   group the old one was assigned to rather than back at the package's fresh-mount default.
 4. A non-removable slot shows the package reason and offers no removal action.
 
 ### Story 2 — Find a replacement (P1)
 
-1. Choices are grouped into families in the Almanac's own family order, then by displayed
-   module name, class descending and package rating order ascending; stock precedes variants, and a
-   unique reward is labelled where it sits rather than moved to a section of its own.
+1. Choices are grouped into families in the Almanac's own family order, then by class descending and
+   by the package's own price for the article descending; a choice the package publishes no price for
+   follows every priced choice of its class, and displayed module name, package rating order
+   ascending, stock before variants and the package's own ordinals settle what is left. A unique
+   reward is labelled where it sits rather than moved to a section of its own.
 2. When a fitted module has an available family, that family alone is revealed by default; otherwise
    the wide composition reveals the first family and the compact one reveals none. A Commander can
-   reveal any family without editing the build.
+   reveal any family without editing the build. A family the application revealed is brought into
+   view where the families are drawn as a list of their own; one the Commander revealed is left
+   where they pressed it.
 3. Every whitespace-separated search term must match at least one of name, class, rating or weapon
    mount type as a case- and accent-insensitive substring; a choice matches only when every term does.
    Presenting changed search results reveals every family containing a match where the match set is
@@ -111,7 +117,23 @@ its ship name and ident — belongs here.
 - **FR-005**: Search and ordering MAY arrange package records but MUST NOT alter their values or admit
   an unfittable module. Search MUST cover exactly four fields — the displayed package name for the
   active locale, class, rating and weapon mount type — matching a choice only when every search term
-  matches at least one of them. The no-match and clear-search states MUST be explicit.
+  matches at least one of them. The no-match and clear-search states MUST be explicit. Within a
+  family the leading order keys MUST be numeric class descending and then the package's own price for
+  the article descending; a choice the package publishes no price for MUST follow every priced choice
+  of the same class rather than sorting as though it were free.
+
+  > **Ordered by class and price 2026-08-27 (Commander request).** The name led, so a family read
+  > `Beam Laser` before `Burst Laser` before `Cannon` and a Commander looking for the biggest thing
+  > that fits their mount read down all three. A mount is shopped by size first and by what the best
+  > of that size costs second, so those are the two keys that lead; the name is a tie-break, and the
+  > rating, the stock-before-variant rule and the package's ordinals still settle the rest, so the
+  > order stays total and stays reproducible.
+  >
+  > The price is the package's own catalogue figure for that exact article — the same value the
+  > choice's own `COST` cell states — read and never computed. A Merc Coin price is not converted
+  > into it and not weighed against it, because there is no rate to convert at (constitution IV), so
+  > an article the package prices only in coin has no credit price and takes the unpriced place.
+
 - **FR-006**: Choice and fitted-module labels MUST reflect package acquisition and entitlement data.
   Community-goal and event rewards MUST be identified as unique rewards; Mercenary and tech-broker
   variants MUST be identified as not ordinarily available. A choice MAY carry multiple labels.
@@ -144,11 +166,30 @@ its ship name and ident — belongs here.
   choice row it is bought from and totalled for the build, not by what the article does. Attributes
   MUST be presented for every fitted article, including one the package will accept no further
   engineering for.
-- **FR-012b**: Where the surface draws the details and the engineering side by side, each side MUST
-  scroll independently. Reaching the end of the attribute table MUST NOT carry the recipe controls
-  off the surface. Both sides MUST keep their positions for every fitted article: where there is
-  nothing to engineer, the side that would carry the controls MUST state why, and the attributes
-  MUST stay on the side they occupy otherwise.
+- **FR-012b**: Where the surface draws the details and the engineering inline, neither the surface nor
+  either side of it MAY scroll within itself: both sides MUST expand to the whole of what they hold,
+  the surface MUST be as tall as the taller of them, and the page MUST carry the result. Both sides
+  MUST keep their positions for every fitted article: where there is nothing to engineer, the side
+  that would carry the controls MUST state why, and the attributes MUST stay on the side they occupy
+  otherwise.
+
+  > **Ruled 2026-08-27 (Commander request).** Each side used to scroll in its own column inside a
+  > panel bounded to a share of a workspace column that was itself bounded to the screen. Three
+  > nested boxes, and the innermost was where the reading actually was: a weapon publishes seventy
+  > attribute rows and they were read four at a time, with the recipe beside them in a second short
+  > window. Nothing about that is a comparison read side by side, which is what the two columns are
+  > for.
+  >
+  > So nothing here bounds itself any more. The panel is as tall as its taller half, the workspace
+  > column releases to hold it, and the page scrolls — which is the release the anatomy region's
+  > dashboards already make, for the same reason and by the same rule, and the one a short viewport
+  > makes for the whole workspace. This supersedes the wave-11 ruling that gave each side its own
+  > scroller: that ruling was made because one shared scroller measured both halves against the
+  > taller of them, and a surface with no scroller at all cannot do that either.
+  >
+  > The full-screen composition is untouched. It owns the whole screen and has no page to grow into,
+  > it already draws the two halves as one column, and the layer that holds it is what scrolls.
+
 - **FR-012c**: The engineering surface MUST NOT draw a materials list of its own. Material
   requirements are stated once, as the build-wide total feature 009 draws in the status rail; that
   total already includes what a selected recipe adds, so no figure is lost by the omission.
@@ -164,7 +205,12 @@ its ship name and ident — belongs here.
 - **FR-015**: Enabled state and zero-based priority MUST be edited through `ShipLoadout`; presentation
   MUST use the Commander's one-based priority labels. Where the source states no group, presentation
   MUST show the group the package puts the module in rather than reporting the value as unavailable;
-  the modelled field MUST stay absent, so nothing is written into the build.
+  the modelled field MUST stay absent, so nothing is written into the build. Replacing the module in a
+  mount MUST carry the mount's power state onto the article that lands there: a group the outgoing
+  module was assigned MUST be set again on the incoming one, and a module that was switched off MUST
+  be switched off again. The carry MUST be part of the same package edit and the same Commander
+  decision as the fit, and MUST write no field the outgoing module did not carry — an unstated group
+  and an unstated on-state stay unstated, because the package already answers both.
 
   > **Ruled 2026-08-26.** The chip drew a `—` for an unstated group, on the grounds that choosing one
   > would be a decision nobody made. Nobody was being asked to: `PowerConsumer.priority` documents the
@@ -172,6 +218,24 @@ its ship name and ident — belongs here.
   > where the power panel lists it and where it is shed. The chip was the one place in the
   > application saying otherwise, and `ShipLoadout` resets the group on every fresh mount, so it said
   > it about every module a Commander had fitted.
+
+  > **Carried across a swap 2026-08-27 (Commander request).** That reset is the other half of the
+  > same sentence, and it was being taken as the end of it. A Commander who had put their shield
+  > generator in group 3 and switched a heat sink off, and then swapped either for a bigger one, got
+  > the mount back at the package's fresh-mount default — the priority spread they had built undone
+  > by a size upgrade, silently, on a screen that does not draw the group beside the fit control.
+  >
+  > `setModule` documents exactly this and says what to do about it: "Fitting is a fresh mount: the
+  > slot's `On`, `Priority` and `Health` are reset. Set them again if your screen keeps a priority
+  > group across a swap." So this is not a package defect and not a rule of ours — it is the package
+  > offering the decision, and the decision is that a mount's power assignment belongs to the mount
+  > rather than to the article that happened to be in it. Engineering still does not carry, which is
+  > the opposite answer to the neighbouring question and the right one: a blueprint is a job done to
+  > an article and a priority group is where a Commander decided that mount sits in the shed order.
+  >
+  > **Health is not carried, because this application does not model it.** It is the third field the
+  > package resets and the only one of the three no screen here reads or writes, so there is nothing
+  > of a Commander's to preserve.
 
 - **FR-016**: Undo and redo MUST restore all modelled fields exactly, recompute package results and
   cover module, engineering, power, ship name and ident edits. Captured purchase values MUST NOT be
@@ -230,6 +294,16 @@ its ship name and ident — belongs here.
   > nothing. What is in the mount still wins outright; the carry only answers where the mount itself
   > is silent.
 
+  > **Brought into view 2026-08-27 (Commander request).** Where a composition draws the families as a
+  > list of their own, a family the application reveals MUST be brought into that list's visible box;
+  > a family a Commander reveals themselves MUST NOT be scrolled to. Revealing the fitted module's
+  > family already brought its rows to the module. It did not move the families: the revealed one
+  > could be the sixtieth of seventy-seven and off the end of a list bounded at 470px, so the rows
+  > beside it changed and nothing on screen said which family they now belonged to. The second half
+  > of the rule is the first one's own reasoning applied in the other direction — a Commander who has
+  > just pressed a family is already looking at it, and moving the list under that press is the fault
+  > this rule exists to remove.
+
 - **FR-022**: A Commander MUST be able to reveal any module family. Each family control MUST expose
   its localized family name, available-choice count and revealed state to sighted and screen-reader
   users, and MUST remain operable by touch and pointer on desktop, tablet and mobile.
@@ -281,7 +355,8 @@ its ship name and ident — belongs here.
 - A build remains editable while invalid or incomplete.
 - Unknown module identities are outside the supported import contract and have no compatibility UI
   (FR-003).
-- Replacing a module does not inherit the previous module's engineering.
+- Replacing a module does not inherit the previous module's engineering. It does keep the mount's own
+  power priority group and on/off state (FR-015).
 - Loading, editing, undoing or redoing a build never restores a historical purchase price; current
   cost is recalculated from the Almanac catalogue (FR-016).
 - A module appearing through multiple acquisition routes remains one package variant per route.
@@ -314,16 +389,21 @@ No game rule, value or variant-recognition heuristic is application-owned.
   Chromium-only because CPU throttling has no equivalent in the other supported engine; the search
   behaviour it measures is verified in both.
 - **SC-003**: Undo and redo reproduce every retained intermediate modelled build exactly.
+- **SC-003a**: Replacing the module in a mount that carried a power priority group or an off state
+  leaves both as they were, in one decision that one undo reverses.
 - **SC-004**: No application-owned fitting, engineering or variant-recognition rule exists.
 - **SC-005**: Every incoming build with losslessly normalisable partial engineering reaches quality
   100%; every unsupported partial-quality candidate is rejected without changing the active build.
 - **SC-006**: Across desktop, tablet and mobile, 100% of available replacement choices appear in
-  exactly one Almanac family, and revealing a family never changes the build. At the wide
-  composition every drawn choice row carries exactly three cells — the module, its class and rating,
-  and its price — with no damage, mass, power or weapon-draw figure at that width.
+  exactly one Almanac family, and revealing a family never changes the build. Within every family the
+  rows descend by class and then by the package's price, with a choice the package prices at nothing
+  after the priced ones of its class. At the wide composition every drawn choice row carries exactly
+  three cells — the module, its class and rating, and its price — with no damage, mass, power or
+  weapon-draw figure at that width.
 - **SC-007**: Whenever the exact fitted choice has an available family, that family is the only family
   revealed on initial presentation and after a rebuild; when it has none, the wide composition reveals
-  the first family in package order and the compact one reveals none.
+  the first family in package order and the compact one reveals none. Every family the application
+  reveals is inside the visible box of the list that holds it once presented.
 - **SC-008**: Every choice matching a newly applied or changed non-empty search is either visible
   without the Commander revealing a family manually, or counted on the family that holds it;
   no family holding a match is ever absent, and clearing the search restores the fitted-family

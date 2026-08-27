@@ -889,6 +889,33 @@ test.describe('power and the cargo hatch', () => {
     await expect(toggle).toHaveAttribute('aria-label', /core internals/i);
   });
 
+  test('keeps a mount\u2019s power group and off state through a replacement', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+
+    const first = await fitFromChooser(page, () => 0);
+    const mount = page.locator('[data-slot-key="MediumHardpoint1"]');
+
+    // Two decisions about this mount: which group it sheds in, and that it is
+    // off right now.
+    await mount.locator('.power__priority').selectOption({ value: '3' });
+    await mount.locator('.power__switch').click();
+    await expect(mount.locator('.power__toggle')).not.toBeChecked();
+
+    // A size upgrade is not a reason to undo either of them. The package resets
+    // `On` and `Priority` on every fit and says to set them again where a
+    // screen keeps a group across a swap; this one does, because the group is
+    // the mount's rather than the article's (FR-015, SC-003a).
+    const second = await fitFromChooser(page, (identities) =>
+      identities.findIndex((identity) => identity !== first),
+    );
+    expect(second).not.toBe(first);
+    await expectLedgerCarries(page, 'MediumHardpoint1', second);
+
+    await expect(mount.locator('.power__priority')).toHaveValue('3');
+    await expect(mount.locator('.power__toggle')).not.toBeChecked();
+  });
+
   test('draws no power group on a module the Almanac prices at no power', async ({ page }) => {
     await openStockBuild(page);
 

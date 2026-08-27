@@ -94,6 +94,16 @@ holds — it is the panel that can be read a line at a time. This costs the edit
 ratio above gave it at 900px, which is the trade: five rows of manifest against forty pixels of a
 comparison that scrolls either way.
 
+**Five rows is still a glimpse. Raised 2026-08-27 (Commander request): 18rem to 26rem.** The floor
+above was read off the canvas's own arithmetic, and the canvas is 880px tall. On the screens this is
+actually drawn on it was the floor doing the work rather than the share, and five rows of a
+478-choice manifest is a list a Commander pages through rather than reads. Eight rows is the figure
+now — 26rem over the same head, column rule and foot — and it is affordable in a way it was not
+before, because the ruling below releases the column: the manifest is no longer taking its height out
+of a fixed bench that the editor underneath has to be left some of. The share and the guard that
+divided that bench are gone with it, and the floor stands on its own, bounded only by what the screen
+itself leaves under the command bar so that it can never be taller than the window it is in.
+
 **Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
 track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
 the page to two hundred rows, and the plates fit that column: they are drawn at the hull's own
@@ -109,6 +119,29 @@ plates keep the bound: they are the arrangement it was written for and they fit 
 is open is read off `edsb-hull-anatomy`'s own `anatomy--dashboard` host class rather than a flag
 beside it, so a mode that lands next is bounded or released by what it draws rather than by a list
 somebody remembered to add it to (Commander request 2026-08-26).
+
+**Ruled 2026-08-27 — and a bench is not bounded by the column either.** The same reasoning reaches
+the other thing this column holds. `DETAILS AND ENGINEERING` is drawn inline for whichever mount is
+marked, and its height is whatever the article has to say: a weapon publishes around seventy
+attribute rows, and the panel was being handed a share of a bench inside a column bounded to the
+screen. Wave 11 answered that by scrolling each of the panel's two halves in its own column, which
+put two more bars inside a column that already had one and left the reading four rows tall — the same
+shape of answer wave 14 gave the dashboards, and wrong for the same reason
+(`engineering-editor.md`, "Nothing here scrolls").
+
+So the column releases while a mount is selected, exactly as it releases for a dashboard and by the
+same three rules — `position: static`, its own content height, the bench released with it — and the
+page carries the panel. Inline there is no case where a mount is selected and that panel is not
+drawn: canvas 1c gives it no opening control, so it is simply there for the marked row, empty mount
+or not. That is why the release is keyed on a mount being selected rather than on the panel being
+present. The two describe the same frames, and the mount is the one the region already knows about.
+
+**What the release takes with it.** The bench's `1.1 : 1` share and the manifest's floor-against-the
+-editor's-floor guard both existed to divide a fixed box between two panels. There is no fixed box to
+divide any more, so both are gone: each panel takes the height its own content asks for, the manifest
+keeps its own bound so a 478-choice list still scrolls inside a screenful rather than running the page
+down two hundred rows, and the editor keeps only its floor, so an article with nothing to engineer is
+still a panel rather than a strip.
 
 **Ruled 2026-08-26 — the status rail's last block may have the rest of the column.** The rail is a
 column of a fixed height whose blocks are as tall as they are, and feature 009's material list closes

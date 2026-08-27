@@ -111,7 +111,7 @@ describe('candidate ordering', () => {
   const slots = [FIXTURE_SLOTS.hardpoint, FIXTURE_SLOTS.core, FIXTURE_SLOTS.optional];
 
   for (const slotKey of slots) {
-    it(`orders ${slotKey} by family, name, class, rating and then the package's own ordinals`, () => {
+    it(`orders ${slotKey} by family, class, price, name, rating and the package's own ordinals`, () => {
       const collator = collatorFor('en');
       const choices = open(slotKey).choices;
 
@@ -128,19 +128,32 @@ describe('candidate ordering', () => {
           continue;
         }
 
+        // Inside a family: class descending.
+        expect(previous.presentation.class).toBeGreaterThanOrEqual(current.presentation.class);
+        if (previous.presentation.class !== current.presentation.class) {
+          continue;
+        }
+
+        // Same class: the package's price descending, and a choice it publishes
+        // no price for after every priced one rather than sorted as free.
+        const previousCost = previous.presentation.facts.cost;
+        const currentCost = current.presentation.facts.cost;
+        if (previousCost !== currentCost) {
+          expect(previousCost).not.toBeNull();
+          if (currentCost !== null) {
+            expect(previousCost!).toBeGreaterThan(currentCost);
+          }
+          continue;
+        }
+
+        // Same price: the name a Commander reads.
         const byName = collator.compare(nameOf(previous), nameOf(current));
         expect(byName).toBeLessThanOrEqual(0);
         if (byName !== 0) {
           continue;
         }
 
-        // Same name: class descending.
-        expect(previous.presentation.class).toBeGreaterThanOrEqual(current.presentation.class);
-        if (previous.presentation.class !== current.presentation.class) {
-          continue;
-        }
-
-        // Same class: rating ascending.
+        // Same name: rating ascending.
         const byRating = compareRating(previous.presentation.rating, current.presentation.rating);
         expect(byRating).toBeLessThanOrEqual(0);
         if (byRating !== 0) {
@@ -164,6 +177,45 @@ describe('candidate ordering', () => {
       }
     });
   }
+
+  it('sorts by price inside a class, and leaves an unpriced choice after the priced ones', () => {
+    // The relation test above proves the order holds; this proves the price key
+    // is doing work in it, so a comparator that dropped the key would not pass
+    // by being vacuously true on a fixture where every class holds one row.
+    let pricedPairs = 0;
+
+    for (const slotKey of slots) {
+      const choices = open(slotKey).choices;
+
+      for (let index = 1; index < choices.length; index += 1) {
+        const previous = choices[index - 1]!;
+        const current = choices[index]!;
+
+        if (
+          rankOf(previous) !== rankOf(current) ||
+          previous.presentation.class !== current.presentation.class
+        ) {
+          continue;
+        }
+
+        const previousCost = previous.presentation.facts.cost;
+        const currentCost = current.presentation.facts.cost;
+
+        // Whatever else separates two rows of one class in one family, an
+        // unpriced row is never above a priced one (FR-003).
+        if (previousCost === null) {
+          expect(currentCost).toBeNull();
+          continue;
+        }
+        if (currentCost !== null && previousCost !== currentCost) {
+          expect(previousCost).toBeGreaterThan(currentCost);
+          pricedPairs += 1;
+        }
+      }
+    }
+
+    expect(pricedPairs).toBeGreaterThan(0);
+  });
 
   it('puts every choice in exactly one family, in the package\u2019s own order', () => {
     const state = open(FIXTURE_SLOTS.hardpoint);

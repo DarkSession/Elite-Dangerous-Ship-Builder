@@ -552,4 +552,76 @@ describe('the wide manifest', () => {
     // not the row's (`candidate-query.ts`, `toggleFamily`).
     expect(chosen).toEqual([families[2]!.familyId]);
   });
+
+  /**
+   * Renders the rail with a laid-out box, and reports what was scrolled.
+   *
+   * There is no layout in this environment, so every box is zero and a rule
+   * written in terms of "is this row inside that box" cannot be exercised
+   * without one. The rail is given a 470px box — the canvas's own bound — and
+   * the selected row is placed at `rowTop`, which is the whole of what the rule
+   * reads. Everything else keeps the real measurement, which is zero.
+   */
+  function railScrollFixture(rowTop: number, rowHeight = 44): string[] {
+    const scrolled: string[] = [];
+    const scrollTop = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop')!;
+    // On `HTMLElement.prototype`, and layered over whatever `withHostWidth`
+    // declared rather than beside it: that helper patches this level precisely
+    // so nothing can shadow it, and a rect declared on `Element.prototype` here
+    // would be the thing shadowed (`measurement.spec-helpers.ts`). The width it
+    // declares is what decides this is the rail manifest at all, so it has to
+    // survive.
+    const declared = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'getBoundingClientRect',
+    )!;
+    const measure = declared.value as (this: Element) => DOMRect;
+
+    Object.defineProperty(Element.prototype, 'scrollTop', {
+      ...scrollTop,
+      set(this: Element, value: number) {
+        scrolled.push(this.className);
+        scrollTop.set?.call(this, value);
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      ...declared,
+      value(this: Element): DOMRect {
+        const rect = measure.call(this);
+        if (this.classList.contains('candidates__rail')) {
+          return Object.assign(rect, { top: 0, bottom: 470, height: 470 });
+        }
+        if (this.classList.contains('family--rail')) {
+          return this.getAttribute('aria-pressed') === 'true'
+            ? Object.assign(rect, { top: rowTop, bottom: rowTop + rowHeight, height: rowHeight })
+            : Object.assign(rect, { top: 0, bottom: 0, height: 0 });
+        }
+        return rect;
+      },
+    });
+
+    try {
+      railFixture();
+    } finally {
+      Object.defineProperty(Element.prototype, 'scrollTop', scrollTop);
+      Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', declared);
+    }
+
+    return scrolled;
+  }
+
+  it('brings a revealed family into the rail when it sits below the fold', () => {
+    // Seventy-seven families in a box that holds ten: the family holding what
+    // is fitted can be the sixtieth of them, and until it is scrolled to, the
+    // pane changes while the rail goes on showing a different ten
+    // (Commander request 2026-08-27).
+    expect(railScrollFixture(2400)).toEqual(['candidates__rail']);
+  });
+
+  it('leaves a revealed family alone when it is already in the rail', () => {
+    // The other half of the rule, and the reason it has one: a Commander
+    // pressing a family row is looking straight at it, and a list that moved
+    // under that press would be the same fault in the other direction.
+    expect(railScrollFixture(120)).toEqual([]);
+  });
 });

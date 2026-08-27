@@ -129,6 +129,54 @@ export class CandidateList {
     list.scrollTop = row.offsetTop - list.offsetTop - (list.clientHeight - row.offsetHeight) / 2;
   });
 
+  /**
+   * Brings the revealed family into the rail's own visible box.
+   *
+   * The pane already scrolls to the module in the mount; the rail did not move
+   * at all. It is bounded at the canvas's 470px, which holds about ten of the
+   * Almanac's seventy-seven families, so revealing the family of what is fitted
+   * could change every row in the pane while the rail went on showing the ten
+   * it happened to be scrolled to — the rows changed and nothing on screen said
+   * which family they now belonged to (Commander request 2026-08-27).
+   *
+   * **Only where the row is not already in view.** A Commander who presses a
+   * family row is looking straight at it, and centring on every selection would
+   * move the list under the press that made it — which is the fault above,
+   * drawn in the other direction. A row already inside the box is left exactly
+   * where it stands.
+   *
+   * The rail's own box is scrolled rather than `scrollIntoView`, for the reason
+   * the pane's is: that walks every scrollable ancestor up to the document, and
+   * at a short viewport the region deliberately stops bounding itself and the
+   * page is what scrolls — so delegating would take the search field and the
+   * panel head off screen to bring a family row into view.
+   */
+  readonly #revealFamily = afterRenderEffect(() => {
+    // The accordion draws its families and their rows in one scroller, so the
+    // fitted-row centring above already carries its revealed family with it.
+    // Only the rail lists the families in a box of their own.
+    if (this.manifest() !== 'rail' || this.revealedFamily() === null) {
+      return;
+    }
+
+    const rail = this.#host.nativeElement.querySelector<HTMLElement>('.candidates__rail');
+    // Read off the pressed state the rail publishes rather than off the
+    // computed id, so what is scrolled to and what is marked are the same row
+    // by construction.
+    const row = rail?.querySelector<HTMLElement>('.family--rail[aria-pressed="true"]');
+    if (!rail || !row) {
+      return;
+    }
+
+    const railBox = rail.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    if (rowBox.top >= railBox.top && rowBox.bottom <= railBox.bottom) {
+      return;
+    }
+
+    rail.scrollTop += rowBox.top - railBox.top - (rail.clientHeight - rowBox.height) / 2;
+  });
+
   /** Resolved row text and figures, kept for as long as their records live. */
   readonly #rows = new WeakMap<ModuleChoice, RenderedRow>();
 

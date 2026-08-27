@@ -78,6 +78,25 @@ and 1560, 308 at 1920, 320 at 2560.
 hides every other, and returns before the accordion branch it replaced. Exactly one family is
 selected at all times, and the pane is never empty.
 
+**The rail scrolls to the family it was told to select. Ruled 2026-08-27 (Commander request).** The
+pane already scrolled: opening a fitted mount brought the module in the mount to the middle of the
+rows. The rail did not. Its own `max-height: 470px` holds about ten of the seventy-seven families, so
+selecting `Shield Generators` for a mount that carries one changed every row in the pane while the
+rail went on showing `Armour` through `Bulkheads` — the answer was on screen and the question was
+not, and the seam between them was the one control that says which family is being read.
+
+So the rail brings its selected row into its own visible box, and only where it is not already in it.
+That second half is the rule, not an optimisation: a Commander pressing a family row is looking
+straight at it, and centring on every selection would move the list under the press that made it —
+which is the fault above, drawn in the other direction. A row already in view is left exactly where
+it is; a row outside the box is centred, the same way and for the same reason the pane centres the
+fitted module.
+
+It scrolls the rail's own box rather than delegating to the platform's `scrollIntoView`, for the
+reason the pane does: at a short viewport the region deliberately stops bounding itself and the page
+is what scrolls, so walking every scrollable ancestor would carry the search field and the panel head
+off the screen to bring a family row into it.
+
 The accordion is not gone — canvas 1d still draws it, unchanged, with its badge, its variants
 summary and its caret. So the two compositions now differ in kind and not only in arrangement: a
 rail with one pane at wide, an accordion at compact. What that costs FR-021 to FR-023 is ruled in

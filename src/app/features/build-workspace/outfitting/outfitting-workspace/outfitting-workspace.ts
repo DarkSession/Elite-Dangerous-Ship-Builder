@@ -213,6 +213,30 @@ export class OutfittingWorkspace {
   });
 
   /**
+   * Whether the bench has a mount to draw, and so releases the column too.
+   *
+   * The middle column bounds an anatomy of plates over an empty bench, which is
+   * the arrangement it was written for. A bench with a mount in it is the other
+   * thing that does not fit: `DETAILS AND ENGINEERING` is as tall as the
+   * article has to say — around seventy attribute rows on a weapon — and it no
+   * longer scrolls inside itself, so the column releases and the page carries
+   * it (`design/outfitting-workspace.md`, "a bench is not bounded by the column
+   * either"; FR-012b).
+   *
+   * Read off the selected mount rather than off the engineering panel, and the
+   * two say the same thing: inline, canvas 1c draws that panel with no control
+   * that opens it, so it is simply there for whichever row is marked — empty
+   * mount or not — and `engineeringShown()` answers `true` for every mount
+   * there is. The mount is what the region already knows about, and it is the
+   * question the bench itself is drawn from.
+   *
+   * At layer width the bench is one of canvas 1d's full-screen views and this
+   * decides nothing: the rules it feeds are the wide composition's, and a layer
+   * owns the viewport rather than a column of it.
+   */
+  readonly benchDrawn = computed(() => this.selectedSlot() !== null);
+
+  /**
    * Canvas 1d's sixth segment, `STATUS`, and what it opens.
    *
    * Offered only where the artboard draws it. At wide width the rail is the

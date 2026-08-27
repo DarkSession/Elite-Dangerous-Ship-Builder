@@ -20,8 +20,8 @@ atomically installs it only on success. Components cannot call the Almanac or re
 
 | Intent                               | Required operation                                                                     | Success                                                                                                                                                          |
 | ------------------------------------ | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fit stock                            | `setModule(slotKey, exactModule)`                                                      | Replacement carries no old module engineering                                                                                                                    |
-| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`                                       | Package fixed identity/stats retained                                                                                                                            |
+| Fit stock                            | `setModule(slotKey, exactModule)`, then the power carry below                          | Replacement carries no old module engineering; the mount's power state is set again                                                                              |
+| Fit variant                          | `setPreEngineeredVariant(slotKey, exactVariant)`, then the power carry below           | Package fixed identity/stats retained; the mount's power state is set again                                                                                      |
 | Remove                               | `removeModule(slotKey)`                                                                | Slot becomes empty only if package allows                                                                                                                        |
 | Apply/replace blueprint/grade/effect | `applyBlueprint(..., { grade, quality: 1, experimental })`                             | Package recomputes modifiers/results                                                                                                                             |
 | Change/remove only effect            | `setExperimentalEffect(slotKey, fdnameOrNull)`                                         | Blueprint/grade, fixed identity and base modifier block preserved; effective stats recompute                                                                     |
@@ -122,6 +122,25 @@ untouched.
 An enabled/priority command always leaves the module fitted. Mass remains in the build and current
 catalogue cost is recomputed from the new `ShipLoadout`. All affected power and downstream figures
 are re-read; the application does not add/remove contributions itself.
+
+**The power carry, on a fit or a variant fit.** `setModule` and `setPreEngineeredVariant` document a
+fit as a fresh mount whose `On`, `Priority` and `Health` are reset, and direct a screen that keeps a
+priority group across a swap to set them again. So before the fit, read the outgoing
+`FittedModule`'s `on` and `priority`; after it, inside the same operation on the same candidate:
+
+- where `priority` was an integer the setter's own `0`–`4` domain accepts, call
+  `setModulePriority(slotKey, priority)`. A value outside that domain is not a group the package
+  recognizes, so there is nothing to carry and the fit proceeds without it rather than being refused
+  by a `RangeError` over a value no Commander set;
+- where `on` was exactly `false`, call `setModuleEnabled(slotKey, false)`.
+
+Nothing else is written. An unstated group and an unstated on-state stay unstated: the package
+already answers both — an absent priority is group 1 and an absent `on` is on — so writing either
+would put a field in the build that no Commander set, which is the same rule the priority chip
+follows (FR-015). `health` is not carried because no surface here reads or writes it.
+
+The carry is part of the fit operation, so it is one package edit, one revision and one history
+decision, undone and redone with the fit rather than beside it.
 
 ## Package acceptance
 

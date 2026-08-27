@@ -207,6 +207,66 @@ describe('outfitting store - fitting', () => {
     expect(active.loadout()?.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering).toBeUndefined();
   });
 
+  it('carries the mount\u2019s power group and off state into a replacement', () => {
+    store.select(FIXTURE_SLOTS.thrusters);
+
+    // A Commander's two decisions about this mount, made through the store so
+    // they are exactly the edits the power controls dispatch.
+    store.dispatch({ kind: 'setPriority', slotKey: FIXTURE_SLOTS.thrusters, priority: 3 });
+    store.dispatch({ kind: 'setEnabled', slotKey: FIXTURE_SLOTS.thrusters, enabled: false });
+
+    const fitted = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.symbol;
+    const choice = store
+      .membership()!
+      .choices.find(
+        (candidate) => candidate.kind === 'stock' && candidate.module.symbol !== fitted,
+      )!;
+    const revision = active.revision();
+
+    const result = store.dispatch({
+      kind: 'fitStock',
+      slotKey: FIXTURE_SLOTS.thrusters,
+      choiceKey: choice.key,
+    });
+
+    // The package resets all three of `On`, `Priority` and `Health` on a fit
+    // and says to set them again where a screen keeps a group across a swap.
+    // This one does: the group is the mount's, not the article's
+    // (FR-015, Commander request 2026-08-27).
+    expect(result.kind).toBe('committed');
+    const swapped = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(swapped.symbol).toBe(choice.module.symbol);
+    expect(swapped.priority).toBe(3);
+    expect(swapped.on).toBe(false);
+
+    // And it is one decision, not three: the carry rides inside the fit's own
+    // operation, so one undo puts the whole swap back.
+    expect(active.revision()).toBe(revision + 1);
+    store.undo();
+    expect(active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!.symbol).toBe(fitted);
+  });
+
+  it('writes no power field a replaced module did not carry', () => {
+    store.select(FIXTURE_SLOTS.utility);
+    const before = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.utility);
+    expect(before?.priority).toBeUndefined();
+    expect(before?.on).toBeUndefined();
+
+    const choice = store.membership()!.choices.find((candidate) => candidate.kind === 'stock')!;
+    store.dispatch({
+      kind: 'fitStock',
+      slotKey: FIXTURE_SLOTS.utility,
+      choiceKey: choice.key,
+    });
+
+    // An unstated group is group 1 and an unstated `on` is on, both answered by
+    // the package. Carrying them across as written values would put fields in
+    // the build that no Commander set (FR-015).
+    const swapped = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.utility)!;
+    expect(swapped.priority).toBeUndefined();
+    expect(swapped.on).toBeUndefined();
+  });
+
   it('fits a pre-engineered variant through the package own operation', () => {
     store.select(FIXTURE_SLOTS.frameShiftDrive);
     const variant = store.membership()!.choices.find((candidate) => candidate.kind === 'variant');
