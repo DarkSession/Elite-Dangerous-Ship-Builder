@@ -93,26 +93,37 @@ control beside it that starts the application on the newer one. The control sits
 edge of the bar, after the screen's own actions and Import, and immediately before the notice that
 explains it in reading order.
 
-**A newer version applies itself. Ruled 2026-08-26 (Commander request).** The moment one is ready an
-overlay goes up over the whole page saying what is about to happen, and the application restarts
-under it on the newer version. The overlay is an ordinary layer, so it is modal, it takes focus, and
-it makes the page behind it inert — which is what makes it a warning rather than a decoration.
+**A newer version applies itself. Ruled 2026-08-26 (Commander request), narrowed 2026-08-27
+(owner's decision).** The moment one is ready an overlay goes up over the whole page saying what is
+happening, and the application restarts under it on the newer version. The overlay is a layer, so it
+is modal, it takes focus, and it makes the page behind it inert.
 
-The restart is on a clock, and a clock is a time limit. WCAG 2.2.1 lets one stand only where the
-Commander is warned before it expires and can extend it by a simple action, with **at least twenty
-seconds** to do so. The overlay is that warning, its dismissal — Escape, the ground around it, or
-the named control that says so — is that action, and twenty seconds is the floor the grace period
-is set to rather than a taste. Dismissing puts the session back exactly where it stood: the notice
-on the bar, the named control beside it, and no second overlay for the same version. A Commander who
-has said "not now" once has answered.
+**It offers nothing to press.** It is drawn with no dismiss label, which is what leaves it with no
+control, no Escape and no ground to click: the three routes out of a layer go together, and a
+Commander is told about the restart rather than asked about it. The 2026-08-26 ruling kept a control
+that called the restart off, and the twenty-second grace period was that control's WCAG 2.2.1 floor
+rather than a taste. Both are withdrawn. The period is now ten seconds, set by how long the
+overlay's two sentences take to read.
+
+**What that costs, drawn where it happens.** A restart on a clock with no way to hold the page meets
+none of 2.2.1's conditions, so the criterion is excluded by constitution V for this mechanism and
+named in every conformance statement. It is the application's only time limit.
+
+**The other half is drawn by the session that comes up.** The overlay went with the page that drew
+it, so a Commander who looked away for ten seconds would otherwise find a page that had silently
+become a different one. The restarted session opens a layer saying the update was applied and naming
+the version it is running, dismissed by its own named control. The marker that carries this across
+the reload lives in `sessionStorage`, so it reaches the tab that restarted and no other, and it is
+cleared as it is read.
 
 What is not on a clock is a cached application the worker cannot repair. It is the same shape with
 the tones reversed — a blocking error and a restart that fetches a working version — but the restart
 is a repair a Commander asks for. There is no working page under the warning to protect, and an
 error is not an improvement to be rolled out.
 
-Nothing is lost either way. A session that postpones and never comes back keeps working, and the
-worker has the newer version downloaded, so the next start of the application is served it.
+Nothing is lost where the restart cannot happen. A session with no page to start over keeps working,
+the notice and its named control return to the bar, and the worker has the newer version downloaded,
+so the next start of the application is served it.
 
 The session asks whether a newer version exists on a fixed interval, when the page becomes visible
 again and when connectivity returns. None of that reaches the route, the fragment, history, storage,
@@ -120,18 +131,19 @@ the saved build or an export.
 
 ## Shell states
 
-| State                           | Presentation/behavior                                                                                                             |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                                                             |
-| Browser-matched German          | Complete catalogue/root metadata commit before German route render                                                                |
-| Unsupported browser language    | English appears as the ordinary default                                                                                           |
-| Locale candidate loading        | Current complete snapshot remains; nothing partial is shown                                                                       |
-| Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                                                           |
-| Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable                                                         |
-| Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable                                           |
-| Newer version published         | Modal overlay stating the restart, a control that calls it off, one polite event; the page restarts under it after twenty seconds |
-| Restart called off              | Overlay closes, the page is untouched; visible nonblocking notice and one named restart action remain on the bar                  |
-| Cached version unrepairable     | Visible named error, one named restart action and one assertive event summarizing rather than repeating it                        |
+| State                            | Presentation/behavior                                                                                                   |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Initial English bootstrap        | Bundled localized shell appears with no raw-key flash                                                                   |
+| Browser-matched German           | Complete catalogue/root metadata commit before German route render                                                      |
+| Unsupported browser language     | English appears as the ordinary default                                                                                 |
+| Locale candidate loading         | Current complete snapshot remains; nothing partial is shown                                                             |
+| Locale load/validation fallback  | Complete English snapshot plus one bounded fallback notice/retry intent                                                 |
+| Route loading/empty/ready        | Route owns its state inside `main`; shell landmarks/actions remain stable                                               |
+| Route blocking error             | Visible named error and one assertive event; unaffected shell navigation remains usable                                 |
+| Newer version published          | Modal overlay stating the restart with nothing to press, one polite event; the page restarts under it after ten seconds |
+| Restarted on the newer version   | Modal notice naming the version now running, dismissed by its own control, and not drawn again in that session          |
+| Restart could not be carried out | Overlay closes, the page is untouched; visible nonblocking notice and one named restart action remain on the bar        |
+| Cached version unrepairable      | Visible named error, one named restart action and one assertive event summarizing rather than repeating it              |
 
 ## Component composition
 

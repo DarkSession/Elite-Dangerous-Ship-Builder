@@ -1340,8 +1340,25 @@ export function ledgerReconciliationViolations(input) {
 // Rule: no unqualified WCAG 2.2 AA claim
 // ---------------------------------------------------------------------------
 
-/** The seven criteria the constitution excludes from the conformance target. */
-export const EXCLUDED_CRITERIA = ['2.1.1', '2.1.2', '2.1.4', '2.4.1', '2.4.3', '2.4.7', '2.4.11'];
+/**
+ * The criteria the constitution excludes from the conformance target.
+ *
+ * Seven are the keyboard-operation block principle V has always excluded. The
+ * eighth, 2.2.1, joined them on 2026-08-27 with the update restart: a published
+ * version is applied without asking, so the announcement before it carries
+ * nothing that calls it off, and a time limit with no way out meets none of
+ * that criterion's conditions.
+ */
+export const EXCLUDED_CRITERIA = [
+  '2.1.1',
+  '2.1.2',
+  '2.1.4',
+  '2.2.1',
+  '2.4.1',
+  '2.4.3',
+  '2.4.7',
+  '2.4.11',
+];
 
 /** A claim of WCAG 2.2 AA conformance, however it is phrased. */
 const CONFORMANCE_CLAIM = /WCAG\s*2\.2\s*(?:Level\s*)?AA/gi;
@@ -1349,7 +1366,7 @@ const CONFORMANCE_CLAIM = /WCAG\s*2\.2\s*(?:Level\s*)?AA/gi;
 /**
  * Rejects a conformance claim that does not name its exclusions.
  *
- * The target is WCAG 2.2 AA *minus seven criteria*, and a claim that omits that
+ * The target is WCAG 2.2 AA *minus eight criteria*, and a claim that omits that
  * qualification is not a shorthand — it is a stronger claim than the project
  * can support, made to whoever reads it. Every statement therefore carries the
  * criteria it excludes, in the same sentence, so it cannot be quoted without

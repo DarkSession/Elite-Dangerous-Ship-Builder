@@ -381,6 +381,45 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 - No task lowers the 80% coverage thresholds, drops a browser or viewport project, or skips a test to
   reach a green build
 
+## Phase: the restart stops asking, 2026-08-27
+
+> The overlay the 2026-08-26 reversal introduced still put a question on screen — `Restart now` or
+> `Not now` — and the owner's decision is that a published update is applied, not offered. The
+> Commander is told what is happening, and told again on the other side of the restart.
+
+- [x] T118 Take the two controls off the overlay. `Layer` gains a `dismissLabel` of `null`, which is
+      what leaves a layer with no control, no Escape and no ground to click; `update.applying.now`
+      and `update.applying.postpone` go with them, and `ApplicationUpdateStore.postpone()` goes with
+      the countdown-cancellation it existed for.
+      _One input rather than two: a label and a separate "is it dismissible" flag can disagree, and
+      a layer that offers no way out has no control to name._
+- [x] T119 Draw the other half. The restart writes a marker to `sessionStorage` immediately before
+      the reload, the session that comes up reads it, clears it and opens a layer saying the update
+      was applied and naming the version it is running. `sessionStorage` because the restart
+      replaces one tab: a Commander with four open should be told in the one that restarted.
+      The marker is taken back where `reload()` reports there was no page to start over, and it is
+      never written by the repair of an unusable cache.
+- [x] T120 Set the grace period to ten seconds. Twenty was WCAG 2.2.1's floor for the control that
+      called the restart off; with no such control the floor does not apply, and what sets the
+      number is how long the overlay's two sentences take to read.
+- [x] T121 Amend the constitution to 8.0.0: 2.2.1 Timing Adjustable joins the excluded criteria,
+      scoped by name to this restart and to nothing else, with the Sync Impact Report and the
+      "wherever conformance is stated" rule both saying eight rather than seven.
+      _A second time limit anywhere in the application needs an amendment rather than a reading of
+      this one._
+- [x] T122 Carry the eighth criterion through: `EXCLUDED_CRITERIA` in
+      `scripts/check-interface-foundations.mjs`, the conformance statements in `AGENTS.md` and
+      `specs/004-slef/plan.md` that the checker guards, this feature's own scope, story 2 item 3,
+      FR-012 and FR-015, and the ledger line that counts them. A statement naming only the seven
+      keyboard criteria now fails the checker, and a test asserts that it does.
+- [x] T123 Amend FR-025 and SC-007 to the announced restart, rewrite story 4 items 2 and 3, and
+      bring `design/application-shell.md`, `quickstart.md` and `plan.md` with them.
+- [x] T124 [P] Cover it: the layer with no way out in `containers.spec.ts`, the marker and its three
+      absences in `application-update.store.spec.ts`, the empty overlay and the arriving notice in
+      `app.spec.ts`, and the whole journey in `e2e/application-update.spec.ts` — where the two
+      postponement journeys are replaced by one that presses nothing and one that never waits the
+      overlay out. Reconcile `e2e/coverage-ledger.ts` with all of it.
+
 ## Notes
 
 - [P] tasks touch different files and have no incomplete dependency

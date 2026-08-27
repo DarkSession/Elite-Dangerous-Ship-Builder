@@ -149,14 +149,14 @@ export class App {
   /**
    * The restart, offered only while there is something to restart onto.
    *
-   * The way in for the two cases the overlay does not cover: a newer version
-   * whose restart a Commander called off, and a cached version the worker
-   * cannot repair, which is never restarted on a clock. Where the overlay *is*
-   * up this stays away — see below — because the overlay is already the control
-   * and a second copy of it under an inert page is no control at all.
+   * The way in for the two cases the overlay does not cover: a cached version
+   * the worker cannot repair, which is never restarted on a clock, and a newer
+   * version whose restart could not happen because there was no page to start
+   * over. Where the overlay *is* up this stays away — see below — because the
+   * page under it is inert and a control nobody can reach is no control.
    *
-   * Not pressing it costs nothing either way. The newer version is already
-   * downloaded, and the next start of the application is served it.
+   * Not pressing it costs nothing. The newer version is already downloaded, and
+   * the next start of the application is served it.
    */
   readonly updateAction = computed<ShellAction | null>(() => {
     const state = this.#updates.state();
@@ -164,10 +164,9 @@ export class App {
       return null;
     }
     if (state === 'ready' && this.#updates.overlay()) {
-      // The overlay is already the control, and a shell action beside it would
-      // be a second copy of it that a Commander cannot reach: the layer is
-      // modal and the shell under it is inert. It comes back the moment the
-      // overlay is postponed, which is what makes postponing a deferral.
+      // The page under a modal layer is inert, so an action drawn here while
+      // the overlay stands is one a Commander cannot press. It appears only if
+      // the restart the overlay announced could not be carried out.
       return null;
     }
     return {
@@ -231,24 +230,38 @@ export class App {
    *
    * Everything about it is here rather than in a component of its own: it is
    * one layer, mounted beside the frame like the help dialog, and what it says
-   * is the shell's own account of the version this session is running
-   * (Commander request 2026-08-26).
+   * is the shell's own account of the version this session is running.
+   *
+   * It offers nothing to press. The restart is not a question (owner's
+   * decision, 2026-08-27), so the layer is drawn with no dismiss label, which
+   * is what takes its control, Escape and its ground away together.
    */
   readonly updateOverlay = computed(() => this.#updates.overlay());
   readonly updateOverlayTitle = this.#messages.messageSignal('update.applying.title');
   readonly updateOverlayNotice = this.#messages.messageSignal('update.applying.notice');
   readonly updateOverlayDetail = this.#messages.messageSignal('update.applying.detail');
-  readonly updateOverlayNow = this.#messages.messageSignal('update.applying.now');
-  readonly updateOverlayPostpone = this.#messages.messageSignal('update.applying.postpone');
 
-  /** Applies the waiting version now rather than at the end of the grace period. */
-  applyUpdateNow(): void {
-    void this.#updates.apply();
-  }
+  /**
+   * The notice the session that came up after the restart draws.
+   *
+   * The overlay above went with the page that drew it, and a Commander who
+   * looked away for those few seconds would otherwise find a page that had
+   * silently become a different one. This says what happened and which version
+   * it happened onto, and it is dismissed rather than waited out.
+   */
+  readonly updateApplied = computed(() => this.#updates.applied());
+  readonly updateAppliedTitle = this.#messages.messageSignal('update.applied.title');
+  readonly updateAppliedNotice = this.#messages.messageSignal('update.applied.notice');
+  readonly updateAppliedDismiss = this.#messages.messageSignal('update.applied.dismiss');
+  readonly updateAppliedDetail = computed(() =>
+    this.#messages.message('update.applied.detail', {
+      version: this.help.manifest.build.applicationVersion,
+    }),
+  );
 
-  /** Calls the restart off. The version stays ready and the shell says so again. */
-  postponeUpdate(): void {
-    this.#updates.postpone();
+  /** Takes the after-the-restart notice down, having been read. */
+  acknowledgeUpdate(): void {
+    this.#updates.acknowledgeApplied();
   }
 
   /** The open screen's own identity block, where it publishes one. */
@@ -303,13 +316,12 @@ export class App {
           kind: 'app.update',
           revision,
           urgency: state === 'unusable' ? 'assertive' : 'polite',
-          // The durable fact, not the thing about to happen. A restart can be
-          // called off, and an announcement is spoken once and cannot be taken
-          // back — so "this session is restarting on it" would be left standing
-          // as a statement that turned out to be false, with nothing to correct
-          // it (postponing changes no revision, and so publishes no event). The
-          // overlay says the rest: it is a modal layer, so it takes focus and
-          // its description is read where it stands.
+          // The durable fact, not the thing about to happen. An announcement
+          // is spoken once and cannot be taken back, and a restart that could
+          // not be carried out — no page to start over — would leave "this
+          // session is restarting on it" standing as a statement nothing
+          // corrects. The overlay says the rest: it is a modal layer, so it
+          // takes focus and its description is read where it stands.
           messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
         }),
       );

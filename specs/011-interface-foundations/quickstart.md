@@ -83,9 +83,11 @@ pnpm run e2e:offline
 The same production run. Wait for the worker to control the page, ask the test server to stand in
 for a deployment, and return to the tab.
 
-Expected: the shell states that a newer version is available and offers a named restart; nothing on
-screen is replaced until that control is used; using it brings the application back on the published
-version with nothing left to say. No cache-clearing reload anywhere in the journey.
+Expected: a modal overlay states that the session is restarting and offers nothing to press; nothing
+on screen is replaced while it stands; the page comes back on the published version by itself and
+says on arrival that the update was applied, naming the version it is running. That notice is
+dismissed by its own named control and is not drawn again in the session. No cache-clearing reload
+anywhere in the journey.
 
 ## Formatting
 

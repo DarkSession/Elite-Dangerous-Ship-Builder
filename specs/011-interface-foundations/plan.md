@@ -169,8 +169,8 @@ registration and base configuration. It eagerly caches the shell and English and
 secondary locale once requested. Downstream capabilities may extend that configuration with static
 asset groups but must not register another worker or introduce another cache owner. It owns the
 other side of that worker too: a session that keeps serving the version it installed is the cost of
-being readable offline, so the same feature reports a newly published version, offers the restart
-that applies it, and never applies one by itself. Product and
+being readable offline, so the same feature reports a newly published version, announces the restart
+that applies it, and carries it out without asking. Product and
 preview applications import the same UI source and token entry point.
 
 ## Phase 0: Research Conclusions

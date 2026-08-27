@@ -640,6 +640,52 @@ describe('Layer', () => {
     expect(dismissals).toBe(1);
   });
 
+  it('draws no way out at all when it is given no dismiss label', () => {
+    // One input rather than two, because a label and a separate flag can
+    // disagree and this cannot. Exactly one layer takes it: the overlay that
+    // stands while a published version restarts the page under it, where there
+    // is nothing to cancel because the restart is not a question (011/FR-025).
+    const fixture = renderComponent(Layer, {
+      title: 'Updating',
+      description: 'This session is restarting on the newer version.',
+      open: false,
+    });
+
+    expect(fixture.componentInstance.dismissible()).toBe(false);
+    expect(query(fixture, 'dialog').querySelector('.layer__dismiss')).toBeNull();
+    // And the title and description still reach a reader, which is the whole
+    // point of drawing it as a layer.
+    expect(describedText(query(fixture, 'dialog'))).toContain('restarting on the newer version');
+  });
+
+  it('refuses the native cancel a layer with no way out must not honour', () => {
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, { title: 'Updating', open: false });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+
+    // Escape reaches the element as `cancel`, and a layer that closed on it
+    // would be dismissable by exactly one route and look like none.
+    const cancel = new Event('cancel', { cancelable: true });
+    query(fixture, 'dialog').dispatchEvent(cancel);
+
+    expect(cancel.defaultPrevented).toBe(true);
+    expect(dismissals).toBe(0);
+  });
+
+  it('ignores the ground around a layer with no way out', () => {
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, { title: 'Updating', open: false });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+    const dialog = query(fixture, 'dialog');
+    dialog.getBoundingClientRect = () =>
+      ({ left: 100, right: 200, top: 100, bottom: 200 }) as DOMRect;
+
+    dialog.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 10, clientY: 10 }));
+
+    expect(dismissals).toBe(0);
+  });
+
   it('dismisses a click on the ground around it, and not one on itself', () => {
     let dismissals = 0;
     const fixture = renderComponent(Layer, {

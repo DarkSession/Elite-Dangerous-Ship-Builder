@@ -8,15 +8,18 @@
   [class]="presentationClass()"
   [attr.aria-labelledby]="titleId"
   [attr.aria-describedby]="description() ? descriptionId : null"
+  (cancel)="blockCancel($event)"
   (close)="closed()"
   (mousedown)="pressOn($event)"
   (click)="dismissFromBackdrop($event)"
 >
   <div class="layer__header">
     <h2 class="layer__title" [id]="titleId">{{ title() }}</h2>
-    <button class="layer__dismiss" type="button" (click)="dismiss()">
-      {{ dismissLabel() }}
-    </button>
+    @if (dismissLabel(); as label) {
+      <button class="layer__dismiss" type="button" (click)="dismiss()">
+        {{ label }}
+      </button>
+    }
   </div>
 
   @if (description()) {

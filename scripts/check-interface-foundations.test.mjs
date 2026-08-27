@@ -670,8 +670,8 @@ describe('conformance claims', () => {
   it('accepts a claim that names every excluded criterion', () => {
     const found = rules.conformanceClaimViolations({
       'README.md':
-        'The target is WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, ' +
-        '2.4.7 and 2.4.11.',
+        'The target is WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, ' +
+        '2.4.3, 2.4.7 and 2.4.11.',
     });
 
     assert.deepEqual(found, []);
@@ -691,11 +691,22 @@ describe('conformance claims', () => {
     assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
   });
 
+  it('rejects a claim that names the seven keyboard criteria and not the eighth', () => {
+    // The list a document written before 2026-08-27 carries. 2.2.1 joined the
+    // exclusions with the update restart, and a claim that omits it is the
+    // stronger claim the checker exists to refuse.
+    const found = rules.conformanceClaimViolations({
+      'README.md': 'WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
+  });
+
   it('does not accept exclusions stated in a different paragraph', () => {
     // A claim that can be quoted without its qualification is unqualified.
     const found = rules.conformanceClaimViolations({
       'README.md':
-        'Accessible to WCAG 2.2 AA.\n\nExcluded: 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7, 2.4.11.',
+        'Accessible to WCAG 2.2 AA.\n\nExcluded: 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7, 2.4.11.',
     });
 
     assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);

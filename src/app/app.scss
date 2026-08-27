@@ -4,22 +4,11 @@
   display: contents;
 }
 
-// The update overlay's body: one sentence and the control that goes now rather
-// than waiting out the grace period. The layer around it carries the title, the
-// notice and the way out, so this is only what stands under them.
+// The body of both update layers: one sentence under the title and the notice
+// the layer itself carries. The overlay before the restart offers nothing to
+// press, and the notice after it carries only the layer's own dismissal, so
+// neither has a control of its own to style.
 .app__update-detail {
   margin: 0;
   color: var(--edsb-text-muted);
-}
-
-// Base first, then the variant. `control-base` sets the `border` shorthand and
-// its own font weight, so a variant included ahead of it has both taken back —
-// which drew this as a semibold button with a transparent edge rather than the
-// accented one it is meant to be. Every other primary control in the repository
-// composes them in this order.
-.app__update-now {
-  @include layout.control-base;
-  @include layout.control-primary;
-
-  margin-block-start: var(--edsb-space-stack);
 }
