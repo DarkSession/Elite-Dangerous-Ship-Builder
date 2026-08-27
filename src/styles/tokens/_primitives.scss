@@ -384,11 +384,16 @@
   // more than half of what a Commander can see given to two drawings that were
   // finished at the first of those (Commander request 2026-08-26).
   //
-  // The number is canvas 1c's own: its 862px centre column, less the block's
-  // inset and the gap between the plates, divided in two. So at the width the
-  // canvas was drawn at nothing moves, and past it the anatomy stops taking
-  // room the ledger and the bench below it can use.
-  --edsb-measure-anatomy-plate: 25.25rem;
+  // The number was canvas 1c's own — its 862px centre column, less the block's
+  // inset and the gap between the plates, divided in two — and is now that
+  // measure **raised by two fifths** at the Commander's request (2026-08-27).
+  // The bound was set to stop the block growing without limit on a wide screen
+  // and it did that too hard: two hulls drawn at the canvas's own width on a
+  // 2560 screen are a schematic a Commander has to lean into. A cap of 40%
+  // over it still stops the runaway — 566px against the 583px a 1920 column
+  // would otherwise hand each plate, and against 800px at 2560 — while giving
+  // the drawing the room the screen actually has.
+  --edsb-measure-anatomy-plate: 35.35rem;
 
   // The same node badge, set on the hull instead of in a ledger row. Canvas 1c
   // draws it `clamp(14px, 3.06cqw, 22px)` square with the number at
@@ -498,6 +503,16 @@
   // size (`design/canvas-contract.md`, review note 18).
   --edsb-measure-gunsight-plate: 10.75rem;
   --edsb-measure-shot-dot: 0.4375rem;
+
+  // How wide the `SHOT CONVERGENCE` block itself is allowed to get.
+  //
+  // Canvas 1c's own `max-width: 508px; align-self: flex-start` on the block
+  // (@660195): it is drawn beneath the `WEAPONS` and `DAMAGE PROFILE` pair and
+  // spans neither of them, so a plate 172px across stands in a block a little
+  // over half the panel's width rather than in one running its whole 862px.
+  // The application gave it the full row and drew the canvas's plate marooned
+  // in the middle of it (Commander request 2026-08-27).
+  --edsb-measure-convergence-block: 31.75rem;
   --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 

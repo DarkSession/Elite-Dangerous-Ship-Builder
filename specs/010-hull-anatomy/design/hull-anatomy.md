@@ -102,9 +102,18 @@ plate holds its whole document at its own ratio at every width.
   282px tall on canvas 1c's own 1560, 355px at 1920, 485px at 2560, which is more than half of a
   wide screen given to two drawings that were already finished at the first of those. The two tracks
   are now bounded at `--edsb-layout-anatomy-plate` and centred in whatever the column has beyond it.
-  The measure is canvas 1c's own: its 862px centre column, less the block's inset and the gap between
-  the plates, halved. Nothing moves at the width the canvas was drawn at, and past it the anatomy
-  stops taking room the ledger and the bench can use.
+  The measure was canvas 1c's own: its 862px centre column, less the block's inset and the gap
+  between the plates, halved. Nothing moves at the width the canvas was drawn at, and past it the
+  anatomy stops taking room the ledger and the bench can use.
+
+  **Raised by two fifths, 2026-08-27 (Commander request).** The bound did its job too hard: two
+  hulls held to the canvas's own width on a 2560 screen are a schematic a Commander has to lean into,
+  and the block that was too large at every width was then too small at the ones that have room. The
+  measure is that same number plus 40% — 566px a plate against 404 — which still stops the runaway
+  (a 1920 column would hand each plate 583px unbounded, a 2560 one 800px) while giving the drawing
+  the room the screen actually has. The ratio, the marks and the threshold at which the second plate
+  appears are all untouched: this moves one number.
+
 - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel path data, and what a
   plate needs out of it is the drawing's box, the rectangle it draws in and the middle of every
   annotated mount — a few hundred bytes. Both halves are produced from the installed package at build

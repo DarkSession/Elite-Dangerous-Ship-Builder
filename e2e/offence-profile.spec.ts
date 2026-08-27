@@ -59,7 +59,7 @@ async function plateMarks(page: Page): Promise<string[]> {
         round((mark.top - box.top) / box.height),
       ].join(' ');
     };
-    return [...plate.querySelectorAll('.plate__dot, .plate__numeral')].map(place);
+    return [...plate.querySelectorAll('.plate__dot')].map(place);
   });
 }
 
@@ -797,19 +797,17 @@ test.describe('shot convergence', () => {
     // caption to state (FR-011, `design/canvas-contract.md`).
     expect(await shots.count()).toBe(mounts);
 
-    // Every one of the hull's mounts is drawn as a dot where its shot lands and
-    // the mount's own hardpoint numeral beside it. The badge column at the
-    // plate's edge went with the 2026-08-25 canvas revision and has not come
-    // back; what did come back, with the 2026-08-26 rebuild, is a leader — and
-    // only for a numeral that had to step away from its dot to stand clear of
-    // another mark, so there is never more than one a mount and usually fewer
-    // (review note 19).
+    // Every one of the hull's mounts is drawn as one dot where its shot lands,
+    // and nothing else. The badge column at the plate's edge went with the
+    // 2026-08-25 canvas revision; the numeral that replaced it and the leaders
+    // a crowded plate drew back to it went on 2026-08-27, so the mount's number
+    // is carried by its sentence alone (review note 20).
     await block.locator('input[type="range"]').fill('2000');
     await settled(page);
     await expect(plate.locator('.plate__dot')).toHaveCount(mounts);
-    await expect(plate.locator('.plate__numeral')).toHaveCount(mounts);
     await expect(plate.locator('.plate__shot')).toHaveCount(0);
-    expect(await plate.locator('.plate__leader').count()).toBeLessThanOrEqual(mounts);
+    await expect(plate.locator('.plate__numeral')).toHaveCount(0);
+    await expect(plate.locator('.plate__leader')).toHaveCount(0);
   });
 
   test('draws the plate on one scale, so a ring means the same angle on both axes', async ({
@@ -913,7 +911,6 @@ test.describe('shot convergence', () => {
     await settled(page);
     expect(mounts).toBeGreaterThan(armed);
     await expect(block.locator('.plate__dot')).toHaveCount(mounts);
-    await expect(block.locator('.plate__numeral')).toHaveCount(mounts);
     await expect(block.locator('.plate__dot--empty')).toHaveCount(mounts - armed);
 
     // And the ink is never the only thing that says so: an empty mount's own
@@ -950,50 +947,75 @@ test.describe('shot convergence', () => {
     await openOffence(page);
 
     const block = page.locator('edsb-offence-analysis .offence__block--convergence');
-    const numeral = block.locator('.plate__numeral--selected');
+    const dots = block.locator('.plate__dot');
+
+    /**
+     * Which mark on the plate is drawn as the selected one, by its place among
+     * the dots.
+     *
+     * The dots and the sentences beside them are one list rendered twice, in
+     * one order, so a place in the first is the same mount as that place in the
+     * second. That is what ties a mark to its sentence now that the numeral
+     * which used to print the mount's number on the plate is withdrawn.
+     */
+    const selectedMark = async (): Promise<number> =>
+      dots.evaluateAll((marks) =>
+        marks.findIndex((mark) => mark.classList.contains('plate__dot--selected')),
+      );
+
+    /**
+     * The sentence that names its mount as the selected one: its place in the
+     * list, and the hardpoint it names, read out of the catalogue template's
+     * own `{{hardpoint}}` slot. Reading the slot rather than searching the
+     * sentence for a digit is what keeps this honest — `13.3 m off the axis`
+     * carries a `3`, and so does most of the rest of it.
+     */
+    const selectedSentence = async (): Promise<{ place: number; hardpoint: string }> => {
+      const stated = await block.locator('.shots__entry').allInnerTexts();
+      const patterns = [
+        asSentence(englishMessages['offence.convergence.shot.selected'], 'hardpoint'),
+        asSentence(englishMessages['offence.convergence.empty.selected'], 'hardpoint'),
+      ];
+      const found = stated
+        .map((line, place) => ({
+          place,
+          hardpoint: patterns.map((pattern) => pattern.exec(line)?.[1]).find(Boolean),
+        }))
+        .filter((entry): entry is { place: number; hardpoint: string } => Boolean(entry.hardpoint));
+      expect(found).toHaveLength(1);
+      return found[0] ?? { place: -1, hardpoint: '' };
+    };
 
     // The workspace always has a mount selected — the ledger opens on the first
-    // one — so the plate marks it from the moment it is drawn.
+    // one — so the plate marks it from the moment it is drawn, and the mark is
+    // on the same mount the sentence names (011 FR-022).
     await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
-    await expect(numeral).toHaveCount(1);
-    const first = await numeral.innerText();
+    const first = await selectedMark();
+    expect(first).toBeGreaterThanOrEqual(0);
+    expect(first).toBe((await selectedSentence()).place);
 
     // Selecting a different hardpoint in the ledger moves the mark, because both
     // are reading one selection rather than each keeping their own — and it
-    // moves it to *that* mount. The numeral is the mount's place in the hull's
-    // own hardpoint order, which is the order the ledger lists them in, so the
-    // ledger says which numeral the ring has to be beside without this suite
+    // moves it to *that* mount. The sentence names the mount's place in the
+    // hull's own hardpoint order, which is the order the ledger lists them in,
+    // so the ledger says which mount the mark has to be on without this suite
     // writing the number down.
     const slot = 'LargeHardpoint2';
     const place = (await hardpointKeys(page)).indexOf(slot) + 1;
     expect(place).toBeGreaterThan(0);
     await page.locator(`[data-slot-key="${slot}"] .slot__select`).first().click();
     await settled(page);
-    await expect(numeral).toHaveCount(1);
+    await expect(block.locator('.plate__dot--selected')).toHaveCount(1);
     // Polled rather than read once. `settled` waits for animations, and the
-    // numeral is rewritten by the change detection the click schedules, which
-    // is not one — so a bare read races the redraw and returns the mount that
-    // was selected before. It fails about once in a shard under CI load.
-    expect(String(place)).not.toBe(first);
-    await expect(numeral).toHaveText(String(place));
+    // plate is redrawn by the change detection the click schedules, which is
+    // not one — so a bare read races the redraw and returns the mount that was
+    // selected before. It fails about once in a shard under CI load.
+    await expect.poll(async () => (await selectedSentence()).hardpoint).toBe(String(place));
 
-    // A ring is a picture; the mark's own sentence is the reading. Exactly one
-    // mark is stated as the selected mount, and it is the one the ring is drawn
-    // around (011 FR-022).
-    const stated = await block.locator('.shots__entry').allInnerTexts();
-    const patterns = [
-      asSentence(englishMessages['offence.convergence.shot.selected'], 'hardpoint'),
-      asSentence(englishMessages['offence.convergence.empty.selected'], 'hardpoint'),
-    ];
-    const selected = stated.filter((line) => patterns.some((pattern) => pattern.test(line)));
-    expect(selected).toHaveLength(1);
-
-    // Read the hardpoint back out of the sentence's own `{{hardpoint}}` slot and
-    // compare it with the numeral the ring is drawn beside. A `toContain` here
-    // would pass on any sentence that happens to carry the digit anywhere —
-    // `13.3 m off the axis` carries a `3` — which is most of them.
-    const named = patterns.map((pattern) => pattern.exec(selected[0] ?? '')?.[1]).find(Boolean);
-    expect(named).toBe(await numeral.innerText());
+    // The mark moved with it, and it is still the mark that sentence counts.
+    const moved = await selectedMark();
+    expect(moved).not.toBe(first);
+    expect(moved).toBe((await selectedSentence()).place);
   });
 
   test('moves the shots when the target range moves', async ({ page }) => {
@@ -1043,26 +1065,13 @@ test.describe('shot convergence', () => {
       expect(sentence).not.toBe('');
     }
 
-    // No two numerals drawn over each other, whatever the range is set to.
-    const overlapping = await page
-      .locator('edsb-offence-analysis .plate__numeral')
-      .evaluateAll((numerals) => {
-        const boxes = numerals.map((numeral) => numeral.getBoundingClientRect());
-        let worst = 0;
-        for (let index = 0; index < boxes.length; index += 1) {
-          for (let other = index + 1; other < boxes.length; other += 1) {
-            const one = boxes[index]!;
-            const two = boxes[other]!;
-            const overlapX = Math.min(one.right, two.right) - Math.max(one.left, two.left);
-            const overlapY = Math.min(one.bottom, two.bottom) - Math.max(one.top, two.top);
-            if (overlapX > 0 && overlapY > 0) {
-              worst = Math.max(worst, Math.min(overlapX, overlapY));
-            }
-          }
-        }
-        return worst;
-      });
-    expect(overlapping).toBe(0);
+    // And the plate itself carries no text at all: the numerals that used to
+    // stand beside each dot are withdrawn (2026-08-27), so every word about
+    // this diagram is in the sentences beside it.
+    const drawn = await page
+      .locator('edsb-offence-analysis .plate')
+      .evaluate((plate) => (plate.textContent ?? '').trim());
+    expect(drawn).toBe('');
   });
 });
 
@@ -1223,8 +1232,7 @@ test.describe('the conditions that break layouts', () => {
 
     // Neither does the gunsight. It is a view out of the cockpit, and a
     // right-to-left interface does not move a ship's port hardpoint to
-    // starboard, so every dot keeps its place inside the plate and every
-    // hardpoint numeral keeps the side of its own dot it was placed on
+    // starboard, so every dot keeps its place inside the plate
     // (design/offence-profile.md, "The plate never mirrors").
     expect(await plateMarks(page)).toEqual(plateBefore);
 

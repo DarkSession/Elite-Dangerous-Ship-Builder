@@ -756,7 +756,9 @@ describe('OffenceAnalysis', () => {
       expect(mounts).toBeGreaterThan(0);
       expect(element.querySelectorAll('.plate__dot')).toHaveLength(mounts);
       expect(element.querySelectorAll('.plate__dot--empty')).toHaveLength(mounts);
-      expect(element.querySelectorAll('.plate__numeral')).toHaveLength(mounts);
+      // One dot a mount and nothing beside it: the hardpoint numerals were
+      // withdrawn on 2026-08-27, and each mount's number is in its sentence.
+      expect(element.querySelectorAll('.plate__numeral')).toHaveLength(0);
       // Rings and axes stay: they are the plate, not a reading of the build.
       expect(element.querySelectorAll('.plate__ring')).toHaveLength(2);
       // No group of armed mounts, so none of the four figures about one.

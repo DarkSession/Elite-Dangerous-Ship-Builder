@@ -59,20 +59,13 @@
 // several screens tall, and the field of view it draws does not get wider for
 // having more room.
 //
-// Its own query container, because the hardpoint numeral is sized in `cqw`
-// against the plate it is drawn on rather than against whatever box happens to
-// enclose it — the same reason `.schematic` is one.
-//
 // Every mark on it is placed with physical `left` and `top`, deliberately, as
 // the hull schematic places its mounts: a gunsight is a view out of the
 // cockpit, and a right-to-left interface does not move a ship's port hardpoint
-// to starboard. The numeral beside a dot follows it for the same reason — the
-// canvas picks its corner from where the neighbouring dots are, and mirroring
-// that would put it back over one of them.
+// to starboard.
 .plate {
   position: relative;
   flex: none;
-  container-type: inline-size;
   inline-size: min(100%, var(--edsb-layout-gunsight-plate));
   aspect-ratio: 1;
   overflow: hidden;
@@ -125,24 +118,6 @@
   border-radius: 50%;
 }
 
-// The leaders back from a numeral that could not sit in one of its dot's four
-// corners. Over the ground and under the marks, so a line never crosses the
-// mark it explains, and never takes a pointer that belongs to one.
-.plate__leaders {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  pointer-events: none;
-}
-
-.plate__leader {
-  stroke: var(--edsb-border-node-leader);
-  stroke-width: var(--edsb-border-width-rule);
-  stroke-linecap: round;
-}
-
 // The two dashed rings, centred on the axis and sized in the angle they stand
 // for rather than in pixels, so they stay true at every plate width.
 //
@@ -162,13 +137,14 @@
 
 // Where the shot actually lands: the canvas's 7px dot, ringed in the plate's
 // own ground so it stays visible over a dashed ring or the axis.
-// Four marks in one 7px stack, so which one is on top has to be decided rather
+//
+// Three marks in one 7px stack, so which one is on top has to be decided rather
 // than left to document order. The hull schematics settle it the same way and
 // for the same reason: this hull's mounts project to nearly the same angles, so
 // a mark is often a sliver of whatever was drawn after it. The selected mount
-// comes to the front, then the numerals, then the armed dots, and the empty ones
-// sit under all of them — they are the context the plate is read against, and
-// where a shot actually goes is the reading.
+// comes to the front, then the armed dots, and the empty ones sit under both —
+// they are the context the plate is read against, and where a shot actually
+// goes is the reading.
 .plate__dot {
   position: absolute;
   z-index: 2;
@@ -180,76 +156,18 @@
   box-shadow: 0 0 0 var(--edsb-border-width-thick) var(--edsb-surface-sunken);
 }
 
-// The mount's hardpoint numeral, set beside its own dot at the corner the
-// component chose for it, or out on the ring when the plate was too crowded
-// for corners.
-//
-// Two margins rather than a `translate`, because the offset is measured from
-// the dot's own position rather than from the numeral's own box. They are
-// percentages, and so are the box's own two sizes: the placement measures a box
-// of a fixed size at a reference plate width, and the plate is drawn at
-// whatever width its column leaves it. Sized in pixels the box stayed put while
-// the dot beside it moved, and the leader — which is drawn in the plate's own
-// percentage coordinates — reached for a middle the numeral no longer had.
-// Both margins resolve against the plate's inline size, which on a square plate
-// is its block size too, so the two axes stay in step (reported 2026-08-26).
-//
-// The digit is centred in that box rather than set from its corner, so the box
-// the arithmetic checked and the ink a reader sees have the same middle.
-.plate__numeral {
-  position: absolute;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-node-mark);
-  font-weight: var(--edsb-text-weight-control);
-  line-height: var(--edsb-text-leading-flat);
-  color: var(--edsb-surface-mount-armed);
-}
-
-// An armed mount, an empty one and the selected one, told apart at a glance.
-// Every one of the three is written out in the mark's own sentence below; this
-// only separates the marks.
-//
-// The empty mount's numeral is text, and takes a text ink. The mark beside it
-// takes `--edsb-surface-mount-empty`, which is a non-text ink at the 3:1 that
-// asks of it; a 7px numeral set in the same one would be text below the 4.5:1
-// floor. The number is the schematics' own `--edsb-text-muted`, so an empty
-// mount's numeral reads the same in both drawings. The outline is not theirs:
-// they draw it dashed in `--edsb-border-quiet`, which is a hairline beside a
-// 44px square, where here it is the whole of a 7px mark and has to carry 3:1 on
-// its own.
-.plate__numeral--empty {
-  color: var(--edsb-text-muted);
-}
-
-// The numeral follows the mark, so the selected mount is one mark rather than a
-// blue dot beside a numeral in somebody else's ink. It is set after the empty
-// rule so a selected empty hardpoint reads as selected, which is the state a
-// Commander is looking at while they decide what to put in it.
-.plate__numeral--selected {
-  z-index: 5;
-  color: var(--edsb-surface-mount-selected);
-}
-
-// A hardpoint with nothing on it: the same dot, hollow, in the quiet ink the
-// hull schematics give an empty mount. Hollow as well as quiet because the plate
-// is small and four inks on a 7px mark is more than a 7px mark can hold — an
-// outline against a fill is the difference a reader sees first, and the ink
-// confirms it. What it is is written out in the mark's own sentence either way.
-//
-// The fill is the same ground the armed dot's own halo is drawn in rather than
-// `transparent`, so a dashed ring or an axis running under the mark does not
-// read as something inside it.
+// A hardpoint with nothing on it: the same dot, filled, in the stale amber of a
+// mount that is there with nothing fitted to it. The hollow outline it used to
+// take is withdrawn with the numerals (Commander request 2026-08-27) — three
+// fills of one shape is what a 7px mark can hold, and an outline on a mark that
+// size read as a fourth kind of thing rather than as the absence of a weapon.
+// What it is is written out in the mark's own sentence either way.
 .plate__dot--empty {
   z-index: 1;
-  background-color: var(--edsb-surface-sunken);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-surface-mount-empty);
+  background-color: var(--edsb-surface-mount-empty);
 }
 
-// The mount the workspace has selected: the plate's other ink, and nothing else.
+// The mount the workspace has selected: the plate's third ink, and nothing else.
 //
 // The ink is what the canvas spends on a gimballed mount. It is spent here
 // instead because this plate has three things to separate and the canvas had
@@ -257,25 +175,13 @@
 // sentence carries, where "this is the mount you have open" is a fact about the
 // plate that nothing else on it could say.
 //
-// The ring that used to be drawn around this dot is withdrawn (Commander
-// request 2026-08-26). A crowded plate now takes every numeral out to a ring of
-// its own with a leader back to each dot, and a second circle around one mark
-// in the middle of that reads as a third kind of mark rather than as emphasis.
-// Nothing is lost that a reader had: the selected mount is named as selected in
-// its own sentence beside the plate, which is where the fact was carried all
-// along — the ring only ever repeated it (011 FR-022).
+// It wins over the empty fill, and deliberately: a Commander looking for the
+// mount they have open is looking for one mark, and whether it is armed is a
+// sentence away either way. The ring that used to be drawn around it went in
+// the 2026-08-26 revision and has not come back.
 .plate__dot--selected {
-  z-index: 4;
+  z-index: 3;
   background-color: var(--edsb-surface-mount-selected);
-}
-
-// A selected hardpoint that has nothing on it stays hollow: whether a mount is
-// armed is what the fill against the outline says, and selection is a hue. A
-// mark that filled itself in to say "selected" would be reporting a weapon that
-// is not there.
-.plate__dot--empty.plate__dot--selected {
-  background-color: var(--edsb-surface-sunken);
-  border-color: var(--edsb-surface-mount-selected);
 }
 
 // The plate in words. Kept out of sight rather than out of the document: it is

@@ -1517,9 +1517,9 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'the gunsight plate is hidden from assistive technology, and every mark is a sentence beside it',
-      'each of the hull’s mounts is a mark where its shot lands and its own hardpoint numeral set beside it',
+      'each of the hull’s mounts is one dot where its shot lands, and the plate carries no text at all',
       'a hardpoint the build has not filled is drawn in the empty mount’s own ink and named as empty in words',
-      'the mount the workspace has selected is ringed on the plate and named as selected in its own sentence, and follows the ledger’s selection',
+      'the mount the workspace has selected takes the plate’s third ink and is named as selected in its own sentence, and follows the ledger’s selection',
       'a shot beyond the plate’s field of view is held at the frame’s own margin rather than leaving it, and is stated in words — at its true offset and angle — at that range exactly as at any other',
       'moving the target range moves every shot, and leaves the mounts’ own spans where they were',
       'the range control announces the distance as a Commander reads it, not as a bare number',

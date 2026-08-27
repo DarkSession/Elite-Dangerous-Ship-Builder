@@ -10,59 +10,36 @@ import { Formatters } from '../../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../../i18n/message.service';
 import { RangeField } from '../../../../../ui/components/range-field/range-field';
-import { placeNumerals } from '../../../../../domain/offence/numeral-placement';
 
 /**
  * One of the hull's hardpoints, placed on the gunsight plate.
  *
- * Two marks, as the 2026-08-25 canvas revision draws them: a small dot where the
- * shot lands, and the mount's hardpoint numeral set just beside it. The numeral
- * used to be a badge parked at the plate's edge on a leader line; the revision
- * withdrew both, and it is placed clear of the neighbouring dots instead.
+ * One mark, and one only: a dot where the shot lands (Commander request
+ * 2026-08-27). The hardpoint numeral beside it is withdrawn, and with it the
+ * placement arithmetic, the leaders and the ring a crowded plate used to put
+ * them out on — a plate 172px across carrying eight numerals was a page of
+ * digits over a diagram, and every one of them was already the first word of
+ * that mount's own sentence beside the plate.
  *
- * Every hardpoint gets one, armed or not. What each mark carries — whether a
- * weapon is on it, and whether it is the mount the workspace currently has
- * selected — is drawn as three inks and written out in the mark's own sentence,
- * because a colour is not a reading (011 FR-022). How the weapon aims is in that
- * sentence and nowhere else: the canvas's own second ink is spent on selection
- * here (`design/canvas-contract.md`, review note 17).
+ * What each mark carries — whether a weapon is on it, and whether it is the
+ * mount the workspace currently has selected — is drawn as three inks and
+ * written out in the mark's own sentence, because a colour is not a reading
+ * (011 FR-022). How the weapon aims is in that sentence and nowhere else: the
+ * canvas's own second ink is spent on selection here
+ * (`design/canvas-contract.md`, review note 17).
  */
 export interface ShotView {
   readonly id: string;
-  /** The canvas's numeral: the mount's place in the hull's own hardpoint order. */
-  readonly badge: string;
   /** Percentages from the plate's leading and top edges — where the shot lands. */
   readonly left: number;
   readonly top: number;
   /**
-   * Where the numeral sits relative to its own dot, as a share of the plate.
-   *
-   * A percentage rather than the canvas's pixels, because the plate is not
-   * always drawn at the canvas's width: it is `min(100%, …)`, so a narrow
-   * column shrinks it. Offsets in pixels then stayed the same size while the
-   * dot they hang off moved, and the leader — which is drawn in the plate's own
-   * percentage coordinates — ended somewhere the numeral was not. That is the
-   * reported case of a line that is slightly off (reported 2026-08-26).
-   */
-  readonly numeralLeft: number;
-  readonly numeralTop: number;
-  /**
-   * Whether the numeral had to leave the canvas's four corners to find room.
-   *
-   * A crowded plate is the case the canvas's own rule could not settle: two
-   * mounts far enough apart both score their inward corner well and each aims
-   * its numeral at the other's. A numeral that has moved is tied back to its
-   * dot by a leader, so it still says which shot it counts.
-   */
-  readonly displaced: boolean;
-  /** The leader back to the dot, in plate percentages, or `null` when it stayed. */
-  readonly leader: ShotLeader | null;
-  /**
    * Whether a weapon is fitted here.
    *
    * An empty hardpoint is drawn as the mount it is — the offset is the hull's,
-   * not the weapon's — in the quiet ink the schematics already give an empty
-   * mount, and its sentence says it is empty rather than naming a weapon.
+   * not the weapon's — in the stale amber that says the mount is there and
+   * nothing is on it, and its sentence says it is empty rather than naming a
+   * weapon.
    */
   readonly armed: boolean;
   /**
@@ -70,25 +47,14 @@ export interface ShotView {
    *
    * The same selection the hull schematics mark and the ledger row carries, so
    * a Commander working on one hardpoint can see which mark on the plate is
-   * theirs. It takes the plate's other ink, and nothing else: the ring that
-   * used to be drawn around it is withdrawn, because on a plate whose numerals
-   * may now be out on leaders a second circle around one dot reads as another
-   * kind of mark. Whether the mount is armed stays with the fill against the
-   * outline, so a selected empty hardpoint is still visibly empty, and both
-   * facts are written out in the mark's own sentence — which is what keeps
-   * them off colour alone (Commander request 2026-08-26).
+   * theirs. It takes the plate's third ink, and nothing else: neither a ring
+   * nor an outline is drawn around any mark, so the three states are three
+   * fills of one shape. Both facts are written out in the mark's own sentence,
+   * which is what keeps them off colour alone.
    */
   readonly selected: boolean;
   /** The whole mark in words, for a reader who is not looking at the diagram. */
   readonly statement: string;
-}
-
-/** A leader line from a dot to a numeral that could not sit beside it. */
-export interface ShotLeader {
-  readonly x1: number;
-  readonly y1: number;
-  readonly x2: number;
-  readonly y2: number;
 }
 
 /** Mount offsets to one place, which is the place canvas 1c's `9.8 m` sets. */
@@ -97,69 +63,18 @@ const OFFSET_DIGITS = 1;
 const HALF_PLATE_PERCENT = 50;
 
 /**
- * The plate width the numeral placement is measured in, in pixels.
- *
- * The canvas's corner offsets are pixels and the dots are fractions of the
- * plate, so choosing between them means fixing the size the plate is drawn at.
- * Canvas 1c draws it 172px wide and this is the `10.75rem` plate the
- * application draws in its place, so the two agree; it has to be kept in step
- * with `--edsb-measure-gunsight-plate`.
- *
- * Reading the built plate's real width instead would mean measuring the DOM to
- * place a numeral, and a numeral carries no reading — every mark on this plate
- * is stated in words beside it, so which corner it takes changes nothing a
- * Commander is told (FR-011). The clearance below is what keeps that
- * approximation safe: the placement leaves air around every mark rather than
- * fitting them edge to edge, so a plate drawn a little larger or smaller than
- * the reference still has no two numerals touching.
- */
-const PLATE_REFERENCE_WIDTH = 172;
-
-/**
- * The marks the placement measures, in the same pixels.
- *
- * The numeral's box is the widest a hardpoint numeral gets — two digits of the
- * canvas's 8px monospace with its own tracking — so a one-digit numeral is
- * placed with room to spare rather than a two-digit one being placed short.
- * The dot's reach is its drawn radius plus the halo that lifts it off the
- * ground, and the clearance is the air kept around everything.
- */
-const NUMERAL_METRICS = {
-  plate: PLATE_REFERENCE_WIDTH,
-  width: 11,
-  height: 9,
-  dotRadius: 5,
-  clearance: 1.5,
-} as const;
-
-/**
- * The numeral's box, as a share of the plate, for the stylesheet to draw it at.
- *
- * Published as a custom property rather than written into the stylesheet twice.
- * The placement above checks a box of exactly this size for collisions and the
- * leader ends at its middle, so a box drawn any other size would be a numeral
- * standing somewhere the arithmetic never looked.
- */
-export const NUMERAL_BOX = {
-  width: `${(NUMERAL_METRICS.width / PLATE_REFERENCE_WIDTH) * 100}%`,
-  height: `${(NUMERAL_METRICS.height / PLATE_REFERENCE_WIDTH) * 100}%`,
-} as const;
-
-/**
  * `SHOT CONVERGENCE`: where this build's shots land at a chosen range.
  *
- * Canvas 1c runs it across the full width beneath the `WEAPONS` and
- * `DAMAGE PROFILE` pair: a gunsight plate, the range it is drawn at and four
- * cells reporting the spread. It is its own component because it is its own
- * block — the plate, its marks and its cells share nothing with the two blocks
- * above but the panel ground they sit on, and the range the plate is drawn at
- * is state neither of them has any part in.
+ * Canvas 1c draws it beneath the `WEAPONS` and `DAMAGE PROFILE` pair, in a
+ * block of its own that stops at 508px rather than running the panel's width:
+ * a gunsight plate and, beside it, the range it is drawn at. It is its own
+ * component because it is its own block — the plate, its marks and the range
+ * share nothing with the two blocks above but the panel ground they sit on.
  *
  * The geometry arrives already projected: `src/app/domain/offence/convergence.ts`
  * is the only place that asks the package where a hull's hardpoints are and
  * where they point at a distance. This component places those answers on a
- * plate, names them and does no arithmetic of its own beyond choosing which
- * corner a numeral takes, which moves no reading.
+ * plate, names them and does no arithmetic of its own.
  */
 @Component({
   selector: 'edsb-shot-convergence',
@@ -194,9 +109,6 @@ export class ShotConvergence {
    */
   readonly selectedSlot = input<string | null>(null);
 
-  /** The numeral's drawn box, exactly the one the placement measured. */
-  readonly numeralBox = NUMERAL_BOX;
-
   readonly plateLabel = this.#messages.messageSignal('offence.convergence.plate');
   readonly rangeLabel = this.#messages.messageSignal('offence.convergence.range');
 
@@ -221,81 +133,32 @@ export class ShotConvergence {
    * Each hardpoint, as a position on the plate and as a sentence.
    *
    * The plate is decorative: every mark on it is also stated in words below,
-   * because a dot and a numeral are a picture, and a picture is not a reading
-   * (011 FR-022). That is what carries the two things the inks separate — armed
-   * against empty, and the selected mount against the rest — neither of which
-   * may rest on a colour alone, and it is the only place how a weapon aims is
-   * said at all. Since the 2026-08-25
-   * canvas revision a shot outside the plate's field of view is held at the
-   * frame's own margin rather than clipped out of it, so a moved dot is exactly
-   * the case where its sentence — which carries the offset and the angle it
-   * actually has — is the true reading.
+   * because a dot is a picture, and a picture is not a reading (011 FR-022).
+   * That is what carries the two things the inks separate — armed against
+   * empty, and the selected mount against the rest — neither of which may rest
+   * on a colour alone, and it is the only place how a weapon aims is said at
+   * all, and the only place a mount's hardpoint number is now printed. Since
+   * the 2026-08-25 canvas revision a shot outside the plate's field of view is
+   * held at the frame's own margin rather than clipped out of it, so a moved
+   * dot is exactly the case where its sentence — which carries the offset and
+   * the angle it actually has — is the true reading.
    */
   readonly shots = computed<readonly ShotView[]>(() => {
-    const view = this.convergence();
-
-    // Where each dot sits on the plate, in the pixels the numeral offsets are
-    // written in. Layout and nothing else: no package figure is combined here,
-    // and moving a numeral moves no reading.
-    const dots = view.points.map((point) => ({
-      point,
-      x: ((1 + point.horizontal) / 2) * PLATE_REFERENCE_WIDTH,
-      y: ((1 - point.vertical) / 2) * PLATE_REFERENCE_WIDTH,
-    }));
-
-    // Every numeral placed against every other mark on the plate, so no two of
-    // them are ever drawn on top of each other. The dots themselves do not
-    // move: a dot is where the shot lands, and that is the reading.
-    const numerals = placeNumerals(
-      dots.map((dot, index) => ({
-        id: dot.point.mount.slot,
-        order: dot.point.hardpoint || index + 1,
-        x: dot.x,
-        y: dot.y,
-      })),
-      NUMERAL_METRICS,
-    );
-
     const selectedSlot = this.selectedSlot();
 
-    // Plate pixels into plate percentages. The placement is measured at the
-    // reference width and drawn at whatever width the plate came out, so it is
-    // carried as a share of the plate rather than as a length — which is what
-    // lets the numeral, its box and its leader agree at every size.
-    const share = (pixels: number): number => (pixels / PLATE_REFERENCE_WIDTH) * 100;
-
-    return dots.map((dot, index) => {
-      const mount = dot.point.mount;
+    return this.convergence().points.map((point) => {
+      const mount = point.mount;
       const weapon = mount.weapon;
-      const placement = numerals[index] ?? { left: 0, top: 0, displaced: false };
       const selected = mount.slot === selectedSlot;
       const place = {
-        hardpoint: this.#formatters.integer(dot.point.hardpoint),
+        hardpoint: this.#formatters.integer(point.hardpoint),
         offset: this.#formatters.metres(mount.offsetMetres, OFFSET_DIGITS),
-        angle: this.#milliradians(dot.point.milliradians),
+        angle: this.#milliradians(point.milliradians),
       };
       return {
         id: mount.slot,
-        badge: place.hardpoint,
-        left: (1 + dot.point.horizontal) * HALF_PLATE_PERCENT,
-        top: (1 - dot.point.vertical) * HALF_PLATE_PERCENT,
-        numeralLeft: share(placement.left),
-        numeralTop: share(placement.top),
-        // A numeral that could not stay in one of the canvas's four corners is
-        // tied back to its own dot by a leader, the way feature 010's
-        // schematics explain a mark that has moved.
-        displaced: placement.displaced,
-        // The leader ends at the middle of the numeral's own box, which the
-        // stylesheet draws at exactly the size measured here — so the line and
-        // the numeral meet wherever the plate is drawn, at any width.
-        leader: placement.displaced
-          ? {
-              x1: share(dot.x),
-              y1: share(dot.y),
-              x2: share(dot.x + placement.left + NUMERAL_METRICS.width / 2),
-              y2: share(dot.y + placement.top + NUMERAL_METRICS.height / 2),
-            }
-          : null,
+        left: (1 + point.horizontal) * HALF_PLATE_PERCENT,
+        top: (1 - point.vertical) * HALF_PLATE_PERCENT,
         armed: weapon !== null,
         selected,
         // Four whole sentences rather than one with a state appended to it.

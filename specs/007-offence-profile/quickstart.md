@@ -29,7 +29,7 @@ Confirms against the installed Almanac that:
   carrying an exact `slot`, `symbol`, `name` and `enabled`, and the sparse `maximumRange`,
   `falloffRange` and `armourPiercing` left undefined rather than zero where the article has none;
 - the returned weapons arrive in the hull's own slot order, which is what the panel's rows and the
-  gunsight's hardpoint numerals both depend on. The package documents unknown or unmapped slots as appended in
+  hardpoint each convergence sentence names both depend on. The package documents unknown or unmapped slots as appended in
   source order after them; that path is the package's own to prove, and nothing here exercises it,
   because no build this application can make reaches it;
 - `DamageSplit.unclassified` is absent exactly when it is zero, and `antiXeno` is always present;
@@ -121,12 +121,13 @@ Two mounts carrying the same module are two rows, in package order, unmerged.
 
 ### 6. Read where the shots go
 
-`SHOT CONVERGENCE` draws the gunsight plate with, per hardpoint the hull has, a mark where that
-mount's shot lands and its hardpoint numeral beside it — and one sentence beside the plate naming
-the weapon, its hardpoint, its mount and where its shot goes, plus the ring caption, which sits on
-the block's heading line.
+`SHOT CONVERGENCE` draws the gunsight plate with, per hardpoint the hull has, one mark where that
+mount's shot lands and nothing beside it — and one sentence beside the plate naming the weapon, its
+hardpoint, its mount and where its shot goes. The block stops at the canvas's own 508px rather than
+running the panel's width, and the plate itself draws no text at all: the hardpoint numerals were
+withdrawn on 2026-08-27.
 
-A hardpoint the build has not filled is drawn too, hollow and in a quieter ink, and its sentence
+A hardpoint the build has not filled is drawn too, in the armed mount's own hue gone stale, and its sentence
 names it as empty rather than naming a weapon: where a mount sits is a property of the hull, and it
 is what a Commander choosing what to fit is asking about. The mount the workspace has selected — the
 same one the ledger row and the hull schematics mark — takes the plate's other ink with a ring in it,

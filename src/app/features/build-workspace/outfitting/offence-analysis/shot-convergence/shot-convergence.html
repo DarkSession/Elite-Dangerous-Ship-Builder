@@ -2,12 +2,11 @@
   Canvas 1c's `SHOT CONVERGENCE` block: the gunsight plate, the same diagram in
   words, and the range the plate is drawn at.
 
-  Re-drawn for the 2026-08-26 revision, which took three things out and put one
-  in. Out went the ring caption and the four cells beneath the plate — the two
-  spans, the widest mount and the apparent spread — which the canvas no longer
-  draws anywhere. In came the boresight: the ring and centre dot that mark
-  where the ship itself is pointing, so a Commander reads convergence against
-  the axis rather than against the middle of a box.
+  Every mount is one dot and nothing else since 2026-08-27 (Commander request).
+  The hardpoint numeral set beside each dot is withdrawn, along with the leaders
+  and the ring a crowded plate used to put them out on: what a mount is — armed,
+  empty, or the one the workspace has open — is three fills of one shape, and
+  which mount it is is the first thing its own sentence below says.
 -->
 <div class="convergence">
   <!--
@@ -41,52 +40,23 @@
     }
 
     <!--
-      Every one of the hull's hardpoints twice, as the 2026-08-25 canvas
-      draws an armed one: the dot where the shot lands, and the mount's
-      hardpoint numeral set beside it, at whichever of four corners stands
-      clear of the other dots. When one numeral has no corner to stand in,
-      every numeral on the plate goes out to a ring just inside the frame
-      instead, each on a leader back to its own dot — one arrangement for the
-      whole plate rather than one numeral read differently from the rest.
+      Every one of the hull's hardpoints, as one dot where its shot lands.
 
-      An empty hardpoint is drawn too, in the quiet ink the schematics
-      already give an empty mount: where a mount sits is a property of the
-      hull rather than of what is on it, and a Commander deciding what to
-      fit is asking exactly where a shot from that mount would go. The
-      selected mount takes the plate's other ink and a ring in the same
-      one, while whether it is armed stays with the fill against the
-      outline, so a selected empty hardpoint is still visibly empty.
-      Both distinctions are written out in the list below, and so is the
-      one the plate no longer draws at all: how each weapon aims.
+      An empty hardpoint is drawn too, in the stale amber that says a mount is
+      there with nothing on it: where a mount sits is a property of the hull
+      rather than of what is on it, and a Commander deciding what to fit is
+      asking exactly where a shot from that mount would go. The selected mount
+      takes the plate's third ink. Nothing is ringed or outlined — the three
+      states are three fills of one shape — and all three are written out in
+      the list below, along with the one the plate does not draw at all: how
+      each weapon aims.
 
-      Nothing is clipped any more either: a shot far enough off-axis is
-      held at the frame's own margin, because the field of view is a
-      property of the drawing and never widens to fit a build. That is
-      exactly the case where the sentence beside the plate is the true
-      reading, and it states the offset and angle the shot really has
-      (FR-011).
+      Nothing is clipped either: a shot far enough off-axis is held at the
+      frame's own margin, because the field of view is a property of the
+      drawing and never widens to fit a build. That is exactly the case where
+      the sentence beside the plate is the true reading, and it states the
+      offset and angle the shot really has (FR-011).
     -->
-    <!--
-      A leader for every numeral that had to leave its dot's four corners. Drawn
-      under the marks and over the ground, in the plate's own percentage
-      coordinates, so the line and the numeral can never disagree about where
-      they meet.
-    -->
-    <svg class="plate__leaders" viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false">
-      @for (shot of shots(); track shot.id) {
-        @if (shot.leader; as leader) {
-          <line
-            class="plate__leader"
-            [attr.x1]="leader.x1"
-            [attr.y1]="leader.y1"
-            [attr.x2]="leader.x2"
-            [attr.y2]="leader.y2"
-            vector-effect="non-scaling-stroke"
-          />
-        }
-      }
-    </svg>
-
     @for (shot of shots(); track shot.id) {
       <span
         class="plate__dot"
@@ -95,25 +65,6 @@
         [style.left.%]="shot.left"
         [style.top.%]="shot.top"
       ></span>
-      <!--
-        The numeral in a box of exactly the size the placement measured, offset
-        from its dot as a share of the plate. Both are shares rather than
-        pixels so the mark, its box and the leader that reaches it all scale
-        with the plate together — the plate is `min(100%, …)` and is drawn
-        narrower than the canvas's own width in a narrow column.
-      -->
-      <span
-        class="plate__numeral"
-        [class.plate__numeral--empty]="!shot.armed"
-        [class.plate__numeral--selected]="shot.selected"
-        [style.left.%]="shot.left"
-        [style.top.%]="shot.top"
-        [style.margin-left.%]="shot.numeralLeft"
-        [style.margin-top.%]="shot.numeralTop"
-        [style.inline-size]="numeralBox.width"
-        [style.block-size]="numeralBox.height"
-        >{{ shot.badge }}</span
-      >
     }
   </div>
 
@@ -121,9 +72,9 @@
     The same diagram in words. This is the reading; the plate above is the
     picture of it, and every mark on it is restated here — the empty
     hardpoints and the selected mount with the rest, because those are two
-    of the three things the plate's inks separate. Each sentence carries the
-    offset and the angle that mount's shot really has, so a numeral moved
-    aside to keep the plate legible changes nothing that is read.
+    of the three things the plate's inks separate. Each sentence names the
+    hardpoint and carries the offset and the angle that mount's shot really
+    has, which is the whole of what the withdrawn numerals used to point at.
   -->
   <ul class="shots" [attr.aria-label]="plateLabel()">
     @for (shot of shots(); track shot.id) {

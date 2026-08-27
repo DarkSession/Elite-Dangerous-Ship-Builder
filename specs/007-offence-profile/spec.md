@@ -110,12 +110,12 @@ because it is why the first implementation shipped a third of the canvas.
   not line up with its hardpoints MUST be stated unavailable rather than drawn in part.
 - **FR-011**: The gunsight view is a diagram. It MUST be hidden from assistive technology, and every
   mark it draws MUST also be stated as text beside it, including a shot the plate could not place at
-  its true position. Each mount is drawn as the canvas draws an armed one: a mark where its shot
-  lands, and that mount's hardpoint numeral beside it. Whether a mount is armed and whether it is the
-  mount the workspace has selected MUST each be carried by that mount's own sentence as well as by
-  the ink of its mark; no distinction on this plate rests on colour alone. How a weapon is aimed MUST
-  be stated in that sentence, and is not drawn at all
-  (`design/canvas-contract.md`, review note 17).
+  its true position. Each mount is drawn as **one mark and no other**: a dot where its shot lands.
+  Whether a mount is armed and whether it is the mount the workspace has selected MUST each be
+  carried by that mount's own sentence as well as by the ink of its mark; no distinction on this
+  plate rests on colour alone. How a weapon is aimed, and which hardpoint a mark counts, MUST be
+  stated in that sentence, and neither is drawn at all
+  (`design/canvas-contract.md`, review notes 17 and 20).
 
   > **Re-drawn 2026-08-25.** The plate the canvas draws changed in four ways at once, and the
   > requirement follows the drawing: the field of view is `40` milliradians rather than `115`; the
@@ -141,6 +141,20 @@ because it is why the first implementation shipped a third of the canvas.
   > clear it MUST step out until it is, and MUST then be tied back to its own dot by a leader, as
   > feature 010's schematics explain a mark that has moved. The dot itself MUST NOT move to make
   > room — a dot is where the shot lands, and that is the reading.
+
+  > **The numerals are withdrawn, 2026-08-27** (maintainer's request), and with them the whole
+  > paragraph above: the placement, the leaders and the ring a crowded plate put them out on. A
+  > gunsight 172px across carrying a numeral for every hardpoint was a page of digits over a
+  > diagram, and every one of them was already the first thing that mount's own sentence says. What
+  > is left is one dot a mount, so the plate draws **no text at all**, and which mount a mark counts
+  > is read where the offset and the angle are read.
+  >
+  > The three states become three fills of one shape. The outline that told an empty hardpoint from
+  > an armed one is withdrawn in the same request — a 7px mark cannot carry a shape difference and
+  > an ink difference legibly, and an outline read as another kind of mark rather than as the
+  > absence of a weapon. An empty mount takes the armed mount's own hue gone stale, so it reads as
+  > _this mount, nothing on it_; the selected mount keeps the cool ink and takes it over either.
+  > Neither fact rests on the mark: both are in the mount's own sentence, which is unchanged.
 
 - **FR-012**: Every hardpoint the catalogue places MUST be drawn on the plate, whether or not the
   build has armed it, at the offset the package publishes for that mount. A hardpoint with nothing
@@ -173,13 +187,19 @@ because it is why the first implementation shipped a third of the canvas.
   > registers `007/FR-012` again.
 
 - **FR-013**: The mount the outfitting workspace currently has selected MUST be marked on the plate
-  and MUST be named as the selected mount in its own sentence beside it. The mark MUST NOT replace
-  what that mount's mark already reports — whether it is armed — and the selection MUST be read from
-  the same slot key feature 002's ledger and feature 010's hull schematics mark, so the three
-  drawings of one hull cannot disagree about which mount is open.
+  and MUST be named as the selected mount in its own sentence beside it. Whether that mount is armed
+  MUST still be stated in the same sentence, and the selection MUST be read from the same slot key
+  feature 002's ledger and feature 010's hull schematics mark, so the three drawings of one hull
+  cannot disagree about which mount is open.
 
   > **Added 2026-08-26**, and a sanctioned departure like FR-012: neither canvas relates its
   > gunsight plate to the mount its ledger has open (`design/canvas-contract.md`, review note 17).
+
+  > **Amended 2026-08-27.** This requirement used to rule that the selection mark may not replace
+  > what the mount's mark already reports, which was a rule about a plate that drew armed against
+  > empty as a fill against an outline. With the outline withdrawn (FR-011) a mark carries one fill,
+  > so the selected mount takes the selection ink whether or not it is armed and the sentence
+  > carries both facts — which is where the requirement always put the reading.
 
 ## Edge Cases
 
@@ -196,13 +216,14 @@ because it is why the first implementation shipped a third of the canvas.
   sits is a property of the hull, and it is exactly the reading a Commander with nothing fitted yet
   is after. Nothing is reported beneath the plate either way — the 2026-08-26 canvas draws no
   figures there.
-- A plate too crowded for a numeral to sit in any of its dot's four corners steps that numeral out
-  until it is clear of every other mark and draws a leader back to the dot it counts. The dot does
-  not move: two numerals sharing a few pixels is a drawing problem, and a dot in the wrong place
-  would be a wrong answer.
+- A plate crowded enough that two dots overlap draws them overlapping. A dot is where the shot
+  lands, and moving one to make it legible would be a wrong answer; the mount's own sentence states
+  the offset and the angle exactly, which is the reading either way. _Restated 2026-08-27: this edge
+  case used to describe stepping a crowded numeral out on a leader, and the numerals are withdrawn._
 - The selected mount may be an empty hardpoint, and is marked as selected either way — that is the
-  state a Commander is in while they decide what to put in it. It stays visibly empty while it is
-  selected: whether a mount is armed is not what the selection ink says.
+  state a Commander is in while they decide what to put in it. The mark then says _selected_ and its
+  sentence says both, because since 2026-08-27 one mark carries one fill: whether a mount is armed
+  is stated in words rather than drawn twice.
 - The target range reaches 5,000 m, past every maximum range the package publishes for a weapon on
   this application's reference hull, so the track can be moved to the distance being asked about
   rather than stopping short of it.

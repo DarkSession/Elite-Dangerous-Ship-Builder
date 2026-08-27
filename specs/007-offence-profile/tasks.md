@@ -712,6 +712,36 @@ recorded as such before being built (`design/canvas-contract.md`, review notes 1
       projects rest on this branch's pull request's `End-to-end (shard 1..6)` checks, for the reason
       recorded at the head of this document._
 
+## Phase 10: One mark a mount, and the block's own width
+
+Two more things the maintainer asked for on 2026-08-27, after seeing Phase 9 drawn. Both are
+properties of the **drawing**: no figure moves and every reading the block gives is still the
+package's own answer. The first is a departure recorded before it was built; the second is a canvas
+bound this document's own reading had missed (`design/canvas-contract.md`, review note 20).
+
+- [x] T060 Draw each hardpoint as one dot and nothing else. The numeral beside every mark goes, and
+      with it `src/app/domain/offence/numeral-placement.ts` and its suite, the leaders, the ring a
+      crowded plate sent them out on and the plate's own query container — a gunsight 172px across
+      carrying a numeral for every hardpoint was a page of digits over a diagram, and each of them
+      was already the first thing that mount's sentence says. The three states become three fills of
+      one shape: the empty mount's outline goes with the numerals and
+      `--edsb-surface-mount-empty` becomes the armed amber gone stale
+      (`--edsb-palette-amber-deep`, 4.08:1 on the plate's ground) rather than a text ink, and the
+      selection ink wins over it where a selected hardpoint is empty. Every fact stays in the
+      mount's own sentence, unchanged (`spec.md` FR-011, FR-012, FR-013).
+      _`src/styles/tokens/_semantic.scss`, `shot-convergence.{ts,html,scss}` and its suite,
+      `offence-analysis.spec.ts`, `e2e/offence-profile.spec.ts`, `e2e/coverage-ledger.ts`._
+- [x] T061 Stop the convergence block at the canvas's own `max-width: 508px`, at the leading edge of
+      its row. The block was built across the full width beneath the pair, which stood a 172px plate
+      in the middle of an 862px frame with the range field stretched out beside it. The bound is the
+      canvas's (@660195); `--edsb-measure-convergence-block` carries it.
+      _`src/styles/tokens/_{primitives,semantic}.scss`, `offence-analysis.scss`._
+- [x] T062 Re-run the feature's own e2e specs with the axe scan, and the checks the gate names.
+      _The selection assertion was the one that had to be rebuilt rather than trimmed: it read the
+      selected mount's number off the numeral drawn beside its dot. It now ties the mark to its
+      sentence by their shared place in one list rendered twice, and reads the hardpoint out of the
+      catalogue template's own `{{hardpoint}}` slot._
+
 ---
 
 ## Dependencies & execution order
@@ -735,6 +765,8 @@ recorded as such before being built (`design/canvas-contract.md`, review notes 1
   both; T054 depends on T052 and T053, and T055 on all four.
 - Phase 9 depends on Phase 8 and retunes what it drew. T056, T057 and T058 are independent of each
   other; T059 depends on all three.
+- Phase 10 depends on Phase 9 and withdraws part of what Phases 7 to 9 drew. T060 and T061 are
+  independent of each other; T062 depends on both.
 
 ### Parallel opportunities
 
