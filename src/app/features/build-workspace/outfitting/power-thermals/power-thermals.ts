@@ -129,8 +129,8 @@ const HARDPOINT_LABELS = {
 
 /** Megawatts to two places, as the canvas sets every power figure. */
 const MW_DIGITS = 2;
-/** Megajoules and their rates to one, as the canvas sets the distributor table. */
-const MJ_DIGITS = 1;
+/** The distributor table to one place, as the canvas sets every figure in it. */
+const DISTRIBUTOR_DIGITS = 1;
 /** Pips to one place, because half a pip is the step the ship moves in. */
 const PIP_DIGITS = 1;
 
@@ -511,7 +511,7 @@ export class PowerThermals {
         {
           kind,
           name,
-          capacity: this.#megajoules(capacitor.capacity),
+          capacity: this.#capacity(capacitor.capacity),
           ratedRecharge: this.#megajoulesPerSecond(capacitor.ratedRecharge),
           rechargeRate: this.#megajoulesPerSecond(capacitor.rechargeRate),
           // The blocks carry the allocation as a picture; this carries it as a
@@ -626,15 +626,31 @@ export class PowerThermals {
     });
   }
 
-  #megajoules(value: number): string {
-    return this.#messages.message('power.format.megajoules', {
-      value: this.#formatters.decimal(value, MJ_DIGITS),
+  /**
+   * A bank's capacity, in the unit the game's own panel writes after it.
+   *
+   * The figure is `capacity` exactly as the package returned it; what changed
+   * on 2026-08-27 is the unit written after it, from the SI `MJ` this table
+   * used to the `MW` the outfitting panel a Commander cross-checks it against
+   * writes. The two panels disagreeing on the unit reads as two different
+   * figures rather than one, and the reading a Commander is checking is the
+   * game's. Nothing is scaled or converted: `MJ` and `MW` here name the same
+   * number.
+   *
+   * The rates below keep `MJ/s`, which is the unit they are actually in and
+   * the one the canvas draws. So the column that is a pool and the two that
+   * are rates no longer share a unit, which is the other thing the change
+   * buys: `MJ` beside `MJ/s` invited the pool to be read as a third rate.
+   */
+  #capacity(value: number): string {
+    return this.#messages.message('power.format.megawatts', {
+      value: this.#formatters.decimal(value, DISTRIBUTOR_DIGITS),
     });
   }
 
   #megajoulesPerSecond(value: number): string {
     return this.#messages.message('power.format.megajoules-per-second', {
-      value: this.#formatters.decimal(value, MJ_DIGITS),
+      value: this.#formatters.decimal(value, DISTRIBUTOR_DIGITS),
     });
   }
 }

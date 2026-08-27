@@ -229,7 +229,15 @@ the one figure there that reports a group rather than a mark.
 
 ```ts
 export interface Capacitor {
-  /** Megajoules. */
+  /**
+   * Megajoules, which the screen writes `MW` after.
+   *
+   * The projection carries the package's figure and its real unit; the block
+   * that draws it takes the game's unit for a capacitor pool instead, so that
+   * this reading and the outfitting panel's agree (ruled 2026-08-27,
+   * `spec.md` FR-006). Nothing is converted on the way — the two units name
+   * one number.
+   */
   readonly capacity: number;
   /** Megajoules per second at the read allocation. */
   readonly rechargeRate: number;
@@ -245,8 +253,8 @@ export interface Capacitor {
    *
    * Here rather than on the screen: a fill is two package amounts divided, and
    * the projection is the one place allowed to divide them. The other two rows
-   * carry no fill, because megajoules and seconds share a scale with nothing
-   * beside them.
+   * carry no fill, because a stored pool and a duration share a scale with
+   * nothing beside them.
    */
   readonly drawFill: number | null;
   readonly rechargeFill: number | null;
@@ -262,9 +270,11 @@ Four of the six returned fields, because four is what the canvases draw. `netDra
 returned `weaponsPips` are not selected at all, so nothing downstream can blank, dash or zero one —
 the rule feature 005 set for `headroom`, `utilisation` and `withinBudget`.
 
-`CAPACITY` and `FULL FIRE` carry no bar: megajoules and seconds share a scale with nothing beside
-them. `DRAW` and `RECHARGE` are both MJ/s, share one, and are filled against the larger of the two
-(`design/canvas-contract.md`, review note 6).
+`CAPACITY` and `FULL FIRE` carry no bar: a stored pool and a duration share a scale with nothing
+beside them. `DRAW` and `RECHARGE` are both MJ/s, share one, and are filled against the larger of the
+two (`design/canvas-contract.md`, review note 6). `CAPACITY` is written `MW` — the game's unit for a
+capacitor pool rather than the package's or SI's, ruled 2026-08-27 with feature 005's distributor
+table, which states the same quantity. The unit is all that changed; the figure is the package's.
 
 `Endurance` exists so that `Infinity` never leaves the projection as a number. A positive finite
 result carries its seconds; `0` is `immediate`; `Infinity` is `sustained`, which says the recharge

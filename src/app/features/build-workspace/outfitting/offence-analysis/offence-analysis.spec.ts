@@ -469,20 +469,25 @@ describe('OffenceAnalysis', () => {
       ]);
     });
 
-    it('shows each field as the package returned it, in the package’s own units', () => {
+    it('shows each field as the package returned it, in the unit each one is ruled to take', () => {
       const loadout = populatedBuild();
       const { component } = render(loadout);
       const returned = BuildMetrics.of(loadout).weaponsCapacitorMetrics({ weaponsPips: 2 });
       const drawn = capacitorValues(component);
 
-      // Megajoules and megajoules per second. Canvas 1c labels `DRAW` and
-      // `RECHARGE` as `MW`; both package fields are MJ/s, and the package wins.
+      // The two rates carry the package's own unit: canvas 1c labels `DRAW`
+      // and `RECHARGE` as `MW`, both package fields are MJ/s, and the package
+      // wins. The capacity is the one exception and takes neither — it is the
+      // game's `MW`, the unit the outfitting panel writes after a capacitor
+      // pool, so this block and feature 005's distributor table agree with the
+      // panel and with each other (ruled 2026-08-27). The figures themselves
+      // are the package's throughout.
       expect(drawn['capacity']).toContain(returned.capacity.toFixed(2));
-      expect(drawn['capacity']).toContain('MJ');
+      expect(drawn['capacity']).toMatch(/ MW$/u);
       expect(drawn['recharge']).toContain(returned.rechargeRate.toFixed(2));
-      expect(drawn['recharge']).toContain('MJ/s');
+      expect(drawn['recharge']).toMatch(/ MJ\/s$/u);
       expect(drawn['draw']).toContain(returned.sustainedEnergyPerSecond.toFixed(2));
-      expect(drawn['draw']).toContain('MJ/s');
+      expect(drawn['draw']).toMatch(/ MJ\/s$/u);
     });
 
     it('names the allocation the four figures were read at, once under the block', () => {
@@ -605,8 +610,8 @@ describe('OffenceAnalysis', () => {
 
       // The draw and the recharge are the same quantity in the same unit and
       // are drawn against the larger of the two, so one of them fills its
-      // track exactly. A capacity in megajoules and a duration in seconds have
-      // nothing on this screen to be measured against, and get no track at all.
+      // track exactly. A stored pool and a duration have nothing on this screen
+      // to be measured against, and get no track at all.
       expect(fills['capacity']).toBeNull();
       expect(fills['endurance']).toBeNull();
       expect(Math.max(fills['draw'] ?? 0, fills['recharge'] ?? 0)).toBeCloseTo(1, 6);

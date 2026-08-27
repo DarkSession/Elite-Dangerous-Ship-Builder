@@ -80,7 +80,7 @@ The exact component and state obligations are in
   does not deal is stated by nothing at all, which is the reading both canvases give it.
 - Every bar is decorative and every figure it stands for is written beside it. The gunsight plate is
   hidden from assistive technology and each shot it draws is a sentence.
-- Owned strings use message keys. Damage rates, MJ, MJ/s, seconds, metres, milliradians, percentages,
+- Owned strings use message keys. Damage rates, MW, MJ/s, seconds, metres, milliradians, percentages,
   counts and ratings use active-locale formatters.
 - Canonical package weapon names stay source data; visible game text uses Almanac localization by
   symbol with disclosed canonical fallback.

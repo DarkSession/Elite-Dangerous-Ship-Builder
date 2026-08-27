@@ -661,7 +661,9 @@ test.describe('the status rail', () => {
 });
 
 test.describe('reading the firing endurance', () => {
-  test('draws the four capacitor fields in the package’s own units', async ({ page }) => {
+  test('draws the four capacitor fields in the units each of them is ruled to take', async ({
+    page,
+  }) => {
     await openOffence(page);
 
     const drawn = await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar');
@@ -673,13 +675,17 @@ test.describe('reading the firing endurance', () => {
       englishMessages['offence.capacitor.endurance'],
       englishMessages['offence.capacitor.capacity'],
     ]);
-    // Megajoules and megajoules per second. Canvas 1c labels `DRAW` and
-    // `RECHARGE` as `MW`, and both package fields are MJ/s.
-    expect(drawn[0][1]).toContain('MJ/s');
-    expect(drawn[1][1]).toContain('MJ/s');
-    expect(drawn[3][1]).toContain('MJ');
+    // The two rates keep the package's own unit — canvas 1c labels `DRAW` and
+    // `RECHARGE` as `MW`, both package fields are MJ/s, and the package wins.
+    // The capacity takes the game's `MW`, the same unit feature 005's
+    // distributor table writes after a bank's capacity (ruled 2026-08-27).
+    expect(drawn[0][1]).toMatch(/\d MJ\/s$/u);
+    expect(drawn[1][1]).toMatch(/\d MJ\/s$/u);
+    expect(drawn[3][1]).toMatch(/\d MW$/u);
+    // And nowhere else: the two rates are the rows that used to be argued over,
+    // and neither of them may quietly acquire the capacity's unit.
     const capacitor = await page.locator('.bars--capacitor').innerText();
-    expect(capacitor).not.toContain('MW');
+    expect(capacitor.match(/MW/gu)).toHaveLength(1);
   });
 
   test('moves the recharge and the endurance when the allocation moves', async ({ page }) => {
@@ -753,8 +759,8 @@ test.describe('reading the firing endurance', () => {
     expect(box?.height ?? Infinity).toBeLessThanOrEqual(2);
 
     // The draw and the recharge are the same quantity in the same unit and get
-    // a track each. A capacity in megajoules and a duration in seconds share a
-    // scale with nothing here, so neither gets one.
+    // a track each. A stored pool and a duration share a scale with nothing
+    // here, so neither gets one.
     await expect(capacitor.locator('.bar__track')).toHaveCount(2);
     await expect(capacitor.locator('.bar__track-absent')).toHaveCount(2);
   });

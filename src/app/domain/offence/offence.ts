@@ -105,7 +105,15 @@ export type CollectionMeaning = 'populated' | 'noFittedWeapons' | 'coverageUnava
  * `withinBudget`.
  */
 export interface Capacitor {
-  /** Megajoules. */
+  /**
+   * Megajoules, which the screen writes `MW` after.
+   *
+   * The projection carries the package's figure and its real unit; the block
+   * that draws it takes the game's unit for a capacitor pool instead, so that
+   * this reading and the outfitting panel's agree (ruled 2026-08-27,
+   * `spec.md` FR-006). Nothing is converted on the way — the two units name
+   * one number.
+   */
   readonly capacity: number;
   /** Megajoules per second at the read allocation. */
   readonly rechargeRate: number;
@@ -120,8 +128,8 @@ export interface Capacitor {
    *
    * The canvas gives those two rows a bar each and the other two none: draw
    * and recharge are the same quantity in the same unit and which is larger is
-   * the question the block answers, while a capacity in megajoules and a
-   * duration in seconds share a scale with nothing beside them.
+   * the question the block answers, while a stored capacity and a duration
+   * share a scale with nothing beside them.
    *
    * `null` for both where the larger is itself zero — a nothing-against-nothing
    * track reads as a figure of nothing, which is a different statement — and
