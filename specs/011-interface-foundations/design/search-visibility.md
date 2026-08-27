@@ -107,7 +107,7 @@ would keep working and only the crawl would stop.
 long-tail content: forty-odd `/ships/<symbol>` addresses, one per hull, each with real numbers on
 it. It cannot list them by hand, because the set of hulls belongs to the Almanac and a hard-coded
 list of hull symbols in this repository is exactly the private copy of package data that
-constitution I forbids — it would keep working and would stop tracking the package at the next pin
+constitution II forbids — it would keep working and would stop tracking the package at the next pin
 move. Enumerating them correctly means a generator script that reads the installed package and
 writes the sitemap, in the shape `pnpm run help:artifacts` already establishes. That is a build
 step, and a build step was out of the scope the owner chose. It is the highest-value follow-up on
@@ -150,7 +150,7 @@ form what the previous six findings only imply.
   build change. The canonical pointing at production is the same de-duplication by another route,
   and it costs nothing.
 - **Structured data for hulls.** A `Product`- or `Vehicle`-shaped node per hull would be game data
-  restated in this repository's markup. The Almanac owns those values (constitution I); a generated
+  restated in this repository's markup. The Almanac owns those values (constitution II); a generated
   hull sitemap is the right vehicle for hull-level search presence, not hand-written schema.
 - **A per-route title and description in the published static files.** The deploy step substitutes
   each route's canonical address into its copy, which needs nothing but the address it already has.

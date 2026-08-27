@@ -12,7 +12,7 @@
   Hull pages (`/ships/<symbol>`) are absent, and their absence is deliberate
   rather than forgotten: the set of hulls belongs to the Almanac, and a
   hand-written list of hull symbols here would be the private copy of package
-  data constitution I forbids. Listing them means a generator that reads the
+  data constitution II forbids. Listing them means a generator that reads the
   installed package, which is a build step. Recorded as the highest-value
   follow-up in specs/011-interface-foundations/design/search-visibility.md.
 -->
