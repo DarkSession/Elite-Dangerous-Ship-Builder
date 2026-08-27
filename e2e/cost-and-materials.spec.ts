@@ -1097,6 +1097,13 @@ async function fitMercenaryCargoRack(page: Page, slot: string): Promise<void> {
   }
   await fitCommitted(page);
 
+  // The mount, not the rail. A rail row that is already drawn stays drawn
+  // through the next fit, so `toBeVisible` on it is true before that fit has
+  // reached anything — and a caller that then reads the figure reads the total
+  // from before its own article. What is only true after *this* fit is that
+  // *this* mount carries the article, and the rail is composed from the same
+  // committed build in the same pass.
+  await expect(page.locator(`[data-slot-key="${slot}"]`)).toContainText(/merc-coin/i);
   await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toBeVisible();
 }
 
