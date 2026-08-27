@@ -228,7 +228,7 @@ disagrees or where the announcement is correct but unusable.
     its own term and value, and expect the two terms to distinguish which
     version is which without seeing them side by side; expect nothing to be
     said about what kind of build it is. In `FAQ`, expect each answer to be
-    read with the question it answers. In `LICENCE`, expect three summary lines
+    read with the question it answers. In `LICENCE`, expect four summary lines
     announced as a list of four separate claims, then the Frontier notice
     announced in the language it is actually in — expect the reader to switch
     voice or pronunciation for it while the interface is in another language,

@@ -1082,7 +1082,7 @@ describe('search metadata', () => {
     ...overrides,
   });
 
-  it('accepts four files that agree with each other and with the routes', () => {
+  it('accepts a set of files that agree with each other and with the routes', () => {
     assert.deepEqual(rules.searchMetadataViolations(complete()), []);
   });
 

@@ -129,9 +129,9 @@ jobs:
       # advertises is also published as a file that answers 200.
       #
       # The route list is read out of `sitemap.xml` rather than written here
-      # again: a fifth copy of it could drift from the other four, and this one
-      # would drift silently — the site would keep working and only the crawl
-      # would stop.
+      # again: a third copy of it — `app.routes.ts` and the sitemap are the two —
+      # could drift from them, and this one would drift silently. The site would
+      # keep working and only the crawl would stop.
       - name: Serve client-side routes as real addresses
         if: ${{ github.event_name == 'push' }}
         working-directory: dist/elite-dangerous-ship-builder/browser

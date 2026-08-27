@@ -173,9 +173,10 @@ form what the previous six findings only imply.
 | Crawl rules, map and installability                           | `public/robots.txt`, `public/sitemap.xml`, `public/manifest.webmanifest` |
 | That none of the above drifts apart                           | `searchMetadataViolations` in `scripts/check-interface-foundations.mjs`  |
 
-The last row is the point. Four files now repeat the production origin and the route list, and a
-route added without a sitemap entry, or an origin changed in one file and not the others, is a
-silent regression that nobody would notice for months. The checker refuses it instead.
+The last row is the point. Several files now repeat the production origin, the route list and the
+background colour between them, and a route added without a sitemap entry, an origin changed in one
+file and not the others, or a palette token changed under a manifest nobody reopened, is a silent
+regression that nobody would notice for months. The checker refuses it instead.
 
 Where that gate actually stands is worth being exact about: `pnpm run policy` runs inside
 `pnpm run check`, which this repository asks a contributor to run before proposing a change
@@ -186,6 +187,6 @@ absolute, if any address is not under the declared origin, if a route ends in a 
 canonical or `og:url` substitution did not take. A route below the root is published rather than
 refused — `/ships/Anaconda` becomes `ships/Anaconda.html` — since that is an address, not a
 directory redirect.
-So the four-file agreement is checked where a change is written, and the one-file-per-route
+So the agreement between those files is checked where a change is written, and the one-file-per-route
 publication is checked where it is published. Putting `pnpm run policy` in CI as well is the
 obvious follow-up, and it is a decision about every checker rather than about this one.

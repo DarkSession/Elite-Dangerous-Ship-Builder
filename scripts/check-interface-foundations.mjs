@@ -1472,11 +1472,12 @@ function linkHref(document, rel) {
  * Checks that nothing drifts between the files that state where this
  * application lives, what each of its pages is, and what colour it is.
  *
- * The production origin is repeated in `src/index.html`, `public/robots.txt`,
- * `public/sitemap.xml` and `public/manifest.webmanifest`, and again as the host
- * in `public/CNAME`; the route list is repeated in `app.routes.ts` and the
- * sitemap; the background colour is repeated in the head's `theme-color` and in
- * two members of the manifest. Every one of those repetitions is a silent
+ * The production origin is repeated in `src/index.html`, `public/robots.txt`
+ * and `public/sitemap.xml`, and again as the host in `public/CNAME`; the route
+ * list is repeated in `app.routes.ts` and the sitemap; the background colour is
+ * repeated in the head's `theme-color` and in two members of the manifest. The
+ * manifest states the origin nowhere, which is itself checked: a root-absolute
+ * `start_url`, `scope` or icon would be a fifth copy, and an `id` a sixth. Every one of those repetitions is a silent
  * regression waiting to happen — a route added with no sitemap entry, a domain
  * moved in one file and not the others, a palette token changed under a
  * manifest nobody reopened — and none of them fails anything at runtime. They

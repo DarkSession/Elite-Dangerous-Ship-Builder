@@ -12,7 +12,7 @@ in its place, and — plainly — that no run has been performed.
 
 Feature 011 owns one shared protocol rather than one per feature, so a reader is asked to hear a
 whole application rather than a slice of one. This feature's steps are **step 17** of
-[`e2e/manual/screen-reader.protocol.md`](../../../e2e/manual/screen-reader.protocol.md), version 5,
+[`e2e/manual/screen-reader.protocol.md`](../../../e2e/manual/screen-reader.protocol.md), version 8,
 and its result rows are the "Help, licences and provenance" section of
 [`e2e/manual/results/screen-reader.md`](../../../e2e/manual/results/screen-reader.md).
 
@@ -65,7 +65,7 @@ in feature 011's ten Chromium and Firefox layout projects unless a line says oth
 | Section order and heading nesting        | the three sections in the reference's order; each question a heading one level under the `FAQ` heading                                                                                                                       | same file, "nests the questions under the FAQ heading rather than beside it" |
 | Three sentences, then two identity facts | purpose, maintainer and provenance in that order ahead of the facts; exactly two facts, distinct terms, non-empty values, and no release wording anywhere in the view                                                        | same file, "which artifact a Commander is looking at"                        |
 | Answers read with their questions        | every topic, once each, in the declared order, question and answer resolved from the active catalogue                                                                                                                        | same file, "the questions the modal answers"                                 |
-| Three summary claims, then the notice    | the three summary lines above a disclaimer byte-identical to a fresh generator extraction of root `LICENSE`                                                                                                                  | same file, "the one legal body the modal embeds"                             |
+| Four summary claims, then the notice     | the four summary lines above a disclaimer byte-identical to a fresh generator extraction of root `LICENSE`                                                                                                                   | same file, "the one legal body the modal embeds"                             |
 | The notice in its own language           | the excerpt region carries `lang="en"` while the interface root is `de`                                                                                                                                                      | same file, "sweeps the modal in the other shipped locale"                    |
 | One control, nothing that leaves         | exactly one button in the modal, no `a[href]`, no popup, no request to any origin                                                                                                                                            | same file, "the modal offers no way out of the application"                  |
 | Structure, names, roles, states          | axe over the closed background and every open state; heading order, target size, document overflow and clipping alongside it                                                                                                 | same file, "the floor beneath every open state"                              |

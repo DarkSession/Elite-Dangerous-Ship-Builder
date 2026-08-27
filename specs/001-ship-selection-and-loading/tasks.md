@@ -535,7 +535,7 @@ planned and which was built as two buttons inside the library instead.
 > on the first screen said what the application was. The owner's call is that the landing screen
 > carries the product name.
 
-- [x] T072 Rename `catalogue.title` to `Ship Builder` in both shipped locales, and rename with it
+- [x] T187 Rename `catalogue.title` to `Ship Builder` in both shipped locales, and rename with it
       every string that names that screen: `navigation.catalogue`, which the bar's insignia carries
       as its accessible name, `hullDetail.back`, and the empty workspace's
       `workspace.empty.description` and `workspace.empty.action`. One screen, one name, wherever it
@@ -543,7 +543,7 @@ planned and which was built as two buttons inside the library instead.
       _German keeps the English string for the two that are the product name, and
       `REVIEWED_IDENTICAL_VALUES` records why: a product renamed in one language is a different
       product._
-- [x] T073 Record the departure in `design/hull-catalogue.md` as this screen's second live
+- [x] T188 Record the departure in `design/hull-catalogue.md` as this screen's second live
       divergence from canvas 1a, which writes `SHIPYARD` there, and correct the canvas table's
       screen-chrome row to say which of the two the application draws.
 

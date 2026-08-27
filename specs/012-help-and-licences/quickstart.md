@@ -217,7 +217,7 @@ Expected:
 Complete the manual screen-reader protocol: discover the frame entry from a no-build and an active
 capability, hear one labelled modal, confirm background isolation, read the `ABOUT`, `FAQ` and
 `LICENCE` headings with their facts, questions and answers, hear the two version facts as two
-distinct labelled facts, hear each question as a heading over its own answer, reach the three licence
+distinct labelled facts, hear each question as a heading over its own answer, reach the four licence
 summary lines as a list and then the excerpt in its declared language, then close and verify the
 unchanged underlying capability.
 

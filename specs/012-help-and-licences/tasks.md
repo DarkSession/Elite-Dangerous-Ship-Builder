@@ -287,30 +287,30 @@ request of any origin.
 > into a list a reader skips: five of its seven answers restated something the interface, the
 > licence summary or `ABOUT` already carried.
 
-- [x] T068 Reword `help.purpose` to "Ship Builder is an Elite Dangerous outfitting bench." in both
+- [x] T082 Reword `help.purpose` to "Ship Builder is an Elite Dangerous outfitting bench." in both
       shipped locales, and add `help.maintainer` beside it. `ABOUT` draws the maintainer sentence
       after the purpose and before the version facts.
-- [x] T069 Withdraw `buildLinkPrivacy`, `accountsUploadsTelemetry`, `offlineAssets`,
+- [x] T083 Withdraw `buildLinkPrivacy`, `accountsUploadsTelemetry`, `offlineAssets`,
       `hullFactsAndBuildResults` and `almanacOwnership` from `HELP_TOPIC_IDS`,
       `scripts/help-topic-definitions.mjs` and both locale catalogues. `browserPersistence` and
       `completedEngineeringGrades` remain, in that order.
       _Each withdrawn answer failed the test the two survivors pass: it answered something no
       Commander has to open help to learn._
-- [x] T070 Return the once-per-application Almanac credit to `ABOUT` as `help.provenance`, drawn
+- [x] T084 Return the once-per-application Almanac credit to `ABOUT` as `help.provenance`, drawn
       after the maintainer sentence. Feature 002's voice ruling of 2026-08-22 is why it has to
       exist somewhere in this feature; the topic that had been holding it since 2026-08-25 is gone
-      with T069, and dropping the credit with it would leave around thirty deliberately uncredited
+      with T083, and dropping the credit with it would leave around thirty deliberately uncredited
       strings elsewhere with nothing behind them.
-- [x] T071 Amend the specification to match: the scope sentence, the 2026-08-20 comparison-set
+- [x] T085 Amend the specification to match: the scope sentence, the 2026-08-20 comparison-set
       answer, story 2 item 3, story 3 item 1, FR-008, FR-010, SC-003, SC-004 and the offline edge
       case. Record the three questions and answers of the 2026-08-27 session above them.
-- [x] T072 [P] Carry the same change into `contracts/help-navigation.md` (the reading order, the
+- [x] T086 [P] Carry the same change into `contracts/help-navigation.md` (the reading order, the
       topic bullets, the governing-reference table and the content-review gate),
       `design/help-topic-review.md` (the five reviews go; the two that ship stay),
       `design/reference-review.md` (both paragraphs that warned a later pass about the credit),
       `design/help-and-licences.md`, `design/screen-inventory.md`, `data-model.md`, `quickstart.md`
       and `plan.md`.
-- [x] T073 [P] Cover it: the `ABOUT` prose order in `help-dialog.component.spec.ts` and
+- [x] T087 [P] Cover it: the `ABOUT` prose order in `help-dialog.component.spec.ts` and
       `e2e/help-and-licences.spec.ts`, the credit and the maintainer line in
       `help.presenter.spec.ts`, the two-topic set in `help-topic.spec.ts` and
       `scripts/check-help-topics.test.mjs`, the five withdrawn questions asserted absent in
