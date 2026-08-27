@@ -338,10 +338,10 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
  * The two partial-roll payloads feature 002 already tests the package against.
  *
  * Transcribed from `src/app/domain/outfitting/outfitting.fixtures.ts`, where
- * both are documented with the package behaviour they provoke: a dirty drive
- * at grade 5 is a recipe the package identifies, so its partial roll is
- * completed and reported; a grade-5 `FSD_LongRange` is a pre-engineered reward,
- * so a partial roll of it is a state the package declines to identify and the
+ * both are documented with the package behaviour they provoke: dirty drives at
+ * grade 5 are a recipe the package identifies, so their partial roll is
+ * completed and reported; that same recipe named against a frame shift drive is
+ * one the package can neither roll nor match to a catalogued article, so the
  * whole candidate is refused. They are duplicated here rather than imported
  * because that module reaches into the Almanac, which this suite's transpiler
  * does not resolve — and made up here by nobody, because a payload this suite
@@ -362,11 +362,13 @@ const SUPPORTED_PARTIAL_QUALITY = {
 /**
  * The payload whose partial engineering the package cannot complete.
  *
- * Transcribed with its sibling above from `outfitting.fixtures.ts`: at full
- * grade this drive is a pre-engineered reward, so a partial roll of it is a
- * state the package declines to identify and the whole candidate is refused
- * before anything is activated. A refusal has no half-outcome and therefore no
- * workspace state of its own — it is reported where the payload arrived.
+ * Transcribed with its sibling above from `outfitting.fixtures.ts`: the frame
+ * shift drive's engineering menu does not offer `Engine_Dirty`, and no
+ * catalogued article of that module answers to it, so the package can neither
+ * roll the recipe nor identify an article carrying it and the whole candidate
+ * is refused before anything is activated. A refusal has no half-outcome and
+ * therefore no workspace state of its own — it is reported where the payload
+ * arrived.
  */
 const UNSUPPORTED_PARTIAL_QUALITY = {
   event: 'Loadout',
@@ -375,7 +377,7 @@ const UNSUPPORTED_PARTIAL_QUALITY = {
     {
       Slot: 'FrameShiftDrive',
       Item: 'Int_Hyperdrive_Size6_Class5',
-      Engineering: { BlueprintName: 'FSD_LongRange', Level: 5, Quality: 0.42 },
+      Engineering: { BlueprintName: 'Engine_Dirty', Level: 5, Quality: 0.42 },
     },
   ],
 };
