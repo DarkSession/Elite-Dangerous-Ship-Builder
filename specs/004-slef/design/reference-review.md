@@ -65,7 +65,7 @@ The source is a visual/interaction reference, not executable behavior or authori
 ```text
 Shared host action
 ├── Import Build layer
-│   ├── exact labelled draft + byte state
+│   ├── exact labelled draft
 │   ├── status + package diagnostic/candidate content
 │   ├── explicit actions
 │   └── shared replacement confirmation -> commit -> workspace (002 notice, 003 rail)
@@ -128,8 +128,14 @@ Written after the implementation, so the record is what happened rather than wha
   mark rather than reflowing the column.
 - **A stale payload says why it went away.** The canvas has no state for a build edited after its
   export was made. An empty field with no explanation reads as broken.
-- **The one status line carries every import state.** The canvas draws `AWAITING INPUT`; the same line
-  says the byte count, the inspection, and how a cancelled or superseded attempt ended.
+- **The one status line carries every import state.** It says how a cancelled, refused or superseded
+  attempt ended, and nothing at all before there has been one.
+
+  **Narrowed 2026-08-26 (Commander request).** It used to also draw the canvas's own `AWAITING INPUT`
+  and the draft's byte count. Neither is a state worth a line: "awaiting input" names an empty field a
+  Commander is looking at, and a payload's size in bytes is a fact about a transport rather than about
+  a build. The line now says something only when something has happened.
+
 - **The refusal is said once, by the field.** `edsb-textarea-field` renders it and associates it, so a
   reader who lands on the payload hears why it was refused. A second copy beside it was written,
   measured against the canvas, and removed.

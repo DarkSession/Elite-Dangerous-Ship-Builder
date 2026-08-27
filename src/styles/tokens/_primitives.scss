@@ -374,6 +374,22 @@
   // hull, so the region reserves its height before a schematic is fetched.
   --edsb-measure-plate-ratio: 720 / 292;
 
+  // How wide one anatomy plate is allowed to get.
+  //
+  // A plate's height is its width over the ratio above, and that ratio cannot
+  // move: the drawing's own `viewBox` is built to it, so the marks over the
+  // hull would drift off it if the box the plate draws in were any other shape.
+  // The width is therefore the only lever, and without one the block grew with
+  // the window — 282px of a 1560 screen, 355px at 1920, 485px at 2560, which is
+  // more than half of what a Commander can see given to two drawings that were
+  // finished at the first of those (Commander request 2026-08-26).
+  //
+  // The number is canvas 1c's own: its 862px centre column, less the block's
+  // inset and the gap between the plates, divided in two. So at the width the
+  // canvas was drawn at nothing moves, and past it the anatomy stops taking
+  // room the ledger and the bench below it can use.
+  --edsb-measure-anatomy-plate: 25.25rem;
+
   // The same node badge, set on the hull instead of in a ledger row. Canvas 1c
   // draws it `clamp(14px, 3.06cqw, 22px)` square with the number at
   // `clamp(7px, 1.39cqw, 10px)` and the engineering mark at
@@ -386,6 +402,13 @@
 
   // Canvas 1c's power panel: `min-height: 328px`, and the 16px bars its
   // priority groups, module draws and heat scenarios are all drawn with.
+  // The column canvas 1d stands `H‑PTS` and `GRP n` in, at 40px, so the mode
+  // strip begins exactly where the bars under it begin. Wider here because
+  // neither label is abbreviated — the strip is named `Hardpoints` and a group
+  // is `Group n` — and stated as a floor rather than a width, so a translation
+  // longer than either still fits and the two only stop agreeing where one of
+  // them outgrows it.
+  --edsb-measure-band-name: 4.5rem;
   --edsb-measure-power-bar: 0.5625rem; // 9
 
   // Canvas 1c's drives panel: the mass bar is a 26px band, taller than any
@@ -396,6 +419,25 @@
   // them at.
   --edsb-measure-mass-bar: 1.625rem; // 26
   --edsb-measure-mass-swatch: 0.625rem; // 10
+
+  // The room `MAX 1,890 t` needs at the end of that bar's mark row, and the
+  // narrowest the `OPTIMAL 1,260 t` beside it may be squeezed to.
+  //
+  // The two share one line under the track, the optimal centred on its own tick
+  // and the maximum at the end, and the canvas draws them close enough to touch:
+  // at its own 296px track the pair is over by two pixels. So the optimal is
+  // capped at twice the room left between its tick and the reserve below, and
+  // wraps its name over its figure rather than reaching the maximum. The reserve
+  // is a little over the widest that row's maximum runs — `MAX 1,944 t` measures
+  // 74px.
+  //
+  // There is no floor beside it, and there was: 3.5rem, set above the widest
+  // figure so a squeezed mark could lose its line but never break a number
+  // across two. Measured on the card as it is actually drawn, the floor was
+  // the collision — the cap works out at 40px there and the floor held the
+  // label at 56, eight pixels past where the maximum's words begin, and twelve
+  // past at a doubled text size. The room either side of a tick is whatever the
+  // bar leaves, which is not a quantity a floor can promise anything about.
 
   // Canvas 1c's offence panel.
   //
@@ -472,6 +514,24 @@
   // text size instead of trapping more rows in the same pixels at 200%.
   --edsb-measure-material-list: 11.5rem;
 
+  // What each of the bench's two panels needs before it is a panel rather than
+  // a strip.
+  //
+  // Canvas 1c draws the workspace over a `min-height: 880px`, which leaves the
+  // bench 574px under the plates and divides it into a 292px fitting panel and
+  // a 266px editor. The first of those is the head, the manifest's column rule
+  // and five rows — the point at which the list is a list rather than a
+  // glimpse. Held to a ratio alone the panel followed the window down instead:
+  // at 900px it drew four rows and at 700px it drew two (Commander request
+  // 2026-08-26).
+  //
+  // The editor's is the smaller figure because it is the one that can be read a
+  // line at a time: a recipe, the grade under it and the first comparisons. It
+  // is what the fitting panel's floor is measured against, so the two can never
+  // add up to more than the bench they are in.
+  --edsb-measure-fitting-panel: 18rem;
+  --edsb-measure-editor-panel: 10rem;
+
   // One of canvas 1d's six key readings, at the narrowest it may be drawn.
   //
   // The artboard sets all six across a 390px screen: 362px once the band's own
@@ -497,12 +557,28 @@
   // `fr` says, because there is nothing left over for it to run away with once
   // the rail has its 216px.
   --edsb-measure-family-rail: 13.5rem;
+  // How wide that rail is allowed to get where the column has room to spare.
+  //
+  // 216px is the canvas's figure for the canvas's own 862px centre column — a
+  // quarter of it. Held at 216 everywhere the rail stopped being a quarter and
+  // started being a sliver: at 2560 the pane beside it was 1595px of mostly
+  // empty row while seventeen family names went on wrapping in 216
+  // (Commander request 2026-08-26). It now takes a quarter of what it is
+  // actually given, bounded — the bound is where a family name stops needing
+  // the width, and past it the rows beside it are the better home for the
+  // pixels.
+  --edsb-measure-family-rail-max: 20rem;
+  --edsb-measure-family-rail-share: 26%;
   --edsb-measure-family-gap: 0.875rem;
   --edsb-measure-manifest-pane: 29.375rem;
   --edsb-measure-candidate-class: 4.375rem;
   --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
+  // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
+  // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
+  // wants a button around it rather than a band.
+  --edsb-measure-grade-step: 2.375rem; // 38
 
   // Canvas 1c's defence rows: the 46px resistance column and the 56px value
   // column every figure in the two cards is right-aligned inside. They are

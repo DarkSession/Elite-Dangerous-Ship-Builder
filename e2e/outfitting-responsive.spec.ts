@@ -223,7 +223,11 @@ test.describe('the composition this width has room for', () => {
     expect(order).toEqual([
       // The region's own heading, hidden because neither canvas draws one.
       'visually-hidden',
-      'outfitting__feedback',
+      // Two notices, not three. The import-completion notice left this stack on
+      // 2026-08-26 (Commander request): what the Almanac completed while a build
+      // was read in is a remark about the build a Commander now has, not a
+      // reason they cannot have one, so it stands under `BUILD STATUS` in the
+      // rail beside the package's other reading of the same build.
       'outfitting__feedback',
       'outfitting__feedback',
       'outfitting__ledger-region',

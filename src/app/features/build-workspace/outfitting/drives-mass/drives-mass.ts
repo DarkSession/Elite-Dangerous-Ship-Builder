@@ -424,12 +424,13 @@ export class DrivesMass {
     if (!curve) {
       return [];
     }
+    const optimal = this.massBar()?.optimal ?? null;
     return [
       {
         id: 'optimal',
         label: this.#messages.message('drives.thrusters.optimal-mass'),
         value: this.#tonnes(curve.optMass),
-        position: this.massBar()?.optimal ?? null,
+        position: optimal,
       },
       {
         id: 'maximum',
@@ -584,10 +585,12 @@ export class DrivesMass {
         id: 'opt-mass',
         tone: 'strong',
         label: this.#messages.message('drives.fsd.optimal-mass'),
-        // The canvas's `6A + MASS MANAGER`: which experimental effect this
-        // optimal mass is the result of. The class and rating beside it on the
-        // canvas are already on the card's identity line and are not repeated.
-        detail: this.#experimentalEffect(),
+        // The canvas's `6A + MASS MANAGER · 658 T OF HEADROOM`: which
+        // experimental effect this optimal mass is the result of, and how much
+        // more the build can take on before it stops jumping the way the rows
+        // above say it does. The class and rating beside them on the canvas are
+        // already on the card's identity line and are not repeated.
+        detail: this.#optimalMassDetail(),
         // Null on a drive the package cannot read its own constants off. The
         // row stays, and says it has no figure rather than showing a zero.
         value: drive.optMass === null ? null : this.#tonnes(drive.optMass),
@@ -617,6 +620,54 @@ export class DrivesMass {
     }
     return facts;
   });
+
+  /**
+   * The canvas's qualifier beside `FSD optimal mass`.
+   *
+   * The drive's experimental effect and the mass this build has left under that
+   * optimal, joined the way the canvas joins them, and either alone where the
+   * other has nothing to say.
+   */
+  #optimalMassDetail(): string | null {
+    const effect = this.#experimentalEffect();
+    const headroom = this.#headroom();
+    if (effect === null || headroom === null) {
+      return effect ?? headroom;
+    }
+    return this.#messages.message('drives.fsd.optimal-mass.detail', { effect, headroom });
+  }
+
+  /**
+   * The canvas's `658 T OF HEADROOM`: the drive's optimal mass less this load.
+   *
+   * Not a calculation performed on the game's behalf but the difference between
+   * two package answers already on this screen — the drive's own `optMass` and
+   * the `buildMass(load).total` the other card heads with — which is what a
+   * headroom is. Both have to be there: a load the package could not settle
+   * leaves the row with its optimal mass and no qualifier rather than a headroom
+   * measured against a mass that was assumed (FR-008, constitution IV).
+   *
+   * A build at or over the optimal mass is told how far over instead. A negative
+   * headroom is a figure with a sign in front of it rather than a sentence.
+   */
+  #headroom(): string | null {
+    const view = this.view();
+    // Named as the package names them, so the ownership rule reads this line as
+    // the combination it is. A local called something else would slip past a
+    // fence that is watching for these words, and a fence got past quietly is
+    // worse than no fence: the marker below is the record that this crossing
+    // was ruled on, and it only records anything if there was something to
+    // cross (`scripts/policy/mobility-jump-ownership.mjs`).
+    const optMass = view?.drive.optMass;
+    const total = view?.thrusters.mass?.total;
+    if (optMass === null || optMass === undefined || total === undefined) {
+      return null;
+    }
+    const gap = optMass - total; // policy-allow: FR-008's headroom, ruled 2026-08-26
+    return gap >= 0
+      ? this.#messages.message('drives.fsd.optimal-mass.headroom', { mass: this.#tonnes(gap) })
+      : this.#messages.message('drives.fsd.optimal-mass.over', { mass: this.#tonnes(-gap) });
+  }
 
   /**
    * The drive's experimental effect, in the Commander's language.

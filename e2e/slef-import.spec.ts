@@ -196,7 +196,16 @@ test.describe('what the layer refuses, and what it leaves alone', () => {
     await paste(page, JSON.stringify([{ header: {}, data: {} }]));
     await submit(page);
 
-    const list = layer(page).getByRole('list', { name: /rejected/i });
+    // Behind `Show advanced` since 2026-08-26: the refusal says what happened
+    // in one sentence, and the package's own diagnostics are what a Commander
+    // asks for when that sentence is not enough (Commander request).
+    const list = layer(page).getByRole('list', { name: /refused/i });
+    await expect(list).toHaveCount(0);
+
+    await layer(page)
+      .getByRole('button', { name: /show advanced/i })
+      .click();
+
     await expect(list).toBeVisible();
     // The package's own five facts, not a summary of them.
     await expect(list.getByText(/entries\[0\]/).first()).toBeVisible();
@@ -337,19 +346,32 @@ test.describe('the layer’s semantics', () => {
     await expect(described.filter({ hasText: /json/i }).first()).toBeVisible();
   });
 
-  test('says the size and the state on one line, in words', async ({ page }) => {
+  test('says nothing on its one line until something has happened', async ({ page }) => {
+    // Narrowed 2026-08-26 (Commander request). The line used to draw the
+    // canvas's `AWAITING INPUT` and then the draft's size in bytes. Neither is
+    // a state worth a line of a layer: the first names an empty field a
+    // Commander is looking at, and the second is a fact about a transport
+    // rather than about a build.
     await page.goto('/ships');
     await openImport(page);
     const status = layer(page).locator('p[data-bidi-isolate]').first();
 
-    await expect(status).toHaveText(/awaiting input/i);
+    await expect(status).toHaveText('');
 
     await paste(page, JOURNAL_EVENT);
 
-    await expect(status).toHaveText(/\d/);
-    // One line, one fact: the byte count replaces the prompt rather than
-    // joining it.
-    await expect(status).not.toHaveText(/awaiting input/i);
+    await expect(status).toHaveText('');
+
+    // Nor after a refusal: that is said by the field the payload is in, and
+    // saying it here as well would be the same fact twice on one screen.
+    await paste(page, '{');
+    await submit(page);
+    await expect(status).toHaveText('');
+    await expect(
+      layer(page)
+        .getByText(/could not be read|refused|invalid/i)
+        .first(),
+    ).toBeVisible();
   });
 
   test('gives every diagnostic its five facts, each labelled', async ({ page }) => {
@@ -358,8 +380,12 @@ test.describe('the layer’s semantics', () => {
     await paste(page, JSON.stringify([{ header: {}, data: {} }]));
     await submit(page);
 
+    await layer(page)
+      .getByRole('button', { name: /show advanced/i })
+      .click();
+
     const list = layer(page)
-      .getByRole('list', { name: /diagnostic|almanac/i })
+      .getByRole('list', { name: /refused/i })
       .first();
     await expect(list).toBeVisible();
     const entry = list.getByRole('listitem').first();

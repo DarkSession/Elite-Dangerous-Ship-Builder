@@ -395,17 +395,24 @@
   // it draws between them is taken out (feature 001 build-library design).
   --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
   --edsb-layout-family-rail: var(--edsb-measure-family-rail);
+  --edsb-layout-family-rail-max: min(
+    var(--edsb-measure-family-rail-max),
+    var(--edsb-measure-family-rail-share)
+  );
   --edsb-layout-family-gap: var(--edsb-measure-family-gap);
   --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
+  --edsb-layout-grade-step: var(--edsb-measure-grade-step);
   --edsb-layout-defence-resist: var(--edsb-measure-defence-resist);
   --edsb-layout-defence-value: var(--edsb-measure-defence-value);
 
   --edsb-layout-mount-box: var(--edsb-measure-mount-box);
   --edsb-layout-node-box: var(--edsb-measure-node-box);
   --edsb-layout-plate-ratio: var(--edsb-measure-plate-ratio);
+  --edsb-layout-anatomy-plate: var(--edsb-measure-anatomy-plate);
   --edsb-layout-node-mark: var(--edsb-measure-node-mark);
+  --edsb-layout-band-name: var(--edsb-measure-band-name);
   --edsb-layout-power-bar: var(--edsb-measure-power-bar);
   --edsb-layout-mass-bar: var(--edsb-measure-mass-bar);
   --edsb-layout-mass-swatch: var(--edsb-measure-mass-swatch);
@@ -422,6 +429,8 @@
   --edsb-layout-insignia-width: var(--edsb-measure-insignia-width);
   --edsb-layout-insignia-height: var(--edsb-measure-insignia-height);
   --edsb-layout-material-list: var(--edsb-measure-material-list);
+  --edsb-layout-fitting-panel: var(--edsb-measure-fitting-panel);
+  --edsb-layout-editor-panel: var(--edsb-measure-editor-panel);
   --edsb-layout-key-figure: var(--edsb-measure-key-figure);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
   --edsb-layout-menu-row: var(--edsb-measure-menu-row);

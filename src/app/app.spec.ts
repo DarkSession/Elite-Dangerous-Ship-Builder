@@ -155,6 +155,7 @@ class FakeUpdates {
   reloads = 0;
 
   #listener: ((event: VersionEvent) => void) | null = null;
+  #grace: (() => void) | null = null;
 
   onVersionEvent(listener: (event: VersionEvent) => void): () => void {
     this.#listener = listener;
@@ -176,16 +177,44 @@ class FakeUpdates {
     return () => {};
   }
 
+  after(_milliseconds: number, run: () => void): () => void {
+    this.#grace = run;
+    return () => (this.#grace = null);
+  }
+
   /** The worker reporting on this page's version. */
   report(event: VersionEvent): void {
     this.#listener?.(event);
   }
+
+  /** The grace period under the overlay running out. */
+  expire(): void {
+    this.#grace?.();
+  }
+}
+
+/**
+ * `<dialog>` without the native modal methods, which jsdom does not implement.
+ *
+ * The overlay is a layer, and a layer calls them the moment it opens. What
+ * these tests are about is what the shell decides to put up, not what a
+ * browser does with a dialog element once it is up.
+ */
+function stubNativeDialog(): void {
+  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+  };
+  prototype['close'] = function close(this: HTMLDialogElement) {
+    this.removeAttribute('open');
+  };
 }
 
 describe('App and a newly published version', () => {
   let updates: FakeUpdates;
 
   beforeEach(async () => {
+    stubNativeDialog();
     updates = new FakeUpdates();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
@@ -233,25 +262,48 @@ describe('App and a newly published version', () => {
     expect(textIn(fixture)).not.toContain(BUNDLED_ENGLISH['update.ready.notice']);
   });
 
-  it('states a waiting version as ordinary visible content beside the control that applies it', () => {
+  it('says what is about to happen on the overlay, before anything happens', () => {
     const fixture = render('ready');
 
-    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.ready.notice']);
-    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.ready.detail']);
-    expect(actionNamed(fixture, BUNDLED_ENGLISH['update.ready.action'])).not.toBeNull();
-  });
-
-  it('never starts the application over until the Commander asks', () => {
-    render('ready');
-
+    expect(fixture.componentInstance.updateOverlay()).toBe(true);
+    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.notice']);
+    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.detail']);
+    // Both ways out of it are named on it: go now, or not now.
+    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.now']);
+    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.postpone']);
+    // Nothing has been replaced yet.
     expect(updates.activations).toBe(0);
     expect(updates.reloads).toBe(0);
   });
 
-  it('activates the waiting version and starts over when the control is used', async () => {
+  it('says the same thing once, on the overlay and not on the shell behind it', () => {
+    // The shell under a modal is inert, so a notice and a control there would
+    // be a second copy of this one that nobody can reach (feedback contract).
     const fixture = render('ready');
 
-    actionNamed(fixture, BUNDLED_ENGLISH['update.ready.action'])?.click();
+    expect(fixture.componentInstance.updateStatus()).toBeNull();
+    expect(fixture.componentInstance.updateAction()).toBeNull();
+  });
+
+  it('offers the version again on the shell once the overlay is postponed', async () => {
+    const fixture = render('ready');
+
+    fixture.componentInstance.postponeUpdate();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.updateOverlay()).toBe(false);
+    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.ready.notice']);
+    expect(actionNamed(fixture, BUNDLED_ENGLISH['update.ready.action'])).not.toBeNull();
+    // And nothing restarts behind the dismissal.
+    updates.expire();
+    await settled();
+    expect(updates.reloads).toBe(0);
+  });
+
+  it('activates the waiting version and starts over when the grace period runs out', async () => {
+    render('ready');
+
+    updates.expire();
     // The restart is asynchronous: activation has to land before the page is
     // started over, or the shell would come back asking the old version for
     // chunks the new one renamed.
@@ -261,7 +313,20 @@ describe('App and a newly published version', () => {
     expect(updates.reloads).toBe(1);
   });
 
-  it('announces a waiting version politely, once', () => {
+  it('goes at once when a Commander would rather not wait it out', async () => {
+    const fixture = render('ready');
+
+    fixture.componentInstance.applyUpdateNow();
+    await settled();
+
+    expect(updates.activations).toBe(1);
+    expect(updates.reloads).toBe(1);
+  });
+
+  it('announces a waiting version politely, once, and says only what stays true', () => {
+    // The published version, not the restart. An announcement is spoken once
+    // and cannot be taken back, and the restart can be called off — so the
+    // sentence that reaches the outlet is the one that survives a "not now".
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
 

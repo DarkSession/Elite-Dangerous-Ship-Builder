@@ -98,10 +98,11 @@ export interface AnatomyGuestMode {
   styleUrl: './hull-anatomy.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Which kind of content the region is showing, for the workspace column
-  // outside it. The plates ask for the height their hulls need; a dashboard
-  // takes what the column has and scrolls the rest. The column cannot tell
-  // these apart from the outside, and the difference decides whether the
-  // region may shrink.
+  // outside it. The plates ask for the height their hulls need and fit the
+  // column that bounds them; a dashboard says whatever the build has to say and
+  // does not, so the column releases and the page carries it. The column cannot
+  // tell these apart from the outside, and the difference decides whether it
+  // stays bounded.
   host: { '[class.anatomy--dashboard]': 'isDashboard()' },
 })
 export class HullAnatomy {

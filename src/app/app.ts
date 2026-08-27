@@ -25,6 +25,7 @@ import {
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
+import { Layer } from './ui/components/layer/layer';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
@@ -51,7 +52,7 @@ export const UPDATE_ACTION = 'app.update';
  */
 @Component({
   selector: 'app-root',
-  imports: [AppFrame, ExportDialog, HelpDialog, ImportDialog, RouterOutlet],
+  imports: [AppFrame, ExportDialog, HelpDialog, ImportDialog, Layer, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -115,13 +116,25 @@ export class App {
   readonly actions = computed(() => {
     const screen = this.chrome.actions();
     const update = this.updateAction();
+    // Importing opens the bar's actions rather than closing them.
+    //
+    // No canvas draws either of the two ways a build arrives on the command
+    // bar's action row — the shipyard's `IMPORT` sits beside `?` and its
+    // `OPEN SAVED BUILD` is a control on the page — so where they go on a bar
+    // that carries both is this application's decision. They belong beside each
+    // other: they are the same question with two answers, and the screen's own
+    // history and export sat between them (Commander request 2026-08-26).
+    // The library is a route and stays the link in the bar's navigation, which
+    // the frame draws immediately before this row, so the pair are neighbours
+    // with the screen's own actions grouped off after them.
+    const [first, ...rest] = screen;
     return [
-      ...screen,
       {
         id: IMPORT_ACTION,
         label: this.#messages.message('slef.import.title'),
         emphasis: 'secondary' as const,
       },
+      ...(first === undefined ? [] : [{ ...first, startsGroup: true }, ...rest]),
       {
         id: HELP_ACTION,
         label: this.help.actionLabel(),
@@ -136,15 +149,25 @@ export class App {
   /**
    * The restart, offered only while there is something to restart onto.
    *
-   * Pressing it is the Commander's decision and never the application's: a
-   * reload replaces everything on screen, and taking that decision for someone
-   * in the middle of outfitting a hull is exactly what shell navigation already
-   * refuses to do. Not pressing it costs nothing — the newer version is already
-   * downloaded and the next start of the application is served it.
+   * The way in for the two cases the overlay does not cover: a newer version
+   * whose restart a Commander called off, and a cached version the worker
+   * cannot repair, which is never restarted on a clock. Where the overlay *is*
+   * up this stays away — see below — because the overlay is already the control
+   * and a second copy of it under an inert page is no control at all.
+   *
+   * Not pressing it costs nothing either way. The newer version is already
+   * downloaded, and the next start of the application is served it.
    */
   readonly updateAction = computed<ShellAction | null>(() => {
     const state = this.#updates.state();
     if (state === 'current') {
+      return null;
+    }
+    if (state === 'ready' && this.#updates.overlay()) {
+      // The overlay is already the control, and a shell action beside it would
+      // be a second copy of it that a Commander cannot reach: the layer is
+      // modal and the shell under it is inert. It comes back the moment the
+      // overlay is postponed, which is what makes postponing a deferral.
       return null;
     }
     return {
@@ -184,6 +207,11 @@ export class App {
     if (state === 'current') {
       return null;
     }
+    if (state === 'ready' && this.#updates.overlay()) {
+      // Same sentence, said by the overlay. On the shell as well it would be
+      // the notice a reader meets twice for one event (feedback contract).
+      return null;
+    }
     if (state === 'unusable') {
       return {
         tone: 'error' as const,
@@ -197,6 +225,31 @@ export class App {
       detail: this.#messages.message('update.ready.detail'),
     };
   });
+
+  /**
+   * The overlay that stands over the page while the restart is coming.
+   *
+   * Everything about it is here rather than in a component of its own: it is
+   * one layer, mounted beside the frame like the help dialog, and what it says
+   * is the shell's own account of the version this session is running
+   * (Commander request 2026-08-26).
+   */
+  readonly updateOverlay = computed(() => this.#updates.overlay());
+  readonly updateOverlayTitle = this.#messages.messageSignal('update.applying.title');
+  readonly updateOverlayNotice = this.#messages.messageSignal('update.applying.notice');
+  readonly updateOverlayDetail = this.#messages.messageSignal('update.applying.detail');
+  readonly updateOverlayNow = this.#messages.messageSignal('update.applying.now');
+  readonly updateOverlayPostpone = this.#messages.messageSignal('update.applying.postpone');
+
+  /** Applies the waiting version now rather than at the end of the grace period. */
+  applyUpdateNow(): void {
+    void this.#updates.apply();
+  }
+
+  /** Calls the restart off. The version stays ready and the shell says so again. */
+  postponeUpdate(): void {
+    this.#updates.postpone();
+  }
 
   /** The open screen's own identity block, where it publishes one. */
   readonly identity = this.chrome.identity;
@@ -250,6 +303,13 @@ export class App {
           kind: 'app.update',
           revision,
           urgency: state === 'unusable' ? 'assertive' : 'polite',
+          // The durable fact, not the thing about to happen. A restart can be
+          // called off, and an announcement is spoken once and cannot be taken
+          // back — so "this session is restarting on it" would be left standing
+          // as a statement that turned out to be false, with nothing to correct
+          // it (postponing changes no revision, and so publishes no event). The
+          // overlay says the rest: it is a modal layer, so it takes focus and
+          // its description is read where it stands.
           messageKey: state === 'unusable' ? 'update.unusable.announcement' : 'update.ready.notice',
         }),
       );

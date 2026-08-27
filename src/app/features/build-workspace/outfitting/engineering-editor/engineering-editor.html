@@ -90,6 +90,7 @@
               @if (grades().length > 0) {
                 <edsb-grade-selector
                   class="engineering__grade"
+                  [asSteps]="asLayer()"
                   [grades]="grades()"
                   [lowest]="lowestGrade()"
                   [selected]="selectedGrade()"

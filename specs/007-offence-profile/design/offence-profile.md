@@ -134,8 +134,19 @@ are fields no canvas ever drew.
   2026-08-25 canvas revision, which had it at 115 milliradians over a six-sixteenths box.)_
 - One mark per armed hardpoint, placed where the package projects its shot at the chosen range: a
   dot where the shot lands, and that mount's hardpoint numeral beside it, at whichever of the
-  script's four candidate offsets stands furthest from every other dot. The edge badge and its
-  leader are gone with the same revision.
+  script's four candidate offsets stands clear of every other dot **and of every numeral already
+  placed**. The edge badge and its leader are gone with the same revision.
+- **A plate too crowded for corners takes one arrangement, not two.** Where any numeral has no
+  corner to stand in, every numeral on the plate goes out to a ring just inside the frame, each on
+  its own leader back to its own dot — and none of them stays beside its dot. Pushing out only the
+  numeral that failed was the earlier rule, and it left a plate read two ways at once: most numerals
+  tucked against their dots, one out on a line, and nothing to say the odd one out was the same kind
+  of mark. On the ring each numeral keeps the direction its own dot lies in, moved only as far round
+  as the spacing forces, so a mount on the left of the plate keeps a numeral on the left and no two
+  leaders cross _(Commander request 2026-08-26)_.
+- **The dots never move, at either arrangement.** A dot is where the shot lands, and that is the
+  reading; only the numeral beside it travels. That is what separates this from feature 010's
+  schematics, where the mark _is_ the mount and may be walked to where there is room.
 - **The plate is a diagram and is hidden from assistive technology.** Every mark it draws is also a
   sentence beside it: a shot naming its weapon, its place in the hull's hardpoint order, how it is
   aimed and where its shot goes; and the ring caption, which is the one figure the plate draws that
@@ -164,8 +175,13 @@ are fields no canvas ever drew.
   schematics already give an empty mount, and its own sentence beside the plate names it as empty.
   Neither canvas draws this; it is a sanctioned departure asked for by the maintainer
   (`design/canvas-contract.md`, review note 8, and `spec.md` FR-012).
-- **The mount the workspace has selected takes the plate's other ink**, and a ring in the same one
-  around whichever mark it is. That ink is the one the canvas spends on a gimballed mount; the
+- **The mount the workspace has selected takes the plate's other ink**, and nothing else. The ring
+  that used to be drawn around that mark is withdrawn _(Commander request 2026-08-26)_: a crowded
+  plate now draws a ring of numerals with leaders across it, and a second circle around one dot in
+  the middle of that reads as a third kind of mark rather than as emphasis. Nothing a reader had is
+  lost, because the ring only ever repeated what the mark's own sentence beside the plate already
+  says — which is where the fact has to live in any case, a colour never having been a reading
+  (011 FR-022). That ink is the one the canvas spends on a gimballed mount; the
   fixed-against-aimed distinction is withdrawn from the drawing with it, because this plate has three
   things to separate where the canvas had one, and how a weapon aims is the one of them its own
   sentence was already carrying (`design/canvas-contract.md`, review note 17). Whether a mount is
@@ -206,9 +222,10 @@ are fields no canvas ever drew.
 | Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                              |
 | A placed hull with nothing armed         | The plate with its axes, its rings and every mount drawn empty; none of the four facts |
 | A hardpoint with nothing fitted to it    | A hollow mark in the quiet ink, and a sentence naming it as empty                      |
-| The mount the workspace has selected     | The plate's other ink and a ring in it, and a sentence naming it as selected           |
+| The mount the workspace has selected     | The plate's other ink, and a sentence naming it as selected. No ring                   |
 | An empty hardpoint that is also selected | Still hollow, in the selected ink: the hue says selected, the outline says empty       |
 | A shot outside the plate's field of view | Held at the frame's own margin, and stated at its true angle beside it                 |
+| A plate too crowded for the four corners | Every numeral out on the ring with a leader back to its dot — all of them, or none     |
 
 ## Status contribution
 

@@ -106,7 +106,9 @@ Expected:
 - every value equals the same build revision's `jumpRangeSummary()` field;
 - the exact fitted FSD/slot and only present package parameters are adjacent;
 - combined `jumpBoost`, if shown, is labelled as a build/booster parameter; and
-- no mass factor, headroom, percentage, delta, bar-derived value or inferred SCO badge appears.
+- no mass factor, delta, bar-derived value or inferred SCO badge appears; and
+- the only comparisons drawn are FR-008's two — the percentage of optimal mass and the headroom under
+  it — each of which disappears when either of its two package operands does.
 
 ### 2. Guard jump inputs and preserve zero
 

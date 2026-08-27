@@ -3,28 +3,39 @@
     {{ label() }}
   </label>
 
-  <select
-    #control
-    class="field__control"
-    [id]="relations.controlId"
-    [attr.required]="required() ? '' : null"
-    [attr.aria-required]="required() ? 'true' : null"
-    [attr.aria-invalid]="relations.invalid() ? 'true' : null"
-    [attr.aria-describedby]="relations.describedBy()"
-    [attr.aria-busy]="busy() ? 'true' : null"
-    [disabled]="disabled()"
-    (change)="onChange($event)"
-  >
-    @for (option of options(); track option.value) {
-      <option
-        [value]="option.value"
-        [selected]="option.value === value()"
-        [disabled]="option.disabled ?? false"
-      >
-        {{ option.label }}
-      </option>
-    }
-  </select>
+  <!--
+    The control and the caret the reference draws beside it. A `select` is a
+    replaced element, so it hosts no pseudo-element of its own and the mark has
+    to be a box over it — inert to the pointer, so the whole control still opens
+    on a press, and hidden from a reader, who is told this is a menu by the
+    element itself (Commander request 2026-08-26).
+  -->
+  <div class="field__select">
+    <select
+      #control
+      class="field__control field__control--select"
+      [id]="relations.controlId"
+      [attr.required]="required() ? '' : null"
+      [attr.aria-required]="required() ? 'true' : null"
+      [attr.aria-invalid]="relations.invalid() ? 'true' : null"
+      [attr.aria-describedby]="relations.describedBy()"
+      [attr.aria-busy]="busy() ? 'true' : null"
+      [disabled]="disabled()"
+      (change)="onChange($event)"
+    >
+      @for (option of options(); track option.value) {
+        <option
+          [value]="option.value"
+          [selected]="option.value === value()"
+          [disabled]="option.disabled ?? false"
+        >
+          {{ option.label }}
+        </option>
+      }
+    </select>
+
+    <span class="field__caret" aria-hidden="true">▾</span>
+  </div>
 
   @if (description()) {
     <p class="field__description" [id]="relations.descriptionId">{{ description() }}</p>

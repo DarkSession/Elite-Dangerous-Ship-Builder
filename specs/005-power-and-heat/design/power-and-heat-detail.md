@@ -152,6 +152,24 @@ words — the labelled `31.20 MW PLANT` line the canvas sets across the bars is 
 The canvas sets three tiles under the bands, and those three are what is drawn: `PLANT OUTPUT`,
 `POWERED DRAW`, `UNPOWERED`.
 
+**How that footer is drawn, ruled 2026-08-26 (Commander request).** Three cells on one line at every
+width, smaller than an ordinary metric cell — canvas 1c sets it `repeat(3, 1fr)` with a 7.5px label
+over a 13px figure and canvas 1d the same at 7px and 12px. Sized by its own width instead, the group
+resolved to two cells with `UNPOWERED` alone under them at the width a phone gives it, which is
+neither artboard. And the middle cell is `POWERED DRAW`, which is what both artboards write and what
+this document has always said: it shipped as `Draw`.
+
+**`CUMULATIVE DRAW` is canvas 1c's alone.** It names the column the percentages fill, and canvas 1d
+draws no such column — its block is one bar per group with the figures after it. The line is
+therefore drawn at the widths that have the column and taken off the screen at the widths that do
+not, rather than taking a line of a 390px screen to name something that is not there (Commander
+request 2026-08-26).
+
+Off the screen, and not out of the page. The percentages themselves are still drawn on every row at
+that width, so these words are still the only thing that says what they are a share of — removing
+them from the accessibility tree as well would take a reading away from the readers who cannot see
+the bar the share is against. The narrow block spends no line on the caption and loses nothing by it.
+
 | Tile           | Figure                                                        |
 | -------------- | ------------------------------------------------------------- |
 | `PLANT OUTPUT` | `available`                                                   |
@@ -392,9 +410,20 @@ region to change.
 stands the three groups side by side with the name over the blocks, each block about 21 CSS pixels
 wide in a 306-pixel rail. Built at the project's 44px design baseline the three groups were 564
 pixels of blocks in a 306-pixel column, and the row scrolled sideways inside itself to hold them.
-At the floor they are 108 pixels a group, which the rail wraps the way it has always wrapped them.
-Same size as the distributor cell's blocks, so the two places a Commander can set the pips are the
-same to press.
+At the floor they are 108 pixels a group. Same size as the distributor cell's blocks, so the two
+places a Commander can set the pips are the same to press.
+
+**And the three groups stack rather than wrap, ruled 2026-08-26 (Commander request).** Three groups
+of 108 pixels do not share a 269-pixel row, so a row of them wrapped two and then one on every build
+— `SYS` and `ENG` together with `WEP` alone under them, which is a ragged arrangement rather than a
+chosen one. The canvas's three-across cannot be built at the floor: its own blocks are 21 pixels
+wide, and that deviation is the one recorded above. So the three take a line each and the blocks take
+the width the row is not fitting three groups into.
+
+What the rail is is still not what the dashboard is. The distributor draws each bank's capacity and
+its two recharge figures around the same blocks and rules the banks off one another; the rail draws
+the bank's name in the bank's ink over the bank's blocks, and nothing else. Standing the three side
+by side, which is the other thing the canvas's rail does, is what the target floor costs.
 
 The rail draws no half-pip block and no running total: four blocks a bank, exactly as the
 distributor's cell draws them, filled from the leading edge so a bank standing on a half fills half

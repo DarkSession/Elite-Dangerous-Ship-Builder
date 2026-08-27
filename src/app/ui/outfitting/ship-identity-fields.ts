@@ -15,11 +15,44 @@ import { relationId } from '../a11y/text-equivalence';
 /** Which of the two identity fields a confirmation is about. */
 export type IdentityField = 'name' | 'ident';
 
+/**
+ * How long each of the two labels may be.
+ *
+ * These are the game's own bounds, not this application's: the ship naming
+ * terminal takes twenty-two characters of name and a six-character ID plate,
+ * and a build carrying more than that describes a ship nobody can register
+ * (Commander request 2026-08-26).
+ *
+ * Which makes them the Almanac's to publish, and it does not: no package record
+ * carries the naming terminal's limits. They are a recorded gap rather than a
+ * licence to keep game figures here — the only two in this application, in one
+ * named place, to be deleted in the same change that reads them from the
+ * package if it ever publishes them (002/FR-019, constitution II). Held on the field rather than checked after
+ * it, so a Commander is stopped at the bound instead of being told about it
+ * afterwards — there is no submit here to be refused at, and no canvas draws a
+ * message under either field.
+ *
+ * Both sit under the build link's own `MAX_STRING_UNITS`, so a name and an
+ * ident that pass here always fit a shared link.
+ */
+export const SHIP_NAME_MAX_LENGTH = 22;
+export const SHIP_IDENT_MAX_LENGTH = 6;
+
 /** One confirmed value, or the absence a Commander cleared it back to. */
 export interface IdentityCommit {
   readonly field: IdentityField;
   /** `null` is an explicit absence. An empty string is never committed. */
   readonly value: string | null;
+}
+
+const IDENTITY_LIMITS: Readonly<Record<IdentityField, number>> = {
+  name: SHIP_NAME_MAX_LENGTH,
+  ident: SHIP_IDENT_MAX_LENGTH,
+};
+
+/** One label, inside the bound its field holds. `null` stays absence. */
+function bounded(field: IdentityField, value: string | null): string | null {
+  return value === null ? null : value.slice(0, IDENTITY_LIMITS[field]);
 }
 
 /**
@@ -49,6 +82,10 @@ export interface IdentityCommit {
 })
 export class ShipIdentityFields {
   readonly #messages = inject(MessageService);
+
+  /** What each field allows, for the template and for what it commits. */
+  readonly nameMaxLength = SHIP_NAME_MAX_LENGTH;
+  readonly identMaxLength = SHIP_IDENT_MAX_LENGTH;
 
   /** The ship's name, or `null` where the build has none. */
   readonly name = input<string | null>(null);
@@ -83,6 +120,26 @@ export class ShipIdentityFields {
   readonly identFieldId = relationId('ship-ident');
 
   readonly heading = computed(() => this.name() ?? this.fallbackName());
+
+  /**
+   * What each field opens on: the value, brought inside the bound first.
+   *
+   * A name that arrived from a link or a SLEF file is whatever it was, and it
+   * can be longer than the terminal would take. `maxlength` holds a Commander
+   * to the bound as they type and as they paste, but it does not touch a value
+   * the field opened *on* — so a field that opened on the full name and clipped
+   * it on the way out shortened a build's name without anyone seeing it happen.
+   *
+   * Opening on the bounded value makes the same normalisation something a
+   * Commander reads before confirming it, in a field they can still edit, which
+   * is the difference between a normalisation that is reported and one that is
+   * applied silently (constitution IV). The heading behind the field goes on
+   * showing the name the build actually has, because that is what it has until
+   * the field is confirmed.
+   */
+  readonly nameFieldValue = computed(() => bounded('name', this.name()));
+
+  readonly identFieldValue = computed(() => bounded('ident', this.ident()));
 
   readonly nameLabel = this.#messages.messageSignal('outfitting.identity.name.label');
   readonly identLabel = this.#messages.messageSignal('outfitting.identity.ident.label');
@@ -129,7 +186,12 @@ export class ShipIdentityFields {
    * would give the build a name nobody can see or search for.
    */
   confirm(field: IdentityField, raw: string): void {
-    const value = raw.trim();
-    this.committed.emit({ field, value: value.length === 0 ? null : value });
+    // Bounded here too, and by now it has nothing left to do: the field opened
+    // on a value already inside the bound and `maxlength` kept it there. It
+    // stays because what this method must never emit is a value the game would
+    // not take, and that is a promise about its output rather than a belief
+    // about its input.
+    const value = bounded(field, raw.trim());
+    this.committed.emit({ field, value: value === null || value.length === 0 ? null : value });
   }
 }

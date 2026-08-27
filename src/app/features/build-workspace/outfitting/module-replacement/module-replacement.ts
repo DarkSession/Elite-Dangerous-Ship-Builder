@@ -91,8 +91,12 @@ export class ModuleReplacement {
 
   readonly closed = output<void>();
 
-  /** The row a Commander picked, and the revision they picked it at. */
-  readonly #pick = signal<{ readonly key: string; readonly revision: number } | null>(null);
+  /** The row a Commander picked, the mount they picked it for, and when. */
+  readonly #pick = signal<{
+    readonly key: string;
+    readonly revision: number;
+    readonly slotKey: string;
+  } | null>(null);
 
   readonly query = computed(() => this.store.candidateQuery());
 
@@ -102,8 +106,47 @@ export class ModuleReplacement {
     return pick !== null && pick.revision !== this.store.revision();
   });
 
-  /** The pick, or nothing once it stops being about the build on screen. */
-  readonly selectedChoiceKey = computed(() => (this.stale() ? null : (this.#pick()?.key ?? null)));
+  /**
+   * The pick, or nothing once it stops being about the mount on screen.
+   *
+   * The mount is checked as well as the revision. Selecting a different mount
+   * spends no revision — it is a change of what is being looked at, not of the
+   * build — so a pick made on one mount used to survive into the next, and the
+   * row it had marked was still marked there. Two mounts of the same size are
+   * offered the same modules under the same keys, so that was the *same* row,
+   * and the radio the browser had physically checked was never written back to
+   * unchecked. Pressing it again set `checked` on an input that was already
+   * checked, no `change` event was fired, and nothing happened: the reported
+   * case of a module that cannot be fitted to a second, empty hardpoint
+   * (reported 2026-08-26).
+   */
+  readonly selectedChoiceKey = computed(() => {
+    const pick = this.#pick();
+    if (pick === null || this.stale() || pick.slotKey !== this.slot().key) {
+      return null;
+    }
+    return pick.key;
+  });
+
+  /**
+   * The row the manifest marks as the chosen one.
+   *
+   * The pick where there is one, and otherwise **the module already in the
+   * mount**. A radio group's checked option is the option currently in force,
+   * and a mount that already holds a module has one — so opening a fitted mount
+   * used to open the right family and scroll the right row into view while
+   * every row in the group still reported unchecked, leaving the fitted state
+   * carried by that row's own ground alone (Commander request 2026-08-26).
+   *
+   * Kept apart from `selectedChoiceKey` deliberately. That one is a *decision a
+   * Commander made*, and it is what the layer's `FIT MODULE` commits; this one
+   * is what the list draws. Folding the two together would arm that control on
+   * a mount nobody had touched, and pressing it would spend a press to fit the
+   * module that is already there.
+   */
+  readonly markedChoiceKey = computed(
+    () => this.selectedChoiceKey() ?? this.query()?.fittedChoiceKey ?? null,
+  );
 
   /**
    * Every choice the mount has, as the Almanac's own families.
@@ -225,7 +268,11 @@ export class ModuleReplacement {
    * decision (design-canvas rule).
    */
   choose(choiceKey: string): void {
-    this.#pick.set({ key: choiceKey, revision: this.store.revision() });
+    this.#pick.set({
+      key: choiceKey,
+      revision: this.store.revision(),
+      slotKey: this.slot().key,
+    });
     if (!this.asLayer()) {
       this.fit();
     }
@@ -281,10 +328,24 @@ export class ModuleReplacement {
     );
 
     if (result.kind === 'committed' || result.kind === 'unchanged') {
+      // The pick is spent either way: it was a decision, the decision has been
+      // taken, and what the row means from here is that it is the module in the
+      // mount. Nothing is lost by forgetting it — `markedChoiceKey` falls back
+      // to the mount's own fitted row, so the manifest goes on marking exactly
+      // the row that was just chosen, and the radio goes on agreeing with it.
+      //
+      // Carrying it forward instead was tried and was worse. `stale` asks
+      // whether the pick was made against a build that has since changed, and a
+      // pick held at the revision it produced answers yes to the very next edit
+      // anywhere in the workspace — a priority toggle, an undo, an engineering
+      // pass — at which point the panel replaced the whole manifest with "this
+      // has moved on" and never came back, because nothing inline closes the
+      // panel or clears the pick.
       this.#pick.set(null);
+
       // Only a layer closes. Inline the panel is simply there for the marked
-      // mount, so there is nothing to close and the manifest stays where the
-      // Commander is reading it (canvas 1c).
+      // mount, so the manifest stays where the Commander is reading it
+      // (canvas 1c).
       if (this.asLayer()) {
         this.closed.emit();
       }

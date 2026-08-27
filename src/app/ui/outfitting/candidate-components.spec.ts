@@ -21,6 +21,7 @@ import {
 import { AcquisitionBadge } from './acquisition-badge';
 import { CandidateList } from './candidate-list';
 import { CandidateSearch } from './candidate-search';
+import { declareMeasurement, declareResizeObserver } from '../measurement.spec-helpers';
 
 /**
  * What the chooser promises a reader.
@@ -69,24 +70,22 @@ function familiesFor(
  * thing under test, and a component that decided its own manifest from a flag
  * would not be testing the decision at all.
  */
-const MEASURE = HTMLElement.prototype.getBoundingClientRect;
+let declared: readonly (() => void)[] = [];
 
 function withHostWidth(width: number): void {
-  (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
-    observe(): void {}
-    disconnect(): void {}
-    unobserve(): void {}
-  };
-  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
-    configurable: true,
-    writable: true,
-    value: () => ({ width, height: 0, top: 0, left: 0, right: width, bottom: 0 }),
-  });
+  withoutHostWidth();
+  // Both declarations, and the rule about which prototype carries the width,
+  // come from `measurement.spec-helpers`: undoing one of these by assignment
+  // leaves the genuine method behind as an own property on
+  // `HTMLElement.prototype`, shadowing the level other specs patch.
+  declared = [declareResizeObserver(), declareMeasurement({ width, right: width })];
 }
 
 function withoutHostWidth(): void {
-  HTMLElement.prototype.getBoundingClientRect = MEASURE;
-  delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+  for (const undo of declared) {
+    undo();
+  }
+  declared = [];
 }
 
 /** Every choice a family list holds, flattened. */
@@ -180,6 +179,32 @@ describe('acquisition badge', () => {
     expect(element(fixture).querySelector('.acquisition__chip--reward')).toBeNull();
     expect(items[0]!.querySelector('.acquisition__route')).not.toBeNull();
     expect(textOf(element(fixture))).toContain('ELITE_HORIZONS_V_PLANETARY_LANDINGS');
+  });
+
+  it('lets a mark be asked what it means, in the sentence beside it', () => {
+    const fixture = renderComponent(AcquisitionBadge, {
+      labels: [
+        {
+          kind: 'powerplay',
+          packageValue: 'powerplay',
+          messageKey: 'outfitting.acquisition.powerplay',
+          params: null,
+        },
+      ],
+    });
+
+    const item = element(fixture).querySelector('.acquisition__item')!;
+    const mark = item.querySelector('.acquisition__route')!;
+    const sentence = textOf(item as HTMLElement);
+
+    // Canvas 1c gives every one of these icons a tip. It is the row's own
+    // sentence and not a second wording of it, so what is hovered and what is
+    // read are the same words.
+    expect(sentence.length).toBeGreaterThan(0);
+    expect(mark.getAttribute('title')).toBe(sentence);
+    // Still presentational: the tip is a way to see the sentence, never a
+    // second announcement of it.
+    expect(mark.getAttribute('alt')).toBe('');
   });
 });
 

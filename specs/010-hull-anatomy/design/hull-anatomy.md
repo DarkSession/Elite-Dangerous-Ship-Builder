@@ -95,6 +95,16 @@ plate holds its whole document at its own ratio at every width.
   draws the same whole hull smaller, and there is no pan, no zoom, no drag matrix, no coordinate read
   off the DOM and no stored pan model — which is how both canvases draw the plates, and it is why
   FR-012 says nothing pans rather than making panning accessible.
+- **The plate has a width it does not grow past. Ruled 2026-08-26 (Commander request).** A plate's
+  height is its width over that ratio, and the ratio is the one thing here that cannot move — the
+  drawing's own `viewBox` is built to it, so a plate of any other shape would drift its marks off the
+  hull. Tracks that took every pixel they were given therefore grew the whole block with the window:
+  282px tall on canvas 1c's own 1560, 355px at 1920, 485px at 2560, which is more than half of a
+  wide screen given to two drawings that were already finished at the first of those. The two tracks
+  are now bounded at `--edsb-layout-anatomy-plate` and centred in whatever the column has beyond it.
+  The measure is canvas 1c's own: its 862px centre column, less the block's inset and the gap between
+  the plates, halved. Nothing moves at the width the canvas was drawn at, and past it the anatomy
+  stops taking room the ledger and the bench can use.
 - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel path data, and what a
   plate needs out of it is the drawing's box, the rectangle it draws in and the middle of every
   annotated mount — a few hundred bytes. Both halves are produced from the installed package at build
@@ -135,6 +145,14 @@ plate holds its whole document at its own ratio at every width.
 - Where the plates share a bounded column with feature 002's bench, the plates ask for the height
   their hulls need at that width and the bench takes everything else. A capability that stretched to
   fill the column and pushed the editor off it would have got its own priority backwards.
+- A dashboard mode is the other case, and it is not bounded at all. Its height is whatever the build
+  has to say rather than what a hull's proportions come to, so the region says all of it and the
+  column outside releases to carry it (`specs/002-module-outfitting/design/outfitting-workspace.md`,
+  "a detail panel is not bounded by the column"). It scrolled inside itself until 2026-08-26, which
+  on a 1560 x 800 screen meant 224px of panel for 1053px of content, in a second scrollbar inside a
+  column that already had one. The region reports which of the two it is showing — `isDashboard()`,
+  drawn as the `anatomy--dashboard` host class — and that is the whole of what the column outside
+  reads (Commander request 2026-08-26).
 
 ## Legend and visual language
 
@@ -179,6 +197,20 @@ and at its own label width beside it when there is room. A caller may add segmen
 panel this region does not draw; see "Divergence from canvas 1d — the sixth segment".
 
 Canvas 1d's strip is **not** the same control, and the difference is recorded below.
+
+What the two canvases do share is the segment, on two different insides: `padding: 7px 12px` on
+canvas 1c's strip and `10px 3px` on canvas 1d's, on the same six labels. That is the difference
+between a strip sized by its own labels and a strip dividing 362px between six of them, and it is not
+cosmetic — at the wide canvas's inside the six want 376px, so the phone drew a horizontal scrollbar
+under the strip for the fourteen pixels it was over (Commander request 2026-08-26).
+
+The narrowing lives in `edsb-tab-group`, under the compact viewport query, because the phone artboard
+draws _every_ one of its segmented strips on that inside — this one, the side selector under it, the
+priority groups in feature 005's panel. It is a viewport query and not a container one on purpose:
+the question is which artboard is being drawn, not how much room this strip was given. The second
+question is the one the component's own scroller answers, and it still does where even the tight
+inside will not fit. What does not vary either way is the invariant — every segment shows its whole
+label and clears the 24px target.
 
 `MOUNTS` is this capability's own layer. `POWER`, `DRIVES`, `DEFENCE` and `OFFENCE` are the same
 plates read by features 005 to 008, and until one of those ships its segment is **disabled** rather
@@ -416,6 +448,30 @@ That question is asked twice. A crowd placed first cannot see the marks of crowd
 it can choose a side that a later one then fills, or run a leader across a mount that is about to
 move; a second pass re-asks with the whole plate visible. It is what the Corsair needed, and it is
 also what raised the shipped package's shortest visible leader from under a pixel to ten.
+
+**The ladder is climbed in small rungs, because the ladder is what decides whether the aligned turn
+is reachable at all.** This is the correction of 2026-08-26, and it is the second half of the
+Corsair's story above. Every rung is a multiple of a floor computed from the separation the plate
+asked for, and that separation moves with the plate's own width — so a coarse ladder tries a
+_different set of radii_ at every width. The rung that clears the two hardpoints blocking node 1's
+aligned turn exists at one plate width and is stepped straight over at the next, and where it is
+stepped over the room-scored search takes the arrangement instead and turns the ring wherever the
+plate has space. The two answers are a quarter of the ship apart. Measured on the Corsair's top
+plate before the correction, node 1's mark crossed the hull between 180 and 185 CSS pixels of plate,
+crossed back at 190, and again at 245, 250 and 255 — the drawing reshuffling itself while a
+Commander resized their window _(Commander request 2026-08-26)_. Twenty rungs of about a twelfth
+reach the same distance eight rungs of a quarter did, and the aligned answer is reachable at every
+width instead of at some of them. Eight more rings of a dozen marks is nothing to compute.
+
+**Between arrangements that separate their marks equally well, the one that moved them less wins.**
+The search tries the requested separation and then retreats from it, and used to keep whichever
+attempt separated its marks best by the barest margin. That made the choice a knife edge for the
+same reason: a hundredth of a frame unit decided it, and the attempts differ in the _turn_ their
+rings take as well as in their radius. So a spread now has to be two per cent roomier to win on
+room, and spreads inside that band are settled by total travel. Both halves move smoothly with the
+plate's width, which is what stops a small change in the request choosing a wholly different
+picture — and of two equally legible arrangements, the truer one is the one that stayed nearer the
+mounts it is a drawing of.
 
 A ring must also clear every published mount position that is _not_ in the crowd, **and the ring
 grows until it can**. Without the first half a mark can come to rest exactly where a different mount

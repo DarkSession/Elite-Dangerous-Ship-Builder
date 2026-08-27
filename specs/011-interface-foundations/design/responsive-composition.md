@@ -45,6 +45,13 @@ route regions. Both use named tokens; the reference canvas widths are not copied
 All variants share one state/intent contract. Background inertness, title/description, dismissal and
 invoker restoration do not change with presentation.
 
+**One scrollbar at a time (2026-08-26).** A layer scrolls inside its own box. The platform's
+`<dialog>` makes the page behind it inert but leaves it scrolling, so a full-height layer on a phone
+drew a second bar down the same edge and a flick on the wrong one moved a page the layer had already
+put out of reach. The document stops scrolling for as long as any layer is open — `html:has(dialog[open])`
+in the global base, so it holds for every layer in the application and for a nested one without a
+count to keep. The scroll position is not reset, so dismissal puts a Commander back where they were.
+
 ## Text, zoom and bidi
 
 - Relative typography and intrinsic block sizing support 200% text without clipped labels or controls.

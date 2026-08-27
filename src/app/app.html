@@ -38,3 +38,27 @@
   [dismissLabel]="help.dismissLabel()"
   (dismissed)="help.closeDialog()"
 />
+
+<!--
+  The overlay a newer version puts up before it restarts the page under it.
+  Mounted beside the frame rather than inside a capability, because the version
+  a session is running belongs to no screen in particular.
+
+  It is an ordinary layer, so it is modal, it takes focus, it makes the page
+  behind it inert, and its dismissal — Escape, the ground around it, or the
+  named control — is a cancel, which here means "not now". That dismissal is
+  what lets a restart happen on a clock at all: a time limit stands only where
+  a Commander is warned before it expires and can call it off (WCAG 2.2.1).
+-->
+<edsb-layer
+  [open]="updateOverlay()"
+  [title]="updateOverlayTitle()"
+  [description]="updateOverlayNotice()"
+  [dismissLabel]="updateOverlayPostpone()"
+  (dismissed)="postponeUpdate()"
+>
+  <p class="app__update-detail">{{ updateOverlayDetail() }}</p>
+  <button class="app__update-now" type="button" (click)="applyUpdateNow()">
+    {{ updateOverlayNow() }}
+  </button>
+</edsb-layer>

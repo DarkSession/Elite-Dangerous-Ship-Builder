@@ -53,10 +53,12 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 1. A session already open when a newer version is published states that a newer one is available
    without the Commander reloading the page.
-2. Applying it is the Commander's decision. The application never replaces what is on screen by
-   itself.
-3. A session that is never asked to apply it is served the newer version the next time the
-   application starts.
+2. The newer version applies itself, but never without warning and never without a way out: an
+   overlay says what is about to happen, stands long enough to be read and answered, and carries a
+   control that calls the restart off. A Commander who calls it off is back where they were, with
+   the notice and the named control that applies it whenever they are ready.
+3. A session that never applies it — because it was postponed, or because nobody was at the tab —
+   is served the newer version the next time the application starts.
 4. A cached application the worker cannot repair says so and offers the recovery that fixes it.
    Clearing a cache or forcing a reload from the browser is never the route back.
 
@@ -117,13 +119,28 @@ WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 ### Application Delivery
 
 - **FR-025**: A session running a version that has been superseded MUST detect the newly published
-  one without a Commander-initiated reload, MUST state as visible text that a newer version is
-  available, and MUST offer a named control that applies it. The application MUST NOT apply it by
-  itself, and a session that is never asked MUST be served the newer version the next time the
-  application starts.
+  one without a Commander-initiated reload and MUST apply it by itself. It MUST NOT do so unwarned:
+  the restart MUST be preceded by visible text saying what is about to happen and by a named control
+  that calls it off, and that warning MUST stand for at least twenty seconds before the restart
+  happens (WCAG 2.2.1). A session where the restart was called off MUST state as visible text that a
+  newer version is available and MUST offer a named control that applies it, and a session that
+  never applies it MUST be served the newer version the next time the application starts.
+
+  **Reversed from "MUST NOT apply it by itself", 2026-08-26 (Commander request: "detected updates
+  should automatically be applied once they are ready, ideally with an overlay just before it is
+  applied").** The original reading was that a reload replaces everything on screen and that
+  deciding it for someone mid-outfitting is the one thing the mechanism must not do. What it
+  produced is a fleet of sessions on old builds behind a notice nobody presses — the exact failure
+  the requirement exists to prevent — and the reload is no longer the loss it was reasoned against:
+  a build lives in the link in the address bar and in this browser's own store, and both survive a
+  restart. What the reversal keeps is the part that mattered: nothing happens without warning, and
+  nothing happens that cannot be stopped.
+
 - **FR-026**: A cached application in a state the worker cannot repair MUST be stated as a blocking
   error carrying a named control that recovers it. Recovery MUST NOT depend on the Commander
-  clearing a cache or forcing a reload from outside the interface.
+  clearing a cache or forcing a reload from outside the interface. Recovery MUST NOT happen on a clock: an
+  unrepairable cache is an error rather than an improvement, and there is no working page under the
+  warning to protect.
 
 ### Verification
 
@@ -161,6 +178,7 @@ translations.
 - **SC-006**: English and German contain identical non-empty application-owned message-key and
   interpolation-variable sets across the complete application; a matching browser language selects
   the corresponding shipped language and an unsupported browser language selects English.
-- **SC-007**: A session left open across a deployment states that a newer version is available,
-  applies it from its own named control, and comes back on the published version — with no
-  cache-clearing reload anywhere in the journey.
+- **SC-007**: A session left open across a deployment warns that it is about to restart, comes back
+  on the published version on its own within a minute of the warning, and — where the warning is
+  answered instead — states that a newer version is available and applies it from its own named
+  control. No cache-clearing reload appears anywhere in either journey.

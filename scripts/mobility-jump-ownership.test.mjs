@@ -132,6 +132,11 @@ describe('mobility and jump ownership policy', () => {
 
   describe('combined-figure rule', () => {
     it('rejects a headroom subtracted out of two package masses', () => {
+      // Still rejected, and deliberately so. FR-008 rules that the canvas's own
+      // headroom may be drawn, and the way a ruled crossing is recorded here is
+      // a `policy-allow:` marker at the line that makes it — not a rule that
+      // stops seeing the shape. A rule that could not see it would also not see
+      // the next one nobody ruled on.
       const source = 'const headroom = curve.maxMass - mass.total;';
       assert.equal(combinedFigures(source).length, 1);
     });
@@ -148,8 +153,11 @@ describe('mobility and jump ownership policy', () => {
 
     it('rejects a figure that reached the arithmetic through a destructure', () => {
       // The dot is gone by the time the subtraction is written, and this file
-      // already destructures — so a rule that only saw `.maxMass` would let the
-      // canvas's own `658 T HEADROOM` back in through the idiom the code uses.
+      // already destructures — so a rule that only saw `.maxMass` would let a
+      // combination through unseen on the idiom the code actually uses. It is
+      // the package's words that are watched for, which is why the code that
+      // draws FR-008's headroom names its locals `optMass` and `total`: a
+      // crossing this rule cannot see is a crossing nobody recorded.
       assert.equal(combinedFigures('const spare = maxMass - total;').length, 1);
       assert.equal(combinedFigures('const position = loadedMass / optMass;').length, 1);
     });

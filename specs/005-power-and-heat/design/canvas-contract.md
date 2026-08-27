@@ -68,6 +68,17 @@ All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
   hard against the leading edge (`align-self: flex-start`). It is not in the
   header row, it is not a large separate control, and it is not labelled
   "Hardpoints".
+  Canvas 1d does label it, as `H‑PTS`, and stands that caption in the same 40px
+  column as its `GRP n` labels so the strip begins exactly where the bars begin.
+  The application draws the caption too — spelled out rather than abbreviated,
+  because the strip needs a name a reader can hear — and now shares the column
+  with it, which is what makes the two line up (`--edsb-layout-band-name`;
+  Commander request 2026-08-26).
+- Four rows, each `GRP n` then the bar then the draw in MW then the cumulative
+  percentage. **Corrected 2026-08-26 (Commander request):** the draw was drawn
+  before the bar, which pushed every bar's leading edge past the mode strip above
+  it and left the two unable to line up. Both artboards put the figure after the
+  track.
 - Four rows, each `GRP n` + draw in MW + cumulative percentage:
   `GRP 1  18.72 MW  60%` · `GRP 2  4.68 MW  75%` · `GRP 3  6.24 MW  95%` ·
   `GRP 4  7.80 MW  OFFLINE`

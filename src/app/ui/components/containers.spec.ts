@@ -442,6 +442,75 @@ describe('Layer', () => {
     expect(dismissals).toBe(1);
   });
 
+  it('dismisses a click on the ground around it, and not one on itself', () => {
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+    const dialog = query(fixture, 'dialog');
+    // jsdom lays nothing out, so the panel's box is declared rather than
+    // measured. What is being checked is the rule, not the renderer.
+    dialog.getBoundingClientRect = () =>
+      ({ left: 100, right: 300, top: 100, bottom: 300 }) as DOMRect;
+
+    // A press and a release, because that is what a click is made of and the
+    // layer reads both ends of it.
+    dialog.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 200, clientY: 200 }));
+    expect(dismissals).toBe(0);
+
+    dialog.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 20, clientY: 20 }));
+    expect(dismissals).toBe(1);
+  });
+
+  it('keeps a drag that began inside it, however far past the edge it ends', () => {
+    // Selecting the payload in the export layer and releasing past its edge.
+    // The click is dispatched at the nearest common ancestor of the two ends,
+    // which is the dialog itself, and it carries the coordinates of the
+    // release — so on the click alone this is a press on the ground, and it
+    // discarded whatever was in the layer (reported 2026-08-26).
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+    const dialog = query(fixture, 'dialog');
+    dialog.getBoundingClientRect = () =>
+      ({ left: 100, right: 300, top: 100, bottom: 300 }) as DOMRect;
+
+    query(fixture, '.layer__title').dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 20, clientY: 20 }));
+
+    expect(dismissals).toBe(0);
+  });
+
+  it('leaves a click inside the layer to whatever it landed on', () => {
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, {
+      title: 'Export build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+    query(fixture, 'dialog').getBoundingClientRect = () =>
+      ({ left: 100, right: 300, top: 100, bottom: 300 }) as DOMRect;
+
+    // A click on the title bubbles to the dialog carrying the title as its
+    // target, and reports the origin because nothing positioned it. Without
+    // the target check, the box check alone would dismiss the layer.
+    query(fixture, '.layer__title').dispatchEvent(
+      new MouseEvent('click', { bubbles: true, clientX: 0, clientY: 0 }),
+    );
+
+    expect(dismissals).toBe(0);
+  });
+
   it('gives the dismiss control a visible label', () => {
     const fixture = renderComponent(Layer, {
       title: 'Import a build',

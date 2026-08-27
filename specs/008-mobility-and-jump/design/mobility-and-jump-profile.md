@@ -38,9 +38,13 @@ Canvas 1c puts them side by side and canvas 1d stacks them. Both are the same DO
    is. The block is not headed; neither canvas heads it, and its name is the list's accessible name
    only;
 7. the canvas's hairline between that legend and the block below it; and
-8. `Speed envelope at this mass` — top speed, boost, pitch, roll and yaw — under the canvas's own
-   heading and nothing more. The two mass-curve multipliers the package also returns are **not**
-   drawn; neither canvas has them.
+8. the five envelope readings — top speed, boost, pitch, roll and yaw — and nothing more. The two
+   mass-curve multipliers the package also returns are **not** drawn; neither canvas has them. The
+   canvas heads the block `SPEED ENVELOPE AT THIS MASS` and that heading is no longer drawn: it is a
+   line of prose over five rows that already name themselves, on the card that runs longest of the
+   two, and the load it qualifies — `at this mass` — is stated on the headline directly above it
+   (Commander request 2026-08-26). The words stay as the list's accessible name, so a reader moving
+   by list still meets the block under the name the canvas gives it.
 
 There is no fourth group between the legend and the envelope. The canvas draws no unladen mass and
 no cargo capacity, and a reading it does not draw is not this screen's to add. Nor does it draw a
@@ -53,7 +57,8 @@ row's own figure is the fuel part of `buildMass(load)` and is unchanged by that.
 1. the card heading, with the `SCO` badge riding inside it, on its line — the canvas keeps the two
    together, because the badge is a property of the drive the heading names rather than of the card;
 2. the fitted drive's identity, on the same terms as the thruster's;
-3. the canvas's headline trio on one hairline ground — `Jump laden`, `Jump unladen` and `Mass lock`;
+3. the canvas's headline trio on one hairline ground — `Jump laden`, `Jump unladen` and `Mass lock`
+   — three across on one line, at every width, as the canvas draws them;
 4. the canvas's hairline under that trio;
 5. `Range by load` — three rows in the same label / bar / figure shape the speed envelope takes,
    each naming the load and the one figure the canvas puts on it;
@@ -62,7 +67,11 @@ row's own figure is the fuel part of `buildMass(load)` and is unchanged by that.
    tank makes. Three rows, and no fourth: a Guardian FSD Booster changes every range above and the
    canvas still states only these, so its bonus is not drawn. The rows take the same swatch, name
    and figure shape the mass legend on the other card takes, because that is how the canvas draws
-   both.
+   both, and each carries the canvas's own qualifier run in beside its name: the drive's
+   experimental effect and how much mass this build has left under the optimal, `Max draw at full
+range`, and how many jumps the tank makes. The qualifiers are the canvas's wording, not a gloss
+   of it — an earlier pass wrote `The most it draws at full range` for the second, which says the
+   same thing at twice the length on the row that has the least room for it.
 
 The package publishes a whole-tank total and a jump count for each of the three loads. The canvas
 draws them once, not three times, and once is what is drawn: `totalUnladen`, because the canvas's
@@ -86,10 +95,48 @@ the bar and its two marks are absent rather than drawn against something chosen 
 keeps every figure either way.
 
 `Optimal` and `Max` are the canvas's own two words, each written under the position on the scale it
-marks: the optimal centred on its own tick, the maximum against the end of the track. Both stay in
-the flow of one row rather than being pinned over it, so the pair can never paint across each other
-— in German at a doubled text size the row wraps and the maximum drops to a line of its own instead.
-The tick on the track carries the position; the words under it carry the two figures.
+marks: the optimal centred on its own tick, the maximum against the end of the track. They follow
+each other through one wrapping row, so the maximum keeps the line under the bar wherever the pair
+fits on it and takes a line of its own where it does not. That is what "right below the bar if there
+is space" asks for: the row measures the space rather than assuming it (Commander request
+2026-08-26).
+
+**A pass that forced them onto one line is reversed here, 2026-08-26, and the measurements are the
+reason.** That pass put both marks in one grid cell and capped the optimal's box at twice the room
+left between its tick and the maximum, on the reading that a wrapping row dropped the maximum two
+lines down even in English. The arithmetic of the cap is sound; the geometry defeats it. An ordinary
+Anaconda's optimal tick stands two thirds of the way along the track, so the room either side of it
+is less than the label needs at _every_ width this card is given — not only in German at a doubled
+text size. Measured: at 1440 the cap came out at 40px and stacked `Optimal 1,440 t` over three
+lines; at 390, in German at a doubled text size, the tick fell inside `Max 2.160 t`'s own words and
+the cap collapsed to nothing, leaving a column one character wide and three hundred pixels tall.
+
+So there is no width at which a label centred on that tick and a label at the end of the track both
+fit, and a rule that puts them on one line regardless can only do it by taking the room from one of
+them. The wrapping row gives the maximum its own line in exactly the cases where the alternative is
+an unreadable optimal, and gives it the canvas's line in every case where the pair fits. The tick on
+the track carries the position; the words under it carry the two figures; neither is ever painted
+over the other, and neither is ever squeezed to nothing to keep the other company.
+
+The cap's floor, and the note that recorded its removal, go with the cap.
+
+### The headroom under the optimal mass
+
+The canvas writes `6A + MASS MANAGER · 658 T OF HEADROOM` beside `FSD optimal mass`. The first half
+is the drive's own engineering, which is drawn; the second was withdrawn as a comparison nothing
+publishes, and has been put back (Commander request 2026-08-26).
+
+It is not a figure invented here. `658` is the canvas's own `1,800 t` optimal mass less its own
+`1,142 t` loaded mass — two package answers already on this screen, one on each card — and their
+difference is the reading a Commander about to fit something is asking for: how much more this build
+can take on before the drive stops jumping the way the rows above say it does. Restating two figures
+is what a headroom is.
+
+Both sides of the subtraction have to be there for it to be drawn: a load the package could not
+settle leaves the row with its optimal mass and no qualifier, never with a headroom measured against
+a mass that was guessed. And it is drawn as a headroom only while there is one — at or over the
+optimal mass the note says how far over instead, because a negative headroom is a figure with a sign
+in front of it rather than a sentence anybody reads.
 
 ### The headline trio
 

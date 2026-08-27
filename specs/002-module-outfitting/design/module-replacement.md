@@ -66,6 +66,14 @@ manifest as one accordion. It draws `#fit-table` as
 - **column 2, row 2** — the selected family's rows, `border-left: 1px solid var(--amber-a16)`,
   bounded at the same `max-height: 470px` and scrolling on its own.
 
+**The rail's 216px is a floor and a share, amended 2026-08-26 (Commander request).** It is a quarter
+of the canvas's own 862px centre column, and held at that one number it stopped being a quarter the
+moment the column was wider: at 2560 the pane beside it ran 1595px of mostly empty row while
+seventeen family names went on wrapping inside 216. The rail now takes a quarter of what it is
+actually given, floored at the canvas's figure so nothing moves at the width the canvas was drawn at,
+and bounded at 20rem — past the width a family name needs, the pixels belong to the rows. 216 at 1440
+and 1560, 308 at 1920, 320 at 2560.
+
 **Selection is exclusive.** The revised script's rail branch shows the chosen family's `.fam-v` and
 hides every other, and returns before the accordion branch it replaced. Exactly one family is
 selected at all times, and the pane is never empty.
@@ -120,6 +128,37 @@ rows all marked. The class and the five figures share one rung of the ramp, the 
 which is a step _above_ the 8.5px the column headings take: at the heading's rung the figures stood
 smaller than their own labels, and at the metric rung they stood taller than the module names beside
 them.
+
+## The group is this manifest's rows, and its checked row is the module in the mount
+
+**Ruled 2026-08-26 (Commander request).** Three reported faults, all of them one thing: the radio
+group was not saying what it is a group of.
+
+**The group's name is the manifest's own, not a constant.** Every row's control used to be named
+`module-choice`, so every radio in the document was one group. Two mounts of the same size are
+offered the same modules under the same keys, so a Commander arrowing through one mount's rows
+roamed into rows belonging to another. A group is the set of options a reader chooses _between_, and
+that is this manifest's rows and no others.
+
+**A pick is about a mount as well as about a build.** The surface used to drop a pick only when the
+build moved under it. But selecting a different mount spends no revision — it changes what is being
+looked at, not the build — so a pick made on one mount survived into the next, and because the row
+is the same row on two mounts of a size, it was still the marked one there. The control the browser
+had physically checked was never written back to unchecked, pressing it fired no `change` event, and
+nothing happened: the reported case of a module that cannot be fitted to a second, empty hardpoint.
+It is the mount, not the row, that has to be checked, because a binding that reads the same on both
+mounts is a binding Angular never writes.
+
+**The row already in the mount is the checked row.** Opening a fitted mount already opened the right
+family and already scrolled the right row to the middle of the scroller. What it did not do was say
+which row was chosen: every control in the group reported unchecked, and what is fitted was carried
+by that row's own ground alone. A radio group's checked option is the option currently in force, and
+a mount holding a module has one.
+
+What is drawn and what is committed stay two different things. The mark is what the list draws; the
+_pick_ is a decision a Commander made, and it is what canvas 1d's `FIT MODULE` commits. Folded
+together, that control would arm itself on a mount nobody had touched, and pressing it would spend a
+press re-fitting the module already there.
 
 ## The cost cell carries two prices, and they do not add up
 
@@ -396,6 +435,18 @@ here: hover-only meaning is unreachable by touch (011 FR-006), and this componen
 same four routes as spoken sentences beside the mark since wave 10. The revision is evidence that
 those sentences are the right words, not a new element to build. The drawn markers stay a subset of
 the spoken ones.
+
+**Amended 2026-08-26 (Commander request): the tip is drawn after all, as the sentence itself.** The
+2026-08-25 reading is still right about what a tip may not be — the only carrier of a meaning — and
+that is exactly why it can now be added. Neither the ledger row nor the manifest row draws the
+sentence, so on those rows the mark stands alone with no way to ask what it is; a Commander who can
+see the icon and cannot see the words had a mark and no question. Each mark now carries the row's own
+sentence as its `title`, so hovering shows the same words a reader is already given. It is the
+sentence and not a shorter phrase beside it: one restriction, one wording, whether it is drawn,
+hovered or read. The mark stays presentational with its `alt` empty, so the tip adds a way to see the
+sentence and never a second announcement of it, and the sentence stays in the accessibility tree
+whether or not a pointer ever reaches the icon — which is what 011 FR-006 asks and what the hover
+adds nothing to.
 
 **The mark sits on the name's own line, in the ledger as in the manifest.** Canvas 1c draws the
 fitted `Advanced Plasma Accelerator` with its Powerplay mark 7px after the name and the

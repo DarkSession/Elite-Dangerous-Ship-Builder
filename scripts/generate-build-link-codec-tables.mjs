@@ -91,9 +91,25 @@ for (const ship of ships) {
     moduleStatsBySymbol.set(symbol.toLowerCase(), module.stats);
   }
 }
+/**
+ * Which modules carry a power state in a link.
+ *
+ * The mirror of the mount card's own `showsPower`, and it has to be: a mount
+ * that offers a Commander a power chip has a state to carry, and a state the
+ * link drops is a setting that survives the local record and dies in the share.
+ *
+ * A module the Almanac prices at no draw — the surface scanner, the approach
+ * suites, the module stabilisers — has nothing to power and nothing to group,
+ * and neither the card nor the link spends a bit on one. A module whose draw
+ * the Almanac does not publish — every power plant, fuel tank, cargo rack,
+ * reinforcement, passenger cabin and bulkhead — keeps its state, because not
+ * having read a figure is not the same as having read a zero (constitution IV).
+ * Excluding those was why a priority set on the plant came back unset from a
+ * shared link while the record beside it still held it (reported 2026-08-26).
+ */
 const poweredModules = modules.flatMap((symbol, index) => {
   const powerDraw = moduleStatsBySymbol.get(symbol.toLowerCase())?.powerDraw;
-  return powerDraw !== undefined && powerDraw > 0 ? [index] : [];
+  return typeof powerDraw === 'number' && powerDraw <= 0 ? [] : [index];
 });
 const blueprints = [
   ...new Set([

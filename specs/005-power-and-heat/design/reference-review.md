@@ -340,8 +340,14 @@ not a wide block: whether its bars and its tiles stand side by side is a questio
 
 ### Still standing after this wave
 
-The region is bounded by the column and scrolls what will not fit, which is what wave 14 settled and
-what keeps the distributor's own controls reachable. Two rows of two shortens the dashboard; it does
-not make it fit. At 1440×900 the panel is about 800 CSS pixels in a slot of about 325, so the second
-row is still reached by scrolling the region — the bench's own 26rem minimum is what bounds the slot,
-and that belongs to feature 002.
+Two rows of two shortens the dashboard; it does not make it fit. At 1440×900 the panel is about 800
+CSS pixels in a slot of about 325, and the bench's own 26rem minimum is what bounds that slot.
+
+**Superseded 2026-08-26 (Commander request).** Wave 14 had the region take what the column had and
+scroll the rest inside itself, which is what the bench beside it does. That is now withdrawn: the
+column releases while a dashboard is open and the page carries the panel instead
+(`specs/002-module-outfitting/design/outfitting-workspace.md`, "a detail panel is not bounded by the
+column"). The reachability the wave-14 rule was written to protect is what withdrawing it settles —
+a second scrollbar inside a column that already had one put the distributor's own pip blocks below
+the panel's fold with a page underneath that had stopped scrolling. Nothing about the dashboard's
+own arrangement changes; it is the column outside it that gives.

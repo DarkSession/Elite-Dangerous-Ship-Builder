@@ -186,6 +186,33 @@ export class OutfittingWorkspace {
   readonly #anatomyMode = signal<string>('mounts');
 
   /**
+   * Whether the anatomy region is showing a dashboard rather than its plates.
+   *
+   * The middle column bounds the plates, which are drawn at the hull's own
+   * proportions and fit it. A dashboard is whatever the build has to say and
+   * does not, so the column releases and the page carries it
+   * (`design/outfitting-workspace.md`, "a detail panel is not bounded by the
+   * column"). Read off `mounts` rather than by listing the dashboards, so a
+   * mode that lands next releases the column by what it draws rather than by a
+   * list somebody remembered to add it to — the same rule the region applies to
+   * itself.
+   */
+  readonly anatomyDashboard = computed(() => {
+    const mode = this.#anatomyMode();
+    if (mode === 'mounts') {
+      return false;
+    }
+    // A guest segment the strip has stopped offering is not open. The region
+    // falls back to its own first mode when the mode it was asked for is a
+    // guest one it no longer offers, and it does so without emitting — so a
+    // reading of its own that did not fall back with it went on releasing this
+    // column for a dashboard while the region was drawing plates
+    // (`hull-anatomy.ts`, `#mode`). `STATUS` is the one guest segment, and
+    // whether it is offered is the same question as below.
+    return mode !== STATUS_MODE || this.benchIsLayer();
+  });
+
+  /**
    * Canvas 1d's sixth segment, `STATUS`, and what it opens.
    *
    * Offered only where the artboard draws it. At wide width the rail is the

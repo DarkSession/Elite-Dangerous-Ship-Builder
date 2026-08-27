@@ -80,30 +80,10 @@
   overflow-wrap: anywhere;
 }
 
+// Read, not drawn. See the template for what each of the three said and what
+// draws it now (Commander request 2026-08-26).
 .record__states {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
-}
-
-.record__current,
-.record__validation,
-.record__remaining {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
-}
-
-.record__current {
-  color: var(--edsb-text-accent);
-}
-
-.record__validation--warning {
-  color: var(--edsb-text-accent);
-}
-
-.record__validation--error {
-  color: var(--edsb-text-danger);
-}
-
-.record__validation--success {
-  color: var(--edsb-text-success);
+  @include layout.visually-hidden;
 }
 
 .record__hull,

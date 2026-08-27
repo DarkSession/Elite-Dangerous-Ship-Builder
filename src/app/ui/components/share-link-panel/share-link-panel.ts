@@ -62,9 +62,9 @@ export class ShareLinkPanel {
   readonly panelId = relationId('share-link');
 
   readonly title = this.#messages.messageSignal('link.title');
-  readonly description = this.#messages.messageSignal('link.description');
   readonly valueLabel = this.#messages.messageSignal('link.value.label');
-  readonly copyLabel = this.#messages.messageSignal('link.copy');
+  readonly #copyLabel = this.#messages.messageSignal('link.copy');
+  readonly #copiedLabel = this.#messages.messageSignal('link.copied');
   readonly shareLabel = this.#messages.messageSignal('link.share');
   readonly encodingLabel = this.#messages.messageSignal('link.encoding');
   readonly absentLabel = this.#messages.messageSignal('link.absent');
@@ -76,15 +76,39 @@ export class ShareLinkPanel {
   readonly hasUrl = computed(() => (this.url() ?? '').length > 0);
 
   /**
-   * What the last attempt did, in words.
+   * The copy control's label — or what it says instead, having just copied.
    *
-   * A failure says what to do instead — select the text and copy it — because
-   * "could not copy" on its own leaves a Commander with no next move.
+   * The reference answers a successful copy on the control that did it, and
+   * puts the label back a moment later. A panel that answered with a notice of
+   * its own said the same thing in a second place and left it standing there
+   * (Commander request 2026-08-26). Swapping the label rather than adding
+   * anything also means the answer arrives where a reader already is: the
+   * control they just pressed, whose accessible name is what changed.
+   */
+  readonly copyLabel = computed(() =>
+    this.feedback() === 'copied' ? this.#copiedLabel() : this.#copyLabel(),
+  );
+
+  /**
+   * The same answer, for a reader rather than for a look.
+   *
+   * The label swap is the visible answer and the only one on the screen. What
+   * it is not is a reliable spoken one: an accessible-name change on the
+   * control that already has focus is announced differently by every reader,
+   * and by some not at all. This is the same word in a region that draws
+   * nothing, so the answer arrives either way and the panel still says it once.
+   */
+  readonly copiedAnnouncement = this.#copiedLabel;
+
+  /**
+   * What went wrong with the last attempt, in words.
+   *
+   * Only failures. A failure says what to do instead — select the text and copy
+   * it — because "could not copy" on its own leaves a Commander with no next
+   * move, and that is not something to flash for a second and take away.
    */
   readonly feedbackNotice = computed(() => {
     switch (this.feedback()) {
-      case 'copied':
-        return { tone: 'success' as const, message: this.#messages.message('link.copied') };
       case 'copy-failed':
         return { tone: 'warning' as const, message: this.#messages.message('link.copy-failed') };
       case 'share-failed':

@@ -10,12 +10,21 @@ localized content and zoom—not device detection or a hard-coded user-agent cla
 All compositions preserve this semantic order:
 
 1. feature 001 build identity and action header;
-2. accepted-normalization or incoming-refusal feedback;
-3. shared anatomy/status/calculation outlets;
+2. incoming-refusal feedback;
+3. shared anatomy/status/calculation outlets, the accepted-normalization notice among them;
 4. feature 002 category, ledger and selected-slot controls;
 5. active chooser/editor content.
 
 Visual multi-column placement may differ, but DOM/assistive reading order remains coherent.
+
+**Ruled 2026-08-26 (Commander request).** The two halves of the ingress gate's answer used to sit
+together at position 2, above everything else on the screen. Only the refusing half belongs there: a
+refused build is the case where there may be nothing open to describe, and the reason is the whole of
+what the screen has to say. A build that _was_ accepted is a build a Commander now has open, and what
+the Almanac completed on the way in is a remark about it — so the completion notice moves into the
+status outlet at position 3, under `BUILD STATUS`, beside the package's own verdict on the same
+build. A banner across the screen said "something happened to your build" every time an import
+succeeded, which is the tone of a refusal on the one path that did not refuse anything.
 
 ## Declared content minimums
 

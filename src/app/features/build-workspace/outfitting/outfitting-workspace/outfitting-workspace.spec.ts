@@ -9,6 +9,7 @@ import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { ScreenChrome } from '../../../shared/screen-chrome';
 import { OutfittingWorkspace } from './outfitting-workspace';
+import { declareMeasurement, declareResizeObserver } from '../../../../ui/measurement.spec-helpers';
 
 /**
  * What the workspace publishes to the command bar.
@@ -325,24 +326,22 @@ describe('the wide workspace’s categories', () => {
  * resizing anything. The observer is stubbed only so the measurement path is
  * taken at all — the reading that matters is the synchronous one it makes
  * before observing (`composition.ts`).
+ *
+ * Both declarations come from `measurement.spec-helpers`, which is where the
+ * rule about *which* prototype carries the patch is written down. This test
+ * used to declare the width on `Element.prototype` itself and failed whenever
+ * a spec that patches `HTMLElement.prototype` had run first in the same worker
+ * and left an own property shadowing it: the patch landed somewhere nothing
+ * read, the region measured nothing, and a wide ledger opened on canvas 1d's
+ * four tabs. It failed by scheduling rather than by code, which is why the
+ * declaration is shared now rather than written here.
  */
 function restoreAfterWideRegion(width: number): () => void {
-  const box = Element.prototype.getBoundingClientRect;
-  const observer = globalThis.ResizeObserver;
-
-  Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
-    // Spread rather than reconstructed: the renderer's own box carries every
-    // other edge, and only the inline size is being declared here.
-    return Object.assign(box.call(this), { width }) as DOMRect;
-  };
-  globalThis.ResizeObserver = class {
-    observe(): void {}
-    unobserve(): void {}
-    disconnect(): void {}
-  } as unknown as typeof ResizeObserver;
+  const measured = declareMeasurement({ width });
+  const observed = declareResizeObserver();
 
   return () => {
-    Element.prototype.getBoundingClientRect = box;
-    globalThis.ResizeObserver = observer;
+    observed();
+    measured();
   };
 }

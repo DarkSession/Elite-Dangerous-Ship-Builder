@@ -191,10 +191,25 @@
 }
 
 // The canvas's `OPTIMAL 1,260 t` and `MAX 1,890 t`, each under the position it
-// marks. Both stay in the flow of this row rather than being pinned over it: at
-// a doubled text size in German the pair no longer fits on one line, and a row
-// that wraps drops the maximum to a line of its own instead of painting the two
-// readings across each other.
+// marks. Both stay in the flow of this row rather than being pinned over it, and
+// the row wraps: where the pair fits on the line under the bar it is drawn
+// there, and where it does not the maximum takes a line of its own instead of
+// the two readings painting across each other (Commander request 2026-08-26,
+// "if there is space").
+//
+// **A pass that forced them onto one line is what this reverses, and the
+// measurements are why.** The two shared a grid cell, with the optimal's box
+// capped at twice the room left between its tick and the words at the end. The
+// cap is sound arithmetic and the geometry defeats it: an Anaconda's optimal
+// tick stands two thirds along the track, so the room either side of it is
+// less than the label needs at every width this card is given. At 1440 the cap
+// came out at 40px and stacked `Optimal 1,440 t` over three lines; at 390, in
+// German at a doubled text size, the tick fell *inside* the maximum's own words
+// and the cap collapsed to nothing — a column one character wide and three
+// hundred pixels tall. There is no width at which a label centred on that tick
+// and a label at the end of the track both fit, so "on one line if there is
+// space" is answered here by a row that measures the space rather than by a
+// rule that assumes it.
 .drives__mass-marks {
   display: flex;
   flex-wrap: wrap;

@@ -7,8 +7,16 @@
     <edsb-status-notice tone="warning" [message]="stale" />
   }
 
+  <!--
+    The label is read, not drawn. The layer is titled `Export build`, the format
+    control above names which of the two this is, and the canvas draws no label
+    over the payload — `SLEF payload` on top of all that is the same fact a
+    third time (Commander request 2026-08-26). The label itself stays: it is
+    what names the control to a reader who lands on it.
+  -->
   <edsb-textarea-field
     [label]="view().fieldLabel"
+    [labelHidden]="true"
     [value]="view().payload"
     [rows]="12"
     [readonly]="true"

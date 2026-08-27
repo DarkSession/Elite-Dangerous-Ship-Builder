@@ -1,6 +1,5 @@
 <section class="share-link" [attr.aria-labelledby]="panelId + '-title'">
   <h3 class="share-link__title" [id]="panelId + '-title'">{{ title() }}</h3>
-  <p class="share-link__description">{{ description() }}</p>
 
   @switch (state()) {
     @case ('encoding') {
@@ -43,6 +42,19 @@
         <edsb-action-button [label]="shareLabel()" (activated)="shareRequested.emit()" />
       }
     </div>
+
+    <!--
+      The copy, answered where a reader is rather than where a reader looks.
+      The visible answer is the control's own label, which is what the reference
+      does and what was asked for — no second element saying "success" beside a
+      button that already says it. But a label swap on the control that has
+      focus is announced inconsistently across readers, and a change nobody
+      hears is not an answer. So the sentence also reaches a live region that
+      draws nothing: same words, same moment, no second thing on the screen.
+    -->
+    <p class="visually-hidden" role="status">
+      {{ feedback() === 'copied' ? copiedAnnouncement() : '' }}
+    </p>
   }
 
   @if (feedbackNotice(); as notice) {

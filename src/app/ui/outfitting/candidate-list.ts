@@ -164,6 +164,19 @@ export class CandidateList {
   /** The row a Commander has picked. Draft state; it changes no build. */
   readonly selectedKey = input<string | null>(null);
 
+  /**
+   * The radio group's name, one per rendered manifest.
+   *
+   * It used to be the constant `module-choice`, which put every radio in the
+   * document into one group. Two mounts of the same size are offered the same
+   * modules, so their rows carry the same key and the browser treated the two
+   * manifests as one set of options — a Commander arrowing through the list on
+   * one mount roamed into rows belonging to another. A group is the set of
+   * options a reader chooses *between*, and that is this manifest's rows and no
+   * others (reported 2026-08-26).
+   */
+  readonly groupName = relationId('module-choice');
+
   /** The symbol currently fitted in this mount, so its rows can say so. */
   readonly fittedSymbol = input<string | null>(null);
 

@@ -155,8 +155,8 @@
   // full size, so the target a pointer aims at is the thing being operated
   // rather than a glyph beside it.
   //
-  // Every plate reserves the marker on its leading edge, so choosing one moves
-  // a mark rather than reflowing the column.
+  // The marker is laid against the plate's padding box rather than reserved in
+  // its flow, so choosing one moves a mark and nothing reflows.
   .choice {
     position: relative;
     display: flex;
@@ -167,7 +167,6 @@
     padding-inline: var(--edsb-space-lg);
     background-color: var(--edsb-surface-panel-raised);
     border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-    border-inline-start: var(--edsb-border-width-marker) solid transparent;
   }
 
   // Selection follows the input's own checked state rather than a class
@@ -182,7 +181,23 @@
   .choice:has(.choice__input:checked) {
     background-color: var(--edsb-surface-accent-selected);
     border-color: var(--edsb-border-control);
-    border-inline-start-color: var(--edsb-marker-selected);
+  }
+
+  // The marker is drawn inside the card's leading edge rather than as a border
+  // on it. Carried by the border it replaced the card's own hairline on that one
+  // side, so a card nobody had chosen was closed on three sides and open on the
+  // fourth — the export dialog's second format looked unfinished beside its
+  // first (Commander request 2026-08-26). The canvas draws both cards as
+  // complete boxes. An absolutely positioned mark is laid against the padding
+  // box, so the hairline stays where it is, the marker sits just inside it, and
+  // the card is the same shape whichever one is chosen.
+  .choice:has(.choice__input:checked)::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--edsb-border-width-marker);
+    background-color: var(--edsb-marker-selected);
   }
 
   .choice:has(.choice__input:focus-visible) {
@@ -258,10 +273,15 @@
       border: 0;
     }
 
+    // A chip carries its own fill, so neither the card's box nor its marker is
+    // drawn under it.
     .choice:has(.choice__input:checked) {
       background-color: transparent;
       border-color: transparent;
-      border-inline-start-color: transparent;
+    }
+
+    .choice:has(.choice__input:checked)::before {
+      content: none;
     }
 
     // The chip wears the ring itself, so the outline follows the shape the eye

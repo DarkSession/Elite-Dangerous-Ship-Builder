@@ -155,6 +155,48 @@ describe('gunsight numeral placement', () => {
     expect(tightest(boxes(anchors))).toBeGreaterThanOrEqual(0);
   });
 
+  it('moves every numeral to the ring, or none of them', () => {
+    // The whole plate is in one arrangement. A reader who meets a numeral out
+    // on a leader must not also meet one tucked against its dot, or the two
+    // read as different kinds of mark (Commander request 2026-08-26).
+    for (let range = 500; range <= 3000; range += 50) {
+      const placed = placeNumerals(project(CASPIAN_EXPLORER, range), METRICS);
+      const moved = placed.filter((placement) => placement.displaced).length;
+      expect([0, placed.length]).toContain(moved);
+    }
+  });
+
+  it('keeps a ringed numeral on its own side of the plate', () => {
+    // Six mounts crowded into the middle: no corner can hold them, so the ring
+    // takes over. Each numeral must still stand in the direction its own dot
+    // lies in, or its leader crosses the plate to reach it.
+    const middle = METRICS.plate / 2;
+    const anchors: readonly NumeralAnchor[] = [
+      { id: 'a', order: 1, x: middle - 6, y: middle - 6 },
+      { id: 'b', order: 2, x: middle + 6, y: middle - 6 },
+      { id: 'c', order: 3, x: middle + 6, y: middle + 6 },
+      { id: 'd', order: 4, x: middle - 6, y: middle + 6 },
+      { id: 'e', order: 5, x: middle, y: middle - 9 },
+      { id: 'f', order: 6, x: middle, y: middle + 9 },
+    ];
+
+    const placed = placeNumerals(anchors, METRICS);
+    expect(placed.every((placement) => placement.displaced)).toBe(true);
+
+    placed.forEach((placement, index) => {
+      const anchor = anchors[index]!;
+      const centreX = anchor.x + placement.left + METRICS.width / 2;
+      const centreY = anchor.y + placement.top + METRICS.height / 2;
+      // The numeral lies in the same quadrant of the plate as its own dot.
+      expect(Math.sign(centreX - middle)).toBe(
+        Math.sign(anchor.x - middle) || Math.sign(centreX - middle),
+      );
+      expect(Math.sign(centreY - middle)).toBe(
+        Math.sign(anchor.y - middle) || Math.sign(centreY - middle),
+      );
+    });
+  });
+
   it('never steps a numeral off the plate', () => {
     for (const range of [500, 1000, 2000, 5000]) {
       for (const box of boxes(project(CASPIAN_EXPLORER, range))) {

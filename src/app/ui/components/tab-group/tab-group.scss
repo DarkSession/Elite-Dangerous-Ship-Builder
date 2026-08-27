@@ -33,6 +33,15 @@
   flex: none;
 }
 
+// A caption that stands in a column the caller also draws rows in, so the strip
+// begins exactly where those rows' own second column begins. Canvas 1d does
+// this with the priority groups: `H‑PTS` and `GRP n` share one column and the
+// mode strip lines up with the bars (Commander request 2026-08-26). The width
+// is the caller's, named through a layout token it and the rows both read.
+:host(.tab-group-host--ruled) .tab-group__label {
+  min-inline-size: var(--edsb-layout-band-name);
+}
+
 // One amber hairline showing between the segments, and nothing around them:
 // `display: flex; gap: 1px; background: var(--amber-a16)` on both canvases.
 //
@@ -60,6 +69,14 @@
 // a German compound has no space to wrap at, and `Verteidigung` at a doubled
 // text size overflowed its segment far enough to paint across `Antriebe` beside
 // it and swallow that segment's taps — a disabled mode taking an enabled one's.
+// Letting the word break instead is no better: allowed to break anywhere, every
+// label in a six-segment strip takes an equal share and `MOUNTS` comes out as
+// `MOUNT` over `S` (measured 2026-08-26).
+//
+// What gives instead is the inside of the segment, which is what the two
+// artboards themselves vary: canvas 1c sets its mode strip at `padding: 7px
+// 12px` and canvas 1d sets the same six labels at `10px 3px`. The wide inside
+// is below and the phone's is at the foot of this file.
 
 // The canvases draw this strip dense and never at the project's 44-pixel
 // baseline: 23.5px for canvas 1c's mode strip, 30px for canvas 1d's, 25px for
@@ -123,5 +140,27 @@
 
   .tab__state {
     color: var(--edsb-text-disabled);
+  }
+}
+
+// Canvas 1d's inside, on canvas 1d's screens.
+//
+// The phone artboard draws every one of these strips at `padding: 10px 3px`
+// where the wide one draws `7px 12px`, and it is not a preference: at that
+// width six segments divide 362px instead of taking their own label widths, and
+// on the wide inside they want 376px — so the strip fell fourteen pixels short
+// and drew a horizontal bar under itself for them (Commander request
+// 2026-08-26). Narrowing the inside is what the artboard does about that, and it
+// costs no label and no target: the segment keeps its whole word and the 24px
+// floor above.
+//
+// A viewport query rather than a container one, deliberately. This is not a
+// question about the room this strip was given — that question is answered by
+// the scroller above, and answering it here would need the strip to be a size
+// container, which it cannot be. It is a question about which artboard is being
+// drawn, and that is the width of the screen.
+@include layout.compact {
+  .tab {
+    padding-inline: var(--edsb-space-inline-tight);
   }
 }

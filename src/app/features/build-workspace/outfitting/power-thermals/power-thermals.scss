@@ -87,8 +87,25 @@
   text-wrap: pretty;
 }
 
+// `CUMULATIVE DRAW` names the column the percentages fill, which is what canvas
+// 1c draws it for. Canvas 1d draws no such line: the block there is one column
+// of rows against the plant's own bar, so the words named a column that was not
+// there and took a line of a 390px screen to do it (Commander request
+// 2026-08-26).
+//
+// Taken off the screen, not out of the page. `display: none` would have been
+// the shorter rule and it would have been wrong: the percentages themselves are
+// still drawn on every row at this width, so the words are still the only thing
+// that says what they are a share of. A phone spends no line on them and a
+// reader still has them.
 .power__note--inline {
   color: var(--edsb-text-faint);
+}
+
+@include layout.container-compact(power) {
+  .power__note--inline {
+    @include layout.visually-hidden;
+  }
 }
 
 .power__table,
@@ -409,7 +426,8 @@
 // in different places down one column of figures.
 .power__bands {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  // The canvas's four: the group's name, its bar, its draw, its share.
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   column-gap: var(--edsb-space-inline);
   row-gap: var(--edsb-space-stack-tight);
   margin: 0;
@@ -424,8 +442,14 @@
   align-items: center;
 }
 
+// The column the mode strip above shares, so the strip's segments begin where
+// the bars begin — canvas 1d stands `H‑PTS` and `GRP n` in one 40px column for
+// exactly that reason (`--edsb-layout-band-name`; Commander request
+// 2026-08-26).
 .power__band-group {
   @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-heading));
+
+  min-inline-size: var(--edsb-layout-band-name);
 }
 
 .power__band-draw,

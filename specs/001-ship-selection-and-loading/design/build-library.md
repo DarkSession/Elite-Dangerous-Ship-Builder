@@ -16,7 +16,7 @@
 - Actions on a named record: open, rename, duplicate and delete. On an unnamed one: open, name it, duplicate it under a new name, and delete. Naming acts on the record itself and leaves nothing behind (persistence contract, "Autosaved records").
 - A committing footer: the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge.
 - `ConfirmDialog` for delete, name dialog with duplicate warning, three-choice conflict dialog, and record manager for quota recovery.
-- The remaining life of every unnamed record, stated on its own row in words and in the active locale's relative time, with naming offered from the row that is about to run out (FR-010, FR-013).
+- The remaining life of every unnamed record, stated on its own row in words and in the active locale's relative time, with naming offered from the row that is about to run out (FR-010, FR-013). Since the 2026-08-26 request that statement is read rather than drawn, together with the recorded validation and the current-build marker: the canvas draws none of the three, and each row's title, issue count, hull and edited time are what it does draw. See FR-010 and FR-013 for the amendment and its one real cost.
 - `InlineNotice`/`ErrorSummary` for storage unavailability, malformed records, unsupported newer versions and failed operations.
 
 The reference rows establish the compact name/note, hull, validation badge and modified-time hierarchy. Feature 001 adds a visible unnamed-record group/state and the missing rename/duplicate/manage actions. The reference price column is optional feature 009 composition: it appears only from package-owned build cost state and is not copied into feature 001 record metadata or used as a persistence identity.

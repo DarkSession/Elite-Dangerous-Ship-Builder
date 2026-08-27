@@ -30,6 +30,17 @@ export class GradeSelector {
   /** The cells to draw, ascending — one to the recipe's highest. */
   readonly grades = input.required<readonly number[]>();
 
+  /**
+   * Which of the two artboards' controls to draw.
+   *
+   * Canvas 1c draws `GRADE   5` over a bar of five bare cells filled up to the
+   * chosen one; canvas 1d draws five numbered buttons with only the chosen one
+   * filled. Two drawings of one choice, and the difference is not a width the
+   * control can read off itself — it is which artboard the editor around it is
+   * being drawn as, which only the editor knows (Commander request 2026-08-26).
+   */
+  readonly asSteps = input(false);
+
   /** The first grade the recipe offers. Cells below it are drawn and refused. */
   readonly lowest = input<number | null>(null);
 
@@ -41,10 +52,16 @@ export class GradeSelector {
 
   readonly legend = this.#messages.messageSignal('outfitting.engineering.grade.legend');
 
-  /** The chosen grade, drawn beside the label exactly as canvas 1c draws it. */
+  /**
+   * The chosen grade, drawn beside the label exactly as canvas 1c draws it.
+   *
+   * Canvas 1d has no such figure and needs none: its cells carry their own
+   * numbers, and the chosen one is the filled number. Written twice it would be
+   * the same grade said twice in one control.
+   */
   readonly selectedLabel = computed(() => {
     const grade = this.selected();
-    return grade === null ? null : String(grade);
+    return grade === null || this.asSteps() ? null : String(grade);
   });
 
   /**
@@ -59,10 +76,20 @@ export class GradeSelector {
     return lowest !== null && grade < lowest;
   };
 
-  /** The canvas fills the bar to the chosen grade, so every cell up to it. */
+  /**
+   * Which cells are filled.
+   *
+   * Canvas 1c fills the bar to the chosen grade, so every cell up to it and
+   * grade 5 reads as five. Canvas 1d fills the chosen button and no other,
+   * because a numbered button that is filled for being *below* the choice would
+   * be four buttons claiming to be the one that is pressed.
+   */
   readonly filled = (grade: number): boolean => {
     const selected = this.selected();
-    return selected !== null && grade <= selected;
+    if (selected === null) {
+      return false;
+    }
+    return this.asSteps() ? grade === selected : grade <= selected;
   };
 
   readonly optionLabel = (grade: number): string =>

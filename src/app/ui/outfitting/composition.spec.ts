@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, type Signal } from '@angular/core';
 import { renderComponent } from '../components/ui-component.spec-helpers';
 import { observeComposition, type OutfittingComposition } from './composition';
+import { declareMeasurement, declareResizeObserver } from '../measurement.spec-helpers';
 
 /**
  * The composition follows the space the region was actually given.
@@ -21,24 +22,20 @@ class CompositionHost {
   readonly composition: Signal<OutfittingComposition> = observeComposition();
 }
 
-/** The prototype's own measurement, so the patch below can be undone. */
-const MEASURE = HTMLElement.prototype.getBoundingClientRect;
+/** The undo for whatever this test declared, run after it. */
+let restore: (() => void) | null = null;
 
 /**
  * Sets the host's measured width, since jsdom lays nothing out on its own.
  *
- * `writable` matters here. A prototype property defined without it is
- * non-writable, and a *later* spec in the same worker assigning its own
- * `element.getBoundingClientRect` then throws in strict mode — a failure with
- * nothing to do with the file it lands in, appearing and disappearing as the
- * suite is re-sharded. The patch is undone after each test for the same reason.
+ * Which prototype carries the patch, and what putting it back means, are both
+ * decided in `measurement.spec-helpers` — a spec that undoes one of these by
+ * assignment leaves the genuine method behind as an own property, shadowing
+ * the one every other spec patches (see that file).
  */
 function withWidth(width: number): void {
-  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
-    configurable: true,
-    writable: true,
-    value: () => ({ width, height: 0, top: 0, left: 0, right: width, bottom: 0 }),
-  });
+  restore?.();
+  restore = declareMeasurement({ width, right: width });
 }
 
 /** The root text size the thresholds are measured against. */
@@ -47,21 +44,21 @@ function withRootFontSize(px: number): void {
 }
 
 describe('outfitting composition', () => {
+  let observed: (() => void) | null = null;
+
   beforeEach(() => {
     // The renderer under test observes resizes; the initial measurement is the
     // synchronous one, which is what these thresholds are about. A no-op
     // observer keeps that path honest without simulating a resize.
-    (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
-      observe(): void {}
-      disconnect(): void {}
-      unobserve(): void {}
-    };
+    observed = declareResizeObserver();
   });
 
   afterEach(() => {
     document.documentElement.style.fontSize = '';
-    HTMLElement.prototype.getBoundingClientRect = MEASURE;
-    delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+    restore?.();
+    restore = null;
+    observed?.();
+    observed = null;
   });
 
   it('uses the compact composition when the ledger and bench cannot both fit', () => {

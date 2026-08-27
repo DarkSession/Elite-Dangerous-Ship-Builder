@@ -28,6 +28,19 @@ html {
   scrollbar-color: var(--edsb-border-strong) transparent;
 }
 
+// One scrollbar at a time.
+//
+// A modal layer scrolls inside its own box, and the platform's `<dialog>` leaves
+// the document behind it scrolling too — so a full-height layer on a phone drew
+// two bars down the right edge, and a flick on the wrong one moved a page the
+// layer had already made inert (Commander request 2026-08-26). The page stops
+// scrolling for as long as a layer is open; what moves is the layer. The
+// position is kept rather than reset, so closing the layer puts a Commander back
+// where they were.
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
 body {
   min-block-size: 100%;
   margin: 0;

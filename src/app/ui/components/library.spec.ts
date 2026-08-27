@@ -54,7 +54,10 @@ describe('SavedBuildCard', () => {
     );
   });
 
-  it('carries the recorded state in words and not only in colour', () => {
+  it('keeps the recorded state in words, where a reader can still reach it', () => {
+    // Read rather than drawn since 2026-08-26: the canvas draws no state row,
+    // and a build with issues is already marked by the count beside its title.
+    // What this holds is that the words did not go with the ink.
     for (const [validation, expected] of [
       [{ label: 'Invalid', tone: 'error' as const }, 'Invalid'],
       [{ label: 'Incomplete', tone: 'warning' as const }, 'Incomplete'],
@@ -67,7 +70,9 @@ describe('SavedBuildCard', () => {
     }
   });
 
-  it('says the record is the current one in words as well as in the marker', () => {
+  it('says the record is the current one in words as well as by its marker', () => {
+    // The words are read rather than drawn; the amber edge and `aria-current`
+    // are what the canvas draws. Neither carries it alone.
     const fixture = renderComponent(SavedBuildCard, { build: build({ current: true }) });
     const row = query(fixture, 'button');
 
@@ -95,7 +100,10 @@ describe('SavedBuildCard', () => {
     expect(textOf(element(fixture))).toContain('2 issues recorded');
   });
 
-  it('states remaining life where a record has a deadline', () => {
+  it('states remaining life to a reader where a record has a deadline', () => {
+    // FR-010's countdown, which is now text and not ink. This is the assertion
+    // that would fail if the words were dropped as well as the row, which is
+    // the difference between the trade the spec records and losing it entirely.
     const fixture = renderComponent(SavedBuildCard, {
       build: build({ remaining: 'Deleted in 6 days unless it is saved' }),
     });

@@ -425,4 +425,40 @@ describe('placeMarks', () => {
     expect(placed[1]!.displaced).toBe(false);
     expect(placed[2]!.displaced).toBe(false);
   });
+
+  it('does not send the Corsair\u2019s first hardpoint across the hull as the plate resizes', () => {
+    // The reported case, as a Commander meets it: a plate is not one width. It
+    // is drawn at whatever the column leaves it, and the mark's own size is
+    // `clamp(0.875rem, 3.06cqw, 1.375rem)`, so the separation asked for changes
+    // with every few pixels. Node 1's mark used to answer that by crossing the
+    // whole ship — forward of the nose at one width, aft of the mounts behind
+    // it at the next, and back again a few pixels later.
+    //
+    // What is asserted is *stability*, not a position: over the widths a plate
+    // is actually drawn at, the mark stays on one side of its own mount. Which
+    // side is the aligned one, and the test above pins that.
+    const frame = { width: 1423.2329, height: 577.2 };
+    const anchors = [
+      { x: 659.555, y: 288.6 },
+      { x: 565.054, y: 320.569 },
+      { x: 565.054, y: 256.633 },
+      { x: 670.62, y: 321.575 },
+      { x: 670.619, y: 255.628 },
+      { x: 788.334, y: 546.449 },
+      { x: 788.334, y: 30.75 },
+    ];
+
+    // The stylesheet's own two numbers, as the plate measures them: a mark of
+    // `clamp(14px, 3.06%, 22px)` on a plate of `plate` CSS pixels, and the
+    // separation the component asks for from that.
+    const sides: number[] = [];
+    for (let plate = 240; plate <= 900; plate += 5) {
+      const mark = Math.min(22, Math.max(14, plate * 0.0306));
+      const share = mark / plate;
+      const placed = placeMarks(anchors, frame, Math.min(0.2, share * 1.25), share);
+      sides.push(Math.sign(placed[0]!.mark.x - anchors[0]!.x));
+    }
+
+    expect(new Set(sides).size).toBe(1);
+  });
 });

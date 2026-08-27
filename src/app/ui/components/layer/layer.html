@@ -1,8 +1,16 @@
+<!--
+  `click` on the dialog itself is the backdrop: a click inside the panel is
+  reported against whatever it landed on, and only the ground around the panel
+  reaches the element. The reference wires exactly this on both of its modals
+  (`modal.addEventListener('click', e => { if (e.target === modal) close(); })`).
+-->
 <dialog
   [class]="presentationClass()"
   [attr.aria-labelledby]="titleId"
   [attr.aria-describedby]="description() ? descriptionId : null"
   (close)="dismiss()"
+  (mousedown)="pressOn($event)"
+  (click)="dismissFromBackdrop($event)"
 >
   <div class="layer__header">
     <h2 class="layer__title" [id]="titleId">{{ title() }}</h2>

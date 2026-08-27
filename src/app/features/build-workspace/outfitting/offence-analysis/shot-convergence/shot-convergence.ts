@@ -34,7 +34,16 @@ export interface ShotView {
   /** Percentages from the plate's leading and top edges — where the shot lands. */
   readonly left: number;
   readonly top: number;
-  /** Where the numeral sits relative to its own dot, in pixels. */
+  /**
+   * Where the numeral sits relative to its own dot, as a share of the plate.
+   *
+   * A percentage rather than the canvas's pixels, because the plate is not
+   * always drawn at the canvas's width: it is `min(100%, …)`, so a narrow
+   * column shrinks it. Offsets in pixels then stayed the same size while the
+   * dot they hang off moved, and the leader — which is drawn in the plate's own
+   * percentage coordinates — ended somewhere the numeral was not. That is the
+   * reported case of a line that is slightly off (reported 2026-08-26).
+   */
   readonly numeralLeft: number;
   readonly numeralTop: number;
   /**
@@ -61,9 +70,13 @@ export interface ShotView {
    *
    * The same selection the hull schematics mark and the ledger row carries, so
    * a Commander working on one hardpoint can see which mark on the plate is
-   * theirs. It takes the plate's other ink and a ring in the same one; whether
-   * the mount is armed stays with the fill against the outline, so a selected
-   * empty hardpoint is still visibly empty.
+   * theirs. It takes the plate's other ink, and nothing else: the ring that
+   * used to be drawn around it is withdrawn, because on a plate whose numerals
+   * may now be out on leaders a second circle around one dot reads as another
+   * kind of mark. Whether the mount is armed stays with the fill against the
+   * outline, so a selected empty hardpoint is still visibly empty, and both
+   * facts are written out in the mark's own sentence — which is what keeps
+   * them off colour alone (Commander request 2026-08-26).
    */
   readonly selected: boolean;
   /** The whole mark in words, for a reader who is not looking at the diagram. */
@@ -120,6 +133,19 @@ const NUMERAL_METRICS = {
 } as const;
 
 /**
+ * The numeral's box, as a share of the plate, for the stylesheet to draw it at.
+ *
+ * Published as a custom property rather than written into the stylesheet twice.
+ * The placement above checks a box of exactly this size for collisions and the
+ * leader ends at its middle, so a box drawn any other size would be a numeral
+ * standing somewhere the arithmetic never looked.
+ */
+export const NUMERAL_BOX = {
+  width: `${(NUMERAL_METRICS.width / PLATE_REFERENCE_WIDTH) * 100}%`,
+  height: `${(NUMERAL_METRICS.height / PLATE_REFERENCE_WIDTH) * 100}%`,
+} as const;
+
+/**
  * `SHOT CONVERGENCE`: where this build's shots land at a chosen range.
  *
  * Canvas 1c runs it across the full width beneath the `WEAPONS` and
@@ -167,6 +193,9 @@ export class ShotConvergence {
    * ten hulls, so matching on the number would mark the wrong mount on those.
    */
   readonly selectedSlot = input<string | null>(null);
+
+  /** The numeral's drawn box, exactly the one the placement measured. */
+  readonly numeralBox = NUMERAL_BOX;
 
   readonly plateLabel = this.#messages.messageSignal('offence.convergence.plate');
   readonly rangeLabel = this.#messages.messageSignal('offence.convergence.range');
@@ -229,6 +258,12 @@ export class ShotConvergence {
 
     const selectedSlot = this.selectedSlot();
 
+    // Plate pixels into plate percentages. The placement is measured at the
+    // reference width and drawn at whatever width the plate came out, so it is
+    // carried as a share of the plate rather than as a length — which is what
+    // lets the numeral, its box and its leader agree at every size.
+    const share = (pixels: number): number => (pixels / PLATE_REFERENCE_WIDTH) * 100;
+
     return dots.map((dot, index) => {
       const mount = dot.point.mount;
       const weapon = mount.weapon;
@@ -244,22 +279,21 @@ export class ShotConvergence {
         badge: place.hardpoint,
         left: (1 + dot.point.horizontal) * HALF_PLATE_PERCENT,
         top: (1 - dot.point.vertical) * HALF_PLATE_PERCENT,
-        numeralLeft: placement.left,
-        numeralTop: placement.top,
+        numeralLeft: share(placement.left),
+        numeralTop: share(placement.top),
         // A numeral that could not stay in one of the canvas's four corners is
         // tied back to its own dot by a leader, the way feature 010's
         // schematics explain a mark that has moved.
         displaced: placement.displaced,
+        // The leader ends at the middle of the numeral's own box, which the
+        // stylesheet draws at exactly the size measured here — so the line and
+        // the numeral meet wherever the plate is drawn, at any width.
         leader: placement.displaced
           ? {
-              x1: (dot.x / PLATE_REFERENCE_WIDTH) * 100,
-              y1: (dot.y / PLATE_REFERENCE_WIDTH) * 100,
-              x2:
-                ((dot.x + placement.left + NUMERAL_METRICS.width / 2) / PLATE_REFERENCE_WIDTH) *
-                100,
-              y2:
-                ((dot.y + placement.top + NUMERAL_METRICS.height / 2) / PLATE_REFERENCE_WIDTH) *
-                100,
+              x1: share(dot.x),
+              y1: share(dot.y),
+              x2: share(dot.x + placement.left + NUMERAL_METRICS.width / 2),
+              y2: share(dot.y + placement.top + NUMERAL_METRICS.height / 2),
             }
           : null,
         armed: weapon !== null,

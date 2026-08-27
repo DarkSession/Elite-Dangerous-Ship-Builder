@@ -22,21 +22,61 @@
   margin-block-end: var(--edsb-space-stack-tight);
 }
 
+// Canvas 1d draws every option in this card as a plate of its own: `min-height:
+// 46px; padding: 9px 11px` on the inset ground, its own hairline around it, and
+// 6px of the card's ground showing between one and the next. That is not the
+// ledger's continuous ruled list, which is what these rows were built as — a
+// marker on the leading edge and a hairline under each — and beside the
+// artboard the difference is the whole look of the card (Commander request
+// 2026-08-26). The chosen one carries the canvas's own amber wash and an amber
+// edge; the plate also carries a
+// marker inside its leading edge, because filled and edged is a difference in
+// colour and a state may never rest on one.
 .blueprint {
-  @include layout.selectable-row;
   @include layout.target-baseline;
 
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--edsb-space-inline);
-  padding: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  padding: var(--edsb-space-row) var(--edsb-space-inline);
+  background-color: var(--edsb-surface-inset);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
   cursor: pointer;
 }
 
+.blueprint[data-selected='true'] {
+  background-color: var(--edsb-surface-accent-selected);
+  border-color: var(--edsb-border-accent);
+}
+
+// The wash and the amber edge are the echo, not the fact. A reader is told by
+// the radio's own checked state; an eye needs something that survives a
+// monochrome rendering, and a tint on its own does not — a state carried by
+// colour is the one thing this design system does not do (canvas extraction,
+// "Colour is what makes the state obvious; it is never what carries it").
+//
+// Drawn inside the plate rather than as a border on it, exactly as the choice
+// group draws its cards, so the plate keeps the shape canvas 1d gives it: a
+// complete box either way, with the mark laid against its padding box.
+.blueprint[data-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--edsb-border-width-marker);
+  background-color: var(--edsb-marker-selected);
+}
+
+.blueprint[data-selected='true'] .blueprint__name {
+  font-weight: var(--edsb-text-weight-heading);
+}
+
 // The canvas draws the no-blueprint row dashed, so it reads as the way out
-// rather than as one more recipe.
-.blueprint--none {
-  border: var(--edsb-border-width-hairline) dashed var(--edsb-border-quiet);
+// rather than as one more of them.
+.blueprint--none,
+.blueprint--none[data-selected='true'] {
+  border-style: dashed;
 }
 
 .blueprint__radio {

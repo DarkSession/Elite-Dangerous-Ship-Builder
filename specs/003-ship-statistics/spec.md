@@ -14,6 +14,12 @@ This capability presents the active build's structural status, as canvases 1c an
 `BUILD STATUS` heading opening the workspace's status rail, and the Almanac's validation issues
 beneath it.
 
+Feature 004's import-completion notice is drawn under that same heading, beneath the issues, since
+2026-08-26 (Commander request). It is not this capability's to own — the wording, the dismissal and
+what counts as a completion all belong to [004](../004-slef/spec.md) — but it is this rail's to
+place, on the same reading that puts the issues there: both are what the package says about the build
+that is now open.
+
 The headline results, power block and viewing conditions the canvas draws further down that rail
 belong to [005](../005-power-and-heat/spec.md), [006](../006-defence-profile/spec.md),
 [007](../007-offence-profile/spec.md) and [008](../008-mobility-and-jump/spec.md); the cost and

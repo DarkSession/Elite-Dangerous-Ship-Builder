@@ -17,8 +17,25 @@ import { reachShellAction } from './shell';
  * to it without spending a second build to do it.
  */
 
-/** What the shell says when a newer version is waiting. */
+/** What the shell says when a newer version is waiting to be applied. */
 const UPDATE_NOTICE = 'A newer version of this application has been published.';
+
+/** The overlay's own name, which is how a reader finds it. */
+const UPDATE_OVERLAY_TITLE = 'Updating';
+
+/**
+ * The overlay a newer version puts up before it restarts the page under it.
+ *
+ * Found as the named modal rather than by its sentence, and both halves of that
+ * matter. The sentence is also published to the polite outlet, so text alone
+ * matches twice; and the layer is mounted beside the frame whether it is open or
+ * not, so a text match inside it finds a closed layer as readily as an open one.
+ * A dialog that is not open is not in the accessibility tree at all, which is
+ * what makes this the same locator for "it is up" and for "there is none".
+ */
+function restartWarning(page: Page): Locator {
+  return page.getByRole('dialog', { name: UPDATE_OVERLAY_TITLE });
+}
 
 /**
  * The notice as visible content, not as the announcement of it.
@@ -89,6 +106,24 @@ async function staysAbsent(page: Page): Promise<void> {
   expect(raised).toBe(false);
 }
 
+/**
+ * The same assertion, for the warning a postponed session must not see again.
+ *
+ * Sized past the grace period rather than against the poll above: what would
+ * falsify "asked once" is the countdown coming back, and a window shorter than
+ * the countdown could not have caught it.
+ */
+async function staysAbsentAsAWarning(page: Page): Promise<void> {
+  const raised = await restartWarning(page)
+    .waitFor({ state: 'visible', timeout: 25_000 })
+    .then(
+      () => true,
+      () => false,
+    );
+
+  expect(raised).toBe(false);
+}
+
 /** Waits until a service worker is actually controlling the page. */
 async function waitForController(page: Page): Promise<void> {
   await page.waitForFunction(
@@ -116,45 +151,64 @@ async function openControlledSession(page: Page): Promise<void> {
 }
 
 test.describe('a newly published version', () => {
-  test('reaches an open session, and waits there to be applied', async ({ page }, testInfo) => {
+  test('reaches an open session, and says so before it restarts it', async ({ page }, testInfo) => {
     await openControlledSession(page);
 
     // Nothing has been published, so the session has nothing to say about the
     // version it is running.
+    await expect(restartWarning(page)).toHaveCount(0);
     await expect(standingNotice(page)).toHaveCount(0);
 
     await publish(page);
     await returnToTheTab(page);
 
-    await expect(standingNotice(page)).toBeVisible({ timeout: 30_000 });
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
-    // The notice and the control it explains are a rendered product state like
-    // any other, so they are scanned like any other.
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'update-available' });
+    // Everything below runs against a page with a countdown on it, so it runs
+    // in order of how long it takes: the sweep first, while the whole grace
+    // period is still ahead of it, and the short waits after. A scan that
+    // started late enough would be scanning the reload.
+    //
+    // The overlay and the controls on it are a rendered product state like any
+    // other, so they are scanned like any other.
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applying' });
 
-    // It waits. A reload replaces everything on screen, and the session never
-    // decides that for a Commander who is in the middle of something.
+    // The warning stands before anything is replaced. A restart on a clock is
+    // only allowed where there was time to read the warning and call it off
+    // (WCAG 2.2.1), so the seconds after it appears are seconds in which the
+    // page is still the page the Commander was on.
     const reloaded = page.waitForEvent('load', { timeout: 2_000 }).then(
       () => true,
       () => false,
     );
     expect(await reloaded).toBe(false);
-    await expect(standingNotice(page)).toBeVisible();
+    await expect(restartWarning(page)).toBeVisible();
+
+    // And the shell behind it says nothing of its own. One sentence, in one
+    // place, is the whole of what a Commander is being told.
+    await expect(standingNotice(page)).toHaveCount(0);
   });
 
-  test('is applied when the Commander asks for it, and not before', async ({ page }) => {
+  test('restarts the session on its own when the warning is left standing', async ({ page }) => {
+    // Slow because of what it does, not because of the machine: the grace
+    // period it waits out is twenty seconds of product behaviour, and two
+    // controlled loads bracket it. The default budget is calibrated on a test
+    // that does not wait for a clock (`playwright.config.ts`).
+    test.setTimeout(150_000);
+
     await openControlledSession(page);
 
     await publish(page);
     await returnToTheTab(page);
-    await expect(standingNotice(page)).toBeVisible({ timeout: 30_000 });
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
-    await reachShellAction(page, /^update now$/i);
-
-    // The application comes back with nothing left to say about its version —
-    // no cache-defeating reload anywhere in that journey.
+    // Nothing is pressed. The grace period runs out and the page starts over on
+    // the newer version by itself (FR-025) — no cache-defeating reload anywhere
+    // in that journey.
+    await page.waitForEvent('load', { timeout: 60_000 });
     await expect(page.getByRole('main')).toBeVisible();
     await waitForController(page);
+    await expect(restartWarning(page)).toHaveCount(0);
     await expect(standingNotice(page)).toHaveCount(0);
 
     // What this cannot show is that activation happened: the stood-in
@@ -168,20 +222,59 @@ test.describe('a newly published version', () => {
     // still watching: the next deployment reaches it exactly like the first.
     await publish(page);
     await returnToTheTab(page);
-    await expect(standingNotice(page)).toBeVisible({ timeout: 30_000 });
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
   });
 
-  test('is what the next start is served, even when nobody asks for it', async ({ page }) => {
+  test('is held back, and applied later, when the Commander says not now', async ({
+    page,
+  }, testInfo) => {
+    // Slow for the same reason, from the other side: proving the warning does
+    // not come back means outliving the countdown that would have brought it.
+    test.setTimeout(150_000);
+
     await openControlledSession(page);
 
     await publish(page);
     await returnToTheTab(page);
-    await expect(standingNotice(page)).toBeVisible({ timeout: 30_000 });
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
-    // The Commander ignores the notice and comes back later. Ignoring it costs
-    // nothing: the newer version is downloaded already, and a session that
-    // starts again is served it (FR-025). Nothing was pressed, and the restart
-    // still delivered — which is the whole of the promise.
+    // The simple action the rule asks for. Taking it puts the session back
+    // exactly where it stood, with the version still waiting and the sentence
+    // that says so back on the shell.
+    await page.getByRole('button', { name: /^not now$/i }).click();
+    await expect(restartWarning(page)).toHaveCount(0);
+    await expect(standingNotice(page)).toBeVisible();
+
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'update-available' });
+
+    // And it stays held back. A Commander who has answered once is not asked
+    // again for the same version.
+    await staysAbsentAsAWarning(page);
+
+    await reachShellAction(page, /^update now$/i);
+
+    await expect(page.getByRole('main')).toBeVisible();
+    await waitForController(page);
+    await expect(standingNotice(page)).toHaveCount(0);
+  });
+
+  test('is what the next start is served, even when nobody applies it', async ({ page }) => {
+    // Two controlled loads and a ten-second absence window, on top of a warning
+    // that has to be answered before either.
+    test.setTimeout(120_000);
+
+    await openControlledSession(page);
+
+    await publish(page);
+    await returnToTheTab(page);
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
+    await page.getByRole('button', { name: /^not now$/i }).click();
+    await expect(standingNotice(page)).toBeVisible();
+
+    // The Commander leaves the notice alone and comes back later. Leaving it
+    // costs nothing: the newer version is downloaded already, and a session
+    // that starts again is served it (FR-025). Nothing was pressed, and the
+    // restart still delivered — which is the whole of the promise.
     //
     // Which version a fresh client is handed is exactly what this clause is
     // about, so the absence gets a window: a session served the superseded
@@ -195,6 +288,6 @@ test.describe('a newly published version', () => {
     // And it is watching again from there: a further deployment is noticed.
     await publish(page);
     await returnToTheTab(page);
-    await expect(standingNotice(page)).toBeVisible({ timeout: 30_000 });
+    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
   });
 });

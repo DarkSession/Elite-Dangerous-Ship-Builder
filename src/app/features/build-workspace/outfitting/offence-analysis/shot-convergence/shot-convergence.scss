@@ -181,12 +181,27 @@
 }
 
 // The mount's hardpoint numeral, set beside its own dot at the corner the
-// component chose for it. Two margins rather than a `translate`, because the
-// canvas offsets it in pixels from the dot's own position and a percentage
-// translate would scale that gap with the numeral's own text.
+// component chose for it, or out on the ring when the plate was too crowded
+// for corners.
+//
+// Two margins rather than a `translate`, because the offset is measured from
+// the dot's own position rather than from the numeral's own box. They are
+// percentages, and so are the box's own two sizes: the placement measures a box
+// of a fixed size at a reference plate width, and the plate is drawn at
+// whatever width its column leaves it. Sized in pixels the box stayed put while
+// the dot beside it moved, and the leader — which is drawn in the plate's own
+// percentage coordinates — reached for a middle the numeral no longer had.
+// Both margins resolve against the plate's inline size, which on a square plate
+// is its block size too, so the two axes stay in step (reported 2026-08-26).
+//
+// The digit is centred in that box rather than set from its corner, so the box
+// the arithmetic checked and the ink a reader sees have the same middle.
 .plate__numeral {
   position: absolute;
   z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--edsb-font-metric);
   font-size: var(--edsb-text-size-node-mark);
   font-weight: var(--edsb-text-weight-control);
@@ -234,23 +249,24 @@
   border: var(--edsb-border-width-hairline) solid var(--edsb-surface-mount-empty);
 }
 
-// The mount the workspace has selected: the plate's other ink, and a ring around
-// the mark in the same one, outside the ground halo that already separates the
-// dot from the plate.
+// The mount the workspace has selected: the plate's other ink, and nothing else.
 //
 // The ink is what the canvas spends on a gimballed mount. It is spent here
 // instead because this plate has three things to separate and the canvas had
 // one, and because how a weapon aims is a fact about the weapon that its own
 // sentence carries, where "this is the mount you have open" is a fact about the
-// plate that nothing else on it could say. The ring is kept beside the ink so
-// the mark still stands out where a reader cannot tell the two hues apart —
-// `outline` follows `border-radius`, so it is a circle without a second element
-// to draw it, and it is drawn outside the box so it moves no mark around it.
+// plate that nothing else on it could say.
+//
+// The ring that used to be drawn around this dot is withdrawn (Commander
+// request 2026-08-26). A crowded plate now takes every numeral out to a ring of
+// its own with a leader back to each dot, and a second circle around one mark
+// in the middle of that reads as a third kind of mark rather than as emphasis.
+// Nothing is lost that a reader had: the selected mount is named as selected in
+// its own sentence beside the plate, which is where the fact was carried all
+// along — the ring only ever repeated it (011 FR-022).
 .plate__dot--selected {
   z-index: 4;
   background-color: var(--edsb-surface-mount-selected);
-  outline: var(--edsb-border-width-thick) solid var(--edsb-surface-mount-selected);
-  outline-offset: var(--edsb-space-3xs);
 }
 
 // A selected hardpoint that has nothing on it stays hollow: whether a mount is

@@ -81,6 +81,45 @@ under them — is the taller of the two readings at the moment a Commander is ma
 editor was the pane being scrolled. Not an even split: the canvas does draw the manifest the taller
 of the two, and this only narrows the margin (Commander request 2026-08-26).
 
+**And a share is not a size. Ruled 2026-08-26 (Commander request).** The ratio divides whatever the
+bench has, so on a shorter screen each panel is a smaller fraction of a smaller box: at 900px the
+manifest drew four rows and at 700px it drew two, which is a glimpse of a list rather than a list.
+Canvas 1c settles what one should be — it draws the workspace over a `min-height: 880px`, leaving the
+bench 574px under the plates and giving the manifest 292 of it: the head, the column rule and five
+rows. Each panel now states a floor of its own, on its own host, because how short a panel may get
+before it stops being one is the panel's statement rather than the bench's; the manifest's is
+measured against the editor's, so the two can never ask for more than the bench holds and neither
+ends up in a box that clips it. Where the bench cannot give both, the editor's is the floor that
+holds — it is the panel that can be read a line at a time. This costs the editor some of what the
+ratio above gave it at 900px, which is the trade: five rows of manifest against forty pixels of a
+comparison that scrolls either way.
+
+**Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
+track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
+the page to two hundred rows, and the plates fit that column: they are drawn at the hull's own
+proportions and ask for exactly the height they need. The four dashboard modes are not. Their height
+is whatever the build has to say, and `POWER AND THERMALS` exceeds the column on any screen shorter
+than 900px — at 1560 x 800 it was given 224px for 1053px of content. Wave 14 had it scroll that
+inside itself, which put a second scrollbar in a column that already had one, with the distributor's
+own pip blocks below the panel's fold and the page underneath refusing to move.
+
+So the column releases while a dashboard is open — `position: static`, its own content height, the
+bench released with it — and the page scrolls instead, exactly as a short viewport releases it. The
+plates keep the bound: they are the arrangement it was written for and they fit it. Which of the two
+is open is read off `edsb-hull-anatomy`'s own `anatomy--dashboard` host class rather than a flag
+beside it, so a mode that lands next is bounded or released by what it draws rather than by a list
+somebody remembered to add it to (Commander request 2026-08-26).
+
+**Ruled 2026-08-26 — the status rail's last block may have the rest of the column.** The rail is a
+column of a fixed height whose blocks are as tall as they are, and feature 009's material list closes
+it. Bounded at five rows by that feature's ruling G, the list stopped a third of the way down and
+left the foot of the track empty beside a scrollbar that was there to reach rows the column had room
+to show. The rail is now a stack: what sits above the list is fixed, the list takes what is left and
+scrolls only what will not fit, and it never falls below the measure ruling G set. Only where the
+rail is the canvas's third track — below that step it is a band under the bench with the page's own
+height to grow into, and a list that filled it there would run the whole shopping list down the
+screen (Commander request 2026-08-26; `specs/009-cost-and-materials/spec.md`, FR-007a).
+
 **What that height is, is measured, not declared.** `--edsb-layout-bar-height` is one row of controls
 at the target baseline — what the bar comes to on every screen that draws a plain title. This screen
 does not: FR-019's identity block is two 24px targets and a gap, so the workspace's bar is 74px, and
@@ -178,8 +217,14 @@ STATUS`. Five of the six are the anatomy region's own; see "The status segment" 
    sixth.
 3. **The six key readings** — `DPS`, `SHIELD`, `ARMOUR`, `JUMP`, `SPEED`, `MASS` — on one strip,
    closed by a hairline. See "The compact key figures" below.
-4. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
-5. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
+4. **The marked mount's own rule** — `FITTING · HARDPOINT 1` — over the tabs it names the contents
+   of. Canvas 1d writes it between the key readings and the categories, and it stood above the key
+   readings here until 2026-08-26 because it is the head of the bench, and the bench is the other
+   half of the column the wide grid needs. At compact there is no column: `.outfitting__centre`
+   becomes `display: contents` so the anatomy and the bench each take their own place in the stack,
+   which is the only way a band that is their sibling can come between them.
+5. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
+6. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
    in the ledger above, `position: sticky; bottom: 0` on its own plate. Each opens its full-screen
    feature layer; back or cancel changes no build. It is drawn after the ledger rather than under the
    anatomy, which is where the artboard puts it and why it is not inside the bench — at this width
@@ -220,6 +265,12 @@ inside a box of its own and the plate sits below that box, which is how a phone'
 and what the artboard is actually drawing. That is a different arrangement from the single page-length
 column this region composes at compact width — the mode strip, the plates, the key figures and the
 ledger all scroll together today — so it is recorded here as the follow-up rather than half-built.
+
+**And it is also what was asked for (2026-08-26).** The Commander's own words for this were that the
+two actions should not appear until the modules do. Drawn in the flow they cannot: the plate is the
+last thing in the stack, under the ledger it acts on, so it comes into view with the end of that list
+and never before it. The pinned plate showed both actions over the hull plates, before there was a
+list on screen to have marked a mount in. Whatever the follow-up above builds has to keep that.
 
 ### The compact key figures
 

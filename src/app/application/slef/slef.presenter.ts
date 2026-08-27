@@ -43,6 +43,16 @@ export interface SlefFailureView {
   readonly diagnosticsLabel: string;
   /** One line per refused partial roll, in exact source identities. */
   readonly refusals: readonly string[];
+  /**
+   * The control that opens the two lists above.
+   *
+   * A refused paste is answered by one sentence; the slot identities and the
+   * five-field diagnostics behind it are for a Commander who wants to know
+   * which module the library would not take, and they are not what most
+   * refusals need said (Commander request 2026-08-26). Nothing is withheld —
+   * the control is beside the sentence, and it names itself.
+   */
+  readonly advancedLabel: string;
 }
 
 /** One format the export layer offers. */
@@ -308,14 +318,23 @@ export class SlefPresenter {
   // ---- import wording ----------------------------------------------------
 
   /**
-   * The one status line, in priority order.
+   * The one status line, in priority order — and empty while nothing has
+   * happened yet.
    *
    * The canvas draws exactly one place for this. A refusal is said by the
    * failure block below it, so the status line stays what it was rather than
    * saying the same thing a second time.
+   *
+   * It used to say "Awaiting input" over an empty field and count the draft's
+   * bytes while a Commander typed. Neither was news: an empty field is already
+   * empty, and a byte count nobody is near the limit of is arithmetic about
+   * something that has not gone wrong (Commander request 2026-08-26). The size
+   * is still said at the one moment it decides anything — over the limit, where
+   * `slef.import.failure.tooLarge` names the draft's size and the limit and the
+   * field carries it as its own error. The line keeps its height either way, so
+   * the field and the footer do not jump apart when a status does arrive.
    */
   #importStatus(): string {
-    const draft = this.#store.draft();
     if (this.#store.importStatus() !== 'editing') {
       return this.#messages.message('slef.import.status.inspecting');
     }
@@ -323,13 +342,7 @@ export class SlefPresenter {
     if (ending !== null) {
       return this.#messages.message(`slef.import.status.${ending}` as MessageKey);
     }
-    if (draft.text.length === 0) {
-      return this.#messages.message('slef.import.status.awaiting');
-    }
-    return this.#messages.message('slef.import.status.bytes', {
-      bytes: this.#formatters.bytes(draft.utf8Bytes),
-      limit: this.#formatters.bytes(draft.limitBytes),
-    });
+    return '';
   }
 
   #failureView(failure: SlefImportFailure): SlefFailureView {
@@ -338,6 +351,7 @@ export class SlefPresenter {
       diagnostics: this.diagnostics('diagnostics' in failure ? failure.diagnostics : []),
       diagnosticsLabel: this.#messages.message('slef.diagnostic.title'),
       refusals: 'failures' in failure ? failure.failures.map((one) => this.#refusal(one)) : [],
+      advancedLabel: this.#messages.message('slef.import.advanced'),
     };
   }
 
@@ -435,14 +449,24 @@ export class SlefPresenter {
     return null;
   }
 
+  /**
+   * Why the export carries no link — or nothing, where it carries one.
+   *
+   * An export that includes the link used to say so. It was the ordinary case
+   * announcing itself: the canvas draws two formats and a payload, and a
+   * sentence under them confirming that the one a Commander asked for is the
+   * one they got is not news (Commander request 2026-08-26). The four omissions
+   * stay, because each of those is a Commander expecting something that is not
+   * in the file they are about to save.
+   */
   #link(): string | null {
     const artifact = this.#store.artifact();
-    if (artifact === null) {
+    if (artifact === null || artifact.linkOmission === null) {
       return null;
     }
-    return artifact.linkOmission === null
-      ? this.#messages.message('slef.export.link.included')
-      : this.#messages.message(`slef.export.link.omitted.${artifact.linkOmission}` as MessageKey);
+    return this.#messages.message(
+      `slef.export.link.omitted.${artifact.linkOmission}` as MessageKey,
+    );
   }
 
   #actions(): readonly SlefDeliveryView[] {

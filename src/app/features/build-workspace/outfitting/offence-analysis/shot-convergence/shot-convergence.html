@@ -44,8 +44,10 @@
       Every one of the hull's hardpoints twice, as the 2026-08-25 canvas
       draws an armed one: the dot where the shot lands, and the mount's
       hardpoint numeral set beside it, at whichever of four corners stands
-      clear of the other dots. The badge column parked at the plate's edge,
-      and the leader lines back from it, are gone with the revision.
+      clear of the other dots. When one numeral has no corner to stand in,
+      every numeral on the plate goes out to a ring just inside the frame
+      instead, each on a leader back to its own dot — one arrangement for the
+      whole plate rather than one numeral read differently from the rest.
 
       An empty hardpoint is drawn too, in the quiet ink the schematics
       already give an empty mount: where a mount sits is a property of the
@@ -93,14 +95,23 @@
         [style.left.%]="shot.left"
         [style.top.%]="shot.top"
       ></span>
+      <!--
+        The numeral in a box of exactly the size the placement measured, offset
+        from its dot as a share of the plate. Both are shares rather than
+        pixels so the mark, its box and the leader that reaches it all scale
+        with the plate together — the plate is `min(100%, …)` and is drawn
+        narrower than the canvas's own width in a narrow column.
+      -->
       <span
         class="plate__numeral"
         [class.plate__numeral--empty]="!shot.armed"
         [class.plate__numeral--selected]="shot.selected"
         [style.left.%]="shot.left"
         [style.top.%]="shot.top"
-        [style.margin-left.px]="shot.numeralLeft"
-        [style.margin-top.px]="shot.numeralTop"
+        [style.margin-left.%]="shot.numeralLeft"
+        [style.margin-top.%]="shot.numeralTop"
+        [style.inline-size]="numeralBox.width"
+        [style.block-size]="numeralBox.height"
         >{{ shot.badge }}</span
       >
     }

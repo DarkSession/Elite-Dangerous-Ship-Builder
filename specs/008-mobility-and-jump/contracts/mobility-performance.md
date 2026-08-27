@@ -93,8 +93,10 @@ Locate the source through `slots('core')` where `core === 'thrusters'`; retain t
 - optional speed `min/opt/maxSpeedMultiplier`; and
 - optional rotation `min/opt/maxRotationMultiplier`.
 
-The two selected-load multipliers come from the complete mobility result. No threshold becomes a
-bar width, curve, percentage-of-optimal or headroom value.
+The two selected-load multipliers come from the complete mobility result. No threshold becomes a bar
+width or a curve. The two comparisons FR-008 ruled on — `91% OF OPTIMAL MASS` and
+`658 T OF HEADROOM` — are the exception, and are bounded by that ruling: each is one package answer
+read against another, drawn only where both are present, and nowhere else.
 
 ## Viewing and revision behavior
 

@@ -63,8 +63,8 @@ describe('build-link codec pinned symbol models', () => {
     expect(fragments).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.V-Vvc1n36H310k3c1JR73EOXTDVtl.J/noD6UIA!DNJj1i6Yb3BK4h-klUe.0Oe',
-      'b.1vt1AsJNQOz@5/xzoXz80TStxhx7ttNjJuEoqU9Q0A:Q/VgcWpNlK@mJujF.IPA0qRo1-GSdd3Lul3gHSO/wrvrWzPtV-pV',
+      'b.Fe22sXs1VYx8!NVMtClstaF14xQPy8sBf67Gl_pVZTY6E_IRHK3E/rNfDqSLrFuY/-bXDhZ',
+      'b.6lNEFSYnYR0i,sY,ohzZJbdMI4OCa2QXgTdxfqEJ6,rTcsmF4Yfz_VxmMFuXCzefb_ck@ziD/nac4.rjo5VicfG,wuFOfX!O',
       'b.7yvr6:PyEpDGgEs9aI:gxA@uHybdm4IM',
     ]);
   });
@@ -81,8 +81,8 @@ describe('build-link codec pinned symbol models', () => {
     expect(rows).toEqual([
       { label: 'empty Sidewinder', baselineLength: 16, modelledLength: 16 },
       { label: 'stock Krait Mk II', baselineLength: 10, modelledLength: 10 },
-      { label: 'engineered Anaconda', baselineLength: 76, modelledLength: 65 },
-      { label: 'supplied engineered Corvette', baselineLength: 108, modelledLength: 97 },
+      { label: 'engineered Anaconda', baselineLength: 85, modelledLength: 73 },
+      { label: 'supplied engineered Corvette', baselineLength: 110, modelledLength: 98 },
       { label: 'named stock Krait Mk II', baselineLength: 38, modelledLength: 34 },
     ]);
 

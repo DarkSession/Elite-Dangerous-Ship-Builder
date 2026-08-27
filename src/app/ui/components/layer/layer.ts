@@ -58,6 +58,13 @@ export type LayerWidth = 'default' | 'wide';
  *
  * Dismissal restores the invoking control, so a Commander who opens a layer
  * from a row ends up back on that row rather than at the top of the document.
+ *
+ * A click on the ground around the layer dismisses it, as the reference does on
+ * both of its modals (Commander request 2026-08-26). It is the same act as
+ * Escape, which the native element has always honoured here through its own
+ * `close` event, and it means the same thing: every layer's dismissal is a
+ * cancel, and the one destructive answer any of them offers is behind a button
+ * a Commander has to press.
  */
 @Component({
   selector: 'edsb-layer',
@@ -113,6 +120,9 @@ export class Layer {
   /** The control that opened the layer, so focus can be handed back to it. */
   #invoker: HTMLElement | null = null;
 
+  /** Whether the press that produces the next click landed on the ground. */
+  #pressedOnGround = false;
+
   constructor() {
     effect(() => {
       const dialog = this.#dialog();
@@ -136,6 +146,53 @@ export class Layer {
 
   dismiss(): void {
     this.dismissed.emit();
+  }
+
+  /**
+   * Remembers where the gesture that produces the next click began.
+   *
+   * A `click` is dispatched at the nearest common ancestor of where the button
+   * went down and where it came up, so a drag that starts inside the panel and
+   * ends on the ground is reported against the dialog itself with coordinates
+   * outside the panel — indistinguishable, from the click alone, from a press
+   * on the ground. Selecting the payload in the export layer and releasing past
+   * its edge is exactly that gesture, and it closed the layer.
+   */
+  pressOn(event: MouseEvent): void {
+    this.#pressedOnGround = event.target === event.currentTarget;
+  }
+
+  /**
+   * Dismiss a click that landed on the ground rather than on the layer.
+   *
+   * Three checks now, and each rules out a different thing. The press says the
+   * gesture *began* on the ground rather than ending up there. The target says
+   * the click reached the dialog element itself rather than bubbling from
+   * something inside it. The box says it was outside the panel rather than on
+   * the padding the panel draws around its own content, which is still the
+   * dialog element.
+   *
+   * A click a keyboard produced carries no position — it reports the origin —
+   * so the box check would call it a backdrop click. It never reaches here:
+   * such a click is dispatched at the control that was activated, and the
+   * target check has already turned it away.
+   */
+  dismissFromBackdrop(event: MouseEvent): void {
+    const dialog = event.currentTarget;
+    const pressedOnGround = this.#pressedOnGround;
+    this.#pressedOnGround = false;
+    if (!pressedOnGround || event.target !== dialog || !(dialog instanceof HTMLElement)) {
+      return;
+    }
+    const box = dialog.getBoundingClientRect();
+    const onThePanel =
+      event.clientX >= box.left &&
+      event.clientX <= box.right &&
+      event.clientY >= box.top &&
+      event.clientY <= box.bottom;
+    if (!onThePanel) {
+      this.dismiss();
+    }
   }
 
   #dialog(): HTMLDialogElement | null {

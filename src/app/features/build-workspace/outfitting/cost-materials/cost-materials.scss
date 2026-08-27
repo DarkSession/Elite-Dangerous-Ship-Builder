@@ -165,6 +165,62 @@
   overscroll-behavior-block: contain;
 }
 
+// Where the rail is the canvas's own third track, the measure above is the
+// floor and not the ceiling.
+//
+// That track is a column of a fixed height — everything the command bar leaves
+// — and this block closes it. Capped at five rows the list stopped a third of
+// the way down and left the rest of the column empty below it, on a screen
+// whose scrollbar was there to reach a list that had room to show itself
+// (Commander request 2026-08-26). So the box takes what the column has left
+// and scrolls only what will not fit, never showing fewer rows than the cap
+// used to allow.
+//
+// Asked of the workspace's own container rather than of a width, because the
+// third track is what makes this a bounded column: below its threshold the rail
+// is a band under the bench with the page's height to grow into, and a box that
+// filled it there would run the whole shopping list down the screen. The same
+// query the workspace draws that track with.
+@container outfitting (min-width: 68rem) {
+  :host {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 0;
+  }
+
+  // The prices are as tall as they are; the materials block is what gives. It
+  // is already a stack — `.block` above — so this only says how it is sized.
+  .block--materials {
+    flex: 1 1 auto;
+    min-block-size: 0;
+  }
+
+  .block--materials .block__head,
+  .block--materials .block__footer {
+    flex: none;
+  }
+
+  // Every link in the chain needs `min-block-size: 0`: a flex item's automatic
+  // minimum is its content, and one link left at `auto` puts the whole list
+  // back on the column and the column back past the foot of the screen.
+  .materials-box {
+    flex: 1 1 auto;
+    min-block-size: var(--edsb-layout-material-list);
+    max-block-size: none;
+  }
+}
+
+// A short viewport releases the rail with the command bar — it stops being a
+// column of a fixed height and the page scrolls instead — so there is no
+// remaining space to take and the cap comes back. Stated after the query above,
+// which it has to beat on source order rather than on weight.
+@include layout.short-viewport {
+  .materials-box {
+    min-block-size: 0;
+    max-block-size: var(--edsb-layout-material-list);
+  }
+}
+
 // Ruled off what sits above it, the way the canvas rules it. Merc Coin now
 // closes the cost rows, which are always present when the row is, so this rule
 // is unconditional where it used to depend on there being a list above it.

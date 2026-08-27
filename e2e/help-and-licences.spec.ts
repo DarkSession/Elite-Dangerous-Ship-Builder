@@ -253,6 +253,11 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   },
   'quality-completion-notice': async (page) => {
     await importPayload(page, JSON.stringify(SUPPORTED_PARTIAL_QUALITY));
+    // What the Almanac completed is said in the build status rather than over
+    // it, so it is reached the way every other rail statement is: at compact
+    // width the rail is behind the anatomy strip's `STATUS` segment
+    // (Commander request 2026-08-26).
+    await revealStatusRail(page);
     await expect(page.locator('edsb-quality-completion-notice')).toContainText(
       englishMessages['outfitting.notice.import.title'],
     );
@@ -275,6 +280,9 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   },
   'import-outcome': async (page) => {
     await importPayload(page, JSON.stringify(SUPPORTED_PARTIAL_QUALITY));
+    // As above: the outcome is part of the build status now, and at compact
+    // width that rail is opened rather than waited for.
+    await revealStatusRail(page);
     await expect(page.locator('edsb-quality-completion-notice')).toBeVisible();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   },

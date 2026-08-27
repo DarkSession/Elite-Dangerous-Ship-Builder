@@ -487,7 +487,13 @@ test.describe('purchased and reward articles', () => {
     // panel has not finished answering commits the grade that was there
     // before it — which is the article's purchase grade, and reads as a climb
     // that never happened.
-    await expect(page.locator('.grades__selected')).toHaveText('5');
+    //
+    // Read off the chosen cell rather than the figure beside the legend: only
+    // canvas 1c draws that figure, and canvas 1d needs none because its cells
+    // carry their own numbers. The cell marked as chosen is the one thing both
+    // drawings of this control state, so it is what a journey that runs at
+    // every width is allowed to ask.
+    await expect(page.locator('.grade[data-selected="true"] .grade__number')).toHaveText('5');
     // Inline this has already committed; in a layer it is a draft that has to
     // be applied before the ledger says anything. Either way the panel is then
     // showing the climbed article (constitution V).
@@ -524,7 +530,7 @@ test.describe('purchased and reward articles', () => {
 
     const climbed = await applied(page, 'SmallHardpoint1');
     await page.locator('.grade').first().click();
-    await expect(page.locator('.grades__selected')).toHaveText('1');
+    await expect(page.locator('.grade[data-selected="true"] .grade__number')).toHaveText('1');
     await applyDraft(page);
 
     expect(climbed).toMatch(/G5$/);

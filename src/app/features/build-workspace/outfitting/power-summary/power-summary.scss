@@ -91,11 +91,24 @@
 }
 
 // Canvas 1c's three `.pipset` groups under the bar: a bank name in that bank's
-// own ink over four blocks, the three side by side as the canvas stands them.
-// They wrap rather than scroll, because the rail is narrow and three groups of
-// four targets do not share a 306-pixel line at a doubled text size.
+// own ink over four blocks.
+//
+// The canvas stands the three side by side, each a third of the rail, and this
+// stacks them instead. Three groups of four never fit a 306-pixel rail at the
+// target floor — the canvas's own blocks are 19.5px wide, which is the
+// deviation already recorded below — so a row of them wrapped two and then one,
+// which is a ragged arrangement rather than a chosen one: on every build the
+// rail drew SYS and ENG together and WEP alone under them (Commander request
+// 2026-08-26).
+//
+// Stacked, each group keeps the composition the canvas gives it — the bank's
+// name in the bank's ink over that bank's four blocks — and the blocks take the
+// width the row is not fitting three groups into. It stays the rail's own
+// arrangement rather than the dashboard's: the distributor draws each bank's
+// capacity and its two recharge figures around the same blocks and rules the
+// banks off each other, and none of that is here.
 .pipsets {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.stack(var(--edsb-space-stack));
 
   margin-block-start: var(--edsb-space-stack);
 }
@@ -120,22 +133,26 @@
 // four of those are 176px before the gaps, in a 306-pixel rail that has three
 // groups of them to stand, and the canvas draws a pip block as a chip in a row
 // of them rather than as a button standing on its own. The floor is a floor and
-// not a waiver — the canvas's own 14 pixels stay unbuilt — and the row is still
-// bounded, so a text size that finally squeezes even those scrolls the row
-// rather than the document.
+// not a waiver — the canvas's own 14 pixels stay unbuilt.
+//
+// No scroller of its own any more, because there is nothing left for one to
+// scroll: four floors and their gaps come to 114px in a 269px row at ordinary
+// text and 210px at doubled text, measured, so the row holds at both. A
+// container that can never overflow is a scrollbar a reader can reach and
+// nothing can put anything into (see the figures on `.pips__step` below).
 .pips {
-  @include layout.bounded-scroller;
-
   display: flex;
   gap: var(--edsb-space-inline-tight);
-  inline-size: max-content;
 }
 
 .pips__step {
   @include layout.target-floor;
 
   position: relative;
-  flex: 0 0 var(--edsb-target-size-floor);
+  // Four across the rail, each taking a quarter of it and none below the floor.
+  // Four floors and their gaps come to 114px in a 269px row at ordinary text and
+  // 210px at doubled text, so the row holds without a scroller of its own.
+  flex: 1 1 var(--edsb-target-size-floor);
   padding: 0;
   background-color: var(--edsb-surface-inset);
   border: var(--edsb-border-width-hairline) solid transparent;

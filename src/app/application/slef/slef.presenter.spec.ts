@@ -93,14 +93,12 @@ describe('what feature 004 says out loud', () => {
   });
 
   describe('the import status line', () => {
-    it('awaits input while the draft is empty', () => {
-      expect(presenter.importView().status).toBe('Awaiting input');
-    });
+    it('says nothing at all until something has happened', () => {
+      expect(presenter.importView().status).toBe('');
 
-    it('states the used and available bytes through a named formatter', () => {
       store.setDraft('{}');
 
-      expect(presenter.importView().status).toBe('2 byte of 65.5 kB used');
+      expect(presenter.importView().status).toBe('');
     });
 
     it('says a cancelled attempt changed nothing', () => {
@@ -109,11 +107,26 @@ describe('what feature 004 says out loud', () => {
       expect(presenter.importView().status).toBe('Nothing was imported. Your build is unchanged.');
     });
 
-    it('returns to the byte count on the next edit', () => {
+    it('falls silent again on the next edit', () => {
       store.setImportEnding('superseded');
       store.setDraft('{}');
 
-      expect(presenter.importView().status).toBe('2 byte of 65.5 kB used');
+      expect(presenter.importView().status).toBe('');
+    });
+
+    it('still names the draft size and the limit when the draft is too big', () => {
+      // The one moment the size decides anything. It is said by the field's own
+      // error rather than by the status line, which is where a Commander who is
+      // being refused is already looking.
+      store.setImportFailure({
+        kind: 'tooLarge',
+        utf8Bytes: SLEF_IMPORT_LIMIT_BYTES + 1,
+        limitBytes: SLEF_IMPORT_LIMIT_BYTES,
+      });
+
+      expect(presenter.importView().failure?.message).toBe(
+        'This draft is 65.5 kB, and the most that can be imported is 65.5 kB.',
+      );
     });
   });
 
@@ -148,7 +161,7 @@ describe('what feature 004 says out loud', () => {
       store.setImportFailure({ kind: 'syntax' });
 
       expect(presenter.importView().failure?.message).toBe(
-        'This is not valid JSON, so the Almanac could not read it.',
+        'This is not valid JSON, so it could not be read.',
       );
       expect(presenter.importView().failure?.diagnostics).toEqual([]);
     });

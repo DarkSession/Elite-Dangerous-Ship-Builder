@@ -93,10 +93,26 @@ control beside it that starts the application on the newer one. The control sits
 edge of the bar, after the screen's own actions and Import, and immediately before the notice that
 explains it in reading order.
 
-Applying is the Commander's decision every time. A session that is never asked keeps working and is
-served the newer version the next time the application starts, so nothing is lost by ignoring the
-notice. A cached application the worker cannot repair is the same shape with the tones reversed: a
-blocking error and a restart that fetches a working version.
+**A newer version applies itself. Ruled 2026-08-26 (Commander request).** The moment one is ready an
+overlay goes up over the whole page saying what is about to happen, and the application restarts
+under it on the newer version. The overlay is an ordinary layer, so it is modal, it takes focus, and
+it makes the page behind it inert — which is what makes it a warning rather than a decoration.
+
+The restart is on a clock, and a clock is a time limit. WCAG 2.2.1 lets one stand only where the
+Commander is warned before it expires and can extend it by a simple action, with **at least twenty
+seconds** to do so. The overlay is that warning, its dismissal — Escape, the ground around it, or
+the named control that says so — is that action, and twenty seconds is the floor the grace period
+is set to rather than a taste. Dismissing puts the session back exactly where it stood: the notice
+on the bar, the named control beside it, and no second overlay for the same version. A Commander who
+has said "not now" once has answered.
+
+What is not on a clock is a cached application the worker cannot repair. It is the same shape with
+the tones reversed — a blocking error and a restart that fetches a working version — but the restart
+is a repair a Commander asks for. There is no working page under the warning to protect, and an
+error is not an improvement to be rolled out.
+
+Nothing is lost either way. A session that postpones and never comes back keeps working, and the
+worker has the newer version downloaded, so the next start of the application is served it.
 
 The session asks whether a newer version exists on a fixed interval, when the page becomes visible
 again and when connectivity returns. None of that reaches the route, the fragment, history, storage,
@@ -104,20 +120,41 @@ the saved build or an export.
 
 ## Shell states
 
-| State                           | Presentation/behavior                                                                                      |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                                      |
-| Browser-matched German          | Complete catalogue/root metadata commit before German route render                                         |
-| Unsupported browser language    | English appears as the ordinary default                                                                    |
-| Locale candidate loading        | Current complete snapshot remains; nothing partial is shown                                                |
-| Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                                    |
-| Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable                                  |
-| Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable                    |
-| Newer version published         | Visible nonblocking notice, one named restart action and one polite event; nothing on screen is replaced   |
-| Cached version unrepairable     | Visible named error, one named restart action and one assertive event summarizing rather than repeating it |
+| State                           | Presentation/behavior                                                                                                             |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Initial English bootstrap       | Bundled localized shell appears with no raw-key flash                                                                             |
+| Browser-matched German          | Complete catalogue/root metadata commit before German route render                                                                |
+| Unsupported browser language    | English appears as the ordinary default                                                                                           |
+| Locale candidate loading        | Current complete snapshot remains; nothing partial is shown                                                                       |
+| Locale load/validation fallback | Complete English snapshot plus one bounded fallback notice/retry intent                                                           |
+| Route loading/empty/ready       | Route owns its state inside `main`; shell landmarks/actions remain stable                                                         |
+| Route blocking error            | Visible named error and one assertive event; unaffected shell navigation remains usable                                           |
+| Newer version published         | Modal overlay stating the restart, a control that calls it off, one polite event; the page restarts under it after twenty seconds |
+| Restart called off              | Overlay closes, the page is untouched; visible nonblocking notice and one named restart action remain on the bar                  |
+| Cached version unrepairable     | Visible named error, one named restart action and one assertive event summarizing rather than repeating it                        |
 
 ## Component composition
 
 Compose shared frame, product/route heading, navigation, visible-name actions/menu, labelled locale
 field/selector, status/error, adaptive layer and announcement outlet primitives. Shell styles contain
 no governed literal and shell templates contain no application-owned display literal.
+
+**The menu control draws its own mark. Ruled 2026-08-26 (Commander request).** A `select` left at the
+platform's own appearance drew the browser's chevron in the browser's ink — the one part of a field
+the theme could not reach, and on the engineering recipe it sat inside a control the canvas draws in
+the accent. The control now takes `appearance: none` and the field draws canvas 1c's own caret
+beside it (`eng-bp-btn`): a mono glyph at the trailing edge, in the field's own muted ink and the
+disabled ink when the control is disabled, with the control's trailing inset opened far enough that
+the longest option stops before the mark rather than running under it.
+
+**The search field's platform mark goes with it.** A `type="search"` box draws a clear mark of its
+own in WebKit and Blink, in the browser's ink and at the browser's size, and this system's own search
+already carries a clear control at the same edge — so a field with something in it showed two crosses
+side by side, one of them a colour nothing else on the screen uses. The platform's is removed; the
+one that stays is named, reachable from a keyboard and drawn in the theme (Commander request
+2026-08-26).
+
+A `select` is a replaced element and hosts no pseudo-element, so the mark is a box positioned over
+it. It is `pointer-events: none`, so the whole control still opens on a press anywhere across it, and
+`aria-hidden`, because the element already tells a reader it is a menu — a caret announced beside it
+would be a second, wordless claim about the same control.

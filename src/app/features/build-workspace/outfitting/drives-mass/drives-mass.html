@@ -95,9 +95,10 @@
           they mark: the optimal under its own tick, the maximum at the end of
           the track, which is where the maximum is.
 
-          Both sit in the flow of one row rather than pinned over it, so the
-          pair can never paint across each other — at a doubled text size in
-          German the row wraps and the maximum drops to a line of its own
+          Both sit in the flow of one row rather than pinned over it, and the
+          row wraps: the maximum keeps the line under the bar where the pair
+          fits on it, and takes a line of its own where it does not, rather
+          than the two readings painting across each other
           (`design/mobility-and-jump-profile.md`, "The mass bar").
         -->
         @if (curveMarks().length) {
@@ -169,9 +170,14 @@
         The canvas's `SPEED ENVELOPE AT THIS MASS`. The bars are decoration and
         each is scaled inside its own group; the package's number beside every
         one is what is read.
-      -->
-      <h5 class="drives__section-heading">{{ envelopeHeading() }}</h5>
 
+        The canvas's heading over them is not drawn: five rows that each name
+        themselves do not need a line of prose over them, on the longer of the
+        two cards, and the condition it states — `at this mass` — is on the
+        headline directly above (Commander request 2026-08-26). The words stay
+        as the list's accessible name, so a reader moving by list still meets the
+        block under the name the canvas gives it.
+      -->
       @if (envelope().length) {
         <ul class="drives__envelope" [attr.aria-label]="envelopeHeading()">
           @for (row of envelope(); track row.id) {
@@ -257,8 +263,18 @@
         `JUMP LADEN`, `JUMP UNLADEN` and `MASS LOCK`. The card's summary, the way
         the loaded mass is the thruster card's, and the two jumps are the ends of
         the `RANGE BY LOAD` list under it.
+
+        Three across on one line, at every width, as the canvas sets them —
+        `repeat(3, 1fr)` on the same smaller cell feature 005's priority footer
+        takes, and for the same reason. Left to size itself from the card's own
+        width the trio came out two across with `MASS LOCK` alone underneath,
+        which is neither artboard (Commander request 2026-08-26).
       -->
-      <edsb-metric-group class="drives__cells" [label]="jumpCellsLabel()" [metrics]="jumpCells()" />
+      <edsb-metric-group
+        class="drives__cells metric-group--tight"
+        [label]="jumpCellsLabel()"
+        [metrics]="jumpCells()"
+      />
 
       <!-- The canvas's hairline under that trio. -->
       <span class="drives__rule" aria-hidden="true"></span>
@@ -327,8 +343,11 @@
         and `Total range`, the whole tank and the jumps it makes, from the same
         summary the rows above came from. Drawn in the same swatch, name and
         figure rows the mass legend on the other card takes, because that is how
-        the canvas draws both. The canvas's `658 T OF HEADROOM` note is a
-        comparison nothing publishes and is not drawn.
+        the canvas draws both. `FSD optimal mass` carries the canvas's own
+        `658 T OF HEADROOM` beside it, as its detail: not a figure nothing
+        publishes but the drive's `optMass` less the load the other card already
+        heads with, which is a comparison of two package answers and is drawn
+        only where both of them are there (FR-008).
       -->
       <ul class="drives__legend" [attr.aria-label]="driveFactsLabel()">
         @for (row of driveFacts(); track row.id) {

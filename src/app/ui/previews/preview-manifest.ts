@@ -3808,7 +3808,7 @@ registerPreview({
     state(
       'default',
       {
-        label: 'What the Almanac rejected',
+        label: 'What was refused',
         diagnostics: [
           {
             id: '0',
@@ -3841,7 +3841,7 @@ registerPreview({
       ],
       ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
     ),
-    state('empty', { label: 'What the Almanac rejected', diagnostics: [] }, [
+    state('empty', { label: 'What was refused', diagnostics: [] }, [
       'nothing rejected renders no rows at all',
     ]),
     notApplicable(
@@ -3874,12 +3874,11 @@ const SLEF_PAYLOAD = `[
 
 const IMPORT_VIEW = {
   title: 'Import build',
-  description:
-    'Paste a SLEF export or a journal Loadout event. The hull is selected from the loadout.',
+  description: 'Paste a SLEF export or a journal Loadout event.',
   accepted: 'SLEF v1 · Journal Loadout event',
   fieldLabel: 'SLEF payload',
   draft: '',
-  status: 'Awaiting input',
+  status: '',
   busy: false,
   failure: null,
   submitLabel: 'Load build',
@@ -3899,9 +3898,9 @@ registerPreview({
       exposedStates: ['invalid', 'busy'],
       relationships: ['label', 'description', 'error'],
       textEquivalents: [
-        'the draft’s size against the limit, in words',
+        'the payload field’s own name, read but not drawn',
         'why an import was refused, in the application’s own framing',
-        'what the Almanac rejected, fact by fact',
+        'what was refused, fact by fact, behind the control that names it',
       ],
     },
     ['default', 'empty', 'loading', 'error'],
@@ -3913,19 +3912,18 @@ registerPreview({
         view: {
           ...IMPORT_VIEW,
           draft: SLEF_PAYLOAD,
-          status: '284 byte of 65.5 kB used',
           canSubmit: true,
         },
       },
       [
         'the payload is monospaced, direction-isolated and editable',
-        'the size and the limit are one line, in the reader’s own language',
+        'the status line holds its height while it has nothing to say',
         'Cancel and Load build are the only controls, as the canvas draws them',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
     ),
     state('empty', { view: IMPORT_VIEW }, [
-      'an empty draft says what is awaited rather than showing a bare box',
+      'an empty draft is a field and a sentence, with nothing said about it yet',
       'Load build is unavailable until there is something to load',
     ]),
     state(
@@ -3942,10 +3940,10 @@ registerPreview({
         view: {
           ...IMPORT_VIEW,
           draft: '[{ "header": {}, "data": {} }]',
-          status: '30 byte of 65.5 kB used',
           failure: {
-            message: 'The Almanac rejected this entry.',
-            diagnosticsLabel: 'What the Almanac rejected',
+            message: 'This entry was refused.',
+            diagnosticsLabel: 'What was refused',
+            advancedLabel: 'Show advanced',
             refusals: [],
             diagnostics: [
               {
@@ -4000,7 +3998,7 @@ const EXPORT_VIEW = {
   generating: null,
   stale: null,
   validation: null,
-  link: 'The export carries a link back to this exact build.',
+  link: null,
   actions: [
     { action: 'download', label: 'Download', status: null, failed: false },
     { action: 'copy', label: 'Copy', status: null, failed: false },

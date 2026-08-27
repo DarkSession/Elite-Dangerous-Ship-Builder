@@ -792,6 +792,38 @@ describe('DrivesMass', () => {
       ]);
     });
 
+    it('says how much mass is left under the drive’s optimal, beside it', () => {
+      // The canvas's `658 T OF HEADROOM`: the drive's own optimal mass less
+      // what the build weighs at the load the other card is read at. Two
+      // package answers, and their difference is the reading (FR-008).
+      const loadout = build();
+      const metrics = BuildMetrics.of(loadout);
+      const optimal = metrics.frameShiftDrive().optMass ?? 0;
+      const loaded = metrics.buildMass(carried(loadout)).total;
+      const { component } = render(loadout);
+
+      const gap = optimal - loaded;
+      const detail = component.driveFacts()[0].detail ?? '';
+      expect(detail).toContain(tonnes(Math.abs(gap)));
+      // Worded for which side of the optimal this build is on: a headroom, or
+      // how far over it the build already is.
+      expect(detail).toMatch(gap >= 0 ? /headroom/iu : /over optimal/iu);
+    });
+
+    it('leaves the optimal mass unqualified where the load cannot be settled', () => {
+      // Half a subtraction is not a headroom. A load the package could not
+      // weigh leaves the row with its own figure and nothing beside it, rather
+      // than a comparison against a mass that was assumed (constitution IV).
+      vi.spyOn(BuildMetrics.prototype, 'standardLoadResult').mockReturnValue({
+        complete: false,
+        value: undefined,
+        issues: [],
+      } as never);
+      const { component } = render(build());
+
+      expect(component.driveFacts()[0].detail ?? '').not.toMatch(/headroom|over optimal/iu);
+    });
+
     it('draws no row the canvas’s legend does not have, whatever else is fitted', () => {
       // A Guardian booster changes every range above, and the canvas still
       // states only its three legend rows. A fourth row for the bonus would be
@@ -804,6 +836,36 @@ describe('DrivesMass', () => {
         'total-range',
       ]);
     });
+  });
+
+  it('draws no heading over the speed envelope, and keeps the words as its name', () => {
+    // The canvas heads the block `SPEED ENVELOPE AT THIS MASS`; this card does
+    // not draw that line any more. Five rows that each name themselves do not
+    // need a sentence over them, and the load it states is on the headline
+    // directly above (Commander request 2026-08-26). A reader moving by list
+    // still meets the block under the canvas's own name.
+    const { element, component } = render(build());
+    const envelope = card(element, 'thrusters').querySelector('.drives__envelope');
+
+    expect(envelope?.getAttribute('aria-label')).toBe(component.envelopeHeading());
+    expect(texts(card(element, 'thrusters'), '.drives__section-heading')).toEqual([]);
+    // The drive card keeps the heading the canvas gives its ranges.
+    expect(texts(card(element, 'drive'), '.drives__section-heading')).toEqual([
+      component.rangeHeading(),
+    ]);
+  });
+
+  it('carries the optimal mark to its own tick, and the maximum to the end', () => {
+    // The optimal is placed at its tick by the margin that starts its box
+    // there; the maximum has no tick of its own, because the end of the track
+    // is where it is.
+    const { element, component } = render(build());
+    const marks = component.curveMarks();
+    const drawn = element.querySelectorAll<HTMLElement>('.drives__mass-mark');
+
+    expect(drawn[0]?.style.marginInlineStart).toBe(`${(marks[0].position ?? 0) * 100}%`);
+    expect(marks[1].position).toBeNull();
+    expect(drawn[1]?.style.marginInlineStart).toBe('');
   });
 
   it('qualifies each card by the fitted module’s class, and never by its name', () => {

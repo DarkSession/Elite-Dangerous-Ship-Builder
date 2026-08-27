@@ -334,23 +334,36 @@ channel rather than drawing its own pair inside the region: a second pair would 
 actions twice, in a place neither canvas puts them. Task T093 named a component file for them; what
 was built is the channel, and the task text now says so.
 
+**Where the two ways in sit on that row, ruled 2026-08-26 (Commander request).** No canvas draws
+either of them there. The shipyard's `IMPORT` sits alone beside `?` on canvas 1a's bar, and its
+`OPEN SAVED BUILD` is a control on the page — beside the filters on the manifest, beside
+`BUILD STOCK HULL` on the hull detail — so a bar carrying both is this application's own composition
+and their order is its own decision. They belong beside each other: they are the same question with
+two answers, and the screen's history pair and `EXPORT` sat between them. Importing now opens the
+action row and the screen's own actions are grouped off after it, which puts it next to the library
+link the frame draws immediately before that row. The library stays a link: it is a route, and a
+button for it could not be opened in a new tab or have its address copied.
+
 The next-action summary the contract asks for is exposed by the store and carried as the control's
 `aria-describedby` — invisible, because neither canvas draws a summary beside either control. It is
 the same accessibility floor as the ledger's hidden slot keys.
 
-**Power state the build link cannot carry, found 2026-08-21 during US4 implementation.** Recorded
-rather than resolved, because the codec is feature 001's. Both canvases draw a power chip on every
-ledger row _including the power plant_, and the package accepts `setModulePriority` there — but the
-compact link codec writes power state only for modules that draw power, so a priority set on the
-plant is dropped from the link while the local record keeps it. Reloading a page whose only unsaved
-change is a plant priority then asks "Replace the build you are working on?", because the address bar
-and the stored record disagree about the build.
+**Power state the build link could not carry, found 2026-08-21 during US4 implementation, closed
+2026-08-26.** Recorded rather than resolved at the time, because the codec is feature 001's. Both
+canvases draw a power chip on every ledger row _including the power plant_, and the package accepts
+`setModulePriority` there — but the compact link codec wrote power state only for modules the
+Almanac prices above zero draw, so a priority set on the plant was dropped from the link while the
+local record kept it. Reloading a page whose only unsaved change was a plant priority then asked
+"Replace the build you are working on?", because the address bar and the stored record disagreed
+about the build.
 
 Feature 001's own FR-019 says a build the codec cannot represent losslessly must be _refused_ with
-the affected slot and reason rather than silently reduced, so this is a defect in that codec rather
-than a rule of this feature: nothing here fabricates or drops a value. Feature 002 keeps the chip the
-canvas draws on every row and the e2e suite exercises link and reload journeys through a mount whose
-power the codec does carry, so the suite tests this feature rather than that gap.
+the affected slot and reason rather than silently reduced, so this was a defect in that codec rather
+than a rule of this feature: nothing here fabricates or drops a value. It is fixed there: the codec
+table now carries power state for every module the Almanac does not positively price at no draw,
+which is the chip's own rule — a figure the Almanac has not published is not a zero (constitution
+IV). The chip this feature draws on the plant, the tank, the rack and the bulkhead therefore
+survives a share, and this feature keeps the chip the canvas draws on every row unchanged.
 
 **Short viewports take the compact composition, ruled 2026-08-21 after a design pass.** A consequence
 of the rule above, found by measurement: with the two panels inline, a 844 x 390 landscape viewport

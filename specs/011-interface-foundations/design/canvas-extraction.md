@@ -219,6 +219,16 @@ plate takes the reserved marker the canvas itself draws on the save dialog's cho
 and the wide arrangement joins the compact one in setting the chosen name in the heavier
 weight. Colour is what makes the state obvious; it is never what carries it.
 
+**Where that marker is drawn, corrected 2026-08-26 (Commander request).** It was a border
+on the plate's leading edge, which meant it replaced the plate's own hairline on that one
+side: an unchosen plate reserved the marker's width in `transparent` and so was closed on
+three sides and open on the fourth, and the export dialog's second format read as
+unfinished beside its first. The canvas draws both plates as complete boxes. The plate now
+carries its hairline on all four sides in both states and the chosen one draws the marker
+just inside its leading edge, laid against the padding box — so the hairline stays where it
+is, nothing shifts when the choice moves, and the marker still says what tint alone may
+not.
+
 The alphas and inks resolve to the nearest named role rather than to steps of their own.
 The plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
 the chosen plate's takes `--edsb-border-control` (`amber-a40`) against the drawn `amber-a5`,

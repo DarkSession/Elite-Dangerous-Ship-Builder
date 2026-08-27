@@ -134,4 +134,22 @@ export class ApplicationUpdateAdapter {
     const handle = view.setInterval(run, milliseconds);
     return () => view.clearInterval(handle);
   }
+
+  /**
+   * Runs `run` once, `milliseconds` from now, until the returned function is
+   * called.
+   *
+   * The same port as {@link every} and separate from it on purpose: what the
+   * store schedules here is the one grace period between an overlay appearing
+   * and the page restarting under it, and a period that could not be called off
+   * would be a time limit with no way out of it (WCAG 2.2.1).
+   */
+  after(milliseconds: number, run: () => void): () => void {
+    const view = this.#window;
+    if (!view) {
+      return () => {};
+    }
+    const handle = view.setTimeout(run, milliseconds);
+    return () => view.clearTimeout(handle);
+  }
 }
