@@ -717,3 +717,11 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       SC-003a and the editor contract now cover all three operations the package treats as a fresh
       mount rather than the two they named (`power-carry.ts`, `spec.md`,
       `contracts/outfitting-editor.md`, `design/engineering-editor.md`)
+- [x] T169 Name the frozen columns rather than counting them. The seams this region draws are the
+      ledger's and the status rail's; the centre column between them draws neither and releases
+      whenever a mount is selected, so a journey asking for two frozen columns at any non-compact
+      width read that release as a lost seam — at the two-pane width, where the status rail is a band
+      under both columns and draws no vertical seam either, the count came to one. It now asserts
+      what the rule says: every region drawing a seam is frozen, and runs the full height the command
+      bar leaves (`e2e/outfitting-responsive.spec.ts`; workspace design, "the centre column is not
+      one of the frozen ones")

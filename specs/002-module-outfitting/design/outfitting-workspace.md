@@ -136,6 +136,20 @@ drawn: canvas 1c gives it no opening control, so it is simply there for the mark
 or not. That is why the release is keyed on a mount being selected rather than on the panel being
 present. The two describe the same frames, and the mount is the one the region already knows about.
 
+**And the centre column is not one of the frozen ones while it is released.** The two seams this
+region draws are the ledger's `border-right` and the status rail's `border-left`; the column between
+them draws neither, because the bench drops its own leading edge so the pair do not stack into a
+two-pixel rule. Releasing it therefore costs no seam — the ledger stays frozen at the full height the
+command bar leaves, and follows the page down, which is what keeps its rule against the screen
+however long the bench below it grows.
+
+It is worth writing down because a journey was counting rather than naming: it asked for two frozen
+columns at any non-compact width, which the ledger and the centre satisfied together until the centre
+released. At the two-pane width the status rail is a band under both columns and draws no vertical
+seam at all, so the count came to one and read the release as a lost seam. The rule is that every
+region drawing a seam is frozen — the ledger always, the status rail wherever this width gives it a
+column of its own (`e2e/outfitting-responsive.spec.ts`, corrected 2026-08-27).
+
 **What the release takes with it.** The bench's `1.1 : 1` share and the manifest's floor-against-the
 -editor's-floor guard both existed to divide a fixed box between two panels. There is no fixed box to
 divide any more, so both are gone: each panel takes the height its own content asks for, the manifest

@@ -134,9 +134,13 @@ test.describe('the composition this width has room for', () => {
         '.outfitting__status-rail',
       ].map((selector) => {
         const node = document.querySelector(selector)!;
+        const style = getComputedStyle(node);
         return {
           selector,
-          frozen: getComputedStyle(node).position === 'sticky',
+          frozen: style.position === 'sticky',
+          // A region spanning the whole grid is a band under the columns rather
+          // than a column beside them, and a band draws no vertical seam.
+          band: style.gridColumnEnd === '-1',
           height: node.getBoundingClientRect().height,
         };
       });
@@ -159,10 +163,27 @@ test.describe('the composition this width has room for', () => {
     expect(Math.abs(measured.cleared - drawnBar)).toBeLessThan(1);
 
     const frozen = measured.columns.filter((column) => column.frozen);
+    const seams = measured.columns.filter(
+      (column) => column.selector !== '.outfitting__centre' && !column.band,
+    );
+
     if (drawn === 'compact') {
       expect(frozen).toEqual([]);
     } else {
-      expect(frozen.length).toBeGreaterThanOrEqual(2);
+      // Named rather than counted, because the count was standing in for the
+      // rule and the two have come apart. The seams are the ledger's
+      // `border-right` and the status rail's `border-left`; the centre column
+      // between them draws neither — the bench drops its own leading edge so
+      // the two do not stack into a two-pixel rule — and since 2026-08-27 it
+      // releases whenever a mount is selected, so the page can carry a bench
+      // that is as tall as the article has to say. A count of two was reading
+      // that release as a lost seam (`design/outfitting-workspace.md`, "a bench
+      // is not bounded by the column either").
+      //
+      // So: every region that draws a seam is frozen, and the status rail is
+      // exempt exactly when this width draws it as a band under the columns.
+      expect(seams.length).toBeGreaterThanOrEqual(1);
+      expect(seams.every((column) => column.frozen)).toBe(true);
     }
 
     for (const column of frozen) {
