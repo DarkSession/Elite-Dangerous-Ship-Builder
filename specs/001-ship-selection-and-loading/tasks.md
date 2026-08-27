@@ -554,7 +554,7 @@ planned and which was built as two buttons inside the library instead.
 - Every browser API is reached through an injected port so domain behavior stays render-free and testable
 - Candidate-first is absolute: no loader mutates active state before its candidate has parsed, constructed and validated
 - Since 2026-08-25 exactly three things remove a record — a confirmed deletion, the manual save that consumes the unnamed record it saved from, and the seven-day expiry of an unnamed record that its own row stated beforehand — and autosave never writes to a named record at all
-- Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
+- Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - T151 kept the fingerprint module rather than deleting it, and renamed it: `isDirty` is what T148
   made autosave's own trigger, so `src/app/domain/build/replacement-policy.ts` is now
   `src/app/domain/build/build-fingerprint.ts`. `ReplacementCoordinator` became

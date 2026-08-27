@@ -104,10 +104,13 @@ export class Layer {
    * dismissible" flag can disagree and this cannot: a layer that offers no way
    * out has no control to name, and a layer that has one always names it.
    *
-   * `null` also stops Escape and the ground closing it, so all three routes out
-   * are absent together. Exactly one layer takes it — the overlay that stands
-   * while a published version restarts the page under it, where there is
-   * nothing to cancel because the restart is not a question (011/FR-025).
+   * No label also stops Escape and the ground closing it, so the two routes a
+   * reader can find are absent together with the control. The third, a direct
+   * `close()` on the element, is not blocked and does not need to be: nothing
+   * calls it, and the owner lowering `open` is the same act by another name.
+   * Exactly one layer takes it — the overlay that stands while a published
+   * version restarts the page under it, where there is nothing to cancel
+   * because the restart is not a question (011/FR-025).
    */
   readonly dismissLabel = input<string | null>(null);
 
@@ -173,8 +176,15 @@ export class Layer {
     });
   }
 
-  /** Whether this layer offers any way out at all. */
-  readonly dismissible = computed(() => this.dismissLabel() !== null);
+  /**
+   * Whether this layer offers any way out at all.
+   *
+   * Blank counts as absent, and must: the template draws no control for an
+   * empty label, so treating `''` as dismissable would leave Escape and the
+   * ground closing a layer that shows no way out — the split this single input
+   * exists to make impossible.
+   */
+  readonly dismissible = computed(() => (this.dismissLabel() ?? '').trim().length > 0);
 
   dismiss(): void {
     this.dismissed.emit();

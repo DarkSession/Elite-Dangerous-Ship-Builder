@@ -7,7 +7,7 @@ import {
 import { LocaleStore } from '../../i18n/locale.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
-import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
+import { BUNDLED_ENGLISH, type MessageCatalogue } from '../../i18n/locale-registry';
 import { SITE_ORIGIN } from '../../platform/browser/site-address';
 import { RouteTitleStrategy } from './route-title.strategy';
 
@@ -15,11 +15,11 @@ import { RouteTitleStrategy } from './route-title.strategy';
  * A route declares message keys; the document shows sentences.
  *
  * The three things this must never do are write a raw key into the tab, leave a
- * title standing in a language the page is no longer in, and publish one
- * screen's name under another screen's address. All three come from the same
- * rule: only keys this build actually carries become text, they are resolved
- * through the same catalogue as everything else, and the route's own path
- * travels with them in the same commit.
+ * title or a description standing in a language the page is no longer in, and
+ * publish one screen's name under another screen's address. All three come from
+ * the same rule: only keys this build actually carries reach the store, they
+ * are resolved by the store on every commit rather than once on arrival, and
+ * the route's own path travels with them in that same commit.
  */
 
 /** A route tree with `data` at whichever depths the test names. */
@@ -151,5 +151,27 @@ describe('RouteTitleStrategy', () => {
     strategy.updateTitle(snapshot);
 
     expect(locale.canonical()).toBe(`${SITE_ORIGIN}/build`);
+  });
+  it('hands over keys rather than sentences, so a later catalogue retranslates both', async () => {
+    // The order a non-English session actually starts in: the route is entered
+    // under bundled English, and the catalogue lands behind it.
+    const { strategy, locale, snapshot } = strategyWith('catalogue.title', {
+      routes: [{ description: 'library.description' }],
+    });
+    strategy.updateTitle(snapshot);
+    expect(locale.page()).toBe(BUNDLED_ENGLISH['catalogue.title']);
+
+    const german: MessageCatalogue = {
+      ...BUNDLED_ENGLISH,
+      'catalogue.title': 'Schiffsbaukasten',
+      'library.description': 'Verwalte die gespeicherten Builds.',
+    };
+    locale.commitCandidate(
+      { requested: 'de', catalogue: german, source: 'asset', failure: null },
+      'browser',
+    );
+
+    expect(locale.page()).toBe('Schiffsbaukasten');
+    expect(locale.description()).toBe('Verwalte die gespeicherten Builds.');
   });
 });

@@ -118,9 +118,12 @@ interface Harness {
   readonly session: MemoryStorage;
 }
 
-function setup(options: { available?: boolean; session?: MemoryStorage } = {}): Harness {
+function setup(
+  options: { available?: boolean; session?: MemoryStorage; restartable?: boolean } = {},
+): Harness {
   const updates = new FakeUpdates();
   updates.available = options.available ?? true;
+  updates.restartable = options.restartable ?? true;
   const lifecycle = new FakeLifecycle();
   const connectivity = new FakeConnectivity();
   const session = options.session ?? new MemoryStorage();
@@ -202,11 +205,9 @@ describe('ApplicationUpdateStore', () => {
   });
 
   it('puts the overlay up the moment a version is ready, and restarts under it', async () => {
-    // Reversed twice. Until 2026-08-26 nothing restarted without a Commander
-    // pressing a control, which produced a fleet of sessions on old builds
-    // behind a notice nobody pressed. The overlay that replaced it still asked
-    // — restart now, or not now — and on 2026-08-27 the owner's decision
-    // removed the question too (FR-025).
+    // The restart is applied rather than offered: a notice that waits to be
+    // pressed produces a fleet of sessions on old builds behind a notice nobody
+    // presses, which is the failure this mechanism exists to prevent (FR-025).
     const { store, updates } = setup();
 
     updates.report('ready');
@@ -305,18 +306,32 @@ describe('ApplicationUpdateStore', () => {
     expect(store.applied()).toBe(true);
   });
 
-  it('restarts again for a further version published behind the first', () => {
-    // Each `ready` is a version that was not there before. A session that
-    // stopped acting on them would be the stale session this whole mechanism
-    // exists to prevent (FR-025).
-    const { store, updates } = setup();
+  it('restarts again for a further version, where the first restart could not happen', async () => {
+    // Each `ready` is a version that was not there before, and this is the only
+    // session that can act on two of them: one whose restart found no page to
+    // start over. A session that stopped acting on them would be the stale
+    // session this whole mechanism exists to prevent (FR-025).
+    //
+    // Ordinarily a restart is the last thing a page does, so `apply()` holds
+    // its flag and there is no second attempt to make. Releasing that flag when
+    // the reload reports there was nothing to reload is what leaves this
+    // session able to try again.
+    const { store, updates } = setup({ restartable: false });
     updates.report('ready');
     updates.expire();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(updates.calls).toEqual(['activate', 'reload']);
+    expect(store.overlay()).toBe(false);
 
     updates.report('ready');
-
     expect(store.overlay()).toBe(true);
     expect(updates.grace).toBe(UPDATE_OVERLAY_MS);
+    updates.expire();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(updates.calls).toEqual(['activate', 'reload', 'activate', 'reload']);
     // And still one thing to say: the sentence on the shell was already true,
     // so nothing interrupts a reader to repeat it.
     expect(store.snapshot()).toEqual({ state: 'ready', revision: 1 });

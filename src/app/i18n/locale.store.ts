@@ -12,6 +12,7 @@ import {
   type LocaleSelectionSource,
   type LocaleSnapshot,
   type MessageCatalogue,
+  type MessageKey,
   type ShippedLocale,
   fallbackLocale,
   findShippedLocale,
@@ -47,16 +48,26 @@ export class LocaleStore {
   /** True only while a candidate is being loaded. The prior snapshot stays visible. */
   readonly #loading = signal(false);
 
-  /** The page name the route contributes to the document title. */
-  readonly #page = signal<string | null>(null);
+  /**
+   * The message key the route contributes to the document title.
+   *
+   * A key rather than the sentence it resolves to. The route is chosen once and
+   * the language can change under it — a catalogue arriving after the first
+   * navigation is the ordinary case, because selecting a non-English locale
+   * takes a request and the first navigation does not. Storing the text would
+   * freeze the page name in whichever language happened to be committed when
+   * the route was entered, and leave it there under a root `lang` that has
+   * since moved (FR-019).
+   */
+  readonly #titleKey = signal<MessageKey | null>(null);
 
   /**
-   * The description the route contributes to the search metadata.
+   * The message key the route contributes to the search metadata.
    *
    * `null` where the route declares none, which falls back to the
    * application's own description rather than leaving the tag blank.
    */
-  readonly #description = signal<string | null>(null);
+  readonly #descriptionKey = signal<MessageKey | null>(null);
 
   /** The route's own path, which becomes its canonical address. */
   readonly #path = signal('/');
@@ -68,7 +79,7 @@ export class LocaleStore {
   readonly loading = this.#loading.asReadonly();
 
   /** The page name currently contributing to the document title. */
-  readonly page = this.#page.asReadonly();
+  readonly page = computed(() => this.#pageName(this.#snapshot().catalogue));
 
   /** The canonical address of the route currently on screen. */
   readonly canonical = computed(() => canonicalAddress(this.#path()));
@@ -178,8 +189,8 @@ export class LocaleStore {
    * mismatch the single commit exists to make impossible (011/FR-027).
    */
   setRoute(route: RouteIdentity): void {
-    this.#page.set(route.title);
-    this.#description.set(route.description);
+    this.#titleKey.set(route.titleKey);
+    this.#descriptionKey.set(route.descriptionKey);
     this.#path.set(route.path);
     this.#publish(this.#snapshot());
   }
@@ -230,8 +241,12 @@ export class LocaleStore {
    * The single commit point.
    *
    * One revision increment, one snapshot write and one root-document write per
-   * committed locale state. Nothing else in the application writes root `lang`
-   * or `dir`.
+   * committed locale state.
+   *
+   * Not the only caller of {@link #publish}: `setRoute` publishes too, on the
+   * snapshot already committed, because the route changes what the document
+   * says without changing which language says it. Both go through the one
+   * adapter, and nothing outside this store writes root `lang` or `dir`.
    */
   #commit(next: Omit<LocaleSnapshot, 'revision'>): LocaleSnapshot {
     const snapshot: LocaleSnapshot = { ...next, revision: this.#snapshot().revision + 1 };
@@ -260,7 +275,13 @@ export class LocaleStore {
   }
 
   #title(catalogue: MessageCatalogue): string {
-    return resolveDocumentTitle(catalogue, this.#page());
+    return resolveDocumentTitle(catalogue, this.#pageName(catalogue));
+  }
+
+  /** The route's page name, resolved in the catalogue being published. */
+  #pageName(catalogue: MessageCatalogue): string | null {
+    const key = this.#titleKey();
+    return key === null ? null : catalogue[key];
   }
 
   /**
@@ -271,22 +292,27 @@ export class LocaleStore {
    * to say is read by a search engine as exactly that.
    */
   #pageDescription(catalogue: MessageCatalogue): string {
-    const own = this.#description();
-    return own !== null && own.trim().length > 0 ? own : catalogue['app.description'];
+    return catalogue[this.#descriptionKey() ?? 'app.description'];
   }
 }
 
 /**
  * What a route contributes to the document.
  *
- * `title` and `description` are already-resolved text rather than message keys:
- * the route declares keys, `RouteTitleStrategy` resolves them against the
- * committed catalogue, and the store never learns that routes have keys at all.
- * Either may be `null` where the route declares none.
+ * Keys rather than the sentences they resolve to, and the store resolves them
+ * on every commit. That is the whole of what makes the title and the
+ * description move with the language rather than with the navigation: a session
+ * whose German catalogue lands after its first navigation — which is the
+ * ordinary order, since the catalogue takes a request and the navigation does
+ * not — retranslates both on the commit that publishes it.
+ *
+ * Either key may be `null` where the route declares none. A key naming a
+ * message this build does not carry never reaches here: `RouteTitleStrategy`
+ * turns it into `null` rather than into a raw key on screen.
  */
 export interface RouteIdentity {
-  readonly title: string | null;
-  readonly description: string | null;
+  readonly titleKey: MessageKey | null;
+  readonly descriptionKey: MessageKey | null;
   /** The router's own URL for this route, query and fragment included or not. */
   readonly path: string;
 }

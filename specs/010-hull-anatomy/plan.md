@@ -68,7 +68,7 @@ ledger or module editor for artwork
 private geometry catalogue, coordinate measurement, slot-name inference, raw/trusted markup sink,
 reimplemented power verdict or persisted anatomy state; no page horizontal scroll; one tokenized
 dark theme; translatable owned text and locale formatting; shared 44 CSS-pixel target baseline;
-WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: Every hull, side schematic, hardpoint and utility mount supplied by the installed
 package. Catalogue counts and asset sizes are discovered during the package audit and are never

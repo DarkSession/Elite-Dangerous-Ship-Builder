@@ -593,7 +593,8 @@ fit after another tab/component edit; the detached transaction remains final aut
 - Candidate action names include module form and class/rating context needed to distinguish choices.
 - Targets are at least 44 CSS px, except the dense inline chips the canvas itself draws small — a
   ledger row's power cell is 20px there, and forty rows of a 44px chip is a different interface.
-  Those clear the WCAG 2.2 AA floor of 24 CSS px instead, and the exemption is a named list
+  Those clear the WCAG 2.2 Target Size (Minimum) floor of 24 CSS px instead, and the exemption is a
+  named list
   (`DENSE_TARGETS`), never a loosened baseline (wave 4).
 - Browser input-to-result DOM update stays below 100 ms for the installed package's largest choice set.
 - Axe/semantic/no-overflow tests cover full, searched, no-match, empty, stale and refusal states at all

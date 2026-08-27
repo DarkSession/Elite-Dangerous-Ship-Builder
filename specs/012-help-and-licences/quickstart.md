@@ -129,9 +129,8 @@ Expected:
 ## 4. Validate accepted help and provenance
 
 Confirm the modal contains every topic from
-[contracts/help-navigation.md](./contracts/help-navigation.md): build-link privacy,
-accounts/uploads/telemetry, browser persistence/clearing, offline assets, completed engineering
-grades, hull facts versus build results and Almanac ownership.
+[contracts/help-navigation.md](./contracts/help-navigation.md): browser persistence/clearing and
+completed engineering grades.
 
 Expected:
 
@@ -142,9 +141,9 @@ Expected:
 - no answer says partial engineering rolls are retained;
 - the `ABOUT` provenance sentence says the bundled Almanac supplies the catalogue, the checks and the
   calculations and that this application neither maintains nor corrects those game values — this is
-  where the once-per-application credit now lives, the `ABOUT` provenance paragraph having been
-  withdrawn with the rest of what the reference does not draw;
-- `ABOUT` carries the purpose sentence and the two version facts and nothing else;
+  where the once-per-application Almanac credit lives;
+- `ABOUT` carries the purpose sentence, the maintainer sentence, the provenance sentence and the two
+  version facts, in that order, and nothing else;
 - nothing in the modal makes a live-game/live-catalogue currency claim;
 - no issue-tracker, support or defect-reporting action appears anywhere in the modal.
 
@@ -233,4 +232,4 @@ Expected: formatting, typecheck, production build, generator/script tests, unit 
 viewport, accessibility rule or test is skipped to obtain a green build.
 
 If conformance is reported, use the constitution's qualified statement: WCAG 2.2 AA except criteria
-2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.

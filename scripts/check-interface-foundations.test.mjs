@@ -1020,7 +1020,8 @@ describe('search metadata', () => {
 
   const MANIFEST = JSON.stringify({
     name: 'Elite Dangerous Ship Builder',
-    short_name: 'Ship Builder',
+    short_name: 'Elite Dangerous Ship Builder',
+    id: './',
     description: 'What this is.',
     start_url: './',
     scope: './',
@@ -1036,6 +1037,7 @@ describe('search metadata', () => {
     robots: ROBOTS,
     sitemap: SITEMAP,
     manifest: MANIFEST,
+    domain: 'sb.edct.dev\n',
     routes: ['', 'ships', ':symbol', 'build', '**'],
     ...overrides,
   });
@@ -1166,5 +1168,61 @@ describe('search metadata', () => {
     const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
 
     assert.match(found.at(-1).message, /icons\[0\]\.src/);
+  });
+  it('rejects a site served from a domain SITE_ORIGIN does not name', () => {
+    const found = rules.searchMetadataViolations(complete({ domain: 'shipbuilder.example\n' }));
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /shipbuilder\.example/);
+  });
+
+  it('rejects a deployment that declares no domain at all', () => {
+    const found = rules.searchMetadataViolations(complete({ domain: '' }));
+
+    assert.match(found[0].message, /production domain/);
+  });
+
+  it('rejects a relative canonical, which canonicalises a preview to itself', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('href="https://sb.edct.dev/"', 'href="/"') }),
+    );
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /absolute/);
+  });
+
+  it('rejects the three description tags drifting apart', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          '<meta name="twitter:description" content="What this is." />',
+          '<meta name="twitter:description" content="Something else." />',
+        ),
+      }),
+    );
+
+    assert.match(found[0].message, /do not say the same thing/);
+  });
+
+  it('sees a plain-text address as well as a secure one', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ robots: `${ROBOTS}Host: http://shipbuilder.example\n` }),
+    );
+
+    assert.match(found[0].message, /shipbuilder\.example/);
+  });
+
+  it('rejects a foreign origin in the manifest', () => {
+    const foreign = { ...JSON.parse(MANIFEST), icons: [{ src: 'https://cdn.example/icon.png' }] };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(foreign) }));
+
+    assert.match(found[0].message, /cdn\.example/);
+  });
+
+  it('rejects a root-absolute manifest id, which collides every preview into one app', () => {
+    const rooted = { ...JSON.parse(MANIFEST), id: '/' };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
+
+    assert.match(found[0].message, /"id"/);
   });
 });

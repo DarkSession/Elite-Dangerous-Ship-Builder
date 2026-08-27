@@ -15,9 +15,9 @@
 >
   <div class="layer__header">
     <h2 class="layer__title" [id]="titleId">{{ title() }}</h2>
-    @if (dismissLabel(); as label) {
+    @if (dismissible()) {
       <button class="layer__dismiss" type="button" (click)="dismiss()">
-        {{ label }}
+        {{ dismissLabel() }}
       </button>
     }
   </div>

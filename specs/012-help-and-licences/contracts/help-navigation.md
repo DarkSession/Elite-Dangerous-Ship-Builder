@@ -278,7 +278,7 @@ licence summary names and the generator still audits at build time.
   isolation, the two identity facts as distinct labelled facts, the excerpt's declared language and
   the underlying capability after close. There is no warning relationship to verify: the modal has no
   external action.
-- Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+- Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
   2.4.11.
 
 ## Component previews

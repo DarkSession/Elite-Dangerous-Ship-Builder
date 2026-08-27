@@ -50,14 +50,12 @@ export const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
  * overlay says what is happening rather than asking anything, so what the
  * period has to cover is reading, not deciding.
  *
- * It was twenty seconds until 2026-08-27, because the overlay carried a control
- * that called the restart off and WCAG 2.2.1 gives a Commander at least that
- * long to reach one. There is no such control now (owner's decision), so 2.2.1
- * is not met and the constitution names it among the excluded criteria; with
- * the rule's floor gone, the only thing left setting the number is reading
- * speed. Ten seconds is two unhurried sentences, and it is deliberately not
- * trimmed to the fastest reader: the Commander this costs the most is the one
- * who looks up partway through, and they have nothing to press.
+ * Nothing on the overlay can call the restart off, so WCAG 2.2.1 sets no floor
+ * here — the criterion is excluded by constitution V for this mechanism and
+ * named as the cost. What is left setting the number is reading speed alone,
+ * and it is deliberately not trimmed to the fastest reader: the Commander this
+ * costs the most is the one who looks up partway through, and they have nothing
+ * to press.
  */
 export const UPDATE_OVERLAY_MS = 10 * 1000;
 
@@ -76,19 +74,13 @@ export const UPDATE_OVERLAY_MS = 10 * 1000;
  * restarts on the newer version under it. The session that comes up says the
  * update was applied, and which version it landed on.
  *
- * **Twice reversed.** Until 2026-08-26 this waited for a Commander to press a
- * control, on the reading that a reload replaces everything on screen and
- * deciding that for someone mid-outfitting is the one thing it must not do.
- * What that produced is a fleet of sessions sitting on old builds behind a
- * notice nobody presses, which is the failure the whole mechanism exists to
- * prevent. The reload is no longer the loss it was reasoned against either:
- * what a Commander is working on is in the link in the address bar and in this
- * browser's own store, and both survive it.
- *
- * The overlay that replaced the control still asked a question — restart now,
- * or not now — and on 2026-08-27 the owner's decision removed the question
- * too. The update is applied; the overlay reports it. Nothing here asks, and
- * nothing here can be called off.
+ * **Nothing here asks, and that is the point.** Waiting for a Commander to
+ * press a control produces a fleet of sessions sitting on old builds behind a
+ * notice nobody presses, which is the failure this whole mechanism exists to
+ * prevent — and the reload costs less than it appears to, because what a
+ * Commander is working on is in the link in the address bar and in this
+ * browser's own store, and both survive it (owner's decision, recorded in
+ * 011/FR-025's amendment history).
  *
  * **What that costs, stated rather than buried.** A restart on a clock with no
  * way to stop it is a time limit that meets none of WCAG 2.2.1's conditions.
@@ -277,12 +269,11 @@ export class ApplicationUpdateStore {
    *
    * *What is done* is per version. Each `ready` the worker reports is a version
    * that was not there before, and each one is announced and restarted onto.
-   * The two were once collapsed into the sentence, and a session that had
-   * answered a notice once stayed on the version it was running for the rest of
-   * its life, however many were published behind it — the stale session this
-   * mechanism exists to prevent. There is no answering a notice now, but the
-   * separation is what makes a third version behind a second reach a page whose
-   * restart of the second could not happen.
+   * Collapsing the two into the sentence would leave a session that had been
+   * told once sitting on the version it was running for the rest of its life,
+   * however many were published behind it — the stale session this mechanism
+   * exists to prevent. The separation is what makes a third version behind a
+   * second reach a page whose restart of the second could not happen.
    *
    * A broken cached version supersedes a waiting one, because it is the more
    * urgent of the two and the restart it asks for delivers both. It is never

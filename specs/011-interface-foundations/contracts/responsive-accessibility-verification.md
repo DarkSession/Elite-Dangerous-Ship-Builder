@@ -79,7 +79,8 @@ address, because an isolated state is by definition one that cannot share the pa
 
 For every rendered product/relevant state and applicable preview declaration:
 
-- run `@axe-core/playwright` after the state settles with WCAG A/AA tags through WCAG 2.2 AA;
+- run `@axe-core/playwright` after the state settles with the WCAG 2.0, 2.1 and 2.2 Level A and
+  Level AA rule tags;
 - assert the expected banner/navigation/main/headings, visible/matching names, roles, state and
   label/description/error/unit relationships;
 - assert each visual information carrier has its visible/programmatic text equivalent;
@@ -105,7 +106,7 @@ Start with no disabled axe rules and never suppress a whole WCAG tag or page reg
 maps solely to one of the constitutionally excluded keyboard criteria, a future exception requires:
 
 1. a versioned rule-to-criterion record using the installed axe rule metadata;
-2. an automated assertion that every mapped criterion is in the seven-item exclusion set;
+2. an automated assertion that every mapped criterion is in the eight-item exclusion set;
 3. retained feature-specific semantic assertions;
 4. no suppression of any in-scope criterion also covered by that rule.
 

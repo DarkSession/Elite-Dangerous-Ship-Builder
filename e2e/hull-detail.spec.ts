@@ -220,7 +220,7 @@ test.describe('hull detail', () => {
     await expect(page.getByText(/Nonexistent_Hull/)).toBeVisible();
     await expect(page.getByText(/nothing has been created or changed/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Build stock hull' })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Back to the shipyard' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Back to Ship Builder' })).toBeVisible();
   });
 
   test('creates the package’s own default build, and only when asked', async ({ page }) => {

@@ -96,8 +96,12 @@ test.describe('what the head says this page is', () => {
     await canonical(page).toBe(`${SITE_ORIGIN}/build`);
   });
 
-  test('is in the language the page is in', async ({ browser }) => {
-    const context = await browser.newContext({ locale: 'de-DE' });
+  test('is in the language the page is in', async ({ browser, baseURL }) => {
+    // The baseURL travels with the context, as it does everywhere else in the
+    // suite: a context made without one answers relative navigations from
+    // nowhere, and the next person to write `page.goto('/ships')` here would
+    // find out the hard way.
+    const context = await browser.newContext({ baseURL, locale: 'de-DE' });
     const page = await context.newPage();
 
     await page.goto(`${PRODUCT_URL}/ships`);
@@ -112,15 +116,47 @@ test.describe('what the head says this page is', () => {
 
   test('is already in the document before anything runs', async ({ page }) => {
     // The head a reader that executes no script is served. Fetched rather than
-    // navigated to, so the bundle never gets the chance to rewrite it.
+    // navigated to, so the bundle never gets the chance to rewrite it, and
+    // read for its values rather than for the presence of its tags: a head of
+    // empty `content` attributes would satisfy "the tags are there" and say
+    // exactly as much to a crawler as no head at all.
     const response = await page.request.get(`${PRODUCT_URL}/index.html`);
     const document = await response.text();
+    const value = (pattern: RegExp): string => pattern.exec(document)?.[1] ?? '';
 
-    expect(document).toContain('<link rel="canonical"');
-    expect(document).toContain('name="description"');
-    expect(document).toContain('property="og:title"');
-    expect(document).toContain('name="twitter:card"');
+    expect(value(/<title>([^<]*)<\/title>/)).toBe(englishMessages['app.document-title.default']);
+    expect(value(/name="description"[^>]*content="([^"]*)"/s)).toBe(
+      englishMessages['app.description'],
+    );
+    expect(value(/property="og:description"[^>]*content="([^"]*)"/s)).toBe(
+      englishMessages['app.description'],
+    );
+    expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(englishMessages['app.name']);
+    expect(value(/rel="canonical"[^>]*href="([^"]*)"/)).toBe(`${SITE_ORIGIN}/`);
+    expect(value(/name="twitter:card"[^>]*content="([^"]*)"/)).toBe('summary');
     expect(document).toContain('application/ld+json');
     expect(document).toContain('rel="manifest"');
+  });
+
+  test('hands a crawler a policy, a map and a manifest that agree with it', async ({ page }) => {
+    const read = async (path: string): Promise<string> =>
+      (await page.request.get(`${PRODUCT_URL}${path}`)).text();
+
+    const robots = await read('/robots.txt');
+    expect(robots).toContain(`Sitemap: ${SITE_ORIGIN}/sitemap.xml`);
+    expect(robots).not.toMatch(/^\s*Disallow:\s*\/\s*$/m);
+
+    const sitemap = await read('/sitemap.xml');
+    for (const route of ['/ships', '/build', '/builds']) {
+      expect(sitemap).toContain(`<loc>${SITE_ORIGIN}${route}</loc>`);
+    }
+
+    const manifest: unknown = JSON.parse(await read('/manifest.webmanifest'));
+    expect(manifest).toMatchObject({
+      name: englishMessages['app.name'],
+      short_name: englishMessages['app.name'],
+      description: englishMessages['app.description'],
+      display: 'standalone',
+    });
   });
 });

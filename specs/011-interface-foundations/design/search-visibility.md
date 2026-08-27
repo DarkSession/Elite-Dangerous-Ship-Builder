@@ -81,6 +81,15 @@ and description. Adding the image later is one asset and two tags.
 `public/robots.txt` allows everything and names the sitemap. `public/sitemap.xml` lists the three
 top-level routes.
 
+**The trap under this one, found in review.** A sitemap is worthless if the addresses in it do not
+answer. GitHub Pages serves a single-page application's deep links from `404.html` — with a 404
+status — and a crawler drops a 404 whatever the body contains, canonical link and all. Every URL in
+the sitemap would have been reported as an error and none of the per-route head above would have
+counted for the three routes it was built for. The deployment now publishes each advertised route as
+a real `index.html` that answers 200, alongside the `404.html` that still catches everything else,
+and it reads the route list out of `sitemap.xml` rather than repeating it: a fifth copy of that list
+would drift silently, because the site would keep working and only the crawl would stop.
+
 **The second omission, also named.** The sitemap does not list hull pages, and those are the
 long-tail content: forty-odd `/ships/<symbol>` addresses, one per hull, each with real numbers on
 it. It cannot list them by hand, because the set of hulls belongs to the Almanac and a hard-coded
@@ -118,8 +127,9 @@ form what the previous six findings only imply.
 - **Prerendering or SSR.** The single highest-value change available, and explicitly out of the
   chosen scope. It is also not free: the application is client-side only by constitution, a
   prerender step would need the Almanac at build time and would produce four HTML documents to keep
-  honest. Google executes JavaScript and will index the routes as they are; every other crawler
-  sees the static head this change adds and nothing more.
+  honest. Google executes JavaScript, and — now that each route answers 200 rather than 404 — will
+  index the routes as they are; every other crawler sees the static head this change adds and
+  nothing more.
 - **`hreflang` alternates.** There is no per-language URL. The language follows the browser setting
   and nothing else (FR-017), so `en` and `de` are the same address and there is no alternate to
   declare. `og:locale` still reports which language the document was actually rendered in.

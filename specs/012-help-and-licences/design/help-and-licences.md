@@ -43,25 +43,23 @@ one scrolling column, and that is the order built here.
 
 ### 2. ABOUT
 
-- Short localised purpose: an offline, private, client-side Elite Dangerous outfitting planner. The
-  reference's own sentence is one line above its version line.
+- Short localised purpose: what this application is, in the owner's own sentence. The reference's
+  own sentence is one line above its version line.
+- Who builds and maintains it, in one sentence under the purpose.
+- Where the game values come from: the bundled Almanac supplies the catalogue, the checks and the
+  calculations, and this application neither maintains nor corrects them. This is where the
+  once-per-application Almanac credit lives.
 - The identity facts described in [Identity facts](#identity-facts) below, in the place the
   reference draws `APP VERSION 4.2.1 · LIBRARY VERSION 3.8.0.3`.
 
-Nothing else. The reference draws a sentence and a version line, and the two provenance paragraphs
-this section once carried are withdrawn.
+Nothing else, and in that order: three sentences and then the version line.
 
 ### 3. FAQ
 
-Seven question/answer records remain visible in one reading sequence:
+Two question/answer records remain visible in one reading sequence:
 
-1. Do share links expose my account? — the reference's own question
-2. Are there accounts, uploads or telemetry?
-3. Where are my builds stored? — the reference's own question and its own answer
-4. What works offline?
-5. Why do my engineered stats differ in game? — the reference's own question
-6. What is a hull fact and what is a build result?
-7. Where do the game values and calculations come from?
+1. Where are my builds stored? — the reference's own question and its own answer
+2. Why do my engineered stats differ in game? — the reference's own question
 
 Each is a heading over its own answer, so a reader moving by heading meets the questions rather
 than one block of prose. A question sits closer to its own answer than the pairs sit to each other,
@@ -138,7 +136,7 @@ never draws. A preview state may now declare the prose the stage puts around it,
 is the first to use it.
 
 Conformance for this section is stated under the same qualification as everything else in this
-feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
+feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
 which the constitution excludes.
 
 ### Known gap: EDAssets interface marks
@@ -189,7 +187,7 @@ it is recorded here for the pass that resolves it.
 
 ## Accessibility behavior
 
-**Conformance for this screen reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+**Conformance for this screen reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11.”** That is feature 011's qualified statement and it is repeated here rather than
 referred to, because a conformance claim a reader has to follow a link to qualify is a claim that
 gets quoted without its qualification. The exclusions are the keyboard and focus-order criteria the

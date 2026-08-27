@@ -2,7 +2,7 @@
   "name": "Elite Dangerous Ship Builder",
   "short_name": "Elite Dangerous Ship Builder",
   "description": "Plan Elite Dangerous loadouts. Pick a hull, outfit it, read the numbers, and share a build as a link.",
-  "id": "/",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

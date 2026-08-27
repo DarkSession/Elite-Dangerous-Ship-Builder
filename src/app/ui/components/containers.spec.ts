@@ -658,6 +658,24 @@ describe('Layer', () => {
     expect(describedText(query(fixture, 'dialog'))).toContain('restarting on the newer version');
   });
 
+  it('treats a blank label as no way out rather than as a nameless one', () => {
+    // The template draws no control for a blank label, so a layer that still
+    // counted itself dismissable would close on Escape and on the ground while
+    // showing nothing to press — the split the single input exists to prevent.
+    let dismissals = 0;
+    const fixture = renderComponent(Layer, { title: 'Updating', dismissLabel: '  ', open: false });
+    fixture.componentInstance.dismissed.subscribe(() => (dismissals += 1));
+
+    expect(fixture.componentInstance.dismissible()).toBe(false);
+    expect(query(fixture, 'dialog').querySelector('.layer__dismiss')).toBeNull();
+
+    const cancel = new Event('cancel', { cancelable: true });
+    query(fixture, 'dialog').dispatchEvent(cancel);
+
+    expect(cancel.defaultPrevented).toBe(true);
+    expect(dismissals).toBe(0);
+  });
+
   it('refuses the native cancel a layer with no way out must not honour', () => {
     let dismissals = 0;
     const fixture = renderComponent(Layer, { title: 'Updating', open: false });

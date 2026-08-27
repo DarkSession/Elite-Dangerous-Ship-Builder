@@ -55,8 +55,12 @@ export class DocumentAdapter {
    * Publishes the root language, direction, title and search metadata in one call.
    *
    * A caller that has nothing new to say for the title passes `null` rather
-   * than a blank string, so an empty title can never be written. A blank
-   * description is likewise left alone rather than published: an empty
+   * than a blank string, so an empty title can never be written.
+   *
+   * The description is guarded the same way, for a caller this application does
+   * not currently have: the locale store always falls back to the catalogue's
+   * own application description, which the catalogue schema forbids to be
+   * blank. The guard is what makes the adapter safe to call directly — an empty
    * `<meta name="description">` is worse than none, because a search engine
    * reads it as the page having nothing to say.
    */

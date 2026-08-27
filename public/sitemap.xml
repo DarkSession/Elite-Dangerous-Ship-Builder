@@ -3,6 +3,12 @@
   The three top-level screens. `/` is not listed: it redirects to `/ships`, and
   a sitemap entry for a redirect is an entry for a page that does not exist.
 
+  This file is also the route list the deployment publishes as real addresses.
+  Pages would otherwise serve each of these from `404.html`, and a crawler drops
+  a 404 whatever the body says — so the deploy step reads the addresses below
+  and writes an `index.html` under each. Adding a `<loc>` here publishes it;
+  there is no second list to keep in step.
+
   Hull pages (`/ships/<symbol>`) are absent, and their absence is deliberate
   rather than forgotten: the set of hulls belongs to the Almanac, and a
   hand-written list of hull symbols here would be the private copy of package

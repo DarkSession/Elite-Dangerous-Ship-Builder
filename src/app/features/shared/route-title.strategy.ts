@@ -5,22 +5,23 @@ import {
   type RouterStateSnapshot,
 } from '@angular/router';
 import { LocaleStore } from '../../i18n/locale.store';
-import { MessageService } from '../../i18n/message.service';
 import { MESSAGE_KEYS, type MessageKey } from '../../i18n/locale-registry';
 
 /**
- * Resolves a route's message keys into what the document says it is.
+ * Hands the locale store what the route says about itself.
  *
- * Routes declare keys, not phrases, so the title and the description a search
- * result quotes are translated by the same catalogue as everything else and are
- * republished by the locale store in the same commit as the root `lang` — a
- * title in one language under a root `lang` in another is exactly what that
- * single commit exists to prevent (011/FR-027).
+ * Message keys, not phrases, and the keys travel unresolved: the store resolves
+ * them on every commit, so the document title and the sentence a search result
+ * quotes change language with everything else rather than staying in whichever
+ * language happened to be committed when the route was entered. That is not a
+ * corner case — selecting a non-English catalogue takes a request and the first
+ * navigation does not, so the ordinary order is that the language arrives
+ * second (011/FR-027, 011/FR-019).
  *
- * A route with no title, or with a key this build does not carry, leaves the
- * product name standing rather than writing a raw key into the tab. The same is
- * true of the description: an absent one falls back to the application's own
- * rather than being published blank.
+ * A route with no title, or with a key this build does not carry, contributes
+ * nothing and leaves the product name standing rather than writing a raw key
+ * into the tab. The same is true of the description: an absent one falls back
+ * to the application's own rather than being published blank.
  *
  * Angular's title strategy is the only hook that fires on every completed
  * navigation and carries the router state, which is why the canonical address
@@ -30,31 +31,40 @@ import { MESSAGE_KEYS, type MessageKey } from '../../i18n/locale-registry';
 @Injectable()
 export class RouteTitleStrategy extends TitleStrategy {
   readonly #locale = inject(LocaleStore);
-  readonly #messages = inject(MessageService);
 
   override updateTitle(snapshot: RouterStateSnapshot): void {
     this.#locale.setRoute({
-      title: this.#resolve(this.buildTitle(snapshot)),
-      description: this.#resolve(nearestDescription(snapshot.root)),
+      titleKey: messageKey(this.buildTitle(snapshot)),
+      descriptionKey: messageKey(nearestDescription(snapshot.root)),
       path: snapshot.url,
     });
   }
+}
 
-  /** A message key becomes text; anything else becomes nothing at all. */
-  #resolve(key: string | undefined): string | null {
-    return key !== undefined && isMessageKey(key) ? this.#messages.message(key) : null;
-  }
+/** A key this build carries, or nothing at all. */
+function messageKey(value: string | undefined): MessageKey | null {
+  return value !== undefined && (MESSAGE_KEYS as readonly string[]).includes(value)
+    ? (value as MessageKey)
+    : null;
 }
 
 /**
- * The description of the deepest route that declares one.
+ * The description key of the deepest route that declares one.
  *
  * Walked rather than read off the leaf, because a child route need not repeat
  * what its parent already says: an open hull sits inside the catalogue screen
  * and is that screen's subject, so it inherits that screen's description unless
- * it states its own. Angular inherits `data` down a route tree only when the
- * router is configured to, and configuring it globally would change what every
- * other consumer of `data` sees.
+ * it states its own.
+ *
+ * Not left to the router's own inheritance either. `paramsInheritanceStrategy`
+ * defaults to `emptyOnly`, which passes `data` down to path-less and
+ * component-less children only — and every child here loads a component — while
+ * setting it to `always` would change what every other consumer of `data` sees
+ * for the sake of one key.
+ *
+ * `firstChild` is `children[0]`, so this follows the primary outlet only for as
+ * long as the route table has no named outlet. It has none, and a named one
+ * would need this walk to choose the outlet by name rather than by position.
  */
 function nearestDescription(root: ActivatedRouteSnapshot): string | undefined {
   let found: string | undefined;
@@ -65,8 +75,4 @@ function nearestDescription(root: ActivatedRouteSnapshot): string | undefined {
     }
   }
   return found;
-}
-
-function isMessageKey(value: string): value is MessageKey {
-  return (MESSAGE_KEYS as readonly string[]).includes(value);
 }

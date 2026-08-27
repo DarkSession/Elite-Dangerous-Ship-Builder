@@ -184,9 +184,11 @@ disagrees or where the announcement is correct but unusable.
 
     Walk the headings inside it. Expect the reference's own three sections in
     the reference's own order — `ABOUT`, `FAQ`, `LICENCE` — and expect each of
-    the seven questions to be a heading **under** the `FAQ` heading rather than
+    the questions to be a heading **under** the `FAQ` heading rather than
     beside it, so heading navigation reaches the questions as a list of
-    questions. In `ABOUT`, expect exactly two identity facts, each announced as
+    questions. In `ABOUT`, expect the purpose, the maintainer and the Almanac
+    provenance to be read as three sentences in that order before any fact is
+    reached. Then expect exactly two identity facts, each announced as
     its own term and value, and expect the two terms to distinguish which
     version is which without seeing them side by side; expect nothing to be
     said about what kind of build it is. In `FAQ`, expect each answer to be

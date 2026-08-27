@@ -60,7 +60,7 @@ calculation — a share or a bar fill over amounts stated on the same screen is 
 measurement; no cause inferred from a zero or an infinity; optional, zero, disabled,
 unlimited and infinite states retain package meaning; all owned text and figures localized; one
 tokenized dark theme; no document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
-2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: The complete installed hull and hardpoint catalogues; normal hull layouts contain at
 most 10 known hardpoint slots. The returned collection has no application cap because package-valid

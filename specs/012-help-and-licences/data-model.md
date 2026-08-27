@@ -144,7 +144,7 @@ BrowserHelpTopic {
 }
 ```
 
-The separate generated catalogue contains exactly seven records in the required order and is eagerly
+The separate generated catalogue contains exactly the FR-010 records in the required order and is eagerly
 imported beside the manifest. It contains no governing references; those remain tooling-only review
 evidence. A missing, duplicated, reordered or blank browser record prevents emission of the complete
 catalogue, never publication of a partial runtime set.
@@ -155,7 +155,7 @@ Application-owned accepted help content.
 
 | Field                 | Type                             | Rule                                                               |
 | --------------------- | -------------------------------- | ------------------------------------------------------------------ |
-| `id`                  | `HelpTopicId`                    | one of the seven required identities; occurs exactly once          |
+| `id`                  | `HelpTopicId`                    | one of the required identities; occurs exactly once                |
 | `questionKey`         | message key                      | resolves nonblank in every shipped locale                          |
 | `answerKey`           | message key                      | resolves nonblank in every shipped locale; never contains raw HTML |
 | `governingReferences` | non-empty `GoverningReference[]` | accepted feature requirements or constitution principles only      |
@@ -235,9 +235,11 @@ HelpDialogViewModel {
 Rules:
 
 - The three section headings are the reference's own `ABOUT`, `FAQ` and `LICENCE`, in that order.
+- `about.purpose`, `about.maintainer` and `about.provenance` are the three sentences of that
+  section, in that order, ahead of the facts.
 - `about.facts` is exactly the application and Almanac versions, each with its own label. There is
   no third fact: build kind and build identifier are build evidence, not content.
-- `topics` is the seven of FR-010 in their declared order, each already resolved to a question and
+- `topics` is the two of FR-010 in their declared order, each already resolved to a question and
   an answer. No governing reference is projected.
 - `licence.index` is the reference's three-line summary of what covers what, resolved from the
   catalogue because it is application-owned text.

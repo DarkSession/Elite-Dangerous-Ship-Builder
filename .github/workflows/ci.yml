@@ -116,9 +116,31 @@ jobs:
       # A push to `main` is the deployment's build run too. Packaging the output
       # here keeps the source, checks and Pages artifact on one trusted event and
       # avoids checking out a SHA supplied by a later `workflow_run` event.
-      - name: Serve client-side routes from the 404 page
+      # Two mechanisms, because they answer different callers. `404.html` catches
+      # every address, which is what a Commander following a deep link needs —
+      # but Pages serves it with a 404 status, and a crawler drops a 404 whatever
+      # the body says, canonical link included. So each route the sitemap
+      # advertises is also published as a real `index.html` that answers 200.
+      #
+      # The route list is read out of `sitemap.xml` rather than written here
+      # again: a fifth copy of it could drift from the other four, and this one
+      # would drift silently — the site would keep working and only the crawl
+      # would stop.
+      - name: Serve client-side routes as real addresses
         if: ${{ github.event_name == 'push' }}
-        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
+        working-directory: dist/elite-dangerous-ship-builder/browser
+        run: |
+          cp index.html 404.html
+          routes="$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed 's|<loc>https\?://[^/]*/||; s|</loc>||')"
+          if [ -z "$routes" ]; then
+            echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> to publish."
+            exit 1
+          fi
+          for route in $routes; do
+            mkdir -p "$route"
+            cp index.html "$route/index.html"
+            echo "::notice title=Route published::/$route answers 200."
+          done
 
       - name: Upload the build as a Pages artifact
         if: ${{ github.event_name == 'push' }}

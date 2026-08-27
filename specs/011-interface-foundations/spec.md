@@ -214,13 +214,13 @@ translations.
 - **SC-006**: English and German contain identical non-empty application-owned message-key and
   interpolation-variable sets across the complete application; a matching browser language selects
   the corresponding shipped language and an unsupported browser language selects English.
-- **SC-008**: Each addressable screen is served its own title, its own description and its own
-  canonical address, in the committed language, with no build payload in the address; the document
-  served before the application starts carries all three in bundled English; and the crawl policy,
-  the sitemap, the manifest and the structured data agree with the route table and with one another.
-
 - **SC-007**: A session left open across a deployment states that it is restarting, offers nothing
   to press while it does, comes back on the published version on its own within a minute, and states
   on arrival that the update was applied and which version it is running. Where the restart could
   not be carried out, the session states that a newer version is available and applies it from its
   own named control. No cache-clearing reload appears anywhere in either journey.
+
+- **SC-008**: Each addressable screen is served its own title, its own description and its own
+  canonical address, in the committed language, with no build payload in the address; the document
+  served before the application starts carries all three in bundled English; and the crawl policy,
+  the sitemap, the manifest and the structured data agree with the route table and with one another.

@@ -71,7 +71,7 @@ no network request or persisted derived cache
 curve or power calculation; no truthiness conversion of zero; no hull-stat fallback for unavailable
 mobility; exact package issue order and identities; no document horizontal scrolling; one tokenized
 dark theme; all application text and numeric/unit formatting localized; WCAG 2.2 AA except criteria
-2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active build across the complete installed hull catalogue; three standard jump profiles;
 seven mobility fields; three aggregate result groups; sparse FSD/thruster parameters; one mass row

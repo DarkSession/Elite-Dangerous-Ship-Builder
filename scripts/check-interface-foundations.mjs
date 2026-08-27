@@ -50,11 +50,15 @@ export const SCOPE = {
    *
    * A specification that claims the target for its own surfaces is a statement
    * about those surfaces, and an unqualified one there is as strong a claim as
-   * an unqualified one in the README. The list is per feature rather than all
-   * of `specs/` because four earlier features still carry unqualified
-   * paragraphs; each joins as its documents are qualified.
+   * an unqualified one in the README.
+   *
+   * The whole tree, deliberately. A per-feature list is a rule that does not
+   * point at the files most likely to break it: an amendment to the excluded
+   * set is carried through the guarded directories and silently missed
+   * everywhere else, which leaves the constitution asserting one number and
+   * three dozen documents enumerating another.
    */
-  conformanceSpecs: ['specs/004-slef'],
+  conformanceSpecs: ['specs'],
   /** The emitted production output, inspected as shipped. */
   productionOutput: 'dist/elite-dangerous-ship-builder/browser',
   /** Where the build is configured to place the copied hull schematics. */
@@ -875,8 +879,7 @@ async function checkSearchMetadata() {
     return existsSync(file) ? await readFile(file, 'utf8') : '';
   };
 
-  const routesPath = resolve(ROOT, 'src/app/app.routes.ts');
-  const routesSource = existsSync(routesPath) ? await readFile(routesPath, 'utf8') : '';
+  const routesSource = await read('src/app/app.routes.ts');
 
   violations.push(
     ...searchMetadataViolations({
@@ -885,6 +888,7 @@ async function checkSearchMetadata() {
       robots: await read(SEARCH_METADATA_FILES.robots),
       sitemap: await read(SEARCH_METADATA_FILES.sitemap),
       manifest: await read(SEARCH_METADATA_FILES.manifest),
+      domain: await read(SEARCH_METADATA_FILES.domain),
       routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
     }),
   );
@@ -1347,6 +1351,15 @@ export const SEARCH_METADATA_FILES = {
   robots: 'public/robots.txt',
   sitemap: 'public/sitemap.xml',
   manifest: 'public/manifest.webmanifest',
+  /**
+   * The file that actually decides the production domain.
+   *
+   * Pages reads it and serves the site from whatever it names, so a domain move
+   * that edits this and nothing else would leave every canonical link, the
+   * sitemap and the robots file pointing at an address the site no longer
+   * answers on — and nothing would notice.
+   */
+  domain: 'public/CNAME',
 };
 
 /** Head tags `index.html` must carry for a crawler that runs no script. */
@@ -1362,6 +1375,13 @@ const REQUIRED_HEAD_TAGS = [
   { attribute: 'property', key: 'og:description' },
   { attribute: 'property', key: 'og:url' },
   { attribute: 'property', key: 'og:locale' },
+];
+
+/** The description tags that must all say the same thing. */
+const DESCRIPTION_TAGS = [
+  { attribute: 'name', key: 'description' },
+  { attribute: 'property', key: 'og:description' },
+  { attribute: 'name', key: 'twitter:description' },
 ];
 
 /** Members a web app manifest needs before a browser offers installation. */
@@ -1391,9 +1411,9 @@ const UNLISTABLE_ROUTES = new Set(['', '**']);
  * not the other three — and none of them fails anything at runtime. They fail
  * months later, in a search result nobody is looking at (011/FR-027).
  *
- * `input` is `{ origin, index, robots, sitemap, manifest, routes }`, each the
- * text of its file except `routes`, which is the paths parsed out of the route
- * table. An empty input is itself a violation: a rule that passes when there is
+ * `input` is `{ origin, index, robots, sitemap, manifest, domain, routes }`,
+ * each the text of its file except `routes`, which is the paths parsed out of
+ * the route table. An empty input is itself a violation: a rule that passes when there is
  * nothing to inspect is not a gate.
  */
 export function searchMetadataViolations(input) {
@@ -1409,6 +1429,20 @@ export function searchMetadataViolations(input) {
     return found;
   }
   const origin = declared[1];
+  const host = origin.replace(/^https?:\/\//, '');
+
+  // The domain the site is actually served from. `SITE_ORIGIN` is a claim about
+  // it, and a claim nobody compares is how a moved domain leaves every
+  // canonical link pointing at an address that no longer answers.
+  const domain = (input.domain ?? '').trim();
+  if (domain.length === 0) {
+    fail(SEARCH_METADATA_FILES.domain, 'No production domain is declared for the deployment.');
+  } else if (domain !== host) {
+    fail(
+      SEARCH_METADATA_FILES.domain,
+      `The site is served from "${domain}" but SITE_ORIGIN names "${host}". One of the two has moved.`,
+    );
+  }
 
   // `index.html`: the head a crawler that runs no script is served.
   const index = input.index ?? '';
@@ -1425,10 +1459,20 @@ export function searchMetadataViolations(input) {
     }
   }
 
-  if (!/<link\b[^>]*?\brel\s*=\s*["']canonical["']/i.test(index)) {
+  // The href, not just the element. A relative `href="/"` satisfies "a canonical
+  // exists" and is exactly the mistake `SITE_ORIGIN` exists to prevent: served
+  // from a preview sub-path it canonicalises the preview to itself.
+  const canonical =
+    /<link\b[^>]*?\brel\s*=\s*["']canonical["'][^>]*?\bhref\s*=\s*["']([^"']*)["']/i.exec(index);
+  if (canonical === null) {
     fail(
       SEARCH_METADATA_FILES.index,
       'The head declares no canonical link, so every preview deployment is a duplicate of the site.',
+    );
+  } else if (canonical[1] !== `${origin}/`) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      `The canonical link is "${canonical[1]}"; it must be the absolute "${origin}/".`,
     );
   }
   if (!/<link\b[^>]*?\brel\s*=\s*["']manifest["']/i.test(index)) {
@@ -1441,10 +1485,32 @@ export function searchMetadataViolations(input) {
     );
   }
 
-  // Every absolute address in the three crawler-facing files is this origin.
-  for (const key of ['index', 'robots', 'sitemap']) {
+  // The three description tags say one thing. They drift the moment one is
+  // edited and the others are not, and nothing at runtime notices. A tag that
+  // is absent is left out of the comparison: it is already reported above as
+  // missing, and reporting it twice makes one fault look like two.
+  const descriptions = new Set(
+    DESCRIPTION_TAGS.map(({ attribute, key }) => {
+      const tag = new RegExp(
+        `<meta\\b[^>]*?\\b${attribute}\\s*=\\s*["']${key}["'][^>]*?\\bcontent\\s*=\\s*["']([^"']*)["']`,
+        'is',
+      ).exec(index);
+      return tag?.[1] ?? null;
+    }).filter((value) => value !== null),
+  );
+  if (descriptions.size > 1) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The description, og:description and twitter:description do not say the same thing.',
+    );
+  }
+
+  // Every absolute address in the four crawler-facing files is this origin.
+  // `http` as well as `https`: a plain-text address is still an address, and an
+  // unnoticed one is still the wrong site.
+  for (const key of ['index', 'robots', 'sitemap', 'manifest']) {
     const file = SEARCH_METADATA_FILES[key];
-    for (const match of (input[key] ?? '').matchAll(/https:\/\/[a-z0-9.-]+/gi)) {
+    for (const match of (input[key] ?? '').matchAll(/https?:\/\/[a-z0-9.-]+/gi)) {
       const address = match[0];
       // A bare origin gains the trailing slash `NON_REQUEST_ORIGINS` is
       // written against, so a vocabulary named without a path still matches.
@@ -1513,6 +1579,7 @@ export function searchMetadataViolations(input) {
     // served from a sub-path of a Pages site, and a leading slash would look
     // for the scope, the start URL and every icon at the host root.
     for (const [member, value] of [
+      ['id', manifest.id],
       ['start_url', manifest.start_url],
       ['scope', manifest.scope],
       ...(Array.isArray(manifest.icons) ? manifest.icons : []).map((icon, index) => [
@@ -1628,7 +1695,7 @@ const CONFORMANCE_CLAIM = /WCAG\s*2\.2\s*(?:Level\s*)?AA/gi;
  * them (FR-015).
  *
  * `sources` is `{ [file]: contents }`. A claim qualifies when its own paragraph
- * names all seven criteria.
+ * names all eight criteria.
  */
 export function conformanceClaimViolations(sources) {
   const found = [];

@@ -52,8 +52,8 @@ it.
 ## Accessibility, responsive and localisation baseline
 
 These are inherited obligations, not new requirements. They are governed by feature 011's accepted
-FR-011 (available on desktop, tablet and mobile in portrait and landscape), FR-012 (in-scope WCAG 2.2
-AA contrast and target size), FR-015 (conformance statements name the excluded criteria) and FR-021
+FR-011 (available on desktop, tablet and mobile in portrait and landscape), FR-012 (in-scope
+contrast and target size), FR-015 (conformance statements name the excluded criteria) and FR-021
 (every primary journey runs at three viewports in Chromium and Firefox), and by constitution
 principles V, VI and VII. They are listed here so every task that exists to satisfy them maps to an
 accepted requirement rather than to nothing.
@@ -75,7 +75,7 @@ accepted requirement rather than to nothing.
 - Owned labels and the licence summary resolve through feature 011 localisation and survive
   expansion and RTL. The Frontier excerpt stays in a `lang="en"` region and is never mirrored or
   translated.
-- Conformance is reported qualified, naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+- Conformance is reported qualified, naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
   2.4.7 and 2.4.11. An unqualified WCAG 2.2 AA claim is prohibited (feature 011 FR-015).
 - The automated axe sweep is a floor. The manual assistive-technology protocol is the proof, and it
   is release-blocking until recorded.

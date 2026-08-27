@@ -144,7 +144,7 @@ and every primary journey.
 - Complete the three stories with NVDA/Firefox desktop and TalkBack/Chromium mobile protocols.
 
 Expected: every capability/state remains complete and understandable. Any conformance statement names
-the exclusions: WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+the exclusions: WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 ## 12. Validate localization boundaries
 

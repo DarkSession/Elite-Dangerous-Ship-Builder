@@ -98,11 +98,10 @@ export interface HelpAboutView {
    *
    * Feature 002's voice ruling of 2026-08-22 stopped some thirty
    * Commander-facing strings naming the Almanac, on the grounds that the credit
-   * belongs to this feature, once per application. It sat here until
-   * 2026-08-25, moved to the `almanacOwnership` topic when the reference pass
-   * withdrew this paragraph, and returns here on 2026-08-27 because that topic
-   * is withdrawn. The ruling is what keeps it in the modal at all; only its
-   * address has ever changed (FR-008).
+   * belongs to this feature and is made once per application. This sentence is
+   * that once. Withdrawing it, or moving it into a help topic that a later pass
+   * could withdraw, leaves the application crediting the Almanac nowhere
+   * (FR-008).
    */
   readonly provenance: string;
   readonly facts: readonly VersionFact[];

@@ -170,7 +170,7 @@ Manually verify 200% text, actual 400% zoom, expanded/RTL text and reduced motio
 - a screen reader reads every label with its value, and every material's name, rarity and quantity.
 
 Automated success does not waive a manual failure. Any conformance statement must say WCAG 2.2 AA
-except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11; no shorter or unqualified claim
+except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11; no shorter or unqualified claim
 passes review.
 
 ## Scenario 8: design fidelity

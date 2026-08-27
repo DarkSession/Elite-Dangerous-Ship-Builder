@@ -1,11 +1,13 @@
 /**
  * Where this application is published, and how a route becomes an address.
  *
- * One constant, because four files have to agree on it: `src/index.html`'s
- * static head, `public/robots.txt`, `public/sitemap.xml` and every canonical
- * link the running application writes. The policy checker compares all four
- * against this value, so a move to a different domain is one edit and a failing
- * build everywhere it was not carried through.
+ * One constant, because several files have to agree on it: `src/index.html`'s
+ * static head, `public/robots.txt`, `public/sitemap.xml`, `public/manifest.webmanifest`
+ * and every canonical link the running application writes — and `public/CNAME`,
+ * which is the one that actually decides where Pages serves the site from. The
+ * policy checker compares all of them against this value, so a move to a
+ * different domain is one edit and a failing build everywhere it was not
+ * carried through.
  *
  * **Why a constant rather than `location.origin`.** A canonical link built from
  * wherever the document happens to be served makes every pull-request preview
@@ -13,6 +15,10 @@
  * Built from this, a preview and a development server both say the production
  * address — a statement about where the page *is* that is false in exactly the
  * two places where the truth is useless (see `design/search-visibility.md`).
+ *
+ * The canonical link and `og:url` are rewritten per route; the JSON-LD block
+ * in `src/index.html` keeps this origin's root and the English description on
+ * every route, deliberately. It describes the application, not the page.
  */
 export const SITE_ORIGIN = 'https://sb.edct.dev';
 

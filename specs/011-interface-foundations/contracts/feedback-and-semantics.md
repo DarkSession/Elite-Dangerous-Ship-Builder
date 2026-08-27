@@ -70,7 +70,7 @@ The interface states no conformance target. FR-015 is a prohibition, not an obli
 constrains how a claim is phrased wherever one is made, and the product makes none. The project
 documents that do state it use one wording:
 
-> WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+> WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 An unqualified product/documentation claim fails the policy check. The checker scopes claims to
 application/documentation statements and does not flag the constitution/spec passages that define

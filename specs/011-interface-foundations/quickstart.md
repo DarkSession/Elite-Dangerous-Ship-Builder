@@ -178,7 +178,7 @@ touch in both tablet/mobile orientations. Expected: complete actions/content, no
 scroll, obscured content or truncated meaning; wide data scrolls only inside a labelled owning
 component.
 
-Any conformance statement reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+Any conformance statement reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11.”
 
 ## Full gate

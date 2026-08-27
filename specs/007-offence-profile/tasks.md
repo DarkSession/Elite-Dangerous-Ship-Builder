@@ -761,7 +761,7 @@ installed, per the engine-coverage note at the head of this document.
 - No cause inferred from a zero or an infinity.
 - Every owned string through the localization layer; every figure through an active-locale formatter.
 - One tokenized dark theme; no colour literal outside the token layer.
-- WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, stated with the
+- WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11, stated with the
   exclusion wherever conformance is claimed.
 - Nothing user-facing that `design/canvas-contract.md` does not sanction.
 

@@ -55,7 +55,7 @@ and options; publish each locale change as one committed revision with no mixed-
 translation, second theme, production preview surface or domain state inside UI components. English
 must remain readable without a network. Every action and datum remains available at 200% text and
 400% zoom without document horizontal scrolling. Touch targets use a 44 CSS-pixel design baseline.
-Conformance is WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+Conformance is WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 **Scale/Scope**: One application frame, locale store, formatter registry and announcement service;
 initial complete application catalogues `en` and `de`; every exported `src/app/ui/` component and
