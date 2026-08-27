@@ -593,29 +593,17 @@
 // Canvas 1d's sticky foot, and only canvas 1d's: at wider compositions the two
 // panels are drawn without a control that opens them.
 //
-// `position: sticky; bottom: 0` on its own plate, under the ledger it acts on —
-// so the mount a Commander marked is still on screen while they choose what to
-// do to it, however far down the list they marked it.
-// Canvas 1d's foot: `CHANGE MODULE` filled and `ENGINEER` outlined, on their
-// own plate at the end of the screen.
-//
-// Drawn in the flow, not pinned over it. The artboard pins the pair, and this
-// pinned them too until the automated gate measured what that costs: an opaque
-// bar 76px tall over a page-length ledger of 52px rows covers between a half and
-// the whole of whichever row falls at the foot of the viewport, at every scroll
-// position there is — 31.6px of 52px on an Anaconda's hardpoints, leaving a
-// 350×20.4px target where the rule asks for 24px (measured 2026-08-26). The
-// mount rows are this screen's primary targets, and a bar that permanently
-// covers one of them is not a bar that can be pinned over them.
-//
-// Pinning it properly means bounding the scroll: the stack above scrolls in a
-// box of its own and the plate sits below that box rather than over it. That is
-// a different arrangement from the one this region has, and it is recorded as
-// the follow-up rather than half-built here
-// (`design/outfitting-workspace.md`, "The foot is drawn, not pinned").
+// Pinned to the foot of the viewport, so the two actions for the marked mount
+// are on screen wherever a Commander has scrolled to. What that costs is paid
+// for by the ledger, which carries the plate's own height as end padding: no
+// row is permanently covered (`design/outfitting-workspace.md`, "The foot is
+// pinned, and the ledger pays for it").
 .outfitting__bench-actions {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 2;
   padding: var(--edsb-space-inline-loose);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
@@ -735,8 +723,12 @@
     order: 4;
   }
 
+  // Room under the last mount for the plate pinned over the foot of the
+  // viewport, so the end of the ledger can be scrolled clear of it. The plate is
+  // one row of controls inside its own block padding, which is what this is.
   .outfitting__ledger-region {
     order: 5;
+    padding-block-end: calc(var(--edsb-target-size) + 2 * var(--edsb-space-inline-loose));
   }
 
   .outfitting__bench-actions {

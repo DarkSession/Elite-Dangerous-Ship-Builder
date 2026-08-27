@@ -37,7 +37,7 @@ game-text strings.
 
 No frame is created for slot selection, category/anatomy/status mode, chooser search, editor draft,
 open/close/cancel, failed/stale/refused commands, calculation reads, autosave, link publication,
-package construction or transient quality-completion notice changes.
+package construction or transient ingress-normalisation state.
 
 ## Capacity and transitions
 

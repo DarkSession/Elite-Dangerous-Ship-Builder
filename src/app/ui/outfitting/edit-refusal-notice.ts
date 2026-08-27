@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { EditFailure } from '../../application/outfitting/build-edit-intent';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
@@ -35,8 +35,6 @@ export class EditRefusalNotice {
 
   /** The mount's drawn label, so the notice names it the way the ledger does. */
   readonly slotLabel = input<string | null>(null);
-
-  readonly dismissed = output<void>();
 
   readonly title = computed(() => this.#messages.message('outfitting.refusal.title'));
 

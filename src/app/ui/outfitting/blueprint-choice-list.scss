@@ -104,8 +104,13 @@
   font-size: var(--edsb-text-size-caption);
 }
 
+// Ranged against the plate's trailing edge, at the end of the row the identity
+// block flexes across.
 .blueprint__applied {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+
+  flex: none;
+  margin-inline-start: auto;
 }
 
 // The article's own recipe, drawn as the dropdown's value is drawn so the two

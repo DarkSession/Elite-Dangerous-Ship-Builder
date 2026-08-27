@@ -44,6 +44,10 @@ const DENSE_TARGETS = [
   // selector and 38px for canvas 1a's catalogue filter. At 44 it stops being a
   // strip beside a heading and becomes a band across the region.
   '.tab',
+  // A module row's acquisition mark: an icon the reference draws at 14 pixels
+  // beside a module name, with its gloss on a tip. At 44 it is taller than the
+  // ledger row it sits in.
+  '.tooltip__trigger--mark',
 ];
 
 /**

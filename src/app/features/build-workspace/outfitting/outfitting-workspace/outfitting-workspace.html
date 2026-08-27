@@ -39,7 +39,6 @@
     [failures]="ingressFailures()"
     [revision]="revision()"
     [slotLabels]="slotLabels()"
-    (dismissed)="active.dismissIngressRefusal()"
   />
 
   @if (!store.hasBuild()) {
@@ -53,7 +52,6 @@
       [failure]="failure()"
       [revision]="revision()"
       [slotLabel]="selectedSlotLabel()"
-      (dismissed)="store.dismissFailure()"
     />
 
     <div class="outfitting__ledger-region">
@@ -138,7 +136,7 @@
             <edsb-module-replacement
               [slot]="slot"
               [asLayer]="benchIsLayer()"
-              [panelHeading]="benchIsLayer() ? null : benchTitle()"
+              [panelHeading]="benchTitle()"
               (closed)="closeSurface()"
             />
           }
@@ -231,20 +229,6 @@
           {{ statusRailLabel() }}
         </p>
         <edsb-build-status />
-
-        <!--
-          What the Almanac completed while this build was read in, under the
-          same heading as what it says is wrong with it. Both are the package's
-          reading of the build now open, and the rail is where this screen puts
-          that reading (Commander request 2026-08-26).
-        -->
-        <edsb-quality-completion-notice
-          class="outfitting__feedback"
-          [notices]="qualityNotices()"
-          [revision]="revision()"
-          [slotLabels]="slotLabels()"
-          (dismissed)="active.setQualityCompletionNotices([])"
-        />
       </div>
 
       <!--

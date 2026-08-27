@@ -3,7 +3,9 @@ import type {
   AcquisitionLabel,
   AcquisitionLabelKind,
 } from '../../application/outfitting/acquisition-labels';
+import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
+import { Tooltip } from '../components/tooltip/tooltip';
 
 /** What, if anything, the canvas draws for each restriction. */
 type Marker = 'communityGoal' | 'powerplay' | 'mercCoin' | 'techBroker' | null;
@@ -50,12 +52,30 @@ const MARKER: Record<AcquisitionLabelKind, Marker> = {
   entitlement: null,
 };
 
+/**
+ * The gloss each drawn mark carries, as message keys.
+ *
+ * Short, and its own wording rather than the row's sentence. The sentence is
+ * for a reader and says what the restriction means; the tip is for an eye that
+ * has just landed on an unfamiliar icon and wants to know what the icon is
+ * (Commander request 2026-08-27). A `Record` over the markers, so a marker
+ * added above cannot reach a row without a gloss of its own.
+ */
+const MARKER_TIPS: Record<Exclude<Marker, null>, MessageKey> = {
+  mercCoin: 'outfitting.acquisition.short.mercenary',
+  communityGoal: 'outfitting.acquisition.short.communityGoal',
+  techBroker: 'outfitting.acquisition.short.techBroker',
+  powerplay: 'outfitting.acquisition.short.powerplay',
+};
+
 /** One label, with its explanation resolved for the reading language. */
 interface RenderedLabel {
   readonly kind: string;
   readonly packageValue: string;
   readonly marker: Marker;
   readonly explanation: string;
+  /** The mark's own short gloss. `null` where nothing is drawn to gloss. */
+  readonly tip: string | null;
 }
 
 /**
@@ -74,6 +94,7 @@ interface RenderedLabel {
  */
 @Component({
   selector: 'edsb-acquisition-badge',
+  imports: [Tooltip],
   templateUrl: './acquisition-badge.html',
   styleUrl: './acquisition-badge.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,11 +108,15 @@ export class AcquisitionBadge {
   readonly showExplanations = input(false);
 
   readonly rendered = computed<readonly RenderedLabel[]>(() =>
-    this.labels().map((label) => ({
-      kind: label.kind,
-      packageValue: label.packageValue,
-      marker: MARKER[label.kind],
-      explanation: this.#messages.message(label.messageKey, label.params ?? undefined),
-    })),
+    this.labels().map((label) => {
+      const marker = MARKER[label.kind];
+      return {
+        kind: label.kind,
+        packageValue: label.packageValue,
+        marker,
+        explanation: this.#messages.message(label.messageKey, label.params ?? undefined),
+        tip: marker === null ? null : this.#messages.message(MARKER_TIPS[marker]),
+      };
+    }),
   );
 }

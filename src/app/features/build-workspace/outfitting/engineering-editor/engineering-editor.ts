@@ -283,23 +283,31 @@ export class EngineeringEditor {
   );
 
   /**
-   * Canvas 1d's second line: the module and the mount, under the screen's name.
+   * The layer's own title: the module the screen is open on.
    *
-   * The screen is called what canvas 1c calls the panel — `DETAILS AND
-   * ENGINEERING` — at both widths, because it is one screen and two names for
-   * it is worse than either. What it is open on goes here instead, which is
-   * where 1d draws it and what the dialog is described by, so the mount is still
-   * announced with the screen (reported 2026-08-26).
+   * Canvas 1d writes the screen's name — `DETAILS AND ENGINEERING` — in the bar
+   * and the module under it. A Commander arriving from a ledger row already
+   * knows which screen they opened and does not know which of forty mounts it
+   * landed on, so the module takes the bar and the screen's name is what the
+   * region is called for a reader (Commander request 2026-08-27). Where there
+   * is no module there is nothing to name, so the screen's name stands.
+   */
+  readonly layerTitle = computed(() => {
+    const module = this.slot().module;
+    return module === null ? this.panelHeading() : (module.displayName.text ?? module.symbol);
+  });
+
+  /**
+   * The mount, under the module — except on a core mount.
+   *
+   * A core module names its own mount: `Power Plant` in the bar over
+   * `Power Plant` under it is the same word twice. Every other kind is one of
+   * several the module could be in, so the mount is the fact that tells them
+   * apart (Commander request 2026-08-27).
    */
   readonly layerDetail = computed(() => {
-    const module = this.slot().module;
-    if (module === null) {
-      return null;
-    }
-    return this.#messages.message('outfitting.engineering.layer-detail', {
-      module: module.displayName.text ?? module.symbol,
-      slot: this.#slotLabel(),
-    });
+    const slot = this.slot();
+    return slot.module === null || slot.kind === 'core' ? null : this.#slotLabel();
   });
 
   readonly regionLabel = computed(() =>

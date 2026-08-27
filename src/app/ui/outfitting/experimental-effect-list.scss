@@ -104,6 +104,9 @@
 
 .effect__applied {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+
+  flex: none;
+  margin-inline-start: auto;
 }
 
 // Canvas 1c sets the effect dropdown apart from the amber one above it in the

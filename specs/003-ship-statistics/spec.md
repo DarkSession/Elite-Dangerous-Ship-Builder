@@ -59,8 +59,12 @@ composes none of them and passes no conditions to any of them.
   MUST NOT create a separate normalization or provenance region.
 - **FR-014**: Status MUST NOT persist or publish import/defaulting history derived from fixed-module
   state to stored builds, links, SLEF or edit history.
-- **FR-015**: With no package issues, nothing MUST be drawn — no all-clear line, no count and no
-  statement — so that no readiness or quality claim can be made.
+- **FR-015**: With no package issues, the status block MUST draw one line confirming that the build
+  is valid, and nothing else — no count, no structural-facts list and no readiness or quality claim
+  beyond the package's own verdict. Where there is no build, nothing MUST be drawn at all: no build
+  is not a valid build. The original requirement withheld the line entirely; a Commander read the
+  silence as a block that had failed to load rather than as an all-clear, and asked for the
+  confirmation (2026-08-27).
 - **FR-022**: Issue severity MUST be expressed as text beside its issue and MUST NOT depend on
   colour alone. The text is not drawn, because neither canvas draws a severity word; the tiers differ
   by ground as well as by hue.

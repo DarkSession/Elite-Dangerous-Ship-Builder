@@ -22,7 +22,6 @@ import { observeComposition } from '../../../../ui/outfitting/composition';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { EditRefusalNotice } from '../../../../ui/outfitting/edit-refusal-notice';
 import { IngressRefusalNotice } from '../../../../ui/outfitting/ingress-refusal-notice';
-import { QualityCompletionNotice } from '../../../../ui/outfitting/quality-completion-notice';
 import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-card';
 import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-group';
 import { BuildStatus } from '../build-status/build-status';
@@ -109,7 +108,6 @@ const HISTORY_REDO_MARK = '\u21b7';
     EngineeringEditor,
     IngressRefusalNotice,
     ModuleReplacement,
-    QualityCompletionNotice,
     SlotCard,
     SlotGroup,
   ],
@@ -317,18 +315,15 @@ export class OutfittingWorkspace {
   readonly failure = this.store.lastEditFailure;
   readonly revision = this.store.revision;
 
-  /** What the Almanac completed while the build on screen was being read in. */
-  readonly qualityNotices = this.active.qualityCompletionNotices;
-
   /** Why a build the Commander tried to open never became this one. */
   readonly ingressFailures = this.active.ingressFailures;
 
   /**
    * The ledger's own labels, keyed by exact slot key.
    *
-   * Both ingress surfaces name mounts, and they name them the way the ledger
-   * does rather than by the game's slot key — which is the identity everything
-   * uses and not something a Commander reads.
+   * The ingress refusal names mounts, and it names them the way the ledger does
+   * rather than by the game's slot key — which is the identity everything uses
+   * and not something a Commander reads.
    */
   readonly slotLabels = computed<Readonly<Record<string, string>>>(() =>
     Object.fromEntries(

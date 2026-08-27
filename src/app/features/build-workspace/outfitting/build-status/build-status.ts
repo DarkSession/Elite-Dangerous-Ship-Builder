@@ -45,16 +45,18 @@ const SEVERITY_LABELS = {
  * for are not built (`specs/003-ship-statistics/design/reference-review.md`,
  * rulings A–C).
  *
- * Two consequences of ruling A are deliberate and worth stating, because both
- * look like omissions:
+ * A build the package reports nothing about says so, in one line: `Build is
+ * valid`. That reverses FR-015's original silence, which was read as the rail
+ * having failed to load rather than as an all-clear — a Commander asked for the
+ * confirmation and the requirement now carries it (Commander request
+ * 2026-08-27). The line is the package's verdict and nothing more: it is drawn
+ * only where `validation()` actually answered, never where there is no build to
+ * have a verdict about.
  *
- *   * **A build the package reports nothing about draws nothing.** Not an
- *     all-clear line, not a zero count. Neither canvas draws such a state, and
- *     silence claims strictly less than an all-clear statement would — which is
- *     exactly what FR-015 asks for.
- *   * **Nothing here is interactive.** The canvas draws these as plain blocks,
- *     and at both widths the slot ledger a per-issue action would have reached
- *     is already on screen beside them.
+ * One consequence of ruling A is deliberate and worth stating, because it looks
+ * like an omission: **nothing here is interactive.** The canvas draws these as
+ * plain blocks, and at both widths the slot ledger a per-issue action would have
+ * reached is already on screen beside them.
  *
  * The sentence is the package's own, resolved through feature 011's presenter.
  * The application keeps no copy of a package diagnostic, parses none, and
@@ -95,4 +97,15 @@ export class BuildStatus {
       diagnostic: this.#gameText.loadoutIssueMessage(issue),
     })),
   );
+
+  /**
+   * True where the package answered and had nothing to report.
+   *
+   * `validation()` is `null` until a build is open, and no build is not a valid
+   * build. The two are told apart here so the confirmation is never drawn over
+   * an empty workspace.
+   */
+  readonly valid = computed(() => this.#active.validation() !== null && this.issues().length === 0);
+
+  readonly validLabel = this.#messages.messageSignal('build-status.valid');
 }

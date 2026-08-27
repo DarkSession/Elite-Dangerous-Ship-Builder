@@ -102,9 +102,9 @@ Not built, and not to be reintroduced without a new ruling:
 
 - `StatusCapability` as a wide-width mode, its central-selector registration and the rail's
   open-Status action (ruling B).
-- `StructuralFacts` as a definition list of `valid` and `complete`. Neither canvas draws an
-  all-clear state; a build with no package issues draws no block, exactly as the canvas does, and so
-  makes no readiness claim of any kind (ruling A, and it is what former FR-015 asked for).
+- `StructuralFacts` as a definition list of `valid` and `complete`. A build with no package issues
+  draws one line saying so and nothing else — not a definition list, not a readiness claim, not a
+  qualification (ruling A, and FR-015 as it now stands).
 - The issue and qualification **counts**, the qualification summary section and both none-reported
   statements (ruling A).
 - `StatusCountAnnouncer` and `StatusAnnouncementCoordinator`. They announced count changes, and there
@@ -117,8 +117,12 @@ Not built, and not to be reintroduced without a new ruling:
 - The visible `LoadoutIssueCode`. The canvas draws a sentence, not a code (ruling A). The severity
   survives, because the design system's block already names its own tone in words.
 
-A consequence accepted with ruling A: the rail is silent for a build the package reports nothing
-about. That is the canvas's behaviour, and silence claims less than an all-clear statement would.
+Ruling A also made the rail silent for a build the package reported nothing about, on the reading
+that silence claims less than an all-clear statement would. **That half of it is withdrawn
+(2026-08-27.)** A Commander read the silence as a block that had failed to load, and asked for the
+confirmation: the block now draws `Build is valid`, which is the package's own verdict and not a
+readiness claim built on top of it. Nothing is drawn where there is no build to have a verdict about.
+The rest of ruling A stands.
 
 A consequence accepted with ruling C: feature 003 passes no conditions to anything. The seven
 headline results are each their owning capability's, computed under whatever conditions that

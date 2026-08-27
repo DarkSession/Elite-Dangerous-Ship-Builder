@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { PartialEngineeringFailure } from '../../domain/build/build-ingress-result';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
@@ -44,8 +44,6 @@ export class IngressRefusalNotice {
 
   /** The mount labels, already localized, keyed by the package's slot key. */
   readonly slotLabels = input<Readonly<Record<string, string>>>({});
-
-  readonly dismissed = output<void>();
 
   readonly title = computed(() => this.#messages.message('outfitting.ingress.refusal.title'));
 
