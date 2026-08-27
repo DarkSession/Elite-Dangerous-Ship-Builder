@@ -67,7 +67,16 @@ function caps(text: string): string {
  */
 async function switchThrustersOff(page: Page): Promise<void> {
   await revealMount(page, 'MainEngines');
-  await page.locator('.slot[data-slot-key="MainEngines"] .power__toggle').uncheck({ force: true });
+  const mount = page.locator('.slot[data-slot-key="MainEngines"]');
+
+  // The label is the control, and the rest of this suite drives it that way.
+  // Its checkbox is a clipped one-pixel box, so forcing a pointer onto the box
+  // itself aims at a coordinate the layout never promised belonged to it —
+  // whatever the ledger happens to draw over that point at a given width
+  // receives the click instead, and the state does not change. The label is
+  // the drawn target with the 24px floor under it, at every width.
+  await mount.locator('.power__switch').click();
+  await expect(mount.locator('.power__toggle')).not.toBeChecked();
   await settled(page);
 }
 
