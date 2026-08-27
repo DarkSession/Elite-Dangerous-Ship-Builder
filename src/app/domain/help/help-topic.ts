@@ -10,10 +10,9 @@
  * The set is the two a Commander cannot answer by reading the interface. Where
  * a build is stored and why an engineered figure differs from the game are both
  * facts about how this application behaves, and neither is written on any
- * screen. The five questions the set used to carry were withdrawn on 2026-08-27
- * at the owner's request: each answered something the interface, the licence
- * summary or the `ABOUT` section already says, and a FAQ that repeats the
- * screen behind it is a FAQ a reader learns to skip
+ * screen. Nothing else qualifies: a question the interface, the licence summary
+ * or the `ABOUT` section already answers makes a FAQ that repeats the screen
+ * behind it, which is a FAQ a reader learns to skip
  * (`contracts/help-navigation.md`, "Required help topics").
  */
 

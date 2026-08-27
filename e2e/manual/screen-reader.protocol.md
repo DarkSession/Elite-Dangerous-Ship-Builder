@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 5
+**Version**: 6
 
 ## What is automated, and what is left
 
@@ -145,14 +145,38 @@ disagrees or where the announcement is correct but unusable.
     to remain reachable and selectable.
 
 16. **A newly published version.** With the application open, have a newer
-    version published behind it. Expect one polite announcement that a newer
-    version is available, expect it not to interrupt what is being read, and
-    expect the notice to remain findable on the page afterwards rather than
-    only having been spoken. Move to the restart: expect it to be announced as
-    a button, named the way it reads on screen, with its description. Expect
-    the announcement **not** to repeat when a further version is published
-    behind the first, and expect nothing on screen to be replaced until the
-    restart is activated.
+    version published behind it. A modal layer comes up, announced by name
+    (**Updating**), saying that a newer version was published and that this
+    session is restarting on it, and saying where the open build lives across
+    the restart. Expect that layer to take focus, expect the page behind it to
+    be unreachable by heading, landmark or gesture while it stands, and expect
+    to find **nothing to press inside it** — no dismiss, no confirm, no "not
+    now". The restart is not a question and the layer offers no answer to one.
+
+    Stay on it and expect the page to restart by itself, roughly ten seconds
+    in, with nothing having been activated. This is the step that carries the
+    cost of excluding WCAG 2.2.1 for this mechanism (constitution V): a time
+    limit no reader can extend or turn off. What the exclusion buys is that the
+    layer only has to be **read**, not decided on, so what to check is reading
+    time — whether ten seconds is enough for the two sentences at the reader's
+    own rate and verbosity. If it is not, that is a number to revisit, and
+    `UPDATE_OVERLAY_MS` in `src/app/application/updates/application-update.store.ts`
+    is where it lives. Record the rate and the setting alongside the verdict.
+
+    The session that comes up says so: expect a notice announced once,
+    **Updated**, naming the version now running, and expect it to be findable
+    on the page afterwards rather than only having been spoken. It carries a
+    named control (**Continue**) that only dismisses the notice. Expect the
+    announcement **not** to repeat on the next load of that session.
+
+    Then the state where the restart could not be carried out: the layer is
+    gone, and the shell carries a polite notice that a newer version was
+    published, beside a named control (**Update now**) with its description.
+    Expect the notice to be announced once without interrupting what is being
+    read, expect it to stay findable on the page, and expect the control to be
+    announced as a button named the way it reads on screen. Expect the notice
+    **not** to be announced again when a further version is published behind
+    the first.
 
     Then the unrepairable state, which the shell exposes as an alert rather
     than as a status. Expect the notice to be spoken once as it arrives, expect

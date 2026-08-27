@@ -692,9 +692,9 @@ describe('conformance claims', () => {
   });
 
   it('rejects a claim that names the seven keyboard criteria and not the eighth', () => {
-    // The list a document written before 2026-08-27 carries. 2.2.1 joined the
-    // exclusions with the update restart, and a claim that omits it is the
-    // stronger claim the checker exists to refuse.
+    // The seven keyboard criteria without 2.2.1, which the update restart is
+    // also excluded for. A claim that omits it is the stronger claim the
+    // checker exists to refuse.
     const found = rules.conformanceClaimViolations({
       'README.md': 'WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.',
     });

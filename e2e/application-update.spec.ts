@@ -168,11 +168,11 @@ test.describe('a newly published version', () => {
   });
 
   test('offers nothing to press, because the restart is not a question', async ({ page }) => {
-    // Owner's decision, 2026-08-27. The overlay carried `Restart now` and
-    // `Not now` until then; it carries neither, and the layer is drawn with no
-    // dismiss label, so its control, its Escape and its ground go together.
-    // That is a time limit a Commander cannot hold, and constitution V names
-    // WCAG 2.2.1 among the excluded criteria for this one mechanism.
+    // The overlay says what is happening rather than asking anything, so it
+    // carries nothing to answer with: the layer is drawn with no dismiss label,
+    // which takes its control, its Escape and its ground together. That is a
+    // time limit a Commander cannot hold, and constitution V names WCAG 2.2.1
+    // among the excluded criteria for this one mechanism.
     await openControlledSession(page);
 
     await publish(page);

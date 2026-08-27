@@ -50,6 +50,17 @@ validation and atomic publication").
 `index.html` carries the English defaults for the crawler that reads the document and never runs
 the bundle.
 
+What that crawler gets, stated rather than implied. The deployment publishes one file per sitemap
+route, and each is `index.html` with that route's canonical address and `og:url` substituted in —
+so a crawler that runs nothing still reads `/ships` as `/ships` rather than as the root. Its title
+and description are the application's, not the route's: resolving those before the bundle runs
+means reading the message catalogue at deploy time, which is the build step the owner ruled out for
+this pass. So the per-route title and description are the running application's alone. A crawler
+that renders — Googlebot does — sees them; one that does not sees three distinct addresses under
+one honest application title, which is a smaller loss than three addresses all claiming to be the
+root. Closing it is the same generator that would list the hull pages, and it is recorded with them
+under "Not done" below.
+
 ### 2. Nothing said which URL was the page _(fixed)_
 
 Canonical links now name the production address of the route, resolved from one constant
@@ -142,6 +153,11 @@ form what the previous six findings only imply.
 - **Structured data for hulls.** A `Product`- or `Vehicle`-shaped node per hull would be game data
   restated in this repository's markup. The Almanac owns those values (constitution I); a generated
   hull sitemap is the right vehicle for hull-level search presence, not hand-written schema.
+- **A per-route title and description in the published static files.** The deploy step substitutes
+  each route's canonical address into its copy, which needs nothing but the address it already has.
+  A title and a description need the message catalogue, and reading that at deploy time is the
+  build step this pass excluded. It is the same generator the hull sitemap needs, and worth doing
+  once, for both.
 - **Keyword meta tags.** No search engine has used them in twenty years.
 
 ## Where the pieces live
@@ -149,6 +165,7 @@ form what the previous six findings only imply.
 | Concern                                                       | Owner                                                                    |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Static head for a crawler that runs no script                 | `src/index.html`                                                         |
+| One published file per route, canonical rewritten per route   | `.github/workflows/ci.yml`                                               |
 | The production origin, and the canonical built from it        | `src/app/platform/browser/site-address.ts`                               |
 | Every runtime write of title, description, canonical and card | `src/app/platform/browser/document.adapter.ts`                           |
 | Which description belongs to which route                      | `src/app/app.routes.ts`, `RouteTitleStrategy`                            |

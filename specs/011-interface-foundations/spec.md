@@ -222,5 +222,6 @@ translations.
 
 - **SC-008**: Each addressable screen is served its own title, its own description and its own
   canonical address, in the committed language, with no build payload in the address; the document
-  served before the application starts carries all three in bundled English; and the crawl policy,
-  the sitemap, the manifest and the structured data agree with the route table and with one another.
+  served before the application starts carries that route's own canonical address and the
+  application's bundled English title and description; and the crawl policy, the sitemap, the
+  manifest and the structured data agree with the route table and with one another.

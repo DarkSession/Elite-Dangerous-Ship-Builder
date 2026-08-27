@@ -17,9 +17,10 @@
  * reference mock's FAQ answers a question about importing that this
  * application does not promise, and one about retained partial engineering
  * rolls that contradicts feature 002 — neither is a topic, and the check
- * script refuses a set that grows one. The five topics withdrawn on 2026-08-27
- * are absent for a different reason: each answered something the interface, the
- * licence summary or the `ABOUT` section already says.
+ * script refuses a set that grows one. A question the interface, the licence
+ * summary or the `ABOUT` section already answers is absent for a different
+ * reason: the answer is already on screen, and repeating it here teaches a
+ * reader to skip the FAQ.
  */
 
 /** A numbered principle of the repository constitution. */

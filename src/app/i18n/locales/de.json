@@ -825,7 +825,7 @@
   "help.title": "Hilfe · Über",
   "help.purpose": "Ship Builder ist eine Ausrüstungswerkbank für Elite Dangerous.",
   "help.maintainer": "Entwickelt und gepflegt von CMDR Dark Session.",
-  "help.provenance": "Spieldaten, Prüfungen und Berechnungen stammen aus dem beiliegenden Almanach, der den Katalog, die Prüfungen und die Berechnungen liefert. Ship Builder pflegt und korrigiert diese Spielwerte nicht.",
+  "help.provenance": "Spieldaten, Prüfungen und Berechnungen stammen aus dem beiliegenden Almanach. Ship Builder pflegt und korrigiert diese Spielwerte nicht.",
   "help.section.about": "Über",
   "help.section.faq": "FAQ",
   "help.section.licence": "Lizenz",

@@ -339,13 +339,28 @@ describe('LocaleStore document title', () => {
   });
 
   it('names the page and the application together once a page is set', () => {
+    // The library rather than the catalogue: `catalogue.title` is a phrase the
+    // application name already contains, so a `toContain` pair would pass on
+    // the product name alone and prove nothing about composing anything.
+    const { store, document } = setup();
+    store.commitBundledEnglish();
+
+    store.setRoute({ titleKey: 'library.title', descriptionKey: null, path: '/builds' });
+
+    expect(document.commits.at(-1)?.title).toBe(
+      `${BUNDLED_ENGLISH['library.title']} · ${BUNDLED_ENGLISH['app.name']}`,
+    );
+  });
+
+  it('says the product name once for the screen that is named after it', () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 
     store.setRoute({ titleKey: 'catalogue.title', descriptionKey: null, path: '/ships' });
 
-    expect(document.commits.at(-1)?.title).toContain(BUNDLED_ENGLISH['catalogue.title']);
-    expect(document.commits.at(-1)?.title).toContain(BUNDLED_ENGLISH['app.name']);
+    // `/` redirects here and the sitemap ranks it highest, so this is the
+    // title in the search result that matters most.
+    expect(document.commits.at(-1)?.title).toBe(BUNDLED_ENGLISH['app.document-title.default']);
   });
 
   it('leaves the product name standing for a route that names no page', () => {

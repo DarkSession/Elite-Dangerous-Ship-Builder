@@ -439,11 +439,16 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a session that never applies it is served the newer version the next time it starts, and says nothing about it over a window in which it would have',
       'exactly one polite announcement is published per version revision',
     ],
-    // The shell state where the restart could not be carried out — the notice
-    // and its named control — is scanned by axe in the preview catalogue's
-    // error composition rather than here. No journey can hold it open: in a
-    // real window `location.reload()` does not fail, so the state exists only
-    // where the port can be driven directly.
+    // The shell state where the restart could not be carried out — the polite
+    // notice and the named control beside it — is not swept by axe as one
+    // composition anywhere, and that is a known gap rather than an assumed
+    // scan. No journey can hold it open: in a real window `location.reload()`
+    // does not fail, so the state exists only where the port can be driven
+    // directly, which is `application-update.store.spec.ts` and `app.spec.ts`.
+    // Each half is scanned on its own — the preview catalogue's `status-notice`
+    // default renders an `info` notice, and the frame's `error` composition
+    // renders a shell status beside a primary action carrying its own
+    // description — so what is unscanned is the pairing, not the parts.
     manualRecord: 'screen-reader',
   },
   {

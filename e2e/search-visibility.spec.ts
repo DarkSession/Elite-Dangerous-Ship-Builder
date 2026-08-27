@@ -3,6 +3,7 @@ import { PRODUCT_URL } from './servers';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import { openFirstHullFromManifest } from './shell';
+import { SITE_ORIGIN } from '../src/app/platform/browser/site-address';
 
 /**
  * What this application says about itself to something that is not a Commander.
@@ -19,8 +20,6 @@ import { openFirstHullFromManifest } from './shell';
  * the tags are actually rewritten as a Commander moves between screens, in the
  * language the page is in, with the build kept out of the address.
  */
-
-const SITE_ORIGIN = 'https://sb.edct.dev';
 
 /**
  * One head value, once it has settled.
@@ -43,13 +42,22 @@ test.describe('what the head says this page is', () => {
     await expect(page.getByRole('main')).toBeVisible();
     await description(page).toBe(englishMessages['catalogue.description']);
 
+    await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
+
     await page.goto(`${PRODUCT_URL}/builds`);
     await expect(page.getByRole('main')).toBeVisible();
     await description(page).toBe(englishMessages['library.description']);
+    await expect
+      .poll(() => page.title())
+      .toBe(`${englishMessages['library.title']} · ${englishMessages['app.name']}`);
 
     expect(englishMessages['catalogue.description']).not.toBe(
       englishMessages['library.description'],
     );
+    // The catalogue is the screen named after the product, and its title says
+    // the product name once rather than twice. The library is an ordinary
+    // screen, so the same mechanism composes both halves there.
+    expect(englishMessages['app.document-title.default']).not.toContain(' · ');
   });
 
   test('carries the route into the canonical address and both cards', async ({ page }) => {

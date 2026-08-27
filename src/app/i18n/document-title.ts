@@ -17,8 +17,34 @@ export function resolveDocumentTitle(catalogue: MessageCatalogue, page: string |
     return application;
   }
 
+  // The landing screen is named after the product, so composing it would
+  // publish `Ship Builder · Elite Dangerous Ship Builder` — the product name
+  // twice, on the one address `/` redirects to and the sitemap ranks highest.
+  // A search result that repeats itself is the very thing a per-route title is
+  // for, so a page whose name the application name already contains publishes
+  // the application name alone.
+  if (namesTheApplication(page, catalogue['app.name'])) {
+    return application;
+  }
+
   return interpolate(catalogue['app.document-title'], {
     page,
     app: catalogue['app.name'],
   });
+}
+
+/**
+ * Whether the application name already says what this page is called.
+ *
+ * On whole words rather than on substrings, because `Build` sits inside
+ * `Builder`: a plain `includes` would collapse the workspace's title into the
+ * product name and lose the one word that says which screen it is. The
+ * boundary is "not a letter and not a digit" rather than `\b`, which is
+ * defined on ASCII word characters and would put a boundary inside `Aufbau`
+ * where German needs none.
+ */
+function namesTheApplication(page: string, application: string): boolean {
+  const name = page.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const edge = '[^\\p{L}\\p{N}]';
+  return new RegExp(`(^|${edge})${name}($|${edge})`, 'iu').test(application);
 }

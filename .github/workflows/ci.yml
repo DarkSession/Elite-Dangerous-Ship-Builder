@@ -120,7 +120,7 @@ jobs:
       # every address, which is what a Commander following a deep link needs —
       # but Pages serves it with a 404 status, and a crawler drops a 404 whatever
       # the body says, canonical link included. So each route the sitemap
-      # advertises is also published as a real `index.html` that answers 200.
+      # advertises is also published as a file that answers 200.
       #
       # The route list is read out of `sitemap.xml` rather than written here
       # again: a fifth copy of it could drift from the other four, and this one
@@ -130,23 +130,62 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         working-directory: dist/elite-dangerous-ship-builder/browser
         run: |
+          set -o pipefail
           cp index.html 404.html
-          # `<route>.html`, not `<route>/index.html`. Pages serves `/ships` from
-          # `ships.html` with a 200 and no redirect; from a directory it answers
-          # 301 to `/ships/`, which would make the address the sitemap and the
-          # canonical both advertise the one address that does not answer.
-          routes="$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed -n 's|<loc>https\?://[^/]*/\([^<]\{1,\}\)</loc>|\1|p')"
-          if [ -z "$routes" ]; then
-            echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> with a path to publish."
+          # Comments are cut before the addresses are read, and the surrounding
+          # whitespace is tolerated, so that reformatting the sitemap cannot
+          # quietly remove a route from this list while leaving the policy
+          # checker — which is lenient about both — green.
+          locations="$(sed '/<!--/,/-->/d' sitemap.xml \
+            | tr '\n' ' ' \
+            | grep -o '<loc>[[:space:]]*[^<[:space:]]\{1,\}[[:space:]]*</loc>' \
+            | sed -e 's|<loc>[[:space:]]*||' -e 's|[[:space:]]*</loc>||')"
+          if [ -z "$locations" ]; then
+            echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> to publish."
             exit 1
           fi
-          for route in $routes; do
+          # The origin comes from the sitemap too, for the same reason the routes
+          # do: it is already declared there, and deriving it is one fewer copy.
+          origin="$(printf '%s\n' "$locations" | sed -n '1s|\(https\{0,1\}://[^/]*\).*|\1|p')"
+          if [ -z "$origin" ]; then
+            echo "::error title=Sitemap has no origin::the first <loc> is not an absolute address."
+            exit 1
+          fi
+          printf '%s\n' "$locations" | while IFS= read -r address; do
+            case "$address" in
+              "$origin"/?*) : ;;
+              *) echo "::error title=Foreign or rootless address::\"$address\" is not under $origin." && exit 1 ;;
+            esac
+          done
+          printf '%s\n' "$locations" | while IFS= read -r address; do
+            route="${address#"$origin"/}"
             case "$route" in
               */) echo "::error title=Unpublishable route::\"$route\" ends in a slash." && exit 1 ;;
             esac
+            # `<route>.html`, not `<route>/index.html`. Pages serves `/ships` from
+            # `ships.html` with a 200 and no redirect; from a directory it answers
+            # 301 to `/ships/`, which would make the address the sitemap and the
+            # canonical both advertise the one address that does not answer.
+            #
+            # The copy is not byte-for-byte: the shell ships the root's own
+            # canonical and `og:url`, and a route that kept them would tell a
+            # crawler to index `/` instead — the same outcome the 404 status had,
+            # reached a different way. Both are rewritten to this route's own
+            # address, and the rewrite is checked rather than assumed, because a
+            # silent no-op here looks exactly like a published route.
             mkdir -p "$(dirname "$route")"
-            cp index.html "$route.html"
-            echo "::notice title=Route published::/$route answers 200 from $route.html."
+            sed -e "s|href=\"$origin/\"|href=\"$address\"|" \
+                -e "s|content=\"$origin/\"|content=\"$address\"|" \
+                index.html > "$route.html"
+            if ! grep -q "rel=\"canonical\"[^>]*href=\"$address\"" "$route.html"; then
+              echo "::error title=Canonical not rewritten::$route.html still names another address."
+              exit 1
+            fi
+            if ! grep -q "property=\"og:url\"[^>]*content=\"$address\"" "$route.html"; then
+              echo "::error title=og:url not rewritten::$route.html still names another address."
+              exit 1
+            fi
+            echo "::notice title=Route published::/$route answers 200 from $route.html, canonical $address."
           done
 
       - name: Upload the build as a Pages artifact

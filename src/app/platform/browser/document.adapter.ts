@@ -76,10 +76,11 @@ export class DocumentAdapter {
     root.lang = state.language;
     root.dir = state.direction;
 
-    const title = state.title !== null && state.title.length > 0 ? state.title : this.title;
-    if (state.title !== null && state.title.length > 0) {
-      this.#document.title = state.title;
+    const published = state.title !== null && state.title.length > 0 ? state.title : null;
+    if (published !== null) {
+      this.#document.title = published;
     }
+    const title = published ?? this.title;
 
     if (state.description.length > 0) {
       this.#meta('name', 'description', state.description);
