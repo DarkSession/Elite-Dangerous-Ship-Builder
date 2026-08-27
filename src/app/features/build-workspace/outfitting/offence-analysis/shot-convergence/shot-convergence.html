@@ -20,14 +20,14 @@
     <span class="plate__axis plate__axis--horizontal"></span>
 
     <!--
-      The boresight the 2026-08-26 revision adds: a hairline ring on the axis
-      with a filled dot at its centre. It is where the hull points, so it is
-      what every shot is offset *from* — the one mark on this plate that is a
-      property of the drawing rather than of the build, which is why it takes
-      no state and needs no sentence of its own.
+      The boresight the 2026-08-26 revision adds: a hairline ring on the axis.
+      It is where the hull points, so it is what every shot is offset *from* —
+      the one mark on this plate that is a property of the drawing rather than
+      of the build, which is why it takes no state and needs no sentence of its
+      own. The canvas's filled dot at its centre is withdrawn (2026-08-27): on a
+      plate of dots it read as a shot landing dead on the axis.
     -->
     <span class="plate__boresight"></span>
-    <span class="plate__boresight-centre"></span>
 
     <!--
       The two dashed rings. Each is a circle in *angle*, and on a box that is
@@ -51,20 +51,23 @@
       the list below, along with the one the plate does not draw at all: how
       each weapon aims.
 
-      Nothing is clipped either: a shot far enough off-axis is held at the
-      frame's own margin, because the field of view is a property of the
-      drawing and never widens to fit a build. That is exactly the case where
-      the sentence beside the plate is the true reading, and it states the
-      offset and angle the shot really has (FR-011).
+      A shot the frame cannot hold is left off it rather than pinned to the
+      edge, because the field of view is a property of the drawing and never
+      widens to fit a build. At a short enough range that is most of a hull's
+      mounts, and it is exactly the case where the sentence beside the plate is
+      the reading: it states the offset and the angle the shot really has,
+      whether or not there is a dot for it (FR-011).
     -->
     @for (shot of shots(); track shot.id) {
-      <span
-        class="plate__dot"
-        [class.plate__dot--empty]="!shot.armed"
-        [class.plate__dot--selected]="shot.selected"
-        [style.left.%]="shot.left"
-        [style.top.%]="shot.top"
-      ></span>
+      @if (shot.onPlate) {
+        <span
+          class="plate__dot"
+          [class.plate__dot--empty]="!shot.armed"
+          [class.plate__dot--selected]="shot.selected"
+          [style.left.%]="shot.left"
+          [style.top.%]="shot.top"
+        ></span>
+      }
     }
   </div>
 

@@ -111,11 +111,13 @@
     padding-inline: var(--edsb-space-region);
   }
 
-  // Canvas 1c's two tracks, each bounded at the width the canvas gives it and
-  // centred in whatever it is given beyond that. A plate's height follows its
-  // width, so tracks that took every pixel of a 2560px column drew a block
-  // taller than half the screen for two drawings that were already finished at
-  // 1560 (Commander request 2026-08-26; `--edsb-measure-anatomy-plate`).
+  // Canvas 1c's two tracks, each bounded and centred in whatever it is given
+  // beyond that. A plate's height follows its width, so tracks that took every
+  // pixel of a 2560px column drew a block taller than half the screen for two
+  // drawings that were already finished at 1560 (Commander request 2026-08-26).
+  // The bound is the canvas's own width plus two fifths, which is a second
+  // Commander request against the first (2026-08-27;
+  // `--edsb-measure-anatomy-plate`).
   .anatomy__plates {
     grid-template-columns: repeat(2, minmax(0, var(--edsb-layout-anatomy-plate)));
     justify-content: center;

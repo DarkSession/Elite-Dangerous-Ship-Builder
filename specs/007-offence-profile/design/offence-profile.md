@@ -131,7 +131,12 @@ are fields no canvas ever drew.
 - The gunsight plate is the canvas's: **40 milliradians** either side of the axis on **both** axes,
   square in angle, with the canvas's two dashed rings at a third and two thirds of that half field —
   circles in angle, so their pixel height is corrected for the box's own aspect. _(Redrawn by the
-  2026-08-25 canvas revision, which had it at 115 milliradians over a six-sixteenths box.)_
+  2026-08-25 canvas revision, which had it at 115 milliradians over a six-sixteenths box.)_ It is
+  drawn at `14rem` — 224px against the canvas's 172px — which is what the bounded block has room for
+  beside its range column _(Commander request 2026-08-27)_.
+- **The boresight is a ring and nothing inside it.** The canvas puts a filled dot at its centre; on a
+  plate whose only marks are dots that reads as a shot landing dead on the axis, so it is withdrawn
+  _(Commander request 2026-08-27)_.
 - **One mark per hardpoint, and one only** — a dot where the package projects that mount's shot at
   the chosen range _(Commander request 2026-08-27)_. The hardpoint numeral that used to stand beside
   it is withdrawn, along with the placement that kept numerals clear of one another, the leaders and
@@ -149,16 +154,19 @@ are fields no canvas ever drew.
 - **The plate is a diagram and is hidden from assistive technology.** Every mark it draws is also a
   sentence beside it: a shot naming its weapon, its place in the hull's hardpoint order, how it is
   aimed and where its shot goes; and the ring caption, which is the one figure the plate draws that
-  the four cells beneath it do not repeat. A shot the field of view does not reach is **clamped to
-  the frame's own margin**, where the revised script puts it; its sentence still states its true
-  offset and angle at that range, exactly as at any other. The field of view is a property of the
-  drawing and never widens to fit a build.
-- The target range is a range field over 500 m to 5,000 m on a 100 m step, starting at 1,000 m,
+  nothing beside it repeats. A shot the field of view does not reach is **not drawn at all**
+  _(Commander request 2026-08-27)_; its sentence still states its true offset and angle at that
+  range, exactly as at any other, and for that mount it is the only statement there is. The field of
+  view is a property of the drawing and never widens to fit a build, and a mark held at the frame —
+  which is what the canvas's own script does — reports a shot landing where it does not.
+- The target range is a range field over 500 m to 3,000 m on a 50 m step, starting at 1,500 m,
   announcing the distance as a Commander reads it rather than as a bare number. Those are the
   maintainer's bounds rather than the canvas's own 100 m–2,000 m: a weapon on this application's
   reference hull states a maximum range of 3,000 m, and a track that stopped short of it could not
-  be moved to the distance being asked about (`design/canvas-contract.md`, review note 18). It is
-  the one control this panel owns, and it sets nothing outside the panel.
+  be moved to the distance being asked about (`design/canvas-contract.md`, review notes 18 and 21).
+  It stops there rather than at the 5,000 m it reached between 2026-08-26 and 2026-08-27, because
+  past the range a weapon reaches every shot has converged and each further step draws the same
+  picture. It is the one control this panel owns, and it sets nothing outside the panel.
 - Four facts under the plate: the lateral span, the vertical span, the apparent spread at the chosen
   range, and the widest mount by its place in the hull's hardpoint order. The two spans are distances
   between mounts and do not move with the range; the spread does. All four are about a group of
@@ -207,27 +215,27 @@ are fields no canvas ever drew.
 
 ## State behavior
 
-| State                                    | Presentation                                                                           |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| Workspace no build                       | Feature 001's no-build state; this panel draws nothing and calls nothing               |
-| Complete populated                       | Exact totals, damage types, capacitor and every returned weapon field                  |
-| Confirmed no fitted weapons              | Explicit empty meaning, with the package's own zero totals beside it                   |
-| Coverage unavailable                     | Explicit qualification; no fabricated output and no false empty claim                  |
-| Some or all returned weapons disabled    | Full rows with exact enabled flags and the package's own totals                        |
-| Genuine zero weapon                      | Complete row including numeric zero in every drawn column                              |
-| Unclassified absent                      | No segment, no legend line and no stated zero — and never unavailable                  |
-| Range or piercing member absent          | Field-specific not stated, never numeric zero                                          |
-| No conventional damage dealt             | No bar and no legend: nothing is drawn and no zero is stated                           |
-| Nothing landing at any range band        | Four stated figures and no track at all, rather than four empty bars                   |
-| Finite, immediate or infinite endurance  | The exact field, or `∞` with what it stands for said beside it                         |
-| Zero capacity                            | The package's own zero, with no cause attached                                         |
-| Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                              |
-| A placed hull with nothing armed         | The plate with its axes, its rings and every mount drawn empty; none of the four facts |
-| A hardpoint with nothing fitted to it    | The same dot in the stale amber, and a sentence naming it as empty                     |
-| The mount the workspace has selected     | The plate's third ink, and a sentence naming it as selected. No ring, no outline       |
-| An empty hardpoint that is also selected | The selected ink, with the sentence saying both: one mark carries one fill             |
-| A shot outside the plate's field of view | Held at the frame's own margin, and stated at its true angle beside it                 |
-| A plate too crowded to separate two dots | Both dots drawn where the shots land; their two sentences state the two offsets        |
+| State                                    | Presentation                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------------- |
+| Workspace no build                       | Feature 001's no-build state; this panel draws nothing and calls nothing         |
+| Complete populated                       | Exact totals, damage types, capacitor and every returned weapon field            |
+| Confirmed no fitted weapons              | Explicit empty meaning, with the package's own zero totals beside it             |
+| Coverage unavailable                     | Explicit qualification; no fabricated output and no false empty claim            |
+| Some or all returned weapons disabled    | Full rows with exact enabled flags and the package's own totals                  |
+| Genuine zero weapon                      | Complete row including numeric zero in every drawn column                        |
+| Unclassified absent                      | No segment, no legend line and no stated zero — and never unavailable            |
+| Range or piercing member absent          | Field-specific not stated, never numeric zero                                    |
+| No conventional damage dealt             | No bar and no legend: nothing is drawn and no zero is stated                     |
+| Nothing landing at any range band        | Four stated figures and no track at all, rather than four empty bars             |
+| Finite, immediate or infinite endurance  | The exact field, or `∞` with what it stands for said beside it                   |
+| Zero capacity                            | The package's own zero, with no cause attached                                   |
+| Gunsight unavailable for the hull        | Stated in words; no plate, no facts and no partial spread                        |
+| A placed hull with nothing armed         | The plate with its axes, its rings and every mount it can hold drawn empty       |
+| A hardpoint with nothing fitted to it    | The same dot in the stale amber, and a sentence naming it as empty               |
+| The mount the workspace has selected     | The plate's third ink, and a sentence naming it as selected. No ring, no outline |
+| An empty hardpoint that is also selected | The selected ink, with the sentence saying both: one mark carries one fill       |
+| A shot outside the plate's field of view | Not drawn; stated at its true offset and angle in the sentence beside the plate  |
+| A plate too crowded to separate two dots | Both dots drawn where the shots land; their two sentences state the two offsets  |
 
 ## Status contribution
 

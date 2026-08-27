@@ -192,15 +192,16 @@ modelled and no offset is derived (`spec.md` FR-010).
 ```ts
 export const FIELD_OF_VIEW_MILLIRADIANS = 40;
 export const PLATE_MARGIN_FRACTION = 0.92;
-export const TARGET_RANGE = { min: 500, max: 5000, step: 100, initial: 1000 } as const;
+export const TARGET_RANGE = { min: 500, max: 3000, step: 50, initial: 1500 } as const;
 ```
 
 These are properties of the **drawing**. The first two are the canvas's own
 script's (`wireConvergence`), and the 2026-08-25 canvas revision changed both.
 The third is not: the canvas's track runs `100`–`2000` on a `25` step and opens
-at `600`, and these bounds are the maintainer's, set on 2026-08-26 so the track
-reaches past a real weapon's maximum range (`design/canvas-contract.md`, review
-note 18). None of the three changes a figure — each decides what the plate shows
+at `600`, and these bounds are the maintainer's: the track reaches the longest
+maximum range the package publishes for a weapon on this hull and stops there,
+because past it every shot has converged (`design/canvas-contract.md`, review
+notes 18 and 21; the ceiling was `5000` between 2026-08-26 and 2026-08-27). None of the three changes a figure — each decides what the plate shows
 and at what distance the package is asked, never what it answers. The plate is square in _angle_ — both axes map over the same field of
 view — and the box it is drawn in is square too, which is what makes that
 mapping level: a milliradian then covers the same number of pixels up as
@@ -209,13 +210,16 @@ across. The script's correction of a ring's height by the box's own
 pixels as well as in angle and the plate draws it as `aspect-ratio: 1` rather
 than measuring anything.
 
-A shot further off the axis than the plate shows is **clamped** to the frame's
-own margin rather than clipped out of it: `PLATE_MARGIN_FRACTION` is the
-canvas's `clamp(50 ± mrad / FOV × 50, 4, 96)` written as the fraction of the
-half plate it works out to. The field of view never moves to accommodate a
-build, so a clamped mark is exactly the case where the sentence stated beside
-the plate — which carries the offset and the angle the shot actually has, never
-the clamped one — is the true reading (`spec.md` FR-011).
+A shot further off the axis than the plate shows is **not drawn**:
+`PLATE_MARGIN_FRACTION` is the canvas's `clamp(50 ± mrad / FOV × 50, 4, 96)`
+written as the fraction of the half plate it works out to, and read as the bound
+past which a mount has no mark rather than as a place to pin one
+(`ConvergencePoint.onPlate`, from 2026-08-27). The field of view never moves to
+accommodate a build, and a mark held at the margin says a shot lands where it
+does not. `horizontal` and `vertical` therefore carry the shot's own unbounded
+fraction, and the sentence stated beside the plate — which carries the offset and
+the angle the shot actually has — is the whole reading for that mount
+(`spec.md` FR-011).
 
 `convergenceAt(convergence, metres)` asks `projectGunsight` where the shots go at
 one range and returns their positions as fractions of the plate, the diagonal of

@@ -482,8 +482,7 @@
   --edsb-measure-weapon-module: 9.6875rem;
 
   // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
-  // box square in pixels, and a 7px dot where each shot lands with the mount's
-  // hardpoint numeral set beside it.
+  // box square in pixels, with a 7px dot where each shot lands.
   //
   // The box is square because the plate is square in *angle* — the script maps
   // both axes over the same field of view and corrects a ring's height by the
@@ -494,14 +493,22 @@
   // drawing kept a `16 / 6` box level by dividing its vertical axis by a
   // narrower field; the revision squares the box instead, and this follows it.
   //
-  // Drawn at `8rem` rather than the canvas's own `172px`, from 2026-08-26. The
-  // plate is decorative in full — every mark on it is a sentence beside it — and
-  // at the canvas's width it was the tallest thing in the offence panel, setting
-  // the whole convergence block's height on its own. Squareness is the property
-  // that matters, not the number of pixels: every mark is placed as a fraction
-  // of the plate rather than in pixels, so it is the same diagram at either
-  // size (`design/canvas-contract.md`, review note 18).
-  --edsb-measure-gunsight-plate: 10.75rem;
+  // Drawn at `14rem` — 224px — rather than the canvas's own 172px, from
+  // 2026-08-27 (Commander request). The size has moved twice before: `8rem` on
+  // 2026-08-26, because at the canvas's width the plate was the tallest thing in
+  // an offence panel that then ran the full width of the column, and back to
+  // 172px later the same day with the block still unbounded. Now that the block
+  // stops at the canvas's own 508px, the plate is no longer setting a whole
+  // panel's height, and 172px inside a 508px frame is a small drawing with air
+  // around it. 224px is what the bounded block has room for: 508 less its two
+  // 18px insets and the 22px gap leaves 226px for the range column beside it,
+  // which is about what that column asks for.
+  //
+  // Squareness is the property that matters, not the number of pixels: every
+  // mark is placed as a fraction of the plate rather than in pixels, so it is
+  // the same diagram at every size it has been drawn at
+  // (`design/canvas-contract.md`, review notes 18 and 21).
+  --edsb-measure-gunsight-plate: 14rem;
   --edsb-measure-shot-dot: 0.4375rem;
 
   // How wide the `SHOT CONVERGENCE` block itself is allowed to get.

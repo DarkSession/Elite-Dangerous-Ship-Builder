@@ -1,10 +1,10 @@
 @use '../../../../../../styles/responsive' as layout;
 
-// Canvas 1c's `SHOT CONVERGENCE`: a square gunsight plate, the range it is drawn
-// at, and four cells reporting the spread. The block's own frame and its heading
-// line — which since the 2026-08-25 canvas revision carries the ring caption —
-// are the panel's, and stay with it; everything here is the content inside that
-// frame.
+// Canvas 1c's `SHOT CONVERGENCE`: a square gunsight plate and the range it is
+// drawn at. The block's own frame and its heading line are the panel's, and stay
+// with it; everything here is the content inside that frame. The four fact cells
+// and the ring caption that used to stand with them are withdrawn — the
+// 2026-08-26 canvas draws neither.
 :host {
   display: block;
   min-inline-size: 0;
@@ -23,10 +23,10 @@
   min-inline-size: 0;
 }
 
-// The range and the four cells: one column beside the plate, and the whole
-// width beneath it once it cannot be. The basis is what it takes for the
-// canvas's four fact cells to stand as more than one column; below that the
-// row wraps rather than squeezing them.
+// The range: a column beside the plate, and the whole width beneath it once it
+// cannot be. The basis is what the range field needs before its label, its value
+// and its two end labels start wrapping over each other; below that the row
+// wraps and the range takes the width under the plate instead.
 .convergence__readout {
   @include layout.stack(var(--edsb-space-stack));
 
@@ -91,10 +91,14 @@
 }
 
 // The boresight the 2026-08-26 revision adds: where the hull itself points.
-// A hairline ring on the axis with a filled dot at its centre, so a Commander
-// reads a shot's offset against the ship's own line rather than against the
-// middle of a box. Sized in the plate's own width so it holds its proportion
-// at every size the block is given.
+// A hairline ring on the axis, so a Commander reads a shot's offset against the
+// ship's own line rather than against the middle of a box. Sized in the plate's
+// own width so it holds its proportion at every size the block is given.
+//
+// The canvas draws a filled dot at its centre as well; it is withdrawn
+// (Commander request 2026-08-27). On a plate whose marks are now dots and
+// nothing else, a dot in the middle of the boresight reads as a shot landing
+// dead on the axis, which is the one thing it is not.
 .plate__boresight {
   position: absolute;
   left: 50%;
@@ -103,18 +107,6 @@
   inline-size: 11.6%;
   aspect-ratio: 1;
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
-  border-radius: 50%;
-}
-
-.plate__boresight-centre {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: 50%;
-  translate: -50% -50%;
-  inline-size: 1.75%;
-  aspect-ratio: 1;
-  background-color: var(--edsb-text-accent);
   border-radius: 50%;
 }
 

@@ -110,9 +110,17 @@ plate holds its whole document at its own ratio at every width.
   hulls held to the canvas's own width on a 2560 screen are a schematic a Commander has to lean into,
   and the block that was too large at every width was then too small at the ones that have room. The
   measure is that same number plus 40% — 566px a plate against 404 — which still stops the runaway
-  (a 1920 column would hand each plate 583px unbounded, a 2560 one 800px) while giving the drawing
-  the room the screen actually has. The ratio, the marks and the threshold at which the second plate
-  appears are all untouched: this moves one number.
+  while giving the drawing the room the screen actually has. The ratio, the marks and the threshold
+  at which the second plate appears are all untouched: this moves one number.
+
+  The two paragraphs measure different things, and both are right. A plate's width is the centre
+  column less the two rails (`24.5rem` and `19.125rem`), less the block's own `22px` inset either
+  side and the `10px` between the plates, halved: 404px at 1560, 584px at 1920, 904px at 2560 — the
+  first of which is this token's own value, which is how the derivation is checked. The heights
+  above are the **block's**, plate plus the header and legend around it: 164 + 118 = 282 at 1560,
+  237 + 118 = 355 at 1920, 367 + 118 = 485 at 2560. So the new bound binds from 1560 up, and at
+  1440 — the width the end-to-end desktop project runs at — neither bound is reached and nothing
+  moves.
 
 - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel path data, and what a
   plate needs out of it is the drawing's box, the rectangle it draws in and the middle of every

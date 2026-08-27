@@ -726,7 +726,8 @@ bound this document's own reading had missed (`design/canvas-contract.md`, revie
       was already the first thing that mount's sentence says. The three states become three fills of
       one shape: the empty mount's outline goes with the numerals and
       `--edsb-surface-mount-empty` becomes the armed amber gone stale
-      (`--edsb-palette-amber-deep`, 4.08:1 on the plate's ground) rather than a text ink, and the
+      (`--edsb-palette-amber-deep`, 3.62:1 against the worst stripe of the plate's hatch) rather
+      than a text ink, and the
       selection ink wins over it where a selected hardpoint is empty. Every fact stays in the
       mount's own sentence, unchanged (`spec.md` FR-011, FR-012, FR-013).
       _`src/styles/tokens/_semantic.scss`, `shot-convergence.{ts,html,scss}` and its suite,
@@ -741,6 +742,42 @@ bound this document's own reading had missed (`design/canvas-contract.md`, revie
       selected mount's number off the numeral drawn beside its dot. It now ties the mark to its
       sentence by their shared place in one list rendered twice, and reads the hardpoint out of the
       catalogue template's own `{{hardpoint}}` slot._
+
+## Phase 11: The plate a Commander actually reads
+
+Four more from the same day, after seeing Phase 10 drawn, plus the findings a review of it raised.
+All four are the drawing again; no figure moves (`design/canvas-contract.md`, review note 21).
+
+- [x] T063 Draw the plate at `14rem` — 224px against the canvas's 172px. With the block bounded at
+      508px the plate no longer sets the panel's height, and 172px inside that frame is a small
+      drawing with air around it. 224px is what the bounded block has room for: 508 less its two
+      18px insets and the 22px gap leaves 226px for the range column beside it.
+      _`src/styles/tokens/_primitives.scss`._
+- [x] T064 Leave a shot outside the field of view **off the plate** instead of holding it at the
+      frame. `PLATE_MARGIN_FRACTION` stops being a clamp and becomes the bound past which a mount is
+      not drawn: `ConvergencePoint` gains `onPlate`, `horizontal` and `vertical` carry the shot's own
+      unbounded fraction, and the template draws the marks that fit. Every mount keeps its sentence,
+      which is now the only statement of a shot the plate cannot show — the first thing on this plate
+      that is text-only (`spec.md` FR-011, FR-012).
+      _`src/app/domain/offence/convergence.ts` and its suite, `shot-convergence.{ts,html}` and its
+      suite, `e2e/offence-profile.spec.ts`, `e2e/coverage-ledger.ts`._
+- [x] T065 Stop the target-range track at 3,000 m. Review note 18's 5,000 m reached past a weapon's
+      maximum range; 3,000 m _is_ the longest the package publishes for a weapon on this hull, and
+      past it every shot has converged and each further step draws the same picture.
+      _`src/app/domain/offence/convergence.ts` and its suite._
+- [x] T066 Withdraw the filled dot at the boresight's centre. The canvas draws one; on a plate whose
+      only marks are dots it reads as a shot landing dead on the axis. The ring stays.
+      _`shot-convergence.{html,scss}` and its suite, `e2e/offence-profile.spec.ts`._
+- [x] T067 Close the review's findings on Phase 10: the empty ink's contrast is stated as measured
+      (3.62:1 against the worst stripe of the plate's hatch, not the 4.08:1 first written down) and
+      recorded in feature 011's `design/token-evidence.md` beside the other two mount inks; FR-011's
+      "no distinction rests on colour alone" is withdrawn and replaced by what is actually true of
+      this plate; the stale comments Phase 10 left in `_primitives.scss`, `shot-convergence.scss`
+      and `hull-anatomy.scss` are corrected; the canvas's `13px 14px` inset for block 3 is recorded
+      as deliberately not adopted; and the two layout numbers now have end-to-end guards — the
+      block's own bound, and the empty mark being filled rather than outlined.
+      _`spec.md`, `design/canvas-contract.md`, `specs/011-interface-foundations/design/token-evidence.md`,
+      `specs/010-hull-anatomy/design/hull-anatomy.md`, `e2e/offence-profile.spec.ts`._
 
 ---
 
@@ -767,6 +804,8 @@ bound this document's own reading had missed (`design/canvas-contract.md`, revie
   other; T059 depends on all three.
 - Phase 10 depends on Phase 9 and withdraws part of what Phases 7 to 9 drew. T060 and T061 are
   independent of each other; T062 depends on both.
+- Phase 11 depends on Phase 10. T063 to T066 are independent of each other; T067 answers a review of
+  Phase 10 and touches what T060 and T061 wrote.
 
 ### Parallel opportunities
 

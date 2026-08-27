@@ -183,14 +183,16 @@ describe('ShotConvergence', () => {
     expect(component.shots().map((shot) => shot.left)).not.toEqual(near);
   });
 
-  it('draws the boresight the hull points along, and no cells beneath the plate', () => {
+  it('draws the boresight ring the hull points along, and nothing at its centre', () => {
     const { element } = render();
 
-    // The 2026-08-26 revision adds the ring and centre dot that mark where the
-    // ship itself is aimed, and withdraws the four cells — the two spans, the
-    // widest mount and the apparent spread — along with the ring caption.
+    // The 2026-08-26 revision adds the ring that marks where the ship itself is
+    // aimed, and withdraws the four cells — the two spans, the widest mount and
+    // the apparent spread — along with the ring caption. The canvas's filled dot
+    // at the ring's centre went on 2026-08-27: on a plate whose marks are dots
+    // it read as a shot landing dead on the axis.
     expect(element.querySelector('.plate__boresight')).not.toBeNull();
-    expect(element.querySelector('.plate__boresight-centre')).not.toBeNull();
+    expect(element.querySelector('.plate__boresight-centre')).toBeNull();
     expect(element.querySelector('.fact')).toBeNull();
     expect(element.querySelector('.facts')).toBeNull();
   });
@@ -203,7 +205,7 @@ describe('ShotConvergence', () => {
     // numeral that replaced them, along with the leaders a crowded plate drew
     // to reach one. What is left is one dot a mount, and the mount's number is
     // in its own sentence beside the plate.
-    const marks = component.shots().length;
+    const marks = component.shots().filter((shot) => shot.onPlate).length;
     expect(marks).toBeGreaterThan(0);
     expect(element.querySelectorAll('.plate__dot')).toHaveLength(marks);
     expect(element.querySelector('.plate__shot')).toBeNull();
@@ -216,36 +218,41 @@ describe('ShotConvergence', () => {
     expect((element.querySelector('.plate')?.textContent ?? '').trim()).toBe('');
   });
 
-  it('holds a shot outside the field of view at the frame, and states where it really goes', () => {
-    const { component, detect } = render();
+  it('leaves a shot outside the field of view off the plate, and still states it', () => {
+    const { component, element, detect } = render();
 
-    // A hundred metres puts this hull's widest mounts far outside the plate's
-    // forty milliradians.
+    // The track's shortest range puts this hull's widest mounts far outside the
+    // plate's forty milliradians.
     component.setTargetRange(component.rangeBounds.min);
     detect();
 
-    // The margin, to the place a percentage of a plate is drawn at.
-    const at = (percent: number) => Math.round(percent * 1e6) / 1e6;
     const marks = component.shots();
-    for (const shot of marks) {
-      // Nothing leaves the plate: the canvas clamps to a 4% margin, so no mark
-      // is drawn outside it and none is dropped.
+    const drawn = marks.filter((shot) => shot.onPlate);
+
+    // Something is actually left off at this range — the rule is a rule rather
+    // than a bound nothing reaches — and only the marks that fit are drawn.
+    expect(drawn.length).toBeLessThan(marks.length);
+    expect(element.querySelectorAll('.plate__dot')).toHaveLength(drawn.length);
+
+    // Every mark that is drawn stands inside the frame's own 4% margin.
+    const at = (percent: number) => Math.round(percent * 1e6) / 1e6;
+    for (const shot of drawn) {
       expect(at(shot.left)).toBeGreaterThanOrEqual(4);
       expect(at(shot.left)).toBeLessThanOrEqual(96);
       expect(at(shot.top)).toBeGreaterThanOrEqual(4);
       expect(at(shot.top)).toBeLessThanOrEqual(96);
-      // And every one of them still says what it actually does.
-      expect(shot.statement).not.toBe('');
     }
-    // The clamp is reached rather than being a bound nothing touches — on
-    // whichever axis reaches it first. This hull's mounts sit far below the
-    // cockpit and much less far to either side of it, so at the track's own
-    // shortest range it is the vertical axis that runs out of plate.
-    expect(
-      marks.some((shot) =>
-        [shot.left, shot.top].some((fraction) => at(fraction) === 4 || at(fraction) === 96),
-      ),
-    ).toBe(true);
+
+    // And every mount is still stated in words, drawn or not: a shot the plate
+    // cannot show is exactly the one whose sentence is the only reading of it.
+    const stated = [...element.querySelectorAll('.shots__entry')].map((entry) =>
+      (entry.textContent ?? '').trim(),
+    );
+    expect(stated).toHaveLength(marks.length);
+    for (const shot of marks) {
+      expect(shot.statement).not.toBe('');
+      expect(stated).toContain(shot.statement);
+    }
   });
 
   it('offers the range as a real control, with its value announced', () => {

@@ -34,6 +34,17 @@ export interface ShotView {
   readonly left: number;
   readonly top: number;
   /**
+   * Whether this mount is drawn on the plate at all.
+   *
+   * A shot further off-axis than the plate shows is left off it rather than
+   * pinned to the frame (Commander request 2026-08-27) — at a short range that
+   * is most of a hull's mounts, and a row of dots along the edge reported a
+   * spread no build has. The mount keeps its sentence below either way, and
+   * that sentence carries the offset and the angle it really has, so the
+   * reading is the same whether or not the plate can show the mark (FR-011).
+   */
+  readonly onPlate: boolean;
+  /**
    * Whether a weapon is fitted here.
    *
    * An empty hardpoint is drawn as the mount it is — the offset is the hull's,
@@ -137,11 +148,11 @@ export class ShotConvergence {
    * That is what carries the two things the inks separate — armed against
    * empty, and the selected mount against the rest — neither of which may rest
    * on a colour alone, and it is the only place how a weapon aims is said at
-   * all, and the only place a mount's hardpoint number is now printed. Since
-   * the 2026-08-25 canvas revision a shot outside the plate's field of view is
-   * held at the frame's own margin rather than clipped out of it, so a moved
-   * dot is exactly the case where its sentence — which carries the offset and
-   * the angle it actually has — is the true reading.
+   * all, and the only place a mount's hardpoint number is now printed. It is
+   * also the whole of what a Commander is told about a shot the plate cannot
+   * show: since 2026-08-27 a mount whose shot falls outside the frame is not
+   * drawn, and its sentence — which carries the offset and the angle it
+   * actually has — is then the only place that shot appears at all.
    */
   readonly shots = computed<readonly ShotView[]>(() => {
     const selectedSlot = this.selectedSlot();
@@ -159,6 +170,7 @@ export class ShotConvergence {
         id: mount.slot,
         left: (1 + point.horizontal) * HALF_PLATE_PERCENT,
         top: (1 - point.vertical) * HALF_PLATE_PERCENT,
+        onPlate: point.onPlate,
         armed: weapon !== null,
         selected,
         // Four whole sentences rather than one with a state appended to it.

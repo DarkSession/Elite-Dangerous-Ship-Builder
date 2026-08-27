@@ -206,7 +206,7 @@ canonical package text; no private game translation is allowed.
 - Cover present/absent effective ranges and absent piercing.
 - Prove convergence resolves slots through the hull layout, rejects a mismatched gunsight whole, and
   moves every shot — and no span — when the target range moves.
-- Prove a shot outside the plate's field of view is clamped to the frame's own margin rather than
-  leaving it, that it keeps its sentence, and that the sentence states the angle the shot actually
-  makes rather than the one it was drawn at.
+- Prove a shot outside the plate's field of view is left off the plate rather than held at its
+  margin, that it keeps its sentence, and that the sentence states the angle the shot actually
+  makes rather than any drawn approximation of it.
 - Prove no weapon row carries a control.
