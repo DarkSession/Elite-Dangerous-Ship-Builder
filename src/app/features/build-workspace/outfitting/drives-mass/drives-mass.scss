@@ -191,19 +191,29 @@
 }
 
 // The canvas's `OPTIMAL 1,260 t` and `MAX 1,890 t`, each under the position it
-// marks — and both on the one line the canvas draws them on, because the maximum
-// is the end of the track and belongs beside it rather than two lines below it.
+// marks. Both stay in the flow of this row rather than being pinned over it, and
+// the row wraps: where the pair fits on the line under the bar it is drawn
+// there, and where it does not the maximum takes a line of its own instead of
+// the two readings painting across each other (Commander request 2026-08-26,
+// "if there is space").
 //
-// One grid cell holds both, so there is no line for either to be pushed off. An
-// earlier pass ran them through a wrapping flex row, on the reasoning that a
-// doubled text size in German would drop the maximum to a line of its own rather
-// than let the two paint across each other. Measured, that wrap was the ordinary
-// case and not the exception: an Anaconda centres `Optimal 1,296 t` on a tick
-// 240px along a 360px track, five pixels past where `Max 1,944 t` starts. The
-// guard is the cap below instead, which never costs the maximum its line.
+// **A pass that forced them onto one line is what this reverses, and the
+// measurements are why.** The two shared a grid cell, with the optimal's box
+// capped at twice the room left between its tick and the words at the end. The
+// cap is sound arithmetic and the geometry defeats it: an Anaconda's optimal
+// tick stands two thirds along the track, so the room either side of it is
+// less than the label needs at every width this card is given. At 1440 the cap
+// came out at 40px and stacked `Optimal 1,440 t` over three lines; at 390, in
+// German at a doubled text size, the tick fell *inside* the maximum's own words
+// and the cap collapsed to nothing — a column one character wide and three
+// hundred pixels tall. There is no width at which a label centred on that tick
+// and a label at the end of the track both fit, so "on one line if there is
+// space" is answered here by a row that measures the space rather than by a
+// rule that assumes it.
 .drives__mass-marks {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--edsb-space-inline);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -212,7 +222,6 @@
 .drives__mass-mark {
   @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
-  grid-area: 1 / 1;
   min-inline-size: 0;
   // `Optimal` is one word in both languages, but the mass beside it is not, and
   // this row is the narrowest thing on the card.
@@ -232,41 +241,11 @@
 // The optimal mark is centred on its own tick, the way the canvas centres it:
 // the offset that puts it there is the margin, and the half-width that centres
 // it is the translation.
-//
-// The cap is what keeps it off the maximum at the end of the row. It is twice
-// the room between the tick and the words down there, because a centred label
-// spends that room in both directions at once — so where a long figure or a long
-// translation would reach them, the mark wraps its name over its own figure and
-// stays centred on the tick, rather than either reading being painted over the
-// other.
-//
-// **No floor under it, and the floor is why this is written down.** One was
-// tried, set above the widest figure so a squeeze could cost a mark its line but
-// never break a number across two. Measured, it was the thing doing the damage:
-// at the width this card is actually given the cap works out at 40px and the
-// floor held the label at 56, which put its box eight pixels past where the
-// maximum's own words begin — and at a doubled text size, twelve. A floor is a
-// promise that a box will not get smaller than a number, and this row cannot
-// keep it: the room either side of the tick is whatever the bar leaves, and past
-// a certain size there is not enough of it for the figure at all. Between a
-// number that wraps and two readings painted over each other, the wrap is the
-// one a Commander can still read.
-// Unprefixed on purpose. The `--edsb-` names are design tokens — decisions the
-// token layer owns and every stylesheet reads — and this is nothing of the kind:
-// it is one element's own position, written on that element by the template and
-// read back one line later. A token-shaped name for a per-element value would
-// send the next reader looking for a declaration in `_primitives.scss` that is
-// not there and should not be.
 .drives__mass-mark--pinned {
   position: relative;
-  justify-content: center;
   transform: translateX(-50%);
-  margin-inline-start: var(--mass-mark-position, 0%);
   inline-size: max-content;
-  max-inline-size: max(
-    0%,
-    (100% - var(--mass-mark-position, 0%) - var(--edsb-layout-mass-mark-reserve)) * 2
-  );
+  max-inline-size: 100%;
 }
 
 // The offset above is logical and the translation that centres the mark on it is
@@ -278,10 +257,10 @@
   transform: translateX(50%);
 }
 
-// The maximum is where the track stops, so it is set against the end of the row,
-// on the line under the bar and on no other.
+// The maximum is where the track stops, so it is set against the end of the row
+// — on the first line while the pair fits, and on its own line once it does not.
 .drives__mass-mark--end {
-  justify-self: end;
+  margin-inline-start: auto;
 }
 
 // The canvas's two legends — the parts of the mass bar under one card, the

@@ -95,13 +95,11 @@
           they mark: the optimal under its own tick, the maximum at the end of
           the track, which is where the maximum is.
 
-          Both share one row and one line, which is the line the canvas draws
-          them on: the maximum is where the track stops, so it is read with the
-          track rather than two lines under it. Where a long translation would
-          carry the optimal's label into the maximum, the label wraps over its
-          own figure instead — still centred on its tick, still clear of the
-          words at the end (`design/mobility-and-jump-profile.md`, "The mass
-          bar").
+          Both sit in the flow of one row rather than pinned over it, and the
+          row wraps: the maximum keeps the line under the bar where the pair
+          fits on it, and takes a line of its own where it does not, rather
+          than the two readings painting across each other
+          (`design/mobility-and-jump-profile.md`, "The mass bar").
         -->
         @if (curveMarks().length) {
           <ul class="drives__mass-marks" [attr.aria-label]="curveMarksLabel()">
@@ -110,7 +108,7 @@
                 class="drives__mass-mark"
                 [class.drives__mass-mark--pinned]="mark.position !== null"
                 [class.drives__mass-mark--end]="mark.position === null"
-                [style.--mass-mark-position]="mark.offset"
+                [style.margin-inline-start.%]="mark.position !== null ? mark.position * 100 : null"
               >
                 <span class="drives__mass-mark-label">{{ mark.label }}</span>
                 <span class="drives__mass-mark-value" data-bidi-isolate>{{ mark.value }}</span>

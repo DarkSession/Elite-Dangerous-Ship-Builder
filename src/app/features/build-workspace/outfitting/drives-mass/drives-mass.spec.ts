@@ -855,20 +855,17 @@ describe('DrivesMass', () => {
     ]);
   });
 
-  it('carries the optimal mark to its tick as an offset the stylesheet can read back', () => {
-    // The mark is centred on its own tick and the maximum sits at the end of
-    // the same line, so the stylesheet needs the position twice — once to place
-    // the mark, once to work out the room left before those words. One custom
-    // property carries it; a margin could not be read back.
+  it('carries the optimal mark to its own tick, and the maximum to the end', () => {
+    // The optimal is placed at its tick by the margin that starts its box
+    // there; the maximum has no tick of its own, because the end of the track
+    // is where it is.
     const { element, component } = render(build());
     const marks = component.curveMarks();
     const drawn = element.querySelectorAll<HTMLElement>('.drives__mass-mark');
 
-    expect(marks[0].offset).toBe(`${(marks[0].position ?? 0) * 100}%`);
-    expect(drawn[0]?.style.getPropertyValue('--mass-mark-position')).toBe(marks[0].offset);
-    // The maximum is the end of the track and has no tick of its own.
-    expect(marks[1].offset).toBeNull();
-    expect(drawn[1]?.style.getPropertyValue('--mass-mark-position')).toBe('');
+    expect(drawn[0]?.style.marginInlineStart).toBe(`${(marks[0].position ?? 0) * 100}%`);
+    expect(marks[1].position).toBeNull();
+    expect(drawn[1]?.style.marginInlineStart).toBe('');
   });
 
   it('qualifies each card by the fitted module’s class, and never by its name', () => {

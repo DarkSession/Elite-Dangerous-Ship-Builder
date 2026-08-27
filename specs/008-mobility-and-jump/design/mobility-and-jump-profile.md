@@ -95,32 +95,30 @@ the bar and its two marks are absent rather than drawn against something chosen 
 keeps every figure either way.
 
 `Optimal` and `Max` are the canvas's own two words, each written under the position on the scale it
-marks: the optimal centred on its own tick, the maximum against the end of the track. Both are on
-the one line under the bar, which is the line the canvas draws them on and the line the maximum
-belongs on — the maximum is where the track stops, so it is read with the track.
+marks: the optimal centred on its own tick, the maximum against the end of the track. They follow
+each other through one wrapping row, so the maximum keeps the line under the bar wherever the pair
+fits on it and takes a line of its own where it does not. That is what "right below the bar if there
+is space" asks for: the row measures the space rather than assuming it (Commander request
+2026-08-26).
 
-They share one grid cell to get there, rather than following each other through a wrapping row. The
-wrapping row was the earlier answer and it was the wrong one: it kept the pair apart by dropping the
-maximum to a line of its own whenever the two would not fit, and at the width this card is actually
-given they do not fit. An ordinary Anaconda puts `Optimal 1,296 t` centred on a tick 240px along a
-360px track — its right edge five pixels past where `Max 1,944 t` begins — so what was written as
-the rare German-at-200% case was every build, and the end of the scale sat two lines below the scale
-(Commander request 2026-08-26).
+**A pass that forced them onto one line is reversed here, 2026-08-26, and the measurements are the
+reason.** That pass put both marks in one grid cell and capped the optimal's box at twice the room
+left between its tick and the maximum, on the reading that a wrapping row dropped the maximum two
+lines down even in English. The arithmetic of the cap is sound; the geometry defeats it. An ordinary
+Anaconda's optimal tick stands two thirds of the way along the track, so the room either side of it
+is less than the label needs at _every_ width this card is given — not only in German at a doubled
+text size. Measured: at 1440 the cap came out at 40px and stacked `Optimal 1,440 t` over three
+lines; at 390, in German at a doubled text size, the tick fell inside `Max 2.160 t`'s own words and
+the cap collapsed to nothing, leaving a column one character wide and three hundred pixels tall.
 
-Sharing the cell restores the canvas's line and keeps the guard the wrapping row was there for: the
-optimal's own box is capped at twice the room left between its tick and the maximum, so a long
-translation wraps `Optimal` over its own figure — two short lines still centred on the tick — before
-it can reach the words at the end. The tick on the track carries the position; the words under it
-carry the two figures; neither is ever painted over the other.
+So there is no width at which a label centred on that tick and a label at the end of the track both
+fit, and a rule that puts them on one line regardless can only do it by taking the room from one of
+them. The wrapping row gives the maximum its own line in exactly the cases where the alternative is
+an unreadable optimal, and gives it the canvas's line in every case where the pair fits. The tick on
+the track carries the position; the words under it carry the two figures; neither is ever painted
+over the other, and neither is ever squeezed to nothing to keep the other company.
 
-**The cap has no floor under it, corrected 2026-08-26.** One was written first — set above the widest
-figure, so a squeezed mark could lose its line but never break a number across two lines. Measured on
-the card as it is actually drawn, the floor was itself the collision the cap exists to prevent: the
-cap works out at 40px at that width and the floor held the label at 56, which put its box eight
-pixels past where `Max` begins, and twelve past at a doubled text size. The room either side of a
-tick is whatever the bar leaves it, and that is not a quantity a floor can promise anything about. A
-number that wraps is worse-looking than one that does not; two readings painted over each other are
-not readable at all, and that is the comparison that settles it.
+The cap's floor, and the note that recorded its removal, go with the cap.
 
 ### The headroom under the optimal mass
 

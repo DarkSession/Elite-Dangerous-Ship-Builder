@@ -124,6 +124,19 @@
   grid-column: auto;
 }
 
+// Three across at every width is a promise about the columns, and a column is
+// a third of whatever the card is given. On a 390px phone at a doubled text
+// size that is 85px, and `SPRUNG BELADEN` is wider than that as one word — so
+// the words break rather than the page scrolling sideways under them. A broken
+// word is read; a document a Commander has to pan across to finish a line is
+// the reflow failure this suite measures (WCAG 1.4.10).
+:host(.metric-group--tight) .metric__label,
+:host(.metric-group--tight) .metric__number,
+:host(.metric-group--tight) .metric__unit,
+:host(.metric-group--tight) .metric__condition {
+  overflow-wrap: anywhere;
+}
+
 // A group whose cells join a grid an ancestor owns.
 //
 // The canvas draws the status rail's six cells as one grid on one hairline

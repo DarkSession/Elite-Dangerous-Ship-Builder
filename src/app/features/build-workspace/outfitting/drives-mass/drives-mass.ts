@@ -151,15 +151,6 @@ interface CurveMarkView {
   readonly label: string;
   readonly value: string;
   readonly position: number | null;
-  /**
-   * That position as a percentage of the track, or `null` at the end of it.
-   *
-   * The stylesheet needs the offset twice — once to carry the mark to its tick,
-   * once to work out how much room is left between that tick and the maximum at
-   * the end of the row — so it is handed over as one custom property rather than
-   * as a margin the stylesheet cannot read back.
-   */
-  readonly offset: string | null;
 }
 
 /**
@@ -440,14 +431,12 @@ export class DrivesMass {
         label: this.#messages.message('drives.thrusters.optimal-mass'),
         value: this.#tonnes(curve.optMass),
         position: optimal,
-        offset: optimal === null ? null : `${optimal * 100}%`, // policy-allow: SC-002 tick offset
       },
       {
         id: 'maximum',
         label: this.#messages.message('drives.thrusters.maximum-mass'),
         value: this.#tonnes(curve.maxMass),
         position: null,
-        offset: null,
       },
     ];
   });
