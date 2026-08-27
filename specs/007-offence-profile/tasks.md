@@ -870,6 +870,13 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       dead selectors — two more `.fact__value` and the convergence block's `.offence__note` — are
       out of the two unions that still named them.
       _`e2e/offence-profile.spec.ts`._
+- [x] T075 Take the last two ways an assertion on this branch could decline to run. The
+      selected-empty mark's fill was read inside `if (count > 0)`, so a plate that stopped marking
+      the selected mount would skip the only check of it and pass; the mark is asserted to exist
+      instead. And the right-to-left test compares the plate's marks before and after, which two
+      empty lists satisfy — an empty plate being a reachable state since a shot outside the field of
+      view is left off it — so the list is asserted non-empty first.
+      _`e2e/offence-profile.spec.ts`._
 
 ---
 
@@ -901,7 +908,8 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
   what T061 and T063 drew; T069 answers a review of T068 and corrects what the phase wrote down; T070 answers a review of
   T069 and does the same again; T071 answers a review of T070, which found no defect in the code; T072 answers a review of T071,
   which found none either; T073 answers a review of T072, which found one unmeasured figure and one
-  assertion that could not fail; T074 restores the assertion T073 deleted with it.
+  assertion that could not fail; T074 restores the assertion T073 deleted with it; T075 closes the two branches
+  that could skip themselves.
 
 ### Parallel opportunities
 

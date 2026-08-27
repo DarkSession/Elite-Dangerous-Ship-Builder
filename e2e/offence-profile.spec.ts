@@ -988,14 +988,16 @@ test.describe('shot convergence', () => {
     // one. One mark carries one fill, and which fill it is rests on the order
     // two rules of equal specificity are declared in, so it is read off the
     // rendered mark rather than assumed.
+    // Asserted to exist rather than checked for: the state is this hull's, at a
+    // range where every mount is drawn, so a plate without it is the regression
+    // this is here to catch and a skipped branch would report it as a pass.
     const selectedEmpty = block.locator('.plate__dot--empty.plate__dot--selected');
-    if ((await selectedEmpty.count()) > 0) {
-      const fill = await selectedEmpty
-        .first()
-        .evaluate((dot) => getComputedStyle(dot).backgroundColor);
-      expect(fill).not.toBe(emptyMark.fill);
-      expect(fill).not.toBe(armedFill);
-    }
+    await expect(selectedEmpty).toHaveCount(1);
+    const selectedFill = await selectedEmpty.evaluate(
+      (dot) => getComputedStyle(dot).backgroundColor,
+    );
+    expect(selectedFill).not.toBe(emptyMark.fill);
+    expect(selectedFill).not.toBe(armedFill);
 
     // And the ink is never the only thing that says so: an empty mount's own
     // sentence stands beside the plate with the rest, and it is the catalogue's
@@ -1321,6 +1323,11 @@ test.describe('the conditions that break layouts', () => {
     await openOffence(page);
     const before = await everyFigure(page);
     const plateBefore = await plateMarks(page);
+    // A plate with no marks on it compares equal to itself, and since a shot the
+    // field of view does not reach is left off the drawing, an empty plate is a
+    // state this suite can reach. At the range the block opens at it is not this
+    // one.
+    expect(plateBefore.length).toBeGreaterThan(0);
 
     await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
     await settled(page);
