@@ -59,8 +59,9 @@ hairline dividers in one scrolling column. The invariant DOM/reading order is:
    provenance sentence, then the application and bundled-Almanac identity facts where the reference
    draws its `APP VERSION … · LIBRARY VERSION …` line;
 3. the `FAQ` section — the help topics as question/answer pairs; and
-4. the `LICENCE` section — heading, the reference's own three-line summary of what covers what,
-   then the exact project-specific Frontier disclaimer marked in its own language.
+4. the `LICENCE` section — heading, the four-line summary of what covers what (the reference's
+   three plus the bundled library's own terms, amended below), then the exact project-specific
+   Frontier disclaimer marked in its own language.
 
 **Corrected 2026-08-25, against the design reference.** `ABOUT` previously also carried a bounded
 provenance statement after the version facts, and `LICENCE` previously opened with prose framing and
@@ -289,7 +290,7 @@ Feature 011's preview catalogue must include:
 - the open modal state;
 - both populated help topics;
 - long application and package identifiers;
-- the three-line licence summary and the exact disclaimer;
+- the four-line licence summary and the exact disclaimer;
 - desktop centered, tablet/mobile portrait and landscape sheet states;
 - doubled/expanded text, RTL section with English disclaimer, reduced motion and 400%-zoom reflow.
 

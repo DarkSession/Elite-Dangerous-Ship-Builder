@@ -878,7 +878,13 @@ export async function runChecks({ scope = SCOPE } = {}) {
   return [...violations];
 }
 
-/** IO wrapper: reads the four files that state where this application lives. */
+/**
+ * IO wrapper: reads every file the search-metadata rule compares.
+ *
+ * Nine of them — the seven in `SEARCH_METADATA_FILES` plus the route table and
+ * the locale registry. The rule does not require its inputs, so a caller that
+ * reads fewer loses the checks that need them without being told.
+ */
 async function checkSearchMetadata() {
   const read = async (path) => {
     const file = resolve(ROOT, path);
@@ -1360,7 +1366,8 @@ export function productionOutputViolations(contents) {
 }
 
 // ---------------------------------------------------------------------------
-// Rule: the four files that state where this application lives agree
+// Rule: the files that state where this application lives, and what it looks
+// like, agree with each other and with the route table
 // ---------------------------------------------------------------------------
 
 /** Where each half of the search metadata is written. */

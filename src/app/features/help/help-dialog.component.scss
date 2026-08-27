@@ -59,9 +59,9 @@
   text-wrap: pretty;
 }
 
-// The reference's three-line licence summary, drawn in the metric face it uses
-// for dense factual lines. It is a list because it is three separate claims
-// about three separate things, and a reader moving through it by item is
+// The four-line licence summary, drawn in the metric face the reference uses
+// for dense factual lines. It is a list because it is four separate claims
+// about four separate things, and a reader moving through it by item is
 // reading it the way it was written.
 .help-dialog__licence-index {
   @include layout.stack(var(--edsb-space-hair));

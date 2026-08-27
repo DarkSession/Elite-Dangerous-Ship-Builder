@@ -89,9 +89,12 @@ action appears either: FR-009 is withdrawn and the reference draws no such contr
 
 ### 4. LICENCE
 
-- The reference's own three-line summary of what covers what, one localised line each: the
-  application's code under MIT; the game data and imagery under Frontier's media-usage rules; the
-  typefaces under the SIL Open Font Licence.
+- A four-line summary of what covers what, one localised line each: the application's code under
+  MIT; the bundled Almanac under its own terms; the game data and imagery under Frontier's
+  media-usage rules; the typefaces under the SIL Open Font Licence. The reference draws the first,
+  third and fourth; the library's terms are a separate claim from the application's and are owed
+  whether or not the reference thought to draw them (`contracts/help-navigation.md`, amended
+  2026-08-26).
 - The exact generated disclaimer appears as plain text in a `lang="en"` region, with no translation,
   Markdown interpretation, automatic linking or alteration.
 - No complete legal document appears, and **no external action appears at all**. The modal has no

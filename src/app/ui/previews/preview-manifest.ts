@@ -4440,7 +4440,7 @@ registerPreview({
         'ABOUT names the application version and the bundled Almanac as separate facts',
         'FAQ answers both questions, once each, in the order they are declared',
         'each question is a heading over its own answer, never one run of prose',
-        'LICENCE opens with the three-line summary of what covers what',
+        'LICENCE opens with the four-line summary of what covers what',
         'LICENCE then carries the exact Frontier notice once, marked as English',
         'the modal offers no link out of the application',
       ],

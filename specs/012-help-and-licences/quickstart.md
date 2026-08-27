@@ -155,8 +155,8 @@ Expected:
 
 - exactly the project-specific disclaimer appears, unchanged and non-empty, inside a region
   carrying `lang="en"`;
-- above it, the reference's own three-line summary of what covers what — the application's code, the
-  game data and imagery, and the typefaces — one line each, localised;
+- above it, the four-line summary of what covers what — the application's code, the bundled
+  Almanac, the game data and imagery, and the typefaces — one line each, localised;
 - no sentence of prose framing above the summary, no sentence naming the excerpt's source and no
   sentence naming its language: the reference draws none of the three, and the language is a
   property of the text rather than a claim about it;

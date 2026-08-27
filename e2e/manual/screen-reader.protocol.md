@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 7
+**Version**: 8
 
 ## What is automated, and what is left
 
@@ -229,7 +229,7 @@ disagrees or where the announcement is correct but unusable.
     version is which without seeing them side by side; expect nothing to be
     said about what kind of build it is. In `FAQ`, expect each answer to be
     read with the question it answers. In `LICENCE`, expect three summary lines
-    announced as a list of three separate claims, then the Frontier notice
+    announced as a list of four separate claims, then the Frontier notice
     announced in the language it is actually in — expect the reader to switch
     voice or pronunciation for it while the interface is in another language,
     and expect **no** sentence anywhere telling you what language it is in or

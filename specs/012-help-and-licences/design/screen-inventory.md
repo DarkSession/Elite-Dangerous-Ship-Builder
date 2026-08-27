@@ -24,7 +24,7 @@ The frame surrounds every capability, so the frame's action is the route from al
 | ----------- | ----------------------- | ----------------------------------------------------------------------- | -------------------------------- |
 | FR-001      | global/no-build access  | in-place, eager, offline dialog                                         | initial-bundle assertion         |
 | FR-002      | the single access route | common provenance/legal destination; no surface owns a copy             | —                                |
-| FR-003      | —                       | the reference's three-line summary above one exact excerpt              | URL/text verification            |
+| FR-003      | —                       | the four-line summary above one exact excerpt                           | URL/text verification            |
 | FR-004      | —                       | clearly separates MIT from package/Frontier rights                      | package-mirror equality          |
 | FR-005      | —                       | renders the generated exact excerpt                                     | release fails on source mismatch |
 | FR-006      | —                       | localised labels; excerpt marked in its own language                    | byte/hash verification           |

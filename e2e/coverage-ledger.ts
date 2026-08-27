@@ -1748,7 +1748,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'the rendered disclaimer is byte-identical to a fresh generator extraction of root LICENSE',
       'it is text content inside a region carrying its own lang, never innerHTML, Markdown or a frame',
-      'the reference’s three-line summary of what covers what opens the section, localised',
+      'the four-line summary of what covers what opens the section, localised',
       'one legal body and no other: no MIT text, no Almanac licence, no third-party notices',
       'the modal draws no link, no popup and nothing that navigates out of the application',
       'the excerpt wraps within the measure and is never clipped or truncated',

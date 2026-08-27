@@ -30,7 +30,7 @@ Step 17 asks a reader to:
 6. hear `ABOUT` read its purpose, its maintainer and its Almanac provenance as three sentences in
    that order, and then exactly two identity facts, each as its own term and value, with nothing
    said about what kind of build it is;
-7. hear the licence summary as three separate claims and then the Frontier notice in the language it
+7. hear the licence summary as four separate claims and then the Frontier notice in the language it
    is actually in, with no sentence anywhere naming that language or the notice's source;
 8. find exactly one control in the whole modal — its close — and nothing announced as leaving the
    application or as needing a network;

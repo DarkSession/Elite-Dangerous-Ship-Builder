@@ -24,8 +24,9 @@ versions, application behavior, legal facts, dependencies or CSS literals.
 - `FAQ` is question-then-answer pairs in one reading sequence, a question closer to its own answer
   than the pairs are to each other. Three of its four questions are asked in the reference's own
   words.
-- `LICENCE` opens with the reference's own three-line summary of what covers what — the
-  application's code, the game data and imagery, the typefaces — one line each, before the notice.
+- `LICENCE` opens with a summary of what covers what, one line each, before the notice. The
+  reference's three — the application's code, the game data and imagery, the typefaces — and the
+  bundled Almanac's own terms as a fourth (`contracts/help-navigation.md`, amended 2026-08-26).
 - The modal draws no control other than its close: no link, and nothing that leaves the application.
 
 ## Required departures
@@ -67,7 +68,7 @@ that no canvas of the reference draws.
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
 | Two provenance sentences after the `ABOUT` version facts   | One `ABOUT` provenance sentence before them, and the licence summary's Frontier line       | FR-008              |
 | A third identity fact carrying release state and build ID  | Two version facts, as the reference draws. Generator classification is untouched           | FR-007              |
-| Prose licence framing above the excerpt                    | The reference's own three-line summary of what covers what                                 | FR-003              |
+| Prose licence framing above the excerpt                    | The four-line summary of what covers what                                                  | FR-003              |
 | Two sentences naming the excerpt's source and its language | The excerpt's `lang`, which is the same fact as a property rather than as prose            | FR-006              |
 | The warned repository-`LICENSE` action                     | Nothing. The modal has no external navigation, and `WarnedExternalLink` is deleted with it | FR-003, FR-005      |
 
@@ -96,7 +97,7 @@ external font request is copied from the HTML.
 
 The modal remains deliberately text-forward. Help answers are visible in a single column as in the
 reference, each question a heading over its own answer; versions form a semantic fact group; the
-licence summary is a list, because it is three separate claims about three separate things; the
+licence summary is a list, because it is four separate claims about four separate things; the
 longer exact disclaimer wraps as prose. This keeps the reference's scan pattern without inheriting
 its low-contrast tiny text, clipped fixed box, hover dependence or fabricated facts.
 
