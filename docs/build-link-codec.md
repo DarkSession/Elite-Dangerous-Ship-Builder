@@ -549,7 +549,7 @@ numbers, and generation refuses a table that exceeds one.
 | Outfittable mounts on one hull      |      38 |           48 | 48-bit bitmap, 6-bit indexes |
 | Hull-implied components on one hull |       1 |            4 | power state only             |
 | Grades on one blueprint             |       5 |            5 | 1 bit, or 3 below the top    |
-| Largest module candidate set        |     473 |        1,024 | 10 bits per fitted module    |
+| Largest module candidate set        |     464 |        1,024 | 10 bits per fitted module    |
 | Largest blueprint candidate set     |       9 |           32 | 5 bits per engineered module |
 | Largest experimental candidate set  |      12 |           32 | 5 bits per engineered module |
 | Largest pre-engineered set          |       6 |           32 | 5 bits per engineered module |
@@ -610,14 +610,18 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.2.0`. Table 1 was overwritten in
+The current application dependency is exactly pinned to Almanac `0.2.1`. Table 1 was overwritten in
 place on 2026-08-22, while it is still pre-release and no link has been published against it, so
 that a module's pre-engineered variants contribute their blueprints to its candidate set — see
 "Where neither form fits" above. It was overwritten again on 2026-08-26, under the same rule, so
 that `POWERED_MODULES` lists every module the catalogue does not price at zero draw rather than only
-those it prices above it — see "Power state" above. Running `pnpm run codec:tables` reproduces
-table 1 at content hash
-`0306523d99f8a65bdaea46e33274908c52ed164223d0de7a3a682b89a9df318f`. The package also reconstructs
+those it prices above it — see "Power state" above. The third overwrite, on 2026-08-27, follows the
+package: nine starter `*_free` fittings and six bundle-granted Vessel Hangars are second identities
+for articles the game already sells, and `modulesForSlot` stopped offering them, so `MODULE_SETS`
+stopped listing them. They stay in `MODULES` at the same indices, because every lookup still
+resolves them and an imported build keeps the one it arrived with. Running `pnpm run codec:tables`
+reproduces table 1 at content hash
+`f05e74f830df5485ac4e89f10e7016a167e622cd68e2d86ec2febe15a5ed0150`. The package also reconstructs
 every omitted required mount with the hull's default module. That changes the canonical minimal
 loadout and the current encoder output for it without changing the table's identity.
 
@@ -641,15 +645,17 @@ references, whose canonical body is arithmetic, were re-pinned when the models l
 pre-release regeneration rule. The festive Krait was re-pinned again on 2026-08-22, at the same
 length, when pre-engineered variants' blueprints joined their modules' candidate sets. Both
 engineered references were re-pinned once more on 2026-08-26, longer by eight and one character,
-when the modules whose draw the Almanac does not publish began carrying their power state:
+when the modules whose draw the Almanac does not publish began carrying their power state. They were
+re-pinned again on 2026-08-27, at the same lengths, when the grant-only articles left the candidate
+sets:
 
 | Reference build               | Base70 encoded data                                                                                  | Data length |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------- | ----------: |
 | Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                                   |          16 |
 | Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                         |          10 |
 | Festive flak Krait            | `b.5S25TzaeHpHX!Om2.:Z`                                                                              |          21 |
-| Full engineered Anaconda*     | `b.Fe22sXs1VYx8!NVMtClstaF14xQPy8sBf67Gl_pVZTY6E_IRHK3E/rNfDqSLrFuY/-bXDhZ`                          |          73 |
-| Supplied engineered Corvette† | `b.6lNEFSYnYR0i,sY,ohzZJbdMI4OCa2QXgTdxfqEJ6,rTcsmF4Yfz_VxmMFuXCzefb_ck@ziD/nac4.rjo5VicfG,wuFOfX!O` |          98 |
+| Full engineered Anaconda*     | `b.Fe22sXs1VYx8!NVMtCk!psrGUkIV-ECpUjGE0xXgXOFkqJ25PNA@tSqnpD8XpmV70,ONRNW`                          |          73 |
+| Supplied engineered Corvette† | `b.6lNEFSYnYR0i,rdWhJz8H7mFTPR@@DRYR3SD6cWNd1A4!PTC4.,JMc/y1Uhh9M_uk5yKmUPRDlI/iyfgDRolLhJF/v!4SUos` |          98 |
 
 \* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
 the fixed cargo hatch has an explicit power state. Cargo racks remain stock because Almanac 0.1.4

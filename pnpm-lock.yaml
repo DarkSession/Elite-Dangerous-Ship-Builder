@@ -30,8 +30,8 @@ importers:
         specifier: ^22.1.3
         version: 22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.2))(rxjs@7.8.2)
       '@elite-dangerous-almanac/core':
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.2.1
+        version: 0.2.1
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
@@ -380,8 +380,8 @@ packages:
     resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
     engines: {node: '>=20.19.0'}
 
-  '@elite-dangerous-almanac/core@0.2.0':
-    resolution: {integrity: sha512-H70l6OfylIsODGQLQZYvbwGNliAPmuS72i/IRaKz3fZhWUnMqCHOn39i3TDw5F9vdxQsajwyWYubfWPippThJw==}
+  '@elite-dangerous-almanac/core@0.2.1':
+    resolution: {integrity: sha512-Kq6C0GM5jT7AOfB2/6p7f2I0gGSYjOMFpzWK6+Lz3DAZlNEkIyd0LhRt1FDqR2fG8GwJ744ZWn8qS0wpplhiHA==}
     engines: {node: '>=22'}
 
   '@emnapi/core@1.11.1':
@@ -2954,7 +2954,7 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.0': {}
 
-  '@elite-dangerous-almanac/core@0.2.0': {}
+  '@elite-dangerous-almanac/core@0.2.1': {}
 
   '@emnapi/core@1.11.1':
     dependencies:

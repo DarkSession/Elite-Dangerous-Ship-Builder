@@ -808,6 +808,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the rail opens with the canvas’s own BUILD STATUS heading, and the region is named by it',
       'one block per package issue, in package order, each drawn exactly once',
       'each block names its severity in words, unseen as the canvas draws none, so colour carries nothing alone',
+      'a package warning is drawn in its own tier on a build the package still calls valid, and reads clean there',
       'the sentence is the package’s, unparsed, with no second sentence composed from its parameters',
       'a locale the package has no diagnostic for reads canonically, with the untranslated disclosure',
       'a build the package reports nothing about draws nothing: no all-clear line and no count',

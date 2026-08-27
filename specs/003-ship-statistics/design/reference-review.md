@@ -80,8 +80,8 @@ no slot action in either block.
 
 - The `BUILD STATUS` heading opening the rail and the Status mode.
 - Validation issues as the canvas's bordered blocks, in package order, directly under that heading.
-- The severity treatment: tier 1 for a package `error`, tier 3 for a package `incomplete`, and no
-  severity word on the screen, because neither canvas draws one.
+- The severity treatment: tier 1 for a package `error`, tier 2 for a package `warning`, tier 3 for a
+  package `incomplete`, and no severity word on the screen, because neither canvas draws one.
 - The rail as the wide home for build status, and the stacked Status mode as the compact one.
 - Warnings → power → six metrics → cost → materials, at both widths.
 
@@ -127,7 +127,8 @@ capability's own surface offers.
 ## Rejected mock content
 
 - The authored power and heat warnings (tiers 1 and 2 of 1d's three). They are feature 005 sentences,
-  not `LoadoutValidation` issues, and this application authors no diagnosis of its own.
+  not `LoadoutValidation` issues, and this application authors no diagnosis of its own. The tiers
+  they were drawn in carry package severities instead.
 - The segmented power bar with its 79%/21% split, hatched overflow band and marker. It is a
   reverse-engineered threshold, and the package publishes no such ratio.
 - Cross-origin `edassets.org` imagery and Google Fonts runtime requests.
@@ -135,11 +136,11 @@ capability's own surface offers.
 
 ## Departures that remain, on constitutional grounds
 
-| Canvas                              | Built instead                                         | Reason                                                                                                                                                  |
-| ----------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Warning blocks as unsemantic `div`s | A list, each item naming its severity in hidden words | Meaning may not be carried by a coloured border alone. The word is not drawn — the design draws none — and the tiers differ by ground as well as by hue |
-| Package sentences set as plain text | The shared `edsb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                        |
-| Inline colours and sizes            | Design tokens                                         | One design system                                                                                                                                       |
+| Canvas                              | Built instead                                         | Reason                                                                                                                                                                                                         |
+| ----------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Warning blocks as unsemantic `div`s | A list, each item naming its severity in hidden words | Meaning may not be carried by a coloured border alone. The word is not drawn — the design draws none — and it is what carries the severity, because two of the three tiers differ from each other in hue alone |
+| Package sentences set as plain text | The shared `edsb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                                                                               |
+| Inline colours and sizes            | Design tokens                                         | One design system                                                                                                                                                                                              |
 
 `edsb-game-text` is the design system's existing behaviour for every package string in the
 application, not a feature-003 addition — the same argument feature 009 settled under its ruling F.

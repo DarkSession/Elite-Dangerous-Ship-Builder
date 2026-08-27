@@ -264,6 +264,7 @@
   "outfitting.ledger.label": "Alle Halterungen dieses Rumpfes",
   "outfitting.status-rail.label": "Status des Aufbaus",
   "build-status.severity.error": "Fehler",
+  "build-status.severity.warning": "Warnung",
   "build-status.severity.incomplete": "Unvollständig",
   "outfitting.status-rail.mode": "Status",
   "outfitting.key-figures.label": "Kennzahlen",

@@ -41,6 +41,25 @@ describe('the build status block', () => {
     ],
   };
 
+  /** Thrusters that carry the fit and its fuel but not a full hold: one `warning`. */
+  const HOLD_ONLY_OVERLOAD: LoadoutEvent = {
+    event: 'Loadout',
+    Ship: FIXTURE_HULL,
+    Modules: [
+      { Slot: 'MainEngines', Item: 'Int_Engine_Size6_Class1' },
+      { Slot: 'Slot01_Size7', Item: 'Int_CargoRack_Size7_Class1' },
+      { Slot: 'Slot02_Size6', Item: 'Int_CargoRack_Size6_Class1' },
+      { Slot: 'Slot03_Size6', Item: 'Int_CargoRack_Size6_Class1' },
+      { Slot: 'Slot04_Size6', Item: 'Int_CargoRack_Size6_Class1' },
+      { Slot: 'Slot05_Size5', Item: 'Int_CargoRack_Size5_Class1' },
+      { Slot: 'Slot06_Size5', Item: 'Int_CargoRack_Size5_Class1' },
+      { Slot: 'Slot07_Size5', Item: 'Int_CargoRack_Size5_Class1' },
+      { Slot: 'Slot08_Size4', Item: 'Int_CargoRack_Size4_Class1' },
+      { Slot: 'Slot09_Size4', Item: 'Int_CargoRack_Size4_Class1' },
+      { Slot: 'Slot10_Size4', Item: 'Int_CargoRack_Size4_Class1' },
+    ],
+  };
+
   /** A hardpoint article in an optional internal: an `incompatibleModule` issue. */
   const INCOMPATIBLE_MODULE: LoadoutEvent = {
     event: 'Loadout',
@@ -150,6 +169,21 @@ describe('the build status block', () => {
       const severity = items(fixture)[0]?.querySelector('.visually-hidden');
       expect(severity?.textContent).toBe(englishCatalogue['build-status.severity.error']);
       expect(items(fixture)[0]?.classList).toContain('issue--error');
+    });
+
+    it('draws the warning tier for a build the package still calls valid', () => {
+      const loadout = ShipLoadout.fromLoadout(HOLD_ONLY_OVERLOAD);
+      const fixture = render(loadout);
+
+      // The severity is the package's, not a reading of `valid`: a hold-only
+      // thruster overload is a `warning` beside `valid` and `complete`, and the
+      // block draws its own tier for it (`design/status-rail.md`).
+      expect(loadout.validation().valid).toBe(true);
+      const first = items(fixture)[0];
+      expect(first?.querySelector('.visually-hidden')?.textContent).toBe(
+        englishCatalogue['build-status.severity.warning'],
+      );
+      expect(first?.classList).toContain('issue--warning');
     });
 
     it('carries the package’s own sentence, with its interpolated identities', () => {

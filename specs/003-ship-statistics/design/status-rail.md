@@ -61,15 +61,18 @@ marker, a quiet tinted ground, and the sentence set in prose rather than in the 
 | Package severity | Canvas tier | Treatment                          |
 | ---------------- | ----------- | ---------------------------------- |
 | `error`          | 1           | danger marker, danger quiet ground |
+| `warning`        | 2           | accent marker, accent quiet ground |
 | `incomplete`     | 3           | info marker, no tint               |
 
-Tier 2, the amber middle, carries no package severity and is unused.
+A `warning` stands beside `valid` and `complete`: the package raises one where a load the pilot
+chooses, rather than the fit itself, crosses a limit. The block draws the severity the package
+states, never one read off `valid`.
 
 The severity is also written in words — hidden, because neither canvas draws one. The reference
 carries the tier in its marker and its ground, and a word the design does not draw does not go on the
 screen; it stays as the accessibility floor, read aloud beside the sentence and costing the design
-nothing. The tiers still differ visually by more than hue, because tier 1 carries a tinted ground and
-tier 3 does not.
+nothing. That word is what carries the severity, because tiers 1 and 2 differ from each other in hue
+alone. The tiers reinforce it; they do not state it.
 
 The sentence itself is package game text, resolved through `getLoadoutIssueMessage` by way of feature
 011's presenter and rendered by `edsb-game-text`, so a locale the package has no translation for shows

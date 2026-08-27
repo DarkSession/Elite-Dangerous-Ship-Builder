@@ -8,7 +8,7 @@ import { FIXTURE_HULL } from '../../../../domain/outfitting/outfitting.fixtures'
  *
  * Narrow on purpose. Characterizing the Almanac is the package's own suite's
  * job; what is pinned here is the handful of shapes this block would silently
- * misread if a release changed them — the two severity values, the order of
+ * misread if a release changed them — the three severity values, the order of
  * `issues`, the parameter shapes a diagnostic can carry, and the `null` that
  * makes a locale miss indistinguishable from an unknown identity.
  *
@@ -28,6 +28,32 @@ const INCOMPATIBLE_MODULE: LoadoutEvent = {
   event: 'Loadout',
   Ship: FIXTURE_HULL,
   Modules: [{ Slot: 'Slot01_Size7', Item: 'Hpt_PulseLaser_Fixed_Small' }],
+};
+
+/** A payload whose thrusters are rated below the mass of the fit alone. */
+const THRUSTERS_BELOW_DRY_MASS: LoadoutEvent = {
+  event: 'Loadout',
+  Ship: FIXTURE_HULL,
+  Modules: [{ Slot: 'MainEngines', Item: 'Int_Engine_Size5_Class1' }],
+};
+
+/** A payload whose thrusters carry the fit and its fuel, but not a full hold. */
+const THRUSTERS_BELOW_LADEN_MASS: LoadoutEvent = {
+  event: 'Loadout',
+  Ship: FIXTURE_HULL,
+  Modules: [
+    { Slot: 'MainEngines', Item: 'Int_Engine_Size6_Class1' },
+    { Slot: 'Slot01_Size7', Item: 'Int_CargoRack_Size7_Class1' },
+    { Slot: 'Slot02_Size6', Item: 'Int_CargoRack_Size6_Class1' },
+    { Slot: 'Slot03_Size6', Item: 'Int_CargoRack_Size6_Class1' },
+    { Slot: 'Slot04_Size6', Item: 'Int_CargoRack_Size6_Class1' },
+    { Slot: 'Slot05_Size5', Item: 'Int_CargoRack_Size5_Class1' },
+    { Slot: 'Slot06_Size5', Item: 'Int_CargoRack_Size5_Class1' },
+    { Slot: 'Slot07_Size5', Item: 'Int_CargoRack_Size5_Class1' },
+    { Slot: 'Slot08_Size4', Item: 'Int_CargoRack_Size4_Class1' },
+    { Slot: 'Slot09_Size4', Item: 'Int_CargoRack_Size4_Class1' },
+    { Slot: 'Slot10_Size4', Item: 'Int_CargoRack_Size4_Class1' },
+  ],
 };
 
 /** A payload fitting two of a family the hull allows one of. */
@@ -103,22 +129,53 @@ describe('the Almanac validation contract', () => {
       expect(issue?.params?.['constraint']).toBe('optionalInternalRequired');
     });
 
-    it('publishes only the two severities the block draws', () => {
-      const severities = [UNKNOWN_SLOT, INCOMPATIBLE_MODULE, DUPLICATE_EXCLUSIVE].flatMap((event) =>
+    it('publishes only the three severities the block draws', () => {
+      const severities = [
+        UNKNOWN_SLOT,
+        INCOMPATIBLE_MODULE,
+        DUPLICATE_EXCLUSIVE,
+        THRUSTERS_BELOW_DRY_MASS,
+        THRUSTERS_BELOW_LADEN_MASS,
+      ].flatMap((event) =>
         ShipLoadout.fromLoadout(event)
           .validation()
           .issues.map((issue) => issue.severity),
       );
 
-      // At the pinned version every reachable issue is an `error`; `incomplete`
+      // `error` and `warning` are both reachable from a build. `incomplete`
       // belongs to `missingRequiredSlot`, which a `ShipLoadout` never raises.
-      // The block still draws both, because the union has two members and a
-      // release that starts raising the second must not fall through to
+      // The block draws all three, because the union has three members and a
+      // release that starts raising the third must not fall through to
       // nothing.
       expect(severities.length).toBeGreaterThan(0);
       expect(
-        severities.every((severity) => severity === 'error' || severity === 'incomplete'),
+        severities.every(
+          (severity) => severity === 'error' || severity === 'warning' || severity === 'incomplete',
+        ),
       ).toBe(true);
+    });
+
+    it('states a thruster overload at the lightest load that crosses the rating', () => {
+      const [issue] = ShipLoadout.fromLoadout(THRUSTERS_BELOW_DRY_MASS).validation().issues;
+
+      expect(issue?.code).toBe('thrusterMassExceeded');
+      expect(issue?.severity).toBe('error');
+      expect(issue?.params?.['load']).toBe('dry');
+    });
+
+    it('raises a warning, and leaves the build valid, for a hold-only overload', () => {
+      const validation = ShipLoadout.fromLoadout(THRUSTERS_BELOW_LADEN_MASS).validation();
+      const [issue] = validation.issues;
+
+      // How much cargo to take is the pilot's decision, so the package reports
+      // the overload without condemning the fit. This is the one severity that
+      // stands beside `valid` and `complete`, and the reason the block draws a
+      // third tier rather than reading a severity off `valid`.
+      expect(issue?.code).toBe('thrusterMassExceeded');
+      expect(issue?.severity).toBe('warning');
+      expect(issue?.params?.['load']).toBe('laden');
+      expect(validation.valid).toBe(true);
+      expect(validation.complete).toBe(true);
     });
   });
 
