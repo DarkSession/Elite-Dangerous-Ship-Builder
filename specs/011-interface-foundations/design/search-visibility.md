@@ -181,9 +181,19 @@ Where that gate actually stands is worth being exact about: `pnpm run policy` ru
 `pnpm run check`, which this repository asks a contributor to run before proposing a change
 (README, "Run `pnpm run check` before proposing a change"). The CI workflow does not run it — it
 never has, for any of the eight checkers. What does run on every deployment is the deploy step's
-own guards: it fails the run if the sitemap advertises no routes, if its first address is not
-absolute, if any address is not under the declared origin, if a route ends in a slash, or if the
-canonical or `og:url` substitution did not take. A route below the root is published rather than
+own guards: it fails the run if a comment survives the comment-stripping pass, if the sitemap
+advertises no routes, if its first address is not absolute, if any address is not under the declared
+origin, if a route ends in a slash, or if the canonical or `og:url` substitution did not take.
+
+That first guard is worth its own sentence, because it was added after CodeQL named the shape.
+Both readers cut comments in a single pass, deliberately, so that neither can read an address the
+other cannot. A single pass cannot cut every comment: `<!<!-- -->--` becomes `<!--` once the inner
+one is gone, and a comment containing `--` is not cut at all, so either way a `<loc>` can end up
+inside what the next reader takes for live markup. Cutting twice is not the fix — it would cut more
+in the checker than `sed` cuts in the deployment, which is exactly the drift the single pass exists
+to prevent. So neither reader trusts its own cut: both refuse a file that still holds `<!--` or
+`-->` afterwards, in the same words, and a sitemap whose comments are malformed fails by name
+instead of quietly meaning something other than it appears to. A route below the root is published rather than
 refused — `/ships/Anaconda` becomes `ships/Anaconda.html` — since that is an address, not a
 directory redirect. So the agreement between those files is checked where a change is written, and
 the one-file-per-route publication is checked where it is published. Putting `pnpm run policy` in CI

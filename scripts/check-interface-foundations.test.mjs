@@ -1031,7 +1031,12 @@ describe('the excluded-criteria enumeration', () => {
 describe('search metadata', () => {
   const ORIGIN = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
 
-  const INDEX = [
+  // Held apart so the "no JSON-LD" case can be built by leaving the block out
+  // rather than by cutting it back out of a finished document. A regexp that
+  // strips a `<script>` element is a filter, and a filter is judged as one: it
+  // would have to survive `<SCRIPT>` and a second element to be worth trusting,
+  // and none of that has anything to do with what this fixture is for.
+  const INDEX_WITHOUT_JSON_LD = [
     '<meta name="description" content="What this is." />',
     '<meta name="theme-color" content="#0b0b0c" />',
     '<meta name="twitter:card" content="summary" />',
@@ -1045,8 +1050,12 @@ describe('search metadata', () => {
     '<meta property="og:locale" content="en" />',
     '<link rel="canonical" href="https://sb.edct.dev/" />',
     '<link rel="manifest" href="manifest.webmanifest" />',
-    '<script type="application/ld+json">{"@context":"https://schema.org","url":"https://sb.edct.dev/","inLanguage":["en","de"]}</script>',
   ].join('\n');
+
+  const JSON_LD =
+    '<script type="application/ld+json">{"@context":"https://schema.org","url":"https://sb.edct.dev/","inLanguage":["en","de"]}</script>';
+
+  const INDEX = `${INDEX_WITHOUT_JSON_LD}\n${JSON_LD}`;
 
   const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n';
 
@@ -1112,8 +1121,8 @@ describe('search metadata', () => {
     // `--` is illegal inside an XML comment and nothing here validates the
     // file, so a lazy strip would cut this one and the deployment's `sed`,
     // which cannot express one, would not — and would publish `/ghost` with a
-    // canonical of its own. Neither reader strips it, so the address arrives
-    // here as a `<loc>` no route serves and the build stops.
+    // canonical of its own. Neither reader strips it, so a delimiter survives
+    // the cut and the file is refused for what is actually wrong with it.
     const malformed = `<urlset>
       <!-- old -- gone <loc>https://sb.edct.dev/ghost</loc> -->
       <url><loc>https://sb.edct.dev/ships</loc></url>
@@ -1122,8 +1131,24 @@ describe('search metadata', () => {
 
     const found = rules.searchMetadataViolations(complete({ sitemap: malformed }));
 
-    assert.deepEqual(ruleIds(found), ['search-metadata']);
-    assert.match(found[0].message, /ghost/);
+    assert.match(found[0].message, /nested or contains/);
+  });
+
+  it('refuses a comment that one pass reassembles into another', () => {
+    // What a single strip cannot do, and why the leftovers are checked rather
+    // than cut again: removing the inner `<!-- -->` here joins `<!` to `--`
+    // and leaves a comment wrapping `/ghost`. A second pass would then read
+    // the file as listing nothing, while the deployment's `sed` — also one
+    // pass — would publish `/ghost`. The two must agree, so both refuse it.
+    const nested = `<urlset>
+      <!<!-- -->-- <loc>https://sb.edct.dev/ghost</loc> -->
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <url><loc>https://sb.edct.dev/build</loc></url>
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: nested }));
+
+    assert.match(found[0].message, /nested or contains/);
   });
 
   it('still misses a route that a comment is the only thing listing it', () => {
@@ -1166,9 +1191,7 @@ describe('search metadata', () => {
   });
 
   it('rejects a head with no JSON-LD', () => {
-    const found = rules.searchMetadataViolations(
-      complete({ index: INDEX.replace(/<script[\s\S]*<\/script>/, '') }),
-    );
+    const found = rules.searchMetadataViolations(complete({ index: INDEX_WITHOUT_JSON_LD }));
 
     assert.match(found[0].message, /JSON-LD/);
   });

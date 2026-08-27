@@ -1451,12 +1451,33 @@ function headContent(document, attribute, key) {
  * (`.github/workflows/ci.yml`, "Serve client-side routes as real addresses").
  * XML forbids `--` inside a comment, and neither reader validates the file, so
  * a malformed one has to fail the same way in both: the lazy form would strip
- * it here and publish a route from inside it there. This form strips neither,
- * and the address then reaches the route comparison below as a `<loc>` that no
- * route serves, which is a build failure rather than a silent extra page.
+ * it here and publish a route from inside it there. This form strips neither.
+ *
+ * One pass therefore leaves some documents holding a comment delimiter still —
+ * a nested `<!<!-- -->--` reassembles one — so this is deliberately not a
+ * sanitiser and nothing may treat it as one. The caller checks what is left
+ * over and fails on it by name; the deployment does the same, in the same
+ * words.
  */
 function withoutXmlComments(document) {
+  // codeql[js/incomplete-multi-character-sanitization] Deliberately one pass,
+  // to stay identical to the deployment's `sed`. This is not a sanitiser and
+  // nothing downstream treats it as one: both callers refuse a document that
+  // still holds a delimiter afterwards.
   return document.replace(/<!--(?:[^-]|-[^-])*-->/g, '');
+}
+
+/**
+ * One string as a pattern that matches exactly itself.
+ *
+ * Every metacharacter, not just the dot. Escaping the one character a caller
+ * happens to pass today is how a hand-rolled escape becomes wrong later: a
+ * criterion, a rel or a key that ever contains a backslash would otherwise
+ * escape the character after it instead of itself, and the pattern would match
+ * something the caller never wrote.
+ */
+function escapedForRegExp(literal) {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** One `<link>` element's href, by its relationship. */
@@ -1665,10 +1686,26 @@ export function searchMetadataViolations(input) {
   // Comments are cut first, because the deployment cuts them: this file is also
   // the route list `.github/workflows/ci.yml` publishes from, and a `<loc>` the
   // two read differently is a route that passes here and never gets a file.
+  const body = withoutXmlComments(input.sitemap ?? '');
+
+  // Nothing that opens or closes a comment may survive the cut. One pass
+  // cannot: `<!<!-- -->--` leaves `<!--` behind, and a `--` inside a comment
+  // leaves the whole thing, so a `<loc>` nobody meant to publish can end up
+  // inside what the next reader takes for live markup. Neither this nor the
+  // deployment's `sed` makes a second pass — a second pass would strip more
+  // here than there, which is the drift they are written to avoid — so what
+  // is left over is checked instead of cut, and a file that leaves anything
+  // over fails by name.
+  if (/<!--|-->/.test(body)) {
+    fail(
+      SEARCH_METADATA_FILES.sitemap,
+      'A comment here is nested or contains "--", so the file does not say what it appears to. ' +
+        'Neither this check nor the deployment can read it; write plain comments.',
+    );
+  }
+
   const listed = new Set(
-    [...withoutXmlComments(input.sitemap ?? '').matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map(
-      (match) => match[1],
-    ),
+    [...body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]),
   );
   const addressable = (input.routes ?? []).filter(
     (route) => !UNLISTABLE_ROUTES.has(route) && !route.includes(':'),
@@ -1898,8 +1935,7 @@ export function conformanceClaimViolations(sources) {
       // calls out, and exactly the half-carried amendment this rule exists to
       // fail.
       const missing = EXCLUDED_CRITERIA.filter(
-        (criterion) =>
-          !new RegExp(`(?<!\\d)${criterion.replace(/\./g, '\\.')}(?!\\d)`).test(paragraph),
+        (criterion) => !new RegExp(`(?<!\\d)${escapedForRegExp(criterion)}(?!\\d)`).test(paragraph),
       );
       if (missing.length > 0) {
         found.push({

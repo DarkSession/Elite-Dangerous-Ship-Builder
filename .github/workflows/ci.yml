@@ -150,8 +150,22 @@ jobs:
           # pipeline runs under `pipefail`: without it an empty sitemap aborts
           # the step on the assignment, and the message below — the one that
           # says what is actually wrong — is never printed.
-          locations="$(tr '\n' ' ' < sitemap.xml \
-            | sed 's/<!--\([^-]\|-[^-]\)*-->//g' \
+          body="$(tr '\n' ' ' < sitemap.xml | sed 's/<!--\([^-]\|-[^-]\)*-->//g')"
+          # Nothing that opens or closes a comment may survive that cut. One
+          # pass cannot: `<!<!-- -->--` leaves `<!--` behind, and a `--` inside
+          # a comment leaves the whole comment, so an address nobody meant to
+          # publish can end up inside what the next reader takes for live
+          # markup. A second pass is not the answer — it would cut more here
+          # than `searchMetadataViolations` cuts there, which is the drift the
+          # two are written to avoid — so the leftovers are checked instead,
+          # and a file that leaves any fails the deployment by name.
+          case "$body" in
+            *'<!--'*|*'-->'*)
+              echo "::error title=Unreadable sitemap::a comment in sitemap.xml is nested or contains \"--\", so the file does not say what it appears to."
+              exit 1
+              ;;
+          esac
+          locations="$(printf '%s' "$body" \
             | grep -o '<loc>[[:space:]]*[^<[:space:]]\{1,\}[[:space:]]*</loc>' \
             | sed -e 's|<loc>[[:space:]]*||' -e 's|[[:space:]]*</loc>||' || true)"
           if [ -z "$locations" ]; then
