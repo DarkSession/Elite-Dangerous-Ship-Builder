@@ -100,9 +100,9 @@ counted for the three routes it was built for. The deployment now publishes each
 `<route>.html`, which Pages answers with a 200 and no redirect, alongside the `404.html` that still
 catches everything else. `<route>/index.html` would have answered 301 to `<route>/`, which is the
 same defect one step smaller: the address the sitemap and the canonical both name would still not be
-the address that answers. The route list is read out of `sitemap.xml` rather than repeated: a fifth
-copy of it would drift silently, because the site would keep working and only the crawl would
-stop.
+the address that answers. The route list is read out of `sitemap.xml` rather than repeated: a third
+copy of it — `app.routes.ts` and the sitemap are the two — would drift silently, because the site
+would keep working and only the crawl would stop.
 
 **The second omission, also named.** The sitemap does not list hull pages, and those are the
 long-tail content: forty-odd `/ships/<symbol>` addresses, one per hull, each with real numbers on
@@ -121,9 +121,9 @@ colours taken from the token layer, and `display: standalone`. Both names are
 `Elite Dangerous Ship Builder` (owner's ruling, 2026-08-27): `Ship Builder` is what the first
 _screen_ is called, not what the application is called, and an installed icon captioned with the
 screen name would be the one place the two are confused. Nothing else in the head names the
-application in the short form either. Its `start_url`, `scope` and icon paths are relative, for the same reason the
-locale catalogues' paths are: a preview is served from a sub-path, and a leading slash would look at
-the host root.
+application in the short form either. Its `start_url`, `scope` and icon paths are relative, for the
+same reason the locale catalogues' paths are: a preview is served from a sub-path, and a leading
+slash would look at the host root.
 
 **Third omission.** Its only icon is `favicon.ico`. A manifest wants at least a 192px and a 512px
 PNG, one of them maskable, for a browser to offer installation. Same missing asset as the card
@@ -186,7 +186,7 @@ own guards: it fails the run if the sitemap advertises no routes, if its first a
 absolute, if any address is not under the declared origin, if a route ends in a slash, or if the
 canonical or `og:url` substitution did not take. A route below the root is published rather than
 refused — `/ships/Anaconda` becomes `ships/Anaconda.html` — since that is an address, not a
-directory redirect.
-So the agreement between those files is checked where a change is written, and the one-file-per-route
-publication is checked where it is published. Putting `pnpm run policy` in CI as well is the
-obvious follow-up, and it is a decision about every checker rather than about this one.
+directory redirect. So the agreement between those files is checked where a change is written, and
+the one-file-per-route publication is checked where it is published. Putting `pnpm run policy` in CI
+as well is the obvious follow-up, and it is a decision about every checker rather than about this
+one.

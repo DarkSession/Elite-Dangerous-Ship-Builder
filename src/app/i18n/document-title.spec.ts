@@ -1,5 +1,6 @@
 import { resolveDocumentTitle } from './document-title';
 import { BUNDLED_ENGLISH, type MessageCatalogue } from './locale-registry';
+import germanCatalogue from './locales/de.json';
 
 /** The bundled catalogue, with only the keys a test is about varied. */
 function catalogue(overrides: Partial<Record<string, string>> = {}): MessageCatalogue {
@@ -61,17 +62,22 @@ describe('resolveDocumentTitle', () => {
     );
   });
 
-  it('collapses in the other shipped locale too, where the name is the same', () => {
-    // `app.name` is a product name and is never translated, so the German
-    // catalogue names the catalogue screen `Ship Builder` as well.
-    const german = catalogue({ 'app.name': 'Elite Dangerous Ship Builder' });
+  it('collapses in the other shipped locale too, on that catalogue as shipped', () => {
+    // The real German catalogue rather than an override of the English one:
+    // `app.name` is a product name and is not translated, so the collapse has
+    // to fire there as well — and it would be easy to ship a translated name
+    // that quietly stopped it.
+    const german = germanCatalogue as unknown as MessageCatalogue;
 
-    expect(resolveDocumentTitle(german, 'Ship Builder')).toBe(
-      BUNDLED_ENGLISH['app.document-title.default'],
+    expect(resolveDocumentTitle(german, german['catalogue.title'])).toBe(
+      german['app.document-title.default'],
     );
-    expect(resolveDocumentTitle(german, 'Gespeicherte Aufbauten')).toBe(
-      'Gespeicherte Aufbauten · Elite Dangerous Ship Builder',
+    expect(resolveDocumentTitle(german, german['library.title'])).toBe(
+      `${german['library.title']} · ${german['app.name']}`,
     );
+    // And the two really are different screens, so the test above is not
+    // comparing one sentence with itself.
+    expect(german['catalogue.title']).not.toBe(german['library.title']);
   });
 
   it('takes a page name with regular-expression punctuation as text', () => {

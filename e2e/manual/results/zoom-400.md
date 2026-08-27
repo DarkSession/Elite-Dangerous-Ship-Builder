@@ -47,8 +47,9 @@ composition step 6 is about. Each is its own observation.
 
 ## Help · About (feature 012)
 
-The modal is the longest text this application draws in one column — a purpose sentence, two facts,
-seven question-and-answer pairs, three summary lines and a legal notice that must not be truncated —
+The modal is the longest text this application draws in one column — three `ABOUT` sentences, two
+facts, two question-and-answer pairs, four summary lines and a legal notice that must not be
+truncated —
 and at 400% zoom on a phone the viewport has room for about one section of it at a time. So the
 observation is not whether it fits, which it will not: it is whether every section is still
 _reachable_, whether the header and its close stay put while the body alone scrolls, and whether the

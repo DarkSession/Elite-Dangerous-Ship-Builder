@@ -184,8 +184,8 @@ capability. Open the modal before opening any hull artwork.
 
 Expected:
 
-- both topics, all three `ABOUT` sentences, both version facts, the licence summary and the exact disclaimer are
-  present;
+- both topics, all three `ABOUT` sentences, both version facts, the licence summary and the exact
+  disclaimer are present;
 - opening/reading/closing causes no request and has no loading/error/stale state;
 - there is nothing to follow: the modal has no external action offline or online;
 - uncached package artwork may be temporarily absent under its owning contract, while help remains

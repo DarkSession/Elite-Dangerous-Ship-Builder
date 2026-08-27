@@ -381,7 +381,7 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 - No task lowers the 80% coverage thresholds, drops a browser or viewport project, or skips a test to
   reach a green build
 
-## Phase: the restart stops asking, 2026-08-27
+## Phase 9: The restart stops asking, 2026-08-27
 
 > The overlay the 2026-08-26 reversal introduced still put a question on screen — `Restart now` or
 > `Not now` — and the owner's decision is that a published update is applied, not offered. The
@@ -420,14 +420,7 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       postponement journeys are replaced by one that presses nothing and one that never waits the
       overlay out. Reconcile `e2e/coverage-ledger.ts` with all of it.
 
-## Notes
-
-- [P] tasks touch different files and have no incomplete dependency
-- Every component task includes its unit test, its required-state preview declarations and its message
-  keys; none of the three is a follow-up
-- Commit after each task or logical group; stop at a checkpoint to validate a story independently
-
-## Phase: the application says what it is, 2026-08-27
+## Phase 10: The application says what it is, 2026-08-27
 
 > "Analyse the application and propose ways to optimize for search engines." Four routes were served
 > one title, no description, no canonical and no card, and the analysis in
@@ -465,3 +458,10 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       `locale.store.spec.ts`, both directions of the new rule in
       `check-interface-foundations.test.mjs`, and the journey in `e2e/search-visibility.spec.ts`.
       Reconcile `e2e/coverage-ledger.ts` with FR-027 and SC-008.
+
+## Notes
+
+- [P] tasks touch different files and have no incomplete dependency
+- Every component task includes its unit test, its required-state preview declarations and its message
+  keys; none of the three is a follow-up
+- Commit after each task or logical group; stop at a checkpoint to validate a story independently
