@@ -426,3 +426,42 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 - Every component task includes its unit test, its required-state preview declarations and its message
   keys; none of the three is a follow-up
 - Commit after each task or logical group; stop at a checkpoint to validate a story independently
+
+## Phase: the application says what it is, 2026-08-27
+
+> "Analyse the application and propose ways to optimize for search engines." Four routes were served
+> one title, no description, no canonical and no card, and the analysis in
+> `design/search-visibility.md` is the first deliverable rather than a by-product of the second.
+
+- [x] T125 Write the analysis. What a crawler is served on each of the four routes today, six
+      findings ranked by what they cost, and — named rather than buried — the three omissions that
+      wait on an asset or a build step: no card image, no hull pages in the sitemap, no installable
+      icon. Record what was considered and deliberately not done, prerendering first.
+      _Proposing without saying what the proposal leaves out is how a follow-up becomes a surprise._
+- [x] T126 Give a route an identity. `SITE_ORIGIN` and `canonicalAddress` in
+      `src/app/platform/browser/site-address.ts`; routes declare a `description` message key beside
+      their title key; `RouteTitleStrategy` resolves both and hands the store the route's path with
+      them. A child with no description of its own inherits the nearest ancestor's, walked rather
+      than configured, so `paramsInheritanceStrategy` does not change what every other consumer of
+      `data` sees.
+      _The canonical is built from a constant rather than from `location`: a preview canonical to
+      itself is exactly the duplicate a canonical exists to collapse._
+- [x] T127 Widen the one commit. `DocumentAdapter.commitRootState` takes a `RootDocumentState` and
+      publishes description, `og:*`, `twitter:*` and the canonical link alongside `lang`, `dir` and
+      the title; the locale store publishes it from its single commit point, so a description can
+      never be left in the language the title has just moved out of.
+- [x] T128 [P] Ship the static half. The English defaults in `src/index.html`, plus
+      `public/robots.txt`, `public/sitemap.xml`, `public/manifest.webmanifest` and a JSON-LD
+      `WebApplication` node. Relative `start_url`, `scope` and icon paths, for the same reason the
+      locale catalogues' paths are relative. Prefetch the manifest in `ngsw-config.json`.
+- [x] T129 Gate the drift. `searchMetadataViolations` reconciles the four files against `SITE_ORIGIN`
+      and against the route table, and the cross-origin rule stops reporting a `rel="canonical"` as
+      a request — a declared relationship opens no connection, while `preconnect`, `manifest` and
+      `stylesheet` still do and stay caught.
+      _Four files now repeat the origin and the route list. A route added with no sitemap entry
+      fails nothing at runtime; it fails months later in a search result nobody is looking at._
+- [x] T130 [P] Cover it: `site-address.spec.ts`, the head writes in `document.adapter.spec.ts`, the
+      key resolution and inheritance in `route-title.strategy.spec.ts`, the widened commit in
+      `locale.store.spec.ts`, both directions of the new rule in
+      `check-interface-foundations.test.mjs`, and the journey in `e2e/search-visibility.spec.ts`.
+      Reconcile `e2e/coverage-ledger.ts` with FR-027 and SC-008.

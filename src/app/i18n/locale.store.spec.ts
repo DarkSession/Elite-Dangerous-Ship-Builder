@@ -1,16 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { DocumentAdapter } from '../platform/browser/document.adapter';
+import { DocumentAdapter, type RootDocumentState } from '../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
 import { CatalogueLoader } from './catalogue-loader';
 import { BUNDLED_ENGLISH, type LocaleCandidate, type ShippedLocale } from './locale-registry';
+import { SITE_ORIGIN } from '../platform/browser/site-address';
 import { LocaleStore } from './locale.store';
 
 /** Records every root-document commit so atomicity can be asserted. */
 class RecordingDocumentAdapter {
-  readonly commits: { language: string; direction: string; title: string | null }[] = [];
+  readonly commits: RootDocumentState[] = [];
 
-  commitRootState(language: string, direction: 'ltr' | 'rtl', title: string | null): void {
-    this.commits.push({ language, direction, title });
+  commitRootState(state: RootDocumentState): void {
+    this.commits.push(state);
   }
 }
 
@@ -115,7 +116,7 @@ describe('LocaleStore', () => {
     expect(store.commitBundledEnglish('browser').selectionSource).toBe('browser');
   });
 
-  it('publishes language, direction and title together in one document commit', () => {
+  it('publishes language, direction, title, description and address in one commit', () => {
     const { store, document } = setup();
 
     store.commitCandidate(
@@ -124,7 +125,13 @@ describe('LocaleStore', () => {
     );
 
     expect(document.commits).toEqual([
-      { language: 'de', direction: 'ltr', title: BUNDLED_ENGLISH['app.document-title.default'] },
+      {
+        language: 'de',
+        direction: 'ltr',
+        title: BUNDLED_ENGLISH['app.document-title.default'],
+        description: germanCatalogue['app.description'],
+        canonical: `${SITE_ORIGIN}/`,
+      },
     ]);
   });
 
@@ -323,7 +330,7 @@ describe('LocaleStore document title', () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 
-    store.setPage('Ship Builder');
+    store.setRoute({ title: 'Ship Builder', description: null, path: '/ships' });
 
     expect(document.commits.at(-1)?.title).toContain('Ship Builder');
     expect(document.commits.at(-1)?.title).toContain(BUNDLED_ENGLISH['app.name']);
@@ -333,14 +340,14 @@ describe('LocaleStore document title', () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 
-    store.setPage('   ');
+    store.setRoute({ title: '   ', description: null, path: '/ships' });
 
     expect(document.commits.at(-1)?.title).toBe(BUNDLED_ENGLISH['app.document-title.default']);
   });
 
   it('re-publishes the title in the language that commits with it', async () => {
     const { store, document } = setup({ browserLanguages: ['de'] });
-    store.setPage('Ship Builder');
+    store.setRoute({ title: 'Ship Builder', description: null, path: '/ships' });
 
     await store.start();
 

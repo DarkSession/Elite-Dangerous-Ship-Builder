@@ -55,8 +55,14 @@ In clean browser contexts verify:
 2. An unsupported browser language selects bundled English with no locale request.
 3. No language control is present and nothing about the language is stored in the browser.
 4. A secondary-catalogue load/shape/blank/placeholder failure commits complete English once.
-5. Messages, title, `lang`, `dir` and formatters change in one revision; no mixed frame/raw key flash.
+5. Messages, title, description, canonical address, `lang`, `dir` and formatters change in one
+   revision; no mixed frame/raw key flash and no description left in the previous language.
 6. Active build bytes/revision, URL, save state and undo history remain unchanged.
+7. Each of `/ships`, `/build` and `/builds` carries its own `<meta name="description">` and its own
+   `<link rel="canonical">`, the canonical names `https://sb.edct.dev` rather than `localhost`, and
+   `/build` with a build in its fragment canonicalises to `/build`.
+8. `curl` on `/index.html`, `/robots.txt`, `/sitemap.xml` and `/manifest.webmanifest` returns the
+   static half a reader that runs no script is served.
 
 Expected request counts: English zero; cold German at most one same-origin `/i18n/` request; warm
 German zero.

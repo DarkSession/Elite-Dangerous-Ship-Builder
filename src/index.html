@@ -1,11 +1,72 @@
 <!doctype html>
+<!--
+  The host document, not a component template.
+
+  It is served before Angular runs and is the only thing a crawler that executes
+  no script ever sees, so every phrase in it is the English default for the
+  screen the application opens on. The locale store replaces the title, the
+  description, the canonical link and both card blocks on the first committed
+  snapshot, in whichever language the browser asked for (011/FR-027). The policy
+  checker holds the addresses here to `SITE_ORIGIN`, and holds this file, the
+  sitemap, the robots file and the manifest to the same origin as each other.
+-->
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
     <title>Elite Dangerous Ship Builder</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Plan Elite Dangerous loadouts in your browser. Pick a hull, outfit it, read the numbers, and share a build as a link. No account, nothing uploaded."
+    />
+    <link rel="canonical" href="https://sb.edct.dev/" />
+
+    <!-- The dark theme is the only theme (011/FR-003); saying so keeps the
+         browser from drawing a light frame around it before the styles land. -->
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0b0b0c" />
+    <meta name="application-name" content="Ship Builder" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Elite Dangerous Ship Builder" />
+    <meta property="og:title" content="Elite Dangerous Ship Builder" />
+    <meta
+      property="og:description"
+      content="Plan Elite Dangerous loadouts in your browser. Pick a hull, outfit it, read the numbers, and share a build as a link. No account, nothing uploaded."
+    />
+    <meta property="og:url" content="https://sb.edct.dev/" />
+    <meta property="og:locale" content="en" />
+
+    <!-- `summary` rather than `summary_large_image`: there is no card image,
+         because there is no logo to make one from. See the named omission in
+         specs/011-interface-foundations/design/search-visibility.md. -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Elite Dangerous Ship Builder" />
+    <meta
+      name="twitter:description"
+      content="Plan Elite Dangerous loadouts in your browser. Pick a hull, outfit it, read the numbers, and share a build as a link. No account, nothing uploaded."
+    />
+
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Elite Dangerous Ship Builder",
+        "alternateName": "Ship Builder",
+        "url": "https://sb.edct.dev/",
+        "description": "Plan Elite Dangerous loadouts in your browser. Pick a hull, outfit it, read the numbers, and share a build as a link. No account, nothing uploaded.",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript.",
+        "isAccessibleForFree": true,
+        "inLanguage": ["en", "de"],
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
   </head>
   <body>
     <app-root></app-root>

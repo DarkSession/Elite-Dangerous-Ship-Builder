@@ -861,10 +861,33 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkServiceWorkerOwnership(sources);
   await checkConformanceClaims(sources);
   await checkLedgerReconciliation();
+  await checkSearchMetadata();
   await checkProductionOutput();
   await checkCopiedSchematics();
 
   return [...violations];
+}
+
+/** IO wrapper: reads the four files that state where this application lives. */
+async function checkSearchMetadata() {
+  const read = async (path) => {
+    const file = resolve(ROOT, path);
+    return existsSync(file) ? await readFile(file, 'utf8') : '';
+  };
+
+  const routesPath = resolve(ROOT, 'src/app/app.routes.ts');
+  const routesSource = existsSync(routesPath) ? await readFile(routesPath, 'utf8') : '';
+
+  violations.push(
+    ...searchMetadataViolations({
+      origin: await read(SEARCH_METADATA_FILES.origin),
+      index: await read(SEARCH_METADATA_FILES.index),
+      robots: await read(SEARCH_METADATA_FILES.robots),
+      sitemap: await read(SEARCH_METADATA_FILES.sitemap),
+      manifest: await read(SEARCH_METADATA_FILES.manifest),
+      routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
+    }),
+  );
 }
 
 /** IO wrapper: reads the emitted production output. */
@@ -1091,8 +1114,23 @@ const BUNDLE_REMNANTS = [
   'onlyBuiltDependencies',
 ];
 
-/** Origins that appear as namespace or documentation strings, never as requests. */
-const NON_REQUEST_ORIGINS = [/^https?:\/\/www\.w3\.org\//];
+/**
+ * Origins that appear as namespace or documentation strings, never as requests.
+ *
+ * `schema.org` is the JSON-LD vocabulary the head declares itself against and
+ * `sitemaps.org` is the sitemap's XML namespace. Neither is fetched: a
+ * `@context` names a vocabulary and an `xmlns` names a schema, and both would
+ * be identical strings if the site were served from the moon.
+ *
+ * Each entry is written with its trailing slash, because the addresses these
+ * are tested against are full URLs. A caller holding a bare origin appends one
+ * before testing.
+ */
+const NON_REQUEST_ORIGINS = [
+  /^https?:\/\/www\.w3\.org\//,
+  /^https?:\/\/schema\.org\//,
+  /^https?:\/\/www\.sitemaps\.org\//,
+];
 
 /** Ways a bundle can actually reach another origin. */
 const CROSS_ORIGIN_REQUEST = [
@@ -1102,6 +1140,21 @@ const CROSS_ORIGIN_REQUEST = [
   /@import\s+(?:url\()?["']?(https?:\/\/[^"')]+)/gi,
   /url\(\s*["']?(https?:\/\/[^"')]+)/gi,
 ];
+
+/**
+ * `<link>` relationships that state something rather than fetch something.
+ *
+ * A canonical or an alternate is an address the document *declares*; the
+ * browser opens no connection for either, and a search engine is the only
+ * consumer. Every other relationship is left caught, including the ones that
+ * look declarative and are not: `preconnect` and `dns-prefetch` open the
+ * connection as their whole purpose, and `manifest`, `stylesheet`, `icon` and
+ * `preload` fetch a file.
+ *
+ * Without this, the canonical link the application needs in order to be found
+ * at all would be reported as the cross-origin request it is not (011/FR-027).
+ */
+const DECLARED_LINK_RELS = /<link\b[^>]*?\brel\s*=\s*["'](?:canonical|alternate)["'][^>]*>/gi;
 
 // ---------------------------------------------------------------------------
 // Rule: the hull schematics are extracted from the package, never kept
@@ -1254,10 +1307,16 @@ export function productionOutputViolations(contents) {
     // One URL, one violation: `@import url(...)` matches two of the patterns
     // above, and reporting the same address twice makes a short list look like
     // a long one.
+    //
+    // Declarative `<link>` elements are removed first rather than filtered
+    // afterwards, so the address inside one is never compared at all: it is not
+    // a request, and exempting it by origin would exempt real requests to the
+    // same host.
+    const requestable = text.replace(DECLARED_LINK_RELS, '');
     const reported = new Set();
     for (const pattern of CROSS_ORIGIN_REQUEST) {
       pattern.lastIndex = 0;
-      let match = pattern.exec(text);
+      let match = pattern.exec(requestable);
       while (match !== null) {
         const url = match[1];
         if (!NON_REQUEST_ORIGINS.some((allowed) => allowed.test(url)) && !reported.has(url)) {
@@ -1269,7 +1328,203 @@ export function productionOutputViolations(contents) {
             message: `The production output requests another origin: ${url}`,
           });
         }
-        match = pattern.exec(text);
+        match = pattern.exec(requestable);
+      }
+    }
+  }
+
+  return found;
+}
+
+// ---------------------------------------------------------------------------
+// Rule: the four files that state where this application lives agree
+// ---------------------------------------------------------------------------
+
+/** Where each half of the search metadata is written. */
+export const SEARCH_METADATA_FILES = {
+  origin: 'src/app/platform/browser/site-address.ts',
+  index: 'src/index.html',
+  robots: 'public/robots.txt',
+  sitemap: 'public/sitemap.xml',
+  manifest: 'public/manifest.webmanifest',
+};
+
+/** Head tags `index.html` must carry for a crawler that runs no script. */
+const REQUIRED_HEAD_TAGS = [
+  { attribute: 'name', key: 'description' },
+  { attribute: 'name', key: 'theme-color' },
+  { attribute: 'name', key: 'twitter:card' },
+  { attribute: 'name', key: 'twitter:title' },
+  { attribute: 'name', key: 'twitter:description' },
+  { attribute: 'property', key: 'og:type' },
+  { attribute: 'property', key: 'og:site_name' },
+  { attribute: 'property', key: 'og:title' },
+  { attribute: 'property', key: 'og:description' },
+  { attribute: 'property', key: 'og:url' },
+  { attribute: 'property', key: 'og:locale' },
+];
+
+/** Members a web app manifest needs before a browser offers installation. */
+const REQUIRED_MANIFEST_MEMBERS = [
+  'name',
+  'short_name',
+  'description',
+  'start_url',
+  'scope',
+  'display',
+  'background_color',
+  'theme_color',
+  'icons',
+];
+
+/** Routes that are redirects or wildcards, and so are not addresses to list. */
+const UNLISTABLE_ROUTES = new Set(['', '**']);
+
+/**
+ * Checks that nothing drifts between the four files that state where this
+ * application lives and what each of its pages is.
+ *
+ * The production origin is repeated in `src/index.html`, `public/robots.txt`
+ * and `public/sitemap.xml`; the route list is repeated in `app.routes.ts` and
+ * the sitemap. Every one of those repetitions is a silent regression waiting to
+ * happen — a route added with no sitemap entry, a domain moved in one file and
+ * not the other three — and none of them fails anything at runtime. They fail
+ * months later, in a search result nobody is looking at (011/FR-027).
+ *
+ * `input` is `{ origin, index, robots, sitemap, manifest, routes }`, each the
+ * text of its file except `routes`, which is the paths parsed out of the route
+ * table. An empty input is itself a violation: a rule that passes when there is
+ * nothing to inspect is not a gate.
+ */
+export function searchMetadataViolations(input) {
+  const found = [];
+  const fail = (file, message) => found.push({ file, line: 0, rule: 'search-metadata', message });
+
+  const declared = /SITE_ORIGIN\s*=\s*'(https:\/\/[^']+)'/.exec(input.origin ?? '');
+  if (declared === null) {
+    fail(
+      SEARCH_METADATA_FILES.origin,
+      'No SITE_ORIGIN is declared, so nothing states where this application is published.',
+    );
+    return found;
+  }
+  const origin = declared[1];
+
+  // `index.html`: the head a crawler that runs no script is served.
+  const index = input.index ?? '';
+  for (const { attribute, key } of REQUIRED_HEAD_TAGS) {
+    const tag = new RegExp(
+      `<meta\\b[^>]*?\\b${attribute}\\s*=\\s*["']${key}["'][^>]*?\\bcontent\\s*=\\s*["']([^"']+)["']`,
+      'is',
+    );
+    if (!tag.test(index)) {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        `The head carries no non-empty <meta ${attribute}="${key}">, so a crawler that runs no script reads none.`,
+      );
+    }
+  }
+
+  if (!/<link\b[^>]*?\brel\s*=\s*["']canonical["']/i.test(index)) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The head declares no canonical link, so every preview deployment is a duplicate of the site.',
+    );
+  }
+  if (!/<link\b[^>]*?\brel\s*=\s*["']manifest["']/i.test(index)) {
+    fail(SEARCH_METADATA_FILES.index, 'The head links no web app manifest.');
+  }
+  if (!/<script\b[^>]*?\btype\s*=\s*["']application\/ld\+json["']/i.test(index)) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The head carries no JSON-LD, so nothing states in machine-readable form what this is.',
+    );
+  }
+
+  // Every absolute address in the three crawler-facing files is this origin.
+  for (const key of ['index', 'robots', 'sitemap']) {
+    const file = SEARCH_METADATA_FILES[key];
+    for (const match of (input[key] ?? '').matchAll(/https:\/\/[a-z0-9.-]+/gi)) {
+      const address = match[0];
+      // A bare origin gains the trailing slash `NON_REQUEST_ORIGINS` is
+      // written against, so a vocabulary named without a path still matches.
+      if (
+        address !== origin &&
+        !NON_REQUEST_ORIGINS.some((allowed) => allowed.test(`${address}/`))
+      ) {
+        fail(
+          file,
+          `"${address}" is not the declared site origin ${origin}. One of the two has moved and the other has not.`,
+        );
+      }
+    }
+  }
+
+  // `robots.txt`: crawlable, and naming the map.
+  const robots = input.robots ?? '';
+  if (!/^\s*User-agent:/im.test(robots)) {
+    fail(SEARCH_METADATA_FILES.robots, 'No User-agent group, so the file states nothing.');
+  }
+  if (/^\s*Disallow:\s*\/\s*$/im.test(robots)) {
+    fail(
+      SEARCH_METADATA_FILES.robots,
+      'The whole site is disallowed. Nothing here is behind an account to keep out of an index.',
+    );
+  }
+  if (!robots.includes(`Sitemap: ${origin}/sitemap.xml`)) {
+    fail(SEARCH_METADATA_FILES.robots, `No "Sitemap: ${origin}/sitemap.xml" line.`);
+  }
+
+  // `sitemap.xml`: exactly the addressable routes, no more and no fewer.
+  const listed = new Set(
+    [...(input.sitemap ?? '').matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]),
+  );
+  const addressable = (input.routes ?? []).filter(
+    (route) => !UNLISTABLE_ROUTES.has(route) && !route.includes(':'),
+  );
+  for (const route of addressable) {
+    if (!listed.has(`${origin}/${route}`)) {
+      fail(SEARCH_METADATA_FILES.sitemap, `Route "/${route}" is addressable but is not listed.`);
+    }
+  }
+  for (const address of listed) {
+    if (!addressable.some((route) => `${origin}/${route}` === address)) {
+      fail(
+        SEARCH_METADATA_FILES.sitemap,
+        `"${address}" is listed but is not a route this application serves.`,
+      );
+    }
+  }
+
+  // `manifest.webmanifest`: parses, complete, and reachable from a sub-path.
+  let manifest = null;
+  try {
+    manifest = JSON.parse(input.manifest ?? '');
+  } catch {
+    fail(SEARCH_METADATA_FILES.manifest, 'The manifest is not valid JSON, so no browser reads it.');
+  }
+  if (manifest !== null) {
+    for (const member of REQUIRED_MANIFEST_MEMBERS) {
+      if (manifest[member] === undefined) {
+        fail(SEARCH_METADATA_FILES.manifest, `The manifest declares no "${member}".`);
+      }
+    }
+    // Same reason the locale catalogues' paths are relative: a preview is
+    // served from a sub-path of a Pages site, and a leading slash would look
+    // for the scope, the start URL and every icon at the host root.
+    for (const [member, value] of [
+      ['start_url', manifest.start_url],
+      ['scope', manifest.scope],
+      ...(Array.isArray(manifest.icons) ? manifest.icons : []).map((icon, index) => [
+        `icons[${index}].src`,
+        icon?.src,
+      ]),
+    ]) {
+      if (typeof value === 'string' && value.startsWith('/')) {
+        fail(
+          SEARCH_METADATA_FILES.manifest,
+          `"${member}" is "${value}". A root-absolute path breaks every preview deployment; make it relative.`,
+        );
       }
     }
   }
@@ -1812,6 +2067,7 @@ export const rules = {
   conformanceClaimViolations,
   ledgerReconciliationViolations,
   productionOutputViolations,
+  searchMetadataViolations,
   copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,

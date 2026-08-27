@@ -3,7 +3,8 @@
 ## Scope
 
 Every capability uses one design system, works with pointer, touch and screen reader at all supported
-sizes, and resolves application text and formatting through one localisation layer. The target is
+sizes, resolves application text and formatting through one localisation layer, and states what it is
+to a reader that arrives from a search engine. The target is
 WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 **Amended 2026-08-27:** 2.2.1 joins the list with FR-025's restart, which is applied rather than
 offered and therefore carries no way to hold the page.
@@ -50,6 +51,8 @@ offered and therefore carries no way to hold the page.
 3. Missing application translation falls back to bundled English text.
 4. Game text unavailable in the active locale uses canonical package text and is identified as
    untranslated when that text exists; otherwise it is explicitly unavailable.
+5. Each screen states what it is and where it lives, in the same language and in the same commit as
+   its title, so a search result and a pasted link name the screen rather than the product.
 
 ### Story 4 — Read the version that was published (P2)
 
@@ -156,6 +159,25 @@ offered and therefore carries no way to hold the page.
   unrepairable cache is an error rather than an improvement, and there is no working page under the
   warning to protect.
 
+- **FR-027**: Every addressable screen MUST publish, as part of the same commit that publishes the
+  root language, direction and document title, a description of itself and the canonical address of
+  its route, both resolved in the committed locale. The application MUST additionally ship, as
+  same-origin static files, a crawl policy that permits indexing, a sitemap naming every addressable
+  route, a web app manifest, and machine-readable structured data describing the application. The
+  document served before the application starts MUST carry the complete set in bundled English, so a
+  reader that executes no script is not served a document that says nothing. A canonical address
+  MUST name the production site rather than wherever the document happens to be served from, and
+  MUST NOT carry a build: the payload lives in the fragment (001/FR-015), and a canonical per build
+  is a canonical per nothing. Every file that repeats the production address or the route list MUST
+  be reconciled by the policy checker rather than by hand.
+
+  _Recorded 2026-08-27 (Commander request: "analyse the application and propose ways to optimize for
+  search engines")._ The analysis, its three named omissions — no card image, no hull pages in the
+  sitemap, no installable icon, each with the asset or build step it waits on — and what was
+  deliberately not done are in `design/search-visibility.md`. Prerendering is out of scope by the
+  owner's decision: this requirement is what a client-side application can state about itself
+  without one.
+
 ### Verification
 
 - **FR-021**: Every primary journey MUST run across the five layout profiles — desktop, tablet
@@ -192,6 +214,11 @@ translations.
 - **SC-006**: English and German contain identical non-empty application-owned message-key and
   interpolation-variable sets across the complete application; a matching browser language selects
   the corresponding shipped language and an unsupported browser language selects English.
+- **SC-008**: Each addressable screen is served its own title, its own description and its own
+  canonical address, in the committed language, with no build payload in the address; the document
+  served before the application starts carries all three in bundled English; and the crawl policy,
+  the sitemap, the manifest and the structured data agree with the route table and with one another.
+
 - **SC-007**: A session left open across a deployment states that it is restarting, offers nothing
   to press while it does, comes back on the published version on its own within a minute, and states
   on arrival that the update was applied and which version it is running. Where the restart could

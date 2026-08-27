@@ -402,6 +402,28 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    // Two halves with two owners. The policy checker compares `index.html`,
+    // `robots.txt`, `sitemap.xml`, the manifest and the route table against one
+    // constant, which is the half a browser cannot see all at once; the journey
+    // covers the half only a browser can answer, which is whether the head is
+    // actually rewritten as a Commander moves and in the language the page is
+    // in. Neither half is evidence for the other.
+    surfaceId: 'shell/search-metadata',
+    requirements: ['011/FR-027', '011/SC-008'],
+    journey: 'product/search-visibility',
+    axe: false,
+    assertions: [
+      'each addressable route publishes its own description rather than the product tagline',
+      'the canonical address and both card blocks name the route that is on screen',
+      'the canonical names the production site rather than wherever the document is served from',
+      'an open hull inherits the description of the screen it sits inside',
+      'no build payload reaches the canonical address, because a build lives in the fragment',
+      'the description and the declared locale are in the language the page is rendered in',
+      'the document served before the bundle runs already carries the whole set in English',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'shell/newer-version-published',
     requirements: ['011/FR-025', '011/SC-007'],
     journey: 'product/application-update',

@@ -828,6 +828,32 @@ describe('production output', () => {
     assert.deepEqual(ruleIds(found), ['production-output']);
   });
 
+  it('accepts a canonical link, which declares an address rather than fetching one', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/index.html': '<link rel="canonical" href="https://sb.edct.dev/ships">',
+    });
+
+    assert.deepEqual(found, []);
+  });
+
+  it('still rejects a stylesheet from another origin on the same document', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/index.html':
+        '<link rel="canonical" href="https://sb.edct.dev/"><link rel="stylesheet" href="https://cdn.example.com/x.css">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['production-output']);
+    assert.match(found[0].message, /cdn\.example\.com/);
+  });
+
+  it('still rejects a preconnect, which opens the connection it names', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/index.html': '<link rel="preconnect" href="https://fonts.example.com">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['production-output']);
+  });
+
   it('rejects a stylesheet, script or font loaded from another origin', () => {
     for (const contents of [
       '<script src="https://cdn.example/app.js"></script>',
@@ -962,5 +988,183 @@ describe('the placeholder grammar', () => {
     const gateSpelling = spelling(gate);
     assert.ok(gateSpelling, 'the gate no longer declares a placeholder pattern');
     assert.equal(spelling(application), gateSpelling);
+  });
+});
+
+describe('search metadata', () => {
+  const ORIGIN = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
+
+  const INDEX = [
+    '<meta name="description" content="What this is." />',
+    '<meta name="theme-color" content="#0b0b0c" />',
+    '<meta name="twitter:card" content="summary" />',
+    '<meta name="twitter:title" content="Ship Builder" />',
+    '<meta name="twitter:description" content="What this is." />',
+    '<meta property="og:type" content="website" />',
+    '<meta property="og:site_name" content="Ship Builder" />',
+    '<meta property="og:title" content="Ship Builder" />',
+    '<meta property="og:description" content="What this is." />',
+    '<meta property="og:url" content="https://sb.edct.dev/" />',
+    '<meta property="og:locale" content="en" />',
+    '<link rel="canonical" href="https://sb.edct.dev/" />',
+    '<link rel="manifest" href="manifest.webmanifest" />',
+    '<script type="application/ld+json">{"@context":"https://schema.org"}</script>',
+  ].join('\n');
+
+  const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n';
+
+  const SITEMAP = `<urlset>
+    <url><loc>https://sb.edct.dev/ships</loc></url>
+    <url><loc>https://sb.edct.dev/build</loc></url>
+  </urlset>`;
+
+  const MANIFEST = JSON.stringify({
+    name: 'Elite Dangerous Ship Builder',
+    short_name: 'Ship Builder',
+    description: 'What this is.',
+    start_url: './',
+    scope: './',
+    display: 'standalone',
+    background_color: '#0b0b0c',
+    theme_color: '#0b0b0c',
+    icons: [{ src: 'favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+  });
+
+  const complete = (overrides = {}) => ({
+    origin: ORIGIN,
+    index: INDEX,
+    robots: ROBOTS,
+    sitemap: SITEMAP,
+    manifest: MANIFEST,
+    routes: ['', 'ships', ':symbol', 'build', '**'],
+    ...overrides,
+  });
+
+  it('accepts four files that agree with each other and with the routes', () => {
+    assert.deepEqual(rules.searchMetadataViolations(complete()), []);
+  });
+
+  it('fails when nothing states where the application is published', () => {
+    const found = rules.searchMetadataViolations({});
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /SITE_ORIGIN/);
+  });
+
+  it('rejects a head with no description for a crawler that runs no script', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace(/<meta name="description"[^>]*>/, '') }),
+    );
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /description/);
+  });
+
+  it('rejects a head with no canonical link', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace(/<link rel="canonical"[^>]*>/, '') }),
+    );
+
+    assert.match(found[0].message, /canonical/);
+  });
+
+  it('rejects a head with no JSON-LD', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace(/<script[\s\S]*<\/script>/, '') }),
+    );
+
+    assert.match(found[0].message, /JSON-LD/);
+  });
+
+  it('rejects a domain moved in one file and not the others', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ robots: ROBOTS.replace('sb.edct.dev', 'shipbuilder.example') }),
+    );
+
+    assert.ok(found.length > 0);
+    assert.match(found[0].message, /shipbuilder\.example/);
+  });
+
+  it('accepts the vocabularies a document declares itself against', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        sitemap: SITEMAP.replace(
+          '<urlset>',
+          '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">',
+        ),
+      }),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a robots file that disallows the whole site', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        robots: `User-agent: *\nDisallow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n`,
+      }),
+    );
+
+    assert.match(found[0].message, /disallowed/);
+  });
+
+  it('rejects a robots file that names no sitemap', () => {
+    const found = rules.searchMetadataViolations(complete({ robots: 'User-agent: *\nAllow: /\n' }));
+
+    assert.match(found[0].message, /Sitemap/);
+  });
+
+  it('rejects an addressable route the sitemap does not list', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ routes: ['', 'ships', ':symbol', 'build', 'builds', '**'] }),
+    );
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /\/builds/);
+  });
+
+  it('rejects a listed address that is not a route the application serves', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ sitemap: `${SITEMAP}<url><loc>https://sb.edct.dev/gone</loc></url>` }),
+    );
+
+    assert.match(found[0].message, /\/gone/);
+  });
+
+  it('does not ask a redirect or a wildcard to be listed', () => {
+    assert.deepEqual(
+      rules.searchMetadataViolations(complete({ routes: ['', 'ships', 'build', '**'] })),
+      [],
+    );
+  });
+
+  it('rejects a manifest that is not valid JSON', () => {
+    const found = rules.searchMetadataViolations(complete({ manifest: '{ not json' }));
+
+    assert.match(found[0].message, /valid JSON/);
+  });
+
+  it('rejects a manifest missing a member a browser needs', () => {
+    const incomplete = JSON.parse(MANIFEST);
+    delete incomplete.icons;
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: JSON.stringify(incomplete) }),
+    );
+
+    assert.match(found[0].message, /icons/);
+  });
+
+  it('rejects a root-absolute path, which breaks every preview deployment', () => {
+    const rooted = { ...JSON.parse(MANIFEST), start_url: '/' };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
+
+    assert.match(found[0].message, /start_url/);
+  });
+
+  it('rejects a root-absolute icon path for the same reason', () => {
+    const rooted = { ...JSON.parse(MANIFEST), icons: [{ src: '/favicon.ico' }] };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
+
+    assert.match(found.at(-1).message, /icons\[0\]\.src/);
   });
 });

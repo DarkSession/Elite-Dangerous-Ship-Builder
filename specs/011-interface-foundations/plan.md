@@ -105,7 +105,8 @@ specs/011-interface-foundations/
     ├── component-preview-catalogue.md
     ├── reference-review.md
     ├── responsive-composition.md
-    └── screen-inventory.md
+    ├── screen-inventory.md
+    └── search-visibility.md
 ```
 
 `tasks.md` is Phase 2 output and is intentionally not created by this command.
@@ -237,6 +238,10 @@ No planning clarification marker remains.
   fixture addressing and the required state/profile/variant ledger.
 - [design/reference-review.md](./design/reference-review.md) records the exact 1a–1d patterns retained
   and the fixed-layout, remote-asset, contrast, target, semantics and localization mechanics rejected.
+- [design/search-visibility.md](./design/search-visibility.md) records the 2026-08-27 search-engine
+  analysis: what a crawler was previously served on all four routes, the six findings that were
+  acted on, the three assets and one build step the remaining omissions wait on, and what was
+  deliberately not done and why (FR-027).
 - [quickstart.md](./quickstart.md) provides runnable validation scenarios for strict compilation,
   catalogues, offline fallback, formatting, package text, previews, policy checks, browsers, axe,
   screen readers and zoom.

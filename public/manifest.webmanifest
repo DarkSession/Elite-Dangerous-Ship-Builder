@@ -1,0 +1,22 @@
+{
+  "name": "Elite Dangerous Ship Builder",
+  "short_name": "Ship Builder",
+  "description": "Plan Elite Dangerous loadouts in your browser. Pick a hull, outfit it, read the numbers, and share a build as a link. No account, nothing uploaded.",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "utilities"],
+  "background_color": "#0b0b0c",
+  "theme_color": "#0b0b0c",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

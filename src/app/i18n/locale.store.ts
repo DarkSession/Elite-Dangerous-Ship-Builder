@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { DocumentAdapter } from '../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
+import { canonicalAddress } from '../platform/browser/site-address';
 import { CatalogueLoader } from './catalogue-loader';
 import { resolveDocumentTitle } from './document-title';
 import {
@@ -49,6 +50,17 @@ export class LocaleStore {
   /** The page name the route contributes to the document title. */
   readonly #page = signal<string | null>(null);
 
+  /**
+   * The description the route contributes to the search metadata.
+   *
+   * `null` where the route declares none, which falls back to the
+   * application's own description rather than leaving the tag blank.
+   */
+  readonly #description = signal<string | null>(null);
+
+  /** The route's own path, which becomes its canonical address. */
+  readonly #path = signal('/');
+
   /** The current committed locale state. Always complete, always usable. */
   readonly snapshot = this.#snapshot.asReadonly();
 
@@ -57,6 +69,18 @@ export class LocaleStore {
 
   /** The page name currently contributing to the document title. */
   readonly page = this.#page.asReadonly();
+
+  /** The canonical address of the route currently on screen. */
+  readonly canonical = computed(() => canonicalAddress(this.#path()));
+
+  /**
+   * What the document currently says this page is, in the committed language.
+   *
+   * Public because it is what a search result quotes and a link preview shows,
+   * which makes it as much a published fact about the interface as the title
+   * is — and the only way to assert the route and the language agree on it.
+   */
+  readonly description = computed(() => this.#pageDescription(this.#snapshot().catalogue));
 
   readonly catalogue = computed<MessageCatalogue>(() => this.#snapshot().catalogue);
   readonly effectiveLocale = computed(() => this.#snapshot().effectiveLocale);
@@ -142,19 +166,22 @@ export class LocaleStore {
   }
 
   /**
-   * Sets the page name the document title names, and republishes the title.
+   * Sets what the route contributes to the document, and republishes it.
    *
-   * The route owns the page name; the store owns how it is combined with the
-   * application name and in which language.
+   * The route owns its own identity — which page it is, what that page is for,
+   * and where it lives; the store owns how those are worded, in which language,
+   * and how the page name is combined with the application name.
+   *
+   * One method rather than three, because all three are written in one commit
+   * and a route that could set two of them would eventually set two of them:
+   * a title from one screen under a canonical from the last is precisely the
+   * mismatch the single commit exists to make impossible (011/FR-027).
    */
-  setPage(page: string | null): void {
-    this.#page.set(page);
-    const snapshot = this.#snapshot();
-    this.#document.commitRootState(
-      snapshot.effectiveLocale,
-      snapshot.direction,
-      this.#title(snapshot.catalogue),
-    );
+  setRoute(route: RouteIdentity): void {
+    this.#page.set(route.title);
+    this.#description.set(route.description);
+    this.#path.set(route.path);
+    this.#publish(this.#snapshot());
   }
 
   /**
@@ -210,20 +237,58 @@ export class LocaleStore {
     const snapshot: LocaleSnapshot = { ...next, revision: this.#snapshot().revision + 1 };
     this.#snapshot.set(snapshot);
     this.#loading.set(false);
-    // Messages, effective locale, direction and title in one write. The
-    // formatters read their locale from this same snapshot, so they change with
-    // it rather than one render later.
-    this.#document.commitRootState(
-      snapshot.effectiveLocale,
-      snapshot.direction,
-      this.#title(snapshot.catalogue),
-    );
+    this.#publish(snapshot);
     return snapshot;
+  }
+
+  /**
+   * The one write of root document state.
+   *
+   * Messages, effective locale, direction, title, description and canonical in
+   * one call. The formatters read their locale from the same snapshot, so they
+   * change with it rather than one render later, and the description can never
+   * be left in the language the title has just moved out of.
+   */
+  #publish(snapshot: LocaleSnapshot): void {
+    this.#document.commitRootState({
+      language: snapshot.effectiveLocale,
+      direction: snapshot.direction,
+      title: this.#title(snapshot.catalogue),
+      description: this.#pageDescription(snapshot.catalogue),
+      canonical: this.canonical(),
+    });
   }
 
   #title(catalogue: MessageCatalogue): string {
     return resolveDocumentTitle(catalogue, this.#page());
   }
+
+  /**
+   * What this page is, in the committed language.
+   *
+   * A route with nothing of its own to say falls back to the application's
+   * description rather than to a blank tag: a page that declares it has nothing
+   * to say is read by a search engine as exactly that.
+   */
+  #pageDescription(catalogue: MessageCatalogue): string {
+    const own = this.#description();
+    return own !== null && own.trim().length > 0 ? own : catalogue['app.description'];
+  }
+}
+
+/**
+ * What a route contributes to the document.
+ *
+ * `title` and `description` are already-resolved text rather than message keys:
+ * the route declares keys, `RouteTitleStrategy` resolves them against the
+ * committed catalogue, and the store never learns that routes have keys at all.
+ * Either may be `null` where the route declares none.
+ */
+export interface RouteIdentity {
+  readonly title: string | null;
+  readonly description: string | null;
+  /** The router's own URL for this route, query and fragment included or not. */
+  readonly path: string;
 }
 
 /**
