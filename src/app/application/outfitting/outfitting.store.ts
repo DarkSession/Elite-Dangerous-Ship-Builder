@@ -727,6 +727,48 @@ function refusalOf(error: LoadoutEditError, slotKey: string | null): EditFailure
  * text on a tape that must not hold any (edit-history contract, "Included
  * decisions").
  */
+function summaryOf(intent: BuildEditIntent): HistoryIntentSummary {
+  switch (intent.kind) {
+    case 'fitStock':
+    case 'fitVariant':
+      return { key: 'outfitting.history.fit', params: { slot: intent.slotKey } };
+    case 'remove':
+      return { key: 'outfitting.history.remove', params: { slot: intent.slotKey } };
+    case 'applyEngineering':
+      return {
+        key: 'outfitting.history.engineer',
+        params: { slot: intent.slotKey, grade: intent.grade },
+      };
+    case 'setExperimental':
+      return { key: 'outfitting.history.effect', params: { slot: intent.slotKey } };
+    case 'clearEngineering':
+      return { key: 'outfitting.history.clear', params: { slot: intent.slotKey } };
+    case 'restorePurchase':
+      return { key: 'outfitting.history.restore', params: { slot: intent.slotKey } };
+    case 'setEnabled':
+      return {
+        key: intent.enabled ? 'outfitting.history.powered' : 'outfitting.history.unpowered',
+        params: { slot: intent.slotKey },
+      };
+    case 'setPriority':
+      return {
+        key: 'outfitting.history.priority',
+        params: { slot: intent.slotKey, group: intent.priority + 1 },
+      };
+    case 'setShipName':
+      return {
+        key: intent.value === null ? 'outfitting.history.name.cleared' : 'outfitting.history.name',
+        params: {},
+      };
+    case 'setShipIdent':
+      return {
+        key:
+          intent.value === null ? 'outfitting.history.ident.cleared' : 'outfitting.history.ident',
+        params: {},
+      };
+  }
+}
+
 /**
  * What a mount's power assignment is, as the two fields a Commander set.
  *
@@ -784,47 +826,5 @@ function carryPower(candidate: ShipLoadout, slotKey: string, carried: CarriedPow
   // writing `true` would add a field rather than preserve a state.
   if (carried.on === false) {
     candidate.setModuleEnabled(slotKey, false);
-  }
-}
-
-function summaryOf(intent: BuildEditIntent): HistoryIntentSummary {
-  switch (intent.kind) {
-    case 'fitStock':
-    case 'fitVariant':
-      return { key: 'outfitting.history.fit', params: { slot: intent.slotKey } };
-    case 'remove':
-      return { key: 'outfitting.history.remove', params: { slot: intent.slotKey } };
-    case 'applyEngineering':
-      return {
-        key: 'outfitting.history.engineer',
-        params: { slot: intent.slotKey, grade: intent.grade },
-      };
-    case 'setExperimental':
-      return { key: 'outfitting.history.effect', params: { slot: intent.slotKey } };
-    case 'clearEngineering':
-      return { key: 'outfitting.history.clear', params: { slot: intent.slotKey } };
-    case 'restorePurchase':
-      return { key: 'outfitting.history.restore', params: { slot: intent.slotKey } };
-    case 'setEnabled':
-      return {
-        key: intent.enabled ? 'outfitting.history.powered' : 'outfitting.history.unpowered',
-        params: { slot: intent.slotKey },
-      };
-    case 'setPriority':
-      return {
-        key: 'outfitting.history.priority',
-        params: { slot: intent.slotKey, group: intent.priority + 1 },
-      };
-    case 'setShipName':
-      return {
-        key: intent.value === null ? 'outfitting.history.name.cleared' : 'outfitting.history.name',
-        params: {},
-      };
-    case 'setShipIdent':
-      return {
-        key:
-          intent.value === null ? 'outfitting.history.ident.cleared' : 'outfitting.history.ident',
-        params: {},
-      };
   }
 }

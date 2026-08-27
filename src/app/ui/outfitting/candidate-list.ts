@@ -126,8 +126,30 @@ export class CandidateList {
     // (module-replacement, the short-viewport release) — so delegating would
     // take the search field and the `FITTED HERE` block off screen to centre a
     // row, which is the opposite of what this is for.
-    list.scrollTop = row.offsetTop - list.offsetTop - (list.clientHeight - row.offsetHeight) / 2;
+    //
+    // Measured as two rects and a delta, which is the same arithmetic the rail
+    // below does. It was `row.offsetTop - list.offsetTop`, and those two are
+    // not in the same coordinate system: both scrollers are positioned, so they
+    // are the row's own `offsetParent` and `row.offsetTop` is already measured
+    // from the scroller — while `list.offsetTop` is the scroller's offset
+    // inside whatever is positioned above it. Subtracting the second undershot
+    // the centre by however far the box sat down the page, and the release of
+    // the workspace column moved that distance again (reported in review,
+    // 2026-08-27).
+    const listBox = list.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    list.scrollTop += rowBox.top - listBox.top - (list.clientHeight - rowBox.height) / 2;
   });
+
+  /**
+   * The family this manifest's own press last asked for.
+   *
+   * A plain field rather than a signal, deliberately: nothing renders from it
+   * and nothing should re-run because of it. It is set on the press and read
+   * once by the reveal that press causes — the store answers with a fresh
+   * family list either way, so the effect always runs and always spends it.
+   */
+  #pressedFamily: OutfittingFamilyId | null = null;
 
   /**
    * Brings the revealed family into the rail's own visible box.
@@ -155,7 +177,23 @@ export class CandidateList {
     // The accordion draws its families and their rows in one scroller, so the
     // fitted-row centring above already carries its revealed family with it.
     // Only the rail lists the families in a box of their own.
-    if (this.manifest() !== 'rail' || this.revealedFamily() === null) {
+    const revealed = this.revealedFamily();
+    if (this.manifest() !== 'rail' || revealed === null) {
+      return;
+    }
+
+    // Spent whether or not it matches: a press answers for the reveal it
+    // caused and for no later one.
+    const pressed = this.#pressedFamily;
+    this.#pressedFamily = null;
+
+    // The rule itself, and not a proxy for it: a family the Commander revealed
+    // is not scrolled to. Asking instead whether the row is already in view
+    // gets this wrong for exactly the row it matters for — the rail is a 470px
+    // box of 44px rows, so the row at either edge is routinely clipped, and
+    // pressing a clipped row would re-centre the list under the finger that
+    // pressed it (reported in review, 2026-08-27).
+    if (pressed === revealed.familyId) {
       return;
     }
 
@@ -170,6 +208,9 @@ export class CandidateList {
 
     const railBox = rail.getBoundingClientRect();
     const rowBox = row.getBoundingClientRect();
+    // Restraint rather than rule: what is already whole and in the box needs no
+    // bringing into it, and moving it would be motion with nothing to show for
+    // it.
     if (rowBox.top >= railBox.top && rowBox.bottom <= railBox.bottom) {
       return;
     }
@@ -267,6 +308,18 @@ export class CandidateList {
 
   /** One family opened or closed. View state; it changes no build. */
   readonly familyToggled = output<OutfittingFamilyId>();
+
+  /**
+   * A Commander pressing a family control, in either manifest.
+   *
+   * It asks for the family exactly as the bare output did, and records that the
+   * ask was theirs. What the reveal rule does with that is above; what it must
+   * not do is scroll a list a Commander is already looking at.
+   */
+  revealFamily(familyId: OutfittingFamilyId): void {
+    this.#pressedFamily = familyId;
+    this.familyToggled.emit(familyId);
+  }
 
   /** The prefix every family control and region id is built from. */
   readonly #idBase = relationId('candidate-family');

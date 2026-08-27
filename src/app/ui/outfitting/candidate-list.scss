@@ -24,6 +24,21 @@
   border: 0;
   min-inline-size: 0;
   min-block-size: 0;
+  // A height of its own, and a `fieldset` is why.
+  //
+  // Every other box in this chain hands its flex child the height it resolved
+  // to. A fieldset lays its children out in an anonymous box that nothing here
+  // can name, and that box only takes the fieldset's height when the fieldset
+  // has a definite one — a `flex: 1` share of a definite parent counts, a
+  // `max-block-size` on an auto-height ancestor does not. So the scroller
+  // inside grew to its content instead of scrolling: measured at 1112x834, a
+  // 680px fieldset with 1100px of rows laid out inside it.
+  //
+  // It never showed while the bench clipped what overflowed it. Releasing the
+  // workspace column for a selected mount stopped the clipping, and the rows
+  // were painted straight over the engineering panel below — where they
+  // answered a press meant for a family control (reported 2026-08-27).
+  block-size: 100%;
 }
 
 // The scroller, and the only one in this component.
@@ -43,6 +58,26 @@
   min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior-block: contain;
+}
+
+// Room kept under the command bar for anything scrolled to.
+//
+// The bar is sticky over the page, and since the workspace column releases for
+// a selected mount the page is what scrolls (`design/outfitting-workspace.md`,
+// "a bench is not bounded by the column either"). A family control or a row
+// brought into view by anything other than a Commander's own thumb — the
+// platform's `scrollIntoView`, moving focus, an assistive technology — then
+// landed flush at the top of the window, which is behind the bar: measured at
+// 1112x834, a family control at 0-44px under a bar reaching 74px, with the bar
+// answering the press meant for it.
+//
+// The same reservation `.frame__main` already makes for an in-page link, made
+// here for the two things in this list that get scrolled to. It counts inside
+// this component's own scroller too, where it is the frozen family bar rather
+// than the command bar that would otherwise stand over the row.
+.family,
+.candidate {
+  scroll-margin-block-start: var(--edsb-layout-bar-height);
 }
 
 // Hidden until there is room to align columns under it.

@@ -25,7 +25,7 @@
             [id]="familyControlId(family.familyId)"
             [attr.aria-pressed]="revealedFamily()?.familyId === family.familyId"
             [attr.aria-controls]="paneId"
-            (click)="familyToggled.emit(family.familyId)"
+            (click)="revealFamily(family.familyId)"
           >
             <span class="family__name">
               <edsb-game-text
@@ -149,7 +149,7 @@
             [id]="familyControlId(family.familyId)"
             [attr.aria-expanded]="family.open"
             [attr.aria-controls]="familyRegionId(family.familyId)"
-            (click)="familyToggled.emit(family.familyId)"
+            (click)="revealFamily(family.familyId)"
           >
             <span class="family__name">
               <edsb-game-text

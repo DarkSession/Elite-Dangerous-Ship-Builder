@@ -247,22 +247,35 @@ describe('outfitting store - fitting', () => {
   });
 
   it('writes no power field a replaced module did not carry', () => {
-    store.select(FIXTURE_SLOTS.utility);
-    const before = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.utility);
-    expect(before?.priority).toBeUndefined();
-    expect(before?.on).toBeUndefined();
+    store.select(FIXTURE_SLOTS.thrusters);
 
-    const choice = store.membership()!.choices.find((candidate) => candidate.kind === 'stock')!;
-    store.dispatch({
+    // A mount that really is occupied, and a module that really does say
+    // nothing about its power. Both matter: on an empty mount every assertion
+    // below reads `undefined` off a `null`, and on a choice that is already
+    // fitted the transaction returns `unchanged` and edits nothing — either way
+    // the test would pass without the rule holding.
+    const before = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(before.priority).toBeUndefined();
+    expect(before.on).toBeUndefined();
+
+    const choice = store
+      .membership()!
+      .choices.find(
+        (candidate) => candidate.kind === 'stock' && candidate.module.symbol !== before.symbol,
+      )!;
+    const result = store.dispatch({
       kind: 'fitStock',
-      slotKey: FIXTURE_SLOTS.utility,
+      slotKey: FIXTURE_SLOTS.thrusters,
       choiceKey: choice.key,
     });
 
     // An unstated group is group 1 and an unstated `on` is on, both answered by
     // the package. Carrying them across as written values would put fields in
     // the build that no Commander set (FR-015).
-    const swapped = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.utility)!;
+    expect(result.kind).toBe('committed');
+    const swapped = active.loadout()!.fittedModuleAt(FIXTURE_SLOTS.thrusters)!;
+    expect(swapped.symbol).toBe(choice.module.symbol);
+    expect(swapped.symbol).not.toBe(before.symbol);
     expect(swapped.priority).toBeUndefined();
     expect(swapped.on).toBeUndefined();
   });

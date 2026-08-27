@@ -640,30 +640,30 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       it, and it was a different one in each profile — so the sweep is taken where a Commander who
       reached this width meets the arrangement. `accessibility.ts` now says that the state a sweep
       judges includes where the page stands (`e2e/mobility-and-jump.spec.ts`, `e2e/accessibility.ts`)
-- [ ] T159 Bring a revealed family into the rail's own visible box. Opening a fitted mount already
+- [x] T159 Bring a revealed family into the rail's own visible box. Opening a fitted mount already
       centred the module in the pane and left the rail showing whichever ten of the seventy-seven
       families it happened to be scrolled to, so the rows changed and nothing said which family they
       belonged to. The rail centres a revealed row that is outside its box and leaves one that is
       already in it exactly where it is, so a Commander's own press never moves the list under them
       (`candidate-list.ts`; spec FR-021, SC-007; `design/module-replacement.md`, "The rail scrolls to
       the family it was told to select")
-- [ ] T160 Order a family's choices by class descending and then by the package's price descending,
+- [x] T160 Order a family's choices by class descending and then by the package's price descending,
       with a choice the package publishes no price for after the priced ones of its class. The name
       that used to lead becomes a tie-break above rating, stock-before-variant and the package's
       ordinals, so the order stays total (`candidate-query.ts`; spec FR-005, SC-006;
       `contracts/module-catalogue.md`, "Families and order")
-- [ ] T161 Raise the fitting panel's floor from five rows to eight — `--edsb-measure-fitting-panel`
+- [x] T161 Raise the fitting panel's floor from five rows to eight — `--edsb-measure-fitting-panel`
       18rem to 26rem — and drop the guard that measured it against the editor's floor, which the
       release in T162 leaves nothing to guard. The floor is bounded by what the command bar leaves of
       the screen so it can never exceed the window (`styles/tokens/_primitives.scss`,
       `module-replacement.scss`; workspace design, "Five rows is still a glimpse")
-- [ ] T162 Let the details and engineering panel expand instead of scroll. The two column scrollers,
+- [x] T162 Let the details and engineering panel expand instead of scroll. The two column scrollers,
       the panel body's scroller and the panel's own bound are gone; the workspace's middle column
       releases while a mount is selected, exactly as it releases for an anatomy dashboard, and the
       page carries the panel. The full-screen composition is untouched — the layer around it is what
       scrolls (`engineering-editor.scss`, `outfitting-workspace.*`; spec FR-012b;
       `design/engineering-editor.md`, "Nothing here scrolls")
-- [ ] T163 Carry a mount's power priority group and off state through a replacement. `setModule` and
+- [x] T163 Carry a mount's power priority group and off state through a replacement. `setModule` and
       `setPreEngineeredVariant` document a fit as a fresh mount whose `On`, `Priority` and `Health`
       are reset, and direct a screen that keeps a group across a swap to set them again: this one
       does, inside the fit's own operation, so it stays one revision and one history decision. Only
@@ -671,3 +671,12 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       on-state stay unstated — and `health` is not carried because no surface here reads it
       (`outfitting.store.ts`; spec FR-015, SC-003a; `contracts/outfitting-editor.md`, "The power
       carry")
+- [x] T164 Give the manifest's `fieldset` a definite height, and keep the command bar off anything
+      scrolled to. Two faults the T162 release uncovered rather than caused: a fieldset hands its
+      anonymous content box a height only when it has a definite one, so the scroller inside stopped
+      scrolling and grew — 1100px of rows in a 680px box at 1112x834 — and with the bench no longer
+      clipping, those rows were painted over the engineering panel, where they answered presses meant
+      for a family control. The second is the sticky command bar: with the page scrolling, a control
+      brought into view programmatically landed behind it (`candidate-list.scss`;
+      `design/module-replacement.md`, "The fieldset needs a height of its own" and "Room under the
+      command bar")

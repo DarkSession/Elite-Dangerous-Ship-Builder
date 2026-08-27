@@ -303,6 +303,44 @@ three lines, seventeen families no longer fit in the canvas's 470px, and every
 row was squeezed until the names printed over one another. A scroller is what a
 list does when it has more than it can show; shrinking its rows is not.
 
+## The fieldset needs a height of its own, and the released column is how we found out
+
+**Ruled 2026-08-27.** The manifest's scroller sits inside the `fieldset` that
+carries the radio group's legend, and a fieldset lays its children out in an
+anonymous box no stylesheet here can name. That box takes the fieldset's height
+only when the fieldset has a **definite** one. A `flex: 1` share of a definite
+parent is definite; a `max-block-size` on an ancestor whose own height comes
+from its content is not.
+
+Until 2026-08-27 the chain was definite all the way down — the bench divided a
+fixed column between two panels — so nothing showed. Releasing the column for a
+selected mount made the panel's height a maximum rather than a share, and the
+scroller inside the fieldset stopped scrolling and simply grew: measured at
+1112x834, a 680px fieldset with 1100px of rows laid out inside it.
+
+It was invisible for one more step, because the bench clipped what overflowed
+it. The release stopped the clipping too, and then the rows were painted
+straight over the engineering panel below — where they answered a press meant
+for a family control. So the fieldset states `block-size: 100%`, which is the
+definite height its anonymous box needs, and every box in the chain is back to
+the height it resolved to.
+
+## Room under the command bar for anything scrolled to
+
+**Ruled 2026-08-27.** The command bar is sticky over the page, and since the
+workspace column releases for a selected mount, the page is what scrolls. A
+family control or a candidate row brought into view by anything other than a
+Commander's own thumb — the platform's `scrollIntoView`, moving focus, an
+assistive technology — then landed flush against the top of the window, which is
+behind the bar: measured at 1112x834, a family control at 0-44px under a bar
+reaching 74px, with the bar answering the press meant for the control.
+
+Both carry `scroll-margin-block-start: var(--edsb-layout-bar-height)`, which is
+the reservation `.frame__main` already makes for an in-page link, made here for
+the two things in this list that get scrolled to. It counts inside the
+manifest's own scroller as well, where it is the frozen family bar rather than
+the command bar that would otherwise stand over the row.
+
 ## The scroller is a containing block, or it clips nothing
 
 **Ruled 2026-08-25.** Every manifest row carries text drawn only for a reader, positioned out of the

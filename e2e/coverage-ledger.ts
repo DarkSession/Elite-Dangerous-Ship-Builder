@@ -869,6 +869,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'clearing the search restores the fitted-family default',
       'a unique reward keeps its labels on its own row, inside its base module’s family',
       'a family name changes with the reading language and membership does not',
+      'a revealed family is inside the rail’s own box, and a pressed one does not move',
+      'a family’s rows fall by class and then by price, with the unpriced last',
       'the control clears 44 CSS px under touch and the document never scrolls sideways',
     ],
     manualRecord: 'screen-reader',

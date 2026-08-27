@@ -562,7 +562,10 @@ describe('the wide manifest', () => {
    * the selected row is placed at `rowTop`, which is the whole of what the rule
    * reads. Everything else keeps the real measurement, which is zero.
    */
-  function railScrollFixture(rowTop: number, rowHeight = 44): string[] {
+  function railScrollFixture(
+    rowTop: number,
+    { press = false, rowHeight = 44 }: { press?: boolean; rowHeight?: number } = {},
+  ): string[] {
     const scrolled: string[] = [];
     const scrollTop = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop')!;
     // On `HTMLElement.prototype`, and layered over whatever `withHostWidth`
@@ -601,7 +604,29 @@ describe('the wide manifest', () => {
     });
 
     try {
-      railFixture();
+      const { families, fixture } = railFixture();
+      if (press) {
+        // What the state does with a toggle, standing in for it: a rebuilt list
+        // of rebuilt families with the asked-for one revealed. It has to be new
+        // objects, because that is what makes `revealedFamily()` change and the
+        // reveal effect run at all — a press answered with the identical array
+        // re-runs nothing, and a test written that way would pass whether or
+        // not the press is weighed.
+        fixture.componentInstance.familyToggled.subscribe((familyId: string) => {
+          fixture.componentRef.setInput(
+            'families',
+            families.map((family) => ({ ...family, open: family.familyId === familyId })),
+          );
+        });
+
+        const pressed = element(fixture).querySelector<HTMLElement>(
+          '.family--rail[aria-pressed="true"]',
+        )!;
+        // Only what the press causes is under test; the opening scroll is not.
+        scrolled.length = 0;
+        pressed.click();
+        fixture.detectChanges();
+      }
     } finally {
       Object.defineProperty(Element.prototype, 'scrollTop', scrollTop);
       Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', declared);
@@ -618,10 +643,18 @@ describe('the wide manifest', () => {
     expect(railScrollFixture(2400)).toEqual(['candidates__rail']);
   });
 
-  it('leaves a revealed family alone when it is already in the rail', () => {
-    // The other half of the rule, and the reason it has one: a Commander
-    // pressing a family row is looking straight at it, and a list that moved
-    // under that press would be the same fault in the other direction.
+  it('leaves a family the Commander pressed exactly where they pressed it', () => {
+    // The rule, and the reason it is about who revealed the family rather than
+    // about where the row happens to be: the rail is a 470px box of 44px rows,
+    // so the row at either edge is routinely clipped, and a Commander can press
+    // a clipped row. Re-centring under the finger that pressed it is the fault
+    // the scroll exists to remove, in the other direction (reported in review,
+    // 2026-08-27).
+    expect(railScrollFixture(2400, { press: true })).toEqual([]);
+  });
+
+  it('leaves a revealed family alone when it is already whole in the rail', () => {
+    // Restraint rather than rule: nothing to bring into view, so nothing moves.
     expect(railScrollFixture(120)).toEqual([]);
   });
 });

@@ -396,14 +396,15 @@ No game rule, value or variant-recognition heuristic is application-owned.
   100%; every unsupported partial-quality candidate is rejected without changing the active build.
 - **SC-006**: Across desktop, tablet and mobile, 100% of available replacement choices appear in
   exactly one Almanac family, and revealing a family never changes the build. Within every family the
-  rows descend by class and then by the package's price, with a choice the package prices at nothing
-  after the priced ones of its class. At the wide composition every drawn choice row carries exactly
+  rows descend by class and then by the package's price, with a choice the package publishes no price
+  for after the priced ones of its class. At the wide composition every drawn choice row carries exactly
   three cells — the module, its class and rating, and its price — with no damage, mass, power or
   weapon-draw figure at that width.
 - **SC-007**: Whenever the exact fitted choice has an available family, that family is the only family
   revealed on initial presentation and after a rebuild; when it has none, the wide composition reveals
-  the first family in package order and the compact one reveals none. Every family the application
-  reveals is inside the visible box of the list that holds it once presented.
+  the first family in package order and the compact one reveals none. Where the composition draws the
+  families as a list of their own, every family the application reveals is inside that list's visible
+  box once presented, and every family the Commander reveals is left where they pressed it.
 - **SC-008**: Every choice matching a newly applied or changed non-empty search is either visible
   without the Commander revealing a family manually, or counted on the family that holds it;
   no family holding a match is ever absent, and clearing the search restores the fitted-family
