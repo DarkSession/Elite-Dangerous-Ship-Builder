@@ -277,7 +277,7 @@ export function projectMobilityAndJump(loadout: ShipLoadout, enginesPips: number
  * available. An unusable drive must not take the speed envelope down with it.
  */
 function readThrusters(loadout: ShipLoadout, enginesPips: number): ThrusterLoadView {
-  // Passed rather than left to default even though `mobilityMetrics()` happens
+  // Passed rather than left to default even though `mobilityMetricsResult()` happens
   // to default to the same profile: the card names the load beside the figure,
   // and a default is documented rather than promised. At 2 ENG pips a stock
   // Anaconda differs by two thirds of a metre per second between this profile
@@ -288,7 +288,7 @@ function readThrusters(loadout: ShipLoadout, enginesPips: number): ThrusterLoadV
   const metrics = BuildMetrics.of(loadout);
   const carried = readStandardLoad(metrics, ENVELOPE_LOAD);
   const mobility = carried?.complete ? metrics.mobilityMetricsResult(carried.value) : carried;
-  // The ENG allocation is its own calculation since 0.2.0: `mobilityMetrics()`
+  // The ENG allocation is its own calculation since 0.2.0: `mobilityMetricsResult()`
   // is the four-pip envelope, and this is what the standing allocation makes of
   // it. Same load, so the two describe one ship.
   const capacitor = carried?.complete

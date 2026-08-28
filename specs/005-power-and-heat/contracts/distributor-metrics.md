@@ -19,7 +19,7 @@ const result = metrics.distributorMetricsResult({
 ```
 
 Use `DistributorOptions` from
-`@elite-dangerous-almanac/core/ships/ship-loadout` and result types from
+`@elite-dangerous-almanac/core/ships/build-metrics` and result types from
 `@elite-dangerous-almanac/core/ships/distributor`. The application never
 calls the standalone calculator or recharge scaler.
 

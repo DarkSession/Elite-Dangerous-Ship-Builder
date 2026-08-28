@@ -52,15 +52,24 @@ export const ALLOWED_SUBPATHS = [
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
 
 /**
- * The three package answers this capability is made of.
+ * The three package answers this capability is made of, in every spelling.
  *
- * Two of them are named in their `…Result(` form: Almanac 0.2.2 removed the
- * nullable twins, so `distributorMetricsResult(` is the only way to ask, and a
- * rule still spelled `distributorMetrics(` would match none of them — the
- * bracket that keeps this list from catching a longer name also keeps it from
- * catching the one name there now is.
+ * Each name appears twice because two different things answer to it. The
+ * `…Result(` form is the method on `BuildMetrics`, and is the only way to ask
+ * it since Almanac 0.2.2 withdrew the nullable twin. The bare `heatMetrics(`
+ * and `distributorMetrics(` are the standalone calculators, which the package
+ * still exports from `ships/heat` and `ships/distributor` — both on this
+ * capability's allowed subpaths, and both refused by the contracts, so dropping
+ * their names would leave nothing guarding that refusal. A name is matched with
+ * its bracket, which is why the shorter spelling does not cover the longer one.
  */
-export const PACKAGE_CALLS = ['powerBudget(', 'distributorMetricsResult(', 'heatMetricsResult('];
+export const PACKAGE_CALLS = [
+  'powerBudget(',
+  'distributorMetrics(',
+  'distributorMetricsResult(',
+  'heatMetrics(',
+  'heatMetricsResult(',
+];
 
 /**
  * The package fields that are figures rather than identities.

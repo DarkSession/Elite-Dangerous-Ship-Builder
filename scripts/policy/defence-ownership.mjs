@@ -56,16 +56,28 @@ export const ALLOWED_SUBPATHS = [
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
 
 /**
- * The five build answers this capability is made of.
+ * The five build answers this capability is made of, in every spelling.
  *
  * The bare shield and what a SYS allocation makes of it became two calls in
  * Almanac 0.2.0, and the second draws the damage table's fifth column (FR-002).
  * It is fenced like the other four: a second call site would return a plausible
  * pool at a plausible allocation and nothing would fail.
+ *
+ * The three shields names appear twice. The `…Result(` form is the method on
+ * `BuildMetrics`; the bare `shieldMetrics(`, `shieldCapacitorMetrics(` and
+ * `shieldRecovery(` are the standalone formulas the package exports from the
+ * three shield leaves above, which `contracts/shield-profile.md` refuses and
+ * nothing else here guards. `armourMetrics(` needs no second entry: the method
+ * and the standalone formula are spelled the same, so the one name catches
+ * both. A name is matched with its bracket, which is why the shorter spelling
+ * does not cover the longer one.
  */
 export const PACKAGE_CALLS = [
+  'shieldMetrics(',
   'shieldMetricsResult(',
+  'shieldCapacitorMetrics(',
   'shieldCapacitorMetricsResult(',
+  'shieldRecovery(',
   'shieldRecoveryResult(',
   'cellBanks(',
   'armourMetrics(',

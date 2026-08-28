@@ -113,8 +113,8 @@ describe('projectMobilityAndJump', () => {
 
   describe('mobility', () => {
     it('passes the ENG allocation to the package unchanged', () => {
-      // Almanac 0.2.0 took the allocation off `mobilityMetrics()`, which is now
-      // the four-pip envelope, and gave it its own call. The allocation is the
+      // Almanac 0.2.0 took the allocation off `mobilityMetricsResult()`, which
+      // is now the four-pip envelope, and gave it its own call. The allocation is the
       // capacitor's, so that is where it has to arrive unchanged.
       const loadout = build();
       const carried = envelopeLoad(loadout);

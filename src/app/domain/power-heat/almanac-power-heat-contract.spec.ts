@@ -16,9 +16,12 @@ import {
  * feature 005 would silently misread if a release changed them: which fields
  * exist, which of them mean "there is no answer", and which sentinel carries
  * that meaning. Each of the three is a different one — a `CalculationResult`
- * whose `value` is `null` for a whole result, `null` for one field, and
+ * that is not `complete` for a whole result, `null` for one field, and
  * `Infinity` for another — and a screen that confused any two of them would say
- * something the package did not.
+ * something the package did not. Feature 005 reads only the `value`, but the
+ * shape it is read off is pinned whole: an incomplete result is the one carrier
+ * of "there is no answer" since Almanac 0.2.2 withdrew the nullable twins, so
+ * `complete` and a non-empty `issues` are pinned beside the `null` here.
  */
 describe('the Almanac contract for power, distributor and heat', () => {
   describe('powerBudget()', () => {
@@ -138,8 +141,24 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('values null — not zeroed capacitors — for a distributor it cannot resolve', () => {
-      expect(BuildMetrics.of(distributorOffBuild()).distributorMetricsResult().value).toBeNull();
-      expect(BuildMetrics.of(noPlantOutputBuild()).distributorMetricsResult().value).toBeNull();
+      for (const build of [distributorOffBuild(), noPlantOutputBuild()]) {
+        const result = BuildMetrics.of(build).distributorMetricsResult();
+
+        // The three halves of one absence: the result object is always there,
+        // `complete` is what says there is no answer, and the reasons are never
+        // an empty list standing in for one.
+        expect(result.complete).toBe(false);
+        expect(result.value).toBeNull();
+        expect(result.issues.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('carries no issue beside a complete distributor', () => {
+      const result = BuildMetrics.of(withinBudgetBuild()).distributorMetricsResult();
+
+      expect(result.complete).toBe(true);
+      expect(result.issues).toEqual([]);
+      expect(result.value).not.toBeNull();
     });
   });
 
@@ -186,7 +205,19 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('values null — not a zeroed profile — with no powered plant', () => {
-      expect(BuildMetrics.of(noPlantOutputBuild()).heatMetricsResult().value).toBeNull();
+      const result = BuildMetrics.of(noPlantOutputBuild()).heatMetricsResult();
+
+      expect(result.complete).toBe(false);
+      expect(result.value).toBeNull();
+      expect(result.issues.length).toBeGreaterThan(0);
+    });
+
+    it('carries no issue beside a complete profile', () => {
+      const result = BuildMetrics.of(withinBudgetBuild()).heatMetricsResult();
+
+      expect(result.complete).toBe(true);
+      expect(result.issues).toEqual([]);
+      expect(result.value).not.toBeNull();
     });
 
     it('still returns five scenarios for a build with no weapons fitted', () => {

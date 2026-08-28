@@ -232,7 +232,7 @@ export class PowerSummary {
    *
    * The pips drawn are **the ones the package returned**, exactly as the
    * distributor cell draws them (FR-013): the projection reads them back out of
-   * `distributorMetrics()` rather than echoing the request, so if the package
+   * `distributorMetricsResult()` rather than echoing the request, so if the package
    * ever normalises an allocation both surfaces show what it actually answered
    * for rather than what was pressed.
    *

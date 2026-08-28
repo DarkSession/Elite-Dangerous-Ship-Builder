@@ -50,14 +50,17 @@ import type {
  * unengineered one. Where it can resolve neither a recipe nor a catalogued
  * article, it reports `unresolvedEngineering` in `importOutcomes` and the
  * module keeps unengineered figures. Since Almanac 0.2.2 two further entries sit
- * beside it, each reporting the reading the package took rather than a change it
- * made: `ambiguousEngineering` where a catalogued article answered to the recipe
- * as well as the module's own menu did, and `rerolledEngineering` where a stated
- * modifier block moved nothing the module has and the recipe beside it was
- * rolled in its place. Nothing here reads any of the three: such a module is
- * either carrying a partial quality, in which case step 4 refuses the whole
- * candidate over the package's own refusal, or it is not, in which case this
- * application has no surface that states it yet.
+ * beside it. `ambiguousEngineering` reports the reading the package took rather
+ * than a change it made: a catalogued article answered to the recipe as well as
+ * the module's own menu did, and the article passed over rides on the outcome
+ * for `setPreEngineeredVariant`. `rerolledEngineering` does name a change — a
+ * stated modifier block that moved no stat the module carries is gone from the
+ * build and the recipe stated beside it was rolled in its place, which is the
+ * same reading of a stated recipe as the roll above rather than a normalization
+ * of its own (`docs/slef-interchange.md`). Nothing here reads any of the three:
+ * such a module is either carrying a partial quality, in which case step 4
+ * refuses the whole candidate over the package's own refusal, or it is not, in
+ * which case this application has no surface that states it yet.
  */
 export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   // Step 1. Read the source's partial rolls before construction consumes them.

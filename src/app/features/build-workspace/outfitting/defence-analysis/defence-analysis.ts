@@ -304,9 +304,9 @@ export class DefenceAnalysis {
   /**
    * The shield table: the bare four columns, and the pip column beside them.
    *
-   * The first four are `shieldMetrics()`, which is pip-free — the base
+   * The first four are `shieldMetricsResult()`, which is pip-free — the base
    * resistances an outfitting screen shows — and they do not move when a pip
-   * moves. The fifth is `shieldCapacitorMetrics()` at the standing allocation,
+   * moves. The fifth is `shieldCapacitorMetricsResult()` at the standing allocation,
    * and it is the only cell on the table that does (FR-002).
    */
   readonly shieldDamage = computed<DamageTableView>(() => {

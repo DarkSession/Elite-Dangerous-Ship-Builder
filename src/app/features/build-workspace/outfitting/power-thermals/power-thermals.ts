@@ -351,7 +351,7 @@ export class PowerThermals {
    * The canvas's bars, in the order the projection put them in.
    *
    * Both lengths and the threshold they are measured against were worked out
-   * there, against one `heatMetrics()` result; this turns them into words.
+   * there, against one `heatMetricsResult()` value; this turns them into words.
    */
   readonly heatBars = computed<readonly HeatBarView[]>(() => {
     const heat = this.#projection()?.heat ?? null;
