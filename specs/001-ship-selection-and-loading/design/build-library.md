@@ -12,7 +12,7 @@
 - Semantic `ResponsiveRecordList` as one list in one order — newest first, with the record id breaking ties — with no group headings between named and unnamed records (FR-010, ruled 2026-08-27).
 - `SavedBuildCard` showing the local name or that there is none, its note on one line, package hull text, how long ago it was last edited in the active locale's own words, and recorded validation valid/complete state. The instant itself stays as text beside the row's other read-not-drawn facts, so nothing is lost to a reader who needs it exactly. An unnamed record forked from a named one says which one, so unsaved edits to a saved build are distinguishable from a build that never had a name. Note presence/content is local, written with the build from the workspace's own `SAVE` (FR-011).
 - An unnamed row is titled by the build's own ship name, or its ident, or the hull — read from the build each time it is drawn, never written onto the record, and set apart from a Commander-given name rather than passed off as one. The reference draws the name as the largest thing in a row, and a week of rows all reading one word would be a pile rather than a library. Ship name and ident are the Commander's own words and are not package text, so they carry no translation marker.
-- A leading 3px marker on every row, filled amber with a wash running from the leading edge on the record the workspace currently holds, and a monospace issue count on a warm plate beside the title where the recorded validation has issues.
+- A leading 3px marker on every row, filled amber with a wash running from the leading edge on the chosen row — which is the record the workspace holds until a Commander chooses another (revised 2026-08-28) — and a monospace issue count on a warm plate beside the title where the recorded validation has issues.
 - Two actions on the record that was chosen, named or not: open it, and delete it. Naming, renaming and saving a copy are the workspace's own `SAVE` and are specified in [`build-workspace.md`](./build-workspace.md) — a library answers "which of these builds", and what should become of one is asked where a Commander is working in it (FR-009, ruled 2026-08-27).
 - A committing footer: the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge. Each is named for what it does — `DELETE`, `OPEN IN OUTFITTING` — and not for the build it does it to, which is the row the Commander pressed.
 - Dismissing the layer returns to the screen it was opened over, address and fragment intact — a Commander who glanced at their saved builds and chose nothing is still in the build they were working in. Where it was reached by its own address there is no such screen, and the build in hand is the destination, or the shipyard where there is none (Commander request 2026-08-27).
@@ -198,8 +198,14 @@ ago`, in the active locale's own words through `Intl.RelativeTimeFormat`, which
 ## Responsive and accessibility notes
 
 - Desktop uses the reference columnar modal; mobile retains the reference stacked records with the same two actions and the same semantic list order.
-- The current-record marker is drawn as the reference draws it and is also stated in words and in
-  `aria-current`; the amber wash is never the only thing carrying it.
+- One row carries the drawn marker: the row the footer would act on. The library opens with the
+  record the workspace holds already chosen, so opening it still answers "which of these am I in?"
+  without a Commander pressing anything. Choosing another record moves the marker rather than adding
+  a second one (reported 2026-08-28: two rows were drawn alike, and a marker on two rows marks
+  nothing).
+- The record the workspace holds keeps saying so whether or not it is the marked row — in
+  `aria-current` and in its own words among the row's read facts — so what the marker stopped drawing
+  is not lost. The amber wash was never the only thing carrying it, which is why it could be moved.
 - The issue badge is a count with its own words, not a colour: a row with issues says so.
 - Validation state includes explicit valid/incomplete/invalid wording and icon; never color alone.
 - Dialog title, description and each choice are visible and programmatically associated. Conflict choices explain which versions survive.

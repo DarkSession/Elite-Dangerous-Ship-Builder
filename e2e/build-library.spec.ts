@@ -264,6 +264,36 @@ test.describe('the build library', () => {
     ).toBeVisible();
   });
 
+  test('marks exactly one row, and moves the mark to whichever was chosen', async ({ page }) => {
+    // Two states meet on these rows: the record the workspace is holding, and
+    // the row the footer would act on. Both used to draw the marker, so opening
+    // the library on a loaded build and then choosing a different record left
+    // two rows washed and edged alike (reported 2026-08-28).
+    test.slow();
+    await createBuild(page);
+    await saveActiveBuild(page, 'Alpha');
+    // A second record from the same build, so the workspace ends up holding
+    // Beta while Alpha is another row on the list.
+    await saveActiveBuild(page, 'Beta');
+
+    await reachShellLink(page, 'Open saved build');
+    const marked = page.locator('.record--chosen');
+
+    // Opening marks where the Commander is: the library opens on the record the
+    // workspace is holding, and it is the only marked row.
+    await expect(marked).toHaveCount(1);
+    await expect(marked).toContainText('Beta');
+
+    await chooseRecord(page, 'Alpha');
+
+    // Still one, and now the other. The record the workspace holds keeps saying
+    // so — in `aria-current` and in its own words — without drawing a second
+    // marker for it.
+    await expect(marked).toHaveCount(1);
+    await expect(marked).toContainText('Alpha');
+    await expect(page.locator('.record[aria-current]')).toContainText('Current build');
+  });
+
   test('names the record the build is already in, leaving nothing behind', async ({ page }) => {
     // Revised 2026-08-25: a manual save consumes the unnamed record these edits
     // were autosaved into, rather than copying the build beside it. A Commander
