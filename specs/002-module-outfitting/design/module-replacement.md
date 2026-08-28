@@ -81,8 +81,8 @@ manifest as one accordion. It draws `#fit-table` as
 
 **The pane height is 428px, amended 2026-08-28 (Commander request).** The canvas draws 470px. One
 manifest row comes off it, the same row the fitting panel's floor gives up, because the panel and the
-pane are the same list at two widths and the bench is a tenth shorter for the pair
-(`design/outfitting-workspace.md`, "Seven rows, and the bench a tenth shorter").
+pane are the same list at two widths and the panel is about a tenth shorter for the pair
+(`design/outfitting-workspace.md`, "Seven rows, and the fitting panel about a tenth shorter").
 
 **The rail's 216px is a floor and a share, amended 2026-08-26 (Commander request).** It is a quarter
 of the canvas's own 862px centre column, and held at that one number it stopped being a quarter the

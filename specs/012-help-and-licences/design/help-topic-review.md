@@ -49,12 +49,12 @@ For each topic:
 
 **Governed by** constitution principle IV and feature 002 FR-013.
 
-| Check | Finding                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | FR-013 requires every selected ordinary grade to represent 100% quality and requires partial imported quality to be normalised to 100% or the whole incoming build refused. Principle IV is the lossless-and-honest rule behind it. The answer states the invariant, the raise and both import outcomes.                                                                                                         |
-| 2     | This is the topic the reference mock gets wrong: its FAQ says an imported module keeps its real roll, which contradicts FR-013 outright. That wording is excluded, and `scripts/check-help-topics.mjs` refuses a catalogue that reintroduces it.                                                                                                                                                                 |
-| 3     | "Refused whole before anything opens" and "your open build stays as it was" are both FR-013 as feature 004 ships it: the refusal is before activation and the current build is unchanged. The reference asks this question and answers it with a retained real roll; the question is kept because it is the question a Commander has, and the answer is replaced because FR-013 contradicts the reference's own. |
-| 4     | German states the same invariant, the same raise and the same atomic refusal.                                                                                                                                                                                                                                                                                                                                    |
+| Check | Finding                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | FR-013 requires every selected ordinary grade to represent 100% quality and requires partial imported quality to be normalised to 100% or the whole incoming build refused. Principle IV is the lossless-and-honest rule behind it. The answer states the invariant, the raise and both import outcomes.                                                                                                                    |
+| 2     | This is the topic the reference mock gets wrong: its FAQ says an imported module keeps its real roll, which contradicts FR-013 outright. That wording is excluded, and `scripts/check-help-topics.mjs` refuses a catalogue that reintroduces it.                                                                                                                                                                            |
+| 3     | "Refuses the whole import before anything opens" and "your open build stays as it was" are both FR-013 as feature 004 ships it: the refusal is before activation and the current build is unchanged. The reference asks this question and answers it with a retained real roll; the question is kept because it is the question a Commander has, and the answer is replaced because FR-013 contradicts the reference's own. |
+| 4     | German states the same invariant, the same raise and the same atomic refusal.                                                                                                                                                                                                                                                                                                                                               |
 
 **The answer says what the raise costs a reader, reviewed 2026-08-28 (owner's request: clarify that
 engineering quality may be raised to full quality for a partial import).** The wording said a
@@ -66,9 +66,9 @@ grade rather than at the roll they have.
 primary one, so the best roll of a grade is not better in every figure it draws — a completed Dirty
 Drive Tuning reads more thrust and more thermal load together. "The best roll of that grade" is what
 normalising quality to 100% actually produces and is all FR-013 supports; anything stronger than
-that would be the answer making a claim the requirement does not. It adds nothing FR-013 does not
-already require, which is check 1 above, and it is the honest half of principle IV, which is why the
-sentence is in the answer rather than left for a Commander to discover against the game.
+that would be the answer making a claim the requirement does not. That wording adds nothing FR-013
+does not already require, which is check 1 above, and it is the honest half of principle IV, which
+is why it is in the answer rather than left for a Commander to discover against the game.
 
 ## Excluded from the reference mock
 

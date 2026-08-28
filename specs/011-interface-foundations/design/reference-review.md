@@ -75,8 +75,8 @@ thing the departure was actually aimed at: a control with no text name at all.
 
 So the canvas's drawing stands and the accessibility floor stands with it. Three consequences:
 
-- The compact bar's trigger is the `⋮` mark on its own outlined square. `MENU` is drawn on no
-  artboard, and a compact bar already carrying a build's name has no room for it.
+- The folded bar's trigger is the `⋮` mark on its own outlined square. `MENU` is drawn on no
+  artboard, and a bar already carrying a build's name has no room for it.
 - The opened layer is a flat panel of full-width rows ruled apart at the canvas's group boundaries,
   not a stack of chips. A row is still a button with a name, a role and a state.
 - The insignia is the way home, and the wide bar's `SHIPYARD` chip is not drawn a second time beside

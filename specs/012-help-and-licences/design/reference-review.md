@@ -147,7 +147,7 @@ that line as where the credit is made.
 ## A defect the wide bar's mark exposed, 2026-08-26
 
 Shortening the action's words from `HELP & FAQ` to `Help` turned a passing assertion red, and the
-assertion was right. At 200% text on a 390-pixel phone the compact action layer's panel was drawn
+assertion was right. At 200% text on a 390-pixel phone the folded action layer's panel was drawn
 partly off the leading edge of the viewport, so its entries — FR-001's only route to help among them
 — could not be pressed. Two separate causes, both now fixed in feature 011's own component and both
 about the panel rather than about help:

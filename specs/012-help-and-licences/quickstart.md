@@ -112,7 +112,7 @@ pnpm start
 ```
 
 From a no-build capability, record pathname/query/fragment/history length, open Help · About from the
-frame, read it and close it. Repeat from an active build, from the compact action layer, from hull
+frame, read it and close it. Repeat from an active build, from the folded action layer, from hull
 detail (package artwork) and from the outfitting ledger (package values). Confirm that none of those
 surfaces carries a help control of its own.
 

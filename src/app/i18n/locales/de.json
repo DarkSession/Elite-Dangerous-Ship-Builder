@@ -1,7 +1,7 @@
 {
   "app.name": "Elite Dangerous Ship Builder",
   "app.tagline": "Schiffsausrüstungen planen.",
-  "app.description": "Ship Builder ist eine Ausrüstungswerkbank für Elite Dangerous. Plane Elite-Dangerous-Ausrüstungen. Wähle einen Rumpf, rüste ihn aus, lies die Werte und teile einen Build als Link.",
+  "app.description": "Ship Builder ist eine Ausrüstungswerkbank für Elite Dangerous. Wähle einen Rumpf, rüste ihn aus, lies die Werte und teile einen Build als Link.",
   "app.document-title": "{{page}} · {{app}}",
   "app.document-title.default": "Elite Dangerous Ship Builder",
   "shell.banner.label": "Anwendung",
@@ -822,7 +822,7 @@
   "help.title": "Hilfe · Über",
   "help.purpose": "Ship Builder ist eine Ausrüstungswerkbank für Elite Dangerous.",
   "help.maintainer": "Entwickelt und gepflegt von CMDR Dark Session.",
-  "help.source": "Quellcode verfügbar auf {{source}}.",
+  "help.source": "Quellcode auf {{source}} verfügbar.",
   "help.source.link": "GitHub",
   "help.section.about": "Über",
   "help.section.faq": "FAQ",

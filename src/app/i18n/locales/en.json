@@ -1,7 +1,7 @@
 {
   "app.name": "Elite Dangerous Ship Builder",
   "app.tagline": "Plan ship loadouts.",
-  "app.description": "Ship Builder is an Elite Dangerous outfitting bench. Plan Elite Dangerous loadouts. Pick a hull, outfit it, read the numbers, and share a build as a link.",
+  "app.description": "Ship Builder is an Elite Dangerous outfitting bench. Pick a hull, outfit it, read the numbers, and share a build as a link.",
   "app.document-title": "{{page}} · {{app}}",
   "app.document-title.default": "Elite Dangerous Ship Builder",
   "shell.banner.label": "Application",

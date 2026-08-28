@@ -208,8 +208,9 @@ does rather than which questions it happens to hold.
   Almanac is still named in the section a licence claim belongs in — the licence summary's library
   line points at the bundled library's own `LICENSE` — and the section stays three sentences long.
   Feature 002's voice ruling of 2026-08-22 is amended to match: the once-per-application credit is
-  the licence summary's library line, not a paragraph in `ABOUT`. All three sentences depart from
-  the reference, which draws none of them.
+  the licence summary's library line, not a paragraph in `ABOUT`. The reference draws the purpose
+  sentence and neither of the other two, so those two are departures this requirement states rather
+  than hides.
 
 - `FR-009`: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
   removed. The design reference draws no such control, and reporting a package defect is a support

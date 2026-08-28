@@ -70,9 +70,10 @@ async function openHelp(page: Page): Promise<void> {
 /**
  * The frame's Help entry itself, brought within reach without pressing it.
  *
- * At the wide profiles it is on the banner row; at the compact ones it is
- * inside the action layer, and a journey that wants to *look at* the control
- * rather than use it still has to open the layer holding it first.
+ * Where the bar draws its controls it is on the banner row; where the bar is
+ * folded it is inside the action layer, and a journey that wants to *look at*
+ * the control rather than use it still has to open the layer holding it first.
+ * Of the five layout profiles only 1440 is wide enough for the banner row.
  */
 async function helpEntry(page: Page) {
   const entry = page.getByRole('button', { name: HELP_ACTION });
@@ -623,7 +624,7 @@ test.describe('the one destination FR-002 requires', () => {
   });
 });
 
-test.describe('the compact route the reference draws', () => {
+test.describe('the folded route the reference draws', () => {
   test('the action layer carries the same entry as the wide row', async ({ page }) => {
     await withStockBuild(page);
 

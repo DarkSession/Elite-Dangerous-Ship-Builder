@@ -140,7 +140,7 @@ No project, viewport, accessibility rule or test was skipped to obtain a pass.
 
 Not a divergence between document and product, but the walk is where it surfaced, so it is recorded
 with the rest. Section 8's 200%-text state at the mobile profile could not be reached: feature 011's
-compact action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
+folded action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
 scrolled into view, and at 200% text the panel was taller than the space left below the banner. The
 Help entry sat at y 873 in an 844-pixel viewport with no way to press it — FR-001's only route,
 unavailable in a state a Commander can be in.

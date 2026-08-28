@@ -4,7 +4,7 @@ import { relationId } from '../../a11y/text-equivalence';
 import type { NavigationEntry, ShellAction } from './app-frame';
 
 /**
- * The compact shell action layer.
+ * The folded shell action layer.
  *
  * When the banner cannot hold every action on one row, the actions move into
  * this layer rather than being dropped. The layer relates to its trigger by
