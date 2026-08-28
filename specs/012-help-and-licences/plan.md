@@ -72,7 +72,7 @@ text carries its own `lang`; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.
 
 **Scale/Scope**: One shared modal and dialog state; one frame entry surface; exactly two accepted
 help-topic definitions, each with unique identity and non-empty governing references; application,
-build and Almanac identity facts; one exact Frontier excerpt; one repository-licence destination; two
+build and Almanac identity facts; one exact Frontier excerpt; three audited external destinations; two
 required mirrored Almanac source-distribution artifacts
 
 **Design Reference**: `.design/Ship Builder.dc.html` canvases 1a–1d, and it governs. The grouped

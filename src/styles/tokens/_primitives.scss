@@ -355,9 +355,13 @@
   // on the shipyard and 74px on a build, and the whole page under it moved as a
   // Commander opened one (Commander request 2026-08-28).
   //
-  // It is a floor, not a fixed height: the bar wraps in a longer language, at a
-  // doubled text size and at 400% zoom, and a bar that could not grow would cut
-  // its own controls off there (011/FR-011).
+  // The bar's own controls have to fit on a row for that to hold, which is what
+  // `$mode-bar-folded-max` is for: below the width the widest shipped language
+  // needs for them, the bar folds them into its named menu rather than wrapping.
+  //
+  // It stays a floor rather than a fixed height. At a doubled text size and at
+  // 400% zoom the bar still wraps and still grows, because a bar that could not
+  // would cut its own controls off (011/FR-011).
   --edsb-measure-bar-height: 4.625rem;
 
   // What a sticky bar has to overhang the edge it is frozen against by so
@@ -597,7 +601,7 @@
 
   // The 2026-08-25 revision of canvas 1c's manifest: `grid-template-columns:
   // 216px minmax(0, 1fr); column-gap: 14px` for the rail beside its pane, both
-  // bounded at `max-height: 470px`, and `2.6fr 70px 150px` for the three
+  // bounded at one `max-height`, and `2.6fr 70px 150px` for the three
   // columns a row is drawn in inside that pane. The rail and the two fixed
   // columns are the canvas's own pixels; the name takes what is left, as its
   // `fr` says, because there is nothing left over for it to run away with once

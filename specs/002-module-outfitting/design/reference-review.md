@@ -488,7 +488,7 @@ arrangement.
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Canvas 1c's accordion becomes a 216 px family rail beside a variant pane | **Built** (T147).                                                                                                                |
 | Exactly one family selected at wide; no caret at that width              | **Built** (T146, T147). Selection is exclusive and total, and never empty.                                                       |
-| Both panes bounded at `max-height: 470px`, each scrolling on its own     | **Built** (T147).                                                                                                                |
+| Both panes bounded at one `max-height`, each scrolling on its own        | **Built** (T147).                                                                                                                |
 | The wide manifest narrows to `MODULE` / `CLASS` / `COST`                 | **Built** (T148).                                                                                                                |
 | `DPS`, `MASS t`, `PWR MW`, `DRAW WEP` withdrawn from the wide manifest   | **Built** (T148). They survive on canvas 1d's card, which that canvas did not change.                                            |
 | Canvas 1d's accordion, badge, variants summary and code line             | **Unchanged.** Every existing ruling on them stands.                                                                             |

@@ -94,15 +94,15 @@ holds — it is the panel that can be read a line at a time. This costs the edit
 ratio above gave it at 900px, which is the trade: five rows of manifest against forty pixels of a
 comparison that scrolls either way.
 
-**Five rows is still a glimpse. Raised 2026-08-27 (Commander request): 18rem to 26rem.** The floor
-above was read off the canvas's own arithmetic, and the canvas is 880px tall. On the screens this is
-actually drawn on it was the floor doing the work rather than the share, and five rows of a
-478-choice manifest is a list a Commander pages through rather than reads. Eight rows is the figure
-now — 26rem over the same head, column rule and foot — and it is affordable in a way it was not
-before, because the ruling below releases the column: the manifest is no longer taking its height out
-of a fixed bench that the editor underneath has to be left some of. The share and the guard that
-divided that bench are gone with it, and the floor stands on its own, bounded only by what the screen
-itself leaves under the command bar so that it can never be taller than the window it is in.
+**Five rows is still a glimpse. Ruled 2026-08-27 (Commander request).** The floor above was read off
+the canvas's own arithmetic, and the canvas is 880px tall. On the screens this is actually drawn on
+it was the floor doing the work rather than the share, and five rows of a 478-choice manifest is a
+list a Commander pages through rather than reads. So the floor is a row count over the same head,
+column rule and foot, and any of it is affordable only because the ruling below releases the column:
+the manifest is no longer taking its height out of a fixed bench that the editor underneath has to
+be left some of. The share and the guard that divided that bench are gone with it, and the floor
+stands on its own, bounded only by what the screen itself leaves under the command bar so that it
+can never be taller than the window it is in. What the count is, the ruling below settles.
 
 **Seven rows, and the bench a tenth shorter. Ruled 2026-08-28 (Commander request).** The fitting
 panel and the pane inside it are the tallest thing on the workspace, and the anatomy and the status

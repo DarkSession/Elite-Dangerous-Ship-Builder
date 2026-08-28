@@ -33,11 +33,12 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
   screen. Where it is the way home the link around it takes the 44px press baseline, and the mark
   inside it does not grow with the target
   (`design/canvas-extraction.md`, "Command bar").
-- **The bar is one height wherever its controls fit on a row.** It is sized to the tallest identity
-  it carries — the workspace's two-line build identity — so the page under it does not move as a
-  Commander opens a build. It is a floor, not a fixed height: where the bar's own controls need a
-  second row it takes one, which at ordinary text size is the 834 and 844 profiles
-  (`design/canvas-extraction.md`, "One bar height, wherever the bar's controls fit on a row").
+- **The bar is one height on every screen.** It is sized to the tallest identity it carries — the
+  workspace's two-line build identity — and it folds its own controls into the named menu below the
+  width the widest shipped language needs for them, so the page under it does not move as a
+  Commander opens a build. It stays a floor rather than a fixed height: at a doubled text size and
+  at 400% zoom the bar still wraps and grows (`design/canvas-extraction.md`, "One bar height, on
+  every screen").
 - **The release mark follows it.** A solid amber chip reading `BETA`, with the bar's own ground as
   its ink, between the insignia and the screen's identity on every artboard.
 - **A screen opened over another one replaces the group.** Canvas 1b's hull sheet draws a bare `←`,

@@ -663,8 +663,8 @@ describe('the wide manifest', () => {
    *
    * There is no layout in this environment, so every box is zero and a rule
    * written in terms of "is this row inside that box" cannot be exercised
-   * without one. The rail is given a 470px box — the canvas's own bound — and
-   * the selected row is placed at `rowTop`, which is the whole of what the rule
+   * without one. The rail is given a box the size the pane declares and the
+   * selected row is placed at `rowTop`, which is the whole of what the rule
    * reads. Everything else keeps the real measurement, which is zero.
    */
   function railScrollFixture(
@@ -750,8 +750,9 @@ describe('the wide manifest', () => {
 
   it('leaves a family the Commander pressed exactly where they pressed it', () => {
     // The rule, and the reason it is about who revealed the family rather than
-    // about where the row happens to be: the rail is a 470px box of 44px rows,
-    // so the row at either edge is routinely clipped, and a Commander can press
+    // about where the row happens to be: the rail is a bounded box of 44px
+    // rows, so the row at either edge is routinely clipped, and a Commander can
+    // press
     // a clipped row. Re-centring under the finger that pressed it is the fault
     // the scroll exists to remove, in the other direction (reported in review,
     // 2026-08-27).

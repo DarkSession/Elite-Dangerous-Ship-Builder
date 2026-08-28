@@ -287,12 +287,20 @@
     font-size: var(--edsb-text-size-heading-sm);
     letter-spacing: var(--edsb-text-tracking-dialog);
   }
+}
 
-  // Canvas 1d's compact bar is a single 52px row: the wedge, the identity, and
-  // one `⋮` control holding everything else. The screens the bar offers are in
-  // that menu with the actions, so the chip row that stood under the bar at
-  // compact width is not drawn — it was the wide bar folded, not the compact
-  // one (canvas 1d).
+// Canvas 1d's folded bar is a single row: the wedge, the identity, and one `⋮`
+// control holding everything else. The screens the bar offers are in that menu
+// with the actions, so the chip row that stood under the bar is not drawn — it
+// was the wide bar folded, not the folded bar itself (canvas 1d).
+//
+// Its own step rather than the compact one, because what decides it is the
+// bar's own content: the widest set the application has is the workspace's, and
+// in German it asks for 1070px. Left at the compact step the bar wrapped to two
+// rows on a build while the shipyard's stayed at one, and the page under it
+// moved as a Commander opened a build (`$mode-bar-folded-max`, which carries
+// how the width was chosen; Commander request 2026-08-28).
+@include layout.bar-folded {
   .frame__actions,
   .frame__navigation {
     display: none;
@@ -300,7 +308,7 @@
 
   // The menu hangs off its trigger's trailing edge (canvas 1d), so where the
   // trigger lands decides whether the panel lands on the screen at all. The
-  // compact bar wraps — a long build name, a German label, a doubled text size
+  // folded bar wraps — a long build name, a German label, a doubled text size
   // — and a trigger that has taken a row of its own sits at its leading edge,
   // dragging the panel past the left of the viewport where nothing in it can
   // be pressed. Holding it to the trailing edge of whatever row it lands on is

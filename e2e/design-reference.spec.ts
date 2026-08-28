@@ -156,15 +156,15 @@ test.describe('the reference visual language', () => {
     // two-line build identity rather than the single row of controls every
     // other screen comes to. Sized to that row the bar was 66px on the
     // shipyard and 74px on a build, and the whole page under it moved as a
-    // Commander opened one (`canvas-extraction.md`, "One bar height, wherever
-    // the bar's controls fit on a row"; Commander request 2026-08-28).
+    // Commander opened one (`canvas-extraction.md`, "One bar height, on every
+    // screen"; Commander request 2026-08-28).
     //
-    // Two things, because the bar can grow for two different reasons and only
-    // one of them is a defect. Its identity not fitting is; wrapping is not —
-    // where the bar's own controls need more than one row it takes more than
-    // one row, which is what keeps them reachable at 200% text (011/FR-011).
-    // So the wrap is measured rather than assumed, and the height is pinned
-    // wherever there is no wrap.
+    // The bar carries its widest set on the workspace, and below the width
+    // that set needs it folds into the named menu rather than wrapping, so
+    // this holds at every layout profile and in both shipped languages. The
+    // wrap is still measured rather than assumed: at a doubled text size and
+    // at 400% zoom the bar does wrap, and it has to, or its own controls would
+    // be cut off (011/FR-011).
     const banner = page.getByRole('banner');
     const bar = async () =>
       await banner.evaluate((node) => {
@@ -221,10 +221,8 @@ test.describe('the reference visual language', () => {
     }
 
     // Where they do not, the bar is taller for the one reason a bar may be:
-    // its own controls took another row. At 834 and 844 the workspace's six
-    // actions and its saved-build chip ask for more width than the bar has,
-    // which the shell design records as the limit of the one-height rule
-    // (`011/design/application-shell.md`, "The bar's leading edge").
+    // its own controls took another row, which is the enlarged-text case this
+    // profile does not run at.
     expect(workspace.drawn).toBeGreaterThan(shipyard.drawn);
   });
 
