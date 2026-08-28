@@ -1,3 +1,4 @@
+import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   FIXED_REWARD_REGRESSION,
@@ -8,7 +9,9 @@ import {
   mercenaryVariant,
   packageText,
 } from '../../domain/outfitting/outfitting.fixtures';
+import { WEAPON_FIGURES, weaponFigures } from '../../domain/offence/weapon-figures';
 import {
+  HIGHER_IS_BETTER,
   NO_BLUEPRINT,
   currentSelection,
   draftIsStale,
@@ -479,6 +482,185 @@ describe('engineering draft', () => {
 
       expect(zeros.every((row) => !row.drawn)).toBe(true);
       expect(others.every((row) => row.drawn)).toBe(true);
+    });
+
+    it('adds the package’s calculated figures for a weapon, on both sides', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      // A weapon that stops to reload, so its sustained figures are readings of
+      // their own rather than the burst figures written twice.
+      loadout.setModule(slot, getModuleBySymbol('Hpt_MultiCannon_Fixed_Small')!);
+      const blueprint = loadout.availableBlueprints(slot)[0]!;
+
+      const draft = openEngineeringDraft(
+        loadout,
+        slot,
+        1,
+        {
+          blueprintFdname: blueprint.blueprintSymbol,
+          grade: blueprint.grades.at(-1)!,
+          effectFdname: null,
+        },
+        TEXT,
+      );
+
+      const preview = draft?.preview.kind === 'known' ? draft.preview : null;
+      const rows = new Map(preview?.attributes.map((row) => [row.attribute as string, row]));
+      // Damage per second is the figure the whole recipe is chosen for, and no
+      // catalogue field states it. It is the package's own calculation over the
+      // same two articles the catalogue rows come from.
+      const stock = weaponFigures(loadout.fittedModuleAt(slot)?.stats ?? null);
+      // The modified reading, worked out a second time on a build the recipe
+      // was actually applied to. `expect.any(Number)` would pass for any
+      // wiring at all; this fails unless the panel measured the right article
+      // with the right recipe on it.
+      const applied = defaultBuild();
+      applied.setModule(slot, getModuleBySymbol('Hpt_MultiCannon_Fixed_Small')!);
+      applied.applyBlueprint(slot, blueprint.blueprintSymbol, {
+        grade: blueprint.grades.at(-1)!,
+        quality: 1,
+      });
+      const modified = weaponFigures(applied.fittedModuleAt(slot)?.effectiveStats ?? null);
+      expect(stock).not.toBeNull();
+      expect(modified).not.toBeNull();
+      // Its one round a shot makes a damage per shot that is its damage, so
+      // that row is the only one of the eight this article does not get.
+      const drawnFigures = WEAPON_FIGURES.filter((figure) => figure !== 'damagePerShot');
+      for (const attribute of drawnFigures) {
+        expect(rows.get(attribute)?.stock).toBe(stock?.[attribute]);
+        expect(rows.get(attribute)?.modified).toBe(modified?.[attribute]);
+      }
+      expect(rows.get('damagePerSecond')?.modified).not.toBe(rows.get('damagePerSecond')?.stock);
+
+      // Exactly these rows, the way the drive's own test reads exactly its
+      // catalogue fields: a calculated figure the panel invents is a figure
+      // nobody measured, and one it drops is a figure a Commander cannot read.
+      const stats = loadout.fittedModuleAt(slot)?.stats;
+      const published = Object.entries(stats ?? {})
+        .filter(([, value]) => typeof value === 'number')
+        .filter(([field]) => field !== 'class' && field !== 'cost')
+        .filter(([field, value]) => !(field === 'bootTime' && value === 0))
+        .map(([field]) => field);
+      expect([...rows.keys()].sort()).toEqual([...published, ...drawnFigures].sort());
+    });
+
+    it('gives a module that is not a weapon no calculated figures', () => {
+      const draft = driveDraft({ blueprintFdname: null, grade: null, effectFdname: null });
+
+      const drawn =
+        draft.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string)
+          : [];
+
+      // `weaponMetrics` answers for anything, and its answer for a frame shift
+      // drive is a block of zeroes. A zero here is not a reading (constitution
+      // IV), so the rows are never offered rather than being drawn and excused.
+      for (const attribute of WEAPON_FIGURES) {
+        expect(drawn).not.toContain(attribute);
+      }
+    });
+
+    it('leaves off a sustained figure that repeats the row above it', () => {
+      const loadout = defaultBuild();
+      // A pulse laser never stops to reload, so it sustains exactly what it
+      // starts with and its four sustained figures are four rows written twice.
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      expect(loadout.fittedModuleAt(slot)?.stats?.clipSize).toBeUndefined();
+
+      const draft = openEngineeringDraft(loadout, slot, 1, NO_SELECTION, TEXT);
+
+      const drawn =
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string)
+          : [];
+      expect(drawn).toEqual(
+        expect.arrayContaining(['damagePerSecond', 'energyPerSecond', 'heatPerSecond']),
+      );
+      for (const attribute of [
+        'sustainedDamagePerSecond',
+        'sustainedEnergyPerSecond',
+        'sustainedHeatPerSecond',
+        'sustainedRateOfFire',
+        // And it fires one round a shot, so its damage per shot is its damage.
+        'damagePerShot',
+      ]) {
+        expect(drawn).not.toContain(attribute);
+      }
+    });
+
+    it('keeps a damage per shot that is not the article’s damage', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      // A fragment cannon fires twelve rounds a shot, so what one shot lands is
+      // not what one round does — and no catalogue row states it.
+      loadout.setModule(slot, getModuleBySymbol('Hpt_Slugshot_Fixed_Small')!);
+
+      const draft = openEngineeringDraft(loadout, slot, 1, NO_SELECTION, TEXT);
+
+      const rows = new Map(
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => [row.attribute as string, row])
+          : [],
+      );
+      expect(rows.get('roundsPerShot')?.stock).toBeGreaterThan(1);
+      expect(rows.get('damagePerShot')?.stock).not.toBe(rows.get('damage')?.stock);
+    });
+
+    it('keeps a sustained figure that is a reading on one side only', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      loadout.setModule(slot, getModuleBySymbol('Hpt_Cannon_Fixed_Small')!);
+
+      const draft = openEngineeringDraft(
+        loadout,
+        slot,
+        1,
+        { blueprintFdname: 'Weapon_RapidFire', grade: 5, effectFdname: null },
+        TEXT,
+      );
+
+      const row =
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.find((entry) => entry.attribute === 'sustainedDamagePerSecond')
+          : undefined;
+      // A cannon reloads at stock and stops losing anything to it once rapid
+      // fire has shortened the reload. The row is a reading on one side and a
+      // repetition on the other, and dropping it would report the reading as
+      // lost.
+      expect(row?.stock).not.toBe(row?.modified);
+      expect(Number.isFinite(row?.stock)).toBe(true);
+    });
+
+    it('gives a continuous-fire weapon no calculated figures either', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      loadout.setModule(slot, getModuleBySymbol('Hpt_BeamLaser_Fixed_Small')!);
+
+      const draft = openEngineeringDraft(loadout, slot, 1, NO_SELECTION, TEXT);
+
+      const drawn =
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string)
+          : [];
+      // A beam's damage, draw and heat are already per second, so the drawn
+      // catalogue rows are the reading and a calculated row would repeat one.
+      expect(drawn).toContain('damage');
+      for (const attribute of WEAPON_FIGURES) {
+        expect(drawn).not.toContain(attribute);
+      }
+    });
+
+    it('marks a calculated figure the way the attribute’s own sense reads', () => {
+      // Rapid fire buys its rate of fire with heat. More heat per second is
+      // worse and more damage per second is better, and the table that says so
+      // is the application's — the Almanac's `LessIsGood` is not read.
+      expect(HIGHER_IS_BETTER.damagePerSecond).toBe(true);
+      expect(HIGHER_IS_BETTER.sustainedDamagePerSecond).toBe(true);
+      expect(HIGHER_IS_BETTER.sustainedRateOfFire).toBe(true);
+      expect(HIGHER_IS_BETTER.heatPerSecond).toBe(false);
+      expect(HIGHER_IS_BETTER.sustainedHeatPerSecond).toBe(false);
+      expect(HIGHER_IS_BETTER.energyPerSecond).toBe(false);
+      expect(HIGHER_IS_BETTER.sustainedEnergyPerSecond).toBe(false);
     });
   });
 });

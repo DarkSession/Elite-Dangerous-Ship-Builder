@@ -285,8 +285,11 @@ that `CLEAR ✕` created by existing at wide width only.
 
 ## Attribute and cost honesty
 
-- `stats`/`effectiveStats` and package modifiers are the only attribute values.
-- Missing `stats`, missing modifiers or missing fields render unavailable.
+- `stats`/`effectiveStats`, package modifiers and the package's own calculations over those two
+  records are the only attribute values.
+- Missing `stats`, missing modifiers or missing fields render unavailable — as a value, through
+  `edsb-unavailable-value`. The cell holds a figure, so it states the absence of a figure; the
+  game-text message for a lost _name_ belongs to a name.
 - **Every attribute the article carries, ruled 2026-08-23 (wave 10, Commander request).**
   `COMPARED_ATTRIBUTES` is every numeric field the Almanac publishes on a module, and the article's
   own record decides which of them it has — a pulse laser lists thirteen, a power distributor a
@@ -295,6 +298,25 @@ that `CLEAR ✕` created by existing at wide width only.
   the one number left out: it is identity, drawn in the panel's own header as `HUGE MULTI-CANNON 4A`,
   and no recipe changes it. Each field carries an application-owned localized label, because a
   journal modifier name (`FSDOptimalMass`) has no translation anywhere in the Almanac.
+- **What the package calculates is drawn beside what it catalogues, ruled 2026-08-28 (Commander
+  request).** `WEAPON_FIGURES` is the Almanac's own per-weapon calculation over the same two
+  articles the catalogue rows come from — damage per shot and per second, sustained damage per
+  second, sustained rate of fire, distributor draw and heat, each on both readings. A recipe that trades rate of fire
+  for damage per round moves two catalogue rows and leaves the reader to multiply, which is the one
+  thing this application never asks of a Commander. `weaponFigures` decides what has an answer: the
+  package's calculation takes `hardpoint` records, so the one utility module carrying a damage
+  figure is not measured, and a continuous-fire weapon is not either — its damage, draw and heat are
+  already per second, so every figure would repeat the catalogue row beside it. `RESTATED_BY` drops
+  the rest: a figure whose two readings both equal another row's is that row written twice, which is
+  what a weapon that never stops to reload does to its four sustained figures. A figure that repeats
+  on one reading and moves on the other is kept — a small cannon reloads at stock and does not once
+  rapid fire has shortened its reload, and a row that vanished from one column would report the
+  reading as lost. A calculated row can therefore outlive the row it restates: a torpedo pylon fires
+  one shot a second, so its damage per second repeats its damage and is dropped, while the reload
+  behind that shot keeps the sustained figure a reading of its own.
+- The calculated rows are drawn as one block after the catalogue rows, not folded into their
+  alphabetical order. The table's subject changes at that line — from what the article is to what it
+  does — and a `Damage per second` between `Clip size` and `Distributor draw` would hide the change.
 - **A boot time of zero is left off. Ruled 2026-08-23 (wave 11, Commander request).** The Almanac
   publishes `bootTime: 0` on 244 modules, and it is a real reading — the module has no boot delay —
   rather than a gap. `Boot time s 0` is still a row that tells a Commander nothing, and alphabetical

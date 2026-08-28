@@ -190,7 +190,7 @@ non-empty query and clear action; `packageEmpty` means a successful package quer
 | `selectedGrade`           | package-offered grade/null          | Must occur in selected descriptor                                                                                                                 |
 | `effects`                 | readonly fdname[]                   | Exact current package menu                                                                                                                        |
 | `selectedEffectFdname`    | `string \| null`                    | Null explicitly means no effect                                                                                                                   |
-| `preview`                 | detached package result/unavailable | Read from candidate `stats`/`effectiveStats`                                                                                                      |
+| `preview`                 | detached package result/unavailable | Read from candidate `stats`/`effectiveStats`, and `weaponFigures` over the same two                                                               |
 | `cost`                    | `EngineeringCostView`               | Package cost results only                                                                                                                         |
 
 `clearEngineering` remains a separate confirmed intent with its own package operation. It is reached

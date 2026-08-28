@@ -31,7 +31,11 @@
         <tr class="comparison__row">
           <th class="comparison__attribute" scope="row">{{ row.label }}</th>
           <td class="comparison__value" data-bidi-isolate>
-            {{ row.stock ?? unavailable() }}
+            @if (row.stock === null) {
+              <edsb-unavailable-value />
+            } @else {
+              {{ row.stock }}
+            }
           </td>
           @if (comparing()) {
             <td
@@ -39,7 +43,11 @@
               [attr.data-direction]="row.direction ?? null"
               data-bidi-isolate
             >
-              {{ row.modified ?? unavailable() }}
+              @if (row.modified === null) {
+                <edsb-unavailable-value />
+              } @else {
+                {{ row.modified }}
+              }
               @if (row.direction === 'better' || row.direction === 'worse') {
                 <span class="comparison__marker" aria-hidden="true">{{
                   row.direction === 'better' ? '▲' : '▼'

@@ -4,6 +4,7 @@ import type {
   ShipLoadout,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { captureCheckpoint, restoreCheckpoint } from '../../domain/build/modeled-build-checkpoint';
+import { WEAPON_FIGURES, weaponFigures } from '../../domain/offence/weapon-figures';
 import type { EditOperation } from '../../domain/outfitting/build-edit-transaction';
 import {
   engineeringCost,
@@ -134,7 +135,19 @@ export const COMPARED_ATTRIBUTES = [
   'weaponsRecharge',
 ] as const;
 
-export type ComparedAttribute = (typeof COMPARED_ATTRIBUTES)[number];
+/**
+ * The table draws what the package calculates as well as what it catalogues.
+ *
+ * Damage per second is what a Commander engineering a weapon is deciding
+ * about, and no catalogue field states it: a recipe that trades rate of fire
+ * for damage per round moves both rows and leaves the reader to multiply. The
+ * Almanac publishes the calculation, so the panel shows the package's own
+ * answer beside the stats it was worked out from (FR-012a). `weaponFigures`
+ * decides which articles have one, and which of its numbers are readings
+ * rather than echoes of a catalogue row.
+ */
+export type ComparedAttribute =
+  (typeof COMPARED_ATTRIBUTES)[number] | (typeof WEAPON_FIGURES)[number];
 
 /**
  * Which way is better, per attribute.
@@ -166,7 +179,10 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   chargeTime: false,
   clipSize: true,
   damage: true,
+  damagePerSecond: true,
+  damagePerShot: true,
   distributorDraw: false,
+  energyPerSecond: false,
   engineHeatRate: false,
   enginesCapacity: true,
   enginesRecharge: true,
@@ -177,6 +193,7 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   fuelMul: false,
   fuelPower: false,
   heatEfficiency: false,
+  heatPerSecond: false,
   hullBoost: true,
   hullReinforcement: true,
   integrity: true,
@@ -220,6 +237,10 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   shieldBrokenRegenRate: true,
   shieldRegenRate: true,
   shotSpeed: true,
+  sustainedDamagePerSecond: true,
+  sustainedEnergyPerSecond: false,
+  sustainedHeatPerSecond: false,
+  sustainedRateOfFire: true,
   systemsCapacity: true,
   systemsRecharge: true,
   thermalLoad: false,
@@ -672,18 +693,72 @@ function previewOf(
     return { kind: 'unavailable' };
   }
 
-  const attributes = COMPARED_ATTRIBUTES.map((attribute) => ({
-    attribute,
-    stock: stockArticle?.[attribute] ?? null,
-    modified: modifiedArticle?.[attribute] ?? null,
+  const stockFigures = weaponFigures(stockArticle);
+  const modifiedFigures = weaponFigures(modifiedArticle);
+  const attributes = [
+    ...COMPARED_ATTRIBUTES.map((attribute) => ({
+      attribute,
+      stock: stockArticle?.[attribute] ?? null,
+      modified: modifiedArticle?.[attribute] ?? null,
+    })),
+    // The package's own calculations for the same two articles, after the
+    // stats they are worked out from. `null` on both sides for anything that
+    // is not a weapon, which the row filter then drops.
+    ...WEAPON_FIGURES.map((attribute) => ({
+      attribute,
+      stock: stockFigures?.[attribute] ?? null,
+      modified: modifiedFigures?.[attribute] ?? null,
+    })),
     // A row neither side publishes is not a row: a multi-cannon has no
     // integrity figure to compare and drawing an empty one would suggest the
     // package lost it.
-  }))
+  ]
     .filter((row) => row.stock !== null || row.modified !== null)
     .filter((row) => !silentZero(row));
+  const drawn = new Map(attributes.map((row) => [row.attribute, row] as const));
 
-  return { kind: 'known', comparing: modifiedArticle !== null, attributes };
+  return {
+    kind: 'known',
+    comparing: modifiedArticle !== null,
+    attributes: attributes.filter((row) => !restatesAnotherRow(row, drawn)),
+  };
+}
+
+/**
+ * The row each calculated figure restates where a weapon's cadence is flat.
+ *
+ * A weapon that never stops to reload sustains exactly what it starts with, so
+ * its four sustained figures are the four above them written twice; a weapon
+ * whose cadence is one shot a second has a damage per second equal to its
+ * damage. Neither is wrong, and neither is a second reading.
+ */
+const RESTATED_BY: Partial<Record<ComparedAttribute, ComparedAttribute>> = {
+  damagePerShot: 'damage',
+  damagePerSecond: 'damage',
+  energyPerSecond: 'distributorDraw',
+  heatPerSecond: 'thermalLoad',
+  sustainedDamagePerSecond: 'damagePerSecond',
+  sustainedEnergyPerSecond: 'energyPerSecond',
+  sustainedHeatPerSecond: 'heatPerSecond',
+  sustainedRateOfFire: 'rateOfFire',
+};
+
+/**
+ * A calculated row that says what another row of the table already says.
+ *
+ * Dropped only where *both* readings match, because that is what makes it a
+ * repetition rather than a change. A small cannon reloads at stock and does not
+ * once rapid fire has shortened its reload to nothing: its sustained figures
+ * are a reading on one side and a repetition on the other, and a row that
+ * vanished from one column would report the reading as lost (FR-012a).
+ */
+function restatesAnotherRow(
+  row: AttributeComparison,
+  drawn: ReadonlyMap<ComparedAttribute, AttributeComparison>,
+): boolean {
+  const restated = RESTATED_BY[row.attribute];
+  const other = restated === undefined ? undefined : drawn.get(restated);
+  return other !== undefined && other.stock === row.stock && other.modified === row.modified;
 }
 
 /**

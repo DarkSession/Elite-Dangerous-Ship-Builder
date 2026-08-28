@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import englishMessages from '../src/app/i18n/locales/en.json';
 import { sweepOutfittingState } from './accessibility';
 import {
   applyDraft,
@@ -386,6 +387,51 @@ test.describe('engineering costs', () => {
         )
         .first(),
     ).toBeVisible();
+  });
+
+  test('states an absent figure as a value, and lists what the package calculates', async ({
+    page,
+  }, testInfo) => {
+    await openStockBuild(page);
+    await openEditor(page, 'SmallHardpoint1');
+    await chooseRecipe(page, /rapid fire/i);
+    await chooseGrade(page, 5);
+
+    const comparison = page.locator('.comparison');
+    await expect(comparison).toBeVisible();
+
+    // Rapid fire gives a pulse laser a jitter the catalogue never gave it, so
+    // the stock side of that row has no figure. It is a number that is absent,
+    // not a name the catalogue lost, and the cell says so.
+    const jitter = comparison.locator('tr', { has: page.getByText(/^Jitter/) });
+    await expect(jitter.locator('.comparison__value .unavailable')).toBeVisible();
+    await expect(comparison).not.toContainText(/name unavailable/i);
+
+    // Damage per second is what the recipe is chosen for, and the Almanac
+    // calculates it. Both readings are drawn, after the stats they come from.
+    const dps = comparison.locator('tr', {
+      has: page.getByText(englishMessages['outfitting.engineering.attribute.damagePerSecond'], {
+        exact: true,
+      }),
+    });
+    await expect(dps).toBeVisible();
+    await expect(dps.locator('.comparison__value').first()).toHaveText(/\d/);
+    await expect(dps.locator('.comparison__value--modified')).toHaveText(/\d/);
+
+    // A pulse laser never stops to reload, so it sustains what it starts with,
+    // and it fires one round a shot. Both rows would be a row above them
+    // written twice, and both are left off.
+    for (const key of [
+      'outfitting.engineering.attribute.sustainedDamagePerSecond',
+      'outfitting.engineering.attribute.damagePerShot',
+    ] as const) {
+      await expect(comparison).not.toContainText(englishMessages[key]);
+    }
+
+    // The drive every other swept state opens has no one-sided row and no
+    // calculated figure, so this is the only state that renders either. It
+    // carries the table's longest label, in a column that does not wrap.
+    await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {

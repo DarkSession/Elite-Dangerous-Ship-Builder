@@ -17,6 +17,41 @@ One data-free package function is called, and only over the retained result: `da
 the range bands (see "Range bands" below). It is the package's own falloff rule, applied to the
 package's own returned fields.
 
+## One article's figures
+
+`weaponMetrics()` is asked in `src/app/domain/offence` and nowhere else, so a damage figure on any
+screen has one place it can have come from. That rule holds for a second, smaller question the
+outfitting workspace asks: what one weapon article does per second, stock and modified, in feature
+002's engineering editor. `weaponFigures()` answers it — the package's data-free `weaponMetrics()`
+over one `OutfittingModule` record — and feature 002 reads its result.
+
+It is a different subject from this contract's, and does not join it. It measures an article rather
+than a build, it takes no `BuildMetrics`, it reads no enabled state and no slot, and its result
+never reaches this panel or the rail cell. What it must agree with this contract on is which
+articles are weapons at all. `weaponMetrics()` is data-free and measures whatever it is handed, so
+the decision belongs to the caller: `BuildMetrics.weaponMetrics()` makes it by walking the build's
+hardpoints, and `weaponFigures()` restates that rule as the article's own `category`. It is why
+neither surface measures the one utility module that carries a damage figure. A point defence turret
+publishes no capacitor draw, and the calculation's own default would report that absence as a draw
+of zero.
+
+A `continuous` weapon is not measured either. Its damage, draw and heat are already per second, so
+every figure collapses onto the catalogue stat the editor's table draws beside it, and
+`damagePerShot` and `sustainedRateOfFire` become the values the arithmetic needs to carry a weapon
+with no shots.
+
+Eight scalar figures are exposed: `damagePerShot`, `damagePerSecond`, `sustainedDamagePerSecond`,
+`sustainedRateOfFire`, `energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond` and
+`sustainedHeatPerSecond`. The damage splits, `rateOfFire`, `thermalLoad`, `powerDraw` and
+`continuous` itself are not — the splits are this panel's, and the rest are catalogue fields the
+editor already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in, under the same
+name the article's own `distributorDraw` row carries.
+
+Which of the eight the editor then draws is the editor's own rule, not this contract's: a figure
+whose two readings both equal another row's is dropped there. That is what happens to the sustained
+four on a weapon that never stops to reload, and to `damagePerShot` on the weapons that fire one
+round a shot.
+
 ## Leaf imports
 
 - `ShipLoadout`, `BuildWeaponMetrics`, `FittedWeaponMetrics`:
