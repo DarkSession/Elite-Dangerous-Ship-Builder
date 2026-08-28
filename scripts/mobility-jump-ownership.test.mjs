@@ -104,8 +104,12 @@ describe('mobility and jump ownership policy', () => {
     });
 
     it('does not read a longer name that merely ends in a forbidden one', () => {
-      assert.deepEqual(forbiddenCalls('const x = envelopeMobilityMetrics(load);'), []);
-      assert.deepEqual(forbiddenCalls('const x = readPowerBudget(load);'), []);
+      // Both differ from the forbidden name by one leading word character and
+      // nothing else, so they fail if the word boundary is ever dropped. A
+      // fixture that also changed the first letter's case would pass whether the
+      // boundary was there or not, and prove nothing.
+      assert.deepEqual(forbiddenCalls('const x = envelope_mobilityMetrics(load);'), []);
+      assert.deepEqual(forbiddenCalls('const x = xpowerBudget(load);'), []);
     });
 
     it('accepts the diagnostic form each nullable one is named after', () => {

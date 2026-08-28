@@ -77,17 +77,35 @@ export const PACKAGE_CALLS = [
 /**
  * The calculators no file may call, the projection included.
  *
- * `ships/heat` and `ships/distributor` are on the allowed subpaths because the
- * projection imports their *types*, so the calculators come with them, and the
- * projection is the one directory in the repository that can reach them at all.
- * Exempting it from {@link PACKAGE_CALLS} — which it must be, since it is the
- * one place that asks — would therefore leave `heat-profile.md` and
- * `distributor-metrics.md`'s refusal of the standalone forms with nothing
- * enforcing it anywhere. This list is checked over every owned file with no
- * exemption: assembling a calculator's inputs here is the application deciding
- * what a package figure is made of (constitution II).
+ * `ships/distributor` is on the allowed subpaths for its types and `ships/heat`
+ * for `heatLevelAtTime` and `OVERHEAT_HEAT_LEVEL`, so the leaves' calculators
+ * come with them — and the projection is the one directory in the repository
+ * that reaches those leaves at all. Exempting it from {@link PACKAGE_CALLS} —
+ * which it must be, since it is the one place that asks — would therefore leave
+ * `heat-profile.md` and `distributor-metrics.md`'s refusal of the standalone
+ * forms with nothing enforcing it anywhere. Assembling a calculator's inputs
+ * here is the application deciding what a package figure is made of
+ * (constitution II).
+ *
+ * Both contracts refuse a category rather than a name, so every calculator on
+ * the two leaves is listed — except `heatLevelAtTime(`, which `heat-profile.md`
+ * mandates for the cell-bank spike and the projection calls. `powerBudget(` has
+ * no entry for the opposite reason to a missing one: `ships/power` exports a
+ * calculator spelled exactly like the `BuildMetrics` method, so no name can tell
+ * them apart and {@link PACKAGE_CALLS} catches the pair outside the projection
+ * and neither inside it. `contracts/power-budget.md` refuses the standalone form
+ * in prose, and nothing mechanical can hold it to that.
+ *
+ * The rule that reads this list walks all of `SCOPE`, not just the owned
+ * directories: a standalone calculator is refused wherever it is written.
  */
-export const STANDALONE_CALLS = ['distributorMetrics(', 'heatMetrics('];
+export const STANDALONE_CALLS = [
+  'distributorMetrics(',
+  'heatMetrics(',
+  'equilibriumHeatLevel(',
+  'effectiveWeaponThermalLoad(',
+  'secondsToHeatLevel(',
+];
 
 /**
  * The package fields that are figures rather than identities.
@@ -174,10 +192,16 @@ const RULES = [
         for (const { line, hit } of scan(source, (text) =>
           STANDALONE_CALLS.find((call) => text.includes(call)),
         )) {
+          // A name this list shares with `PACKAGE_CALLS` is already reported by
+          // the placement rule everywhere that rule looks. Saying it twice with
+          // two reasons reads as two problems.
+          if (!isProjection(name) && PACKAGE_CALLS.includes(hit)) {
+            continue;
+          }
           violations.push({
             file: name,
             line,
-            reason: `"${hit.slice(0, -1)}" is the standalone calculator, which no file may call — the projection included; the build-aware "${hit.slice(0, -1)}Result" reads the fit the package already holds, and assembling the calculator's inputs here is this application deciding what the figure is made of (constitution II)`,
+            reason: `"${hit.slice(0, -1)}" is a standalone calculator, which no file may call — the projection included; the build-aware call reads the fit the package already holds, and assembling a calculator's inputs here is this application deciding what the figure is made of (constitution II)`,
           });
         }
       }

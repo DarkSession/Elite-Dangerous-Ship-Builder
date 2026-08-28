@@ -273,9 +273,9 @@ and `WEP` stay abbreviated: those are the game's own marks on the pip display.
 The rail's control and the distributor cell are one control drawn twice. Both call the same store
 action, so neither can hold a reading the other does not have, and there is no second allocation, no
 draft and no running total. The rail's blocks are drawn from the standing allocation rather than
-from a `distributorMetrics()` result, because the rail is on screen for a build with no distributor
-fitted: the pips are a question being asked about the ship, and what an allocation does to a recharge
-is the distributor table's reading — which is where a `null` result is stated.
+from a `distributorMetricsResult()` value, because the rail is on screen for a build with no
+distributor fitted: the pips are a question being asked about the ship, and what an allocation does
+to a recharge is the distributor table's reading — which is where a `null` value is stated.
 
 ### Withdrawn in this wave
 

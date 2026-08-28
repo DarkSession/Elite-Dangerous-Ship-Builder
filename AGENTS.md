@@ -28,9 +28,12 @@ planning ship loadouts.
   why it is `null`. Read `.value` where a screen only states the absence, and the
   issues where it states the reason. The leaves still export **standalone
   calculators** under the withdrawn names, taking inputs rather than a build:
-  they are not the call you want, assembling their inputs here would be this
-  application deciding what a figure is made of, and the ownership policies
-  refuse them outright. Specs written before 0.2.0 name these calls on
+  they are not the call you want, and assembling their inputs here would be this
+  application deciding what a figure is made of. The power-and-heat, defence and
+  mobility ownership policies refuse them by name wherever that name differs
+  from the build-aware call; where it does not — `powerBudget` and
+  `armourMetrics` are spelled alike either way — only the feature's contract
+  says so, and nothing mechanical can hold you to it. Specs written before 0.2.0 name these calls on
   `ShipLoadout`; the `contracts/` under each feature are corrected, older
   `research.md`, `plan.md` and `tasks.md` entries are dated records and are left
   as they were written.

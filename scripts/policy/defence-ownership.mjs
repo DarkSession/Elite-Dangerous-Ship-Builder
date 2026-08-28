@@ -95,7 +95,13 @@ export const PACKAGE_CALLS = [
  * would catch them; `shieldMetrics(`, `shieldCapacitorMetrics(` and
  * `shieldRecovery(` are in {@link PACKAGE_CALLS} above and are added here so
  * that the projection, which is exempt from that list because it is the one
- * place that asks, cannot call them either.
+ * place that asks, cannot call them either. `armourMetrics(` cannot be listed:
+ * `ships/armour` spells its calculator exactly like the `BuildMetrics` method,
+ * so no name tells them apart, and `contracts/armour-profile.md`'s refusal of
+ * the standalone form is prose nothing mechanical can hold it to.
+ *
+ * The rule that reads this list walks all of `SCOPE`, not just the owned
+ * directories: a standalone formula is refused wherever it is written.
  */
 export const STANDALONE_CALLS = [
   'shieldMetrics(',
@@ -203,6 +209,12 @@ const RULES = [
         for (const { line, hit } of scan(source, (text) =>
           STANDALONE_CALLS.find((call) => text.includes(call)),
         )) {
+          // A name this list shares with `PACKAGE_CALLS` is already reported by
+          // the placement rule everywhere that rule looks. Saying it twice with
+          // two reasons reads as two problems.
+          if (!isProjection(name) && PACKAGE_CALLS.includes(hit)) {
+            continue;
+          }
           violations.push({
             file: name,
             line,
