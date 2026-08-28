@@ -62,8 +62,9 @@ composes none of them and passes no conditions to any of them.
 - **FR-015**: With no package issues, nothing MUST be drawn — no all-clear line, no count and no
   statement — so that no readiness or quality claim can be made.
 - **FR-022**: Issue severity MUST be expressed as text beside its issue and MUST NOT depend on
-  colour alone. The text is not drawn, because neither canvas draws a severity word; the tiers differ
-  by ground as well as by hue.
+  colour alone. The text is not drawn, because neither canvas draws a severity word; it is read
+  aloud beside the sentence, and it is what carries the severity. The canvas's three tiers reinforce
+  it — two of them differ from each other in hue alone.
 
 ## Withdrawn and reassigned requirements
 

@@ -58,7 +58,7 @@ export const LARGEST_CHOICE_SET = {
   hull: 'PantherMkII',
   slot: 'Slot01_Size8',
   /** Stock records plus every variant, at the pinned package version. */
-  approximateChoices: 478,
+  approximateChoices: 469,
 } as const;
 
 /**
@@ -243,10 +243,16 @@ export const SUPPORTED_PARTIAL_SOURCE_QUALITY = 0.37;
 /**
  * A payload whose partial engineering the package cannot complete.
  *
- * A grade-5 `FSD_LongRange` drive at a partial quality: at full grade that
- * article is a pre-engineered reward, so a partial roll of it is a state the
- * package declines to identify. `completeEngineeringGrade` answers
- * `unsupported`, and the whole candidate is refused before activation.
+ * A thruster recipe named against a frame shift drive: the module's engineering
+ * menu does not offer `Engine_Dirty`, and no catalogued article of that module
+ * answers to it either, so the package can neither roll the recipe nor identify
+ * an article carrying it. It reports `unresolvedEngineering` on import and
+ * answers `unsupported` to `completeEngineeringGrade`, and the whole candidate
+ * is refused before activation.
+ *
+ * A recipe the module's menu *does* offer is rolled at the stated grade and
+ * quality even where a fixed article of the same module carries the same
+ * blueprint at the same grade, so a mismatch of that kind is not one of these.
  */
 export const UNSUPPORTED_PARTIAL_QUALITY: LoadoutEvent = {
   event: 'Loadout',
@@ -255,7 +261,7 @@ export const UNSUPPORTED_PARTIAL_QUALITY: LoadoutEvent = {
     {
       Slot: FIXTURE_SLOTS.frameShiftDrive,
       Item: 'Int_Hyperdrive_Size6_Class5',
-      Engineering: { BlueprintName: 'FSD_LongRange', Level: 5, Quality: 0.42 },
+      Engineering: { BlueprintName: 'Engine_Dirty', Level: 5, Quality: 0.42 },
     },
   ],
 };

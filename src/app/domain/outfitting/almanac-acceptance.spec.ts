@@ -170,7 +170,7 @@ describe('installed Almanac acceptance', () => {
       );
     });
 
-    it('reports a stated roll at quality 1 as unchanged and absent quality as unsupported', () => {
+    it('reports a completed roll as unchanged, whatever quality the source stated', () => {
       const complete = ShipLoadout.fromLoadout({
         event: 'Loadout',
         Ship: FIXTURE_HULL,
@@ -189,12 +189,13 @@ describe('installed Almanac acceptance', () => {
       });
       expect(complete.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unchanged');
 
-      // A block naming a blueprint and grade at quality 1 but stating no
-      // modifiers at all is the identity-only shape SLEF permits and other
-      // tools write. The package rolls that one rather than leaving a completed
-      // capture stock, so quality alone does not decide the answer. The ingress
-      // pipeline asks neither: it guards on a partial quality first, and 1 is
-      // not one.
+      // A block naming a blueprint and grade but stating no modifiers at all is
+      // the identity-only shape SLEF permits and other tools write. Import
+      // rolls that recipe at the grade and quality the block states, so the
+      // module arrives with the package's own modifiers and there is nothing
+      // left to complete. This is the fix an imported build reads its
+      // engineered figures from; without it every such module published the
+      // figures of an unengineered one.
       const identityOnly = ShipLoadout.fromLoadout({
         event: 'Loadout',
         Ship: FIXTURE_HULL,
@@ -206,13 +207,14 @@ describe('installed Almanac acceptance', () => {
           },
         ],
       });
-      expect(identityOnly.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe(
-        'normalized',
-      );
+      const rolled = identityOnly.fittedModuleAt(FIXTURE_SLOTS.thrusters);
+      expect(rolled?.engineering?.Modifiers?.length).toBeGreaterThan(0);
+      expect(identityOnly.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unchanged');
 
       // SLEF requires `Quality`, so this shape cannot be typed — but a real
       // export from another tool can still omit it, which is why the pipeline
-      // guards on the value rather than trusting the declaration.
+      // guards on the value rather than trusting the declaration. The package
+      // rolls a stated recipe with no quality at a full one.
       const absent = ShipLoadout.fromLoadout({
         event: 'Loadout',
         Ship: FIXTURE_HULL,
@@ -224,10 +226,12 @@ describe('installed Almanac acceptance', () => {
           },
         ],
       });
-      // This is exactly why the pipeline never calls the operation for absent
-      // quality: the package treats "no quality" as unsupported, which would
-      // refuse a build that has nothing wrong with it.
-      expect(absent.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unsupported');
+      expect(absent.fittedModuleAt(FIXTURE_SLOTS.thrusters)?.engineering?.Quality).toBe(1);
+      // And this is why the pipeline never calls the operation for a quality it
+      // did not read as partial: there is nothing left to complete, so the
+      // answer is `unchanged` — which the pipeline reads as the two halves of
+      // the released contract disagreeing, and refuses the build over.
+      expect(absent.completeEngineeringGrade(FIXTURE_SLOTS.thrusters).kind).toBe('unchanged');
     });
 
     it('identifies a final article and declines to complete its baked grade', () => {
