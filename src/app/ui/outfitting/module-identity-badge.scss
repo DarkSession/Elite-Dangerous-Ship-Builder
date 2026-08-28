@@ -35,6 +35,17 @@
   overflow-wrap: break-word;
 }
 
+// The ellipsis that stands in for the rest of a cut name, set as the name is
+// set so the two read as one run of text rather than as a name and a chip after
+// it. It never gives way: the point of it is that the name gave way to it.
+.identity__more {
+  flex: none;
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-lead);
+  font-weight: var(--edsb-text-weight-emphasis);
+  color: var(--edsb-text-primary);
+}
+
 // The same identity where it is not the row's subject. Canvas 1c sets a ledger
 // row's module name `500 13px` (design L6871) and the offence panel's weapon
 // name `400 10.5px` (L14427), the name there being one of four columns. The code

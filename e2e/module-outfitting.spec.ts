@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import germanMessages from '../src/app/i18n/locales/de.json';
 import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
 import {
   acrossEveryFamily,
@@ -30,9 +31,13 @@ import { savedToBrowser } from './shell';
  */
 
 /** Creates a stock build and lands in the workspace with the ledger rendered. */
-async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
+async function openStockBuild(
+  page: Page,
+  hull = 'Anaconda',
+  create = 'Build stock hull',
+): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: create }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
@@ -73,7 +78,10 @@ async function fittedIdentityAt(page: Page, slotKey: string): Promise<string | n
     // manifest writes it in its own `CLASS` column — so what is compared is the
     // module, not the arrangement.
     const clone = identity.cloneNode(true) as HTMLElement;
-    for (const hidden of clone.querySelectorAll('.visually-hidden')) {
+    // What is drawn and what is read, and nothing that is neither: the ellipsis
+    // mark on a cut name is hidden from the accessibility tree and carries the
+    // whole name as its tip, so leaving it in would put the name in twice.
+    for (const hidden of clone.querySelectorAll('.visually-hidden, [aria-hidden="true"]')) {
       hidden.remove();
     }
     return (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
@@ -305,6 +313,64 @@ test.describe('the slot ledger', () => {
 
     // A required mount has no removal to shortcut to, so the row is unchanged.
     expect(await fittedIdentityAt(page, 'PowerPlant')).toBe(before);
+  });
+
+  /**
+   * German, because English is where this never happens.
+   *
+   * The Almanac publishes no German name for this suite, so the row draws the
+   * English one *and* the untranslated tag beside it — seventy-odd pixels more
+   * than the ledger has at a phone's width, and the only place in a stock build
+   * where the rule that cuts a name actually fires. Run in English the test
+   * would pass on its other branch for ever and prove nothing.
+   */
+  test.describe('in German', () => {
+    test.use({ locale: 'de-DE' });
+
+    /**
+     * A row cuts a long name short; it never loses one.
+     *
+     * The rule the ledger keeps is stated as a choice rather than as an outcome,
+     * because which of the two a row takes is the width's to decide: a name that
+     * fits is simply drawn, and a name that does not is cut with an ellipsis that
+     * is itself the control carrying the whole of it. What is checked is that no
+     * width takes a third option — drawing part of a name and offering no way to
+     * read the rest — which is what SC 1.4.4 is about and what `clippedText`
+     * stops trusting the moment `data-text-reachable` appears on a row.
+     */
+    test('never loses a module name the row is too narrow to draw', async ({ page }) => {
+      // The stock Anaconda's own longest name, and the one the accessibility
+      // sweep reported cut: at 390 pixels the ledger gives a name about thirty
+      // characters and this is thirty-two.
+      const suite = /Advanced Planetary Approach Suite/i;
+      await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
+      const row = await revealMount(page, 'PlanetaryApproachSuite');
+      await expectLedgerCarries(
+        page,
+        'PlanetaryApproachSuite',
+        'Advanced Planetary Approach Suite',
+      );
+
+      const mark = row.locator('.identity__more');
+      const drawnWhole = await row
+        .locator('.game-text__value')
+        .first()
+        .evaluate(
+          (node) => (node as HTMLElement).scrollWidth - (node as HTMLElement).clientWidth <= 1,
+        );
+      if (drawnWhole) {
+        // Nothing was cut, so nothing stands in for what was cut.
+        await expect(mark).toHaveCount(0);
+        await expect(row.locator('[data-text-reachable]')).toHaveCount(0);
+        return;
+      }
+
+      await expect(mark).toHaveCount(1);
+      await expect(mark.locator('.tooltip__tip')).toHaveText(suite);
+      // A thumb, which is the input a painted ellipsis has no answer for.
+      await mark.click();
+      await expect(mark.locator('.tooltip__tip--shown')).toBeVisible();
+    });
   });
 
   test('puts the caret in the search field on the key the hint names', async ({ page }) => {

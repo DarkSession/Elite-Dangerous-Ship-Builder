@@ -128,7 +128,10 @@ cover the final focus/reading target.
   container query in `em`, so a doubled text size or an expanded translation turns it off and the row
   wraps and grows instead. And identity is not what it hides: every row leads with its own size box
   and node badge, and the fitting panel beside the ledger names the module in full for the marked
-  mount.
+  mount. Where the cut actually fires the ellipsis is a tooltip carrying the whole name rather than a
+  glyph the browser paints, so the text is folded away behind a control on the same screen rather
+  than lost — which is the one form of truncation `clippedText` accepts, and only on an element whose
+  owner has marked it `data-text-reachable`.
 - Internal horizontal scrolling is allowed only for explicitly labeled wide fact tables or segmented
   controls whose alternatives remain discoverable. The page never scrolls horizontally.
 - RTL changes visual direction, not semantic order or exact game identity.

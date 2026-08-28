@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  type ElementRef,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
 import { type GameTextTranslationState } from '../../../i18n/game-text.presenter';
 import { MessageService } from '../../../i18n/message.service';
 import { relationId } from '../../a11y/text-equivalence';
@@ -64,4 +72,20 @@ export class GameText {
   );
 
   readonly unavailableText = this.#messages.messageSignal('game-text.unavailable');
+
+  private readonly value = viewChild<ElementRef<HTMLElement>>('value');
+
+  /**
+   * Whether the box it was given is too narrow to draw the whole text.
+   *
+   * Asked by a caller that truncates this text — the ledger row, and nothing
+   * else — because the box that overflows is this one: the row's rule shrinks
+   * the value alone so the untranslated tag beside it keeps its place, so the
+   * badge above cannot see the overflow from its own element. A pixel of slack
+   * for sub-pixel layout, which the two engines round differently.
+   */
+  cut(): boolean {
+    const element = this.value()?.nativeElement;
+    return element !== undefined && element.scrollWidth - element.clientWidth > 1;
+  }
 }

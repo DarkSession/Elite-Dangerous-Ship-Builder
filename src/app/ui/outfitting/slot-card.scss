@@ -212,6 +212,16 @@
       white-space: nowrap;
     }
 
+    // Where the badge has drawn its own ellipsis, the browser's is dropped: two
+    // in a row read as a longer pause rather than as one mark. The badge draws
+    // it as a tooltip carrying the whole name, so what is cut here can be asked
+    // for by a thumb or a pointer as well as read by a reader — which is what
+    // keeps a truncated name from being content the drawing simply loses (SC
+    // 1.4.4).
+    .identity__name[data-text-reachable] .game-text__value {
+      text-overflow: clip;
+    }
+
     .identity__name .game-text__tag {
       flex: none;
     }

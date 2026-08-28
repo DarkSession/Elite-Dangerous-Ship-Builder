@@ -176,6 +176,91 @@ describe('module identity badge', () => {
     });
     expect(textOf(query(shown, '.identity__code-line'))).toBe('Hpt_MultiCannon_Gimbal_Huge');
   });
+
+  /**
+   * The badge cannot see a width, so the width is declared to it.
+   *
+   * jsdom lays nothing out and has no `ResizeObserver`, and the badge asks for
+   * both through the platform's own size adapter — so what a spec supplies is
+   * an observer that delivers when it says so, over an element whose overflow
+   * it has stated. That is the seam the adapter exists for; nothing here mocks
+   * the component's own module.
+   */
+  function declareDelivery(): { deliver: () => void; undo: () => void } {
+    const own = Object.getOwnPropertyDescriptor(globalThis, 'ResizeObserver');
+    const callbacks: ResizeObserverCallback[] = [];
+
+    (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+      constructor(callback: ResizeObserverCallback) {
+        callbacks.push(callback);
+      }
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    };
+
+    return {
+      deliver: () => {
+        for (const callback of callbacks) {
+          callback(
+            [{ contentRect: { width: 100, height: 20 } }] as unknown as ResizeObserverEntry[],
+            {} as ResizeObserver,
+          );
+        }
+      },
+      undo: () => {
+        if (own === undefined) {
+          delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+          return;
+        }
+        Object.defineProperty(globalThis, 'ResizeObserver', own);
+      },
+    };
+  }
+
+  /** States what the renderer will not: how much of the name is drawn. */
+  function declareOverflow(value: HTMLElement, drawn: number, whole: number): void {
+    Object.defineProperty(value, 'clientWidth', { configurable: true, value: drawn });
+    Object.defineProperty(value, 'scrollWidth', { configurable: true, value: whole });
+  }
+
+  it('hands back the whole name where the caller\u2019s rule cuts it short', () => {
+    const delivery = declareDelivery();
+    try {
+      const fixture = renderComponent(ModuleIdentityBadge, {
+        name: LOCALIZED,
+        nameTip: 'Multi-Cannon',
+      });
+      declareOverflow(query(fixture, '.game-text__value'), 100, 300);
+      delivery.deliver();
+      fixture.detectChanges();
+
+      // The ellipsis is the control, and the control carries the whole name —
+      // so what the row cut is asked for by a thumb rather than lost (SC 1.4.4).
+      expect(textOf(query(fixture, '.identity__more'))).toContain('Multi-Cannon');
+      expect(element(fixture).querySelector('[data-text-reachable]')).not.toBeNull();
+    } finally {
+      delivery.undo();
+    }
+  });
+
+  it('draws no mark where the whole name is drawn', () => {
+    const delivery = declareDelivery();
+    try {
+      const fixture = renderComponent(ModuleIdentityBadge, {
+        name: LOCALIZED,
+        nameTip: 'Multi-Cannon',
+      });
+      declareOverflow(query(fixture, '.game-text__value'), 300, 300);
+      delivery.deliver();
+      fixture.detectChanges();
+
+      expect(element(fixture).querySelector('.identity__more')).toBeNull();
+      expect(element(fixture).querySelector('[data-text-reachable]')).toBeNull();
+    } finally {
+      delivery.undo();
+    }
+  });
 });
 
 describe('slot card', () => {

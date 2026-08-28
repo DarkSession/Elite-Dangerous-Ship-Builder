@@ -258,6 +258,23 @@ a reader is read the whole name and only the drawing is short; and where two lon
 alike, the row leads with its own size box and node badge and the fitting panel opened on the marked
 mount writes the module's name in full.
 
+**The ellipsis is a control, not a painted glyph.** `text-overflow` draws a mark no pointer and no
+thumb can ask anything of, and a name that is only half drawn is content the surface has lost. So
+where — and only where — the row is actually cutting a name, the badge replaces the browser's
+ellipsis with the design system's own tooltip carrying the whole name: the same presentational mark
+the acquisition icons on that line already are, a `span` rather than a button because the row around
+it is itself a control, and hidden from the accessibility tree because the whole name is in the DOM
+beside it and is read out whole. Whether the name is cut is measured through the platform's element
+size adapter, so a row whose name fits carries no mark at all and the ledger is the only surface that
+pays for the measurement.
+
+That makes the truncation a fold rather than a loss, which is what SC 1.4.4 is about: the assertion
+`clippedText` stops reporting an element whose owner has marked it `data-text-reachable`, and the
+attribute appears only alongside the control that produces the whole text on the same screen. A
+surface that sets it without drawing that control is lying, and `never loses a module name the row is
+too narrow to draw` is what holds it to that — run in German, because English is the one language
+where this row never overflows.
+
 **Three things the cut does not reach, and one condition on it.**
 
 - **The code line is not cut.** `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` is the only place a row

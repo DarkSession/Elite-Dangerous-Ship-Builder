@@ -49,6 +49,7 @@
       @if (slot().module !== null) {
         <edsb-module-identity-badge
           [name]="slot().module!.displayName"
+          [nameTip]="slot().module!.displayName.text"
           [symbol]="slot().module!.symbol"
           [moduleClass]="slot().module!.article?.class ?? null"
           [rating]="slot().module!.article?.rating ?? null"
