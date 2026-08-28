@@ -244,13 +244,21 @@ describe('module identity badge', () => {
     }
   });
 
-  it('draws no mark where the whole name is drawn', () => {
+  it('takes the mark away again once the whole name is drawn', () => {
     const delivery = declareDelivery();
     try {
       const fixture = renderComponent(ModuleIdentityBadge, {
         name: LOCALIZED,
         nameTip: 'Multi-Cannon',
       });
+      // Marked first, so that the absence below is something the badge did
+      // rather than something it never got round to: a widened rail, or a
+      // shorter name in the same mount.
+      declareOverflow(query(fixture, '.game-text__value'), 100, 300);
+      delivery.deliver();
+      fixture.detectChanges();
+      expect(element(fixture).querySelector('.identity__more')).not.toBeNull();
+
       declareOverflow(query(fixture, '.game-text__value'), 300, 300);
       delivery.deliver();
       fixture.detectChanges();

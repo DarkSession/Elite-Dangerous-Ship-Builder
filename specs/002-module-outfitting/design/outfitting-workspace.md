@@ -266,7 +266,12 @@ the acquisition icons on that line already are, a `span` rather than a button be
 it is itself a control, and hidden from the accessibility tree because the whole name is in the DOM
 beside it and is read out whole. Whether the name is cut is measured through the platform's element
 size adapter, so a row whose name fits carries no mark at all and the ledger is the only surface that
-pays for the measurement.
+pays for the measurement. It is projected into the game text itself, beside the value, so it lands
+against the words it abbreviates rather than after the `UNTRANSLATED` tag — which is a fact about the
+language and not about what was cut. And **no box above it hides its overflow**: a bubble is hung off
+its trigger, so any ancestor of that trigger which clips takes the whole gloss with it, and the
+ledger's own line boxes were doing exactly that to the acquisition marks' tips as well. The value
+clips itself and nothing above it does.
 
 That makes the truncation a fold rather than a loss, which is what SC 1.4.4 is about: the assertion
 `clippedText` stops reporting an element whose owner has marked it `data-text-reachable`, and the

@@ -369,7 +369,23 @@ test.describe('the slot ledger', () => {
       await expect(mark.locator('.tooltip__tip')).toHaveText(suite);
       // A thumb, which is the input a painted ellipsis has no answer for.
       await mark.click();
-      await expect(mark.locator('.tooltip__tip--shown')).toBeVisible();
+      const bubble = mark.locator('.tooltip__tip--shown');
+      await expect(bubble).toBeVisible();
+
+      // And painted where it is drawn. A bubble is hung off its trigger, so any
+      // ancestor of that trigger which hides its overflow clips the bubble away
+      // — leaving a box with a size and a position that nothing renders into,
+      // which is exactly what `toBeVisible` reports as visible. Asked of the
+      // document rather than of the element, at the middle of the bubble.
+      const painted = await bubble.evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        const at = node.ownerDocument.elementFromPoint(
+          box.left + box.width / 2,
+          box.top + box.height / 2,
+        );
+        return at !== null && (at === node || node.contains(at));
+      });
+      expect(painted, 'the whole name is drawn where nothing paints it').toBe(true);
     });
   });
 

@@ -286,7 +286,12 @@ test.describe('the composition this width has room for', () => {
     // A mount with something in it: the region opens on the first mount, and
     // the Anaconda's first hardpoint is empty, so there is nothing to engineer.
     await revealMount(page, 'FrameShiftDrive');
-    await page.locator('[data-slot-key="FrameShiftDrive"] button').first().click();
+    const drive = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
+    await drive.click();
+    // The row's own pressed state first. `benchFollowedSelection` is satisfied
+    // by a bench that is already on screen from the mount before this one, so
+    // without this the editor below can be opened on the previous selection.
+    await expect(drive).toHaveAttribute('aria-pressed', 'true');
     await benchFollowedSelection(page);
     await openEditor(page);
     await sweepOutfittingState(page, testInfo, `${drawn}/engineering`);

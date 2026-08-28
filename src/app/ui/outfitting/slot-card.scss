@@ -171,10 +171,6 @@
     padding-block: 0;
   }
 
-  .slot__identity {
-    overflow: hidden;
-  }
-
   // The name is cut, not wrapped. The badge and the game text inside it are
   // separate components, so the rule reaches them from here: what is being said
   // is about this row's measure rather than about either component, and neither
@@ -186,11 +182,15 @@
   // an icon is not a readable substitute for it (FR-010). It wraps where it must
   // and the row grows with it, which is why the measure above is a floor.
   .slot__identity ::ng-deep {
+    // The line, not a clipper. What is cut is the value inside it, and it cuts
+    // itself — while every box above the value keeps `overflow: visible`,
+    // because the ellipsis is a tooltip and a bubble hung off it is clipped by
+    // any ancestor of its containing block that hides its overflow. Hiding it
+    // here put the whole gloss behind a thirty-pixel corner, and took the
+    // acquisition marks' own tips down with it.
     .identity__name {
       display: block;
       min-inline-size: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
