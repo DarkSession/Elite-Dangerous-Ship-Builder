@@ -136,23 +136,18 @@ export const COMPARED_ATTRIBUTES = [
 ] as const;
 
 /**
- * The figures the package calculates for a weapon rather than catalogues.
+ * The table draws what the package calculates as well as what it catalogues.
  *
  * Damage per second is what a Commander engineering a weapon is deciding
  * about, and no catalogue field states it: a recipe that trades rate of fire
  * for damage per round moves both rows and leaves the reader to multiply. The
  * Almanac publishes the calculation, so the panel shows the package's own
- * answer beside the stats it was worked out from (FR-012a).
- *
- * The article's `rateOfFire`, `thermalLoad` and `powerDraw` are not repeated:
- * the package's result echoes them and the table already has them as catalogue
- * rows. The damage splits are not here either — they are what feature 007's
- * panel draws for the build, over the weapons a build actually carries.
+ * answer beside the stats it was worked out from (FR-012a). `weaponFigures`
+ * decides which articles have one, and which of its numbers are readings
+ * rather than echoes of a catalogue row.
  */
-export const CALCULATED_ATTRIBUTES = WEAPON_FIGURES;
-
 export type ComparedAttribute =
-  (typeof COMPARED_ATTRIBUTES)[number] | (typeof CALCULATED_ATTRIBUTES)[number];
+  (typeof COMPARED_ATTRIBUTES)[number] | (typeof WEAPON_FIGURES)[number];
 
 /**
  * Which way is better, per attribute.
@@ -185,7 +180,6 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   clipSize: true,
   damage: true,
   damagePerSecond: true,
-  damagePerShot: true,
   distributorDraw: false,
   energyPerSecond: false,
   engineHeatRate: false,
@@ -709,7 +703,7 @@ function previewOf(
     // The package's own calculations for the same two articles, after the
     // stats they are worked out from. `null` on both sides for anything that
     // is not a weapon, which the row filter then drops.
-    ...CALCULATED_ATTRIBUTES.map((attribute) => ({
+    ...WEAPON_FIGURES.map((attribute) => ({
       attribute,
       stock: stockFigures?.[attribute] ?? null,
       modified: modifiedFigures?.[attribute] ?? null,

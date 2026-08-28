@@ -1,4 +1,5 @@
 import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
+import { weaponMetrics } from '@elite-dangerous-almanac/core/ships/weapons';
 import { WEAPON_FIGURES, weaponFigures } from './weapon-figures';
 
 /**
@@ -24,16 +25,13 @@ describe('weapon figures', () => {
     expect(figures?.damagePerSecond).toBeGreaterThan(0);
   });
 
-  it('gives a continuous-fire weapon no cadence figures', () => {
-    const figures = weaponFigures(beamLaser);
-
-    // A beam laser's stats are already per second. The package carries it
-    // through the same arithmetic by reporting its damage as one shot's and a
-    // rate of fire of 1, and neither of those is a reading.
-    expect(figures?.damagePerSecond).toBe(beamLaser?.damage);
-    expect(figures?.damagePerShot).toBeUndefined();
-    expect(figures?.sustainedRateOfFire).toBeUndefined();
-    expect(Number.isFinite(figures?.heatPerSecond)).toBe(true);
+  it('reports nothing for a continuous-fire weapon', () => {
+    // A beam laser's damage, draw and heat are already per second, so every
+    // figure would repeat the catalogue row beside it — and the two the
+    // arithmetic needs to carry a weapon with no shots are not readings at all.
+    expect(weaponMetrics(beamLaser!).damagePerSecond).toBe(beamLaser?.damage);
+    expect(weaponMetrics(beamLaser!).energyPerSecond).toBe(beamLaser?.distributorDraw);
+    expect(weaponFigures(beamLaser)).toBeNull();
   });
 
   it('reports nothing for an article the package does not measure as a weapon', () => {

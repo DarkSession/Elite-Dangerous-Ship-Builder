@@ -16,7 +16,6 @@ import { weaponMetrics } from '@elite-dangerous-almanac/core/ships/weapons';
  * result and passed on unchanged.
  */
 export const WEAPON_FIGURES = [
-  'damagePerShot',
   'damagePerSecond',
   'sustainedDamagePerSecond',
   'sustainedRateOfFire',
@@ -30,42 +29,38 @@ export const WEAPON_FIGURES = [
 export type WeaponFigure = (typeof WEAPON_FIGURES)[number];
 
 /**
- * The two figures a continuous-fire weapon has no reading for.
+ * The package's figures for one article, or `null` where there is none to give.
  *
- * A beam or mining laser fires no shots, so the package's result carries its
- * per-second damage as `damagePerShot` and a `sustainedRateOfFire` of `1`.
- * Both are how the calculation carries a weapon with no cadence through the
- * same arithmetic as one that has; neither is a figure anyone measured, and
- * `Sustained rate of fire /s 1` on a beam laser is exactly the number this
- * application never writes (constitution IV).
- */
-const CADENCE_FIGURES: readonly WeaponFigure[] = ['damagePerShot', 'sustainedRateOfFire'];
-
-/**
- * The package's figures for one article, or `null` where it is not a weapon.
+ * Two articles get nothing. The test for a weapon is the package's own:
+ * `weaponMetrics` is fed by `hardpoint` records and nothing else, which is why
+ * feature 007 never measures the one utility module that carries a damage
+ * figure — a point defence turret publishes no capacitor draw, and the
+ * calculation's own default would report that absence as a draw of zero.
  *
- * The test for a weapon is the package's own: `weaponMetrics` is fed by
- * `hardpoint` records and nothing else, which is why feature 007 never
- * measures the one utility module that carries a damage figure. A point
- * defence turret publishes no capacitor draw, and the calculation's own
- * default would report that absence as a draw of zero.
+ * And a continuous-fire weapon — a beam or a mining laser — carries no cadence
+ * for anything to be worked out over. Its damage, its draw and its heat are
+ * already per second, so every figure here collapses to the catalogue stat the
+ * table already draws beside it, and `damagePerShot` and `sustainedRateOfFire`
+ * become the values the arithmetic needs to carry a weapon with no shots. A
+ * row repeating the row above it is not a second reading (constitution IV).
+ *
+ * `damagePerShot` is not published at all: it is `damage × roundsPerShot`, and
+ * both of those are rows of the same table.
  */
 export function weaponFigures(
   article: OutfittingModule | null,
-): Readonly<Partial<Record<WeaponFigure, number>>> | null {
+): Readonly<Record<WeaponFigure, number>> | null {
   if (article === null || article.category !== 'hardpoint') {
     return null;
   }
 
   const metrics = weaponMetrics(article);
-  if (!metrics.continuous) {
-    return metrics;
+  if (metrics.continuous) {
+    return null;
   }
 
-  return Object.fromEntries(
-    WEAPON_FIGURES.filter((figure) => !CADENCE_FIGURES.includes(figure)).map((figure) => [
-      figure,
-      metrics[figure],
-    ]),
-  );
+  return Object.fromEntries(WEAPON_FIGURES.map((figure) => [figure, metrics[figure]])) as Record<
+    WeaponFigure,
+    number
+  >;
 }

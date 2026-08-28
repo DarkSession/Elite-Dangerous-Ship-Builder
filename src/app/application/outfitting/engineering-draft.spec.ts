@@ -9,9 +9,9 @@ import {
   mercenaryVariant,
   packageText,
 } from '../../domain/outfitting/outfitting.fixtures';
-import { weaponFigures } from '../../domain/offence/weapon-figures';
+import { WEAPON_FIGURES, weaponFigures } from '../../domain/offence/weapon-figures';
 import {
-  CALCULATED_ATTRIBUTES,
+  HIGHER_IS_BETTER,
   NO_BLUEPRINT,
   currentSelection,
   draftIsStale,
@@ -507,10 +507,21 @@ describe('engineering draft', () => {
       // catalogue field states it. It is the package's own calculation over the
       // same two articles the catalogue rows come from.
       const stock = weaponFigures(loadout.fittedModuleAt(slot)?.stats ?? null);
+      // The modified reading, worked out a second time on a build the recipe
+      // was actually applied to. `expect.any(Number)` would pass for any
+      // wiring at all; this fails unless the panel measured the right article
+      // with the right recipe on it.
+      const applied = defaultBuild();
+      applied.applyBlueprint(slot, blueprint.blueprintSymbol, {
+        grade: blueprint.grades.at(-1)!,
+        quality: 1,
+      });
+      const modified = weaponFigures(applied.fittedModuleAt(slot)?.effectiveStats ?? null);
       expect(stock).not.toBeNull();
-      for (const attribute of CALCULATED_ATTRIBUTES) {
+      expect(modified).not.toBeNull();
+      for (const attribute of WEAPON_FIGURES) {
         expect(rows.get(attribute)?.stock).toBe(stock?.[attribute]);
-        expect(rows.get(attribute)?.modified).toEqual(expect.any(Number));
+        expect(rows.get(attribute)?.modified).toBe(modified?.[attribute]);
       }
       expect(rows.get('damagePerSecond')?.modified).not.toBe(rows.get('damagePerSecond')?.stock);
 
@@ -523,7 +534,7 @@ describe('engineering draft', () => {
         .filter(([field]) => field !== 'class' && field !== 'cost')
         .filter(([field, value]) => !(field === 'bootTime' && value === 0))
         .map(([field]) => field);
-      expect([...rows.keys()].sort()).toEqual([...published, ...CALCULATED_ATTRIBUTES].sort());
+      expect([...rows.keys()].sort()).toEqual([...published, ...WEAPON_FIGURES].sort());
     });
 
     it('gives a module that is not a weapon no calculated figures', () => {
@@ -537,12 +548,12 @@ describe('engineering draft', () => {
       // `weaponMetrics` answers for anything, and its answer for a frame shift
       // drive is a block of zeroes. A zero here is not a reading (constitution
       // IV), so the rows are never offered rather than being drawn and excused.
-      for (const attribute of CALCULATED_ATTRIBUTES) {
+      for (const attribute of WEAPON_FIGURES) {
         expect(drawn).not.toContain(attribute);
       }
     });
 
-    it('leaves a continuous-fire weapon its cadence rows off', () => {
+    it('gives a continuous-fire weapon no calculated figures either', () => {
       const loadout = defaultBuild();
       const slot = FIXTURE_SLOTS.fittedHardpoint;
       loadout.setModule(slot, getModuleBySymbol('Hpt_BeamLaser_Fixed_Small')!);
@@ -553,12 +564,25 @@ describe('engineering draft', () => {
         draft?.preview.kind === 'known'
           ? draft.preview.attributes.map((row) => row.attribute as string)
           : [];
-      expect(drawn).toContain('damagePerSecond');
-      // A beam fires no shots, so it has no damage per shot and no rate of
-      // fire to sustain. The package carries both to keep one arithmetic, and
-      // neither is a figure a Commander can read (`weaponFigures`).
-      expect(drawn).not.toContain('damagePerShot');
-      expect(drawn).not.toContain('sustainedRateOfFire');
+      // A beam's damage, draw and heat are already per second, so the drawn
+      // catalogue rows are the reading and a calculated row would repeat one.
+      expect(drawn).toContain('damage');
+      for (const attribute of WEAPON_FIGURES) {
+        expect(drawn).not.toContain(attribute);
+      }
+    });
+
+    it('marks a calculated figure the way the attribute’s own sense reads', () => {
+      // Rapid fire buys its rate of fire with heat. More heat per second is
+      // worse and more damage per second is better, and the table that says so
+      // is the application's — the Almanac's `LessIsGood` is not read.
+      expect(HIGHER_IS_BETTER.damagePerSecond).toBe(true);
+      expect(HIGHER_IS_BETTER.sustainedDamagePerSecond).toBe(true);
+      expect(HIGHER_IS_BETTER.sustainedRateOfFire).toBe(true);
+      expect(HIGHER_IS_BETTER.heatPerSecond).toBe(false);
+      expect(HIGHER_IS_BETTER.sustainedHeatPerSecond).toBe(false);
+      expect(HIGHER_IS_BETTER.energyPerSecond).toBe(false);
+      expect(HIGHER_IS_BETTER.sustainedEnergyPerSecond).toBe(false);
     });
   });
 });

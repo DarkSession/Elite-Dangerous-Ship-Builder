@@ -33,13 +33,17 @@ package's own gate into the calculation, and is why neither surface measures the
 that carries a damage figure. A point defence turret publishes no capacitor draw, and the
 calculation's own default would report that absence as a draw of zero.
 
-Eight scalar figures are exposed: `damagePerShot`, `damagePerSecond`, `sustainedDamagePerSecond`,
+A `continuous` weapon is not measured either. Its damage, draw and heat are already per second, so
+every figure collapses onto the catalogue stat the editor's table draws beside it, and
+`damagePerShot` and `sustainedRateOfFire` become the values the arithmetic needs to carry a weapon
+with no shots.
+
+Seven scalar figures are exposed: `damagePerSecond`, `sustainedDamagePerSecond`,
 `sustainedRateOfFire`, `energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond` and
-`sustainedHeatPerSecond`. A `continuous` weapon is given six of them: it fires no shots, so the
-result's `damagePerShot` is its per-second damage under another name and its `sustainedRateOfFire`
-is the `1` the arithmetic needs, and neither is a reading. The damage splits, `rateOfFire`,
-`thermalLoad`, `powerDraw` and `continuous` itself are not exposed — the first two are this panel's,
-and the rest are catalogue fields the editor's own table already draws.
+`sustainedHeatPerSecond`. `damagePerShot` is not, because it is `damage × roundsPerShot` and both
+are rows of that table. Neither are the damage splits, `rateOfFire`, `thermalLoad`, `powerDraw` and
+`continuous` itself — the splits are this panel's, and the rest are catalogue fields the editor
+already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in.
 
 ## Leaf imports
 
