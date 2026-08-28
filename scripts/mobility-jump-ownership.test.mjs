@@ -93,6 +93,21 @@ describe('mobility and jump ownership policy', () => {
       }
     });
 
+    it('rejects the standalone calculator as well as the call on a build', () => {
+      // Almanac 0.2.2 withdrew the `BuildMetrics` methods of these names but
+      // not the calculators the mobility leaves export under them, which are
+      // still nullable and still on the allowed subpaths. A rule that wanted a
+      // receiver would have read the import-and-call form as innocent.
+      for (const call of FORBIDDEN_CALLS) {
+        assert.deepEqual(forbiddenCalls(`const x = ${call}(input);`), [call]);
+      }
+    });
+
+    it('does not read a longer name that merely ends in a forbidden one', () => {
+      assert.deepEqual(forbiddenCalls('const x = envelopeMobilityMetrics(load);'), []);
+      assert.deepEqual(forbiddenCalls('const x = readPowerBudget(load);'), []);
+    });
+
     it('accepts the diagnostic form each nullable one is named after', () => {
       // `mobilityMetricsResult(` contains `mobilityMetrics(` as a prefix only
       // if the bracket is ignored, which is the near miss this rule has to

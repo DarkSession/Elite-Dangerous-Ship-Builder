@@ -129,8 +129,8 @@ it, and `contracts/capacitor-endurance.md` records the other half.
 
 ## Availability and zero
 
-`null` maps to one `unavailable` result with no capacitor figures. Null alone
-does not authorize a cause-specific diagnosis: it may reflect an absent,
+A `null` value maps to one `unavailable` result with no capacitor figures. Null
+alone does not authorize a cause-specific diagnosis: it may reflect an absent,
 disabled, package-incomplete or retracted-shed distributor. Unknown catalogue identities have
 no supported ingress representation and never reach this boundary.
 
@@ -176,5 +176,5 @@ history, URL, a build link or SLEF.
   at every width, including the narrow arrangement where the column labels
   itself.
 - Zero-pip recharge remains numeric zero.
-- Every package null renders unavailable without catalogue values or inferred
-  cause, and power, heat and the conditions stay usable beside it.
+- Every package null value renders unavailable without catalogue values or
+  inferred cause, and power, heat and the conditions stay usable beside it.

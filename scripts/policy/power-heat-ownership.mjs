@@ -54,14 +54,17 @@ export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]
 /**
  * The three package answers this capability is made of, in every spelling.
  *
- * Each name appears twice because two different things answer to it. The
- * `…Result(` form is the method on `BuildMetrics`, and is the only way to ask
- * it since Almanac 0.2.2 withdrew the nullable twin. The bare `heatMetrics(`
- * and `distributorMetrics(` are the standalone calculators, which the package
- * still exports from `ships/heat` and `ships/distributor` — both on this
- * capability's allowed subpaths, and both refused by the contracts, so dropping
- * their names would leave nothing guarding that refusal. A name is matched with
- * its bracket, which is why the shorter spelling does not cover the longer one.
+ * Each build-aware name appears twice because two different things answer to
+ * it. The `…Result(` form is the method on `BuildMetrics`, and is the only way
+ * to ask a build since Almanac 0.2.2 withdrew the nullable twin. The bare
+ * `heatMetrics(` and `distributorMetrics(` are the standalone calculators,
+ * which the package still exports from `ships/heat` and `ships/distributor`. A
+ * name is matched with its bracket, which is why the shorter spelling does not
+ * cover the longer one.
+ *
+ * This list is about *where* an answer is asked for, so the projection is
+ * exempt from it. What the projection may not do either is {@link
+ * STANDALONE_CALLS}.
  */
 export const PACKAGE_CALLS = [
   'powerBudget(',
@@ -70,6 +73,21 @@ export const PACKAGE_CALLS = [
   'heatMetrics(',
   'heatMetricsResult(',
 ];
+
+/**
+ * The calculators no file may call, the projection included.
+ *
+ * `ships/heat` and `ships/distributor` are on the allowed subpaths because the
+ * projection imports their *types*, so the calculators come with them, and the
+ * projection is the one directory in the repository that can reach them at all.
+ * Exempting it from {@link PACKAGE_CALLS} — which it must be, since it is the
+ * one place that asks — would therefore leave `heat-profile.md` and
+ * `distributor-metrics.md`'s refusal of the standalone forms with nothing
+ * enforcing it anywhere. This list is checked over every owned file with no
+ * exemption: assembling a calculator's inputs here is the application deciding
+ * what a package figure is made of (constitution II).
+ */
+export const STANDALONE_CALLS = ['distributorMetrics(', 'heatMetrics('];
 
 /**
  * The package fields that are figures rather than identities.
@@ -143,6 +161,23 @@ const RULES = [
             file: name,
             line,
             reason: `"${hit.slice(0, -1)}" is asked outside ${PROJECTION}; every screen reads one projection of one answer, and a second call site is a second opinion nothing reconciles (FR-001)`,
+          });
+        }
+      }
+    },
+  },
+  {
+    name: 'nobody calls the standalone calculator',
+    async run(violations) {
+      for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
+        const source = await readFile(resolve(ROOT, name), 'utf8');
+        for (const { line, hit } of scan(source, (text) =>
+          STANDALONE_CALLS.find((call) => text.includes(call)),
+        )) {
+          violations.push({
+            file: name,
+            line,
+            reason: `"${hit.slice(0, -1)}" is the standalone calculator, which no file may call — the projection included; the build-aware "${hit.slice(0, -1)}Result" reads the fit the package already holds, and assembling the calculator's inputs here is this application deciding what the figure is made of (constitution II)`,
           });
         }
       }

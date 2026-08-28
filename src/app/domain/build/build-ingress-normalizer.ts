@@ -57,10 +57,14 @@ import type {
  * stated modifier block that moved no stat the module carries is gone from the
  * build and the recipe stated beside it was rolled in its place, which is the
  * same reading of a stated recipe as the roll above rather than a normalization
- * of its own (`docs/slef-interchange.md`). Nothing here reads any of the three:
- * such a module is either carrying a partial quality, in which case step 4
- * refuses the whole candidate over the package's own refusal, or it is not, in
- * which case this application has no surface that states it yet.
+ * of its own (`docs/slef-interchange.md`). Nothing here reads any of the three,
+ * for two different reasons. The two that report no change are moot: such a
+ * module is either carrying a partial quality, in which case step 4 refuses the
+ * whole candidate over the package's own refusal, or it is not, in which case
+ * there is nothing to say. A reroll is not moot — a rerolled module at full
+ * quality passes step 4, and the block the source wrote is gone from the build
+ * without the Commander being told — and goes unread only because this
+ * application draws no engineering-provenance surface for it to be told on.
  */
 export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   // Step 1. Read the source's partial rolls before construction consumes them.

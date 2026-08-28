@@ -149,10 +149,10 @@ canvas draws it as a reading, and feature 002's ledger is where a mount is selec
 7. Confirm zero pips reads as a genuine zero recharge.
 8. Confirm the figures keep their columns at every width: the pip blocks take the space they need
    and no more, and no capacity, rated recharge or recharge rate wraps or is cut off.
-9. Exercise a `null` result — an absent, switched-off, unresolvable or retracted-shed distributor.
+9. Exercise a `null` value — an absent, switched-off, unresolvable or retracted-shed distributor.
 
 Expected: every field equals `distributorMetricsResult()`; there is no draft, no running total across the
-three banks and no validation; a `null` result is one unavailable group with no catalogue figure and
+three banks and no validation; a `null` value is one unavailable group with no catalogue figure and
 no diagnosis of which of the four reasons it was, and power, heat and the conditions stay usable.
 
 ## 8. Validate heat

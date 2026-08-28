@@ -58,28 +58,37 @@ export const ALLOWED_SUBPATHS = [
 /**
  * Package calls this capability must never make at all.
  *
- * `mobilityMetrics()` and `mobilityCapacitorMetrics()` were the nullable
- * convenience forms of the two results this feature reads. They answered or they
- * returned `null`, and a `null` carries no reason — so a card built on them could
- * only say "unavailable" with nothing after it, where FR-005 requires the
- * package's own issues. Almanac 0.2.2 removed both, leaving the `…Result` form as
- * the only spelling; they stay named here so the rule keeps standing on the near
- * miss the result forms are, rather than being reintroduced by a wrapper of this
- * application's own. `powerBudget()` is feature 005's question: the package's
- * own mobility diagnostics already distinguish a shed thruster from a missing
- * one, and a budget checked here would be this feature deciding a power meaning
- * that is not its to decide (the Delivery gate in tasks.md names all three).
+ * `mobilityMetrics()` and `mobilityCapacitorMetrics()` answer or they return
+ * `null`, and a `null` carries no reason — so a card built on either could only
+ * say "unavailable" with nothing after it, where FR-005 requires the package's
+ * own issues.
+ *
+ * Almanac 0.2.2 withdrew the two `BuildMetrics` **methods** of those names,
+ * leaving `…Result` as the only way to ask the build. It did not withdraw the
+ * **standalone calculators**, which `ships/mobility` and `ships/mobility-capacitor`
+ * — both on the allowed subpaths above — still export under the same two names,
+ * and which are still nullable. So the name is forbidden whether or not it is
+ * reached through a build, which is why the match below does not require a
+ * receiver.
+ *
+ * `powerBudget()` is feature 005's question: the package's own mobility
+ * diagnostics already distinguish a shed thruster from a missing one, and a
+ * budget checked here would be this feature deciding a power meaning that is not
+ * its to decide (the Delivery gate in tasks.md names all three).
  */
 export const FORBIDDEN_CALLS = ['mobilityMetrics', 'mobilityCapacitorMetrics', 'powerBudget'];
 
 /**
- * One of those, called on something.
+ * One of those, called — on a build, or as the bare calculator.
  *
- * Requiring the bracket is what keeps `mobilityMetricsResult(` — the
- * diagnostic form this feature does read — from matching the withdrawn
- * `mobilityMetrics(` it is named after.
+ * There is no leading dot: `mobilityMetrics(input)` imported straight from
+ * `ships/mobility` is the same forbidden question as `metrics.mobilityMetrics()`,
+ * and requiring a receiver would have let the import-and-call form through. The
+ * word boundary keeps a longer identifier ending in one of these names from
+ * matching, and requiring the bracket keeps `mobilityMetricsResult(` — the
+ * diagnostic form this feature does read — from matching the name it is built on.
  */
-const FORBIDDEN_CALL = new RegExp(`\\.(?:${FORBIDDEN_CALLS.join('|')})\\s*\\(`);
+const FORBIDDEN_CALL = new RegExp(`\\b(?:${FORBIDDEN_CALLS.join('|')})\\s*\\(`);
 
 /** Any import of the package, so a barrel or an unlisted subpath is caught too. */
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
@@ -268,15 +277,15 @@ export function packageCalls(source) {
   return packageCallSites(source).map(({ hit }) => hit);
 }
 
-/** The lines where one source makes a call this capability may never make. */
+/**
+ * The lines where one source makes a call this capability may never make.
+ *
+ * The match is the name and its bracket. Nothing is sliced off the front: the
+ * pattern opens on a word boundary rather than a receiver, so the first
+ * character of the match is the first character of the name.
+ */
 export function forbiddenCallSites(source) {
-  return scan(
-    source,
-    (text) =>
-      FORBIDDEN_CALL.exec(text)?.[0]
-        ?.slice(1)
-        .replace(/\s*\($/, '') ?? null,
-  );
+  return scan(source, (text) => FORBIDDEN_CALL.exec(text)?.[0].replace(/\s*\($/, '') ?? null);
 }
 
 /** Just the calls, for a caller that does not need the lines. */

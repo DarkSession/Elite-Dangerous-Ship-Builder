@@ -78,7 +78,7 @@ conditions here, because the design draws them inside this capability and nowher
   > than imposed from here: this spec constrains this capability, and one quantity written in two
   > units across one workspace is a thing both specs have to say.
 
-- **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
+- **FR-008**: A `null` distributor value MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
 - **FR-009**: Heat MUST use `BuildMetrics.heatMetricsResult()` and show the five returned scenarios, their
   thermal load, heat level, gauge level, overheat state and time to overheat.

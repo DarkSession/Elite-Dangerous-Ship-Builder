@@ -23,10 +23,14 @@ planning ship loadouts.
   `BuildMetrics.of(build).powerBudget()`. A property is a fact the build already
   carries and anything that does work is a call, so `validation()` is a call
   too. Since Almanac 0.2.2 a metric that can be unavailable is offered **only**
-  as its `…Result` form — `heatMetricsResult()`, not `heatMetrics()` — whose
-  `value` is the figure or `null` and whose `issues` say why it is `null`. Read
-  `.value` where a screen only states the absence, and the issues where it
-  states the reason. Specs written before 0.2.0 name these calls on
+  as its `…Result` form on `BuildMetrics` — `heatMetricsResult()`, not
+  `heatMetrics()` — whose `value` is the figure or `null` and whose `issues` say
+  why it is `null`. Read `.value` where a screen only states the absence, and the
+  issues where it states the reason. The leaves still export **standalone
+  calculators** under the withdrawn names, taking inputs rather than a build:
+  they are not the call you want, assembling their inputs here would be this
+  application deciding what a figure is made of, and the ownership policies
+  refuse them outright. Specs written before 0.2.0 name these calls on
   `ShipLoadout`; the `contracts/` under each feature are corrected, older
   `research.md`, `plan.md` and `tasks.md` entries are dated records and are left
   as they were written.
