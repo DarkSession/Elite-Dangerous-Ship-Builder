@@ -326,7 +326,7 @@ width, and the chooser takes the whole of it as a layer.
 **Both scrollers keep their rows' own height.** A bounded flex column gives its
 items' height up before it scrolls, and the rail is exactly that. Reading the
 screen in German is what showed it: `Unterflächenverdrängungsraketen` wraps to
-three lines, seventeen families no longer fit in the canvas's 470px, and every
+three lines, seventeen families no longer fit in the pane's own bound, and every
 row was squeezed until the names printed over one another. A scroller is what a
 list does when it has more than it can show; shrinking its rows is not.
 
@@ -385,7 +385,8 @@ ground. The ledger's rail already states this rule in its own stylesheet; the ma
 the engineering editor's now state it too.
 
 Two dozen pixels of that document survive it, and are not this: at that viewport the middle column
-has 760 px for plates that ask for 349 and a bench that will not go under its declared minimum. That is the column being asked to hold more than it has, which is a composition question
+has 760 px for plates that ask for 349 and a bench that will not go under its own declared 26rem
+minimum. That is the column being asked to hold more than it has, which is a composition question
 and not a clipping one.
 
 ## Module families

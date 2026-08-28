@@ -117,9 +117,9 @@
   @if (actions().length > 0 || navigation().length > 0) {
     <!--
       The same actions in two compositions, one rendered at a time. The wide row
-      keeps every action on the banner; the compact layer moves them behind one
+      keeps every action on the banner; the folded layer moves them behind one
       named trigger. Whichever is not in use is removed from layout and from the
-      accessibility tree by its media query, so no action is ever announced
+      accessibility tree by `layout.bar-folded`, so no action is ever announced
       twice or reachable while invisible.
     -->
     <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">

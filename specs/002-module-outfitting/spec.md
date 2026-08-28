@@ -318,7 +318,7 @@ its ship name and ident — belongs here.
   > list of their own, a family the application reveals MUST be brought into that list's visible box;
   > a family a Commander reveals themselves MUST NOT be scrolled to. Revealing the fitted module's
   > family already brought its rows to the module. It did not move the families: the revealed one
-  > could be the sixtieth of seventy-seven and off the end of a list bounded at 470px, so the rows
+  > could be the sixtieth of seventy-seven and off the end of a bounded list, so the rows
   > beside it changed and nothing on screen said which family they now belonged to. The second half
   > of the rule is the first one's own reasoning applied in the other direction — a Commander who has
   > just pressed a family is already looking at it, and moving the list under that press is the fault

@@ -65,8 +65,9 @@
 // Every canvas builds the bar from exactly two groups: the screen's identity on
 // the leading edge and everything it offers on the trailing one (canvas 1a's
 // `OPEN SAVED BUILD · IMPORT · ?`, canvas 1c's `UNDO · REDO · EXPORT · SAVE ·
-// ?`). Nothing is drawn between them, so the identity takes the slack and the
-// navigation and the actions abut on the trailing edge as one row of controls.
+// ?`). Nothing is drawn between them, so the identity takes the slack and
+// whatever the trailing edge holds — the navigation and the actions where the
+// bar is drawn wide, the one named trigger where it is folded — abuts there.
 .frame__identity {
   @include layout.wrapping-row(var(--edsb-space-inline));
 
@@ -143,7 +144,7 @@
 }
 
 // Canvas 1b's sheet bar. One composition is rendered at a time, the same way
-// the wide action row and the compact action layer are: `display: none` is the
+// the wide action row and the folded action layer are: `display: none` is the
 // hide, so the bar that is not in use leaves the accessibility tree and the
 // document never carries two `h1`s or two ways back at once.
 .frame__return {
@@ -276,9 +277,10 @@
 
 @include layout.compact {
   .frame__banner {
-    // The identity, navigation and action trigger each take a full row rather
-    // than competing for one; nothing shrinks below its target baseline and no
-    // label truncates.
+    // The identity and the action trigger each take a full row rather than
+    // competing for one; nothing shrinks below its target baseline and no label
+    // truncates. The bar is folded at every width this applies to, so those two
+    // are all it draws.
     align-items: flex-start;
     padding-inline: var(--edsb-space-inline-loose);
   }

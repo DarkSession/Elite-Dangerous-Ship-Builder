@@ -8,7 +8,7 @@
   (click)="toggle()"
 >
   <!--
-    Canvas 1d draws the mark and no word: the compact bar is one 52px row
+    Canvas 1d draws the mark and no word: the folded bar is one row
     already carrying a build's name, and there is no room for a fourth phrase.
     The mark is hidden and the name is carried as text inside the control, so
     the button is named by words in the accessibility tree and drawn as the
@@ -30,7 +30,7 @@
     Canvas 1d's `⋮` menu is one list: `SAVE`, then the history pair, then
     `IMPORT · EXPORT`, then `HELP & FAQ`. The screens a Commander can move to
     are part of that list at this width, not a second row of chips under the
-    bar — the compact bar is one 52px row and nothing else.
+    bar — the folded bar is one row and nothing else.
   -->
   @if (links().length > 0) {
     <nav class="action-layer__navigation" [attr.aria-label]="linksLabel()">

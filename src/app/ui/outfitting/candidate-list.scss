@@ -404,10 +404,9 @@
   // scroll, and a flex item's default is to give up its height to fit. Reading
   // the screen in German is what showed it: `Unterflächenverdrängungsraketen`
   // wraps to three lines, seventeen families no longer fit in the pane, and
-  // every
-  // row was squeezed until the names printed over one another. A scroller is
-  // what a list does when it has more than it can show; shrinking its rows is
-  // not.
+  // every row was squeezed until the names printed over one another. A scroller
+  // is what a list does when it has more than it can show; shrinking its rows
+  // is not.
   .family--rail,
   .candidates__pane .candidate {
     flex: none;

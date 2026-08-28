@@ -192,7 +192,7 @@ export class AppFrame {
    * The compact bar a layered screen publishes, where one does.
    *
    * Rendered alongside the ordinary bar and hidden at the width it does not
-   * belong to, the way the wide action row and the compact action layer already
+   * belong to, the way the wide action row and the folded action layer already
    * are: `display: none` takes the composition that is not in use out of the
    * accessibility tree, so exactly one `h1` and one way back are ever exposed.
    */
@@ -232,7 +232,7 @@ export class AppFrame {
   readonly actionsCloseLabel = this.#messages.messageSignal('shell.actions.close');
 
   /**
-   * Whether the compact action layer is open.
+   * Whether the folded action layer is open.
    *
    * Pure view state: which controls are currently on screen. It is not domain
    * state, is never persisted, and is reset by nothing but the Commander, so

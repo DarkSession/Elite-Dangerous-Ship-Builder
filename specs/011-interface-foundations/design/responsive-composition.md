@@ -5,11 +5,16 @@
 The reference supplies wide and 390px compact examples. Feature 011 adds the missing medium behavior
 and lets available content space—not a device label alone—choose composition.
 
-| Mode    | Composition rule                                                                                         | Reference basis        |
-| ------- | -------------------------------------------------------------------------------------------------------- | ---------------------- |
-| Wide    | Inline identity/actions; master-detail or multi-region workspace; centered dialogs                       | Canvases 1a and 1c     |
-| Medium  | Wrapping shell; two regions where relationships remain legible; secondary region moves below or drill-in | Synthesized for tablet |
-| Compact | Single semantic flow; route-backed/full-height drill-ins; sheets for simple tasks; named action menu     | Canvases 1b and 1d     |
+| Mode    | Composition rule                                                                                     | Reference basis        |
+| ------- | ---------------------------------------------------------------------------------------------------- | ---------------------- |
+| Wide    | Master-detail or multi-region workspace; centered dialogs                                            | Canvases 1a and 1c     |
+| Medium  | Two regions where relationships remain legible; secondary region moves below or drill-in             | Synthesized for tablet |
+| Compact | Single semantic flow; route-backed/full-height drill-ins; sheets for simple tasks; named action menu | Canvases 1b and 1d     |
+
+The command bar is not in that table. It composes at a step of its own — inline identity and
+actions above the width the widest shipped language needs for them, one row and a named menu below —
+because what decides it is the bar's own content rather than the page's
+(`_responsive.scss`, `$mode-bar-folded-max`).
 
 Container queries govern reusable component composition. Page-level media queries govern shell and
 route regions. Both use named tokens; the reference canvas widths are not copied as breakpoints.

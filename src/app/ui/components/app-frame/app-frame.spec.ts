@@ -52,7 +52,7 @@ describe('AppFrame', () => {
     const element = render(HULL_SHEET);
 
     // Both compositions are rendered and the stylesheet shows one, the way the
-    // wide action row and the compact action layer already are. Which one is
+    // wide action row and the folded action layer already are. Which one is
     // on screen is a media query's decision, so the shipyard's own title is
     // still here for the width that draws it.
     const titles = [...element.querySelectorAll('h1')].map((heading) =>

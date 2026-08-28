@@ -654,7 +654,7 @@ test.describe('the compact route the reference draws', () => {
     // row of guesses; one is a convention.
     expect(await page.locator('.frame__actions .action').count()).toBeGreaterThan(1);
 
-    // The compact action layer spells the same entry out and draws no mark at
+    // The folded action layer spells the same entry out and draws no mark at
     // all, which is what canvas 1d draws there: a menu is a list of rows a
     // Commander reads rather than a bar they scan.
     await expect(page.locator('.action-layer__panel .action--symbol')).toHaveCount(0);
@@ -769,7 +769,7 @@ test.describe('the questions the modal answers', () => {
     }
   });
 
-  test('draws the same set from the compact action layer', async ({ page }) => {
+  test('draws the same set from the folded action layer', async ({ page }) => {
     await withStockBuild(page);
 
     const inline = page.getByRole('button', { name: HELP_ACTION });

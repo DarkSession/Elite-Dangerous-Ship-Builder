@@ -6,11 +6,11 @@ component preview application, which never appears in product navigation or prod
 
 ## Feature-owned surfaces
 
-| Surface                           | Wide/medium presentation                                           | Compact/zoom presentation                                       | Primary states                                                                           |
-| --------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Embedded application shell        | Product/route identity, navigation, wrapping actions and feedback  | Identity plus named action layer retaining Help/context actions | bootstrap, route loading/ready/empty/error, locale ready/loading/fallback                |
-| Global feedback/announcement host | Visible route/global messages plus hidden assertive/polite outlets | Same semantic order and event policy                            | initial, new/stale/replayed blocking/nonblocking events                                  |
-| Component preview application     | Manifest selection and bounded component fixture                   | Same fixture under compact project viewport                     | every declared state plus expanded, RTL, reduced motion, localized/canonical/unavailable |
+| Surface                           | Wide/medium presentation                                            | Compact/zoom presentation                                              | Primary states                                                                           |
+| --------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Embedded application shell        | Product/route identity, navigation, actions and feedback on one row | Identity plus named action layer retaining every action the bar offers | bootstrap, route loading/ready/empty/error, locale ready/loading/fallback                |
+| Global feedback/announcement host | Visible route/global messages plus hidden assertive/polite outlets  | Same semantic order and event policy                                   | initial, new/stale/replayed blocking/nonblocking events                                  |
+| Component preview application     | Manifest selection and bounded component fixture                    | Same fixture under compact project viewport                            | every declared state plus expanded, RTL, reduced motion, localized/canonical/unavailable |
 
 ## Reference-canvas consumption
 

@@ -116,18 +116,20 @@ describe('the sticky banner', () => {
   });
 
   it('publishes the height the bar actually came out at, not the declared one', () => {
-    // The reading every sticky region below the bar offsets by. The workspace's
-    // bar is taller than the token's one-row figure because its identity block
-    // is two 24px targets, and a wrapped bar is taller again; a region handed
-    // the declared figure freezes behind the bar and stands its own foot short
-    // of the screen's by the difference.
+    // The reading every sticky region below the bar offsets by. A wrapped bar
+    // is taller than the declared floor — at a doubled text size and at 400%
+    // zoom it wraps — and a region handed the declared figure freezes behind
+    // the bar and stands its own foot short of the screen's by the difference.
+    //
+    // Measured at a height the token layer never declares, so a reading that
+    // was really the declared figure could not pass this.
     withRootFontSize(16);
     withWindowHeight(1000);
-    withBarHeight(74);
+    withBarHeight(118);
 
     const fixture = renderComponent(StickyBannerHost);
 
-    expect(fixture.componentInstance.height()).toBe(74);
+    expect(fixture.componentInstance.height()).toBe(118);
   });
 
   it('holds its place in a renderer with no resize observer', () => {

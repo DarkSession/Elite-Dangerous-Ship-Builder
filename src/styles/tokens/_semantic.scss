@@ -449,11 +449,10 @@
 
 // The bar the frame actually rendered, republished on its own host from the
 // measurement (`app-frame.ts`), because the declared height above is a floor
-// rather than a reading: the workspace draws an identity block of two 24px
-// targets in the same bar, and any width where the bar wraps draws more rows
-// than one. A region that offset by the declared figure there froze itself
-// behind the bar and stood its own foot short of the screen's by the difference
-// (Commander request 2026-08-25).
+// rather than a reading: at a doubled text size and at 400% zoom the bar wraps
+// and draws more rows than one. A region that offset by the declared figure
+// there froze itself behind the bar and stood its own foot short of the
+// screen's by the difference (Commander request 2026-08-25).
 //
 // Everything derived from that height has to be derived again beside it, since
 // a custom property substitutes its own `var()`s where it is declared.

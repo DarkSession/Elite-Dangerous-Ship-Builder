@@ -48,18 +48,22 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
 
 ## Wide composition
 
-- Keep route/product identity at the inline start and a wrapping named action group at the inline end,
+- Keep route/product identity at the inline start and a named action group at the inline end,
   matching the reference hierarchy.
-- Primary actions remain visible. Secondary utilities may use a named menu only when every menu item
-  repeats a visible text label.
+- Actions remain visible on the bar wherever the widest shipped language can draw them all on one
+  row. Below that width the bar folds instead, and the fold is total: every action and every screen
+  the bar offers goes into the one named menu, at every width the bar is folded at
+  (`design/canvas-extraction.md`, "One bar height, on every screen"). A menu item repeats the
+  visible text label the bar would have drawn, so nothing is only reachable as an unnamed mark.
 - Route content receives a fluid central region; the shell does not impose the reference's fixed
   canvas width.
 
 ## Medium/tablet composition
 
-- Identity and actions wrap into separate rows before labels truncate or targets shrink.
-- Preserve direct access to the primary route action and Language; lower-priority actions may move to
-  the named action layer without changing availability.
+- The bar is folded here, so it draws identity and one named menu rather than wrapping identity and
+  actions into separate rows. Everything the bar offers stays available, in the menu, named.
+- Regions below the bar take the medium mode as they always did: two regions where relationships
+  stay legible, and a secondary region that moves below or becomes a drill-in.
 - Portrait and landscape use the same semantic DOM order even when the visible rows change.
 
 ## Compact/zoom composition

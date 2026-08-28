@@ -160,10 +160,10 @@ export class CandidateList {
    * Brings the revealed family into the rail's own visible box.
    *
    * The pane already scrolls to the module in the mount; the rail did not move
-   * at all. It is bounded at the pane's own height, which holds about nine of the
-   * Almanac's seventy-seven families, so revealing the family of what is fitted
-   * could change every row in the pane while the rail went on showing the ten
-   * it happened to be scrolled to — the rows changed and nothing on screen said
+   * at all. It is bounded at the pane's own height, which holds about nine of
+   * the Almanac's seventy-seven families, so revealing the family of what is
+   * fitted could change every row in the pane while the rail went on showing
+   * the nine it happened to be scrolled to — the rows changed and nothing said
    * which family they now belonged to (Commander request 2026-08-27).
    *
    * **Who revealed it decides.** A family the application revealed is centred;
@@ -209,9 +209,8 @@ export class CandidateList {
     // The rule itself, and not a proxy for it: a family the Commander revealed
     // is not scrolled to. Asking instead whether the row is already in view
     // gets this wrong for exactly the row it matters for — the rail is a
-    // bounded box of 44px rows, so the row at either edge is routinely
-    // clipped, and
-    // pressing a clipped row would re-centre the list under the finger that
+    // bounded box of 44px rows, so the row at either edge is routinely clipped,
+    // and pressing a clipped row would re-centre the list under the finger that
     // pressed it (reported in review, 2026-08-27).
     if (pressed === revealed.familyId) {
       return;
