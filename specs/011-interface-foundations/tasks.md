@@ -472,12 +472,19 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       amended together; the store's own unit test asserts the new bound rather than the old floor.
       _The overlay is not a passage to finish. The half written to be read is the `Updated` notice
       the restarted session draws, and it carries no clock at all._
-- [x] T145 Record what that costs. The applying overlay is no longer swept by axe in
-      `e2e/application-update.spec.ts`: it stands for less time than a scan takes, so a sweep would
-      be scanning the page that replaced it. `e2e/coverage-ledger.ts` says so in place rather than
-      leaving the surface looking scanned, and the structural assertions — a named dialog with
-      nothing to press — stay where they were.
-      _A gap named on the ledger is a decision; a gap nobody wrote down is a claim._
+- [x] T145 Record what that costs, and stop the journeys racing the clocks. Neither update layer is
+      swept by axe any more — the overlay stands for one second and the arrival notice for six, and
+      one axe pass is 2.5 s locally and about twice that on a runner, so a sweep would as often be
+      scanning the page that replaced it. `e2e/coverage-ledger.ts` carries `axe: false` and the
+      reason in place rather than leaving the surface looking scanned.
+      The journeys stopped waiting on the layers too. Playwright's auto-retrying assertions settle to
+      a one-second poll, which against a one-second state is a coin toss whose losing side looks
+      exactly like the overlay never being drawn; `watchForRestartOverlay` has the page record what
+      it drew, at animation-frame cadence, into the `sessionStorage` that survives the restart, and
+      the assertions are made afterwards. The two overlay journeys become one, because they were two
+      races against the same second.
+      _A gap named on the ledger is a decision; a gap nobody wrote down is a claim — and a test that
+      is green half the time for reasons of sampling is neither._
 - [x] T147 Let the arrival notice go by itself. `UPDATE_APPLIED_NOTICE_MS` is six seconds, run on
       the same one-shot port as the restart's grace and stopped when the notice's own control is
       pressed or the store is destroyed. It is a second time limit, so constitution V is amended to
@@ -493,6 +500,15 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       journey in `e2e/cost-and-materials.spec.ts` asserts the disclosure where it asserted the badge.
       _A marker on nearly every row marks nothing. Untranslated game text is the ordinary state of a
       package locale this application does not own._
+- [x] T148 Carry it into feature 002's record and re-measure what it held up.
+      `design/outfitting-workspace.md` said the ledger row keeps its `UNTRANSLATED` tag; it does not,
+      and the revision says why. The tag was also the seventy-odd pixels that made the ledger's
+      longest German name overflow — measured again, `Advanced Planetary Approach Suite` now fits at
+      205 against 205 at all five layout profiles, at 100% text and at 200%, so the two German
+      journeys in `e2e/module-outfitting.spec.ts` assert the fits-whole branch and say so rather than
+      passing while measuring nothing. The cut-and-reach path is proved over the port in
+      `outfitting-components.spec.ts`, where the overflow is declared instead of waited for.
+      _A test that quietly stops exercising the thing it is named after is worse than no test._
 
 ## Notes
 

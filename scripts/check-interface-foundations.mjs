@@ -1898,10 +1898,11 @@ export function ledgerReconciliationViolations(input) {
  * The criteria the constitution excludes from the conformance target.
  *
  * Seven are the keyboard-operation block principle V excludes. The eighth,
- * 2.2.1, is excluded for the update restart alone: a published version is
- * applied without asking, so the announcement before it carries nothing that
- * calls it off, and a time limit with no way out meets none of that
- * criterion's conditions.
+ * 2.2.1, is excluded for applying an update and for nothing else: a published
+ * version is applied without asking, so the announcement before it carries
+ * nothing that calls it off, and the notice on the other side of the restart
+ * takes itself down. Neither time limit meets any of that criterion's
+ * conditions (constitution 9.0.0).
  */
 export const EXCLUDED_CRITERIA = [
   '2.1.1',

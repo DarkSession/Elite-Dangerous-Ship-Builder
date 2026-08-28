@@ -317,13 +317,25 @@ test.describe('the slot ledger', () => {
   });
 
   /**
-   * German, because English is where this never happens.
+   * German, because English is where the names are shortest.
    *
-   * The Almanac publishes no German name for this suite, so the row draws the
-   * English one *and* the untranslated tag beside it — seventy-odd pixels more
-   * than the ledger has at a phone's width, and the only place in a stock build
-   * where the rule that cuts a name actually fires. Run in English the test
-   * would pass on its other branch for ever and prove nothing.
+   * **Measured again on 2026-08-28, and it changed.** The untranslated tag used
+   * to stand beside this row's English name — seventy-odd pixels the ledger did
+   * not have at a phone's width, and the one place in a stock build where the
+   * rule that cuts a name actually fired. The tag is gone (owner's decision,
+   * 011/FR-020), and with it that overflow: `Advanced Planetary Approach Suite`
+   * now measures 205 against 205 at every one of the five layout profiles, at
+   * 100% text and at 200%, and the longest name anything fittable carries
+   * clears the widest ledger too.
+   *
+   * So what these two assert today is the branch a row that fits owes: the
+   * whole name drawn, and **no** mark standing in for something that was not
+   * cut. `expectTheWholeNameIsReachable` still carries the other branch and
+   * still runs it the moment a row overflows again — a longer name, a narrower
+   * profile, another hull — and until then the cut-and-reach path is proved
+   * over the port, in `outfitting-components.spec.ts`, where the overflow is
+   * declared rather than waited for. Written down rather than left as two tests
+   * that pass while measuring nothing.
    */
   test.describe('in German', () => {
     test.use({ locale: 'de-DE' });
@@ -390,10 +402,10 @@ test.describe('the slot ledger', () => {
 
     test('never loses a module name the row is too narrow to draw', async ({ page }) => {
       // The stock Anaconda's own longest name, and the one the accessibility
-      // sweep reported cut: the Almanac publishes no German for this suite, so
-      // the row draws the English name *and* the untranslated tag beside it,
-      // which is more than a phone's ledger has. In English nothing here
-      // overflows and the test would prove nothing.
+      // sweep once reported cut: the Almanac publishes no German for this
+      // suite, so the row draws the English one. It fits at every profile now
+      // that nothing stands beside it — see the block comment above for what
+      // that costs and where the other branch is proved.
       await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
       await expectTheWholeNameIsReachable(page);
     });

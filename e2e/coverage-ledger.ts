@@ -428,7 +428,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     surfaceId: 'shell/newer-version-published',
     requirements: ['011/FR-025', '011/SC-007'],
     journey: 'product/application-update',
-    axe: true,
+    axe: false,
     assertions: [
       'a session already open when a version is published states it without a Commander-initiated reload',
       'the statement is a modal overlay carrying nothing to press: no control, no Escape and no ground',
@@ -436,21 +436,26 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the page restarts on the newer version by itself once the overlay has stood',
       'the restarted session states that the update was applied and names the version it is running',
       'that statement carries one named control, goes by itself once it has stood, and does not return on a later navigation',
-      'a session that never applies it is served the newer version the next time it starts, and says nothing about it over a window in which it would have',
+      'a hand-started reload after the restart is served the published version, announces nothing, and is not restarted again over a window in which a stale one would have been',
     ],
-    // The overlay before the restart is not swept, and that is the cost of the
-    // 2026-08-28 decision rather than an omission: it stands for the second
-    // before the reload (`UPDATE_OVERLAY_MS`), which is less than a sweep
-    // takes, so a scan started on it would be scanning the page that replaced
-    // it. The same layer is swept where it can be held still — the `Updated`
-    // notice the restarted session draws — and the difference between the two,
-    // a layer with no dismiss control, is asserted structurally here and in
-    // `containers.spec.ts`.
+    // **Neither of this mechanism's two layers is swept as a composition, and
+    // that is the cost of the 2026-08-28 decision rather than an omission.**
+    // The overlay stands for the second before the reload
+    // (`UPDATE_OVERLAY_MS`) and the arrival notice for six
+    // (`UPDATE_APPLIED_NOTICE_MS`); this repository's own figure for one axe
+    // pass is 2.5 s locally and roughly twice that on a runner
+    // (`e2e/accessibility.ts`, `SWEEP_BUDGET_MS`), so a scan started on either
+    // would as often be scanning the page that replaced it — a green that means
+    // nothing, which is worse than a gap that is written down.
     //
-    // The notice on the other side is swept, and pressing its control is what
-    // is asserted over the port instead: the notice takes itself down after
-    // `UPDATE_APPLIED_NOTICE_MS`, so a journey that waited to press it would be
-    // pressing a layer that had already gone. `app.spec.ts` presses it.
+    // What still covers them: `Layer` itself is swept in the preview catalogue
+    // under every variant, both layers are asserted structurally here — a named
+    // dialog with nothing to press, and a named dialog with one control — and
+    // the manual screen-reader protocol walks both. Pressing the notice's
+    // control is asserted over the port in `app.spec.ts`, because a journey
+    // that waited to press it would be pressing a layer that had gone.
+    //
+    // Lengthening either clock is what would buy the sweep back.
 
     // No polite announcement is on that list, and its absence is the rule
     // rather than an omission. The overlay is modal, so the outlet inside the

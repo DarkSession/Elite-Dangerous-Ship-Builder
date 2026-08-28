@@ -183,8 +183,11 @@ disagrees or where the announcement is correct but unusable.
     reader inside that window at their own rate and verbosity. If they do not,
     that is a number to revisit, and `UPDATE_APPLIED_NOTICE_MS` in
     `src/app/application/updates/application-update.store.ts` is where it lives.
-    Expect it **not** to come back on the next navigation, or on the next load
-    of that session.
+    When it goes by itself, focus returns to where the layer took it from — for
+    a layer opened at start-up that is the document body, with nothing said
+    about the move. Record what the reader does at that moment: whether it
+    reads on, falls silent, or starts the page again. Expect the notice **not**
+    to come back on the next navigation, or on the next load of that session.
 
     Then the state where the restart could not be carried out: the layer comes
     down without the page starting over, and the shell is left carrying a
