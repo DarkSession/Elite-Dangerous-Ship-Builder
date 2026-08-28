@@ -350,10 +350,11 @@
   // which is a rule about the product rather than a measurement taken off the
   // drawing. The figure is the tallest identity the bar carries — the
   // workspace's two-line block of a build name over its hull and ID plate —
-  // inside the bar's own block padding, rather than the single row of controls
-  // every other screen comes to. Sized to that row instead, the bar stood 66px
-  // on the shipyard and 74px on a build, and the whole page under it moved as a
-  // Commander opened one (Commander request 2026-08-28).
+  // inside the bar's own block padding and the amber rule that closes it, which
+  // the border box counts. Sized to the single row of controls every other
+  // screen comes to instead, the bar stood 66px on the shipyard and 74px on a
+  // build, and the whole page under it moved as a Commander opened one
+  // (Commander request 2026-08-28).
   //
   // The bar's own controls have to fit on a row for that to hold, which is what
   // `$mode-bar-folded-max` is for: below the width the widest shipped language
@@ -574,7 +575,7 @@
   // the row this gives up is what a Commander was scrolling past to reach the
   // anatomy and the rail under them (Commander requests 2026-08-27 and
   // 2026-08-28; `design/outfitting-workspace.md`, "Five rows is still a
-  // glimpse" and "Seven rows, and the bench a tenth shorter").
+  // glimpse" and "Seven rows, and the fitting panel about a tenth shorter").
   --edsb-measure-fitting-panel: 23.375rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It

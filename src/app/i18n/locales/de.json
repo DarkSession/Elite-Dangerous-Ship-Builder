@@ -832,7 +832,7 @@
   "help.topic.browserPersistence.question": "Wo werden meine Aufbauten gespeichert?",
   "help.topic.browserPersistence.answer": "In diesem Browser, zusammen mit deinen Einstellungen. Das Löschen der Websitedaten löscht sie, exportiere oder teile also alles, was du behalten willst.",
   "help.topic.completedEngineeringGrades.question": "Warum weichen meine verbesserten Werte im Spiel ab?",
-  "help.topic.completedEngineeringGrades.answer": "Im Spiel schwankt die Güte der Würfe. Ship Builder zeigt jede Stufe mit 100 % Güte. Eine importierte Teilstufe wird auf 100 % angehoben; das Modul wird hier also stärker gezeigt als der Teilwurf im Spiel. Lässt sich eine Stufe nicht anheben, wird der ganze Import abgelehnt, bevor etwas geöffnet wird, und dein offener Build bleibt unverändert.",
+  "help.topic.completedEngineeringGrades.answer": "Im Spiel schwankt die Güte der Würfe. Ship Builder zeigt jede Stufe mit 100 % Güte. Eine importierte Teilstufe wird auf 100 % angehoben; das Modul wird also mit dem besten Wurf dieser Stufe gezeigt und nicht mit deinem Wurf aus dem Spiel. Lässt sich eine Stufe nicht anheben, wird der ganze Import abgelehnt, bevor etwas geöffnet wird, und dein offener Build bleibt unverändert.",
   "help.licence.index.application": "App · {{licence}}",
   "help.licence.link.application": "MIT-Lizenz, vollständige Fassung auf GitHub",
   "help.licence.index.library": "Bibliothek · Elite Dangerous Almanac, {{licence}}",

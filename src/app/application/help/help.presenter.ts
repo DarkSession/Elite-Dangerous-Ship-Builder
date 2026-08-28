@@ -330,7 +330,7 @@ export class HelpPresenter {
    * would do for a reader who cannot see what it sits beside.
    *
    * The name is the accessible name at both widths and the visible words in the
-   * compact action layer; the mark is the reference's own `?`, drawn on the
+   * folded action layer; the mark is the reference's own `?`, drawn on the
    * wide bar in place of the words and hidden from a reader, who is told the
    * name instead.
    */

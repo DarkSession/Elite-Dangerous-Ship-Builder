@@ -1240,7 +1240,7 @@ registerPreview({
         'exposes banner, navigation and main landmarks',
         'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current navigation entry exposes aria-current',
-        'the Help entry is in the wide row and in the compact action layer, and is the only one of its kind',
+        'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity', 'nested-relationships'],
       // Isolated: the frame renders the banner and main landmarks, and a page

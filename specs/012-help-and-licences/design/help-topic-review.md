@@ -59,12 +59,16 @@ For each topic:
 **The answer says what the raise costs a reader, reviewed 2026-08-28 (owner's request: clarify that
 engineering quality may be raised to full quality for a partial import).** The wording said a
 partial grade "is completed to" 100%, which is FR-013's own language and told a Commander nothing
-about what they would then be looking at. It now says the module reads stronger here than the
-partial roll does in game. That is the consequence of normalising quality to 100% and not a second
-claim: a completed grade is the best roll of that grade, and the figures drawn from it are the
-figures of that roll. It adds nothing FR-013 does not already require, which is check 1 above; it
-is the honest half of principle IV, which is why the sentence is in the answer rather than left for
-a Commander to discover against the game.
+about what they would then be looking at. It now says the module is shown at the best roll of that
+grade rather than at the roll they have.
+
+**"Stronger" was rejected on the same review.** A blueprint's secondary modifiers move with its
+primary one, so the best roll of a grade is not better in every figure it draws — a completed Dirty
+Drive Tuning reads more thrust and more thermal load together. "The best roll of that grade" is what
+normalising quality to 100% actually produces and is all FR-013 supports; anything stronger than
+that would be the answer making a claim the requirement does not. It adds nothing FR-013 does not
+already require, which is check 1 above, and it is the honest half of principle IV, which is why the
+sentence is in the answer rather than left for a Commander to discover against the game.
 
 ## Excluded from the reference mock
 

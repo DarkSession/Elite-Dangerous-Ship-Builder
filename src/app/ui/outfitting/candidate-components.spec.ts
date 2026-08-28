@@ -752,7 +752,7 @@ describe('the wide manifest', () => {
   it('brings a revealed family into the rail when it sits below the fold', () => {
     // Seventy-seven families in a box that holds nine: the family holding what
     // is fitted can be the sixtieth of them, and until it is scrolled to, the
-    // pane changes while the rail goes on showing a different ten
+    // pane changes while the rail goes on showing a different nine
     // (Commander request 2026-08-27).
     expect(railScrollFixture(2400)).toEqual(['candidates__rail']);
   });

@@ -40,7 +40,7 @@ export async function reachShellLink(page: Page, name: RegExp | string): Promise
 }
 
 /**
- * Opens the compact menu.
+ * Opens the folded bar's menu.
  *
  * The trigger carries visible text rather than the reference's unlabelled
  * ellipsis, so it is found by name like everything else.

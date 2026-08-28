@@ -171,8 +171,9 @@ that offers the way home as on the shipyard that does not (Commander request
 ### One bar height, on every screen
 
 The bar is drawn at `4.625rem`, which is the tallest identity it carries — the
-workspace's build name over its hull and ID plate — inside the bar's own block
-padding. Sized to the single row of controls every other screen comes to, it
+workspace's build name over its hull and ID plate, 52px — inside the bar's own
+20px of block padding and the 2px amber rule that closes it, all of which the
+border box counts. Sized to the single row of controls every other screen comes to, it
 stood 66px on the shipyard and 74px on a build, and the whole page under it
 moved as a Commander opened one.
 

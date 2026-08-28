@@ -277,10 +277,11 @@
 
 @include layout.compact {
   .frame__banner {
-    // The identity and the action trigger each take a full row rather than
-    // competing for one; nothing shrinks below its target baseline and no label
-    // truncates. The bar is folded at every width this applies to, so those two
-    // are all it draws.
+    // The bar is folded at every width this applies to, so it draws the
+    // identity and the one named trigger and nothing else. They sit at the top
+    // of the bar rather than centred on it, so that a wrapped identity — a long
+    // build name, a German label, a doubled text size — grows downwards and the
+    // trigger stays where a thumb last found it.
     align-items: flex-start;
     padding-inline: var(--edsb-space-inline-loose);
   }

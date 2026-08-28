@@ -832,7 +832,7 @@
   "help.topic.browserPersistence.question": "Where are my builds stored?",
   "help.topic.browserPersistence.answer": "In this browser, along with your preferences. Clearing site data deletes them, so export or share anything you want to keep.",
   "help.topic.completedEngineeringGrades.question": "Why do my engineered stats differ in game?",
-  "help.topic.completedEngineeringGrades.answer": "Rolls vary in quality in game. Ship Builder shows every grade at 100% quality. A partial imported grade is raised to 100%, so the module reads stronger here than the partial roll does in game. A grade that cannot be raised refuses the whole import before anything opens, and your open build stays as it was.",
+  "help.topic.completedEngineeringGrades.answer": "Rolls vary in quality in game. Ship Builder shows every grade at 100% quality. A partial imported grade is raised to 100%, so the module is shown at the best roll of that grade rather than at the roll you have in game. A grade that cannot be raised refuses the whole import before anything opens, and your open build stays as it was.",
   "help.licence.index.application": "App · {{licence}}",
   "help.licence.link.application": "MIT licence, full detail on GitHub",
   "help.licence.index.library": "Library · Elite Dangerous Almanac, {{licence}}",

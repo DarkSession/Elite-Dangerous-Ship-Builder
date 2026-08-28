@@ -341,7 +341,7 @@ export class BuildWorkspacePage {
     // history pair the outfitting region publishes, with `SAVE` filled amber as
     // the one committing action of the two. They are published rather than
     // drawn in the page, for the reason the region's own pair is: the frame
-    // already renders one list in both the wide row and the compact menu, and a
+    // already renders one list in both the wide row and the folded bar's menu, and a
     // button inside the page would be a second placement neither canvas has.
     effect((onCleanup) => {
       this.#chrome.setActions(

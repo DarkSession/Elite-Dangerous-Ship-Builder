@@ -209,10 +209,10 @@ localisation/reflow or screen-reader requirements.
 - Vitest covers browser-manifest invariants, presenter localisation, store transitions, view-model
   distinctions and component intents/semantics. Required content review rejects
   contradictory/unsupported claims outside automated semantic tests.
-- Playwright covers the wide frame action and the compact action layer from no-build and active
+- Playwright covers the wide frame action and the folded action layer from no-build and active
   capabilities, URL/build
-  stability, all content, offline opening/reload, the absence of any external destination,
-  no automatic/cross-origin request, modal states, expanded/RTL text, 200% text, actual 400% zoom,
+  stability, all content, offline opening/reload, exactly the three audited external destinations
+  and no other, no automatic/cross-origin request, modal states, expanded/RTL text, 200% text, actual 400% zoom,
   reduced motion, axe and no-overflow across feature 011's ten Chromium/Firefox projects.
 
 Manual screen-reader protocol verifies that the modal is announced, the background is not traversed

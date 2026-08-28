@@ -68,7 +68,7 @@ had to be drawn.
 
 The name and the drawing are separable. A control can render one conventional typographic mark and
 still carry its localized name as text inside itself, hidden from the eye and not from a reader —
-which is what `ActionButton.symbol` already does for `?` and what the compact menu trigger now does
+which is what `ActionButton.symbol` already does for `?` and what the folded bar's trigger now does
 for `⋮`. The accessible name is unchanged, the target keeps its 44-pixel baseline, and nothing
 is an image, a font icon or a shape whose meaning has to be learned. What is not permitted is the
 thing the departure was actually aimed at: a control with no text name at all.

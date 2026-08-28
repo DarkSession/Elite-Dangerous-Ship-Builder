@@ -28,7 +28,7 @@ help control anywhere else on any of its four canvases.
 1. The shared application frame exposes a visible localised Help action on every route and no-build
    state. It is an ordinary shell action, so the frame's existing composition already places it in
    the wide banner row.
-2. When the banner collapses, the same action moves into the frame's compact action layer, where it
+2. When the banner collapses, the same action moves into the frame's folded action layer, where it
    is drawn in words rather than as the mark — a list of rows is read, not scanned, and the canvas
    spells it out there for the same reason.
 

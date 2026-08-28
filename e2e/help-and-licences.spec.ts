@@ -1231,7 +1231,7 @@ test.describe('the floor beneath every open state', () => {
 
   test('sweeps the modal over a capability with no build', async ({ page }, testInfo) => {
     // The same modal over the other kind of screen, and at the narrow profiles
-    // it is also the modal reached through the compact action layer — which
+    // it is also the modal reached through the folded action layer — which
     // `reachShellAction` opens where the width has one and leaves alone where
     // it does not. The layer is still open behind the modal when it appears,
     // which is a nesting the wide profiles never produce.

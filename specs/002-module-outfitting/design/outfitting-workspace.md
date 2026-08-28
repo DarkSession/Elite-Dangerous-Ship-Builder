@@ -104,12 +104,13 @@ be left some of. The share and the guard that divided that bench are gone with i
 stands on its own, bounded only by what the screen itself leaves under the command bar so that it
 can never be taller than the window it is in. What the count is, the ruling below settles.
 
-**Seven rows, and the bench a tenth shorter. Ruled 2026-08-28 (Commander request).** The fitting
-panel and the pane inside it are the tallest thing on the workspace, and the anatomy and the status
-rail beside them are what a Commander scrolls to reach. So the floor is 23.375rem and the pane's own
-bound comes down by the same row — a tenth of each, because the two are the same list at two widths.
-Seven rows over the same head, column rule and foot is still a list rather than the glimpse five
-rows was. Nothing else on the workspace changes height.
+**Seven rows, and the fitting panel about a tenth shorter. Ruled 2026-08-28 (Commander request).**
+The fitting panel and the pane inside it are the tallest thing on the workspace, and the anatomy and
+the status rail beside them are what a Commander scrolls to reach. So the floor is 23.375rem and the
+pane's own bound comes down by the same one manifest row, because the two are the same list at two
+widths. Seven rows over the same head, column rule and foot is still a list rather than the glimpse
+five rows was. Nothing else changes height — the bench's own 26rem minimum, the plates and the rail
+are all where they were.
 
 **Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
 track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing

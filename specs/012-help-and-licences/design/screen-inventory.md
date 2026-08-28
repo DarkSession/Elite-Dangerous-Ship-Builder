@@ -5,10 +5,10 @@ standalone page and no per-surface control. Both compose the shared feature 011 
 
 ## Inventory
 
-| Surface                      | Kind                   | Appears in                                                             | Purpose                                                   |
-| ---------------------------- | ---------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and compact action layer | opens the shared modal without navigation                 |
-| Help · About modal           | shared modal layer     | above the current capability                                           | presents ABOUT, FAQ and LICENCE, and no other destination |
+| Surface                      | Kind                   | Appears in                                                            | Purpose                                                   |
+| ---------------------------- | ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
+| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and folded action layer | opens the shared modal without navigation                 |
+| Help · About modal           | shared modal layer     | above the current capability                                          | presents ABOUT, FAQ and LICENCE, and no other destination |
 
 The application frame owns the single modal instance and the single entry. A capability may not embed
 a private modal, legal copy, help destination or entry control of its own.
@@ -86,7 +86,7 @@ accepted requirement rather than to nothing.
 - Features 001–011 change nothing. There is no `ContextHelpLink` and no template of theirs is
   touched — the reciprocal-entry set an earlier revision of this document required is withdrawn.
 - **One exception, 2026-08-25**, and it is a defect fix rather than an addition: feature 011's
-  compact action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
+  folded action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
   scrolled into view — the document scrolls the screen underneath while the banner and everything
   anchored to it stay put. At 200% text on a phone the panel grew taller than the space below the
   banner, which put this feature's Help entry at y 873 in an 844-pixel viewport with no way to reach

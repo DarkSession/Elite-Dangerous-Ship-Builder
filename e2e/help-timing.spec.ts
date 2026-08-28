@@ -74,7 +74,7 @@ test.describe('help first-frame timing', () => {
     const measurements: number[] = [];
     for (let round = 0; round < ROUNDS; round += 1) {
       // At the timing project's mobile viewport the frame draws its actions in
-      // the compact layer, so the layer is opened first and left open. What is
+      // the folded layer, so the layer is opened first and left open. What is
       // timed is the same thing at every width: activating the Help action and
       // waiting for the modal's first presented frame. Opening the menu is the
       // Commander's previous gesture, not part of this one.

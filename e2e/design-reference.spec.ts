@@ -713,7 +713,7 @@ test.describe('the saved-build surface', () => {
 
     expect(hoverGrounds['button']).toBeTruthy();
     expect(hoverGrounds['link']).toBe(hoverGrounds['button']);
-    // The same control in the compact menu, which is where a Commander reaches
+    // The same control in the folded bar's menu, which is where a Commander reaches
     // it at narrow widths and where the complaint was first made.
     expect(hoverGrounds['compactLink']).toBe(hoverGrounds['button']);
   });
