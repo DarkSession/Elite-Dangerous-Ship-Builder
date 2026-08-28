@@ -69,9 +69,9 @@ provenance statement after the version facts, and `LICENCE` previously opened wi
 two sentences naming the excerpt's source and language before the quotation, and closed with a
 warned repository-`LICENSE` action. The reference draws none of the five. All are withdrawn, the
 specification is amended to match the reference rather than the other way round, and what they
-carried is either drawn where the reference does draw it — the licence summary names Frontier, the
-`almanacOwnership` topic carries the package credit — or is a property of the text rather than a
-sentence about it, as the excerpt's `lang` is.
+carried is either drawn where the reference does draw it — the licence summary names Frontier, and
+its library line carries the package credit — or is a property of the text rather than a sentence
+about it, as the excerpt's `lang` is.
 
 **Amended 2026-08-27.** The provenance statement returns to `ABOUT`, before the version facts rather
 than after them, because the topic that had been holding the package credit is withdrawn and
@@ -125,7 +125,7 @@ set. References are build/review evidence only and are not displayed or bundled.
 `accountsUploadsTelemetry` and `offlineAssets` each restated constitution I, which the application
 obeys in its behaviour and the licence summary already names; `hullFactsAndBuildResults` explained a
 distinction features 003 and 005 draw in the region where it applies; and `almanacOwnership` was a
-credit rather than a question, and FR-008 now carries it in `ABOUT`. The two that remain answer what
+credit rather than a question, and the licence summary's library line carries it. The two that remain answer what
 no screen states. Governing references for the withdrawn rows are not retained here: a reference
 table is resolved against live artifacts on every build, and a row for a topic that does not exist
 would resolve for no reader.

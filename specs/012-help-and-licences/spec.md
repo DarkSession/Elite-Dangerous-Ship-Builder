@@ -92,10 +92,14 @@ does rather than which questions it happens to hold.
   repeats the interface behind it is a FAQ a reader learns to skip.
 - Q: Where does the once-per-application Almanac credit go when its topic is withdrawn? → A: Back
   into `ABOUT`, where it stood until 2026-08-25. Feature 002's voice ruling of 2026-08-22 is what
-  requires it to exist somewhere in this feature; only its address has ever moved.
+  requires it to exist somewhere in this feature; only its address has ever moved. **Superseded
+  2026-08-28:** it moved again, to the licence summary's library line, which names the bundled
+  library and links its terms. The ruling is amended to name that line.
 - Q: What does `ABOUT` say beside the two version facts? → A: Three sentences — what this is, who
   builds it, and where the game values come from. The reference draws only the first. The second is
-  the owner's request of the same day, and the third is the credit above.
+  the owner's request of the same day, and the third is the credit above. **Superseded 2026-08-28,
+  owner's request:** the third sentence is withdrawn and the source sentence takes its place. The
+  count is unchanged and FR-008 carries the resolved position.
 
 ## User Scenarios
 
@@ -233,8 +237,8 @@ does rather than which questions it happens to hold.
   accounts, uploads and telemetry, and what works offline are all constitution I, which the
   application demonstrates by behaving that way and the licence summary already names; hull facts
   against build results explains a distinction features 003 and 005 draw on screen, in the region
-  where it matters; and Almanac ownership of game values is a credit, which FR-008 now carries in
-  `ABOUT` where it belongs. What survives is the pair a Commander cannot answer by reading any
+  where it matters; and Almanac ownership of game values is a credit, which the licence summary's
+  library line carries where it belongs. What survives is the pair a Commander cannot answer by reading any
   screen: where a build is kept, and why an engineered figure differs from the game's. The rule
   around the set — one answer each, each governed, drift fails the release — is untouched.
 

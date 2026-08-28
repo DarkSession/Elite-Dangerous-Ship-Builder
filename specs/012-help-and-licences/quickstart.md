@@ -32,7 +32,7 @@ Expected:
 - the extracted payload is non-empty and its byte count/SHA-256 match generated runtime text;
 - application and Almanac versions are distinct manifest facts;
 - the repository `LICENSE` destination matches its exact allowlist and contains no query/fragment,
-  and it is the only destination emitted;
+  and each of the three destinations emitted matches its own allowlisted address and purpose;
 - installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` exactly equal tracked
   `legal/almanac/` mirrors.
 

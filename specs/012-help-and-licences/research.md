@@ -34,7 +34,8 @@ was rejected because it cannot serve every capability cleanly.
 **Narrowed 2026-08-27, owner's request.** The set held seven. What the five withdrawn answers had
 in common is that each restated something the interface, the ABOUT section or the licence text
 already says, which is what turned a section a reader consults into a list a reader skips. The
-Almanac's once-per-application credit moved into ABOUT rather than being lost with them.
+Almanac's once-per-application credit moved to the licence summary's library line rather than being
+lost with them.
 
 Each topic is exactly one stable ID plus question/body message keys and a non-empty set of
 tooling-only governing references to accepted feature requirements or constitution principles. The

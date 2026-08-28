@@ -46,9 +46,9 @@ one scrolling column, and that is the order built here.
 - Short localised purpose: what this application is, in the owner's own sentence. The reference's
   own sentence is one line above its version line.
 - Who builds and maintains it, in one sentence under the purpose.
-- Where the game values come from: the bundled Almanac supplies the catalogue, the checks and the
-  calculations, and this application neither maintains nor corrects them. This is where the
-  once-per-application Almanac credit lives.
+- Where the source is published, in one sentence carrying the audited source destination inside its
+  own words. The once-per-application Almanac credit is not here: it is the licence summary's
+  library line, which names the bundled library and links its terms.
 - The identity facts described in [Identity facts](#identity-facts) below, in the place the
   reference draws `APP VERSION 4.2.1 · LIBRARY VERSION 3.8.0.3`.
 
