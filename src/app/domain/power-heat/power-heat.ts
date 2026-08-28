@@ -377,15 +377,18 @@ export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditio
   // handed rather than holding a copy of it (Almanac 0.2.0).
   const metrics = BuildMetrics.of(loadout);
   const budget = metrics.powerBudget();
-  const heat = metrics.heatMetrics();
+  // Since Almanac 0.2.2 every metric that can be unavailable is a
+  // `CalculationResult`, so the value is read off `.value`. This screen states
+  // the absence and not its reasons, so `.issues` is left where it is.
+  const heat = metrics.heatMetricsResult().value;
   // Read once and passed down. What it answers is about the build's own fitting
   // rather than about a package figure, and asking twice invites two answers.
   const fitted = loadout.fittedModules();
-  const distributor = metrics.distributorMetrics({
+  const distributor = metrics.distributorMetricsResult({
     systemsPips: conditions.pips.systems,
     enginesPips: conditions.pips.engines,
     weaponsPips: conditions.pips.weapons,
-  });
+  }).value;
 
   return Object.freeze({
     hardpoints: conditions.hardpoints,

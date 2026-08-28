@@ -11,11 +11,11 @@ Feature 005 holds the allocation in `PowerConditionsStore` and calls:
 
 ```ts
 const metrics = BuildMetrics.of(loadout);
-const result = metrics.distributorMetrics({
+const result = metrics.distributorMetricsResult({
   systemsPips: conditions.pips.systems,
   enginesPips: conditions.pips.engines,
   weaponsPips: conditions.pips.weapons,
-});
+}).value;
 ```
 
 Use `DistributorOptions` from

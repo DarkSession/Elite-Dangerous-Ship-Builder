@@ -8,9 +8,9 @@
 
 ## Boundary
 
-For one captured build, call `BuildMetrics.heatMetrics()` once. The method accepts
-no hardpoint or pip options; feature 005 never changes the result for a viewing
-condition.
+For one captured build, call `BuildMetrics.heatMetricsResult()` once and read its
+`value`. The method accepts no hardpoint or pip options; feature 005 never
+changes the result for a viewing condition.
 
 Import `HeatMetrics` and `HeatState` from
 `@elite-dangerous-almanac/core/ships/heat`. Do not call the standalone heat
@@ -47,8 +47,8 @@ quantity as heat level.
 
 ## Availability
 
-- `heatMetrics() === null` maps to one unavailable profile with no hull,
-  catalogue or inferred fallback.
+- `heatMetricsResult().value === null` maps to one unavailable profile with no
+  hull, catalogue or inferred fallback.
 - A ready profile is a complete answer for the build. Every scenario carries the package's own
   figures, and the application adds no bound, projection or qualification of its own.
 - With no weapons, all five scenarios remain present even when values coincide.
@@ -83,9 +83,9 @@ invented:
 | `DISSIPATION`    | Exact `hullHeatDissipation`                                                |
 | `HEAT SINKS`     | Launchers and charges from `fittedModules()`, over the canvas's `2 x 3`    |
 
-`HEAT SINKS` comes from the build rather than from `heatMetrics()`, which models
-no sink at all: a sink removes heat, and every load the package accepts is
-non-negative. Its `2 x 3` breakdown is absent where the fitted launchers do not
+`HEAT SINKS` comes from the build rather than from `heatMetricsResult()`, which
+models no sink at all: a sink removes heat, and every load the package accepts
+is non-negative. Its `2 x 3` breakdown is absent where the fitted launchers do not
 all carry the same charges, because two unlike launchers are not one product.
 
 The canvases also draw a sixth bar, `Shield cell bank`. The package publishes five

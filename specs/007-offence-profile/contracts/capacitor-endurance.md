@@ -95,8 +95,8 @@ the symbol readable rather than decorative.
 Zero capacity and zero recharge are genuine package numbers and are shown as such. **No cause is
 stated.** The package documents several ways to reach a zero-capacity result — no powered
 distributor among them — and does not say which one applied, so neither does this application. No
-distributor observation, priority band, symbol prefix or `distributorMetrics() === null` is consulted
-or drawn beside the figure: no canvas draws one, and an adjacency a reader would read as a cause is
+distributor observation, priority band, symbol prefix or `distributorMetricsResult().value === null`
+is consulted or drawn beside the figure: no canvas draws one, and an adjacency a reader would read as a cause is
 the inference FR-007 forbids.
 
 ## Scope separation

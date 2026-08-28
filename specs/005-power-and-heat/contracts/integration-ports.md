@@ -28,10 +28,10 @@ export interface PowerConditions {
 }
 ```
 
-`projectPowerHeat` is pure and synchronous. It calls `powerBudget()` once, `distributorMetrics()`
-once and `heatMetrics()` once, and returns one frozen result. There is no store, no cache, no
-revision key and no lifecycle: the loadout is already in memory, and the signal graph memoises the
-call for the surfaces that read it.
+`projectPowerHeat` is pure and synchronous. It calls `powerBudget()` once,
+`distributorMetricsResult()` once and `heatMetricsResult()` once, and returns one frozen result.
+There is no store, no cache, no revision key and no lifecycle: the loadout is already in memory,
+and the signal graph memoises the call for the surfaces that read it.
 
 ## Feature 010 — the mode, and nothing on the plates
 

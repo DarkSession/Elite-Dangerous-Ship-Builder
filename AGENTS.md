@@ -22,9 +22,14 @@ planning ship loadouts.
   is on `BuildMetrics`**, which reads the build it is handed —
   `BuildMetrics.of(build).powerBudget()`. A property is a fact the build already
   carries and anything that does work is a call, so `validation()` is a call
-  too. Specs written before 0.2.0 name these calls on `ShipLoadout`; the
-  `contracts/` under each feature are corrected, older `research.md`, `plan.md`
-  and `tasks.md` entries are dated records and are left as they were written.
+  too. Since Almanac 0.2.2 a metric that can be unavailable is offered **only**
+  as its `…Result` form — `heatMetricsResult()`, not `heatMetrics()` — whose
+  `value` is the figure or `null` and whose `issues` say why it is `null`. Read
+  `.value` where a screen only states the absence, and the issues where it
+  states the reason. Specs written before 0.2.0 name these calls on
+  `ShipLoadout`; the `contracts/` under each feature are corrected, older
+  `research.md`, `plan.md` and `tasks.md` entries are dated records and are left
+  as they were written.
 - **Library defects are fixed in the library.** If the package returns a wrong
   value or is missing something, call it out and raise it against
   [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac)

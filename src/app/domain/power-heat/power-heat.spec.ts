@@ -364,11 +364,11 @@ describe('projectPowerHeat', () => {
   describe('the distributor', () => {
     it('returns the three capacitors in SYS, ENG, WEP order with every field', () => {
       const build = withinBudgetBuild();
-      const metrics = BuildMetrics.of(build).distributorMetrics({
+      const metrics = BuildMetrics.of(build).distributorMetricsResult({
         systemsPips: 2,
         enginesPips: 2,
         weaponsPips: 2,
-      });
+      }).value;
       const capacitors = project(build).distributor?.capacitors ?? [];
 
       expect(capacitors.map((bank) => bank.kind)).toEqual([...CAPACITOR_KINDS]);
@@ -427,7 +427,7 @@ describe('projectPowerHeat', () => {
   describe('the heat profile', () => {
     it('returns the three profile facts and exactly the five scenarios in order', () => {
       const build = withinBudgetBuild();
-      const heat = BuildMetrics.of(build).heatMetrics();
+      const heat = BuildMetrics.of(build).heatMetricsResult().value;
       const view = project(build).heat;
 
       expect(view?.efficiency).toBe(heat?.heatEfficiency);
@@ -438,7 +438,7 @@ describe('projectPowerHeat', () => {
 
     it('reads every field of every scenario from the package', () => {
       const build = withinBudgetBuild();
-      const heat = BuildMetrics.of(build).heatMetrics();
+      const heat = BuildMetrics.of(build).heatMetricsResult().value;
 
       for (const scenario of project(build).heat?.scenarios ?? []) {
         const state = heat?.[scenario.key];
@@ -509,7 +509,7 @@ describe('projectPowerHeat', () => {
         (bank.effectiveStats?.shieldBankHeat ?? 0) / (bank.effectiveStats?.shieldBankSpinUp ?? 1);
       expect(spike?.seconds).toBe(bank.effectiveStats?.shieldBankSpinUp);
       expect(spike?.thermalLoad).toBeCloseTo(
-        (BuildMetrics.of(build).heatMetrics()?.idle.thermalLoad ?? 0) + perSecond,
+        (BuildMetrics.of(build).heatMetricsResult().value?.idle.thermalLoad ?? 0) + perSecond,
         10,
       );
     });
@@ -548,18 +548,21 @@ describe('projectPowerHeat', () => {
 
   describe('the package boundary', () => {
     it('asks the package for each of the three answers exactly once', () => {
-      // Counted at this projection's own boundary. `heatMetrics()` and
-      // `distributorMetrics()` apply the power budget internally, so only the
-      // outermost call of each is counted: one ask per answer, no
+      // Counted at this projection's own boundary. `heatMetricsResult()` and
+      // `distributorMetricsResult()` apply the power budget internally, so only
+      // the outermost call of each is counted: one ask per answer, no
       // re-derivation and no second opinion. Since Almanac 0.2.0 the three
       // calculations are on `BuildMetrics`, so the seam is its prototype;
       // `fittedModules()` is the build's own fitting and stays on the loadout.
       const build = withinBudgetBuild();
-      // One depth across all three: `heatMetrics()` and `distributorMetrics()`
-      // apply the power budget internally, so a per-method depth would count
-      // the package's own call into `powerBudget()` as a second ask.
+      // One depth across all three: `heatMetricsResult()` and
+      // `distributorMetricsResult()` apply the power budget internally, so a
+      // per-method depth would count the package's own call into
+      // `powerBudget()` as a second ask.
       let depth = 0;
-      const outermost = (name: 'powerBudget' | 'heatMetrics' | 'distributorMetrics') => {
+      const outermost = (
+        name: 'powerBudget' | 'heatMetricsResult' | 'distributorMetricsResult',
+      ) => {
         let calls = 0;
         const real = BuildMetrics.prototype[name] as (...args: never[]) => unknown;
         vi.spyOn(BuildMetrics.prototype, name).mockImplementation(function (
@@ -577,14 +580,14 @@ describe('projectPowerHeat', () => {
         return () => calls;
       };
       const powerBudget = outermost('powerBudget');
-      const heatMetrics = outermost('heatMetrics');
-      const distributorMetrics = outermost('distributorMetrics');
+      const heatMetrics = outermost('heatMetricsResult');
+      const distributorMetrics = outermost('distributorMetricsResult');
       const fittedModules = vi.spyOn(build, 'fittedModules');
 
       projectPowerHeat(build, conditions());
 
       // The fourth is not a package answer: it is the build's own fitting, read
-      // for the two readings `heatMetrics()` says it does not publish.
+      // for the two readings `heatMetricsResult()` says it does not publish.
       expect({
         powerBudget: powerBudget(),
         heatMetrics: heatMetrics(),
@@ -600,7 +603,7 @@ describe('projectPowerHeat', () => {
 
     it('hands the allocation to the package rather than scaling anything itself', () => {
       const build = withinBudgetBuild();
-      const distributorMetrics = vi.spyOn(BuildMetrics.prototype, 'distributorMetrics');
+      const distributorMetrics = vi.spyOn(BuildMetrics.prototype, 'distributorMetricsResult');
 
       projectPowerHeat(build, conditions('deployed', { systems: 3, engines: 1, weapons: 2 }));
 

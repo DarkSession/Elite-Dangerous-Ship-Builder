@@ -61,8 +61,8 @@ rotations are what the allocation makes of it and come from `mobilityCapacitorMe
 
 An incomplete result retains `value: null` and its exact ordered issues. This contract uses the
 diagnostic result facade; it does not describe the result object itself as nullable. The separate
-`mobilityMetrics()` and `mobilityCapacitorMetrics()` convenience methods are nullable but are not
-used.
+`mobilityMetrics()` and `mobilityCapacitorMetrics()` were nullable convenience methods, were never
+used here, and Almanac 0.2.2 removed them.
 
 ## Thruster and power meanings
 

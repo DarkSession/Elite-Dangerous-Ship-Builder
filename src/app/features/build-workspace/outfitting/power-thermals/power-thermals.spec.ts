@@ -476,7 +476,7 @@ describe('PowerThermals', () => {
 
     it('reads each bar as the gauge reads it, beside the bar it drew', () => {
       const build = withinBudgetBuild();
-      const idle = BuildMetrics.of(build).heatMetrics()?.idle;
+      const idle = BuildMetrics.of(build).heatMetricsResult().value?.idle;
       const { element } = render(build);
 
       const first = element.querySelector('.heat__bar');
@@ -493,7 +493,9 @@ describe('PowerThermals', () => {
       const build = overheatingBuild();
       const { element } = render(build);
 
-      expect(BuildMetrics.of(build).heatMetrics()?.firingDrained.heatLevel).toBe(Infinity);
+      expect(BuildMetrics.of(build).heatMetricsResult().value?.firingDrained.heatLevel).toBe(
+        Infinity,
+      );
       const bar = [...element.querySelectorAll('.heat__bar')][3];
       const level = bar?.querySelector('.heat__level');
 
@@ -549,11 +551,11 @@ describe('PowerThermals', () => {
   describe('the distributor', () => {
     it('draws the three banks with the package’s own figures and pips', () => {
       const build = withinBudgetBuild();
-      const metrics = BuildMetrics.of(build).distributorMetrics({
+      const metrics = BuildMetrics.of(build).distributorMetricsResult({
         systemsPips: 2,
         enginesPips: 2,
         weaponsPips: 2,
-      });
+      }).value;
       const { element } = render(build);
 
       const rows = cells(element, '.distributor');
@@ -667,11 +669,11 @@ describe('PowerThermals', () => {
       rows[0]?.querySelectorAll<HTMLElement>('.pips__step')[3]?.click();
       detect();
 
-      const used = BuildMetrics.of(build).distributorMetrics({
+      const used = BuildMetrics.of(build).distributorMetricsResult({
         systemsPips: 4,
         enginesPips: 1,
         weaponsPips: 1,
-      })?.pips.systems;
+      }).value?.pips.systems;
       expect(component.bankRows()[0]?.pipsLabel).toContain(String(used));
     });
 

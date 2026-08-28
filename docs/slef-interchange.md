@@ -69,9 +69,15 @@ time a figure looks low.
 
 What is left is narrower and is not swept here either. Where the package can resolve neither a recipe
 the module's menu offers nor a catalogued article carrying it, it reports `unresolvedEngineering` and
-the module keeps its unengineered figures. Nothing in this application reads that outcome: such a
-module is either carrying a partial quality, in which case the whole candidate is refused over the
-package's own `unsupported`, or it is not, in which case there is no surface here that states it yet.
+the module keeps its unengineered figures. Almanac 0.2.2 added two further entries beside it, each
+reporting a _reading_ the import chose rather than a change it made: `ambiguousEngineering`, where the
+menu offers the recipe and a catalogued article answers to it just as well — a pre-engineered SCO
+drive is the case a Commander meets most often — carrying the article passed over so
+`setPreEngineeredVariant` can take the other reading; and `rerolledEngineering`, where a stated
+modifier block moved nothing the module has and the recipe beside it was rolled in its place. Nothing
+in this application reads any of the three: such a module is either carrying a partial quality, in
+which case the whole candidate is refused over the package's own `unsupported`, or it is not, in
+which case there is no surface here that states it yet.
 
 ## Which hull the build is
 

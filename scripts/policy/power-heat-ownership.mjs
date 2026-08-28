@@ -51,8 +51,16 @@ export const ALLOWED_SUBPATHS = [
 /** Any import of the package, so a barrel or a fifth subpath is caught too. */
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
 
-/** The three package answers this capability is made of. */
-export const PACKAGE_CALLS = ['powerBudget(', 'distributorMetrics(', 'heatMetrics('];
+/**
+ * The three package answers this capability is made of.
+ *
+ * Two of them are named in their `…Result(` form: Almanac 0.2.2 removed the
+ * nullable twins, so `distributorMetricsResult(` is the only way to ask, and a
+ * rule still spelled `distributorMetrics(` would match none of them — the
+ * bracket that keeps this list from catching a longer name also keeps it from
+ * catching the one name there now is.
+ */
+export const PACKAGE_CALLS = ['powerBudget(', 'distributorMetricsResult(', 'heatMetricsResult('];
 
 /**
  * The package fields that are figures rather than identities.

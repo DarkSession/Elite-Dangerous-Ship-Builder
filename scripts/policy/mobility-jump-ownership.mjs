@@ -58,11 +58,14 @@ export const ALLOWED_SUBPATHS = [
 /**
  * Package calls this capability must never make at all.
  *
- * `mobilityMetrics()` and `mobilityCapacitorMetrics()` are the nullable
- * convenience forms of the two results this feature reads. They answer or they
- * return `null`, and a `null` carries no reason — so a card built on them could
+ * `mobilityMetrics()` and `mobilityCapacitorMetrics()` were the nullable
+ * convenience forms of the two results this feature reads. They answered or they
+ * returned `null`, and a `null` carries no reason — so a card built on them could
  * only say "unavailable" with nothing after it, where FR-005 requires the
- * package's own issues. `powerBudget()` is feature 005's question: the package's
+ * package's own issues. Almanac 0.2.2 removed both, leaving the `…Result` form as
+ * the only spelling; they stay named here so the rule keeps standing on the near
+ * miss the result forms are, rather than being reintroduced by a wrapper of this
+ * application's own. `powerBudget()` is feature 005's question: the package's
  * own mobility diagnostics already distinguish a shed thruster from a missing
  * one, and a budget checked here would be this feature deciding a power meaning
  * that is not its to decide (the Delivery gate in tasks.md names all three).
@@ -72,8 +75,8 @@ export const FORBIDDEN_CALLS = ['mobilityMetrics', 'mobilityCapacitorMetrics', '
 /**
  * One of those, called on something.
  *
- * The negative lookahead is what keeps `mobilityMetricsResult(` — the
- * diagnostic form this feature does read — from matching the nullable
+ * Requiring the bracket is what keeps `mobilityMetricsResult(` — the
+ * diagnostic form this feature does read — from matching the withdrawn
  * `mobilityMetrics(` it is named after.
  */
 const FORBIDDEN_CALL = new RegExp(`\\.(?:${FORBIDDEN_CALLS.join('|')})\\s*\\(`);
