@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { deriveBuildTitle } from '../../domain/build/build-title';
 import type { LocalRecordV1 } from '../../domain/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
@@ -165,9 +166,40 @@ export class BuildWorkspacePage {
     };
   });
 
-  /** The name the layer starts from: what a refused save asked for, else the record's own. */
+  /**
+   * What the build is called where nothing has named it.
+   *
+   * FR-010's rule for an unnamed record, applied to the build that is open: its
+   * own ship name, else its ident, else the hull. The library already titles a
+   * row this way, and the two read the same rule from one place so a Commander
+   * meets the same words in the layer as on the row.
+   */
+  readonly #derivedName = computed(() => {
+    // The package mutates the loadout in place, so the revision is what says it
+    // changed. Without reading it a Commander who names their ship and then
+    // presses SAVE meets the name it had before.
+    this.#active.revision();
+    const loadout = this.#active.loadout();
+    if (loadout === null) {
+      return '';
+    }
+    return deriveBuildTitle(loadout, this.#active.hullName(), '');
+  });
+
+  /**
+   * The name the layer starts from: what a refused save asked for, else the
+   * record's own, else what the build is called.
+   *
+   * **Revised 2026-08-28 (Commander request).** It used to be nothing at all for
+   * a build that came from nowhere, on the reasoning that a name the
+   * application filled in is not a name a Commander gave. In front of a
+   * Commander that reads as a broken layer — the common way to reach `SAVE` is
+   * on a build just created from a hull, and the field was always empty there —
+   * and the field is theirs to overwrite before they press anything. The ship's
+   * own name is what they already call the build everywhere else it is listed.
+   */
   readonly saveInitialName = computed(
-    () => this.#lastRequest()?.name ?? this.saveSource()?.name ?? '',
+    () => this.#lastRequest()?.name ?? this.saveSource()?.name ?? this.#derivedName(),
   );
 
   /** The note the layer starts from, on the same terms. */
@@ -388,9 +420,9 @@ export class BuildWorkspacePage {
    * Opens the save layer on the build that is open.
    *
    * The name it starts from is the record's own where the build came from one,
-   * and nothing where it did not: a name the application filled in from the
-   * hull is not a name a Commander gave, and offering one as a default would
-   * make it look like one (FR-010).
+   * and what the build is called where it did not — its ship name, its ident or
+   * its hull, which is the same rule the library titles an unnamed row by
+   * (FR-010, revised 2026-08-28 on Commander request).
    */
   openSave(): void {
     // Re-read before asking, not after: the name a Commander is about to type

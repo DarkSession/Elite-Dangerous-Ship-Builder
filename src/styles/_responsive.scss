@@ -335,16 +335,30 @@ $container-wide-min: 40rem;
 // A row in a manifest or a record list, with the leading marker the canvas uses
 // to carry selection. Colour is never the only carrier: the components that use
 // this also expose the state in text and in programmatic state.
-@mixin selectable-row {
+//
+// `$current-marks` is for the list that carries two states at once. Most rows
+// have one — the current row *is* the selected row — and mark on both hooks.
+// The library's rows have two: which record the workspace is holding, and which
+// row the footer would act on. Drawing both puts two marked rows on screen and
+// the marker stops meaning anything (reported 2026-08-28), so that list marks
+// the chosen row only and states the other in words.
+@mixin selectable-row($current-marks: true) {
   position: relative;
   background-color: var(--edsb-surface-row);
   border-inline-start: var(--edsb-border-width-marker) solid transparent;
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 
-  &[aria-current],
-  &[data-selected='true'] {
-    background-image: var(--edsb-surface-row-selected);
-    border-inline-start-color: var(--edsb-marker-selected);
+  @if $current-marks {
+    &[aria-current],
+    &[data-selected='true'] {
+      background-image: var(--edsb-surface-row-selected);
+      border-inline-start-color: var(--edsb-marker-selected);
+    }
+  } @else {
+    &[data-selected='true'] {
+      background-image: var(--edsb-surface-row-selected);
+      border-inline-start-color: var(--edsb-marker-selected);
+    }
   }
 }
 

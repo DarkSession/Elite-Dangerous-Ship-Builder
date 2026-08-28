@@ -17,6 +17,13 @@ export type ChoiceKind = 'radio' | 'checkbox' | 'switch';
  *
  * All three render the same native inputs; only the arrangement differs.
  *
+ * `marked-cards` is the same plate carrying a selection marker: canvas 1c draws
+ * the save layer's two modes as bordered cards led by a 12px square, filled on
+ * the one that is chosen and open on the one that is not, with a sentence-case
+ * title over a monospace outcome line. The export layer's format list carries no
+ * such mark, which is why the two are separate arrangements rather than one with
+ * a flag.
+ *
  * `cards` resolves in CSS rather than in TypeScript, because the reference
  * draws the same set of choices two ways: a column of plates beside the content
  * where there is room for one, and the scrolling strip of tracked chips canvas
@@ -24,7 +31,7 @@ export type ChoiceKind = 'radio' | 'checkbox' | 'switch';
  * means it also answers to zoom and to text scale, which a measurement taken
  * once at construction would not.
  */
-export type ChoiceLayout = 'stack' | 'segmented' | 'cards';
+export type ChoiceLayout = 'stack' | 'segmented' | 'cards' | 'marked-cards';
 
 /** One choice. `description` is associated, not merely rendered nearby. */
 export interface Choice {
@@ -80,6 +87,22 @@ export class ChoiceGroup {
 
   /** A stable name binding the radio inputs of this instance together. */
   readonly groupName = relationId('choice-group');
+
+  /** Whether each choice draws the selection square canvas 1c puts on it. */
+  readonly hasMarker = computed(() => this.layout() === 'marked-cards');
+
+  /**
+   * Whether this group is drawn as plates at all.
+   *
+   * Its own hook rather than a selector naming both card arrangements, because
+   * the plate is where nearly every rule of those two lives: keyed on the two
+   * layout names it is written into every one of them, and this component's
+   * stylesheet is already the largest in the library.
+   */
+  readonly isCards = computed(() => {
+    const layout = this.layout();
+    return layout === 'cards' || layout === 'marked-cards';
+  });
 
   readonly isMultiple = computed(() => this.kind() === 'checkbox');
   readonly inputType = computed(() => (this.kind() === 'radio' ? 'radio' : 'checkbox'));

@@ -8,27 +8,38 @@
 <edsb-layer
   [open]="true"
   [title]="listLabel()"
-  [dismissLabel]="closeLabel()"
+  [dismissLabel]="dismissLabel()"
   presentation="adaptive"
+  width="widest"
+  [flush]="true"
   (dismissed)="close()"
 >
   <section class="library">
     @if (storageNotice(); as notice) {
-      <edsb-status-notice tone="error" [message]="notice" />
+      <edsb-status-notice class="library__notice" tone="error" [message]="notice" />
     }
 
     @if (failure(); as reason) {
-      <edsb-status-notice tone="error" [message]="reason" />
+      <edsb-status-notice class="library__notice" tone="error" [message]="reason" />
     }
 
-    <!-- The header row: one search field over the records, and the count in
-         monospace beside it, where the reference puts them. -->
+    <!--
+      The header row: one search field over the records, and the count in
+      monospace beside it on the same line, where the reference puts them.
+
+      The field carries its words in the placeholder and draws no label above
+      them, as the canvas does. The label is still a real one, bound to the
+      control and read aloud — a placeholder disappears as soon as somebody
+      types, so it cannot be the only name the field has.
+    -->
     <div class="library__header">
       <edsb-text-field
         class="library__search"
         [label]="searchLabel()"
+        [labelHidden]="true"
+        [placeholder]="searchLabel()"
         [value]="search()"
-        [description]="searchDescription()"
+        kind="search"
         (changed)="changeSearch($event)"
       />
       <p class="library__count">{{ countText() }}</p>
@@ -54,6 +65,7 @@
 
     @if (manageReason(); as reason) {
       <edsb-record-manager
+        class="library__manager"
         [records]="manageableRecords()"
         [selected]="selectedForDiscard()"
         [reason]="reason"

@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
   DestroyRef,
   computed,
   inject,
@@ -85,6 +86,36 @@ export class ResponsiveCatalogueView {
    */
   readonly #hoverable = signal(hoverMatch()?.matches ?? false);
 
+  /**
+   * Whether the pointer has actually moved since this list appeared.
+   *
+   * A page that loads under a resting pointer fires `mouseenter` on whichever
+   * row the layout happens to put beneath it — no movement, no intent, and the
+   * hull under the cursor is chance. Resting reads a hull *and replaces the
+   * address*, so without this a Commander opening a shared or bookmarked
+   * `/ships/Anaconda` with their pointer over the manifest landed on some other
+   * hull entirely, and the address they followed was gone (reported
+   * 2026-08-28).
+   *
+   * `pointermove` is what tells the two apart, measured rather than assumed: a
+   * hover fires `pointerover, mouseover, mouseenter, pointermove`, and a load
+   * under a resting pointer fires the same sequence with the move missing.
+   * Nothing resets it — once the Commander has moved the pointer, every
+   * `mouseenter` after that is theirs.
+   */
+  readonly #pointerMoved = signal(false);
+
+  /**
+   * The row entered before the first move has confirmed there was one.
+   *
+   * The move that carries a pointer onto a row fires `mouseenter` *before* its
+   * `pointermove`, so a row cannot be answered the moment it is entered without
+   * answering the resting pointer too. It is held here instead and released by
+   * the move, which on a real hover is the very next event and on a load never
+   * comes at all.
+   */
+  #enteredBeforeMoving: string | null = null;
+
   readonly captionId = relationId('catalogue-caption');
   readonly scrollLabel = this.#messages.messageSignal('catalogue.table.caption');
   readonly selectedLabel = this.#messages.messageSignal('catalogue.selected');
@@ -99,20 +130,48 @@ export class ResponsiveCatalogueView {
   readonly isEmpty = computed(() => this.hulls().length === 0);
 
   constructor() {
+    const destroyRef = inject(DestroyRef);
+
+    // On the document, because the movement that matters happens before the
+    // pointer reaches a row: by the time `mouseenter` fires on one, the pointer
+    // has already crossed the page to get there.
+    const view = inject(DOCUMENT).defaultView;
+    if (view) {
+      const moved = (): void => {
+        this.#pointerMoved.set(true);
+        view.removeEventListener('pointermove', moved);
+        const entered = this.#enteredBeforeMoving;
+        this.#enteredBeforeMoving = null;
+        if (entered !== null) {
+          this.hullPreviewed.emit(entered);
+        }
+      };
+      view.addEventListener('pointermove', moved, { passive: true });
+      destroyRef.onDestroy(() => view.removeEventListener('pointermove', moved));
+    }
+
     const query = hoverMatch();
     if (query === null) {
       return;
     }
     const follow = (): void => this.#hoverable.set(query.matches);
     query.addEventListener('change', follow);
-    inject(DestroyRef).onDestroy(() => query.removeEventListener('change', follow));
+    destroyRef.onDestroy(() => query.removeEventListener('change', follow));
   }
 
-  /** Resting on a row reads the hull, where resting is a thing the device does. */
+  /**
+   * Resting on a row reads the hull, where resting is a thing the device does
+   * and where the Commander put the pointer there themselves.
+   */
   preview(hull: HullSummary): void {
-    if (this.#hoverable()) {
-      this.hullPreviewed.emit(hull.symbol);
+    if (!this.#hoverable()) {
+      return;
     }
+    if (this.#pointerMoved()) {
+      this.hullPreviewed.emit(hull.symbol);
+      return;
+    }
+    this.#enteredBeforeMoving = hull.symbol;
   }
 
   /** Pressing a row flies it. Without hover it opens it, since nothing else can. */

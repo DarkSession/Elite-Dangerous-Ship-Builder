@@ -57,10 +57,16 @@ type SaveMode = 'overwrite' | 'new';
  * **Revised 2026-08-25.** Since a save consumes the unsaved entry these edits
  * were autosaved into, the two choices no longer differ only in which record is
  * written: replacing removes that entry, and saving as new keeps both builds.
- * One of them therefore ends with a record fewer than it started with, which is
- * exactly the sort of thing a Commander has to be told before they press it and
- * not after — so each choice states its outcome in visible, associated words
- * (FR-008, T150a).
+ * One of them therefore ends with a record fewer than it started with, so each
+ * choice carries its outcome in visible, associated words rather than leaving a
+ * Commander to find out after pressing (FR-008, T150a).
+ *
+ * **Narrowed 2026-08-28 (Commander request).** Those words are the canvas's
+ * now — "Last saved {when}" against "Keeps both copies" — rather than the
+ * spelt-out account of the entry being removed that stood here before. The
+ * contrast still carries which choice ends with both builds and which does not,
+ * and the behaviour is unchanged: `requestSave` passes the held record into
+ * `SaveConflictService` either way.
  *
  * **Moved here 2026-08-27.** It was the library's, reached from a footer button
  * under a row. It is the workspace's now, and the two choices are the canvas's
@@ -119,9 +125,7 @@ export class SaveBuildDialog {
 
   readonly title = this.#messages.messageSignal('workspace.save.title');
   readonly nameLabel = this.#messages.messageSignal('workspace.save.name.label');
-  readonly nameDescription = this.#messages.messageSignal('workspace.save.name.description');
   readonly noteLabel = this.#messages.messageSignal('workspace.save.note.label');
-  readonly noteDescription = this.#messages.messageSignal('workspace.save.note.description');
   readonly modeLegend = this.#messages.messageSignal('workspace.save.mode.legend');
   readonly confirmLabel = this.#messages.messageSignal('workspace.save.confirm');
   readonly cancelLabel = this.#messages.messageSignal('action.cancel');
@@ -177,19 +181,24 @@ export class SaveBuildDialog {
       }),
   });
 
-  /** The two cards the canvas draws, or the one that applies. */
+  /**
+   * The two cards the canvas draws, or none at all.
+   *
+   * A choice of one is not a choice. Where there is nothing to replace — a
+   * build that came from nowhere, or a browser that cannot replace a save
+   * safely — saving as a new build is the only thing `SAVE BUILD` can do, and a
+   * single selected card in front of it asks a question with one answer. The
+   * canvas draws the pair or it draws neither.
+   *
+   * Nothing is lost by leaving them out. `effectiveMode()` still resolves to
+   * `new`, and the one case a Commander could be surprised by — a save they
+   * opened that this browser cannot replace — says so on the message line
+   * instead, where the reason belongs.
+   */
   readonly modes = computed<readonly Choice[]>(() => {
     const source = this.source();
-    const asNew: Choice = {
-      value: 'new',
-      label: this.#messages.message('workspace.save.mode.new'),
-      description: this.#messages.message(
-        source === null ? 'workspace.save.mode.new.only' : 'workspace.save.mode.new.outcome',
-      ),
-    };
-
     if (source === null || !source.replaceable) {
-      return [asNew];
+      return [];
     }
 
     return [
@@ -200,7 +209,11 @@ export class SaveBuildDialog {
           when: source.lastSaved,
         }),
       },
-      asNew,
+      {
+        value: 'new',
+        label: this.#messages.message('workspace.save.mode.new'),
+        description: this.#messages.message('workspace.save.mode.new.outcome'),
+      },
     ];
   });
 

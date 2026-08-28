@@ -133,6 +133,18 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
 }
 
 /**
+ * One of the footer's two actions, scoped to the footer.
+ *
+ * The canvas names them for what they do — `DELETE` and `OPEN IN OUTFITTING` —
+ * so `Delete` also reads as a substring of the confirmation's own
+ * `Delete this build`. Scoping to the plate and matching exactly is what keeps
+ * the two apart.
+ */
+function footerAction(page: Page, name: string) {
+  return page.locator('.library__footer').getByRole('button', { name, exact: true });
+}
+
+/**
  * Saves the build the workspace is holding, from the workspace's own `SAVE`.
  *
  * Naming, renaming and saving a copy all go through here since 2026-08-27:
@@ -147,10 +159,13 @@ async function saveActiveBuild(
   await reachShellAction(page, /^Save$/);
   const dialog = page.getByRole('dialog', { name: 'Save build' });
   await dialog.getByRole('textbox', { name: 'Build name' }).fill(name);
+  // The modes are drawn only where both apply. A build with nothing to replace
+  // has one thing `SAVE BUILD` can do, so there is no card to press (canvas 1c).
+  const asNew = dialog.getByRole('radio', { name: 'Save as a new build' });
   if (mode === 'overwrite') {
     await dialog.getByRole('radio', { name: /^Overwrite/ }).check();
-  } else {
-    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+  } else if ((await asNew.count()) > 0) {
+    await asNew.check();
   }
   await dialog.getByRole('button', { name: 'Save build' }).click();
 }
@@ -164,7 +179,15 @@ async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<vo
   await expect(page.getByRole('heading', { level: 1, name: new RegExp(hull, 'i') })).toBeVisible();
 }
 
-const library = (page: Page) => page.getByRole('heading', { level: 1, name: 'Saved builds' });
+/**
+ * The saved-build surface, in whichever composition it is showing.
+ *
+ * The dialog rather than a heading: the layer names itself the same way over a
+ * screen and on its own page, and over a screen the document's `h1` is the
+ * screen's — the ship a Commander is in — with the layer's own name on the
+ * dialog, which is where a modal's name belongs.
+ */
+const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
 
 test.describe('the build library', () => {
   test('says so when nothing is stored', async ({ page }) => {
@@ -181,9 +204,13 @@ test.describe('the build library', () => {
     await expect(library(page)).toBeVisible();
     // Titled by what the build calls itself — here the hull, since a stock
     // build has neither a ship name nor an ident yet (FR-010).
-    await expect(page.getByText('Anaconda').first()).toBeVisible();
-    await expect(page.getByText('Valid').first()).toBeVisible();
-    await expect(page.getByText(/Current build/).first()).toBeVisible();
+    await expect(library(page).getByText('Anaconda').first()).toBeVisible();
+    await expect(library(page).getByText('Valid').first()).toBeVisible();
+    await expect(
+      library(page)
+        .getByText(/Current build/)
+        .first(),
+    ).toBeVisible();
   });
 
   test('lists named and unnamed records as one list, under no group heading', async ({ page }) => {
@@ -241,8 +268,93 @@ test.describe('the build library', () => {
     const footer = page.locator('.library__footer');
 
     await expect(footer.getByRole('button')).toHaveCount(2);
-    await expect(footer.getByRole('button', { name: 'Delete Anaconda explorer' })).toBeVisible();
-    await expect(footer.getByRole('button', { name: 'Open Anaconda explorer' })).toBeVisible();
+    // Named for what they do, as the canvas names them. The build they act on
+    // is the row the Commander pressed, which is where they are looking.
+    await expect(footer.getByRole('button', { name: 'Delete', exact: true })).toBeVisible();
+    await expect(
+      footer.getByRole('button', { name: 'Open in outfitting', exact: true }),
+    ).toBeVisible();
+  });
+
+  test('stands over the screen it was opened from, keeping its own address', async ({ page }) => {
+    // Canvas 1a draws `/builds` as a modal over an inert originating screen,
+    // and a modal is only a modal if there is a screen behind it. Built as a
+    // sibling route there was none: the workspace was replaced by a page whose
+    // whole body was the layer (Commander request 2026-08-28).
+    await createBuild(page);
+    await reachShellLink(page, 'Open saved build');
+
+    const layer = page.getByRole('dialog', { name: 'Saved builds' });
+    await expect(layer).toBeVisible();
+
+    // The address is the library's, without a navigation having taken the
+    // workspace away: the ship is still there, behind and inert.
+    await expect(page).toHaveURL(/\/builds$/);
+    await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(1);
+    await expect(page).toHaveTitle(/^Saved builds/);
+
+    // And closing gives all of it back, fragment included — the build link the
+    // workspace published on the entry the layer was opened over.
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(layer).toBeHidden();
+    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveTitle(/^Build/);
+  });
+
+  test('closes on the browser’s own back, as a screen would', async ({ page }) => {
+    // The address is real, so the entry is real: back is one of the two ways
+    // out and the canvas draws the other.
+    await createBuild(page);
+    await reachShellLink(page, 'Open saved build');
+
+    const layer = page.getByRole('dialog', { name: 'Saved builds' });
+    await expect(layer).toBeVisible();
+
+    await page.goBack();
+
+    await expect(layer).toBeHidden();
+    await expect(page).toHaveURL(/\/build#b\./);
+  });
+
+  test('is an ordinary page where it was reached by its own address', async ({ page }) => {
+    // Nothing to stand over. The same content and the same title, on a page
+    // background — which is what the design says direct navigation supplies.
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+
+    await expect(library(page)).toBeVisible();
+    await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(0);
+    await expect(page).toHaveTitle(/^Saved builds/);
+  });
+
+  test('marks exactly one row, and moves the mark to whichever was chosen', async ({ page }) => {
+    // Two states meet on these rows: the record the workspace is holding, and
+    // the row the footer would act on. Both used to draw the marker, so opening
+    // the library on a loaded build and then choosing a different record left
+    // two rows washed and edged alike (reported 2026-08-28).
+    test.slow();
+    await createBuild(page);
+    await saveActiveBuild(page, 'Alpha');
+    // A second record from the same build, so the workspace ends up holding
+    // Beta while Alpha is another row on the list.
+    await saveActiveBuild(page, 'Beta');
+
+    await reachShellLink(page, 'Open saved build');
+    const marked = page.locator('.record--chosen');
+
+    // Opening marks where the Commander is: the library opens on the record the
+    // workspace is holding, and it is the only marked row.
+    await expect(marked).toHaveCount(1);
+    await expect(marked).toContainText('Beta');
+
+    await chooseRecord(page, 'Alpha');
+
+    // Still one, and now the other. The record the workspace holds keeps saying
+    // so — in `aria-current` and in its own words — without drawing a second
+    // marker for it.
+    await expect(marked).toHaveCount(1);
+    await expect(marked).toContainText('Alpha');
+    await expect(page.locator('.record[aria-current]')).toContainText('Current build');
   });
 
   test('names the record the build is already in, leaving nothing behind', async ({ page }) => {
@@ -254,7 +366,7 @@ test.describe('the build library', () => {
     await saveActiveBuild(page, 'Anaconda explorer');
 
     await reachShellLink(page, 'Open saved build');
-    await expect(page.getByText('Anaconda explorer').first()).toBeVisible();
+    await expect(library(page).getByText('Anaconda explorer').first()).toBeVisible();
     expect(await recordCount(page)).toBe(1);
   });
 
@@ -298,6 +410,9 @@ test.describe('the build library', () => {
     // A closed dialog still holds what is in it, so opening has to be a reset:
     // otherwise the next Commander to press SAVE finds an abandoned name in the
     // field, under a duplicate count worked out for a different one.
+    //
+    // The reset lands on what the build is called rather than on nothing since
+    // 2026-08-28 — the abandoned draft is still what must not survive.
     await createBuild(page);
 
     await reachShellAction(page, /^Save$/);
@@ -306,7 +421,7 @@ test.describe('the build library', () => {
     await dialog.getByRole('button', { name: 'Cancel' }).click();
 
     await reachShellAction(page, /^Save$/);
-    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('');
+    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('Anaconda');
   });
 
   test('writes the note with the build, and keeps it out of the link', async ({ page }) => {
@@ -360,7 +475,7 @@ test.describe('the build library', () => {
     await reachShellLink(page, 'Open saved build');
     await expect(library(page)).toBeVisible();
 
-    await page.getByRole('button', { name: 'Close saved builds' }).click();
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
@@ -413,14 +528,14 @@ test.describe('the build library', () => {
     await page.goto('/builds');
 
     await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     const dialog = page.getByRole('dialog', { name: /Build a/ });
     await expect(dialog.getByText(/cannot be undone/i)).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Keep this build' }).click();
     expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).not.toBeNull();
 
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     await page
       .getByRole('dialog', { name: /Build a/ })
       .getByRole('button', { name: 'Delete this build' })
@@ -434,7 +549,7 @@ test.describe('the build library', () => {
     await page.goto('/builds');
 
     await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     await page
       .getByRole('dialog', { name: /Build a/ })
       .getByRole('button', { name: 'Delete this build' })
@@ -474,13 +589,13 @@ test.describe('the build library', () => {
       }),
     ]);
     await page.goto('/builds');
-    await expect(page.getByText('2 builds stored')).toBeVisible();
+    await expect(page.getByText('2 builds', { exact: true })).toBeVisible();
 
-    await page.getByRole('textbox', { name: 'Search these builds' }).fill('python');
+    await page.getByRole('searchbox', { name: 'Search saved builds' }).fill('python');
 
     await expect
       .poll(() => page.locator('.library__count').innerText(), { timeout: 5_000 })
-      .toBe('1 of 2 builds shown');
+      .toBe('1 of 2 builds');
     await expect(page.locator('[data-record-id="b"]')).toBeVisible();
     await expect(page.locator('[data-record-id="a"]')).toHaveCount(0);
     // Narrowing changes no record and removes nothing.
@@ -491,7 +606,7 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
     await page.goto('/builds');
 
-    const search = page.getByRole('textbox', { name: 'Search these builds' });
+    const search = page.getByRole('searchbox', { name: 'Search saved builds' });
     await search.fill('nothing like this');
 
     await expect(page.getByText(/Nothing here matches/)).toBeVisible();
@@ -640,7 +755,7 @@ test.describe('the build library', () => {
     await createBuild(first);
     await saveActiveBuild(first, 'Shared build');
     await reachShellLink(first, 'Open saved build');
-    await expect(first.getByText('Shared build').first()).toBeVisible();
+    await expect(library(first).getByText('Shared build').first()).toBeVisible();
 
     // The other page opens the same named record, so both hold the same baseline.
     await second.goto('/builds');
@@ -691,7 +806,7 @@ test.describe('the build library', () => {
     await createBuild(first);
     await saveActiveBuild(first, 'Shared build');
     await reachShellLink(first, 'Open saved build');
-    await expect(first.getByText('Shared build').first()).toBeVisible();
+    await expect(library(first).getByText('Shared build').first()).toBeVisible();
 
     // Both pages open the record before either saves, so both hold one
     // baseline and the collision is between two deliberate saves (FR-012).
@@ -737,7 +852,7 @@ test.describe('the build library', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-populated' });
 
     await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     await expect(page.getByRole('dialog', { name: /Build a/ })).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-delete-confirmation' });
   });

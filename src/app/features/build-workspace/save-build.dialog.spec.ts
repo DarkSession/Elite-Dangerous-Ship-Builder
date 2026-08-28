@@ -86,14 +86,22 @@ describe('SaveBuildDialog', () => {
     );
   });
 
-  it('offers one mode for a build that came from nowhere', () => {
-    // There is nothing to replace, so there is one thing saving can do — and it
-    // still says what that is rather than leaving the card blank.
+  it('offers no mode at all for a build that came from nowhere', () => {
+    // A choice of one is not a choice. There is nothing to replace, so saving
+    // as a new build is the only thing SAVE BUILD can do, and a single selected
+    // card in front of it asks a question with one answer (canvas 1c).
     const fixture = render({ initialName: 'A name' });
 
-    expect(radios(fixture)).toHaveLength(1);
-    expect(text(fixture)).toContain('Save as a new build');
-    expect(text(fixture)).toContain('kept for good');
+    expect(radios(fixture)).toHaveLength(0);
+    expect(saveButton(fixture).hasAttribute('disabled')).toBe(false);
+  });
+
+  it('marks each mode with the square the canvas draws on it', () => {
+    // Filled on the choice that stands, open on the offer beside it — the state
+    // survives a monochrome rendering rather than being carried by the wash.
+    const fixture = render({ initialName: 'Anaconda explorer', source: source() });
+
+    expect(root(fixture).querySelectorAll('.choice__marker')).toHaveLength(2);
   });
 
   it('offers both modes for a build opened from a save, replacing selected first', () => {
@@ -113,7 +121,9 @@ describe('SaveBuildDialog', () => {
       source: source({ replaceable: false }),
     });
 
-    expect(radios(fixture)).toHaveLength(1);
+    // One mode left is no mode drawn: the reason stands on the message line,
+    // which is where a Commander can act on it.
+    expect(radios(fixture)).toHaveLength(0);
     expect(text(fixture)).toContain('cannot coordinate between tabs');
     // Saving is still available: only the unsafe half of it went.
     expect(saveButton(fixture).hasAttribute('disabled')).toBe(false);
@@ -145,8 +155,8 @@ describe('SaveBuildDialog', () => {
   });
 
   it('warns about a duplicate name even where the browser cannot replace one', () => {
-    // The state that needs the warning most: there is one mode, it is the one
-    // that creates a record, and the Commander cannot switch away from it.
+    // The state that needs the warning most: saving can only create a record,
+    // and the Commander has no other mode to switch to.
     const fixture = render({
       initialName: 'Anaconda explorer',
       source: source({ replaceable: false }),
@@ -265,7 +275,7 @@ describe('SaveBuildDialog', () => {
     expect((root(fixture).querySelector('input[type="text"]') as HTMLInputElement).value).toBe(
       'Needle',
     );
-    expect(radios(fixture)).toHaveLength(1);
+    expect(radios(fixture)).toHaveLength(0);
   });
 
   it('holds what was typed while the screen re-reads what it is holding', () => {

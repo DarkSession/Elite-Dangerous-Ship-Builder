@@ -8,7 +8,16 @@
 }
 
 .record {
-  @include layout.selectable-row;
+  // Marked by the choice alone. A library row carries two states at once — the
+  // record the workspace is holding, and the row the footer would act on — and
+  // marking both left two rows washed and edged alike the moment a Commander
+  // chose a record other than the one they had open (reported 2026-08-28).
+  //
+  // Nothing is lost by not drawing it: the row is still `aria-current`, and it
+  // still says "Current build" in its own words among the row's read facts. The
+  // library opens with the current record already chosen, so a Commander who
+  // opens the screen and chooses nothing still sees where they are.
+  @include layout.selectable-row($current-marks: false);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -25,8 +34,10 @@
   cursor: pointer;
 }
 
-// The chosen row takes the same wash the mixin gives a current one, so the row
-// the footer acts on is the row a Commander is looking at.
+// The one marked row: what the footer would act on. The mixin's own hook is
+// `data-selected`, which this row does not carry — choosing is `aria-pressed`
+// here, because the row is a button a Commander presses rather than an option
+// in a list — so the mark is drawn here under the same tokens.
 .record--chosen {
   background-image: var(--edsb-surface-row-selected);
   border-inline-start-color: var(--edsb-marker-selected);

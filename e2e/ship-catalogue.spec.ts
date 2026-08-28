@@ -161,6 +161,41 @@ test.describe('hull catalogue', () => {
     expect(stored.session).toEqual(['edsb:catalogue']);
   });
 
+  test('keeps the address a Commander followed, under a pointer that never moved', async ({
+    page,
+  }) => {
+    // Resting on a row reads the hull beside it and replaces the address, which
+    // is what makes the manifest browsable. A page that loads under a resting
+    // pointer fires the same `mouseenter` with no movement behind it, so the
+    // row the layout happened to put under the cursor took over the address: a
+    // shared or bookmarked `/ships/Anaconda` landed on some other hull entirely
+    // (reported 2026-08-28).
+    // Parked over the manifest, then loaded under it without moving again. A
+    // device that cannot hover parks nothing and reads no row, so the address
+    // has to survive there too — by having nothing to take it.
+    const hoverable = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+    await page.goto('/ships');
+    await visibleHulls(page).first().hover();
+
+    for (const hull of ['Anaconda', 'Python', 'SideWinder']) {
+      await page.goto(`/ships/${hull}`);
+      await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`/ships/${hull}$`));
+    }
+
+    // And the reading it exists for still happens: a real move follows the
+    // pointer where there is one, and the press does it where there is not.
+    await page.goto('/ships');
+    const row = visibleHulls(page).nth(3);
+    const symbol = await row.getAttribute('data-hull-symbol');
+    // The row's own control, which is what a Commander reaches for at either
+    // width: the anchored element carries the symbol, the control inside it
+    // carries the action.
+    const control = row.getByRole('button').first();
+    await (hoverable ? control.hover() : control.click());
+    await expect(page).toHaveURL(new RegExp(`/ships/${symbol}$`));
+  });
+
   test('restores constraints, order and place after a trip to hull detail', async ({ page }) => {
     await search(page).fill('type');
     await sortControl(page, 'Price Mcr').click();

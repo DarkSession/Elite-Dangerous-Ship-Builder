@@ -196,6 +196,22 @@ export class LocaleStore {
   }
 
   /**
+   * What the route is contributing right now, as it was committed.
+   *
+   * For the one surface that stands over a screen without navigating: the
+   * saved-build layer takes the document's identity while it is up and has to
+   * give back exactly what it took, and re-deriving it from the router would be
+   * a second answer to a question this store already holds (011/FR-027).
+   */
+  route(): RouteIdentity {
+    return {
+      titleKey: this.#titleKey(),
+      descriptionKey: this.#descriptionKey(),
+      path: this.#path(),
+    };
+  }
+
+  /**
    * Chooses the startup locale and publishes it.
    *
    * Precedence is the browser's declared languages, then bundled English

@@ -23,7 +23,6 @@ function build(overrides: Partial<SavedBuild> = {}): SavedBuild {
     remaining: null,
     current: false,
     currentLabel: 'Current build',
-    chooseLabel: 'Choose Anaconda explorer',
     note: null,
     ...overrides,
   };

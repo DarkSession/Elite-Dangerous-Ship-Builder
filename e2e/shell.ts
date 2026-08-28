@@ -77,7 +77,9 @@ export async function openRecordFromLibrary(page: Page, title: string): Promise<
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const surface = page.getByRole('dialog', { name: /^saved builds$/i });
   const row = surface.getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
-  const open = surface.getByRole('button', { name: `Open ${title}` });
+  // The footer's action is named for what it does rather than for the build it
+  // does it to, as the canvas names it (canvas 1a, "SAVED BUILDS").
+  const open = surface.getByRole('button', { name: 'Open in outfitting', exact: true });
 
   await expect(async () => {
     if (/\/build(#|$)/.test(page.url())) {

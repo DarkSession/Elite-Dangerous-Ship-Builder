@@ -5,9 +5,12 @@ import {
   computed,
   effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { LibraryPresence } from './library-presence';
+import { deriveBuildTitle } from '../../domain/build/build-title';
 import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
@@ -102,8 +105,19 @@ export class BuildLibraryPage {
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
+  readonly #presence = inject(LibraryPresence);
 
-  readonly closeLabel = this.#messages.messageSignal('library.close');
+  /**
+   * Whether this is the layer the shell stands over a screen, or the page the
+   * `/builds` address renders on its own.
+   *
+   * The same content either way — the canvas draws one surface — and the
+   * difference is only what happens on the way out: a layer lowers and gives
+   * the screen behind it back, and a page has nothing behind it and navigates
+   * (build-library design, "Composition").
+   */
+  readonly asLayer = input(false);
+
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');
   readonly unavailableLabel = this.#messages.messageSignal('library.unavailable.label');
@@ -112,7 +126,6 @@ export class BuildLibraryPage {
   readonly deleteConfirmLabel = this.#messages.messageSignal('library.delete.confirm');
   readonly deleteCancelLabel = this.#messages.messageSignal('library.delete.cancel');
   readonly searchLabel = this.#messages.messageSignal('library.search.label');
-  readonly searchDescription = this.#messages.messageSignal('library.search.description');
   readonly nothingChosen = this.#messages.messageSignal('library.chosen.none');
 
   readonly isEmpty = this.#library.isEmpty;
@@ -179,7 +192,7 @@ export class BuildLibraryPage {
   });
 
   /**
-   * What each footer action would do, named for the record it would do it to.
+   * What the footer commits on the record that was chosen.
    *
    * The canvas's two, and nothing else. Naming, renaming and saving a copy were
    * here until 2026-08-27 and are the workspace's own `SAVE` now: a library
@@ -187,23 +200,27 @@ export class BuildLibraryPage {
    * where a Commander is working in it. Nothing they could do is gone — a
    * record is renamed by opening it and saving it over the save it came from,
    * and copied by opening it and saving it as a new build (FR-009).
+   *
+   * Each is named for what it does and not for the build it does it to, as the
+   * canvas draws them: `DELETE` and `OPEN IN OUTFITTING`. The build is the row
+   * the Commander pressed, which is the pressed row in the list above and is
+   * where they are looking; repeating its name into the buttons made the same
+   * word the longest thing on the plate and moved it whenever the choice moved.
    */
   readonly chosenActions = computed<readonly RecordAction[]>(() => {
-    const record = this.chosen() === null ? null : this.#library.find(this.chosen()!);
-    if (record === null) {
+    if (this.chosen() === null) {
       return [];
     }
 
-    const build = record.name ?? this.#derivedTitle(record);
     return [
       {
         id: 'delete',
-        label: this.#messages.message('library.action.delete', { build }),
+        label: this.#messages.message('library.action.delete'),
         emphasis: 'danger' as const,
       },
       {
         id: 'open',
-        label: this.#messages.message('library.action.open', { build }),
+        label: this.#messages.message('library.action.open'),
         emphasis: 'primary' as const,
       },
     ];
@@ -355,6 +372,10 @@ export class BuildLibraryPage {
    * the dismiss the canvas draws.
    */
   close(): void {
+    if (this.asLayer()) {
+      this.#presence.lower();
+      return;
+    }
     void this.#router.navigateByUrl(this.#origin());
   }
 
@@ -437,6 +458,11 @@ export class BuildLibraryPage {
           return;
         }
         if (result.kind === 'committed') {
+          // Leaving through the layer rather than closing it: the address goes
+          // back to the screen behind before the navigation, or the router —
+          // which never left that screen — would navigate to where it already
+          // is and leave `/builds` standing in the bar.
+          this.#presence.lowerForNavigation();
           void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
         }
         return;
@@ -532,7 +558,6 @@ export class BuildLibraryPage {
       remaining: this.#remainingLife(record),
       current: record.id === this.#currentRecordId(),
       currentLabel: this.#messages.message('library.record.current'),
-      chooseLabel: this.#messages.message('library.record.choose', { build: title }),
       note: this.#noteFor(record),
     };
   }
@@ -558,12 +583,10 @@ export class BuildLibraryPage {
    * clarification 2026-08-25).
    */
   #derivedTitle(record: LocalRecordV1): string {
-    const build = record.build;
-    return (
-      build.shipName?.trim() ||
-      build.shipIdent?.trim() ||
-      this.#hullName(record.hullSymbol) ||
-      this.#messages.message('library.record.unnamed')
+    return deriveBuildTitle(
+      record.build,
+      this.#hullName(record.hullSymbol),
+      this.#messages.message('library.record.unnamed'),
     );
   }
 

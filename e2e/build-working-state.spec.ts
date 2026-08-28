@@ -40,10 +40,13 @@ async function saveActiveBuild(
   await reachShellAction(page, /^Save$/);
   const dialog = page.getByRole('dialog', { name: 'Save build' });
   await dialog.getByRole('textbox', { name: 'Build name' }).fill(name);
+  // The modes are drawn only where both apply. A build with nothing to replace
+  // has one thing `SAVE BUILD` can do, so there is no card to press (canvas 1c).
+  const asNew = dialog.getByRole('radio', { name: 'Save as a new build' });
   if (mode === 'overwrite') {
     await dialog.getByRole('radio', { name: /^Overwrite/ }).check();
-  } else {
-    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+  } else if ((await asNew.count()) > 0) {
+    await asNew.check();
   }
   await dialog.getByRole('button', { name: 'Save build' }).click();
 }
@@ -73,6 +76,15 @@ async function renameShip(page: Page, name: string): Promise<void> {
   await field.press('Enter');
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
+
+/**
+ * The saved-build surface, whichever composition it is showing.
+ *
+ * Scoped, because it stands over the screen rather than replacing it since
+ * 2026-08-28: a bare `getByText` reaches the workspace behind it, and a closed
+ * save dialog holds the same record's name in a label of its own.
+ */
+const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
 
 /** How many records this browser is holding, whatever their kind. */
 async function recordCount(page: Page): Promise<number> {
@@ -286,6 +298,56 @@ test.describe('the tab’s working build', () => {
     }
   });
 
+  test('opens the save layer on what the build is already called', async ({ page }) => {
+    // Reported empty 2026-08-28: the common way to reach SAVE is on a build just
+    // made from a hull, and the field started blank there. It starts from what
+    // the build is called — the ship's name, its ident, or the hull — which is
+    // the same rule the library titles an unnamed row by (FR-010).
+    await createBuild(page);
+    await reachShellAction(page, /^Save$/);
+
+    const layer = page.getByRole('dialog', { name: 'Save build' });
+    await expect(layer.getByRole('textbox', { name: 'Build name' })).toHaveValue('Anaconda');
+
+    // Nothing to replace yet, so the layer asks nothing: the pair of modes or
+    // neither.
+    await expect(layer.locator('.save__modes .choice')).toHaveCount(0);
+  });
+
+  test('offers both modes once the build has a save to replace', async ({ page }) => {
+    // The other half of the same report. A build that was saved, or opened from
+    // a save, must be able to choose between replacing it and keeping both.
+    test.slow();
+    await createBuild(page);
+    await savedToBrowser(page);
+    await saveActiveBuild(page, 'Explorer');
+    await reachShellAction(page, /^Save$/);
+
+    const layer = page.getByRole('dialog', { name: 'Save build' });
+    await expect(layer.getByRole('textbox', { name: 'Build name' })).toHaveValue('Explorer');
+    await expect(layer.getByRole('radio')).toHaveCount(2);
+    // Replacing is the one that stands, and it names the record it would take.
+    await expect(layer.getByRole('radio').first()).toBeChecked();
+    await expect(layer.getByText(/Overwrite/)).toBeVisible();
+    await page.getByRole('button', { name: /^Cancel$/i }).click();
+
+    // The same offer after opening that save from the library, and still there
+    // once an edit has forked the working record away from it: what the layer
+    // offers to replace is the build's provenance, not whether it is unedited.
+    await reachShellLink(page, 'Open saved build');
+    await chooseRecord(page, 'Explorer');
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/build(#|$)/);
+    await renameShip(page, 'Vindicator');
+
+    await reachShellAction(page, /^Save$/);
+    await expect(layer.getByRole('radio')).toHaveCount(2);
+    await expect(layer.getByRole('textbox', { name: 'Build name' })).toHaveValue('Explorer');
+  });
+
   test('writes nothing to a saved build when it is opened', async ({ page }) => {
     // A build, a named save, and an open — three journeys' worth of waiting on
     // one page, which runs past the default budget on a loaded machine.
@@ -294,7 +356,7 @@ test.describe('the tab’s working build', () => {
     await savedToBrowser(page);
     await saveActiveBuild(page, 'Explorer');
     await reachShellLink(page, 'Open saved build');
-    await expect(page.getByText('Explorer').first()).toBeVisible();
+    await expect(library(page).getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
       Object.keys(localStorage)
@@ -306,7 +368,10 @@ test.describe('the tab’s working build', () => {
     // Opening it again writes nothing at all: the build is already recoverable
     // from what was opened.
     await chooseRecord(page, 'Explorer');
-    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/build(#|$)/);
 
     expect(await recordBytes(page, id)).toBe(saved);
@@ -321,7 +386,7 @@ test.describe('the tab’s working build', () => {
     await savedToBrowser(page);
     await saveActiveBuild(page, 'Explorer');
     await reachShellLink(page, 'Open saved build');
-    await expect(page.getByText('Explorer').first()).toBeVisible();
+    await expect(library(page).getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
       Object.keys(localStorage)
@@ -331,7 +396,10 @@ test.describe('the tab’s working build', () => {
     const saved = await recordBytes(page, id);
 
     await chooseRecord(page, 'Explorer');
-    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await renameShip(page, 'Vindicator');
 
@@ -350,7 +418,10 @@ test.describe('the tab’s working build', () => {
     await reachShellLink(page, 'Open saved build');
 
     await chooseRecord(page, 'Explorer');
-    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await renameShip(page, 'Vindicator');
     await expectRecords(page, 2);
