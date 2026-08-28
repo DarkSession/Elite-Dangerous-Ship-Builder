@@ -158,8 +158,9 @@ its ship name and ident — belongs here.
   and MUST NOT invent, derive or estimate an attribute the package does not publish. Where the
   package calculates a figure for the kind of article the mount holds, that figure MUST be presented
   beside the catalogued attributes, on both readings, and MUST come from the package's own
-  calculation rather than from arithmetic over the rows: a weapon's damage per second, sustained
-  damage per second, sustained rate of fire, capacitor draw and heat are what a recipe is chosen
+  calculation rather than from arithmetic over the rows: a weapon's damage per shot and per second,
+  sustained damage per second, sustained rate of fire, distributor draw and heat are what a recipe
+  is chosen
   for, and a Commander MUST NOT have to multiply two rows to read one of them. A calculated figure
   MUST NOT be offered where it would not be a second reading. Three cases: an article the package
   does not measure as a weapon, which would be answered with the calculation's own defaults; a

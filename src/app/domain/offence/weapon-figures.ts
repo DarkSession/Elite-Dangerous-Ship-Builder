@@ -46,7 +46,6 @@ export type WeaponFigure = (typeof WEAPON_FIGURES)[number];
  * table draws beside it, and its `sustainedRateOfFire` is the `1` the
  * arithmetic needs to carry a weapon that fires no shots. A row repeating the
  * row above it is not a second reading (constitution IV).
- *
  */
 export function weaponFigures(
   article: OutfittingModule | null,

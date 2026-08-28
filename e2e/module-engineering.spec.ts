@@ -391,7 +391,7 @@ test.describe('engineering costs', () => {
 
   test('states an absent figure as a value, and lists what the package calculates', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await openStockBuild(page);
     await openEditor(page, 'SmallHardpoint1');
     await chooseRecipe(page, /rapid fire/i);
@@ -427,6 +427,11 @@ test.describe('engineering costs', () => {
     ] as const) {
       await expect(comparison).not.toContainText(englishMessages[key]);
     }
+
+    // The drive every other swept state opens has no one-sided row and no
+    // calculated figure, so this is the only state that renders either. It
+    // carries the table's longest label, in a column that does not wrap.
+    await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {

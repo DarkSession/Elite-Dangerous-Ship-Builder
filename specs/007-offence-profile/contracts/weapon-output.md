@@ -44,7 +44,8 @@ Eight scalar figures are exposed: `damagePerShot`, `damagePerSecond`, `sustained
 `sustainedRateOfFire`, `energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond` and
 `sustainedHeatPerSecond`. The damage splits, `rateOfFire`, `thermalLoad`, `powerDraw` and
 `continuous` itself are not — the splits are this panel's, and the rest are catalogue fields the
-editor already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in.
+editor already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in, under the same
+name the article's own `distributorDraw` row carries.
 
 Which of the eight the editor then draws is the editor's own rule, not this contract's: a figure
 whose two readings both equal another row's is dropped there. That is what happens to the sustained

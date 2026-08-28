@@ -300,8 +300,8 @@ that `CLEAR ✕` created by existing at wide width only.
   journal modifier name (`FSDOptimalMass`) has no translation anywhere in the Almanac.
 - **What the package calculates is drawn beside what it catalogues, ruled 2026-08-28 (Commander
   request).** `WEAPON_FIGURES` is the Almanac's own per-weapon calculation over the same two
-  articles the catalogue rows come from — damage per second, sustained damage per second, sustained
-  rate of fire, capacitor draw and heat, each on both readings. A recipe that trades rate of fire
+  articles the catalogue rows come from — damage per shot and per second, sustained damage per
+  second, sustained rate of fire, distributor draw and heat, each on both readings. A recipe that trades rate of fire
   for damage per round moves two catalogue rows and leaves the reader to multiply, which is the one
   thing this application never asks of a Commander. `weaponFigures` decides what has an answer: the
   package's calculation takes `hardpoint` records, so the one utility module carrying a damage
