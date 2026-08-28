@@ -128,23 +128,22 @@ Expected:
 
 ## 4. Validate accepted help and provenance
 
-Confirm the modal contains all seven topics from
-[contracts/help-navigation.md](./contracts/help-navigation.md): build-link privacy,
-accounts/uploads/telemetry, browser persistence/clearing, offline assets, completed engineering
-grades, hull facts versus build results and Almanac ownership.
+Confirm the modal contains every topic from
+[contracts/help-navigation.md](./contracts/help-navigation.md): browser persistence/clearing and
+completed engineering grades.
 
 Expected:
 
-- the IDs form the exact seven-topic set with no duplicate, and every topic has a non-empty resolved
+- the IDs form the exact declared topic set with no duplicate, and every topic has a non-empty resolved
   governing-reference set matching the contract map;
 - every topic matches accepted current behavior;
 - no reference-only import promise appears;
 - no answer says partial engineering rolls are retained;
-- the `almanacOwnership` answer says the bundled Almanac supplies the catalogue, the checks and the
+- the `ABOUT` provenance sentence says the bundled Almanac supplies the catalogue, the checks and the
   calculations and that this application neither maintains nor corrects those game values — this is
-  where the once-per-application credit now lives, the `ABOUT` provenance paragraph having been
-  withdrawn with the rest of what the reference does not draw;
-- `ABOUT` carries the purpose sentence and the two version facts and nothing else;
+  where the once-per-application Almanac credit lives;
+- `ABOUT` carries the purpose sentence, the maintainer sentence, the provenance sentence and the two
+  version facts, in that order, and nothing else;
 - nothing in the modal makes a live-game/live-catalogue currency claim;
 - no issue-tracker, support or defect-reporting action appears anywhere in the modal.
 
@@ -156,8 +155,8 @@ Expected:
 
 - exactly the project-specific disclaimer appears, unchanged and non-empty, inside a region
   carrying `lang="en"`;
-- above it, the reference's own three-line summary of what covers what — the application's code, the
-  game data and imagery, and the typefaces — one line each, localised;
+- above it, the four-line summary of what covers what — the application's code, the bundled
+  Almanac, the game data and imagery, and the typefaces — one line each, localised;
 - no sentence of prose framing above the summary, no sentence naming the excerpt's source and no
   sentence naming its language: the reference draws none of the three, and the language is a
   property of the text rather than a claim about it;
@@ -185,8 +184,8 @@ capability. Open the modal before opening any hull artwork.
 
 Expected:
 
-- all seven topics, both version facts, the three-line licence summary and the exact disclaimer are
-  present;
+- both topics, all three `ABOUT` sentences, both version facts, the licence summary and the exact
+  disclaimer are present;
 - opening/reading/closing causes no request and has no loading/error/stale state;
 - there is nothing to follow: the modal has no external action offline or online;
 - uncached package artwork may be temporarily absent under its owning contract, while help remains
@@ -218,7 +217,7 @@ Expected:
 Complete the manual screen-reader protocol: discover the frame entry from a no-build and an active
 capability, hear one labelled modal, confirm background isolation, read the `ABOUT`, `FAQ` and
 `LICENCE` headings with their facts, questions and answers, hear the two version facts as two
-distinct labelled facts, hear each question as a heading over its own answer, reach the three licence
+distinct labelled facts, hear each question as a heading over its own answer, reach the four licence
 summary lines as a list and then the excerpt in its declared language, then close and verify the
 unchanged underlying capability.
 
@@ -233,4 +232,4 @@ Expected: formatting, typecheck, production build, generator/script tests, unit 
 viewport, accessibility rule or test is skipped to obtain a green build.
 
 If conformance is reported, use the constitution's qualified statement: WCAG 2.2 AA except criteria
-2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.

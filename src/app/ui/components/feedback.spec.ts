@@ -153,7 +153,7 @@ describe('AppFrame', () => {
 
   it('carries the screen count beside that name', () => {
     const fixture = renderComponent(AppFrame, {
-      routeContext: 'Shipyard',
+      routeContext: 'Ship Builder',
       routeCount: '48 of 48 hulls shown',
     });
 
@@ -169,7 +169,7 @@ describe('AppFrame', () => {
   it('names the navigation and marks the current entry', () => {
     const fixture = renderComponent(AppFrame, {
       navigation: [
-        { id: 'ships', label: 'Shipyard', href: '/ships', current: true },
+        { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
         { id: 'builds', label: 'Saved builds', href: '/builds' },
       ],
     });

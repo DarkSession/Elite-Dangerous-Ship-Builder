@@ -10,16 +10,16 @@ Add one shared Help · About modal to the application frame. A visible frame act
 every capability and no-build state, and it is the only entry — no other surface carries a help
 control, because the design reference draws none. Opening and closing the modal changes no route, URL
 fragment, build, storage or capability state. The modal presents the reference's own three sections
-in its own order: `ABOUT` (purpose and the separate application and bundled-Almanac versions),
-`FAQ` (the seven accepted help topics) and `LICENCE` (the reference's own three-line summary of what
-covers what, then the exact project-specific Frontier disclaimer extracted from the root `LICENSE`).
+in its own order: `ABOUT` (purpose, maintainer, Almanac provenance and the separate application and
+bundled-Almanac versions), `FAQ` (the two accepted help topics) and `LICENCE` (the four-line summary of what covers what, then
+the exact project-specific Frontier disclaimer extracted from the root `LICENSE`).
 The modal draws no control other than its close and offers no external navigation — **amended
 2026-08-25**, when the additions the reference does not draw were withdrawn.
 
 A build-time Node generator validates the root and installed-package artifacts, extracts the one
 permitted legal excerpt without maintaining a second copy, classifies release/non-release identity,
 and emits an immutable TypeScript manifest imported by the initial Angular bundle. A companion
-release gate mechanically requires exactly one definition for each of FR-010's seven help topics,
+release gate mechanically requires exactly one definition for each of FR-010's help topics,
 complete shipped-locale messages and at least one resolvable governing accepted feature requirement
 or constitution principle per topic; it emits a separate immutable browser-topic catalogue containing
 only validated IDs and message keys, while content review checks each answer against its sources.
@@ -65,10 +65,10 @@ configuration or external navigation of any kind; only the exact project-specifi
 disclaimer is embedded; source terms remain distinct from the application MIT grant; versions come
 from shipped manifests and are the only two identity facts displayed; no document horizontal
 scrolling; one dark tokenised theme; every application-owned string is localised; untranslated legal
-text carries its own `lang`; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+text carries its own `lang`; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
 2.4.11
 
-**Scale/Scope**: One shared modal and dialog state; one frame entry surface; exactly seven accepted
+**Scale/Scope**: One shared modal and dialog state; one frame entry surface; exactly two accepted
 help-topic definitions, each with unique identity and non-empty governing references; application,
 build and Almanac identity facts; one exact Frontier excerpt; one repository-licence destination; two
 required mirrored Almanac source-distribution artifacts
@@ -91,7 +91,7 @@ requested._
 | Principle                               | Design evidence                                                                                                                                         | Status                 |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | I. Client-Side Only                     | Help is compiled into the static app shell; dialog state is memory-only; external links require explicit activation and carry no build data.            | PASS                   |
-| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; the `almanacOwnership` topic claims only the package's catalogue/calculation role.               | PASS                   |
+| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; the `ABOUT` provenance sentence claims only the package's catalogue/calculation role.            | PASS                   |
 | III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close intent.                   | PASS                   |
 | IV. Lossless, Honest Builds             | Help never mutates a build; exact source text and shipped versions are validated; unavailable or ambiguous build metadata blocks release.               | PASS                   |
 | V. Desktop, Tablet and Mobile           | Centered wide modal becomes a complete narrow sheet; shared dialog semantics, touch sizing, zoom/reflow, dual engines and axe are part of the contract. | PASS                   |
@@ -218,7 +218,7 @@ are:
 - Use the reference's single grouped modal, not the old plan's `/help` route, and the reference's own
   section order. The frame action dispatches one store intent, so the current capability, URL and
   build remain intact.
-- Keep seven accepted help topics as localised application messages derived from the constitution
+- Keep the accepted help topics as localised application messages derived from the constitution
   and accepted feature contracts. Each exact topic ID occurs once and carries non-empty tooling-only
   references to the governing accepted requirement or principle. Structural checks validate the
   set and references; required content review validates the claims against them. Missing, duplicate,
@@ -253,7 +253,7 @@ No planning clarification marker or unresolved upstream dependency remains.
   resolution, exact extraction, byte/hash checks, source-distribution mirrors, URL validation,
   release classification and failure behavior.
 - [contracts/help-navigation.md](./contracts/help-navigation.md) freezes modal ownership, the single
-  frame entry, the reference's information order, the exact seven accepted help records and
+  frame entry, the reference's information order, the exact accepted help records and
   governing-reference map, the licence summary and excerpt, the absence of any external navigation
   and state preservation.
 - [design/screen-inventory.md](./design/screen-inventory.md) maps every FR to the application-frame
@@ -286,7 +286,7 @@ Phase 1 introduces no server, runtime metadata request, telemetry, build-state f
 data, package correction, translated legal copy, second theme or route transition. The exact
 Frontier excerpt remains traceable to the root `LICENSE`; package redistribution documents remain
 traceable to the installed package; missing or contradictory inputs block release instead of
-degrading at runtime. The exact seven help definitions are unique, complete in every shipped locale
+degrading at runtime. The help definitions are unique, complete in every shipped locale
 and each traceable to a non-empty governing-reference set; contradictory or unsupported help blocks
 release. Every FR has an owning surface and a dual-engine responsive/accessibility validation path.
 The modal's single legal-details link is identified, allowlisted and free of application/build

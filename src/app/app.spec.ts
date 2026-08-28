@@ -10,12 +10,18 @@ import germanCatalogue from './i18n/locales/de.json';
 import { LocaleStore } from './i18n/locale.store';
 import { AnnouncementService } from './ui/announcements/announcement.service';
 import { HelpPresenter } from './application/help/help.presenter';
+import { HELP_MANIFEST } from './platform/build/help-manifest.generated';
+import { EDSB_UPDATE_APPLIED_KEY } from './platform/storage/storage-keys';
+import { MemoryStorage, provideMemoryStorage } from './platform/storage/storage.spec-helpers';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideLocalization()],
+      // The shell holds the update store, which reads the session area for the
+      // marker a restart leaves behind. In-memory here, so a test never sees a
+      // marker another test wrote.
+      providers: [provideLocalization(), ...provideMemoryStorage(new MemoryStorage())],
     }).compileComponents();
   });
 
@@ -154,6 +160,9 @@ class FakeUpdates {
   activations = 0;
   reloads = 0;
 
+  /** Whether there is a page to start over. False stands in for no window. */
+  restartable = true;
+
   #listener: ((event: VersionEvent) => void) | null = null;
   #grace: (() => void) | null = null;
 
@@ -170,7 +179,7 @@ class FakeUpdates {
 
   reload(): boolean {
     this.reloads += 1;
-    return true;
+    return this.restartable;
   }
 
   every(): () => void {
@@ -212,14 +221,20 @@ function stubNativeDialog(): void {
 
 describe('App and a newly published version', () => {
   let updates: FakeUpdates;
+  let sessionArea: MemoryStorage;
 
   beforeEach(async () => {
     stubNativeDialog();
     updates = new FakeUpdates();
+    sessionArea = new MemoryStorage();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideLocalization(), { provide: ApplicationUpdateAdapter, useValue: updates }],
+      providers: [
+        provideLocalization(),
+        { provide: ApplicationUpdateAdapter, useValue: updates },
+        ...provideMemoryStorage(new MemoryStorage(), sessionArea),
+      ],
     }).compileComponents();
   });
 
@@ -268,12 +283,21 @@ describe('App and a newly published version', () => {
     expect(fixture.componentInstance.updateOverlay()).toBe(true);
     expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.notice']);
     expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.detail']);
-    // Both ways out of it are named on it: go now, or not now.
-    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.now']);
-    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.postpone']);
     // Nothing has been replaced yet.
     expect(updates.activations).toBe(0);
     expect(updates.reloads).toBe(0);
+  });
+
+  it('offers nothing to press on the overlay, because the restart is not a question', () => {
+    // Owner's decision, 2026-08-27. The layer is drawn with no dismiss label,
+    // which takes its control, its Escape and its ground away together — a
+    // time limit a Commander cannot stop, which is why constitution V names
+    // WCAG 2.2.1 among the excluded criteria.
+    const fixture = render('ready');
+    const overlay = (fixture.nativeElement as HTMLElement).querySelectorAll('dialog[open]');
+
+    expect(overlay.length).toBe(1);
+    expect(overlay[0]?.querySelectorAll('button').length).toBe(0);
   });
 
   it('says the same thing once, on the overlay and not on the shell behind it', () => {
@@ -285,19 +309,20 @@ describe('App and a newly published version', () => {
     expect(fixture.componentInstance.updateAction()).toBeNull();
   });
 
-  it('offers the version again on the shell once the overlay is postponed', async () => {
+  it('offers the version on the shell when there was no page to start over', async () => {
+    // The one path back to the shell control. A frame that may not navigate
+    // itself leaves a session on the old version with the overlay down, and a
+    // control it can reach is all it has left.
+    updates.restartable = false;
     const fixture = render('ready');
 
-    fixture.componentInstance.postponeUpdate();
+    updates.expire();
+    await settled();
     fixture.detectChanges();
 
     expect(fixture.componentInstance.updateOverlay()).toBe(false);
     expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.ready.notice']);
     expect(actionNamed(fixture, BUNDLED_ENGLISH['update.ready.action'])).not.toBeNull();
-    // And nothing restarts behind the dismissal.
-    updates.expire();
-    await settled();
-    expect(updates.reloads).toBe(0);
   });
 
   it('activates the waiting version and starts over when the grace period runs out', async () => {
@@ -313,34 +338,79 @@ describe('App and a newly published version', () => {
     expect(updates.reloads).toBe(1);
   });
 
-  it('goes at once when a Commander would rather not wait it out', async () => {
-    const fixture = render('ready');
+  it('says the update was applied in the session that came up after the restart', () => {
+    // The overlay above went with the page that drew it. This is the half a
+    // Commander who looked away is certain to read, and it names the version
+    // they landed on.
+    sessionArea.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+    const fixture = render();
 
-    fixture.componentInstance.applyUpdateNow();
-    await settled();
+    expect(fixture.componentInstance.updateApplied()).toBe(true);
+    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applied.notice']);
+    expect(textIn(fixture)).toContain(HELP_MANIFEST.build.applicationVersion);
 
-    expect(updates.activations).toBe(1);
-    expect(updates.reloads).toBe(1);
+    fixture.componentInstance.acknowledgeUpdate();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.updateApplied()).toBe(false);
   });
 
-  it('announces a waiting version politely, once, and says only what stays true', () => {
-    // The published version, not the restart. An announcement is spoken once
-    // and cannot be taken back, and the restart can be called off — so the
-    // sentence that reaches the outlet is the one that survives a "not now".
+  it('says nothing into the outlet while the overlay stands over it', () => {
+    // The overlay is a modal layer, so the page behind it — the outlet
+    // included, it is mounted inside the frame — is inert and out of the
+    // accessibility tree. An announcement published here is one no reader is
+    // ever offered, and the overlay is what speaks in that state.
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
+
+    expect(fixture.componentInstance.updateOverlay()).toBe(true);
+    expect(announcements.polite()).toBe('');
+    expect(announcements.assertive()).toBe('');
+  });
+
+  it('announces a waiting version politely, once, and says only what stays true', async () => {
+    // The published version, not the restart. An announcement is spoken once
+    // and cannot be taken back, so this waits for the overlay to come down on
+    // a restart that could not be carried out: only then is there a reader to
+    // hear it and a sentence that stays true.
+    updates.restartable = false;
+    const fixture = render('ready');
+    const announcements = TestBed.inject(AnnouncementService);
+
+    updates.expire();
+    await settled();
+    fixture.detectChanges();
 
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
     expect(announcements.assertive()).toBe('');
 
+    // A further version behind the first is the same sentence for the same
+    // revision, and the overlay going up and down again does not repeat it.
+    // Asserted on what the service did with the request, not on what the outlet
+    // holds: a republished event writes the same string, so reading the outlet
+    // again would pass either way. The effect does re-run — the overlay going
+    // up and coming down is a change it tracks — and the identity is what
+    // refuses it, which is the half worth proving.
+    const published = vi.spyOn(announcements, 'announce');
+
     updates.report('ready');
     fixture.detectChanges();
+    updates.expire();
+    await settled();
+    fixture.detectChanges();
+
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
+    expect(published.mock.calls.length).toBeGreaterThan(0);
+    expect(published.mock.results.map(({ value }) => value)).not.toContain(true);
   });
 
-  it('does not republish the version event when a locale commits behind it', () => {
+  it('does not republish the version event when a locale commits behind it', async () => {
+    updates.restartable = false;
     const fixture = render('ready');
     const announcements = TestBed.inject(AnnouncementService);
+
+    updates.expire();
+    await settled();
+    fixture.detectChanges();
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['update.ready.notice']);
 
     const published = vi.spyOn(announcements, 'announce');

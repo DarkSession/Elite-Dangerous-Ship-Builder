@@ -689,20 +689,28 @@ test.describe('the compact route the reference draws', () => {
 });
 
 /**
- * The seven questions, and the two the reference asks that this cannot answer.
+ * The questions the modal answers, spelled out rather than imported.
  *
- * The identities and their message keys come from the generated catalogue, so
- * a topic renamed in the definitions is a topic this suite starts asserting
- * under its new name rather than one it silently stops checking.
+ * A topic renamed in the definitions is a topic this suite starts asserting
+ * under its new name rather than one it silently stops checking, and a topic
+ * withdrawn is one this list has to be edited to lose.
  */
-const HELP_TOPIC_KEYS = [
-  'buildLinkPrivacy',
-  'accountsUploadsTelemetry',
-  'browserPersistence',
-  'offlineAssets',
-  'completedEngineeringGrades',
-  'hullFactsAndBuildResults',
-  'almanacOwnership',
+const HELP_TOPIC_KEYS = ['browserPersistence', 'completedEngineeringGrades'] as const;
+
+/**
+ * The five withdrawn on 2026-08-27, by the words they used to be asked in.
+ *
+ * Asserted absent rather than merely dropped from the list above: a topic that
+ * came back would otherwise pass every count this suite makes, and each of
+ * these was withdrawn because the answer is somewhere a Commander already
+ * reads it.
+ */
+const WITHDRAWN_HELP_QUESTIONS = [
+  /share links expose/i,
+  /accounts, uploads or telemetry/i,
+  /what works offline/i,
+  /hull fact/i,
+  /where do the game values/i,
 ] as const;
 
 const HELP_TOPIC_TEXT = HELP_TOPIC_KEYS.map((id) => ({
@@ -724,7 +732,7 @@ async function renderedTopics(page: Page): Promise<[string, string][]> {
 }
 
 test.describe('the questions the modal answers', () => {
-  test('answers all seven, once each, in the declared order', async ({ page }) => {
+  test('answers every topic, once each, in the declared order', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
 
@@ -753,7 +761,7 @@ test.describe('the questions the modal answers', () => {
     }
   });
 
-  test('draws the same seven from the compact action layer', async ({ page }) => {
+  test('draws the same set from the compact action layer', async ({ page }) => {
     await withStockBuild(page);
 
     const inline = page.getByRole('button', { name: HELP_ACTION });
@@ -792,6 +800,16 @@ test.describe('the questions the modal answers', () => {
     // import behaviour feature 004 owns. Neither is a topic here.
     expect(text).not.toMatch(/retain(s|ed)?\s+(its|their|the)?\s*(original|real|partial)\s+roll/i);
     expect(text).not.toMatch(/coming soon|will soon|in a future (release|version)/i);
+  });
+
+  test('asks none of the five questions withdrawn from the set', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+    const text = (await helpModal(page).textContent()) ?? '';
+
+    for (const question of WITHDRAWN_HELP_QUESTIONS) {
+      expect(text).not.toMatch(question);
+    }
   });
 
   test('nests the questions under the FAQ heading rather than beside it', async ({ page }) => {
@@ -1114,6 +1132,27 @@ test.describe('which artifact a Commander is looking at', () => {
     await expect(
       helpModal(page).getByText(/live game|live catalogue|up to date|latest version/i),
     ).toHaveCount(0);
+  });
+
+  // Three sentences, in one order, before the facts. The reference draws only
+  // the first; the second is the owner's maintainer line and the third is the
+  // once-per-application Almanac credit FR-008 requires, which lived in a FAQ
+  // answer until that answer was withdrawn on 2026-08-27.
+  test('reads purpose, maintainer and provenance before the facts', async ({ page }) => {
+    await withStockBuild(page);
+    await openHelp(page);
+
+    const about = helpModal(page).locator('.help-dialog__section').first();
+    const prose = await about
+      .locator('p')
+      .evaluateAll((paragraphs) => paragraphs.map((node) => (node.textContent ?? '').trim()));
+
+    expect(prose).toEqual([
+      englishMessages['help.purpose'],
+      englishMessages['help.maintainer'],
+      englishMessages['help.provenance'],
+    ]);
+    await expect(about.locator('edsb-version-facts')).toHaveCount(1);
   });
 
   test('wraps long identities within the measure rather than sideways', async ({ page }) => {

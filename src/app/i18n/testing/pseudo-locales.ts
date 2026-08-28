@@ -301,11 +301,13 @@ export class PseudoLocaleStore extends LocaleStore {
     // container alone leaves the scrollbar, the caret and every ancestor box
     // reading the other way, which is not the condition under test.
     effect(() => {
-      this.#root.commitRootState(
-        this.effectiveLocale(),
-        this.direction(),
-        this.catalogue()['app.document-title.default'],
-      );
+      this.#root.commitRootState({
+        language: this.effectiveLocale(),
+        direction: this.direction(),
+        title: this.catalogue()['app.document-title.default'],
+        description: this.catalogue()['app.description'],
+        canonical: this.canonical(),
+      });
     });
   }
 }

@@ -71,7 +71,7 @@ local power/distributor/heat formula, raw-modifier interpretation, inferred
 null diagnosis or catalogue fallback; exact package identities; no stale mixed
 revisions; no page horizontal scrolling; one tokenized dark theme; localized
 owned text/numbers/units; touch and screen-reader operation; WCAG 2.2 AA except
-criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active loadout; one row per priority group the build uses; one line per kind of
 power consumer the package returns; three distributor capacitors; five heat scenarios and the shield

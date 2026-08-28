@@ -65,7 +65,7 @@ generate/deliver without an application network request
 schema, game-data copy, calculation, default-module lookup or historical-price retention; no server,
 telemetry or automatic payload transmission; failed/cancelled/superseded import leaves active,
 stored, URL and history state unchanged; one tokenized dark theme; all app text translatable; WCAG
-2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One draft, one candidate and one active-revision export artifact at a time; one
 accepted SLEF entry; package catalogue size/maximum-slot fixture discovered at test runtime rather

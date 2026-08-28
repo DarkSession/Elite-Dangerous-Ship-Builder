@@ -94,12 +94,14 @@ test.describe('help offline', () => {
     const modal = helpModal(page);
     await expect(modal).toBeVisible();
 
-    // Every part of it, not merely the shell: the sections, the purpose, all
-    // seven questions with their answers, and the whole licence summary.
+    // Every part of it, not merely the shell: the sections, all three ABOUT
+    // sentences, every question with its answer, and the whole licence summary.
     await expect(modal).toContainText(englishMessages['help.section.about']);
     await expect(modal).toContainText(englishMessages['help.section.faq']);
     await expect(modal).toContainText(englishMessages['help.section.licence']);
     await expect(modal).toContainText(englishMessages['help.purpose']);
+    await expect(modal).toContainText(englishMessages['help.maintainer']);
+    await expect(modal).toContainText(englishMessages['help.provenance']);
     await expect(modal).toContainText(englishMessages['help.licence.link.application']);
     await expect(modal).toContainText(englishMessages['help.licence.link.library']);
     await expect(modal).toContainText(englishMessages['help.licence.index.gameData']);
@@ -117,7 +119,7 @@ test.describe('help offline', () => {
       expect(await link.getAttribute('href')).toMatch(/^https:\/\/github\.com\//);
     }
 
-    // SC-004's help part: the same seven, in order, with complete text and
+    // SC-004's help part: the same set, in order, with complete text and
     // nothing waiting on anything.
     const topics = (await modal
       .locator('.help-dialog__topic')

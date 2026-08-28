@@ -20,19 +20,19 @@ The frame surrounds every capability, so the frame's action is the route from al
 
 ## Requirement mapping
 
-| Requirement | Application-frame entry | Help · About modal                                          | Build/source-distribution gate   |
-| ----------- | ----------------------- | ----------------------------------------------------------- | -------------------------------- |
-| FR-001      | global/no-build access  | in-place, eager, offline dialog                             | initial-bundle assertion         |
-| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy | —                                |
-| FR-003      | —                       | the reference's three-line summary above one exact excerpt  | URL/text verification            |
-| FR-004      | —                       | clearly separates MIT from package/Frontier rights          | package-mirror equality          |
-| FR-005      | —                       | renders the generated exact excerpt                         | release fails on source mismatch |
-| FR-006      | —                       | localised labels; excerpt marked in its own language        | byte/hash verification           |
-| FR-007      | —                       | separate application and Almanac versions in `ABOUT`        | manifest identity checks         |
-| FR-008      | —                       | no currency claim; ownership stated by the `FAQ` topic      | wording/manifest tests           |
-| FR-009      | —                       | _withdrawn — no package-defect action is rendered_          | —                                |
-| FR-010      | opens complete help     | all seven accepted topics in `FAQ`                          | catalogue completeness           |
-| FR-011      | universal route         | complete common destination                                 | inventory coverage check         |
+| Requirement | Application-frame entry | Help · About modal                                                      | Build/source-distribution gate   |
+| ----------- | ----------------------- | ----------------------------------------------------------------------- | -------------------------------- |
+| FR-001      | global/no-build access  | in-place, eager, offline dialog                                         | initial-bundle assertion         |
+| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy             | —                                |
+| FR-003      | —                       | the four-line summary above one exact excerpt                           | URL/text verification            |
+| FR-004      | —                       | clearly separates MIT from package/Frontier rights                      | package-mirror equality          |
+| FR-005      | —                       | renders the generated exact excerpt                                     | release fails on source mismatch |
+| FR-006      | —                       | localised labels; excerpt marked in its own language                    | byte/hash verification           |
+| FR-007      | —                       | separate application and Almanac versions in `ABOUT`                    | manifest identity checks         |
+| FR-008      | —                       | no currency claim; ownership and who maintains it, each once in `ABOUT` | wording/manifest tests           |
+| FR-009      | —                       | _withdrawn — no package-defect action is rendered_                      | —                                |
+| FR-010      | opens complete help     | both accepted topics in `FAQ`                                           | catalogue completeness           |
+| FR-011      | universal route         | complete common destination                                             | inventory coverage check         |
 
 Every live FR has at least one user-facing owner or release-gate owner. No requirement depends on a
 standalone help page or on a per-surface control.
@@ -52,8 +52,8 @@ it.
 ## Accessibility, responsive and localisation baseline
 
 These are inherited obligations, not new requirements. They are governed by feature 011's accepted
-FR-011 (available on desktop, tablet and mobile in portrait and landscape), FR-012 (in-scope WCAG 2.2
-AA contrast and target size), FR-015 (conformance statements name the excluded criteria) and FR-021
+FR-011 (available on desktop, tablet and mobile in portrait and landscape), FR-012 (in-scope
+contrast and target size), FR-015 (conformance statements name the excluded criteria) and FR-021
 (every primary journey runs at three viewports in Chromium and Firefox), and by constitution
 principles V, VI and VII. They are listed here so every task that exists to satisfy them maps to an
 accepted requirement rather than to nothing.
@@ -75,7 +75,7 @@ accepted requirement rather than to nothing.
 - Owned labels and the licence summary resolve through feature 011 localisation and survive
   expansion and RTL. The Frontier excerpt stays in a `lang="en"` region and is never mirrored or
   translated.
-- Conformance is reported qualified, naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+- Conformance is reported qualified, naming excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
   2.4.7 and 2.4.11. An unqualified WCAG 2.2 AA claim is prohibited (feature 011 FR-015).
 - The automated axe sweep is a floor. The manual assistive-technology protocol is the proof, and it
   is release-blocking until recorded.

@@ -43,27 +43,25 @@ one scrolling column, and that is the order built here.
 
 ### 2. ABOUT
 
-- Short localised purpose: an offline, private, client-side Elite Dangerous outfitting planner. The
-  reference's own sentence is one line above its version line.
+- Short localised purpose: what this application is, in the owner's own sentence. The reference's
+  own sentence is one line above its version line.
+- Who builds and maintains it, in one sentence under the purpose.
+- Where the game values come from: the bundled Almanac supplies the catalogue, the checks and the
+  calculations, and this application neither maintains nor corrects them. This is where the
+  once-per-application Almanac credit lives.
 - The identity facts described in [Identity facts](#identity-facts) below, in the place the
   reference draws `APP VERSION 4.2.1 · LIBRARY VERSION 3.8.0.3`.
 
-Nothing else. The reference draws a sentence and a version line, and the two provenance paragraphs
-this section once carried are withdrawn.
+Nothing else, and in that order: three sentences and then the version line.
 
 ### 3. FAQ
 
-Seven question/answer records remain visible in one reading sequence:
+Two question/answer records remain visible in one reading sequence:
 
-1. Do share links expose my account? — the reference's own question
-2. Are there accounts, uploads or telemetry?
-3. Where are my builds stored? — the reference's own question and its own answer
-4. What works offline?
-5. Why do my engineered stats differ in game? — the reference's own question
-6. What is a hull fact and what is a build result?
-7. Where do the game values and calculations come from?
+1. Where are my builds stored? — the reference's own question and its own answer
+2. Why do my engineered stats differ in game? — the reference's own question
 
-Each is a heading over its own answer, so a reader moving by heading meets seven questions rather
+Each is a heading over its own answer, so a reader moving by heading meets the questions rather
 than one block of prose. A question sits closer to its own answer than the pairs sit to each other,
 which is the reference's own 4-against-11-pixel rhythm expressed in stack tokens.
 
@@ -78,7 +76,7 @@ A semantic fact group inside `ABOUT` presents two facts, which is what the refer
 
 - App version; and
 - Library version — the reference's own term for the bundled Almanac, adopted on 2026-08-26. The
-  package is credited by name in the `almanacOwnership` topic and in the licence summary; a version
+  package is credited by name in the `ABOUT` provenance sentence and in the licence summary; a version
   label is not where that credit lives.
 
 Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
@@ -91,9 +89,12 @@ action appears either: FR-009 is withdrawn and the reference draws no such contr
 
 ### 4. LICENCE
 
-- The reference's own three-line summary of what covers what, one localised line each: the
-  application's code under MIT; the game data and imagery under Frontier's media-usage rules; the
-  typefaces under the SIL Open Font Licence.
+- A four-line summary of what covers what, one localised line each: the application's code under
+  MIT; the bundled Almanac under its own terms; the game data and imagery under Frontier's
+  media-usage rules; the typefaces under the SIL Open Font Licence. The reference draws the first,
+  third and fourth; the library's terms are a separate claim from the application's and are owed
+  whether or not the reference thought to draw them (`contracts/help-navigation.md`, amended
+  2026-08-26).
 - The exact generated disclaimer appears as plain text in a `lang="en"` region, with no translation,
   Markdown interpretation, automatic linking or alteration.
 - No complete legal document appears, and **no external action appears at all**. The modal has no
@@ -138,7 +139,7 @@ never draws. A preview state may now declare the prose the stage puts around it,
 is the first to use it.
 
 Conformance for this section is stated under the same qualification as everything else in this
-feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
+feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
 which the constitution excludes.
 
 ### Known gap: EDAssets interface marks
@@ -176,24 +177,25 @@ it is recorded here for the pass that resolves it.
 
 ## States
 
-| State                    | Presentation                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| Closed                   | current capability plus the frame's visible Help entry; no hidden duplicate dialog landmark |
-| Open                     | complete content: purpose, two version facts, seven topics, summary and disclaimer          |
-| Global invocation        | normal top-of-modal position                                                                |
-| Offline                  | identical help, facts, topics and disclaimer; nothing left to fetch and no network warning  |
-| Alternate locale         | all owned text translated; exact disclaimer unchanged and marked English                    |
-| Expanded/RTL fixture     | expanded/RTL section reflows around a stable English source region without truncation       |
-| Reduced motion           | no essential transition; state change remains immediate and textual                         |
-| Missing/invalid artifact | no runtime state; generation/release fails                                                  |
+| State                    | Presentation                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| Closed                   | current capability plus the frame's visible Help entry; no hidden duplicate dialog landmark       |
+| Open                     | complete content: three `ABOUT` sentences, two version facts, both topics, summary and disclaimer |
+| Global invocation        | normal top-of-modal position                                                                      |
+| Offline                  | identical help, facts, topics and disclaimer; nothing left to fetch and no network warning        |
+| Alternate locale         | all owned text translated; exact disclaimer unchanged and marked English                          |
+| Expanded/RTL fixture     | expanded/RTL section reflows around a stable English source region without truncation             |
+| Reduced motion           | no essential transition; state change remains immediate and textual                               |
+| Missing/invalid artifact | no runtime state; generation/release fails                                                        |
 
 ## Accessibility behavior
 
-**Conformance for this screen reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+**Conformance for this screen reads “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11.”** That is feature 011's qualified statement and it is repeated here rather than
 referred to, because a conformance claim a reader has to follow a link to qualify is a claim that
-gets quoted without its qualification. The exclusions are the keyboard and focus-order criteria the
-application does not claim; everything below is claimed.
+gets quoted without its qualification. Seven of the exclusions are the keyboard and focus-order
+criteria the application does not claim; the eighth, 2.2.1 Timing Adjustable, is narrower still and
+belongs to the update restart alone, which this screen does not draw. Everything below is claimed.
 
 - One labelled dialog; background content is isolated while open. The layer is a native `dialog`
   opened with `showModal()`, so modality is the element's own `:modal` state rather than an
@@ -201,7 +203,7 @@ application does not claim; everything below is claimed.
   it, and asserted that way in the journey.
 - Heading levels create a complete order for ABOUT, FAQ and LICENCE.
 - Heading levels nest: each `FAQ` question is a heading under the section's own, so heading
-  navigation reaches the seven questions.
+  navigation reaches every question.
 - Version facts use semantic terms/definitions. Every fact is text, not color or position.
 - The disclaimer's language is declared on the region itself, so it is announced in the language it
   was written in whatever the interface language is.

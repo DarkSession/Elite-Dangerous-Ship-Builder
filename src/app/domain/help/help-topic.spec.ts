@@ -12,16 +12,19 @@ const complete = (): BrowserHelpTopic[] =>
   }));
 
 describe('the help topic catalogue', () => {
-  it('is the exact seven accepted identities', () => {
-    expect(HELP_TOPIC_IDS).toEqual([
+  it('is the exact two accepted identities', () => {
+    expect(HELP_TOPIC_IDS).toEqual(['browserPersistence', 'completedEngineeringGrades']);
+  });
+
+  it('holds no withdrawn identity', () => {
+    const withdrawn = [
       'buildLinkPrivacy',
       'accountsUploadsTelemetry',
-      'browserPersistence',
       'offlineAssets',
-      'completedEngineeringGrades',
       'hullFactsAndBuildResults',
       'almanacOwnership',
-    ]);
+    ];
+    expect(HELP_TOPIC_IDS.filter((id) => withdrawn.includes(id))).toEqual([]);
   });
 
   it('holds no duplicate identity', () => {
@@ -33,13 +36,13 @@ describe('the help topic catalogue', () => {
     expect(assertCompleteHelpTopicCatalogue(topics)).toBe(topics);
   });
 
-  it('rejects a missing topic rather than publishing six', () => {
-    expect(() => assertCompleteHelpTopicCatalogue(complete().slice(1))).toThrow(/exactly 7 topics/);
+  it('rejects a missing topic rather than publishing one', () => {
+    expect(() => assertCompleteHelpTopicCatalogue(complete().slice(1))).toThrow(/exactly 2 topics/);
   });
 
   it('rejects a duplicated topic', () => {
     const topics = complete();
-    topics[3] = topics[2]!;
+    topics[1] = topics[0]!;
     expect(() => assertCompleteHelpTopicCatalogue(topics)).toThrow(/out of order/);
   });
 
@@ -51,7 +54,7 @@ describe('the help topic catalogue', () => {
 
   it('rejects a blank question or answer key', () => {
     const topics = complete();
-    topics[4] = { ...topics[4]!, answerKey: '  ' };
+    topics[1] = { ...topics[1]!, answerKey: '  ' };
     expect(() => assertCompleteHelpTopicCatalogue(topics)).toThrow(/blank question or answer key/);
   });
 });

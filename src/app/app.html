@@ -44,21 +44,34 @@
   Mounted beside the frame rather than inside a capability, because the version
   a session is running belongs to no screen in particular.
 
-  It is an ordinary layer, so it is modal, it takes focus, it makes the page
-  behind it inert, and its dismissal — Escape, the ground around it, or the
-  named control — is a cancel, which here means "not now". That dismissal is
-  what lets a restart happen on a clock at all: a time limit stands only where
-  a Commander is warned before it expires and can call it off (WCAG 2.2.1).
+  It is a layer with no dismiss label, which is what leaves it with no control,
+  no Escape and no ground to click: the restart is announced rather than asked
+  about, so there is nothing here to answer. That is a time limit a Commander
+  cannot stop, and constitution V names WCAG 2.2.1 among the excluded criteria
+  for this one mechanism.
 -->
 <edsb-layer
   [open]="updateOverlay()"
   [title]="updateOverlayTitle()"
   [description]="updateOverlayNotice()"
-  [dismissLabel]="updateOverlayPostpone()"
-  (dismissed)="postponeUpdate()"
+  [dismissLabel]="null"
 >
   <p class="app__update-detail">{{ updateOverlayDetail() }}</p>
-  <button class="app__update-now" type="button" (click)="applyUpdateNow()">
-    {{ updateOverlayNow() }}
-  </button>
+</edsb-layer>
+
+<!--
+  And the other half of the announcement, drawn by the session that came up on
+  the newer version. The overlay above is gone with the page that drew it; this
+  is the half a Commander who looked away is certain to read, and it names the
+  version they landed on. Dismissed like any other layer — nothing is pending
+  behind it, because the update is already applied.
+-->
+<edsb-layer
+  [open]="updateApplied()"
+  [title]="updateAppliedTitle()"
+  [description]="updateAppliedNotice()"
+  [dismissLabel]="updateAppliedDismiss()"
+  (dismissed)="acknowledgeUpdate()"
+>
+  <p class="app__update-detail">{{ updateAppliedDetail() }}</p>
 </edsb-layer>

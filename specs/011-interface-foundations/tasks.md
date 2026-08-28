@@ -381,6 +381,84 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 - No task lowers the 80% coverage thresholds, drops a browser or viewport project, or skips a test to
   reach a green build
 
+## Phase 9: The restart stops asking, 2026-08-27
+
+> The overlay the 2026-08-26 reversal introduced still put a question on screen — `Restart now` or
+> `Not now` — and the owner's decision is that a published update is applied, not offered. The
+> Commander is told what is happening, and told again on the other side of the restart.
+
+- [x] T131 Take the two controls off the overlay. `Layer` gains a `dismissLabel` of `null`, which is
+      what leaves a layer with no control, no Escape and no ground to click; `update.applying.now`
+      and `update.applying.postpone` go with them, and `ApplicationUpdateStore.postpone()` goes with
+      the countdown-cancellation it existed for.
+      _One input rather than two: a label and a separate "is it dismissible" flag can disagree, and
+      a layer that offers no way out has no control to name._
+- [x] T132 Draw the other half. The restart writes a marker to `sessionStorage` immediately before
+      the reload, the session that comes up reads it, clears it and opens a layer saying the update
+      was applied and naming the version it is running. `sessionStorage` because the restart
+      replaces one tab: a Commander with four open should be told in the one that restarted.
+      The marker is taken back where `reload()` reports there was no page to start over, and it is
+      never written by the repair of an unusable cache.
+- [x] T133 Set the grace period to ten seconds. Twenty was WCAG 2.2.1's floor for the control that
+      called the restart off; with no such control the floor does not apply, and what sets the
+      number is how long the overlay's two sentences take to read.
+- [x] T134 Amend the constitution to 8.0.0: 2.2.1 Timing Adjustable joins the excluded criteria,
+      scoped by name to this restart and to nothing else, with the Sync Impact Report and the
+      "wherever conformance is stated" rule both saying eight rather than seven.
+      _A second time limit anywhere in the application needs an amendment rather than a reading of
+      this one._
+- [x] T135 Carry the eighth criterion through: `EXCLUDED_CRITERIA` in
+      `scripts/check-interface-foundations.mjs`, the conformance statements in `AGENTS.md` and
+      `specs/004-slef/plan.md` that the checker guards, this feature's own scope, story 2 item 3,
+      FR-012 and FR-015, and the ledger line that counts them. A statement naming only the seven
+      keyboard criteria now fails the checker, and a test asserts that it does.
+- [x] T136 Amend FR-025 and SC-007 to the announced restart, rewrite story 4 items 2 and 3, and
+      bring `design/application-shell.md`, `quickstart.md` and `plan.md` with them.
+- [x] T137 [P] Cover it: the layer with no way out in `containers.spec.ts`, the marker and its three
+      absences in `application-update.store.spec.ts`, the empty overlay and the arriving notice in
+      `app.spec.ts`, and the whole journey in `e2e/application-update.spec.ts` — where the two
+      postponement journeys are replaced by one that presses nothing and one that never waits the
+      overlay out. Reconcile `e2e/coverage-ledger.ts` with all of it.
+
+## Phase 10: The application says what it is, 2026-08-27
+
+> "Analyse the application and propose ways to optimize for search engines." Four routes were served
+> one title, no description, no canonical and no card, and the analysis in
+> `design/search-visibility.md` is the first deliverable rather than a by-product of the second.
+
+- [x] T138 Write the analysis. What a crawler is served on each of the four routes today, six
+      findings ranked by what they cost, and — named rather than buried — the three omissions that
+      wait on an asset or a build step: no card image, no hull pages in the sitemap, no installable
+      icon. Record what was considered and deliberately not done, prerendering first.
+      _Proposing without saying what the proposal leaves out is how a follow-up becomes a surprise._
+- [x] T139 Give a route an identity. `SITE_ORIGIN` and `canonicalAddress` in
+      `src/app/platform/browser/site-address.ts`; routes declare a `description` message key beside
+      their title key; `RouteTitleStrategy` resolves both and hands the store the route's path with
+      them. A child with no description of its own inherits the nearest ancestor's, walked rather
+      than configured, so `paramsInheritanceStrategy` does not change what every other consumer of
+      `data` sees.
+      _The canonical is built from a constant rather than from `location`: a preview canonical to
+      itself is exactly the duplicate a canonical exists to collapse._
+- [x] T140 Widen the one commit. `DocumentAdapter.commitRootState` takes a `RootDocumentState` and
+      publishes description, `og:*`, `twitter:*` and the canonical link alongside `lang`, `dir` and
+      the title; the locale store publishes it from its single commit point, so a description can
+      never be left in the language the title has just moved out of.
+- [x] T141 [P] Ship the static half. The English defaults in `src/index.html`, plus
+      `public/robots.txt`, `public/sitemap.xml`, `public/manifest.webmanifest` and a JSON-LD
+      `WebApplication` node. Relative `start_url`, `scope` and icon paths, for the same reason the
+      locale catalogues' paths are relative. Prefetch the manifest in `ngsw-config.json`.
+- [x] T142 Gate the drift. `searchMetadataViolations` reconciles the four files against `SITE_ORIGIN`
+      and against the route table, and the cross-origin rule stops reporting a `rel="canonical"` as
+      a request — a declared relationship opens no connection, while `preconnect`, `manifest` and
+      `stylesheet` still do and stay caught.
+      _Four files now repeat the origin and the route list. A route added with no sitemap entry
+      fails nothing at runtime; it fails months later in a search result nobody is looking at._
+- [x] T143 [P] Cover it: `site-address.spec.ts`, the head writes in `document.adapter.spec.ts`, the
+      key resolution and inheritance in `route-title.strategy.spec.ts`, the widened commit in
+      `locale.store.spec.ts`, both directions of the new rule in
+      `check-interface-foundations.test.mjs`, and the journey in `e2e/search-visibility.spec.ts`.
+      Reconcile `e2e/coverage-ledger.ts` with FR-027 and SC-008.
+
 ## Notes
 
 - [P] tasks touch different files and have no incomplete dependency

@@ -84,6 +84,26 @@ export interface HelpLicenceLink {
  * the modal says.
  */
 export interface HelpAboutView {
+  /**
+   * Who builds this, under the sentence saying what it is.
+   *
+   * The reference draws no such line. It is here at the owner's request of
+   * 2026-08-27: a bench a Commander found through a shared link has nobody's
+   * name on it anywhere else, and an application with no author reads as one
+   * nobody stands behind.
+   */
+  readonly maintainer: string;
+  /**
+   * Where the game values come from, in one sentence.
+   *
+   * Feature 002's voice ruling of 2026-08-22 stopped some thirty
+   * Commander-facing strings naming the Almanac, on the grounds that the credit
+   * belongs to this feature and is made once per application. This sentence is
+   * that once. Withdrawing it, or moving it into a help topic that a later pass
+   * could withdraw, leaves the application crediting the Almanac nowhere
+   * (FR-008).
+   */
+  readonly provenance: string;
   readonly facts: readonly VersionFact[];
 }
 
@@ -156,7 +176,7 @@ export class HelpPresenter {
   }));
 
   /**
-   * The two identity facts the reference draws.
+   * What `ABOUT` says beside the two identity facts the reference draws.
    *
    * Which application, and which catalogue it was bundled with. Both are terms
    * with values rather than one run-together line, because each value means
@@ -164,6 +184,8 @@ export class HelpPresenter {
    * been told a number, not a version.
    */
   readonly #about = computed<HelpAboutView>(() => ({
+    maintainer: this.#messages.message('help.maintainer'),
+    provenance: this.#messages.message('help.provenance'),
     facts: [
       {
         id: 'application',
@@ -179,14 +201,15 @@ export class HelpPresenter {
   }));
 
   /**
-   * The seven topics, resolved once and in the order they are read.
+   * The topics, resolved once and in the order they are read.
    *
    * The catalogue is re-asserted here rather than trusted. It is generated, and
    * generated correctly, but the assertion costs nothing and the failure it
    * prevents is the one that matters: a modal that quietly dropped a topic it
    * could not resolve looks exactly like a modal for an application that does
-   * not do that thing. A Commander reading a FAQ with no answer about build
-   * links would reasonably conclude there was nothing to say about build links.
+   * not do that thing. A Commander reading a FAQ with no answer about where
+   * their builds are kept would reasonably conclude there was nothing to say
+   * about it.
    *
    * A blank or unresolved message is the same failure wearing different
    * clothes, so it throws here too. `MessageService` never echoes a key — an

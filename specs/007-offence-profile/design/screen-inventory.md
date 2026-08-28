@@ -89,5 +89,5 @@ The exact component and state obligations are in
 - Every meaningful state runs in Chromium and Firefox across all five layout profiles with axe;
   manual screen-reader and actual-zoom protocols remain required.
 
-Where conformance is stated, use: "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+Where conformance is stated, use: "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11."

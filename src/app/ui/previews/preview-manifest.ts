@@ -1221,7 +1221,7 @@ registerPreview({
       {
         routeContext: 'Anaconda explorer',
         navigation: [
-          { id: 'ships', label: 'Shipyard', href: '/ships', current: true },
+          { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
           { id: 'builds', label: 'Saved builds', href: '/builds' },
         ],
         actions: [
@@ -4182,14 +4182,18 @@ const HELP_ABOUT_FACTS = [
   },
 ];
 
-const HELP_ABOUT = { facts: HELP_ABOUT_FACTS };
+const HELP_ABOUT = {
+  maintainer: BUNDLED_ENGLISH['help.maintainer'],
+  provenance: BUNDLED_ENGLISH['help.provenance'],
+  facts: HELP_ABOUT_FACTS,
+};
 
 /**
- * All seven questions, read from the generated catalogue and the bundled
- * English messages rather than typed in here.
+ * Every question, read from the generated catalogue and the bundled English
+ * messages rather than typed in here.
  *
  * A catalogue page that listed its own copy of the questions would keep
- * rendering seven of them on the day the modal started rendering six.
+ * rendering the old set on the day the modal started rendering a new one.
  */
 const HELP_TOPIC_VIEWS = HELP_TOPICS.map((topic) => ({
   id: topic.id,
@@ -4378,10 +4382,11 @@ registerPreview({
         'wide viewports centre a bounded dialog; narrow ones raise a full-width sheet',
         'a short viewport and 400% zoom take the full-height treatment rather than clipping',
         'reduced motion makes open and close immediate without removing content',
+        'ABOUT reads purpose, maintainer and Almanac provenance before its facts',
         'ABOUT names the application version and the bundled Almanac as separate facts',
-        'FAQ answers all seven questions, once each, in the order they are declared',
+        'FAQ answers both questions, once each, in the order they are declared',
         'each question is a heading over its own answer, never one run of prose',
-        'LICENCE opens with the three-line summary of what covers what',
+        'LICENCE opens with the four-line summary of what covers what',
         'LICENCE then carries the exact Frontier notice once, marked as English',
         'the modal offers no link out of the application',
       ],

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Proves the seven Help topics before letting any of them reach a browser.
+ * Proves the declared Help topics before letting any of them reach a browser.
  *
  * A help answer is a claim this application makes about itself, and the only
  * thing separating a useful one from a confident invention is whether anything
@@ -79,7 +79,7 @@ export function interpolationVariables(message) {
 }
 
 /**
- * Confirms the declared set is exactly the seven, once each, in order.
+ * Confirms the declared set is exactly the required ids, once each, in order.
  *
  * Checked against `HELP_TOPIC_IDS` rather than against a count, so a definition
  * file that swapped two topics or renamed one fails here and names which.

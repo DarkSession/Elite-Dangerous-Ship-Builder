@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { reachShellAction } from './shell';
+import { reachShellLink } from './shell';
+import { HELP_MANIFEST } from '../src/app/platform/build/help-manifest.generated';
 
 /**
  * The update journey (US4).
@@ -23,18 +24,28 @@ const UPDATE_NOTICE = 'A newer version of this application has been published.';
 /** The overlay's own name, which is how a reader finds it. */
 const UPDATE_OVERLAY_TITLE = 'Updating';
 
+/** The name of the notice the session that came up after the restart draws. */
+const UPDATE_APPLIED_TITLE = 'Updated';
+
+/** What that notice says. Neither title is a substring of the other. */
+const UPDATE_APPLIED_NOTICE = 'This session restarted on the newer version that was published.';
+
 /**
  * The overlay a newer version puts up before it restarts the page under it.
  *
- * Found as the named modal rather than by its sentence, and both halves of that
- * matter. The sentence is also published to the polite outlet, so text alone
- * matches twice; and the layer is mounted beside the frame whether it is open or
- * not, so a text match inside it finds a closed layer as readily as an open one.
- * A dialog that is not open is not in the accessibility tree at all, which is
- * what makes this the same locator for "it is up" and for "there is none".
+ * Found as the named modal rather than by its sentence, because the layer is
+ * mounted beside the frame whether it is open or not: a text match inside it
+ * finds a closed layer as readily as an open one. A dialog that is not open is
+ * not in the accessibility tree at all, which is what makes this the same
+ * locator for "it is up" and for "there is none".
  */
 function restartWarning(page: Page): Locator {
   return page.getByRole('dialog', { name: UPDATE_OVERLAY_TITLE });
+}
+
+/** The other half of the announcement, drawn by the session that came up. */
+function appliedNotice(page: Page): Locator {
+  return page.getByRole('dialog', { name: UPDATE_APPLIED_TITLE });
 }
 
 /**
@@ -106,24 +117,6 @@ async function staysAbsent(page: Page): Promise<void> {
   expect(raised).toBe(false);
 }
 
-/**
- * The same assertion, for the warning a postponed session must not see again.
- *
- * Sized past the grace period rather than against the poll above: what would
- * falsify "asked once" is the countdown coming back, and a window shorter than
- * the countdown could not have caught it.
- */
-async function staysAbsentAsAWarning(page: Page): Promise<void> {
-  const raised = await restartWarning(page)
-    .waitFor({ state: 'visible', timeout: 25_000 })
-    .then(
-      () => true,
-      () => false,
-    );
-
-  expect(raised).toBe(false);
-}
-
 /** Waits until a service worker is actually controlling the page. */
 async function waitForController(page: Page): Promise<void> {
   await page.waitForFunction(
@@ -169,29 +162,43 @@ test.describe('a newly published version', () => {
     // period is still ahead of it, and the short waits after. A scan that
     // started late enough would be scanning the reload.
     //
-    // The overlay and the controls on it are a rendered product state like any
-    // other, so they are scanned like any other.
+    // The overlay is a rendered product state like any other, so it is scanned
+    // like any other.
     await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applying' });
+  });
 
-    // The warning stands before anything is replaced. A restart on a clock is
-    // only allowed where there was time to read the warning and call it off
-    // (WCAG 2.2.1), so the seconds after it appears are seconds in which the
-    // page is still the page the Commander was on.
+  test('offers nothing to press, because the restart is not a question', async ({ page }) => {
+    // The overlay says what is happening rather than asking anything, so it
+    // carries nothing to answer with: the layer is drawn with no dismiss label,
+    // which takes its control, its Escape and its ground together. That is a
+    // time limit a Commander cannot hold, and constitution V names WCAG 2.2.1
+    // among the excluded criteria for this one mechanism.
+    await openControlledSession(page);
+
+    await publish(page);
+    await returnToTheTab(page);
+    const overlay = restartWarning(page);
+    await expect(overlay).toBeVisible({ timeout: 30_000 });
+
+    await expect(overlay.getByRole('button')).toHaveCount(0);
+
+    // The page under it is still the page the Commander was on: the overlay
+    // stands before anything is replaced.
     const reloaded = page.waitForEvent('load', { timeout: 2_000 }).then(
       () => true,
       () => false,
     );
     expect(await reloaded).toBe(false);
-    await expect(restartWarning(page)).toBeVisible();
+    await expect(overlay).toBeVisible();
 
     // And the shell behind it says nothing of its own. One sentence, in one
     // place, is the whole of what a Commander is being told.
     await expect(standingNotice(page)).toHaveCount(0);
   });
 
-  test('restarts the session on its own when the warning is left standing', async ({ page }) => {
+  test('restarts by itself, and says on arrival that it did', async ({ page }, testInfo) => {
     // Slow because of what it does, not because of the machine: the grace
-    // period it waits out is twenty seconds of product behaviour, and two
+    // period it waits out is ten seconds of product behaviour, and two
     // controlled loads bracket it. The default budget is calibrated on a test
     // that does not wait for a clock (`playwright.config.ts`).
     test.setTimeout(150_000);
@@ -202,14 +209,36 @@ test.describe('a newly published version', () => {
     await returnToTheTab(page);
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
-    // Nothing is pressed. The grace period runs out and the page starts over on
-    // the newer version by itself (FR-025) — no cache-defeating reload anywhere
-    // in that journey.
+    // Nothing is pressed, because there is nothing to press. The grace period
+    // runs out and the page starts over on the newer version by itself
+    // (FR-025) — no cache-defeating reload anywhere in that journey.
     await page.waitForEvent('load', { timeout: 60_000 });
     await expect(page.getByRole('main')).toBeVisible();
     await waitForController(page);
     await expect(restartWarning(page)).toHaveCount(0);
     await expect(standingNotice(page)).toHaveCount(0);
+
+    // The other half of the announcement. The overlay went with the page that
+    // drew it, and this is the half a Commander who looked away is certain to
+    // read.
+    const applied = appliedNotice(page);
+    await expect(applied).toBeVisible();
+    await expect(applied).toContainText(UPDATE_APPLIED_NOTICE);
+    // And which version it landed on, which is the half that tells a Commander
+    // the restart delivered something rather than merely happened. Read from
+    // the manifest this build was made with rather than written here, so a
+    // stamped patch number does not have to be kept in step by hand.
+    await expect(applied).toContainText(HELP_MANIFEST.build.applicationVersion);
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applied' });
+
+    // Dismissed by its own named control, and gone for good: a later navigation
+    // in the same session does not meet it again.
+    await applied.getByRole('button').first().click();
+    await expect(applied).toHaveCount(0);
+
+    await reachShellLink(page, /^open saved build$/i);
+    await expect(page).toHaveURL(/\/builds/);
+    await expect(appliedNotice(page)).toHaveCount(0);
 
     // What this cannot show is that activation happened: the stood-in
     // deployment changes only the manifest's stamp, so no asset URL moves and
@@ -225,67 +254,38 @@ test.describe('a newly published version', () => {
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
   });
 
-  test('is held back, and applied later, when the Commander says not now', async ({
+  test('is what the next start is served, even when nobody waits the overlay out', async ({
     page,
-  }, testInfo) => {
-    // Slow for the same reason, from the other side: proving the warning does
-    // not come back means outliving the countdown that would have brought it.
-    test.setTimeout(150_000);
-
-    await openControlledSession(page);
-
-    await publish(page);
-    await returnToTheTab(page);
-    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
-
-    // The simple action the rule asks for. Taking it puts the session back
-    // exactly where it stood, with the version still waiting and the sentence
-    // that says so back on the shell.
-    await page.getByRole('button', { name: /^not now$/i }).click();
-    await expect(restartWarning(page)).toHaveCount(0);
-    await expect(standingNotice(page)).toBeVisible();
-
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'update-available' });
-
-    // And it stays held back. A Commander who has answered once is not asked
-    // again for the same version.
-    await staysAbsentAsAWarning(page);
-
-    await reachShellAction(page, /^update now$/i);
-
-    await expect(page.getByRole('main')).toBeVisible();
-    await waitForController(page);
-    await expect(standingNotice(page)).toHaveCount(0);
-  });
-
-  test('is what the next start is served, even when nobody applies it', async ({ page }) => {
-    // Two controlled loads and a ten-second absence window, on top of a warning
-    // that has to be answered before either.
+  }) => {
+    // Two controlled loads and a ten-second absence window.
     test.setTimeout(120_000);
 
     await openControlledSession(page);
 
+    // Published and noticed, so the worker has the newer version downloaded and
+    // the overlay is up. Then the page is started again from under it, well
+    // inside the ten seconds the overlay stands: nobody waits the restart out,
+    // and the session never applies it. What that session is served next is
+    // the clause under test (FR-025).
     await publish(page);
     await returnToTheTab(page);
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
-    await page.getByRole('button', { name: /^not now$/i }).click();
-    await expect(standingNotice(page)).toBeVisible();
 
-    // The Commander leaves the notice alone and comes back later. Leaving it
-    // costs nothing: the newer version is downloaded already, and a session
-    // that starts again is served it (FR-025). Nothing was pressed, and the
-    // restart still delivered — which is the whole of the promise.
-    //
-    // Which version a fresh client is handed is exactly what this clause is
-    // about, so the absence gets a window: a session served the superseded
-    // version would ask, find the newer manifest and say so within it.
     await page.reload();
     await expect(page.getByRole('main')).toBeVisible();
     await waitForController(page);
     await returnToTheTab(page);
-    await staysAbsent(page);
 
-    // And it is watching again from there: a further deployment is noticed.
+    // A fresh client is handed the newest version, so there is nothing newer
+    // for it to find. The absence gets a window: a session served the
+    // superseded version would ask, find the newer manifest and say so within
+    // it.
+    await staysAbsent(page);
+    // And it was started again by hand rather than restarted onto anything, so
+    // it has nothing to announce.
+    await expect(appliedNotice(page)).toHaveCount(0);
+
+    // It is watching again from there: a further deployment is noticed.
     await publish(page);
     await returnToTheTab(page);
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });

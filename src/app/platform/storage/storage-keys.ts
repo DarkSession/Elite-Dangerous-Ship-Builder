@@ -15,6 +15,17 @@ export const EDSB_RECORD_KEY_PREFIX = 'edsb:record:';
 /** This top-level browsing context's tab descriptor, in `sessionStorage`. */
 export const EDSB_TAB_KEY = 'edsb:tab';
 
+/**
+ * The marker one restart leaves for the session that comes up after it.
+ *
+ * `sessionStorage`, because the restart replaces this tab and no other: a
+ * Commander with four tabs open should be told about the update in the one that
+ * restarted, not in all four. Written immediately before the reload and cleared
+ * by the first session that reads it, so the notice is shown once
+ * (011/FR-025).
+ */
+export const EDSB_UPDATE_APPLIED_KEY = 'edsb:update-applied';
+
 /** The channel duplicated tabs negotiate working-record ownership over. */
 export const EDSB_BROADCAST_CHANNEL = 'edsb.persistence.v1';
 

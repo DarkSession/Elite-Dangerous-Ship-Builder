@@ -55,11 +55,13 @@ The order is the design reference's own: a header, then `ABOUT`, `FAQ` and `LICE
 hairline dividers in one scrolling column. The invariant DOM/reading order is:
 
 1. visible `Help · About` dialog title and close action, in a header pinned above the scrolling body;
-2. the `ABOUT` section — the localised purpose sentence, then the application and bundled-Almanac
-   identity facts where the reference draws its `APP VERSION … · LIBRARY VERSION …` line;
-3. the `FAQ` section — the seven help topics as question/answer pairs; and
-4. the `LICENCE` section — heading, the reference's own three-line summary of what covers what,
-   then the exact project-specific Frontier disclaimer marked in its own language.
+2. the `ABOUT` section — the localised purpose sentence, the maintainer sentence, the Almanac
+   provenance sentence, then the application and bundled-Almanac identity facts where the reference
+   draws its `APP VERSION … · LIBRARY VERSION …` line;
+3. the `FAQ` section — the help topics as question/answer pairs; and
+4. the `LICENCE` section — heading, the four-line summary of what covers what (the reference's
+   three plus the bundled library's own terms, amended below), then the exact project-specific
+   Frontier disclaimer marked in its own language.
 
 **Corrected 2026-08-25, against the design reference.** `ABOUT` previously also carried a bounded
 provenance statement after the version facts, and `LICENCE` previously opened with prose framing and
@@ -70,6 +72,13 @@ carried is either drawn where the reference does draw it — the licence summary
 `almanacOwnership` topic carries the package credit — or is a property of the text rather than a
 sentence about it, as the excerpt's `lang` is.
 
+**Amended 2026-08-27.** The provenance statement returns to `ABOUT`, before the version facts rather
+than after them, because the topic that had been holding the package credit is withdrawn and
+feature 002's voice ruling requires the credit to live somewhere in this feature. A maintainer
+sentence joins it at the owner's request. `ABOUT` is now three sentences and two facts, and the
+reference draws only the first sentence and the facts — a departure this contract states rather than
+hides.
+
 The reference puts its version line inside `ABOUT`, above the questions, and this contract follows
 it. Wide layouts may adjust spacing/measure but do not reorder sections. Narrow, landscape, zoomed,
 RTL and expanded-text states use the same complete single-column order.
@@ -78,62 +87,46 @@ RTL and expanded-text states use the same complete single-column order.
 
 Owned/localised content describes only accepted current behavior:
 
-- **Build-link privacy**: canonical build data is in the URL fragment, which is not transmitted in
-  HTTP requests; deliberately sharing the full URL shares the encoded loadout. Asked in the
-  reference's own words, which put it as the question a Commander has: whether a shared link exposes
-  an account.
-- **Accounts/uploads/telemetry**: there are no accounts, authentication, application uploads,
-  telemetry or server persistence.
 - **Browser persistence**: working/named builds and preferences remain in browser storage; clearing
   site data removes them, so export/share is needed for a separate copy. Asked and answered in the
   reference's own words.
-- **Offline assets**: installed app-shell/bundled data remains usable offline; same-origin artwork is
-  offline only after being opened/cached, and temporary absence cannot block the capability.
 - **Completed engineering grades**: every represented grade is 100%; validated partial imports are
   completed through Almanac or refused atomically before activation. Asked in the reference's own
   words — why engineered stats differ in game — because that is the question the invariant answers;
   the reference's own answer to it is the one this application cannot make.
-- **Hull facts and build results**: package hull facts are not fitted-build results; result values may
-  also depend on declared viewing conditions.
-- **Almanac ownership**: the bundled Almanac supplies catalogue data, validation and calculations;
-  the application does not maintain or correct those game values.
+
+Both answer something no screen states. That is the test a topic has to pass, ruled 2026-08-27:
+a question the interface already answers by behaving is a question the FAQ should not repeat.
 
 Raw message keys, blank answers, future promises, unsupported import claims, private game-text
 translations and the reference's retained-partial-roll wording are prohibited.
 
-**Wording, ruled 2026-08-25.** Three of the reference's four questions ask what three of these seven
-topics answer, and those three are asked in the reference's own words rather than reworded. Its
-`Where are my builds stored?` answer is used as it stands; its `Do share links expose my account?`
-answer is extended to carry the not-transmitted half this table requires and its answer omits; its
-`Why do my engineered stats differ in game?` answer is replaced, because the claim it makes is the
-one feature 002 FR-013 contradicts. The remaining four topics have no question in the reference and
-take the wording settled here. The reference's fourth question, `What can I import?`, is not a topic:
-import behaviour is feature 004's, and this table is the accepted set.
+**Wording, ruled 2026-08-25 and narrowed 2026-08-27.** Both surviving questions are asked in the
+reference's own words. Its `Where are my builds stored?` answer is used as it stands; its `Why do my
+engineered stats differ in game?` answer is replaced, because the claim it makes is the one feature
+002 FR-013 contradicts. The reference's other two questions are not topics: `Do share links expose
+my account?` was one until 2026-08-27, and `What can I import?` never was, because import behaviour
+is feature 004's.
 
 Exactly one definition exists for each topic ID, with the following non-empty governing-reference
 set. References are build/review evidence only and are not displayed or bundled.
 
 | Topic ID                     | Governing accepted source                                          |
 | ---------------------------- | ------------------------------------------------------------------ |
-| `buildLinkPrivacy`           | Feature 001 FR-015                                                 |
-| `accountsUploadsTelemetry`   | Constitution Principle I                                           |
 | `browserPersistence`         | Constitution Principle I and Feature 001 FR-008, FR-013 and FR-014 |
-| `offlineAssets`              | Constitution Principle I and Feature 001 FR-006                    |
 | `completedEngineeringGrades` | Constitution Principle IV and Feature 002 FR-013                   |
-| `hullFactsAndBuildResults`   | Feature 001 FR-004 and Feature 005 FR-003                          |
-| `almanacOwnership`           | Constitution Principle II and Feature 003 FR-002                   |
 
-**Corrected 2026-08-25, during implementation.** `hullFactsAndBuildResults` cited feature 003's
-FR-006 and FR-009. Neither is a declared requirement any more: feature 003's own "Withdrawn and
-reassigned requirements" ruling of 2026-08-22 reassigned FR-006 to features 005–008 with the values
-it governed, and FR-009 — the deployed/retracted switch — to feature 005. The topic is unchanged and
-so is its wording; what changed is which live requirement it points at, which is the whole purpose of
-this table. The viewing-condition half is now feature 005's FR-003, where that selection actually
-lives. Citing a reassigned id would make the reference resolvable only against a table of things that
-are no longer true.
+**Narrowed 2026-08-27, owner's request.** The table held seven rows. `buildLinkPrivacy`,
+`accountsUploadsTelemetry` and `offlineAssets` each restated constitution I, which the application
+obeys in its behaviour and the licence summary already names; `hullFactsAndBuildResults` explained a
+distinction features 003 and 005 draw in the region where it applies; and `almanacOwnership` was a
+credit rather than a question, and FR-008 now carries it in `ABOUT`. The two that remain answer what
+no screen states. Governing references for the withdrawn rows are not retained here: a reference
+table is resolved against live artifacts on every build, and a row for a topic that does not exist
+would resolve for no reader.
 
 Build validation resolves every reference against the accepted repository artifacts and verifies
-the exact seven-ID set, uniqueness and non-empty shipped-locale messages. Required content review
+the exact declared ID set, uniqueness and non-empty shipped-locale messages. Required content review
 checks each answer for consistency with its cited behavior. A missing, duplicate, unreferenced,
 contradictory or unsupported topic blocks release; the modal never publishes a partial or
 speculative set.
@@ -145,7 +138,7 @@ the generated browser module.
 ### Required content-review gate
 
 Whenever an English question, English answer or governing reference changes, release review must
-record all seven topic IDs against the table above and confirm:
+record every topic ID against the table above and confirm:
 
 1. every factual sentence is supported by at least one cited accepted source;
 2. no sentence contradicts any cited source or another accepted requirement;
@@ -163,8 +156,10 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 - **Corrected 2026-08-26.** The second term was “Bundled Almanac version”, on the reasoning that the
   reference's own `LIBRARY VERSION` was ambiguous. The reference's wording stands instead: what the
   fact names is the library this application was built against, which is what a Commander comparing
-  two builds is reading it for, and the package is credited by name in the `almanacOwnership` topic
-  and in the licence summary rather than in a version label. Nothing else moves: it is still the
+  two builds is reading it for, and the package is credited by name in the `ABOUT` provenance
+  sentence and in the licence summary rather than in a version label. **Corrected 2026-08-27:** that
+  credit was in the `almanacOwnership` topic when this was written; the topic is withdrawn and the
+  sentence carries it. Nothing else moves: it is still the
   installed package's own version, still a separate labelled fact, and still not a claim about the
   live game or the live catalogue.
 - **Corrected 2026-08-25.** The modal previously drew a third fact carrying release state and, for a
@@ -284,7 +279,7 @@ licence summary names and the generator still audits at build time.
   isolation, the two identity facts as distinct labelled facts, the excerpt's declared language and
   the underlying capability after close. There is no warning relationship to verify: the modal has no
   external action.
-- Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+- Any conformance statement names excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
   2.4.11.
 
 ## Component previews
@@ -293,9 +288,9 @@ Feature 011's preview catalogue must include:
 
 - the closed frame-entry state;
 - the open modal state;
-- all seven populated help topics;
+- both populated help topics;
 - long application and package identifiers;
-- the three-line licence summary and the exact disclaimer;
+- the four-line licence summary and the exact disclaimer;
 - desktop centered, tablet/mobile portrait and landscape sheet states;
 - doubled/expanded text, RTL section with English disclaimer, reduced motion and 400%-zoom reflow.
 

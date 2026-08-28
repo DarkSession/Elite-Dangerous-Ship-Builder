@@ -53,7 +53,7 @@ Every shared component has default/populated, empty, loading, error and disabled
 - Expanded and RTL text do not reorder semantic reading or remove actions.
 - Reference selection markers are supplemented by text and programmatic selected state. Reference `div` actions become native/shared semantic controls, and targets smaller than 44 CSS px are enlarged through tokens.
 
-Any conformance statement uses: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
+Any conformance statement uses: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
 
 ## Localization and formatting
 

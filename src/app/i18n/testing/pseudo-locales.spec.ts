@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { DocumentAdapter } from '../../platform/browser/document.adapter';
+import { DocumentAdapter, type RootDocumentState } from '../../platform/browser/document.adapter';
 import { provideIsolatedLocaleEnvironment } from './localization-harness';
 import { provideLocalization } from '../i18n.providers';
 import { BUNDLED_ENGLISH, MESSAGE_KEYS, SHIPPED_LOCALES } from '../locale-registry';
@@ -20,10 +20,10 @@ class RecordingDocumentAdapter {
   direction = '';
   title = '';
 
-  commitRootState(language: string, direction: 'ltr' | 'rtl', title: string | null): void {
-    this.language = language;
-    this.direction = direction;
-    this.title = title ?? this.title;
+  commitRootState(state: RootDocumentState): void {
+    this.language = state.language;
+    this.direction = state.direction;
+    this.title = state.title ?? this.title;
   }
 }
 

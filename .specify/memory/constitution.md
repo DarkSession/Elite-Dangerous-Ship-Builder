@@ -1,13 +1,14 @@
 <!--
-Sync Impact Report (7.0.0)
-- Version change: 6.0.1 -> 7.0.0 (MAJOR)
-- Modified principles: IV. Lossless, Honest Builds — removed the compatibility contract for unknown
-  module identities and made package-defaulted fixed mounts an invariant of every constructed build.
-- Rationale: Almanac 0.1.4 no longer exposes an empty fixed-mount state: armour, the seven core
-  internals and the cargo hatch are populated from the hull defaults at construction and ingress.
-  Unknown module compatibility is no longer a supported application capability.
-- Invalidated-spec review: features 001, 002 and 004 updated; downstream features now rely only on
-  the stronger fixed-mount invariant and no longer prescribe unknown-module ingress coverage.
+Sync Impact Report (8.0.0)
+- Version change: 7.0.0 -> 8.0.0 (MAJOR)
+- Modified principles: V. Works on Desktop, Tablet and Mobile — 2.2.1 Timing Adjustable joins the
+  excluded criteria, scoped by name to the application-update restart.
+- Rationale: the owner's decision of 2026-08-27 is that a published update is applied without
+  asking. The overlay that announces it carries no control that calls the restart off, which is a
+  time limit meeting none of 2.2.1's conditions. The alternative — keeping a control — is the
+  behaviour the decision removed, so the criterion is excluded and named rather than claimed.
+- Invalidated-spec review: feature 011 FR-025 and SC-007 rewritten; every conformance statement now
+  names eight criteria; `scripts/check-interface-foundations.mjs` enforces the longer list.
 - Follow-up TODOs: none.
 -->
 
@@ -165,21 +166,33 @@ fallback.
   MUST be large enough to hit reliably on a phone, and nothing essential may
   depend on hover.
 - Portrait and landscape orientations MUST both work on tablet and mobile.
-- The application MUST meet **WCAG 2.2 level AA** on every form factor, with one
-  exclusion: the keyboard-operation criteria — 2.1.1 Keyboard, 2.1.2 No Keyboard
-  Trap, 2.1.4 Character Key Shortcuts, 2.4.1 Bypass Blocks, 2.4.3 Focus Order,
-  2.4.7 Focus Visible and 2.4.11 Focus Not Obscured (Minimum) — are out of scope,
-  and no requirement in this repository may demand them. The rest of the standard
-  is not an aspiration: every capability MUST be navigable by screen reader with
-  correct roles, names and state, legible at 200% text size and at 400% zoom
-  without loss of content or function, and free of any information carried by
-  colour, shape or position alone. Contrast MUST meet the AA ratios for text and
-  for the non-text elements that carry meaning; touch targets MUST meet the AA
-  target-size rule; motion MUST respect `prefers-reduced-motion`.
+- The application MUST meet **WCAG 2.2 level AA** on every form factor, with two
+  exclusions. The first is the keyboard-operation criteria — 2.1.1 Keyboard,
+  2.1.2 No Keyboard Trap, 2.1.4 Character Key Shortcuts, 2.4.1 Bypass Blocks,
+  2.4.3 Focus Order, 2.4.7 Focus Visible and 2.4.11 Focus Not Obscured (Minimum)
+  — which are out of scope, and no requirement in this repository may demand
+  them. The second is **2.2.1 Timing Adjustable**, and it is narrower: it is
+  excluded for the application-update restart and for nothing else. The rest of
+  the standard is not an aspiration: every capability MUST be navigable by
+  screen reader with correct roles, names and state, legible at 200% text size
+  and at 400% zoom without loss of content or function, and free of any
+  information carried by colour, shape or position alone. Contrast MUST meet the
+  AA ratios for text and for the non-text elements that carry meaning; touch
+  targets MUST meet the AA target-size rule; motion MUST respect
+  `prefers-reduced-motion`.
+- **The one time limit, and why it is excluded.** When a newer version has been
+  published, the application announces a restart and then carries it out. The
+  announcement offers nothing that calls the restart off, so a Commander who
+  needs longer than the announcement stands cannot have it, which meets none of
+  2.2.1's conditions. The restart is the application's **only**
+  time limit. Introducing a second one MUST amend this principle rather than
+  read itself into this exclusion, and no other capability MUST impose a limit
+  on how long a Commander has to act.
 - Because criteria at level A and AA are excluded, the application MUST NOT claim
   unqualified WCAG 2.2 AA conformance. Wherever conformance is stated — in the
-  interface, in documentation or in a specification — the excluded criteria MUST
-  be named alongside it.
+  interface, in documentation or in a specification — all eight excluded criteria
+  MUST be named alongside it: 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
+  2.4.11.
 - Accessibility is verified, not assumed: an automated accessibility check MUST
   run over every screen as part of the end-to-end suite, and a failure of an
   in-scope criterion MUST fail the build. An automated pass is a floor rather
@@ -374,4 +387,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 7.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-20
+**Version**: 8.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-27

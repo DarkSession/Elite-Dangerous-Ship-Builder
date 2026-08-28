@@ -670,8 +670,8 @@ describe('conformance claims', () => {
   it('accepts a claim that names every excluded criterion', () => {
     const found = rules.conformanceClaimViolations({
       'README.md':
-        'The target is WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, ' +
-        '2.4.7 and 2.4.11.',
+        'The target is WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, ' +
+        '2.4.3, 2.4.7 and 2.4.11.',
     });
 
     assert.deepEqual(found, []);
@@ -691,11 +691,22 @@ describe('conformance claims', () => {
     assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
   });
 
+  it('rejects a claim that names the seven keyboard criteria and not the eighth', () => {
+    // The seven keyboard criteria without 2.2.1, which the update restart is
+    // also excluded for. A claim that omits it is the stronger claim the
+    // checker exists to refuse.
+    const found = rules.conformanceClaimViolations({
+      'README.md': 'WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
+  });
+
   it('does not accept exclusions stated in a different paragraph', () => {
     // A claim that can be quoted without its qualification is unqualified.
     const found = rules.conformanceClaimViolations({
       'README.md':
-        'Accessible to WCAG 2.2 AA.\n\nExcluded: 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7, 2.4.11.',
+        'Accessible to WCAG 2.2 AA.\n\nExcluded: 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7, 2.4.11.',
     });
 
     assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
@@ -815,6 +826,49 @@ describe('production output', () => {
     });
 
     assert.deepEqual(ruleIds(found), ['production-output']);
+  });
+
+  it('accepts a canonical link, which declares an address rather than fetching one', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/index.html': '<link rel="canonical" href="https://sb.edct.dev/ships">',
+    });
+
+    assert.deepEqual(found, []);
+  });
+
+  it('still rejects a stylesheet from another origin on the same document', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/index.html':
+        '<link rel="canonical" href="https://sb.edct.dev/"><link rel="stylesheet" href="https://cdn.example.com/x.css">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['production-output']);
+    assert.match(found[0].message, /cdn\.example\.com/);
+  });
+
+  it('still rejects a preconnect, which opens the connection it names', () => {
+    const found = rules.productionOutputViolations({
+      'dist/app/browser/index.html': '<link rel="preconnect" href="https://fonts.example.com">',
+    });
+
+    assert.deepEqual(ruleIds(found), ['production-output']);
+  });
+
+  it('rejects a request to a vocabulary the search-metadata rule names as a string', () => {
+    // `schema.org` and `sitemaps.org` are exempt from the search-metadata rule,
+    // where they appear as a `@context` and an `xmlns` and are never fetched.
+    // Exempting them here as well would let the shipped bundle open a
+    // connection nobody is told about, which is the whole of this rule.
+    for (const contents of [
+      'fetch("https://schema.org/WebApplication");',
+      '<script src="https://www.sitemaps.org/x.js"></script>',
+    ]) {
+      assert.deepEqual(
+        ruleIds(rules.productionOutputViolations({ 'dist/app/browser/x': contents })),
+        ['production-output'],
+        contents,
+      );
+    }
   });
 
   it('rejects a stylesheet, script or font loaded from another origin', () => {
@@ -951,5 +1005,483 @@ describe('the placeholder grammar', () => {
     const gateSpelling = spelling(gate);
     assert.ok(gateSpelling, 'the gate no longer declares a placeholder pattern');
     assert.equal(spelling(application), gateSpelling);
+  });
+});
+
+describe('the excluded-criteria enumeration', () => {
+  it('rejects a claim that omits 2.4.1, which hides inside 2.4.11', () => {
+    const found = rules.conformanceClaimViolations({
+      'X.md': 'WCAG 2.2 AA except 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(ruleIds(found), ['unqualified-conformance-claim']);
+    assert.match(found[0].message, /2\.4\.1(?!\d)/);
+  });
+
+  it('accepts the complete enumeration', () => {
+    const found = rules.conformanceClaimViolations({
+      'Y.md':
+        'WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.',
+    });
+
+    assert.deepEqual(found, []);
+  });
+});
+
+describe('search metadata', () => {
+  const ORIGIN = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
+
+  // Held apart so the "no JSON-LD" case can be built by leaving the block out
+  // rather than by cutting it back out of a finished document. A regexp that
+  // strips a `<script>` element is a filter, and a filter is judged as one: it
+  // would have to survive `<SCRIPT>` and a second element to be worth trusting,
+  // and none of that has anything to do with what this fixture is for.
+  const INDEX_WITHOUT_JSON_LD = [
+    '<meta name="description" content="What this is." />',
+    '<meta name="theme-color" content="#0b0b0c" />',
+    '<meta name="twitter:card" content="summary" />',
+    '<meta name="twitter:title" content="Ship Builder" />',
+    '<meta name="twitter:description" content="What this is." />',
+    '<meta property="og:type" content="website" />',
+    '<meta property="og:site_name" content="Ship Builder" />',
+    '<meta property="og:title" content="Ship Builder" />',
+    '<meta property="og:description" content="What this is." />',
+    '<meta property="og:url" content="https://sb.edct.dev/" />',
+    '<meta property="og:locale" content="en" />',
+    '<link rel="canonical" href="https://sb.edct.dev/" />',
+    '<link rel="manifest" href="manifest.webmanifest" />',
+  ].join('\n');
+
+  const JSON_LD =
+    '<script type="application/ld+json">{"@context":"https://schema.org","url":"https://sb.edct.dev/","inLanguage":["en","de"]}</script>';
+
+  const INDEX = `${INDEX_WITHOUT_JSON_LD}\n${JSON_LD}`;
+
+  const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n';
+
+  const SITEMAP = `<urlset>
+    <url><loc>https://sb.edct.dev/ships</loc></url>
+    <url><loc>https://sb.edct.dev/build</loc></url>
+  </urlset>`;
+
+  const TOKENS = '  --edsb-palette-bg: #0b0b0c;\n';
+
+  const MANIFEST = JSON.stringify({
+    name: 'Elite Dangerous Ship Builder',
+    short_name: 'Elite Dangerous Ship Builder',
+    description: 'What this is.',
+    start_url: './',
+    scope: './',
+    display: 'standalone',
+    background_color: '#0b0b0c',
+    theme_color: '#0b0b0c',
+    icons: [{ src: 'favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+  });
+
+  const complete = (overrides = {}) => ({
+    origin: ORIGIN,
+    index: INDEX,
+    robots: ROBOTS,
+    sitemap: SITEMAP,
+    manifest: MANIFEST,
+    domain: 'sb.edct.dev\n',
+    tokens: TOKENS,
+    locales: ['en', 'de'],
+    routes: ['', 'ships', ':symbol', 'build', '**'],
+    ...overrides,
+  });
+
+  it('accepts a set of files that agree with each other and with the routes', () => {
+    assert.deepEqual(rules.searchMetadataViolations(complete()), []);
+  });
+
+  it('reads no route out of an XML comment, in either of its shapes', () => {
+    // The deployment publishes one file per `<loc>` and cuts comments before it
+    // reads them. A `<loc>` this rule counted and the deploy skipped would be a
+    // route that passes the gate and never gets a file.
+    for (const commented of [
+      `<urlset>
+        <!-- <loc>https://sb.edct.dev/ghost</loc> -->
+        <url><loc>https://sb.edct.dev/ships</loc></url>
+        <url><loc>https://sb.edct.dev/build</loc></url>
+      </urlset>`,
+      `<urlset>
+        <!--
+          <loc>https://sb.edct.dev/ghost</loc>
+        -->
+        <url><loc>https://sb.edct.dev/ships</loc></url>
+        <url><loc>https://sb.edct.dev/build</loc></url>
+      </urlset>`,
+    ]) {
+      assert.deepEqual(rules.searchMetadataViolations(complete({ sitemap: commented })), []);
+    }
+  });
+
+  it('refuses a malformed comment rather than reading past it the deploy cannot', () => {
+    // `--` is illegal inside an XML comment and nothing here validates the
+    // file, so a lazy strip would cut this one and the deployment's `sed`,
+    // which cannot express one, would not — and would publish `/ghost` with a
+    // canonical of its own. Neither reader strips it, so a delimiter survives
+    // the cut and the file is refused for what is actually wrong with it.
+    const malformed = `<urlset>
+      <!-- old -- gone <loc>https://sb.edct.dev/ghost</loc> -->
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <url><loc>https://sb.edct.dev/build</loc></url>
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: malformed }));
+
+    assert.match(found[0].message, /nested or contains/);
+  });
+
+  it('refuses the HTML comment terminator, which closes nothing in XML', () => {
+    // `--!>` ends a comment in HTML and ends nothing here, so a file holding
+    // one means something different to whoever reads it next. Both readers
+    // refuse it rather than guess which of the two the author meant.
+    const html = `<urlset>
+      <!-- gone <loc>https://sb.edct.dev/ghost</loc> --!>
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <url><loc>https://sb.edct.dev/build</loc></url>
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: html }));
+
+    assert.match(found[0].message, /nested or contains/);
+  });
+
+  it('refuses a comment that one pass reassembles into another', () => {
+    // What a single strip cannot do, and why the leftovers are checked rather
+    // than cut again: removing the inner `<!-- -->` here joins `<!` to `--`
+    // and leaves a comment wrapping `/ghost`. A second pass would then read
+    // the file as listing nothing, while the deployment's `sed` — also one
+    // pass — would publish `/ghost`. The two must agree, so both refuse it.
+    const nested = `<urlset>
+      <!<!-- -->-- <loc>https://sb.edct.dev/ghost</loc> -->
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <url><loc>https://sb.edct.dev/build</loc></url>
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: nested }));
+
+    assert.match(found[0].message, /nested or contains/);
+  });
+
+  it('still misses a route that a comment is the only thing listing it', () => {
+    // The other direction of the same rule: commenting a route out is removing
+    // it, and an addressable route that nothing lists is the drift this exists
+    // to catch.
+    const commented = `<urlset>
+      <url><loc>https://sb.edct.dev/ships</loc></url>
+      <!-- <url><loc>https://sb.edct.dev/build</loc></url> -->
+    </urlset>`;
+
+    const found = rules.searchMetadataViolations(complete({ sitemap: commented }));
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /\/build/);
+  });
+
+  it('fails when nothing states where the application is published', () => {
+    const found = rules.searchMetadataViolations({});
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /SITE_ORIGIN/);
+  });
+
+  it('rejects a head with no description for a crawler that runs no script', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace(/<meta name="description"[^>]*>/, '') }),
+    );
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /description/);
+  });
+
+  it('rejects a head with no canonical link', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace(/<link rel="canonical"[^>]*>/, '') }),
+    );
+
+    assert.match(found[0].message, /canonical/);
+  });
+
+  it('rejects a head with no JSON-LD', () => {
+    const found = rules.searchMetadataViolations(complete({ index: INDEX_WITHOUT_JSON_LD }));
+
+    assert.match(found[0].message, /JSON-LD/);
+  });
+
+  it('rejects a domain moved in one file and not the others', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ robots: ROBOTS.replace('sb.edct.dev', 'shipbuilder.example') }),
+    );
+
+    assert.ok(found.length > 0);
+    assert.match(found[0].message, /shipbuilder\.example/);
+  });
+
+  it('accepts the vocabularies a document declares itself against', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        sitemap: SITEMAP.replace(
+          '<urlset>',
+          '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">',
+        ),
+      }),
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a robots file that disallows the whole site', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        robots: `User-agent: *\nDisallow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n`,
+      }),
+    );
+
+    assert.match(found[0].message, /disallowed/);
+  });
+
+  it('rejects a robots file that names no sitemap', () => {
+    const found = rules.searchMetadataViolations(complete({ robots: 'User-agent: *\nAllow: /\n' }));
+
+    assert.match(found[0].message, /Sitemap/);
+  });
+
+  it('rejects an addressable route the sitemap does not list', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ routes: ['', 'ships', ':symbol', 'build', 'builds', '**'] }),
+    );
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /\/builds/);
+  });
+
+  it('rejects a listed address that is not a route the application serves', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ sitemap: `${SITEMAP}<url><loc>https://sb.edct.dev/gone</loc></url>` }),
+    );
+
+    assert.match(found[0].message, /\/gone/);
+  });
+
+  it('does not ask a redirect or a wildcard to be listed', () => {
+    assert.deepEqual(
+      rules.searchMetadataViolations(complete({ routes: ['', 'ships', 'build', '**'] })),
+      [],
+    );
+  });
+
+  it('rejects a manifest that is not valid JSON', () => {
+    const found = rules.searchMetadataViolations(complete({ manifest: '{ not json' }));
+
+    assert.match(found[0].message, /valid JSON/);
+  });
+
+  it('rejects a manifest missing a member a browser needs', () => {
+    const incomplete = JSON.parse(MANIFEST);
+    delete incomplete.icons;
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: JSON.stringify(incomplete) }),
+    );
+
+    assert.match(found[0].message, /icons/);
+  });
+
+  it('rejects a root-absolute path, which breaks every preview deployment', () => {
+    const rooted = { ...JSON.parse(MANIFEST), start_url: '/' };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
+
+    assert.match(found[0].message, /start_url/);
+  });
+
+  it('rejects a root-absolute icon path for the same reason', () => {
+    const rooted = { ...JSON.parse(MANIFEST), icons: [{ src: '/favicon.ico' }] };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
+
+    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+  });
+  it('rejects an absolute path even when it names the declared origin', () => {
+    // The one that slips past everything else: `https://sb.edct.dev/` is the
+    // declared origin, so the foreign-address sweep is content with it and the
+    // root-absolute rule never sees a leading slash. It still pins a preview's
+    // installed application to production, which is the whole reason these
+    // three members are relative.
+    for (const member of ['start_url', 'scope']) {
+      const pinned = { ...JSON.parse(MANIFEST), [member]: 'https://sb.edct.dev/' };
+      const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(pinned) }));
+
+      assert.deepEqual(ruleIds(found), ['search-metadata'], member);
+      assert.match(found[0].message, /absolute address installs a preview/);
+    }
+
+    const pinnedIcon = {
+      ...JSON.parse(MANIFEST),
+      icons: [{ src: 'https://sb.edct.dev/favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+    };
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: JSON.stringify(pinnedIcon) }),
+    );
+
+    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+  });
+
+  it('accepts a protocol-relative path nowhere either', () => {
+    const pinned = { ...JSON.parse(MANIFEST), start_url: '//sb.edct.dev/' };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(pinned) }));
+
+    assert.match(found[0].message, /absolute address installs a preview/);
+  });
+
+  it('still accepts the relative forms a manifest is supposed to carry', () => {
+    for (const value of ['./', '.', 'index.html', './icons/a.png']) {
+      const relative = { ...JSON.parse(MANIFEST), start_url: value };
+
+      assert.deepEqual(
+        rules.searchMetadataViolations(complete({ manifest: JSON.stringify(relative) })),
+        [],
+        value,
+      );
+    }
+  });
+
+  it('rejects a site served from a domain SITE_ORIGIN does not name', () => {
+    const found = rules.searchMetadataViolations(complete({ domain: 'shipbuilder.example\n' }));
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /shipbuilder\.example/);
+  });
+
+  it('rejects a deployment that declares no domain at all', () => {
+    const found = rules.searchMetadataViolations(complete({ domain: '' }));
+
+    assert.match(found[0].message, /production domain/);
+  });
+
+  it('rejects a relative canonical, which canonicalises a preview to itself', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('href="https://sb.edct.dev/"', 'href="/"') }),
+    );
+
+    assert.deepEqual(ruleIds(found), ['search-metadata']);
+    assert.match(found[0].message, /absolute/);
+  });
+
+  it('rejects the three description tags drifting apart', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          '<meta name="twitter:description" content="What this is." />',
+          '<meta name="twitter:description" content="Something else." />',
+        ),
+      }),
+    );
+
+    assert.match(found[0].message, /do not say the same thing/);
+  });
+
+  it('sees a plain-text address as well as a secure one', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ robots: `${ROBOTS}Host: http://shipbuilder.example\n` }),
+    );
+
+    assert.match(found[0].message, /shipbuilder\.example/);
+  });
+
+  it('rejects a foreign origin in the manifest', () => {
+    const foreign = { ...JSON.parse(MANIFEST), icons: [{ src: 'https://cdn.example/icon.png' }] };
+    const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(foreign) }));
+
+    assert.match(found[0].message, /cdn\.example/);
+  });
+
+  it('rejects a root-absolute manifest link, for the reason its own paths are relative', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace('href="manifest.webmanifest"', 'href="/manifest.webmanifest"'),
+      }),
+    );
+
+    assert.match(found[0].message, /root-absolute/);
+  });
+
+  it('rejects structured data that does not parse, which states as much as none', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('"@context"', 'nope') }),
+    );
+
+    assert.match(found[0].message, /does not parse/);
+  });
+
+  it('rejects structured data naming an address that is not the site root', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace('"url":"https://sb.edct.dev/"', '"url":"https://sb.edct.dev/ships"'),
+      }),
+    );
+
+    assert.match(found[0].message, /JSON-LD names/);
+  });
+
+  it('rejects structured data that has not kept up with a shipped language', () => {
+    const found = rules.searchMetadataViolations(complete({ locales: ['en', 'de', 'fr'] }));
+
+    assert.match(found[0].message, /declares languages/);
+  });
+
+  it('rejects an og:url that is not the canonical it restates', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('content="https://sb.edct.dev/" />', 'content="/" />') }),
+    );
+
+    assert.match(found[0].message, /og:url/);
+  });
+
+  it('sees description drift that begins after an apostrophe', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          '<meta name="description" content="What this is." />',
+          `<meta name="description" content="A page's one." />`,
+        )
+          .replace(
+            '<meta property="og:description" content="What this is." />',
+            `<meta property="og:description" content="A page's two." />`,
+          )
+          .replace(
+            '<meta name="twitter:description" content="What this is." />',
+            `<meta name="twitter:description" content="A page's three." />`,
+          ),
+      }),
+    );
+
+    assert.match(found[0].message, /do not say the same thing/);
+  });
+
+  it('rejects a theme colour the token layer does not draw', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('content="#0b0b0c"', 'content="#101010"') }),
+    );
+
+    assert.match(found[0].message, /theme-color/);
+  });
+
+  it('rejects a manifest colour the token layer does not draw', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        manifest: MANIFEST.replace('"theme_color":"#0b0b0c"', '"theme_color":"#101010"'),
+      }),
+    );
+
+    assert.match(found[0].message, /theme_color/);
+  });
+
+  it('rejects a manifest id, which resolves against the origin and cannot be per-deployment', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: JSON.stringify({ ...JSON.parse(MANIFEST), id: './' }) }),
+    );
+
+    assert.match(found[0].message, /"id"/);
   });
 });

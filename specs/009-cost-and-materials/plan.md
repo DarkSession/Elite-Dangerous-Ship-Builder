@@ -56,7 +56,7 @@ the three ruled canvas counts (blueprint count, material-type count, unit total)
 currency conversion/comparison; package `null`, `[]`, zero and conditional absence
 remain distinct; exact game slot/symbol/fdname identities; leaf imports only; no cross-origin
 requests; no document horizontal scrolling; token-only dark design system; all owned text and
-figures localized; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+figures localized; WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active build and every blueprint, effect, material and priced pre-engineered
 variant supplied by the installed package. Catalogue counts are discovered by contract tests, never
@@ -208,7 +208,7 @@ accepted. Constitution IV is therefore marked "PASS with ruled exception" above 
 PASS, and the exception is not to be widened.
 
 Any feature-owned or repository conformance statement uses the qualified form: WCAG 2.2 AA except
-criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11. Neither automated nor manual evidence
+criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11. Neither automated nor manual evidence
 may shorten that exclusion list.
 
 ## Complexity Tracking

@@ -57,7 +57,7 @@ describe('unknown hull symbol', () => {
     const element = render('Nonexistent_Hull');
     const link = element.querySelector('a');
 
-    expect(link?.textContent?.trim()).toBe('Back to the shipyard');
+    expect(link?.textContent?.trim()).toBe('Back to Ship Builder');
     expect(link?.getAttribute('href')).toContain('/ships');
   });
 

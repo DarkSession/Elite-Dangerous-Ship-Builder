@@ -89,5 +89,5 @@ Previews and tests cover:
   landscape and mobile portrait/landscape. Manual screen-reader checks verify geometry/list/detail,
   duplicate, selection, status and recovery relationships.
 
-Where conformance is stated, use: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+Where conformance is stated, use: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11.”
