@@ -4,6 +4,8 @@ import {
   benchFollowedSelection,
   chooseRecipe,
   openEditor,
+  revealMount,
+  revealStatusRail,
 } from './outfitting-surfaces';
 import { openFirstHullFromManifest } from './shell';
 
@@ -126,6 +128,13 @@ test.describe('offline capability', () => {
 
     await context.setOffline(true);
 
+    // Both blocks live in the status rail, which canvas 1d keeps behind its
+    // `STATUS` segment rather than in the flow — so a compact run opens it, and
+    // a wide one finds it already there. Opened with the network already gone,
+    // like the modes the journey above opens, because at that width this is the
+    // only way to the blocks and it is part of what has to still work.
+    await revealStatusRail(page);
+
     // Both blocks are a synchronous read of an in-memory loadout and an
     // installed package, so they are not merely still painted with the network
     // gone — they still answer an edit. Engineering a mount is what proves it:
@@ -135,6 +144,9 @@ test.describe('offline capability', () => {
     const credits = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
     await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
 
+    // Its category first: at compact width a mount nobody has asked for is not
+    // on the page at all (`revealMount`).
+    await revealMount(page, 'FrameShiftDrive');
     const mount = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
     await mount.click();
     await expect(mount).toHaveAttribute('aria-pressed', 'true');
