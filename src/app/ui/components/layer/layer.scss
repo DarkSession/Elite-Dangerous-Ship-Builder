@@ -37,10 +37,27 @@
   padding-inline: var(--edsb-space-panel);
 }
 
+// The title and whatever names the subject under it, as one block in the bar.
+.layer__identity {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  min-inline-size: 0;
+}
+
 .layer__title {
   @include layout.display-title(var(--edsb-text-size-heading-sm));
 
   min-inline-size: 0;
+}
+
+// The subject's label under the title. It takes the bar's condensed, tracked,
+// uppercase face rather than body type — the tracking is what puts a readable
+// gap either side of a space, which body type at this size does not.
+.layer__detail {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+
+  margin: 0;
+  font-size: var(--edsb-text-size-compact);
 }
 
 .layer__dismiss {

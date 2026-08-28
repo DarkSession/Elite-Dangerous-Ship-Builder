@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { expectNoClippedText, sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, expectTargetSizes } from './accessibility/assertions';
 import {
+  benchFollowedSelection,
   chooserOffered,
   editorOffered,
   isCompactWorkspace,
@@ -89,9 +90,7 @@ test.describe('the composition this width has room for', () => {
     // Waited for: the bench answers about the mount that is selected, and
     // reading it before the selection lands reads about the previous one.
     await expect(row).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.locator('.replacement__title, .outfitting__bench-title').first(),
-    ).toContainText(/size 6/i);
+    await benchFollowedSelection(page);
 
     // The same four operations, wherever this width keeps them: fit, empty,
     // engineer and power. A width that quietly offered fewer would be a
@@ -99,6 +98,9 @@ test.describe('the composition this width has room for', () => {
     expect(await chooserOffered(page)).toBe(true);
     expect(await editorOffered(page)).toBe(true);
     await openChooser(page);
+    // The fitting panel names the mount it is open on at both widths: inline
+    // that head is the bench's, and at layer width it is the screen's own.
+    await expect(page.locator('.replacement__title').first()).toContainText(/size 6/i);
     await expect(page.getByRole('button', { name: /remove module/i })).toBeVisible();
     await expect(page.locator('[data-slot-key="Slot03_Size6"] .power__priority')).toHaveCount(1);
   });
@@ -284,10 +286,13 @@ test.describe('the composition this width has room for', () => {
     // A mount with something in it: the region opens on the first mount, and
     // the Anaconda's first hardpoint is empty, so there is nothing to engineer.
     await revealMount(page, 'FrameShiftDrive');
-    await page.locator('[data-slot-key="FrameShiftDrive"] button').first().click();
-    await expect(
-      page.locator('.replacement__title, .outfitting__bench-title').first(),
-    ).toContainText(/frame shift/i);
+    const drive = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
+    await drive.click();
+    // The row's own pressed state first. `benchFollowedSelection` is satisfied
+    // by a bench that is already on screen from the mount before this one, so
+    // without this the editor below can be opened on the previous selection.
+    await expect(drive).toHaveAttribute('aria-pressed', 'true');
+    await benchFollowedSelection(page);
     await openEditor(page);
     await sweepOutfittingState(page, testInfo, `${drawn}/engineering`);
   });

@@ -176,6 +176,99 @@ describe('module identity badge', () => {
     });
     expect(textOf(query(shown, '.identity__code-line'))).toBe('Hpt_MultiCannon_Gimbal_Huge');
   });
+
+  /**
+   * The badge cannot see a width, so the width is declared to it.
+   *
+   * jsdom lays nothing out and has no `ResizeObserver`, and the badge asks for
+   * both through the platform's own size adapter — so what a spec supplies is
+   * an observer that delivers when it says so, over an element whose overflow
+   * it has stated. That is the seam the adapter exists for; nothing here mocks
+   * the component's own module.
+   */
+  function declareDelivery(): { deliver: () => void; undo: () => void } {
+    const own = Object.getOwnPropertyDescriptor(globalThis, 'ResizeObserver');
+    const callbacks: ResizeObserverCallback[] = [];
+
+    (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+      constructor(callback: ResizeObserverCallback) {
+        callbacks.push(callback);
+      }
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    };
+
+    return {
+      deliver: () => {
+        for (const callback of callbacks) {
+          callback(
+            [{ contentRect: { width: 100, height: 20 } }] as unknown as ResizeObserverEntry[],
+            {} as ResizeObserver,
+          );
+        }
+      },
+      undo: () => {
+        if (own === undefined) {
+          delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+          return;
+        }
+        Object.defineProperty(globalThis, 'ResizeObserver', own);
+      },
+    };
+  }
+
+  /** States what the renderer will not: how much of the name is drawn. */
+  function declareOverflow(value: HTMLElement, drawn: number, whole: number): void {
+    Object.defineProperty(value, 'clientWidth', { configurable: true, value: drawn });
+    Object.defineProperty(value, 'scrollWidth', { configurable: true, value: whole });
+  }
+
+  it('hands back the whole name where the caller\u2019s rule cuts it short', () => {
+    const delivery = declareDelivery();
+    try {
+      const fixture = renderComponent(ModuleIdentityBadge, {
+        name: LOCALIZED,
+        nameTip: 'Multi-Cannon',
+      });
+      declareOverflow(query(fixture, '.game-text__value'), 100, 300);
+      delivery.deliver();
+      fixture.detectChanges();
+
+      // The ellipsis is the control, and the control carries the whole name —
+      // so what the row cut is asked for by a thumb rather than lost (SC 1.4.4).
+      expect(textOf(query(fixture, '.identity__more'))).toContain('Multi-Cannon');
+      expect(element(fixture).querySelector('[data-text-reachable]')).not.toBeNull();
+    } finally {
+      delivery.undo();
+    }
+  });
+
+  it('takes the mark away again once the whole name is drawn', () => {
+    const delivery = declareDelivery();
+    try {
+      const fixture = renderComponent(ModuleIdentityBadge, {
+        name: LOCALIZED,
+        nameTip: 'Multi-Cannon',
+      });
+      // Marked first, so that the absence below is something the badge did
+      // rather than something it never got round to: a widened rail, or a
+      // shorter name in the same mount.
+      declareOverflow(query(fixture, '.game-text__value'), 100, 300);
+      delivery.deliver();
+      fixture.detectChanges();
+      expect(element(fixture).querySelector('.identity__more')).not.toBeNull();
+
+      declareOverflow(query(fixture, '.game-text__value'), 300, 300);
+      delivery.deliver();
+      fixture.detectChanges();
+
+      expect(element(fixture).querySelector('.identity__more')).toBeNull();
+      expect(element(fixture).querySelector('[data-text-reachable]')).toBeNull();
+    } finally {
+      delivery.undo();
+    }
+  });
 });
 
 describe('slot card', () => {
@@ -285,6 +378,64 @@ describe('slot card', () => {
     query(fixture, '.slot__select').click();
 
     expect(emitted).toEqual([{ kind: 'select' }]);
+  });
+
+  it('empties the mount on the secondary button, and on nothing else', () => {
+    const fixture = renderComponent(SlotCard, {
+      slot: slotView(),
+      capabilities: EVERY_CAPABILITY,
+    });
+
+    const emitted: unknown[] = [];
+    fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
+
+    // A long press reports button 0, so touch keeps the platform's own menu and
+    // no mount is emptied by a press that was meant to select it.
+    const primary = new MouseEvent('contextmenu', { button: 0, bubbles: true, cancelable: true });
+    query(fixture, '.slot__select').dispatchEvent(primary);
+    expect(emitted).toEqual([]);
+    expect(primary.defaultPrevented).toBe(false);
+
+    const secondary = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
+    query(fixture, '.slot__select').dispatchEvent(secondary);
+    expect(emitted).toEqual([{ kind: 'remove' }]);
+    expect(secondary.defaultPrevented).toBe(true);
+  });
+
+  it('leaves the power chip its own platform menu', () => {
+    const fixture = renderComponent(SlotCard, {
+      slot: slotView(),
+      capabilities: EVERY_CAPABILITY,
+    });
+
+    const emitted: unknown[] = [];
+    fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
+
+    // The shortcut is bound to the row's selection control, not to the row. A
+    // secondary press on the switch or the priority group is a press on those
+    // controls, and emptying the mount from one is not what it was aimed at.
+    const event = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
+    query(fixture, '.slot__power').dispatchEvent(event);
+
+    expect(emitted).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('keeps the platform menu where the package refuses the removal', () => {
+    for (const slot of [
+      { slot: slotView({ module: null }), capabilities: EVERY_CAPABILITY },
+      { slot: slotView(), capabilities: { ...EVERY_CAPABILITY, canRemove: false } },
+    ]) {
+      const fixture = renderComponent(SlotCard, slot);
+      const emitted: unknown[] = [];
+      fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
+
+      const event = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
+      query(fixture, '.slot__select').dispatchEvent(event);
+
+      expect(emitted).toEqual([]);
+      expect(event.defaultPrevented).toBe(false);
+    }
   });
 
   it('draws no power chip on a module the Almanac prices at no power', () => {

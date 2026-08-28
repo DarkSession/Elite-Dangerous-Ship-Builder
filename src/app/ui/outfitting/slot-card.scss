@@ -10,6 +10,10 @@
 // control and by the visually-hidden selected text beside it.
 :host {
   display: block;
+  // The row asks itself whether a line is long enough to hold a name. See
+  // "One line while a line will hold one" below.
+  container-type: inline-size;
+  container-name: slot;
 }
 
 // One row, as the canvas draws it: the mount, the module, the power chip and
@@ -134,6 +138,105 @@
   @include layout.stack(var(--edsb-space-stack-tight));
 
   min-inline-size: 0;
+}
+
+// One line while a line will hold one
+//
+// A ledger is forty rows read as a column, so a row is the target baseline
+// exactly and both of its lines are cut with an ellipsis: a long module name
+// that took a second line made its own row taller than its neighbours and
+// pushed the marks at the end of it — the acquisition icons, the power chip,
+// the engineered mark — off the line they belong on. Those marks keep their
+// places and the name gives way to them.
+//
+// It is asked as a container query in `em`, which is the question rather than a
+// proxy for it: `em` here is the row's own font size, so 20em is "twenty
+// characters' worth of line". A Commander who has set their text to twice the
+// size, or a translation that runs half again as long, is asking for a line
+// this rail cannot give — and there the row goes back to wrapping and growing,
+// because cutting a name off is loss of content and the constitution puts that
+// in scope at 200% text (principle V, SC 1.4.4).
+@container slot (min-width: 20em) {
+  .slot {
+    flex-wrap: nowrap;
+  }
+
+  .slot__select {
+    // One measure for every row, and it is the project's target baseline: with
+    // the canvas's block padding taken off, two lines of identity come to 33px
+    // and the baseline is what the row is. A row that carries its own padding
+    // as well comes out at 52px, and eight pixels over thirty-nine mounts is
+    // most of a screen of ledger.
+    min-block-size: var(--edsb-target-size);
+    padding-block: 0;
+  }
+
+  // The name is cut, not wrapped. The badge and the game text inside it are
+  // separate components, so the rule reaches them from here: what is being said
+  // is about this row's measure rather than about either component, and neither
+  // of them is truncated anywhere else it is drawn.
+  //
+  // The whole name is still in the DOM, so a reader is read the whole name; what
+  // is cut is what is drawn. The code line under it is **not** cut: it is the
+  // only place `OVERCHARGED G5 · CORROSIVE` is written in words on the row, and
+  // an icon is not a readable substitute for it (FR-010). It wraps where it must
+  // and the row grows with it, which is why the measure above is a floor.
+  .slot__identity ::ng-deep {
+    // The line, not a clipper. What is cut is the value inside it, and it cuts
+    // itself — while every box above the value keeps `overflow: visible`,
+    // because the ellipsis is a tooltip and a bubble hung off it is clipped by
+    // any ancestor of its containing block that hides its overflow. Hiding it
+    // here put the whole gloss behind a thirty-pixel corner, and took the
+    // acquisition marks' own tips down with it.
+    .identity__name {
+      display: block;
+      min-inline-size: 0;
+      white-space: nowrap;
+    }
+
+    // The name gives way; what is beside it does not. A package name the Almanac
+    // publishes in one language only carries the `UNTRANSLATED` tag, and that tag
+    // is the same kind of thing as the acquisition icon after it — a mark that
+    // says something about the module which the row's own text does not. So the
+    // row's flex line stops wrapping and the value alone is what shrinks and
+    // takes the ellipsis, exactly as the name gives way to the route icon.
+    .identity__name .game-text {
+      flex-wrap: nowrap;
+      max-inline-size: 100%;
+    }
+
+    .identity__name .game-text__value {
+      min-inline-size: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // Where the badge has drawn its own ellipsis, the browser's is dropped: two
+    // in a row read as a longer pause rather than as one mark. The badge draws
+    // it as a tooltip carrying the whole name, so what is cut here can be asked
+    // for by a thumb or a pointer as well as read by a reader — which is what
+    // keeps a truncated name from being content the drawing simply loses (SC
+    // 1.4.4).
+    .identity__name[data-text-reachable] .game-text__value {
+      text-overflow: clip;
+    }
+
+    .identity__name .game-text__tag {
+      flex: none;
+    }
+
+    // The sentence behind the tag is a sentence, and a ledger row is not where a
+    // sentence fits: forty rows of `Shown in its original language, because no
+    // German text is available for it` is the wrapped three-line row this measure
+    // exists to stop. It is spoken instead, which is where it was already reached
+    // from — the value names it through `aria-describedby`, so the tag carries
+    // the state on the screen and the sentence carries the reason to a reader
+    // (constitution VI, and the same floor the drawn label already takes).
+    .identity__name .game-text__disclosure {
+      @include layout.visually-hidden;
+    }
+  }
 }
 
 .slot__empty {

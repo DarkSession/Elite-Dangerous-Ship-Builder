@@ -325,6 +325,16 @@
 .frame__main {
   flex: 1 1 auto;
 
+  // The page stacks inside itself. Every `z-index` a screen sets is about the
+  // order of that screen's own parts — a mark over a hull plate, a fill over a
+  // track, a tip over the row it belongs to — and none of them is a claim about
+  // the bar above. Without this they are made in the same stacking context as
+  // the bar, where the bar's own `z-index: 2` is only equal to a schematic
+  // mount's and the page wins on document order: an anatomy mount scrolled up
+  // under the bar paints over the `?` control, which an accessibility scan
+  // reports as a target obscured.
+  isolation: isolate;
+
   // Space reserved under the sticky banner so a target scrolled to by an
   // in-page link lands below it rather than behind it.
   scroll-margin-block-start: var(--edsb-layout-bar-height);

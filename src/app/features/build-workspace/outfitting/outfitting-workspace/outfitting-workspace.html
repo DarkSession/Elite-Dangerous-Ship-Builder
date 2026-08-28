@@ -117,8 +117,14 @@
           search and `REMOVE MODULE`. Where no fitting panel is drawn — a mount
           the Almanac takes nothing else in — the bench keeps the rule itself,
           so the region is never nameless (wave 5).
+
+          At layer width the head is not drawn at all. There the fitting panel
+          is a screen a Commander opens, and that screen carries the mount in
+          its own head; a second copy on the page behind it named a mount with
+          nothing under it, above a ledger that already marks the row
+          (Commander request 2026-08-28).
         -->
-          @if (!replacementShown()) {
+          @if (!replacementShown() && !benchIsLayer()) {
             <div class="outfitting__bench-header">
               <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
             </div>

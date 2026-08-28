@@ -146,6 +146,22 @@ export class SlotCard {
   emit(intent: SlotCardIntent): void {
     this.intent.emit(intent);
   }
+
+  /**
+   * Empties the mount from the row, on the secondary pointer button.
+   *
+   * Only the secondary button, and only where the package accepts the removal.
+   * A long press reports `button` 0 rather than 2, so touch keeps its own menu
+   * and no mount is emptied by a press that was meant to select it. A mount the
+   * package refuses to empty, and an empty one, keep the platform's menu too.
+   */
+  removeFromPointer(event: MouseEvent): void {
+    if (event.button !== 2 || this.slot().module === null || !this.capabilities().canRemove) {
+      return;
+    }
+    event.preventDefault();
+    this.emit({ kind: 'remove' });
+  }
 }
 
 /** The heading a mount kind sits under. */

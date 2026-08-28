@@ -1,7 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import germanMessages from '../src/app/i18n/locales/de.json';
 import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
 import {
   acrossEveryFamily,
+  benchFollowedSelection,
   chooserOffered,
   editorOffered,
   familyControls,
@@ -16,6 +18,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { savedToBrowser } from './shell';
 
 /**
@@ -29,9 +32,13 @@ import { savedToBrowser } from './shell';
  */
 
 /** Creates a stock build and lands in the workspace with the ledger rendered. */
-async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
+async function openStockBuild(
+  page: Page,
+  hull = 'Anaconda',
+  create = 'Build stock hull',
+): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: create }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
@@ -51,7 +58,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
+  await benchFollowedSelection(page);
 }
 
 /**
@@ -72,7 +79,10 @@ async function fittedIdentityAt(page: Page, slotKey: string): Promise<string | n
     // manifest writes it in its own `CLASS` column — so what is compared is the
     // module, not the arrangement.
     const clone = identity.cloneNode(true) as HTMLElement;
-    for (const hidden of clone.querySelectorAll('.visually-hidden')) {
+    // What is drawn and what is read, and nothing that is neither: the ellipsis
+    // mark on a cut name is hidden from the accessibility tree and carries the
+    // whole name as its tip, so leaving it in would put the name in twice.
+    for (const hidden of clone.querySelectorAll('.visually-hidden, [aria-hidden="true"]')) {
       hidden.remove();
     }
     return (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
@@ -86,11 +96,19 @@ async function fittedIdentityAt(page: Page, slotKey: string): Promise<string | n
  * arrange an identity differently — the manifest gives the class its own column
  * and the ledger writes it into the row's code line — so what is compared is
  * the module, not the arrangement.
+ *
+ * Polled rather than read once. `fitCommitted` waits on the chooser, and the
+ * chooser and the ledger are rendered from the same signal but not in the same
+ * frame — on a replacement the chooser's marked-and-fitted row is already there
+ * from the fit before it, so the wait can pass with the ledger still one render
+ * behind and a single read then compares the module that was replaced.
  */
 async function expectLedgerCarries(page: Page, slotKey: string, identity: string): Promise<void> {
-  const fitted = (await fittedIdentityAt(page, slotKey))?.toLowerCase() ?? '';
+  const reading = async () => (await fittedIdentityAt(page, slotKey))?.toLowerCase() ?? '';
   for (const token of identity.split(/[·\s]+/).filter((part) => part.length > 1)) {
-    expect(fitted, `${slotKey} does not read as ${identity}`).toContain(token.toLowerCase());
+    await expect
+      .poll(reading, { message: `${slotKey} does not read as ${identity}` })
+      .toContain(token.toLowerCase());
   }
 }
 
@@ -268,6 +286,139 @@ test.describe('the slot ledger', () => {
     await openChooser(page);
     await page.getByRole('button', { name: /remove module/i }).click();
     await expect(page.locator('[data-slot-key="MediumHardpoint1"]')).toContainText(/empty/i);
+  });
+
+  test('empties a mount from its own row on the secondary button', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    const fitted = await fitFromChooser(page, () => 0);
+    await expectLedgerCarries(page, 'MediumHardpoint1', fitted);
+
+    // The row itself, not the chooser's control. It is a pointer shortcut for a
+    // Commander clearing several mounts, and `REMOVE MODULE` is still the drawn
+    // route (Commander request 2026-08-28).
+    const row = page.locator('[data-slot-key="MediumHardpoint1"]');
+    await row.click({ button: 'right' });
+    await expect(row).toContainText(/empty/i);
+  });
+
+  test('leaves a mount the package will not empty alone on the secondary button', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await revealMount(page, 'PowerPlant');
+
+    const row = page.locator('[data-slot-key="PowerPlant"]');
+    const before = await fittedIdentityAt(page, 'PowerPlant');
+    await row.click({ button: 'right' });
+
+    // A required mount has no removal to shortcut to, so the row is unchanged.
+    expect(await fittedIdentityAt(page, 'PowerPlant')).toBe(before);
+  });
+
+  /**
+   * German, because English is where this never happens.
+   *
+   * The Almanac publishes no German name for this suite, so the row draws the
+   * English one *and* the untranslated tag beside it — seventy-odd pixels more
+   * than the ledger has at a phone's width, and the only place in a stock build
+   * where the rule that cuts a name actually fires. Run in English the test
+   * would pass on its other branch for ever and prove nothing.
+   */
+  test.describe('in German', () => {
+    test.use({ locale: 'de-DE' });
+
+    /**
+     * A row cuts a long name short; it never loses one.
+     *
+     * The rule the ledger keeps is stated as a choice rather than as an
+     * outcome, because which of the two a row takes is the line's to decide: a
+     * name that fits is simply drawn, and a name that does not is cut with an
+     * ellipsis that is itself the control carrying the whole of it. What this
+     * refuses is a third option — drawing part of a name and offering no way to
+     * read the rest — which is what SC 1.4.4 is about and what `clippedText`
+     * stops trusting the moment `data-text-reachable` appears on a row.
+     *
+     * It is also the only thing watching that, at every text size. `clippedText`
+     * cannot be: the exemption that makes a cut acceptable is set by the same
+     * rule that cuts, so a lapse would exempt the sweep from noticing itself.
+     */
+    async function expectTheWholeNameIsReachable(page: Page): Promise<void> {
+      const row = await revealMount(page, 'PlanetaryApproachSuite');
+      await expectLedgerCarries(
+        page,
+        'PlanetaryApproachSuite',
+        'Advanced Planetary Approach Suite',
+      );
+
+      const mark = row.locator('.identity__more');
+      const drawnWhole = await row
+        .locator('.game-text__value')
+        .first()
+        .evaluate(
+          (node) => (node as HTMLElement).scrollWidth - (node as HTMLElement).clientWidth <= 1,
+        );
+      if (drawnWhole) {
+        // Nothing was cut, so nothing stands in for what was cut.
+        await expect(mark).toHaveCount(0);
+        await expect(row.locator('[data-text-reachable]')).toHaveCount(0);
+        return;
+      }
+
+      await expect(mark).toHaveCount(1);
+      await expect(mark.locator('.tooltip__tip')).toHaveText(/Advanced Planetary Approach Suite/i);
+      // A thumb, which is the input a painted ellipsis has no answer for.
+      await mark.click();
+      const bubble = mark.locator('.tooltip__tip--shown');
+      await expect(bubble).toBeVisible();
+
+      // And painted where it is drawn. A bubble is hung off its trigger, so any
+      // ancestor of that trigger which hides its overflow clips the bubble away
+      // — leaving a box with a size and a position that nothing renders into,
+      // which is exactly what `toBeVisible` reports as visible. Asked of the
+      // document rather than of the element, at the middle of the bubble.
+      const painted = await bubble.evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        const at = node.ownerDocument.elementFromPoint(
+          box.left + box.width / 2,
+          box.top + box.height / 2,
+        );
+        return at !== null && (at === node || node.contains(at));
+      });
+      expect(painted, 'the whole name is drawn where nothing paints it').toBe(true);
+    }
+
+    test('never loses a module name the row is too narrow to draw', async ({ page }) => {
+      // The stock Anaconda's own longest name, and the one the accessibility
+      // sweep reported cut: the Almanac publishes no German for this suite, so
+      // the row draws the English name *and* the untranslated tag beside it,
+      // which is more than a phone's ledger has. In English nothing here
+      // overflows and the test would prove nothing.
+      await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
+      await expectTheWholeNameIsReachable(page);
+    });
+
+    test('keeps the whole name reachable at doubled text', async ({ page }) => {
+      // Doubled text does not simply switch the cut off. The condition is the
+      // line, asked as a container query in `em` — so a narrow rail wraps and
+      // grows, while a rail that is still twenty characters wide at this size
+      // goes on cutting, and owes the same reachable name for it.
+      await withRootTextScale(page, DOUBLED_TEXT);
+      await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
+      await expectTheWholeNameIsReachable(page);
+    });
+  });
+
+  test('puts the caret in the search field on the key the hint names', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    await page.keyboard.press('Control+k');
+
+    // The field the hint sits beside, and not the browser's address bar: the
+    // combination is cancelled before the engine claims it.
+    await expect(page.locator('.search__field input')).toBeFocused();
   });
 
   test('offers no removal on a required mount, and says why', async ({ page }) => {

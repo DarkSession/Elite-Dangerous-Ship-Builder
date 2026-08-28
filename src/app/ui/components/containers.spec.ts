@@ -602,6 +602,38 @@ describe('Layer', () => {
     expect(describedText(query(fixture, 'dialog'))).toContain('Paste a SLEF payload.');
   });
 
+  it('draws a detail inside the title bar and associates it too', () => {
+    const fixture = renderComponent(Layer, {
+      title: 'Cargo Rack',
+      detail: 'Optional Internal 1 (Size 7)',
+      description: 'Paste a SLEF payload.',
+      dismissLabel: 'Close',
+      open: false,
+    });
+
+    // In the bar with the title, not under it: a name is part of what the bar
+    // says the screen is about, and prose is not.
+    const detail = query(fixture, '.layer__detail');
+    expect(query(fixture, '.layer__header').contains(detail)).toBe(true);
+    expect(textOf(detail)).toBe('Optional Internal 1 (Size 7)');
+
+    // Both supporting texts reach a reader, in the order they are drawn.
+    const described = describedText(query(fixture, 'dialog'));
+    expect(described).toContain('Optional Internal 1 (Size 7)');
+    expect(described).toContain('Paste a SLEF payload.');
+  });
+
+  it('names nothing where it was given no supporting text', () => {
+    const fixture = renderComponent(Layer, {
+      title: 'Import a build',
+      dismissLabel: 'Close',
+      open: false,
+    });
+
+    expect(query(fixture, 'dialog').getAttribute('aria-describedby')).toBeNull();
+    expect(element(fixture).querySelector('.layer__detail')).toBeNull();
+  });
+
   it('uses a native dialog, so background content is genuinely inert', () => {
     const fixture = renderComponent(Layer, {
       title: 'Import a build',

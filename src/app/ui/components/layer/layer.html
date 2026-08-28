@@ -7,14 +7,24 @@
 <dialog
   [class]="presentationClass()"
   [attr.aria-labelledby]="titleId"
-  [attr.aria-describedby]="description() ? descriptionId : null"
+  [attr.aria-describedby]="describedBy()"
   (cancel)="blockCancel($event)"
   (close)="closed()"
   (mousedown)="pressOn($event)"
   (click)="dismissFromBackdrop($event)"
 >
   <div class="layer__header">
-    <h2 class="layer__title" [id]="titleId">{{ title() }}</h2>
+    <div class="layer__identity">
+      <h2 class="layer__title" [id]="titleId">{{ title() }}</h2>
+      <!--
+        The subject's own label, in the bar with the title rather than under it.
+        A name is part of what the bar says the screen is about; a paragraph is
+        not, and stays below (`description`).
+      -->
+      @if (detail(); as detail) {
+        <p class="layer__detail" [id]="detailId">{{ detail }}</p>
+      }
+    </div>
     @if (dismissible()) {
       <button class="layer__dismiss" type="button" (click)="dismiss()">
         {{ dismissLabel() }}

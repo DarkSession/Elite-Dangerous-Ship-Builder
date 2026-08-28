@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { createFieldRelations } from '../field/field-relations';
 
 /** The input purposes this field covers. */
@@ -55,7 +62,26 @@ export class TextField {
     error: this.error,
   });
 
+  private readonly control = viewChild.required<ElementRef<HTMLInputElement>>('control');
+
   onInput(event: Event): void {
     this.changed.emit((event.target as HTMLInputElement).value);
+  }
+
+  /**
+   * Puts the caret in the field, and answers whether it arrived.
+   *
+   * For a caller that offers a way to reach the field from elsewhere on the
+   * screen. The control is the component's own, so reaching it is the
+   * component's job rather than the caller's. The answer matters because a
+   * field can be unreachable without being absent: an open modal makes the rest
+   * of the document inert, and a caller that cancelled a key press on the
+   * strength of a focus that never landed would leave the press doing nothing
+   * at all.
+   */
+  focus(): boolean {
+    const control = this.control().nativeElement;
+    control.focus();
+    return control.ownerDocument.activeElement === control;
   }
 }

@@ -184,11 +184,13 @@ route's `h1` to the ledger's kind headings, which leaves a reader unable to tell
 moved into a subsection or out of one. This is the invisible accessibility floor the design-canvas
 rule already permits, not an addition to either canvas.
 
-**`⌘K` search shortcut, ruled 2026-08-21.** Adopted as drawn, as an _unrequired_ affordance. It
-cannot be a requirement or an acceptance gate — constitution V puts criterion 2.1.4 out of scope and
-forbids any requirement demanding keyboard operation — and it is never the only route to the field.
-The hint is application text: localized, and resolved per platform rather than shipping the macOS
-`⌘` literal everywhere. See [module-replacement.md](./module-replacement.md).
+**`⌘K` search shortcut, ruled 2026-08-21.** Adopted as drawn, as an _unrequired_ affordance, and
+wired on 2026-08-28. It cannot be a requirement or an acceptance gate — constitution V puts criterion
+2.1.4 out of scope and forbids any requirement demanding keyboard operation — and it is never the
+only route to the field. The hint is application text: localized, and resolved per platform rather
+than shipping the macOS `⌘` literal everywhere. The key event is cancelled, or the browser claims it
+for its own address bar and the hint names a key the page never receives. See
+[module-replacement.md](./module-replacement.md).
 
 **`G5 ROLL` label, ruled 2026-08-21 — since adopted by the design.** The canvas now draws
 `MATERIALS · G5`, so specification and design agree and the heading is the canvas's own form. A

@@ -80,6 +80,12 @@ a pair is only a pair while both halves can hold what is in them.
 - The bar stays drawn from the **bare** resistance, the column it sits beside. Two lengths on one
   track, or a length drawn from one column and printed beside another, would be a reading the canvas
   does not draw.
+- **The rows are set tight. Ruled 2026-08-28 (Commander request).** A cell takes 4px of block inset,
+  not a control's 10px, which puts a damage row at 26px. A table row is not a control and has no
+  target to hold, and at 38px there was more air between one resistance and the next than either of
+  them occupied — half a screen of it across the two cards. 26px is what the offence panel's own
+  range-band rows already read at, so the two analyses agree. The inset is the cells', so the column
+  heads and the scale under the bars close up with the rows.
 - An unavailable result shows every package issue in order. The UI never derives or announces a
   different generator verdict, and puts no action in their place.
 - Shield and recovery are independent: either complete result remains visible if the other is

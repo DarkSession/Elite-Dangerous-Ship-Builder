@@ -298,12 +298,14 @@ export class EngineeringEditor {
   });
 
   /**
-   * The mount, under the module — except on a core mount.
+   * The mount, under the module and inside the bar with it.
    *
    * A core module names its own mount: `Power Plant` in the bar over
    * `Power Plant` under it is the same word twice. Every other kind is one of
    * several the module could be in, so the mount is the fact that tells them
-   * apart (Commander request 2026-08-27).
+   * apart (Commander request 2026-08-27). It sits in the title bar rather than
+   * under it, in the bar's own tracked face, which is also what makes the space
+   * in `Optional Internal 1 (Size 7)` legible (Commander request 2026-08-28).
    */
   readonly layerDetail = computed(() => {
     const slot = this.slot();

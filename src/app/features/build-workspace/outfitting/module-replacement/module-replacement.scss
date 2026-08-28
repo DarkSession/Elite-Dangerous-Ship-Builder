@@ -137,15 +137,6 @@
   flex: none;
 }
 
-// The measure kept, the control gone. `visibility: hidden` removes it from the
-// accessibility tree and the tab order as surely as `@if` would, and unlike
-// `@if` it leaves the header row the width it had — which is what stops the
-// search field resizing under a Commander's hands as they move between a fitted
-// mount and an empty one.
-.replacement__remove--reserved {
-  visibility: hidden;
-}
-
 .replacement__no-matches {
   @include layout.stack(var(--edsb-space-stack-tight));
 }

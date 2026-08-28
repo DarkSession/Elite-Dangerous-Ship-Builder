@@ -48,21 +48,21 @@
 
       <!--
         Canvas 1c's `REMOVE MODULE`, drawn in this panel's header beside the
-        search, which is the only place either canvas draws it. Its place is
-        kept on a mount with nothing to remove rather than closed up: the canvas
-        keeps it, and without it the search field beside it grows and shrinks as
-        a Commander moves down the ledger. `visibility: hidden` is the canvas's
-        own device for this — it takes the control out of the reading order and
-        the tab order and leaves only its measure behind (wave 8).
+        search, which is the only place either canvas draws it. A mount with
+        nothing to remove closes the space up rather than reserving it: the
+        header wraps at every width this panel is drawn at, so a reserved
+        control is not a gap beside the search but a whole blank row under it —
+        54px of nothing over most of an unfitted hull. The measure a reserve
+        would hold is held another way: the search takes the row it is on
+        whether or not the control is there, so it does not resize as a
+        Commander moves down the ledger (Commander request 2026-08-28,
+        superseding wave 8).
       -->
-      <button
-        class="replacement__remove"
-        type="button"
-        [class.replacement__remove--reserved]="!canRemove()"
-        (click)="remove()"
-      >
-        {{ removeLabel() }}
-      </button>
+      @if (canRemove()) {
+        <button class="replacement__remove" type="button" (click)="remove()">
+          {{ removeLabel() }}
+        </button>
+      }
     </div>
   }
 

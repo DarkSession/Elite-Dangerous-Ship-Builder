@@ -3,6 +3,7 @@ import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loado
 import { sweepOutfittingState } from './accessibility';
 import {
   applyDraft,
+  benchFollowedSelection,
   chooseEffect,
   chooseFirstEffect,
   chooseRecipe,
@@ -45,7 +46,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
+  await benchFollowedSelection(page);
 }
 
 /** Opens the engineering editor for the selected mount, at whatever width. */

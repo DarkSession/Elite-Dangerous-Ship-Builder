@@ -1,7 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
+import { ElementSizeAdapter } from '../../platform/browser/element-size.adapter';
 import { MessageService } from '../../i18n/message.service';
 import { GameText } from '../components/game-text/game-text';
+import { Tooltip } from '../components/tooltip/tooltip';
 
 /**
  * What identifies one module.
@@ -20,16 +32,30 @@ import { GameText } from '../components/game-text/game-text';
  */
 @Component({
   selector: 'edsb-module-identity-badge',
-  imports: [GameText],
+  imports: [GameText, Tooltip],
   templateUrl: './module-identity-badge.html',
   styleUrl: './module-identity-badge.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModuleIdentityBadge {
   readonly #messages = inject(MessageService);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly #sizes = inject(ElementSizeAdapter);
 
   /** The package's name for the article, with its provenance. */
   readonly name = input.required<GameTextPresentation>();
+
+  /**
+   * The whole name, offered as a tip wherever the caller's rule cuts it short.
+   *
+   * A caller that truncates this name has to give the whole of it back, and an
+   * ellipsis the browser paints cannot be reached by a thumb or a pointer. Set
+   * this and the ellipsis becomes the system's own tooltip instead — drawn only
+   * while the name is actually too long for the line it is on, so a name that
+   * fits carries no mark at all. Left unset, nothing here truncates and there is
+   * nothing to reach.
+   */
+  readonly nameTip = input<string | null>(null);
 
   /** The package identity. Rendered only where two rows would otherwise match. */
   readonly symbol = input<string | null>(null);
@@ -109,6 +135,34 @@ export class ModuleIdentityBadge {
       parts.push(this.symbol()!);
     }
     return parts.length === 0 ? null : parts.join(' · ');
+  });
+
+  private readonly nameText = viewChild(GameText);
+
+  /** Whether the caller's rule is currently cutting the name short. */
+  protected readonly cut = signal(false);
+
+  /**
+   * Watches the line the name is on, and asks the name whether it still fits.
+   *
+   * Only where a tip was offered, so the ledger pays for this and no other
+   * surface does. It settles rather than oscillates: the mark only appears
+   * while the name is cut, and taking a mark's width off a line that was
+   * already too short cannot make the name fit.
+   */
+  readonly #watch = effect((onCleanup) => {
+    if (this.nameTip() === null) {
+      this.cut.set(false);
+      return;
+    }
+    // Read so a new name is re-measured: a longer name in an unchanged box
+    // overflows without the box ever resizing.
+    this.name();
+    onCleanup(
+      this.#sizes.observe(this.#host.nativeElement, () =>
+        this.cut.set(this.nameText()?.cut() ?? false),
+      ),
+    );
   });
 
   /** The class and rating, spelled out for anyone reading the code aloud. */

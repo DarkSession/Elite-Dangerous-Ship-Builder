@@ -10,10 +10,34 @@
     <edsb-game-text
       class="identity__name"
       [class.identity__name--compact]="compact()"
+      [attr.data-text-reachable]="cut() ? '' : null"
       [text]="name().text"
       [language]="name().language"
       [translationState]="name().translationState"
-    />
+    >
+      <!--
+        The ellipsis, made reachable, and projected into the game text so it
+        lands against the value it abbreviates rather than after the
+        untranslated tag. It draws the `…` and `text-overflow` does not, because
+        a browser paints that one and no thumb can ask it what it stands for. It
+        is the same presentational tooltip the route marks on this line already
+        use: a span rather than a button, because the row around it is itself a
+        control, and hidden from the accessibility tree because the whole name
+        is in the DOM beside it and is read out whole whatever the drawing does
+        with it.
+      -->
+      @if (nameTip(); as tip) {
+        @if (cut()) {
+          <edsb-tooltip
+            class="identity__more"
+            aria-hidden="true"
+            [presentational]="true"
+            [tip]="tip"
+            >…</edsb-tooltip
+          >
+        }
+      }
+    </edsb-game-text>
     <ng-content />
   </span>
 

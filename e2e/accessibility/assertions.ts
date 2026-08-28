@@ -552,6 +552,19 @@ export async function clippedText(page: Page): Promise<ClippedElement[]> {
         if (element.clientWidth <= 1 && element.clientHeight <= 1) {
           return false;
         }
+        // Text the surface cuts on purpose and hands back another way.
+        //
+        // Marked by the element that owns the cut, and only ever alongside a
+        // control that produces the whole text on the same screen — the ledger
+        // row's ellipsis is the system's tooltip carrying the module's full
+        // name, reachable by pointer, thumb and keyboard alike. What 1.4.4 and
+        // this assertion are about is content the drawing *loses*; content the
+        // drawing folds away behind a control it also draws is not lost. A
+        // surface that sets the attribute without drawing that control is
+        // lying, which is what the ledger's own truncation spec is for.
+        if (element.closest('[data-text-reachable]') !== null) {
+          return false;
+        }
         // Only a box that actually clips can cut text off. Content that
         // overflows a visible box is still painted and still readable — a
         // diacritic rising past its line box is the common case, and reporting

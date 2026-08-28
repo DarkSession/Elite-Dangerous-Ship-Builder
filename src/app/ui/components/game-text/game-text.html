@@ -7,6 +7,7 @@
     <span class="game-text__unavailable">{{ unavailableText() }}</span>
   } @else {
     <span
+      #value
       class="game-text__value"
       data-bidi-isolate
       [attr.lang]="language()"
@@ -14,6 +15,14 @@
       [attr.aria-describedby]="isCanonical() ? disclosureId : null"
       >{{ text() }}</span
     >
+    <!--
+      A mark about the drawing of the value, beside the value. The ledger cuts a
+      name and projects the ellipsis that stands for the rest of it here, where
+      it lands against the text it abbreviates rather than after the
+      untranslated tag — which is a fact about the language and not about what
+      was cut.
+    -->
+    <ng-content />
 
     @if (isCanonical()) {
       <span class="game-text__tag">{{ untranslatedLabel() }}</span>
