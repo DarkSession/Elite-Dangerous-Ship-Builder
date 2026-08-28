@@ -241,7 +241,7 @@ are:
   eagerly. Opening the modal never enters a loading/error state and never causes a request.
 - Compose feature 011's dialog/facts/notices/actions, with a centered wide treatment and bottom-sheet
   narrow treatment matching `.design` while meeting reflow, touch, screen-reader and reduced-motion
-  requirements. The frame already renders shell actions in both a wide row and a compact action
+  requirements. The frame already renders shell actions in both a wide row and a folded action
   layer, so the entry needs no new frame composition.
 
 No planning clarification marker or unresolved upstream dependency remains.

@@ -312,18 +312,21 @@ describe('HelpPresenter', () => {
       expect([...hrefs.keys()].sort()).toEqual(['application', 'library']);
     });
 
-    it('offers no destination beyond the two licences, and no bare URL as text', () => {
-      const index = presenter().view().licence.index;
+    it('links two of the summary lines and no more, and draws no URL as text', () => {
+      const view = presenter().view();
+      const index = view.licence.index;
 
-      // Two links, both complete legal terms. An issue tracker, a homepage or a
-      // docs site reaching this list would be a navigation nobody accepted.
+      // Two links in the summary, both complete legal terms. An issue tracker
+      // or a docs site reaching this list would be a navigation nobody
+      // accepted; the source is `ABOUT`'s sentence and is not in this list.
       const links = index.filter((entry) => entry.link !== null);
       expect(links).toHaveLength(2);
 
-      // And no URL is drawn as words. A Commander reads what the destination
-      // is, not where it is: an address in the visible text is a thing to
-      // mistype, and it would wrap the line sideways at 200% text.
-      for (const entry of index) {
+      // And no URL is drawn as words, in any sentence that carries a link. A
+      // Commander reads what the destination is, not where it is: an address in
+      // the visible text is a thing to mistype, and it would wrap the line
+      // sideways at 200% text.
+      for (const entry of [...index, view.about.source]) {
         expect(entry.before).not.toMatch(/https?:/);
         expect(entry.after).not.toMatch(/https?:/);
         expect(entry.link?.label ?? '').not.toMatch(/https?:/);

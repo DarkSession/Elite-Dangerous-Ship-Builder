@@ -44,7 +44,7 @@ export interface ShellAction {
    * Only the reference's `?` uses it, and only where the reference draws it:
    * on the trailing edge of the wide command bar, where a bar that is already
    * carrying a build's name has no room for a fourth phrase. It never replaces
-   * the label — `label` remains the action's accessible name and the compact
+   * the label — `label` remains the action's accessible name and the folded
    * action layer goes on drawing it in words, as canvas 1d does.
    */
   readonly symbol?: string;

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectRelationship } from './accessibility/assertions';
+import { commandBarActionState } from './outfitting-surfaces';
 import { reachShellAction, savedToBrowser } from './shell';
 
 /**
@@ -763,6 +764,13 @@ test.describe('with no build to pass on', () => {
 
     // The honest state: the action is not published rather than published and
     // refusing. The canvas draws no unavailable panel, and one is not invented.
+    //
+    // Read off the bar's own row rather than by role: where the bar is folded
+    // that row is `display: none` and leaves the accessibility tree, so a role
+    // query finds nothing whether or not the action was published. The row is
+    // in the document at every width, so this asks the question at all five
+    // profiles rather than only at the widest.
+    await expect(commandBarActionState(page, /^export$/i)).toHaveCount(0);
     await expect(page.getByRole('button', { name: /^export$/i })).toHaveCount(0);
     await expect(page.getByRole('dialog', { name: /export build/i })).toHaveCount(0);
   });

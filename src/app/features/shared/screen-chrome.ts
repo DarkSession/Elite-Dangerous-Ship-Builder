@@ -31,7 +31,7 @@ export interface ScreenAction {
  *
  * The actions are here for the same reason. The reference draws `↶ UNDO`,
  * `REDO ↷`, `EXPORT` and `SAVE` in the command bar at wide width and in the
- * compact overflow menu at narrow width — the frame already renders both
+ * folded bar's overflow menu — the frame already renders both
  * placements from one list, so a screen publishes its actions and the shell
  * places them. A second pair of buttons drawn inside the page would be the
  * same actions twice, in a place neither canvas puts them (canvas 1c's command

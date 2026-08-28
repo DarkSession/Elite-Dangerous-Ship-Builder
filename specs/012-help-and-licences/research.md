@@ -103,19 +103,22 @@ unsupported, nondeterministic, personal or misleading.
 
 ## External destinations
 
-**Decision**: Keep one audited application-owned constant for
-`https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE`. The generator accepts
-only HTTPS, the exact GitHub host/repository/ref/path, and no query, fragment, credentials or port.
-This is the sole modal action described as the destination for remaining licence and third-party
-terms.
+**Decision**: Keep audited application-owned constants for every address the modal offers. The
+generator accepts only HTTPS, the exact GitHub host/repository/ref/path, and no query, fragment,
+credentials or port, and it checks each address against the purpose its own id declares.
 
-It is also the **only** destination. FR-009's Almanac package-defect action is withdrawn (spec
-clarification 2026-08-25): the design reference draws no such control, and the installed package's
-`bugs.url` is therefore not read at all. **Amended 2026-08-25:** the repository-`LICENSE` link is
-withdrawn too. The reference draws no control in the modal other than its close, so there is no
-anchor, no warning text and no destination rendered anywhere; the address is still validated by the
-generator, because a wrong one for the terms the source distribution carries is still a release
-failure.
+There are three, and no more. Two are complete licence documents — this repository's `LICENSE` and
+the bundled library's — and one is this repository's own page, which `ABOUT` offers as where the
+source is. FR-009's Almanac package-defect action is withdrawn (spec clarification 2026-08-25): the
+design reference draws no such control, and the installed package's `bugs.url` is therefore not read
+at all.
+
+**Amendment history.** **2026-08-25:** the repository-`LICENSE` link was withdrawn from the modal on
+a reading of the reference as drawing no navigation, and the address was validated without being
+rendered. **2026-08-26:** that reading is corrected — the reference draws no licence _control_, and
+linked words inside a sentence are a different shape — so the link returns and the bundled library's
+joins it. **2026-08-28:** the source destination joins them, at the owner's request, under the same
+audit.
 
 **Rationale**: A checked-in allowlisted repository licence location is auditable and independent of
 developer git remotes. An exact URL makes it straightforward to prove that no route, fragment, SLEF

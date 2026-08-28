@@ -667,7 +667,7 @@ export async function commandBarAction(page: Page, name: RegExp): Promise<Locato
     return direct;
   }
 
-  // The compact composition keeps them behind the menu. Whether it is open is
+  // The folded composition keeps them behind the menu. Whether it is open is
   // read from the control's own state rather than from its label, which changes
   // when it opens, or from whether a button inside it can be seen, which races
   // the re-render that follows the last press.

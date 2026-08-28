@@ -66,9 +66,10 @@ grade rather than at the roll they have.
 primary one, so the best roll of a grade is not better in every figure it draws — a completed Dirty
 Drive Tuning reads more thrust and more thermal load together. "The best roll of that grade" is what
 normalising quality to 100% actually produces and is all FR-013 supports; anything stronger than
-that would be the answer making a claim the requirement does not. That wording adds nothing FR-013
-does not already require, which is check 1 above, and it is the honest half of principle IV, which
-is why it is in the answer rather than left for a Commander to discover against the game.
+that would be the answer making a claim the requirement does not. "The best roll of that grade"
+adds nothing FR-013 does not already require, which is check 1 above, and it is the honest half of
+principle IV — which is why that phrase is in the answer rather than left for a Commander to
+discover against the game.
 
 ## Excluded from the reference mock
 

@@ -120,7 +120,7 @@ Expected:
 
 - exactly one labelled modal appears above the unchanged capability;
 - the URL, history length, build revision, selected capability/slot and stored records do not change;
-- the wide action and the compact action-layer item reach the same single modal;
+- the wide action and the folded action-layer item reach the same single modal;
 - close returns to the same underlying state; no focus/keyboard behavior is asserted;
 - no route chunk, help file, legal file or cross-origin request occurs on open;
 - SC-005: at the mobile viewport under 4× CPU slowdown, the first complete frame of the

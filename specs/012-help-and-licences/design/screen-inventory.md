@@ -39,10 +39,10 @@ standalone help page or on a per-surface control.
 
 ## Shared states
 
-| Surface     | Required states                                                                              |
-| ----------- | -------------------------------------------------------------------------------------------- |
-| Frame entry | wide row action, compact action-layer item, no-build, active-build, translated/expanded, RTL |
-| Modal       | offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom          |
+| Surface     | Required states                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Frame entry | wide row action, folded action-layer item, no-build, active-build, translated/expanded, RTL |
+| Modal       | offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom         |
 
 There is no runtime loading, missing-disclaimer, destination-error or stale-artifact state. Those
 conditions fail generation/release. There is no release/non-release state either: the generator
@@ -187,7 +187,7 @@ Automated journeys open the modal from every row of the [Release coverage
 ledger](#release-coverage-ledger) and include at least:
 
 1. a no-build hull-catalogue capability through the wide frame action;
-2. an active workspace through the compact action-layer item;
+2. an active workspace through the folded action-layer item;
 3. a package artwork capability — hull detail, whose artwork region the frame surrounds; and
 4. a package value capability — the outfitting ledger and status rail.
 

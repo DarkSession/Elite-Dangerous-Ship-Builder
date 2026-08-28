@@ -642,7 +642,7 @@
   --edsb-measure-defence-resist: 2.875rem; // 46
   --edsb-measure-defence-value: 3.5rem; //    56
 
-  // The compact action menu, 196px in canvas 1d, and the width it may grow to
+  // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
   --edsb-measure-menu-row: 2.875rem;
   --edsb-measure-menu-min: 12.25rem;
@@ -660,7 +660,7 @@
 
   // The list down the leading edge of a two-region layer: 236px in canvas 1c's
   // export dialog, where the formats stand beside the payload rather than above
-  // it. Narrower than the compact action menu, because it holds a tracked title
+  // it. Narrower than the folded action menu, because it holds a tracked title
   // over a short description and nothing else.
   --edsb-measure-layer-aside: 14.75rem;
 }
