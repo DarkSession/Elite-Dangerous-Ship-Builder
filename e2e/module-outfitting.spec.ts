@@ -18,6 +18,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { savedToBrowser } from './shell';
 
 /**
@@ -330,20 +331,19 @@ test.describe('the slot ledger', () => {
     /**
      * A row cuts a long name short; it never loses one.
      *
-     * The rule the ledger keeps is stated as a choice rather than as an outcome,
-     * because which of the two a row takes is the width's to decide: a name that
-     * fits is simply drawn, and a name that does not is cut with an ellipsis that
-     * is itself the control carrying the whole of it. What is checked is that no
-     * width takes a third option — drawing part of a name and offering no way to
+     * The rule the ledger keeps is stated as a choice rather than as an
+     * outcome, because which of the two a row takes is the line's to decide: a
+     * name that fits is simply drawn, and a name that does not is cut with an
+     * ellipsis that is itself the control carrying the whole of it. What this
+     * refuses is a third option — drawing part of a name and offering no way to
      * read the rest — which is what SC 1.4.4 is about and what `clippedText`
      * stops trusting the moment `data-text-reachable` appears on a row.
+     *
+     * It is also the only thing watching that, at every text size. `clippedText`
+     * cannot be: the exemption that makes a cut acceptable is set by the same
+     * rule that cuts, so a lapse would exempt the sweep from noticing itself.
      */
-    test('never loses a module name the row is too narrow to draw', async ({ page }) => {
-      // The stock Anaconda's own longest name, and the one the accessibility
-      // sweep reported cut: at 390 pixels the ledger gives a name about thirty
-      // characters and this is thirty-two.
-      const suite = /Advanced Planetary Approach Suite/i;
-      await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
+    async function expectTheWholeNameIsReachable(page: Page): Promise<void> {
       const row = await revealMount(page, 'PlanetaryApproachSuite');
       await expectLedgerCarries(
         page,
@@ -366,7 +366,7 @@ test.describe('the slot ledger', () => {
       }
 
       await expect(mark).toHaveCount(1);
-      await expect(mark.locator('.tooltip__tip')).toHaveText(suite);
+      await expect(mark.locator('.tooltip__tip')).toHaveText(/Advanced Planetary Approach Suite/i);
       // A thumb, which is the input a painted ellipsis has no answer for.
       await mark.click();
       const bubble = mark.locator('.tooltip__tip--shown');
@@ -386,6 +386,26 @@ test.describe('the slot ledger', () => {
         return at !== null && (at === node || node.contains(at));
       });
       expect(painted, 'the whole name is drawn where nothing paints it').toBe(true);
+    }
+
+    test('never loses a module name the row is too narrow to draw', async ({ page }) => {
+      // The stock Anaconda's own longest name, and the one the accessibility
+      // sweep reported cut: the Almanac publishes no German for this suite, so
+      // the row draws the English name *and* the untranslated tag beside it,
+      // which is more than a phone's ledger has. In English nothing here
+      // overflows and the test would prove nothing.
+      await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
+      await expectTheWholeNameIsReachable(page);
+    });
+
+    test('keeps the whole name reachable at doubled text', async ({ page }) => {
+      // Doubled text does not simply switch the cut off. The condition is the
+      // line, asked as a container query in `em` — so a narrow rail wraps and
+      // grows, while a rail that is still twenty characters wide at this size
+      // goes on cutting, and owes the same reachable name for it.
+      await withRootTextScale(page, DOUBLED_TEXT);
+      await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
+      await expectTheWholeNameIsReachable(page);
     });
   });
 

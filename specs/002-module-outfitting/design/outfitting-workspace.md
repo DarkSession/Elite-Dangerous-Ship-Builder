@@ -289,11 +289,13 @@ where this row never overflows.
 - **Nor a mark.** The tag and the acquisition icons are `flex: none`; only the name shrinks.
 - **The cut applies only while a line will hold a name**, asked as a container query in `em` on the
   row itself — `em` there is the row's own font size, so `20em` is "twenty characters' worth of
-  line". A Commander who has doubled their text size, or a translation that runs half again as long,
-  is asking for a line this rail cannot give, and the row goes back to wrapping and growing there.
-  That is not a nicety: cutting a name off is loss of content, and the constitution puts 200% text
-  in scope (principle V). The end-to-end suite measures it — `clippedText` over every expanded,
-  mirrored and doubled-text sweep — so the condition is enforced rather than asserted.
+  line". A rail that cannot give that much — a narrow one, or one whose Commander has doubled their
+  text size — wraps and grows instead. It is the line that decides and not the text size: a rail
+  still twenty characters wide at 200% goes on cutting, and owes the same reachable name for it.
+  `never loses a module name the row is too narrow to draw` and `keeps the whole name reachable at
+doubled text` are what hold that, and they have to be tests of their own: `clippedText` cannot
+  watch this, because the `data-text-reachable` exemption that makes a cut acceptable is set by the
+  same rule that cuts, so a lapse would exempt the sweep from noticing it.
 
 A row's second line is **one line in one ink**: `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE`, joined
 with the canvas's own separator and set in the faint ink the canvas sets it in. It is not a row of
