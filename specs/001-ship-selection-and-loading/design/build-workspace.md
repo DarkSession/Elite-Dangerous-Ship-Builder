@@ -24,24 +24,24 @@ Canvas 1c supplies the wide workspace command hierarchy: build name/hull identit
 
 ## States
 
-| State                              | Required presentation and behavior                                                                                                                                                                                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship. Reached by deleting the record this page holds, and not treated as an error when it is.                                                              |
-| Unnamed stock/link build           | Title from the build's ship name, ident or hull, as the library titles it, set apart from a given name.                                                                                                                                     |
-| Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.                                                                                                                                       |
-| Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.                                                                                                                               |
-| Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                                                                                                                                                 |
-| Persistence failed/quota           | Blocking status explains that editing remains usable; manage/retry actions remain available.                                                                                                                                                |
-| Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance.                                                                                                                              |
-| Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                                                                                                                                             |
-| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                                                                                                                                                 |
-| Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.                                                                                                                                      |
-| Save, unnamed build                | No mode is drawn: saving as a new build is the only thing the commit can do. The name starts empty and the build’s own title is not typed in for the Commander, because a name the application filled in is not a name they gave.           |
-| Save, opened from a save           | Two modes, the first selected, each led by a square marker filled on the one that stands: replace that save, stating when it was last saved, or keep both as a new build. The name starts from the record’s own and the note from its note. |
-| Save, duplicate name               | The message line states how many stored builds already use the typed name. Saving stays available and creates a separate record; visual name equality never authorizes a replacement.                                                       |
-| Save, replacing unavailable        | Where the browser has no Web Locks there is nothing to choose between, so no mode is drawn and the message line says why. Saving as a new build and cancelling both remain.                                                                 |
-| Conflict                           | Another page saved the record after this one opened it: overwrite, keep both and cancel, each stating which versions survive. No lock is held while it is shown.                                                                            |
-| Conflict changed again             | A third revision appeared while the Commander decided: the observed version is re-read and the question asked again, never a silent replacement.                                                                                            |
+| State                              | Required presentation and behavior                                                                                                                                                                                                            |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No active build                    | Explain how to select a hull/open a save/paste a link; no fabricated placeholder ship. Reached by deleting the record this page holds, and not treated as an error when it is.                                                                |
+| Unnamed stock/link build           | Title from the build's ship name, ident or hull, as the library titles it, set apart from a given name.                                                                                                                                       |
+| Named build, unedited              | Show the name the Commander gave the record. Nothing is written; what is on screen is what was saved.                                                                                                                                         |
+| Named build, edited                | Show the name it came from and that the edits are their own unnamed entry until saved; the save is untouched.                                                                                                                                 |
+| Persistence saving/saved           | Nonblocking status; announcements are polite and coalesced.                                                                                                                                                                                   |
+| Persistence failed/quota           | Blocking status explains that editing remains usable; manage/retry actions remain available.                                                                                                                                                  |
+| Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance.                                                                                                                                |
+| Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                                                                                                                                               |
+| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                                                                                                                                                   |
+| Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.                                                                                                                                        |
+| Save, unnamed build                | No mode is drawn: saving as a new build is the only thing the commit can do. The name starts from what the build is already called — its ship name, its ident, or its hull — which is the rule the library titles an unnamed row by (FR-010). |
+| Save, opened from a save           | Two modes, the first selected, each led by a square marker filled on the one that stands: replace that save, stating when it was last saved, or keep both as a new build. The name starts from the record’s own and the note from its note.   |
+| Save, duplicate name               | The message line states how many stored builds already use the typed name. Saving stays available and creates a separate record; visual name equality never authorizes a replacement.                                                         |
+| Save, replacing unavailable        | Where the browser has no Web Locks there is nothing to choose between, so no mode is drawn and the message line says why. Saving as a new build and cancelling both remain.                                                                   |
+| Conflict                           | Another page saved the record after this one opened it: overwrite, keep both and cancel, each stating which versions survive. No lock is held while it is shown.                                                                              |
+| Conflict changed again             | A third revision appeared while the Commander decided: the observed version is re-read and the question asked again, never a silent replacement.                                                                                              |
 
 ## URL lifecycle
 
@@ -66,6 +66,21 @@ Visibility loss/pagehide requests a best-effort flush. A manual save takes the t
   notice still gets them. Conflict, quota and link refusal keep their visible treatment —
   those are blocking conditions a Commander has to act on, not status.
 - Preview states cover no-build, unnamed/named/link, persistence failures, valid/invalid/refused links, and the save layer’s unnamed, opened-from-a-save, duplicate-name and locks-unavailable states, at all core widths. The replacement-confirmation preview is withdrawn with the state.
+
+### The save layer's name, 2026-08-28 (Commander request)
+
+Reported as an always-empty dialog. The layer used to start its name field from the record the build
+was opened from and from nothing otherwise, on the reasoning that a name the application filled in is
+not a name a Commander gave. The common way to reach `SAVE` is on a build just made from a hull,
+where there is no such record, so the field was blank almost every time it was opened.
+
+It now starts from what the build is already called: its ship name, its ident, or its hull — FR-010's
+rule for titling an unnamed record, applied to the build that is open and read from one place so the
+layer and the library cannot disagree. It is still the Commander's to overwrite before they press
+anything, and a build with something to replace still starts from that record's own name.
+
+The two modes were not part of the defect and are unchanged: they are drawn where there is a save to
+replace, replacing selected, and not drawn at all where there is nothing to replace.
 
 ## Reference composition
 

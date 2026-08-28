@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { deriveBuildTitle } from '../../domain/build/build-title';
 import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
@@ -559,12 +560,10 @@ export class BuildLibraryPage {
    * clarification 2026-08-25).
    */
   #derivedTitle(record: LocalRecordV1): string {
-    const build = record.build;
-    return (
-      build.shipName?.trim() ||
-      build.shipIdent?.trim() ||
-      this.#hullName(record.hullSymbol) ||
-      this.#messages.message('library.record.unnamed')
+    return deriveBuildTitle(
+      record.build,
+      this.#hullName(record.hullSymbol),
+      this.#messages.message('library.record.unnamed'),
     );
   }
 

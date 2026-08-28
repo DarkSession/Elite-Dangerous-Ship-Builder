@@ -317,6 +317,9 @@ test.describe('the build library', () => {
     // A closed dialog still holds what is in it, so opening has to be a reset:
     // otherwise the next Commander to press SAVE finds an abandoned name in the
     // field, under a duplicate count worked out for a different one.
+    //
+    // The reset lands on what the build is called rather than on nothing since
+    // 2026-08-28 — the abandoned draft is still what must not survive.
     await createBuild(page);
 
     await reachShellAction(page, /^Save$/);
@@ -325,7 +328,7 @@ test.describe('the build library', () => {
     await dialog.getByRole('button', { name: 'Cancel' }).click();
 
     await reachShellAction(page, /^Save$/);
-    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('');
+    await expect(dialog.getByRole('textbox', { name: 'Build name' })).toHaveValue('Anaconda');
   });
 
   test('writes the note with the build, and keeps it out of the link', async ({ page }) => {

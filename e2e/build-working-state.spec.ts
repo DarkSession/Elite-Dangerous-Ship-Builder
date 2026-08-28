@@ -289,6 +289,56 @@ test.describe('the tab’s working build', () => {
     }
   });
 
+  test('opens the save layer on what the build is already called', async ({ page }) => {
+    // Reported empty 2026-08-28: the common way to reach SAVE is on a build just
+    // made from a hull, and the field started blank there. It starts from what
+    // the build is called — the ship's name, its ident, or the hull — which is
+    // the same rule the library titles an unnamed row by (FR-010).
+    await createBuild(page);
+    await reachShellAction(page, /^Save$/);
+
+    const layer = page.getByRole('dialog', { name: 'Save build' });
+    await expect(layer.getByRole('textbox', { name: 'Build name' })).toHaveValue('Anaconda');
+
+    // Nothing to replace yet, so the layer asks nothing: the pair of modes or
+    // neither.
+    await expect(layer.locator('.save__modes .choice')).toHaveCount(0);
+  });
+
+  test('offers both modes once the build has a save to replace', async ({ page }) => {
+    // The other half of the same report. A build that was saved, or opened from
+    // a save, must be able to choose between replacing it and keeping both.
+    test.slow();
+    await createBuild(page);
+    await savedToBrowser(page);
+    await saveActiveBuild(page, 'Explorer');
+    await reachShellAction(page, /^Save$/);
+
+    const layer = page.getByRole('dialog', { name: 'Save build' });
+    await expect(layer.getByRole('textbox', { name: 'Build name' })).toHaveValue('Explorer');
+    await expect(layer.getByRole('radio')).toHaveCount(2);
+    // Replacing is the one that stands, and it names the record it would take.
+    await expect(layer.getByRole('radio').first()).toBeChecked();
+    await expect(layer.getByText(/Overwrite/)).toBeVisible();
+    await page.getByRole('button', { name: /^Cancel$/i }).click();
+
+    // The same offer after opening that save from the library, and still there
+    // once an edit has forked the working record away from it: what the layer
+    // offers to replace is the build's provenance, not whether it is unedited.
+    await reachShellLink(page, 'Open saved build');
+    await chooseRecord(page, 'Explorer');
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/build(#|$)/);
+    await renameShip(page, 'Vindicator');
+
+    await reachShellAction(page, /^Save$/);
+    await expect(layer.getByRole('radio')).toHaveCount(2);
+    await expect(layer.getByRole('textbox', { name: 'Build name' })).toHaveValue('Explorer');
+  });
+
   test('writes nothing to a saved build when it is opened', async ({ page }) => {
     // A build, a named save, and an open — three journeys' worth of waiting on
     // one page, which runs past the default budget on a loaded machine.
