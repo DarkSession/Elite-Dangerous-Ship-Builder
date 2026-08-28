@@ -127,12 +127,12 @@ cover the final focus/reading target.
   the name only, never the code line beside it and never the marks after it. It is asked as a
   container query in `em` on the row itself, so what decides is the line and not the text size: a
   rail that cannot give twenty characters' worth wraps and grows instead, and one that still can at
-  200% text goes on cutting and owes the reachable name below for it. And identity is not what it hides: every row leads with its own size box
-  and node badge, and the fitting panel beside the ledger names the module in full for the marked
-  mount. Where the cut actually fires the ellipsis is a tooltip carrying the whole name rather than a
-  glyph the browser paints, so the text is folded away behind a control on the same screen rather
-  than lost — which is the one form of truncation `clippedText` accepts, and only on an element whose
-  owner has marked it `data-text-reachable`.
+  200% text goes on cutting and owes the reachable name below for it. And identity is not what it
+  hides: every row leads with its own size box and node badge, and the fitting panel beside the
+  ledger names the module in full for the marked mount. Where the cut actually fires the ellipsis is
+  a tooltip carrying the whole name rather than a glyph the browser paints, so the text is folded
+  away behind a control on the same screen rather than lost — which is the one form of truncation
+  `clippedText` accepts, and only on an element whose owner has marked it `data-text-reachable`.
 - Internal horizontal scrolling is allowed only for explicitly labeled wide fact tables or segmented
   controls whose alternatives remain discoverable. The page never scrolls horizontally.
 - RTL changes visual direction, not semantic order or exact game identity.
