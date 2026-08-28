@@ -299,7 +299,7 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.6lNEFSYnYR0i,sY,ohzZJbdMI4OCa2QXgTdxfqEJ6,rTcsmF4Yfz_VxmMFuXCzefb_ck@ziD/nac4.rjo5VicfG,wuFOfX!O',
+      'b.6lNEFSYnYR0i,rdWhJz8H7mFTPR@@DRYR3SD6cWNd1A4!PTC4.,JMc/y1Uhh9M_uk5yKmUPRDlI/iyfgDRolLhJF/v!4SUos',
     );
     expect(`https://ships.example/#${fragment}`).toHaveLength(121);
   });
@@ -665,13 +665,13 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently on 2026-08-26 so that a mount whose draw the Almanac does not
-    // publish carries its power state. Once released, a changed hash belongs under the next
-    // table number.
+    // unpublished, most recently on 2026-08-27 so that its candidate sets stop offering the
+    // fifteen grant-only articles the Almanac stopped offering. Once released, a changed hash
+    // belongs under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('0306523d99f8a65bdaea46e33274908c52ed164223d0de7a3a682b89a9df318f');
+    expect(contentHash).toBe('f05e74f830df5485ac4e89f10e7016a167e622cd68e2d86ec2febe15a5ed0150');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -839,7 +839,7 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.Fe22sXs1VYx8!NVMtClstaF14xQPy8sBf67Gl_pVZTY6E_IRHK3E/rNfDqSLrFuY/-bXDhZ',
+      'b.Fe22sXs1VYx8!NVMtCk!psrGUkIV-ECpUjGE0xXgXOFkqJ25PNA@tSqnpD8XpmV70,ONRNW',
     ]);
     expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 96]);
 

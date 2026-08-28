@@ -5,10 +5,12 @@
 // and the sentence set in the prose voice rather than in the mono numeric voice
 // the figures below use.
 //
-// The canvas draws three tiers. Only two of them carry a package severity —
-// tiers one and three — because the amber middle tier holds authored power and
-// heat sentences that are feature 005's and are not `LoadoutValidation` issues
-// (`design/reference-review.md`, "Rejected mock content").
+// The canvas draws three tiers and the package publishes three severities, one
+// for each: tier one for an `error`, the amber middle tier for a `warning`, and
+// tier three for an `incomplete`. The authored power and heat sentences the
+// canvas puts in the middle tier are feature 005's and are not
+// `LoadoutValidation` issues (`design/reference-review.md`, "Rejected mock
+// content"); the tier they were drawn in carries a package severity instead.
 :host {
   display: block;
 }
@@ -48,6 +50,16 @@
   border-inline-start-color: var(--edsb-border-danger);
   background-color: var(--edsb-surface-danger-quiet);
   color: var(--edsb-text-danger);
+}
+
+// Canvas tier two, the amber middle: the accent marker over the quieter accent
+// ground. A `warning` leaves the build valid and complete — the package raises
+// one where a load a pilot chooses, rather than the fit, crosses a limit — so
+// it says less than the hot tier and more than the quiet one.
+.issue--warning {
+  border-inline-start-color: var(--edsb-border-accent);
+  background-color: var(--edsb-surface-accent-quiet);
+  color: var(--edsb-text-accent);
 }
 
 // Canvas tier three is the default above: the quiet marker, no tint.

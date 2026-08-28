@@ -24,6 +24,7 @@ interface IssueView {
  */
 const SEVERITY_LABELS = {
   error: 'build-status.severity.error',
+  warning: 'build-status.severity.warning',
   incomplete: 'build-status.severity.incomplete',
 } as const satisfies Record<LoadoutIssue['severity'], MessageKey>;
 

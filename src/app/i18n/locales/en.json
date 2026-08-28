@@ -264,6 +264,7 @@
   "outfitting.ledger.label": "Every mount on this hull",
   "outfitting.status-rail.label": "Build status",
   "build-status.severity.error": "Error",
+  "build-status.severity.warning": "Warning",
   "build-status.severity.incomplete": "Incomplete",
   "build-status.valid": "Build is valid",
   "outfitting.status-rail.mode": "Status",

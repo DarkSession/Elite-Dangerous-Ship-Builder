@@ -67,6 +67,63 @@ function seedInvalidRecord(id: string, slots: readonly string[]) {
   };
 }
 
+/**
+ * A stored build whose thrusters carry the fit and its fuel, but not a full hold.
+ *
+ * The one severity a Commander can reach without an impossible module in the
+ * build: the package rates the fitted thrusters below the laden mass, reports
+ * `thrusterMassExceeded` as a `warning`, and still calls the build valid and
+ * complete. Seeded rather than journeyed to only to keep the test short — every
+ * module in it is one the chooser offers.
+ */
+function seedOverloadedRecord(id: string) {
+  const cargo = [
+    ['Slot01_Size7', 'Int_CargoRack_Size7_Class1'],
+    ['Slot02_Size6', 'Int_CargoRack_Size6_Class1'],
+    ['Slot03_Size6', 'Int_CargoRack_Size6_Class1'],
+    ['Slot04_Size6', 'Int_CargoRack_Size6_Class1'],
+    ['Slot05_Size5', 'Int_CargoRack_Size5_Class1'],
+    ['Slot06_Size5', 'Int_CargoRack_Size5_Class1'],
+    ['Slot07_Size5', 'Int_CargoRack_Size5_Class1'],
+    ['Slot08_Size4', 'Int_CargoRack_Size4_Class1'],
+    ['Slot09_Size4', 'Int_CargoRack_Size4_Class1'],
+    ['Slot10_Size4', 'Int_CargoRack_Size4_Class1'],
+  ] as const;
+
+  return {
+    key: `edsb:record:${id}`,
+    value: JSON.stringify({
+      format: 'edsb.local-record',
+      version: 1,
+      id,
+      kind: 'named',
+      revisionId: `revision-${id}`,
+      createdAt: '2026-01-02T03:04:05.000Z',
+      modifiedAt: '2026-01-02T03:04:05.000Z',
+      name: `Build ${id}`,
+      note: null,
+      hullSymbol: HULL,
+      validation: { valid: true, complete: true },
+      build: {
+        format: 'edsb.build',
+        version: 1,
+        shipSymbol: HULL,
+        shipName: null,
+        shipIdent: null,
+        modules: [['MainEngines', 'Int_Engine_Size6_Class1'], ...cargo].map(([slot, symbol]) => ({
+          slot,
+          symbol,
+          enabled: null,
+          priority: null,
+          preEngineered: null,
+          engineering: null,
+        })),
+      },
+      sourceNamed: null,
+    }),
+  };
+}
+
 async function seed(page: Page, entries: readonly { key: string; value: string }[]): Promise<void> {
   await page.addInitScript((seeded) => {
     for (const { key, value } of seeded) {
@@ -126,6 +183,31 @@ test.describe('the BUILD STATUS block', () => {
     await expect(issues(page).nth(1)).toContainText('NoSuchSlotB');
     // FR-022: the severity is a word, not just a coloured marker.
     await expect(issues(page).nth(0)).toContainText(englishMessages['build-status.severity.error']);
+  });
+
+  test('draws a package warning in its own tier, on a build it still calls valid', async ({
+    page,
+  }) => {
+    await seed(page, [seedOverloadedRecord('w')]);
+    await openSeededBuild(page, 'w');
+
+    // The block draws the severity the package states rather than one read off
+    // `valid`, so the amber middle tier is reachable on a build with nothing
+    // else wrong with it (`design/status-rail.md`).
+    await expect(issues(page)).toHaveCount(1);
+    await expect(issues(page).nth(0)).toContainText(
+      englishMessages['build-status.severity.warning'],
+    );
+    await expect(issues(page).nth(0)).toHaveClass(/issue--warning/);
+  });
+
+  test('reads a warning block with no violation either', async ({ page }, testInfo) => {
+    await seed(page, [seedOverloadedRecord('w')]);
+    await openSeededBuild(page, 'w');
+
+    await expect(issues(page)).toHaveCount(1);
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'build-status-warning' });
+    await expectNoDocumentOverflow(page);
   });
 
   test('offers no action on an issue', async ({ page }) => {

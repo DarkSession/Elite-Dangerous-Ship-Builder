@@ -119,11 +119,11 @@ describe('incoming build normalization', () => {
     expect(result.failures).toHaveLength(1);
     const failure = result.failures[0]!;
     expect(failure.reason).toBe('packageResult');
-    expect(failure.code).toBe('unidentifiedPreEngineeredVariant');
+    expect(failure.code).toBe('unsupportedEngineering');
     // The refusal names exactly what arrived, so the surface can say it.
     expect(failure.source.slotKey).toBe(FIXTURE_SLOTS.frameShiftDrive);
     expect(failure.source.moduleSymbol).toBe('Int_Hyperdrive_Size6_Class5');
-    expect(failure.source.blueprintFdname).toBe('FSD_LongRange');
+    expect(failure.source.blueprintFdname).toBe('Engine_Dirty');
     expect(failure.source.quality).toBe(UNSUPPORTED_PARTIAL_SOURCE_QUALITY);
   });
 
@@ -135,7 +135,7 @@ describe('incoming build normalization', () => {
         {
           Slot: FIXTURE_SLOTS.frameShiftDrive,
           Item: 'Int_Hyperdrive_Size6_Class5',
-          Engineering: { BlueprintName: 'FSD_LongRange', Level: 5, Quality: 0.42 },
+          Engineering: { BlueprintName: 'Engine_Dirty', Level: 5, Quality: 0.42 },
         },
         {
           Slot: FIXTURE_SLOTS.thrusters,

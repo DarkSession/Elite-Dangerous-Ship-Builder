@@ -42,6 +42,17 @@ import type {
  * no "fix just the quality" branch at step 4: a partial the package declines to
  * identify refuses the candidate rather than being written down at a value
  * nobody computed (FR-013).
+ *
+ * Step 2 also settles the engineering a source states without its modifiers,
+ * which is how Inara and other SLEF producers write every engineered module:
+ * the package rolls the recipe at the grade and quality the block names, so the
+ * module arrives with the package's own modifiers rather than the figures of an
+ * unengineered one. Where it can resolve neither a recipe nor a catalogued
+ * article, it reports `unresolvedEngineering` in `importOutcomes` and the
+ * module keeps unengineered figures. Nothing here reads that outcome: such a
+ * module is either carrying a partial quality, in which case step 4 refuses the
+ * whole candidate over the package's own refusal, or it is not, in which case
+ * this application has no surface that states it yet.
  */
 export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   // Step 1. Read the source's partial rolls before construction consumes them.

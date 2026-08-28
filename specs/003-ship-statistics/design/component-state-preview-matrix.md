@@ -8,9 +8,9 @@ manifest covers the design system's shared primitives; a feature block that comp
 The primitives this feature composes are already previewed by feature 011: `edsb-game-text` carries
 the localized, canonical and unavailable states, and the tokens carry the severity treatments.
 
-| Component     | Default/populated                 | Empty                    | Loading | Error | Disabled | Required variants                          |
-| ------------- | --------------------------------- | ------------------------ | ------- | ----- | -------- | ------------------------------------------ |
-| `BuildStatus` | both severities, in package order | no issues: nothing drawn | N/A     | N/A   | N/A      | canonical fallback, long params, RTL, wrap |
+| Component     | Default/populated                | Empty                    | Loading | Error | Disabled | Required variants                          |
+| ------------- | -------------------------------- | ------------------------ | ------- | ----- | -------- | ------------------------------------------ |
+| `BuildStatus` | every severity, in package order | no issues: nothing drawn | N/A     | N/A   | N/A      | canonical fallback, long params, RTL, wrap |
 
 `N/A` means the component cannot semantically own that state. There is no loading state because
 `ShipLoadout.validation()` reads a build already in memory, and no error state because reading
