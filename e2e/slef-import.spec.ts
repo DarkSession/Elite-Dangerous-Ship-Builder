@@ -64,7 +64,9 @@ test.describe('importing a build', () => {
     // layer over the screen it was opened from, and a modal makes the frame
     // behind it inert — which is what a modal is for. The import action is
     // offered by that screen, reached by closing the library (feature 001,
-    // build-library design, "Composition").
+    // build-library design, "Composition"). True of the address as well since
+    // 2026-08-28, when the layer stopped replacing the screen it stands over:
+    // reached directly it is a page, and a page carries no screen's actions.
     for (const route of ['/ships', '/ships/Anaconda', '/build']) {
       await page.goto(route);
       await openImport(page);

@@ -179,7 +179,15 @@ async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<vo
   await expect(page.getByRole('heading', { level: 1, name: new RegExp(hull, 'i') })).toBeVisible();
 }
 
-const library = (page: Page) => page.getByRole('heading', { level: 1, name: 'Saved builds' });
+/**
+ * The saved-build surface, in whichever composition it is showing.
+ *
+ * The dialog rather than a heading: the layer names itself the same way over a
+ * screen and on its own page, and over a screen the document's `h1` is the
+ * screen's — the ship a Commander is in — with the layer's own name on the
+ * dialog, which is where a modal's name belongs.
+ */
+const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
 
 test.describe('the build library', () => {
   test('says so when nothing is stored', async ({ page }) => {
@@ -196,9 +204,13 @@ test.describe('the build library', () => {
     await expect(library(page)).toBeVisible();
     // Titled by what the build calls itself — here the hull, since a stock
     // build has neither a ship name nor an ident yet (FR-010).
-    await expect(page.getByText('Anaconda').first()).toBeVisible();
-    await expect(page.getByText('Valid').first()).toBeVisible();
-    await expect(page.getByText(/Current build/).first()).toBeVisible();
+    await expect(library(page).getByText('Anaconda').first()).toBeVisible();
+    await expect(library(page).getByText('Valid').first()).toBeVisible();
+    await expect(
+      library(page)
+        .getByText(/Current build/)
+        .first(),
+    ).toBeVisible();
   });
 
   test('lists named and unnamed records as one list, under no group heading', async ({ page }) => {
@@ -264,6 +276,57 @@ test.describe('the build library', () => {
     ).toBeVisible();
   });
 
+  test('stands over the screen it was opened from, keeping its own address', async ({ page }) => {
+    // Canvas 1a draws `/builds` as a modal over an inert originating screen,
+    // and a modal is only a modal if there is a screen behind it. Built as a
+    // sibling route there was none: the workspace was replaced by a page whose
+    // whole body was the layer (Commander request 2026-08-28).
+    await createBuild(page);
+    await reachShellLink(page, 'Open saved build');
+
+    const layer = page.getByRole('dialog', { name: 'Saved builds' });
+    await expect(layer).toBeVisible();
+
+    // The address is the library's, without a navigation having taken the
+    // workspace away: the ship is still there, behind and inert.
+    await expect(page).toHaveURL(/\/builds$/);
+    await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(1);
+    await expect(page).toHaveTitle(/^Saved builds/);
+
+    // And closing gives all of it back, fragment included — the build link the
+    // workspace published on the entry the layer was opened over.
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(layer).toBeHidden();
+    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveTitle(/^Build/);
+  });
+
+  test('closes on the browser’s own back, as a screen would', async ({ page }) => {
+    // The address is real, so the entry is real: back is one of the two ways
+    // out and the canvas draws the other.
+    await createBuild(page);
+    await reachShellLink(page, 'Open saved build');
+
+    const layer = page.getByRole('dialog', { name: 'Saved builds' });
+    await expect(layer).toBeVisible();
+
+    await page.goBack();
+
+    await expect(layer).toBeHidden();
+    await expect(page).toHaveURL(/\/build#b\./);
+  });
+
+  test('is an ordinary page where it was reached by its own address', async ({ page }) => {
+    // Nothing to stand over. The same content and the same title, on a page
+    // background — which is what the design says direct navigation supplies.
+    await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
+    await page.goto('/builds');
+
+    await expect(library(page)).toBeVisible();
+    await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(0);
+    await expect(page).toHaveTitle(/^Saved builds/);
+  });
+
   test('marks exactly one row, and moves the mark to whichever was chosen', async ({ page }) => {
     // Two states meet on these rows: the record the workspace is holding, and
     // the row the footer would act on. Both used to draw the marker, so opening
@@ -303,7 +366,7 @@ test.describe('the build library', () => {
     await saveActiveBuild(page, 'Anaconda explorer');
 
     await reachShellLink(page, 'Open saved build');
-    await expect(page.getByText('Anaconda explorer').first()).toBeVisible();
+    await expect(library(page).getByText('Anaconda explorer').first()).toBeVisible();
     expect(await recordCount(page)).toBe(1);
   });
 
@@ -692,7 +755,7 @@ test.describe('the build library', () => {
     await createBuild(first);
     await saveActiveBuild(first, 'Shared build');
     await reachShellLink(first, 'Open saved build');
-    await expect(first.getByText('Shared build').first()).toBeVisible();
+    await expect(library(first).getByText('Shared build').first()).toBeVisible();
 
     // The other page opens the same named record, so both hold the same baseline.
     await second.goto('/builds');
@@ -743,7 +806,7 @@ test.describe('the build library', () => {
     await createBuild(first);
     await saveActiveBuild(first, 'Shared build');
     await reachShellLink(first, 'Open saved build');
-    await expect(first.getByText('Shared build').first()).toBeVisible();
+    await expect(library(first).getByText('Shared build').first()).toBeVisible();
 
     // Both pages open the record before either saves, so both hold one
     // baseline and the collision is between two deliberate saves (FR-012).

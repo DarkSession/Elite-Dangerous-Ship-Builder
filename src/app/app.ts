@@ -11,6 +11,8 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
+import { BuildLibraryPage } from './features/build-library/build-library.page';
+import { LibraryPresence } from './features/build-library/library-presence';
 import { ScreenChrome } from './features/shared/screen-chrome';
 import { LocaleStore } from './i18n/locale.store';
 import { SlefStore } from './application/slef/slef.store';
@@ -52,7 +54,15 @@ export const UPDATE_ACTION = 'app.update';
  */
 @Component({
   selector: 'app-root',
-  imports: [AppFrame, ExportDialog, HelpDialog, ImportDialog, Layer, RouterOutlet],
+  imports: [
+    AppFrame,
+    BuildLibraryPage,
+    ExportDialog,
+    HelpDialog,
+    ImportDialog,
+    Layer,
+    RouterOutlet,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,6 +77,7 @@ export class App {
   readonly help = inject(HelpPresenter);
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #announcements = inject(AnnouncementService);
+  readonly library = inject(LibraryPresence);
 
   readonly #path = signal(this.#router.url);
 
@@ -361,6 +372,17 @@ export class App {
       return;
     }
     event.preventDefault();
+
+    // The saved builds are a layer over the screen a Commander is on, not a
+    // screen they leave: `/builds` is drawn as a modal over an inert
+    // originating screen, and navigating to it takes that screen away
+    // (Commander request 2026-08-28). The address is still the entry's own, so
+    // the modified clicks that never reach here — a middle click, a new tab —
+    // still open the library at its own address as an ordinary page.
+    if (entry.href === NAVIGATION_ROUTES.library && this.library.raise()) {
+      return;
+    }
+
     void this.#router.navigateByUrl(entry.href);
   }
 
@@ -384,7 +406,11 @@ export class App {
       return;
     }
     if (id === 'library') {
-      void this.#router.navigateByUrl(NAVIGATION_ROUTES.library);
+      // A layer over the screen, as the link is. The navigation stands behind
+      // it for the one case the layer refuses: a Commander already on `/builds`.
+      if (!this.library.raise()) {
+        void this.#router.navigateByUrl(NAVIGATION_ROUTES.library);
+      }
     }
   }
 }

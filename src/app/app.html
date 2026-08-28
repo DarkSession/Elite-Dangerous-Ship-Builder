@@ -27,6 +27,24 @@
 }
 
 <!--
+  The saved builds, as the layer canvas 1a draws: over the screen a Commander is
+  on, with that screen inert behind it rather than replaced by it. Mounted here
+  beside the frame for the same reason help is — the list of stored builds
+  belongs to no screen in particular — and deferred, because a Commander who
+  never opens it should never pay for it.
+
+  `/builds` remains a real address and a real route. Reached directly it renders
+  the same content as an ordinary page, which is what the design says direct
+  navigation should do; reached from the shell it is this, and the address is
+  taken without a navigation so the screen behind survives.
+-->
+@defer (when library.open()) {
+  @if (library.open()) {
+    <edsb-build-library-page [asLayer]="true" />
+  }
+}
+
+<!--
   The one Help · About modal, mounted beside the frame and never inside a
   capability. It is eager, not deferred: help has to open on the first offline
   visit after one completed load, and a chunk fetched on activation is a

@@ -5,9 +5,11 @@ import {
   computed,
   effect,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { LibraryPresence } from './library-presence';
 import { deriveBuildTitle } from '../../domain/build/build-title';
 import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
@@ -103,6 +105,18 @@ export class BuildLibraryPage {
   readonly #formatters = inject(Formatters);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
+  readonly #presence = inject(LibraryPresence);
+
+  /**
+   * Whether this is the layer the shell stands over a screen, or the page the
+   * `/builds` address renders on its own.
+   *
+   * The same content either way — the canvas draws one surface — and the
+   * difference is only what happens on the way out: a layer lowers and gives
+   * the screen behind it back, and a page has nothing behind it and navigates
+   * (build-library design, "Composition").
+   */
+  readonly asLayer = input(false);
 
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');
@@ -358,6 +372,10 @@ export class BuildLibraryPage {
    * the dismiss the canvas draws.
    */
   close(): void {
+    if (this.asLayer()) {
+      this.#presence.lower();
+      return;
+    }
     void this.#router.navigateByUrl(this.#origin());
   }
 
@@ -440,6 +458,11 @@ export class BuildLibraryPage {
           return;
         }
         if (result.kind === 'committed') {
+          // Leaving through the layer rather than closing it: the address goes
+          // back to the screen behind before the navigation, or the router —
+          // which never left that screen — would navigate to where it already
+          // is and leave `/builds` standing in the bar.
+          this.#presence.lowerForNavigation();
           void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
         }
         return;

@@ -28,7 +28,7 @@ The reference rows establish the compact name/note, hull, validation badge and m
 
 | Reference part                                                               | Built today                                                                                                 |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Scrim and modal frame over an inert originating screen                       | An ordinary route page; nothing is behind it and nothing is inert                                           |
+| Scrim and modal frame over an inert originating screen                       | Closed 2026-08-28: a layer over the screen it was opened from, which stays mounted and inert behind it      |
 | Title bar reading `SAVED BUILDS` with a monospace `CLOSE ✕`                  | No title bar; the count goes to the command bar and the dismiss is a quiet button at the end of the content |
 | Header row: a search field beside a monospace record count                   | Neither. There is no way to search a library holding a week of ordinary building                            |
 | Column headers `BUILD` / `HULL` / `Mcr` / `EDITED` on a lighter plate        | None; each card repeats its own field labels                                                                |
@@ -195,6 +195,32 @@ ago`, in the active locale's own words through `Intl.RelativeTimeFormat`, which
 - A page whose autosave record was discarded elsewhere pauses autosave and requires explicit resume
   rather than silently recreating it.
 
+### Standing over a screen rather than replacing one, 2026-08-28 (Commander request)
+
+Reported as a navigation that should not be one: opening the saved builds took the Commander out of
+the ship they were working in. It did. `/builds` was a sibling route to `/build`, so the router
+destroyed the workspace and rendered a page whose whole body was the layer — the scrim covered
+nothing, and the modal frame framed an empty background. That is the gap the table above recorded
+from the day it was built, and this closes it.
+
+The layer is mounted in the shell now, beside the help and update layers, for the same reason those
+are: a list of stored builds belongs to no screen in particular. It is raised over whatever screen is
+showing, and `<dialog>`'s own modality makes that screen inert and absent from the accessibility tree
+while it stands.
+
+The address survives, because it is taken without a navigation. `Location.go` writes `/builds` and
+pushes the entry, so the browser's back still closes the layer, and the address is still one to copy,
+bookmark or reload. Reloading lands on the route, which renders the library as an ordinary page —
+which is what this document already said direct navigation should supply. The document's title and
+canonical address follow the layer up and back down, so what the address says and what the page
+claims to be do not disagree.
+
+Two consequences worth stating. While the layer is up, the router's own URL is the screen behind it:
+nothing navigates from under the layer without lowering it first, and lowering restores the address
+the router still believes in. And the document's `h1` stays the screen's — the ship a Commander is in
+— with the layer's own name on the dialog, which is where a modal's name belongs; on the page
+composition the `h1` is the library's, as before.
+
 ## Responsive and accessibility notes
 
 - Desktop uses the reference columnar modal; mobile retains the reference stacked records with the same two actions and the same semantic list order.
@@ -210,7 +236,7 @@ ago`, in the active locale's own words through `Intl.RelativeTimeFormat`, which
 - Validation state includes explicit valid/incomplete/invalid wording and icon; never color alone.
 - Dialog title, description and each choice are visible and programmatically associated. Conflict choices explain which versions survive.
 - Record names/notes/symbols wrap without truncating identity or causing page overflow.
-- While the route-backed modal is open, its background is inert and removed from the accessibility tree; close/back restores the originating route and session position.
+- While the layer is open, the screen behind it is inert and removed from the accessibility tree — genuinely, by `<dialog>`, rather than by a scrim over a page that replaced it; close and back both restore the originating route, its fragment and its session position.
 - Previews cover empty, populated, current-record, searched, no-match, delete, expiring, quota, unsupported, malformed and unavailable states. The duplicate-name warning and the failed write are previewed with the workspace's save layer that raises them, and the conflict with the three-choice dialog that asks it.
 
 ## Reference composition
