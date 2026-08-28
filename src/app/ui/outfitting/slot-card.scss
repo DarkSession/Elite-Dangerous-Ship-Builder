@@ -222,16 +222,12 @@
       text-overflow: clip;
     }
 
-    .identity__name .game-text__tag {
-      flex: none;
-    }
-
-    // The sentence behind the tag is a sentence, and a ledger row is not where a
-    // sentence fits: forty rows of `Shown in its original language, because no
-    // German text is available for it` is the wrapped three-line row this measure
-    // exists to stop. It is spoken instead, which is where it was already reached
-    // from — the value names it through `aria-describedby`, so the tag carries
-    // the state on the screen and the sentence carries the reason to a reader
+    // The disclosure is a sentence, and a ledger row is not where a sentence
+    // fits: forty rows of `Shown in its original language, because no German
+    // text is available for it` is the wrapped three-line row this measure
+    // exists to stop. It is spoken instead, which is where it was already
+    // reached from — the value names it through `aria-describedby`, so the
+    // reason reaches a reader without a badge on every row
     // (constitution VI, and the same floor the drawn label already takes).
     .identity__name .game-text__disclosure {
       @include layout.visually-hidden;

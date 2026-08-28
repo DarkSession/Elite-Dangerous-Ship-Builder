@@ -432,12 +432,26 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'a session already open when a version is published states it without a Commander-initiated reload',
       'the statement is a modal overlay carrying nothing to press: no control, no Escape and no ground',
-      'nothing on screen is replaced while that overlay is being read',
+      'the overlay is a named dialog, and the shell behind it says nothing of its own',
       'the page restarts on the newer version by itself once the overlay has stood',
       'the restarted session states that the update was applied and names the version it is running',
-      'that statement is dismissed by its own named control and does not return on a later navigation',
+      'that statement carries one named control, goes by itself once it has stood, and does not return on a later navigation',
       'a session that never applies it is served the newer version the next time it starts, and says nothing about it over a window in which it would have',
     ],
+    // The overlay before the restart is not swept, and that is the cost of the
+    // 2026-08-28 decision rather than an omission: it stands for the second
+    // before the reload (`UPDATE_OVERLAY_MS`), which is less than a sweep
+    // takes, so a scan started on it would be scanning the page that replaced
+    // it. The same layer is swept where it can be held still — the `Updated`
+    // notice the restarted session draws — and the difference between the two,
+    // a layer with no dismiss control, is asserted structurally here and in
+    // `containers.spec.ts`.
+    //
+    // The notice on the other side is swept, and pressing its control is what
+    // is asserted over the port instead: the notice takes itself down after
+    // `UPDATE_APPLIED_NOTICE_MS`, so a journey that waited to press it would be
+    // pressing a layer that had already gone. `app.spec.ts` presses it.
+
     // No polite announcement is on that list, and its absence is the rule
     // rather than an omission. The overlay is modal, so the outlet inside the
     // frame is inert while it stands and nothing is published there; the one

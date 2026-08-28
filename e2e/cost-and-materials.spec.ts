@@ -480,7 +480,7 @@ test.describe('in German', () => {
         return {
           text: (value?.textContent ?? '').trim(),
           language: value?.getAttribute('lang') ?? null,
-          tagged: node.querySelector('.game-text__tag') !== null,
+          disclosed: node.querySelector('.game-text__disclosure') !== null,
           describedBy: value?.getAttribute('aria-describedby') ?? null,
           disclosureId: disclosure?.getAttribute('id') ?? null,
         };
@@ -496,15 +496,17 @@ test.describe('in German', () => {
       // The invariant that ties what is seen to what was resolved: the
       // presenter marks a row canonical exactly when it could not find the
       // active locale's name and fell back to the package's English entry, and
-      // the primitive draws its tag exactly then
+      // the primitive discloses exactly then
       // (`src/app/i18n/game-text.presenter.ts`, the `canonical` arm). A row
-      // whose text is English and carries no tag is an untranslated name passed
-      // off as a translated one.
-      expect(row.tagged, `${row.text} is in ${row.language}`).toBe(row.language === 'en');
+      // whose text is English and carries no disclosure is an untranslated name
+      // passed off as a translated one. The badge that used to stand beside it
+      // is gone (owner's decision, 2026-08-28); the disclosure is what is left
+      // saying so, and it is the half a reader was already reaching it by.
+      expect(row.disclosed, `${row.text} is in ${row.language}`).toBe(row.language === 'en');
 
       // And the disclosure is bound to the name rather than left sitting beside
       // it, so a reader meets the two together.
-      expect(row.describedBy).toBe(row.tagged ? row.disclosureId : null);
+      expect(row.describedBy).toBe(row.disclosed ? row.disclosureId : null);
     }
 
     // The active locale reached the package: this recipe's ordinary elements

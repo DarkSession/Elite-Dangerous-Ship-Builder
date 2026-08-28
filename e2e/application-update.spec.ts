@@ -144,7 +144,7 @@ async function openControlledSession(page: Page): Promise<void> {
 }
 
 test.describe('a newly published version', () => {
-  test('reaches an open session, and says so before it restarts it', async ({ page }, testInfo) => {
+  test('reaches an open session, and says so before it restarts it', async ({ page }) => {
     await openControlledSession(page);
 
     // Nothing has been published, so the session has nothing to say about the
@@ -157,14 +157,16 @@ test.describe('a newly published version', () => {
 
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
-    // Everything below runs against a page with a countdown on it, so it runs
-    // in order of how long it takes: the sweep first, while the whole grace
-    // period is still ahead of it, and the short waits after. A scan that
-    // started late enough would be scanning the reload.
+    // The overlay is a dialog with its own accessible name, and it is the
+    // announcement rather than a screen to work in: the page restarts under it
+    // a second later (`UPDATE_OVERLAY_MS`, owner's decision 2026-08-28).
     //
-    // The overlay is a rendered product state like any other, so it is scanned
-    // like any other.
-    await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applying' });
+    // That second is why no axe sweep runs here and one runs on the notice the
+    // restarted session draws instead. A scan takes longer than the state
+    // stands, so a sweep started here would be scanning the reload — the two
+    // are the same layer under the same rules, and the half that can be held
+    // still is the half that is scanned (`update-applied`, below).
+    await expect(restartWarning(page)).toHaveAccessibleName(UPDATE_OVERLAY_TITLE);
   });
 
   test('offers nothing to press, because the restart is not a question', async ({ page }) => {
@@ -182,25 +184,19 @@ test.describe('a newly published version', () => {
 
     await expect(overlay.getByRole('button')).toHaveCount(0);
 
-    // The page under it is still the page the Commander was on: the overlay
-    // stands before anything is replaced.
-    const reloaded = page.waitForEvent('load', { timeout: 2_000 }).then(
-      () => true,
-      () => false,
-    );
-    expect(await reloaded).toBe(false);
-    await expect(overlay).toBeVisible();
-
     // And the shell behind it says nothing of its own. One sentence, in one
-    // place, is the whole of what a Commander is being told.
+    // place, is the whole of what a Commander is being told. Read from the
+    // overlay's own moment rather than after a wait: the restart follows it by
+    // a second, and a page that has already gone answers about the session
+    // after it (`UPDATE_OVERLAY_MS`).
     await expect(standingNotice(page)).toHaveCount(0);
   });
 
   test('restarts by itself, and says on arrival that it did', async ({ page }, testInfo) => {
-    // Slow because of what it does, not because of the machine: the grace
-    // period it waits out is ten seconds of product behaviour, and two
-    // controlled loads bracket it. The default budget is calibrated on a test
-    // that does not wait for a clock (`playwright.config.ts`).
+    // Slow because of what it does, not because of the machine: two controlled
+    // loads bracket a deployment the worker has to notice and download. The
+    // default budget is calibrated on a test that does not wait for a worker
+    // (`playwright.config.ts`).
     test.setTimeout(150_000);
 
     await openControlledSession(page);
@@ -229,12 +225,24 @@ test.describe('a newly published version', () => {
     // the manifest this build was made with rather than written here, so a
     // stamped patch number does not have to be kept in step by hand.
     await expect(applied).toContainText(HELP_MANIFEST.build.applicationVersion);
+
+    // It carries its one named control, which is the way out for a Commander
+    // who does not want to wait its six seconds out. That pressing it takes the
+    // notice down is asserted over the port, in `app.spec.ts`: here the control
+    // is left alone, because the clause under test below is that the notice
+    // goes whether or not anyone presses it.
+    await expect(applied.getByRole('button')).toHaveCount(1);
+
+    // Swept while it stands. The sweep is started the moment the notice is
+    // visible for the same reason the overlay's was dropped: the notice is on a
+    // clock of its own now (`UPDATE_APPLIED_NOTICE_MS`), and a scan begun late
+    // would be scanning the page after it.
     await expectNoAccessibilityViolations(page, testInfo, { label: 'update-applied' });
 
-    // Dismissed by its own named control, and gone for good: a later navigation
-    // in the same session does not meet it again.
-    await applied.getByRole('button').first().click();
-    await expect(applied).toHaveCount(0);
+    // And it goes by itself, without anything having been pressed (owner's
+    // decision, 2026-08-28). Gone for good, too: a later navigation in the same
+    // session does not meet it again.
+    await expect(applied).toHaveCount(0, { timeout: 30_000 });
 
     await reachShellLink(page, /^open saved build$/i);
     await expect(page).toHaveURL(/\/builds/);
@@ -254,22 +262,19 @@ test.describe('a newly published version', () => {
     await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
   });
 
-  test('is what the next start is served, even when nobody waits the overlay out', async ({
-    page,
-  }) => {
+  test('is what the next start is served, even when nobody applies it', async ({ page }) => {
     // Two controlled loads and a ten-second absence window.
     test.setTimeout(120_000);
 
     await openControlledSession(page);
 
-    // Published and noticed, so the worker has the newer version downloaded and
-    // the overlay is up. Then the page is started again from under it, well
-    // inside the ten seconds the overlay stands: nobody waits the restart out,
-    // and the session never applies it. What that session is served next is
-    // the clause under test (FR-025).
+    // Published, and then the page is started again before the session has been
+    // told anything about it: nobody waits the restart out, and this session
+    // never applies it. What that session is served next is the clause under
+    // test (FR-025). The overlay is deliberately not waited for — it stands for
+    // a second and the restart follows it, so a session that reached the
+    // overlay is a session that applied the update.
     await publish(page);
-    await returnToTheTab(page);
-    await expect(restartWarning(page)).toBeVisible({ timeout: 30_000 });
 
     await page.reload();
     await expect(page.getByRole('main')).toBeVisible();

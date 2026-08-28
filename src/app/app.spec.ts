@@ -282,7 +282,6 @@ describe('App and a newly published version', () => {
 
     expect(fixture.componentInstance.updateOverlay()).toBe(true);
     expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.notice']);
-    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.detail']);
     // Nothing has been replaced yet.
     expect(updates.activations).toBe(0);
     expect(updates.reloads).toBe(0);

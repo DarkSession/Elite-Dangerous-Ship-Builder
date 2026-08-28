@@ -250,7 +250,6 @@ export class App {
   readonly updateOverlay = computed(() => this.#updates.overlay());
   readonly updateOverlayTitle = this.#messages.messageSignal('update.applying.title');
   readonly updateOverlayNotice = this.#messages.messageSignal('update.applying.notice');
-  readonly updateOverlayDetail = this.#messages.messageSignal('update.applying.detail');
 
   /**
    * The notice the session that came up after the restart draws.

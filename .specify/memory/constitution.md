@@ -1,14 +1,18 @@
 <!--
-Sync Impact Report (8.0.0)
-- Version change: 7.0.0 -> 8.0.0 (MAJOR)
-- Modified principles: V. Works on Desktop, Tablet and Mobile — 2.2.1 Timing Adjustable joins the
-  excluded criteria, scoped by name to the application-update restart.
-- Rationale: the owner's decision of 2026-08-27 is that a published update is applied without
-  asking. The overlay that announces it carries no control that calls the restart off, which is a
-  time limit meeting none of 2.2.1's conditions. The alternative — keeping a control — is the
-  behaviour the decision removed, so the criterion is excluded and named rather than claimed.
-- Invalidated-spec review: feature 011 FR-025 and SC-007 rewritten; every conformance statement now
-  names eight criteria; `scripts/check-interface-foundations.mjs` enforces the longer list.
+Sync Impact Report (9.0.0)
+- Version change: 8.0.0 -> 9.0.0 (MAJOR)
+- Modified principles: V. Works on Desktop, Tablet and Mobile — the 2.2.1 Timing Adjustable
+  exclusion now names two mechanisms rather than one: the application-update restart, and the notice
+  the restarted session draws, which takes itself down.
+- Rationale: the owner's decision of 2026-08-28 is that the notice saying the update was applied
+  goes by itself after a few seconds rather than standing in front of the build until it is pressed.
+  It keeps its own named control, so nothing has to be waited out; what the clock takes is the
+  reading time of a Commander who does not press it, which meets none of 2.2.1's conditions. The
+  8.0.0 wording made the restart the application's only time limit and required an amendment rather
+  than a reading for any second one — this is that amendment.
+- Invalidated-spec review: feature 011 FR-025 and SC-007 name both mechanisms; the count of excluded
+  criteria is unchanged at eight, so `scripts/check-interface-foundations.mjs` and every conformance
+  statement stand as they are.
 - Follow-up TODOs: none.
 -->
 
@@ -172,7 +176,8 @@ fallback.
   2.4.3 Focus Order, 2.4.7 Focus Visible and 2.4.11 Focus Not Obscured (Minimum)
   — which are out of scope, and no requirement in this repository may demand
   them. The second is **2.2.1 Timing Adjustable**, and it is narrower: it is
-  excluded for the application-update restart and for nothing else. The rest of
+  excluded for the application-update mechanism — the restart and the notice on
+  the other side of it — and for nothing else. The rest of
   the standard is not an aspiration: every capability MUST be navigable by
   screen reader with correct roles, names and state, legible at 200% text size
   and at 400% zoom without loss of content or function, and free of any
@@ -180,14 +185,18 @@ fallback.
   AA ratios for text and for the non-text elements that carry meaning; touch
   targets MUST meet the AA target-size rule; motion MUST respect
   `prefers-reduced-motion`.
-- **The one time limit, and why it is excluded.** When a newer version has been
-  published, the application announces a restart and then carries it out. The
-  announcement offers nothing that calls the restart off, so a Commander who
-  needs longer than the announcement stands cannot have it, which meets none of
-  2.2.1's conditions. The restart is the application's **only**
-  time limit. Introducing a second one MUST amend this principle rather than
-  read itself into this exclusion, and no other capability MUST impose a limit
-  on how long a Commander has to act.
+- **The two time limits, and why they are excluded.** When a newer version has
+  been published, the application announces a restart and then carries it out.
+  The announcement offers nothing that calls the restart off, so a Commander who
+  needs longer than the announcement stands cannot have it. The session that
+  comes up says the update was applied and names the version, and that notice
+  takes itself down after a few seconds; it keeps a named control, so nothing
+  has to be waited out, but a Commander who does not press it cannot hold it
+  either. Neither meets any of 2.2.1's conditions, and both are stated rather
+  than claimed. **Applying an update is the application's only mechanism that
+  imposes a time limit.** Introducing one anywhere else MUST amend this
+  principle rather than read itself into this exclusion, and no other capability
+  MUST impose a limit on how long a Commander has to act.
 - Because criteria at level A and AA are excluded, the application MUST NOT claim
   unqualified WCAG 2.2 AA conformance. Wherever conformance is stated — in the
   interface, in documentation or in a specification — all eight excluded criteria
@@ -387,4 +396,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 8.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-27
+**Version**: 9.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-28

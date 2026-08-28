@@ -459,6 +459,41 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       `check-interface-foundations.test.mjs`, and the journey in `e2e/search-visibility.spec.ts`.
       Reconcile `e2e/coverage-ledger.ts` with FR-027 and SC-008.
 
+## Phase 11: Less on screen, 2026-08-28
+
+> Two Commander requests about text that is drawn and does not earn its place: the restart overlay
+> standing for ten seconds ahead of a reload that takes a fraction of one, and the untranslated chip
+> beside every game noun a German reader meets.
+
+- [x] T144 Shorten the restart announcement. `UPDATE_OVERLAY_MS` is one second, and
+      `update.applying.detail` — the sentence about the build surviving in the link and in this
+      browser — goes with the wait that existed to read it. FR-025, SC-007's journey,
+      `design/application-shell.md`, `quickstart.md` and the manual screen-reader protocol are
+      amended together; the store's own unit test asserts the new bound rather than the old floor.
+      _The overlay is not a passage to finish. The half written to be read is the `Updated` notice
+      the restarted session draws, and it carries no clock at all._
+- [x] T145 Record what that costs. The applying overlay is no longer swept by axe in
+      `e2e/application-update.spec.ts`: it stands for less time than a scan takes, so a sweep would
+      be scanning the page that replaced it. `e2e/coverage-ledger.ts` says so in place rather than
+      leaving the surface looking scanned, and the structural assertions — a named dialog with
+      nothing to press — stay where they were.
+      _A gap named on the ledger is a decision; a gap nobody wrote down is a claim._
+- [x] T147 Let the arrival notice go by itself. `UPDATE_APPLIED_NOTICE_MS` is six seconds, run on
+      the same one-shot port as the restart's grace and stopped when the notice's own control is
+      pressed or the store is destroyed. It is a second time limit, so constitution V is amended to
+      9.0.0 to cover applying an update rather than the restart alone, and `AGENTS.md`, FR-025,
+      SC-007, `design/application-shell.md` and the manual protocol say the same thing. The journey
+      leaves the control alone and waits the notice out; `app.spec.ts` is where pressing it is
+      asserted, because a journey that waited to press it would be pressing a layer that had gone.
+      _The version it names is on Help · About and the application is already running it. A modal in
+      front of the build a Commander came back to is not where either fact belongs._
+- [x] T146 Take the untranslated chip off `edsb-game-text`. The badge, its message key in both
+      catalogues and its rules in `game-text.scss` and `slot-card.scss` go; the `lang` attribute and
+      the `aria-describedby` disclosure stay, and they are what FR-020 now names. The German material
+      journey in `e2e/cost-and-materials.spec.ts` asserts the disclosure where it asserted the badge.
+      _A marker on nearly every row marks nothing. Untranslated game text is the ordinary state of a
+      package locale this application does not own._
+
 ## Notes
 
 - [P] tasks touch different files and have no incomplete dependency
