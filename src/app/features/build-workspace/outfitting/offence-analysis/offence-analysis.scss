@@ -403,8 +403,8 @@
 .split__bar {
   display: flex;
   gap: var(--edsb-border-width-hairline);
-  // Canvas 1c's 22px band. `--edsb-layout-bar-height` is the command bar's
-  // 66px and was never this measure.
+  // Canvas 1c's 22px band. `--edsb-layout-bar-height` is the command bar's own
+  // height and was never this measure.
   block-size: var(--edsb-layout-damage-bar);
   background-color: var(--edsb-surface-inset);
 }

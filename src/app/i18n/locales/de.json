@@ -835,7 +835,7 @@
   "help.topic.completedEngineeringGrades.answer": "Im Spiel schwankt die Güte der Würfe. Ship Builder zeigt jede Stufe mit 100 % Güte. Eine importierte Teilstufe wird auf 100 % angehoben; das Modul wird hier also stärker gezeigt als der Teilwurf im Spiel. Lässt sich eine Stufe nicht anheben, wird der ganze Import abgelehnt, bevor etwas geöffnet wird, und dein offener Build bleibt unverändert.",
   "help.licence.index.application": "App · {{licence}}",
   "help.licence.link.application": "MIT-Lizenz, vollständige Fassung auf GitHub",
-  "help.licence.index.library": "Bibliothek · {{licence}}",
+  "help.licence.index.library": "Bibliothek · Elite Dangerous Almanac, {{licence}}",
   "help.licence.link.library": "MIT-Lizenz, vollständige Fassung auf GitHub",
   "help.licence.index.gameData": "Spieldaten & Abbildungen · Frontier Developments, Media-Usage-Regeln",
   "help.licence.index.typefaces": "Schriften · Barlow & JetBrains Mono, SIL Open Font License"

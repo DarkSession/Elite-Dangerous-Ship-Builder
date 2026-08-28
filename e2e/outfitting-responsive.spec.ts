@@ -151,10 +151,10 @@ test.describe('the composition this width has room for', () => {
         columns,
         viewport: window.innerHeight,
         // What the token says a region has to clear, and what the bar it names
-        // actually came to. The declared figure is one row of controls at the
-        // target baseline; this screen's identity block is two 24px targets,
-        // and at any width where the bar wraps it is taller again (workspace
-        // design, "What that height is, is measured, not declared").
+        // actually came to. The declared figure is the one height the bar is
+        // drawn at, and at any width where the bar wraps it is taller again
+        // (workspace design, "What that height is, is measured, not
+        // declared").
         cleared: parseFloat(getComputedStyle(frame).getPropertyValue('--edsb-layout-bar-height')),
         bar: document.querySelector('.frame__banner')!.getBoundingClientRect().height,
         released: frame.classList.contains('frame--released'),

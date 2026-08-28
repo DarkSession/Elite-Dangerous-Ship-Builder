@@ -149,6 +149,20 @@ describe('HelpPresenter', () => {
       expect(everything).not.toMatch(/live game|live catalogue|up to date|latest version/i);
     });
 
+    // The once-per-application Almanac credit feature 002's voice ruling put in
+    // this feature. It is the licence summary's library line: the line names
+    // the bundled library and links its terms, and around thirty strings
+    // elsewhere say nothing about the package because this one does
+    // (FR-003, FR-008).
+    it('credits the bundled library by name in the line that gives its terms', () => {
+      const library = presenter()
+        .view()
+        .licence.index.find((entry) => entry.id === 'library');
+
+      expect(`${library?.before}${library?.after}`).toMatch(/almanac/i);
+      expect(library?.link?.href).toBe(HELP_MANIFEST.destinations.almanacLicense.url);
+    });
+
     // Where the source is, as one sentence with the destination inside it. The
     // link comes from the audited manifest rather than from a string typed
     // here, and the sentence is cut at the place its own translation put the
@@ -165,13 +179,16 @@ describe('HelpPresenter', () => {
 
     it('names who maintains the application, in its own sentence', () => {
       // Two sentences from two keys, and the presenter's whole job here is
-      // putting each in its own field. A length check would pass with both
-      // resolving to the same string.
+      // putting each in its own field. Asserting the resolved key rather than a
+      // length, because a length check would pass with both fields wired to the
+      // same message.
       const view = presenter().view();
 
       expect(view.about.maintainer).toBe(englishMessages['help.maintainer']);
+      expect(view.about.source.before).toBe(
+        englishMessages['help.source'].slice(0, englishMessages['help.source'].indexOf('{{')),
+      );
       expect(view.about.maintainer).not.toBe(view.purpose);
-      expect(view.about.maintainer).not.toBe(view.about.source.before);
     });
   });
 

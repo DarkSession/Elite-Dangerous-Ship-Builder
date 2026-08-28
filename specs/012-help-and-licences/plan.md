@@ -10,11 +10,13 @@ Add one shared Help · About modal to the application frame. A visible frame act
 every capability and no-build state, and it is the only entry — no other surface carries a help
 control, because the design reference draws none. Opening and closing the modal changes no route, URL
 fragment, build, storage or capability state. The modal presents the reference's own three sections
-in its own order: `ABOUT` (purpose, maintainer, Almanac provenance and the separate application and
+in its own order: `ABOUT` (purpose, maintainer, where the source is, and the separate application and
 bundled-Almanac versions), `FAQ` (the two accepted help topics) and `LICENCE` (the four-line summary of what covers what, then
 the exact project-specific Frontier disclaimer extracted from the root `LICENSE`).
-The modal draws no control other than its close and offers no external navigation — **amended
-2026-08-25**, when the additions the reference does not draw were withdrawn.
+The modal draws no control other than its close — **amended 2026-08-25**, when the additions the
+reference does not draw were withdrawn. Its navigation out of the application is three audited
+destinations, each carried by linked words inside a sentence rather than by a control — **amended
+2026-08-26** for the two licence documents and **2026-08-28** for the source.
 
 A build-time Node generator validates the root and installed-package artifacts, extracts the one
 permitted legal excerpt without maintaining a second copy, classifies release/non-release identity,
@@ -88,17 +90,17 @@ reference's mark with the action's localised name carried inside it as text.
 _GATE: Passed before Phase 0 research. Re-check after Phase 1. No constitutional exception is
 requested._
 
-| Principle                               | Design evidence                                                                                                                                         | Status                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| I. Client-Side Only                     | Help is compiled into the static app shell; dialog state is memory-only; external links require explicit activation and carry no build data.            | PASS                   |
-| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; the `ABOUT` provenance sentence claims only the package's catalogue/calculation role.            | PASS                   |
-| III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close intent.                   | PASS                   |
-| IV. Lossless, Honest Builds             | Help never mutates a build; exact source text and shipped versions are validated; unavailable or ambiguous build metadata blocks release.               | PASS                   |
-| V. Desktop, Tablet and Mobile           | Centered wide modal becomes a complete narrow sheet; shared dialog semantics, touch sizing, zoom/reflow, dual engines and axe are part of the contract. | PASS                   |
-| VI. Commander's Language                | Every owned string is localised with bundled English fallback; the exact disclaimer remains unchanged in a `lang="en"` region.                          | PASS                   |
-| VII. One Design System                  | Feature 011's application frame, dialog, disclosures, facts, notices, links and tokens are reused or extended under `src/app/ui/`.                      | PASS; prerequisite 011 |
-| VIII. Tested Before It Ships            | Generator failure tests, exact-source assertions, modal journeys, dual-engine viewports, axe and manual screen-reader checks retain all gates.          | PASS; prerequisite 011 |
-| IX. Specification Before Implementation | Every requirement maps to a plan-time surface, model, contract and validation scenario before tasks are generated.                                      | PASS                   |
+| Principle                               | Design evidence                                                                                                                                               | Status                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| I. Client-Side Only                     | Help is compiled into the static app shell; dialog state is memory-only; external links require explicit activation and carry no build data.                  | PASS                   |
+| II. Almanac Source of Truth             | The Almanac version comes from the installed manifest; the licence summary's library line names the package and links its own terms, and claims nothing else. | PASS                   |
+| III. Domain Logic Outside UI            | A pure artifact generator and read-only presenter own identities/content; dialog components receive state and emit open/close intent.                         | PASS                   |
+| IV. Lossless, Honest Builds             | Help never mutates a build; exact source text and shipped versions are validated; unavailable or ambiguous build metadata blocks release.                     | PASS                   |
+| V. Desktop, Tablet and Mobile           | Centered wide modal becomes a complete narrow sheet; shared dialog semantics, touch sizing, zoom/reflow, dual engines and axe are part of the contract.       | PASS                   |
+| VI. Commander's Language                | Every owned string is localised with bundled English fallback; the exact disclaimer remains unchanged in a `lang="en"` region.                                | PASS                   |
+| VII. One Design System                  | Feature 011's application frame, dialog, disclosures, facts, notices, links and tokens are reused or extended under `src/app/ui/`.                            | PASS; prerequisite 011 |
+| VIII. Tested Before It Ships            | Generator failure tests, exact-source assertions, modal journeys, dual-engine viewports, axe and manual screen-reader checks retain all gates.                | PASS; prerequisite 011 |
+| IX. Specification Before Implementation | Every requirement maps to a plan-time surface, model, contract and validation scenario before tasks are generated.                                            | PASS                   |
 
 ### Required repository dependencies
 

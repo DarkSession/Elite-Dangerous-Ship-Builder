@@ -228,8 +228,8 @@ external-action primitives. Add or extend shared presentation-only components on
 - `VersionFacts`: application and bundled-Almanac fact presentation; and
 - `LegalExcerpt`: a wrapping text region marked in the language it was written in.
 
-`WarnedExternalLink` was a third. It is **deleted**: the modal was its only consumer, and the modal
-has no link.
+`WarnedExternalLink` was a third. It is **deleted**: the modal was its only consumer, and what the
+modal draws instead is `InlineLink` inside a sentence, which needs no warning around it.
 
 These components receive complete immutable inputs and emit intent. They do not read Router,
 History, browser storage, package files, generated manifests, locale globals or build stores. Every

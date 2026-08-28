@@ -20,19 +20,19 @@ The frame surrounds every capability, so the frame's action is the route from al
 
 ## Requirement mapping
 
-| Requirement | Application-frame entry | Help · About modal                                                      | Build/source-distribution gate   |
-| ----------- | ----------------------- | ----------------------------------------------------------------------- | -------------------------------- |
-| FR-001      | global/no-build access  | in-place, eager, offline dialog                                         | initial-bundle assertion         |
-| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy             | —                                |
-| FR-003      | —                       | the four-line summary above one exact excerpt                           | URL/text verification            |
-| FR-004      | —                       | clearly separates MIT from package/Frontier rights                      | package-mirror equality          |
-| FR-005      | —                       | renders the generated exact excerpt                                     | release fails on source mismatch |
-| FR-006      | —                       | localised labels; excerpt marked in its own language                    | byte/hash verification           |
-| FR-007      | —                       | separate application and Almanac versions in `ABOUT`                    | manifest identity checks         |
-| FR-008      | —                       | no currency claim; ownership and who maintains it, each once in `ABOUT` | wording/manifest tests           |
-| FR-009      | —                       | _withdrawn — no package-defect action is rendered_                      | —                                |
-| FR-010      | opens complete help     | both accepted topics in `FAQ`                                           | catalogue completeness           |
-| FR-011      | universal route         | complete common destination                                             | inventory coverage check         |
+| Requirement | Application-frame entry | Help · About modal                                                                | Build/source-distribution gate   |
+| ----------- | ----------------------- | --------------------------------------------------------------------------------- | -------------------------------- |
+| FR-001      | global/no-build access  | in-place, eager, offline dialog                                                   | initial-bundle assertion         |
+| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy                       | —                                |
+| FR-003      | —                       | the four-line summary above one exact excerpt                                     | URL/text verification            |
+| FR-004      | —                       | clearly separates MIT from package/Frontier rights                                | package-mirror equality          |
+| FR-005      | —                       | renders the generated exact excerpt                                               | release fails on source mismatch |
+| FR-006      | —                       | localised labels; excerpt marked in its own language                              | byte/hash verification           |
+| FR-007      | —                       | separate application and Almanac versions in `ABOUT`                              | manifest identity checks         |
+| FR-008      | —                       | no currency claim; who maintains it and where the source is, each once in `ABOUT` | wording/manifest tests           |
+| FR-009      | —                       | _withdrawn — no package-defect action is rendered_                                | —                                |
+| FR-010      | opens complete help     | both accepted topics in `FAQ`                                                     | catalogue completeness           |
+| FR-011      | universal route         | complete common destination                                                       | inventory coverage check         |
 
 Every live FR has at least one user-facing owner or release-gate owner. No requirement depends on a
 standalone help page or on a per-surface control.

@@ -257,11 +257,10 @@ export class AppFrame {
   /**
    * What a region below has to clear, as the bar actually came out.
    *
-   * The token layer declares one row of controls at the target baseline, which
-   * is what the bar is on every screen that draws a plain title. The workspace
-   * draws an identity block of two 24px targets instead, and every width where
-   * the bar wraps draws more rows than one — so the declared figure is a floor
-   * the real bar passes, not the height a sticky region under it can offset by.
+   * The token layer declares the one height the bar is drawn at, which is what
+   * it is at every width where it does not wrap. Every width where it does
+   * wrap draws more rows than one — so the declared figure is a floor the real
+   * bar passes, not the height a sticky region under it can offset by.
    * Published from the measurement so a region that freezes below the bar,
    * reserves scroll room for it or subtracts it from its own height clears the
    * bar that is there.

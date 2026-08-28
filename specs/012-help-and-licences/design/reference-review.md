@@ -66,11 +66,11 @@ that no canvas of the reference draws.
 
 | Withdrawn addition                                         | What it is replaced by                                                                     | Requirement amended |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
-| Two provenance sentences after the `ABOUT` version facts   | One `ABOUT` provenance sentence before them, and the licence summary's Frontier line       | FR-008              |
+| Two provenance sentences after the `ABOUT` version facts   | The licence summary's library and Frontier lines, which name what each covers              | FR-008              |
 | A third identity fact carrying release state and build ID  | Two version facts, as the reference draws. Generator classification is untouched           | FR-007              |
 | Prose licence framing above the excerpt                    | The four-line summary of what covers what                                                  | FR-003              |
 | Two sentences naming the excerpt's source and its language | The excerpt's `lang`, which is the same fact as a property rather than as prose            | FR-006              |
-| The warned repository-`LICENSE` action                     | Nothing. The modal has no external navigation, and `WarnedExternalLink` is deleted with it | FR-003, FR-005      |
+| The warned repository-`LICENSE` action                     | Linked words inside the summary line that names its terms; `WarnedExternalLink` is deleted | FR-003, FR-005      |
 
 Two things did **not** change with them. The exact Frontier media-usage notice stays embedded and
 verbatim — it is the compliance artifact root `LICENSE` records the Almanac redistributing under,

@@ -37,13 +37,13 @@ export interface BannerMeasurement {
  * cannot have.
  *
  * And while it does keep its place, what it leaves below is what every sticky
- * region under it has to clear. The declared `--edsb-layout-bar-height` is one
- * row of controls at the target baseline, which is what the bar comes to on
- * every screen that draws a plain title — but not on the workspace, whose
- * identity block is two 24px targets and a gap, and not on any width where the
- * bar has wrapped. A region offsetting by the declared figure there freezes
- * itself *behind* the bar and stands its own foot short of the screen's by the
- * difference (Commander request 2026-08-25).
+ * region under it has to clear. The declared `--edsb-layout-bar-height` is the
+ * one height the bar is drawn at, which is what it comes to at every width
+ * where it does not wrap — but a bar that has wrapped is taller, by however
+ * many rows a longer language, a narrower window or a larger text size cost it.
+ * A region offsetting by the declared figure there freezes itself *behind* the
+ * bar and stands its own foot short of the screen's by the difference
+ * (Commander request 2026-08-25).
  *
  * Measured rather than declared, because no query can ask how tall a bar
  * wrapped to. It is the same trade the outfitting region makes for its own

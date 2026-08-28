@@ -24,10 +24,10 @@
   z-index: 2;
   flex-wrap: wrap;
   padding-block: var(--edsb-space-control-block);
-  // The bar's own floor: one row of controls at the target baseline. What the
-  // regions below clear is `--edsb-layout-bar-height`, which is this bar as it
-  // was actually drawn — a separate token on purpose, because a bar sized from
-  // its own measurement could never shrink again (token layer,
+  // The bar's own floor: the one height it is drawn at on every screen. What
+  // the regions below clear is `--edsb-layout-bar-height`, which is this bar as
+  // it was actually drawn — a separate token on purpose, because a bar sized
+  // from its own measurement could never shrink again (token layer,
   // `--edsb-layout-bar-floor`).
   min-block-size: var(--edsb-layout-bar-floor);
 }

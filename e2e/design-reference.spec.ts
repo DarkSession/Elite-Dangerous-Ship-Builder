@@ -67,9 +67,9 @@ test.describe('the reference visual language', () => {
     // The resynced canvases replaced the plain amber block that opened the bar
     // with the wedge the app icon is cut from (canvas 3b): a clipped outline
     // closed by a lighter bar. Both are cut into the flag's own layers rather
-    // than painted on its box, because where the insignia is the way home that
-    // box is held to the 44px press baseline and an amber ground on it would
-    // draw a 44px amber square (`canvas-extraction.md`, "Command bar").
+    // than painted on its box, because an amber ground on the box would draw
+    // an amber rectangle behind the mark rather than the mark
+    // (`canvas-extraction.md`, "Command bar").
     const flag = page.locator('.frame__flag');
 
     const mark = await flag.evaluate((element) => {
@@ -96,6 +96,89 @@ test.describe('the reference visual language', () => {
     // `26 x 23`: the size canvas 3b draws the mark, near enough square.
     expect(mark.width).toBeGreaterThan(0);
     expect(Math.abs(mark.width - mark.height)).toBeLessThanOrEqual(4);
+  });
+
+  test('draws the insignia at one size whether or not it is the way home', async ({ page }) => {
+    // The shipyard draws the mark as decoration; every other screen makes it
+    // the way home, which is a control and is held to the 44px press baseline.
+    // The baseline is paid by a box around the mark, so the mark is the size
+    // canvas 3b draws it on both — a mark that took the target's own box would
+    // be drawn half as large again on a build as on the shipyard
+    // (`canvas-extraction.md`, "Command bar"; Commander request 2026-08-28).
+    const measure = async () =>
+      await page.locator('.frame__flag').evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        return { width: box.width, height: box.height };
+      });
+
+    const shipyard = await measure();
+    expect(await page.locator('.frame__flag-home').count()).toBe(0);
+
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+
+    const home = page.locator('.frame__flag-home');
+    await expect(home).toHaveCount(1);
+    expect(await measure()).toEqual(shipyard);
+
+    // And the press around it is the baseline, which is the whole reason the
+    // two are separate boxes.
+    const target = await home.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    });
+    expect(target.width).toBeGreaterThanOrEqual(44);
+    expect(target.height).toBeGreaterThanOrEqual(44);
+  });
+
+  test('sizes the command bar to the tallest identity it carries', async ({ page }) => {
+    // The bar is drawn at one height, and the height is the workspace's
+    // two-line build identity rather than the single row of controls every
+    // other screen comes to. Sized to that row the bar was 66px on the
+    // shipyard and 74px on a build, and the whole page under it moved as a
+    // Commander opened one (`canvas-extraction.md`, "One bar height, on every
+    // screen"; Commander request 2026-08-28).
+    //
+    // Asserted against the floor rather than by comparing two screens,
+    // because the bar wraps: at 834 and 844 the workspace's actions take a
+    // second row, which is the floor doing what a floor does rather than two
+    // bars disagreeing.
+    const banner = page.getByRole('banner');
+    const bar = async () =>
+      await banner.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return {
+          drawn: node.getBoundingClientRect().height,
+          floor: parseFloat(style.minBlockSize),
+          // What the bar spends on itself, which the identity inside it does
+          // not get: its own block padding and the amber rule that closes it.
+          chrome:
+            parseFloat(style.paddingBlockStart) +
+            parseFloat(style.paddingBlockEnd) +
+            parseFloat(style.borderBlockEndWidth),
+        };
+      });
+
+    // A plain title is exactly the floor, at every width. This is the half
+    // that was 66px.
+    const shipyard = await bar();
+    expect(shipyard.drawn).toBe(shipyard.floor);
+
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+
+    // And the tallest identity fits inside that same floor, so the bar only
+    // ever grows by wrapping rather than by the identity not fitting.
+    const workspace = await bar();
+    const identity = await page
+      .locator('.frame__identity')
+      .evaluate((node) => node.getBoundingClientRect().height);
+
+    expect(workspace.floor).toBe(shipyard.floor);
+    expect(identity + workspace.chrome).toBeLessThanOrEqual(workspace.floor);
+    expect(workspace.drawn).toBeGreaterThanOrEqual(workspace.floor);
   });
 
   test('sets every heading in tracked uppercase condensed', async ({ page }) => {

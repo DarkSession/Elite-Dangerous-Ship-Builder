@@ -104,12 +104,12 @@ of a fixed bench that the editor underneath has to be left some of. The share an
 divided that bench are gone with it, and the floor stands on its own, bounded only by what the screen
 itself leaves under the command bar so that it can never be taller than the window it is in.
 
-**Seven rows, and the bench a tenth shorter. Lowered 2026-08-28 (Commander request): 26rem to
-23.375rem.** The fitting panel and the pane inside it are the tallest thing on the workspace, and
-the anatomy and the status rail beside them are what a Commander scrolls to reach. One row comes off
-the floor and the same row comes off the pane's own bound, which is a tenth of each: seven rows over
-the same head, column rule and foot is still a list rather than the glimpse five rows was. Nothing
-else on the workspace changes height.
+**Seven rows, and the bench a tenth shorter. Ruled 2026-08-28 (Commander request).** The fitting
+panel and the pane inside it are the tallest thing on the workspace, and the anatomy and the status
+rail beside them are what a Commander scrolls to reach. So the floor is 23.375rem and the pane's own
+bound comes down by the same row — a tenth of each, because the two are the same list at two widths.
+Seven rows over the same head, column rule and foot is still a list rather than the glimpse five
+rows was. Nothing else on the workspace changes height.
 
 **Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
 track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
@@ -174,12 +174,12 @@ rail is the canvas's third track — below that step it is a band under the benc
 height to grow into, and a list that filled it there would run the whole shopping list down the
 screen (Commander request 2026-08-26; `specs/009-cost-and-materials/spec.md`, FR-007a).
 
-**What that height is, is measured, not declared.** `--edsb-layout-bar-height` is one row of controls
-at the target baseline — what the bar comes to on every screen that draws a plain title. This screen
-does not: FR-019's identity block is two 24px targets and a gap, so the workspace's bar is 74px, and
-at any width where the bar wraps it is taller again. Subtracting the declared figure left the columns
-past the foot of the screen by the difference, and freezing the ledger at it put the category strip
-_behind_ the bar at tablet width — 62px of it, at 834px, once the page was scrolled. The frame
+**What that height is, is measured, not declared.** `--edsb-layout-bar-height` is the one height the
+bar is drawn at — what it comes to at every width where it does not wrap. At any width where it does
+wrap it is taller, by however many rows a longer language, a narrower window or a larger text size
+cost it. Subtracting the declared figure left the columns past the foot of the screen by the
+difference, and freezing the ledger at it put the category strip _behind_ the bar at tablet width —
+62px of it, at 834px, once the page was scrolled. The frame
 already measures its own bar to decide whether to release it; it now republishes that reading as the
 token on its own host, so every region that clears the bar clears the bar that is there
 (`app-frame.ts`, `sticky-banner.ts`; token layer, `edsb-app-frame`). This is feature 011's shell, and

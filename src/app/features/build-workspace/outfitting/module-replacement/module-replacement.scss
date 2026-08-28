@@ -32,8 +32,8 @@
 // bench 574px under the plates and gives this panel 292 of it. Sized by its
 // share of the bench alone the panel followed the window down instead — four
 // rows at 900px, two at 700 — which is a glimpse of a list rather than a list
-// (Commander request 2026-08-26). The floor itself was raised from five rows to
-// eight on 2026-08-27, and the token carries why.
+// (Commander request 2026-08-26). How many rows the floor is worth is the
+// token's own decision, and the token carries why.
 //
 // **The guard against the editor's floor is gone with the bench that needed
 // it.** It subtracted the editor's floor from the bench's height so the two

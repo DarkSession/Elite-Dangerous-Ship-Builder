@@ -835,7 +835,7 @@
   "help.topic.completedEngineeringGrades.answer": "Rolls vary in quality in game. Ship Builder shows every grade at 100% quality. A partial imported grade is raised to 100%, so the module reads stronger here than the partial roll does in game. A grade that cannot be raised refuses the whole import before anything opens, and your open build stays as it was.",
   "help.licence.index.application": "App · {{licence}}",
   "help.licence.link.application": "MIT licence, full detail on GitHub",
-  "help.licence.index.library": "Library · {{licence}}",
+  "help.licence.index.library": "Library · Elite Dangerous Almanac, {{licence}}",
   "help.licence.link.library": "MIT licence, full detail on GitHub",
   "help.licence.index.gameData": "Game data & imagery · Frontier Developments, media-usage rules",
   "help.licence.index.typefaces": "Typefaces · Barlow & JetBrains Mono, SIL Open Font Licence"

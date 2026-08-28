@@ -199,7 +199,14 @@ describe('assertHelpManifest', () => {
       expect(() =>
         assertHelpManifest({
           ...subject,
-          destinations: { ...subject.destinations, [id]: { ...subject.destinations[other] } },
+          destinations: {
+            ...subject.destinations,
+            // The other destination's id under this key, and this key's own
+            // purpose kept: the id is what has to fail here, and a substituted
+            // object that also carried the wrong purpose would throw on that
+            // instead and leave the id unchecked.
+            [id]: { ...subject.destinations[other], purpose },
+          },
         }),
       ).toThrow(new RegExp(`${id} must be a ${purpose} destination`));
     });
