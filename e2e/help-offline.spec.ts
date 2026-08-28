@@ -58,7 +58,7 @@ test.describe('help offline', () => {
     await page
       .getByRole('dialog')
       .getByRole('button', {
-        name: new RegExp(`^${englishMessages['library.close']}$`, 'i'),
+        name: new RegExp(`^${englishMessages['action.close']}$`, 'i'),
       })
       .first()
       .click();

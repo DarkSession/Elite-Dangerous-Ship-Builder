@@ -80,7 +80,7 @@ test.describe('importing a build', () => {
     await page.goto('/builds');
     await expect(page.getByRole('dialog', { name: /saved builds/i })).toBeVisible();
 
-    await page.getByRole('button', { name: /^close saved builds$/i }).click();
+    await page.getByRole('button', { name: /^close$/i }).click();
     await openImport(page);
 
     await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();

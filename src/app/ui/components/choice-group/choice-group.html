@@ -8,7 +8,11 @@
     {{ legend() }}
   </legend>
 
-  <div class="choice-group__options" [attr.data-layout]="layout()">
+  <div
+    class="choice-group__options"
+    [attr.data-layout]="layout()"
+    [attr.data-cards]="isCards() ? '' : null"
+  >
     @for (choice of choices(); track choice.value) {
       <div class="choice">
         <input
@@ -23,6 +27,15 @@
           [disabled]="(choice.disabled ?? false) || disabled()"
           (change)="toggle(choice.value)"
         />
+        <!--
+          The mark canvas 1c draws on each save mode: an open square on the
+          offer, a filled one on the choice that stands. `aria-hidden`, because
+          the control's own checked state already says it and a reader hearing
+          it twice is told nothing more.
+        -->
+        @if (hasMarker()) {
+          <span class="choice__marker" aria-hidden="true"></span>
+        }
         <label class="choice__label" [attr.for]="choiceId(choice.value)">{{ choice.label }}</label>
         @if (choice.description) {
           <p class="choice__description" [id]="choiceDescriptionId(choice.value)">

@@ -2042,7 +2042,6 @@ const NAMED_BUILD = {
   remaining: null,
   current: false,
   currentLabel: 'Current build',
-  chooseLabel: 'Choose Anaconda explorer',
   note: 'Neutron route to Colonia. Swap the AFMU before the return leg.',
 } as const;
 
@@ -2059,7 +2058,6 @@ const WORKING_BUILD = {
   named: false,
   note: 'Unsaved edits to “Anaconda explorer”',
   remaining: 'Deleted in 6 days unless it is saved',
-  chooseLabel: 'Choose Vindicator',
 } as const;
 
 /** The record the workspace is holding right now. */
@@ -2320,7 +2318,8 @@ registerPreview({
         source: SAVE_SOURCE,
       },
       [
-        'the two modes are bordered cards, the replacing one selected first',
+        'the two modes are bordered cards, each led by a square marker',
+        'the marker is filled on the mode that is chosen and open on the other',
         'each mode states in associated words what it does to the stored builds',
         'the replacing mode says when the save it would replace was last written',
       ],
@@ -2333,7 +2332,7 @@ registerPreview({
       'empty',
       { open: true, initialName: '', initialNote: null, source: null },
       [
-        'a build that came from nowhere is offered one mode, and it still says what saving does',
+        'a build that came from nowhere is offered no mode: saving can do one thing',
         'the name starts empty rather than filled in with a name nobody gave',
         'Save build is unavailable until the build has a name',
       ],
@@ -2355,6 +2354,7 @@ registerPreview({
       },
       [
         'a browser that cannot replace a save safely is told so, in the line the canvas draws',
+        'no mode is drawn, because only one of the two is left to choose',
         'saving as a new build stays available, because only the unsafe half went',
         'the duplicate-name warning stands beside that reason rather than behind it',
       ],

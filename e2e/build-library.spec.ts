@@ -133,6 +133,18 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
 }
 
 /**
+ * One of the footer's two actions, scoped to the footer.
+ *
+ * The canvas names them for what they do — `DELETE` and `OPEN IN OUTFITTING` —
+ * so `Delete` also reads as a substring of the confirmation's own
+ * `Delete this build`. Scoping to the plate and matching exactly is what keeps
+ * the two apart.
+ */
+function footerAction(page: Page, name: string) {
+  return page.locator('.library__footer').getByRole('button', { name, exact: true });
+}
+
+/**
  * Saves the build the workspace is holding, from the workspace's own `SAVE`.
  *
  * Naming, renaming and saving a copy all go through here since 2026-08-27:
@@ -147,10 +159,13 @@ async function saveActiveBuild(
   await reachShellAction(page, /^Save$/);
   const dialog = page.getByRole('dialog', { name: 'Save build' });
   await dialog.getByRole('textbox', { name: 'Build name' }).fill(name);
+  // The modes are drawn only where both apply. A build with nothing to replace
+  // has one thing `SAVE BUILD` can do, so there is no card to press (canvas 1c).
+  const asNew = dialog.getByRole('radio', { name: 'Save as a new build' });
   if (mode === 'overwrite') {
     await dialog.getByRole('radio', { name: /^Overwrite/ }).check();
-  } else {
-    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+  } else if ((await asNew.count()) > 0) {
+    await asNew.check();
   }
   await dialog.getByRole('button', { name: 'Save build' }).click();
 }
@@ -241,8 +256,12 @@ test.describe('the build library', () => {
     const footer = page.locator('.library__footer');
 
     await expect(footer.getByRole('button')).toHaveCount(2);
-    await expect(footer.getByRole('button', { name: 'Delete Anaconda explorer' })).toBeVisible();
-    await expect(footer.getByRole('button', { name: 'Open Anaconda explorer' })).toBeVisible();
+    // Named for what they do, as the canvas names them. The build they act on
+    // is the row the Commander pressed, which is where they are looking.
+    await expect(footer.getByRole('button', { name: 'Delete', exact: true })).toBeVisible();
+    await expect(
+      footer.getByRole('button', { name: 'Open in outfitting', exact: true }),
+    ).toBeVisible();
   });
 
   test('names the record the build is already in, leaving nothing behind', async ({ page }) => {
@@ -360,7 +379,7 @@ test.describe('the build library', () => {
     await reachShellLink(page, 'Open saved build');
     await expect(library(page)).toBeVisible();
 
-    await page.getByRole('button', { name: 'Close saved builds' }).click();
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
@@ -413,14 +432,14 @@ test.describe('the build library', () => {
     await page.goto('/builds');
 
     await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     const dialog = page.getByRole('dialog', { name: /Build a/ });
     await expect(dialog.getByText(/cannot be undone/i)).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Keep this build' }).click();
     expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).not.toBeNull();
 
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     await page
       .getByRole('dialog', { name: /Build a/ })
       .getByRole('button', { name: 'Delete this build' })
@@ -434,7 +453,7 @@ test.describe('the build library', () => {
     await page.goto('/builds');
 
     await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     await page
       .getByRole('dialog', { name: /Build a/ })
       .getByRole('button', { name: 'Delete this build' })
@@ -474,13 +493,13 @@ test.describe('the build library', () => {
       }),
     ]);
     await page.goto('/builds');
-    await expect(page.getByText('2 builds stored')).toBeVisible();
+    await expect(page.getByText('2 builds', { exact: true })).toBeVisible();
 
-    await page.getByRole('textbox', { name: 'Search these builds' }).fill('python');
+    await page.getByRole('searchbox', { name: 'Search saved builds' }).fill('python');
 
     await expect
       .poll(() => page.locator('.library__count').innerText(), { timeout: 5_000 })
-      .toBe('1 of 2 builds shown');
+      .toBe('1 of 2 builds');
     await expect(page.locator('[data-record-id="b"]')).toBeVisible();
     await expect(page.locator('[data-record-id="a"]')).toHaveCount(0);
     // Narrowing changes no record and removes nothing.
@@ -491,7 +510,7 @@ test.describe('the build library', () => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
     await page.goto('/builds');
 
-    const search = page.getByRole('textbox', { name: 'Search these builds' });
+    const search = page.getByRole('searchbox', { name: 'Search saved builds' });
     await search.fill('nothing like this');
 
     await expect(page.getByText(/Nothing here matches/)).toBeVisible();
@@ -737,7 +756,7 @@ test.describe('the build library', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-populated' });
 
     await chooseRecord(page, 'Build a');
-    await page.getByRole('button', { name: 'Delete Build a' }).click();
+    await footerAction(page, 'Delete').click();
     await expect(page.getByRole('dialog', { name: /Build a/ })).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'library-delete-confirmation' });
   });

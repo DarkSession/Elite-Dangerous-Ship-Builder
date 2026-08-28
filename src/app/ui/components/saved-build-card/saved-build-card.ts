@@ -48,8 +48,6 @@ export interface SavedBuild {
   readonly current: boolean;
   /** "Current build" — the marker's meaning, in words rather than in amber. */
   readonly currentLabel: string;
-  /** The whole action of choosing this row, in words. */
-  readonly chooseLabel: string;
 }
 
 /**

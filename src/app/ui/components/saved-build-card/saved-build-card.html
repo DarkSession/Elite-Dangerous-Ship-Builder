@@ -1,9 +1,9 @@
 <!--
   A button, because choosing a row is an action and the footer acts on what was
-  chosen. Its accessible name is the row's own words rather than an `aria-label`
-  over the top of them: a name that replaced the visible text would be a name a
-  Commander reading aloud could not match to what they see (WCAG 2.5.3). What
-  the plate and the marker say without words is added as text of its own.
+  chosen. Its accessible name is the row's own words and nothing else: a name
+  that replaced or extended the visible text would be a name a Commander reading
+  aloud could not match to what they see (WCAG 2.5.3). What the plate and the
+  marker say without words is added as text of its own.
 -->
 <button
   type="button"
@@ -75,7 +75,4 @@
   </span>
 
   <span class="record__modified">{{ build().modified }}</span>
-
-  <!-- The verb, after the row's own words rather than instead of them. -->
-  <span class="visually-hidden">{{ build().chooseLabel }}</span>
 </button>

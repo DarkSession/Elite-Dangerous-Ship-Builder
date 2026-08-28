@@ -103,7 +103,6 @@ export class BuildLibraryPage {
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
 
-  readonly closeLabel = this.#messages.messageSignal('library.close');
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');
   readonly unavailableLabel = this.#messages.messageSignal('library.unavailable.label');
@@ -112,7 +111,6 @@ export class BuildLibraryPage {
   readonly deleteConfirmLabel = this.#messages.messageSignal('library.delete.confirm');
   readonly deleteCancelLabel = this.#messages.messageSignal('library.delete.cancel');
   readonly searchLabel = this.#messages.messageSignal('library.search.label');
-  readonly searchDescription = this.#messages.messageSignal('library.search.description');
   readonly nothingChosen = this.#messages.messageSignal('library.chosen.none');
 
   readonly isEmpty = this.#library.isEmpty;
@@ -179,7 +177,7 @@ export class BuildLibraryPage {
   });
 
   /**
-   * What each footer action would do, named for the record it would do it to.
+   * What the footer commits on the record that was chosen.
    *
    * The canvas's two, and nothing else. Naming, renaming and saving a copy were
    * here until 2026-08-27 and are the workspace's own `SAVE` now: a library
@@ -187,23 +185,27 @@ export class BuildLibraryPage {
    * where a Commander is working in it. Nothing they could do is gone — a
    * record is renamed by opening it and saving it over the save it came from,
    * and copied by opening it and saving it as a new build (FR-009).
+   *
+   * Each is named for what it does and not for the build it does it to, as the
+   * canvas draws them: `DELETE` and `OPEN IN OUTFITTING`. The build is the row
+   * the Commander pressed, which is the pressed row in the list above and is
+   * where they are looking; repeating its name into the buttons made the same
+   * word the longest thing on the plate and moved it whenever the choice moved.
    */
   readonly chosenActions = computed<readonly RecordAction[]>(() => {
-    const record = this.chosen() === null ? null : this.#library.find(this.chosen()!);
-    if (record === null) {
+    if (this.chosen() === null) {
       return [];
     }
 
-    const build = record.name ?? this.#derivedTitle(record);
     return [
       {
         id: 'delete',
-        label: this.#messages.message('library.action.delete', { build }),
+        label: this.#messages.message('library.action.delete'),
         emphasis: 'danger' as const,
       },
       {
         id: 'open',
-        label: this.#messages.message('library.action.open', { build }),
+        label: this.#messages.message('library.action.open'),
         emphasis: 'primary' as const,
       },
     ];
@@ -532,7 +534,6 @@ export class BuildLibraryPage {
       remaining: this.#remainingLife(record),
       current: record.id === this.#currentRecordId(),
       currentLabel: this.#messages.message('library.record.current'),
-      chooseLabel: this.#messages.message('library.record.choose', { build: title }),
       note: this.#noteFor(record),
     };
   }

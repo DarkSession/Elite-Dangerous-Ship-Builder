@@ -40,10 +40,13 @@ async function saveActiveBuild(
   await reachShellAction(page, /^Save$/);
   const dialog = page.getByRole('dialog', { name: 'Save build' });
   await dialog.getByRole('textbox', { name: 'Build name' }).fill(name);
+  // The modes are drawn only where both apply. A build with nothing to replace
+  // has one thing `SAVE BUILD` can do, so there is no card to press (canvas 1c).
+  const asNew = dialog.getByRole('radio', { name: 'Save as a new build' });
   if (mode === 'overwrite') {
     await dialog.getByRole('radio', { name: /^Overwrite/ }).check();
-  } else {
-    await dialog.getByRole('radio', { name: 'Save as a new build' }).check();
+  } else if ((await asNew.count()) > 0) {
+    await asNew.check();
   }
   await dialog.getByRole('button', { name: 'Save build' }).click();
 }
@@ -306,7 +309,10 @@ test.describe('the tab’s working build', () => {
     // Opening it again writes nothing at all: the build is already recoverable
     // from what was opened.
     await chooseRecord(page, 'Explorer');
-    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/build(#|$)/);
 
     expect(await recordBytes(page, id)).toBe(saved);
@@ -331,7 +337,10 @@ test.describe('the tab’s working build', () => {
     const saved = await recordBytes(page, id);
 
     await chooseRecord(page, 'Explorer');
-    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await renameShip(page, 'Vindicator');
 
@@ -350,7 +359,10 @@ test.describe('the tab’s working build', () => {
     await reachShellLink(page, 'Open saved build');
 
     await chooseRecord(page, 'Explorer');
-    await page.getByRole('button', { name: 'Open Explorer' }).click();
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: 'Open in outfitting', exact: true })
+      .click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await renameShip(page, 'Vindicator');
     await expectRecords(page, 2);

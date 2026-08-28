@@ -1,4 +1,4 @@
-@use '../field/field';
+@use '../field/labelling';
 @use '../../../../styles/responsive' as layout;
 
 .choice-group {
@@ -130,33 +130,27 @@
   }
 }
 
-// The card arrangement.
+// The plate both card arrangements are built on.
 //
-// Canvas 1c draws the export layer's formats as a column of plates: a tracked
-// condensed title over a Barlow description, on `--panel-2` inside an amber
-// hairline, and the chosen one washed amber with its title in amber too. Canvas
-// 1d draws the same formats above the payload instead, as a strip of tracked
-// chips that scrolls sideways rather than wrapping.
+// Canvas 1c draws two lists of them: the export layer's formats, and the save
+// layer's modes. They share the box — `--panel-2` inside an amber hairline,
+// washed amber when chosen — and differ in what leads a card and how its title
+// is set, which the two blocks after this one supply.
 //
-// One contract, two resolutions. Both are the native input and both carry
-// selection as its own checked state, so what a reader is told does not change
-// with the width.
+// Keyed on its own attribute rather than on both layout names, because nearly
+// every rule of both lives here: written against the two names it is written
+// into all of them, and this component's stylesheet is already the largest in
+// the library.
 //
-// The two are keyed to the viewport rather than to this group's own box, which
-// is the exception the shared library makes for a composition the surrounding
-// layer also has to agree with: the export layer's grid is keyed to the
-// complementary `medium-up`, and a group that answered its own width would give
-// the 236px column canvas 1c draws the chips canvas 1d draws instead. A `cards`
-// group placed somewhere narrow at a wide viewport gets the plates.
-.choice-group__options[data-layout='cards'] {
+// The plate is the native input either way, and selection is the control's own
+// checked state, so what a reader is told does not change with the arrangement
+// or with the width.
+.choice-group__options[data-cards] {
   @include layout.stack(var(--edsb-space-inline-tight));
 
   // The plate is the control's own box: the input covers it, transparent and
   // full size, so the target a pointer aims at is the thing being operated
   // rather than a glyph beside it.
-  //
-  // The marker is laid against the plate's padding box rather than reserved in
-  // its flow, so choosing one moves a mark and nothing reflows.
   .choice {
     position: relative;
     display: flex;
@@ -183,23 +177,6 @@
     border-color: var(--edsb-border-control);
   }
 
-  // The marker is drawn inside the card's leading edge rather than as a border
-  // on it. Carried by the border it replaced the card's own hairline on that one
-  // side, so a card nobody had chosen was closed on three sides and open on the
-  // fourth — the export dialog's second format looked unfinished beside its
-  // first (Commander request 2026-08-26). The canvas draws both cards as
-  // complete boxes. An absolutely positioned mark is laid against the padding
-  // box, so the hairline stays where it is, the marker sits just inside it, and
-  // the card is the same shape whichever one is chosen.
-  .choice:has(.choice__input:checked)::before {
-    content: '';
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: 0;
-    inline-size: var(--edsb-border-width-marker);
-    background-color: var(--edsb-marker-selected);
-  }
-
   .choice:has(.choice__input:focus-visible) {
     outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
     outline-offset: var(--edsb-focus-ring-offset);
@@ -219,21 +196,12 @@
   .choice__label {
     display: block;
     min-block-size: 0;
-    font-family: var(--edsb-font-heading);
-    font-size: var(--edsb-text-size-compact);
-    font-weight: var(--edsb-text-weight-control);
-    line-height: var(--edsb-text-leading-control);
-    letter-spacing: var(--edsb-text-tracking-heading);
-    text-transform: uppercase;
-    color: var(--edsb-text-secondary);
   }
 
-  .choice__input:checked + .choice__label {
-    font-weight: var(--edsb-text-weight-heading);
-    color: var(--edsb-text-accent-strong);
-  }
-
-  .choice__input:disabled + .choice__label {
+  // `~` rather than `+`: a marked card puts its marker between the input and
+  // the label, so the adjacent-sibling form would reach the label on one
+  // arrangement and nothing at all on the other.
+  .choice__input:disabled ~ .choice__label {
     color: var(--edsb-text-disabled);
     cursor: not-allowed;
   }
@@ -248,6 +216,119 @@
   .choice__label,
   .choice__description {
     overflow-wrap: anywhere;
+  }
+}
+
+// The format list's own plate: the title tracked, condensed and uppercase, and
+// selection carried by a mark inside the card's leading edge.
+//
+// Canvas 1d draws the same formats above the payload rather than beside it, as
+// a strip of tracked chips that scrolls sideways instead of wrapping — the
+// compact resolution at the foot of this file.
+//
+// The two are keyed to the viewport rather than to this group's own box, which
+// is the exception the shared library makes for a composition the surrounding
+// layer also has to agree with: the export layer's grid is keyed to the
+// complementary `medium-up`, and a group that answered its own width would give
+// the 236px column canvas 1c draws the chips canvas 1d draws instead. A `cards`
+// group placed somewhere narrow at a wide viewport gets the plates.
+.choice-group__options[data-layout='cards'] {
+  // The mark is laid against the plate's padding box rather than reserved in
+  // its flow, so choosing one moves a mark and nothing reflows.
+  //
+  // It is drawn inside the leading edge rather than as a border on it. Carried
+  // by the border it replaced the card's own hairline on that one side, so a
+  // card nobody had chosen was closed on three sides and open on the fourth —
+  // the export dialog's second format looked unfinished beside its first
+  // (Commander request 2026-08-26). The canvas draws both cards as complete
+  // boxes, so the hairline stays where it is and the mark sits just inside it.
+  .choice:has(.choice__input:checked)::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: var(--edsb-border-width-marker);
+    background-color: var(--edsb-marker-selected);
+  }
+
+  .choice__label {
+    font-family: var(--edsb-font-heading);
+    font-size: var(--edsb-text-size-compact);
+    font-weight: var(--edsb-text-weight-control);
+    line-height: var(--edsb-text-leading-control);
+    letter-spacing: var(--edsb-text-tracking-heading);
+    text-transform: uppercase;
+    color: var(--edsb-text-secondary);
+  }
+
+  .choice__input:checked + .choice__label {
+    font-weight: var(--edsb-text-weight-heading);
+    color: var(--edsb-text-accent-strong);
+  }
+}
+
+// The save layer's mode plate: a square marker on the leading edge, a
+// sentence-case title beside it and the outcome in monospace under that
+// (canvas 1c, "SAVE BUILD").
+//
+// The marker is in the card's flow rather than laid over it, because it is what
+// the eye reads the state off: an open square is an offer and a filled one is
+// the choice that stands. It is drawn on every card, chosen or not, so nothing
+// reflows when the choice moves and no card is missing a part its neighbour has.
+//
+// The tracks and the columns the label and the description sit in come from the
+// base `.choice` above, which already lays a mark beside a label over a
+// description. Only the display mode is restated, because the shared plate
+// above sets `flex`.
+.choice-group__options[data-layout='marked-cards'] {
+  .choice {
+    display: grid;
+    column-gap: var(--edsb-space-inline);
+    align-items: start;
+  }
+
+  // Spanning both rows, so it stands against the title rather than floating
+  // between the title and the line beneath it. The title's own leading centres
+  // it on the first line of text at any text size, which a fixed offset would
+  // do at one size only.
+  .choice__marker {
+    grid-row: 1 / span 2;
+    inline-size: var(--edsb-space-lg);
+    block-size: var(--edsb-space-lg);
+    margin-block-start: calc((1em * var(--edsb-text-leading-body) - var(--edsb-space-lg)) / 2);
+    border: var(--edsb-border-width-hairline) solid var(--edsb-border-strong);
+  }
+
+  // Filled, not merely tinted. The fill is what survives a monochrome rendering
+  // and is why the state is not carried by colour alone (AGENTS.md).
+  .choice__input:checked ~ .choice__marker {
+    background-color: var(--edsb-marker-selected);
+    border-color: var(--edsb-marker-selected);
+  }
+
+  .choice__input:disabled ~ .choice__marker {
+    border-color: var(--edsb-text-disabled);
+  }
+
+  // A sentence, not a heading. The canvas sets a save mode in body type where
+  // it sets the format list beside it tracked and uppercase, because a mode is
+  // read as words and a format is read as a name.
+  .choice__label {
+    font-weight: var(--edsb-text-weight-emphasis);
+    line-height: var(--edsb-text-leading-body);
+    color: var(--edsb-text-secondary);
+  }
+
+  .choice__input:checked ~ .choice__label {
+    color: var(--edsb-text-accent-strong);
+  }
+
+  // The outcome is set in the metric face: it is a fact about the stored
+  // build — when it was last saved, what survives — rather than prose.
+  .choice__description {
+    font-family: var(--edsb-font-metric);
+    font-size: var(--edsb-text-size-caption);
+    font-weight: var(--edsb-text-weight-body);
   }
 }
 

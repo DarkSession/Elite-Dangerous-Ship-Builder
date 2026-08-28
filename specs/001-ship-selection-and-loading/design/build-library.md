@@ -6,15 +6,15 @@
 ## Composition
 
 - Wide: canvas 1a's centered, route-backed saved-build modal over an inert originating screen — a scrim, an amber-hairline body, a darker title bar carrying `SAVED BUILDS` and a monospace dismiss, and a committing footer on its own plate. Narrow: canvas 1b's full-screen saved-build layer with a back arrow in its own bar and the same footer pinned. Direct navigation to `/builds` supplies an ordinary page background while keeping the same content and the same title.
-- The modal's own title bar is this screen's heading, and the record count sits beside the search field in the header row under it, where the reference draws it. The command bar behind the modal keeps naming the screen the modal was opened over.
-- A header row: one search field over the records, and the count of records in monospace beside it.
+- The modal's own title bar is this screen's heading, and the record count sits beside the search field in the header row under it, where the reference draws it. The title bar's dismiss is the shared `Close` every layer carries. The command bar behind the modal keeps naming the screen the modal was opened over.
+- A header row: one search field over the records carrying its words in the placeholder rather than in a drawn label, and the count of records in monospace beside it on the same line.
 - Column headers on their own lighter plate — `BUILD`, `HULL`, `Mcr`, `EDITED` — over a scrolling body, as one semantic list rather than four unrelated columns.
 - Semantic `ResponsiveRecordList` as one list in one order — newest first, with the record id breaking ties — with no group headings between named and unnamed records (FR-010, ruled 2026-08-27).
 - `SavedBuildCard` showing the local name or that there is none, its note on one line, package hull text, how long ago it was last edited in the active locale's own words, and recorded validation valid/complete state. The instant itself stays as text beside the row's other read-not-drawn facts, so nothing is lost to a reader who needs it exactly. An unnamed record forked from a named one says which one, so unsaved edits to a saved build are distinguishable from a build that never had a name. Note presence/content is local, written with the build from the workspace's own `SAVE` (FR-011).
 - An unnamed row is titled by the build's own ship name, or its ident, or the hull — read from the build each time it is drawn, never written onto the record, and set apart from a Commander-given name rather than passed off as one. The reference draws the name as the largest thing in a row, and a week of rows all reading one word would be a pile rather than a library. Ship name and ident are the Commander's own words and are not package text, so they carry no translation marker.
 - A leading 3px marker on every row, filled amber with a wash running from the leading edge on the record the workspace currently holds, and a monospace issue count on a warm plate beside the title where the recorded validation has issues.
 - Two actions on the record that was chosen, named or not: open it, and delete it. Naming, renaming and saving a copy are the workspace's own `SAVE` and are specified in [`build-workspace.md`](./build-workspace.md) — a library answers "which of these builds", and what should become of one is asked where a Commander is working in it (FR-009, ruled 2026-08-27).
-- A committing footer: the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge.
+- A committing footer: the destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge. Each is named for what it does — `DELETE`, `OPEN IN OUTFITTING` — and not for the build it does it to, which is the row the Commander pressed.
 - Dismissing the layer returns to the screen it was opened over, address and fragment intact — a Commander who glanced at their saved builds and chose nothing is still in the build they were working in. Where it was reached by its own address there is no such screen, and the build in hand is the destination, or the shipyard where there is none (Commander request 2026-08-27).
 - `ConfirmDialog` for delete, and record manager for quota recovery. The name dialog and the three-choice conflict dialog moved to the workspace with the save that raises them.
 - The remaining life of every unnamed record, stated on its own row in words and in the active locale's relative time, and a name is what stops that clock — given from the workspace's `SAVE`, not from the row (FR-010, FR-013). Since the 2026-08-26 request that statement is read rather than drawn, together with the recorded validation and the current-build marker: the canvas draws none of the three, and each row's title, issue count, hull and edited time are what it does draw. See FR-010 and FR-013 for the amendment and its one real cost.
@@ -90,6 +90,26 @@ The surface was the canvas's; the rows were not measured against it.
 The **group headings** — unnamed working records above named saves — were kept
 here on 2026-08-26 as a divergence not to close. They went on 2026-08-27; see
 below.
+
+### Four corrections to the surface, 2026-08-28 (Commander request)
+
+The rows were measured against the canvas; the panel around them was not.
+
+- **860px, and every region edge to edge.** The layer takes the widest of its
+  named width steps, which is what canvas 1a draws, and its body is flush. Each
+  region carries its own inset instead: the hairline under the search, the plate
+  the column headers sit on and the footer's own plate all reach the panel's
+  sides, and a row is inset once rather than by the surface and then by itself.
+- **The search carries its words in its placeholder**, with no label drawn above
+  it, exactly as the shipyard's search does and as canvas 1a draws both. The
+  label stays a real one, bound to the control and read aloud: a placeholder goes
+  the moment somebody types, so it can never be the only name a field has.
+- **The count is `N builds`, on the search's own line.** `N builds stored` said a
+  word the surface's title already says, and the drawn label above the field was
+  what pushed the count onto a line of its own.
+- **A row's own words are its whole accessible name.** `Choose <build>` was added
+  after them; the canvas draws no such verb, and the row is a button, which
+  already says that pressing it does something.
 
 ### Three corrections to the rows, 2026-08-27 (Commander request)
 
@@ -191,14 +211,14 @@ ago`, in the active locale's own words through `Intl.RelativeTimeFormat`, which
 
 Measured from canvas 1a's `SAVED BUILDS` modal and canvas 1b's `ssv-screen`.
 
-| Part            | Canvas                                                                                                                                                                           |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wide surface    | A centred dialog on a near-opaque scrim: amber-hairline body, a darker title bar with the title tracked 0.22em and a monospace dismiss, and a committing footer on its own plate |
-| Compact surface | The same content as a full-screen layer with a back arrow and a pinned footer                                                                                                    |
-| Header row      | A search field beside a monospace record count                                                                                                                                   |
-| Column headers  | Monospace, tracked 0.14em, on a slightly lighter plate                                                                                                                           |
-| Record          | Title in condensed 600 tracked 0.09em, a one-line note beneath in Barlow 300, then hull, price and how long ago it was edited in monospace                                       |
-| Issue badge     | A monospace count on a translucent warm plate beside the title                                                                                                                   |
-| Record marker   | A 3px leading edge that takes amber when the record is the current one                                                                                                           |
-| Empty state     | Centred prose, no panel                                                                                                                                                          |
-| Footer actions  | The destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge                                                                   |
+| Part            | Canvas                                                                                                                                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wide surface    | An 860px centred dialog on a near-opaque scrim: amber-hairline body, a darker title bar with the title tracked 0.22em and a monospace dismiss, and a committing footer on its own plate |
+| Compact surface | The same content as a full-screen layer with a back arrow and a pinned footer                                                                                                           |
+| Header row      | A search field carrying its words in the placeholder, beside a monospace record count on the same line                                                                                  |
+| Column headers  | Monospace, tracked 0.14em, on a slightly lighter plate                                                                                                                                  |
+| Record          | Title in condensed 600 tracked 0.09em, a one-line note beneath in Barlow 300, then hull, price and how long ago it was edited in monospace                                              |
+| Issue badge     | A monospace count on a translucent warm plate beside the title                                                                                                                          |
+| Record marker   | A 3px leading edge that takes amber when the record is the current one                                                                                                                  |
+| Empty state     | Centred prose, no panel                                                                                                                                                                 |
+| Footer actions  | The destructive action bordered warm on the leading edge, the opening action filled amber on the trailing edge                                                                          |

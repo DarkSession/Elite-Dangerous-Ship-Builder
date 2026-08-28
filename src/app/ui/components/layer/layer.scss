@@ -143,9 +143,15 @@
   @include dialog-presentation(var(--edsb-layout-layer-wide));
 }
 
+.layer--dialog.layer--widest,
+.layer--adaptive.layer--widest {
+  @include dialog-presentation(var(--edsb-layout-layer-widest));
+}
+
 @include layout.compact {
   .layer--adaptive,
-  .layer--adaptive.layer--wide {
+  .layer--adaptive.layer--wide,
+  .layer--adaptive.layer--widest {
     @include sheet-presentation;
   }
 }
@@ -156,6 +162,7 @@
 @include layout.short-viewport {
   .layer--adaptive,
   .layer--adaptive.layer--wide,
+  .layer--adaptive.layer--widest,
   .layer--sheet {
     @include full-height-presentation;
   }

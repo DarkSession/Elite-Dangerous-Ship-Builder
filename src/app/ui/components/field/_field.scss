@@ -1,4 +1,5 @@
 @use '../../../../styles/responsive' as layout;
+@use 'labelling';
 
 // The shared labelled-control appearance.
 //
@@ -6,25 +7,12 @@
 // every field. A capability that needs a new field composes this rather than
 // inventing local rules (FR-001).
 //
+// The words around the control are in `labelling`, which this carries: a
+// component that renders a control takes both from here, and one that renders
+// only the words takes that partial on its own.
+//
 // The reference sets a field as a darker fill inside an amber hairline, under a
 // tracked monospace label (canvas 1c, "Text input").
-
-:host {
-  display: block;
-}
-
-.field {
-  @include layout.stack(var(--edsb-space-stack-tight));
-}
-
-.field__label {
-  @include layout.micro-label(var(--edsb-text-subtle));
-}
-
-.field__label--hidden,
-.field__description--hidden {
-  @include layout.visually-hidden;
-}
 
 .field__control {
   @include layout.target-baseline;
@@ -50,19 +38,6 @@
 .field__control:disabled {
   color: var(--edsb-text-disabled);
   border-color: var(--edsb-border-quiet);
-}
-
-.field__description {
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
-}
-
-.field__error {
-  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-count));
-
-  text-transform: none;
 }
 
 // The reference's own menu control: the field's ground and hairline, its text

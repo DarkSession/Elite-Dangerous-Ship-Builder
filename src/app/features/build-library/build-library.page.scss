@@ -6,9 +6,19 @@
 
 // The surface's body: the header row, then one scrolling list, then the footer
 // the layer pins beneath both (canvas 1a "SAVED BUILDS", canvas 1b list).
+//
+// The layer is asked for a flush body and every region here carries its own
+// inset, because the canvas runs each of them edge to edge: the hairline under
+// the search, the plate the column headers sit on and the footer's own plate
+// all reach the panel's sides. A body padded once around the whole column would
+// hold them off it, and the rows would be inset twice — the surface's padding
+// and then their own (canvas 1a "SAVED BUILDS").
+//
+// No gap between the regions, for the same reason. The canvas divides them with
+// rules and grounds rather than with air.
 .library {
-  @include layout.stack(var(--edsb-space-stack));
-
+  display: flex;
+  flex-direction: column;
   min-block-size: 0;
 }
 
@@ -16,18 +26,35 @@
 // beside it, wrapping to its own line where the surface is narrow. Canvas 1a
 // closes it with a hairline, which is what separates the row that searches the
 // library from the rows that are the library (reported 2026-08-26).
+//
+// One line, because the field draws no label above it: the count sits against
+// the trailing edge of the same row the search is on.
 .library__header {
   @include layout.wrapping-row(var(--edsb-space-inline));
 
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  padding-block-end: var(--edsb-space-control-block);
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-row);
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
 }
 
 .library__search {
   flex: 1 1 var(--edsb-layout-rail-min);
   min-inline-size: 0;
+}
+
+// A notice carries its own block padding and takes only the inset the regions
+// around it carry, so it lines up with the search above it and the rows below.
+.library__notice {
+  padding-inline: var(--edsb-space-row);
+}
+
+// The quota manager is a bordered panel of its own rather than a region of the
+// surface, so it is held off the panel's edges on every side.
+.library__manager {
+  padding-block-end: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-row);
 }
 
 .library__count {
@@ -41,6 +68,7 @@
   @include layout.stack(var(--edsb-space-stack));
 
   padding-block: var(--edsb-space-section);
+  padding-inline: var(--edsb-space-row);
   max-inline-size: var(--edsb-layout-prose-max);
   margin-inline: auto;
   text-align: center;
@@ -65,7 +93,7 @@
   inset-block-end: 0;
   align-items: center;
   padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-panel);
+  padding-inline: var(--edsb-space-row);
   background-color: var(--edsb-surface-panel-raised);
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
 

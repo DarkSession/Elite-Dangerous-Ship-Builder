@@ -119,9 +119,7 @@ export class SaveBuildDialog {
 
   readonly title = this.#messages.messageSignal('workspace.save.title');
   readonly nameLabel = this.#messages.messageSignal('workspace.save.name.label');
-  readonly nameDescription = this.#messages.messageSignal('workspace.save.name.description');
   readonly noteLabel = this.#messages.messageSignal('workspace.save.note.label');
-  readonly noteDescription = this.#messages.messageSignal('workspace.save.note.description');
   readonly modeLegend = this.#messages.messageSignal('workspace.save.mode.legend');
   readonly confirmLabel = this.#messages.messageSignal('workspace.save.confirm');
   readonly cancelLabel = this.#messages.messageSignal('action.cancel');
@@ -177,19 +175,24 @@ export class SaveBuildDialog {
       }),
   });
 
-  /** The two cards the canvas draws, or the one that applies. */
+  /**
+   * The two cards the canvas draws, or none at all.
+   *
+   * A choice of one is not a choice. Where there is nothing to replace — a
+   * build that came from nowhere, or a browser that cannot replace a save
+   * safely — saving as a new build is the only thing `SAVE BUILD` can do, and a
+   * single selected card in front of it asks a question with one answer. The
+   * canvas draws the pair or it draws neither.
+   *
+   * Nothing is lost by leaving them out. `effectiveMode()` still resolves to
+   * `new`, and the one case a Commander could be surprised by — a save they
+   * opened that this browser cannot replace — says so on the message line
+   * instead, where the reason belongs.
+   */
   readonly modes = computed<readonly Choice[]>(() => {
     const source = this.source();
-    const asNew: Choice = {
-      value: 'new',
-      label: this.#messages.message('workspace.save.mode.new'),
-      description: this.#messages.message(
-        source === null ? 'workspace.save.mode.new.only' : 'workspace.save.mode.new.outcome',
-      ),
-    };
-
     if (source === null || !source.replaceable) {
-      return [asNew];
+      return [];
     }
 
     return [
@@ -200,7 +203,11 @@ export class SaveBuildDialog {
           when: source.lastSaved,
         }),
       },
-      asNew,
+      {
+        value: 'new',
+        label: this.#messages.message('workspace.save.mode.new'),
+        description: this.#messages.message('workspace.save.mode.new.outcome'),
+      },
     ];
   });
 

@@ -624,14 +624,15 @@
   --edsb-measure-menu-min: 12.25rem;
   --edsb-measure-menu-max: 20rem;
 
-  // Dialog widths, from the canvas: 540 save, 560 import, 620 help and 760
-  // export — and an 860 saved-builds modal that is a route here rather than a
-  // dialog, so no step covers it. Three named steps cover the rest: one region
-  // of prose and a field takes the middle one, and the layer that stands two
-  // regions side by side takes the widest.
+  // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export
+  // and 860 saved builds. Four named steps: one region of prose and a field
+  // takes the second, the layer that stands two regions side by side takes the
+  // third, and the library — a whole list under its own column headers — takes
+  // the widest.
   --edsb-measure-layer-sm: 33.75rem;
   --edsb-measure-layer-md: 38.75rem;
   --edsb-measure-layer-lg: 47.5rem;
+  --edsb-measure-layer-xl: 53.75rem;
 
   // The list down the leading edge of a two-region layer: 236px in canvas 1c's
   // export dialog, where the formats stand beside the payload rather than above

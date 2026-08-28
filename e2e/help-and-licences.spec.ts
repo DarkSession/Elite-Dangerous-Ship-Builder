@@ -154,7 +154,6 @@ async function selectSlot(page: Page, slotKey: string): Promise<void> {
 /** Dismisses whatever layer is covering the frame, by its own visible control. */
 const WAY_OUT = new RegExp(
   `^(${englishMessages['action.close']}|${englishMessages['action.cancel']}` +
-    `|${englishMessages['library.close']}` +
     `|${englishMessages['library.delete.cancel']})$`,
   'i',
 );
@@ -226,7 +225,12 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     // Deleting is the library's, and the row it acts on is the one the
     // workspace is holding — the build just saved.
     await reachShellLink(page, /^open saved build$/i);
-    await page.getByRole('button', { name: /^delete ledger build$/i }).click();
+    // The footer's action is named for what it does, so it is reached on the
+    // footer's own plate: `Delete` also reads inside `Delete this build`.
+    await page
+      .locator('.library__footer')
+      .getByRole('button', { name: englishMessages['library.action.delete'], exact: true })
+      .click();
     await expect(page.getByRole('dialog', { name: /ledger build/i })).toBeVisible();
   },
   'outfitting-ledger': async (page) => {
@@ -393,11 +397,15 @@ async function openSaveLayer(page: Page): Promise<void> {
   ).toBeVisible();
 }
 
-/** Saves the open build under a name, from the layer that is already open. */
+/**
+ * Saves the open build under a name, from the layer that is already open.
+ *
+ * No mode is pressed: a build with nothing to replace is offered no card, and
+ * saving as a new build is the only thing the commit can do (canvas 1c).
+ */
 async function saveAs(page: Page, name: string): Promise<void> {
   const layer = page.getByRole('dialog', { name: englishMessages['workspace.save.title'] });
   await layer.getByRole('textbox', { name: /^build name$/i }).fill(name);
-  await layer.getByRole('radio', { name: /^save as a new build$/i }).check();
   await layer.getByRole('button', { name: englishMessages['workspace.save.confirm'] }).click();
   await expect(layer).toHaveCount(0);
 }

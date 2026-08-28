@@ -432,6 +432,46 @@ test.describe('the saved-build surface', () => {
     );
   });
 
+  test('draws the surface at the width the canvas sets, with nothing inset twice', async ({
+    page,
+  }) => {
+    // Canvas 1a draws the saved-build modal at 860px, and runs every region in
+    // it edge to edge: the hairline under the search, the plate the column
+    // headers sit on and the footer's own plate all reach the panel's sides.
+    await withOneBuild(page);
+    const dialog = surface(page);
+
+    const box = await dialog.boundingBox();
+    expect(box?.width).toBeCloseTo(860, 0);
+
+    const body = dialog.locator('.layer__body').first();
+    expect(await style(body, 'padding-inline-start')).toBe('0px');
+    const columns = page.locator('.records__columns');
+    const columnsBox = await columns.boundingBox();
+    // Inside the panel's own hairline, and nothing further.
+    expect((columnsBox?.width ?? 0) + 2).toBeCloseTo(box?.width ?? 0, 0);
+  });
+
+  test('searches from a placeholder, with the count on the same line', async ({ page }) => {
+    // Canvas 1a puts the search field's words in its placeholder and the count
+    // in monospace beside it, on one row. The label stays a real one, bound to
+    // the control and read aloud, because a placeholder goes as soon as
+    // somebody types.
+    await withOneBuild(page);
+
+    const search = page.getByRole('searchbox', { name: 'Search saved builds' });
+    await expect(search).toHaveAttribute('placeholder', 'Search saved builds');
+    const label = await page.locator('.library__search .field__label').boundingBox();
+    expect(label?.height ?? 0).toBeLessThanOrEqual(1);
+
+    // One line: the field and the count share a horizontal band.
+    const field = await search.boundingBox();
+    const count = await page.locator('.library__count').boundingBox();
+    expect(count?.y).toBeGreaterThan((field?.y ?? 0) - (field?.height ?? 0));
+    expect(count?.y).toBeLessThan((field?.y ?? 0) + (field?.height ?? 0));
+    await expect(page.locator('.library__count')).toHaveText('1 builds');
+  });
+
   test('sets the record count and the column headers in tracked monospace', async ({ page }) => {
     // Canvas 1a's header row — a search field beside a monospace count — over
     // column headers on a slightly lighter plate.
@@ -573,6 +613,24 @@ test.describe('the save-build surface', () => {
     return layer;
   }
 
+  /**
+   * The same layer over a build that was opened from a save.
+   *
+   * The modes are drawn only where both apply, so the state the canvas draws
+   * them in is a build with something to replace: saved once, then reopened
+   * from its own `SAVE`.
+   */
+  async function withBothModes(page: Page): Promise<Locator> {
+    const first = await withSaveOpen(page);
+    await first.getByRole('button', { name: 'Save build' }).click();
+    await expect(first).toBeHidden();
+
+    await page.getByRole('banner').getByRole('button', { name: 'Save' }).click();
+    const layer = page.getByRole('dialog', { name: 'Save build' });
+    await expect(layer.locator('.save__modes .choice')).toHaveCount(2);
+    return layer;
+  }
+
   test('titles the layer in tracked uppercase over a monospace dismiss', async ({ page }) => {
     const layer = await withSaveOpen(page);
 
@@ -588,21 +646,41 @@ test.describe('the save-build surface', () => {
   test('draws the modes as bordered cards, washing and marking only the selected one', async ({
     page,
   }) => {
-    // Canvas 1c: two bordered cards, the selected one washed amber with a
-    // filled square marker and the other left on the panel ground.
-    const layer = await withSaveOpen(page);
+    // Canvas 1c: two bordered cards, each led by a 12px square, the selected
+    // one washed amber with its square filled and the other left on the panel
+    // ground with its square open.
+    const layer = await withBothModes(page);
     const cards = layer.locator('.save__modes .choice');
-    // A build that came from nowhere has one mode, and it is the selected one.
-    await expect(cards).toHaveCount(1);
 
-    const only = cards.first();
-    expect(await style(only, 'border-block-start-width')).toBe('1px');
-    expect(await style(only, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    const chosen = cards.first();
+    const other = cards.last();
+    expect(await style(chosen, 'border-block-start-width')).toBe('1px');
+    expect(await style(other, 'border-block-start-width')).toBe('1px');
+    expect(await style(chosen, 'background-color')).not.toBe(
+      await style(other, 'background-color'),
+    );
+
+    // The mark, on both cards and filled on one. A wash the eye reads as
+    // selection is colour alone; the fill is what survives without it.
+    const marks = layer.locator('.save__modes .choice__marker');
+    await expect(marks).toHaveCount(2);
+    expect(await style(marks.first(), 'background-color')).toBe(AMBER);
+    expect(await style(marks.last(), 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect((await marks.first().boundingBox())?.width).toBeCloseTo(12, 0);
+
     // The legend is read, not drawn: the canvas puts the cards straight under
     // the note field with no heading over them. Still in the accessibility
     // tree, so it takes a box of a pixel rather than none.
     const legend = await layer.locator('.choice-group__legend').boundingBox();
     expect(legend?.height ?? 0).toBeLessThanOrEqual(1);
+  });
+
+  test('draws no mode at all where there is nothing to replace', async ({ page }) => {
+    // A choice of one is not a choice: a build that came from nowhere has one
+    // thing SAVE BUILD can do, and the canvas draws the pair or neither.
+    const layer = await withSaveOpen(page);
+
+    await expect(layer.locator('.save__modes .choice')).toHaveCount(0);
   });
 
   test('closes the layer with a hairline over a monospace message line', async ({ page }) => {

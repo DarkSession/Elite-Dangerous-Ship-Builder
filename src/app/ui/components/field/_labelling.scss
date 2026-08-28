@@ -1,0 +1,41 @@
+@use '../../../../styles/responsive' as layout;
+
+// The words around a control: its label, its description and its error.
+//
+// Separate from the control's own appearance because they are not always
+// attached to one. A choice group is a `fieldset` of native radios with no
+// `.field__control` anywhere in it, and compiling the text input's surface, the
+// select's caret and the search field's cleared mark into it shipped a
+// kilobyte of rules that matched nothing (canvas 1c, "Text input").
+//
+// A component that renders a control uses `field` instead, which carries both.
+
+:host {
+  display: block;
+}
+
+.field {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.field__label {
+  @include layout.micro-label(var(--edsb-text-subtle));
+}
+
+.field__label--hidden,
+.field__description--hidden {
+  @include layout.visually-hidden;
+}
+
+.field__description {
+  font-size: var(--edsb-text-size-compact);
+  font-weight: var(--edsb-text-weight-prose);
+  line-height: var(--edsb-text-leading-body);
+  color: var(--edsb-text-subtle);
+}
+
+.field__error {
+  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-count));
+
+  text-transform: none;
+}
