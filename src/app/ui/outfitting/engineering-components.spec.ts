@@ -237,7 +237,11 @@ describe('attribute comparison', () => {
 
     const cells = queryAll(fixture, '.comparison__value');
     expect(textOf(cells[2]!)).not.toBe('0');
-    expect(textOf(cells[2]!).length).toBeGreaterThan(0);
+    // The cell holds a figure, so it states the absence of a figure. `Name
+    // unavailable` is what a lost piece of game *text* says, and a stock column
+    // reporting it told a Commander their multi-cannon had no name.
+    expect(query(fixture, '.comparison__value .unavailable')).toBeTruthy();
+    expect(textOf(cells[2]!)).toBe('Unavailable');
   });
 
   it('marks a direction the canvas’s way, and never by colour alone', () => {

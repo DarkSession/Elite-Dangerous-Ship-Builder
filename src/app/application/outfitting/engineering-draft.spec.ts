@@ -8,7 +8,9 @@ import {
   mercenaryVariant,
   packageText,
 } from '../../domain/outfitting/outfitting.fixtures';
+import { weaponFigures } from '../../domain/offence/weapon-figures';
 import {
+  CALCULATED_ATTRIBUTES,
   NO_BLUEPRINT,
   currentSelection,
   draftIsStale,
@@ -479,6 +481,53 @@ describe('engineering draft', () => {
 
       expect(zeros.every((row) => !row.drawn)).toBe(true);
       expect(others.every((row) => row.drawn)).toBe(true);
+    });
+
+    it('adds the package’s calculated figures for a weapon, on both sides', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      const blueprint = loadout.availableBlueprints(slot)[0]!;
+
+      const draft = openEngineeringDraft(
+        loadout,
+        slot,
+        1,
+        {
+          blueprintFdname: blueprint.blueprintSymbol,
+          grade: blueprint.grades.at(-1)!,
+          effectFdname: null,
+        },
+        TEXT,
+      );
+
+      const preview = draft?.preview.kind === 'known' ? draft.preview : null;
+      const rows = new Map(preview?.attributes.map((row) => [row.attribute as string, row]));
+      // Damage per second is the figure the whole recipe is chosen for, and no
+      // catalogue field states it. It is the package's own calculation over the
+      // same two articles the catalogue rows come from.
+      const stock = weaponFigures(loadout.fittedModuleAt(slot)?.stats ?? null);
+      expect(stock).not.toBeNull();
+      for (const attribute of CALCULATED_ATTRIBUTES) {
+        expect(rows.get(attribute)?.stock).toBe(stock?.[attribute]);
+        expect(rows.get(attribute)?.modified).toEqual(expect.any(Number));
+      }
+      expect(rows.get('damagePerSecond')?.modified).not.toBe(rows.get('damagePerSecond')?.stock);
+    });
+
+    it('gives a module that is not a weapon no calculated figures', () => {
+      const draft = driveDraft({ blueprintFdname: null, grade: null, effectFdname: null });
+
+      const drawn =
+        draft.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string)
+          : [];
+
+      // `weaponMetrics` answers for anything, and its answer for a frame shift
+      // drive is a block of zeroes. A zero here is not a reading (constitution
+      // IV), so the rows are never offered rather than being drawn and excused.
+      for (const attribute of CALCULATED_ATTRIBUTES) {
+        expect(drawn).not.toContain(attribute);
+      }
     });
   });
 });

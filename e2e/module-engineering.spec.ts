@@ -388,6 +388,34 @@ test.describe('engineering costs', () => {
     ).toBeVisible();
   });
 
+  test('states an absent figure as a value, and lists what the package calculates', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await openEditor(page, 'SmallHardpoint1');
+    await chooseRecipe(page, /rapid fire/i);
+    await chooseGrade(page, 5);
+
+    const comparison = page.locator('.comparison');
+    await expect(comparison).toBeVisible();
+
+    // Rapid fire gives a pulse laser a jitter the catalogue never gave it, so
+    // the stock side of that row has no figure. It is a number that is absent,
+    // not a name the catalogue lost, and the cell says so.
+    const jitter = comparison.locator('tr', { has: page.getByText(/^Jitter/) });
+    await expect(jitter.locator('.comparison__value .unavailable')).toBeVisible();
+    await expect(comparison).not.toContainText(/name unavailable/i);
+
+    // Damage per second is what the recipe is chosen for, and the Almanac
+    // calculates it. Both readings are drawn, beside the stats they come from.
+    for (const label of ['Damage per second', 'Sustained damage per second']) {
+      const row = comparison.locator('tr', { has: page.getByText(label, { exact: true }) });
+      await expect(row).toBeVisible();
+      await expect(row.locator('.comparison__value').first()).toHaveText(/\d/);
+      await expect(row.locator('.comparison__value--modified')).toHaveText(/\d/);
+    }
+  });
+
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');

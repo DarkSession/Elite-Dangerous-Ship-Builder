@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
+import { UnavailableValue } from '../components/unavailable-value/unavailable-value';
 
 /** One attribute, as the catalogue has it and as the draft would make it. */
 export interface AttributeComparisonRow {
@@ -39,6 +40,7 @@ export interface AttributeComparisonRow {
  */
 @Component({
   selector: 'edsb-attribute-comparison',
+  imports: [UnavailableValue],
   templateUrl: './attribute-comparison.html',
   styleUrl: './attribute-comparison.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,7 +69,6 @@ export class AttributeComparison {
   readonly modifiedColumn = this.#messages.messageSignal(
     'outfitting.engineering.attributes.modified',
   );
-  readonly unavailable = this.#messages.messageSignal('game-text.unavailable');
 
   /** The direction, in words, for a reader who cannot see the colour. */
   directionLabel(direction: 'better' | 'worse'): string {

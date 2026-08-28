@@ -4,6 +4,7 @@ import type {
   ShipLoadout,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { captureCheckpoint, restoreCheckpoint } from '../../domain/build/modeled-build-checkpoint';
+import { WEAPON_FIGURES, weaponFigures } from '../../domain/offence/weapon-figures';
 import type { EditOperation } from '../../domain/outfitting/build-edit-transaction';
 import {
   engineeringCost,
@@ -134,7 +135,24 @@ export const COMPARED_ATTRIBUTES = [
   'weaponsRecharge',
 ] as const;
 
-export type ComparedAttribute = (typeof COMPARED_ATTRIBUTES)[number];
+/**
+ * The figures the package calculates for a weapon rather than catalogues.
+ *
+ * Damage per second is what a Commander engineering a weapon is deciding
+ * about, and no catalogue field states it: a recipe that trades rate of fire
+ * for damage per round moves both rows and leaves the reader to multiply. The
+ * Almanac publishes the calculation, so the panel shows the package's own
+ * answer beside the stats it was worked out from (FR-012a).
+ *
+ * The article's `rateOfFire`, `thermalLoad` and `powerDraw` are not repeated:
+ * the package's result echoes them and the table already has them as catalogue
+ * rows. The damage splits are not here either — they are what feature 007's
+ * panel draws for the build, over the weapons a build actually carries.
+ */
+export const CALCULATED_ATTRIBUTES = WEAPON_FIGURES;
+
+export type ComparedAttribute =
+  (typeof COMPARED_ATTRIBUTES)[number] | (typeof CALCULATED_ATTRIBUTES)[number];
 
 /**
  * Which way is better, per attribute.
@@ -166,7 +184,10 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   chargeTime: false,
   clipSize: true,
   damage: true,
+  damagePerSecond: true,
+  damagePerShot: true,
   distributorDraw: false,
+  energyPerSecond: false,
   engineHeatRate: false,
   enginesCapacity: true,
   enginesRecharge: true,
@@ -177,6 +198,7 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   fuelMul: false,
   fuelPower: false,
   heatEfficiency: false,
+  heatPerSecond: false,
   hullBoost: true,
   hullReinforcement: true,
   integrity: true,
@@ -220,6 +242,10 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   shieldBrokenRegenRate: true,
   shieldRegenRate: true,
   shotSpeed: true,
+  sustainedDamagePerSecond: true,
+  sustainedEnergyPerSecond: false,
+  sustainedHeatPerSecond: false,
+  sustainedRateOfFire: true,
   systemsCapacity: true,
   systemsRecharge: true,
   thermalLoad: false,
@@ -672,14 +698,26 @@ function previewOf(
     return { kind: 'unavailable' };
   }
 
-  const attributes = COMPARED_ATTRIBUTES.map((attribute) => ({
-    attribute,
-    stock: stockArticle?.[attribute] ?? null,
-    modified: modifiedArticle?.[attribute] ?? null,
+  const stockFigures = weaponFigures(stockArticle);
+  const modifiedFigures = weaponFigures(modifiedArticle);
+  const attributes = [
+    ...COMPARED_ATTRIBUTES.map((attribute) => ({
+      attribute,
+      stock: stockArticle?.[attribute] ?? null,
+      modified: modifiedArticle?.[attribute] ?? null,
+    })),
+    // The package's own calculations for the same two articles, after the
+    // stats they are worked out from. `null` on both sides for anything that
+    // is not a weapon, which the row filter then drops.
+    ...CALCULATED_ATTRIBUTES.map((attribute) => ({
+      attribute,
+      stock: stockFigures?.[attribute] ?? null,
+      modified: modifiedFigures?.[attribute] ?? null,
+    })),
     // A row neither side publishes is not a row: a multi-cannon has no
     // integrity figure to compare and drawing an empty one would suggest the
     // package lost it.
-  }))
+  ]
     .filter((row) => row.stock !== null || row.modified !== null)
     .filter((row) => !silentZero(row));
 

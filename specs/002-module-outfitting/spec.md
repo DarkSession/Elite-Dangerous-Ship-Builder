@@ -155,7 +155,14 @@ its ship name and ident — belongs here.
   and restrictions on further engineering MUST come from the package.
 - **FR-012a**: The engineering surface MUST present every numeric attribute the package publishes on
   the fitted article, and only those the article itself carries. It MUST NOT present a chosen subset,
-  and MUST NOT invent, derive or estimate an attribute the package does not publish. Attribute labels
+  and MUST NOT invent, derive or estimate an attribute the package does not publish. Where the
+  package calculates a figure for the kind of article the mount holds, that figure MUST be presented
+  beside the catalogued attributes, on both readings, and MUST come from the package's own
+  calculation rather than from arithmetic over the rows: a weapon's damage per second, sustained
+  damage per second, damage per shot, sustained rate of fire, capacitor draw and heat are what a
+  recipe is chosen for, and no catalogue field states any of them. A calculated figure MUST NOT be
+  offered for an article the calculation does not describe — a module with no damage figure is not a
+  weapon, and a block of zeroes is not a reading. Attribute labels
   are application-localized; the package's own field identities MUST NOT reach a screen. The stock
   reading MUST be shown whether or not the module is engineered; the modified reading MUST be shown
   exactly when there is a selection or existing engineering to compare against, and a selection the

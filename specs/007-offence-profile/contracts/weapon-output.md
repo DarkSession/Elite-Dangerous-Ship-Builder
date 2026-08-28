@@ -17,6 +17,23 @@ One data-free package function is called, and only over the retained result: `da
 the range bands (see "Range bands" below). It is the package's own falloff rule, applied to the
 package's own returned fields.
 
+## One article's figures
+
+`weaponMetrics()` is asked in `src/app/domain/offence` and nowhere else, so a damage figure on any
+screen has one place it can have come from. That rule holds for a second, smaller question the
+outfitting workspace asks: what one weapon article does per second, stock and modified, in feature
+002's engineering editor. `weaponFigures()` answers it — the package's data-free `weaponMetrics()`
+over one `OutfittingModuleStats` record, with `hasWeaponDamageStats()` deciding whether the record
+is a weapon at all — and feature 002 reads its result.
+
+It is a different subject from this contract's, and does not join it. It measures an article rather
+than a build, it takes no `BuildMetrics`, it reads no enabled state and no slot, and its result
+never reaches this panel or the rail cell. Eight scalar figures are exposed: `damagePerShot`,
+`damagePerSecond`, `sustainedDamagePerSecond`, `sustainedRateOfFire`, `energyPerSecond`,
+`sustainedEnergyPerSecond`, `heatPerSecond` and `sustainedHeatPerSecond`. The damage splits,
+`rateOfFire`, `thermalLoad`, `powerDraw` and `continuous` are not — the first two are this panel's,
+and the rest are catalogue fields the editor's own table already draws.
+
 ## Leaf imports
 
 - `ShipLoadout`, `BuildWeaponMetrics`, `FittedWeaponMetrics`:
@@ -27,6 +44,7 @@ package's own returned fields.
 - `ModuleMount`, `getModuleBySymbol`: `@elite-dangerous-almanac/core/ships/modules`
 - `getShipGunsight`, `projectGunsight`, `GunsightOffset`:
   `@elite-dangerous-almanac/core/ships/gunsights`
+- `hasWeaponDamageStats`: `@elite-dangerous-almanac/core/ships/module-capabilities`
 - `getShipSlots`: `@elite-dangerous-almanac/core/ships/ships`
 - `enumerateSlots`: `@elite-dangerous-almanac/core/ships/slots`
 
