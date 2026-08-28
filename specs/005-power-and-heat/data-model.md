@@ -70,13 +70,13 @@ There is no draft, no Apply, no Reset, no running total and no validation.
 
 ## PowerAndHeat
 
-| Field         | Type                       | Rule                                            |
-| ------------- | -------------------------- | ----------------------------------------------- |
-| `hardpoints`  | `HardpointState`           | The state every selected figure was read under  |
-| `power`       | `PowerView`                | Selected fields of one `powerBudget()` result   |
-| `modules`     | `readonly ModuleDrawRow[]` | `budget.consumers`, heaviest first              |
-| `heat`        | `HeatView \| null`         | `null` exactly when `heatMetrics()` returned it |
-| `distributor` | `DistributorView \| null`  | `null` exactly when `distributorMetrics()` did  |
+| Field         | Type                       | Rule                                                       |
+| ------------- | -------------------------- | ---------------------------------------------------------- |
+| `hardpoints`  | `HardpointState`           | The state every selected figure was read under             |
+| `power`       | `PowerView`                | Selected fields of one `powerBudget()` result              |
+| `modules`     | `readonly ModuleDrawRow[]` | `budget.consumers`, heaviest first                         |
+| `heat`        | `HeatView \| null`         | `null` exactly when `heatMetricsResult().value` was        |
+| `distributor` | `DistributorView \| null`  | `null` exactly when `distributorMetricsResult().value` was |
 
 The object is frozen. Nothing about it is serialized, persisted or placed in
 history, a URL or SLEF.
@@ -193,7 +193,7 @@ Rules:
 
 ## HeatView
 
-`null` exactly when `heatMetrics()` returned `null`, with no hull or catalogue
+`null` exactly when `heatMetricsResult().value` was `null`, with no hull or catalogue
 figure standing in and no diagnosis of why.
 
 | Field                 | Type                          | Source/rule                                   |
@@ -239,7 +239,7 @@ weapons.
 
 ### HeatSpikeView
 
-The canvases draw a sixth bar, `Shield cell bank`. `heatMetrics()` publishes five
+The canvases draw a sixth bar, `Shield cell bank`. `heatMetricsResult()` publishes five
 scenarios and says outright that this is not one of them: a bank states heat per
 _activation_ rather than per second, and the package's own remedy is to divide
 that by the bank's spin-up, add it to the build's load and run it for the
@@ -256,14 +256,14 @@ bar is absent, not zero, where no bank is fitted.
 | `total`     | number           | Charges carried between them                                |
 
 The canvases' `HEAT SINKS 6` over `2 x 3`. It comes from `fittedModules()` rather
-than from `heatMetrics()`, which models no sink at all: a sink removes heat, and
+than from `heatMetricsResult()`, which models no sink at all: a sink removes heat, and
 every load the package accepts is non-negative. The `2 x 3` breakdown is absent
 where the launchers do not all carry the same number, because two unlike
 launchers are not one multiplication.
 
 ## DistributorView
 
-`null` exactly when `distributorMetrics()` returned `null` — an absent,
+`null` exactly when `distributorMetricsResult().value` was `null` — an absent,
 switched-off, unresolvable or retracted-shed distributor — carrying no inferred
 cause and no catalogue figure. Power, heat and the conditions stay usable.
 

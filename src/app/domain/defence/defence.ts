@@ -42,7 +42,7 @@ export interface Defence {
   /**
    * The complete `ShieldMetrics`, or every package issue that prevented it.
    *
-   * The **bare** shield: since Almanac 0.2.0 `shieldMetrics()` is pip-free, so
+   * The **bare** shield: since Almanac 0.2.0 `shieldMetricsResult()` is pip-free, so
    * its resistances and pools are the base figures an outfitting screen shows
    * and they do not move when a pip does. What the allocation is worth is
    * {@link capacitor}.
@@ -51,7 +51,7 @@ export interface Defence {
   /**
    * What {@link systemsPips} is worth to the bare shield above.
    *
-   * A second package call, `shieldCapacitorMetrics()`, over the same build. It
+   * A second package call, `shieldCapacitorMetricsResult()`, over the same build. It
    * carries the resistance the pips contribute on their own and the effective
    * pool behind them, and it is the only thing on the damage table that moves
    * with the allocation (FR-002's 2026-08-25 second column). The recovery below

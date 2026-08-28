@@ -49,7 +49,7 @@ conditions here, because the design draws them inside this capability and nowher
   state's own package total. A line standing for more than one mount MUST carry its count, a line
   the plant leaves dark MUST name its group, and a switched-off line MUST say so. The list carries
   no action: feature 002's ledger is where a mount is selected (design wins, wave 13).
-- **FR-007**: Distributor values MUST use `BuildMetrics.distributorMetrics()` for capacity, rated
+- **FR-007**: Distributor values MUST use `BuildMetrics.distributorMetricsResult()` for capacity, rated
   recharge, pip-scaled recharge and the allocation used. The application MUST NOT scale recharge.
   This capability owns the allocation: a Commander assigns a whole `0`–`4` pips to one of SYS, ENG
   and WEP, chosen in place with no draft, running total or confirmation step, and the pips shown are
@@ -78,9 +78,9 @@ conditions here, because the design draws them inside this capability and nowher
   > than imposed from here: this spec constrains this capability, and one quantity written in two
   > units across one workspace is a thing both specs have to say.
 
-- **FR-008**: A `null` distributor result MUST remain unavailable; catalogue figures MUST NOT replace
+- **FR-008**: A `null` distributor value MUST remain unavailable; catalogue figures MUST NOT replace
   a build result.
-- **FR-009**: Heat MUST use `BuildMetrics.heatMetrics()` and show the five returned scenarios, their
+- **FR-009**: Heat MUST use `BuildMetrics.heatMetricsResult()` and show the five returned scenarios, their
   thermal load, heat level, gauge level, overheat state and time to overheat.
 - **FR-010**: `null` heat MUST remain unavailable; catalogue figures MUST NOT replace a build
   result.
@@ -123,7 +123,7 @@ conditions here, because the design draws them inside this capability and nowher
 
 ## Almanac Coverage
 
-`powerBudget()`, `distributorMetrics()` and `heatMetrics()` provide every value and state required
+`powerBudget()`, `distributorMetricsResult()` and `heatMetricsResult()` provide every value and state required
 here. The application only formats, orders and links returned data.
 
 ## Current Almanac Limit
@@ -134,10 +134,10 @@ neither canvas draws any of the three, so none is read in either state and none 
 dashed or explained. The application MUST NOT calculate a retracted equivalent, and MUST NOT
 reintroduce the deployed ones without the design drawing them.
 
-`heatMetrics()` publishes five scenarios and states outright that a shield cell bank's heat is not
+`heatMetricsResult()` publishes five scenarios and states outright that a shield cell bank's heat is not
 one of them, because a bank states heat per _activation_. The canvases draw a sixth bar for it, and
 the package's own documented remedy — divide by the bank's spin-up, add it to the build's load, run
-it for that duration with `heatLevelAtTime` — is what draws it. `heatMetrics()` also models no heat
+it for that duration with `heatLevelAtTime` — is what draws it. `heatMetricsResult()` also models no heat
 sink, so the canvases' `HEAT SINKS` tile is counted from `fittedModules()` rather than derived.
 
 ## Success Criteria

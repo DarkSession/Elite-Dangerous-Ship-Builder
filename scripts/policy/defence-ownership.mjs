@@ -56,19 +56,60 @@ export const ALLOWED_SUBPATHS = [
 export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]*)\1/;
 
 /**
- * The five build answers this capability is made of.
+ * The five build answers this capability is made of, in every spelling.
  *
  * The bare shield and what a SYS allocation makes of it became two calls in
  * Almanac 0.2.0, and the second draws the damage table's fifth column (FR-002).
  * It is fenced like the other four: a second call site would return a plausible
  * pool at a plausible allocation and nothing would fail.
+ *
+ * The three shields names appear twice: the `…Result(` form is the method on
+ * `BuildMetrics`, and the bare name is the standalone formula the package
+ * exports from the same leaf. `armourMetrics(` needs no second entry — the
+ * method and the standalone formula are spelled the same, so the one name
+ * catches both. A name is matched with its bracket, which is why the shorter
+ * spelling does not cover the longer one.
+ *
+ * This list is about *where* an answer is asked for, so the projection is
+ * exempt from it. What the projection may not do either is {@link
+ * STANDALONE_CALLS}.
  */
 export const PACKAGE_CALLS = [
+  'shieldMetrics(',
   'shieldMetricsResult(',
+  'shieldCapacitorMetrics(',
   'shieldCapacitorMetricsResult(',
+  'shieldRecovery(',
   'shieldRecoveryResult(',
   'cellBanks(',
   'armourMetrics(',
+];
+
+/**
+ * The formulas no file may call, the projection included.
+ *
+ * `contracts/shield-profile.md` refuses "standalone shield, resistance, EHP or
+ * recovery formulas" — a category, not a list of names — and the three shield
+ * leaves this capability may import export six of them between them. These are
+ * the ones whose names differ from the build-aware call, so nothing else here
+ * would catch them; `shieldMetrics(`, `shieldCapacitorMetrics(` and
+ * `shieldRecovery(` are in {@link PACKAGE_CALLS} above and are added here so
+ * that the projection, which is exempt from that list because it is the one
+ * place that asks, cannot call them either. `armourMetrics(` cannot be listed:
+ * `ships/armour` spells its calculator exactly like the `BuildMetrics` method,
+ * so no name tells them apart, and `contracts/armour-profile.md`'s refusal of
+ * the standalone form is prose nothing mechanical can hold it to.
+ *
+ * The rule that reads this list walks all of `SCOPE`, not just the owned
+ * directories: a standalone formula is refused wherever it is written.
+ */
+export const STANDALONE_CALLS = [
+  'shieldMetrics(',
+  'shieldCapacitorMetrics(',
+  'shieldRecovery(',
+  'shieldStrength(',
+  'shieldMassCurveMultiplier(',
+  'cellBankSummary(',
 ];
 
 /**
@@ -155,6 +196,30 @@ const RULES = [
             file: name,
             line,
             reason: `"${hit.slice(0, -1)}" is asked outside ${PROJECTION}; every screen reads one projection of one answer, and a second call site is a second opinion nothing reconciles (FR-001)`,
+          });
+        }
+      }
+    },
+  },
+  {
+    name: 'nobody calls the standalone formula',
+    async run(violations) {
+      for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
+        const source = await readFile(resolve(ROOT, name), 'utf8');
+        // A name this list shares with `PACKAGE_CALLS` is already reported by
+        // the placement rule everywhere that rule looks, so it is passed over
+        // here rather than said twice with two reasons. The skip belongs in the
+        // predicate: `scan` yields one hit per line, so skipping the whole line
+        // would lose a standalone-only name written beside a shared one.
+        for (const { line, hit } of scan(source, (text) =>
+          STANDALONE_CALLS.find(
+            (call) => text.includes(call) && (isProjection(name) || !PACKAGE_CALLS.includes(call)),
+          ),
+        )) {
+          violations.push({
+            file: name,
+            line,
+            reason: `"${hit.slice(0, -1)}" is a standalone formula, which no file may call — the projection included; the build-aware call reads the fit the package already holds, and assembling a formula's inputs here is this application deciding what the figure is made of (constitution II)`,
           });
         }
       }

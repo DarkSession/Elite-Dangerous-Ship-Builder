@@ -8,8 +8,8 @@ import { defaultBuild } from '../outfitting/outfitting.fixtures';
  *
  * Every one of them is a real `ShipLoadout` the package answers for. Nothing
  * here writes down a megawatt, a megajoule or a heat level: the fixtures put a
- * build into a condition and let `powerBudget()`, `distributorMetrics()` and
- * `heatMetrics()` say what that condition means (constitution II).
+ * build into a condition and let `powerBudget()`, `distributorMetricsResult()`
+ * and `heatMetricsResult()` say what that condition means (constitution II).
  *
  * The module symbols below are identities the installed package either carries
  * or does not, and `packageModule` fails loudly when one stops being carried —
@@ -68,7 +68,7 @@ export function divergentBandBuild(): ShipLoadout {
  * A build with no powered plant.
  *
  * Zero output, a positive draw, every band shed, `Infinity` utilisation, and
- * both `heatMetrics()` and `distributorMetrics()` returning `null` — four of
+ * both `heatMetricsResult()` and `distributorMetricsResult()` valuing `null` — four of
  * this feature's states in one build, and all four are the package's answers
  * rather than an application special case.
  */
@@ -81,7 +81,7 @@ export function noPlantOutputBuild(): ShipLoadout {
 /**
  * A build whose distributor is switched off.
  *
- * `distributorMetrics()` returns `null` while heat and power stay readable, and
+ * `distributorMetricsResult()` values `null` while heat and power stay readable, and
  * the switched-off distributor keeps its row in `consumers` — the disabled
  * consumer FR-004 says must stay visible.
  */

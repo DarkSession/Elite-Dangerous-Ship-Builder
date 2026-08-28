@@ -28,10 +28,10 @@ export interface PowerConditions {
 }
 ```
 
-`projectPowerHeat` is pure and synchronous. It calls `powerBudget()` once, `distributorMetrics()`
-once and `heatMetrics()` once, and returns one frozen result. There is no store, no cache, no
-revision key and no lifecycle: the loadout is already in memory, and the signal graph memoises the
-call for the surfaces that read it.
+`projectPowerHeat` is pure and synchronous. It calls `powerBudget()` once,
+`distributorMetricsResult()` once and `heatMetricsResult()` once, and returns one frozen result.
+There is no store, no cache, no revision key and no lifecycle: the loadout is already in memory,
+and the signal graph memoises the call for the surfaces that read it.
 
 ## Feature 010 — the mode, and nothing on the plates
 
@@ -69,6 +69,9 @@ a consequence of the withdrawn shared-context design and is not built.
   restores all three unchanged.
 - The dashboard and the rail read one `projectPowerHeat` result and agree for the same build; a band
   whose `poweredDeployed` and `poweredRetracted` differ reads its own verdict in each state.
-- No consumer of the export calls `powerBudget`, `distributorMetrics` or `heatMetrics`, and only
+- No consumer of the export calls `powerBudget`, `distributorMetricsResult` or `heatMetricsResult`,
+  and only
   `src/app/domain/power-heat` combines package figures arithmetically, which
-  `scripts/policy/power-heat-ownership.mjs` enforces by path.
+  `scripts/policy/power-heat-ownership.mjs` enforces by path. The standalone `distributorMetrics`
+  and `heatMetrics` calculators the same leaves export are refused everywhere, the projection
+  included.

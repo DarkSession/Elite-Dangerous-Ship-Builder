@@ -76,9 +76,10 @@ describe('the Almanac contract for shields, recovery, cell banks and armour', ()
     });
 
     it('answers the same bare shield whatever the allocation stands at', () => {
-      // Almanac 0.2.0 took the pips off this call entirely: `shieldMetrics()`
-      // is the shield an outfitting screen shows, and no allocation reaches it.
-      // What the pips are worth is `shieldCapacitorMetrics()`, below.
+      // Almanac 0.2.0 took the pips off this call entirely:
+      // `shieldMetricsResult()` is the shield an outfitting screen shows, and no
+      // allocation reaches it. What the pips are worth is
+      // `shieldCapacitorMetricsResult()`, below.
       const build = readyBuild();
       const first = BuildMetrics.of(build).shieldMetricsResult().value!;
       const second = BuildMetrics.of(build).shieldMetricsResult().value!;

@@ -39,9 +39,9 @@ export interface PowerAndHeat {
   readonly power: PowerView;
   /** `DRAW BY MODULE`, heaviest first, as canvases 1c and 1d list it. */
   readonly modules: readonly ModuleDrawRow[];
-  /** `null` exactly when `heatMetrics()` returned `null`. Never a zeroed profile. */
+  /** `null` exactly when `heatMetricsResult().value` was. Never a zeroed profile. */
   readonly heat: HeatView | null;
-  /** `null` exactly when `distributorMetrics()` returned `null`. */
+  /** `null` exactly when `distributorMetricsResult().value` was. */
   readonly distributor: DistributorView | null;
 }
 
@@ -206,8 +206,8 @@ export interface ModuleDrawRow {
 }
 
 /**
- * The five scenarios `heatMetrics()` returns, in the order the canvases draw
- * them.
+ * The five scenarios `heatMetricsResult()` returns, in the order the canvases
+ * draw them.
  *
  * `Weapons alpha` before `Sustained weapon fire`, which is the package's
  * `firingDrained` before its `firingSustained`: the drained case is the one the
@@ -248,7 +248,7 @@ export interface HeatView {
   /**
    * The canvases' sixth bar, `Shield cell bank`, or `null` with no bank fitted.
    *
-   * `heatMetrics()` publishes five scenarios and says outright that this is not
+   * `heatMetricsResult()` publishes five scenarios and says outright that this is not
    * one of them: a bank states its heat per *activation* rather than per second,
    * and the package's own remedy is to divide that by the bank's spin-up, add it
    * to the build's load and run it for the spin-up's duration. That is done here
@@ -260,8 +260,8 @@ export interface HeatView {
    * The heat sink launchers fitted, and what they carry.
    *
    * The canvases' fourth tile, `HEAT SINKS 6` over `2 x 3`. It comes from the
-   * build rather than from `heatMetrics()`, which models no sink at all: a sink
-   * removes heat, and every load the package accepts is non-negative.
+   * build rather than from `heatMetricsResult()`, which models no sink at all: a
+   * sink removes heat, and every load the package accepts is non-negative.
    */
   readonly heatSinks: HeatSinkView;
 }
@@ -377,15 +377,18 @@ export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditio
   // handed rather than holding a copy of it (Almanac 0.2.0).
   const metrics = BuildMetrics.of(loadout);
   const budget = metrics.powerBudget();
-  const heat = metrics.heatMetrics();
+  // Since Almanac 0.2.2 every metric that can be unavailable is a
+  // `CalculationResult`, so the value is read off `.value`. This screen states
+  // the absence and not its reasons, so `.issues` is left where it is.
+  const heat = metrics.heatMetricsResult().value;
   // Read once and passed down. What it answers is about the build's own fitting
   // rather than about a package figure, and asking twice invites two answers.
   const fitted = loadout.fittedModules();
-  const distributor = metrics.distributorMetrics({
+  const distributor = metrics.distributorMetricsResult({
     systemsPips: conditions.pips.systems,
     enginesPips: conditions.pips.engines,
     weaponsPips: conditions.pips.weapons,
-  });
+  }).value;
 
   return Object.freeze({
     hardpoints: conditions.hardpoints,

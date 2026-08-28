@@ -15,9 +15,13 @@ import {
  * the package's own suite's job. What is pinned here is the handful of shapes
  * feature 005 would silently misread if a release changed them: which fields
  * exist, which of them mean "there is no answer", and which sentinel carries
- * that meaning. Each of the three is a different one — `null` for a whole
- * result, `null` for one field, and `Infinity` for another — and a screen that
- * confused any two of them would say something the package did not.
+ * that meaning. Each of the three is a different one — a `CalculationResult`
+ * that is not `complete` for a whole result, `null` for one field, and
+ * `Infinity` for another — and a screen that confused any two of them would say
+ * something the package did not. Feature 005 reads only the `value`, but the
+ * shape it is read off is pinned whole: an incomplete result is the one carrier
+ * of "there is no answer" since Almanac 0.2.2 withdrew the nullable twins, so
+ * `complete` and a non-empty `issues` are pinned beside the `null` here.
  */
 describe('the Almanac contract for power, distributor and heat', () => {
   describe('powerBudget()', () => {
@@ -97,13 +101,13 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
   });
 
-  describe('distributorMetrics()', () => {
+  describe('distributorMetricsResult()', () => {
     it('returns three capacitors and echoes the allocation it used', () => {
-      const metrics = BuildMetrics.of(withinBudgetBuild()).distributorMetrics({
+      const metrics = BuildMetrics.of(withinBudgetBuild()).distributorMetricsResult({
         systemsPips: 2,
         enginesPips: 2,
         weaponsPips: 2,
-      });
+      }).value;
 
       expect(metrics).not.toBeNull();
       expect(metrics?.pips).toEqual({ systems: 2, engines: 2, weapons: 2 });
@@ -115,11 +119,11 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('accepts every whole allocation the artboard draws, including none', () => {
-      const metrics = BuildMetrics.of(withinBudgetBuild()).distributorMetrics({
+      const metrics = BuildMetrics.of(withinBudgetBuild()).distributorMetricsResult({
         systemsPips: 0,
         enginesPips: 4,
         weaponsPips: 2,
-      });
+      }).value;
 
       // A genuine zero, which is a real recharge rate and not an absent one.
       expect(metrics?.systems.rechargeRate).toBe(0);
@@ -128,23 +132,39 @@ describe('the Almanac contract for power, distributor and heat', () => {
 
     it('leaves capacity alone when the allocation changes', () => {
       const build = withinBudgetBuild();
-      const four = BuildMetrics.of(build).distributorMetrics({ systemsPips: 4 });
-      const none = BuildMetrics.of(build).distributorMetrics({ systemsPips: 0 });
+      const four = BuildMetrics.of(build).distributorMetricsResult({ systemsPips: 4 }).value;
+      const none = BuildMetrics.of(build).distributorMetricsResult({ systemsPips: 0 }).value;
 
       expect(none?.systems.capacity).toBe(four?.systems.capacity);
       expect(none?.systems.ratedRecharge).toBe(four?.systems.ratedRecharge);
       expect(none?.systems.rechargeRate).not.toBe(four?.systems.rechargeRate);
     });
 
-    it('returns null — not zeroed capacitors — for a distributor it cannot resolve', () => {
-      expect(BuildMetrics.of(distributorOffBuild()).distributorMetrics()).toBeNull();
-      expect(BuildMetrics.of(noPlantOutputBuild()).distributorMetrics()).toBeNull();
+    it('values null — not zeroed capacitors — for a distributor it cannot resolve', () => {
+      for (const build of [distributorOffBuild(), noPlantOutputBuild()]) {
+        const result = BuildMetrics.of(build).distributorMetricsResult();
+
+        // The three halves of one absence: the result object is always there,
+        // `complete` is what says there is no answer, and the reasons are never
+        // an empty list standing in for one.
+        expect(result.complete).toBe(false);
+        expect(result.value).toBeNull();
+        expect(result.issues.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('carries no issue beside a complete distributor', () => {
+      const result = BuildMetrics.of(withinBudgetBuild()).distributorMetricsResult();
+
+      expect(result.complete).toBe(true);
+      expect(result.issues).toEqual([]);
+      expect(result.value).not.toBeNull();
     });
   });
 
-  describe('heatMetrics()', () => {
+  describe('heatMetricsResult()', () => {
     it('publishes three profile facts and exactly five scenarios', () => {
-      const heat = BuildMetrics.of(withinBudgetBuild()).heatMetrics();
+      const heat = BuildMetrics.of(withinBudgetBuild()).heatMetricsResult().value;
 
       expect(heat).not.toBeNull();
       expect(Number.isFinite(heat?.heatEfficiency)).toBe(true);
@@ -163,7 +183,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('reports a settling scenario as a level that never reaches the gauge', () => {
-      const idle = BuildMetrics.of(withinBudgetBuild()).heatMetrics()?.idle;
+      const idle = BuildMetrics.of(withinBudgetBuild()).heatMetricsResult().value?.idle;
 
       expect(Number.isFinite(idle?.heatLevel)).toBe(true);
       expect(idle?.overheats).toBe(false);
@@ -171,7 +191,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
     });
 
     it('reports a non-settling scenario as infinity, and times its climb', () => {
-      const heat = BuildMetrics.of(overheatingBuild()).heatMetrics();
+      const heat = BuildMetrics.of(overheatingBuild()).heatMetricsResult().value;
 
       expect(heat?.firingDrained.heatLevel).toBe(Infinity);
       expect(heat?.firingDrained.gauge).toBe(Infinity);
@@ -184,8 +204,20 @@ describe('the Almanac contract for power, distributor and heat', () => {
       expect(heat?.firingSustained.secondsToOverheat).toBeNull();
     });
 
-    it('returns null — not a zeroed profile — with no powered plant', () => {
-      expect(BuildMetrics.of(noPlantOutputBuild()).heatMetrics()).toBeNull();
+    it('values null — not a zeroed profile — with no powered plant', () => {
+      const result = BuildMetrics.of(noPlantOutputBuild()).heatMetricsResult();
+
+      expect(result.complete).toBe(false);
+      expect(result.value).toBeNull();
+      expect(result.issues.length).toBeGreaterThan(0);
+    });
+
+    it('carries no issue beside a complete profile', () => {
+      const result = BuildMetrics.of(withinBudgetBuild()).heatMetricsResult();
+
+      expect(result.complete).toBe(true);
+      expect(result.issues).toEqual([]);
+      expect(result.value).not.toBeNull();
     });
 
     it('still returns five scenarios for a build with no weapons fitted', () => {
@@ -193,7 +225,7 @@ describe('the Almanac contract for power, distributor and heat', () => {
       for (const slot of ['SmallHardpoint1', 'SmallHardpoint2']) {
         build.removeModule(slot);
       }
-      const heat = BuildMetrics.of(build).heatMetrics();
+      const heat = BuildMetrics.of(build).heatMetricsResult().value;
 
       expect(heat).not.toBeNull();
       expect(heat?.firingSustained.thermalLoad).toBeGreaterThanOrEqual(0);

@@ -309,7 +309,7 @@ that does not settle carries `Infinity` and a finite climb. The screen states wh
 rather than deriving one from the other. Neither is drawn as a number, a glyph or a clamped
 percentage.
 
-`heatMetrics()` returns `null` for a build with no powered plant. That is one unavailable group. No
+`heatMetricsResult()` values `null` for a build with no powered plant. That is one unavailable group. No
 hull figure and no catalogue figure stands in for it.
 
 ## Power distributor and pips
@@ -418,7 +418,7 @@ and 1d's short form does not reopen it. Canvas 1d's foot line — `3 · 1 · 2 P
 the weapon drain is feature 007's reading of the weapon capacitor, which the power and heat ownership
 fence keeps out of this block. Recorded rather than built.
 
-`distributorMetrics()` returns `null` when the distributor is absent, switched off, unresolvable or
+`distributorMetricsResult()` values `null` when the distributor is absent, switched off, unresolvable or
 shed by the retracted power budget. That is one unavailable group, with no capacitor figures in it
 and no diagnosis of which of those four it was. The rest of the dashboard stays usable.
 
@@ -482,7 +482,7 @@ a block. Each group is named with the allocation it stands at, which is the read
 cannot see the blocks, and each block is named with the bank and the count pressing it asks for.
 
 The blocks draw **the pips the package returned**, exactly as the distributor cell draws them
-(FR-013): the projection reads them back out of `distributorMetrics()` rather than echoing the
+(FR-013): the projection reads them back out of `distributorMetricsResult()` rather than echoing the
 request, so a package that ever normalised an allocation would move both surfaces rather than leave
 the rail showing what was pressed.
 

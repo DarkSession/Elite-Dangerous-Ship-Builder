@@ -136,7 +136,7 @@ canvas draws it as a reading, and feature 002's ledger is where a mount is selec
 1. Confirm the block states its name once. The heading is the plate's own; the table repeats it
    in no caption of its own.
 2. Compare `SYS`, `ENG` and `WEP` capacity, rated recharge, returned pips and recharge rate with
-   `distributorMetrics()` at the opening `2/2/2`.
+   `distributorMetricsResult()` at the opening `2/2/2`.
 3. Press each of a bank's four blocks. Confirm the bank lands on that **whole** count, that the six
    pips there are between the three banks are held, and that the other two paid half a pip each —
    from `2 · 2 · 2`, three in `SYS` leaves `1.5` in each of the others. Confirm a bank with nothing
@@ -149,10 +149,10 @@ canvas draws it as a reading, and feature 002's ledger is where a mount is selec
 7. Confirm zero pips reads as a genuine zero recharge.
 8. Confirm the figures keep their columns at every width: the pip blocks take the space they need
    and no more, and no capacity, rated recharge or recharge rate wraps or is cut off.
-9. Exercise a `null` result — an absent, switched-off, unresolvable or retracted-shed distributor.
+9. Exercise a `null` value — an absent, switched-off, unresolvable or retracted-shed distributor.
 
-Expected: every field equals `distributorMetrics()`; there is no draft, no running total across the
-three banks and no validation; a `null` result is one unavailable group with no catalogue figure and
+Expected: every field equals `distributorMetricsResult()`; there is no draft, no running total across the
+three banks and no validation; a `null` value is one unavailable group with no catalogue figure and
 no diagnosis of which of the four reasons it was, and power, heat and the conditions stay usable.
 
 ## 8. Validate heat

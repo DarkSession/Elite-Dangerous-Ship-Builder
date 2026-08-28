@@ -69,9 +69,32 @@ time a figure looks low.
 
 What is left is narrower and is not swept here either. Where the package can resolve neither a recipe
 the module's menu offers nor a catalogued article carrying it, it reports `unresolvedEngineering` and
-the module keeps its unengineered figures. Nothing in this application reads that outcome: such a
-module is either carrying a partial quality, in which case the whole candidate is refused over the
-package's own `unsupported`, or it is not, in which case there is no surface here that states it yet.
+the module keeps its unengineered figures. Almanac 0.2.2 added `ambiguousEngineering` beside it,
+which reports a _reading_ rather than a change: the module's menu offers the recipe and a catalogued
+article answers to it just as well — a pre-engineered SCO drive is the case a Commander meets most
+often — so the roll was taken, and the article passed over is carried on the outcome, ready for
+`setPreEngineeredVariant`. Nothing in this application reads either outcome, but for different
+reasons. An unresolved module is moot: it is either carrying a partial quality, in which case the
+whole candidate is refused over the package's own `unsupported`, or it is not, in which case there
+is nothing to say. An ambiguous one is not moot — its recipe is one the module's own menu offers, so
+a partial quality on it completes and the candidate is accepted — and goes unread only because there
+is no surface here to offer the passed-over article on.
+
+0.2.2's third entry is not one of those two, and is the one thing in this release that changes a fit.
+Where a stated `Modifiers` block moves no stat the module's record carries — an empty array, or
+labels the catalogues model nothing for — it describes some other module, and keeping it would
+publish unengineered figures under an engineered block. The package rolls the recipe stated beside it
+in the block's place and reports the slot as `rerolledEngineering`. A block that moves at least one
+stat the module carries is untouched: a capture's own figures are what the game reported, and outrank
+anything recomputed.
+
+This is the same reading as the paragraph above rather than a normalization of its own — the source
+stated a recipe, and a block that moves nothing says no more about the fit than the absent block
+0.2.1 already rolled — which is why the two the constitution names (principle IV) are still two.
+Against every journal and SLEF capture the package holds, no real capture is re-rolled, and this
+application never writes a block that would be: what it exports is the package's own serialization of
+modifiers that do move stats. A reviewer who reads it as a third exception rather than as a wider
+case of the first should say so, because that reading needs an amendment rather than a paragraph.
 
 ## Which hull the build is
 

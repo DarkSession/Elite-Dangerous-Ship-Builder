@@ -49,10 +49,25 @@ import type {
  * module arrives with the package's own modifiers rather than the figures of an
  * unengineered one. Where it can resolve neither a recipe nor a catalogued
  * article, it reports `unresolvedEngineering` in `importOutcomes` and the
- * module keeps unengineered figures. Nothing here reads that outcome: such a
- * module is either carrying a partial quality, in which case step 4 refuses the
- * whole candidate over the package's own refusal, or it is not, in which case
- * this application has no surface that states it yet.
+ * module keeps unengineered figures. Since Almanac 0.2.2 two further entries sit
+ * beside it. `ambiguousEngineering` reports the reading the package took rather
+ * than a change it made: a catalogued article answered to the recipe as well as
+ * the module's own menu did, and the article passed over rides on the outcome
+ * for `setPreEngineeredVariant`. `rerolledEngineering` does name a change — a
+ * stated modifier block that moved no stat the module carries is gone from the
+ * build and the recipe stated beside it was rolled in its place, which is the
+ * same reading of a stated recipe as the roll above rather than a normalization
+ * of its own (`docs/slef-interchange.md`). Nothing here reads any of the three.
+ * `unresolvedEngineering` is moot: such a module is either carrying a partial
+ * quality, in which case step 4 refuses the whole candidate over the package's
+ * own `unsupported`, or it is not, in which case there is nothing to say. The
+ * other two are not moot, and go unread for want of a surface rather than for
+ * want of something to say. Both resolve a recipe the module's own menu offers,
+ * so a partial quality on either completes at step 4 and the candidate is
+ * accepted: an ambiguous roll arrives with the article it passed over riding on
+ * the outcome, and a reroll arrives with the block the source wrote gone from
+ * the build. Neither has an engineering-provenance surface to be offered or
+ * stated on.
  */
 export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   // Step 1. Read the source's partial rolls before construction consumes them.

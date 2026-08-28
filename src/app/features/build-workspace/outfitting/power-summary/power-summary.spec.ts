@@ -178,7 +178,7 @@ describe('PowerSummary', () => {
 
   it('draws no sentence the canvas does not print in this block', () => {
     const build = sustainedOverheatBuild();
-    expect(BuildMetrics.of(build).heatMetrics()?.firingSustained.overheats).toBe(true);
+    expect(BuildMetrics.of(build).heatMetricsResult().value?.firingSustained.overheats).toBe(true);
     const element = render(build);
 
     // A build that cooks itself under sustained fire says so in the heat
@@ -348,11 +348,11 @@ describe('PowerSummary', () => {
       // exactly the property this asserts, so a package that started
       // normalising an allocation would move the rail with the table rather
       // than leaving it showing the request.
-      const returned = BuildMetrics.of(build).distributorMetrics({
+      const returned = BuildMetrics.of(build).distributorMetricsResult({
         systemsPips: conditions.pips().systems,
         enginesPips: conditions.pips().engines,
         weaponsPips: conditions.pips().weapons,
-      });
+      }).value;
 
       expect(returned).not.toBeNull();
       expect(
