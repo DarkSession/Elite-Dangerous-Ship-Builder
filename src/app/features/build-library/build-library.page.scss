@@ -44,16 +44,24 @@
   min-inline-size: 0;
 }
 
-// A notice carries its own block padding and takes only the inset the regions
-// around it carry, so it lines up with the search above it and the rows below.
+// A notice is a bordered box that carries its own padding, so it takes only the
+// inset the regions around it carry and lines up with the search above it and
+// the rows below.
+//
+// The block step is its own, because the regions of this surface are divided by
+// rules and grounds rather than by air and the column therefore has no gap of
+// its own: without it a second notice would butt against the first and the last
+// one against the header's rule.
 .library__notice {
+  padding-block-start: var(--edsb-space-stack-tight);
   padding-inline: var(--edsb-space-row);
 }
 
 // The quota manager is a bordered panel of its own rather than a region of the
-// surface, so it is held off the panel's edges on every side.
+// surface, so it is held off the panel's edges on every side — including the
+// side the list above it ends on, for the same reason the notices are.
 .library__manager {
-  padding-block-end: var(--edsb-space-control-block);
+  padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-row);
 }
 

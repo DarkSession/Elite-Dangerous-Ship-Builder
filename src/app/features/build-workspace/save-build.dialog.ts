@@ -57,10 +57,16 @@ type SaveMode = 'overwrite' | 'new';
  * **Revised 2026-08-25.** Since a save consumes the unsaved entry these edits
  * were autosaved into, the two choices no longer differ only in which record is
  * written: replacing removes that entry, and saving as new keeps both builds.
- * One of them therefore ends with a record fewer than it started with, which is
- * exactly the sort of thing a Commander has to be told before they press it and
- * not after — so each choice states its outcome in visible, associated words
- * (FR-008, T150a).
+ * One of them therefore ends with a record fewer than it started with, so each
+ * choice carries its outcome in visible, associated words rather than leaving a
+ * Commander to find out after pressing (FR-008, T150a).
+ *
+ * **Narrowed 2026-08-28 (Commander request).** Those words are the canvas's
+ * now — "Last saved {when}" against "Keeps both copies" — rather than the
+ * spelt-out account of the entry being removed that stood here before. The
+ * contrast still carries which choice ends with both builds and which does not,
+ * and the behaviour is unchanged: `requestSave` passes the held record into
+ * `SaveConflictService` either way.
  *
  * **Moved here 2026-08-27.** It was the library's, reached from a footer button
  * under a row. It is the workspace's now, and the two choices are the canvas's

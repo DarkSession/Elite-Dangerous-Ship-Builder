@@ -37,11 +37,21 @@
   @include layout.stack(var(--edsb-space-stack-tight));
 }
 
+// The library asks the layer for a flush body, so every region inside it
+// carries its own inset (canvas 1a). The rows carry theirs on the card, and
+// these two carry theirs here — without them a heading and the notices under it
+// run to the panel's edge while the rows beside them stand a row-step in.
 .records__heading {
   @include layout.section-rule;
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-control));
 
   margin: 0;
+  padding-inline: var(--edsb-space-row);
+}
+
+.records__group edsb-status-notice {
+  display: block;
+  padding-inline: var(--edsb-space-row);
 }
 
 .records__list {
@@ -78,6 +88,7 @@
 // removed, so widening the search needs no separate action.
 .records__no-match {
   padding-block: var(--edsb-space-section);
+  padding-inline: var(--edsb-space-row);
   margin: 0;
   font-weight: var(--edsb-text-weight-prose);
   text-align: center;

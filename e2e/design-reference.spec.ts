@@ -668,6 +668,16 @@ test.describe('the save-build surface', () => {
     expect(await style(marks.last(), 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect((await marks.first().boundingBox())?.width).toBeCloseTo(12, 0);
 
+    // Beside the title, not above it. The card restates `display: grid` over
+    // the shared plate's `flex` and leans on the base choice's own two tracks
+    // for the columns, which is the sort of thing that keeps working until
+    // somebody moves a declaration — so it is measured rather than assumed.
+    const mark = await marks.first().boundingBox();
+    const title = await cards.first().locator('.choice__label').boundingBox();
+    expect(mark!.x + mark!.width).toBeLessThanOrEqual(title!.x + 1);
+    expect(mark!.y).toBeLessThan(title!.y + title!.height);
+    expect(title!.y).toBeLessThan(mark!.y + mark!.height);
+
     // The legend is read, not drawn: the canvas puts the cards straight under
     // the note field with no heading over them. Still in the accessibility
     // tree, so it takes a box of a pixel rather than none.
