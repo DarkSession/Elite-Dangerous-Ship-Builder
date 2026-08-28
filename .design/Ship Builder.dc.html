@@ -490,7 +490,7 @@
                       "
                     >
                       <div>BUILD</div>
-                      <div>HULL</div>
+                      <div>SHIP</div>
                       <div style="text-align: right">Mcr</div>
                       <div style="text-align: right">EDITED</div>
                     </div>
@@ -5871,13 +5871,25 @@
                               text-wrap: pretty;
                             "
                           >
-                            Read-only link to this exact loadout.
+                            The link to this build.
                           </div>
                         </div>
                       </div>
                       <div
                         style="padding: 14px 16px; display: flex; flex-direction: column; gap: 11px"
                       >
+                        <div
+                          id="exp-cap"
+                          style="
+                            visibility: hidden;
+                            font:
+                              300 12px/1.4 Barlow,
+                              sans-serif;
+                            color: var(--ink-7);
+                          "
+                        >
+                          The link to this build
+                        </div>
                         <textarea
                           id="exp-out"
                           readonly=""
@@ -10320,6 +10332,20 @@
                                 <div
                                   style="
                                     position: absolute;
+                                    left: 50%;
+                                    top: -2px;
+                                    bottom: -2px;
+                                    width: 1px;
+                                    background: repeating-linear-gradient(
+                                      to bottom,
+                                      var(--ink-45) 0 2px,
+                                      transparent 2px 5px
+                                    );
+                                  "
+                                ></div>
+                                <div
+                                  style="
+                                    position: absolute;
                                     left: 83.33333333333334%;
                                     top: -3px;
                                     bottom: -3px;
@@ -10401,6 +10427,20 @@
                                 <div
                                   style="
                                     position: absolute;
+                                    left: 50%;
+                                    top: -2px;
+                                    bottom: -2px;
+                                    width: 1px;
+                                    background: repeating-linear-gradient(
+                                      to bottom,
+                                      var(--ink-45) 0 2px,
+                                      transparent 2px 5px
+                                    );
+                                  "
+                                ></div>
+                                <div
+                                  style="
+                                    position: absolute;
                                     left: 83.33333333333334%;
                                     top: -3px;
                                     bottom: -3px;
@@ -10477,6 +10517,20 @@
                                     bottom: 0;
                                     width: 16.666666666666668%;
                                     background: var(--amber);
+                                  "
+                                ></div>
+                                <div
+                                  style="
+                                    position: absolute;
+                                    left: 50%;
+                                    top: -2px;
+                                    bottom: -2px;
+                                    width: 1px;
+                                    background: repeating-linear-gradient(
+                                      to bottom,
+                                      var(--ink-45) 0 2px,
+                                      transparent 2px 5px
+                                    );
                                   "
                                 ></div>
                                 <div
@@ -10567,6 +10621,20 @@
                                 <div
                                   style="
                                     position: absolute;
+                                    left: 50%;
+                                    top: -2px;
+                                    bottom: -2px;
+                                    width: 1px;
+                                    background: repeating-linear-gradient(
+                                      to bottom,
+                                      var(--ink-45) 0 2px,
+                                      transparent 2px 5px
+                                    );
+                                  "
+                                ></div>
+                                <div
+                                  style="
+                                    position: absolute;
                                     left: 83.33333333333334%;
                                     top: -3px;
                                     bottom: -3px;
@@ -10602,6 +10670,43 @@
                               >
                                 OFFLINE
                               </div>
+                            </div>
+                            <div
+                              style="display: flex; align-items: center; gap: 9px; margin-top: 1px"
+                            >
+                              <div style="width: 52px; flex: none"></div>
+                              <div style="flex: 1; position: relative; height: 11px">
+                                <div
+                                  style="
+                                    position: absolute;
+                                    left: 50%;
+                                    transform: translateX(-50%);
+                                    font:
+                                      400 8px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-38);
+                                    letter-spacing: 0.08em;
+                                  "
+                                >
+                                  50%
+                                </div>
+                                <div
+                                  style="
+                                    position: absolute;
+                                    left: 83.33333333333334%;
+                                    transform: translateX(-50%);
+                                    font:
+                                      400 8px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-55);
+                                    letter-spacing: 0.08em;
+                                  "
+                                >
+                                  100%
+                                </div>
+                              </div>
+                              <div style="width: 78px; flex: none"></div>
+                              <div style="width: 74px; flex: none"></div>
                             </div>
                           </div>
                           <div style="height: 1px; background: var(--amber-a14)"></div>
@@ -11677,33 +11782,6 @@
                                   131%
                                 </div>
                               </div>
-                              <div
-                                style="
-                                  display: flex;
-                                  align-items: center;
-                                  gap: 9px;
-                                  padding-left: 127px;
-                                "
-                              >
-                                <div style="flex: 1; position: relative; height: 11px">
-                                  <div
-                                    style="
-                                      position: absolute;
-                                      left: 62.5%;
-                                      transform: translateX(-50%);
-                                      white-space: nowrap;
-                                      font:
-                                        400 8px/1 'JetBrains Mono',
-                                        monospace;
-                                      color: var(--ink-45);
-                                      letter-spacing: 0.1em;
-                                    "
-                                  >
-                                    100% MODULE DAMAGE
-                                  </div>
-                                </div>
-                                <div style="width: 55px; flex: none"></div>
-                              </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 11px">
                               <div style="display: flex; flex-direction: column; gap: 7px">
@@ -11950,7 +12028,7 @@
                                     color: var(--ink-66);
                                   "
                                 >
-                                  34.0 MJ
+                                  34.0 MW
                                 </div>
                                 <div
                                   style="
@@ -12022,7 +12100,7 @@
                                     color: var(--ink-66);
                                   "
                                 >
-                                  26.0 MJ
+                                  26.0 MW
                                 </div>
                                 <div
                                   style="
@@ -12102,7 +12180,7 @@
                                     color: var(--ink-66);
                                   "
                                 >
-                                  38.4 MJ
+                                  38.4 MW
                                 </div>
                                 <div
                                   style="
@@ -13198,8 +13276,10 @@
                               <div style="flex: 1"></div>
                               <div style="width: 46px; flex: none; text-align: right">RESIST</div>
                               <div style="width: 56px; flex: none; text-align: right">MJ</div>
-                              <div style="width: 78px; flex: none; text-align: right">
-                                MJ × 4 SYS PIPS
+                              <div
+                                style="width: 78px; flex: none; text-align: right; line-height: 1.4"
+                              >
+                                MJ<br /><span style="font-size: 7px">× 4 SYS PIPS</span>
                               </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 9px">
@@ -13500,19 +13580,42 @@
                                 align-items: center;
                                 gap: 9px;
                                 padding-left: 83px;
-                                padding-right: 198px;
-                                font:
-                                  400 8px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-36);
-                                letter-spacing: 0.1em;
+                                padding-right: 207px;
                               "
                             >
-                              <span>0%</span
-                              ><span
-                                style="flex: 1; height: 1px; background: var(--amber-a12)"
-                              ></span
-                              ><span>100%</span>
+                              <div
+                                style="
+                                  flex: 1;
+                                  position: relative;
+                                  height: 9px;
+                                  font:
+                                    400 8px/1 'JetBrains Mono',
+                                    monospace;
+                                  color: var(--ink-36);
+                                  letter-spacing: 0.1em;
+                                "
+                              >
+                                <div
+                                  style="
+                                    position: absolute;
+                                    left: 0;
+                                    top: 0;
+                                    transform: translateX(-50%);
+                                  "
+                                >
+                                  0%
+                                </div>
+                                <div
+                                  style="
+                                    position: absolute;
+                                    right: 0;
+                                    top: 0;
+                                    transform: translateX(50%);
+                                  "
+                                >
+                                  100%
+                                </div>
+                              </div>
                             </div>
                           </div>
                           <div style="height: 1px; background: var(--amber-a14)"></div>
@@ -14198,19 +14301,42 @@
                                 align-items: center;
                                 gap: 9px;
                                 padding-left: 83px;
-                                padding-right: 198px;
-                                font:
-                                  400 8px/1 'JetBrains Mono',
-                                  monospace;
-                                color: var(--ink-36);
-                                letter-spacing: 0.1em;
+                                padding-right: 120px;
                               "
                             >
-                              <span>0%</span
-                              ><span
-                                style="flex: 1; height: 1px; background: var(--amber-a12)"
-                              ></span
-                              ><span>100%</span>
+                              <div
+                                style="
+                                  flex: 1;
+                                  position: relative;
+                                  height: 9px;
+                                  font:
+                                    400 8px/1 'JetBrains Mono',
+                                    monospace;
+                                  color: var(--ink-36);
+                                  letter-spacing: 0.1em;
+                                "
+                              >
+                                <div
+                                  style="
+                                    position: absolute;
+                                    left: 18%;
+                                    top: 0;
+                                    transform: translateX(-50%);
+                                  "
+                                >
+                                  0%
+                                </div>
+                                <div
+                                  style="
+                                    position: absolute;
+                                    right: 0;
+                                    top: 0;
+                                    transform: translateX(50%);
+                                  "
+                                >
+                                  100%
+                                </div>
+                              </div>
                             </div>
                           </div>
                           <div style="height: 1px; background: var(--amber-a14)"></div>
@@ -22825,6 +22951,216 @@
                             45
                           </div>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            title="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 10.5px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Chemical Manipulators
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            22
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            title="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 10.5px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Phase Alloys
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            28
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-2.svg"
+                            alt="Grade 2"
+                            title="Grade 2"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 10.5px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Shielding Sensors
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            52
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-2.svg"
+                            alt="Grade 2"
+                            title="Grade 2"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 10.5px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Germanium
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            40
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-1.svg"
+                            alt="Grade 1"
+                            title="Grade 1"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 10.5px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Iron
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            64
+                          </div>
+                        </div>
                       </div>
                       <div
                         style="
@@ -27150,6 +27486,20 @@
                             <div
                               style="
                                 position: absolute;
+                                left: 50%;
+                                top: -2px;
+                                bottom: -2px;
+                                width: 1px;
+                                background: repeating-linear-gradient(
+                                  to bottom,
+                                  var(--ink-45) 0 2px,
+                                  transparent 2px 5px
+                                );
+                              "
+                            ></div>
+                            <div
+                              style="
+                                position: absolute;
                                 left: 83.33%;
                                 top: -3px;
                                 bottom: -3px;
@@ -27231,6 +27581,20 @@
                             <div
                               style="
                                 position: absolute;
+                                left: 50%;
+                                top: -2px;
+                                bottom: -2px;
+                                width: 1px;
+                                background: repeating-linear-gradient(
+                                  to bottom,
+                                  var(--ink-45) 0 2px,
+                                  transparent 2px 5px
+                                );
+                              "
+                            ></div>
+                            <div
+                              style="
+                                position: absolute;
                                 left: 83.33%;
                                 top: -3px;
                                 bottom: -3px;
@@ -27307,6 +27671,20 @@
                                 bottom: 0;
                                 width: 16.67%;
                                 background: var(--amber);
+                              "
+                            ></div>
+                            <div
+                              style="
+                                position: absolute;
+                                left: 50%;
+                                top: -2px;
+                                bottom: -2px;
+                                width: 1px;
+                                background: repeating-linear-gradient(
+                                  to bottom,
+                                  var(--ink-45) 0 2px,
+                                  transparent 2px 5px
+                                );
                               "
                             ></div>
                             <div
@@ -27397,6 +27775,20 @@
                             <div
                               style="
                                 position: absolute;
+                                left: 50%;
+                                top: -2px;
+                                bottom: -2px;
+                                width: 1px;
+                                background: repeating-linear-gradient(
+                                  to bottom,
+                                  var(--ink-45) 0 2px,
+                                  transparent 2px 5px
+                                );
+                              "
+                            ></div>
+                            <div
+                              style="
+                                position: absolute;
                                 left: 83.33%;
                                 top: -3px;
                                 bottom: -3px;
@@ -27432,6 +27824,41 @@
                           >
                             OFF
                           </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 1px">
+                          <div style="width: 40px; flex: none"></div>
+                          <div style="flex: 1; position: relative; height: 10px">
+                            <div
+                              style="
+                                position: absolute;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                font:
+                                  400 7.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-38);
+                                letter-spacing: 0.08em;
+                              "
+                            >
+                              50%
+                            </div>
+                            <div
+                              style="
+                                position: absolute;
+                                left: 83.33%;
+                                transform: translateX(-50%);
+                                font:
+                                  400 7.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-55);
+                                letter-spacing: 0.08em;
+                              "
+                            >
+                              100%
+                            </div>
+                          </div>
+                          <div style="width: 56px; flex: none"></div>
+                          <div style="width: 48px; flex: none"></div>
                         </div>
                       </div>
                       <div style="height: 1px; background: var(--amber-a14)"></div>
@@ -27536,9 +27963,25 @@
                           letter-spacing: 0.18em;
                         "
                       >
-                        DRAW BY MODULE · MW
+                        DRAW BY MODULE
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 8px">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            font:
+                              500 7.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-36);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          <div style="width: 84px; flex: none">MODULE</div>
+                          <div style="flex: 1"></div>
+                          <div style="width: 52px; flex: none; text-align: right">MW</div>
+                        </div>
                         <div style="display: flex; align-items: center; gap: 8px">
                           <div
                             style="
@@ -29379,53 +29822,6 @@
                             "
                           >
                             23.5 ly
-                          </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px">
-                          <div
-                            style="
-                              width: 78px;
-                              flex: none;
-                              font:
-                                400 8.5px/1 'JetBrains Mono',
-                                monospace;
-                              color: var(--ink-62);
-                              letter-spacing: 0.08em;
-                            "
-                          >
-                            CURRENT
-                          </div>
-                          <div
-                            style="
-                              flex: 1;
-                              height: 12px;
-                              background: var(--panel-5);
-                              position: relative;
-                            "
-                          >
-                            <div
-                              style="
-                                position: absolute;
-                                left: 0;
-                                top: 0;
-                                bottom: 0;
-                                width: 80%;
-                                background: var(--amber-3);
-                              "
-                            ></div>
-                          </div>
-                          <div
-                            style="
-                              width: 56px;
-                              flex: none;
-                              text-align: right;
-                              font:
-                                400 9.5px/1 'JetBrains Mono',
-                                monospace;
-                              color: var(--ink);
-                            "
-                          >
-                            21.4 ly
                           </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px">
@@ -31646,7 +32042,7 @@
                           letter-spacing: 0.1em;
                         "
                       >
-                        <span>CAP 61 MJ · WEP 3 PIPS</span><span>CORROSIVE +30%</span>
+                        <span>CAP 61 MW · WEP 3 PIPS</span><span>CORROSIVE +30%</span>
                       </div>
                     </div>
                     <div
@@ -32509,6 +32905,211 @@
                             "
                           >
                             45
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Chemical Manipulators
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            22
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-3.svg"
+                            alt="Grade 3"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Phase Alloys
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            28
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-2.svg"
+                            alt="Grade 2"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Shielding Sensors
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            52
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-2.svg"
+                            alt="Grade 2"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Germanium
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            40
+                          </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px">
+                          <img
+                            src="https://edassets.org/static/img/materials/grade-1.svg"
+                            alt="Grade 1"
+                            style="
+                              width: 13px;
+                              height: 13px;
+                              flex: none;
+                              opacity: 0.85;
+                              object-fit: contain;
+                            "
+                          />
+                          <div
+                            style="
+                              flex: 1;
+                              min-width: 0;
+                              font:
+                                400 11px/1.2 Barlow,
+                                sans-serif;
+                              color: var(--ink-2);
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                              white-space: nowrap;
+                            "
+                          >
+                            Iron
+                          </div>
+                          <div
+                            style="
+                              width: 34px;
+                              flex: none;
+                              text-align: right;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-7);
+                            "
+                          >
+                            64
                           </div>
                         </div>
                       </div>
@@ -35496,7 +36097,7 @@
               text: '{\n  "header": {\n    "appName": "Ship Builder",\n    "appVersion": "4.2.1",\n    "appURL": "https://shipbuilder.local/b/pacifier"\n  },\n  "data": {\n    "Ship": "Anaconda",\n    "ShipName": "Pacifier",\n    "ShipIdent": "PC-01",\n    "HullValue": 146969450,\n    "ModulesValue": 214382910,\n    "Rebuy": 18067618,\n    "Modules": [ \u2026 41 entries \u2026 ]\n  }\n}',
             },
             link: {
-              meta: 'SHARE LINK \u00b7 READ-ONLY',
+              meta: '',
               text: 'https://shipbuilder.local/b/pacifier#h=anaconda&v=4.2.1&m=A8pp.oc5,A7th.ddt5,4A.mc.oc5.cor',
             },
           };
@@ -35525,8 +36126,15 @@
           const data = this.payloads();
           const show = k => {
             const d = data[k] || data.slef;
-            if (out) out.value = d.text;
-            if (meta) meta.textContent = d.meta;
+            const isLink = k === 'link';
+            if (out) { out.value = d.text; out.style.height = p === 'exp' ? '206px' : (isLink ? '52px' : '150px'); }
+            if (meta) { meta.textContent = d.meta; meta.style.visibility = d.meta ? 'visible' : 'hidden'; }
+            const cap = document.getElementById(p + '-cap');
+            if (cap) cap.style.visibility = isLink ? 'visible' : 'hidden';
+            const dlB = document.getElementById(p + '-dl');
+            if (dlB) dlB.style.display = isLink ? 'none' : '';
+            const cpB = document.getElementById(p + '-copy');
+            if (cpB) cpB.textContent = isLink ? 'COPY THE LINK' : 'COPY';
           };
           const tabs = Array.from(modal.querySelectorAll('.' + p + '-fmt'));
           const desktop = p === 'exp';
@@ -35556,6 +36164,7 @@
           if (copy) copy.addEventListener('click', () => {
             if (out) { out.select(); try { document.execCommand('copy'); } catch (e) {} }
             flash(copy, 'COPIED \u2713');
+            setTimeout(() => { const a = modal.querySelector('.' + p + '-fmt[data-fmt="link"]'); if (a && out && out.value.indexOf('http') === 0) copy.textContent = 'COPY THE LINK'; }, 1250);
           });
           const dl = document.getElementById(p + '-dl');
           if (dl) dl.addEventListener('click', () => flash(dl, 'SAVED \u2713'));
