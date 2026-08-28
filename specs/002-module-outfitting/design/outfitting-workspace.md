@@ -293,9 +293,11 @@ where this row never overflows.
   text size — wraps and grows instead. It is the line that decides and not the text size: a rail
   still twenty characters wide at 200% goes on cutting, and owes the same reachable name for it.
   `never loses a module name the row is too narrow to draw` and `keeps the whole name reachable at
-doubled text` are what hold that, and they have to be tests of their own: `clippedText` cannot
-  watch this, because the `data-text-reachable` exemption that makes a cut acceptable is set by the
-  same rule that cuts, so a lapse would exempt the sweep from noticing it.
+doubled text` hold the obligation that comes with the cut — a cut row and a reachable whole name
+  are the same state, at every width and both text sizes — and they have to be tests of their own:
+  `clippedText` cannot watch this, because the `data-text-reachable` exemption that makes a cut
+  acceptable is set by the same rule that cuts, so a lapse would exempt the sweep from noticing it.
+  The threshold itself is the stylesheet's, and nothing asserts where it falls.
 
 A row's second line is **one line in one ink**: `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE`, joined
 with the canvas's own separator and set in the faint ink the canvas sets it in. It is not a row of

@@ -125,8 +125,9 @@ cover the final focus/reading target.
   (Commander request 2026-08-28; `outfitting-workspace.md`, "The rail is one ground"). The exception
   is bounded three ways and they are what keep it inside this section's first two rules. It reaches
   the name only, never the code line beside it and never the marks after it. It is asked as a
-  container query in `em`, so a doubled text size or an expanded translation turns it off and the row
-  wraps and grows instead. And identity is not what it hides: every row leads with its own size box
+  container query in `em` on the row itself, so what decides is the line and not the text size: a
+  rail that cannot give twenty characters' worth wraps and grows instead, and one that still can at
+  200% text goes on cutting and owes the reachable name below for it. And identity is not what it hides: every row leads with its own size box
   and node badge, and the fitting panel beside the ledger names the module in full for the marked
   mount. Where the cut actually fires the ellipsis is a tooltip carrying the whole name rather than a
   glyph the browser paints, so the text is folded away behind a control on the same screen rather
