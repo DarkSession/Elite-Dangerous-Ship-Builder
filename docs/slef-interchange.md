@@ -73,9 +73,12 @@ the module keeps its unengineered figures. Almanac 0.2.2 added `ambiguousEnginee
 which reports a _reading_ rather than a change: the module's menu offers the recipe and a catalogued
 article answers to it just as well — a pre-engineered SCO drive is the case a Commander meets most
 often — so the roll was taken, and the article passed over is carried on the outcome, ready for
-`setPreEngineeredVariant`. Nothing in this application reads either outcome: such a module is either
-carrying a partial quality, in which case the whole candidate is refused over the package's own
-`unsupported`, or it is not, in which case there is no surface here that states it yet.
+`setPreEngineeredVariant`. Nothing in this application reads either outcome, but for different
+reasons. An unresolved module is moot: it is either carrying a partial quality, in which case the
+whole candidate is refused over the package's own `unsupported`, or it is not, in which case there
+is nothing to say. An ambiguous one is not moot — its recipe is one the module's own menu offers, so
+a partial quality on it completes and the candidate is accepted — and goes unread only because there
+is no surface here to offer the passed-over article on.
 
 0.2.2's third entry is not one of those two, and is the one thing in this release that changes a fit.
 Where a stated `Modifiers` block moves no stat the module's record carries — an empty array, or

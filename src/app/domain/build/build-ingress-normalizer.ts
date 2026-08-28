@@ -57,15 +57,17 @@ import type {
  * stated modifier block that moved no stat the module carries is gone from the
  * build and the recipe stated beside it was rolled in its place, which is the
  * same reading of a stated recipe as the roll above rather than a normalization
- * of its own (`docs/slef-interchange.md`). Nothing here reads any of the three,
- * for two different reasons. The two that report no change go unread because
- * such a module is either carrying a partial quality, in which case step 4
- * refuses the whole candidate over the package's own refusal, or it is not, in
- * which case this application has no surface that states it yet — the article
- * `ambiguousEngineering` carries would need one to be offered on. The reroll
- * goes unread for the second reason only: a rerolled module at full quality
- * passes step 4, so the block the source wrote is gone from the build and there
- * is no engineering-provenance surface to say so on.
+ * of its own (`docs/slef-interchange.md`). Nothing here reads any of the three.
+ * `unresolvedEngineering` is moot: such a module is either carrying a partial
+ * quality, in which case step 4 refuses the whole candidate over the package's
+ * own `unsupported`, or it is not, in which case there is nothing to say. The
+ * other two are not moot, and go unread for want of a surface rather than for
+ * want of something to say. Both resolve a recipe the module's own menu offers,
+ * so a partial quality on either completes at step 4 and the candidate is
+ * accepted: an ambiguous roll arrives with the article it passed over riding on
+ * the outcome, and a reroll arrives with the block the source wrote gone from
+ * the build. Neither has an engineering-provenance surface to be offered or
+ * stated on.
  */
 export function normalizeIncomingBuild(event: LoadoutEvent): IngressResult {
   // Step 1. Read the source's partial rolls before construction consumes them.

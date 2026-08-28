@@ -54,13 +54,14 @@ export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]
 /**
  * The three package answers this capability is made of, in every spelling.
  *
- * Each build-aware name appears twice because two different things answer to
- * it. The `…Result(` form is the method on `BuildMetrics`, and is the only way
- * to ask a build since Almanac 0.2.2 withdrew the nullable twin. The bare
- * `heatMetrics(` and `distributorMetrics(` are the standalone calculators,
+ * The two names whose nullable twin 0.2.2 withdrew appear twice. The `…Result(`
+ * form is the method on `BuildMetrics`, and is the only way to ask a build; the
+ * bare `heatMetrics(` and `distributorMetrics(` are the standalone calculators,
  * which the package still exports from `ships/heat` and `ships/distributor`. A
  * name is matched with its bracket, which is why the shorter spelling does not
- * cover the longer one.
+ * cover the longer one. `powerBudget(` needs no second entry: `ships/power`
+ * spells its calculator exactly like the `BuildMetrics` method, so the one name
+ * catches both.
  *
  * This list is about *where* an answer is asked for, so the projection is
  * exempt from it. What the projection may not do either is {@link
@@ -189,15 +190,16 @@ const RULES = [
     async run(violations) {
       for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
+        // A name this list shares with `PACKAGE_CALLS` is already reported by
+        // the placement rule everywhere that rule looks, so it is passed over
+        // here rather than said twice with two reasons. The skip belongs in the
+        // predicate: `scan` yields one hit per line, so skipping the whole line
+        // would lose a standalone-only name written beside a shared one.
         for (const { line, hit } of scan(source, (text) =>
-          STANDALONE_CALLS.find((call) => text.includes(call)),
+          STANDALONE_CALLS.find(
+            (call) => text.includes(call) && (isProjection(name) || !PACKAGE_CALLS.includes(call)),
+          ),
         )) {
-          // A name this list shares with `PACKAGE_CALLS` is already reported by
-          // the placement rule everywhere that rule looks. Saying it twice with
-          // two reasons reads as two problems.
-          if (!isProjection(name) && PACKAGE_CALLS.includes(hit)) {
-            continue;
-          }
           violations.push({
             file: name,
             line,

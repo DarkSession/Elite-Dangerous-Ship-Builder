@@ -206,15 +206,16 @@ const RULES = [
     async run(violations) {
       for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
+        // A name this list shares with `PACKAGE_CALLS` is already reported by
+        // the placement rule everywhere that rule looks, so it is passed over
+        // here rather than said twice with two reasons. The skip belongs in the
+        // predicate: `scan` yields one hit per line, so skipping the whole line
+        // would lose a standalone-only name written beside a shared one.
         for (const { line, hit } of scan(source, (text) =>
-          STANDALONE_CALLS.find((call) => text.includes(call)),
+          STANDALONE_CALLS.find(
+            (call) => text.includes(call) && (isProjection(name) || !PACKAGE_CALLS.includes(call)),
+          ),
         )) {
-          // A name this list shares with `PACKAGE_CALLS` is already reported by
-          // the placement rule everywhere that rule looks. Saying it twice with
-          // two reasons reads as two problems.
-          if (!isProjection(name) && PACKAGE_CALLS.includes(hit)) {
-            continue;
-          }
           violations.push({
             file: name,
             line,
