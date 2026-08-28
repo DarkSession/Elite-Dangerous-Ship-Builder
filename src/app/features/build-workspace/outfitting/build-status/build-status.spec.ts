@@ -195,6 +195,19 @@ describe('the build status block', () => {
       expect(first?.classList).toContain('issue--warning');
     });
 
+    it('states the verdict above a warning the package raises anyway', () => {
+      const loadout = ShipLoadout.fromLoadout(HOLD_ONLY_OVERLOAD);
+      const fixture = render(loadout);
+
+      // The two blocks are not exclusive, and this is the arrangement Almanac
+      // 0.2.1 made reachable. `valid` is read rather than derived from the issue
+      // count, so a build the package calls valid says so even where it also
+      // raises a warning about a load the pilot chose (constitution II).
+      expect(loadout.validation().valid).toBe(true);
+      expect(items(fixture)).toHaveLength(1);
+      expect(allClear(fixture)?.textContent?.trim()).toBe(englishCatalogue['build-status.valid']);
+    });
+
     it('carries the package’s own sentence, with its interpolated identities', () => {
       const loadout = ShipLoadout.fromLoadout(UNKNOWN_SLOT);
       const issue = loadout.validation().issues[0]!;

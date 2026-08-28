@@ -88,9 +88,14 @@ package diagnostic and parses none.
   at both widths the slot ledger it would have reached is already on screen. Feature 005's pip
   control, drawn in this rail since the 2026-08-25 canvas revision, is the one control in the region
   and belongs to that feature; it changes neither this block nor ruling A.
-- A build with no package issues draws no block at all — not an all-clear line, not a count, not a
-  statement. That is what the canvas does, and it is the strongest available guarantee that no
-  readiness, flyability or quality claim is being made.
+- A build the package calls valid draws one line saying so, and nothing beyond it — no count, no
+  structural facts, no readiness or flyability claim. The line is read from
+  `LoadoutValidation.valid`, so it stands whether the package raised nothing at all or raised only a
+  `warning`, and the issue blocks are drawn beneath it in that second case. The canvas draws no
+  such line; it was added because a Commander read the silence as a rail that had failed to load
+  rather than as an all-clear (2026-08-27, revising FR-015 and half of ruling A). It states the
+  package's verdict and nothing built on top of it.
+- Where there is no build, nothing is drawn at all. No build is not a valid build.
 - Visible content is not live. A revalidated build is ordinary re-rendered content, not an event, and
   ruling A withdrew the announcer that would have reported one.
 

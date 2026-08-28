@@ -104,10 +104,13 @@ export class BuildStatus {
    *
    * `LoadoutValidation` publishes the verdict beside the issues, so this line is
    * the package's answer rather than this component's reading of how many issues
-   * came back. The two are not the same claim: `incomplete` is a severity, and a
-   * build carrying only those is one the package calls valid. Counting issues
-   * would have withheld the confirmation there, on a verdict of our own
-   * (constitution II).
+   * came back. The two are not the same claim, and since Almanac 0.2.1 they come
+   * apart on a build a Commander can reach without an impossible module in it: a
+   * `warning` — a hold loaded past what the fitted thrusters carry, say — leaves
+   * the build valid and complete, so the rail states the verdict and draws the
+   * amber block beneath it. Counting issues would have withheld the confirmation
+   * there, on a verdict of our own (constitution II). `incomplete` is the same
+   * case and no build raises it at the pinned version.
    *
    * `validation()` is `null` until a build is open, and no build is not a valid
    * build, so the confirmation is never drawn over an empty workspace.

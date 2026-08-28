@@ -1,9 +1,11 @@
 <!--
-  The package's verdict, either way. A build it reports nothing about carries
-  one line saying so, in the same block and the same voice as the issues it
-  would report instead: silence there read as a rail that had not loaded rather
-  than as an all-clear (Commander request 2026-08-27, revising FR-015). Nothing
-  is drawn at all until there is a build to have a verdict about.
+  The package's verdict, either way. A build the package calls valid carries one
+  line saying so, in the same block and the same voice as the issues below:
+  silence there read as a rail that had not loaded rather than as an all-clear
+  (Commander request 2026-08-27, revising FR-015). Nothing is drawn at all until
+  there is a build to have a verdict about. The two blocks are not exclusive —
+  a `warning` leaves a build valid, so the verdict stands above its own amber
+  block.
 -->
 @if (valid()) {
   <p class="issue issue--valid">{{ validLabel() }}</p>

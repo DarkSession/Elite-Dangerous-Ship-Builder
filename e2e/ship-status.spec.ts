@@ -199,6 +199,9 @@ test.describe('the BUILD STATUS block', () => {
       englishMessages['build-status.severity.warning'],
     );
     await expect(issues(page).nth(0)).toHaveClass(/issue--warning/);
+    // And the verdict stands above it: the package calls this build valid, and
+    // the line is that answer rather than a reading of the issue count.
+    await expect(allClear(page)).toHaveText(englishMessages['build-status.valid']);
   });
 
   test('reads a warning block with no violation either', async ({ page }, testInfo) => {

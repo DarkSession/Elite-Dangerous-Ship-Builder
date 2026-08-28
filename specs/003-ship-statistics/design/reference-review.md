@@ -102,9 +102,10 @@ Not built, and not to be reintroduced without a new ruling:
 
 - `StatusCapability` as a wide-width mode, its central-selector registration and the rail's
   open-Status action (ruling B).
-- `StructuralFacts` as a definition list of `valid` and `complete`. A build with no package issues
+- `StructuralFacts` as a definition list of `valid` and `complete`. A build the package calls valid
   draws one line saying so and nothing else — not a definition list, not a readiness claim, not a
-  qualification (ruling A, and FR-015 as it now stands).
+  qualification (ruling A, and FR-015 as it now stands). Since Almanac 0.2.1 that line can stand
+  above an issue block, because a `warning` leaves a build valid.
 - The issue and qualification **counts**, the qualification summary section and both none-reported
   statements (ruling A).
 - `StatusCountAnnouncer` and `StatusAnnouncementCoordinator`. They announced count changes, and there
