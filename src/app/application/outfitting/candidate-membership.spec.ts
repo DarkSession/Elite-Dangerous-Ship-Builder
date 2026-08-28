@@ -6,7 +6,7 @@ import {
   packageText,
   routeDistinctVariants,
 } from '../../domain/outfitting/outfitting.fixtures';
-import { candidateMembership, resolveChoice } from './candidate-membership';
+import { candidateMembership, isFittedChoice, resolveChoice } from './candidate-membership';
 
 /**
  * Membership is an expansion of what the package said, and nothing else.
@@ -94,6 +94,26 @@ describe('candidate membership', () => {
     );
 
     expect(membership.choices).toEqual([]);
+  });
+
+  it('marks the fitted row on a build that spells its modules the journal way', () => {
+    // A journal `Loadout` event writes `hpt_beamlaser_gimbal_small` and the
+    // catalogue carries `Hpt_BeamLaser_Gimbal_Small`. `ShipLoadout` keeps what it
+    // was handed, so compared exactly no row in an imported build was ever the
+    // fitted one: the chooser opened the wrong family and marked nothing
+    // (reported 2026-08-27).
+    const membership = candidateMembership(
+      defaultBuild(),
+      FIXTURE_SLOTS.hardpoint,
+      1,
+      packageText('en'),
+    );
+    const choice = membership.choices.find((candidate) => candidate.kind === 'stock')!;
+
+    expect(isFittedChoice(choice, { symbol: choice.module.symbol, variant: null })).toBe(true);
+    expect(
+      isFittedChoice(choice, { symbol: choice.module.symbol.toLowerCase(), variant: null }),
+    ).toBe(true);
   });
 
   it('discards a choice resolved against a stale revision', () => {

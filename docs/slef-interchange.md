@@ -41,14 +41,37 @@ figure, a mass or a jump range.
 An accepted import is normalized in exactly two ways, both of them the package's:
 
 1. **A supported partial engineering roll is completed to quality 1.** The application captures the
-   source quality first, so the completion can be reported; an unsupported partial refuses the whole
-   import rather than arriving as something the Commander did not paste.
+   source quality first; an unsupported partial refuses the whole import rather than arriving as
+   something the Commander did not paste.
 2. **Every fixed mount arrives populated.** `ShipLoadout.fromLoadout` fills a fixed mount the payload
    omitted or filled with something unusable. The application performs no second repair pass, keeps
    no "was defaulted" provenance, and exposes no empty-fixed-mount state.
 
-Both are reported where the workspace already reports them: feature 002's quality-completion notice
-and feature 003's build-status rail. Feature 004 draws no report of its own.
+What the package says about the result is reported where the workspace already reports it: feature
+003's build-status rail. Feature 004 draws no report of its own.
+
+### A stated recipe without its modifiers, and what is left of it
+
+A journal `Loadout` event carries a `Modifiers` block beside each engineered module, and the package
+reads its figures out of that block. Inara's SLEF writes none: it states `BlueprintName`, `Level` and
+`Quality` and stops. Until Almanac 0.2.1 the package held that faithfully and published the
+unengineered figure for every such module — an imported Anaconda read 19.36 Ly where the same build
+in the game read 26.84.
+
+**That was an Almanac defect and it was fixed in the Almanac**
+([Elite-Dangerous-Almanac#371](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/371),
+released in 0.2.1). The package now rolls the recipe at the grade and quality the block names, so the
+module arrives carrying the package's own modifiers. An earlier revision of this work spelled the
+modifiers out through the package instead, and was reverted: whether a stated recipe applies without
+its modifier block, and what it does to each attribute, is game data, and a pass here would have been
+correcting a package result. This paragraph is kept so that workaround is not reintroduced the next
+time a figure looks low.
+
+What is left is narrower and is not swept here either. Where the package can resolve neither a recipe
+the module's menu offers nor a catalogued article carrying it, it reports `unresolvedEngineering` and
+the module keeps its unengineered figures. Nothing in this application reads that outcome: such a
+module is either carrying a partial quality, in which case the whole candidate is refused over the
+package's own `unsupported`, or it is not, in which case there is no surface here that states it yet.
 
 ## Which hull the build is
 

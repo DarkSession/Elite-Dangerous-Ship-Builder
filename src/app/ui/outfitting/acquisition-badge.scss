@@ -54,3 +54,11 @@
 .visually-hidden {
   @include layout.visually-hidden;
 }
+
+// The mark's tip host. It is the mark's box and nothing more: the icon inside
+// keeps the canvas's 14 pixels, and the trigger around it takes the dense
+// target floor, so the row it sits on does not grow.
+.acquisition__mark {
+  display: inline-flex;
+  flex: none;
+}

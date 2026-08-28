@@ -197,10 +197,6 @@ export class ActiveBuildStore {
     this.#ingressFailures.set(failures);
   }
 
-  dismissIngressRefusal(): void {
-    this.#ingressFailures.set([]);
-  }
-
   /**
    * Clears the build if it is the one living in this record, and says whether
    * it did.

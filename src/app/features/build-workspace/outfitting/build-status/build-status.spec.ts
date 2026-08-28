@@ -17,9 +17,11 @@ import { BuildStatus } from './build-status';
  *
  * Half of what this suite proves is *absence*. The wave 11 rulings built exactly
  * what canvases 1c and 1d draw and nothing else, so the tests that matter most
- * are the ones that fail if a count, a structural-facts list, an all-clear line
- * or a per-issue action comes back
- * (`specs/003-ship-statistics/design/reference-review.md`, rulings A–C).
+ * are the ones that fail if a count, a structural-facts list or a per-issue
+ * action comes back
+ * (`specs/003-ship-statistics/design/reference-review.md`, rulings A–C). The
+ * all-clear line is the one thing ruling A withheld that a Commander asked for
+ * back, so it is asserted rather than forbidden.
  */
 describe('the build status block', () => {
   let active: ActiveBuildStore;
@@ -97,7 +99,11 @@ describe('the build status block', () => {
   }
 
   function items(fixture: ReturnType<typeof render>): readonly HTMLElement[] {
-    return [...host(fixture).querySelectorAll<HTMLElement>('.issue')];
+    return [...host(fixture).querySelectorAll<HTMLElement>('.issue:not(.issue--valid)')];
+  }
+
+  function allClear(fixture: ReturnType<typeof render>): HTMLElement | null {
+    return host(fixture).querySelector<HTMLElement>('.issue--valid');
   }
 
   /** Commits German, which the package publishes no diagnostics in. */
@@ -124,17 +130,20 @@ describe('the build status block', () => {
     it('draws nothing at all without a build', () => {
       // The workspace already says why it is empty; a block here would be a
       // second answer to a question feature 001 has already answered (FR-001).
+      // No build is not a valid build either, so there is no all-clear.
       expect(items(render(null))).toHaveLength(0);
+      expect(allClear(render(null))).toBeNull();
+      expect(text(render(null)).trim()).toBe('');
     });
 
-    it('draws nothing for a build the package raises no issue about', () => {
+    it('confirms a build the package raises no issue about', () => {
       const fixture = render(ShipLoadout.default(FIXTURE_HULL));
 
-      // Ruling A. Neither canvas draws an all-clear state, and the strongest
-      // available guarantee that no readiness claim is made is that there is no
-      // sentence in which to make one (FR-015).
+      // The verdict, either way. Silence here read as a rail that had not
+      // loaded rather than as an all-clear (Commander request 2026-08-27,
+      // revising FR-015).
       expect(items(fixture)).toHaveLength(0);
-      expect(text(fixture).trim()).toBe('');
+      expect(allClear(fixture)?.textContent?.trim()).toBe(englishCatalogue['build-status.valid']);
     });
   });
 
@@ -184,6 +193,19 @@ describe('the build status block', () => {
         englishCatalogue['build-status.severity.warning'],
       );
       expect(first?.classList).toContain('issue--warning');
+    });
+
+    it('states the verdict above a warning the package raises anyway', () => {
+      const loadout = ShipLoadout.fromLoadout(HOLD_ONLY_OVERLOAD);
+      const fixture = render(loadout);
+
+      // The two blocks are not exclusive, and this is the arrangement Almanac
+      // 0.2.1 made reachable. `valid` is read rather than derived from the issue
+      // count, so a build the package calls valid says so even where it also
+      // raises a warning about a load the pilot chose (constitution II).
+      expect(loadout.validation().valid).toBe(true);
+      expect(items(fixture)).toHaveLength(1);
+      expect(allClear(fixture)?.textContent?.trim()).toBe(englishCatalogue['build-status.valid']);
     });
 
     it('carries the package’s own sentence, with its interpolated identities', () => {
@@ -275,10 +297,12 @@ describe('the build status block', () => {
       active.commit(candidateFor(ShipLoadout.default(FIXTURE_HULL)));
       fixture.detectChanges();
 
-      // A resolved issue leaves with its build. There is no second source to
-      // fall behind the one in memory, which is why ruling A could withdraw the
+      // A resolved issue leaves with its build, and the build that replaced it
+      // is confirmed in its place. There is no second source to fall behind the
+      // one in memory, which is why ruling A could withdraw the
       // revision-stamped projection envelope entirely.
       expect(items(fixture)).toHaveLength(0);
+      expect(allClear(fixture)).not.toBeNull();
     });
   });
 });

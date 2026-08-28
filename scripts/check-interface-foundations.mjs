@@ -1990,8 +1990,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the separator are language-neutral.',
     'hullDetail.bar.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
-    'outfitting.engineering.layer-detail':
-      'A composition pattern; both variables and the separator are language-neutral.',
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
@@ -2037,8 +2035,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: the label is the product word “App”, which German uses too, and the rest is the link variable.',
     'help.action.symbol':
       'A question mark, drawn as the reference draws it. The glyph is the mark itself and not a word; the action’s translated name is what a reader is told.',
-    'outfitting.acquisition.short.mercenary':
-      'Merc-Coin is the in-game currency name and is not translated.',
     'slef.import.refusal.module':
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'slef.announce.delivery':

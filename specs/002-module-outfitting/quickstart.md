@@ -59,7 +59,7 @@ Expected:
    with and without attached partial engineering.
 2. Run the candidate through the shared ingress pipeline.
 3. Observe the active build before any calculation presenter reads it.
-4. Inspect quality-completion notices and history controls.
+4. Inspect the build status and history controls.
 
 Expected:
 

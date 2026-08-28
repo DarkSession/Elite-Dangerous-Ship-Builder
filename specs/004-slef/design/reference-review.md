@@ -32,9 +32,9 @@ The source is a visual/interaction reference, not executable behavior or authori
   actions reachable.
 - Add visible labels/instructions, exact UTF-8 usage/limit, over-limit, inspecting, cardinality,
   semantic diagnostics, candidate/replacement and normalization-refusal states to import.
-- Keep import exact and atomic. The workspace owns what happens after the commit: feature 002's
-  quality-completion notice and feature 003's build-status rail survive the input layer transition,
-  and feature 004 adds no report beside them (see [import-outcome.md](./import-outcome.md)).
+- Keep import exact and atomic. The workspace owns what happens after the commit: feature 003's
+  build-status rail survives the input layer transition, and feature 004 adds no report beside it
+  (see [import-outcome.md](./import-outcome.md)).
 - Add true package validation/incomplete warnings, exact-revision artifact/link behavior and real
   localized metadata to SLEF export.
 - Desktop Download and mobile Share File are not equivalent reference actions: Download is always

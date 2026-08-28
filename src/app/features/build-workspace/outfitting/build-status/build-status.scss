@@ -74,3 +74,13 @@
 .visually-hidden {
   @include layout.visually-hidden;
 }
+
+// The all-clear, drawn as a block of the same shape as an issue so the rail
+// reads the same either way: one marker on the leading edge and one sentence.
+// It takes the system's `success` pair rather than a tier of its own — the
+// canvas has no fourth tier, and this is not a warning.
+.issue--valid {
+  margin: 0;
+  border-inline-start-color: var(--edsb-border-success);
+  color: var(--edsb-text-success);
+}

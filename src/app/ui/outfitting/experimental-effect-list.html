@@ -66,10 +66,14 @@
               [translationState]="effect.description.translationState"
             />
           }
-          @if (effect.applied) {
-            <span class="effect__applied">{{ appliedLabel() }}</span>
-          }
         </span>
+        <!--
+          Ranged against the plate's trailing edge, exactly as the recipe list
+          ranges its own (Commander request 2026-08-27).
+        -->
+        @if (effect.applied) {
+          <span class="effect__applied">{{ appliedLabel() }}</span>
+        }
       </label>
     }
   </fieldset>

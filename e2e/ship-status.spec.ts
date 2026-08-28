@@ -19,7 +19,8 @@ import { openRecordFromLibrary } from './shell';
 const HULL = 'Anaconda';
 
 const rail = (page: Page) => page.locator('.outfitting__status-rail');
-const issues = (page: Page) => page.locator('edsb-build-status .issue');
+const issues = (page: Page) => page.locator('edsb-build-status .issue:not(.issue--valid)');
+const allClear = (page: Page) => page.locator('edsb-build-status .issue--valid');
 
 /**
  * A stored build naming mounts the hull does not have.
@@ -161,13 +162,14 @@ test.describe('the BUILD STATUS block', () => {
     ).toBeVisible();
   });
 
-  test('draws nothing for a build the package raises no issue about', async ({ page }) => {
+  test('confirms a build the package raises no issue about', async ({ page }) => {
     await openStockBuild(page);
 
-    // Ruling A. No all-clear line, no zero count, no structural-facts list —
-    // the region simply has nothing to say, exactly as the canvas draws it.
+    // The verdict, either way, and nothing beyond it: no count, no
+    // structural-facts list, no completeness claim. Silence here read as a rail
+    // that had not loaded (Commander request 2026-08-27, revising FR-015).
     await expect(issues(page)).toHaveCount(0);
-    await expect(rail(page).getByText(/valid/i)).toHaveCount(0);
+    await expect(allClear(page)).toHaveText(englishMessages['build-status.valid']);
     await expect(rail(page).getByText(/complete/i)).toHaveCount(0);
   });
 
@@ -197,6 +199,9 @@ test.describe('the BUILD STATUS block', () => {
       englishMessages['build-status.severity.warning'],
     );
     await expect(issues(page).nth(0)).toHaveClass(/issue--warning/);
+    // And the verdict stands above it: the package calls this build valid, and
+    // the line is that answer rather than a reading of the issue count.
+    await expect(allClear(page)).toHaveText(englishMessages['build-status.valid']);
   });
 
   test('reads a warning block with no violation either', async ({ page }, testInfo) => {

@@ -313,6 +313,15 @@ and what the artboard is actually drawing. That is a different arrangement from 
 column this region composes at compact width — the mode strip, the plates, the key figures and the
 ledger all scroll together today — so it is recorded here as the follow-up rather than half-built.
 
+**Tried, and reverted, on 2026-08-27.** A Commander asked for the plate to be on screen wherever they
+had scrolled to, and `position: sticky; inset-block-end: 0` was fitted with the ledger carrying the
+plate's height as end padding. The padding clears the _last_ rows only; at every other scroll
+position the plate still covered whichever row was at the foot of the viewport, and axe reported
+`target-size` (serious) against that row's `.slot__select` in both engines, across eight specs at
+mobile portrait. The criterion is **SC 2.5.8**, which is in scope — not SC 2.4.11, which is one of
+the seven the constitution excludes and which the reverted note wrongly cited. The follow-up above
+is the way in; there is no version of this that floats an opaque plate over the rows.
+
 **And it is also what was asked for (2026-08-26).** The Commander's own words for this were that the
 two actions should not appear until the modules do. Drawn in the flow they cannot: the plate is the
 last thing in the stack, under the ledger it acts on, so it comes into view with the end of that list

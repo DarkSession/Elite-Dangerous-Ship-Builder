@@ -20,71 +20,90 @@
           the invisible floor, rather than a row of chips the reference does not
           have (design-canvas rule).
 
-          `alt` is empty on both because the sentence beside them says the same
-          thing in words: a marker and its own caption read as two restrictions
-          where there is one.
+          `alt` is empty on all of them because the sentence beside them says
+          the same thing in words: a marker and its own caption read as two
+          restrictions where there is one.
 
-          Each carries the sentence as its `title` as well. Canvas 1c gives
-          every one of these icons a tip on hover — `data-tip="Powerplay
-          module"`, `"Community goal reward"`, `"Tech Broker unlock"`,
-          `"Merc Coin purchase"` — and without one an icon on a row where the
-          sentence is not drawn is a mark with no way to ask what it means
-          (Commander request 2026-08-26). It is the row's own sentence rather
-          than a shorter phrase beside it: one restriction, one wording,
-          whether it is drawn, hovered or read.
+          Each mark hangs its own short gloss on the design system's tooltip.
+          Canvas 1c gives every one of these icons a tip on hover —
+          `data-tip="Powerplay module"`, `"Community goal reward"`,
+          `"Tech Broker unlock"`, `"Merc Coin purchase"` — and without one an
+          icon on a row where the sentence is not drawn is a mark with no way
+          to ask what it means. It is not hung on a `title`: a `title` cannot be
+          reached by touch at all, and hover-only meaning is unreachable by
+          touch (011 FR-006, Commander request 2026-08-27).
 
-          `aria-hidden` is what actually keeps the mark presentational, and it
-          is not belt and braces. An `img` with an empty `alt` maps to
-          presentation only while it has no `title`; give it one and it is
-          exposed as an image named by that title, which beside the sentence
-          the row already carries is the same restriction announced twice.
-          Hidden from the tree, the tip is what it was meant to be: a way to
-          *see* the sentence, on a mark whose meaning a reader already has.
+          The whole control is `aria-hidden`, and that is the same ruling as
+          before rather than a new one. The row already carries its restriction
+          as a sentence; a mark that also announced it would be one restriction
+          said twice. Hidden from the tree — and taken out of the tab order by
+          `presentational` — the tip is what it was meant to be: a way to *see*
+          what a reader already has.
         -->
         @switch (label.marker) {
           @case ('communityGoal') {
-            <img
-              class="acquisition__route"
-              src="assets/icons/community-goal.svg"
-              alt=""
+            <edsb-tooltip
+              class="acquisition__mark"
               aria-hidden="true"
-              [attr.title]="label.explanation"
-              width="14"
-              height="14"
-            />
+              [presentational]="true"
+              [tip]="label.tip ?? ''"
+            >
+              <img
+                class="acquisition__route"
+                src="assets/icons/community-goal.svg"
+                alt=""
+                width="14"
+                height="14"
+              />
+            </edsb-tooltip>
           }
           @case ('powerplay') {
-            <img
-              class="acquisition__route"
-              src="assets/icons/powerplay.svg"
-              alt=""
+            <edsb-tooltip
+              class="acquisition__mark"
               aria-hidden="true"
-              [attr.title]="label.explanation"
-              width="14"
-              height="14"
-            />
+              [presentational]="true"
+              [tip]="label.tip ?? ''"
+            >
+              <img
+                class="acquisition__route"
+                src="assets/icons/powerplay.svg"
+                alt=""
+                width="14"
+                height="14"
+              />
+            </edsb-tooltip>
           }
           @case ('techBroker') {
-            <img
-              class="acquisition__route acquisition__route--broker"
-              src="assets/icons/tech-broker.svg"
-              alt=""
+            <edsb-tooltip
+              class="acquisition__mark"
               aria-hidden="true"
-              [attr.title]="label.explanation"
-              width="14"
-              height="14"
-            />
+              [presentational]="true"
+              [tip]="label.tip ?? ''"
+            >
+              <img
+                class="acquisition__route acquisition__route--broker"
+                src="assets/icons/tech-broker.svg"
+                alt=""
+                width="14"
+                height="14"
+              />
+            </edsb-tooltip>
           }
           @case ('mercCoin') {
-            <img
-              class="acquisition__coin"
-              src="assets/icons/merc-coin.png"
-              alt=""
+            <edsb-tooltip
+              class="acquisition__mark"
               aria-hidden="true"
-              [attr.title]="label.explanation"
-              width="14"
-              height="14"
-            />
+              [presentational]="true"
+              [tip]="label.tip ?? ''"
+            >
+              <img
+                class="acquisition__coin"
+                src="assets/icons/merc-coin.png"
+                alt=""
+                width="14"
+                height="14"
+              />
+            </edsb-tooltip>
           }
         }
         <span [class.visually-hidden]="!showExplanations()" class="acquisition__explanation">

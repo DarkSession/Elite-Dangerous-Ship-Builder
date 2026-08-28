@@ -90,9 +90,9 @@ its ship name and ident — belongs here.
 2. A Commander can apply or replace a blueprint and grade, add, replace or remove only an
    experimental effect, or clear all ordinary engineering. Removing only the effect preserves the
    blueprint and grade.
-3. Grades are always modelled at 100% quality. Resolved imported partial quality is normalised and
-   reported; an incoming build whose partial engineering cannot be resolved and completed losslessly
-   is refused before activation.
+3. Grades are always modelled at 100% quality. Resolved imported partial quality is normalised; an
+   incoming build whose partial engineering cannot be resolved and completed losslessly is refused
+   before activation.
 4. Enabled state and priority update every affected package calculation while mass and cost remain
    because the module is still fitted.
 
@@ -196,11 +196,14 @@ its ship name and ident — belongs here.
   requirements are stated once, as the build-wide total feature 009 draws in the status rail; that
   total already includes what a selected recipe adds, so no figure is lost by the omission.
 - **FR-013**: Every selected ordinary grade MUST represent 100% quality. Partial imported quality on
-  each supported resolved module MUST be normalised to 100% through the package and reported. If the package cannot resolve the
-  engineering identity or otherwise cannot complete the grade losslessly, the entire incoming build
-  MUST be refused before activation, the current build MUST remain unchanged, and the refusal MUST
-  identify the affected slot and engineering identity. The application MUST NOT change only its
-  quality scalar, strip engineering, retain the partial roll or fabricate modifiers.
+  each supported resolved module MUST be normalised to 100% through the package. If the package
+  cannot resolve the engineering identity or otherwise cannot complete the grade losslessly, the
+  entire incoming build MUST be refused before activation, the current build MUST remain unchanged,
+  and the refusal MUST identify the affected slot and engineering identity. The application MUST NOT
+  change only its quality scalar, strip engineering, retain the partial roll or fabricate modifiers.
+  A completion is not reported to the Commander: the notice that did so was withdrawn on
+  2026-08-27, because it is a remark about a build they now have open rather than a decision they
+  are being asked to take.
 - **FR-014**: Engineering material costs MUST use package cost results, wherever they are stated.
   Fixed pre-engineering MUST add no craft cost unless the package reports separately selected
   ordinary engineering.

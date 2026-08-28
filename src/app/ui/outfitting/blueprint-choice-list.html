@@ -72,10 +72,16 @@
             [language]="choice.name.language"
             [translationState]="choice.name.translationState"
           />
-          @if (choice.applied) {
-            <span class="blueprint__applied">{{ appliedLabel() }}</span>
-          }
         </span>
+        <!--
+          The applied mark ends the row rather than sitting under the name.
+          Canvas 1d ranges it against the plate's trailing edge, where a column
+          of rows can be read down for the one that is on (Commander request
+          2026-08-27).
+        -->
+        @if (choice.applied) {
+          <span class="blueprint__applied">{{ appliedLabel() }}</span>
+        }
       </label>
     }
   </fieldset>

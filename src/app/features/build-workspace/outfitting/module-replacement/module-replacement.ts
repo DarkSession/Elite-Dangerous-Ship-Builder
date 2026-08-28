@@ -77,6 +77,11 @@ export class ModuleReplacement {
    * Canvas 1c writes `FITTING · HARDPOINT 1` on the same row as the search
    * field and `REMOVE MODULE`, so the heading belongs to this panel's head
    * rather than to a rule above it (wave 5).
+   *
+   * It is drawn at both widths. The layer's own title says what the screen is
+   * for — `Change module` — and the mount it is open on is a different fact: a
+   * Commander who opened the wrong row had nothing on the screen to tell them
+   * so (Commander request 2026-08-27).
    */
   readonly panelHeading = input<string | null>(null);
 

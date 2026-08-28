@@ -54,7 +54,7 @@ Compose or extend feature 011 `src/app/ui/` contracts for:
 - feature 001 replacement confirmation and no-build recovery state.
 
 After the import layer transitions away, what the import did is read on the workspace surfaces that
-already draw it — feature 002's quality-completion notice and feature 003's build-status rail.
+already draw it — feature 003's build-status rail, and the build itself.
 Feature 004 composes no report of its own (see
 [design/import-outcome.md](../design/import-outcome.md), "Divergence"). A missing technical-text
 field or diagnostic component extends `src/app/ui/`; no feature-local visual language is created. Previews cover every meaningful default/populated/empty/loading/error/disabled/

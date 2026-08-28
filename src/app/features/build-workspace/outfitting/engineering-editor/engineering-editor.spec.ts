@@ -104,16 +104,27 @@ describe('engineering editor surface', () => {
       );
     });
 
-    it('names what it is open on underneath, as the module and the mount', () => {
+    it('names the module in its own bar, and the mount underneath', () => {
+      commit(defaultBuild());
+
+      const fixture = open(FIXTURE_SLOTS.fittedHardpoint);
+      const slot = slotFor(FIXTURE_SLOTS.fittedHardpoint);
+      const editor = fixture.componentInstance;
+
+      expect(slot.module).not.toBeNull();
+      expect(editor.layerTitle()).toBe(slot.module?.displayName.text ?? '');
+      expect(editor.layerDetail()).toBe(slot.displayName.text ?? slot.canonicalName);
+    });
+
+    it('leaves the mount off a core module, which already names its own', () => {
       commit(defaultBuild());
 
       const fixture = open(FIXTURE_SLOTS.frameShiftDrive);
       const slot = slotFor(FIXTURE_SLOTS.frameShiftDrive);
-      const detail = fixture.componentInstance.layerDetail();
 
-      expect(slot.module).not.toBeNull();
-      expect(detail).toContain(slot.module?.displayName.text ?? '');
-      expect(detail).toContain(slot.displayName.text ?? slot.canonicalName);
+      expect(slot.kind).toBe('core');
+      expect(fixture.componentInstance.layerTitle()).toBe(slot.module?.displayName.text ?? '');
+      expect(fixture.componentInstance.layerDetail()).toBeNull();
     });
 
     it('has no second line over an empty mount, having nothing to name there', () => {

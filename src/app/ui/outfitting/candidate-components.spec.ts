@@ -1,3 +1,4 @@
+import englishCatalogue from '../../i18n/locales/en.json';
 import { candidateMembership } from '../../application/outfitting/candidate-membership';
 import {
   applyQuery,
@@ -181,7 +182,7 @@ describe('acquisition badge', () => {
     expect(textOf(element(fixture))).toContain('ELITE_HORIZONS_V_PLANETARY_LANDINGS');
   });
 
-  it('lets a mark be asked what it means, in the sentence beside it', () => {
+  it('lets a mark be asked what it means, without a title', () => {
     const fixture = renderComponent(AcquisitionBadge, {
       labels: [
         {
@@ -194,17 +195,58 @@ describe('acquisition badge', () => {
     });
 
     const item = element(fixture).querySelector('.acquisition__item')!;
+    const tooltip = item.querySelector('edsb-tooltip')!;
     const mark = item.querySelector('.acquisition__route')!;
-    const sentence = textOf(item as HTMLElement);
 
-    // Canvas 1c gives every one of these icons a tip. It is the row's own
-    // sentence and not a second wording of it, so what is hovered and what is
-    // read are the same words.
-    expect(sentence.length).toBeGreaterThan(0);
-    expect(mark.getAttribute('title')).toBe(sentence);
-    // Still presentational: the tip is a way to see the sentence, never a
-    // second announcement of it.
+    // Canvas 1c gives every one of these icons a tip. It hangs on the design
+    // system's tooltip rather than on a `title`, which touch cannot reach at
+    // all, and it carries the mark's own short gloss.
+    expect(tooltip.querySelector('[role="tooltip"]')?.textContent?.trim()).toBe(
+      englishCatalogue['outfitting.acquisition.short.powerplay'],
+    );
+    expect(mark.getAttribute('title')).toBeNull();
+    // Still presentational: the tip is a way to see a restriction the row
+    // already states in words, never a second announcement of it.
     expect(mark.getAttribute('alt')).toBe('');
+    expect(tooltip.getAttribute('aria-hidden')).toBe('true');
+    // No control of any kind inside the mark. The badge is projected into the
+    // ledger row's own select button, so a button here would be a button inside
+    // a button — invalid, and `nested-interactive` to an accessibility scan.
+    expect(tooltip.querySelector('button, [role="button"], [tabindex]')).toBeNull();
+    expect(textOf(item as HTMLElement)).toContain(
+      englishCatalogue['outfitting.acquisition.powerplay'],
+    );
+  });
+
+  it('acts on the mark and never on the row the mark is drawn in', () => {
+    // A chooser row is a `label` around its own radio, and taking one at wide
+    // width fits the module. A tap asking what an icon means must not fit the
+    // article it is drawn on, so the press stops at the mark.
+    const fixture = renderComponent(AcquisitionBadge, {
+      labels: [
+        {
+          kind: 'powerplay',
+          packageValue: 'powerplay',
+          messageKey: 'outfitting.acquisition.powerplay',
+          params: null,
+        },
+      ],
+    });
+
+    const mark = element(fixture).querySelector<HTMLElement>('.tooltip__trigger--mark')!;
+    const press = new MouseEvent('click', { bubbles: true, cancelable: true });
+    let reachedTheRow = false;
+    element(fixture).addEventListener('click', () => {
+      reachedTheRow = true;
+    });
+
+    mark.dispatchEvent(press);
+    fixture.detectChanges();
+
+    expect(reachedTheRow).toBe(false);
+    expect(press.defaultPrevented).toBe(true);
+    // And it still did its own job.
+    expect(element(fixture).querySelector('.tooltip__tip--shown')).not.toBeNull();
   });
 });
 

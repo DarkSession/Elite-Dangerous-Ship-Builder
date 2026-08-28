@@ -126,10 +126,11 @@ export class SlefImportCoordinator {
    * from — the producer the envelope named, the draft — goes with it: neither
    * is build state.
    *
-   * The quality completions travel as feature 001's own `qualityNotices`,
-   * which is what the workspace's existing completion notice reads. Feature 004
-   * publishes no second report of them: the same fact told twice on the same
-   * screen is worse than the fact told once
+   * The quality completions travel as feature 001's own `qualityNotices`, which
+   * nothing draws: what the package completed on a build a Commander now has
+   * open is a remark rather than a decision they are being asked to take, and
+   * the notice that named them was withdrawn on 2026-08-27. Feature 004
+   * publishes no report of its own either
    * (`specs/004-slef/design/import-outcome.md`, "Divergence").
    */
   #candidate(candidate: SlefImportCandidate) {

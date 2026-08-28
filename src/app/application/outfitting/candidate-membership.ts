@@ -127,7 +127,7 @@ export interface FittedArticle {
  * family the marked row is not in (FR-021).
  */
 export function isFittedChoice(choice: ModuleChoice, fitted: FittedArticle | null): boolean {
-  if (fitted === null || choice.module.symbol !== fitted.symbol) {
+  if (fitted === null || !sameIdentity(choice.module.symbol, fitted.symbol)) {
     return false;
   }
   if (choice.kind !== 'variant') {
@@ -136,9 +136,24 @@ export function isFittedChoice(choice: ModuleChoice, fitted: FittedArticle | nul
   return (
     fitted.variant !== null &&
     choice.variant.name === fitted.variant.name &&
-    choice.variant.blueprintSymbol === fitted.variant.blueprintSymbol &&
+    sameIdentity(choice.variant.blueprintSymbol, fitted.variant.blueprintSymbol) &&
     choice.variant.grade === fitted.variant.grade
   );
+}
+
+/**
+ * Package identities compared the way the package matches them.
+ *
+ * A journal `Loadout` event spells every module in lower case —
+ * `hpt_beamlaser_gimbal_small` — and the catalogue carries
+ * `Hpt_BeamLaser_Gimbal_Small`. `ShipLoadout` keeps whatever string it was
+ * handed, so an imported build's fitted symbol is not spelled the way the row
+ * offering that same module is. Compared exactly, no row in an imported build
+ * was ever the fitted one: the chooser opened on the wrong family and marked
+ * nothing (reported 2026-08-27).
+ */
+function sameIdentity(left: string, right: string): boolean {
+  return left.toLowerCase() === right.toLowerCase();
 }
 
 /** Everything the chooser holds for one mount at one build revision. */

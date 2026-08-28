@@ -10,7 +10,6 @@ wide, tablet and compact behavior is in
 | [Outfitting workspace](./outfitting-workspace.md) | Complete ledger, inline selected-slot bench, direct history actions | Roomy landscape uses two panes; portrait/constrained uses compact flow | Source-faithful status/anatomy-before-ledger order, slot cards and persistent selected actions | FR-001–FR-003, FR-006–FR-011, FR-015–FR-019 |
 | [Module replacement](./module-replacement.md)     | Inline searchable manifest, choice facts and explicit confirm       | Inline in roomy two-pane mode; full-screen layer when compact          | Full-screen layer with independent scroll and persistent cancel/fit                            | FR-002, FR-004–FR-008                       |
 | [Engineering editor](./engineering-editor.md)     | Inline draft, result facts and costs with explicit apply/cancel     | Inline in roomy two-pane mode; full-screen layer when compact          | Full-screen layer with independent scroll and persistent revert/apply                          | FR-002, FR-007, FR-012–FR-014               |
-| Workspace quality-completion notice               | Accepted build notice names successful quality completion           | Same content reflows                                                   | Same content reflows before shared outlets                                                     | FR-013, FR-018                              |
 | Incoming-build normalization refusal              | Owning feature 001/004 ingress surface shown before activation      | Same content reflows                                                   | Same content reflows; never opens an editor                                                    | FR-003, FR-013, FR-018                      |
 | Ship name and ident control                       | Named fields in the workspace header beside feature 001's identity  | Same fields reflow in the header                                       | Same fields in the compact identity header; never a separate layer                             | FR-016, FR-019                              |
 
@@ -67,6 +66,6 @@ feature's mock values as placeholders.
 
 Feature 002 extends `src/app/ui/` through feature 011 with slot groups/cards, module
 identity/acquisition badges, unavailable facts, named power controls, candidate search/list,
-engineering choices/material costs, undo/redo actions, ship name/ident fields, quality-completion
-notices and ingress/edit refusal notices. Previews cover default/populated, selected, empty, unavailable, disabled, loading,
+engineering choices/material costs, undo/redo actions, ship name/ident fields and ingress/edit
+refusal notices. Previews cover default/populated, selected, empty, unavailable, disabled, loading,
 stale and refusal states at wide, tablet and compact widths with expanded/RTL text.

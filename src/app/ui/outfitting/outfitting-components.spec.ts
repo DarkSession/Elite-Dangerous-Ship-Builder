@@ -10,7 +10,6 @@ import {
 import { EditRefusalNotice } from './edit-refusal-notice';
 import { ModuleIdentityBadge } from './module-identity-badge';
 import { OutfittingNotice } from './outfitting-notice';
-import { QualityCompletionNotice } from './quality-completion-notice';
 import { SlotCard } from './slot-card';
 import { SlotGroup } from './slot-group';
 import { UnavailableFact } from './unavailable-fact';
@@ -396,35 +395,6 @@ describe('outfitting notice', () => {
       lines: [{ id: 'a', messageKey: 'outfitting.refusal.packageEdit' }],
     });
     expect(query(alert, '.status').getAttribute('role')).toBe('alert');
-  });
-});
-
-describe('quality completion notice', () => {
-  it('names the mount and the quality the module arrived at', () => {
-    const fixture = renderComponent(QualityCompletionNotice, {
-      revision: 2,
-      slotLabels: { MainEngines: 'Thrusters' },
-      notices: [
-        {
-          kind: 'qualityCompleted',
-          slotKey: 'MainEngines',
-          moduleSymbol: 'Int_Engine_Size7_Class5',
-          blueprintFdname: 'Engine_Dirty',
-          previousQuality: 0.37,
-          quality: 1,
-        },
-      ],
-    });
-
-    const text = textOf(element(fixture));
-    expect(text).toContain('Thrusters');
-    expect(text).toContain('37%');
-  });
-
-  it('says nothing when the Almanac completed nothing', () => {
-    const fixture = renderComponent(QualityCompletionNotice, { revision: 2, notices: [] });
-
-    expect(element(fixture).querySelector('.notice')).toBeNull();
   });
 });
 

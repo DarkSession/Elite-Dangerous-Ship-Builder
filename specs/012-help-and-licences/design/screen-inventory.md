@@ -132,7 +132,6 @@ capability or applicable surface is a release failure; representative sampling i
 | Module replacement layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
 | Engineering editor layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
 | Incoming-build normalisation refusal         | 002   | obscured, dismissible | FR-011                 |
-| Workspace quality-completion notice          | 002   | visible               | FR-011                 |
 | Status rail                                  | 003   | visible               | FR-002, FR-008         |
 | Import Build layer                           | 004   | obscured, dismissible | FR-011                 |
 | Export Build layer                           | 004   | obscured, dismissible | FR-011                 |

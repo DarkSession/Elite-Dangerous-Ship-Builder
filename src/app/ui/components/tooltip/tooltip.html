@@ -4,15 +4,36 @@
   never behind a pointer for a reader who is told the interface rather than
   shown it (011 FR-006).
 -->
-<button
-  class="tooltip__trigger"
-  type="button"
-  [attr.aria-describedby]="tipId"
-  [attr.aria-expanded]="shown() ? 'true' : 'false'"
-  (click)="toggle()"
->
-  {{ label() }}
-</button>
+@if (presentational()) {
+  <!--
+    A span, and deliberately not a button. This trigger is projected into rows
+    that are themselves controls — a ledger row's `slot__select` wraps the
+    module's whole identity, marks included — so a button here is a button
+    inside a button: invalid, and `nested-interactive` to an accessibility
+    scan. It carries no role and no tab stop because it carries no meaning
+    either: the host is `aria-hidden`, and the restriction is already a sentence
+    on the row. What it adds is a way to *see* that sentence by pointer or
+    thumb, which is the whole of what the `title` it replaced was for.
+
+    The press is taken here and goes no further. A mark is projected into rows
+    that act on a press: a chooser row is a `label` around its own radio, and
+    taking one at wide width *fits the module*. Bubbling, a tap asking what an
+    icon means would fit the article it is drawn on.
+  -->
+  <span class="tooltip__trigger tooltip__trigger--mark" (click)="toggle($event)">
+    <ng-content />
+  </span>
+} @else {
+  <button
+    class="tooltip__trigger"
+    type="button"
+    [attr.aria-describedby]="tipId"
+    [attr.aria-expanded]="shown() ? 'true' : 'false'"
+    (click)="toggle()"
+  >
+    {{ label() }}
+  </button>
+}
 
 <span class="tooltip__tip" role="tooltip" [id]="tipId" [class.tooltip__tip--shown]="shown()">
   {{ tip() }}

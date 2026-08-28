@@ -247,7 +247,6 @@ import { CandidateSearch } from '../outfitting/candidate-search';
 import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
 import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
 import { OutfittingNotice } from '../outfitting/outfitting-notice';
-import { QualityCompletionNotice } from '../outfitting/quality-completion-notice';
 import { SlotCard } from '../outfitting/slot-card';
 import { SlotGroup } from '../outfitting/slot-group';
 import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
@@ -2821,59 +2820,6 @@ registerPreview({
     notApplicable('loading', 'The ledger is read from the committed build.'),
     notApplicable('error', 'A group reports no error of its own.'),
     notApplicable('disabled', 'A heading and a list are content, not controls.'),
-  ],
-});
-
-registerPreview({
-  componentId: 'quality-completion-notice',
-  group: 'Outfitting',
-  component: QualityCompletionNotice,
-  contract: contract(
-    'quality-completion-notice',
-    {
-      role: 'region',
-      visibleNameMatchesAccessibleName: true,
-      exposedStates: [],
-      relationships: ['label'],
-      textEquivalents: ['what changed, in words rather than as a badge'],
-    },
-    ['default', 'empty'],
-  ),
-  states: [
-    state(
-      'default',
-      {
-        revision: 3,
-        slotLabels: { MainEngines: 'Thrusters' },
-        notices: [
-          {
-            kind: 'qualityCompleted',
-            slotKey: 'MainEngines',
-            moduleSymbol: 'Int_Engine_Size7_Class5',
-            blueprintFdname: 'Engine_Dirty',
-            previousQuality: 0.37,
-            quality: 1,
-          },
-        ],
-      },
-      [
-        'the mount and the quality it arrived at are both named',
-        'the notice is announced politely, once for the batch',
-      ],
-      CONTROL_VARIANTS,
-    ),
-    state('empty', { revision: 3, notices: [] }, [
-      'a build with nothing completed renders nothing rather than an empty frame',
-    ]),
-    notApplicable('loading', 'The notice reports a completed import, never a pending one.'),
-    notApplicable(
-      'error',
-      'A partial roll the Almanac could not complete refuses the whole build; it never becomes a notice on an active one.',
-    ),
-    notApplicable(
-      'disabled',
-      'A notice is content; dismissing removes it rather than disabling it.',
-    ),
   ],
 });
 

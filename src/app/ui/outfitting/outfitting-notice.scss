@@ -13,19 +13,12 @@
 
 .notice__header {
   @include layout.wrapping-row(var(--edsb-space-inline));
-
-  justify-content: space-between;
 }
 
 .notice__title {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 
   margin: 0;
-}
-
-.notice__dismiss {
-  @include layout.control-base;
-  @include layout.control-quiet;
 }
 
 .notice__lines {

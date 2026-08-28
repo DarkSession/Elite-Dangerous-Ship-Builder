@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
 import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../announcements/announcement.service';
 import { StatusNotice, type StatusTone } from '../components/status/status-notice';
@@ -71,11 +63,8 @@ export class OutfittingNotice {
   /** A stable event id, so a locale switch does not look like a new event. */
   readonly announcementKind = input<string>('outfitting.notice');
 
-  readonly dismissed = output<void>();
-
   readonly tone = computed<StatusTone>(() => (this.mode() === 'alert' ? 'error' : 'info'));
 
-  readonly dismissLabel = computed(() => this.#messages.message('outfitting.notice.dismiss'));
   readonly regionLabel = computed(() => this.#messages.message('outfitting.notice.label'));
 
   readonly resolved = computed(() =>
@@ -102,9 +91,5 @@ export class OutfittingNotice {
         params: { title: this.title(), count: lines.length },
       });
     });
-  }
-
-  dismiss(): void {
-    this.dismissed.emit();
   }
 }

@@ -43,6 +43,17 @@
   cursor: help;
 }
 
+// A mark rather than a word. The reference draws these at 14 pixels inside a
+// ledger row, so the trigger takes the accessible floor the other dense chips
+// take rather than the comfortable baseline, and drops the dotted rule — there
+// is no word under it to rule.
+.tooltip__trigger--mark {
+  @include layout.target-floor;
+
+  justify-content: center;
+  text-decoration: none;
+}
+
 // Not drawn is not the same as not there: closed, the gloss is the same
 // screen-reader-only text every other text equivalent in this system is, which
 // is what keeps `aria-describedby` pointing at something a reader can be given.

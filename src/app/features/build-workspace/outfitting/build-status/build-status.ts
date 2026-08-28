@@ -46,16 +46,18 @@ const SEVERITY_LABELS = {
  * for are not built (`specs/003-ship-statistics/design/reference-review.md`,
  * rulings A–C).
  *
- * Two consequences of ruling A are deliberate and worth stating, because both
- * look like omissions:
+ * A build the package reports nothing about says so, in one line: `Build is
+ * valid`. That reverses FR-015's original silence, which was read as the rail
+ * having failed to load rather than as an all-clear — a Commander asked for the
+ * confirmation and the requirement now carries it (Commander request
+ * 2026-08-27). The line is the package's verdict and nothing more: it is drawn
+ * only where `validation()` actually answered, never where there is no build to
+ * have a verdict about.
  *
- *   * **A build the package reports nothing about draws nothing.** Not an
- *     all-clear line, not a zero count. Neither canvas draws such a state, and
- *     silence claims strictly less than an all-clear statement would — which is
- *     exactly what FR-015 asks for.
- *   * **Nothing here is interactive.** The canvas draws these as plain blocks,
- *     and at both widths the slot ledger a per-issue action would have reached
- *     is already on screen beside them.
+ * One consequence of ruling A is deliberate and worth stating, because it looks
+ * like an omission: **nothing here is interactive.** The canvas draws these as
+ * plain blocks, and at both widths the slot ledger a per-issue action would have
+ * reached is already on screen beside them.
  *
  * The sentence is the package's own, resolved through feature 011's presenter.
  * The application keeps no copy of a package diagnostic, parses none, and
@@ -96,4 +98,24 @@ export class BuildStatus {
       diagnostic: this.#gameText.loadoutIssueMessage(issue),
     })),
   );
+
+  /**
+   * The package's own `valid`, read and not derived.
+   *
+   * `LoadoutValidation` publishes the verdict beside the issues, so this line is
+   * the package's answer rather than this component's reading of how many issues
+   * came back. The two are not the same claim, and since Almanac 0.2.1 they come
+   * apart on a build a Commander can reach without an impossible module in it: a
+   * `warning` — a hold loaded past what the fitted thrusters carry, say — leaves
+   * the build valid and complete, so the rail states the verdict and draws the
+   * amber block beneath it. Counting issues would have withheld the confirmation
+   * there, on a verdict of our own (constitution II). `incomplete` is the same
+   * case and no build raises it at the pinned version.
+   *
+   * `validation()` is `null` until a build is open, and no build is not a valid
+   * build, so the confirmation is never drawn over an empty workspace.
+   */
+  readonly valid = computed(() => this.#active.validation()?.valid === true);
+
+  readonly validLabel = this.#messages.messageSignal('build-status.valid');
 }

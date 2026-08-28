@@ -82,7 +82,23 @@ import { relationId } from '../../a11y/text-equivalence';
 })
 export class Tooltip {
   /** The trigger's visible text — the word the tip is a gloss on. */
-  readonly label = input.required<string>();
+  readonly label = input<string>('');
+
+  /**
+   * The trigger is a mark rather than a word.
+   *
+   * The reference draws some of these glosses on an icon: a route mark on a
+   * module row has no word under it, and the sentence saying what the mark
+   * means is already on the row for a reader. So the caller projects the mark
+   * as content and hides the whole control from the accessibility tree, and the
+   * trigger becomes a plain `span` — these marks are projected into rows that
+   * are controls themselves, where a button would be a button inside a button.
+   * A tip that is only a way to *see* a sentence the row already carries needs
+   * no role, no tab stop and no description of its own. The trigger takes the
+   * dense target floor with it, because the mark is one of the chips the
+   * reference draws small.
+   */
+  readonly presentational = input(false);
 
   /** What that word is shorthand for. Always available; drawn on request. */
   readonly tip = input.required<string>();
@@ -129,7 +145,14 @@ export class Tooltip {
    * therefore always be a press that closes it, and on a keyboard the tip could
    * not be closed at all.
    */
-  toggle(): void {
+  toggle(event?: Event): void {
+    // A presentational mark hands its press the event, because the row under it
+    // is a control: `preventDefault` stops a wrapping `label` from activating
+    // the radio it is for, and `stopPropagation` stops a ledger row's own
+    // select handler. Without both, asking what a mark means changes the build.
+    event?.preventDefault();
+    event?.stopPropagation();
+
     const pinning = !this.#pressed();
     this.#dismissed.set(false);
     this.#hovered.set(false);

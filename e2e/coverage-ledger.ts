@@ -1917,13 +1917,6 @@ export const helpRouteCoverage: readonly HelpRouteRow[] = [
     requirements: ['012/FR-011'],
   },
   {
-    id: 'quality-completion-notice',
-    surface: 'Workspace quality-completion notice',
-    owner: '002',
-    frameEntry: 'visible',
-    requirements: ['012/FR-011'],
-  },
-  {
     id: 'status-rail',
     surface: 'Status rail',
     owner: '003',
