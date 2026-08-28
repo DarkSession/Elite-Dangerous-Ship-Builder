@@ -739,10 +739,20 @@
   // contents` takes the box away and keeps everything inside it: the two hosts,
   // which are the layers' own and paint in the top layer, and the withdrawn
   // sentences saying why a mount cannot be emptied, which are out of flow. An
-  // outlined empty box between the key figures and the tabs read as a region
-  // that had failed to load (Commander request 2026-08-28).
+  // outlined empty box between the key figures and the tabs is a region that
+  // looks as though it failed to load (Commander request 2026-08-28).
   .outfitting__bench {
     display: contents;
+  }
+
+  // The band the bench held, kept by what is left of it. `display: contents`
+  // takes the box away and with it the `order` the box carried, so the two
+  // hosts would otherwise fall into the notices' band at the head of the stack.
+  // Both are the layers' own and paint nothing in the flow, so this decides
+  // where they sit rather than what is seen.
+  .outfitting__bench edsb-module-replacement,
+  .outfitting__bench edsb-engineering-editor {
+    order: 4;
   }
 
   .outfitting__ledger-region {

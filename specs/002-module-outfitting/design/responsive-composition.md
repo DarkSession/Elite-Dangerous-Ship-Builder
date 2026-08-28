@@ -120,7 +120,15 @@ cover the final focus/reading target.
 
 - 200% text must reflow without clipped labels or lost controls.
 - 400% browser zoom must select compact composition and produce no two-dimensional page scroll.
-- Long localized and canonical fallback names wrap; identity ambiguity is not hidden by ellipsis.
+- Long localized and canonical fallback names wrap wherever they are drawn, **except a module name
+  in the slot ledger**, which is cut with an ellipsis while the row's own line will hold a name
+  (Commander request 2026-08-28; `outfitting-workspace.md`, "The rail is one ground"). The exception
+  is bounded three ways and they are what keep it inside this section's first two rules. It reaches
+  the name only, never the code line beside it and never the marks after it. It is asked as a
+  container query in `em`, so a doubled text size or an expanded translation turns it off and the row
+  wraps and grows instead. And identity is not what it hides: every row leads with its own size box
+  and node badge, and the fitting panel beside the ledger names the module in full for the marked
+  mount.
 - Internal horizontal scrolling is allowed only for explicitly labeled wide fact tables or segmented
   controls whose alternatives remain discoverable. The page never scrolls horizontally.
 - RTL changes visual direction, not semantic order or exact game identity.

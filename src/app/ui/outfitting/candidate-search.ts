@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   inject,
   input,
@@ -47,6 +48,7 @@ import { TextField } from '../components/text-field/text-field';
 export class CandidateSearch {
   readonly #messages = inject(MessageService);
   readonly #navigator = inject(NavigatorAdapter);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly query = input('');
 
@@ -77,16 +79,38 @@ export class CandidateSearch {
    * shortcut for its address bar in every engine this application is tested in,
    * so a listener that does not cancel the event draws a hint for a key the
    * page never receives (Commander request 2026-08-28).
+   *
+   * Two things it will not do. It leaves the press alone where text is being
+   * entered somewhere else — a Commander renaming their ship, or pasting a
+   * build into the import layer, is mid-edit in a field of their own, and on a
+   * Mac keyboard `Ctrl + K` is that field's own kill-to-end-of-line. And it
+   * cancels the press only once the caret has actually arrived: a field behind
+   * an open modal is inert, and a press cancelled on its behalf would reach
+   * neither this field nor the browser.
    */
   reachField(event: KeyboardEvent): void {
     if (event.altKey || event.shiftKey || !(event.ctrlKey || event.metaKey)) {
       return;
     }
-    if (event.key.toLowerCase() !== 'k') {
+    if (event.key.toLowerCase() !== 'k' || this.#editingElsewhere(event.target)) {
       return;
     }
-    event.preventDefault();
-    this.field().focus();
+    if (this.field().focus()) {
+      event.preventDefault();
+    }
+  }
+
+  /** Whether the press came from somewhere text is being entered that is not this field. */
+  #editingElsewhere(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement) || this.#host.nativeElement.contains(target)) {
+      return false;
+    }
+    return (
+      target.isContentEditable ||
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    );
   }
 
   readonly shortcutHint = computed(() =>

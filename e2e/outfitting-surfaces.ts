@@ -158,14 +158,20 @@ export async function editorOffered(page: Page): Promise<boolean> {
 }
 
 /**
- * Waits until the bench has caught up with the mount that was just selected.
+ * Waits until the bench is drawn for the mount that is selected.
  *
- * Inline, the bench writes the mount over the fitting panel, and that head is
- * the signal. At layer width the two panels are screens a Commander opens and
- * each carries the mount in its own head, so the page behind them does not name
- * it a second time — the signal there is the pair of actions that open them,
- * drawn for whichever mount is marked (`design/outfitting-workspace.md`, "The
- * mount is named on the screen that acts on it").
+ * Inline, the bench writes the mount over the fitting panel, so the head is
+ * both the wait and the naming. At layer width the two panels are screens a
+ * Commander opens, each carrying the mount in its own head, and the page behind
+ * them names no mount at all — so what is waited on there is the action bar
+ * that opens them, which is drawn for whichever mount is marked but reads the
+ * same for every one of them.
+ *
+ * Which means this is a barrier and not an assertion, and at layer width it is
+ * a weak one: the bar is already on screen from the previous selection. The
+ * selection itself is gated by the caller, on the row's own `aria-pressed`; a
+ * test whose claim is *which* mount the bench is open on has to open one of the
+ * two surfaces and read the head there.
  */
 export async function benchFollowedSelection(page: Page): Promise<void> {
   await expect(

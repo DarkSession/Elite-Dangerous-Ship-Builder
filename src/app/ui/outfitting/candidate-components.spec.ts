@@ -158,6 +158,29 @@ describe('candidate search', () => {
     }
   });
 
+  it('leaves the press alone where text is being entered somewhere else', () => {
+    const fixture = renderComponent(CandidateSearch, { resultCount: 12 });
+    const input = query(fixture, 'input');
+
+    const elsewhere = document.createElement('textarea');
+    document.body.appendChild(elsewhere);
+    elsewhere.focus();
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'k',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    elsewhere.dispatchEvent(event);
+
+    // A Commander renaming their ship, or pasting a build into the import
+    // layer, is mid-edit in a field of their own.
+    expect(event.defaultPrevented).toBe(false);
+    expect(document.activeElement).not.toBe(input);
+    elsewhere.remove();
+  });
+
   it('leaves the bare key and the other combinations alone', () => {
     const fixture = renderComponent(CandidateSearch, { resultCount: 12 });
     const input = query(fixture, 'input');

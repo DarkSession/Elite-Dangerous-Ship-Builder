@@ -88,9 +88,9 @@ export class Layer {
    * For what names the subject rather than describing it — the mount an
    * engineering screen is open on, under the module it is open for. It is set
    * in the bar's own tracked condensed face, which is what makes a space
-   * between a numeral and a bracket legible at this size; Barlow's own space is
-   * a fifth of an em, and `Optional Internal 1 (Size 7)` in body type read as
-   * `1(Size` (Commander request 2026-08-28).
+   * between a numeral and a bracket legible at this size: Barlow's own space is
+   * a fifth of an em, so `Optional Internal 1 (Size 7)` in body type at this
+   * scale draws as `1(Size 7)` (Commander request 2026-08-28).
    *
    * Prose belongs in `description`, which is drawn under the bar and does not
    * pin with it: a paragraph in a sticky title bar is a paragraph that never
@@ -140,13 +140,15 @@ export class Layer {
   readonly descriptionId = relationId('layer-description');
   readonly detailId = relationId('layer-detail');
 
-  /** Whichever of the two supporting texts this layer was given, in reading order. */
+  /**
+   * Whichever of the two supporting texts this layer was given, in reading order.
+   *
+   * Emptiness is tested the way the template tests it. A blank string draws no
+   * element, so naming its id here would point `aria-describedby` at nothing.
+   */
   readonly describedBy = computed(
     () =>
-      [
-        this.detail() === null ? null : this.detailId,
-        this.description() === null ? null : this.descriptionId,
-      ]
+      [this.detail() ? this.detailId : null, this.description() ? this.descriptionId : null]
         .filter((id): id is string => id !== null)
         .join(' ') || null,
   );

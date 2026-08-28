@@ -238,22 +238,40 @@ The group rule stands clear of the first row under it by the canvas's own 8px an
 same edge its rows are.
 
 **Ruled 2026-08-28 (Commander request).** The rail is drawn in a **tighter measure than the canvas's
-own**, in three places and no others. A row is the project's 44-pixel target baseline exactly, stated
-rather than grown from the two lines inside it — sized by its content it came out at 52px, and eight
-pixels over thirty-nine mounts is most of a screen of ledger. One group is separated from the next by
-12px rather than 18, and the rail closes 8px after its last row rather than 22. Nothing else about
-the rail moves: the inset, the group rule, the size box and the node badge are the canvas's. The
-three numbers that changed are air a Commander scrolls past rather than reads, and an Anaconda is
-thirty-nine rows of it.
+own**, in three places and no others. A row is the project's 44-pixel target baseline: with the
+canvas's block padding taken off, two lines of identity come to 33px, so the baseline is what the row
+is — a row carrying that padding as well comes out at 52px, and eight pixels over thirty-nine mounts
+is most of a screen of ledger. One group is separated from the next by 12px rather than 18, and the
+rail closes 8px after its last row rather than 22. Nothing else about the rail moves: the inset, the
+group rule, the size box and the node badge are the canvas's. The three numbers that changed are air
+a Commander scrolls past rather than reads, and an Anaconda is thirty-nine rows of it.
 
-**Ruled 2026-08-28 (Commander request).** Both of a row's lines are **cut with an ellipsis rather
-than wrapped**, and the row never wraps either. A ledger is forty rows read as a column, and a long
-module name that took a second line made its own row taller than its neighbours and pushed the marks
-at the end of it — the acquisition icons, the power chip, the engineered mark — off the line they
-belong on. Those marks keep their places and the name gives way, which is the order the request
-asked for: the icon first, the text cut earlier to keep it. The whole name is still in the DOM, so a
-reader is read the whole name and only the drawing is short; the bench beside the ledger carries the
-full name for anyone reading it off the screen.
+**Ruled 2026-08-28 (Commander request).** A row's **module name is cut with an ellipsis rather than
+wrapped**, and the row does not wrap around it. A ledger is forty rows read as a column, and a long
+name that took a second line made its own row taller than its neighbours and pushed the marks at the
+end of it — the acquisition icons, the power chip, the engineered mark — off the line they belong on.
+Those marks keep their places and the name gives way, which is the order the request asked for: the
+icon first, the text cut earlier to keep it. The `UNTRANSLATED` tag is one of those marks: a name the
+Almanac publishes in one language only keeps its tag, so a row still says what language it is reading
+in, and the sentence behind the tag is spoken rather than drawn. The whole name stays in the DOM, so
+a reader is read the whole name and only the drawing is short; and where two long names would read
+alike, the row leads with its own size box and node badge and the fitting panel opened on the marked
+mount writes the module's name in full.
+
+**Three things the cut does not reach, and one condition on it.**
+
+- **The code line is not cut.** `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` is the only place a row
+  writes its engineering in words, and the marker beside it is a glyph rather than a substitute
+  (FR-010). It wraps where it must and the row grows with it, which is why the 44px measure is a
+  floor rather than a fixed height.
+- **Nor a mark.** The tag and the acquisition icons are `flex: none`; only the name shrinks.
+- **The cut applies only while a line will hold a name**, asked as a container query in `em` on the
+  row itself — `em` there is the row's own font size, so `20em` is "twenty characters' worth of
+  line". A Commander who has doubled their text size, or a translation that runs half again as long,
+  is asking for a line this rail cannot give, and the row goes back to wrapping and growing there.
+  That is not a nicety: cutting a name off is loss of content, and the constitution puts 200% text
+  in scope (principle V). The end-to-end suite measures it — `clippedText` over every expanded,
+  mirrored and doubled-text sweep — so the condition is enforced rather than asserted.
 
 A row's second line is **one line in one ink**: `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE`, joined
 with the canvas's own separator and set in the faint ink the canvas sets it in. It is not a row of

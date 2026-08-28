@@ -299,14 +299,33 @@ describe('slot card', () => {
     // A long press reports button 0, so touch keeps the platform's own menu and
     // no mount is emptied by a press that was meant to select it.
     const primary = new MouseEvent('contextmenu', { button: 0, bubbles: true, cancelable: true });
-    query(fixture, '.slot').dispatchEvent(primary);
+    query(fixture, '.slot__select').dispatchEvent(primary);
     expect(emitted).toEqual([]);
     expect(primary.defaultPrevented).toBe(false);
 
     const secondary = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
-    query(fixture, '.slot').dispatchEvent(secondary);
+    query(fixture, '.slot__select').dispatchEvent(secondary);
     expect(emitted).toEqual([{ kind: 'remove' }]);
     expect(secondary.defaultPrevented).toBe(true);
+  });
+
+  it('leaves the power chip its own platform menu', () => {
+    const fixture = renderComponent(SlotCard, {
+      slot: slotView(),
+      capabilities: EVERY_CAPABILITY,
+    });
+
+    const emitted: unknown[] = [];
+    fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
+
+    // The shortcut is bound to the row's selection control, not to the row. A
+    // secondary press on the switch or the priority group is a press on those
+    // controls, and emptying the mount from one is not what it was aimed at.
+    const event = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
+    query(fixture, '.slot__power').dispatchEvent(event);
+
+    expect(emitted).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('keeps the platform menu where the package refuses the removal', () => {
@@ -319,7 +338,7 @@ describe('slot card', () => {
       fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
 
       const event = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
-      query(fixture, '.slot').dispatchEvent(event);
+      query(fixture, '.slot__select').dispatchEvent(event);
 
       expect(emitted).toEqual([]);
       expect(event.defaultPrevented).toBe(false);

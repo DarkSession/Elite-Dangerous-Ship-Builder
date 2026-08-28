@@ -1,15 +1,17 @@
 <!--
-  The secondary button empties the mount. It is a pointer shortcut and never the
-  only route: `REMOVE MODULE` on the bench is the drawn control at both widths,
-  and a Commander clearing several mounts in a row should not have to travel to
-  it for each one (Commander request 2026-08-28). Touch reaches the same
-  operation through the bench, so a long press keeps the platform's own menu.
+  The secondary button on the row's own selection control empties the mount. It
+  is a pointer shortcut and never the only route: `REMOVE MODULE` on the bench
+  is the drawn control at both widths, and a Commander clearing several mounts
+  in a row should not have to travel to it for each one (Commander request
+  2026-08-28). It is bound to the selection control rather than to the row, so
+  the power chip beside it keeps the platform's menu over its own controls.
+  Touch reaches the same operation through the bench, so a long press keeps the
+  platform's menu too.
 -->
 <div
   class="slot"
   [attr.data-selected]="selected() ? 'true' : null"
   [attr.data-slot-key]="slot().key"
-  (contextmenu)="removeFromPointer($event)"
 >
   <span class="visually-hidden" [id]="identityId">{{ identityText() }}</span>
 
@@ -19,6 +21,7 @@
     [attr.aria-pressed]="selected() ? 'true' : 'false'"
     [attr.aria-describedby]="identityId"
     (click)="emit({ kind: 'select' })"
+    (contextmenu)="removeFromPointer($event)"
   >
     <span class="slot__mount">
       <!--
