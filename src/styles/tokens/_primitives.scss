@@ -557,21 +557,20 @@
   // glimpse of a list rather than a list (Commander request 2026-08-26). So
   // each states a floor.
   //
-  // **Raised 2026-08-27: 18rem to 26rem.** The canvas's own 292px is the head,
-  // the manifest's column rule and five rows, and on the screens this is drawn
-  // on it was the floor doing the work rather than the share — five rows of a
-  // 478-choice manifest is a list a Commander pages through rather than reads.
-  // 26rem is eight rows over the same head, rule and foot, and it is affordable
-  // now because the editor below no longer takes its height out of the same
-  // fixed bench: the workspace column releases while a mount is selected and
-  // the page carries what will not fit (Commander request 2026-08-27;
-  // `design/outfitting-workspace.md`, "Five rows is still a glimpse").
+  // The canvas's own 292px is the head, the manifest's column rule and five
+  // rows, and on the screens this is drawn on it is the floor doing the work
+  // rather than the share — five rows of a 478-choice manifest is a list a
+  // Commander pages through rather than reads.
   //
-  // Seven rows over that head, rule and foot, rather than eight: the panel and
-  // the pane it holds are the tallest thing on the workspace, and the row this
-  // gives up is what a Commander was scrolling past to reach the anatomy and
-  // the rail under them. Seven is still a list rather than the glimpse five
-  // rows was (Commander request 2026-08-28).
+  // Seven rows over that same head, rule and foot. Any of it is affordable
+  // only because the editor below no longer takes its height out of the same
+  // fixed bench: the workspace column releases while a mount is selected and
+  // the page carries what will not fit. Seven rather than more, because the
+  // panel and the pane it holds are the tallest thing on the workspace, and
+  // the row this gives up is what a Commander was scrolling past to reach the
+  // anatomy and the rail under them (Commander requests 2026-08-27 and
+  // 2026-08-28; `design/outfitting-workspace.md`, "Five rows is still a
+  // glimpse" and "Seven rows, and the bench a tenth shorter").
   --edsb-measure-fitting-panel: 23.375rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It

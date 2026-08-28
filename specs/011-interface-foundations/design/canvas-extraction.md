@@ -168,18 +168,27 @@ minimum beat the declared size, the wedge and the underbar were cut into a
 that offers the way home as on the shipyard that does not (Commander request
 2026-08-28).
 
-### One bar height, on every screen
+### One bar height, wherever the bar's controls fit on a row
 
-The bar is drawn at one height everywhere: `4.625rem`, which is the tallest
-identity it carries — the workspace's build name over its hull and ID plate —
-inside the bar's own block padding. Sized to the single row of controls every
-other screen comes to, it stood 66px on the shipyard and 74px on a build, and
-the whole page under it moved as a Commander opened one.
+The bar is drawn at `4.625rem`, which is the tallest identity it carries — the
+workspace's build name over its hull and ID plate — inside the bar's own block
+padding. Sized to the single row of controls every other screen comes to, it
+stood 66px on the shipyard and 74px on a build, and the whole page under it
+moved as a Commander opened one.
 
-The figure is a floor rather than a fixed height. The bar wraps in a longer
-language, at a doubled text size and at 400% zoom, and a bar that could not grow
-would cut its own controls off there (011/FR-011). What a region below clears is
-still the bar as it was measured, not this declaration.
+The figure is a floor rather than a fixed height, and the bar still grows for
+one reason: its own controls take more than one row. That happens in a longer
+language, at a doubled text size, at 400% zoom, and at two of the five layout
+profiles at their ordinary text size — 834 and 844 wide, where the workspace's
+six actions and its saved-build chip ask for about 860px of the 790 the bar
+has. A bar that could not grow there would cut its own controls off, which is
+what FR-011 forbids.
+
+So the rule holds where the bar has room for its controls and not where it does
+not: at 834 and 844 a build still draws a two-row bar over a shipyard's one-row
+bar. Closing that needs the bar's compact composition — canvas 1d's single row
+behind one `⋮` control — at those widths, which is a decision about what a
+tablet's bar carries rather than about its height. It is not made here.
 
 ### Panel dialog
 

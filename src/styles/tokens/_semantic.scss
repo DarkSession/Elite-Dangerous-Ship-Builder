@@ -365,8 +365,9 @@
   // a window widened until a wrapped bar unwraps would hold the wrapped height
   // as its own minimum, and nothing would ever measure it again. The floor is
   // the declared figure, always, and only the clearance moves. The two carry
-  // the same number because the bar is drawn at one height on every screen
-  // (`011/design/canvas-extraction.md`, "One bar height, on every screen").
+  // the same number because the bar is drawn at one height wherever its own
+  // controls fit on a row (`011/design/canvas-extraction.md`, "One bar height,
+  // wherever the bar's controls fit on a row").
   --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller

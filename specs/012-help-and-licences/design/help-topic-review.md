@@ -6,9 +6,8 @@ declared one, that every governing reference still resolves against a declared r
 and that both shipped locales answer every topic with a matching interpolation contract. They cannot
 prove that an answer is _true_. This record is where that judgment is made and kept.
 
-**Confirmed against the shipped catalogues, 2026-08-25.** T047 has landed: every judgment below was
-re-made against the `help.topic.*` entries now in `src/app/i18n/locales/en.json` and `de.json`, not
-against a draft. The earlier provisional caveat is struck.
+**Confirmed against the shipped catalogues, 2026-08-28.** Every judgment below is made against the
+`help.topic.*` entries now in `src/app/i18n/locales/en.json` and `de.json`, not against a draft.
 
 **Wording changed with the confirmation**, and the findings below record the wording that shipped.
 Both topics are asked in the design reference's own words, because the reference asks an equivalent
@@ -50,12 +49,22 @@ For each topic:
 
 **Governed by** constitution principle IV and feature 002 FR-013.
 
-| Check | Finding                                                                                                                                                                                                                                                                                                |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1     | FR-013 requires every selected ordinary grade to represent 100% quality and requires partial imported quality to be completed by the Almanac or refused. Principle IV is the lossless-and-honest rule behind it. The answer states the invariant and both import outcomes.                             |
-| 2     | This is the topic the reference mock gets wrong: its FAQ says an imported module keeps its real roll, which contradicts FR-013 outright. That wording is excluded, and `scripts/check-help-topics.mjs` refuses a catalogue that reintroduces it.                                                       |
-| 3     | "Refused whole before anything opens" is the behaviour feature 004 ships today. The reference asks this question and answers it with a retained real roll; the question is kept because it is the question a Commander has, and the answer is replaced because FR-013 contradicts the reference's own. |
-| 4     | German states the same invariant and the same atomic refusal.                                                                                                                                                                                                                                          |
+| Check | Finding                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | FR-013 requires every selected ordinary grade to represent 100% quality and requires partial imported quality to be normalised to 100% or the whole incoming build refused. Principle IV is the lossless-and-honest rule behind it. The answer states the invariant, the raise and both import outcomes.                                                                                                         |
+| 2     | This is the topic the reference mock gets wrong: its FAQ says an imported module keeps its real roll, which contradicts FR-013 outright. That wording is excluded, and `scripts/check-help-topics.mjs` refuses a catalogue that reintroduces it.                                                                                                                                                                 |
+| 3     | "Refused whole before anything opens" and "your open build stays as it was" are both FR-013 as feature 004 ships it: the refusal is before activation and the current build is unchanged. The reference asks this question and answers it with a retained real roll; the question is kept because it is the question a Commander has, and the answer is replaced because FR-013 contradicts the reference's own. |
+| 4     | German states the same invariant, the same raise and the same atomic refusal.                                                                                                                                                                                                                                                                                                                                    |
+
+**The answer says what the raise costs a reader, reviewed 2026-08-28 (owner's request: clarify that
+engineering quality may be raised to full quality for a partial import).** The wording said a
+partial grade "is completed to" 100%, which is FR-013's own language and told a Commander nothing
+about what they would then be looking at. It now says the module reads stronger here than the
+partial roll does in game. That is the consequence of normalising quality to 100% and not a second
+claim: a completed grade is the best roll of that grade, and the figures drawn from it are the
+figures of that roll. It adds nothing FR-013 does not already require, which is check 1 above; it
+is the honest half of principle IV, which is why the sentence is in the answer rather than left for
+a Commander to discover against the game.
 
 ## Excluded from the reference mock
 

@@ -27,7 +27,9 @@ versions, application behavior, legal facts, dependencies or CSS literals.
 - `LICENCE` opens with a summary of what covers what, one line each, before the notice. The
   reference's three — the application's code, the game data and imagery, the typefaces — and the
   bundled Almanac's own terms as a fourth (`contracts/help-navigation.md`, amended 2026-08-26).
-- The modal draws no control other than its close: no link, and nothing that leaves the application.
+- The modal draws no control other than its close. What leaves the application is three sets of
+  linked words inside its own sentences, which is not a control
+  (`contracts/help-navigation.md`, "External navigation").
 
 ## Required departures
 
@@ -176,10 +178,10 @@ what the reference draws no _control_ for is not the same as what it forbids, an
 comes back is not the shape that was withdrawn. A warned action in its own row is a control. A few
 underlined words inside a sentence are the sentence.
 
-| Reference treatment                      | Shipped treatment                                                                           | Reason                                                                                                    |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Three summary lines, none of them linked | Four lines; the two whose terms this repository can point at link them from inside the line | A summary of real terms has to be checkable, and the library's terms are a separate claim from Frontier's |
-| No `LIBRARY` line at all                 | `Library · MIT licence on GitHub`                                                           | MIT over a package's code and Frontier's media-usage rules over game data are not one claim               |
+| Reference treatment                      | Shipped treatment                                                                           | Reason                                                                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Three summary lines, none of them linked | Four lines; the two whose terms this repository can point at link them from inside the line | A summary of real terms has to be checkable, and the library's terms are a separate claim from Frontier's                                                                       |
+| No `LIBRARY` line at all                 | `Library · Elite Dangerous Almanac, MIT licence, full detail on GitHub`                     | MIT over a package's code and Frontier's media-usage rules over game data are not one claim; the line names the package, which is where the once-per-application credit is made |
 
 Three things did not come back with them. `WarnedExternalLink` stays deleted — a component whose
 whole purpose was to be a warned action is not what an inline link is. FR-009's package-defect

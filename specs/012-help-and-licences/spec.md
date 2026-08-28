@@ -213,8 +213,8 @@ does rather than which questions it happens to hold.
 
 - `FR-009`: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
   removed. The design reference draws no such control, and reporting a package defect is a support
-  route rather than help content. The modal offers no replacement destination and, since FR-003's
-  repository-`LICENSE` link was withdrawn on the same day, no external navigation of any kind. The
+  route rather than help content. The modal offers no replacement destination: a support route is
+  not one of the three FR-003 accepts, and no later amendment brings one back. The
   identifier is retained rather than reused so references elsewhere in this feature stay
   resolvable. The id is unbolded here on purpose, following feature 003's convention: an unbolded id
   is not declared, so the repository policy checker no longer requires coverage-ledger evidence for

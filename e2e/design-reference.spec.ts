@@ -105,13 +105,32 @@ test.describe('the reference visual language', () => {
     // canvas 3b draws it on both — a mark that took the target's own box would
     // be drawn half as large again on a build as on the shipyard
     // (`canvas-extraction.md`, "Command bar"; Commander request 2026-08-28).
+    // Measured against the token the canvas's figure lives in rather than
+    // against the other screen alone: a mark that grew on both would still
+    // match itself.
     const measure = async () =>
       await page.locator('.frame__flag').evaluate((element) => {
         const box = element.getBoundingClientRect();
-        return { width: box.width, height: box.height };
+        // A custom property resolves as it was written, so the canvas's figure
+        // comes back in `rem` and is turned into the pixels the box is
+        // measured in.
+        const root = getComputedStyle(document.documentElement);
+        const rem = parseFloat(root.fontSize);
+        const declared = (name: string): number => {
+          const value = root.getPropertyValue(name).trim();
+          return parseFloat(value) * (value.endsWith('rem') ? rem : 1);
+        };
+        return {
+          width: box.width,
+          height: box.height,
+          declaredWidth: declared('--edsb-layout-insignia-width'),
+          declaredHeight: declared('--edsb-layout-insignia-height'),
+        };
       });
 
     const shipyard = await measure();
+    expect(shipyard.width).toBe(shipyard.declaredWidth);
+    expect(shipyard.height).toBe(shipyard.declaredHeight);
     expect(await page.locator('.frame__flag-home').count()).toBe(0);
 
     await page.goto('/ships/Anaconda');
@@ -137,19 +156,33 @@ test.describe('the reference visual language', () => {
     // two-line build identity rather than the single row of controls every
     // other screen comes to. Sized to that row the bar was 66px on the
     // shipyard and 74px on a build, and the whole page under it moved as a
-    // Commander opened one (`canvas-extraction.md`, "One bar height, on every
-    // screen"; Commander request 2026-08-28).
+    // Commander opened one (`canvas-extraction.md`, "One bar height, wherever
+    // the bar's controls fit on a row"; Commander request 2026-08-28).
     //
-    // Asserted against the floor rather than by comparing two screens,
-    // because the bar wraps: at 834 and 844 the workspace's actions take a
-    // second row, which is the floor doing what a floor does rather than two
-    // bars disagreeing.
+    // Two things, because the bar can grow for two different reasons and only
+    // one of them is a defect. Its identity not fitting is; wrapping is not —
+    // where the bar's own controls need more than one row it takes more than
+    // one row, which is what keeps them reachable at 200% text (011/FR-011).
+    // So the wrap is measured rather than assumed, and the height is pinned
+    // wherever there is no wrap.
     const banner = page.getByRole('banner');
     const bar = async () =>
       await banner.evaluate((node) => {
         const style = getComputedStyle(node);
+        const box = node.getBoundingClientRect();
+        const groups = [...node.children]
+          .filter((child) => getComputedStyle(child).display !== 'none')
+          .map((child) => child.getBoundingClientRect());
+        // Whether the groups wrapped, read as the band they span against the
+        // tallest of them. Their `top` values differ on one row as well —
+        // the bar centres a 23px identity beside a 44px control — so a count
+        // of distinct tops would report every bar as wrapped.
+        const spanned =
+          Math.max(...groups.map((group) => group.bottom)) -
+          Math.min(...groups.map((group) => group.top));
+        const tallest = Math.max(...groups.map((group) => group.height));
         return {
-          drawn: node.getBoundingClientRect().height,
+          drawn: box.height,
           floor: parseFloat(style.minBlockSize),
           // What the bar spends on itself, which the identity inside it does
           // not get: its own block padding and the amber rule that closes it.
@@ -157,28 +190,42 @@ test.describe('the reference visual language', () => {
             parseFloat(style.paddingBlockStart) +
             parseFloat(style.paddingBlockEnd) +
             parseFloat(style.borderBlockEndWidth),
+          wrapped: spanned > tallest + 1,
         };
       });
 
     // A plain title is exactly the floor, at every width. This is the half
     // that was 66px.
     const shipyard = await bar();
+    expect(shipyard.wrapped).toBe(false);
     expect(shipyard.drawn).toBe(shipyard.floor);
 
     await page.goto('/ships/Anaconda');
     await page.getByRole('button', { name: 'Build stock hull' }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
-    // And the tallest identity fits inside that same floor, so the bar only
-    // ever grows by wrapping rather than by the identity not fitting.
+    // The tallest identity fits inside the same floor, so the bar never grows
+    // because a screen's own identity would not fit in it.
     const workspace = await bar();
     const identity = await page
       .locator('.frame__identity')
       .evaluate((node) => node.getBoundingClientRect().height);
 
-    expect(workspace.floor).toBe(shipyard.floor);
     expect(identity + workspace.chrome).toBeLessThanOrEqual(workspace.floor);
-    expect(workspace.drawn).toBeGreaterThanOrEqual(workspace.floor);
+
+    // And where the bar's controls fit on one row, opening a build moves
+    // nothing: the same bar, at the same height, over the same page.
+    if (!workspace.wrapped) {
+      expect(workspace.drawn).toBe(shipyard.drawn);
+      return;
+    }
+
+    // Where they do not, the bar is taller for the one reason a bar may be:
+    // its own controls took another row. At 834 and 844 the workspace's six
+    // actions and its saved-build chip ask for more width than the bar has,
+    // which the shell design records as the limit of the one-height rule
+    // (`011/design/application-shell.md`, "The bar's leading edge").
+    expect(workspace.drawn).toBeGreaterThan(shipyard.drawn);
   });
 
   test('sets every heading in tracked uppercase condensed', async ({ page }) => {

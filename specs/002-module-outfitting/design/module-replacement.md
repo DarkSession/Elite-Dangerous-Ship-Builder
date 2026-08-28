@@ -98,7 +98,7 @@ selected at all times, and the pane is never empty.
 
 **The rail scrolls to the family it was told to select. Ruled 2026-08-27 (Commander request).** The
 pane already scrolled: opening a fitted mount brought the module in the mount to the middle of the
-rows. The rail did not. Its own `max-height: 470px` holds about ten of the seventy-seven families, so
+rows. The rail did not. Its own bound holds about nine of the seventy-seven families, so
 selecting `Shield Generators` for a mount that carries one changed every row in the pane while the
 rail went on showing `Armour` through `Bulkheads` — the answer was on screen and the question was
 not, and the seam between them was the one control that says which family is being read.
@@ -110,7 +110,7 @@ under the press that made it, which is the fault above drawn in the other direct
 
 **Corrected 2026-08-27: the rule is about who, not about where.** It was first written as "scroll it
 unless the row is already in the box", on the reading that a Commander pressing a row must be looking
-at it. They need not be: the rail is a 470px box of 44px rows, so the row at either edge is routinely
+at it. They need not be: the rail is a bounded box of 44px rows, so the row at either edge is routinely
 clipped, and pressing a clipped row is the ordinary case rather than the awkward one. The component
 records its own press instead and the reveal weighs that, which is the rule FR-021 and SC-007 state.
 
@@ -385,8 +385,7 @@ ground. The ledger's rail already states this rule in its own stylesheet; the ma
 the engineering editor's now state it too.
 
 Two dozen pixels of that document survive it, and are not this: at that viewport the middle column
-has 760 px for plates that ask for 349 and a bench that will not go under its declared 26rem
-minimum. That is the column being asked to hold more than it has, which is a composition question
+has 760 px for plates that ask for 349 and a bench that will not go under its declared minimum. That is the column being asked to hold more than it has, which is a composition question
 and not a clipping one.
 
 ## Module families
