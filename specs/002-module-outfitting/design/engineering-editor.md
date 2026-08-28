@@ -189,8 +189,16 @@ screen was headed `Engineer Hardpoint 1`. Four corrections:
   is 1d's own title and 1c's own heading. One screen with two names across two widths is worse than
   either name.
 - **What it is open on goes on the second line**, as `<module> · <mount>` — 1d's
-  `HUGE MULTI-CANNON 4A · HARDPOINT 1`. It is the dialog's description, so the mount is still
-  announced with the screen even though it left the title.
+  `HUGE MULTI-CANNON 4A · HARDPOINT 1`. The mount is still announced with the screen even though it
+  left the title.
+
+  **Moved into the title bar, 2026-08-28 (Commander request).** It was drawn under the bar, in body
+  type at 12px, where `Optional Internal 1 (Size 7)` read as `1(Size 7)`: Barlow's space is a fifth
+  of an em, and against a bracket at that size it disappears. In the bar it takes the bar's own
+  condensed, tracked, uppercase face, and the tracking is what puts a readable gap either side of a
+  space. The layer's `detail` input is what draws it there — prose stays in `description`, under the
+  bar, because a paragraph pinned in a sticky title bar is a paragraph that never scrolls away. Both
+  are announced with the screen, in the order they are drawn.
 
 The foot bar takes the artboard's inset and runs the width of the screen, rather than stopping short
 of both edges inside the body's own inset and reading as a fourth plate.

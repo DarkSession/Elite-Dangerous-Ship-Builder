@@ -1,7 +1,15 @@
+<!--
+  The secondary button empties the mount. It is a pointer shortcut and never the
+  only route: `REMOVE MODULE` on the bench is the drawn control at both widths,
+  and a Commander clearing several mounts in a row should not have to travel to
+  it for each one (Commander request 2026-08-28). Touch reaches the same
+  operation through the bench, so a long press keeps the platform's own menu.
+-->
 <div
   class="slot"
   [attr.data-selected]="selected() ? 'true' : null"
   [attr.data-slot-key]="slot().key"
+  (contextmenu)="removeFromPointer($event)"
 >
   <span class="visually-hidden" [id]="identityId">{{ identityText() }}</span>
 

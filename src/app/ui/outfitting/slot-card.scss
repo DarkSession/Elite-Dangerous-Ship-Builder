@@ -19,7 +19,12 @@
   @include layout.selectable-row;
 
   display: flex;
-  flex-wrap: wrap;
+  // One line, and it stays one line. A ledger is forty of these rows read as a
+  // column, so a long module name cuts with an ellipsis rather than wrapping
+  // the row taller than its neighbours, and the marks at the row's end — the
+  // acquisition icons, the power chip, the engineered mark — keep their places
+  // whatever the name does (Commander request 2026-08-28).
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--edsb-space-inline-tight);
   padding-inline-end: var(--edsb-space-2xl);
@@ -43,9 +48,13 @@
   // value; it grows into whatever the chip leaves.
   flex: 1 1 8rem;
   min-inline-size: 0;
-  min-block-size: var(--edsb-target-size);
-  // Canvas 1c's `11px 16px`.
-  padding: var(--edsb-space-row) var(--edsb-space-2xl);
+  // One measure for every row, the project's target baseline. Declared rather
+  // than grown from the two lines inside it: a row that sized itself was 52px
+  // where the baseline asks for 44, and eight pixels over thirty-nine mounts is
+  // most of a screen of ledger.
+  block-size: var(--edsb-target-size);
+  padding-block: 0;
+  padding-inline: var(--edsb-space-2xl);
   border: 0;
   background: none;
   text-align: start;
@@ -134,6 +143,26 @@
   @include layout.stack(var(--edsb-space-stack-tight));
 
   min-inline-size: 0;
+  overflow: hidden;
+}
+
+// Both lines of the identity are cut, not wrapped. The badge and the game text
+// inside it are separate components, so the rule reaches them from here: what
+// is being said is about this row's measure rather than about either component,
+// and neither of them is truncated anywhere else it is drawn.
+//
+// The whole name is still in the DOM, so a reader is read the whole name; what
+// is cut is what is drawn.
+.slot__identity ::ng-deep {
+  .identity__name,
+  .identity__name .game-text,
+  .identity__code-line {
+    display: block;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .slot__empty {

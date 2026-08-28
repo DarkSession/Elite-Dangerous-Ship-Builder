@@ -136,6 +136,46 @@ describe('candidate search', () => {
     expect(hint.getAttribute('aria-hidden')).toBe('true');
     expect(textOf(hint)).toMatch(/K/);
   });
+
+  it('puts the caret in the field on the combination the hint names', () => {
+    const fixture = renderComponent(CandidateSearch, { resultCount: 12 });
+    const input = query(fixture, 'input');
+
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }]) {
+      input.blur();
+      const event = new KeyboardEvent('keydown', {
+        key: 'k',
+        bubbles: true,
+        cancelable: true,
+        ...modifier,
+      });
+      document.dispatchEvent(event);
+
+      // Cancelled, or the browser takes it for its own address bar and the hint
+      // names a key the page never receives.
+      expect(event.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(input);
+    }
+  });
+
+  it('leaves the bare key and the other combinations alone', () => {
+    const fixture = renderComponent(CandidateSearch, { resultCount: 12 });
+    const input = query(fixture, 'input');
+
+    for (const init of [{}, { ctrlKey: true, shiftKey: true }, { ctrlKey: true, altKey: true }]) {
+      input.blur();
+      const event = new KeyboardEvent('keydown', {
+        key: 'k',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      document.dispatchEvent(event);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).not.toBe(input);
+    }
+  });
 });
 
 describe('acquisition badge', () => {

@@ -139,9 +139,15 @@
   border-collapse: collapse;
 }
 
+// A control's block inset is what these cells used to take, and a table row is
+// not a control: four damage lines at 38px stood the two cards half a screen
+// taller than the figures in them need, with more air between one resistance
+// and the next than either of them occupies. The dense inset puts a row at
+// 26px, which is what the offence panel's own range-band rows already read at
+// (Commander request 2026-08-28).
 .damage th,
 .damage td {
-  padding-block: var(--edsb-space-control-block);
+  padding-block: var(--edsb-space-2xs);
   padding-inline: var(--edsb-space-inline-tight);
   text-align: start;
   vertical-align: middle;

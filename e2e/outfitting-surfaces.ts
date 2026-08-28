@@ -158,6 +158,24 @@ export async function editorOffered(page: Page): Promise<boolean> {
 }
 
 /**
+ * Waits until the bench has caught up with the mount that was just selected.
+ *
+ * Inline, the bench writes the mount over the fitting panel, and that head is
+ * the signal. At layer width the two panels are screens a Commander opens and
+ * each carries the mount in its own head, so the page behind them does not name
+ * it a second time — the signal there is the pair of actions that open them,
+ * drawn for whichever mount is marked (`design/outfitting-workspace.md`, "The
+ * mount is named on the screen that acts on it").
+ */
+export async function benchFollowedSelection(page: Page): Promise<void> {
+  await expect(
+    page
+      .locator('.replacement__title, .outfitting__bench-title, .outfitting__bench-actions')
+      .first(),
+  ).toBeVisible();
+}
+
+/**
  * Brings the chooser for the selected mount on screen and waits for it.
  *
  * The control is named in whatever language the page is being read in, so a

@@ -82,6 +82,22 @@ export class Layer {
   /** Supporting description, associated with the layer. */
   readonly description = input<string | null>(null);
 
+  /**
+   * A short label drawn inside the title bar, under the title.
+   *
+   * For what names the subject rather than describing it — the mount an
+   * engineering screen is open on, under the module it is open for. It is set
+   * in the bar's own tracked condensed face, which is what makes a space
+   * between a numeral and a bracket legible at this size; Barlow's own space is
+   * a fifth of an em, and `Optional Internal 1 (Size 7)` in body type read as
+   * `1(Size` (Commander request 2026-08-28).
+   *
+   * Prose belongs in `description`, which is drawn under the bar and does not
+   * pin with it: a paragraph in a sticky title bar is a paragraph that never
+   * scrolls away.
+   */
+  readonly detail = input<string | null>(null);
+
   readonly open = input(false);
   readonly presentation = input<LayerPresentation>('adaptive');
   readonly width = input<LayerWidth>('default');
@@ -122,6 +138,18 @@ export class Layer {
 
   readonly titleId = relationId('layer-title');
   readonly descriptionId = relationId('layer-description');
+  readonly detailId = relationId('layer-detail');
+
+  /** Whichever of the two supporting texts this layer was given, in reading order. */
+  readonly describedBy = computed(
+    () =>
+      [
+        this.detail() === null ? null : this.detailId,
+        this.description() === null ? null : this.descriptionId,
+      ]
+        .filter((id): id is string => id !== null)
+        .join(' ') || null,
+  );
 
   readonly presentationClass = computed(() => {
     const classes = ['layer', `layer--${this.presentation()}`];

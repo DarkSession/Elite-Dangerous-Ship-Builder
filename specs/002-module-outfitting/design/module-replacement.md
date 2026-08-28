@@ -25,6 +25,11 @@ the build.
   exactly as canvas 1d shows, with no hint. The hint is application-owned text, so it resolves through
   localization (constitution VI) and names the modifier for the Commander's platform — `⌘K` is
   macOS-only and MUST NOT ship as a literal on Windows or Linux.
+  **Wired 2026-08-28 (Commander request).** The combination is handled and **cancelled**: `Ctrl + K`
+  is the address-bar shortcut in both engines this application is tested in, so a hint drawn beside a
+  field that never receives the key names a convenience that does not exist. Either modifier is
+  accepted whichever hint is drawn, because a Mac keyboard on a PC has both. It stays unrequired: it
+  moves the caret and nothing else, and everything the field offers is reachable without it.
 - **A family rail beside a variant pane**, since the 2026-08-25 canvas revision — see "The wide
   manifest is a rail and a pane" below. The rail carries the package family name and the family's
   choice count; the pane carries the selected family's rows. There is no caret and no section
@@ -41,12 +46,20 @@ the build.
   controls belong to canvas 1d's screen (wave 4). At wide width the foot those two controls sit on is
   not drawn at all — a ruled bar with nothing on it read as a divider between the manifest and the
   engineering panel under it, and canvas 1c has none (wave 8).
-- An explicit remove action operates only when `LoadoutSlot.removable` is true, but **its place in
-  the panel head is kept either way** (wave 8). Canvas 1c keeps it, and closing the gap up made the
-  search field beside it grow and shrink as a Commander moved down the ledger. It is withdrawn with
-  `visibility: hidden`, which takes it out of the reading order and the tab order as surely as
-  removing it would — the canvas's own device for a control whose measure is wanted and whose
-  operation is not.
+- An explicit remove action operates only when `LoadoutSlot.removable` is true, and **its place is
+  closed up where it does not** (Commander request 2026-08-28, superseding wave 8). Wave 8 reserved
+  the measure with `visibility: hidden` so the search field beside it would not grow and shrink as a
+  Commander moved down the ledger. The head wraps at every width this panel is actually drawn at —
+  474px inline, 390px in the layer — so the reserved control was never a gap beside the search but a
+  blank row under it, 54px of nothing over most of an unfitted hull. The reason it was reserved is
+  bought back by the arrangement instead: the search takes the row it is on whether or not the
+  control is there, so it is the same width on a fitted mount and an empty one either way.
+- **A second route to the removal, on the ledger row itself** (Commander request 2026-08-28). The
+  secondary pointer button on a fitted row empties that mount. It is a shortcut and never the only
+  route — `REMOVE MODULE` above is the drawn control at both widths — and it is deliberately not
+  reachable by touch: a long press reports button 0 rather than 2, so it keeps the platform's own
+  menu and no mount is emptied by a press that was meant to select it. A mount the package refuses to
+  empty, and an empty one, keep the platform's menu too.
 
 The region may scroll internally. It cannot cause page-level horizontal overflow.
 

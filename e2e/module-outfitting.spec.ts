@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
 import {
   acrossEveryFamily,
+  benchFollowedSelection,
   chooserOffered,
   editorOffered,
   familyControls,
@@ -51,7 +52,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
+  await benchFollowedSelection(page);
 }
 
 /**
@@ -86,11 +87,19 @@ async function fittedIdentityAt(page: Page, slotKey: string): Promise<string | n
  * arrange an identity differently — the manifest gives the class its own column
  * and the ledger writes it into the row's code line — so what is compared is
  * the module, not the arrangement.
+ *
+ * Polled rather than read once. `fitCommitted` waits on the chooser, and the
+ * chooser and the ledger are rendered from the same signal but not in the same
+ * frame — on a replacement the chooser's marked-and-fitted row is already there
+ * from the fit before it, so the wait can pass with the ledger still one render
+ * behind and a single read then compares the module that was replaced.
  */
 async function expectLedgerCarries(page: Page, slotKey: string, identity: string): Promise<void> {
-  const fitted = (await fittedIdentityAt(page, slotKey))?.toLowerCase() ?? '';
+  const reading = async () => (await fittedIdentityAt(page, slotKey))?.toLowerCase() ?? '';
   for (const token of identity.split(/[·\s]+/).filter((part) => part.length > 1)) {
-    expect(fitted, `${slotKey} does not read as ${identity}`).toContain(token.toLowerCase());
+    await expect
+      .poll(reading, { message: `${slotKey} does not read as ${identity}` })
+      .toContain(token.toLowerCase());
   }
 }
 
@@ -268,6 +277,46 @@ test.describe('the slot ledger', () => {
     await openChooser(page);
     await page.getByRole('button', { name: /remove module/i }).click();
     await expect(page.locator('[data-slot-key="MediumHardpoint1"]')).toContainText(/empty/i);
+  });
+
+  test('empties a mount from its own row on the secondary button', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    const fitted = await fitFromChooser(page, () => 0);
+    await expectLedgerCarries(page, 'MediumHardpoint1', fitted);
+
+    // The row itself, not the chooser's control. It is a pointer shortcut for a
+    // Commander clearing several mounts, and `REMOVE MODULE` is still the drawn
+    // route (Commander request 2026-08-28).
+    const row = page.locator('[data-slot-key="MediumHardpoint1"]');
+    await row.click({ button: 'right' });
+    await expect(row).toContainText(/empty/i);
+  });
+
+  test('leaves a mount the package will not empty alone on the secondary button', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await revealMount(page, 'PowerPlant');
+
+    const row = page.locator('[data-slot-key="PowerPlant"]');
+    const before = await fittedIdentityAt(page, 'PowerPlant');
+    await row.click({ button: 'right' });
+
+    // A required mount has no removal to shortcut to, so the row is unchanged.
+    expect(await fittedIdentityAt(page, 'PowerPlant')).toBe(before);
+  });
+
+  test('puts the caret in the search field on the key the hint names', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    await page.keyboard.press('Control+k');
+
+    // The field the hint sits beside, and not the browser's address bar: the
+    // combination is cancelled before the engine claims it.
+    await expect(page.locator('.search__field input')).toBeFocused();
   });
 
   test('offers no removal on a required mount, and says why', async ({ page }) => {

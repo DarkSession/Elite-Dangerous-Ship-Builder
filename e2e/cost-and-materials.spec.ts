@@ -6,6 +6,7 @@ import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import {
   applyDraft,
+  benchFollowedSelection,
   chooseFirstRecipe,
   chooseRecipe,
   fitCommitted,
@@ -1036,7 +1037,7 @@ async function engineerTheDrive(page: Page, messages = englishMessages): Promise
   const row = page.locator('[data-slot-key="FrameShiftDrive"] button').first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
+  await benchFollowedSelection(page);
 
   await bringEditorOnScreen(page, exactly(messages['outfitting.capability.engineer']));
   // Dispatched on the language actually being read, not on which object was

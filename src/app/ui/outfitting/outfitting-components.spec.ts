@@ -287,6 +287,45 @@ describe('slot card', () => {
     expect(emitted).toEqual([{ kind: 'select' }]);
   });
 
+  it('empties the mount on the secondary button, and on nothing else', () => {
+    const fixture = renderComponent(SlotCard, {
+      slot: slotView(),
+      capabilities: EVERY_CAPABILITY,
+    });
+
+    const emitted: unknown[] = [];
+    fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
+
+    // A long press reports button 0, so touch keeps the platform's own menu and
+    // no mount is emptied by a press that was meant to select it.
+    const primary = new MouseEvent('contextmenu', { button: 0, bubbles: true, cancelable: true });
+    query(fixture, '.slot').dispatchEvent(primary);
+    expect(emitted).toEqual([]);
+    expect(primary.defaultPrevented).toBe(false);
+
+    const secondary = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
+    query(fixture, '.slot').dispatchEvent(secondary);
+    expect(emitted).toEqual([{ kind: 'remove' }]);
+    expect(secondary.defaultPrevented).toBe(true);
+  });
+
+  it('keeps the platform menu where the package refuses the removal', () => {
+    for (const slot of [
+      { slot: slotView({ module: null }), capabilities: EVERY_CAPABILITY },
+      { slot: slotView(), capabilities: { ...EVERY_CAPABILITY, canRemove: false } },
+    ]) {
+      const fixture = renderComponent(SlotCard, slot);
+      const emitted: unknown[] = [];
+      fixture.componentInstance.intent.subscribe((intent) => emitted.push(intent));
+
+      const event = new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true });
+      query(fixture, '.slot').dispatchEvent(event);
+
+      expect(emitted).toEqual([]);
+      expect(event.defaultPrevented).toBe(false);
+    }
+  });
+
   it('draws no power chip on a module the Almanac prices at no power', () => {
     // Armour, a fuel tank: nothing to power, so nothing to group, and the
     // canvas draws no chip on one (wave 4).

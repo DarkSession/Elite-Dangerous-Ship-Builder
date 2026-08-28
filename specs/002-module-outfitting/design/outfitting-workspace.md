@@ -234,8 +234,26 @@ the rail is the group's own, the hairline running from a group's tracked label t
 each row its own panel over a rail a shade darker put a divider under every entry, which is a
 different interface from the one the canvas draws.
 
-The group rule stands clear of the first row under it by the canvas's own 8px, is inset to the same
-edge its rows are, and one group is separated from the next by 18px.
+The group rule stands clear of the first row under it by the canvas's own 8px and is inset to the
+same edge its rows are.
+
+**Ruled 2026-08-28 (Commander request).** The rail is drawn in a **tighter measure than the canvas's
+own**, in three places and no others. A row is the project's 44-pixel target baseline exactly, stated
+rather than grown from the two lines inside it — sized by its content it came out at 52px, and eight
+pixels over thirty-nine mounts is most of a screen of ledger. One group is separated from the next by
+12px rather than 18, and the rail closes 8px after its last row rather than 22. Nothing else about
+the rail moves: the inset, the group rule, the size box and the node badge are the canvas's. The
+three numbers that changed are air a Commander scrolls past rather than reads, and an Anaconda is
+thirty-nine rows of it.
+
+**Ruled 2026-08-28 (Commander request).** Both of a row's lines are **cut with an ellipsis rather
+than wrapped**, and the row never wraps either. A ledger is forty rows read as a column, and a long
+module name that took a second line made its own row taller than its neighbours and pushed the marks
+at the end of it — the acquisition icons, the power chip, the engineered mark — off the line they
+belong on. Those marks keep their places and the name gives way, which is the order the request
+asked for: the icon first, the text cut earlier to keep it. The whole name is still in the DOM, so a
+reader is read the whole name and only the drawing is short; the bench beside the ledger carries the
+full name for anyone reading it off the screen.
 
 A row's second line is **one line in one ink**: `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE`, joined
 with the canvas's own separator and set in the faint ink the canvas sets it in. It is not a row of
@@ -264,12 +282,21 @@ STATUS`. Five of the six are the anatomy region's own; see "The status segment" 
    sixth.
 3. **The six key readings** — `DPS`, `SHIELD`, `ARMOUR`, `JUMP`, `SPEED`, `MASS` — on one strip,
    closed by a hairline. See "The compact key figures" below.
-4. **The marked mount's own rule** — `FITTING · HARDPOINT 1` — over the tabs it names the contents
-   of. Canvas 1d writes it between the key readings and the categories, and it stood above the key
-   readings here until 2026-08-26 because it is the head of the bench, and the bench is the other
-   half of the column the wide grid needs. At compact there is no column: `.outfitting__centre`
-   becomes `display: contents` so the anatomy and the bench each take their own place in the stack,
-   which is the only way a band that is their sibling can come between them.
+4. **Nothing.** Canvas 1d writes the marked mount's own rule — `FITTING · HARDPOINT 1` — between
+   the key readings and the categories, and the application drew it there until 2026-08-28. It is
+   **withdrawn at this width** (Commander request 2026-08-28): the two panels the rule heads are
+   full-screen layers here, each carrying the mount in its own head, so the rule on the page behind
+   them named a mount with nothing under it over a ledger that already marks the row. The bench that
+   carried it draws nothing else at this width either, so it takes `display: contents` — the box
+   goes and everything in it stays, which matters because the withdrawn sentences saying why a mount
+   cannot be emptied live there. An outlined empty panel between the key figures and the tabs read
+   as a region that had failed to load.
+
+   The mount is still named at this width, on the screen that acts on it: the fitting panel writes
+   it in its own head, and the engineering layer carries it in its title bar under the module. That
+   is the rule the end-to-end suite reads — `benchFollowedSelection` waits on whichever of the two
+   heads this width draws, and the action bar where it draws neither.
+
 5. Category tabs, then the ledger. The tabs are four, not five; see "No `ALL` at compact width".
 6. **The sticky foot**: `CHANGE MODULE` filled and `ENGINEER` outlined, for whichever mount is marked
    in the ledger above, `position: sticky; bottom: 0` on its own plate. Each opens its full-screen
@@ -321,6 +348,15 @@ position the plate still covered whichever row was at the foot of the viewport, 
 mobile portrait. The criterion is **SC 2.5.8**, which is in scope — not SC 2.4.11, which is one of
 the seven the constitution excludes and which the reverted note wrongly cited. The follow-up above
 is the way in; there is no version of this that floats an opaque plate over the rows.
+
+**Asked again, and declined, on 2026-08-28.** A Commander asked for the plate to slide in from the
+foot as the first mounts come into view. The answer is the same and the reason is unchanged: there is
+no version of this that floats an opaque plate over the rows, and the bounded-scroll arrangement above
+is a different composition from the single page-length column this region has. What was taken instead
+is the complaint underneath the request — the run of empty space between the last mount and the plate.
+The rail now closes 8px after its last row rather than 22 (see "The rail is one ground"), and the
+empty bench panel that used to stand between the key figures and the tabs is gone with the head it
+carried, so the plate arrives where the ledger ends.
 
 **And it is also what was asked for (2026-08-26).** The Commander's own words for this were that the
 two actions should not appear until the modules do. Drawn in the flow they cannot: the plate is the

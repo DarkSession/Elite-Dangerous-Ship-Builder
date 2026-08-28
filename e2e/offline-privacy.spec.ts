@@ -1,5 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
-import { applyDraft, chooseRecipe, openEditor } from './outfitting-surfaces';
+import {
+  applyDraft,
+  benchFollowedSelection,
+  chooseRecipe,
+  openEditor,
+} from './outfitting-surfaces';
 import { openFirstHullFromManifest } from './shell';
 
 /**
@@ -136,9 +141,7 @@ test.describe('offline capability', () => {
     // The fitting has to be on screen before the editor is asked for: at the
     // compact profiles this suite also runs, the editor is behind an action
     // that only exists once a mount is marked, so asking immediately races it.
-    await expect(
-      page.locator('.replacement__title, .outfitting__bench-title').first(),
-    ).toBeVisible();
+    await benchFollowedSelection(page);
     await openEditor(page);
     await chooseRecipe(page, /Increased Range/i);
     await applyDraft(page);

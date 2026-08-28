@@ -90,11 +90,15 @@
 }
 
 .outfitting__ledger {
-  // Canvas 1c's rail: one ground from the first group rule to the last row,
-  // `14px 0 22px` around them and 18px between one group and the next.
-  @include layout.stack(var(--edsb-space-panel));
+  // Canvas 1c's rail: one ground from the first group rule to the last row.
+  // The canvas's own `14px 0 22px` and its 18px between groups are taken in a
+  // tighter measure — 12px between one group and the next, and 8px after the
+  // last row. Thirty-nine rows of ledger is a screen and a half at compact
+  // width, and the air between the groups and under the last of them is space a
+  // Commander scrolls past rather than reads (Commander request 2026-08-28).
+  @include layout.stack(var(--edsb-space-lg));
 
-  padding-block: var(--edsb-space-xl) var(--edsb-space-4xl);
+  padding-block: var(--edsb-space-lg) var(--edsb-space-sm);
   background-color: var(--edsb-surface-rail);
 }
 
@@ -729,10 +733,16 @@
     order: 3;
   }
 
-  // The mount's own rule, over the tabs it names the contents of — which is
-  // where canvas 1d writes it, under the key figures and above the categories.
+  // The bench draws nothing at this width. Both panels are full-screen layers
+  // opened from the foot, and each of them carries the mount in its own head —
+  // so what is left in the flow is a panel with nothing in it. `display:
+  // contents` takes the box away and keeps everything inside it: the two hosts,
+  // which are the layers' own and paint in the top layer, and the withdrawn
+  // sentences saying why a mount cannot be emptied, which are out of flow. An
+  // outlined empty box between the key figures and the tabs read as a region
+  // that had failed to load (Commander request 2026-08-28).
   .outfitting__bench {
-    order: 4;
+    display: contents;
   }
 
   .outfitting__ledger-region {

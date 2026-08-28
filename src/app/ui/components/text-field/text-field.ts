@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { createFieldRelations } from '../field/field-relations';
 
 /** The input purposes this field covers. */
@@ -55,7 +62,20 @@ export class TextField {
     error: this.error,
   });
 
+  private readonly control = viewChild.required<ElementRef<HTMLInputElement>>('control');
+
   onInput(event: Event): void {
     this.changed.emit((event.target as HTMLInputElement).value);
+  }
+
+  /**
+   * Puts the caret in the field.
+   *
+   * For a caller that offers a way to reach the field from elsewhere on the
+   * screen. The control is the component's own, so reaching it is the
+   * component's job rather than the caller's.
+   */
+  focus(): void {
+    this.control().nativeElement.focus();
   }
 }

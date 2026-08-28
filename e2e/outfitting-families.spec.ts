@@ -3,6 +3,7 @@ import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import {
   acrossEveryFamily,
+  benchFollowedSelection,
   commandBarActionState,
   familyControls,
   manifestOf,
@@ -55,7 +56,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
   const row = page.locator(`[data-slot-key="${slotKey}"] button`).first();
   await row.click();
   await expect(row).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.replacement__title, .outfitting__bench-title').first()).toBeVisible();
+  await benchFollowedSelection(page);
 }
 
 /** The accessible name of every family control currently drawn, in order. */
