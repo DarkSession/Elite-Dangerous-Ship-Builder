@@ -76,8 +76,8 @@ A semantic fact group inside `ABOUT` presents two facts, which is what the refer
 
 - App version; and
 - Library version — the reference's own term for the bundled Almanac, adopted on 2026-08-26. The
-  package is credited by name in the `ABOUT` provenance sentence and in the licence summary; a version
-  label is not where that credit lives.
+  package is credited in the licence summary's library line; a version label is not where that
+  credit lives.
 
 Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
 alone has been told a number, not a version.
@@ -97,9 +97,10 @@ action appears either: FR-009 is withdrawn and the reference draws no such contr
   2026-08-26).
 - The exact generated disclaimer appears as plain text in a `lang="en"` region, with no translation,
   Markdown interpretation, automatic linking or alteration.
-- No complete legal document appears, and **no external action appears at all**. The modal has no
-  link. The remaining licence and third-party terms are in the repository `LICENSE`, which the
-  summary's first line names and the generator still audits at build time.
+- No complete legal document appears, and **no external control appears at all**. What the modal
+  offers instead is three sets of linked words inside its own sentences — the two licence documents
+  the summary is a summary of, and this application's source — each from an audited destination
+  (`contracts/help-navigation.md`, "External navigation").
 
 ### Bundle budget
 
@@ -213,8 +214,9 @@ belongs to the update restart alone, which this screen does not draw. Everything
   overflow.
 - Any visual transition honors `prefers-reduced-motion`.
 - Manual screen-reader verification covers discovery, dialog isolation, heading order, the two
-  identity facts, the excerpt's declared language and the underlying capability after close. There
-  is no licence warning to verify: the modal has no external action. It is step 17 of the shared
+  identity facts, the excerpt's declared language, the three linked destinations and the underlying
+  capability after close. There is no licence warning to verify: the modal draws no external
+  control, only linked words inside its own sentences. It is step 17 of the shared
   protocol, and [screen-reader-record.md](./screen-reader-record.md) is this feature's record of it —
   including that no run has been performed, and what the automated suite covers in its place.
 

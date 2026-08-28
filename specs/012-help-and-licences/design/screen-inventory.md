@@ -192,9 +192,9 @@ ledger](#release-coverage-ledger) and include at least:
 4. a package value capability — the outfitting ledger and status rail.
 
 Each journey asserts one dialog instance, unchanged URL/build state, complete content, a working
-close return, no automatic network request, that the modal itself offers no way out of the
-application, and — FR-002's prohibition — that the row's own surface embeds no legal body and offers
-no help or legal destination of its own. For an obscured row the
+close return, no automatic network request, that the modal itself offers only its three audited
+destinations, and — FR-002's prohibition — that the row's own surface embeds no legal body and
+offers no help or legal destination of its own. For an obscured row the
 journey dismisses the layer first and then opens help from the capability beneath, which is the route
 FR-011 requires there. The four classes above do not cap the ledger. All open states receive axe,
 semantic and overflow checks in the complete Chromium/Firefox viewport-orientation matrix.

@@ -10,9 +10,9 @@
  * that turns into once it is a year old.
  *
  * The manifest is deliberately small. It carries identities, one legal excerpt
- * and one destination; it does not carry help topics (those live in their own
- * generated module, keyed by message id so they can be translated), and it does
- * not carry any document body beyond the single excerpt FR-003 permits.
+ * and three destinations; it does not carry help topics (those live in their
+ * own generated module, keyed by message id so they can be translated), and it
+ * does not carry any document body beyond the single excerpt FR-003 permits.
  */
 
 /** Which application artifact is being looked at. */
@@ -59,18 +59,17 @@ export interface FrontierDisclaimer {
 /**
  * A deliberate navigation out of the application.
  *
- * There are exactly two, and both are complete licence documents: this
- * repository's own `LICENSE`, and the bundled library's. `purpose` stays a
- * single-member union and `id` a closed pair, so a third destination — an issue
- * tracker, a homepage, a docs site — is a type error rather than a review note.
- * FR-009's package-defect action was withdrawn on 2026-08-25 and does not come
- * back with these; what came back is the licence link FR-003 had withdrawn on
- * the same day, on the 2026-08-26 ruling recorded in the specification.
+ * There are exactly three. Two are complete licence documents — this
+ * repository's own `LICENSE` and the bundled library's — and one is this
+ * application's own source. `id` and `purpose` are both closed sets, so a
+ * fourth destination, or a page published as terms it is not, is a type error
+ * rather than a review note. FR-009's package-defect action was withdrawn on
+ * 2026-08-25 and does not come back with these.
  */
 export interface ExternalDestination {
-  readonly id: 'repositoryLicense' | 'almanacLicense';
+  readonly id: 'repositoryLicense' | 'almanacLicense' | 'repositorySource';
   readonly url: string;
-  readonly purpose: 'completeLegalTerms';
+  readonly purpose: 'completeLegalTerms' | 'sourceCode';
   readonly leavesApplication: true;
   readonly mayRequireNetwork: true;
 }
@@ -98,6 +97,7 @@ export interface HelpManifestV1 {
   readonly destinations: {
     readonly repositoryLicense: ExternalDestination;
     readonly almanacLicense: ExternalDestination;
+    readonly repositorySource: ExternalDestination;
   };
   readonly sourceDistribution: readonly SourceDistributionArtifact[];
 }
@@ -158,32 +158,35 @@ export function assertHelpManifest(manifest: HelpManifestV1): HelpManifestV1 {
   assertPositiveInteger(disclaimer.byteLength, 'disclaimer.byteLength');
   assertDigest(disclaimer.sha256, 'disclaimer.sha256');
 
-  // One destination, and the object cannot quietly grow a second one: a key
-  // nobody expects here is a navigation nobody reviewed.
-  // Exactly two, named. Both are complete-licence documents and nothing else
-  // is a destination: an issue tracker, a homepage or a docs site reaching this
-  // set would be a navigation this feature never accepted (FR-003).
-  const expectedIds = ['repositoryLicense', 'almanacLicense'];
+  // Exactly three, named, each for the one thing it is offered as. A key
+  // nobody expects here is a navigation nobody reviewed, and a page carrying
+  // the wrong purpose is one offered as something it is not (FR-003, FR-008).
+  const expectedDestinations = {
+    repositoryLicense: 'completeLegalTerms',
+    almanacLicense: 'completeLegalTerms',
+    repositorySource: 'sourceCode',
+  } as const;
+  const expectedIds = Object.keys(expectedDestinations);
   const destinationIds = Object.keys(manifest.destinations).sort();
   if (destinationIds.join(',') !== [...expectedIds].sort().join(',')) {
     throw new Error(
-      `Help manifest must carry exactly the destinations ${expectedIds.join(' and ')}; found ${
+      `Help manifest must carry exactly the destinations ${expectedIds.join(', ')}; found ${
         destinationIds.join(', ') || 'none'
       }.`,
     );
   }
 
-  for (const id of expectedIds) {
-    const licence = manifest.destinations[id as 'repositoryLicense' | 'almanacLicense'];
-    if (licence.id !== id || licence.purpose !== 'completeLegalTerms') {
-      throw new Error(`${id} must be a completeLegalTerms destination carrying its own id.`);
+  for (const [id, purpose] of Object.entries(expectedDestinations)) {
+    const destination = manifest.destinations[id as keyof typeof expectedDestinations];
+    if (destination.id !== id || destination.purpose !== purpose) {
+      throw new Error(`${id} must be a ${purpose} destination carrying its own id.`);
     }
-    if (!licence.leavesApplication || !licence.mayRequireNetwork) {
+    if (!destination.leavesApplication || !destination.mayRequireNetwork) {
       throw new Error(
         `The ${id} destination must state that it leaves the app and needs a network.`,
       );
     }
-    assertNonEmpty(licence.url, `destinations.${id}.url`);
+    assertNonEmpty(destination.url, `destinations.${id}.url`);
   }
 
   for (const artifact of manifest.sourceDistribution) {

@@ -11,11 +11,12 @@ import {
   ALMANAC_PACKAGE_NAME,
   OUTPUT_PATH,
   REPOSITORY_LICENSE_URL,
+  REPOSITORY_SOURCE_URL,
   classifyBuildIdentity,
   extractFrontierDisclaimer,
   generateHelpManifest,
   validateAlmanacIdentity,
-  validateLicenceDestination,
+  validateDestination,
 } from './generate-help-manifest.mjs';
 
 const REPO = fileURLToPath(new URL('..', import.meta.url));
@@ -368,7 +369,7 @@ describe('the help manifest generator', () => {
     for (const [reason, url] of REJECTED_ALMANAC_DESTINATIONS) {
       it(`refuses an Almanac destination that ${reason}: ${url}`, () => {
         assert.throws(
-          () => validateLicenceDestination(url, 'almanacLicense'),
+          () => validateDestination(url, 'almanacLicense'),
           (error) => error instanceof Error && error.message.includes(reason),
         );
       });
@@ -382,53 +383,84 @@ describe('the help manifest generator', () => {
         // and a reason that ever gained a bracket or a plus would fail to
         // compile at all.
         assert.throws(
-          () => validateLicenceDestination(url),
+          () => validateDestination(url),
           (error) => error instanceof Error && error.message.includes(reason),
         );
       });
     }
 
-    it('emits exactly the two audited destinations, and nothing else', async () => {
+    it('emits exactly the three audited destinations, and nothing else', async () => {
       const { manifest, module } = await run(await fixtureRepo());
 
-      assert.deepEqual(Object.keys(manifest.destinations), ['repositoryLicense', 'almanacLicense']);
+      assert.deepEqual(Object.keys(manifest.destinations), [
+        'repositoryLicense',
+        'almanacLicense',
+        'repositorySource',
+      ]);
       assert.equal(manifest.destinations.repositoryLicense.url, REPOSITORY_LICENSE_URL);
       assert.equal(manifest.destinations.almanacLicense.url, ALMANAC_LICENSE_URL);
+      assert.equal(manifest.destinations.repositorySource.url, REPOSITORY_SOURCE_URL);
 
-      for (const id of ['repositoryLicense', 'almanacLicense']) {
+      const purposes = {
+        repositoryLicense: 'completeLegalTerms',
+        almanacLicense: 'completeLegalTerms',
+        repositorySource: 'sourceCode',
+      };
+      for (const [id, purpose] of Object.entries(purposes)) {
         assert.equal(manifest.destinations[id].id, id);
-        assert.equal(manifest.destinations[id].purpose, 'completeLegalTerms');
+        assert.equal(manifest.destinations[id].purpose, purpose);
         assert.equal(manifest.destinations[id].leavesApplication, true);
         assert.equal(manifest.destinations[id].mayRequireNetwork, true);
       }
 
-      // Two, and only two. Both are complete legal terms; a third purpose in
-      // the emitted module would be a destination that reached the browser
-      // without being audited for one.
+      // Two legal-terms destinations and one source destination, and no more
+      // of either: a further purpose in the emitted module would be a
+      // destination that reached the browser without being audited for one.
       assert.equal(module.split('completeLegalTerms').length - 1, 2);
+      assert.equal(module.split('sourceCode').length - 1, 1);
+    });
+
+    it('refuses a source destination that is not this repository', () => {
+      // The source line points at the repository itself. A file inside it, a
+      // fork of it, or another project's page are each a different promise
+      // from the one the sentence makes.
+      for (const url of [
+        'https://github.com/someone-else/Elite-Dangerous-Ship-Builder',
+        'https://github.com/DarkSession/Elite-Dangerous-Almanac',
+        `${REPOSITORY_SOURCE_URL}/blob/main/LICENSE`,
+      ]) {
+        assert.throws(
+          () => validateDestination(url, 'repositorySource'),
+          (error) => error instanceof Error && error.message.includes("this repository's own page"),
+        );
+      }
     });
 
     it('refuses to audit a destination it does not know', () => {
       // The path an id is checked against is looked up, never passed in: a
       // caller that could name its own path could audit a URL against itself.
       assert.throws(
-        () => validateLicenceDestination(REPOSITORY_LICENSE_URL, 'somewhereElse'),
+        () => validateDestination(REPOSITORY_LICENSE_URL, 'somewhereElse'),
         (error) => error instanceof Error && error.message.includes('not an audited destination'),
       );
     });
 
-    it('refuses each audited URL under the other one’s id', () => {
-      // The two are not interchangeable. Pointing the library's line at this
-      // repository's terms, or the reverse, is a wrong claim about which
-      // document covers which code, and it fails the build rather than
-      // shipping.
+    it('refuses each audited URL under another one’s id', () => {
+      // The three are not interchangeable. Pointing the library's line at this
+      // repository's terms, or the source line at a licence, is a wrong claim
+      // about what a Commander is being offered, and it fails the build rather
+      // than shipping.
       assert.throws(
-        () => validateLicenceDestination(ALMANAC_LICENSE_URL, 'repositoryLicense'),
+        () => validateDestination(ALMANAC_LICENSE_URL, 'repositoryLicense'),
         (error) => error instanceof Error && error.message.includes("this repository's LICENSE"),
       );
       assert.throws(
-        () => validateLicenceDestination(REPOSITORY_LICENSE_URL, 'almanacLicense'),
+        () => validateDestination(REPOSITORY_LICENSE_URL, 'almanacLicense'),
         (error) => error instanceof Error && error.message.includes("Almanac repository's LICENSE"),
+      );
+      assert.throws(
+        () => validateDestination(REPOSITORY_LICENSE_URL, 'repositorySource'),
+        (error) => error instanceof Error && error.message.includes("this repository's own page"),
       );
     });
   });

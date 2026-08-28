@@ -55,8 +55,15 @@ const LICENCE = {
 
 const ABOUT = {
   maintainer: 'Built and maintained by CMDR Dark Session.',
-  provenance:
-    'Game data, checks and calculations come from the bundled Almanac. Ship Builder neither maintains nor corrects those game values.',
+  source: {
+    id: 'source',
+    before: 'Source code available on ',
+    link: {
+      label: 'GitHub',
+      href: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder',
+    },
+    after: '.',
+  },
   facts: [
     { id: 'application', term: 'App version', value: '0.1.0' },
     { id: 'almanac', term: 'Almanac version', value: '0.1.7' },
@@ -144,15 +151,30 @@ describe('HelpDialog', () => {
   });
 
   // Three sentences, in one order, before the facts. The reference draws only
-  // the first; the other two are FR-008's provenance credit and the owner's
-  // maintainer line, and both would be a different claim read after a version.
-  it('reads purpose, then maintainer, then provenance, before the version facts', () => {
+  // the first; the other two are the owner's maintainer line and the source
+  // line, and both would be a different claim read after a version.
+  it('reads purpose, then maintainer, then source, before the version facts', () => {
     const fixture = render();
     const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
     const prose = [...about.querySelectorAll('p')].map((paragraph) => textOf(paragraph));
 
-    expect(prose).toEqual([VIEW.purpose, ABOUT.maintainer, ABOUT.provenance]);
+    expect(prose).toEqual([
+      VIEW.purpose,
+      ABOUT.maintainer,
+      `${ABOUT.source.before}${ABOUT.source.link.label}${ABOUT.source.after}`,
+    ]);
     expect(about.lastElementChild?.tagName.toLowerCase()).toBe('edsb-version-facts');
+  });
+
+  // The link is inside the sentence, at the place the sentence puts it, and it
+  // names where it goes in its own visible words (FR-003).
+  it('links the source sentence to the audited repository address', () => {
+    const fixture = render();
+    const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
+    const link = about.querySelector<HTMLAnchorElement>('.help-dialog__source a');
+
+    expect(link?.textContent?.trim()).toBe(ABOUT.source.link.label);
+    expect(link?.getAttribute('href')).toBe(ABOUT.source.link.href);
   });
 
   it('asks to be dismissed rather than dismissing itself', () => {
@@ -323,12 +345,15 @@ describe('HelpDialog', () => {
       expect(text).not.toContain('MIT License\n');
     });
 
-    it('offers exactly the two complete-licence destinations, and no other', () => {
+    it('offers exactly the source and the two licence destinations, and no other', () => {
       const links = [...element(render()).querySelectorAll('a')];
 
-      // Two, both audited, both leaving deliberately. Anything else in this
-      // modal that navigated would be a destination nobody accepted (FR-003).
+      // Three, all audited, all leaving deliberately, in the order a reader
+      // meets the sections: the source in ABOUT, then the two licence
+      // documents. Anything else in this modal that navigated would be a
+      // destination nobody accepted (FR-003).
       expect(links.map((link) => link.getAttribute('href'))).toEqual([
+        ABOUT.source.link.href,
         LICENCE.index[0].link?.href,
         LICENCE.index[1].link?.href,
       ]);

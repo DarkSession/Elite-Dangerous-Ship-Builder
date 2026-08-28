@@ -30,6 +30,13 @@ const manifest = (overrides: Partial<HelpManifestV1> = {}): HelpManifestV1 =>
         leavesApplication: true,
         mayRequireNetwork: true,
       },
+      repositorySource: {
+        id: 'repositorySource',
+        url: 'https://github.com/DarkSession/Elite-Dangerous-Ship-Builder',
+        purpose: 'sourceCode',
+        leavesApplication: true,
+        mayRequireNetwork: true,
+      },
     },
     sourceDistribution: [
       {
@@ -136,7 +143,7 @@ describe('assertHelpManifest', () => {
       ).toThrow(/exactly the destinations/);
     });
 
-    it('rejects a manifest carrying only one of the two', () => {
+    it('rejects a manifest carrying only one of the three', () => {
       const subject = manifest();
       expect(() =>
         assertHelpManifest({
@@ -148,7 +155,7 @@ describe('assertHelpManifest', () => {
       ).toThrow(/exactly the destinations/);
     });
 
-    it('rejects a third destination, which would be a navigation nobody reviewed', () => {
+    it('rejects a fourth destination, which would be a navigation nobody reviewed', () => {
       const subject = manifest();
       expect(() =>
         assertHelpManifest({
@@ -161,40 +168,43 @@ describe('assertHelpManifest', () => {
       ).toThrow(/exactly the destinations/);
     });
 
-    it.each(['repositoryLicense', 'almanacLicense'] as const)(
-      'requires %s to be the complete legal terms',
-      (id) => {
-        const subject = manifest();
-        expect(() =>
-          assertHelpManifest({
-            ...subject,
-            destinations: {
-              ...subject.destinations,
-              [id]: {
-                ...subject.destinations[id],
-                purpose: 'packageDefectReport' as 'completeLegalTerms',
-              },
+    // Each destination is offered as one thing, and only that thing. A licence
+    // that came through as source, or the source as legal terms, is a page
+    // published as something it is not.
+    const PURPOSES = [
+      ['repositoryLicense', 'completeLegalTerms'],
+      ['almanacLicense', 'completeLegalTerms'],
+      ['repositorySource', 'sourceCode'],
+    ] as const;
+
+    it.each(PURPOSES)('requires %s to be offered as its own purpose', (id, purpose) => {
+      const subject = manifest();
+      expect(() =>
+        assertHelpManifest({
+          ...subject,
+          destinations: {
+            ...subject.destinations,
+            [id]: {
+              ...subject.destinations[id],
+              purpose: 'packageDefectReport' as 'completeLegalTerms',
             },
-          }),
-        ).toThrow(new RegExp(`${id} must be a completeLegalTerms destination`));
-      },
-    );
+          },
+        }),
+      ).toThrow(new RegExp(`${id} must be a ${purpose} destination`));
+    });
 
-    it.each(['repositoryLicense', 'almanacLicense'] as const)(
-      'requires %s to carry its own id rather than the other one',
-      (id) => {
-        const subject = manifest();
-        const other = id === 'repositoryLicense' ? 'almanacLicense' : 'repositoryLicense';
-        expect(() =>
-          assertHelpManifest({
-            ...subject,
-            destinations: { ...subject.destinations, [id]: { ...subject.destinations[other] } },
-          }),
-        ).toThrow(new RegExp(`${id} must be a completeLegalTerms destination`));
-      },
-    );
+    it.each(PURPOSES)('requires %s to carry its own id rather than another', (id, purpose) => {
+      const subject = manifest();
+      const other = id === 'repositoryLicense' ? 'almanacLicense' : 'repositoryLicense';
+      expect(() =>
+        assertHelpManifest({
+          ...subject,
+          destinations: { ...subject.destinations, [id]: { ...subject.destinations[other] } },
+        }),
+      ).toThrow(new RegExp(`${id} must be a ${purpose} destination`));
+    });
 
-    it.each(['repositoryLicense', 'almanacLicense'] as const)(
+    it.each(PURPOSES.map(([id]) => id))(
       'requires %s to admit that it leaves the application',
       (id) => {
         const subject = manifest();
@@ -210,7 +220,7 @@ describe('assertHelpManifest', () => {
       },
     );
 
-    it.each(['repositoryLicense', 'almanacLicense'] as const)('rejects an empty %s URL', (id) => {
+    it.each(PURPOSES.map(([id]) => id))('rejects an empty %s URL', (id) => {
       const subject = manifest();
       expect(() =>
         assertHelpManifest({

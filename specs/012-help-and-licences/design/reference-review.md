@@ -76,17 +76,18 @@ Two things did **not** change with them. The exact Frontier media-usage notice s
 verbatim — it is the compliance artifact root `LICENSE` records the Almanac redistributing under,
 and the reference's paraphrased fan-tool sentence is not a substitute for it. And the audited
 repository-`LICENSE` URL is still resolved and validated by the generator, because a wrong address
-for the terms the source distribution carries is still a release failure; it is simply no longer
-rendered.
+for the terms the source distribution carries is still a release failure. The link back to it
+returned on 2026-08-26, inside the summary line that names its terms
+(`contracts/help-navigation.md`, "External navigation").
 
 **A consequence to keep in view.** Feature 002's voice ruling of 2026-08-22 stopped ~30
 Commander-facing strings naming the Almanac, on the grounds that the credit belonged to this
-feature's provenance statement, once per application. On 2026-08-25 that statement was withdrawn and
-the credit moved to the `almanacOwnership` topic. On 2026-08-27 that topic was withdrawn in turn,
-and the paragraph above did its job: the credit came back to `ABOUT` as the one provenance sentence
-FR-008 now requires, rather than being dropped with the answer that had been holding it. The warning
-stands for whoever edits that sentence next — around thirty strings elsewhere say nothing about the
-Almanac because this one does.
+feature, once per application. It has moved three times since: to the `almanacOwnership` topic on
+2026-08-25, to an `ABOUT` provenance sentence on 2026-08-27 when that topic was withdrawn, and to
+the licence summary's library line on 2026-08-28 when the owner withdrew that sentence. That line is
+where it lives, and the voice ruling is amended to name it. The warning stands for whoever edits
+that line next — around thirty strings elsewhere say nothing about the Almanac because this one
+does.
 
 ## Visual translation into the repository design system
 
@@ -135,11 +136,11 @@ now meets a `?` where they used to meet two words. The canvas's judgement is tha
 symbol that convention has made legible without instruction, and this feature takes it.
 
 **What the second one does not give up.** The Almanac is still credited once per application: the
-`ABOUT` provenance sentence names it as the source of the catalogue, the checks and the
-calculations, and the licence summary names Frontier for the game data and imagery. The version
-label was never where that credit lived — it names the library the build was compiled against, which
-is what someone comparing two builds is reading it for. The standing feature 002 ruling of
-2026-08-22 is unaffected.
+licence summary's library line names the bundled library's own terms and links them, and the same
+summary names Frontier for the game data and imagery. The version label was never where that credit
+lived — it names the library the build was compiled against, which is what someone comparing two
+builds is reading it for. Feature 002's ruling of 2026-08-22 stands, amended on 2026-08-28 to name
+that line as where the credit is made.
 
 ## A defect the wide bar's mark exposed, 2026-08-26
 

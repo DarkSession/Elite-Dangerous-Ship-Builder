@@ -158,6 +158,29 @@ also the way home, and a control that stands on its own is held to the 44px
 press baseline: an amber ground on that box would draw a 44px amber square
 behind a 26px mark (011/FR-012, corrected 2026-08-26).
 
+The press baseline is paid by a box **around** the mark, never by the mark
+itself. Where the insignia is the way home it is a mark inside a link: the link
+takes the 44px target, the mark keeps its own `26 × 23px`, and the negative
+inline margin takes the extra width back out of the bar so the press does not
+open a gap beside the insignia. Held on the mark's own box instead, the target
+minimum beat the declared size, the wedge and the underbar were cut into a
+44 × 44 box, and the insignia was drawn half as large again on every screen
+that offers the way home as on the shipyard that does not (Commander request
+2026-08-28).
+
+### One bar height, on every screen
+
+The bar is drawn at one height everywhere: `4.625rem`, which is the tallest
+identity it carries — the workspace's build name over its hull and ID plate —
+inside the bar's own block padding. Sized to the single row of controls every
+other screen comes to, it stood 66px on the shipyard and 74px on a build, and
+the whole page under it moved as a Commander opened one.
+
+The figure is a floor rather than a fixed height. The bar wraps in a longer
+language, at a doubled text size and at 400% zoom, and a bar that could not grow
+would cut its own controls off there (011/FR-011). What a region below clears is
+still the bar as it was measured, not this declaration.
+
 ### Panel dialog
 
 Centred at wide widths over a `rgba(6,6,7,.78)` scrim; bottom sheet at compact widths

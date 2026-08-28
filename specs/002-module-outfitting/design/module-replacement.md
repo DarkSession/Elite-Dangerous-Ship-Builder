@@ -70,14 +70,19 @@ manifest as one accordion. It draws `#fit-table` as
 `grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, with:
 
 - **column 1, row 2** — the family rail: every family in package order, one row each carrying the
-  family's name and its choice count in a chip, bounded at `max-height: 470px` and scrolling on its
+  family's name and its choice count in a chip, bounded at the pane height below and scrolling on its
   own. The selected row takes the amber left rail (`border-left: 3px solid var(--amber)`) and the
   amber gradient ground, and the others take `var(--panel-2)` with a transparent border in the same
   place. **There is no caret**: `wireFamilies`' rail branch keeps its `.fam-car` update behind a
   null check, and the revised markup carries none;
 - **column 2, row 1** — the column head, over the pane alone;
 - **column 2, row 2** — the selected family's rows, `border-left: 1px solid var(--amber-a16)`,
-  bounded at the same `max-height: 470px` and scrolling on its own.
+  bounded at the same height and scrolling on its own.
+
+**The pane height is 428px, amended 2026-08-28 (Commander request).** The canvas draws 470px. One
+manifest row comes off it, the same row the fitting panel's floor gives up, because the panel and the
+pane are the same list at two widths and the bench is a tenth shorter for the pair
+(`design/outfitting-workspace.md`, "Seven rows, and the bench a tenth shorter").
 
 **The rail's 216px is a floor and a share, amended 2026-08-26 (Commander request).** It is a quarter
 of the canvas's own 862px centre column, and held at that one number it stopped being a quarter the

@@ -29,6 +29,14 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
   by the screen it reaches, with the mark itself hidden from assistive technology so it is never
   announced as a picture of nothing. On the shipyard it is a link to nowhere and is drawn as the
   decoration it is.
+- **The insignia is one size, and the press around it is another.** The mark is `26 × 23px` on every
+  screen. Where it is the way home the link around it takes the 44px press baseline, and the mark
+  inside it does not grow with the target
+  (`design/canvas-extraction.md`, "Command bar").
+- **The bar is one height on every screen.** It is sized to the tallest identity it carries — the
+  workspace's two-line build identity — so the page under it does not move as a Commander opens a
+  build. It is a floor, not a fixed height: the bar still grows where it wraps
+  (`design/canvas-extraction.md`, "One bar height, on every screen").
 - **The release mark follows it.** A solid amber chip reading `BETA`, with the bar's own ground as
   its ink, between the insignia and the screen's identity on every artboard.
 - **A screen opened over another one replaces the group.** Canvas 1b's hull sheet draws a bare `←`,

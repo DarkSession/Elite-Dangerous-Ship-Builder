@@ -53,7 +53,9 @@ describe('HelpPresenter', () => {
       ]),
       ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       view.about.maintainer,
-      view.about.provenance,
+      view.about.source.before,
+      view.about.source.after,
+      ...(view.about.source.link === null ? [] : [view.about.source.link.label]),
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
     ];
 
@@ -124,7 +126,8 @@ describe('HelpPresenter', () => {
       const everything = [
         view.purpose,
         view.about.maintainer,
-        view.about.provenance,
+        view.about.source.before,
+        view.about.source.after,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
       ].join(' ');
 
@@ -137,7 +140,8 @@ describe('HelpPresenter', () => {
       const everything = [
         view.purpose,
         view.about.maintainer,
-        view.about.provenance,
+        view.about.source.before,
+        view.about.source.after,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
         ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ].join(' ');
@@ -145,26 +149,29 @@ describe('HelpPresenter', () => {
       expect(everything).not.toMatch(/live game|live catalogue|up to date|latest version/i);
     });
 
-    // The once-per-application Almanac credit feature 002's voice ruling put in
-    // this feature. It lived in a FAQ answer until that answer was withdrawn;
-    // it is `ABOUT` prose again, and around thirty strings elsewhere say
-    // nothing about the package because this sentence does (FR-008).
-    it('credits the bundled Almanac for the catalogue, the checks and the calculations', () => {
-      const provenance = presenter().view().about.provenance;
+    // Where the source is, as one sentence with the destination inside it. The
+    // link comes from the audited manifest rather than from a string typed
+    // here, and the sentence is cut at the place its own translation put the
+    // link (FR-003, FR-008).
+    it('offers this application’s own source, from the audited destination', () => {
+      const source = presenter().view().about.source;
 
-      expect(provenance).toMatch(/almanac/i);
-      expect(provenance).toBe(englishMessages['help.provenance']);
+      expect(source.link?.href).toBe(HELP_MANIFEST.destinations.repositorySource.url);
+      expect(source.link?.label).toBe(englishMessages['help.source.link']);
+      expect(`${source.before}${source.link?.label ?? ''}${source.after}`).toBe(
+        englishMessages['help.source'].replace('{{source}}', englishMessages['help.source.link']),
+      );
     });
 
     it('names who maintains the application, in its own sentence', () => {
-      // Three sentences from three keys, and the presenter's whole job here is
-      // putting each in its own field. A length check would pass with all three
+      // Two sentences from two keys, and the presenter's whole job here is
+      // putting each in its own field. A length check would pass with both
       // resolving to the same string.
       const view = presenter().view();
 
       expect(view.about.maintainer).toBe(englishMessages['help.maintainer']);
       expect(view.about.maintainer).not.toBe(view.purpose);
-      expect(view.about.maintainer).not.toBe(view.about.provenance);
+      expect(view.about.maintainer).not.toBe(view.about.source.before);
     });
   });
 

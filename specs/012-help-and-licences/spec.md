@@ -59,9 +59,11 @@ does rather than which questions it happens to hold.
 - Q: What is the second identity fact called? → A: `Library version`, the reference's own term. It
   names the library this build was compiled against. The Almanac keeps its once-per-application
   credit in the `almanacOwnership` topic and in the licence summary, which is where FR-008 already
-  put it; a version label was never carrying it. **Superseded in part, 2026-08-27:** that topic is
-  withdrawn and the credit is the `ABOUT` provenance sentence. The answer to the question asked here
-  is unchanged — the fact is still `Library version`, and it still carries no credit.
+  put it; a version label was never carrying it. **Superseded in part, twice:** on 2026-08-27 that
+  topic was withdrawn and the credit was the `ABOUT` provenance sentence; on 2026-08-28 that
+  sentence was withdrawn too and the credit is the licence summary's library line alone. The answer
+  to the question asked here is unchanged — the fact is still `Library version`, and it still
+  carries no credit.
 - Q: Should the licence summary point at the complete documents it is a summary of? → A: Yes, and at
   two of them: this repository's `LICENSE` and the bundled library's, each linked from inside the
   line that names its terms. This reverses the withdrawal FR-003 made on 2026-08-25 — that pass read
@@ -74,7 +76,9 @@ does rather than which questions it happens to hold.
   destinations stay audited at build time exactly as FR-005 already required, both are complete
   licence documents, and a third — an issue tracker, a homepage, a docs site — remains withdrawn
   with FR-009. Each link is `rel="noopener noreferrer"`, so no part of a session, and in particular
-  no build in the URL, reaches another origin.
+  no build in the URL, reaches another origin. **Extended 2026-08-28, owner's request:** the
+  repository's own page joins them as `ABOUT`'s source destination, under the same audit and the
+  same rules; an issue tracker and a docs site stay withdrawn.
 
 ### Session 2026-08-27
 
@@ -113,10 +117,11 @@ does rather than which questions it happens to hold.
 2. Exactly two identity facts appear, each separately labelled. **Amended 2026-08-25:** the scenario
    previously required a non-release build to show a build identifier; FR-007's display half is
    withdrawn and nothing in the modal says which classification the build has.
-3. The `ABOUT` provenance sentence states that the bundled Almanac supplies the catalogue, the
-   checks and the calculations, and nothing in the modal makes a live-game currency claim.
-   **Amended twice:** on 2026-08-25 the paragraph was withdrawn and the `almanacOwnership` topic
-   carried the credit; on 2026-08-27 that topic was withdrawn and the sentence returned here.
+3. `ABOUT` names who maintains the application and where its source is published, and nothing in
+   the modal makes a live-game currency claim. **Amended three times:** on 2026-08-25 the Almanac
+   provenance paragraph was withdrawn and the `almanacOwnership` topic carried the credit; on
+   2026-08-27 that topic was withdrawn and the sentence returned here; on 2026-08-28 the sentence
+   was withdrawn at the owner's request and the source sentence took its place.
 
 ### Story 3 — Understand application behaviour (P2)
 
@@ -146,7 +151,11 @@ does rather than which questions it happens to hold.
   from within its own text, and exactly two can be pointed at — the repository `LICENSE` and the
   bundled library's `LICENSE`, both from the audited destinations FR-005 validates. Each link MUST
   follow a deliberate action, MUST name its destination in visible text, and MUST carry no build,
-  route or session data out with it. No other external destination may appear.
+  route or session data out with it.
+
+  **Amended 2026-08-28 (owner's request):** FR-008's source sentence is the third and last external
+  destination, and it is held to every rule the two licence links are held to — audited by the
+  generator, named in visible text, carrying nothing out. No other external destination may appear.
 
   _Amendment history._ **2026-08-25:** the requirement's original GitHub link was withdrawn, on a
   reading of the design reference as drawing no control in the modal. **2026-08-26:** that reading
@@ -162,12 +171,14 @@ does rather than which questions it happens to hold.
 - **FR-005**: FR-003's disclaimer source MUST be verified before release. A missing, empty or
   mismatched disclaimer MUST fail the release rather than degrade at runtime. Both audited
   destinations MUST be resolved and validated by the generator, each against its own expected
-  address: a wrong, non-HTTPS, credentialled, ported, queried or fragmented URL, or one pointing at
-  the other destination's document, MUST fail the release rather than ship. **Amended 2026-08-25:**
-  the repository-`LICENSE` destination was still validated but no longer displayed. **Amended
-  2026-08-26:** it is displayed again, the bundled library's `LICENSE` joins it under the same
-  validation, and what a release now proves is that the two addresses the modal offers are the two
-  the audit accepted.
+  address and its own purpose: a wrong, non-HTTPS, credentialled, ported, queried or fragmented URL,
+  one pointing at another destination's document, or one offered as a purpose it was not audited
+  for, MUST fail the release rather than ship. **Amended 2026-08-25:** the repository-`LICENSE`
+  destination was still validated but no longer displayed. **Amended 2026-08-26:** it is displayed
+  again, and the bundled library's `LICENSE` joins it under the same validation. **Amended
+  2026-08-28:** the repository's own page joins them as the source destination, under the same
+  validation and carrying its own purpose, and what a release proves is that the three addresses the
+  modal offers are the three the audit accepted.
 - **FR-006**: The embedded Frontier disclaimer MUST remain verbatim and MUST be marked in the
   language it is written in, so a reader whose interface is in another language is not read it in
   that language's voice. Application-owned labels MUST be localised. **Amended 2026-08-25:** the
@@ -182,20 +193,23 @@ does rather than which questions it happens to hold.
   fails a mismatched or placeholder value rather than downgrading, and still records the outcome in
   the manifest as release evidence. It is simply not a thing the modal says.
 - **FR-008**: Neither version MUST be called the live game or live catalogue version, and no help
-  content MUST claim currency with either. `ABOUT` MUST carry one bounded provenance sentence saying
-  that the bundled Almanac supplies the catalogue, the checks and the calculations and that this
-  application neither maintains nor corrects those game values. It MUST NOT state, imply or date any
-  agreement with the live game. `ABOUT` MUST also name who builds and maintains the application, in
-  one sentence, and MUST carry no further prose: three sentences and the two version facts of FR-007
-  are the whole of the section.
+  content MUST claim currency with either, and neither MUST state, imply or date any agreement with
+  the live game. `ABOUT` MUST name who builds and maintains the application, in one sentence, and
+  MUST say where the application's source is published, in one sentence carrying the audited source
+  destination inside its own text. It MUST carry no further prose: three sentences and the two
+  version facts of FR-007 are the whole of the section.
 
-  _Amendment history._ **2026-08-25:** the provenance sentence was withdrawn from `ABOUT`, on the
+  _Amendment history._ **2026-08-25:** a provenance sentence naming the bundled Almanac as the
+  source of the catalogue, the checks and the calculations was withdrawn from `ABOUT`, on the
   reading that the design reference draws no paragraph there, and the credit moved to FR-010's
-  `almanacOwnership` topic. **2026-08-27:** that topic is withdrawn and the sentence returns here,
-  because the standing feature 002 ruling of 2026-08-22 requires the credit to exist in this
-  feature, once per application, and the licence summary's Frontier line is a licence claim rather
-  than the credit. The maintainer sentence is new on the same date, at the owner's request. Both
-  depart from the reference, which draws neither.
+  `almanacOwnership` topic. **2026-08-27:** that topic was withdrawn and the sentence returned here.
+  The maintainer sentence is new on the same date, at the owner's request. **2026-08-28, owner's
+  request:** the provenance sentence is withdrawn and the source sentence takes its place. The
+  Almanac is still named in the section a licence claim belongs in — the licence summary's library
+  line points at the bundled library's own `LICENSE` — and the section stays three sentences long.
+  Feature 002's voice ruling of 2026-08-22 is amended to match: the once-per-application credit is
+  the licence summary's library line, not a paragraph in `ABOUT`. All three sentences depart from
+  the reference, which draws none of them.
 
 - `FR-009`: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
   removed. The design reference draws no such control, and reporting a package defect is a support
@@ -237,10 +251,10 @@ does rather than which questions it happens to hold.
 - The Frontier disclaimer is reproduced rather than translated.
 - After one completed online load, help remains usable offline in full — every section, both topics
   and the disclaimer — with nothing left to fetch.
-- **Amended 2026-08-26:** help has two external destinations, and neither is a way out for build
-  data. Both are constant addresses with no query and no fragment, both are `rel="noopener
-noreferrer"`, and the build a session is holding lives in the URL fragment, which no browser sends
-  in a `Referer` header in any case. The withdrawn edge case read "help has no external navigation,
+- **Amended 2026-08-26, extended 2026-08-28:** help has three external destinations, and none is a
+  way out for build data. All are constant addresses with no query and no fragment, all are
+  `rel="noopener noreferrer"`, and the build a session is holding lives in the URL fragment, which
+  no browser sends in a `Referer` header in any case. The withdrawn edge case read "help has no external navigation,
   so there is no link for build data to ride out on"; what replaces it is a property that is
   asserted rather than obtained by having no links.
 
@@ -257,9 +271,10 @@ on every build, and the link points at the same file in the package's own reposi
 
 - **SC-001**: Help contains the exact, non-empty project-specific Frontier disclaimer from the
   repository `LICENSE`, marked in its own language, above nothing and below the four-line summary of
-  what covers what. It is the only legal body embedded. Help offers exactly two external
-  destinations, both complete licence documents from the audited manifest, each named in the visible
-  text of the line it sits in, and neither carries build, route or session data.
+  what covers what. It is the only legal body embedded. Help offers exactly three external
+  destinations from the audited manifest — two complete licence documents and this application's own
+  source — each named in the visible text of the sentence it sits in, and none carries build, route
+  or session data.
 - **SC-002**: The two displayed versions exactly match shipped artifacts, are separately labelled
   and cannot be mistaken for live-game currency. No release or non-release state is displayed.
 - **SC-003**: Both FR-010 behaviour topics are present exactly once, every topic identifies at

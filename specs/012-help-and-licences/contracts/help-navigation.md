@@ -1,7 +1,8 @@
 # Contract: Help Modal and Navigation
 
-This contract defines the shared Help · About modal and every entry into it. It offers no external
-navigation; the section below that once specified one now specifies its absence.
+This contract defines the shared Help · About modal and every entry into it. Its only navigation out
+of the application is the three audited destinations the "External navigation" section below
+specifies.
 
 ## Availability and state preservation
 
@@ -55,9 +56,9 @@ The order is the design reference's own: a header, then `ABOUT`, `FAQ` and `LICE
 hairline dividers in one scrolling column. The invariant DOM/reading order is:
 
 1. visible `Help · About` dialog title and close action, in a header pinned above the scrolling body;
-2. the `ABOUT` section — the localised purpose sentence, the maintainer sentence, the Almanac
-   provenance sentence, then the application and bundled-Almanac identity facts where the reference
-   draws its `APP VERSION … · LIBRARY VERSION …` line;
+2. the `ABOUT` section — the localised purpose sentence, the maintainer sentence, the source
+   sentence, then the application and bundled-Almanac identity facts where the reference draws its
+   `APP VERSION … · LIBRARY VERSION …` line;
 3. the `FAQ` section — the help topics as question/answer pairs; and
 4. the `LICENCE` section — heading, the four-line summary of what covers what (the reference's
    three plus the bundled library's own terms, amended below), then the exact project-specific
@@ -75,9 +76,13 @@ sentence about it, as the excerpt's `lang` is.
 **Amended 2026-08-27.** The provenance statement returns to `ABOUT`, before the version facts rather
 than after them, because the topic that had been holding the package credit is withdrawn and
 feature 002's voice ruling requires the credit to live somewhere in this feature. A maintainer
-sentence joins it at the owner's request. `ABOUT` is now three sentences and two facts, and the
-reference draws only the first sentence and the facts — a departure this contract states rather than
-hides.
+sentence joins it at the owner's request.
+
+**Amended 2026-08-28, owner's request.** The provenance statement is withdrawn again and the source
+sentence takes its place, in the same position. The package credit is the licence summary's library
+line, which names the bundled library's own terms and links them; feature 002's voice ruling is
+amended to say so. `ABOUT` is three sentences and two facts, and the reference draws only the first
+sentence and the facts — a departure this contract states rather than hides.
 
 The reference puts its version line inside `ABOUT`, above the questions, and this contract follows
 it. Wide layouts may adjust spacing/measure but do not reorder sections. Narrow, landscape, zoomed,
@@ -156,12 +161,12 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 - **Corrected 2026-08-26.** The second term was “Bundled Almanac version”, on the reasoning that the
   reference's own `LIBRARY VERSION` was ambiguous. The reference's wording stands instead: what the
   fact names is the library this application was built against, which is what a Commander comparing
-  two builds is reading it for, and the package is credited by name in the `ABOUT` provenance
-  sentence and in the licence summary rather than in a version label. **Corrected 2026-08-27:** that
-  credit was in the `almanacOwnership` topic when this was written; the topic is withdrawn and the
-  sentence carries it. Nothing else moves: it is still the
-  installed package's own version, still a separate labelled fact, and still not a claim about the
-  live game or the live catalogue.
+  two builds is reading it for, and the package is credited in the licence summary rather than in a
+  version label. **Corrected twice:** the credit was in the `almanacOwnership` topic when this was
+  written, then in the `ABOUT` provenance sentence from 2026-08-27; both are withdrawn and the
+  licence summary's library line carries it. Nothing else moves: it is still the installed package's
+  own version, still a separate labelled fact, and still not a claim about the live game or the live
+  catalogue.
 - **Corrected 2026-08-25.** The modal previously drew a third fact carrying release state and, for a
   non-release build, its build ID. The reference draws two facts and no third; the display is
   withdrawn and FR-007's display half with it. Generator classification is unchanged — a
@@ -206,9 +211,10 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 
 ## External navigation
 
-The modal offers exactly two destinations, and both are complete licence documents: the repository
-`LICENSE`, and the bundled library's. Each is a few linked words inside the summary line that names
-its terms — not a control beside the line, and not a row of its own.
+The modal offers exactly three destinations. Two are complete licence documents — the repository
+`LICENSE`, and the bundled library's — and one is this application's own source. Each is a few
+linked words inside the sentence that names them: not a control beside the sentence, and not a row
+of its own.
 
 Every one of them:
 
@@ -222,11 +228,15 @@ Every one of them:
   no referrer — no route, no query, nothing around the build in the URL — reaches the other origin;
 - draws no address as text. What a Commander reads is which document it is, not where it is.
 
-The two read alike, because both are an MIT licence on GitHub and saying otherwise would be dressing
-up a fact. Which document each covers is the line's own leading label — `App ·` against `Library ·`
-— so the link does not repeat it. **Corrected 2026-08-26:** an earlier revision appended that
-distinction to each link's accessible name. It made a two-word link into a spoken sentence, and the
-label in front of it was already saying the same thing.
+The two licence links read alike, because both are an MIT licence on GitHub and saying otherwise
+would be dressing up a fact. Which document each covers is the line's own leading label — `App ·`
+against `Library ·` — so the link does not repeat it. **Corrected 2026-08-26:** an earlier revision
+appended that distinction to each link's accessible name. It made a two-word link into a spoken
+sentence, and the label in front of it was already saying the same thing.
+
+The source link reads as the site it reaches, because that is what the sentence around it offers: a
+Commander who wants to read the code, not a third copy of terms the two lines above already point
+at. **Added 2026-08-28, owner's request** (012/FR-008).
 
 **Amendment history.** **2026-08-25:** the modal carried one destination, a warned
 repository-`LICENSE` action, and it was withdrawn along with the `WarnedExternalLink` component the

@@ -104,6 +104,13 @@ of a fixed bench that the editor underneath has to be left some of. The share an
 divided that bench are gone with it, and the floor stands on its own, bounded only by what the screen
 itself leaves under the command bar so that it can never be taller than the window it is in.
 
+**Seven rows, and the bench a tenth shorter. Lowered 2026-08-28 (Commander request): 26rem to
+23.375rem.** The fitting panel and the pane inside it are the tallest thing on the workspace, and
+the anatomy and the status rail beside them are what a Commander scrolls to reach. One row comes off
+the floor and the same row comes off the pane's own bound, which is a tenth of each: seven rows over
+the same head, column rule and foot is still a list rather than the glimpse five rows was. Nothing
+else on the workspace changes height.
+
 **Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
 track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
 the page to two hundred rows, and the plates fit that column: they are drawn at the hull's own

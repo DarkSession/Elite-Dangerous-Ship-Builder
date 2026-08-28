@@ -21,8 +21,9 @@ and `offlineAssets` each restated constitution I, `hullFactsAndBuildResults` exp
 features 003 and 005 draw on screen, and `almanacOwnership` was a credit rather than a question. The
 reviews of the five are not kept: a content review is a judgment about text that ships, and text
 that does not ship has nothing to judge. What the fifth of them carried does ship — the
-once-per-application Almanac credit is now the `ABOUT` provenance sentence FR-008 requires, and
-whoever next edits that sentence should read this paragraph before shortening it.
+once-per-application Almanac credit is the licence summary's library line, which names the bundled
+library's own terms and links them, and whoever next edits that line should read this paragraph
+before shortening it.
 
 Re-run this review whenever an English question, an English answer or a governing reference changes;
 a topic left unchecked is a release failure, not a note to come back to.

@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 8
+**Version**: 9
 
 ## What is automated, and what is left
 
@@ -233,9 +233,10 @@ disagrees or where the announcement is correct but unusable.
     the reference's own order — `ABOUT`, `FAQ`, `LICENCE` — and expect each of
     the questions to be a heading **under** the `FAQ` heading rather than
     beside it, so heading navigation reaches the questions as a list of
-    questions. In `ABOUT`, expect the purpose, the maintainer and the Almanac
-    provenance to be read as three sentences in that order before any fact is
-    reached. Then expect exactly two identity facts, each announced as
+    questions. In `ABOUT`, expect the purpose, the maintainer and where the
+    source is to be read as three sentences in that order before any fact is
+    reached, and expect the source sentence to carry a link announced by the
+    site it reaches. Then expect exactly two identity facts, each announced as
     its own term and value, and expect the two terms to distinguish which
     version is which without seeing them side by side; expect nothing to be
     said about what kind of build it is. In `FAQ`, expect each answer to be
@@ -246,15 +247,17 @@ disagrees or where the announcement is correct but unusable.
     and expect **no** sentence anywhere telling you what language it is in or
     where it came from.
 
-    Expect exactly one control in the whole modal: its close. Expect no link,
-    nothing announced as leaving the application and nothing announced as
-    needing a network. Close it and expect to be returned to the control that
-    opened it, with the capability beneath unchanged.
+    Expect exactly one control in the whole modal: its close. Expect three
+    links and no more — the source in `ABOUT`, and the two licence documents in
+    `LICENCE` — each announced by the words on screen and nothing else, and
+    expect nothing else announced as leaving the application or as needing a
+    network. Close it and expect to be returned to the control that opened it,
+    with the capability beneath unchanged.
 
     The judgment this step exists for: whether a Commander who has only heard
     this modal comes away knowing what the application is, which versions they
-    are running, and that the game data is Frontier's and the calculations are
-    the bundled Almanac's. That is a question about meaning, and no snapshot of
+    are running, that the game data is Frontier's, and where the terms and the
+    source can be read. That is a question about meaning, and no snapshot of
     the accessibility tree can answer it.
 
 18. **Drives & Mass.** Open a build and open the `DRIVES` mode of the anatomy

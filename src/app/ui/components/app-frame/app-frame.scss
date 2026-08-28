@@ -84,25 +84,31 @@
   @include layout.command-flag;
 }
 
-// The same mark, as the way back to the shipyard. It is a link, so it takes a
-// focus ring, a pointer and a target of its own.
+// The way back to the shipyard: a link around the mark, never the mark itself.
 //
 // The mark is 26 x 23 — the size the canvas draws it, and under the 24-pixel
 // floor on one axis, let alone this feature's 44-pixel baseline. A control that
 // stands on its own is held to the baseline, so the target is the box around the
 // mark rather than the mark: the drawing is unchanged and the press is the size
 // it should be (011/FR-012, reported 2026-08-26).
-.frame__flag--home {
+//
+// The box around it, because a minimum on the mark's own box is not a box
+// around anything. `min-inline-size` beats the declared `inline-size`, the
+// wedge and its underbar are cut into that box's own layers at full width, and
+// the insignia was drawn 44 x 39 wherever it was a link and 26 x 23 wherever it
+// was not — the same mark at two sizes, changing as a Commander moved from the
+// shipyard to a build (Commander request 2026-08-28).
+.frame__flag-home {
   @include layout.target-baseline;
 
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
-  // The bar's own ink rather than the user agent's link blue. The mark is drawn
-  // as a background and the link's only child is the name it carries for a
-  // reader, so nothing here is ever seen in this colour — but an inherited
-  // `#0000EE` is still a colour this design system did not choose, and it is
-  // measured as one (011/FR-009).
+  // The bar's own ink rather than the user agent's link blue. The link holds
+  // the mark and the name it carries for a reader, and neither is ever seen in
+  // this colour — but an inherited `#0000EE` is still a colour this design
+  // system did not choose, and it is measured as one (011/FR-009).
   color: var(--edsb-text-primary);
   // Taken back out of the bar, so a 44px press does not open a 44px gap beside
   // an insignia the canvas sets 26px wide.
