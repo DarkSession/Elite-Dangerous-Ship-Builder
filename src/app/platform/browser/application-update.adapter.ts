@@ -141,8 +141,13 @@ export class ApplicationUpdateAdapter {
    *
    * The same port as {@link every} and separate from it on purpose: what the
    * store schedules here is the one grace period between an overlay appearing
-   * and the page restarting under it, and a period that could not be called off
-   * would be a time limit with no way out of it (WCAG 2.2.1).
+   * and the page restarting under it.
+   *
+   * Cancellable not because a Commander can call it off — nothing on that
+   * overlay can, which is the cost constitution V records — but because the
+   * store itself must: a period still pending when the restart begins, or when
+   * the worker reports something other than a waiting version, would fire into
+   * a page that has already moved on.
    */
   after(milliseconds: number, run: () => void): () => void {
     const view = this.#window;

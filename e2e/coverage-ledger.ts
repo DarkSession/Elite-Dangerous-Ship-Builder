@@ -402,20 +402,59 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    // Two halves with two owners. The policy checker compares `index.html`,
+    // `robots.txt`, `sitemap.xml`, the manifest and the route table against one
+    // constant, which is the half a browser cannot see all at once; the journey
+    // covers the half only a browser can answer, which is whether the head is
+    // actually rewritten as a Commander moves and in the language the page is
+    // in. Neither half is evidence for the other.
+    surfaceId: 'shell/search-metadata',
+    requirements: ['011/FR-027', '011/SC-008'],
+    journey: 'product/search-visibility',
+    axe: false,
+    assertions: [
+      'each addressable route publishes its own description rather than the product tagline',
+      'the canonical address and both card blocks name the route that is on screen',
+      'the canonical names the production site rather than wherever the document is served from',
+      'an open hull inherits the description of the screen it sits inside',
+      'no build payload reaches the canonical address, because a build lives in the fragment',
+      'the description and the declared locale are in the language the page is rendered in',
+      'the document served before the bundle runs carries the title, description, canonical, card and structured data, with the English wording the catalogue declares',
+      'the crawl policy, the map and the manifest are served, permit indexing and name the same site',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'shell/newer-version-published',
     requirements: ['011/FR-025', '011/SC-007'],
     journey: 'product/application-update',
     axe: true,
     assertions: [
       'a session already open when a version is published states it without a Commander-initiated reload',
-      'the statement is a modal warning carrying a control that calls the restart off',
-      'nothing on screen is replaced while that warning is being read',
-      'the page restarts on the newer version by itself once the warning is left standing',
-      'the restarted session comes back with nothing to say and is still watching for the next one',
-      'calling the restart off leaves the page untouched, puts the notice and its named control on the shell, and does not warn again for the same version',
+      'the statement is a modal overlay carrying nothing to press: no control, no Escape and no ground',
+      'nothing on screen is replaced while that overlay is being read',
+      'the page restarts on the newer version by itself once the overlay has stood',
+      'the restarted session states that the update was applied and names the version it is running',
+      'that statement is dismissed by its own named control and does not return on a later navigation',
       'a session that never applies it is served the newer version the next time it starts, and says nothing about it over a window in which it would have',
-      'exactly one polite announcement is published per version revision',
     ],
+    // No polite announcement is on that list, and its absence is the rule
+    // rather than an omission. The overlay is modal, so the outlet inside the
+    // frame is inert while it stands and nothing is published there; the one
+    // state that does publish is the restart that could not be carried out,
+    // which the note below explains no journey can reach. It is asserted over
+    // the port in `app.spec.ts` instead.
+
+    // The shell state where the restart could not be carried out — the polite
+    // notice and the named control beside it — is not swept by axe as one
+    // composition anywhere, and that is a known gap rather than an assumed
+    // scan. No journey can hold it open: in a real window `location.reload()`
+    // does not fail, so the state exists only where the port can be driven
+    // directly, which is `application-update.store.spec.ts` and `app.spec.ts`.
+    // Each half is scanned on its own — the preview catalogue's `status-notice`
+    // default renders an `info` notice, and the frame's `error` composition
+    // renders a shell status beside a primary action carrying its own
+    // description — so what is unscanned is the pairing, not the parts.
     manualRecord: 'screen-reader',
   },
   {
@@ -498,7 +537,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: false,
     assertions: [
       'no unqualified WCAG 2.2 AA claim exists in the product source or the project documents',
-      'every claim that is made names all seven excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7, 2.4.11',
+      'every claim that is made names all eight excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7, 2.4.11',
     ],
     manualRecord: null,
   },
@@ -1681,6 +1720,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'they are two separately labelled facts with distinct terms, never one run-together line',
       'there is no third fact: nothing in the modal names a release classification or a build id',
       'no label calls either value the live game or the live catalogue version',
+      'the section reads three sentences before the facts: what this is, who maintains it, and where the game values come from',
+      'the provenance sentence names the bundled Almanac and claims no currency with the live game',
       'long identities wrap within the measure rather than scrolling the modal sideways',
     ],
     manualRecord: 'screen-reader',
@@ -1691,7 +1732,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/help',
     axe: true,
     assertions: [
-      'all seven accepted topics are present exactly once, in the declared order',
+      'both accepted topics are present exactly once, in the declared order',
+      'no withdrawn topic returns: nothing asks about share links, accounts, offline, hull facts or where values come from',
       'each question is a heading over its own answer, nested under the FAQ section’s own heading',
       'no answer carries a raw key, a blank value, an unresolved interpolation or markup',
       'neither reference claim this application cannot support appears: no import promise, no retained partial roll',
@@ -1707,7 +1749,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'the rendered disclaimer is byte-identical to a fresh generator extraction of root LICENSE',
       'it is text content inside a region carrying its own lang, never innerHTML, Markdown or a frame',
-      'the reference’s three-line summary of what covers what opens the section, localised',
+      'the four-line summary of what covers what opens the section, localised',
       'one legal body and no other: no MIT text, no Almanac licence, no third-party notices',
       'the modal draws no link, no popup and nothing that navigates out of the application',
       'the excerpt wraps within the measure and is never clipped or truncated',
@@ -1721,7 +1763,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: false,
     assertions: [
       'after one completed online load and with the network disabled, the modal opens complete',
-      'the purpose, both version facts, all seven topics in order and the exact disclaimer are all present',
+      'all three ABOUT sentences, both version facts, both topics in order and the exact disclaimer are all present',
       'no request is made and there is no loading, missing or stale state to be in',
     ],
     manualRecord: null,

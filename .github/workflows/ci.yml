@@ -1,9 +1,15 @@
-# Runs the gate `pnpm run check` runs, split into individual steps so a failure
-# names the stage that broke: formatting, types, the script tests, build, unit
-# tests (with the 80% coverage thresholds from angular.json) and the Playwright
-# end-to-end suite across the desktop, tablet and mobile viewports. It has one
-# stage of its own, between the checks and the build: the version stamp, which
-# only a deployable build needs.
+# Runs most of the gate `pnpm run check` runs, split into individual steps so a
+# failure names the stage that broke: formatting, types, the script tests,
+# build, unit tests (with the 80% coverage thresholds from angular.json) and the
+# Playwright end-to-end suite across the desktop, tablet and mobile viewports.
+# It has one stage of its own, between the checks and the build: the version
+# stamp, which only a deployable build needs.
+#
+# Most, not all. `pnpm run policy`, `help:artifacts:check`, `build:preview`,
+# `codec:capacity`, `e2e:timing` and `e2e:offline` are in `check` and not here,
+# so they are a contributor's gate rather than this one's (README, "Run
+# `pnpm run check` before proposing a change"). Said plainly because a header
+# claiming to be the whole gate is how a check stops being run at all.
 #
 # The end-to-end suite is **sharded across parallel jobs**, which is the one
 # thing the verification contract permits a CI run to do with the matrix: shard
@@ -116,9 +122,103 @@ jobs:
       # A push to `main` is the deployment's build run too. Packaging the output
       # here keeps the source, checks and Pages artifact on one trusted event and
       # avoids checking out a SHA supplied by a later `workflow_run` event.
-      - name: Serve client-side routes from the 404 page
+      # Two mechanisms, because they answer different callers. `404.html` catches
+      # every address, which is what a Commander following a deep link needs —
+      # but Pages serves it with a 404 status, and a crawler drops a 404 whatever
+      # the body says, canonical link included. So each route the sitemap
+      # advertises is also published as a file that answers 200.
+      #
+      # The route list is read out of `sitemap.xml` rather than written here
+      # again: a third copy of it — `app.routes.ts` and the sitemap are the two —
+      # could drift from them, and this one would drift silently. The site would
+      # keep working and only the crawl would stop.
+      - name: Serve client-side routes as real addresses
         if: ${{ github.event_name == 'push' }}
-        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
+        working-directory: dist/elite-dangerous-ship-builder/browser
+        run: |
+          set -o pipefail
+          cp index.html 404.html
+          # The lines are joined and the comments cut before the addresses are
+          # read, so that reformatting the sitemap cannot quietly remove a route
+          # from this list. `searchMetadataViolations` in
+          # scripts/check-interface-foundations.mjs does both as well: a `<loc>`
+          # the two read differently is a route that passes the gate and never
+          # gets a file. A comment body cannot contain `--`, which is what lets
+          # one cut both the one-line and the many-line form without a parser.
+          #
+          # `|| true` because `grep` reports "no match" as a failure and this
+          # pipeline runs under `pipefail`: without it an empty sitemap aborts
+          # the step on the assignment, and the message below — the one that
+          # says what is actually wrong — is never printed.
+          body="$(tr '\n' ' ' < sitemap.xml | sed 's/<!--\([^-]\|-[^-]\)*-->//g')"
+          # Nothing that opens or closes a comment may survive that cut. One
+          # pass cannot: `<!<!-- -->--` leaves `<!--` behind, and a `--` inside
+          # a comment leaves the whole comment, so an address nobody meant to
+          # publish can end up inside what the next reader takes for live
+          # markup. A second pass is not the answer — it would cut more here
+          # than `searchMetadataViolations` cuts there, which is the drift the
+          # two are written to avoid — so the leftovers are checked instead,
+          # and a file that leaves any fails the deployment by name.
+          # `--!>` ends a comment in HTML and ends nothing in XML; a sitemap
+          # holding one is malformed either way, and this refuses rather than
+          # cuts, so naming it can only turn an unreadable file into a named
+          # failure. `searchMetadataViolations` refuses the same three.
+          case "$body" in
+            *'<!--'*|*'-->'*|*'--!>'*)
+              echo "::error title=Unreadable sitemap::a comment in sitemap.xml is nested or contains \"--\", so the file does not say what it appears to."
+              exit 1
+              ;;
+          esac
+          locations="$(printf '%s' "$body" \
+            | grep -o '<loc>[[:space:]]*[^<[:space:]]\{1,\}[[:space:]]*</loc>' \
+            | sed -e 's|<loc>[[:space:]]*||' -e 's|[[:space:]]*</loc>||' || true)"
+          if [ -z "$locations" ]; then
+            echo "::error title=Sitemap advertises no routes::sitemap.xml listed no <loc> to publish."
+            exit 1
+          fi
+          # The origin comes from the sitemap too, for the same reason the routes
+          # do: it is already declared there, and deriving it is one fewer copy.
+          origin="$(printf '%s\n' "$locations" | sed -n '1s|\(https\{0,1\}://[^/]*\).*|\1|p')"
+          if [ -z "$origin" ]; then
+            echo "::error title=Sitemap has no origin::the first <loc> is not an absolute address."
+            exit 1
+          fi
+          printf '%s\n' "$locations" | while IFS= read -r address; do
+            case "$address" in
+              "$origin"/?*) : ;;
+              *) echo "::error title=Foreign or rootless address::\"$address\" is not under $origin." && exit 1 ;;
+            esac
+          done
+          printf '%s\n' "$locations" | while IFS= read -r address; do
+            route="${address#"$origin"/}"
+            case "$route" in
+              */) echo "::error title=Unpublishable route::\"$route\" ends in a slash." && exit 1 ;;
+            esac
+            # `<route>.html`, not `<route>/index.html`. Pages serves `/ships` from
+            # `ships.html` with a 200 and no redirect; from a directory it answers
+            # 301 to `/ships/`, which would make the address the sitemap and the
+            # canonical both advertise the one address that does not answer.
+            #
+            # The copy is not byte-for-byte: the shell ships the root's own
+            # canonical and `og:url`, and a route that kept them would tell a
+            # crawler to index `/` instead — the same outcome the 404 status had,
+            # reached a different way. Both are rewritten to this route's own
+            # address, and the rewrite is checked rather than assumed, because a
+            # silent no-op here looks exactly like a published route.
+            mkdir -p "$(dirname "$route")"
+            sed -e "s|href=\"$origin/\"|href=\"$address\"|" \
+                -e "s|content=\"$origin/\"|content=\"$address\"|" \
+                index.html > "$route.html"
+            if ! grep -q "rel=\"canonical\"[^>]*href=\"$address\"" "$route.html"; then
+              echo "::error title=Canonical not rewritten::$route.html still names another address."
+              exit 1
+            fi
+            if ! grep -q "property=\"og:url\"[^>]*content=\"$address\"" "$route.html"; then
+              echo "::error title=og:url not rewritten::$route.html still names another address."
+              exit 1
+            fi
+            echo "::notice title=Route published::/$route answers 200 from $route.html, canonical $address."
+          done
 
       - name: Upload the build as a Pages artifact
         if: ${{ github.event_name == 'push' }}

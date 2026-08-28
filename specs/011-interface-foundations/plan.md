@@ -55,7 +55,7 @@ and options; publish each locale change as one committed revision with no mixed-
 translation, second theme, production preview surface or domain state inside UI components. English
 must remain readable without a network. Every action and datum remains available at 200% text and
 400% zoom without document horizontal scrolling. Touch targets use a 44 CSS-pixel design baseline.
-Conformance is WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+Conformance is WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 **Scale/Scope**: One application frame, locale store, formatter registry and announcement service;
 initial complete application catalogues `en` and `de`; every exported `src/app/ui/` component and
@@ -105,7 +105,8 @@ specs/011-interface-foundations/
     ├── component-preview-catalogue.md
     ├── reference-review.md
     ├── responsive-composition.md
-    └── screen-inventory.md
+    ├── screen-inventory.md
+    └── search-visibility.md
 ```
 
 `tasks.md` is Phase 2 output and is intentionally not created by this command.
@@ -169,8 +170,8 @@ registration and base configuration. It eagerly caches the shell and English and
 secondary locale once requested. Downstream capabilities may extend that configuration with static
 asset groups but must not register another worker or introduce another cache owner. It owns the
 other side of that worker too: a session that keeps serving the version it installed is the cost of
-being readable offline, so the same feature reports a newly published version, offers the restart
-that applies it, and never applies one by itself. Product and
+being readable offline, so the same feature reports a newly published version, announces the restart
+that applies it, and carries it out without asking. Product and
 preview applications import the same UI source and token entry point.
 
 ## Phase 0: Research Conclusions
@@ -237,6 +238,10 @@ No planning clarification marker remains.
   fixture addressing and the required state/profile/variant ledger.
 - [design/reference-review.md](./design/reference-review.md) records the exact 1a–1d patterns retained
   and the fixed-layout, remote-asset, contrast, target, semantics and localization mechanics rejected.
+- [design/search-visibility.md](./design/search-visibility.md) records the 2026-08-27 search-engine
+  analysis: what a crawler was previously served on all four routes, the six findings that were
+  acted on, the three assets and one build step the remaining omissions wait on, and what was
+  deliberately not done and why (FR-027).
 - [quickstart.md](./quickstart.md) provides runnable validation scenarios for strict compilation,
   catalogues, offline fallback, formatting, package text, previews, policy checks, browsers, axe,
   screen readers and zoom.

@@ -193,7 +193,7 @@ test.describe('the tab’s working build', () => {
     await duplicate.evaluate((state) => sessionStorage.setItem('edsb:tab', state!), tabState);
     await duplicate.reload();
     await expect(duplicate.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
-    await reachShellLink(duplicate, 'Shipyard');
+    await reachShellLink(duplicate, 'Ship Builder');
     await duplicate.goto('/ships/SideWinder');
     await duplicate.getByRole('button', { name: 'Build stock hull' }).click();
     await savedToBrowser(duplicate);

@@ -75,7 +75,7 @@ modelled-checkpoint restoration without cumulative mutation or stale catalogue c
 **Constraints**: No backend, account, telemetry or cross-origin runtime request; no private fitting,
 variant, engineering or calculation rules; no page horizontal scrolling; one tokenized dark theme;
 all application text translatable; all package game text/diagnostics remain package-owned; WCAG 2.2
-AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: Every hull, slot and pre-engineered variant supplied by the installed package; the
 package's largest discovered chooser; exactly the newest 100 Commander decisions; three product

@@ -1,16 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { DocumentAdapter } from '../platform/browser/document.adapter';
+import { DocumentAdapter, type RootDocumentState } from '../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
 import { CatalogueLoader } from './catalogue-loader';
 import { BUNDLED_ENGLISH, type LocaleCandidate, type ShippedLocale } from './locale-registry';
+import { SITE_ORIGIN } from '../platform/browser/site-address';
 import { LocaleStore } from './locale.store';
 
 /** Records every root-document commit so atomicity can be asserted. */
 class RecordingDocumentAdapter {
-  readonly commits: { language: string; direction: string; title: string | null }[] = [];
+  readonly commits: RootDocumentState[] = [];
 
-  commitRootState(language: string, direction: 'ltr' | 'rtl', title: string | null): void {
-    this.commits.push({ language, direction, title });
+  commitRootState(state: RootDocumentState): void {
+    this.commits.push(state);
   }
 }
 
@@ -70,7 +71,19 @@ function setup(options?: {
   return { store: TestBed.inject(LocaleStore), document, loader };
 }
 
-const germanCatalogue = { ...BUNDLED_ENGLISH, 'locale.self-name': 'Deutsch' };
+/**
+ * A complete German catalogue, differing from English wherever a test looks.
+ *
+ * The keys a route contributes are among them deliberately: a fixture that
+ * carried the English sentence for `catalogue.title` would let a store that
+ * never retranslates pass the retranslation test.
+ */
+const germanCatalogue = {
+  ...BUNDLED_ENGLISH,
+  'locale.self-name': 'Deutsch',
+  'catalogue.title': 'Schiffsbaukasten',
+  'library.description': 'Verwalte die in diesem Browser gespeicherten Builds.',
+};
 
 describe('LocaleStore', () => {
   it('starts on a complete bundled English catalogue before anything commits', () => {
@@ -115,7 +128,7 @@ describe('LocaleStore', () => {
     expect(store.commitBundledEnglish('browser').selectionSource).toBe('browser');
   });
 
-  it('publishes language, direction and title together in one document commit', () => {
+  it('publishes language, direction, title, description and address in one commit', () => {
     const { store, document } = setup();
 
     store.commitCandidate(
@@ -124,7 +137,13 @@ describe('LocaleStore', () => {
     );
 
     expect(document.commits).toEqual([
-      { language: 'de', direction: 'ltr', title: BUNDLED_ENGLISH['app.document-title.default'] },
+      {
+        language: 'de',
+        direction: 'ltr',
+        title: BUNDLED_ENGLISH['app.document-title.default'],
+        description: germanCatalogue['app.description'],
+        canonical: `${SITE_ORIGIN}/`,
+      },
     ]);
   });
 
@@ -320,32 +339,66 @@ describe('LocaleStore document title', () => {
   });
 
   it('names the page and the application together once a page is set', () => {
+    // The library rather than the catalogue: `catalogue.title` is a phrase the
+    // application name already contains, so a `toContain` pair would pass on
+    // the product name alone and prove nothing about composing anything.
     const { store, document } = setup();
     store.commitBundledEnglish();
 
-    store.setPage('Shipyard');
+    store.setRoute({ titleKey: 'library.title', descriptionKey: null, path: '/builds' });
 
-    expect(document.commits.at(-1)?.title).toContain('Shipyard');
-    expect(document.commits.at(-1)?.title).toContain(BUNDLED_ENGLISH['app.name']);
+    expect(document.commits.at(-1)?.title).toBe(
+      `${BUNDLED_ENGLISH['library.title']} · ${BUNDLED_ENGLISH['app.name']}`,
+    );
   });
 
-  it('treats a blank page name as no page rather than as an empty title', () => {
+  it('says the product name once for the screen that is named after it', () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 
-    store.setPage('   ');
+    store.setRoute({ titleKey: 'catalogue.title', descriptionKey: null, path: '/ships' });
+
+    // `/` redirects here and the sitemap ranks it highest, so this is the
+    // title in the search result that matters most.
+    expect(document.commits.at(-1)?.title).toBe(BUNDLED_ENGLISH['app.document-title.default']);
+  });
+
+  it('leaves the product name standing for a route that names no page', () => {
+    const { store, document } = setup();
+    store.commitBundledEnglish();
+
+    store.setRoute({ titleKey: null, descriptionKey: null, path: '/ships' });
 
     expect(document.commits.at(-1)?.title).toBe(BUNDLED_ENGLISH['app.document-title.default']);
   });
 
-  it('re-publishes the title in the language that commits with it', async () => {
+  it('retranslates the page a route entered before the language arrived', async () => {
+    // The ordinary order, not a corner case: selecting a non-English catalogue
+    // takes a request and the first navigation does not, so the route is
+    // entered under bundled English and the language lands behind it. Holding
+    // the key rather than the sentence is what lets that commit retranslate.
     const { store, document } = setup({ browserLanguages: ['de'] });
-    store.setPage('Shipyard');
+    store.setRoute({
+      titleKey: 'catalogue.title',
+      descriptionKey: 'library.description',
+      path: '/ships',
+    });
+    expect(document.commits.at(-1)?.description).toBe(BUNDLED_ENGLISH['library.description']);
 
     await store.start();
 
     const last = document.commits.at(-1);
     expect(last?.language).toBe('de');
-    expect(last?.title).toContain('Shipyard');
+    expect(last?.title).toContain(germanCatalogue['catalogue.title']);
+    expect(last?.description).toBe(germanCatalogue['library.description']);
+    expect(store.page()).toBe(germanCatalogue['catalogue.title']);
+  });
+
+  it('publishes the application description where the route declares none', () => {
+    const { store, document } = setup();
+
+    store.setRoute({ titleKey: 'catalogue.title', descriptionKey: null, path: '/ships' });
+
+    expect(document.commits.at(-1)?.description).toBe(BUNDLED_ENGLISH['app.description']);
   });
 });

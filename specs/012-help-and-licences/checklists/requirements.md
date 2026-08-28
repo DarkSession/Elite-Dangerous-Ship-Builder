@@ -21,7 +21,7 @@
 - [x] Scope and exclusions are explicit
 - [x] Cross-feature ownership is clear
 - [x] Success criteria are measurable
-- [x] The application-behaviour help comparison set is fixed at the seven FR-010 topics
+- [x] The application-behaviour help comparison set is fixed at the FR-010 topics
 - [x] Help-currentness has a zero-defect release condition for missing, duplicate, contradictory and unsupported statements
 - [x] Every behaviour topic has an explicit accepted-requirement or constitution-principle comparison source
 - [x] Offline availability is explicitly scoped to visits after one completed online load

@@ -43,18 +43,28 @@ export const SCOPE = {
   catalogues: 'src/app/i18n/locales',
   /** The application's one service-worker configuration. */
   serviceWorkerConfig: 'ngsw-config.json',
-  /** Files that may state the conformance target on the project's behalf. */
-  conformanceDocuments: ['README.md', 'AGENTS.md'],
+  /**
+   * Files that may state the conformance target on the project's behalf.
+   *
+   * The constitution is among them because it is where the excluded set is
+   * defined: a rule that reads every document quoting the target and not the
+   * one that sets it has a hole in the middle of it.
+   */
+  conformanceDocuments: ['README.md', 'AGENTS.md', '.specify/memory/constitution.md'],
   /**
    * Feature documentation whose conformance statements are also qualified.
    *
    * A specification that claims the target for its own surfaces is a statement
    * about those surfaces, and an unqualified one there is as strong a claim as
-   * an unqualified one in the README. The list is per feature rather than all
-   * of `specs/` because four earlier features still carry unqualified
-   * paragraphs; each joins as its documents are qualified.
+   * an unqualified one in the README.
+   *
+   * The whole tree, deliberately. A per-feature list is a rule that does not
+   * point at the files most likely to break it: an amendment to the excluded
+   * set is carried through the guarded directories and silently missed
+   * everywhere else, which leaves the constitution asserting one number and
+   * three dozen documents enumerating another.
    */
-  conformanceSpecs: ['specs/004-slef'],
+  conformanceSpecs: ['specs'],
   /** The emitted production output, inspected as shipped. */
   productionOutput: 'dist/elite-dangerous-ship-builder/browser',
   /** Where the build is configured to place the copied hull schematics. */
@@ -861,10 +871,43 @@ export async function runChecks({ scope = SCOPE } = {}) {
   await checkServiceWorkerOwnership(sources);
   await checkConformanceClaims(sources);
   await checkLedgerReconciliation();
+  await checkSearchMetadata();
   await checkProductionOutput();
   await checkCopiedSchematics();
 
   return [...violations];
+}
+
+/**
+ * IO wrapper: reads every file the search-metadata rule compares.
+ *
+ * Nine of them — the seven in `SEARCH_METADATA_FILES` plus the route table and
+ * the locale registry. The rule does not require its inputs, so a caller that
+ * reads fewer loses the checks that need them without being told.
+ */
+async function checkSearchMetadata() {
+  const read = async (path) => {
+    const file = resolve(ROOT, path);
+    return existsSync(file) ? await readFile(file, 'utf8') : '';
+  };
+
+  const routesSource = await read('src/app/app.routes.ts');
+
+  violations.push(
+    ...searchMetadataViolations({
+      origin: await read(SEARCH_METADATA_FILES.origin),
+      index: await read(SEARCH_METADATA_FILES.index),
+      robots: await read(SEARCH_METADATA_FILES.robots),
+      sitemap: await read(SEARCH_METADATA_FILES.sitemap),
+      manifest: await read(SEARCH_METADATA_FILES.manifest),
+      domain: await read(SEARCH_METADATA_FILES.domain),
+      tokens: await read(SEARCH_METADATA_FILES.tokens),
+      routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
+      locales: [
+        ...(await read('src/app/i18n/locale-registry.ts')).matchAll(/^\s{4}tag: '([^']+)',$/gm),
+      ].map((match) => match[1]),
+    }),
+  );
 }
 
 /** IO wrapper: reads the emitted production output. */
@@ -1091,8 +1134,32 @@ const BUNDLE_REMNANTS = [
   'onlyBuiltDependencies',
 ];
 
-/** Origins that appear as namespace or documentation strings, never as requests. */
+/**
+ * Origins that appear as namespace or documentation strings, never as requests.
+ *
+ * Deliberately short, and deliberately not shared with the search-metadata
+ * rule: this list exempts a host from the constitution-I gate on the shipped
+ * bundle, so anything added here is a host the output may reach without anyone
+ * being told. The vocabularies the head and the sitemap declare themselves
+ * against are named in {@link DECLARED_VOCABULARIES} instead, which exempts
+ * them from that rule alone.
+ */
 const NON_REQUEST_ORIGINS = [/^https?:\/\/www\.w3\.org\//];
+
+/**
+ * Vocabularies the crawler-facing files name without ever fetching them.
+ *
+ * `schema.org` is what the JSON-LD block declares itself against and
+ * `sitemaps.org` is the sitemap's XML namespace. A `@context` names a
+ * vocabulary and an `xmlns` names a schema; both would be identical strings if
+ * the site were served from the moon, so neither is the site's origin moving
+ * out from under the other files.
+ *
+ * Each entry is written with its trailing slash, because the addresses these
+ * are tested against are full URLs. A caller holding a bare origin appends one
+ * before testing.
+ */
+const DECLARED_VOCABULARIES = [/^https?:\/\/schema\.org\//, /^https?:\/\/www\.sitemaps\.org\//];
 
 /** Ways a bundle can actually reach another origin. */
 const CROSS_ORIGIN_REQUEST = [
@@ -1102,6 +1169,21 @@ const CROSS_ORIGIN_REQUEST = [
   /@import\s+(?:url\()?["']?(https?:\/\/[^"')]+)/gi,
   /url\(\s*["']?(https?:\/\/[^"')]+)/gi,
 ];
+
+/**
+ * `<link>` relationships that state something rather than fetch something.
+ *
+ * A canonical or an alternate is an address the document *declares*; the
+ * browser opens no connection for either, and a search engine is the only
+ * consumer. Every other relationship is left caught, including the ones that
+ * look declarative and are not: `preconnect` and `dns-prefetch` open the
+ * connection as their whole purpose, and `manifest`, `stylesheet`, `icon` and
+ * `preload` fetch a file.
+ *
+ * Without this, the canonical link the application needs in order to be found
+ * at all would be reported as the cross-origin request it is not (011/FR-027).
+ */
+const DECLARED_LINK_RELS = /<link\b[^>]*?\brel\s*=\s*["'](?:canonical|alternate)["'][^>]*>/gi;
 
 // ---------------------------------------------------------------------------
 // Rule: the hull schematics are extracted from the package, never kept
@@ -1254,10 +1336,16 @@ export function productionOutputViolations(contents) {
     // One URL, one violation: `@import url(...)` matches two of the patterns
     // above, and reporting the same address twice makes a short list look like
     // a long one.
+    //
+    // Declarative `<link>` elements are removed first rather than filtered
+    // afterwards, so the address inside one is never compared at all: it is not
+    // a request, and exempting it by origin would exempt real requests to the
+    // same host.
+    const requestable = text.replace(DECLARED_LINK_RELS, '');
     const reported = new Set();
     for (const pattern of CROSS_ORIGIN_REQUEST) {
       pattern.lastIndex = 0;
-      let match = pattern.exec(text);
+      let match = pattern.exec(requestable);
       while (match !== null) {
         const url = match[1];
         if (!NON_REQUEST_ORIGINS.some((allowed) => allowed.test(url)) && !reported.has(url)) {
@@ -1269,7 +1357,473 @@ export function productionOutputViolations(contents) {
             message: `The production output requests another origin: ${url}`,
           });
         }
-        match = pattern.exec(text);
+        match = pattern.exec(requestable);
+      }
+    }
+  }
+
+  return found;
+}
+
+// ---------------------------------------------------------------------------
+// Rule: the files that state where this application lives, and what it looks
+// like, agree with each other and with the route table
+// ---------------------------------------------------------------------------
+
+/** Where each half of the search metadata is written. */
+export const SEARCH_METADATA_FILES = {
+  origin: 'src/app/platform/browser/site-address.ts',
+  index: 'src/index.html',
+  robots: 'public/robots.txt',
+  sitemap: 'public/sitemap.xml',
+  manifest: 'public/manifest.webmanifest',
+  /**
+   * The file that actually decides the production domain.
+   *
+   * Pages reads it and serves the site from whatever it names, so a domain move
+   * that edits this and nothing else would leave every canonical link, the
+   * sitemap and the robots file pointing at an address the site no longer
+   * answers on — and nothing would notice.
+   */
+  domain: 'public/CNAME',
+  /** The one file permitted to declare the colour the application is drawn on. */
+  tokens: 'src/styles/tokens/_primitives.scss',
+};
+
+/** Head tags `index.html` must carry for a crawler that runs no script. */
+const REQUIRED_HEAD_TAGS = [
+  { attribute: 'name', key: 'description' },
+  { attribute: 'name', key: 'theme-color' },
+  { attribute: 'name', key: 'twitter:card' },
+  { attribute: 'name', key: 'twitter:title' },
+  { attribute: 'name', key: 'twitter:description' },
+  { attribute: 'property', key: 'og:type' },
+  { attribute: 'property', key: 'og:site_name' },
+  { attribute: 'property', key: 'og:title' },
+  { attribute: 'property', key: 'og:description' },
+  { attribute: 'property', key: 'og:url' },
+  { attribute: 'property', key: 'og:locale' },
+];
+
+/** The description tags that must all say the same thing. */
+const DESCRIPTION_TAGS = [
+  { attribute: 'name', key: 'description' },
+  { attribute: 'property', key: 'og:description' },
+  { attribute: 'name', key: 'twitter:description' },
+];
+
+/** Members a web app manifest needs before a browser offers installation. */
+const REQUIRED_MANIFEST_MEMBERS = [
+  'name',
+  'short_name',
+  'description',
+  'start_url',
+  'scope',
+  'display',
+  'background_color',
+  'theme_color',
+  'icons',
+];
+
+/** Routes that are redirects or wildcards, and so are not addresses to list. */
+const UNLISTABLE_ROUTES = new Set(['', '**']);
+
+/**
+ * One `<meta>` element's content, whichever quote character delimits it.
+ *
+ * Delimiter-aware rather than "anything that is not a quote": a sentence with
+ * an apostrophe in it truncates under the simpler pattern, and two tags that
+ * differ only after the apostrophe compare equal.
+ */
+function headContent(document, attribute, key) {
+  const tag = new RegExp(
+    `<meta\\b[^>]*?\\b${attribute}\\s*=\\s*(["'])${key}\\1[^>]*?\\bcontent\\s*=\\s*(["'])([\\s\\S]*?)\\2`,
+    'i',
+  ).exec(document);
+  return tag?.[3] ?? null;
+}
+
+/**
+ * A document with its XML comments removed, so nothing inside one is read.
+ *
+ * The body is "anything but `--`" rather than a lazy `[\s\S]*?`, so that this
+ * matches character for character what the deployment's `sed` can express
+ * (`.github/workflows/ci.yml`, "Serve client-side routes as real addresses").
+ * XML forbids `--` inside a comment, and neither reader validates the file, so
+ * a malformed one has to fail the same way in both: the lazy form would strip
+ * it here and publish a route from inside it there. This form strips neither.
+ *
+ * One pass therefore leaves some documents holding a comment delimiter still —
+ * a nested `<!<!-- -->--` reassembles one — so this is deliberately not a
+ * sanitiser and nothing may treat it as one. The caller checks what is left
+ * over and fails on it by name; the deployment does the same, in the same
+ * words.
+ */
+function withoutXmlComments(document) {
+  // Written as "keep what is between the comments" rather than as a replace,
+  // because a replace of a multi-character delimiter reads as a sanitiser and
+  // this is not one — the leftovers are what the callers act on. Same regexp,
+  // same single left-to-right pass over non-overlapping matches, so the result
+  // is identical to the replace form and to the deployment's `sed`; the
+  // difference is only in what the code claims to be.
+  const kept = [];
+  let cut = 0;
+
+  for (const comment of document.matchAll(/<!--(?:[^-]|-[^-])*-->/g)) {
+    kept.push(document.slice(cut, comment.index));
+    cut = comment.index + comment[0].length;
+  }
+  kept.push(document.slice(cut));
+
+  return kept.join('');
+}
+
+/**
+ * One string as a pattern that matches exactly itself.
+ *
+ * Every metacharacter, not just the dot. Escaping the one character a caller
+ * happens to pass today is how a hand-rolled escape becomes wrong later: a
+ * criterion, a rel or a key that ever contains a backslash would otherwise
+ * escape the character after it instead of itself, and the pattern would match
+ * something the caller never wrote.
+ */
+function escapedForRegExp(literal) {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** One `<link>` element's href, by its relationship. */
+function linkHref(document, rel) {
+  const tag = new RegExp(
+    `<link\\b[^>]*?\\brel\\s*=\\s*(["'])${rel}\\1[^>]*?\\bhref\\s*=\\s*(["'])([\\s\\S]*?)\\2`,
+    'i',
+  ).exec(document);
+  return tag?.[3] ?? null;
+}
+
+/**
+ * Checks that nothing drifts between the files that state where this
+ * application lives, what each of its pages is, and what colour it is.
+ *
+ * The production origin is repeated in `src/index.html`, `public/robots.txt`
+ * and `public/sitemap.xml`, and again as the host in `public/CNAME`; the route
+ * list is repeated in `app.routes.ts` and the sitemap; the background colour is
+ * repeated in the head's `theme-color` and in two members of the manifest.
+ * Every one of those repetitions is a silent regression waiting to happen — a
+ * route added with no sitemap entry, a domain moved in one file and not the
+ * others, a palette token changed under a manifest nobody reopened — and none
+ * of them fails anything at runtime. They fail months later, in a search result
+ * nobody is looking at (011/FR-027).
+ *
+ * The manifest states the origin nowhere, and that absence is checked too: a
+ * `start_url`, `scope` or icon that is absolute or root-absolute would be a
+ * fifth copy of it, and an `id` a sixth.
+ *
+ * `input` is `{ origin, index, robots, sitemap, manifest, domain, tokens,
+ * routes, locales }`. Each is the text of its file except `routes`, the paths
+ * parsed out of the route table, and `locales`, the tags this build ships;
+ * `origin` is `site-address.ts`, `domain` is `public/CNAME` and `tokens` is the
+ * primitives stylesheet the theme colour is read from. Every one of them is
+ * read, and a caller that omits one loses the checks that need it. An empty
+ * input is itself a violation: a rule that passes when there is nothing to
+ * inspect is not a gate.
+ */
+export function searchMetadataViolations(input) {
+  const found = [];
+  const fail = (file, message) => found.push({ file, line: 0, rule: 'search-metadata', message });
+
+  const declared = /SITE_ORIGIN\s*=\s*'(https:\/\/[^']+)'/.exec(input.origin ?? '');
+  if (declared === null) {
+    fail(
+      SEARCH_METADATA_FILES.origin,
+      'No SITE_ORIGIN is declared, so nothing states where this application is published.',
+    );
+    return found;
+  }
+  const origin = declared[1];
+  const host = origin.replace(/^https?:\/\//, '');
+
+  // The domain the site is actually served from. `SITE_ORIGIN` is a claim about
+  // it, and a claim nobody compares is how a moved domain leaves every
+  // canonical link pointing at an address that no longer answers.
+  const domain = (input.domain ?? '').trim();
+  if (domain.length === 0) {
+    fail(SEARCH_METADATA_FILES.domain, 'No production domain is declared for the deployment.');
+  } else if (domain !== host) {
+    fail(
+      SEARCH_METADATA_FILES.domain,
+      `The site is served from "${domain}" but SITE_ORIGIN names "${host}". One of the two has moved.`,
+    );
+  }
+
+  // `index.html`: the head a crawler that runs no script is served.
+  const index = input.index ?? '';
+  for (const { attribute, key } of REQUIRED_HEAD_TAGS) {
+    const content = headContent(index, attribute, key);
+    if (content === null || content.length === 0) {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        `The head carries no non-empty <meta ${attribute}="${key}">, so a crawler that runs no script reads none.`,
+      );
+    }
+  }
+
+  // The href, not just the element. A relative `href="/"` satisfies "a canonical
+  // exists" and is exactly the mistake `SITE_ORIGIN` exists to prevent: served
+  // from a preview sub-path it canonicalises the preview to itself.
+  const canonical = linkHref(index, 'canonical');
+  if (canonical === null) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The head declares no canonical link, so every preview deployment is a duplicate of the site.',
+    );
+  } else if (canonical !== `${origin}/`) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      `The canonical link is "${canonical}"; it must be the absolute "${origin}/".`,
+    );
+  }
+
+  // `og:url` is the canonical by another name, and a crawler reading only the
+  // card block reads this one. Presence alone would let it say "/".
+  const declaredUrl = headContent(index, 'property', 'og:url');
+  if (declaredUrl !== null && declaredUrl !== `${origin}/`) {
+    fail(SEARCH_METADATA_FILES.index, `og:url is "${declaredUrl}"; it must be "${origin}/".`);
+  }
+
+  // The manifest link is held to the rule its own paths are held to: a leading
+  // slash resolves at the host root, which is not where a preview lives.
+  const manifestHref = linkHref(index, 'manifest');
+  if (manifestHref === null) {
+    fail(SEARCH_METADATA_FILES.index, 'The head links no web app manifest.');
+  } else if (manifestHref.startsWith('/')) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      `The manifest is linked as "${manifestHref}". A root-absolute path breaks every preview deployment; make it relative.`,
+    );
+  }
+
+  // The structured data is parsed rather than spotted. A block that does not
+  // parse states exactly as much as no block at all, and says so to nobody.
+  const structured =
+    /<script\b[^>]*?\btype\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i.exec(
+      index,
+    );
+  if (structured === null) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The head carries no JSON-LD, so nothing states in machine-readable form what this is.',
+    );
+  } else {
+    let node = null;
+    try {
+      node = JSON.parse(structured[1]);
+    } catch {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        'The JSON-LD block does not parse, so no crawler reads it.',
+      );
+    }
+    if (node !== null) {
+      if (node.url !== `${origin}/`) {
+        fail(
+          SEARCH_METADATA_FILES.index,
+          `The JSON-LD names "${node.url}" rather than "${origin}/".`,
+        );
+      }
+      const declaredLanguages = [node.inLanguage ?? []].flat().join(',');
+      if (input.locales !== undefined && declaredLanguages !== input.locales.join(',')) {
+        fail(
+          SEARCH_METADATA_FILES.index,
+          `The JSON-LD declares languages "${declaredLanguages}" but this build ships "${input.locales.join(',')}".`,
+        );
+      }
+    }
+  }
+
+  // The three description tags say one thing. They drift the moment one is
+  // edited and the others are not, and nothing at runtime notices. A tag that
+  // is absent is left out of the comparison: it is already reported above as
+  // missing, and reporting it twice makes one fault look like two.
+  const descriptions = new Set(
+    DESCRIPTION_TAGS.map(({ attribute, key }) => headContent(index, attribute, key)).filter(
+      (value) => value !== null,
+    ),
+  );
+  if (descriptions.size > 1) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The description, og:description and twitter:description do not say the same thing.',
+    );
+  }
+
+  // Every absolute address in the four crawler-facing files is this origin.
+  // `http` as well as `https`: a plain-text address is still an address, and an
+  // unnoticed one is still the wrong site.
+  for (const key of ['index', 'robots', 'sitemap', 'manifest']) {
+    const file = SEARCH_METADATA_FILES[key];
+    for (const match of (input[key] ?? '').matchAll(/https?:\/\/[a-z0-9.-]+/gi)) {
+      const address = match[0];
+      // A bare origin gains the trailing slash `DECLARED_VOCABULARIES` is
+      // written against, so a vocabulary named without a path still matches.
+      if (
+        address !== origin &&
+        !DECLARED_VOCABULARIES.some((allowed) => allowed.test(`${address}/`))
+      ) {
+        fail(
+          file,
+          `"${address}" is not the declared site origin ${origin}. One of the two has moved and the other has not.`,
+        );
+      }
+    }
+  }
+
+  // `robots.txt`: crawlable, and naming the map.
+  const robots = input.robots ?? '';
+  if (!/^\s*User-agent:/im.test(robots)) {
+    fail(SEARCH_METADATA_FILES.robots, 'No User-agent group, so the file states nothing.');
+  }
+  if (/^\s*Disallow:\s*\/\s*$/im.test(robots)) {
+    fail(
+      SEARCH_METADATA_FILES.robots,
+      'The whole site is disallowed. Nothing here is behind an account to keep out of an index.',
+    );
+  }
+  if (!robots.includes(`Sitemap: ${origin}/sitemap.xml`)) {
+    fail(SEARCH_METADATA_FILES.robots, `No "Sitemap: ${origin}/sitemap.xml" line.`);
+  }
+
+  // `sitemap.xml`: exactly the addressable routes, no more and no fewer.
+  //
+  // Comments are cut first, because the deployment cuts them: this file is also
+  // the route list `.github/workflows/ci.yml` publishes from, and a `<loc>` the
+  // two read differently is a route that passes here and never gets a file.
+  const body = withoutXmlComments(input.sitemap ?? '');
+
+  // Nothing that opens or closes a comment may survive the cut. One pass
+  // cannot: `<!<!-- -->--` leaves `<!--` behind, and a `--` inside a comment
+  // leaves the whole thing, so a `<loc>` nobody meant to publish can end up
+  // inside what the next reader takes for live markup. Neither this nor the
+  // deployment's `sed` makes a second pass — a second pass would strip more
+  // here than there, which is the drift they are written to avoid — so what
+  // is left over is checked instead of cut, and a file that leaves anything
+  // over fails by name.
+  //
+  // `--!>` is named alongside `-->` because it ends a comment in HTML and ends
+  // nothing in XML. A sitemap holding one is malformed either way, and this is
+  // a refusal rather than a cut, so covering both can only turn a file nobody
+  // can read from an accepted one into a named failure.
+  if (/<!--|--!?>/.test(body)) {
+    fail(
+      SEARCH_METADATA_FILES.sitemap,
+      'A comment here is nested or contains "--", so the file does not say what it appears to. ' +
+        'Neither this check nor the deployment can read it; write plain comments.',
+    );
+  }
+
+  const listed = new Set(
+    [...body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]),
+  );
+  const addressable = (input.routes ?? []).filter(
+    (route) => !UNLISTABLE_ROUTES.has(route) && !route.includes(':'),
+  );
+  for (const route of addressable) {
+    if (!listed.has(`${origin}/${route}`)) {
+      fail(SEARCH_METADATA_FILES.sitemap, `Route "/${route}" is addressable but is not listed.`);
+    }
+  }
+  for (const address of listed) {
+    if (!addressable.some((route) => `${origin}/${route}` === address)) {
+      fail(
+        SEARCH_METADATA_FILES.sitemap,
+        `"${address}" is listed but is not a route this application serves.`,
+      );
+    }
+  }
+
+  // The dark ground, stated three times: in the token layer that draws it, in
+  // the head that tells a browser what to paint before the styles land, and in
+  // the manifest that colours an installed window. `src/index.html` is outside
+  // the template scan, so nothing else would notice them diverging.
+  const ground = /--edsb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(input.tokens ?? '');
+  if (ground === null) {
+    fail(
+      SEARCH_METADATA_FILES.tokens,
+      'No --edsb-palette-bg is declared to take a theme colour from.',
+    );
+  } else {
+    const declared = headContent(index, 'name', 'theme-color');
+    if (declared !== null && declared.toLowerCase() !== ground[1].toLowerCase()) {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        `theme-color is "${declared}" but the token layer draws ${ground[1]}.`,
+      );
+    }
+  }
+
+  // `manifest.webmanifest`: parses, complete, and reachable from a sub-path.
+  let manifest = null;
+  try {
+    manifest = JSON.parse(input.manifest ?? '');
+  } catch {
+    fail(SEARCH_METADATA_FILES.manifest, 'The manifest is not valid JSON, so no browser reads it.');
+  }
+  if (manifest !== null) {
+    for (const member of REQUIRED_MANIFEST_MEMBERS) {
+      if (manifest[member] === undefined) {
+        fail(SEARCH_METADATA_FILES.manifest, `The manifest declares no "${member}".`);
+      }
+    }
+
+    if (ground !== null) {
+      for (const member of ['theme_color', 'background_color']) {
+        const value = manifest[member];
+        if (typeof value === 'string' && value.toLowerCase() !== ground[1].toLowerCase()) {
+          fail(
+            SEARCH_METADATA_FILES.manifest,
+            `"${member}" is "${value}" but the token layer draws ${ground[1]}.`,
+          );
+        }
+      }
+    }
+    // Same reason the locale catalogues' paths are relative: a preview is
+    // served from a sub-path of a Pages site, and a leading slash would look
+    // for the scope, the start URL and every icon at the host root.
+    // `id` is deliberately absent rather than relative: the specification
+    // resolves it against the manifest's *origin*, so `./` and `/` name the
+    // same identity and neither can be per-deployment. Omitted, the identity
+    // defaults to the resolved `start_url`, which is.
+    if (manifest.id !== undefined) {
+      fail(
+        SEARCH_METADATA_FILES.manifest,
+        'The manifest declares an "id". It resolves against the origin, so it collides every deployment into one installed application; omit it and let the resolved start_url be the identity.',
+      );
+    }
+
+    for (const [member, value] of [
+      ['start_url', manifest.start_url],
+      ['scope', manifest.scope],
+      ...(Array.isArray(manifest.icons) ? manifest.icons : []).map((icon, index) => [
+        `icons[${index}].src`,
+        icon?.src,
+      ]),
+    ]) {
+      if (typeof value !== 'string') {
+        continue;
+      }
+      // Absolute as well as root-absolute. An address naming the production
+      // origin passes every other rule here — it is the declared origin, after
+      // all — and still pins the installed application to production from a
+      // preview, which is the one thing these three members must not do.
+      if (/^[a-z][a-z0-9+.-]*:/i.test(value) || value.startsWith('//')) {
+        fail(
+          SEARCH_METADATA_FILES.manifest,
+          `"${member}" is "${value}". An absolute address installs a preview as the production site; make it relative.`,
+        );
+      } else if (value.startsWith('/')) {
+        fail(
+          SEARCH_METADATA_FILES.manifest,
+          `"${member}" is "${value}". A root-absolute path breaks every preview deployment; make it relative.`,
+        );
       }
     }
   }
@@ -1340,8 +1894,25 @@ export function ledgerReconciliationViolations(input) {
 // Rule: no unqualified WCAG 2.2 AA claim
 // ---------------------------------------------------------------------------
 
-/** The seven criteria the constitution excludes from the conformance target. */
-export const EXCLUDED_CRITERIA = ['2.1.1', '2.1.2', '2.1.4', '2.4.1', '2.4.3', '2.4.7', '2.4.11'];
+/**
+ * The criteria the constitution excludes from the conformance target.
+ *
+ * Seven are the keyboard-operation block principle V excludes. The eighth,
+ * 2.2.1, is excluded for the update restart alone: a published version is
+ * applied without asking, so the announcement before it carries nothing that
+ * calls it off, and a time limit with no way out meets none of that
+ * criterion's conditions.
+ */
+export const EXCLUDED_CRITERIA = [
+  '2.1.1',
+  '2.1.2',
+  '2.1.4',
+  '2.2.1',
+  '2.4.1',
+  '2.4.3',
+  '2.4.7',
+  '2.4.11',
+];
 
 /** A claim of WCAG 2.2 AA conformance, however it is phrased. */
 const CONFORMANCE_CLAIM = /WCAG\s*2\.2\s*(?:Level\s*)?AA/gi;
@@ -1349,14 +1920,14 @@ const CONFORMANCE_CLAIM = /WCAG\s*2\.2\s*(?:Level\s*)?AA/gi;
 /**
  * Rejects a conformance claim that does not name its exclusions.
  *
- * The target is WCAG 2.2 AA *minus seven criteria*, and a claim that omits that
+ * The target is WCAG 2.2 AA *minus eight criteria*, and a claim that omits that
  * qualification is not a shorthand — it is a stronger claim than the project
  * can support, made to whoever reads it. Every statement therefore carries the
  * criteria it excludes, in the same sentence, so it cannot be quoted without
  * them (FR-015).
  *
  * `sources` is `{ [file]: contents }`. A claim qualifies when its own paragraph
- * names all seven criteria.
+ * names all eight criteria.
  */
 export function conformanceClaimViolations(sources) {
   const found = [];
@@ -1374,7 +1945,14 @@ export function conformanceClaimViolations(sources) {
         continue;
       }
 
-      const missing = EXCLUDED_CRITERIA.filter((criterion) => !paragraph.includes(criterion));
+      // Bounded by digits rather than matched as a substring. `2.4.1` occurs
+      // inside `2.4.11`, so a plain `includes` accepts a statement that names
+      // seven criteria and omits 2.4.1 — a different seven from the one FR-015
+      // calls out, and exactly the half-carried amendment this rule exists to
+      // fail.
+      const missing = EXCLUDED_CRITERIA.filter(
+        (criterion) => !new RegExp(`(?<!\\d)${escapedForRegExp(criterion)}(?!\\d)`).test(paragraph),
+      );
       if (missing.length > 0) {
         found.push({
           file,
@@ -1417,6 +1995,9 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
+    'catalogue.title':
+      'The product name. The screen the application opens on is named after the product, ruled 2026-08-27, and a product renamed in one language is a different product.',
+    'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',
@@ -1792,6 +2373,7 @@ export const rules = {
   conformanceClaimViolations,
   ledgerReconciliationViolations,
   productionOutputViolations,
+  searchMetadataViolations,
   copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,

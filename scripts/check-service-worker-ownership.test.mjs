@@ -103,7 +103,12 @@ describe('service-worker ownership across features', () => {
   it('leaves feature 011’s app-shell and locale groups untouched', () => {
     const byName = Object.fromEntries(config.assetGroups.map((group) => [group.name, group]));
 
-    assert.deepEqual(byName['app-shell'].resources.files, ['/index.html', '/*.css', '/*.js']);
+    assert.deepEqual(byName['app-shell'].resources.files, [
+      '/index.html',
+      '/manifest.webmanifest',
+      '/*.css',
+      '/*.js',
+    ]);
     assert.deepEqual(byName['fonts-and-bundled-english'].resources.files, [
       '/fonts/**',
       '/i18n/en.json',

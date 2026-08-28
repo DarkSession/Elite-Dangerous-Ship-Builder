@@ -4,7 +4,7 @@ import { provideLocalization } from '../../../i18n/i18n.providers';
 
 /** Canvas 1b's sheet bar, as the hull sheet publishes it. */
 const HULL_SHEET: ScreenReturn = {
-  back: { id: 'catalogue', label: 'Back to the shipyard', href: '/ships', current: false },
+  back: { id: 'catalogue', label: 'Back to Ship Builder', href: '/ships', current: false },
   title: 'Anaconda',
   detail: 'Faulcon deLacy · Large landing pad',
 };
@@ -19,7 +19,7 @@ describe('AppFrame', () => {
 
   function render(back: ScreenReturn | null): HTMLElement {
     const fixture = TestBed.createComponent(AppFrame);
-    fixture.componentRef.setInput('routeContext', 'Shipyard');
+    fixture.componentRef.setInput('routeContext', 'Ship Builder');
     fixture.componentRef.setInput('routeCount', '48 ships');
     fixture.componentRef.setInput('back', back);
     fixture.detectChanges();
@@ -30,7 +30,7 @@ describe('AppFrame', () => {
     const element = render(null);
 
     expect(element.querySelector('.frame__return')).toBeNull();
-    expect(element.querySelector('.frame__title')?.textContent?.trim()).toBe('Shipyard');
+    expect(element.querySelector('.frame__title')?.textContent?.trim()).toBe('Ship Builder');
   });
 
   it('gives a layered screen the way back and its own name', () => {
@@ -41,7 +41,7 @@ describe('AppFrame', () => {
     // A real link: an address that opens in a new tab and copies, named by
     // where it goes rather than by the arrow drawn in it.
     expect(back?.getAttribute('href')).toBe('/ships');
-    expect(back?.textContent).toContain('Back to the shipyard');
+    expect(back?.textContent).toContain('Back to Ship Builder');
 
     const identity = element.querySelector('.frame__return-identity');
     expect(identity?.querySelector('h1')?.textContent?.trim()).toBe('Anaconda');
@@ -58,7 +58,7 @@ describe('AppFrame', () => {
     const titles = [...element.querySelectorAll('h1')].map((heading) =>
       heading.textContent?.trim(),
     );
-    expect(titles).toEqual(['Anaconda', 'Shipyard']);
+    expect(titles).toEqual(['Anaconda', 'Ship Builder']);
   });
 
   it('carries the way back alone when the package could name no hull', () => {

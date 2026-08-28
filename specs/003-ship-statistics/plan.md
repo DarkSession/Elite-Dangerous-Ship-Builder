@@ -61,7 +61,7 @@ status revision within 100 ms at the mobile viewport under Chromium 4x CPU slowd
 values and semantics remain unchanged; no mixed revisions; no fabricated diagnosis, target or
 readiness verdict; no persisted viewing state; one dark tokenized design system; all owned text and
 formatting localized; no document horizontal scrolling; WCAG 2.2 AA except criteria 2.1.1, 2.1.2,
-2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
+2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11
 
 **Scale/Scope**: One active build of up to the package hull's complete slot set; two structural
 facts, all ordered package issues, seven headline slots, three load choices, valid half-pip

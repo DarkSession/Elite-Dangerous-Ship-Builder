@@ -164,7 +164,7 @@ For every screen and relevant empty/loading/error/disabled/dialog state, verify:
 - numbers, credits, units and dates follow the active locale;
 - canonical Almanac text is visibly identified as untranslated when the active locale is unavailable from the package.
 
-Where conformance is stated, expected wording names the excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+Where conformance is stated, expected wording names the excluded criteria: 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 ## Scenario 10: Design-reference reconciliation
 

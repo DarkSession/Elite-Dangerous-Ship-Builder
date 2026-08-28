@@ -52,6 +52,8 @@ describe('HelpPresenter', () => {
         ...(entry.link === null ? [] : [entry.link.label]),
       ]),
       ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
+      view.about.maintainer,
+      view.about.provenance,
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
     ];
 
@@ -121,6 +123,8 @@ describe('HelpPresenter', () => {
       const view = presenter().view();
       const everything = [
         view.purpose,
+        view.about.maintainer,
+        view.about.provenance,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
       ].join(' ');
 
@@ -132,16 +136,40 @@ describe('HelpPresenter', () => {
       const view = presenter().view();
       const everything = [
         view.purpose,
+        view.about.maintainer,
+        view.about.provenance,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
         ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ].join(' ');
 
       expect(everything).not.toMatch(/live game|live catalogue|up to date|latest version/i);
     });
+
+    // The once-per-application Almanac credit feature 002's voice ruling put in
+    // this feature. It lived in a FAQ answer until that answer was withdrawn;
+    // it is `ABOUT` prose again, and around thirty strings elsewhere say
+    // nothing about the package because this sentence does (FR-008).
+    it('credits the bundled Almanac for the catalogue, the checks and the calculations', () => {
+      const provenance = presenter().view().about.provenance;
+
+      expect(provenance).toMatch(/almanac/i);
+      expect(provenance).toBe(englishMessages['help.provenance']);
+    });
+
+    it('names who maintains the application, in its own sentence', () => {
+      // Three sentences from three keys, and the presenter's whole job here is
+      // putting each in its own field. A length check would pass with all three
+      // resolving to the same string.
+      const view = presenter().view();
+
+      expect(view.about.maintainer).toBe(englishMessages['help.maintainer']);
+      expect(view.about.maintainer).not.toBe(view.purpose);
+      expect(view.about.maintainer).not.toBe(view.about.provenance);
+    });
   });
 
   describe('the topic projection', () => {
-    it('publishes all seven topics, once each, in the declared order', () => {
+    it('publishes every topic, once each, in the declared order', () => {
       const topics = presenter().view().topics;
 
       expect(topics.map((topic) => topic.id)).toEqual([...HELP_TOPIC_IDS]);
@@ -177,7 +205,7 @@ describe('HelpPresenter', () => {
     it('carries neither the import promise nor the retained-partial-roll claim', () => {
       // The two reference answers this application cannot make. The generator
       // refuses a catalogue that reintroduces the second; the first is a topic
-      // feature 004 owns and is simply not one of the seven.
+      // feature 004 owns and is not one of the two here.
       const answers = presenter()
         .view()
         .topics.map((topic) => topic.answer)

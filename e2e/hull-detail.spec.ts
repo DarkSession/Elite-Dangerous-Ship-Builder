@@ -74,7 +74,7 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   // this link is the way back from anywhere but the shipyard. Waiting for it is
   // what keeps the journey behind the navigation that brought us here: without
   // it the search below can be typed into a manifest that is already leaving.
-  await reachShellLink(page, 'Shipyard');
+  await reachShellLink(page, 'Ship Builder');
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
   await openHullFromManifest(page, name);
@@ -220,7 +220,7 @@ test.describe('hull detail', () => {
     await expect(page.getByText(/Nonexistent_Hull/)).toBeVisible();
     await expect(page.getByText(/nothing has been created or changed/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Build stock hull' })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'Back to the shipyard' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Back to Ship Builder' })).toBeVisible();
   });
 
   test('creates the package’s own default build, and only when asked', async ({ page }) => {

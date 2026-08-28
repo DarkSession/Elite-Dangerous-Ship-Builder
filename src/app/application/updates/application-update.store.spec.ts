@@ -5,6 +5,8 @@ import {
 } from '../../platform/browser/application-update.adapter';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
+import { EDSB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
+import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import {
   ApplicationUpdateStore,
   UPDATE_CHECK_INTERVAL_MS,
@@ -112,13 +114,19 @@ interface Harness {
   readonly updates: FakeUpdates;
   readonly lifecycle: FakeLifecycle;
   readonly connectivity: FakeConnectivity;
+  /** The session area the restart leaves its marker in. */
+  readonly session: MemoryStorage;
 }
 
-function setup(options: { available?: boolean } = {}): Harness {
+function setup(
+  options: { available?: boolean; session?: MemoryStorage; restartable?: boolean } = {},
+): Harness {
   const updates = new FakeUpdates();
   updates.available = options.available ?? true;
+  updates.restartable = options.restartable ?? true;
   const lifecycle = new FakeLifecycle();
   const connectivity = new FakeConnectivity();
+  const session = options.session ?? new MemoryStorage();
 
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
@@ -126,10 +134,17 @@ function setup(options: { available?: boolean } = {}): Harness {
       { provide: ApplicationUpdateAdapter, useValue: updates },
       { provide: PageLifecycleAdapter, useValue: lifecycle },
       { provide: ConnectivityAdapter, useValue: connectivity },
+      ...provideMemoryStorage(new MemoryStorage(), session),
     ],
   });
 
-  return { store: TestBed.inject(ApplicationUpdateStore), updates, lifecycle, connectivity };
+  return {
+    store: TestBed.inject(ApplicationUpdateStore),
+    updates,
+    lifecycle,
+    connectivity,
+    session,
+  };
 }
 
 describe('ApplicationUpdateStore', () => {
@@ -190,11 +205,9 @@ describe('ApplicationUpdateStore', () => {
   });
 
   it('puts the overlay up the moment a version is ready, and restarts under it', async () => {
-    // Reversed 2026-08-26. This used to assert the opposite — that nothing
-    // restarts without a Commander pressing a control — and what that produced
-    // was a fleet of sessions on old builds behind a notice nobody pressed.
-    // What is kept is that the restart is announced before it happens and can
-    // be called off (Commander request; FR-025).
+    // The restart is applied rather than offered: a notice that waits to be
+    // pressed produces a fleet of sessions on old builds behind a notice nobody
+    // presses, which is the failure this mechanism exists to prevent (FR-025).
     const { store, updates } = setup();
 
     updates.report('ready');
@@ -209,68 +222,117 @@ describe('ApplicationUpdateStore', () => {
     expect(updates.calls).toEqual(['activate', 'reload']);
   });
 
-  it('gives a Commander at least the twenty seconds the rule asks for', () => {
-    // A restart on a clock is a time limit. It stands only because the overlay
-    // warns before it expires and `postpone()` calls it off with one action,
-    // and that branch of WCAG 2.2.1 sets the floor at twenty seconds.
-    const { updates } = setup();
-
-    updates.report('ready');
-
-    expect(updates.grace).toBeGreaterThanOrEqual(20_000);
+  it('stands the overlay long enough for its sentences to be read', () => {
+    // No rule sets this number: nothing on the overlay calls the restart off,
+    // so 2.2.1 imposes no floor and the criterion is excluded for this
+    // mechanism. What is left is reading speed. Two sentences of roughly twenty
+    // words at a deliberately unhurried 150 words a minute is about eight
+    // seconds, and the Commander this costs the most is the one who looks up
+    // partway through and has nothing to press.
+    expect(UPDATE_OVERLAY_MS).toBeGreaterThanOrEqual(8_000);
   });
 
-  it('calls the restart off when a Commander says not now, and keeps the version ready', () => {
-    const { store, updates } = setup();
+  it('leaves the marker the session after the restart reads, and only for an update', async () => {
+    const { store, updates, session } = setup();
     updates.report('ready');
 
-    store.postpone();
+    await store.apply();
 
+    // Written before the reload, because after it there is no code here to
+    // write anything.
+    expect(session.entries.get(EDSB_UPDATE_APPLIED_KEY)).toBe('1');
+    expect(updates.calls).toEqual(['activate', 'reload']);
+  });
+
+  it('leaves no marker when a repair restarts an unusable cache', async () => {
+    // A repair restarts onto the version this session was already supposed to
+    // be running. That is not an update, and announcing one would be a claim
+    // about a version that never changed.
+    const { store, updates, session } = setup();
+    updates.report('unusable');
+
+    await store.apply();
+
+    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    expect(updates.calls).toEqual(['reload']);
+  });
+
+  it('takes the marker back when there was no page to start over', async () => {
+    const { store, updates, session } = setup();
+    updates.restartable = false;
+    updates.report('ready');
+
+    await store.apply();
+
+    // Otherwise the next session is greeted with news of a restart that never
+    // happened.
+    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    expect(store.applying()).toBe(false);
     expect(store.overlay()).toBe(false);
-    // The countdown is gone, so the page is not restarted behind the dismissal.
-    expect(updates.grace).toBeNull();
+  });
+
+  it('says the update was applied in the session that comes up after it', () => {
+    const session = new MemoryStorage();
+    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+
+    const { store } = setup({ session });
+
+    expect(store.applied()).toBe(true);
+    // Cleared as it is read, so a second navigation in the same tab does not
+    // repeat it.
+    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+
+    store.acknowledgeApplied();
+    expect(store.applied()).toBe(false);
+  });
+
+  it('says nothing about an update in a session that did not restart onto one', () => {
+    const { store, session } = setup();
+
+    expect(store.applied()).toBe(false);
+    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+  });
+
+  it('reads the marker even where no worker is registered', () => {
+    // The development server registers none, and a restart that happened
+    // before one was registered still happened.
+    const session = new MemoryStorage();
+    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+
+    const { store } = setup({ available: false, session });
+
+    expect(store.applied()).toBe(true);
+  });
+
+  it('restarts again for a further version, where the first restart could not happen', async () => {
+    // Each `ready` is a version that was not there before, and this is the only
+    // session that can act on two of them: one whose restart found no page to
+    // start over. A session that stopped acting on them would be the stale
+    // session this whole mechanism exists to prevent (FR-025).
+    //
+    // Ordinarily a restart is the last thing a page does, so `apply()` holds
+    // its flag and there is no second attempt to make. Releasing that flag when
+    // the reload reports there was nothing to reload is what leaves this
+    // session able to try again.
+    const { store, updates } = setup({ restartable: false });
+    updates.report('ready');
     updates.expire();
-    expect(updates.calls).toEqual([]);
-    // And the version is still waiting, so the shell can offer it again.
-    expect(store.state()).toBe('ready');
-  });
-
-  it('warns again when a further version is published after a "not now"', () => {
-    // One "not now" answers for the version it was said to. A version published
-    // behind it is a different question, and a session that stopped asking it
-    // would be exactly the stale session this whole mechanism exists to
-    // prevent — reached through the one control that was meant to be harmless
-    // (FR-025).
-    const { store, updates } = setup();
-    updates.report('ready');
-    store.postpone();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(updates.calls).toEqual(['activate', 'reload']);
     expect(store.overlay()).toBe(false);
 
     updates.report('ready');
-
     expect(store.overlay()).toBe(true);
     expect(updates.grace).toBe(UPDATE_OVERLAY_MS);
+    updates.expire();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(updates.calls).toEqual(['activate', 'reload', 'activate', 'reload']);
     // And still one thing to say: the sentence on the shell was already true,
     // so nothing interrupts a reader to repeat it.
     expect(store.snapshot()).toEqual({ state: 'ready', revision: 1 });
-  });
-
-  it('calls off a restart a Commander dismissed while the worker was activating', async () => {
-    // Activation is a round trip, and the overlay can be dismissed while it is
-    // in the air. This is the one path where the way out has to hold: it is the
-    // whole reason the time limit is allowed to stand at all (WCAG 2.2.1).
-    const { store, updates } = setup();
-    updates.report('ready');
-
-    const restarting = store.apply();
-    store.postpone();
-    await restarting;
-
-    expect(updates.calls).toEqual(['activate']);
-    expect(store.state()).toBe('ready');
-    // And the control that applies it is armed again, rather than left disabled
-    // for the rest of the session.
-    expect(store.applying()).toBe(false);
   });
 
   it('never puts the overlay over a cached version it cannot repair', () => {

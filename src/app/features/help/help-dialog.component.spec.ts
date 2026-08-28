@@ -54,6 +54,9 @@ const LICENCE = {
 };
 
 const ABOUT = {
+  maintainer: 'Built and maintained by CMDR Dark Session.',
+  provenance:
+    'Game data, checks and calculations come from the bundled Almanac. Ship Builder neither maintains nor corrects those game values.',
   facts: [
     { id: 'application', term: 'App version', value: '0.1.0' },
     { id: 'almanac', term: 'Almanac version', value: '0.1.7' },
@@ -69,7 +72,7 @@ const TOPICS = HELP_TOPIC_IDS.map((id, index) => ({
 
 const VIEW: HelpDialogViewModel = {
   title: 'Help · About',
-  purpose: 'Ship Builder is an offline outfitting bench for Elite Dangerous.',
+  purpose: 'Ship Builder is an Elite Dangerous outfitting bench.',
   sections: { about: 'About', faq: 'FAQ', licence: 'Licence' },
   about: ABOUT,
   topics: TOPICS,
@@ -138,6 +141,18 @@ describe('HelpDialog', () => {
     const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
 
     expect(textOf(about.querySelector('.help-dialog__purpose'))).toBe(VIEW.purpose);
+  });
+
+  // Three sentences, in one order, before the facts. The reference draws only
+  // the first; the other two are FR-008's provenance credit and the owner's
+  // maintainer line, and both would be a different claim read after a version.
+  it('reads purpose, then maintainer, then provenance, before the version facts', () => {
+    const fixture = render();
+    const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
+    const prose = [...about.querySelectorAll('p')].map((paragraph) => textOf(paragraph));
+
+    expect(prose).toEqual([VIEW.purpose, ABOUT.maintainer, ABOUT.provenance]);
+    expect(about.lastElementChild?.tagName.toLowerCase()).toBe('edsb-version-facts');
   });
 
   it('asks to be dismissed rather than dismissing itself', () => {
@@ -209,7 +224,7 @@ describe('HelpDialog', () => {
   });
 
   describe('the questions it answers', () => {
-    it('draws all seven topics, once each, in the declared order', () => {
+    it('draws every topic, once each, in the declared order', () => {
       const fixture = render();
       const topics = [...element(fixture).querySelectorAll('.help-dialog__topic')];
 

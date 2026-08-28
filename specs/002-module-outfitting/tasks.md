@@ -564,7 +564,7 @@ Task: "Extend the ownership policy check in scripts/policy/outfitting-ownership.
 - No wave 10 task derives a family id, name, abbreviation or aggregate. The grouping key, the family
   order and every family name are values `@elite-dangerous-almanac/core` 0.1.7 publishes, and T131
   fails the build if one appears locally
-- Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
+- Qualified WCAG 2.2 AA conformance wording (naming the excluded criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11) is enforced repository-wide by feature 011 T093; this feature adds no separate assertion
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently
 
 ---
@@ -739,6 +739,6 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       parked the anatomy 233px up under the command bar, and `target-size` read the bar's own `?` as
       a target zero pixels from the mount marks beneath it. The sweep stands at the top now, which is
       where a Commander meets the arrangement — they reach a mount by scrolling the ledger's own
-      rail — and a control a sticky bar covers at some offset is 2.4.11, one of the seven criteria
+      rail — and a control a sticky bar covers at some offset is 2.4.11, one of the criteria
       the constitution excludes, not the 2.5.8 spacing the rule is about (`e2e/accessibility.ts`;
       the same `scrollTo(0, 0)` `mobility-and-jump` already takes for T158)

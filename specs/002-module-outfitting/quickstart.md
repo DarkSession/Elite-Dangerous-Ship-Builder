@@ -247,7 +247,7 @@ normalization and history-disabled states:
   instead of its rows, and record the figure whether or not it clears 100 ms.
 
 Conformance wording, wherever used, is: “WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4,
-2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
+2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.”
 
 ## 12. Final gate
 

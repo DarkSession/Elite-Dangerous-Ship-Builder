@@ -24,21 +24,17 @@ was rejected because it cannot serve every capability cleanly.
 
 ## Accepted help content
 
-**Decision**: Keep seven application-owned, localised topic records covering:
+**Decision**: Keep application-owned, localised topic records covering:
 
-1. build links place the build in a URL fragment, which browsers do not send in HTTP requests, but a
-   Commander deliberately sharing the URL shares the encoded loadout;
-2. the application has no accounts, authentication, uploads, telemetry or server persistence;
-3. working/named builds and preferences stay in browser storage, and clearing site data removes
+1. working/named builds and preferences stay in browser storage, and clearing site data removes
    them;
-4. the app shell and bundled data remain available offline after installation, while same-origin
-   artwork is available offline only after it has been opened/cached and its temporary absence never
-   blocks the capability;
-5. every selected engineering grade represents completed 100% quality; validated imported partial
-   grades are completed through Almanac or the incoming build is refused before activation;
-6. hull catalogue facts are distinct from fitted-build results and from viewing conditions; and
-7. the bundled Almanac owns catalogue values, validation and calculations, with no live-game
-   currency claim.
+2. every selected engineering grade represents completed 100% quality; validated imported partial
+   grades are completed through Almanac or the incoming build is refused before activation.
+
+**Narrowed 2026-08-27, owner's request.** The set held seven. What the five withdrawn answers had
+in common is that each restated something the interface, the ABOUT section or the licence text
+already says, which is what turned a section a reader consults into a list a reader skips. The
+Almanac's once-per-application credit moved into ABOUT rather than being lost with them.
 
 Each topic is exactly one stable ID plus question/body message keys and a non-empty set of
 tooling-only governing references to accepted feature requirements or constitution principles. The
@@ -222,7 +218,7 @@ localisation/reflow or screen-reader requirements.
 Manual screen-reader protocol verifies that the modal is announced, the background is not traversed
 as active content, headings, questions, answers, the two version facts and the excerpt's declared
 language are understandable, and the unchanged underlying capability is available again after close. The documented conformance
-statement says WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
+statement says WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11.
 
 **Rationale**: Artifact correctness cannot be established by UI tests alone, and an axe pass cannot
 prove reading order or meaning. Layered checks place failures at their owning boundary.

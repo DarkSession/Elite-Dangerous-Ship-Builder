@@ -190,7 +190,7 @@ pnpm exec playwright test offence-profile.spec.ts ui-preview.spec.ts
   number.
 - An RTL root keeps every value with its label.
 - Canonical package names are disclosed as such when the active locale has no translation.
-- Conformance is stated as "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3, 2.4.7 and
+- Conformance is stated as "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and
   2.4.11".
 
 ## Offline

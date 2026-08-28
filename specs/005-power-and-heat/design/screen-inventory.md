@@ -91,5 +91,5 @@ draws, and to the status rail feature 003 already draws, one read-only block and
 - Every state is exercised in Chromium and Firefox across the five layout profiles, with axe plus
   the manual screen-reader and zoom protocols.
 
-Where conformance is stated, use "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.4.1, 2.4.3,
+Where conformance is stated, use "WCAG 2.2 AA except criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3,
 2.4.7 and 2.4.11."

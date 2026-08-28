@@ -144,7 +144,7 @@ BrowserHelpTopic {
 }
 ```
 
-The separate generated catalogue contains exactly seven records in the required order and is eagerly
+The separate generated catalogue contains exactly the FR-010 records in the required order and is eagerly
 imported beside the manifest. It contains no governing references; those remain tooling-only review
 evidence. A missing, duplicated, reordered or blank browser record prevents emission of the complete
 catalogue, never publication of a partial runtime set.
@@ -155,7 +155,7 @@ Application-owned accepted help content.
 
 | Field                 | Type                             | Rule                                                               |
 | --------------------- | -------------------------------- | ------------------------------------------------------------------ |
-| `id`                  | `HelpTopicId`                    | one of the seven required identities; occurs exactly once          |
+| `id`                  | `HelpTopicId`                    | one of the required identities; occurs exactly once                |
 | `questionKey`         | message key                      | resolves nonblank in every shipped locale                          |
 | `answerKey`           | message key                      | resolves nonblank in every shipped locale; never contains raw HTML |
 | `governingReferences` | non-empty `GoverningReference[]` | accepted feature requirements or constitution principles only      |
@@ -168,15 +168,10 @@ type GoverningReference =
 
 Required IDs, in modal order:
 
-1. `buildLinkPrivacy`
-2. `accountsUploadsTelemetry`
-3. `browserPersistence`
-4. `offlineAssets`
-5. `completedEngineeringGrades`
-6. `hullFactsAndBuildResults`
-7. `almanacOwnership`
+1. `browserPersistence`
+2. `completedEngineeringGrades`
 
-Governing references are not displayed or bundled. Build-time checks require the exact seven-ID set,
+Governing references are not displayed or bundled. Build-time checks require the exact declared ID set,
 one definition per ID, a non-empty resolvable reference set per definition and non-empty question and
 answer messages in every shipped application locale. A missing, duplicate or unreferenced
 definition fails mechanically; a contradictory or unsupported definition fails required content
@@ -227,10 +222,10 @@ HelpDialogViewModel {
   title: LocalisedText
   purpose: LocalisedText
   sections: { about: LocalisedText; faq: LocalisedText; licence: LocalisedText }
-  about: { facts: VersionFact[2] }
-  topics: LocalisedHelpTopic[7]
+  about: { maintainer: LocalisedText; provenance: LocalisedText; facts: VersionFact[2] }
+  topics: LocalisedHelpTopic[2]
   licence: {
-    index: { id: "application" | "gameData" | "typefaces"; text: LocalisedText }[3]
+    index: { id: string; before: string; link: HelpLicenceLink | null; after: string }[4]
     excerpt: string
     excerptLanguage: string
   }
@@ -240,12 +235,19 @@ HelpDialogViewModel {
 Rules:
 
 - The three section headings are the reference's own `ABOUT`, `FAQ` and `LICENCE`, in that order.
+- `purpose`, `about.maintainer` and `about.provenance` are the three sentences of that section, in
+  that order, ahead of the facts. `purpose` sits beside `about` rather than inside it because it is
+  what the application is, which the title row and the reference both read before the section
+  begins; the other two are the section's own.
 - `about.facts` is exactly the application and Almanac versions, each with its own label. There is
   no third fact: build kind and build identifier are build evidence, not content.
-- `topics` is the seven of FR-010 in their declared order, each already resolved to a question and
+- `topics` is the two of FR-010 in their declared order, each already resolved to a question and
   an answer. No governing reference is projected.
-- `licence.index` is the reference's three-line summary of what covers what, resolved from the
-  catalogue because it is application-owned text.
+- `licence.index` is the summary of what covers what, resolved from the catalogue because it is
+  application-owned text. Four lines, not the reference's three: the reference draws application,
+  game data and typefaces, and the bundled Almanac's own licence is a fourth this application owes
+  and the reference had no reason to. Each line arrives already cut around the link its own
+  translation placed, so the template never parses a sentence.
 - The excerpt is passed unchanged to a text-only region carrying `excerptLanguage` as `lang`. It is
   never a catalogue entry, because a translated legal notice is not the notice.
 - The view model has no action of any kind, no destination and no external navigation. Closing is

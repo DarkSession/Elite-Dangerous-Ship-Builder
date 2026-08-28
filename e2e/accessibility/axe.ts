@@ -11,7 +11,7 @@ import { settled } from './assertions';
  * `EQUIVALENT_TARGETS` below. If a rule ever needs excluding, the verification
  * contract sets the bar: a versioned rule-to-criterion record from the
  * installed axe metadata, an automated assertion that every mapped criterion is
- * inside the seven-item constitutional keyboard exclusion, retained semantic
+ * inside the constitution's excluded set, retained semantic
  * assertions, and no in-scope criterion lost along the way.
  */
 export const AXE_TAGS = [

@@ -24,9 +24,9 @@ describe('MessageService', () => {
   it('interpolates language-neutral parameters', () => {
     const { messages } = setup();
 
-    expect(messages.message('app.document-title', { page: 'Shipyard', app: 'Ship Builder' })).toBe(
-      'Shipyard · Ship Builder',
-    );
+    expect(
+      messages.message('app.document-title', { page: 'Saved builds', app: 'Ship Builder' }),
+    ).toBe('Saved builds · Ship Builder');
   });
 
   it('leaves a message with no parameters untouched', () => {

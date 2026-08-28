@@ -80,7 +80,7 @@ const SWEEP_BUDGET_MS = 15_000;
  * ledger's own rail, which is what the rail is for; the document moving under
  * them is the test harness reaching a row, not a Commander reading a screen.
  * And a control that a sticky bar covers at some offset is
- * `2.4.11 Focus Not Obscured`, one of the seven criteria the constitution
+ * `2.4.11 Focus Not Obscured`, one of the criteria the constitution
  * excludes — it is not the spacing `2.5.8` is about, which is whether two
  * targets can be told apart by a thumb.
  *

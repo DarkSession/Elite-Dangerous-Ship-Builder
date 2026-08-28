@@ -43,7 +43,7 @@ const sortControl = (page: Page, field: string) =>
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/ships');
-  await expect(page.getByRole('heading', { level: 1, name: /shipyard/i })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: /ship builder/i })).toBeVisible();
   await expect(visibleHulls(page)).toHaveCount(48);
 });
 

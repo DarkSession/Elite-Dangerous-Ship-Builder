@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 5
+**Version**: 8
 
 ## What is automated, and what is left
 
@@ -145,14 +145,50 @@ disagrees or where the announcement is correct but unusable.
     to remain reachable and selectable.
 
 16. **A newly published version.** With the application open, have a newer
-    version published behind it. Expect one polite announcement that a newer
-    version is available, expect it not to interrupt what is being read, and
-    expect the notice to remain findable on the page afterwards rather than
-    only having been spoken. Move to the restart: expect it to be announced as
-    a button, named the way it reads on screen, with its description. Expect
-    the announcement **not** to repeat when a further version is published
-    behind the first, and expect nothing on screen to be replaced until the
-    restart is activated.
+    version published behind it. A modal layer comes up, announced by name
+    (**Updating**), saying that a newer version was published and that this
+    session is restarting on it, and saying where the open build lives across
+    the restart. Expect that layer to take focus, expect the page behind it to
+    be unreachable by heading, landmark or gesture while it stands, and expect
+    to find **nothing to press inside it** — no dismiss, no confirm, no "not
+    now". The restart is not a question and the layer offers no answer to one.
+
+    Nothing is published to the live region while it stands, and that is
+    deliberate rather than an omission: the layer is modal, so the outlet
+    inside the frame is inert and out of the tree, and a sentence put there
+    would be one no reader is offered. The layer is the announcement. So expect
+    to hear its title and description **once**, from the layer, and expect
+    **no** second sentence about a published version alongside it.
+
+    Stay on it and expect the page to restart by itself, roughly ten seconds
+    in, with nothing having been activated. This is the step that carries the
+    cost of excluding WCAG 2.2.1 for this mechanism (constitution V): a time
+    limit no reader can extend or turn off. What the exclusion buys is that the
+    layer only has to be **read**, not decided on, so what to check is reading
+    time — whether ten seconds is enough for the two sentences at the reader's
+    own rate and verbosity. If it is not, that is a number to revisit, and
+    `UPDATE_OVERLAY_MS` in `src/app/application/updates/application-update.store.ts`
+    is where it lives. Record the rate and the setting alongside the verdict.
+
+    The session that comes up says so, in a second modal layer rather than in
+    the live region: expect **Updated** announced by name as it takes focus,
+    naming the version now running, and expect that text to be readable in
+    place rather than only having been spoken. It carries one named control
+    (**Continue**), which dismisses the layer and nothing else. Expect it
+    **not** to come back on the next navigation, or on the next load of that
+    session.
+
+    Then the state where the restart could not be carried out: the layer comes
+    down without the page starting over, and the shell is left carrying a
+    polite notice that a newer version was published, beside a named control
+    (**Update now**) with its description. This is the one moment the live
+    region has something to say, because it is the first moment a reader can
+    reach it — so expect the notice spoken once, politely, without cutting off
+    what is being read; expect it to stay findable on the page rather than only
+    having been spoken; and expect the control announced as a button named the
+    way it reads on screen. Expect the notice **not** to be spoken again when a
+    further version is published behind the first, however many times the layer
+    goes up and comes back down.
 
     Then the unrepairable state, which the shell exposes as an alert rather
     than as a status. Expect the notice to be spoken once as it arrives, expect
@@ -184,14 +220,16 @@ disagrees or where the announcement is correct but unusable.
 
     Walk the headings inside it. Expect the reference's own three sections in
     the reference's own order — `ABOUT`, `FAQ`, `LICENCE` — and expect each of
-    the seven questions to be a heading **under** the `FAQ` heading rather than
+    the questions to be a heading **under** the `FAQ` heading rather than
     beside it, so heading navigation reaches the questions as a list of
-    questions. In `ABOUT`, expect exactly two identity facts, each announced as
+    questions. In `ABOUT`, expect the purpose, the maintainer and the Almanac
+    provenance to be read as three sentences in that order before any fact is
+    reached. Then expect exactly two identity facts, each announced as
     its own term and value, and expect the two terms to distinguish which
     version is which without seeing them side by side; expect nothing to be
     said about what kind of build it is. In `FAQ`, expect each answer to be
-    read with the question it answers. In `LICENCE`, expect three summary lines
-    announced as a list of three separate claims, then the Frontier notice
+    read with the question it answers. In `LICENCE`, expect four summary lines
+    announced as a list of four separate claims, then the Frontier notice
     announced in the language it is actually in — expect the reader to switch
     voice or pronunciation for it while the interface is in another language,
     and expect **no** sentence anywhere telling you what language it is in or

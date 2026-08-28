@@ -102,7 +102,7 @@ after(async () => {
 
 describe('the help topic catalogue', () => {
   describe('the set the modal publishes', () => {
-    it('declares exactly the seven required topics, in reading order', () => {
+    it('declares exactly the required topics, in reading order', () => {
       assert.deepEqual(
         HELP_TOPIC_DEFINITIONS.map((definition) => definition.id),
         [...HELP_TOPIC_IDS],
@@ -113,14 +113,14 @@ describe('the help topic catalogue', () => {
     it('refuses a topic declared twice', () => {
       assert.throws(
         () => assertDeclaredSet([...HELP_TOPIC_DEFINITIONS, HELP_TOPIC_DEFINITIONS[0]]),
-        /buildLinkPrivacy: is declared more than once/,
+        /browserPersistence: is declared more than once/,
       );
     });
 
     it('refuses a required topic that has gone missing', () => {
       assert.throws(
         () => assertDeclaredSet(HELP_TOPIC_DEFINITIONS.slice(1)),
-        /buildLinkPrivacy: is a required topic and is not declared/,
+        /browserPersistence: is a required topic and is not declared/,
       );
     });
 
@@ -135,7 +135,7 @@ describe('the help topic catalogue', () => {
       );
     });
 
-    it('refuses the same seven in a different order', () => {
+    it('refuses the same set in a different order', () => {
       const swapped = [...HELP_TOPIC_DEFINITIONS];
       [swapped[0], swapped[1]] = [swapped[1], swapped[0]];
 
@@ -156,9 +156,11 @@ describe('the help topic catalogue', () => {
 
     it('refuses a topic that cites nothing at all', async () => {
       const root = await fixtureRepo();
-      await refuses(root, /almanacOwnership: cites no governing source/, {
+      await refuses(root, /completedEngineeringGrades: cites no governing source/, {
         definitions: HELP_TOPIC_DEFINITIONS.map((definition) =>
-          definition.id === 'almanacOwnership' ? { ...definition, governedBy: [] } : definition,
+          definition.id === 'completedEngineeringGrades'
+            ? { ...definition, governedBy: [] }
+            : definition,
         ),
       });
     });
@@ -203,20 +205,23 @@ describe('the help topic catalogue', () => {
       const text = await readFile(path, 'utf8');
       await writeFile(
         path,
-        `${text.replace('- **FR-015**: Something accepted.', '')}\n\n| \`FR-015\` | Was a thing | **Reassigned** |\n`,
+        `${text.replace('- **FR-008**: Something accepted.', '')}\n\n| \`FR-008\` | Was a thing | **Reassigned** |\n`,
         'utf8',
       );
 
-      await refuses(root, /001-ship-selection-and-loading FR-015: is not a declared requirement/);
+      await refuses(root, /001-ship-selection-and-loading FR-008: is not a declared requirement/);
     });
   });
 
   describe('what every shipped locale has to say', () => {
     it('refuses a topic with no English question', async () => {
-      const keys = topicMessageKeys('offlineAssets');
+      const keys = topicMessageKeys('completedEngineeringGrades');
       const root = await fixtureRepo({ locales: { en: { [keys.questionKey]: '' } } });
 
-      await refuses(root, /offlineAssets: has no "help\.topic\.offlineAssets\.question" in en/);
+      await refuses(
+        root,
+        /completedEngineeringGrades: has no "help\.topic\.completedEngineeringGrades\.question" in en/,
+      );
     });
 
     it('refuses a topic with no answer in a shipped translation', async () => {
@@ -230,7 +235,7 @@ describe('the help topic catalogue', () => {
     });
 
     it('refuses a translation that drops a variable the answer needs', async () => {
-      const keys = topicMessageKeys('buildLinkPrivacy');
+      const keys = topicMessageKeys('browserPersistence');
       const root = await fixtureRepo({
         locales: {
           en: { [keys.answerKey]: 'It carries {{count}} things.' },
@@ -240,12 +245,12 @@ describe('the help topic catalogue', () => {
 
       await refuses(
         root,
-        /buildLinkPrivacy: "help\.topic\.buildLinkPrivacy\.answer" asks for \[count\]/,
+        /browserPersistence: "help\.topic\.browserPersistence\.answer" asks for \[count\]/,
       );
     });
 
     it('refuses a translation that invents a variable nothing supplies', async () => {
-      const keys = topicMessageKeys('buildLinkPrivacy');
+      const keys = topicMessageKeys('browserPersistence');
       const root = await fixtureRepo({
         locales: { de: { [keys.answerKey]: 'Es enthält {{hull}}.' } },
       });
@@ -265,12 +270,12 @@ describe('the help topic catalogue', () => {
     });
 
     it('refuses a promise about behaviour nobody built', async () => {
-      const keys = topicMessageKeys('offlineAssets');
+      const keys = topicMessageKeys('browserPersistence');
       const root = await fixtureRepo({
         locales: { en: { [keys.answerKey]: 'Full offline artwork is coming soon.' } },
       });
 
-      await refuses(root, /offlineAssets: states a promise about unbuilt behaviour/);
+      await refuses(root, /browserPersistence: states a promise about unbuilt behaviour/);
     });
 
     it('reads the variables a message asks for, and only those', () => {

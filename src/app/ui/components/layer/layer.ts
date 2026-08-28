@@ -97,8 +97,26 @@ export class Layer {
    */
   readonly flush = input(false);
 
-  /** The dismiss control's visible label. */
-  readonly dismissLabel = input.required<string>();
+  /**
+   * The dismiss control's visible label, or `null` for a layer with no way out.
+   *
+   * One input rather than two, because a label and a separate "is it
+   * dismissible" flag can disagree and this cannot: a layer that offers no way
+   * out has no control to name, and a layer that has one always names it.
+   *
+   * Required rather than defaulted, because `null` is a decision. A layer that
+   * a Commander cannot leave is the strongest thing this component does, and it
+   * should not be reachable by forgetting an input.
+   *
+   * No label also stops Escape and the ground closing it, so the two routes a
+   * reader can find are absent together with the control. The third, a direct
+   * `close()` on the element, is not blocked and does not need to be: nothing
+   * calls it, and the owner lowering `open` is the same act by another name.
+   * Exactly one layer takes it — the overlay that stands while a published
+   * version restarts the page under it, where there is nothing to cancel
+   * because the restart is not a question (011/FR-025).
+   */
+  readonly dismissLabel = input.required<string | null>();
 
   readonly dismissed = output<void>();
 
@@ -162,8 +180,32 @@ export class Layer {
     });
   }
 
+  /**
+   * Whether this layer offers any way out at all.
+   *
+   * Blank counts as absent, and must: the template draws no control for an
+   * empty label, so treating `''` as dismissable would leave Escape and the
+   * ground closing a layer that shows no way out — the split this single input
+   * exists to make impossible.
+   */
+  readonly dismissible = computed(() => (this.dismissLabel() ?? '').trim().length > 0);
+
   dismiss(): void {
     this.dismissed.emit();
+  }
+
+  /**
+   * Refuses the native cancel a layer with no way out must not honour.
+   *
+   * `<dialog>` closes itself on Escape, and an undismissable layer that closed
+   * on Escape would be dismissable by exactly one route and look like none.
+   * Preventing it holds the reader inside the layer, which criterion 2.1.2 is
+   * about and which constitution V excludes.
+   */
+  blockCancel(event: Event): void {
+    if (!this.dismissible()) {
+      event.preventDefault();
+    }
   }
 
   /**
@@ -215,6 +257,9 @@ export class Layer {
     const dialog = event.currentTarget;
     const pressedOnGround = this.#pressedOnGround;
     this.#pressedOnGround = false;
+    if (!this.dismissible()) {
+      return;
+    }
     if (!pressedOnGround || event.target !== dialog || !(dialog instanceof HTMLElement)) {
       return;
     }

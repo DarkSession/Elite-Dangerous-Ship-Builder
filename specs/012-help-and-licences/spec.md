@@ -2,14 +2,16 @@
 
 ## Scope
 
-Commanders can open help, privacy and offline explanations, versions and licence information without
-leaving or changing their current capability. Help can be closed to resume that unchanged capability.
-The help, version information and exact project-specific Frontier disclaimer are present in the
-initial application load; the complete terms remain in the repository `LICENSE` and the bundled
-library's, each reachable through a deliberate link inside the licence summary. **Amendment
-history:** on 2026-08-25 FR-003 withdrew the link and this paragraph with it, leaving a summary
-nobody could check; on 2026-08-26 both links were accepted, embedded in the summary's own sentences
-rather than drawn as controls beside them.
+Commanders can open help, behaviour answers, versions and licence information without leaving or
+changing their current capability. Help can be closed to resume that unchanged capability. The help,
+version information and exact project-specific Frontier disclaimer are present in the initial
+application load; the complete terms remain in the repository `LICENSE` and the bundled library's,
+each reachable through a deliberate link inside the licence summary. **Amendment history:** on
+2026-08-25 FR-003 withdrew the link and this paragraph with it, leaving a summary nobody could
+check; on 2026-08-26 both links were accepted, embedded in the summary's own sentences rather than
+drawn as controls beside them; on 2026-08-27 "privacy and offline explanations" became "behaviour
+answers", because FR-010 withdrew both of those topics and the scope should name what the capability
+does rather than which questions it happens to hold.
 
 ## Clarifications
 
@@ -20,10 +22,12 @@ rather than drawn as controls beside them.
 ### Session 2026-08-20
 
 - Q: What stable comparison set determines whether application-behaviour help is current? → A: The
-  accepted set is exactly the seven topics named by FR-010. Each topic appears once, each answer agrees
+  accepted set is exactly the topics named by FR-010. Each topic appears once, each answer agrees
   with at least one explicitly referenced accepted requirement or constitution principle governing
   that topic, and any additional behavioural claim must itself be supported by such a reference or it
-  blocks release. These validation references need not be displayed to the Commander.
+  blocks release. These validation references need not be displayed to the Commander. **Amended
+  2026-08-27:** the answer named seven topics when it was given. The rule it states is unchanged —
+  the set is whatever FR-010 names, once each, each governed — and FR-010 now names two.
 
 ### Session 2026-08-25
 
@@ -55,7 +59,9 @@ rather than drawn as controls beside them.
 - Q: What is the second identity fact called? → A: `Library version`, the reference's own term. It
   names the library this build was compiled against. The Almanac keeps its once-per-application
   credit in the `almanacOwnership` topic and in the licence summary, which is where FR-008 already
-  put it; a version label was never carrying it.
+  put it; a version label was never carrying it. **Superseded in part, 2026-08-27:** that topic is
+  withdrawn and the credit is the `ABOUT` provenance sentence. The answer to the question asked here
+  is unchanged — the fact is still `Library version`, and it still carries no credit.
 - Q: Should the licence summary point at the complete documents it is a summary of? → A: Yes, and at
   two of them: this repository's `LICENSE` and the bundled library's, each linked from inside the
   line that names its terms. This reverses the withdrawal FR-003 made on 2026-08-25 — that pass read
@@ -69,6 +75,23 @@ rather than drawn as controls beside them.
   licence documents, and a third — an issue tracker, a homepage, a docs site — remains withdrawn
   with FR-009. Each link is `rel="noopener noreferrer"`, so no part of a session, and in particular
   no build in the URL, reaches another origin.
+
+### Session 2026-08-27
+
+- Q: Which behaviour topics does the FAQ keep? → A: Two — where builds are stored, and why an
+  engineered figure differs from the one the game shows. Five are withdrawn: build-link privacy,
+  the absence of accounts, uploads and telemetry, what works offline, hull facts against build
+  results, and Almanac ownership of game values. Each of the five answered something a Commander
+  can already read: the first three restate constitution I, which the licence summary and the
+  application's own behaviour carry; the fourth explains a distinction the status rail and the
+  anatomy region make on screen; and the fifth is a credit rather than a question. A FAQ that
+  repeats the interface behind it is a FAQ a reader learns to skip.
+- Q: Where does the once-per-application Almanac credit go when its topic is withdrawn? → A: Back
+  into `ABOUT`, where it stood until 2026-08-25. Feature 002's voice ruling of 2026-08-22 is what
+  requires it to exist somewhere in this feature; only its address has ever moved.
+- Q: What does `ABOUT` say beside the two version facts? → A: Three sentences — what this is, who
+  builds it, and where the game values come from. The reference draws only the first. The second is
+  the owner's request of the same day, and the third is the credit above.
 
 ## User Scenarios
 
@@ -90,15 +113,16 @@ rather than drawn as controls beside them.
 2. Exactly two identity facts appear, each separately labelled. **Amended 2026-08-25:** the scenario
    previously required a non-release build to show a build identifier; FR-007's display half is
    withdrawn and nothing in the modal says which classification the build has.
-3. **Amended 2026-08-25:** the `almanacOwnership` answer states that the bundled Almanac supplies the
-   catalogue, the checks and the calculations, and nothing in the modal makes a live-game currency
-   claim. The `ABOUT` provenance paragraph this scenario used to name is withdrawn.
+3. The `ABOUT` provenance sentence states that the bundled Almanac supplies the catalogue, the
+   checks and the calculations, and nothing in the modal makes a live-game currency claim.
+   **Amended twice:** on 2026-08-25 the paragraph was withdrawn and the `almanacOwnership` topic
+   carried the credit; on 2026-08-27 that topic was withdrawn and the sentence returned here.
 
 ### Story 3 — Understand application behaviour (P2)
 
-1. Help presents each of the seven accepted behaviour topics: build-link privacy, absence of
-   accounts/uploads/telemetry, persistence and storage clearing, offline assets, completed
-   engineering grades, hull facts versus build results and Almanac ownership of game values.
+1. Help presents each of the accepted behaviour topics: persistence and storage clearing, and
+   completed engineering grades. **Amended 2026-08-27:** the set was seven; five were withdrawn
+   because each answered something the interface, the licence summary or `ABOUT` already says.
 2. Each answer states only currently accepted behaviour; no missing, duplicate, contradictory or
    unsupported behavioural statement is presented.
 
@@ -158,14 +182,21 @@ rather than drawn as controls beside them.
   fails a mismatched or placeholder value rather than downgrading, and still records the outcome in
   the manifest as release evidence. It is simply not a thing the modal says.
 - **FR-008**: Neither version MUST be called the live game or live catalogue version, and no help
-  content MUST claim currency with either. **Amended 2026-08-25:** the requirement previously
-  obliged a bounded provenance statement in `ABOUT`. The design reference draws no such paragraph
-  there, and it is withdrawn. The credit it carried is not lost: the `almanacOwnership` topic of
-  FR-010 says that the bundled Almanac supplies the catalogue, the checks and the calculations and
-  that this application neither maintains nor corrects those game values, and FR-003's licence
-  summary names Frontier for the game data and imagery. That is where a Commander now meets both,
-  and it satisfies the standing feature 002 ruling of 2026-08-22 that the credit belongs to this
-  feature, once per application.
+  content MUST claim currency with either. `ABOUT` MUST carry one bounded provenance sentence saying
+  that the bundled Almanac supplies the catalogue, the checks and the calculations and that this
+  application neither maintains nor corrects those game values. It MUST NOT state, imply or date any
+  agreement with the live game. `ABOUT` MUST also name who builds and maintains the application, in
+  one sentence, and MUST carry no further prose: three sentences and the two version facts of FR-007
+  are the whole of the section.
+
+  _Amendment history._ **2026-08-25:** the provenance sentence was withdrawn from `ABOUT`, on the
+  reading that the design reference draws no paragraph there, and the credit moved to FR-010's
+  `almanacOwnership` topic. **2026-08-27:** that topic is withdrawn and the sentence returns here,
+  because the standing feature 002 ruling of 2026-08-22 requires the credit to exist in this
+  feature, once per application, and the licence summary's Frontier line is a licence claim rather
+  than the credit. The maintainer sentence is new on the same date, at the owner's request. Both
+  depart from the reference, which draws neither.
+
 - `FR-009`: _Withdrawn 2026-08-25._ An in-modal action pointing at the Almanac issue tracker was
   removed. The design reference draws no such control, and reporting a package defect is a support
   route rather than help content. The modal offers no replacement destination and, since FR-003's
@@ -175,14 +206,23 @@ rather than drawn as controls beside them.
   is not declared, so the repository policy checker no longer requires coverage-ledger evidence for
   a requirement that no longer exists.
 - **FR-010**: Help MUST describe accepted current behaviour only. Its accepted behaviour-topic set
-  MUST contain exactly one answer for each of these seven topics: build-link privacy; absence of
-  accounts, uploads and telemetry; persistence and storage clearing; offline assets; completed
-  engineering grades; hull facts versus build results; and Almanac ownership of game values. Each
-  topic MUST identify at least one accepted feature requirement or constitution principle governing
-  its answer; those references form the release-validation comparison set and need not be displayed
-  in the interface. Each answer MUST agree with its cited sources and MUST NOT add an unsupported
-  behavioural claim. A missing or duplicate topic, a missing governing reference, a contradiction or
-  an unsupported additional claim MUST fail the release.
+  MUST contain exactly one answer for each of these two topics: persistence and storage clearing;
+  and completed engineering grades. Each topic MUST identify at least one accepted feature
+  requirement or constitution principle governing its answer; those references form the
+  release-validation comparison set and need not be displayed in the interface. Each answer MUST
+  agree with its cited sources and MUST NOT add an unsupported behavioural claim. A missing or
+  duplicate topic, a missing governing reference, a contradiction or an unsupported additional claim
+  MUST fail the release.
+
+  **Amended 2026-08-27, owner's request.** The set was seven. Build-link privacy, the absence of
+  accounts, uploads and telemetry, and what works offline are all constitution I, which the
+  application demonstrates by behaving that way and the licence summary already names; hull facts
+  against build results explains a distinction features 003 and 005 draw on screen, in the region
+  where it matters; and Almanac ownership of game values is a credit, which FR-008 now carries in
+  `ABOUT` where it belongs. What survives is the pair a Commander cannot answer by reading any
+  screen: where a build is kept, and why an engineered figure differs from the game's. The rule
+  around the set — one answer each, each governed, drift fails the release — is untouched.
+
 - **FR-011**: FR-001's common route — the application frame's own Help action — is the only route,
   and it MUST NOT need to open a specific answer. Release validation MUST enumerate every current
   capability, package-backed artwork or value surface and state that obscures the application frame,
@@ -195,8 +235,8 @@ rather than drawn as controls beside them.
 - A missing or mismatched embedded Frontier disclaimer, or a repository-`LICENSE` destination the
   generator cannot audit, is a release failure, not a degradable runtime state.
 - The Frontier disclaimer is reproduced rather than translated.
-- After one completed online load, help remains usable offline in full — every section, all seven
-  topics and the disclaimer — with nothing left to fetch.
+- After one completed online load, help remains usable offline in full — every section, both topics
+  and the disclaimer — with nothing left to fetch.
 - **Amended 2026-08-26:** help has two external destinations, and neither is a way out for build
   data. Both are constant addresses with no query and no fragment, both are `rel="noopener
 noreferrer"`, and the build a session is holding lives in the URL fragment, which no browser sends
@@ -222,11 +262,11 @@ on every build, and the link points at the same file in the package's own reposi
   text of the line it sits in, and neither carries build, route or session data.
 - **SC-002**: The two displayed versions exactly match shipped artifacts, are separately labelled
   and cannot be mistaken for live-game currency. No release or non-release state is displayed.
-- **SC-003**: All seven FR-010 behaviour topics are present exactly once, every topic identifies at
+- **SC-003**: Both FR-010 behaviour topics are present exactly once, every topic identifies at
   least one governing accepted requirement or constitution principle, each answer agrees with those
   sources, and release validation reports zero missing, duplicate, unreferenced, contradictory or
   unsupported behavioural statements.
-- **SC-004**: After one completed online load, help, version information, all seven topics and the
+- **SC-004**: After one completed online load, help, version information, both topics and the
   Frontier disclaimer work on the first subsequent offline visit, with no request and no loading,
   missing or stale state.
 - **SC-005**: Opening the already-loaded help capability presents its first complete frame within

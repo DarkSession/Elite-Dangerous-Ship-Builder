@@ -334,7 +334,8 @@ that `CLEAR ✕` created by existing at wide width only.
 - Status updates are polite; apply/refusal is announced once. Dialog/layer titles and descriptions are
   associated; background content is inert.
 - All controls meet 44 CSS px and work by touch/pointer, except the grade bar's cells, which the
-  canvas draws at 28px: those clear the 24px WCAG 2.2 AA floor and are named in `DENSE_TARGETS`. Text expansion, RTL, reduced motion,
+  canvas draws at 28px: those clear the 24px floor of WCAG 2.2 Target Size (Minimum) and are
+  named in `DENSE_TARGETS`. Text expansion, RTL, reduced motion,
   portrait/landscape and no-page-overflow are tested.
 
 ## Closed 2026-08-22: six climbed reward articles could not be shared as a link

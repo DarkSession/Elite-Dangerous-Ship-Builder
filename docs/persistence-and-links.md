@@ -9,13 +9,14 @@ Everything written to a browser store is named in `src/app/platform/storage/stor
 Enumeration filters on these prefixes: a key this application did not write is never read,
 migrated, repaired or removed, even when it looks like one of ours.
 
-| Key                   | Store              | Holds                                                                         |
-| --------------------- | ------------------ | ----------------------------------------------------------------------------- |
-| `edsb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.               |
-| `edsb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record it autosaves into.               |
-| `edsb:catalogue`      | `sessionStorage`   | This tab's browsing position in the shipyard: search, filters, order, anchor. |
-| `edsb.persistence.v1` | `BroadcastChannel` | Autosave-record claims between live pages, and cross-tab invalidation.        |
-| `edsb:record:<uuid>`  | Web Locks          | Serialises deliberate writes to one record. Per record, never global.         |
+| Key                   | Store              | Holds                                                                             |
+| --------------------- | ------------------ | --------------------------------------------------------------------------------- |
+| `edsb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.                   |
+| `edsb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record it autosaves into.                   |
+| `edsb:catalogue`      | `sessionStorage`   | This tab's browsing position in the catalogue: search, filters, order, anchor.    |
+| `edsb:update-applied` | `sessionStorage`   | That this tab restarted onto a newer version, so the arriving session can say so. |
+| `edsb.persistence.v1` | `BroadcastChannel` | Autosave-record claims between live pages, and cross-tab invalidation.            |
+| `edsb:record:<uuid>`  | Web Locks          | Serialises deliberate writes to one record. Per record, never global.             |
 
 No index key exists on purpose. An index is a second source of truth that can disagree with the
 records it lists, and a Commander whose index was lost would have builds that are present in the

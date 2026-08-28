@@ -5,6 +5,8 @@ import {
 } from '../../platform/browser/application-update.adapter';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
+import { EDSB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
+import { SESSION_STORAGE_PORT } from '../../platform/storage/web-storage.port';
 
 /**
  * What this session knows about the version it is running.
@@ -44,16 +46,18 @@ export const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 /**
  * How long the overlay stands before the page restarts under it.
  *
- * Twenty seconds, and the number is a requirement rather than a taste. A
- * restart that happens on a clock is a time limit, and WCAG 2.2.1 lets one
- * stand only where a Commander can turn it off, adjust it, or is warned before
- * it expires and given **at least twenty seconds** to extend it by a simple
- * action. The overlay is that warning and `postpone()` is that action, so the
- * grace period cannot be shorter than the rule's own floor — and it is not
- * padding either: a Commander who looks up mid-outfitting has to read one
- * sentence and find one control in it.
+ * Long enough for the overlay's two sentences to be read, and no longer. The
+ * overlay says what is happening rather than asking anything, so what the
+ * period has to cover is reading, not deciding.
+ *
+ * Nothing on the overlay can call the restart off, so WCAG 2.2.1 sets no floor
+ * here — the criterion is excluded by constitution V for this mechanism and
+ * named as the cost. What is left setting the number is reading speed alone,
+ * and it is deliberately not trimmed to the fastest reader: the Commander this
+ * costs the most is the one who looks up partway through, and they have nothing
+ * to press.
  */
-export const UPDATE_OVERLAY_MS = 20 * 1000;
+export const UPDATE_OVERLAY_MS = 10 * 1000;
 
 /**
  * Whether the version a Commander is reading is the version that was published.
@@ -66,25 +70,23 @@ export const UPDATE_OVERLAY_MS = 20 * 1000;
  * knowing, and a cache-defeating reload as the only cure.
  *
  * So the session asks, and when the answer is yes it applies it: an overlay
- * says what is about to happen, stands for {@link UPDATE_OVERLAY_MS}, and the
- * page restarts on the newer version under it (Commander request 2026-08-26).
+ * says what is happening, stands for {@link UPDATE_OVERLAY_MS}, and the page
+ * restarts on the newer version under it. The session that comes up says the
+ * update was applied, and which version it landed on.
  *
- * **Reversed from "never on its own".** Until that request this waited for a
- * Commander to press a control, on the reading that a reload replaces
- * everything on screen and deciding that for someone mid-outfitting is the one
- * thing it must not do. What that produced in practice is a fleet of sessions
- * sitting on old builds behind a notice nobody presses, which is the failure
- * the whole mechanism exists to prevent. The reload is no longer the loss it
- * was reasoned against, either: what a Commander is working on is in the link
- * in the address bar and in this browser's own store, and both survive it.
+ * **Nothing here asks, and that is the point.** Waiting for a Commander to
+ * press a control produces a fleet of sessions sitting on old builds behind a
+ * notice nobody presses, which is the failure this whole mechanism exists to
+ * prevent — and the reload costs less than it appears to, because what a
+ * Commander is working on is in the link in the address bar and in this
+ * browser's own store, and both survive it (owner's decision, recorded in
+ * 011/FR-025's amendment history).
  *
- * What does not change is that nothing happens without warning and nothing
- * happens that cannot be stopped. The overlay is the warning; `postpone()` is
- * the way out of it, and taking it puts the session back exactly where it was —
- * a notice on the shell and a control that applies the update whenever the
- * Commander is ready. A session that postpones and never comes back loses
- * nothing: the worker has the newer version downloaded, and the next start of
- * the application is served it.
+ * **What that costs, stated rather than buried.** A restart on a clock with no
+ * way to stop it is a time limit that meets none of WCAG 2.2.1's conditions.
+ * The criterion is named in the constitution's excluded list for this reason
+ * and for this mechanism, which is the application's only time limit. A
+ * Commander who looks up mid-sentence cannot hold the page.
  *
  * A cached version the worker cannot repair is **not** applied on a clock. It
  * is an error rather than an improvement, its restart is a repair a Commander
@@ -99,25 +101,16 @@ export class ApplicationUpdateStore {
   readonly #updates = inject(ApplicationUpdateAdapter);
   readonly #lifecycle = inject(PageLifecycleAdapter);
   readonly #connectivity = inject(ConnectivityAdapter);
+  readonly #session = inject(SESSION_STORAGE_PORT);
 
   readonly #state = signal<ApplicationVersionState>('current');
   readonly #revision = signal(0);
   readonly #applying = signal(false);
   readonly #overlay = signal(false);
+  readonly #applied = signal(false);
 
   /** Calls off the scheduled restart. `null` when none is scheduled. */
   #countdown: (() => void) | null = null;
-
-  /**
-   * Which restart is the wanted one.
-   *
-   * A restart is not instantaneous: activating the waiting version is a round
-   * trip to the worker, and a Commander can dismiss the overlay while it is in
-   * the air. Without this the page reloaded anyway, under a warning that was
-   * already gone — and it is the one path where the way out has to hold, being
-   * the whole reason the limit is allowed to stand (WCAG 2.2.1).
-   */
-  #restart = 0;
 
   readonly state = this.#state.asReadonly();
 
@@ -128,10 +121,23 @@ export class ApplicationUpdateStore {
    * Whether the overlay is standing over the page.
    *
    * Up from the moment a newer version is ready until the page restarts under
-   * it or a Commander postpones it. It is what makes the restart something that
-   * is announced before it happens rather than something that happens.
+   * it. It is what makes the restart something that is announced before it
+   * happens rather than something that happens.
    */
   readonly overlay = this.#overlay.asReadonly();
+
+  /**
+   * Whether this session is the one that came up after a restart.
+   *
+   * The other half of the announcement. The overlay before the reload says what
+   * is about to happen and is gone with the page that drew it; this says it
+   * happened, on the version it happened onto, and it is the only half a
+   * Commander who looked away is certain to read.
+   *
+   * Read once at construction and cleared as it is read, so a second navigation
+   * in the same tab does not repeat it (011/FR-025).
+   */
+  readonly applied = this.#applied.asReadonly();
 
   readonly snapshot = computed<ApplicationVersionSnapshot>(() => ({
     state: this.#state(),
@@ -139,6 +145,8 @@ export class ApplicationUpdateStore {
   }));
 
   constructor() {
+    this.#takeAppliedMarker();
+
     if (!this.#updates.available) {
       // No worker, nothing caching this page, nothing that can be stale. The
       // development server and the unit tests are both here, and neither should
@@ -183,51 +191,54 @@ export class ApplicationUpdateStore {
 
     this.#stopCountdown();
     this.#applying.set(true);
-    const attempt = ++this.#restart;
 
-    if (this.#state() === 'ready') {
+    const applyingNewVersion = this.#state() === 'ready';
+    if (applyingNewVersion) {
       await this.#updates.activate();
-    }
-
-    if (attempt !== this.#restart) {
-      // Called off while the worker was activating. The version stays ready and
-      // the shell offers it again; what must not happen is the page starting
-      // over after a Commander said not to.
-      this.#applying.set(false);
-      return;
+      // Written before the reload rather than after it, because after it there
+      // is no code here to write anything. A repair of an unusable cache leaves
+      // no marker: it restarts onto the version this session was already
+      // supposed to be running, which is not an update to announce.
+      this.#session.write(EDSB_UPDATE_APPLIED_KEY, '1');
     }
 
     if (!this.#updates.reload()) {
+      // Nothing to start over — a frame that may not navigate itself, or no
+      // window at all. The marker would otherwise greet the next session with
+      // news of a restart that never happened.
+      this.#session.remove(EDSB_UPDATE_APPLIED_KEY);
       this.#applying.set(false);
       this.#lowerOverlay();
     }
   }
 
   /**
-   * Calls off the restart and puts the session back where it was.
+   * Takes the notice down, having been read.
    *
-   * The way out of the one time limit this application has, and the reason the
-   * limit is allowed to exist at all (WCAG 2.2.1). It leaves the version state
-   * alone: the newer version is still ready, the shell still says so, and the
-   * control beside that sentence still applies it — so postponing is deferring
-   * rather than declining.
-   *
-   * It answers for the version that was on the overlay, and for that version
-   * only. Nothing puts the same one back up: a Commander who has said "not now"
-   * once has answered, and asking again twenty seconds later would be the
-   * interruption this was supposed to replace. A version published *after* that
-   * answer is a different question, and it is asked — otherwise one "not now"
-   * would opt a session out of every update for the rest of its life, which is
-   * the stale-session failure this whole mechanism exists to prevent (FR-025).
+   * The one control this mechanism still offers, and it acts on a sentence
+   * rather than on the update: the version is already running by the time
+   * anything can be pressed.
    */
-  postpone(): void {
-    // Anything already on its way is no longer wanted, including a restart that
-    // is mid-activation.
-    this.#restart += 1;
-    this.#lowerOverlay();
+  acknowledgeApplied(): void {
+    this.#applied.set(false);
   }
 
-  /** Takes the warning down and stops the clock, wanting nothing else. */
+  /**
+   * Reads the marker the restart left, and clears it in the same breath.
+   *
+   * Cleared whether or not it was set, so a store that cannot read the session
+   * area still cannot leave one behind, and so the notice is shown by the first
+   * session after the restart rather than by every session in that tab.
+   */
+  #takeAppliedMarker(): void {
+    const marker = this.#session.read(EDSB_UPDATE_APPLIED_KEY);
+    this.#session.remove(EDSB_UPDATE_APPLIED_KEY);
+    if (marker.ok && marker.value !== null) {
+      this.#applied.set(true);
+    }
+  }
+
+  /** Takes the notice down and stops the clock, wanting nothing else. */
   #lowerOverlay(): void {
     this.#stopCountdown();
     this.#overlay.set(false);
@@ -238,8 +249,8 @@ export class ApplicationUpdateStore {
     this.#countdown = null;
   }
 
-  /** Puts the warning up and starts the clock under it. */
-  #warnBeforeRestarting(): void {
+  /** Puts the notice up and starts the clock under it. */
+  #announceBeforeRestarting(): void {
     this.#overlay.set(true);
     this.#stopCountdown();
     this.#countdown = this.#updates.after(UPDATE_OVERLAY_MS, () => void this.apply());
@@ -257,12 +268,12 @@ export class ApplicationUpdateStore {
    * the revision counts, and it is why it does not move here.
    *
    * *What is done* is per version. Each `ready` the worker reports is a version
-   * that was not there before, and each one is warned about and restarted onto.
-   * Collapsing that into the sentence meant a single "not now" left the session
-   * on the version it was running for the rest of its life, never warned and
-   * never restarted, however many were published behind it — the stale session
-   * this mechanism exists to prevent, reached through the one control that was
-   * supposed to be harmless.
+   * that was not there before, and each one is announced and restarted onto.
+   * Collapsing the two into the sentence would leave a session that had been
+   * told once sitting on the version it was running for the rest of its life,
+   * however many were published behind it — the stale session this mechanism
+   * exists to prevent. The separation is what makes a third version behind a
+   * second reach a page whose restart of the second could not happen.
    *
    * A broken cached version supersedes a waiting one, because it is the more
    * urgent of the two and the restart it asks for delivers both. It is never
@@ -280,9 +291,9 @@ export class ApplicationUpdateStore {
     }
 
     if (state === 'ready') {
-      this.#warnBeforeRestarting();
+      this.#announceBeforeRestarting();
     } else {
-      // The warning comes down, but a restart already under way is left alone:
+      // The notice comes down, but a restart already under way is left alone:
       // it is on its way to a fresh copy of the application, which is what an
       // unrepairable cache needs too.
       this.#lowerOverlay();
