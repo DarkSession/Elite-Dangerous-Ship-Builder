@@ -9,6 +9,7 @@ import { EDSB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import {
   ApplicationUpdateStore,
+  UPDATE_APPLIED_NOTICE_MS,
   UPDATE_CHECK_INTERVAL_MS,
   UPDATE_OVERLAY_MS,
 } from './application-update.store';
@@ -27,10 +28,20 @@ class FakeUpdates {
 
   #listener: ((event: VersionEvent) => void) | null = null;
   #scheduled: (() => void) | null = null;
-  #grace: (() => void) | null = null;
 
-  /** How long the grace period before a restart was set to, if one is running. */
-  grace: number | null = null;
+  /**
+   * The one-shot periods currently pending, in the order they were scheduled.
+   *
+   * A list rather than a slot: the store runs two of them — the grace before a
+   * restart and the applied notice's own clock — and a session that is told
+   * about a newer version while its notice is still up has both at once.
+   */
+  readonly #pending: { readonly milliseconds: number; readonly run: () => void }[] = [];
+
+  /** How long the most recent pending period was set to, if there is one. */
+  get grace(): number | null {
+    return this.#pending.at(-1)?.milliseconds ?? null;
+  }
 
   onVersionEvent(listener: (event: VersionEvent) => void): () => void {
     this.#listener = listener;
@@ -57,17 +68,19 @@ class FakeUpdates {
   }
 
   after(milliseconds: number, run: () => void): () => void {
-    this.grace = milliseconds;
-    this.#grace = run;
+    const period = { milliseconds, run };
+    this.#pending.push(period);
     return () => {
-      this.grace = null;
-      this.#grace = null;
+      const index = this.#pending.indexOf(period);
+      if (index >= 0) {
+        this.#pending.splice(index, 1);
+      }
     };
   }
 
-  /** The grace period running out. */
+  /** The most recently scheduled period running out. */
   expire(): void {
-    this.#grace?.();
+    this.#pending.pop()?.run();
   }
 
   /** The worker reporting on this page's version. */
@@ -222,14 +235,15 @@ describe('ApplicationUpdateStore', () => {
     expect(updates.calls).toEqual(['activate', 'reload']);
   });
 
-  it('stands the overlay long enough for its sentences to be read', () => {
+  it('stands the overlay for the moment before the restart, and no longer', () => {
     // No rule sets this number: nothing on the overlay calls the restart off,
     // so 2.2.1 imposes no floor and the criterion is excluded for this
-    // mechanism. What is left is reading speed. Two sentences of roughly twenty
-    // words at a deliberately unhurried 150 words a minute is about eight
-    // seconds, and the Commander this costs the most is the one who looks up
-    // partway through and has nothing to press.
-    expect(UPDATE_OVERLAY_MS).toBeGreaterThanOrEqual(8_000);
+    // mechanism. What sets it is the owner's decision of 2026-08-28 — the
+    // overlay announces a restart that is happening rather than holding a page
+    // still to be read — so it stands for a second and never for none: a
+    // restart nobody was told about is the one thing FR-025 forbids.
+    expect(UPDATE_OVERLAY_MS).toBeGreaterThan(0);
+    expect(UPDATE_OVERLAY_MS).toBeLessThanOrEqual(1_000);
   });
 
   it('leaves the marker the session after the restart reads, and only for an update', async () => {
@@ -286,11 +300,42 @@ describe('ApplicationUpdateStore', () => {
     expect(store.applied()).toBe(false);
   });
 
+  it('takes that notice down by itself, and by the same route its control does', () => {
+    // Owner's decision, 2026-08-28. The notice is a modal in front of the build
+    // a Commander came back to, and both facts on it can be read again — the
+    // version is on Help · About, and the application is already running it.
+    const session = new MemoryStorage();
+    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+
+    const { store, updates } = setup({ session });
+
+    expect(store.applied()).toBe(true);
+    expect(updates.grace).toBe(UPDATE_APPLIED_NOTICE_MS);
+
+    updates.expire();
+    expect(store.applied()).toBe(false);
+  });
+
+  it('stops that clock when the notice is pressed, so nothing is left pending', () => {
+    const session = new MemoryStorage();
+    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+
+    const { store, updates } = setup({ session });
+
+    store.acknowledgeApplied();
+
+    expect(store.applied()).toBe(false);
+    expect(updates.grace).toBeNull();
+  });
+
   it('says nothing about an update in a session that did not restart onto one', () => {
-    const { store, session } = setup();
+    const { store, session, updates } = setup();
 
     expect(store.applied()).toBe(false);
     expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    // And schedules nothing: a clock with no notice under it would take down
+    // whatever layer happened to be open when it came round.
+    expect(updates.grace).toBeNull();
   });
 
   it('reads the marker even where no worker is registered', () => {
@@ -299,9 +344,11 @@ describe('ApplicationUpdateStore', () => {
     const session = new MemoryStorage();
     session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
 
-    const { store } = setup({ available: false, session });
+    const { store, updates } = setup({ available: false, session });
 
     expect(store.applied()).toBe(true);
+    // And it goes by itself there too: the notice's clock is not the worker's.
+    expect(updates.grace).toBe(UPDATE_APPLIED_NOTICE_MS);
   });
 
   it('restarts again for a further version, where the first restart could not happen', async () => {

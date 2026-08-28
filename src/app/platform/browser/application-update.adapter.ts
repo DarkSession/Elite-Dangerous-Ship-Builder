@@ -140,14 +140,15 @@ export class ApplicationUpdateAdapter {
    * called.
    *
    * The same port as {@link every} and separate from it on purpose: what the
-   * store schedules here is the one grace period between an overlay appearing
-   * and the page restarting under it.
+   * store schedules here are the two one-shot periods the update mechanism
+   * runs — the grace between an overlay appearing and the page restarting under
+   * it, and the time the notice on the other side of that restart stands.
    *
-   * Cancellable not because a Commander can call it off — nothing on that
-   * overlay can, which is the cost constitution V records — but because the
-   * store itself must: a period still pending when the restart begins, or when
-   * the worker reports something other than a waiting version, would fire into
-   * a page that has already moved on.
+   * Cancellable not because a Commander can call either off — neither can be,
+   * which is the cost constitution V records — but because the store itself
+   * must: a period still pending when the restart begins, when the notice is
+   * pressed, or when the worker reports something other than a waiting version,
+   * would fire into a page that has already moved on.
    */
   after(milliseconds: number, run: () => void): () => void {
     const view = this.#window;

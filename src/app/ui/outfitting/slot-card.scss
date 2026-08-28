@@ -194,12 +194,11 @@
       white-space: nowrap;
     }
 
-    // The name gives way; what is beside it does not. A package name the Almanac
-    // publishes in one language only carries the `UNTRANSLATED` tag, and that tag
-    // is the same kind of thing as the acquisition icon after it — a mark that
-    // says something about the module which the row's own text does not. So the
-    // row's flex line stops wrapping and the value alone is what shrinks and
-    // takes the ellipsis, exactly as the name gives way to the route icon.
+    // The name gives way; what is beside it does not. The acquisition icon after
+    // it says something about the module which the row's own text does not, and
+    // so does the ellipsis the badge projects into the name. So the row's flex
+    // line stops wrapping and the value alone is what shrinks and takes the cut,
+    // exactly as the name gives way to the route icon.
     .identity__name .game-text {
       flex-wrap: nowrap;
       max-inline-size: 100%;
@@ -222,16 +221,12 @@
       text-overflow: clip;
     }
 
-    .identity__name .game-text__tag {
-      flex: none;
-    }
-
-    // The sentence behind the tag is a sentence, and a ledger row is not where a
-    // sentence fits: forty rows of `Shown in its original language, because no
-    // German text is available for it` is the wrapped three-line row this measure
-    // exists to stop. It is spoken instead, which is where it was already reached
-    // from — the value names it through `aria-describedby`, so the tag carries
-    // the state on the screen and the sentence carries the reason to a reader
+    // The disclosure is a sentence, and a ledger row is not where a sentence
+    // fits: forty rows of `Shown in its original language, because no German
+    // text is available for it` is the wrapped three-line row this measure
+    // exists to stop. It is spoken instead, which is where it was already
+    // reached from — the value names it through `aria-describedby`, so the
+    // reason reaches a reader without a badge on every row
     // (constitution VI, and the same floor the drawn label already takes).
     .identity__name .game-text__disclosure {
       @include layout.visually-hidden;

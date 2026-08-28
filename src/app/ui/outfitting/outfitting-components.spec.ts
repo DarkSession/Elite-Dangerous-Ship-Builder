@@ -159,7 +159,14 @@ describe('module identity badge', () => {
     const fixture = renderComponent(ModuleIdentityBadge, { name: CANONICAL });
 
     expect(textOf(element(fixture))).toContain('Corrosion Resistant Cargo Rack');
-    expect(textOf(element(fixture)).toLowerCase()).toContain('untranslated');
+    // The badge that used to say the word is gone (owner's decision,
+    // 2026-08-28). What discloses the state is the sentence, tied to the name
+    // rather than standing beside it, and it is a sentence a reader is offered
+    // wherever the row it sits in has space for one.
+    const value = query(fixture, '.game-text__value');
+    const disclosure = query(fixture, '.game-text__disclosure');
+    expect(textOf(disclosure).toLowerCase()).toContain('original language');
+    expect(value.getAttribute('aria-describedby')).toBe(disclosure.getAttribute('id'));
   });
 
   it('shows the package symbol only where a caller asks for it', () => {

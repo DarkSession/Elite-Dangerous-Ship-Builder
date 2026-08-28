@@ -102,16 +102,30 @@ is modal, it takes focus, and it makes the page behind it inert.
 control, no Escape and no ground to click: the three routes out of a layer go together, and a
 Commander is told about the restart rather than asked about it. The 2026-08-26 ruling kept a control
 that called the restart off, and the twenty-second grace period was that control's WCAG 2.2.1 floor
-rather than a taste. Both are withdrawn. The period is now ten seconds, set by how long the
-overlay's two sentences take to read.
+rather than a taste. Both are withdrawn.
+
+**The period is one second (owner's decision, 2026-08-28).** Ten seconds was set by how long the
+overlay's two sentences took to read, and reading them was never what the overlay was for: it left a
+Commander in front of a page they could not touch while nothing happened. The overlay is the moment
+before the restart — it says what is happening, and the half that is written to be read is the
+notice the restarted session draws, which has no clock on it. The second sentence about where the
+open build lives goes with the wait that existed to read it; the overlay is now a title and one
+sentence.
 
 **What that costs, drawn where it happens.** A restart on a clock with no way to hold the page meets
 none of 2.2.1's conditions, so the criterion is excluded by constitution V for this mechanism and
 named in every conformance statement. It is the application's only time limit.
 
 **The other half is drawn by the session that comes up.** The overlay went with the page that drew
-it, so a Commander who looked away for ten seconds would otherwise find a page that had silently
-become a different one. The restarted session opens a layer saying the update was applied and naming
+it, so a Commander who looked away for a moment would otherwise find a page that had silently
+become a different one.
+
+**And it goes by itself (owner's decision, 2026-08-28).** Six seconds, and then the layer takes
+itself down by the same route its `Continue` takes. It is a modal standing in front of the build a
+Commander has just come back to, and both facts on it survive it: the application is already running
+the newer version, and the version number is on Help · About. That is the second time limit in this
+mechanism and the only other one anywhere, which is why constitution V names the mechanism rather
+than the restart alone. The restarted session opens a layer saying the update was applied and naming
 the version it is running, dismissed by its own named control. The marker that carries this across
 the reload lives in `sessionStorage`, so it reaches the tab that restarted and no other, and it is
 cleared as it is read.
@@ -140,7 +154,7 @@ the saved build or an export.
 | Locale load/validation fallback  | Complete English snapshot plus one bounded fallback notice/retry intent                                                            |
 | Route loading/empty/ready        | Route owns its state inside `main`; shell landmarks/actions remain stable                                                          |
 | Route blocking error             | Visible named error and one assertive event; unaffected shell navigation remains usable                                            |
-| Newer version published          | Modal overlay stating the restart with nothing to press and no event beside it; the page restarts under it after ten seconds       |
+| Newer version published          | Modal overlay stating the restart with nothing to press and no event beside it; the page restarts under it after one second        |
 | Restarted on the newer version   | Modal notice naming the version now running, dismissed by its own control, and not drawn again in that session                     |
 | Restart could not be carried out | Overlay closes, the page is untouched; visible nonblocking notice, one polite event and one named restart action remain on the bar |
 | Cached version unrepairable      | Visible named error, one named restart action and one assertive event summarizing rather than repeating it                         |

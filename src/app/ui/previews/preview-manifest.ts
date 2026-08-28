@@ -1402,10 +1402,9 @@ registerPreview({
   ),
   states: [
     // The canonical case is the default fixture deliberately: it renders the
-    // package text, its accurate `lang`, the untranslated tag and the
-    // associated disclosure all at once, so a reviewer sees the whole
-    // provenance contract rather than the one case where there is nothing to
-    // disclose.
+    // package text, its accurate `lang` and the associated disclosure all at
+    // once, so a reviewer sees the whole provenance contract rather than the
+    // one case where there is nothing to disclose.
     state(
       'default',
       {

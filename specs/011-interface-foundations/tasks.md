@@ -459,6 +459,57 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       `check-interface-foundations.test.mjs`, and the journey in `e2e/search-visibility.spec.ts`.
       Reconcile `e2e/coverage-ledger.ts` with FR-027 and SC-008.
 
+## Phase 11: Less on screen, 2026-08-28
+
+> Two Commander requests about text that is drawn and does not earn its place: the restart overlay
+> standing for ten seconds ahead of a reload that takes a fraction of one, and the untranslated chip
+> beside every game noun a German reader meets.
+
+- [x] T144 Shorten the restart announcement. `UPDATE_OVERLAY_MS` is one second, and
+      `update.applying.detail` — the sentence about the build surviving in the link and in this
+      browser — goes with the wait that existed to read it. FR-025, SC-007's journey,
+      `design/application-shell.md`, `quickstart.md` and the manual screen-reader protocol are
+      amended together; the store's own unit test asserts the new bound rather than the old floor.
+      _The overlay is not a passage to finish. The half written to be read is the `Updated` notice
+      the restarted session draws, and it carries no clock at all._
+- [x] T145 Record what that costs, and stop the journeys racing the clocks. Neither update layer is
+      swept by axe any more — the overlay stands for one second and the arrival notice for six, and
+      one axe pass is 2.5 s locally and about twice that on a runner, so a sweep would as often be
+      scanning the page that replaced it. `e2e/coverage-ledger.ts` carries `axe: false` and the
+      reason in place rather than leaving the surface looking scanned.
+      The journeys stopped waiting on the layers too. Playwright's auto-retrying assertions settle to
+      a one-second poll, which against a one-second state is a coin toss whose losing side looks
+      exactly like the overlay never being drawn; `watchForRestartOverlay` has the page record what
+      it drew, at animation-frame cadence, into the `sessionStorage` that survives the restart, and
+      the assertions are made afterwards. The two overlay journeys become one, because they were two
+      races against the same second.
+      _A gap named on the ledger is a decision; a gap nobody wrote down is a claim — and a test that
+      is green half the time for reasons of sampling is neither._
+- [x] T147 Let the arrival notice go by itself. `UPDATE_APPLIED_NOTICE_MS` is six seconds, run on
+      the same one-shot port as the restart's grace and stopped when the notice's own control is
+      pressed or the store is destroyed. It is a second time limit, so constitution V is amended to
+      9.0.0 to cover applying an update rather than the restart alone, and `AGENTS.md`, FR-025,
+      SC-007, `design/application-shell.md` and the manual protocol say the same thing. The journey
+      leaves the control alone and waits the notice out; `app.spec.ts` is where pressing it is
+      asserted, because a journey that waited to press it would be pressing a layer that had gone.
+      _The version it names is on Help · About and the application is already running it. A modal in
+      front of the build a Commander came back to is not where either fact belongs._
+- [x] T146 Take the untranslated chip off `edsb-game-text`. The badge, its message key in both
+      catalogues and its rules in `game-text.scss` and `slot-card.scss` go; the `lang` attribute and
+      the `aria-describedby` disclosure stay, and they are what FR-020 now names. The German material
+      journey in `e2e/cost-and-materials.spec.ts` asserts the disclosure where it asserted the badge.
+      _A marker on nearly every row marks nothing. Untranslated game text is the ordinary state of a
+      package locale this application does not own._
+- [x] T148 Carry it into feature 002's record and re-measure what it held up.
+      `design/outfitting-workspace.md` said the ledger row keeps its `UNTRANSLATED` tag; it does not,
+      and the revision says why. The tag was also the seventy-odd pixels that made the ledger's
+      longest German name overflow — measured again, `Advanced Planetary Approach Suite` now fits at
+      205 against 205 at all five layout profiles, at 100% text and at 200%, so the two German
+      journeys in `e2e/module-outfitting.spec.ts` assert the fits-whole branch and say so rather than
+      passing while measuring nothing. The cut-and-reach path is proved over the port in
+      `outfitting-components.spec.ts`, where the overflow is declared instead of waited for.
+      _A test that quietly stops exercising the thing it is named after is worse than no test._
+
 ## Notes
 
 - [P] tasks touch different files and have no incomplete dependency

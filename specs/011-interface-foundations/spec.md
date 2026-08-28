@@ -49,8 +49,8 @@ offered and therefore carries no way to hold the page.
 2. Application-owned text and numeric, credit, distance, percentage and date formatting follow the
    active locale.
 3. Missing application translation falls back to bundled English text.
-4. Game text unavailable in the active locale uses canonical package text and is identified as
-   untranslated when that text exists; otherwise it is explicitly unavailable.
+4. Game text unavailable in the active locale uses canonical package text, in its own language and
+   with its disclosure attached, when that text exists; otherwise it is explicitly unavailable.
 5. Each screen states what it is and where it lives, in the same language and in the same commit as
    its title, so a search result and a pasted link name the screen rather than the product.
 
@@ -119,18 +119,27 @@ offered and therefore carries no way to hold the page.
   interface MUST remain on its prior complete locale or fall back atomically to bundled English. Raw
   keys, empty strings and placeholders MUST not appear.
 - **FR-020**: Game text MUST come from the Almanac. If the package cannot supply the active locale,
-  its canonical text MUST be requested and, when present, shown and identified as untranslated. If
-  the package supplies no canonical text, the value MUST be unavailable. The application MUST NOT
-  keep a private game-text translation.
+  its canonical text MUST be requested and, when present, shown, carrying the language it is actually
+  in and a disclosure — programmatically associated with the text — saying why it is not in the
+  reading language. If the package supplies no canonical text, the value MUST be unavailable. The
+  application MUST NOT keep a private game-text translation.
+
+  _Amendment history._ **2026-08-28 (Commander request: "remove the 'Nicht übersetzt' or similar
+  chips").** "Identified as untranslated" no longer means a badge beside the text. A screen of the
+  Almanac's nouns read in German is a screen of chips — one on nearly every row of the ledger, the
+  chooser and the material list — and the state they marked is the ordinary state of game text in a
+  language the package does not ship. The disclosure carries it instead, which is where a reader was
+  already reaching it from.
 
 ### Application Delivery
 
 - **FR-025**: A session running a version that has been superseded MUST detect the newly published
   one without a Commander-initiated reload and MUST apply it by itself. It MUST NOT do so unannounced:
-  the restart MUST be preceded by visible text saying what is happening, standing long enough to be
-  read, and the session that comes up on the newer version MUST state as visible text that the update
-  was applied and which version it is now running. That statement MUST be dismissible and MUST NOT
-  return on a later navigation in the same session. Neither statement MUST offer a control that
+  the restart MUST be preceded by visible text saying what is happening, on screen before the page is
+  replaced and for no longer than the moment before it, and the session that comes up on the newer
+  version MUST state as visible text that the update was applied and which version it is now running.
+  That statement MUST be dismissible by a named control, MUST take itself down once it has stood, and
+  MUST NOT return on a later navigation in the same session. Neither statement MUST offer a control that
   calls the restart off, defers it or asks anything. A session whose restart could not be carried
   out MUST state as visible text that a newer version is available and MUST offer a named control
   that applies it, and a session that never applies it MUST be served the newer version the next
@@ -145,7 +154,22 @@ offered and therefore carries no way to hold the page.
   against: a build lives in the link in the address bar and in this browser's own store, and both
   survive a restart. **2026-08-27 (owner's decision).** The overlay that replaced the control still
   asked a question, and the question is withdrawn with the twenty-second floor that carried it. The
-  restart is announced twice and cannot be stopped.
+  restart is announced twice and cannot be stopped. **2026-08-28 (Commander request: "the
+  'Updating' modal is appearing way too long — it shouldn't be triggered more than 1 second before we
+  actually apply the update and reload the page").** "Standing long enough to be read" is withdrawn
+  as the measure of the overlay. It was reasoned as reading time for two sentences, which made a
+  Commander sit in front of a page they could not touch for ten seconds while nothing happened; the
+  half that is meant to be read is the one the restarted session draws, which carries no clock. The
+  overlay is now the moment before the restart, and the second sentence about where the open build
+  lives across the restart goes with the wait that was there to read it. What the requirement still
+  forbids is a restart nobody was told about. **2026-08-28 (Commander request: "make the 'This
+  session restarted on the newer version that was published.' modal auto disappear after 6
+  seconds").** The notice on the other side of the restart goes by itself as well as by its control.
+  It is a second time limit and it is named as one: constitution V is amended to 9.0.0 so that the
+  2.2.1 exclusion covers applying an update — the restart and this notice — rather than the restart
+  alone. What it buys is that a Commander who came back to their build is not met by a modal that
+  waits to be pressed; the version it names is on Help · About, and the application is already
+  running it.
 
   **What that costs, recorded rather than buried.** A restart on a clock with no way to hold it
   meets none of WCAG 2.2.1's conditions. The criterion is excluded by constitution V for this
@@ -216,7 +240,8 @@ translations.
   the corresponding shipped language and an unsupported browser language selects English.
 - **SC-007**: A session left open across a deployment states that it is restarting, offers nothing
   to press while it does, comes back on the published version on its own within a minute, and states
-  on arrival that the update was applied and which version it is running. Where the restart could
+  on arrival that the update was applied and which version it is running — a statement that carries
+  one named control and goes by itself if nothing presses it. Where the restart could
   not be carried out, the session states that a newer version is available and applies it from its
   own named control. No cache-clearing reload appears anywhere in either journey.
 

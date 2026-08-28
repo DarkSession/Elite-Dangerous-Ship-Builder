@@ -63,8 +63,8 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
 async function familyNames(page: Page): Promise<readonly string[]> {
   // The package's string alone. Everything around it is ours and moves with the
   // reading language whether or not the Almanac translated a thing: the control
-  // carries the count sentence, and the name cell carries the untranslated tag
-  // and its disclosure. Read together, either would satisfy a comparison meant
+  // carries the count sentence, and the name cell carries the untranslated
+  // disclosure. Read together, either would satisfy a comparison meant
   // to prove the *package* relabelled its families.
   return page
     .locator('.family .family__name .game-text__value')

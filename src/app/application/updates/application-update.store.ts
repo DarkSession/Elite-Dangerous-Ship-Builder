@@ -46,18 +46,36 @@ export const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
 /**
  * How long the overlay stands before the page restarts under it.
  *
- * Long enough for the overlay's two sentences to be read, and no longer. The
- * overlay says what is happening rather than asking anything, so what the
- * period has to cover is reading, not deciding.
+ * One second, which is the owner's decision of 2026-08-28: the overlay is the
+ * announcement of a restart that is happening, not a passage to be read out
+ * before one starts. Ten seconds of a page a Commander cannot touch, ahead of a
+ * reload that takes a fraction of that, was ten seconds of nothing happening.
  *
  * Nothing on the overlay can call the restart off, so WCAG 2.2.1 sets no floor
  * here — the criterion is excluded by constitution V for this mechanism and
- * named as the cost. What is left setting the number is reading speed alone,
- * and it is deliberately not trimmed to the fastest reader: the Commander this
- * costs the most is the one who looks up partway through, and they have nothing
- * to press.
+ * named as the cost. What the second buys is that the restart is never
+ * unannounced: the sentence is on screen before the page goes, and the session
+ * that comes up says the update was applied and names the version, which is the
+ * half a Commander who looked away actually reads (FR-025).
  */
-export const UPDATE_OVERLAY_MS = 10 * 1000;
+export const UPDATE_OVERLAY_MS = 1_000;
+
+/**
+ * How long the notice on the other side of the restart stands before it goes.
+ *
+ * Six seconds, which is the owner's decision of 2026-08-28. The notice says the
+ * update was applied and names the version, and both are facts a Commander can
+ * go and read again — the version is on Help · About, and the application is
+ * already running it. Leaving it standing until it is pressed puts a modal in
+ * front of the build a Commander came back to.
+ *
+ * It is a second time limit, and it is named as one. The layer keeps its own
+ * `Continue`, so nothing here needs waiting out; what the clock takes away is
+ * the reading time of someone who does not press it, which meets none of WCAG
+ * 2.2.1's conditions. Constitution V is amended to cover this mechanism by name
+ * rather than to be read as covering it.
+ */
+export const UPDATE_APPLIED_NOTICE_MS = 6 * 1000;
 
 /**
  * Whether the version a Commander is reading is the version that was published.
@@ -72,7 +90,8 @@ export const UPDATE_OVERLAY_MS = 10 * 1000;
  * So the session asks, and when the answer is yes it applies it: an overlay
  * says what is happening, stands for {@link UPDATE_OVERLAY_MS}, and the page
  * restarts on the newer version under it. The session that comes up says the
- * update was applied, and which version it landed on.
+ * update was applied, and which version it landed on, for
+ * {@link UPDATE_APPLIED_NOTICE_MS} or until it is pressed.
  *
  * **Nothing here asks, and that is the point.** Waiting for a Commander to
  * press a control produces a fleet of sessions sitting on old builds behind a
@@ -83,10 +102,10 @@ export const UPDATE_OVERLAY_MS = 10 * 1000;
  * 011/FR-025's amendment history).
  *
  * **What that costs, stated rather than buried.** A restart on a clock with no
- * way to stop it is a time limit that meets none of WCAG 2.2.1's conditions.
- * The criterion is named in the constitution's excluded list for this reason
- * and for this mechanism, which is the application's only time limit. A
- * Commander who looks up mid-sentence cannot hold the page.
+ * way to stop it is a time limit that meets none of WCAG 2.2.1's conditions,
+ * and so is a notice that takes itself down. The criterion is named in the
+ * constitution's excluded list for these two mechanisms and for no others. A
+ * Commander who looks up mid-sentence cannot hold either of them.
  *
  * A cached version the worker cannot repair is **not** applied on a clock. It
  * is an error rather than an improvement, its restart is a repair a Commander
@@ -112,6 +131,9 @@ export class ApplicationUpdateStore {
   /** Calls off the scheduled restart. `null` when none is scheduled. */
   #countdown: (() => void) | null = null;
 
+  /** Calls off the applied notice's own clock. `null` when none is running. */
+  #noticeClock: (() => void) | null = null;
+
   readonly state = this.#state.asReadonly();
 
   /** Whether a restart has been asked for and is on its way. */
@@ -135,7 +157,9 @@ export class ApplicationUpdateStore {
    * Commander who looked away is certain to read.
    *
    * Read once at construction and cleared as it is read, so a second navigation
-   * in the same tab does not repeat it (011/FR-025).
+   * in the same tab does not repeat it (011/FR-025). It stands for
+   * {@link UPDATE_APPLIED_NOTICE_MS} and then takes itself down, by the same
+   * route its own control takes.
    */
   readonly applied = this.#applied.asReadonly();
 
@@ -145,6 +169,16 @@ export class ApplicationUpdateStore {
   }));
 
   constructor() {
+    // Both clocks reach out of this store and into the page: one replaces it,
+    // the other takes a layer down. A pending one firing into a torn-down
+    // injector would be acting on a session nobody is running any more.
+    // Registered before anything can start one, including the notice clock the
+    // marker below starts in a session with no worker at all.
+    inject(DestroyRef).onDestroy(() => {
+      this.#stopCountdown();
+      this.#stopNoticeClock();
+    });
+
     this.#takeAppliedMarker();
 
     if (!this.#updates.available) {
@@ -164,11 +198,6 @@ export class ApplicationUpdateStore {
     this.#connectivity.onOnline(() => void this.#updates.check());
 
     void this.#updates.check();
-
-    // The countdown is the one thing here that reaches out and replaces the
-    // page. A pending one firing into a torn-down injector would restart a
-    // session nobody is running any more.
-    inject(DestroyRef).onDestroy(() => this.#stopCountdown());
   }
 
   /**
@@ -220,6 +249,7 @@ export class ApplicationUpdateStore {
    * anything can be pressed.
    */
   acknowledgeApplied(): void {
+    this.#stopNoticeClock();
     this.#applied.set(false);
   }
 
@@ -235,6 +265,11 @@ export class ApplicationUpdateStore {
     this.#session.remove(EDSB_UPDATE_APPLIED_KEY);
     if (marker.ok && marker.value !== null) {
       this.#applied.set(true);
+      // The same route the control takes, so a notice that went by itself and
+      // one that was pressed leave the session in the same state.
+      this.#noticeClock = this.#updates.after(UPDATE_APPLIED_NOTICE_MS, () =>
+        this.acknowledgeApplied(),
+      );
     }
   }
 
@@ -247,6 +282,11 @@ export class ApplicationUpdateStore {
   #stopCountdown(): void {
     this.#countdown?.();
     this.#countdown = null;
+  }
+
+  #stopNoticeClock(): void {
+    this.#noticeClock?.();
+    this.#noticeClock = null;
   }
 
   /** Puts the notice up and starts the clock under it. */

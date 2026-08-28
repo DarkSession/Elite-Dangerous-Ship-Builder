@@ -147,8 +147,7 @@ disagrees or where the announcement is correct but unusable.
 16. **A newly published version.** With the application open, have a newer
     version published behind it. A modal layer comes up, announced by name
     (**Updating**), saying that a newer version was published and that this
-    session is restarting on it, and saying where the open build lives across
-    the restart. Expect that layer to take focus, expect the page behind it to
+    session is restarting on it. Expect that layer to take focus, expect the page behind it to
     be unreachable by heading, landmark or gesture while it stands, and expect
     to find **nothing to press inside it** — no dismiss, no confirm, no "not
     now". The restart is not a question and the layer offers no answer to one.
@@ -160,23 +159,35 @@ disagrees or where the announcement is correct but unusable.
     to hear its title and description **once**, from the layer, and expect
     **no** second sentence about a published version alongside it.
 
-    Stay on it and expect the page to restart by itself, roughly ten seconds
-    in, with nothing having been activated. This is the step that carries the
-    cost of excluding WCAG 2.2.1 for this mechanism (constitution V): a time
-    limit no reader can extend or turn off. What the exclusion buys is that the
-    layer only has to be **read**, not decided on, so what to check is reading
-    time — whether ten seconds is enough for the two sentences at the reader's
-    own rate and verbosity. If it is not, that is a number to revisit, and
-    `UPDATE_OVERLAY_MS` in `src/app/application/updates/application-update.store.ts`
-    is where it lives. Record the rate and the setting alongside the verdict.
+    Stay on it and expect the page to restart by itself, about a second in,
+    with nothing having been activated. This is the step that carries the cost
+    of excluding WCAG 2.2.1 for this mechanism (constitution V): a time limit no
+    reader can extend or turn off. The layer is not a passage to be finished —
+    the owner's decision of 2026-08-28 shortened it to the moment before the
+    restart, and the half a reader is meant to take in is the **Updated** layer
+    the restarted session draws, which has no clock on it at all. So what to
+    check here is that the announcement is heard **at all** before the page
+    goes: that the layer takes focus and its title reaches the reader. If it
+    does not, that is a number to revisit, and `UPDATE_OVERLAY_MS` in
+    `src/app/application/updates/application-update.store.ts` is where it lives.
+    Record what was heard alongside the verdict.
 
     The session that comes up says so, in a second modal layer rather than in
     the live region: expect **Updated** announced by name as it takes focus,
     naming the version now running, and expect that text to be readable in
     place rather than only having been spoken. It carries one named control
-    (**Continue**), which dismisses the layer and nothing else. Expect it
-    **not** to come back on the next navigation, or on the next load of that
-    session.
+    (**Continue**), which dismisses the layer and nothing else. Left alone, it
+    goes by itself after about six seconds — the second and last time limit in
+    this application, named in constitution V beside the restart — so what to
+    check is whether the title, the sentence and the version all reach the
+    reader inside that window at their own rate and verbosity. If they do not,
+    that is a number to revisit, and `UPDATE_APPLIED_NOTICE_MS` in
+    `src/app/application/updates/application-update.store.ts` is where it lives.
+    When it goes by itself, focus returns to where the layer took it from — for
+    a layer opened at start-up that is the document body, with nothing said
+    about the move. Record what the reader does at that moment: whether it
+    reads on, falls silent, or starts the page again. Expect the notice **not**
+    to come back on the next navigation, or on the next load of that session.
 
     Then the state where the restart could not be carried out: the layer comes
     down without the page starting over, and the shell is left carrying a

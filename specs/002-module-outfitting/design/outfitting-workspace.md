@@ -251,9 +251,14 @@ wrapped**, and the row does not wrap around it. A ledger is forty rows read as a
 name that took a second line made its own row taller than its neighbours and pushed the marks at the
 end of it — the acquisition icons, the power chip, the engineered mark — off the line they belong on.
 Those marks keep their places and the name gives way, which is the order the request asked for: the
-icon first, the text cut earlier to keep it. The `UNTRANSLATED` tag is one of those marks: a name the
-Almanac publishes in one language only keeps its tag, so a row still says what language it is reading
-in, and the sentence behind the tag is spoken rather than drawn. The whole name stays in the DOM, so
+icon first, the text cut earlier to keep it.
+
+**Revised 2026-08-28 (Commander request: "remove the 'Nicht übersetzt' or similar chips").** The
+`UNTRANSLATED` tag used to be one of those marks, and it is gone. A screen of the Almanac's nouns
+read in German is a screen of chips — one on nearly every row of this ledger — and the state they
+marked is the ordinary state of game text in a language the package does not ship. What a row
+carries instead is the `lang` attribute on the name and the disclosure tied to it, spoken rather than
+drawn, which is where the sentence already was (011/FR-020). The whole name stays in the DOM, so
 a reader is read the whole name and only the drawing is short; and where two long names would read
 alike, the row leads with its own size box and node badge and the fitting panel opened on the marked
 mount writes the module's name in full.
@@ -267,8 +272,7 @@ it is itself a control, and hidden from the accessibility tree because the whole
 beside it and is read out whole. Whether the name is cut is measured through the platform's element
 size adapter, so a row whose name fits carries no mark at all and the ledger is the only surface that
 pays for the measurement. It is projected into the game text itself, beside the value, so it lands
-against the words it abbreviates rather than after the `UNTRANSLATED` tag — which is a fact about the
-language and not about what was cut. And **no box above it hides its overflow**: a bubble is hung off
+against the words it abbreviates. And **no box above it hides its overflow**: a bubble is hung off
 its trigger, so any ancestor of that trigger which clips takes the whole gloss with it, and the
 ledger's own line boxes were doing exactly that to the acquisition marks' tips as well. The value
 clips itself and nothing above it does.

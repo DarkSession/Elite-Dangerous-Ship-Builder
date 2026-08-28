@@ -164,7 +164,16 @@ class FakeUpdates {
   restartable = true;
 
   #listener: ((event: VersionEvent) => void) | null = null;
-  #grace: (() => void) | null = null;
+
+  /**
+   * The one-shot periods pending, in the order they were scheduled.
+   *
+   * A list rather than a slot, for the reason `application-update.store.spec.ts`
+   * keeps one: the store runs two of them — the grace before a restart and the
+   * arrival notice's own clock — and a slot silently loses whichever was
+   * scheduled first.
+   */
+  readonly #pending: (() => void)[] = [];
 
   onVersionEvent(listener: (event: VersionEvent) => void): () => void {
     this.#listener = listener;
@@ -187,8 +196,13 @@ class FakeUpdates {
   }
 
   after(_milliseconds: number, run: () => void): () => void {
-    this.#grace = run;
-    return () => (this.#grace = null);
+    this.#pending.push(run);
+    return () => {
+      const index = this.#pending.indexOf(run);
+      if (index >= 0) {
+        this.#pending.splice(index, 1);
+      }
+    };
   }
 
   /** The worker reporting on this page's version. */
@@ -196,9 +210,9 @@ class FakeUpdates {
     this.#listener?.(event);
   }
 
-  /** The grace period under the overlay running out. */
+  /** The most recently scheduled period running out. */
   expire(): void {
-    this.#grace?.();
+    this.#pending.pop()?.();
   }
 }
 
@@ -282,7 +296,6 @@ describe('App and a newly published version', () => {
 
     expect(fixture.componentInstance.updateOverlay()).toBe(true);
     expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.notice']);
-    expect(textIn(fixture)).toContain(BUNDLED_ENGLISH['update.applying.detail']);
     // Nothing has been replaced yet.
     expect(updates.activations).toBe(0);
     expect(updates.reloads).toBe(0);

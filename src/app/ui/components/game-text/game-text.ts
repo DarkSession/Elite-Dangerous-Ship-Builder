@@ -19,16 +19,18 @@ import { relationId } from '../../a11y/text-equivalence';
  *   * **localized** — the package had the text in the active locale. Nothing to
  *     disclose; it simply reads.
  *   * **canonical** — the package had no translation, so its own canonical text
- *     is shown, marked as untranslated and described so a reader knows why the
- *     words are in another language. The `lang` attribute says which language,
- *     so a screen reader pronounces it correctly instead of reading English
- *     with German phonetics.
+ *     is shown, described so a reader knows why the words are in another
+ *     language. The `lang` attribute says which language, so a screen reader
+ *     pronounces it correctly instead of reading English with German phonetics.
+ *     No badge stands beside the text: the owner's decision of 2026-08-28 is
+ *     that a chip on every untranslated game noun is noise on a screen that is
+ *     mostly game nouns, and the disclosure carries the state on its own.
  *   * **unavailable** — the package has nothing at all. The absence is stated;
  *     the raw symbol is never used as a display name (FR-020).
  *
  * The text itself is never translated here and never comes from an application
- * catalogue. Only the framing around it — the untranslated tag, the disclosure,
- * the unavailable wording — is application-owned.
+ * catalogue. Only the framing around it — the disclosure and the unavailable
+ * wording — is application-owned.
  */
 @Component({
   selector: 'edsb-game-text',
@@ -55,9 +57,6 @@ export class GameText {
   readonly isCanonical = computed(() => this.translationState() === 'canonical');
   readonly isUnavailable = computed(() => this.translationState() === 'unavailable');
 
-  /** The short tag shown beside canonical text. */
-  readonly untranslatedLabel = this.#messages.messageSignal('game-text.untranslated.label');
-
   /**
    * Why the text is in another language.
    *
@@ -80,9 +79,9 @@ export class GameText {
    *
    * Asked by a caller that truncates this text — the ledger row, and nothing
    * else — because the box that overflows is this one: the row's rule shrinks
-   * the value alone so the untranslated tag beside it keeps its place, so the
-   * badge above cannot see the overflow from its own element. A pixel of slack
-   * for sub-pixel layout, which the two engines round differently.
+   * the value rather than the whole element, so the badge above cannot see the
+   * overflow from its own element. A pixel of slack for sub-pixel layout, which
+   * the two engines round differently.
    */
   cut(): boolean {
     const element = this.value()?.nativeElement;

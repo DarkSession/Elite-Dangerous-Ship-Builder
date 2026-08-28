@@ -56,8 +56,9 @@ planning ship loadouts.
 - **Accessible to WCAG 2.2 AA, except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1,
   2.4.3, 2.4.7 and 2.4.11.** Seven of those eight are the keyboard-operation criteria
   the constitution excludes. The eighth, 2.2.1 Timing Adjustable, is excluded for one
-  mechanism and no other: a published update is applied without asking, so the overlay
-  announcing the restart offers nothing that calls it off. Every conformance statement
+  mechanism and no other: applying a published update. Nothing is asked, so the overlay
+  announcing the restart offers nothing that calls it off, and the notice the restarted
+  session draws takes itself down after a few seconds. Every conformance statement
   names all eight; an unqualified "WCAG 2.2 AA" claim is a stronger claim than this
   project supports, and the policy checker rejects one.
   Screen-reader navigable, legible at 200% text and 400% zoom, AA contrast, AA
@@ -65,9 +66,10 @@ planning ship loadouts.
   colour alone. It is a requirement of every feature, not a later pass.
   Keyboard operation is out of scope by constitutional exclusion (principle V
   names the criteria), so the application never claims unqualified AA — state
-  the exclusion wherever conformance is stated. The update restart is the
-  application's only time limit; a second one needs an amendment rather than a
-  reading of the first.
+  the exclusion wherever conformance is stated. Applying an update is the
+  application's only mechanism with a time limit on it — the restart, and the
+  notice on the other side of it; a limit anywhere else needs an amendment
+  rather than a reading of this one.
 - **Identities come from the package**: `symbol` for hulls, modules, blueprints
   and experimental effects, and the game's own slot keys — never positional
   indices. Almanac 0.2.0 renamed the blueprint and effect identities from
