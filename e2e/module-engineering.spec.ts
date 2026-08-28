@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import englishMessages from '../src/app/i18n/locales/en.json';
 import { sweepOutfittingState } from './accessibility';
 import {
   applyDraft,
@@ -409,15 +410,23 @@ test.describe('engineering costs', () => {
     // Damage per second is what the recipe is chosen for, and the Almanac
     // calculates it. Both readings are drawn, after the stats they come from.
     const dps = comparison.locator('tr', {
-      has: page.getByText('Damage per second', { exact: true }),
+      has: page.getByText(englishMessages['outfitting.engineering.attribute.damagePerSecond'], {
+        exact: true,
+      }),
     });
     await expect(dps).toBeVisible();
     await expect(dps.locator('.comparison__value').first()).toHaveText(/\d/);
     await expect(dps.locator('.comparison__value--modified')).toHaveText(/\d/);
 
-    // A pulse laser never stops to reload, so it sustains what it starts with.
-    // That row would be the row above it written twice, and it is left off.
-    await expect(comparison).not.toContainText('Sustained damage per second');
+    // A pulse laser never stops to reload, so it sustains what it starts with,
+    // and it fires one round a shot. Both rows would be a row above them
+    // written twice, and both are left off.
+    for (const key of [
+      'outfitting.engineering.attribute.sustainedDamagePerSecond',
+      'outfitting.engineering.attribute.damagePerShot',
+    ] as const) {
+      await expect(comparison).not.toContainText(englishMessages[key]);
+    }
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {

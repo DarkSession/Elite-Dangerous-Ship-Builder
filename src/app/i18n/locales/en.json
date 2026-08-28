@@ -406,6 +406,7 @@
   "outfitting.engineering.attribute.clipSize": "Clip size",
   "outfitting.engineering.attribute.damage": "Damage",
   "outfitting.engineering.attribute.damagePerSecond": "Damage per second",
+  "outfitting.engineering.attribute.damagePerShot": "Damage per shot",
   "outfitting.engineering.attribute.distributorDraw": "Distributor draw",
   "outfitting.engineering.attribute.energyPerSecond": "Capacitor draw MJ/s",
   "outfitting.engineering.attribute.engineHeatRate": "Engine heat rate",

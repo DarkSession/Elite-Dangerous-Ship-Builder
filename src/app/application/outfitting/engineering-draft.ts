@@ -180,6 +180,7 @@ export const HIGHER_IS_BETTER: Record<ComparedAttribute, boolean> = {
   clipSize: true,
   damage: true,
   damagePerSecond: true,
+  damagePerShot: true,
   distributorDraw: false,
   energyPerSecond: false,
   engineHeatRate: false,
@@ -732,6 +733,7 @@ function previewOf(
  * damage. Neither is wrong, and neither is a second reading.
  */
 const RESTATED_BY: Partial<Record<ComparedAttribute, ComparedAttribute>> = {
+  damagePerShot: 'damage',
   damagePerSecond: 'damage',
   energyPerSecond: 'distributorDraw',
   heatPerSecond: 'thermalLoad',
@@ -746,9 +748,9 @@ const RESTATED_BY: Partial<Record<ComparedAttribute, ComparedAttribute>> = {
  *
  * Dropped only where *both* readings match, because that is what makes it a
  * repetition rather than a change. A small cannon reloads at stock and does not
- * once rapid fire has grown its clip: its sustained figures are a reading on
- * one side and a repetition on the other, and a row that vanished from one
- * column would report the reading as lost (FR-012a).
+ * once rapid fire has shortened its reload to nothing: its sustained figures
+ * are a reading on one side and a repetition on the other, and a row that
+ * vanished from one column would report the reading as lost (FR-012a).
  */
 function restatesAnotherRow(
   row: AttributeComparison,

@@ -310,8 +310,10 @@ that `CLEAR ✕` created by existing at wide width only.
   the rest: a figure whose two readings both equal another row's is that row written twice, which is
   what a weapon that never stops to reload does to its four sustained figures. A figure that repeats
   on one reading and moves on the other is kept — a small cannon reloads at stock and does not once
-  rapid fire has grown its clip, and a row that vanished from one column would report the reading as
-  lost.
+  rapid fire has shortened its reload, and a row that vanished from one column would report the
+  reading as lost. A calculated row can therefore outlive the row it restates: a torpedo pylon fires
+  one shot a second, so its damage per second repeats its damage and is dropped, while the reload
+  behind that shot keeps the sustained figure a reading of its own.
 - The calculated rows are drawn as one block after the catalogue rows, not folded into their
   alphabetical order. The table's subject changes at that line — from what the article is to what it
   does — and a `Damage per second` between `Clip size` and `Distributor draw` would hide the change.

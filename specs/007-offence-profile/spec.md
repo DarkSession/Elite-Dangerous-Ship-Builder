@@ -67,7 +67,12 @@ because it is why the first implementation shipped a third of the canvas.
   proportions over package amounts — a share of a stated total, a bar filled against a stated
   strongest — are not measurements and are permitted where the canvas draws one, provided every
   amount they are drawn from is itself stated (FR-009).
-- **FR-002**: Whole-build and per-weapon values MUST use `BuildMetrics.weaponMetrics()`.
+- **FR-002**: Whole-build and per-weapon values about the fitted build MUST use
+  `BuildMetrics.weaponMetrics()`. The package's data-free `weaponMetrics()` MAY be asked about one
+  article that is not a build's fitted weapon — what the engineering editor's attribute table
+  compares — and that reading MUST agree with this one on which articles are weapons at all
+  (`contracts/weapon-output.md`, "One article's figures"). It MUST NOT reach this panel or the
+  status rail, which read the build.
 - **FR-003**: Every conventional damage type the build deals — kinetic, thermal, explosive,
   absolute and unclassified — MUST be stated with its exact returned amount and its share of the
   conventional total, beside the bar that draws those shares. A type the build does not deal MUST

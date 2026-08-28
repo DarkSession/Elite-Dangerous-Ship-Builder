@@ -16,6 +16,7 @@ import { weaponMetrics, type WeaponMetrics } from '@elite-dangerous-almanac/core
  * result and passed on unchanged.
  */
 export const WEAPON_FIGURES = [
+  'damagePerShot',
   'damagePerSecond',
   'sustainedDamagePerSecond',
   'sustainedRateOfFire',
@@ -46,8 +47,6 @@ export type WeaponFigure = (typeof WEAPON_FIGURES)[number];
  * arithmetic needs to carry a weapon that fires no shots. A row repeating the
  * row above it is not a second reading (constitution IV).
  *
- * `damagePerShot` is not published at all: it is `damage × roundsPerShot`, and
- * both of those are rows of the same table.
  */
 export function weaponFigures(
   article: OutfittingModule | null,

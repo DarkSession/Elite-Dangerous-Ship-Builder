@@ -40,16 +40,16 @@ every figure collapses onto the catalogue stat the editor's table draws beside i
 `damagePerShot` and `sustainedRateOfFire` become the values the arithmetic needs to carry a weapon
 with no shots.
 
-Seven scalar figures are exposed: `damagePerSecond`, `sustainedDamagePerSecond`,
+Eight scalar figures are exposed: `damagePerShot`, `damagePerSecond`, `sustainedDamagePerSecond`,
 `sustainedRateOfFire`, `energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond` and
-`sustainedHeatPerSecond`. `damagePerShot` is not, because it is `damage × roundsPerShot` and both
-are rows of that table. Neither are the damage splits, `rateOfFire`, `thermalLoad`, `powerDraw` and
-`continuous` itself — the splits are this panel's, and the rest are catalogue fields the editor
-already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in.
+`sustainedHeatPerSecond`. The damage splits, `rateOfFire`, `thermalLoad`, `powerDraw` and
+`continuous` itself are not — the splits are this panel's, and the rest are catalogue fields the
+editor already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in.
 
-Which of the seven the editor then draws is the editor's own rule, not this contract's: a figure
-whose two readings both equal another row's is dropped there, which is what happens to the sustained
-four on a weapon that never stops to reload.
+Which of the eight the editor then draws is the editor's own rule, not this contract's: a figure
+whose two readings both equal another row's is dropped there. That is what happens to the sustained
+four on a weapon that never stops to reload, and to `damagePerShot` on the weapons that fire one
+round a shot.
 
 ## Leaf imports
 

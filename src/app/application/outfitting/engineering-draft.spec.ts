@@ -523,7 +523,10 @@ describe('engineering draft', () => {
       const modified = weaponFigures(applied.fittedModuleAt(slot)?.effectiveStats ?? null);
       expect(stock).not.toBeNull();
       expect(modified).not.toBeNull();
-      for (const attribute of WEAPON_FIGURES) {
+      // Its one round a shot makes a damage per shot that is its damage, so
+      // that row is the only one of the eight this article does not get.
+      const drawnFigures = WEAPON_FIGURES.filter((figure) => figure !== 'damagePerShot');
+      for (const attribute of drawnFigures) {
         expect(rows.get(attribute)?.stock).toBe(stock?.[attribute]);
         expect(rows.get(attribute)?.modified).toBe(modified?.[attribute]);
       }
@@ -538,7 +541,7 @@ describe('engineering draft', () => {
         .filter(([field]) => field !== 'class' && field !== 'cost')
         .filter(([field, value]) => !(field === 'bootTime' && value === 0))
         .map(([field]) => field);
-      expect([...rows.keys()].sort()).toEqual([...published, ...WEAPON_FIGURES].sort());
+      expect([...rows.keys()].sort()).toEqual([...published, ...drawnFigures].sort());
     });
 
     it('gives a module that is not a weapon no calculated figures', () => {
@@ -578,9 +581,29 @@ describe('engineering draft', () => {
         'sustainedEnergyPerSecond',
         'sustainedHeatPerSecond',
         'sustainedRateOfFire',
+        // And it fires one round a shot, so its damage per shot is its damage.
+        'damagePerShot',
       ]) {
         expect(drawn).not.toContain(attribute);
       }
+    });
+
+    it('keeps a damage per shot that is not the article’s damage', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      // A fragment cannon fires twelve rounds a shot, so what one shot lands is
+      // not what one round does — and no catalogue row states it.
+      loadout.setModule(slot, getModuleBySymbol('Hpt_Slugshot_Fixed_Small')!);
+
+      const draft = openEngineeringDraft(loadout, slot, 1, NO_SELECTION, TEXT);
+
+      const rows = new Map(
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => [row.attribute as string, row])
+          : [],
+      );
+      expect(rows.get('roundsPerShot')?.stock).toBeGreaterThan(1);
+      expect(rows.get('damagePerShot')?.stock).not.toBe(rows.get('damage')?.stock);
     });
 
     it('keeps a sustained figure that is a reading on one side only', () => {
@@ -600,9 +623,10 @@ describe('engineering draft', () => {
         draft?.preview.kind === 'known'
           ? draft.preview.attributes.find((entry) => entry.attribute === 'sustainedDamagePerSecond')
           : undefined;
-      // A cannon reloads at stock and stops reloading once rapid fire has grown
-      // its clip. The row is a reading on one side and a repetition on the
-      // other, and dropping it would report the reading as lost.
+      // A cannon reloads at stock and stops losing anything to it once rapid
+      // fire has shortened the reload. The row is a reading on one side and a
+      // repetition on the other, and dropping it would report the reading as
+      // lost.
       expect(row?.stock).not.toBe(row?.modified);
       expect(Number.isFinite(row?.stock)).toBe(true);
     });
