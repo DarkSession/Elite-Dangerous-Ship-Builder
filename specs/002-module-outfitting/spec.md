@@ -161,8 +161,11 @@ its ship name and ident — belongs here.
   calculation rather than from arithmetic over the rows: a weapon's damage per second, sustained
   damage per second, damage per shot, sustained rate of fire, capacitor draw and heat are what a
   recipe is chosen for, and no catalogue field states any of them. A calculated figure MUST NOT be
-  offered for an article the calculation does not describe — a module with no damage figure is not a
-  weapon, and a block of zeroes is not a reading. Attribute labels
+  offered for an article the calculation does not describe, nor for a figure the calculation carries
+  as a placeholder rather than a reading: a module the package does not admit to the calculation is
+  not a weapon, and a continuous-fire weapon fires no shots and so has no damage per shot and no
+  sustained rate of fire. A defaulted zero and a placeholder one are both figures nobody measured.
+  Attribute labels
   are application-localized; the package's own field identities MUST NOT reach a screen. The stock
   reading MUST be shown whether or not the module is engineered; the modified reading MUST be shown
   exactly when there is a selection or existing engineering to compare against, and a selection the

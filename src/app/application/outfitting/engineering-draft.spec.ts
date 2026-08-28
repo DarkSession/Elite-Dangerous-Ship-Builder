@@ -1,3 +1,4 @@
+import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   FIXED_REWARD_REGRESSION,
@@ -512,6 +513,17 @@ describe('engineering draft', () => {
         expect(rows.get(attribute)?.modified).toEqual(expect.any(Number));
       }
       expect(rows.get('damagePerSecond')?.modified).not.toBe(rows.get('damagePerSecond')?.stock);
+
+      // Exactly these rows, the way the drive's own test reads exactly its
+      // catalogue fields: a calculated figure the panel invents is a figure
+      // nobody measured, and one it drops is a figure a Commander cannot read.
+      const stats = loadout.fittedModuleAt(slot)?.stats;
+      const published = Object.entries(stats ?? {})
+        .filter(([, value]) => typeof value === 'number')
+        .filter(([field]) => field !== 'class' && field !== 'cost')
+        .filter(([field, value]) => !(field === 'bootTime' && value === 0))
+        .map(([field]) => field);
+      expect([...rows.keys()].sort()).toEqual([...published, ...CALCULATED_ATTRIBUTES].sort());
     });
 
     it('gives a module that is not a weapon no calculated figures', () => {
@@ -528,6 +540,25 @@ describe('engineering draft', () => {
       for (const attribute of CALCULATED_ATTRIBUTES) {
         expect(drawn).not.toContain(attribute);
       }
+    });
+
+    it('leaves a continuous-fire weapon its cadence rows off', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      loadout.setModule(slot, getModuleBySymbol('Hpt_BeamLaser_Fixed_Small')!);
+
+      const draft = openEngineeringDraft(loadout, slot, 1, NO_SELECTION, TEXT);
+
+      const drawn =
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string)
+          : [];
+      expect(drawn).toContain('damagePerSecond');
+      // A beam fires no shots, so it has no damage per shot and no rate of
+      // fire to sustain. The package carries both to keep one arithmetic, and
+      // neither is a figure a Commander can read (`weaponFigures`).
+      expect(drawn).not.toContain('damagePerShot');
+      expect(drawn).not.toContain('sustainedRateOfFire');
     });
   });
 });

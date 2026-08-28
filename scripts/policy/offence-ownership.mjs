@@ -50,9 +50,6 @@ export const ALLOWED_SUBPATHS = [
   '@elite-dangerous-almanac/core/ships/weapons',
   '@elite-dangerous-almanac/core/ships/weapons-capacitor',
   '@elite-dangerous-almanac/core/ships/modules',
-  // The package's own test for a damage figure, which is how `weaponFigures`
-  // tells a weapon from everything else without writing a rule of its own.
-  '@elite-dangerous-almanac/core/ships/module-capabilities',
   '@elite-dangerous-almanac/core/ships/gunsights',
   '@elite-dangerous-almanac/core/ships/ships',
   '@elite-dangerous-almanac/core/ships/slots',

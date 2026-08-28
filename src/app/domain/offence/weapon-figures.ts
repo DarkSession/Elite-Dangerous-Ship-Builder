@@ -1,5 +1,4 @@
-import { hasWeaponDamageStats } from '@elite-dangerous-almanac/core/ships/module-capabilities';
-import type { OutfittingModuleStats } from '@elite-dangerous-almanac/core/ships/modules';
+import type { OutfittingModule } from '@elite-dangerous-almanac/core/ships/modules';
 import { weaponMetrics } from '@elite-dangerous-almanac/core/ships/weapons';
 
 /**
@@ -13,8 +12,8 @@ import { weaponMetrics } from '@elite-dangerous-almanac/core/ships/weapons';
  * weapons through `BuildMetrics`, and this measures one article a Commander is
  * looking at in the engineering editor, stock or modified, fitted or not.
  *
- * Nothing is derived here. The eight figures are the package's own, read off
- * its result and passed on unchanged.
+ * Nothing is derived here. The figures are the package's own, read off its
+ * result and passed on unchanged.
  */
 export const WEAPON_FIGURES = [
   'damagePerShot',
@@ -31,15 +30,42 @@ export const WEAPON_FIGURES = [
 export type WeaponFigure = (typeof WEAPON_FIGURES)[number];
 
 /**
+ * The two figures a continuous-fire weapon has no reading for.
+ *
+ * A beam or mining laser fires no shots, so the package's result carries its
+ * per-second damage as `damagePerShot` and a `sustainedRateOfFire` of `1`.
+ * Both are how the calculation carries a weapon with no cadence through the
+ * same arithmetic as one that has; neither is a figure anyone measured, and
+ * `Sustained rate of fire /s 1` on a beam laser is exactly the number this
+ * application never writes (constitution IV).
+ */
+const CADENCE_FIGURES: readonly WeaponFigure[] = ['damagePerShot', 'sustainedRateOfFire'];
+
+/**
  * The package's figures for one article, or `null` where it is not a weapon.
  *
- * `hasWeaponDamageStats` is the package's own test for a damage figure. A
- * module without one is not a weapon, and `weaponMetrics` would answer for it
- * with zeroes — a whole block of firing figures on a fuel tank, every one of
- * them a value nobody published (constitution IV).
+ * The test for a weapon is the package's own: `weaponMetrics` is fed by
+ * `hardpoint` records and nothing else, which is why feature 007 never
+ * measures the one utility module that carries a damage figure. A point
+ * defence turret publishes no capacitor draw, and the calculation's own
+ * default would report that absence as a draw of zero.
  */
 export function weaponFigures(
-  article: OutfittingModuleStats | null,
-): Readonly<Record<WeaponFigure, number>> | null {
-  return hasWeaponDamageStats(article) ? weaponMetrics(article) : null;
+  article: OutfittingModule | null,
+): Readonly<Partial<Record<WeaponFigure, number>>> | null {
+  if (article === null || article.category !== 'hardpoint') {
+    return null;
+  }
+
+  const metrics = weaponMetrics(article);
+  if (!metrics.continuous) {
+    return metrics;
+  }
+
+  return Object.fromEntries(
+    WEAPON_FIGURES.filter((figure) => !CADENCE_FIGURES.includes(figure)).map((figure) => [
+      figure,
+      metrics[figure],
+    ]),
+  );
 }

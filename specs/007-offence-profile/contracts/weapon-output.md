@@ -23,15 +23,22 @@ package's own returned fields.
 screen has one place it can have come from. That rule holds for a second, smaller question the
 outfitting workspace asks: what one weapon article does per second, stock and modified, in feature
 002's engineering editor. `weaponFigures()` answers it — the package's data-free `weaponMetrics()`
-over one `OutfittingModuleStats` record, with `hasWeaponDamageStats()` deciding whether the record
-is a weapon at all — and feature 002 reads its result.
+over one `OutfittingModule` record — and feature 002 reads its result.
 
 It is a different subject from this contract's, and does not join it. It measures an article rather
 than a build, it takes no `BuildMetrics`, it reads no enabled state and no slot, and its result
-never reaches this panel or the rail cell. Eight scalar figures are exposed: `damagePerShot`,
-`damagePerSecond`, `sustainedDamagePerSecond`, `sustainedRateOfFire`, `energyPerSecond`,
-`sustainedEnergyPerSecond`, `heatPerSecond` and `sustainedHeatPerSecond`. The damage splits,
-`rateOfFire`, `thermalLoad`, `powerDraw` and `continuous` are not — the first two are this panel's,
+never reaches this panel or the rail cell. What it must agree with this contract on is which
+articles are weapons at all: an article is measured when its `category` is `hardpoint`, which is the
+package's own gate into the calculation, and is why neither surface measures the one utility module
+that carries a damage figure. A point defence turret publishes no capacitor draw, and the
+calculation's own default would report that absence as a draw of zero.
+
+Eight scalar figures are exposed: `damagePerShot`, `damagePerSecond`, `sustainedDamagePerSecond`,
+`sustainedRateOfFire`, `energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond` and
+`sustainedHeatPerSecond`. A `continuous` weapon is given six of them: it fires no shots, so the
+result's `damagePerShot` is its per-second damage under another name and its `sustainedRateOfFire`
+is the `1` the arithmetic needs, and neither is a reading. The damage splits, `rateOfFire`,
+`thermalLoad`, `powerDraw` and `continuous` itself are not exposed — the first two are this panel's,
 and the rest are catalogue fields the editor's own table already draws.
 
 ## Leaf imports
@@ -44,7 +51,6 @@ and the rest are catalogue fields the editor's own table already draws.
 - `ModuleMount`, `getModuleBySymbol`: `@elite-dangerous-almanac/core/ships/modules`
 - `getShipGunsight`, `projectGunsight`, `GunsightOffset`:
   `@elite-dangerous-almanac/core/ships/gunsights`
-- `hasWeaponDamageStats`: `@elite-dangerous-almanac/core/ships/module-capabilities`
 - `getShipSlots`: `@elite-dangerous-almanac/core/ships/ships`
 - `enumerateSlots`: `@elite-dangerous-almanac/core/ships/slots`
 
