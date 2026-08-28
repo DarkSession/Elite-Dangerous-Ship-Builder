@@ -77,6 +77,15 @@ async function renameShip(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
 
+/**
+ * The saved-build surface, whichever composition it is showing.
+ *
+ * Scoped, because it stands over the screen rather than replacing it since
+ * 2026-08-28: a bare `getByText` reaches the workspace behind it, and a closed
+ * save dialog holds the same record's name in a label of its own.
+ */
+const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' });
+
 /** How many records this browser is holding, whatever their kind. */
 async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
@@ -347,7 +356,7 @@ test.describe('the tab’s working build', () => {
     await savedToBrowser(page);
     await saveActiveBuild(page, 'Explorer');
     await reachShellLink(page, 'Open saved build');
-    await expect(page.getByText('Explorer').first()).toBeVisible();
+    await expect(library(page).getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
       Object.keys(localStorage)
@@ -377,7 +386,7 @@ test.describe('the tab’s working build', () => {
     await savedToBrowser(page);
     await saveActiveBuild(page, 'Explorer');
     await reachShellLink(page, 'Open saved build');
-    await expect(page.getByText('Explorer').first()).toBeVisible();
+    await expect(library(page).getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
       Object.keys(localStorage)
