@@ -64,7 +64,8 @@ is used.
 - Offer exactly the grades in the selected `AvailableBlueprint` and effects returned for that slot.
 - Quality is always explicitly `1` and is never editable/presented as a roll slider.
 - Purchase variant grade and current `Engineering.Level` are separate.
-- Attribute values are package `stats`/`effectiveStats`/modifiers; unavailable remains unavailable.
+- Attribute values are package `stats`/`effectiveStats`/modifiers, and the package's own
+  calculations over those two records; unavailable remains unavailable.
 - Do not claim better/worse direction from `LessIsGood`, which the package documents as unreliable.
 - Fixed/final articles expose only package-supported operations.
 

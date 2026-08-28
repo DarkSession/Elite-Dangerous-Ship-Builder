@@ -714,8 +714,49 @@ function previewOf(
   ]
     .filter((row) => row.stock !== null || row.modified !== null)
     .filter((row) => !silentZero(row));
+  const drawn = new Map(attributes.map((row) => [row.attribute, row] as const));
 
-  return { kind: 'known', comparing: modifiedArticle !== null, attributes };
+  return {
+    kind: 'known',
+    comparing: modifiedArticle !== null,
+    attributes: attributes.filter((row) => !restatesAnotherRow(row, drawn)),
+  };
+}
+
+/**
+ * The row each calculated figure restates where a weapon's cadence is flat.
+ *
+ * A weapon that never stops to reload sustains exactly what it starts with, so
+ * its four sustained figures are the four above them written twice; a weapon
+ * whose cadence is one shot a second has a damage per second equal to its
+ * damage. Neither is wrong, and neither is a second reading.
+ */
+const RESTATED_BY: Partial<Record<ComparedAttribute, ComparedAttribute>> = {
+  damagePerSecond: 'damage',
+  energyPerSecond: 'distributorDraw',
+  heatPerSecond: 'thermalLoad',
+  sustainedDamagePerSecond: 'damagePerSecond',
+  sustainedEnergyPerSecond: 'energyPerSecond',
+  sustainedHeatPerSecond: 'heatPerSecond',
+  sustainedRateOfFire: 'rateOfFire',
+};
+
+/**
+ * A calculated row that says what another row of the table already says.
+ *
+ * Dropped only where *both* readings match, because that is what makes it a
+ * repetition rather than a change. A small cannon reloads at stock and does not
+ * once rapid fire has grown its clip: its sustained figures are a reading on
+ * one side and a repetition on the other, and a row that vanished from one
+ * column would report the reading as lost (FR-012a).
+ */
+function restatesAnotherRow(
+  row: AttributeComparison,
+  drawn: ReadonlyMap<ComparedAttribute, AttributeComparison>,
+): boolean {
+  const restated = RESTATED_BY[row.attribute];
+  const other = restated === undefined ? undefined : drawn.get(restated);
+  return other !== undefined && other.stock === row.stock && other.modified === row.modified;
 }
 
 /**

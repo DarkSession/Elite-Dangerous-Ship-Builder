@@ -161,12 +161,13 @@ its ship name and ident — belongs here.
   calculation rather than from arithmetic over the rows: a weapon's damage per second, sustained
   damage per second, sustained rate of fire, capacitor draw and heat are what a recipe is chosen
   for, and a Commander MUST NOT have to multiply two rows to read one of them. A calculated figure
-  MUST NOT be offered where it would not be a second reading — for an article the calculation does
-  not describe, for a figure that is arithmetic over two rows of the same table, or for one that
-  collapses onto the catalogue row beside it. A module the package does not admit to the calculation
-  is not a weapon, and a continuous-fire weapon's damage, draw and heat are already per second. A
-  defaulted zero and a repeated figure are both rows a Commander learns nothing from. Attribute
-  labels
+  MUST NOT be offered where it would not be a second reading. Three cases: an article the
+  calculation does not describe, which is anything the package does not measure as a weapon; a
+  per-shot figure, which restates a per-round figure the table already carries; and a figure whose
+  two readings both equal another row's, which is what a continuous-fire weapon's every figure does
+  and what a weapon that never stops to reload does to its sustained ones. A figure that repeats on
+  one reading and moves on the other is a reading and MUST be kept. A defaulted zero and a repeated
+  figure are both rows a Commander learns nothing from. Attribute labels
   are application-localized; the package's own field identities MUST NOT reach a screen. The stock
   reading MUST be shown whether or not the module is engineered; the modified reading MUST be shown
   exactly when there is a selection or existing engineering to compare against, and a selection the

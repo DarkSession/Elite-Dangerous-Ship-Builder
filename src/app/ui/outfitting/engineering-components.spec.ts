@@ -217,6 +217,7 @@ describe('attribute comparison', () => {
   const ROWS = [
     { key: 'damage', label: 'Damage', stock: '5.72', modified: '6.90' },
     { key: 'mass', label: 'Mass t', stock: null, modified: '4.00' },
+    { key: 'jitter', label: 'Jitter °', stock: '0.50', modified: null },
   ];
 
   it('relates every figure to its attribute through a row header', () => {
@@ -242,6 +243,8 @@ describe('attribute comparison', () => {
     // reporting it told a Commander their multi-cannon had no name.
     expect(query(fixture, '.comparison__value .unavailable')).toBeTruthy();
     expect(textOf(cells[2]!)).toBe('Unavailable');
+    // Both columns say it the same way.
+    expect(textOf(cells[5]!)).toBe('Unavailable');
   });
 
   it('marks a direction the canvas’s way, and never by colour alone', () => {

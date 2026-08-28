@@ -487,6 +487,9 @@ describe('engineering draft', () => {
     it('adds the package’s calculated figures for a weapon, on both sides', () => {
       const loadout = defaultBuild();
       const slot = FIXTURE_SLOTS.fittedHardpoint;
+      // A weapon that stops to reload, so its sustained figures are readings of
+      // their own rather than the burst figures written twice.
+      loadout.setModule(slot, getModuleBySymbol('Hpt_MultiCannon_Fixed_Small')!);
       const blueprint = loadout.availableBlueprints(slot)[0]!;
 
       const draft = openEngineeringDraft(
@@ -512,6 +515,7 @@ describe('engineering draft', () => {
       // wiring at all; this fails unless the panel measured the right article
       // with the right recipe on it.
       const applied = defaultBuild();
+      applied.setModule(slot, getModuleBySymbol('Hpt_MultiCannon_Fixed_Small')!);
       applied.applyBlueprint(slot, blueprint.blueprintSymbol, {
         grade: blueprint.grades.at(-1)!,
         quality: 1,
@@ -551,6 +555,56 @@ describe('engineering draft', () => {
       for (const attribute of WEAPON_FIGURES) {
         expect(drawn).not.toContain(attribute);
       }
+    });
+
+    it('leaves off a sustained figure that repeats the row above it', () => {
+      const loadout = defaultBuild();
+      // A pulse laser never stops to reload, so it sustains exactly what it
+      // starts with and its four sustained figures are four rows written twice.
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      expect(loadout.fittedModuleAt(slot)?.stats?.clipSize).toBeUndefined();
+
+      const draft = openEngineeringDraft(loadout, slot, 1, NO_SELECTION, TEXT);
+
+      const drawn =
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.map((row) => row.attribute as string)
+          : [];
+      expect(drawn).toEqual(
+        expect.arrayContaining(['damagePerSecond', 'energyPerSecond', 'heatPerSecond']),
+      );
+      for (const attribute of [
+        'sustainedDamagePerSecond',
+        'sustainedEnergyPerSecond',
+        'sustainedHeatPerSecond',
+        'sustainedRateOfFire',
+      ]) {
+        expect(drawn).not.toContain(attribute);
+      }
+    });
+
+    it('keeps a sustained figure that is a reading on one side only', () => {
+      const loadout = defaultBuild();
+      const slot = FIXTURE_SLOTS.fittedHardpoint;
+      loadout.setModule(slot, getModuleBySymbol('Hpt_Cannon_Fixed_Small')!);
+
+      const draft = openEngineeringDraft(
+        loadout,
+        slot,
+        1,
+        { blueprintFdname: 'Weapon_RapidFire', grade: 5, effectFdname: null },
+        TEXT,
+      );
+
+      const row =
+        draft?.preview.kind === 'known'
+          ? draft.preview.attributes.find((entry) => entry.attribute === 'sustainedDamagePerSecond')
+          : undefined;
+      // A cannon reloads at stock and stops reloading once rapid fire has grown
+      // its clip. The row is a reading on one side and a repetition on the
+      // other, and dropping it would report the reading as lost.
+      expect(row?.stock).not.toBe(row?.modified);
+      expect(Number.isFinite(row?.stock)).toBe(true);
     });
 
     it('gives a continuous-fire weapon no calculated figures either', () => {

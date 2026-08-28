@@ -407,13 +407,17 @@ test.describe('engineering costs', () => {
     await expect(comparison).not.toContainText(/name unavailable/i);
 
     // Damage per second is what the recipe is chosen for, and the Almanac
-    // calculates it. Both readings are drawn, beside the stats they come from.
-    for (const label of ['Damage per second', 'Sustained damage per second']) {
-      const row = comparison.locator('tr', { has: page.getByText(label, { exact: true }) });
-      await expect(row).toBeVisible();
-      await expect(row.locator('.comparison__value').first()).toHaveText(/\d/);
-      await expect(row.locator('.comparison__value--modified')).toHaveText(/\d/);
-    }
+    // calculates it. Both readings are drawn, after the stats they come from.
+    const dps = comparison.locator('tr', {
+      has: page.getByText('Damage per second', { exact: true }),
+    });
+    await expect(dps).toBeVisible();
+    await expect(dps.locator('.comparison__value').first()).toHaveText(/\d/);
+    await expect(dps.locator('.comparison__value--modified')).toHaveText(/\d/);
+
+    // A pulse laser never stops to reload, so it sustains what it starts with.
+    // That row would be the row above it written twice, and it is left off.
+    await expect(comparison).not.toContainText('Sustained damage per second');
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {

@@ -28,10 +28,12 @@ over one `OutfittingModule` record — and feature 002 reads its result.
 It is a different subject from this contract's, and does not join it. It measures an article rather
 than a build, it takes no `BuildMetrics`, it reads no enabled state and no slot, and its result
 never reaches this panel or the rail cell. What it must agree with this contract on is which
-articles are weapons at all: an article is measured when its `category` is `hardpoint`, which is the
-package's own gate into the calculation, and is why neither surface measures the one utility module
-that carries a damage figure. A point defence turret publishes no capacitor draw, and the
-calculation's own default would report that absence as a draw of zero.
+articles are weapons at all. `weaponMetrics()` is data-free and measures whatever it is handed, so
+the decision belongs to the caller: `BuildMetrics.weaponMetrics()` makes it by walking the build's
+hardpoints, and `weaponFigures()` restates that rule as the article's own `category`. It is why
+neither surface measures the one utility module that carries a damage figure. A point defence turret
+publishes no capacitor draw, and the calculation's own default would report that absence as a draw
+of zero.
 
 A `continuous` weapon is not measured either. Its damage, draw and heat are already per second, so
 every figure collapses onto the catalogue stat the editor's table draws beside it, and
@@ -44,6 +46,10 @@ Seven scalar figures are exposed: `damagePerSecond`, `sustainedDamagePerSecond`,
 are rows of that table. Neither are the damage splits, `rateOfFire`, `thermalLoad`, `powerDraw` and
 `continuous` itself — the splits are this panel's, and the rest are catalogue fields the editor
 already draws. `energyPerSecond` is stated in the `MJ/s` this panel's `DRAW` is stated in.
+
+Which of the seven the editor then draws is the editor's own rule, not this contract's: a figure
+whose two readings both equal another row's is dropped there, which is what happens to the sustained
+four on a weapon that never stops to reload.
 
 ## Leaf imports
 

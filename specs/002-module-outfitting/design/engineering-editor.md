@@ -306,7 +306,15 @@ that `CLEAR ✕` created by existing at wide width only.
   thing this application never asks of a Commander. `weaponFigures` decides what has an answer: the
   package's calculation takes `hardpoint` records, so the one utility module carrying a damage
   figure is not measured, and a continuous-fire weapon is not either — its damage, draw and heat are
-  already per second, so every figure would repeat the catalogue row beside it.
+  already per second, so every figure would repeat the catalogue row beside it. `RESTATED_BY` drops
+  the rest: a figure whose two readings both equal another row's is that row written twice, which is
+  what a weapon that never stops to reload does to its four sustained figures. A figure that repeats
+  on one reading and moves on the other is kept — a small cannon reloads at stock and does not once
+  rapid fire has grown its clip, and a row that vanished from one column would report the reading as
+  lost.
+- The calculated rows are drawn as one block after the catalogue rows, not folded into their
+  alphabetical order. The table's subject changes at that line — from what the article is to what it
+  does — and a `Damage per second` between `Clip size` and `Distributor draw` would hide the change.
 - **A boot time of zero is left off. Ruled 2026-08-23 (wave 11, Commander request).** The Almanac
   publishes `bootTime: 0` on 244 modules, and it is a real reading — the module has no boot delay —
   rather than a gap. `Boot time s 0` is still a row that tells a Commander nothing, and alphabetical
