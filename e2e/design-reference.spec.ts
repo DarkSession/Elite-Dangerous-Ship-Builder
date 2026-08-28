@@ -693,7 +693,7 @@ test.describe('the saved-build surface', () => {
             declared['link'] = ground;
           }
           if (/\.action-layer__link\[[^\]]*\]:hover$/.test(styled.selectorText)) {
-            declared['compactLink'] = ground;
+            declared['foldedLink'] = ground;
           }
           if (/^\.action\[[^\]]*\]:hover/.test(styled.selectorText)) {
             declared['button'] = ground;
@@ -715,7 +715,7 @@ test.describe('the saved-build surface', () => {
     expect(hoverGrounds['link']).toBe(hoverGrounds['button']);
     // The same control in the folded bar's menu, which is where a Commander reaches
     // it at narrow widths and where the complaint was first made.
-    expect(hoverGrounds['compactLink']).toBe(hoverGrounds['button']);
+    expect(hoverGrounds['foldedLink']).toBe(hoverGrounds['button']);
   });
 });
 

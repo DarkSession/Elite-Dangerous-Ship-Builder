@@ -28,8 +28,8 @@ async function buildWithLink(page: Page, hull = 'Anaconda'): Promise<string> {
  * Opens the export layer from the command bar and asks it for the link.
  *
  * Canvas 1c draws `EXPORT` in the bar's action row, so that is where it is
- * reached — and at compact width the frame puts the same action behind the
- * named trigger, which `reachShellAction` knows about. The layer opens on the
+ * reached — and where the bar is folded the frame puts the same action behind
+ * the named trigger, which `reachShellAction` knows about. The layer opens on the
  * format the canvas draws first, which is the payload, so the link is chosen
  * here rather than assumed.
  */

@@ -118,9 +118,10 @@
     <!--
       The same actions in two compositions, one rendered at a time. The wide row
       keeps every action on the banner; the folded layer moves them behind one
-      named trigger. Whichever is not in use is removed from layout and from the
-      accessibility tree by `layout.bar-folded`, so no action is ever announced
-      twice or reachable while invisible.
+      named trigger. The layer is hidden by default and `layout.bar-folded`
+      reverses that while hiding the row, so exactly one composition is ever in
+      layout and in the accessibility tree, and no action is announced twice or
+      reachable while invisible.
     -->
     <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">
       @for (action of actions(); track action.id) {

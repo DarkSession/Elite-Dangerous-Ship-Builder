@@ -667,7 +667,7 @@ test.describe('the folded route the reference draws', () => {
   });
 
   test('keeps the frame’s actions inside the viewport at 200% text', async ({ page }) => {
-    // Whichever composition this width draws, and the compact one is the one
+    // Whichever composition this width draws, and the folded one is the one
     // that can escape: its panel hangs off a trigger in a wrapping sticky
     // banner, and both of its escapes are horizontal — a rem-based
     // `min-inline-size` wider than the screen, and a wrapped trigger sitting at
@@ -678,12 +678,12 @@ test.describe('the folded route the reference draws', () => {
     await withStockBuild(page);
 
     const trigger = page.locator('.action-layer__trigger');
-    const compact = await trigger.isVisible();
-    if (compact) {
+    const folded = await trigger.isVisible();
+    if (folded) {
       await openActionLayer(page);
     }
 
-    const drawn = compact ? page.locator('.action-layer__panel') : page.locator('.frame__actions');
+    const drawn = folded ? page.locator('.action-layer__panel') : page.locator('.frame__actions');
     await expect(drawn).toBeVisible();
 
     const width = page.viewportSize()?.width ?? 0;
