@@ -104,8 +104,8 @@ describe('mobility and jump ownership policy', () => {
     });
 
     it('does not read a longer name that merely ends in a forbidden one', () => {
-      // Both differ from the forbidden name by one leading word character and
-      // nothing else, so they fail if the word boundary is ever dropped. A
+      // Each is preceded by a word character with nothing between it and the
+      // forbidden name, so both fail if the word boundary is ever dropped. A
       // fixture that also changed the first letter's case would pass whether the
       // boundary was there or not, and prove nothing.
       assert.deepEqual(forbiddenCalls('const x = envelope_mobilityMetrics(load);'), []);
