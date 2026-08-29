@@ -38,9 +38,6 @@ export class SlefExportCoordinator {
     return { loadout, revision, canonicalLink: this.#canonicalLink(revision) };
   });
 
-  /** Whether an export can be generated at all. */
-  readonly available = computed(() => this.snapshot() !== null);
-
   /**
    * Generates the artifact for the current revision, replacing any older one.
    *

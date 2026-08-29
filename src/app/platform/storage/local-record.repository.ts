@@ -102,12 +102,6 @@ export class LocalRecordRepository {
   }
 
   /**
-   * Writes one record as a single value.
-   *
-   * The whole record is serialized before storage is touched, so a serializer
-   * that throws cannot leave a partial value behind.
-   */
-  /**
    * Whether the record under this id is one the Commander has named.
    *
    * Asked of storage rather than of the page's own belief about what it holds:
@@ -151,6 +145,12 @@ export class LocalRecordRepository {
     return matches[0]?.id ?? null;
   }
 
+  /**
+   * Writes one record as a single value.
+   *
+   * The whole record is serialized before storage is touched, so a serializer
+   * that throws cannot leave a partial value behind.
+   */
   write(draft: RecordDraft): RepositoryResult<void> {
     const json = serializeLocalRecord(draft);
     return this.#storage.write(recordKey(draft.id), json);

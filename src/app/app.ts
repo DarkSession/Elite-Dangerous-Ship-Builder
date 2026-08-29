@@ -14,7 +14,7 @@ import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { BuildLibraryPage } from './features/build-library/build-library.page';
 import { LibraryPresence } from './features/build-library/library-presence';
-import { ScreenChrome } from './features/shared/screen-chrome';
+import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { LocaleStore } from './i18n/locale.store';
 import { SlefStore } from './application/slef/slef.store';
 import { ExportDialog } from './features/slef/export-build-layer/export.dialog';
@@ -38,9 +38,6 @@ export const HELP_ACTION = 'help.open';
 
 /** The shell action that starts the application over on a newer version. */
 export const UPDATE_ACTION = 'app.update';
-
-/** The workspace action that top-level composition connects to feature 004. */
-export const WORKSPACE_EXPORT_ACTION = 'workspace.export';
 
 /**
  * The application root.
@@ -418,13 +415,6 @@ export class App {
     if (id === UPDATE_ACTION) {
       void this.#updates.apply();
       return;
-    }
-    if (id === 'library') {
-      // A layer over the screen, as the link is. The navigation stands behind
-      // it for the one case the layer refuses: a Commander already on `/builds`.
-      if (!this.library.raise()) {
-        void this.#router.navigateByUrl(NAVIGATION_ROUTES.library);
-      }
     }
   }
 }

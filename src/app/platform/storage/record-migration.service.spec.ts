@@ -83,9 +83,11 @@ describe('opening a stored record', () => {
     const { service, storage } = setup((store) =>
       store.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1),
     );
+    const writes = vi.spyOn(storage, 'setItem');
     storage.writeError = quotaError();
 
     // Nothing needed migrating, so no write was attempted and the open stands.
     expect(service.open(FIXTURE_IDS.named).ok).toBe(true);
+    expect(writes).not.toHaveBeenCalled();
   });
 });

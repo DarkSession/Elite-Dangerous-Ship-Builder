@@ -226,8 +226,6 @@
   "library.manage.title": "Aufbauten zum Verwerfen auswählen",
   "library.manage.description": "Es wird nichts entfernt, bevor du es auswählst und bestätigst. Dein geöffneter Aufbau bleibt in jedem Fall unverändert.",
   "library.storage.summary": "Etwa {{used}} von {{available}} belegt. Die tatsächliche Grenze bestimmt dein Browser.",
-  "library.migrated": "Dieser Aufbau wurde von einer älteren Version gespeichert und wurde aktualisiert.",
-  "library.migration-not-stored": "Dieser Aufbau ließ sich öffnen, die aktualisierte Fassung konnte aber nicht gespeichert werden. Das Original ist unverändert vorhanden.",
   "link.title": "Aufbau-Link",
   "link.value.label": "Der Link zu diesem Aufbau",
   "link.copy": "Link kopieren",

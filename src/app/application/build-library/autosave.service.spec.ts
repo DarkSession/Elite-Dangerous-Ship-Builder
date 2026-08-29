@@ -11,7 +11,6 @@ import {
 import { recordKey } from '../../platform/storage/storage-keys';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { AutosaveService } from './autosave.service';
-import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 
 /** A lifecycle adapter a test can fire on demand. */
 class FakeLifecycle {
@@ -54,9 +53,7 @@ function setup(seed: (storage: MemoryStorage) => void = () => {}) {
   const autosave = TestBed.inject(AutosaveService);
   TestBed.inject(ClockAdapter).now = () => new Date('2026-01-02T03:04:05.000Z');
   const active = TestBed.inject(ActiveBuildStore);
-  const ownership = TestBed.inject(TabOwnershipCoordinator);
-
-  return { autosave, active, ownership, storage, lifecycle };
+  return { autosave, active, storage, lifecycle };
 }
 
 /** The record a test hands the page, standing in for one it minted itself. */

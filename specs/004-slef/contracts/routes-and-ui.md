@@ -39,8 +39,9 @@ Presentation components receive immutable localized view models and emit typed i
 - SLEF export: generate/retry, select payload, copy, download and share.
 
 Components never call the Almanac, `TextEncoder`, active/storage/link state, Clipboard, Blob, URL or
-Navigator APIs. Feature 001 components publish the export action without importing feature 004.
-Top-level composition connects that action to the feature 004 store.
+Navigator APIs. Feature 001 components publish the export action without importing feature 004, and
+feature 001 domain and application code never imports feature 004. Top-level composition connects
+that action to the feature 004 store.
 
 ## Shared component composition
 

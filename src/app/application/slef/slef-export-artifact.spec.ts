@@ -49,7 +49,6 @@ describe('the export artifact’s life', () => {
 
     active.clear();
 
-    expect(coordinator.available()).toBe(false);
     expect(coordinator.generate()).toBe(false);
     expect(store.artifact()).toBeNull();
   });

@@ -182,28 +182,6 @@ export class SlefPresenter {
 
   // ---- intents -----------------------------------------------------------
 
-  openImport(): void {
-    this.#store.openLayer('import');
-  }
-
-  /**
-   * Opens the export layer, on a named format or on the one it already holds.
-   *
-   * The format is optional because the store's is sticky: a Commander who moved
-   * to the link finds the link. A default here would look like the same
-   * behaviour and be the opposite of it — every open would reset the choice.
-   *
-   * The shell reaches `SlefStore` directly because opening a layer must not
-   * pull this presenter and its export dependencies into the control's bundle.
-   */
-  openExport(mode?: SlefExportMode): void {
-    if (mode !== undefined) {
-      this.#store.selectExportMode(mode);
-    }
-    this.#store.openLayer('export');
-    this.prepareExport();
-  }
-
   /**
    * Makes the layer ready to show what it is about to show.
    *

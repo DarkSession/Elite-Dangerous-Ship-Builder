@@ -226,8 +226,6 @@
   "library.manage.title": "Choose builds to discard",
   "library.manage.description": "Nothing is removed until you choose it and confirm. Your open build stays as it is either way.",
   "library.storage.summary": "Roughly {{used}} of {{available}} used. Your browser decides the real limit.",
-  "library.migrated": "This build was saved by an older version and has been updated.",
-  "library.migration-not-stored": "This build opened, but the updated form could not be stored. The original is still there, unchanged.",
   "link.title": "Build link",
   "link.value.label": "The link to this build",
   "link.copy": "Copy the link",

@@ -174,8 +174,11 @@ Written when the gap was found, so the record says what was wrong rather than on
   export layer now has that block of its own in `e2e/slef-export.spec.ts`, measured against
   `specs/011-interface-foundations/design/canvas-extraction.md`, "Choice cards".
 
-- **The order and the opening format follow the canvas.** Canvas 1c draws SLEF JSON first and draws it
-  selected. The choice stays sticky, so a Commander who moves to the link finds the link next time.
+- **The order and the opening format now follow the canvas.** They did not: the list was drawn Share
+  Link first and opened on it, justified by a comment that said this was "where canvas 1c draws the
+  list starting". Canvas 1c draws SLEF JSON first and draws it selected. The comment was wrong, the
+  resulting hierarchy above is corrected with it, and the layer now opens on the payload. The choice
+  stays sticky, so a Commander who moves to the link finds the link next time.
 
 - **One thing the canvas does not draw is still drawn on purpose**, recorded so the next reading does
   not take it for the same oversight: the payload's visible field label, which this review's "Adapt"

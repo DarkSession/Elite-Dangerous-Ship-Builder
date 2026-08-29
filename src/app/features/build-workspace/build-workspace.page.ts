@@ -29,7 +29,7 @@ import { MessageService } from '../../i18n/message.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
-import { ScreenChrome } from '../shared/screen-chrome';
+import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from '../shared/screen-chrome';
 import { ActionLink } from '../../ui/components/action/action-link';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { StatusNotice } from '../../ui/components/status/status-notice';
@@ -338,7 +338,7 @@ export class BuildWorkspacePage {
         this.hasBuild()
           ? [
               {
-                action: { id: 'workspace.export', label: this.shareLabel() },
+                action: { id: WORKSPACE_EXPORT_ACTION, label: this.shareLabel() },
               },
               {
                 action: {

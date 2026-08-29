@@ -22,8 +22,10 @@ export type OpenOutcome =
  * something this build has already proved it cannot open (persistence
  * contract, "Version and migration behavior").
  *
- * A failed rewrite is not a failed open. The candidate remains usable in
- * memory, and the original stored bytes remain intact.
+ * A failed rewrite is not a failed open, and is not reported. The candidate
+ * remains usable in memory and the original bytes remain intact in their older
+ * form, so the next open migrates and rewrites again. That retry is the whole
+ * recovery (persistence contract, "Version and migration behavior").
  */
 @Injectable({ providedIn: 'root' })
 export class RecordMigrationService {

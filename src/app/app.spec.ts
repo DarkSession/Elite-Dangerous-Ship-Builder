@@ -1,6 +1,7 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { App, HELP_ACTION, WORKSPACE_EXPORT_ACTION } from './app';
+import { App, HELP_ACTION } from './app';
+import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { SlefStore } from './application/slef/slef.store';
 import { FIXTURE_HULL } from './domain/outfitting/outfitting.fixtures';

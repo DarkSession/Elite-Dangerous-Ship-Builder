@@ -22,6 +22,16 @@ export interface ScreenAction {
 }
 
 /**
+ * The workspace action that top-level composition connects to feature 004.
+ *
+ * Named here rather than in either file that uses it, because two files use it:
+ * the workspace publishes the action and the shell dispatches on it. Repeat the
+ * literal across the two, and a rename reaches one file, stops matching in the
+ * other, and nothing short of an e2e run says so.
+ */
+export const WORKSPACE_EXPORT_ACTION = 'workspace.export';
+
+/**
  * What the command bar shows for the screen that is open.
  *
  * The reference puts one number there and nowhere else — "48 SHIPS" on the

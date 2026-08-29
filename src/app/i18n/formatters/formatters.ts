@@ -295,6 +295,16 @@ export class Formatters {
     }
   }
 
+  /**
+   * How many `Intl` instances are currently cached. Exposed for tests.
+   *
+   * One map holds them all — number formats, collators, display names, dates
+   * and relative times — so this is never a count of one kind of formatter.
+   */
+  get cacheSize(): number {
+    return this.#cache.size;
+  }
+
   #numberFormat(kind: FormatterKind, options: Intl.NumberFormatOptions): Intl.NumberFormat {
     return this.#cached(kind, options, () => new Intl.NumberFormat(this.locale, options));
   }
