@@ -385,22 +385,151 @@ describe('build-link codec', () => {
     expect(new Set(withoutModifiers)).toEqual(new Set(mercenary));
   });
 
-  it('leaves a Mercenary purchase fitted in the application carrying no modifiers', () => {
-    // This is what makes the pre-engineered record sufficient for the purchase itself, and so what
-    // the round-trip test below relies on. The package publishes no modifier block for one.
-    const variant = mercenaryVariants().find(
-      ({ symbol }) => symbol === 'Hpt_Railgun_Fixed_Medium',
-    )!;
-    const build = ShipLoadout.empty('Krait_MkII');
-    build.setPreEngineeredVariant('LargeHardpoint1', variant);
-    const fitted = build.fittedModuleAt('LargeHardpoint1')!;
+  it('pins which Mercenary articles the shop sells with an experimental effect', () => {
+    // Ten of the 22 arrive with an effect already on them. The record encodes the effect against
+    // that pinned value rather than writing it out, so a row gaining or losing one changes the bit
+    // layout of every link that names it. Pin the ten so it cannot move unnoticed.
+    const baked = PRE_ENGINEERED_MODULES.filter(
+      ({ acquisition, experimentalEffectSymbol }) =>
+        acquisition === 'mercenary' && experimentalEffectSymbol !== undefined,
+    );
 
-    expect(fitted.preEngineeredVariant).toEqual(variant);
-    expect(fitted.engineering?.Level).toBe(variant.grade);
-    expect(fitted.engineering?.Modifiers ?? []).toHaveLength(0);
+    expect(
+      baked.map(({ symbol, blueprintSymbol, grade, experimentalEffectSymbol }) => [
+        symbol,
+        blueprintSymbol,
+        grade,
+        experimentalEffectSymbol,
+      ]),
+    ).toEqual([
+      [
+        'Hpt_Slugshot_Gimbal_Small',
+        'FragmentCannonSmall_DoubleScreaming',
+        1,
+        'special_screening_shell',
+      ],
+      [
+        'Hpt_Slugshot_Gimbal_Large',
+        'FragmentCannonLarge_DoubleScreaming',
+        1,
+        'special_screening_shell',
+      ],
+      ['Hpt_MiningLaser_Fixed_Small', 'MiningLaser_LongRange', 1, 'special_incendiary_rounds'],
+      ['Hpt_MultiCannon_Fixed_Medium', 'MultiCannon_Rapid', 1, 'special_phasing_sequence'],
+      ['Hpt_Railgun_Fixed_Medium', 'RailGun_LongShot', 1, 'special_feedback_cascade_cooled'],
+      ['Hpt_BasicMissileRack_Fixed_Medium', 'SeekerMissileRack_Drag', 1, 'special_drag_munitions'],
+      ['Hpt_BasicMissileRack_Fixed_Large', 'SeekerMissileRack_Drag', 1, 'special_drag_munitions'],
+      [
+        'Hpt_BasicMissileRack_Fixed_Medium',
+        'SeekerMissileRack_LightWeightThermal',
+        1,
+        'special_thermal_cascade',
+      ],
+      [
+        'Hpt_BasicMissileRack_Fixed_Medium',
+        'SeekerMissileRackMedium_Lockdown',
+        1,
+        'special_fsd_interrupt',
+      ],
+      [
+        'Hpt_BasicMissileRack_Fixed_Large',
+        'SeekerMissileRackLarge_Lockdown',
+        1,
+        'special_fsd_interrupt',
+      ],
+    ]);
   });
 
-  it('round-trips every Mercenary variant at its purchase grade', () => {
+  it('fits every Mercenary purchase stating exactly the modifiers its article moves', () => {
+    // What makes the pre-engineered record sufficient for a purchase. The package publishes no
+    // fixed stat block for a Mercenary article. What it moves is whatever its baked experimental
+    // effect moves, and the fitted module states that and nothing else. That is the same block
+    // `getPreEngineeredJournalModifiers` reports, which is what the record replays. An article
+    // moving nothing carries no `Modifiers` key rather than an empty array, so the two are
+    // compared through `?? []`.
+    let covered = 0;
+    for (const variant of mercenaryVariants()) {
+      const build = ShipLoadout.empty('Krait_MkII');
+      const fitted = build.fittedModuleAt(fitMercenaryVariant(build, variant))!;
+
+      expect(fitted.engineering?.Level).toBe(variant.grade);
+      expect(fitted.engineering?.ExperimentalEffect).toBe(variant.experimentalEffectSymbol);
+      expect(fitted.engineering?.Modifiers ?? []).toEqual(
+        getPreEngineeredJournalModifiers(variant),
+      );
+      covered += 1;
+    }
+
+    expect(covered).toBe(22);
+
+    // One named article proves the block is not empty for all of them.
+    const baked = mercenaryVariants().find(({ symbol }) => symbol === 'Hpt_Railgun_Fixed_Medium')!;
+    const withEffect = ShipLoadout.empty('Krait_MkII');
+    withEffect.setPreEngineeredVariant('LargeHardpoint1', baked);
+
+    expect(
+      withEffect.fittedModuleAt('LargeHardpoint1')?.engineering?.Modifiers?.length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('round-trips every baked Mercenary article fitted in the application', () => {
+    // The shape a Commander reaches by buying one from the candidate list, which no capture is
+    // involved in. The record carries the identity alone, so this is what proves the effect and
+    // the modifiers it moves survive the trip for all ten.
+    const covered: string[] = [];
+    for (const variant of mercenaryVariants()) {
+      if (variant.experimentalEffectSymbol === undefined) continue;
+      const source = ShipLoadout.empty('Krait_MkII');
+      source.setPreEngineeredVariant('LargeHardpoint1', variant);
+      const before = source.fittedModuleAt('LargeHardpoint1')!;
+      expect(before.preEngineeredVariant).toEqual(variant);
+
+      const fragment = encodeBuildLinkFragment(source);
+      const decoded = decodeBuildLinkFragment(fragment);
+      const after = decoded.fittedModuleAt('LargeHardpoint1')!;
+
+      expect(after.preEngineeredVariant).toEqual(variant);
+      expect(after.engineering?.ExperimentalEffect).toBe(variant.experimentalEffectSymbol);
+      expect(after.engineering?.Modifiers).toEqual(before.engineering?.Modifiers);
+      expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+      covered.push(variant.blueprintSymbol);
+    }
+
+    expect(covered).toHaveLength(10);
+  });
+
+  it('pins the two baked articles whose resolved rate of fire is not the one they state', () => {
+    // Eight of the ten resolve to the figures they arrive with. The two Lockdown Seeker Missile
+    // Racks do not. The module the package fits states `RateOfFire: 0.222222` in its own block
+    // and resolves `rateOfFire` to 0.2222222222222222. A link replaying that block therefore
+    // opens on the stated figure rather than the recomputed one. Both figures are the package's
+    // own answers for one article, so the fix is the package's — Elite-Dangerous-Almanac#6 — and
+    // neither is reconciled here. The difference is in the seventh significant figure, no screen
+    // shows it, and a link is still published.
+    const moved: string[] = [];
+    for (const variant of mercenaryVariants()) {
+      if (variant.experimentalEffectSymbol === undefined) continue;
+      const source = ShipLoadout.empty('Krait_MkII');
+      source.setPreEngineeredVariant('LargeHardpoint1', variant);
+      const before = source.fittedModuleAt('LargeHardpoint1')!;
+      const after = decodeBuildLinkFragment(encodeBuildLinkFragment(source)).fittedModuleAt(
+        'LargeHardpoint1',
+      )!;
+      if (JSON.stringify(after.effectiveStats) === JSON.stringify(before.effectiveStats)) continue;
+      expect(after.effectiveStats).toEqual({
+        ...before.effectiveStats,
+        rateOfFire: after.effectiveStats?.rateOfFire,
+      });
+      expect(before.engineering?.Modifiers).toContainEqual(
+        expect.objectContaining({ Label: 'RateOfFire', Value: after.effectiveStats?.rateOfFire }),
+      );
+      moved.push(variant.blueprintSymbol);
+    }
+
+    expect(moved).toEqual(['SeekerMissileRackMedium_Lockdown', 'SeekerMissileRackLarge_Lockdown']);
+  });
+
+  it('round-trips every Mercenary variant imported at its purchase grade with no effect stated', () => {
     for (const variant of mercenaryVariants()) {
       const source = mercenaryBuild(variant, variant.grade);
       const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
@@ -665,13 +794,13 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently on 2026-08-27 so that its candidate sets stop offering the
-    // fifteen grant-only articles the Almanac stopped offering. Once released, a changed hash
+    // unpublished, most recently on 2026-08-29 so that the ten Merc-Coin articles the Almanac
+    // records with a baked experimental effect carry it here too. Once released, a changed hash
     // belongs under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('f05e74f830df5485ac4e89f10e7016a167e622cd68e2d86ec2febe15a5ed0150');
+    expect(contentHash).toBe('cbabae30fb1057a19c54e84d6b0c0bb309fa0071547a9fbf1e24a4c1148b4586');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -1253,6 +1382,36 @@ function mercenaryVariants(): readonly (typeof PRE_ENGINEERED_MODULES)[number][]
   const variants = PRE_ENGINEERED_MODULES.filter(({ acquisition }) => acquisition === 'mercenary');
   expect(variants).toHaveLength(22);
   return variants;
+}
+
+/**
+ * Fits a Mercenary variant into whichever Krait slot accepts it, and names that slot.
+ *
+ * `setPreEngineeredVariant` is the application's own path and it throws on a slot the article does
+ * not belong in. A test that walks all 22 therefore has to find each one its own mount rather than
+ * assume a hardpoint.
+ */
+function fitMercenaryVariant(
+  build: ShipLoadout,
+  variant: (typeof PRE_ENGINEERED_MODULES)[number],
+): string {
+  for (const slot of [
+    'LargeHardpoint1',
+    'MediumHardpoint1',
+    'SmallHardpoint1',
+    'TinyHardpoint1',
+    'Slot01_Size6',
+    'Slot02_Size5',
+    'PowerDistributor',
+  ]) {
+    try {
+      build.setPreEngineeredVariant(slot, variant);
+    } catch {
+      continue;
+    }
+    if (build.fittedModuleAt(slot)?.preEngineeredVariant != null) return slot;
+  }
+  throw new Error(`No Krait slot accepts ${variant.symbol} / ${variant.blueprintSymbol}.`);
 }
 
 function mercenaryBuild(
