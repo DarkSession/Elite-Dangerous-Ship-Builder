@@ -179,6 +179,35 @@ describe('PowerThermals', () => {
       expect(marks[0]).toBeGreaterThan(0);
     });
 
+    it('marks half of the plant’s output beside it, and names both marks', () => {
+      const { component, element } = render(shedBandBuild());
+
+      // The scale every bar is read on is the share of plant output the column
+      // at the end of each row prints, so the plant's own mark is its 100% and
+      // the mark half way to it is its 50%.
+      const halves = [...element.querySelectorAll<HTMLElement>('.power__band-half')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+      expect(halves.length).toBeGreaterThan(1);
+      expect(new Set(halves).size).toBe(1);
+      expect(halves[0]).toBeCloseTo((component.plantMark() * 100) / 2, 6);
+
+      // Named where they stand, under the tracks they are drawn through, and
+      // hidden from a reader: each row already prints its own share beside it.
+      const axis = element.querySelector('.power__axis-row');
+      const names = [...element.querySelectorAll('.power__axis-label')].map((label) =>
+        label.textContent?.trim(),
+      );
+      expect(axis?.getAttribute('aria-hidden')).toBe('true');
+      expect(names).toEqual(['50%', '100%']);
+      const offsets = [...element.querySelectorAll<HTMLElement>('.power__axis-mark')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+      expect(offsets).toEqual([halves[0], component.plantMark() * 100]);
+      // And it is not one of the groups: a row of names is not a priority group.
+      expect(element.querySelectorAll('.power__axis-row.power__band')).toHaveLength(0);
+    });
+
     it('states every group’s verdict in words, not only the shed one', () => {
       const build = shedBandBuild();
       const budget = BuildMetrics.of(build).powerBudget();
@@ -506,12 +535,13 @@ describe('PowerThermals', () => {
       expect(bar?.classList).toContain('heat__bar--over');
     });
 
-    it('names the threshold and both fills in words, not by colour alone', () => {
+    it('names both fills in words, not by colour alone', () => {
       const { element } = render(withinBudgetBuild());
 
-      expect(element.querySelector('.heat__threshold-label')?.textContent?.trim()).toBe(
-        '100% module damage',
-      );
+      // The line the bars are measured against is drawn through them and carries
+      // no caption: the canvas withdrew it on 2026-08-28, and each bar's own
+      // gauge beside it is what says where it falls against the line.
+      expect(element.querySelector('.heat__threshold-label')).toBeNull();
       const keys = [...element.querySelectorAll('.heat__key')].map((node) =>
         node.textContent?.trim(),
       );

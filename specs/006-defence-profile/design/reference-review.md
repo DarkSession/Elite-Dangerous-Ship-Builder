@@ -143,3 +143,21 @@ their module identities, `RECHARGE` / `0→100%` / `BROKEN RESET`, `HARDNESS` / 
 `INTEGRITY`, and `ARMOUR · 3,914 HP EFFECTIVE` in place of `ARMOUR · 2,784 INTEGRITY`. All of it is
 already built: one DOM at both widths was this feature's answer, and the drawing now agrees with it.
 No change follows from that half of the revision.
+
+## Two readings the Commander sent back, 2026-08-28
+
+**The pip heading is two lines, as the canvas sets it.** Canvas 1c writes it
+`MJ<br><span style="font-size: 7px">× 4 SYS PIPS</span>` — the unit on the first line and the
+condition under it, smaller. Set on one line it was the widest thing in the table, standing over a
+column of four-character figures and taking the width from the rows beside it. The words are
+unchanged and so is the reading: the heading still names the allocation the column was read at,
+because a figure that moves with a condition shown without that condition is the misleading number
+constitution IV forbids.
+
+**The scale's names stand on the places they name, and the floor is not one of them.** The names were
+a row under the track with the floor pushed to one end and the ceiling to the other, so neither stood
+on the mark it named; and on an unsigned table the floor is zero, which the row then printed twice
+over — the built `-0%%` a Commander reported. Each name is now a box of no width centred on its own
+mark: zero where the bars are drawn from, the ceiling at the end of the track. Where the table
+reaches below zero the scale is read from the zero mark, and where it does not there is nothing at
+the leading end to name that zero has not already named.

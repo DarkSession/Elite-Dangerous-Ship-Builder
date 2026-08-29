@@ -62,14 +62,29 @@ a pair is only a pair while both halves can hold what is in them.
   beside the four resistances, not a substitute for it.
 - Pair each damage resistance with its same-type EHP. The canvas's row order is the damage type,
   its bar, its resistance and its pool, on one line. The bar is supplemental, drawn over a scale
-  that is the bar column's own width and has both of its ends printed under it — and zero printed
-  at the mark as well, wherever the table reaches below it. Every length a bar draws is stated
-  beside it as a figure.
+  the bar column's own width, and every length a bar draws is stated beside it as a figure.
+- **The scale names zero and the far end, and each name stands on the place it names. Ruled
+  2026-08-28 (Commander request).** The scale printed its floor and its ceiling as a row under the
+  track with the two pushed to its ends, and zero as a third mark wherever the table reached below
+  it. Two things were wrong with that. The names sat where the row's own edges fell rather than where
+  the track begins and ends, so on a signed table `-20%` stood a little inside the length it names.
+  And on a table that reaches nowhere below zero the floor _is_ zero, so the row printed the same
+  figure twice, side by side, as `-0%%`.
+
+  Each name is now a box of no width centred on the place it names: zero at the mark the bars are
+  drawn from, and the ceiling at the end of the track. The floor is not named — where it is below
+  zero the scale is read from the zero mark, and where it is not, naming it would be naming zero a
+  second time. A box of no width is what centres a name on a mark without a transform that has to
+  know which way the document runs.
+
 - **A fifth column, added by the 2026-08-25 canvas revision: `MJ × N SYS PIPS`.** The shield table
   now closes each row with the same effective pool read at the standing SYS allocation, beside the
   bare one. `N` is that allocation, drawn into the heading and moving with it — the canvas samples
-  it at four (`MJ × 4 SYS PIPS`), which is a sample and not the label. At zero pips the column heads
-  `MJ × 0 SYS PIPS` and repeats the `MJ` column, which is correct and is what the reading means. The
+  it at four, which is a sample and not the label. At zero pips the column heads `× 0 SYS PIPS` and
+  repeats the `MJ` column, which is correct and is what the reading means. The heading is two lines,
+  as the canvas sets it (`MJ<br><span style="font-size: 7px">× 4 SYS PIPS</span>`): `MJ` over a
+  smaller `× N SYS PIPS`. On one line it was the widest thing in the table, and it stood over a
+  column of four-character figures. The
   heading states the allocation because a figure that moves with a condition shown without that
   condition is the misleading number constitution IV forbids. The armour table gains nothing: the
   canvas leaves it at four columns, and pips do not reach a hull.

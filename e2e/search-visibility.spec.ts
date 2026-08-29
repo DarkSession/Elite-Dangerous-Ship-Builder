@@ -94,7 +94,7 @@ test.describe('what the head says this page is', () => {
   test('keeps the build out of the address, because that is where it lives', async ({ page }) => {
     await page.goto(`${PRODUCT_URL}/ships`);
     await openFirstHullFromManifest(page);
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page).toHaveURL(/\/build#./);
 
     await canonical(page).toBe(`${SITE_ORIGIN}/build`);

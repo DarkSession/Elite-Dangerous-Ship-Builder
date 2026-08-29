@@ -199,6 +199,14 @@
 
   // The canvas rules the two columns apart rather than spacing them apart.
   .engineering:not(.engineering--layer) .engineering__choices {
+    // The recipe, the grade and the effect keep their place whether or not
+    // there is a recipe behind them to draw the last two. Nothing is drawn that
+    // is not there — the canvas draws no grade bar over an unengineered module
+    // and neither does this — but the space the three of them take is the
+    // column's floor, so choosing a recipe no longer grows this panel and moves
+    // the ledger beside it (Commander request 2026-08-28). A floor and not a
+    // cap: a translation that wraps, or a doubled text size, passes it.
+    min-block-size: var(--edsb-layout-engineering-choices);
     padding-inline-end: var(--edsb-space-panel);
     border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
   }

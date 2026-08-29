@@ -576,6 +576,24 @@ describe('Tooltip', () => {
     // make the trigger a control that does nothing.
     expect(expanded(fixture)).toBe('false');
   });
+
+  it('offers a smaller trigger for a word that sits in a running line', () => {
+    // The heat profile's glosses are hung on the words of a caption, so a
+    // trigger at the 44 px baseline pushes the lines of that caption apart.
+    // The dense variant takes the 24 px floor of success criterion 2.5.8
+    // instead — asked for by the component that projects the word, never
+    // decided here, because a trigger standing on its own has the room.
+    const fixture = renderComponent(Tooltip, {
+      label: 'Idle',
+      tip: 'Hardpoints stowed',
+      dense: true,
+    });
+
+    expect(query(fixture, 'button').classList.contains('tooltip__trigger--dense')).toBe(true);
+
+    const roomy = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    expect(query(roomy, 'button').classList.contains('tooltip__trigger--dense')).toBe(false);
+  });
 });
 
 describe('Layer', () => {

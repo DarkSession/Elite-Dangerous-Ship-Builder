@@ -276,12 +276,10 @@
   }
 }
 
-// The bars and the caption under them share one set of columns, so every track
-// starts and ends on the same two lines and the caption sits under the threshold
-// drawn through all of them. Rows that each sized their own tracks let a
-// three-digit gauge pull its own track narrower than the one above it, and left
-// the caption measured against the whole block rather than against the track it
-// names.
+// Every bar shares one set of columns, so each track starts and ends on the same
+// two lines and the threshold is drawn through all of them at one place. Rows
+// that each sized their own tracks let a three-digit gauge pull its own track
+// narrower than the one above it.
 .heat__profile {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
@@ -369,30 +367,6 @@
 
 .heat__bar--over .heat__level {
   color: var(--edsb-text-danger);
-}
-
-// The caption under the line, set from the line rather than from the block, so
-// it stays under it whatever the track is scaled to.
-// In the track's own column of the profile grid, so the percentage it is offset
-// by is a percentage of the track rather than of the whole block.
-.heat__threshold-label {
-  @include layout.micro-label;
-
-  position: relative;
-  grid-column: 2;
-  margin: 0;
-  transform: translateX(-50%);
-  inline-size: max-content;
-  max-inline-size: 100%;
-}
-
-// The offset above is logical and the translation that centres the caption on
-// it is physical, so the two disagree the moment the page is mirrored: both
-// move the caption the same way and it ends up half a caption off the page.
-// Mirroring the translation is what CSS leaves to the stylesheet — there is no
-// logical form of it to write instead.
-:host-context([dir='rtl']) .heat__threshold-label {
-  transform: translateX(50%);
 }
 
 .heat__legend {
@@ -504,6 +478,59 @@
   inline-size: var(--edsb-border-width-hairline);
   margin-inline-start: calc(var(--edsb-border-width-hairline) * -1);
   background-color: var(--edsb-text-numeric);
+}
+
+// Half of the plant's output, drawn broken so the two marks on a track cannot
+// be taken for the same reading. It is the quieter of the two, because the
+// plant's mark is where the demand actually runs out and this one is a place on
+// the way to it.
+.power__band-half {
+  position: absolute;
+  inset-block: 0;
+  display: block;
+  inline-size: var(--edsb-border-width-hairline);
+  margin-inline-start: calc(var(--edsb-border-width-hairline) * -1);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--edsb-text-muted) 0 var(--edsb-space-hair),
+    transparent var(--edsb-space-hair) var(--edsb-space-3xs)
+  );
+}
+
+// The row that names the two marks, on the same subgrid as the bars so a name
+// is offset by a share of the track it stands under rather than of the block
+// around it. It is not one of the groups and does not carry their class: a row
+// of names is not a priority group, and a journey counting groups counted it.
+.power__axis-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: start;
+}
+
+.power__axis {
+  position: relative;
+  display: block;
+  grid-column: 2;
+  block-size: var(--edsb-text-size-micro);
+}
+
+// A box of no width centring what it holds, so a name straddles its mark
+// without a transform that would have to know which way the document runs. The
+// defence scale's zero mark is drawn the same way.
+.power__axis-mark {
+  position: absolute;
+  inset-block: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 0;
+}
+
+.power__axis-label {
+  @include layout.micro-label;
+
+  white-space: nowrap;
 }
 
 // Everything the plant does not carry, hatched at the canvas's own 135 degrees.

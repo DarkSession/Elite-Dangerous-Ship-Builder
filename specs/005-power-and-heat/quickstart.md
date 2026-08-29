@@ -77,11 +77,15 @@ Use a build whose deployed draw sheds a lower priority group while its retracted
    rather than as a hidden string beside it — with no draft, Apply, Reset or error state.
 5. Compare plant output, the powered draw, the unpowered remainder and every drawn group's own draw
    and cumulative share with the deployed `powerBudget()` result.
-6. Confirm the three tiles under the groups are `PLANT OUTPUT`, `POWERED DRAW` and `UNPOWERED`, and
+6. Confirm the two marks on every group's track are named once under the list: `100%` on the mark
+   where the plant runs out, and `50%` on the broken line at half that output. Both read as shares
+   of plant output, which is the axis the percentage at the end of each row is already on, so the
+   half mark stands at half the plant mark rather than at the middle of a track that runs past it.
+7. Confirm the three tiles under the groups are `PLANT OUTPUT`, `POWERED DRAW` and `UNPOWERED`, and
    that no headroom, no utilisation and no within-budget verdict is drawn anywhere: the canvas
    prints none of them, and no `n MW plant` sentence stands beside the groups either.
-7. Select `RETRACTED`.
-8. Compare every group figure, every module line and all three tiles with the retracted package
+8. Select `RETRACTED`.
+9. Compare every group figure, every module line and all three tiles with the retracted package
    fields.
 
 Expected: exactly one state is shown at a time, it takes effect immediately, and both states state
@@ -165,8 +169,8 @@ For a ready heat profile:
 4. Repeat with a build that never settles under sustained fire.
 5. Repeat with a build the package returns `null` heat for.
 
-Then confirm the block is one plate split down the middle: the five bars and the threshold caption
-on the leading side, and the two-key legend over the canvas's `RESTING HEAT`, `PEAK SUSTAINED`,
+Then confirm the block is one plate split down the middle: the five bars on the leading side, and
+the two-key legend over the canvas's `RESTING HEAT`, `PEAK SUSTAINED`,
 `DISSIPATION` and `HEAT SINKS` tiles in a column of equal width beside them. The key reads before
 the tiles at both arrangements — it explains the bars, not the four figures. Confirm each scenario
 name carries its description in the system's own tooltip rather than in a `title`: hover one and it
@@ -174,8 +178,10 @@ is drawn, press one and it is drawn, press it again and it is put away, and `Esc
 whichever is on screen. Confirm the pointer can travel from the name onto the bubble without it
 collapsing on the way. Then confirm none of the six is reachable _only_ by hovering — every gloss is
 related to its own name by `aria-describedby` whether or not it is drawn, so a screen reader reads
-it without touching a control. The caption sits under the threshold line drawn through the bars, and
-a level that never settles reads `∞` with the sentence it stands for carried beside it. `PEAK SUSTAINED` is the hottest of the bars drawn
+it without touching a control. The threshold line is still drawn through the bars and is captioned
+nowhere: the key above the tiles names both fills, and the hatch beyond the line tells them apart for
+a reader who cannot tell amber from red. A level that never settles reads `∞` with the sentence it
+stands for carried beside it. `PEAK SUSTAINED` is the hottest of the bars drawn
 beside it, picked out rather than worked out; `HEAT SINKS` is the count of what is fitted over the
 canvas's `2 x 3` breakdown, which is absent where the launchers do not all carry the same charges.
 

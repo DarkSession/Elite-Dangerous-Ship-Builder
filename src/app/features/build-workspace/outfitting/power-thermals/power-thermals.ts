@@ -135,6 +135,15 @@ const DISTRIBUTOR_DIGITS = 1;
 const PIP_DIGITS = 1;
 
 /**
+ * The two shares of plant output the priority-group tracks are marked at.
+ *
+ * They name the scale the tracks are read on rather than any figure: the plant
+ * is the whole of it, and the mark half way to that is half of it.
+ */
+const WHOLE_OUTPUT = 1;
+const HALF_OF_OUTPUT = 0.5;
+
+/**
  * The track canvas 1c draws its heat bars on: the damage threshold sits at 62.5%
  * of it, which is a track running to 160% of the threshold.
  */
@@ -274,6 +283,23 @@ export class PowerThermals {
   readonly plantMark = computed(() => this.#projection()?.power.bar.plant ?? 0);
 
   /**
+   * Half way to the plant's mark, which is half of its output on this scale.
+   *
+   * A place on the track rather than a figure: the column at the end of every
+   * row prints that row's share of plant output, so the plant's mark is where
+   * that column reads 100% and this is where it reads 50%. Nothing is claimed
+   * about the plant — a track coordinate is halved, not a megawatt.
+   *
+   * `0` where the projection has no mark to halve, which is what keeps the two
+   * marks and their names off a block that has nowhere to put them.
+   */
+  readonly halfMark = computed(() => this.plantMark() / 2);
+
+  /** The two marks' own names: the shares of plant output they stand at. */
+  readonly halfLabel = computed(() => this.#formatters.percent(HALF_OF_OUTPUT));
+  readonly plantLabel = computed(() => this.#formatters.percent(WHOLE_OUTPUT));
+
+  /**
    * The canvas's three tiles: `PLANT OUTPUT`, `POWERED DRAW`, `UNPOWERED`.
    *
    * All three hold in either hardpoint state, so this states them in both and
@@ -392,8 +418,6 @@ export class PowerThermals {
 
   /** Where on the track the canvas draws its `100% MODULE DAMAGE` line. */
   readonly heatThreshold = computed(() => this.#projection()?.heat?.thresholdAt ?? 0);
-
-  readonly heatThresholdLabel = this.#messages.messageSignal('power.heat.threshold');
 
   /**
    * The hottest of the readings the bars carry.

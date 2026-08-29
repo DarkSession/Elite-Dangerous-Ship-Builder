@@ -158,11 +158,20 @@ describe('DefenceAnalysis', () => {
     });
 
     it('heads the fifth column with the allocation it was read at', () => {
-      const { component, detect } = render(fullyFittedBuild());
+      const { component, element, detect } = render(fullyFittedBuild());
 
       conditions.setPips('systems', 4);
       detect();
-      expect(component.shieldDamage().pipColumn).toBe('MJ × 4 SYS PIPS');
+      // Two lines of one heading: the unit, and the allocation under it. A
+      // reader is given both, because the condition is part of what the column
+      // states.
+      expect(component.shieldDamage().pipColumn).toEqual({
+        unit: 'MJ',
+        atPips: '× 4 SYS PIPS',
+      });
+      const heading = element.querySelector('.card--shield .damage__cell--at-pips');
+      expect(heading?.textContent?.replace(/\s+/gu, ' ').trim()).toBe('MJ × 4 SYS PIPS');
+      expect(heading?.querySelector('.damage__at-pips')?.textContent?.trim()).toBe('× 4 SYS PIPS');
 
       // A bank lands on a half pip by paying for another one, which is the only
       // way it can: a Commander assigns whole pips and the other two split the
@@ -171,7 +180,7 @@ describe('DefenceAnalysis', () => {
       conditions.setPips('systems', 2);
       conditions.setPips('engines', 3);
       detect();
-      expect(component.shieldDamage().pipColumn).toBe('MJ × 1.5 SYS PIPS');
+      expect(component.shieldDamage().pipColumn?.atPips).toBe('× 1.5 SYS PIPS');
     });
 
     it('repeats the bare pool in the fifth column at no pips', () => {
@@ -404,27 +413,26 @@ describe('DefenceAnalysis', () => {
       }
     });
 
-    it('states the ends of the scale the bars are drawn on', () => {
-      const { component } = render(readyBuild());
+    it('names the far end of the scale the bars are drawn on', () => {
+      const { component, element } = render(readyBuild());
       const table = component.armourDamage();
-      const lowest = Math.min(
-        ...Object.values(BuildMetrics.of(readyBuild()).armourMetrics().resistances),
-      );
+      const ceiling = element.querySelector<HTMLElement>('.card--armour .scale__mark--ceiling');
 
-      // The canvas prints both ends under the bars, and a table reaching below
-      // zero has to print the floor it actually reaches rather than `0%`.
-      expect(table.floor).toBe(new Intl.NumberFormat('en', { style: 'percent' }).format(lowest));
+      // The package stops publishing a bound at `100%`, so that is where the
+      // track ends and the name stands at the end of it.
       expect(table.ceiling).toBe(new Intl.NumberFormat('en', { style: 'percent' }).format(1));
+      expect(ceiling?.textContent?.trim()).toBe(table.ceiling);
     });
 
     it('prints zero at the mark on a table that reaches below it', () => {
       const { component, element } = render(readyBuild());
-      const zero = element.querySelector<HTMLElement>('.card--armour .scale__zero');
+      const zero = element.querySelector<HTMLElement>('.card--armour .scale__mark--zero');
 
-      // The end of the scale and the point the bars are measured from are two
-      // readings on a signed table, and the second one is the one that says
-      // which bars are resistances and which are weaknesses.
+      // The point the bars are measured from is the one that says which of them
+      // are resistances and which are weaknesses, and on a signed table it
+      // stands inside the track rather than at either end.
       expect(component.armourDamage().zero).toBe('0%');
+      expect(component.armourDamage().zeroAt).toBeGreaterThan(0);
       expect(zero?.textContent?.trim()).toBe('0%');
       expect(zero?.style.insetInlineStart).toBe(`${component.armourDamage().zeroAt * 100}%`);
     });
@@ -440,10 +448,11 @@ describe('DefenceAnalysis', () => {
       expect(table.signed).toBe(false);
       expect(table.zeroAt).toBe(0);
       expect(table.rows.every((row) => row.barStart === 0)).toBe(true);
-      // Zero is the start of the scale here, so the canvas's own `0%` at the
-      // leading edge already says it and a second mark would be a duplicate.
-      expect(table.floor).toBe(table.zero);
-      expect(element.querySelector('.card--shield .scale__zero')).toBeNull();
+      // Zero is the start of the scale here, which is where the canvas prints
+      // its own `0%`: one mark, standing wherever zero happens to be.
+      const zero = element.querySelector<HTMLElement>('.card--shield .scale__mark--zero');
+      expect(zero?.textContent?.trim()).toBe(table.zero);
+      expect(zero?.style.insetInlineStart).toBe('0%');
     });
 
     it('draws hardness, module protection and integrity as three separate facts', () => {

@@ -32,6 +32,22 @@
   padding-inline: var(--edsb-space-inline-loose);
 }
 
+// A guest segment's panel is drawn by the region that owns it, outside this
+// box. So this box ends at the strip and closes against that panel: the padding
+// under it would be padding under a panel that is not here, and the workspace's
+// gap between bands would stand the panel a band's width below the strip that
+// opened it. Between them they opened a band of nothing under `STATUS`
+// (Commander request 2026-08-28). What is left is the spacing this region puts
+// between its strip and its own four panels, which is what the segment opens
+// onto in every other mode.
+:host(.anatomy--guest) {
+  margin-block-end: calc(var(--edsb-space-inline) - var(--edsb-space-region));
+}
+
+:host(.anatomy--guest) .anatomy {
+  padding-block-end: 0;
+}
+
 // The rule on one side, the mode strip on the other, wrapping rather than
 // squeezing when there is not room for both on one line.
 .anatomy__header {

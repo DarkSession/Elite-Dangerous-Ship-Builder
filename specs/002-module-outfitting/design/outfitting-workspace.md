@@ -377,6 +377,15 @@ panel that is not the open one is removed from the page rather than hidden visua
 The segment is offered only at compact width. At wide width the rail is the third track of canvas
 1c's grid and is on screen whatever the strip has open, so there is nothing for a segment to reveal.
 
+**The seam between the strip and the rail is the anatomy region's own (2026-08-28, Commander
+request).** The rail is the next band of this workspace, so it arrived with the band gap under a
+region that had also kept the inset under the panel it was not drawing — a band of empty ground above
+`BUILD STATUS` that no other segment opens with. The region marks a guest segment on its own host and
+closes against it (`specs/010-hull-anatomy/design/hull-anatomy.md`, "The region closes against a
+guest's panel"), so what stands between the strip and the rail is the spacing every other segment
+opens with. Nothing about which region draws what changes: the workspace still puts the rail there,
+and the anatomy still draws nothing for that segment.
+
 ### The foot is drawn, not pinned
 
 Canvas 1d draws `CHANGE MODULE` and `ENGINEER` on a plate at the foot of the screen, and the artboard

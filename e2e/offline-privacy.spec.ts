@@ -78,7 +78,7 @@ test.describe('offline capability', () => {
 
   test('reads the offence analysis with no network at all', async ({ page, context }) => {
     await withWorker(page, '/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
 
     await context.setOffline(true);
 
@@ -123,7 +123,7 @@ test.describe('offline capability', () => {
 
   test('reads the cost and material blocks with no network at all', async ({ page, context }) => {
     await withWorker(page, '/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
 
     await context.setOffline(true);
@@ -199,7 +199,7 @@ test.describe('offline capability', () => {
 
   test('reads Drives & Mass with no network at all', async ({ page, context }) => {
     await withWorker(page, '/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
 
     await context.setOffline(true);
 
@@ -265,7 +265,7 @@ test.describe('the privacy promise', () => {
 
     await withWorker(page, '/ships');
     await openFirstHullFromManifest(page);
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     await page.goto('/builds');
 

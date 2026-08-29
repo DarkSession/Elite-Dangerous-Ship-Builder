@@ -224,6 +224,15 @@ the coin figure under it.
 A row with two prices is taller than a row with one, exactly as canvas 1c draws it. It therefore
 takes its own height rather than the manifest's declared one, and is **never skipped**: see below.
 
+**The coin is glossed like every other mark on the row, 2026-08-28 (Commander request).** The
+acquisition marks beside a module's name carry the row's own sentence in the design system's tooltip;
+the coin beside the second price did not, so the one mark on the row that says what a figure is
+measured in was the one mark a Commander could not ask about. It hangs the same gloss on the same
+component — drawn on hover, on focus and on a press, never a `title`, which no thumb can reach. It
+stays presentational, because the row around it is a control and a button inside a button is
+invalid; the unit is already beside it in words for a reader, so the tip is a way to _see_ what a
+reader is told.
+
 ## The manifest is whole, and the scroller knows how tall it is
 
 **Ruled 2026-08-22.** No paging, no growing window, no `Showing 60 of 478`: every row the package

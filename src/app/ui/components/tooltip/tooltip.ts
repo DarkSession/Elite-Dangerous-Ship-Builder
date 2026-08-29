@@ -100,6 +100,19 @@ export class Tooltip {
    */
   readonly presentational = input(false);
 
+  /**
+   * The trigger is one line of a dense list rather than a control of its own.
+   *
+   * It takes SC 2.5.8's 24-pixel AA floor instead of the project's 44-pixel
+   * baseline, which is the same allowance the ledger's power chips and the
+   * distributor's pip blocks take: the reference sets these names as plain text
+   * with the gloss on a `data-tip`, so the 44 pixels are a target this
+   * application added and they are what set the rows of a five-row block twenty
+   * pixels apart (Commander request 2026-08-28). Only for a trigger inside such
+   * a list, never for one that stands alone.
+   */
+  readonly dense = input(false);
+
   /** What that word is shorthand for. Always available; drawn on request. */
   readonly tip = input.required<string>();
 

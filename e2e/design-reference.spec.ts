@@ -134,7 +134,7 @@ test.describe('the reference visual language', () => {
     expect(await page.locator('.frame__flag-home').count()).toBe(0);
 
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     const home = page.locator('.frame__flag-home');
@@ -201,7 +201,7 @@ test.describe('the reference visual language', () => {
     expect(shipyard.drawn).toBe(shipyard.floor);
 
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     // The tallest identity fits inside the same floor, so the bar never grows
@@ -523,7 +523,7 @@ test.describe('the saved-build surface', () => {
    */
   async function withOneBuild(page: Page): Promise<void> {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     // Waited for by the record itself rather than by the status line: autosave
     // coalesces, and a status still reading "ready" is a write that is owed
     // rather than one that failed.
@@ -665,7 +665,7 @@ test.describe('the saved-build surface', () => {
     // would pass by reading the resting one. What both controls declare is the
     // claim, and it is the thing a regression would change.
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(
       page.getByRole('banner').getByRole('link', { name: 'Open saved build' }),
     ).toBeVisible();
@@ -733,7 +733,7 @@ test.describe('the save-build surface', () => {
    */
   async function withSaveOpen(page: Page): Promise<Locator> {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await page.getByRole('banner').getByRole('button', { name: 'Save' }).click();
     const layer = page.getByRole('dialog', { name: 'Save build' });
     await expect(layer).toBeVisible();

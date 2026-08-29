@@ -78,7 +78,7 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
   await openHullFromManifest(page, name);
-  await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Build', exact: true })).toBeVisible();
 }
 
 test.describe('hull detail', () => {
@@ -185,7 +185,7 @@ test.describe('hull detail', () => {
     await expect(page.getByText(/illustration is not available right now/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Load the illustration again' })).toBeVisible();
     // The absence of a picture never gates creating a build (FR-006).
-    await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Build', exact: true })).toBeEnabled();
   });
 
   test('recovers the illustration on retry, without reloading the page', async ({ page }) => {
@@ -219,14 +219,14 @@ test.describe('hull detail', () => {
     await expect(page.getByRole('heading', { name: 'No such hull' })).toBeVisible();
     await expect(page.getByText(/Nonexistent_Hull/)).toBeVisible();
     await expect(page.getByText(/nothing has been created or changed/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Build stock hull' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Build', exact: true })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Back to Ship Builder' })).toBeVisible();
   });
 
   test('creates the package’s own default build, and only when asked', async ({ page }) => {
     await expect(page).toHaveURL(/\/ships\/Anaconda$/);
 
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
@@ -243,12 +243,12 @@ test.describe('hull detail', () => {
     // Withdrawn on 2026-08-25: the build being replaced has a record of its own,
     // so nothing is lost and nothing is asked. What is asserted instead is that
     // the first build is still there afterwards (FR-008, FR-009).
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await savedToBrowser(page);
 
     await openHullInApp(page, 'Sidewinder');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/\/build(#|$)/);
@@ -283,10 +283,10 @@ test.describe('hull detail', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-unknown' });
 
     await page.goto(ANACONDA);
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await openHullInApp(page, 'Sidewinder');
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-second-build' });
   });

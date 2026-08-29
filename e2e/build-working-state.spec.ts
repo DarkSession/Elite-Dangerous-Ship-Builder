@@ -22,7 +22,7 @@ import { reachShellAction, savedToBrowser, reachShellLink } from './shell';
 /** Creates a stock build and lands in the workspace. */
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 
@@ -207,7 +207,7 @@ test.describe('the tab’s working build', () => {
     await expect(duplicate.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await reachShellLink(duplicate, 'Ship Builder');
     await duplicate.goto('/ships/SideWinder');
-    await duplicate.getByRole('button', { name: 'Build stock hull' }).click();
+    await duplicate.getByRole('button', { name: 'Build', exact: true }).click();
     await savedToBrowser(duplicate);
 
     const records = await original.evaluate(() =>

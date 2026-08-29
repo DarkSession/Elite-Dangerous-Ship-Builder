@@ -31,7 +31,7 @@ async function openStockBuild(
   messages: Record<string, string> = englishMessages,
 ): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 

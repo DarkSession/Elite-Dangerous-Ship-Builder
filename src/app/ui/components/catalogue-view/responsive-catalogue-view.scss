@@ -133,9 +133,23 @@ thead th[aria-sort] {
   font-size: var(--edsb-text-size-micro);
 }
 
+// The caret every header keeps, drawn on the sorted one only. Hidden rather
+// than removed, so the box it occupies is the same box in both states: the two
+// right-ranged headings were pulled a caret's width along the first time they
+// were pressed, which is a heading moving under the pointer that asked for it.
+.catalogue__caret--reserved {
+  visibility: hidden;
+}
+
 tbody th,
 tbody td {
   background-color: var(--edsb-surface-row);
+}
+
+// The whole row is the target, so the pointer says so over every cell of it and
+// not only over the name.
+.catalogue__row {
+  cursor: pointer;
 }
 
 // The current row is named by the marker, the wash and the amber name, never

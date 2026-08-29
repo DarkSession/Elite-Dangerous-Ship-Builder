@@ -91,9 +91,21 @@ All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
   output — which is why the percentage column and the bar disagree: `GRP 1` is
   `60%` of the plant and half of the track.
 - A one-pixel `var(--ink-62)` mark stands on every row at the same place, `83.33%`
-  — `31.20 / 37.44`, where the plant runs out. Unlabelled: the words
-  `31.20 MW PLANT` are not in the canvas (see "Not in the canvas" below), and
-  the tile beneath says the figure.
+  — `31.20 / 37.44`, where the plant runs out. The words `31.20 MW PLANT` are
+  not in the canvas (see "Not in the canvas" below), and the tile beneath says
+  the figure.
+- **A second mark, and an axis under the list — added by the latest canvas
+  revision.** A one-pixel broken line
+  (`repeating-linear-gradient(to bottom, var(--ink-45) 0 2px, transparent 2px 5px)`)
+  stands on every row at `left: 50%`, and a row under the bars carries `50%` at
+  `left: 50%` and `100%` at `left: 83.33%`, both `8px` and centred on their mark
+  by `translateX(-50%)`. The row is in the track's own column: an empty
+  `52px` box before it and the `78px` and `74px` figure columns after it.
+- The two marks and the two labels do not agree. `100%` stands on the plant
+  mark, where the track's own `83.33%` is `31.20 / 37.44` — so the axis those
+  labels are on is plant output, and half of it is `41.67%` of the track rather
+  than `50%`. The label is what is built (see `power-and-heat-detail.md`,
+  "Priority groups").
 - Three tiles: `PLANT OUTPUT 31.20 MW` · `POWERED DRAW 29.64 MW` · `UNPOWERED 7.80 MW`,
   and no condition printed under them.
 
@@ -123,7 +135,11 @@ All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
   `Weapons alpha 94%` · `Sustained weapon fire 118%` · `Shield cell bank 131%`
 - The track runs to 160%: the threshold line sits at `left: 62.5%`, amber to it
   and hatched beyond.
-- A threshold marker reading `100% MODULE DAMAGE`.
+- **No threshold caption.** The revision before the latest drew
+  `100% MODULE DAMAGE` under the bars at `left: 62.5%`; canvas 1c no longer has
+  it. Canvas 1d still draws it, and it is built at neither width
+  (`power-and-heat-detail.md`, "Heat profile").
+- The rows are `9px` apart on a `14px` track.
 - One box, laid out left and right: bars and their caption down the left column,
   the four tiles beside them at `1.35fr / 1fr`, the key across the foot
   (review note 5).

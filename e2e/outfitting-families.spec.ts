@@ -47,7 +47,7 @@ async function openStockBuild(
   await page.goto('/ships/Anaconda');
   // Named from the catalogue this run is actually reading, because the German
   // context below reaches the same control through the German word for it.
-  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

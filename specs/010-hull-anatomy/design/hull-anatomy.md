@@ -302,6 +302,15 @@ What is still **not** done is this capability deciding what `STATUS` means, draw
 blocks, or reaching for the rail. It carries a word and reports a press; the region that owns the
 panel draws the panel.
 
+**The region closes against a guest's panel (2026-08-28, Commander request).** Drawing nothing is not
+the same as ending: the region kept the inset under its own four panels and the workspace kept the
+gap it puts between bands, so a Commander opening `STATUS` found a band of empty ground between the
+strip and `BUILD STATUS` that no other segment has. A guest segment is marked on the host
+(`anatomy--guest`), which is what lets the region end at the strip: the inset under an absent panel
+goes, and the region takes back the band the workspace would put after it. What is left between the
+strip and the guest's panel is the spacing this region already puts between the strip and its own
+panels — so every segment opens the same way, whoever draws what is under it.
+
 ## Divergence from FR-008 — the selected mount's facts
 
 **What the reference draws.** Nothing. In `MOUNTS` mode canvas 1c ends at the legend and canvas 1d

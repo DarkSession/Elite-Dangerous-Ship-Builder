@@ -135,7 +135,7 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
 /** Creates a stock build and lands in the workspace with the rail rendered. */
 async function openStockBuild(page: Page): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   // Canvas 1d keeps the rail behind its `STATUS` segment rather than in the
   // flow, so a compact run opens it and a wide one finds it already there.

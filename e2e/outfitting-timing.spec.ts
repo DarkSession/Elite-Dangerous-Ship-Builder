@@ -44,7 +44,7 @@ test.describe('candidate search timing', () => {
     await session.send('Emulation.setCPUThrottlingRate', { rate: 4 });
 
     await page.goto(`/ships/${LARGEST.hull}`);
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
 
     // The mobile viewport draws canvas 1d's ledger, which is one category at a

@@ -26,7 +26,7 @@ const HULL = 'Anaconda';
 /** Creates a stock build and opens the anatomy region's `OFFENCE` mode. */
 async function openOffence(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
 
   await page
     .locator('edsb-hull-anatomy .anatomy__modes button')
@@ -651,7 +651,9 @@ test.describe('the status rail', () => {
 
   test('stands in the rail whichever mode the anatomy region has open', async ({ page }) => {
     await page.goto(`/ships/${HULL}`);
-    await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+    await page
+      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
+      .click();
 
     // The rail is not the panel: it reports the build, not what is on screen
     // beside it.

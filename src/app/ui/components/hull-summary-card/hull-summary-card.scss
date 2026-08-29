@@ -14,6 +14,9 @@
 
   padding-block: var(--edsb-space-row);
   padding-inline: var(--edsb-space-row);
+  // The whole record is the target, so the pointer says so over every part of
+  // it and not only over the name.
+  cursor: pointer;
 }
 
 // Every label the reference compresses away, and every code it shortens, is

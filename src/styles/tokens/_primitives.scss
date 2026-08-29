@@ -630,6 +630,16 @@
   --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
+  // The three controls the inline editor's left column holds — the recipe, the
+  // grade under it and the experimental effect under that — measured together
+  // with the two gaps between them: 183px at the base text size.
+  //
+  // A floor, never a cap: it keeps the column's height while the two controls
+  // that follow from a recipe are not there to be drawn, so choosing a recipe
+  // no longer grows the panel and moves the ledger beside it (Commander request
+  // 2026-08-28). Content taller than this — a translation that wraps, a doubled
+  // text size — simply passes it.
+  --edsb-measure-engineering-choices: 11.4375rem; // 183
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
   // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
   // wants a button around it rather than a band.
@@ -641,6 +651,13 @@
   // figure off the end of the bar it is read against.
   --edsb-measure-defence-resist: 2.875rem; // 46
   --edsb-measure-defence-value: 3.5rem; //    56
+
+  // The height the export layer's content column holds whichever format is
+  // chosen: the SLEF payload's twelve rows, its metadata line and its three
+  // actions, measured at the width a phone gives them. The link is a shorter
+  // panel, and without a floor under both of them the layer changed height
+  // under the hand that chose the format (Commander request 2026-08-28).
+  --edsb-measure-export-content: 20.5rem; // 328
 
   // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.

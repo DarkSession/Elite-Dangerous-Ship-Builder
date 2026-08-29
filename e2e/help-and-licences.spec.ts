@@ -135,7 +135,9 @@ async function settled(page: Page): Promise<string> {
 /** A stock build, open in the workspace. */
 async function withStockBuild(page: Page, hull = HULL): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+  await page
+    .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
+    .click();
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -199,7 +201,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
   'hull-detail': async (page) => {
     await page.goto(`/ships/${HULL}`);
     await expect(
-      page.getByRole('button', { name: englishMessages['hullDetail.create'] }),
+      page.getByRole('button', { name: englishMessages['hullDetail.create'], exact: true }),
     ).toBeVisible();
   },
   'build-workspace': async (page) => {

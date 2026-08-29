@@ -32,13 +32,9 @@ import { savedToBrowser } from './shell';
  */
 
 /** Creates a stock build and lands in the workspace with the ledger rendered. */
-async function openStockBuild(
-  page: Page,
-  hull = 'Anaconda',
-  create = 'Build stock hull',
-): Promise<void> {
+async function openStockBuild(page: Page, hull = 'Anaconda', create = 'Build'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: create }).click();
+  await page.getByRole('button', { name: create, exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

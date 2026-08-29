@@ -51,7 +51,7 @@ async function openScreen(
     await page.goto('/ships/Anaconda');
   } else {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+    await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
     await expect(page).toHaveURL(/\/build(#|$)/);
     if (screen === 'library') {
       await page.goto('/builds');
@@ -100,7 +100,7 @@ test.describe('cross-route semantics', () => {
 
     // Opening a hull marks it as the current one rather than only colouring it.
     await openFirstHullFromManifest(page);
-    await expect(page.getByRole('button', { name: 'Build stock hull' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Build', exact: true })).toBeVisible();
     await expect(page.locator('[aria-current="true"]').first()).toBeAttached();
   });
 
@@ -128,7 +128,7 @@ test.describe('cross-route semantics', () => {
     await reachShellLink(page, 'Ship Builder');
     await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('Sidewinder');
     await openFirstHullFromManifest(page);
-    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await page.getByRole('button', { name: 'Build', exact: true }).click();
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();

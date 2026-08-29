@@ -174,9 +174,22 @@ export class ResponsiveCatalogueView {
     this.#enteredBeforeMoving = hull.symbol;
   }
 
-  /** Pressing a row flies it. Without hover it opens it, since nothing else can. */
+  /**
+   * Pressing a row flies it.
+   *
+   * Without hover the first press opens the hull instead, because nothing else
+   * can: a touch screen has no resting state, so the press is the only way into
+   * the detail. Pressing the row that is *already* open is then the decision to
+   * fly it — the same second step a pointer makes by resting and then pressing.
+   * Until 2026-08-28 that second press repeated the navigation the row had
+   * already made and nothing happened (Commander request).
+   */
   activate(hull: HullSummary): void {
-    (this.#hoverable() ? this.hullBuilt : this.hullOpened).emit(hull.symbol);
+    if (this.#hoverable() || hull.selected) {
+      this.hullBuilt.emit(hull.symbol);
+      return;
+    }
+    this.hullOpened.emit(hull.symbol);
   }
 
   /** `aria-sort` for a header: only the sorted column carries one. */
@@ -188,12 +201,26 @@ export class ResponsiveCatalogueView {
    * The caret the reference paints on the column a list is ordered by (canvas
    * 1a `.sy-caret`). Decorative: `aria-sort` and the header's own accessible
    * name carry the same fact.
+   *
+   * A header the list is not ordered by gets one too, and hides it — see
+   * {@link caretReserved}. It is the ascending glyph because the two are the
+   * same width and something has to be there for the width to be reserved.
    */
-  indicator(column: CatalogueColumn): string | null {
-    if (!column.sorted) {
-      return null;
-    }
-    return column.direction === 'ascending' ? this.#ascending() : this.#descending();
+  indicator(column: CatalogueColumn): string {
+    return column.sorted && column.direction === 'descending'
+      ? this.#descending()
+      : this.#ascending();
+  }
+
+  /**
+   * Whether this header's caret is holding its place rather than reading.
+   *
+   * Hidden rather than absent: the two right-ranged headings are pushed along
+   * by a caret that appears, so the caret's width is part of the column at all
+   * times and only its ink comes and goes.
+   */
+  caretReserved(column: CatalogueColumn): boolean {
+    return !column.sorted;
   }
 
   currentFor(hull: HullSummary): string | null {
@@ -208,15 +235,17 @@ export class ResponsiveCatalogueView {
    * control announces as something a Commander can do rather than as a noun —
    * and so one locator finds the same action in both compositions.
    *
-   * Which action that is follows the device: where the row can be hovered, the
-   * hover shows the hull and the press builds it; where it cannot, the press is
-   * still the way in to the detail.
+   * Which action that is follows the device, and on a touch screen the row:
+   * where the row can be hovered, the hover shows the hull and the press builds
+   * it; where it cannot, the press opens the detail until the row is the open
+   * one, and then it builds. The words say whichever of the two the next press
+   * will do, so the control is never named for an action it no longer takes.
    */
   openActionLabel(hull: HullSummary): string {
-    return this.#messages.message(
-      this.#hoverable() ? 'catalogue.build-hull' : 'catalogue.open-hull',
-      { hull: hull.name.text ?? hull.symbol },
-    );
+    const builds = this.#hoverable() || hull.selected;
+    return this.#messages.message(builds ? 'catalogue.build-hull' : 'catalogue.open-hull', {
+      hull: hull.name.text ?? hull.symbol,
+    });
   }
 }
 

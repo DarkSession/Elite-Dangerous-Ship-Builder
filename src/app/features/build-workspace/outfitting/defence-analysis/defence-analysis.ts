@@ -64,32 +64,44 @@ interface DamageRowView {
  * with a weakness among them, carries a zero mark inside the track with the
  * weakness running back from it.
  */
+/**
+ * The fifth column's heading, on the two lines the canvas sets it in.
+ *
+ * The unit is the reading and the allocation is the condition it was read at,
+ * so the canvas prints the unit and then the allocation under it, smaller. It
+ * is one heading either way — a reader is given `MJ × 2 SYS PIPS`, because the
+ * condition is not optional: a figure that moves with a condition shown without
+ * that condition is the misleading number constitution IV forbids (FR-002).
+ */
+interface PipColumnView {
+  readonly unit: string;
+  readonly atPips: string;
+}
+
 interface DamageTableView {
   readonly rows: readonly DamageRowView[];
-  /**
-   * The fifth column's heading — `MJ × 2 SYS PIPS` — or `null` for a table
-   * without one.
-   *
-   * The heading names the allocation it was read at, because a figure that
-   * moves with a condition shown without that condition is the misleading
-   * number constitution IV forbids (FR-002).
-   */
-  readonly pipColumn: string | null;
+  /** The fifth column's heading, or `null` for a table without one. */
+  readonly pipColumn: PipColumnView | null;
   /** Where zero sits on the track, in `[0, 1]`. `0` with nothing below it. */
   readonly zeroAt: number;
-  /** Whether the scale reaches below zero at all, which draws the zero mark. */
+  /** Whether the scale reaches below zero at all, which draws the zero line. */
   readonly signed: boolean;
-  /** The scale's own ends, as the canvas prints them under the bars. */
-  readonly floor: string;
+  /** The scale's far end, printed under the end of the track it names. */
   readonly ceiling: string;
   /**
-   * Zero, printed at the mark on a scale that reaches below it.
+   * Zero, printed at the mark the bars are measured from.
    *
-   * The canvas prints `0%` at the leading edge, which is where zero is on its
-   * shield table and is not where zero is on its hull table. On a table that
-   * reaches below zero it is printed where the mark actually stands, so the
-   * end of the scale and the point the bars are measured from are two readings
-   * rather than one that contradicts the drawing above it.
+   * The two points the scale names are the one every bar starts at and the one
+   * the track ends at. On a table with no weakness in it zero *is* the leading
+   * edge, which is where the canvas prints its `0%`; on one that reaches below
+   * zero the mark moves inside the track and its name goes with it, because
+   * that is what says which bars are resistances and which are weaknesses.
+   *
+   * The leading edge of a signed scale is left unnamed. It is the lowest
+   * resistance in the table, which the row that reaches it already prints in
+   * the `RESIST` column beside its own bar — and a third name on a scale a
+   * phone gives 104 pixels lands on top of this one (Commander request
+   * 2026-08-28).
    */
   readonly zero: string;
 }
@@ -325,12 +337,15 @@ export class DefenceAnalysis {
     const atPips = new Map(capacitor.value.damage.map((row) => [row.type, row]));
     return {
       ...table,
-      pipColumn: this.#messages.message('defence.damage.column.megajoules-at-pips', {
-        pips: this.#formatters.decimal(
-          capacitor.value.systemsPips,
-          pipDigits(capacitor.value.systemsPips),
-        ),
-      }),
+      pipColumn: {
+        unit: this.#messages.message('defence.damage.column.megajoules'),
+        atPips: this.#messages.message('defence.damage.column.at-pips', {
+          pips: this.#formatters.decimal(
+            capacitor.value.systemsPips,
+            pipDigits(capacitor.value.systemsPips),
+          ),
+        }),
+      },
       rows: table.rows.map((row) => ({
         ...row,
         poolAtPips: this.#poolText(atPips.get(row.id as DamageType)?.effectiveHitPoints),
@@ -476,7 +491,6 @@ export class DefenceAnalysis {
       pipColumn: null,
       zeroAt,
       signed: lowest < 0,
-      floor: this.#formatters.percent(lowest),
       ceiling: this.#formatters.percent(RESISTANCE_CEILING),
       zero: this.#formatters.percent(0),
     };

@@ -43,6 +43,15 @@
   cursor: help;
 }
 
+// A word inside a dense list. The reference sets these names as plain text with
+// the gloss on a `data-tip`, so the baseline above is a target this application
+// added: at 44 pixels a five-row block stands its rows twenty pixels apart and
+// reads as a different block from the lists beside it. It takes the same
+// SC 2.5.8 floor the other dense controls take.
+.tooltip__trigger--dense {
+  @include layout.target-floor;
+}
+
 // A mark rather than a word. The reference draws these at 14 pixels inside a
 // ledger row, so the trigger takes the accessible floor the other dense chips
 // take rather than the comfortable baseline, and drops the dotted rule — there

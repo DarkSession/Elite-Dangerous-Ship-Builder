@@ -26,6 +26,7 @@
 } @else {
   <button
     class="tooltip__trigger"
+    [class.tooltip__trigger--dense]="dense()"
     type="button"
     [attr.aria-describedby]="tipId"
     [attr.aria-expanded]="shown() ? 'true' : 'false'"

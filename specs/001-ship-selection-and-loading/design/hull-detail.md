@@ -64,6 +64,15 @@ Two consequences follow, both recorded rather than assumed:
   why — is what a Commander reads. A bar with an empty title and a body with nothing in it would be
   a screen that says nothing about the hull it is showing.
 
+### The action is one word, 2026-08-28 (Commander request)
+
+Both canvases write `BUILD STOCK HULL` on the sheet's own action, and this is a **live divergence**
+from them. The action stands at the foot of a hull's own sheet, under that hull's figures and its
+price, so the noun in it names what a Commander is already looking at and the adjective describes
+what everything they build starts as. `Build` is the whole of what the press does; the sheet around
+it says what is being built. Nothing about the transaction below changes, and the action stays the
+one thing on this screen that creates a build.
+
 ## States
 
 | State                            | Required presentation and behavior                                                                                                                                                                                                                                                                                                                            |

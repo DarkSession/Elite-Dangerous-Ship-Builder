@@ -158,6 +158,23 @@ do not mutate the active build until confirmed.
   to canvas 1d's screen, which holds a draft that has to be left on purpose (wave 4). Clearing is not
   a separate control either — see "Clearing engineering" below.
 
+### The choices column keeps its height, 2026-08-28 (Commander request)
+
+The column holds three controls — the recipe, the grade under it and the experimental effect under
+that — and the last two follow from the first: an unengineered module has a recipe list and nothing
+under it. So opening the panel on a stock module gave a short column, and choosing a recipe grew it,
+which moved the ledger under the hand that was reading it.
+
+The column carries a floor instead (`--edsb-layout-engineering-choices`, the three controls and the
+two gaps between them at the base text size). Nothing is drawn that is not there: no empty grade bar
+over an unengineered module, no placeholder effect: the canvas draws neither and neither does this.
+What is reserved is the room, so the panel is the height it will be before anything is chosen.
+
+A floor and not a cap, at the wide composition only. A translation that wraps a recipe name, a
+doubled text size, or a long list simply passes it; and the narrow composition is a full-screen layer
+where the three controls stack down a screen that scrolls, so there is nothing there for a floor to
+hold still.
+
 ## Narrow and 400%-zoom composition
 
 - Full-screen layer inspired by canvas 1d with associated title/module description and inert

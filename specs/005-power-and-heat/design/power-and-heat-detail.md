@@ -143,9 +143,27 @@ published as `precedingShare` and `ownShare` rather than worked out in the compo
 
 A one-pixel mark stands on every row where the plant runs out, at the same place on each: the
 projection measures the rows and the rail's own bar on one track, so `PowerDrawBar.plant` is that
-position and the group whose length crosses it is the group the plant ran out on. It carries no
-words — the labelled `31.20 MW PLANT` line the canvas sets across the bars is still **not** drawn
-(review note 2), and the tile beneath says the figure.
+position and the group whose length crosses it is the group the plant ran out on.
+
+**The marks are named, and there are two of them (2026-08-28, Commander request).** The plant mark
+stood on every row with nothing to say what it was, so a track that runs past it gave a Commander a
+line and no figure to put on it. It is named now, and a second mark is drawn beside it at half the
+plant's output — the canvas's own dashed line, added in the same revision. The two labels are `50%`
+and `100%`, which reads the marks as shares of what the plant makes: the same axis the percentage at
+the end of every row is already on.
+
+**Where the canvas puts the dashed line and what it labels it disagree, and the label is what is
+kept.** The canvas draws it at a round `left: 50%` of the track, and the track runs to 120% of plant
+output, so a round half of the track is 60% of the plant rather than half of it. A mark reading `50%`
+that does not stand at half the output is a figure that is wrong, where a line a few pixels along is
+only a line in a different place. So the half mark is drawn at half the plant mark and both marks are
+shares of the one axis.
+
+The two labels sit in a row of their own under the bars, in the track's own subgrid column, so each
+one is centred on the mark it names whatever the group column beside it is holding. That row is
+decoration and is hidden from a reader: every row already states its own share in words, so there is
+no figure here a reader would otherwise miss. The labelled `31.20 MW PLANT` line the canvas sets
+across the bars is still **not** drawn (review note 2), and the tile beneath says that figure.
 
 ### The summary under it
 
@@ -244,8 +262,19 @@ a reader who cannot tell amber from red, and the key names both in words as well
 than 160% widens the scale rather than overflowing the track.
 
 The four tiles are `RESTING HEAT`, `PEAK SUSTAINED`, `DISSIPATION` and `HEAT SINKS`, with the
-canvas's `2 x 3` under the count where the launchers all carry the same number. `100% MODULE DAMAGE`
-captions the threshold line, and `WITHIN LIMIT` / `OVER THRESHOLD` are the key.
+canvas's `2 x 3` under the count where the launchers all carry the same number, and
+`WITHIN LIMIT` / `OVER THRESHOLD` are the key.
+
+**The `100% MODULE DAMAGE` caption is withdrawn (2026-08-28, Commander request).** The latest canvas
+revision drops it from canvas 1c, where the revision before it drew one, and it is dropped here at
+every width — canvas 1d still draws it, and a caption that is worth one line on a phone and none on a desktop is a caption that
+says the same thing in two places. What it captioned stays: the threshold line is still drawn
+through every bar, the fill either side of it is still told apart by a hatch rather than by hue
+alone, and the key above the tiles still names both fills in words. So nothing a reader is given
+changes; what goes is one more line under the tallest block of the panel.
+
+**The rows stand closer together, and it is the gloss that was holding them apart** — see "The
+trigger's target size" below, where that reversal is recorded.
 
 **Each bar carries a description, added on 2026-08-25.** The canvas revision gave every scenario row
 a `data-tip`, and the six read: `Hardpoints stowed, no throttle` · `Full throttle, hardpoints
@@ -285,13 +314,25 @@ semantics contract's "line style" clause). It is still the thing that identifies
 owes SC 1.4.11's 3:1 and takes a border ink rather than a decorative one — measured 3.69:1 against
 the panel, where the decorative ink measured 1.56.
 
-The trigger takes the project's full 44-pixel target baseline rather than SC 2.5.8's 24-pixel floor.
+### The trigger's target size
+
+The trigger took the project's full 44-pixel target baseline rather than SC 2.5.8's 24-pixel floor.
 The floor is for controls the reference itself draws dense, and the canvas draws no control here at
 all. Measured at 390 pixels, a heat row is 24 pixels with the trigger at the floor and 44 at the
-baseline, against the 45 the drawn name-and-gloss took — so the baseline is still shorter than the
-arrangement it replaced. By one pixel a row, not by seven: the target the trigger owes takes back
-most of the line the gloss gave up, and the block closes 461.81 pixels against 466.81. The row does
-not grow, so there was nothing here worth holding to a floor for.
+baseline, against the 45 the drawn name-and-gloss took — so the baseline was still shorter than the
+arrangement it replaced, by one pixel a row rather than by seven, and the block closed 461.81 pixels
+against 466.81. The row did not grow, so there seemed nothing here worth holding to a floor for.
+
+**Reversed 2026-08-28 (Commander request): the trigger takes the floor.** The comparison above is
+with the arrangement the tooltip replaced, and that arrangement is a year gone; what a Commander sees
+is this block against the canvas's own. The canvas sets a row of six bars 9 pixels apart on a
+14-pixel track, and at the baseline each row is 44 — so most of the block is the space around a name,
+and the profile reads as six separate readings rather than as one. The trigger takes
+`tooltip__trigger--dense` here: SC 2.5.8's 24-pixel floor, recorded on `DENSE_TARGETS` beside the
+rail's pip control and the ledger's power chip. That is the floor and not a waiver, and it is asked
+for by this block rather than decided inside the tooltip — a trigger standing on its own still has
+the room and still takes the baseline. What closes is the space around the name; the bar beside it is
+the height it always was.
 
 Each bar carries all five `HeatState` fields' meaning: `thermalLoad`, `heatLevel`, `gauge`,
 `overheats` and `secondsToOverheat`.
