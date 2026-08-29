@@ -22,13 +22,8 @@ import { MetricGroup } from '../../../../ui/components/metric-group/metric-group
 import { TabGroup, type TabItem } from '../../../../ui/components/tab-group/tab-group';
 import { Tooltip } from '../../../../ui/components/tooltip/tooltip';
 import { TOTAL_PIPS } from '../../../../application/power-heat/power-conditions.store';
-import type { TableColumn, TableRow } from '../../../../ui/components/table/data-table';
 import { UnavailableValue } from '../../../../ui/components/unavailable-value/unavailable-value';
-import {
-  DistributorBlock,
-  type BankRowView,
-  type PipStepView,
-} from '../distributor-block/distributor-block';
+import { DistributorBlock, type BankRowView } from '../distributor-block/distributor-block';
 
 /** One line of `DRAW BY MODULE`: what it is, what it draws, and how far. */
 interface ModuleRowView {
@@ -133,12 +128,6 @@ const MW_DIGITS = 2;
 const DISTRIBUTOR_DIGITS = 1;
 /** Pips to one place, because half a pip is the step the ship moves in. */
 const PIP_DIGITS = 1;
-
-/**
- * The track canvas 1c draws its heat bars on: the damage threshold sits at 62.5%
- * of it, which is a track running to 160% of the threshold.
- */
-const CANVAS_HEAT_SCALE = 1.6;
 
 /** The four blocks the canvas draws each bank's allocation across. */
 const PIP_STEPS = [1, 2, 3, 4] as const;

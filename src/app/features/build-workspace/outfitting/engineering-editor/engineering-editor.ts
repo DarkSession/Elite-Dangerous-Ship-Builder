@@ -363,10 +363,6 @@ export class EngineeringEditor {
   readonly noModuleLabel = computed(() =>
     this.emptyMount() ? this.#noModuleLabel() : this.loadingLabel(),
   );
-  readonly noAttributesLabel = this.#messages.messageSignal(
-    'outfitting.engineering.attributes.unavailable',
-  );
-
   /** True when applying would actually ask the Almanac for something. */
   readonly canApply = computed(() => {
     const draft = this.draft();

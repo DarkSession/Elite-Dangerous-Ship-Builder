@@ -1,4 +1,3 @@
-import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { inspectSlef } from '@elite-dangerous-almanac/core/ships/slef';
 import type { SlefEntry } from '@elite-dangerous-almanac/core/ships/slef';
 import { normalizeIncomingBuild } from '../build/build-ingress-normalizer';

@@ -5,7 +5,6 @@ import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adap
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 
 /**
  * How long edits are gathered before one write.
@@ -46,7 +45,6 @@ const COALESCE_MS = 400;
 export class AutosaveService {
   readonly #active = inject(ActiveBuildStore);
   readonly #records = inject(LocalRecordRepository);
-  readonly #ownership = inject(TabOwnershipCoordinator);
   readonly #lifecycle = inject(PageLifecycleAdapter);
   readonly #uuid = inject(UuidAdapter);
   readonly #clock = inject(ClockAdapter);

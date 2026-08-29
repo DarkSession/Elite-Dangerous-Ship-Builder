@@ -15,7 +15,6 @@ import {
   editorOffered,
   effectOptions,
   fitCommitted,
-  openChooserRows,
   openEditor as bringEditorOnScreen,
   revealFamilyHolding,
   revealMount,

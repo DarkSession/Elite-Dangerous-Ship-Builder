@@ -3,11 +3,7 @@ import { decodeAndMigrate } from '../../domain/build/record-migrations';
 import { serializeLocalRecord, type RecordDraft } from '../../domain/build/stored-build.serializer';
 import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
 import { EDSB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
-import {
-  LOCAL_STORAGE_PORT,
-  type StorageFailureCode,
-  type WebStoragePort,
-} from './web-storage.port';
+import { LOCAL_STORAGE_PORT, type StorageFailureCode } from './web-storage.port';
 
 /** How a record operation ended. */
 export type RepositoryResult<T> =

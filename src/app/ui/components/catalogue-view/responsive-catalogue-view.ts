@@ -117,7 +117,6 @@ export class ResponsiveCatalogueView {
   #enteredBeforeMoving: string | null = null;
 
   readonly captionId = relationId('catalogue-caption');
-  readonly scrollLabel = this.#messages.messageSignal('catalogue.table.caption');
   readonly selectedLabel = this.#messages.messageSignal('catalogue.selected');
   readonly markerLabel = this.#messages.messageSignal('catalogue.selected');
 

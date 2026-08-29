@@ -16,7 +16,6 @@ import {
   type ShippedLocale,
   fallbackLocale,
   findShippedLocale,
-  isShippedLocale,
   resolveShippedLocale,
 } from './locale-registry';
 

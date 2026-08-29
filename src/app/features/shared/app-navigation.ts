@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import type { NavigationEntry } from '../../ui/components/app-frame/app-frame';
 import { MessageService } from '../../i18n/message.service';
 
@@ -66,11 +66,4 @@ export class AppNavigation {
       current: false,
     };
   }
-
-  /** The library entry point every screen offers as a shell action. */
-  readonly libraryAction = computed(() => ({
-    id: 'library',
-    label: this.#messages.message('navigation.library'),
-    emphasis: 'secondary' as const,
-  }));
 }

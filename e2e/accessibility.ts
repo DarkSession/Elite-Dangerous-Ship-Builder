@@ -27,15 +27,6 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 /** The 400%-zoom equivalence WCAG 1.4.10 defines, as a browser context. */
 export const ZOOM_400 = { viewport: { width: 320, height: 256 }, deviceScaleFactor: 4 } as const;
 
-/** Every layout profile the outfitting suites name, by the label they use. */
-export const OUTFITTING_VIEWPORTS = {
-  desktop: { width: 1440, height: 900 },
-  'tablet-portrait': { width: 834, height: 1112 },
-  'tablet-landscape': { width: 1112, height: 834 },
-  'mobile-portrait': { width: 390, height: 844 },
-  'mobile-landscape': { width: 844, height: 390 },
-} as const;
-
 /**
  * What one sweep is allowed to cost, added to the test's budget when it runs.
  *

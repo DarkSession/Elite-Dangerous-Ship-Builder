@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
-import { BuildIngressCoordinator } from '../../../../application/active-build/build-ingress.coordinator';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
 import { FIXTURE_SLOTS, defaultBuild } from '../../../../domain/outfitting/outfitting.fixtures';

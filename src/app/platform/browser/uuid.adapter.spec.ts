@@ -1,9 +1,15 @@
+import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { UuidAdapter, formatUuid } from './uuid.adapter';
+import { UuidAdapter } from './uuid.adapter';
 
-function adapter(): UuidAdapter {
+function adapter(source?: Crypto): UuidAdapter {
   TestBed.resetTestingModule();
-  TestBed.configureTestingModule({});
+  TestBed.configureTestingModule({
+    providers:
+      source === undefined
+        ? []
+        : [{ provide: DOCUMENT, useValue: { defaultView: { crypto: source } } }],
+  });
   return TestBed.inject(UuidAdapter);
 }
 
@@ -21,15 +27,21 @@ describe('UuidAdapter', () => {
     expect(adapter().create()).toMatch(UUID);
   });
 
-  it('formats raw random bytes as a version-4 identity', () => {
-    const formatted = formatUuid(new Uint8Array(16).fill(0xff));
-
-    expect(formatted).toMatch(UUID);
-  });
-
   it('is not derived from the clock, so two identities in one tick still differ', () => {
     const port = adapter();
 
     expect(port.create()).not.toBe(port.create());
+  });
+
+  it('uses random bytes when an insecure context offers no randomUUID helper', () => {
+    const values = Uint8Array.from({ length: 16 }, (_, index) => index);
+    const source = {
+      getRandomValues(target: Uint8Array): Uint8Array {
+        target.set(values);
+        return target;
+      },
+    } as unknown as Crypto;
+
+    expect(adapter(source).create()).toBe('00010203-0405-4607-8809-0a0b0c0d0e0f');
   });
 });

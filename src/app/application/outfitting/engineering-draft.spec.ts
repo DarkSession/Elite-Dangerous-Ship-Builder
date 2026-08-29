@@ -435,7 +435,7 @@ describe('engineering draft', () => {
       const published = Object.entries(stats ?? {})
         // `class` is identity and `cost` is a price, and neither is an
         // attribute of the article — see `COMPARED_ATTRIBUTES`.
-        .filter(([field, value]) => typeof value === 'number')
+        .filter(([, value]) => typeof value === 'number')
         .filter(([field]) => field !== 'class' && field !== 'cost')
         // A boot time of zero is the one published figure the panel leaves
         // off, and the rule it is left off by is its own test below.

@@ -1,5 +1,9 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { App, HELP_ACTION } from './app';
+import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { App, HELP_ACTION, WORKSPACE_EXPORT_ACTION } from './app';
+import { ActiveBuildStore } from './application/active-build/active-build.store';
+import { SlefStore } from './application/slef/slef.store';
+import { FIXTURE_HULL } from './domain/outfitting/outfitting.fixtures';
 import {
   ApplicationUpdateAdapter,
   type VersionEvent,
@@ -141,6 +145,49 @@ describe('App', () => {
 
     fixture.componentInstance.selectAction(HELP_ACTION);
     expect(help.open()).toBe(true);
+  });
+
+  it('lets the shell handle a published action that has no screen handler', () => {
+    const fixture = TestBed.createComponent(App);
+    const help = TestBed.inject(HelpPresenter);
+    fixture.componentInstance.chrome.setActions([
+      { action: { id: HELP_ACTION, label: 'Help test action' } },
+    ]);
+
+    fixture.componentInstance.selectAction(HELP_ACTION);
+
+    expect(help.open()).toBe(true);
+  });
+
+  it('connects the workspace export action to the exchange layer', () => {
+    const fixture = TestBed.createComponent(App);
+    const active = TestBed.inject(ActiveBuildStore);
+    const slef = TestBed.inject(SlefStore);
+    slef.selectExportMode('link');
+
+    fixture.componentInstance.selectAction(WORKSPACE_EXPORT_ACTION);
+    expect(slef.layer()).toBe('none');
+
+    active.commit({
+      loadout: ShipLoadout.default(FIXTURE_HULL),
+      hullName: 'Anaconda',
+      provenance: 'working',
+      qualityNotices: [],
+      sourceNamed: null,
+      autosaveRecordId: null,
+      baseline: null,
+    });
+    fixture.componentInstance.selectAction(WORKSPACE_EXPORT_ACTION);
+
+    expect(slef.layer()).toBe('export');
+    expect(slef.exportMode()).toBe('link');
+
+    slef.closeLayer();
+    active.setLink({ kind: 'refused', code: 'tooLong', slot: null });
+    fixture.componentInstance.selectAction(WORKSPACE_EXPORT_ACTION);
+
+    expect(slef.layer()).toBe('export');
+    expect(slef.exportMode()).toBe('slef');
   });
 
   it('mounts exactly one assertive and one polite announcement outlet', () => {

@@ -295,11 +295,6 @@ export class Formatters {
     }
   }
 
-  /** How many `Intl` instances are currently cached. Exposed for tests. */
-  get cacheSize(): number {
-    return this.#cache.size;
-  }
-
   #numberFormat(kind: FormatterKind, options: Intl.NumberFormatOptions): Intl.NumberFormat {
     return this.#cached(kind, options, () => new Intl.NumberFormat(this.locale, options));
   }

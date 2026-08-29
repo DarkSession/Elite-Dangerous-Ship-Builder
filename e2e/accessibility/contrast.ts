@@ -15,12 +15,6 @@ import { settled } from './assertions';
  * and measured against the ratio its size and weight require (FR-012).
  */
 
-/** WCAG 2.2 AA minimum for normal-size text. */
-export const TEXT_CONTRAST_MINIMUM = 4.5;
-
-/** WCAG 2.2 AA minimum for large text and for meaningful non-text content. */
-export const LARGE_TEXT_CONTRAST_MINIMUM = 3;
-
 /** One measured pair, named precisely enough to fix without re-running. */
 export interface ContrastSample {
   readonly selector: string;

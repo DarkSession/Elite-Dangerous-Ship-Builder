@@ -7,9 +7,9 @@ import { DOCUMENT, Injectable, inject } from '@angular/core';
  * equality across pages whose clocks need not agree, and two writes in the same
  * millisecond must still be two revisions (research, "Named-save concurrency").
  *
- * `crypto.randomUUID` is the source. The fallback below is for a runtime that
- * exposes `crypto.getRandomValues` but not the newer helper; it is still
- * cryptographically random, never `Math.random`.
+ * `crypto.randomUUID` is preferred. In an insecure browser context,
+ * `crypto.getRandomValues` supplies the same version-4 identity without
+ * making persistence depend on a secure origin.
  */
 @Injectable({ providedIn: 'root' })
 export class UuidAdapter {
@@ -28,7 +28,7 @@ export class UuidAdapter {
 }
 
 /** Formats 16 random bytes as a version-4 UUID. */
-export function formatUuid(bytes: Uint8Array): string {
+function formatUuid(bytes: Uint8Array): string {
   const octets = Uint8Array.from(bytes);
   octets[6] = (octets[6]! & 0x0f) | 0x40;
   octets[8] = (octets[8]! & 0x3f) | 0x80;

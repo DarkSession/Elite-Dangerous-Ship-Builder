@@ -96,7 +96,7 @@ describe('StockBuildCreator', () => {
   });
 
   it('creates a stock build for every installed hull', async () => {
-    const { creator, coordinator } = setup();
+    const { creator } = setup();
 
     for (const ship of SHIPS) {
       const result = await creator.create(ship.symbol);

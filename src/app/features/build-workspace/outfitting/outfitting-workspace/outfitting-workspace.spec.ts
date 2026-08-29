@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
-import { BuildIngressCoordinator } from '../../../../application/active-build/build-ingress.coordinator';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import { FIXTURE_SLOTS, defaultBuild } from '../../../../domain/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
