@@ -1,12 +1,54 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DOCUMENT,
+  DestroyRef,
+  ElementRef,
+  afterRenderEffect,
   computed,
+  inject,
   input,
   linkedSignal,
   signal,
+  viewChild,
 } from '@angular/core';
 import { relationId } from '../../a11y/text-equivalence';
+
+/** The bubble is drawn in the top layer rather than in its own row. */
+const FLOATING = 'tooltip__tip--floating';
+
+/** It is drawn over its trigger, because there was no room under it. */
+const ABOVE = 'tooltip__tip--above';
+
+/**
+ * A scroll anywhere, not only the page's own.
+ *
+ * A `scroll` event does not bubble, and every list this mark is drawn in is a
+ * scroller of its own: without the capture phase a bubble raised out of a
+ * manifest row would stand still while the manifest moved under it.
+ */
+const ANY_SCROLLER = { capture: true, passive: true } as const;
+
+/**
+ * A spacing token, in the pixels a Commander's own text size makes of it.
+ *
+ * The token layer states its measures in `rem` and `getComputedStyle` resolves
+ * a custom property to the token's own value rather than to pixels, so the unit
+ * is converted here against the root text size — read fresh, exactly as the
+ * short-viewport threshold reads it, so a text-scale change moves the distance
+ * with it. The measure itself is still the token's: nothing about how far this
+ * stands from an edge is decided in TypeScript.
+ */
+function pixels(declared: string, root: HTMLElement): number {
+  const measure = Number.parseFloat(declared);
+  if (!Number.isFinite(measure)) {
+    return 0;
+  }
+  if (!declared.trim().endsWith('rem')) {
+    return measure;
+  }
+  return measure * (Number.parseFloat(getComputedStyle(root).fontSize) || 16);
+}
 
 /**
  * A short gloss on the word beside it, drawn when a reader asks for it.
@@ -66,6 +108,36 @@ import { relationId } from '../../a11y/text-equivalence';
  *   sets off to read it.
  * - **persistent.** Nothing times out. It closes when the pointer leaves, when
  *   focus leaves, on the second press, or on `Escape`.
+ *
+ * ## Why the bubble is raised out of the row it belongs to
+ *
+ * A tip drawn in place is drawn inside whatever the row it is on happens to be,
+ * and the rows these marks are on are boxes that cut their content. A manifest
+ * row declares `content-visibility: auto`, so the rows a Commander has not
+ * reached are not laid out — that is paint containment, and paint containment
+ * clips every descendant to the row's own box, whatever the descendant's
+ * `z-index` says. The identity cell cuts a name too long for its column with
+ * `overflow: hidden`, and cuts the bubble with it. The manifest's pane is a
+ * scroller, and cuts whatever reaches its edges. Measured on the fitting
+ * manifest at 1440x900: the bubble was drawn, at full size, at the right
+ * coordinates, and none of it reached the screen — hovering a route mark
+ * appeared to do nothing at all (Commander request 2026-08-29).
+ *
+ * So while it is drawn the bubble is raised into the **top layer**, by the
+ * platform's own `popover`, which is outside all three. `manual` rather than
+ * `auto`: this component already governs when the tip closes, and an `auto`
+ * popover would also close every other one that is open and answer `Escape`
+ * behind {@link dismiss}'s back.
+ *
+ * It is raised without moving: the element stays the child of this host that it
+ * always was, so `aria-describedby` still resolves to it, and a pointer that
+ * travels from the trigger on to the bubble still has not left the host — which
+ * is what keeps "hoverable" above true. The top layer is where it is *painted*,
+ * not where it lives.
+ *
+ * Where the platform has no `popover` — the unit suite's DOM is one — nothing
+ * is raised and the bubble is drawn where it is written, which is what every
+ * placement outside a cutting box gets anyway.
  */
 @Component({
   selector: 'edsb-tooltip',
@@ -126,6 +198,52 @@ export class Tooltip {
   readonly open = input(false);
 
   readonly tipId = relationId('tooltip');
+
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly #document = inject(DOCUMENT);
+
+  /**
+   * The bubble, which is raised while it is drawn.
+   *
+   * TypeScript-private rather than `#private`: a signal query cannot be
+   * declared on an ES private field, which is the same allowance every other
+   * queried element in this library takes.
+   */
+  private readonly bubble = viewChild.required<ElementRef<HTMLElement>>('bubble');
+
+  /**
+   * The bubble while it is in the top layer, and `null` while it is not.
+   *
+   * The element rather than a flag, because the one place this is read without
+   * the bubble in hand is teardown — and a signal query is not a thing to ask
+   * for after the view holding it has gone.
+   */
+  #raised: HTMLElement | null = null;
+
+  /** Kept as one reference, because it is added and removed by identity. */
+  readonly #follow = (): void => {
+    if (this.#raised) {
+      this.#place(this.#raised);
+    }
+  };
+
+  constructor() {
+    // After the render, not during it: the placement is read off the trigger's
+    // own box and off the bubble at its drawn size, and neither is measurable
+    // until the frame that draws them has been written.
+    afterRenderEffect(() => {
+      if (this.shown()) {
+        this.#raise();
+      } else {
+        this.#lower();
+      }
+    });
+
+    // A host taken off the page with its bubble still up leaves nothing behind:
+    // the platform drops the popover with the element, but the two listeners
+    // are the window's and would outlive it.
+    inject(DestroyRef).onDestroy(() => this.#lower());
+  }
 
   /**
    * A press, which is the only way in that touch has.
@@ -250,5 +368,92 @@ export class Tooltip {
     if (!this.#wanted()) {
       this.#dismissed.set(false);
     }
+  }
+
+  /**
+   * Raise the bubble into the top layer, and put it where its trigger is.
+   *
+   * Both halves every time it is called: the raise happens once, but a bubble
+   * already up is re-placed, which is how a scroll is answered.
+   */
+  #raise(): void {
+    const bubble = this.bubble().nativeElement;
+    if (typeof bubble.showPopover !== 'function') {
+      return;
+    }
+    if (!this.#raised) {
+      this.#raised = bubble;
+      bubble.setAttribute('popover', 'manual');
+      bubble.classList.add(FLOATING);
+      bubble.showPopover();
+      const view = this.#document.defaultView;
+      view?.addEventListener('scroll', this.#follow, ANY_SCROLLER);
+      view?.addEventListener('resize', this.#follow);
+    }
+    this.#place(bubble);
+  }
+
+  /** Put the bubble back in the row, and stop following the page. */
+  #lower(): void {
+    const bubble = this.#raised;
+    if (!bubble) {
+      return;
+    }
+    this.#raised = null;
+    const view = this.#document.defaultView;
+    view?.removeEventListener('scroll', this.#follow, ANY_SCROLLER);
+    view?.removeEventListener('resize', this.#follow);
+    // A popover goes down with the element that carried it, so one already off
+    // the page has nothing left to hide and refuses to be asked.
+    if (bubble.isConnected) {
+      bubble.hidePopover();
+    }
+    bubble.removeAttribute('popover');
+    bubble.classList.remove(FLOATING, ABOVE);
+    bubble.style.removeProperty('top');
+    bubble.style.removeProperty('left');
+  }
+
+  /**
+   * Where the raised bubble goes.
+   *
+   * Under the trigger's leading edge, which is where the stylesheet draws it
+   * when nothing has raised it and where every canvas hangs one. Two things
+   * move it, and only when they must:
+   *
+   * - **the far edge.** A mark at the end of a `COST` column would hang its
+   *   bubble off the side of the screen, where the page would have to scroll
+   *   sideways to reach it — which it never does (011 FR-011). So the bubble is
+   *   held inside the viewport by the same inset the region gutter takes.
+   * - **the foot.** A mark on the last row of a long list has no room under it.
+   *   The bubble goes over the trigger instead, and only if there is room there:
+   *   between a cramped bubble above and a cramped bubble below, the canvas's
+   *   own placement wins.
+   *
+   * Physical `top` and `left` rather than the logical pair, because that is what
+   * a client rectangle is: the leading edge is chosen for the writing direction
+   * here instead, which is the one place the difference belongs.
+   */
+  #place(bubble: HTMLElement): void {
+    const trigger = this.#host.nativeElement.querySelector<HTMLElement>('.tooltip__trigger');
+    if (!trigger) {
+      return;
+    }
+    const page = this.#document.documentElement;
+    const anchor = trigger.getBoundingClientRect();
+    const styles = getComputedStyle(bubble);
+    const inset = pixels(styles.getPropertyValue('--edsb-space-region'), page);
+    const width = bubble.offsetWidth;
+    const height = bubble.offsetHeight;
+
+    const noRoomUnder = anchor.bottom + height + inset > page.clientHeight;
+    const roomOver = anchor.top - height - inset >= 0;
+    const above = noRoomUnder && roomOver;
+    bubble.classList.toggle(ABOVE, above);
+
+    const leading = styles.direction === 'rtl' ? anchor.right - width : anchor.left;
+    const furthest = Math.max(inset, page.clientWidth - width - inset);
+    bubble.style.top = `${above ? anchor.top : anchor.bottom}px`;
+    bubble.style.left = `${Math.min(Math.max(inset, leading), furthest)}px`;
   }
 }

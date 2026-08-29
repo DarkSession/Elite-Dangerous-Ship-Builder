@@ -546,6 +546,35 @@ sentence and never a second announcement of it, and the sentence stays in the ac
 whether or not a pointer ever reaches the icon — which is what 011 FR-006 asks and what the hover
 adds nothing to.
 
+**Amended 2026-08-27: the tip is the design system's own, and a short gloss rather than the
+sentence.** See the acquisition-badge component for the wording of each; the sentence stays beside
+the mark for a reader, and the tip says what the _icon_ is for an eye that has just landed on an
+unfamiliar one.
+
+**Corrected 2026-08-29 (Commander request): the bubble is raised into the top layer, because a
+manifest row cuts everything drawn inside it.** The gloss was built, hung on the right mark, opened
+by hover, focus and press — and on the fitting manifest not one pixel of it reached the screen.
+Three boxes cut it, and each on its own is enough: the row declares `content-visibility: auto` so
+the rows a Commander has not reached are not laid out, which is paint containment and clips every
+descendant to the row whatever its `z-index`; the identity cell hides its overflow to cut a name too
+long for its column, and cuts the bubble with it; the pane is a scroller and cuts what reaches its
+edges. Measured at 1440x900: a bubble at full size, at the right coordinates, painted under the row
+below it.
+
+None of the three is wrong. A manifest that lays out four hundred rows it is not showing is the
+defect the containment exists to prevent, a name that wraps is the defect the cut exists to prevent,
+and a list that is longer than its pane is what a scroller is for. So the bubble is raised out of all
+three instead, into the platform's own top layer, for as long as it is drawn — it does not move in
+the document, so it stays this host's child, `aria-describedby` still resolves to it, and a pointer
+travelling from the mark to the bubble still has not left the host, which is what keeps SC 1.4.13's
+"hoverable" true. The placement is set from the trigger's own box; the distance it stands off by, and
+the inset that keeps it inside the viewport, stay in the token layer. Where the platform has no top
+layer the bubble is drawn where it is written, which is what every placement outside a cutting box
+had anyway.
+
+The mark's gloss is now asserted as _painted_ rather than as present: `toBeVisible` reports a box
+with a size and a position, which is exactly what a clipped bubble has.
+
 **The mark sits on the name's own line, in the ledger as in the manifest.** Canvas 1c draws the
 fitted `Advanced Plasma Accelerator` with its Powerplay mark 7px after the name and the
 `FIXED · 51.7 DPS · 1.97 MW · 24.0 t` code line under both. The ledger row therefore projects the

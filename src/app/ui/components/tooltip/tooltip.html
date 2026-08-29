@@ -36,6 +36,19 @@
   </button>
 }
 
-<span class="tooltip__tip" role="tooltip" [id]="tipId" [class.tooltip__tip--shown]="shown()">
+<!--
+  The bubble is raised into the top layer while it is drawn — see the component,
+  which is where the placement is set, and the stylesheet, which is where the
+  distance it stands off by is. It does not move in the document to get there,
+  so it is still this host's own child and still what `aria-describedby` points
+  at.
+-->
+<span
+  #bubble
+  class="tooltip__tip"
+  role="tooltip"
+  [id]="tipId"
+  [class.tooltip__tip--shown]="shown()"
+>
   {{ tip() }}
 </span>
