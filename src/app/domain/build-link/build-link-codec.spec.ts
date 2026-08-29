@@ -474,8 +474,8 @@ describe('build-link codec', () => {
 
   it('round-trips every baked Mercenary article fitted in the application', () => {
     // The shape a Commander reaches by buying one from the candidate list, which no capture is
-    // involved in. The record carries the identity alone, so this is what proves the effect and
-    // the modifiers it moves survive the trip for all ten.
+    // involved in. The record carries the identity alone, so this is what proves the effect, the
+    // modifiers it moves and the stats they resolve to survive the trip for all ten.
     const covered: string[] = [];
     for (const variant of mercenaryVariants()) {
       if (variant.experimentalEffectSymbol === undefined) continue;
@@ -491,42 +491,12 @@ describe('build-link codec', () => {
       expect(after.preEngineeredVariant).toEqual(variant);
       expect(after.engineering?.ExperimentalEffect).toBe(variant.experimentalEffectSymbol);
       expect(after.engineering?.Modifiers).toEqual(before.engineering?.Modifiers);
+      expect(after.effectiveStats).toEqual(before.effectiveStats);
       expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
       covered.push(variant.blueprintSymbol);
     }
 
     expect(covered).toHaveLength(10);
-  });
-
-  it('pins the two baked articles whose resolved rate of fire is not the one they state', () => {
-    // Eight of the ten resolve to the figures they arrive with. The two Lockdown Seeker Missile
-    // Racks do not. The module the package fits states `RateOfFire: 0.222222` in its own block
-    // and resolves `rateOfFire` to 0.2222222222222222. A link replaying that block therefore
-    // opens on the stated figure rather than the recomputed one. Both figures are the package's
-    // own answers for one article, so the fix is the package's — Elite-Dangerous-Almanac#6 — and
-    // neither is reconciled here. The difference is in the seventh significant figure, no screen
-    // shows it, and a link is still published.
-    const moved: string[] = [];
-    for (const variant of mercenaryVariants()) {
-      if (variant.experimentalEffectSymbol === undefined) continue;
-      const source = ShipLoadout.empty('Krait_MkII');
-      source.setPreEngineeredVariant('LargeHardpoint1', variant);
-      const before = source.fittedModuleAt('LargeHardpoint1')!;
-      const after = decodeBuildLinkFragment(encodeBuildLinkFragment(source)).fittedModuleAt(
-        'LargeHardpoint1',
-      )!;
-      if (JSON.stringify(after.effectiveStats) === JSON.stringify(before.effectiveStats)) continue;
-      expect(after.effectiveStats).toEqual({
-        ...before.effectiveStats,
-        rateOfFire: after.effectiveStats?.rateOfFire,
-      });
-      expect(before.engineering?.Modifiers).toContainEqual(
-        expect.objectContaining({ Label: 'RateOfFire', Value: after.effectiveStats?.rateOfFire }),
-      );
-      moved.push(variant.blueprintSymbol);
-    }
-
-    expect(moved).toEqual(['SeekerMissileRackMedium_Lockdown', 'SeekerMissileRackLarge_Lockdown']);
   });
 
   it('round-trips every Mercenary variant imported at its purchase grade with no effect stated', () => {
