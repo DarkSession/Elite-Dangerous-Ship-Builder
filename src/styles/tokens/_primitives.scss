@@ -567,16 +567,21 @@
   // rather than the share — five rows of a 478-choice manifest is a list a
   // Commander pages through rather than reads.
   //
-  // Seven rows over that same head, rule and foot. Any of it is affordable
+  // Six rows over that same head, rule and foot. Any of it is affordable
   // only because the editor below no longer takes its height out of the same
   // fixed bench: the workspace column releases while a mount is selected and
-  // the page carries what will not fit. Seven rather than more, because the
+  // the page carries what will not fit. Six rather than more, because the
   // panel and the pane it holds are the tallest thing on the workspace, and
-  // the row this gives up is what a Commander was scrolling past to reach the
-  // anatomy and the rail under them (Commander requests 2026-08-27 and
-  // 2026-08-28; `design/outfitting-workspace.md`, "Five rows is still a
+  // each row this gives up is one a Commander was scrolling past to reach the
+  // anatomy and the rail under them (Commander requests 2026-08-27, 2026-08-28
+  // and 2026-08-29; `design/outfitting-workspace.md`, "Five rows is still a
   // glimpse" and "Seven rows, and the fitting panel about a tenth shorter").
-  --edsb-measure-fitting-panel: 23.375rem;
+  //
+  // Seven took it a tenth under the canvas and it was still too tall to read
+  // past; six is another tenth off, which is the same request made twice and
+  // answered the same way — in whole rows, because a manifest that ends
+  // halfway down a row is a list with a lid on it rather than a shorter list.
+  --edsb-measure-fitting-panel: 20.75rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It
   // is now only a floor — nothing measures a share against it — and it is what
@@ -622,10 +627,10 @@
   --edsb-measure-family-rail-share: 26%;
   --edsb-measure-family-gap: 0.875rem;
   // What the rail and the pane are bounded at: the canvas's 470px, less the same
-  // one row the fitting panel's floor above gives up. The panel and the pane
+  // two rows the fitting panel's floor above gives up. The panel and the pane
   // are the same list at two widths, so a row comes off both of them or
-  // neither (Commander request 2026-08-28).
-  --edsb-measure-manifest-pane: 26.75rem;
+  // neither (Commander requests 2026-08-28 and 2026-08-29).
+  --edsb-measure-manifest-pane: 24.125rem;
   --edsb-measure-candidate-class: 4.375rem;
   --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).

@@ -693,10 +693,10 @@ describe('the wide manifest', () => {
    * The rail's own box, in the pixels `--edsb-layout-manifest-pane` declares.
    *
    * Written down here because this environment has no layout to read it from,
-   * and it is the one figure the rule below is about: nine 44px rows of the
+   * and it is the one figure the rule below is about: eight 44px rows of the
    * Almanac's seventy-seven families.
    */
-  const RAIL_HEIGHT = 428;
+  const RAIL_HEIGHT = 386;
 
   /**
    * Renders the rail with a laid-out box, and reports what was scrolled.

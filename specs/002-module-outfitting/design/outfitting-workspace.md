@@ -112,6 +112,13 @@ widths. Seven rows over the same head, column rule and foot is still a list rath
 five rows was. Nothing else changes height — the bench's own 26rem minimum, the plates and the rail
 are all where they were.
 
+**Six rows, and another tenth off. Ruled 2026-08-29 (Commander request).** The same reading, made a
+second time against the built screen: still too tall to read past. It is answered the same way, and
+in whole rows for the same reason — a manifest that ends halfway down a row is a list with a lid on
+it rather than a shorter list. The floor is 20.75rem and the pane's bound 24.125rem, one manifest row
+off each again, which is 11% off the panel and 10% off the pane. Six rows over the same head, column
+rule and foot. Nothing else moves.
+
 **Ruled 2026-08-26 — a detail panel is not bounded by the column; the page carries it.** The middle
 track is a column of a fixed height so the bench's manifest scrolls inside itself rather than growing
 the page to two hundred rows, and the plates fit that column: they are drawn at the hull's own
