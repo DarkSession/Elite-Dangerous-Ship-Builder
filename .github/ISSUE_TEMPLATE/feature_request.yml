@@ -1,0 +1,62 @@
+name: Feature request
+description: Ask for a capability, or for a change to one.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The [constitution](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/.specify/memory/constitution.md)
+        bounds what this application can be. It is client-side only: no server, no accounts, no
+        uploads and no telemetry. Game data and build calculations belong to
+        `@elite-dangerous-almanac/core`, so a request for a new figure or a new module is usually a
+        request to [that package](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues).
+  - type: textarea
+    id: goal
+    attributes:
+      label: What you want to do
+      description: The thing you are trying to get done, not the control you imagine for it.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Why
+      description: What is hard or impossible today, and what you do instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: The closest feature. Pick "Not sure" if none of them fits.
+      options:
+        - 001 Ship selection and build loading
+        - 002 Module outfitting and engineering
+        - 003 Ship statistics
+        - 004 SLEF
+        - 005 Power and heat
+        - 006 Defence profile
+        - 007 Offence profile
+        - 008 Mobility and jump
+        - 009 Cost and materials
+        - 010 Hull anatomy
+        - 011 Interface foundations
+        - 012 Help and licences
+        - A new capability
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything else
+      description: How another tool does it, what you already tried, what you would give up for it.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you file this
+      options:
+        - label: I searched the open issues and this is not one of them.
+          required: true
+        - label: This works with no server, no account and no upload.
+          required: true

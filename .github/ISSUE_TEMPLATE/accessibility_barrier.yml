@@ -1,0 +1,80 @@
+name: Accessibility barrier
+description: Report something you cannot use, or a failure of an accessibility requirement.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The target is WCAG 2.2 level AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1,
+        2.4.3, 2.4.7 and 2.4.11. Seven of those are the keyboard-operation criteria the constitution
+        excludes, so a report about keyboard operation alone is out of scope and will be closed as
+        such. The eighth, 2.2.1 Timing Adjustable, is excluded for applying a published update and
+        for nothing else.
+
+        Everything else is in scope, and a barrier an automated checker scores as a pass is still a
+        barrier. Report it.
+  - type: textarea
+    id: barrier
+    attributes:
+      label: What you cannot do
+      description: What you were trying to do, and what stopped you.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reach it
+      placeholder: |
+        1. Open the ship catalogue.
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: assistive-technology
+    attributes:
+      label: Assistive technology and version
+      description: The screen reader, magnifier, switch or voice control you use, if any.
+      placeholder: NVDA 2026.1
+  - type: input
+    id: settings
+    attributes:
+      label: Display or input settings
+      description: Text size, browser zoom, reduced motion, contrast setting, pointer type.
+      placeholder: 200% text size, reduced motion on
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device class
+      multiple: true
+      options:
+        - Desktop
+        - Tablet
+        - Mobile
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+    validations:
+      required: true
+  - type: input
+    id: criterion
+    attributes:
+      label: WCAG success criterion
+      description: The number, if you know it. Leave it empty if you do not.
+      placeholder: 1.4.11 Non-text Contrast
+  - type: input
+    id: version
+    attributes:
+      label: Application version
+      description: Read it in the application under Help · About.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you file this
+      options:
+        - label: I searched the open issues and this is not one of them.
+          required: true
+        - label: This is not about keyboard operation, which the constitution excludes.
+          required: true

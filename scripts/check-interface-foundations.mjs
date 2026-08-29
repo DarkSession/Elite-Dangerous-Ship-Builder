@@ -50,7 +50,12 @@ export const SCOPE = {
    * defined: a rule that reads every document quoting the target and not the
    * one that sets it has a hole in the middle of it.
    */
-  conformanceDocuments: ['README.md', 'AGENTS.md', '.specify/memory/constitution.md'],
+  conformanceDocuments: [
+    'README.md',
+    'AGENTS.md',
+    'CONTRIBUTING.md',
+    '.specify/memory/constitution.md',
+  ],
   /**
    * Feature documentation whose conformance statements are also qualified.
    *
