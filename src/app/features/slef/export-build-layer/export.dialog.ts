@@ -15,10 +15,9 @@ import { ExportBuildLayer } from './export-build-layer';
  * question rather than two screens. Feature 001 owns the link and feature 004
  * owns the payload; this composes both and owns neither.
  *
- * It lives in feature 004 because the arrows point one way. Feature 001's
- * workspace opens the layer through the `SLEF_FALLBACK` seam it already has —
- * an import back from feature 001 into this directory would make the two one
- * feature, which is exactly what the ownership policy forbids.
+ * It lives in feature 004 because the arrows point one way. The application
+ * root connects the workspace action to feature 004. Feature 001 does not
+ * import this directory.
  *
  * The dialog owns the intents; neither panel owns any of them. Copying,
  * sharing, retrying an encode and generating a payload can each fail in their

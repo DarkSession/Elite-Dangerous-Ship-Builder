@@ -117,8 +117,6 @@ export class SlefPresenter {
   readonly #active = inject(ActiveBuildStore);
 
   readonly layer = this.#store.layer;
-  readonly exportAvailable = this.#export.available;
-
   /**
    * Which revision the payload on screen describes, or `null` for none.
    *
@@ -183,32 +181,6 @@ export class SlefPresenter {
   });
 
   // ---- intents -----------------------------------------------------------
-
-  openImport(): void {
-    this.#store.openLayer('import');
-  }
-
-  /**
-   * Opens the export layer, on a named format or on the one it already holds.
-   *
-   * The format is optional because the store's is sticky: a Commander who moved
-   * to the link finds the link. A default here would look like the same
-   * behaviour and be the opposite of it — every open would reset the choice.
-   *
-   * Nothing in the product calls this, or `openImport` above it. Both are the
-   * presenter's statement of the two intents; the shell and the refusal seam
-   * reach `SlefStore` directly instead, because opening a layer must not pull
-   * this presenter — and the Almanac, the serializer and the delivery ports
-   * behind it — into the bundle that draws the control
-   * (`slef-fallback.adapter.ts`).
-   */
-  openExport(mode?: SlefExportMode): void {
-    if (mode !== undefined) {
-      this.#store.selectExportMode(mode);
-    }
-    this.#store.openLayer('export');
-    this.prepareExport();
-  }
 
   /**
    * Makes the layer ready to show what it is about to show.

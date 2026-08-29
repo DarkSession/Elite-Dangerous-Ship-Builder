@@ -1,5 +1,4 @@
 import { Injectable, computed, inject } from '@angular/core';
-import { resolveDocumentTitle } from './document-title';
 import { LocaleStore } from './locale.store';
 import { interpolate, type MessageKey, type MessageParams } from './locale-registry';
 
@@ -47,17 +46,6 @@ export class MessageService {
     // application defect, and the Commander's half of it must not be a screen
     // reading `{{count}}` (localization contract, "Message resolution").
     return interpolate(value, params);
-  }
-
-  /**
-   * The document title for a page, in the active locale.
-   *
-   * The store writes the title as part of the locale commit so it can never
-   * disagree with the root `lang`; this exposes the same resolved string to
-   * anything that needs to display or assert it, through the same rule.
-   */
-  documentTitle(page: string | null = null): string {
-    return resolveDocumentTitle(this.#store.catalogue(), page);
   }
 
   /**

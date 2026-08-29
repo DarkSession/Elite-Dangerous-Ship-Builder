@@ -98,15 +98,3 @@ export interface UiComponentContract {
   /** The cross-cutting variants this component can meaningfully expose. */
   readonly variants: readonly ComponentVariant[];
 }
-
-/**
- * A typed intent emitted by a component.
- *
- * Components request work rather than performing it, so the same button can sit
- * in a product route and in a preview fixture without one of them mutating
- * something.
- */
-export interface ComponentIntent<TKind extends string = string, TPayload = void> {
-  readonly kind: TKind;
-  readonly payload: TPayload;
-}

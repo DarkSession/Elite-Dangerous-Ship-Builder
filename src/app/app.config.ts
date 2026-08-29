@@ -11,7 +11,6 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { RetentionService } from './application/build-library/retention.service';
 import { RouteTitleStrategy } from './features/shared/route-title.strategy';
-import { SLEF_FALLBACK_PROVIDER } from './application/slef/slef-fallback.adapter';
 import { provideLocalization } from './i18n/i18n.providers';
 import { WEB_STORAGE_PROVIDERS } from './platform/storage/web-storage.adapter';
 
@@ -25,9 +24,6 @@ export const appConfig: ApplicationConfig = {
     // tab's language cannot lag the page's.
     { provide: TitleStrategy, useClass: RouteTitleStrategy },
     provideLocalization(),
-    // Feature 001 declares the seam a link refusal reaches for; feature 004
-    // is what it reaches.
-    SLEF_FALLBACK_PROVIDER,
     // Every browser store is reached through a port with an exception
     // boundary, so a blocked or full one changes persistence and nothing else.
     ...WEB_STORAGE_PROVIDERS,

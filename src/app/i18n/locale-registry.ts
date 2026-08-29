@@ -168,11 +168,6 @@ function baseLanguage(tag: string): string {
   return canonicalizeTag(tag).split('-')[0]?.toLowerCase() ?? '';
 }
 
-/** Whether this build ships the given tag, compared canonically. */
-export function isShippedLocale(tag: string): boolean {
-  return findShippedLocale(tag) !== null;
-}
-
 /** The registry entry for an exact canonical tag match, or `null`. */
 export function findShippedLocale(tag: string): ShippedLocale | null {
   const canonical = canonicalizeTag(tag).toLowerCase();

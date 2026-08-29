@@ -30,7 +30,10 @@ No operation writes an index plus a record. Delete calls one `removeItem` only a
   latest-version serialization all succeed. An unknown hull refuses
   opening and leaves the original bytes unchanged. A record containing an unsupported module
   identity likewise refuses migration and opening atomically; its original bytes remain unchanged.
-- If migration persistence fails, the original old-version bytes remain authoritative and opening may continue from the in-memory candidate with a visible persistence warning.
+- If migration persistence fails, the original old-version bytes remain authoritative and opening
+  continues from the in-memory candidate. The failure is not surfaced. The record stays readable in
+  its older form, the next open migrates and rewrites it again, and a Commander opening a build can
+  do nothing about a store that is full or blocked at that moment.
 - A version greater than the latest supported value is listed as unsupported and left byte-for-byte unchanged.
 - Each future published version adds frozen lossless round-trip and failed-write fixtures; supported decoders are not silently removed.
 
@@ -131,6 +134,10 @@ All storage access, including obtaining the storage object, enumeration, `getIte
 | Unsupported newer record         | Retain unchanged; show hull/name metadata only if safely available without guessing.  |
 | Generic write/remove failure     | Report failure and retain prior bytes plus active in-memory candidate.                |
 | Site data cleared externally     | Report loss honestly; no fabricated recovery or value.                                |
+
+The migration rewrite is an exception to these rows. It reports nothing, because a Commander opening
+a build can do nothing about a full or blocked store at that moment, and the record stays readable in
+its older form until a later open rewrites it.
 
 `navigator.storage.estimate()` may be shown as advisory only. A successful private-browsing write is not described as durable beyond browser policy.
 

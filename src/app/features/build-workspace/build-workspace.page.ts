@@ -14,7 +14,6 @@ import { ActiveBuildStore } from '../../application/active-build/active-build.st
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
 import { FragmentPublisher } from '../../application/build-link/fragment-publisher';
 import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
-import { SLEF_FALLBACK } from '../../application/build-link/slef-fallback.port';
 import { AutosaveService } from '../../application/build-library/autosave.service';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { NamedRecordService } from '../../application/build-library/named-record.service';
@@ -30,7 +29,7 @@ import { MessageService } from '../../i18n/message.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
-import { ScreenChrome } from '../shared/screen-chrome';
+import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from '../shared/screen-chrome';
 import { ActionLink } from '../../ui/components/action/action-link';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { StatusNotice } from '../../ui/components/status/status-notice';
@@ -91,15 +90,6 @@ export class BuildWorkspacePage {
   readonly #link = inject(BuildLinkCoordinator);
   readonly #publisher = inject(FragmentPublisher);
   readonly #linkErrors = inject(LinkErrorMapper);
-  /**
-   * How the workspace opens the exchange layer.
-   *
-   * The one seam feature 001 has onto feature 004, and the reason the layer's
-   * own component is not imported here: the workspace says "export this build"
-   * and knows nothing about which formats exist or how one is produced
-   * (build-link contract, "Active-edit synchronization").
-   */
-  readonly #exchange = inject(SLEF_FALLBACK);
   readonly #location = inject(HistoryLocationAdapter);
 
   readonly catalogueRoute = NAVIGATION_ROUTES.catalogue;
@@ -348,8 +338,7 @@ export class BuildWorkspacePage {
         this.hasBuild()
           ? [
               {
-                action: { id: 'workspace.export', label: this.shareLabel() },
-                perform: () => this.#exchange.export(),
+                action: { id: WORKSPACE_EXPORT_ACTION, label: this.shareLabel() },
               },
               {
                 action: {

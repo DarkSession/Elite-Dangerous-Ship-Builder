@@ -41,10 +41,6 @@ export class ArtworkCoordinator {
   /** The whole map, as a signal, so a template recomputes when one changes. */
   readonly states = this.#states.asReadonly();
 
-  markLoading(symbol: string): void {
-    this.#set(symbol, 'loading');
-  }
-
   markAvailable(symbol: string): void {
     this.#set(symbol, 'available');
   }

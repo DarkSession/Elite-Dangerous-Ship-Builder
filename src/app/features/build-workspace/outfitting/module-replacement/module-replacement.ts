@@ -17,7 +17,6 @@ import {
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import { slotCapabilities } from '../../../../application/outfitting/slot-capabilities';
 import type { SlotView } from '../../../../application/outfitting/slot-view';
-import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import { Layer } from '../../../../ui/components/layer/layer';
 import { CandidateList } from '../../../../ui/outfitting/candidate-list';
@@ -66,7 +65,6 @@ export type ReplacementState = CandidateStatus | 'notReplaceable';
 })
 export class ModuleReplacement {
   readonly #messages = inject(MessageService);
-  readonly #formatters = inject(Formatters);
   readonly store = inject(OutfittingStore);
 
   readonly slot = input.required<SlotView>();

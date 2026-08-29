@@ -134,12 +134,10 @@ export class BuildLibraryPage {
   readonly #search = signal('');
   readonly #chosen = signal<string | null>(null);
   readonly #pendingDelete = signal<PendingDelete | null>(null);
-  readonly #managing = signal(false);
   readonly #failure = signal<string | null>(null);
 
   readonly search = this.#search.asReadonly();
   readonly pendingDelete = this.#pendingDelete.asReadonly();
-  readonly managing = this.#managing.asReadonly();
   readonly failure = this.#failure.asReadonly();
 
   /**
@@ -513,10 +511,6 @@ export class BuildLibraryPage {
     this.#pendingDelete.set(null);
   }
 
-  openManager(): void {
-    this.#managing.set(true);
-  }
-
   changeDiscardSelection(ids: readonly string[]): void {
     this.#selectedForDiscard.set(ids);
   }
@@ -533,7 +527,6 @@ export class BuildLibraryPage {
       }
     }
     this.#selectedForDiscard.set([]);
-    this.#managing.set(false);
     this.#library.refresh();
   }
 

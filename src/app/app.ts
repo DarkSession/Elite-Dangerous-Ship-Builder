@@ -9,11 +9,12 @@ import {
 } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
+import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { BuildLibraryPage } from './features/build-library/build-library.page';
 import { LibraryPresence } from './features/build-library/library-presence';
-import { ScreenChrome } from './features/shared/screen-chrome';
+import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { LocaleStore } from './i18n/locale.store';
 import { SlefStore } from './application/slef/slef.store';
 import { ExportDialog } from './features/slef/export-build-layer/export.dialog';
@@ -74,6 +75,7 @@ export class App {
   readonly #router = inject(Router);
   readonly #messages = inject(MessageService);
   readonly #slef = inject(SlefStore);
+  readonly #active = inject(ActiveBuildStore);
   readonly help = inject(HelpPresenter);
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #announcements = inject(AnnouncementService);
@@ -392,6 +394,16 @@ export class App {
     if (this.chrome.select(id)) {
       return;
     }
+    if (id === WORKSPACE_EXPORT_ACTION) {
+      if (this.#active.loadout() === null) {
+        return;
+      }
+      if (this.#active.link().kind === 'refused') {
+        this.#slef.selectExportMode('slef');
+      }
+      this.#slef.openLayer('export');
+      return;
+    }
     if (id === IMPORT_ACTION) {
       this.#slef.openLayer('import');
       return;
@@ -403,13 +415,6 @@ export class App {
     if (id === UPDATE_ACTION) {
       void this.#updates.apply();
       return;
-    }
-    if (id === 'library') {
-      // A layer over the screen, as the link is. The navigation stands behind
-      // it for the one case the layer refuses: a Commander already on `/builds`.
-      if (!this.library.raise()) {
-        void this.#router.navigateByUrl(NAVIGATION_ROUTES.library);
-      }
     }
   }
 }

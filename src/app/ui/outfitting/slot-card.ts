@@ -105,10 +105,6 @@ export class SlotCard {
   readonly engineerLabel = this.#messages.messageSignal('outfitting.capability.engineer');
   readonly removeLabel = this.#messages.messageSignal('outfitting.capability.remove');
 
-  readonly selectLabel = computed(() =>
-    this.#messages.message('outfitting.slot.select', { slot: this.drawnLabel() }),
-  );
-
   /**
    * The module's name, for the power controls to name what they act on.
    *

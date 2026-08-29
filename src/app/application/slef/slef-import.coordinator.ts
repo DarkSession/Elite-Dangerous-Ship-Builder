@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { importSlef } from '../../domain/slef/slef-import';
 import type { SlefImportCandidate } from '../../domain/slef/slef-import.models';
-import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { CandidateOutcome } from '../active-build/build-ingress.coordinator';
 import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { SlefStore } from './slef.store';
@@ -41,7 +40,6 @@ export type SlefImportSubmission =
 export class SlefImportCoordinator {
   readonly #store = inject(SlefStore);
   readonly #ingress = inject(BuildIngressCoordinator);
-  readonly #active = inject(ActiveBuildStore);
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
 

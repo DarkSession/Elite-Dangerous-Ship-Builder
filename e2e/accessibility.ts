@@ -7,7 +7,6 @@ import {
   settled,
 } from './accessibility/assertions';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
-import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 
 /**
  * One sweep, applied to every outfitting state.
@@ -26,15 +25,6 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 
 /** The 400%-zoom equivalence WCAG 1.4.10 defines, as a browser context. */
 export const ZOOM_400 = { viewport: { width: 320, height: 256 }, deviceScaleFactor: 4 } as const;
-
-/** Every layout profile the outfitting suites name, by the label they use. */
-export const OUTFITTING_VIEWPORTS = {
-  desktop: { width: 1440, height: 900 },
-  'tablet-portrait': { width: 834, height: 1112 },
-  'tablet-landscape': { width: 1112, height: 834 },
-  'mobile-portrait': { width: 390, height: 844 },
-  'mobile-landscape': { width: 844, height: 390 },
-} as const;
 
 /**
  * What one sweep is allowed to cost, added to the test's budget when it runs.
@@ -114,80 +104,6 @@ export async function sweepOutfittingState(
 export async function expectNoClippedText(page: Page, label: string): Promise<void> {
   const clipped = await clippedText(page);
   expect(clipped, `clipped text in ${label}`).toEqual([]);
-}
-
-/**
- * Re-runs a check at the user's doubled text size.
- *
- * The scale is applied through an init script, so it is in place for the first
- * frame; the page is therefore reloaded rather than resized.
- */
-export async function atDoubledText(
-  page: Page,
-  url: string,
-  check: () => Promise<void>,
-): Promise<void> {
-  await withRootTextScale(page, DOUBLED_TEXT);
-  await page.goto(url);
-  await settled(page);
-  await check();
-}
-
-/**
- * Re-runs a check at 400% zoom, which must select the compact composition.
- *
- * Viewport and device scale factor together: the width is what wraps the
- * layout, and the scale factor is what makes `devicePixelRatio` and the
- * resolution media queries agree with a genuinely zoomed page.
- */
-export async function atZoom400(
-  page: Page,
-  url: string,
-  check: () => Promise<void>,
-): Promise<void> {
-  await page.setViewportSize(ZOOM_400.viewport);
-  await page.goto(url);
-  await settled(page);
-  await check();
-}
-
-/**
- * Re-runs a check with motion removed.
- *
- * The assertion carried by this is that *nothing* changes: a state that is only
- * reachable through a transition is unreachable for a Commander who has asked
- * for no transitions.
- */
-export async function withReducedMotion(
-  page: Page,
-  url: string,
-  check: () => Promise<void>,
-): Promise<void> {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto(url);
-  await settled(page);
-  await check();
-  await page.emulateMedia({ reducedMotion: null });
-}
-
-/**
- * Re-runs a check with expanded copy and right-to-left direction.
- *
- * Both are stress tests of the same property: the layout has to survive text it
- * did not expect, and the reading order has to stay the reading order when the
- * visual direction flips. Feature 011 provides the pseudo-locales; this only
- * applies them and hands back.
- */
-export async function withExpandedAndRtl(
-  page: Page,
-  url: string,
-  check: (variant: 'expanded' | 'rtl') => Promise<void>,
-): Promise<void> {
-  for (const variant of ['expanded', 'rtl'] as const) {
-    await page.goto(`${url}${url.includes('?') ? '&' : '?'}variant=${variant}`);
-    await settled(page);
-    await check(variant);
-  }
 }
 
 /**

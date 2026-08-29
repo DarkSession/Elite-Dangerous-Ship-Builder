@@ -23,7 +23,10 @@ import {
  * Commander loses nothing by trying to open something that turns out to be
  * unopenable (build-library design, "Operation rules").
  *
- * Opening never converts or mutates the source record, and never writes to one.
+ * Opening never converts or mutates the source record. The one write it can
+ * make is the migration rewrite, which stores the record it has just
+ * reconstructed under its own key, serialized at the latest version
+ * (`RecordMigrationService`). Nothing else here writes.
  * An unnamed record is taken over, because it is already what autosave writes
  * to. A named one is only held: this page writes nothing to it, forks an
  * unnamed record at the first modelled edit, and leaves the save exactly as it

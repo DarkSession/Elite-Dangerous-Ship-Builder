@@ -17,8 +17,19 @@ export interface ScreenIdentityChannel {
 /** One command-bar action, and what activating it does. */
 export interface ScreenAction {
   readonly action: ShellAction;
-  readonly perform: () => void;
+  /** Runs a screen-owned action. The shell handles cross-feature actions. */
+  readonly perform?: () => void;
 }
+
+/**
+ * The workspace action that top-level composition connects to feature 004.
+ *
+ * Named here rather than in either file that uses it, because two files use it:
+ * the workspace publishes the action and the shell dispatches on it. Repeat the
+ * literal across the two, and a rename reaches one file, stops matching in the
+ * other, and nothing short of an e2e run says so.
+ */
+export const WORKSPACE_EXPORT_ACTION = 'workspace.export';
 
 /**
  * What the command bar shows for the screen that is open.
@@ -76,18 +87,22 @@ export class ScreenChrome {
   }
 
   /**
-   * Runs the published action with this id, and says whether there was one.
+   * Runs the screen handler for this id, and says whether it handled the action.
    *
    * The shell asks rather than deciding: it knows an action was activated and
-   * nothing about what it means, which is what keeps navigation intents and a
-   * screen's own actions from having to know about each other.
+   * nothing about what it means. An action without a screen handler returns to
+   * top-level composition, which can connect capabilities without either one
+   * importing the other.
    */
   select(id: string): boolean {
     const entry = [...this.#regionActions(), ...this.#actions()].find(
       (candidate) => candidate.action.id === id,
     );
-    entry?.perform();
-    return entry !== undefined;
+    if (entry?.perform === undefined) {
+      return false;
+    }
+    entry.perform();
+    return true;
   }
 
   readonly #actions = signal<readonly ScreenAction[]>([]);

@@ -21,7 +21,6 @@ import { BuildLibraryStore } from './build-library.store';
 import { RecordOpenService } from './record-open.service';
 import { RetentionService, UNNAMED_RECORD_LIFETIME_MS } from './retention.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
-import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
 
 class SilentChannel {
   readonly available = false;
@@ -81,7 +80,6 @@ function setup(seed: (storage: MemoryStorage) => void = () => {}) {
     library: TestBed.inject(BuildLibraryStore),
     open: TestBed.inject(RecordOpenService),
     retention: TestBed.inject(RetentionService),
-    ownership: TestBed.inject(TabOwnershipCoordinator),
     records: TestBed.inject(LocalRecordRepository),
     active: TestBed.inject(ActiveBuildStore),
     coordinator: TestBed.inject(BuildIngressCoordinator),
@@ -409,7 +407,7 @@ describe('RecordOpenService', () => {
   });
 
   it('cannot replace active work with a record that fails to open', async () => {
-    const { open, active, coordinator } = setup((storage) => {
+    const { open, active } = setup((storage) => {
       storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1);
       storage.setItem(recordKey(FIXTURE_IDS.unknownHull), UNKNOWN_HULL_RECORD);
       storage.setItem(recordKey('broken'), MALFORMED_RECORD);

@@ -8,7 +8,6 @@ import {
   fixedRewardBuild,
 } from '../../domain/outfitting/outfitting.fixtures';
 import { ActiveBuildStore } from '../active-build/active-build.store';
-import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import type { BuildCandidate } from '../active-build/active-build.models';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { OutfittingStore } from './outfitting.store';

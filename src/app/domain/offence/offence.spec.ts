@@ -1,6 +1,5 @@
 import { afterEach, vi } from 'vitest';
 import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
-import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   collectionMeaning,
   projectCapacitor,

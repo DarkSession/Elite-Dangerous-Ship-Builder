@@ -1,6 +1,6 @@
 import { DOCUMENT, Injectable, inject, signal } from '@angular/core';
 import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channel.adapter';
-import { EDSB_RECORD_KEY_PREFIX, recordIdFromKey } from '../../platform/storage/storage-keys';
+import { recordIdFromKey } from '../../platform/storage/storage-keys';
 
 /**
  * Noticing that another page changed something.
@@ -74,11 +74,6 @@ export class RecordInvalidationService {
   /** Forgets a delete once the Commander has been told about it. */
   acknowledgeDeleted(recordId: string): void {
     this.#deleted.update((ids) => ids.filter((id) => id !== recordId));
-  }
-
-  /** The key prefix this service watches. Exposed for tests and diagnostics. */
-  get watchedPrefix(): string {
-    return EDSB_RECORD_KEY_PREFIX;
   }
 
   #invalidate(): void {
