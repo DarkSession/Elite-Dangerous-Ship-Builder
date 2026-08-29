@@ -43,13 +43,20 @@
       where canvas 1c puts the trip the `SHIPYARD` chip used to carry; the mark
       itself stays hidden from assistive technology and the link is named by the
       screen it reaches, so the mark is never announced as a picture of nothing.
+
+      The mark is its own element inside the link rather than the link itself.
+      The link is held to the press baseline, the mark is the size the canvas
+      draws it, and one box cannot be both: a mark cut into the link's own
+      layers grows with the target, and the insignia is then a different size on
+      a screen that offers the way home than on one that does not (011/FR-012).
     -->
     @if (home(); as destination) {
       <a
-        class="frame__flag frame__flag--home"
+        class="frame__flag-home"
         [href]="destination.href"
         (click)="navigationSelected.emit({ entry: destination, event: $event })"
       >
+        <span class="frame__flag" aria-hidden="true"></span>
         <span class="visually-hidden">{{ destination.label }}</span>
       </a>
     } @else {
@@ -110,10 +117,11 @@
   @if (actions().length > 0 || navigation().length > 0) {
     <!--
       The same actions in two compositions, one rendered at a time. The wide row
-      keeps every action on the banner; the compact layer moves them behind one
-      named trigger. Whichever is not in use is removed from layout and from the
-      accessibility tree by its media query, so no action is ever announced
-      twice or reachable while invisible.
+      keeps every action on the banner; the folded layer moves them behind one
+      named trigger. The layer is hidden by default and `layout.bar-folded`
+      reverses that while hiding the row, so exactly one composition is ever in
+      layout and in the accessibility tree, and no action is announced twice or
+      reachable while invisible.
     -->
     <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">
       @for (action of actions(); track action.id) {

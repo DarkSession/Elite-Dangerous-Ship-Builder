@@ -59,7 +59,7 @@ technically intact but practically unusable.
 1. **No horizontal page scrolling.** Scroll to the block end of the page. The document must not
    scroll sideways at any point. A component may own a labelled, bounded scroller; the page may not.
 2. **Nothing is lost.** Every action, datum and status available at 100% is still present. An action
-   that has moved into the compact action layer counts as present; an action that has disappeared
+   that has moved into the folded action layer counts as present; an action that has disappeared
    does not.
 3. **Every action still carries visible text.** No control collapses to an unlabelled glyph or
    ellipsis at any zoom level.

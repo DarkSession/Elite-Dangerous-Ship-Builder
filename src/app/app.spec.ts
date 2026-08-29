@@ -79,7 +79,7 @@ describe('App', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const insignia = element.querySelector('.frame__flag--home');
+    const insignia = element.querySelector('.frame__flag-home');
 
     // The 2026-08-26 revision puts the mark where the `SHIPYARD` word used to
     // be, so the mark is the control and the word is not drawn twice. It is a
@@ -87,6 +87,10 @@ describe('App', () => {
     // says where it goes for a reader who cannot see the mark.
     expect(insignia?.getAttribute('href')).toBe('/ships');
     expect(insignia?.textContent?.trim()).toBe(BUNDLED_ENGLISH['navigation.catalogue']);
+
+    // The mark is inside the link rather than being it, so the press keeps the
+    // target baseline while the insignia keeps the size the canvas draws it.
+    expect(insignia?.querySelector('.frame__flag')).not.toBeNull();
   });
 
   it('resolves its text through the message facade', () => {

@@ -450,13 +450,14 @@ and are served from `assets/`, so the mark a Commander sees is the mark the game
 redrew the rarity mark from the idea of it — a hexagon with one blade per grade — which is a
 different icon wearing the same description, and was withdrawn.
 
-**Voice, ruled 2026-08-22 (wave 9).** Commander-facing copy no longer names the Almanac. The
-package is the source of every figure and every refusal, and the design's own drawings state facts —
-`There is no engineering for this mount.` — without crediting a dependency for them. Naming
-it made a library the speaker of sentences about a Commander's ship, and the credit belongs in the
-provenance statement feature 012 owns, once per application rather than in thirty strings. The name
-stays in code comments, spec prose and diagnostics that never reach a screen, because there it says
-which system is being described.
+**Voice, ruled 2026-08-22 (wave 9), amended 2026-08-28.** Commander-facing copy no longer names the
+Almanac. The package is the source of every figure and every refusal, and the design's own drawings
+state facts — `There is no engineering for this mount.` — without crediting a dependency for them.
+Naming it made a library the speaker of sentences about a Commander's ship, and the credit belongs
+to feature 012, once per application rather than in thirty strings. Where that credit is made is
+feature 012's to decide: it is the licence summary's library line, which names the bundled library's
+own terms and links them (012/FR-003, 012/FR-008). The name stays in code comments, spec prose and
+diagnostics that never reach a screen, because there it says which system is being described.
 
 **Utility node ground, ruled 2026-08-23 (wave 10, Commander request).** The canvas's `paintNodes`
 gives every unselected node in the ledger the one dark ground — `rgba(11,11,12,.88)` — and turns only
@@ -487,7 +488,7 @@ arrangement.
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Canvas 1c's accordion becomes a 216 px family rail beside a variant pane | **Built** (T147).                                                                                                                |
 | Exactly one family selected at wide; no caret at that width              | **Built** (T146, T147). Selection is exclusive and total, and never empty.                                                       |
-| Both panes bounded at `max-height: 470px`, each scrolling on its own     | **Built** (T147).                                                                                                                |
+| Both panes bounded at one `max-height`, each scrolling on its own        | **Built** (T147).                                                                                                                |
 | The wide manifest narrows to `MODULE` / `CLASS` / `COST`                 | **Built** (T148).                                                                                                                |
 | `DPS`, `MASS t`, `PWR MW`, `DRAW WEP` withdrawn from the wide manifest   | **Built** (T148). They survive on canvas 1d's card, which that canvas did not change.                                            |
 | Canvas 1d's accordion, badge, variants summary and code line             | **Unchanged.** Every existing ruling on them stands.                                                                             |

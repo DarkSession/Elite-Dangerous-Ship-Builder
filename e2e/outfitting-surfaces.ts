@@ -667,7 +667,7 @@ export async function commandBarAction(page: Page, name: RegExp): Promise<Locato
     return direct;
   }
 
-  // The compact composition keeps them behind the menu. Whether it is open is
+  // The folded composition keeps them behind the menu. Whether it is open is
   // read from the control's own state rather than from its label, which changes
   // when it opens, or from whether a button inside it can be seen, which races
   // the re-render that follows the last press.
@@ -682,7 +682,7 @@ export async function commandBarAction(page: Page, name: RegExp): Promise<Locato
  * Presses one command-bar action, wherever this width keeps it.
  *
  * The press is retried as a whole rather than aimed once. Choosing an action
- * closes the compact menu and the bar republishes its actions after every
+ * closes the folded bar's menu and the bar republishes its actions after every
  * decision, so a control located a moment ago can be gone by the time it is
  * pressed — and the answer a Commander would give is to open the menu again.
  * The retry is safe because the block ends with the press: nothing after it can
@@ -699,7 +699,7 @@ export async function pressCommandBarAction(page: Page, name: RegExp): Promise<v
  *
  * Deliberately a CSS locator rather than a role lookup: the frame renders both
  * placements and hides the one this width does not use, so a role lookup finds
- * nothing while the compact menu is closed. What is being read here is state,
+ * nothing while that menu is closed. What is being read here is state,
  * and both placements carry the same state from the same list — so the row's
  * copy answers for the menu's, without opening anything a Commander did not.
  */

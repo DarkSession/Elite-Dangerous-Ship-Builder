@@ -659,13 +659,22 @@ describe('the wide manifest', () => {
   });
 
   /**
+   * The rail's own box, in the pixels `--edsb-layout-manifest-pane` declares.
+   *
+   * Written down here because this environment has no layout to read it from,
+   * and it is the one figure the rule below is about: nine 44px rows of the
+   * Almanac's seventy-seven families.
+   */
+  const RAIL_HEIGHT = 428;
+
+  /**
    * Renders the rail with a laid-out box, and reports what was scrolled.
    *
    * There is no layout in this environment, so every box is zero and a rule
    * written in terms of "is this row inside that box" cannot be exercised
-   * without one. The rail is given a 470px box — the canvas's own bound — and
-   * the selected row is placed at `rowTop`, which is the whole of what the rule
-   * reads. Everything else keeps the real measurement, which is zero.
+   * without one. The rail is given the box above and the selected row is placed
+   * at `rowTop`, which is the whole of what the rule reads. Everything else
+   * keeps the real measurement, which is zero.
    */
   function railScrollFixture(
     rowTop: number,
@@ -697,7 +706,7 @@ describe('the wide manifest', () => {
       value(this: Element): DOMRect {
         const rect = measure.call(this);
         if (this.classList.contains('candidates__rail')) {
-          return Object.assign(rect, { top: 0, bottom: 470, height: 470 });
+          return Object.assign(rect, { top: 0, bottom: RAIL_HEIGHT, height: RAIL_HEIGHT });
         }
         if (this.classList.contains('family--rail')) {
           return this.getAttribute('aria-pressed') === 'true'
@@ -741,20 +750,20 @@ describe('the wide manifest', () => {
   }
 
   it('brings a revealed family into the rail when it sits below the fold', () => {
-    // Seventy-seven families in a box that holds ten: the family holding what
+    // Seventy-seven families in a box that holds nine: the family holding what
     // is fitted can be the sixtieth of them, and until it is scrolled to, the
-    // pane changes while the rail goes on showing a different ten
+    // pane changes while the rail goes on showing a different nine
     // (Commander request 2026-08-27).
     expect(railScrollFixture(2400)).toEqual(['candidates__rail']);
   });
 
   it('leaves a family the Commander pressed exactly where they pressed it', () => {
     // The rule, and the reason it is about who revealed the family rather than
-    // about where the row happens to be: the rail is a 470px box of 44px rows,
-    // so the row at either edge is routinely clipped, and a Commander can press
-    // a clipped row. Re-centring under the finger that pressed it is the fault
-    // the scroll exists to remove, in the other direction (reported in review,
-    // 2026-08-27).
+    // about where the row happens to be: the rail is a bounded box of 44px
+    // rows, so the row at either edge is routinely clipped, and a Commander can
+    // press a clipped row. Re-centring under the finger that pressed it is the
+    // fault the scroll exists to remove, in the other direction (reported in
+    // review, 2026-08-27).
     expect(railScrollFixture(2400, { press: true })).toEqual([]);
   });
 

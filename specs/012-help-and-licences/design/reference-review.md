@@ -27,7 +27,9 @@ versions, application behavior, legal facts, dependencies or CSS literals.
 - `LICENCE` opens with a summary of what covers what, one line each, before the notice. The
   reference's three — the application's code, the game data and imagery, the typefaces — and the
   bundled Almanac's own terms as a fourth (`contracts/help-navigation.md`, amended 2026-08-26).
-- The modal draws no control other than its close: no link, and nothing that leaves the application.
+- The modal draws no control other than its close. What leaves the application is three sets of
+  linked words inside its own sentences, which is not a control
+  (`contracts/help-navigation.md`, "External navigation").
 
 ## Required departures
 
@@ -66,27 +68,28 @@ that no canvas of the reference draws.
 
 | Withdrawn addition                                         | What it is replaced by                                                                     | Requirement amended |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
-| Two provenance sentences after the `ABOUT` version facts   | One `ABOUT` provenance sentence before them, and the licence summary's Frontier line       | FR-008              |
+| Two provenance sentences after the `ABOUT` version facts   | The licence summary's library and Frontier lines, which name what each covers              | FR-008              |
 | A third identity fact carrying release state and build ID  | Two version facts, as the reference draws. Generator classification is untouched           | FR-007              |
 | Prose licence framing above the excerpt                    | The four-line summary of what covers what                                                  | FR-003              |
 | Two sentences naming the excerpt's source and its language | The excerpt's `lang`, which is the same fact as a property rather than as prose            | FR-006              |
-| The warned repository-`LICENSE` action                     | Nothing. The modal has no external navigation, and `WarnedExternalLink` is deleted with it | FR-003, FR-005      |
+| The warned repository-`LICENSE` action                     | Linked words inside the summary line that names its terms; `WarnedExternalLink` is deleted | FR-003, FR-005      |
 
 Two things did **not** change with them. The exact Frontier media-usage notice stays embedded and
 verbatim — it is the compliance artifact root `LICENSE` records the Almanac redistributing under,
 and the reference's paraphrased fan-tool sentence is not a substitute for it. And the audited
 repository-`LICENSE` URL is still resolved and validated by the generator, because a wrong address
-for the terms the source distribution carries is still a release failure; it is simply no longer
-rendered.
+for the terms the source distribution carries is still a release failure. The link back to it
+returned on 2026-08-26, inside the summary line that names its terms
+(`contracts/help-navigation.md`, "External navigation").
 
 **A consequence to keep in view.** Feature 002's voice ruling of 2026-08-22 stopped ~30
 Commander-facing strings naming the Almanac, on the grounds that the credit belonged to this
-feature's provenance statement, once per application. On 2026-08-25 that statement was withdrawn and
-the credit moved to the `almanacOwnership` topic. On 2026-08-27 that topic was withdrawn in turn,
-and the paragraph above did its job: the credit came back to `ABOUT` as the one provenance sentence
-FR-008 now requires, rather than being dropped with the answer that had been holding it. The warning
-stands for whoever edits that sentence next — around thirty strings elsewhere say nothing about the
-Almanac because this one does.
+feature, once per application. It has moved three times since: to the `almanacOwnership` topic on
+2026-08-25, to an `ABOUT` provenance sentence on 2026-08-27 when that topic was withdrawn, and to
+the licence summary's library line on 2026-08-28 when the owner withdrew that sentence. That line is
+where it lives, and the voice ruling is amended to name it. The warning stands for whoever edits
+that line next — around thirty strings elsewhere say nothing about the Almanac because this one
+does.
 
 ## Visual translation into the repository design system
 
@@ -135,16 +138,16 @@ now meets a `?` where they used to meet two words. The canvas's judgement is tha
 symbol that convention has made legible without instruction, and this feature takes it.
 
 **What the second one does not give up.** The Almanac is still credited once per application: the
-`ABOUT` provenance sentence names it as the source of the catalogue, the checks and the
-calculations, and the licence summary names Frontier for the game data and imagery. The version
-label was never where that credit lived — it names the library the build was compiled against, which
-is what someone comparing two builds is reading it for. The standing feature 002 ruling of
-2026-08-22 is unaffected.
+licence summary's library line names the bundled library's own terms and links them, and the same
+summary names Frontier for the game data and imagery. The version label was never where that credit
+lived — it names the library the build was compiled against, which is what someone comparing two
+builds is reading it for. Feature 002's ruling of 2026-08-22 stands, amended on 2026-08-28 to name
+that line as where the credit is made.
 
 ## A defect the wide bar's mark exposed, 2026-08-26
 
 Shortening the action's words from `HELP & FAQ` to `Help` turned a passing assertion red, and the
-assertion was right. At 200% text on a 390-pixel phone the compact action layer's panel was drawn
+assertion was right. At 200% text on a 390-pixel phone the folded action layer's panel was drawn
 partly off the leading edge of the viewport, so its entries — FR-001's only route to help among them
 — could not be pressed. Two separate causes, both now fixed in feature 011's own component and both
 about the panel rather than about help:
@@ -175,10 +178,10 @@ what the reference draws no _control_ for is not the same as what it forbids, an
 comes back is not the shape that was withdrawn. A warned action in its own row is a control. A few
 underlined words inside a sentence are the sentence.
 
-| Reference treatment                      | Shipped treatment                                                                           | Reason                                                                                                    |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Three summary lines, none of them linked | Four lines; the two whose terms this repository can point at link them from inside the line | A summary of real terms has to be checkable, and the library's terms are a separate claim from Frontier's |
-| No `LIBRARY` line at all                 | `Library · MIT licence on GitHub`                                                           | MIT over a package's code and Frontier's media-usage rules over game data are not one claim               |
+| Reference treatment                      | Shipped treatment                                                                           | Reason                                                                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Three summary lines, none of them linked | Four lines; the two whose terms this repository can point at link them from inside the line | A summary of real terms has to be checkable, and the library's terms are a separate claim from Frontier's                                                                       |
+| No `LIBRARY` line at all                 | `Library · Elite Dangerous Almanac, MIT licence, full detail on GitHub`                     | MIT over a package's code and Frontier's media-usage rules over game data are not one claim; the line names the package, which is where the once-per-application credit is made |
 
 Three things did not come back with them. `WarnedExternalLink` stays deleted — a component whose
 whole purpose was to be a warned action is not what an inline link is. FR-009's package-defect

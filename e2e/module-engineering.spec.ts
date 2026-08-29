@@ -21,6 +21,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
+import { reachShellAction } from './shell';
 
 /**
  * Engineering a module, end to end (US3).
@@ -275,7 +276,12 @@ test.describe('engineering a module', () => {
       // Inline the recipe and the grade are one decision, because a recipe
       // without a grade asks the Almanac for nothing: the operation is the
       // grade landing on it. So one undo takes it back (FR-018).
-      await page.getByRole('button', { name: /^undo/i }).click();
+      //
+      // Reached through the shell rather than pressed on the banner: the bar
+      // draws its actions on the row only where they fit, and holds them in the
+      // named menu everywhere else, so a journey that wants an action asks for
+      // it by name rather than for the composition it is in.
+      await reachShellAction(page, /^undo/i);
     }
 
     await expect.poll(() => ledgerEngineering(page, 'FrameShiftDrive')).toBe(before);

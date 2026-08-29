@@ -13,17 +13,22 @@
     <!--
       The reference's own ABOUT: one sentence saying what this is, and the
       version line under it. Two sentences stand between them that the
-      reference does not draw — who builds this, at the owner's request, and
-      where the game values come from, which is the once-per-application Almanac
-      credit feature 002's voice ruling put in this feature (FR-008). Each has
-      its own paragraph because each is its own fact; a reader meets them in
-      that order.
+      reference does not draw — who builds this, and where the source is, both
+      at the owner's request (FR-008). Each has its own paragraph because each
+      is its own fact; a reader meets them in that order.
     -->
     <section class="help-dialog__section" [attr.aria-labelledby]="aboutId">
       <h3 class="help-dialog__heading" [id]="aboutId">{{ sections().about }}</h3>
       <p class="help-dialog__purpose">{{ view().purpose }}</p>
       <p class="help-dialog__maintainer">{{ about().maintainer }}</p>
-      <p class="help-dialog__provenance">{{ about().provenance }}</p>
+      <!--
+        The source line, cut at the link its own translation placed, and held on
+        one line by `prettier-ignore` for the reason the licence lines are: the
+        whitespace around the link is the content, and indentation the formatter
+        adds between the pieces is drawn as a gap before the full stop.
+      -->
+      <!-- prettier-ignore -->
+      <p class="help-dialog__source">{{ about().source.before }}@if (about().source.link; as link) {<edsb-inline-link [label]="link.label" [href]="link.href" />}{{ about().source.after }}</p>
 
       <edsb-version-facts [facts]="about().facts" />
     </section>

@@ -147,7 +147,7 @@ test.describe('module families', () => {
     const selected = page.locator('.family--rail[aria-pressed="true"]');
     await expect(selected).toHaveCount(1);
 
-    // The rail is bounded at the canvas's 470px and the Almanac publishes
+    // The rail is bounded at the pane's own height and the Almanac publishes
     // seventy-seven families, so the revealed one can be well past the fold.
     // Wherever it landed, it is inside the box a Commander is reading
     // (FR-021, SC-007).

@@ -67,9 +67,9 @@ test.describe('the reference visual language', () => {
     // The resynced canvases replaced the plain amber block that opened the bar
     // with the wedge the app icon is cut from (canvas 3b): a clipped outline
     // closed by a lighter bar. Both are cut into the flag's own layers rather
-    // than painted on its box, because where the insignia is the way home that
-    // box is held to the 44px press baseline and an amber ground on it would
-    // draw a 44px amber square (`canvas-extraction.md`, "Command bar").
+    // than painted on its box, because an amber ground on the box would draw
+    // an amber rectangle behind the mark rather than the mark
+    // (`canvas-extraction.md`, "Command bar").
     const flag = page.locator('.frame__flag');
 
     const mark = await flag.evaluate((element) => {
@@ -96,6 +96,134 @@ test.describe('the reference visual language', () => {
     // `26 x 23`: the size canvas 3b draws the mark, near enough square.
     expect(mark.width).toBeGreaterThan(0);
     expect(Math.abs(mark.width - mark.height)).toBeLessThanOrEqual(4);
+  });
+
+  test('draws the insignia at one size whether or not it is the way home', async ({ page }) => {
+    // The shipyard draws the mark as decoration; every other screen makes it
+    // the way home, which is a control and is held to the 44px press baseline.
+    // The baseline is paid by a box around the mark, so the mark is the size
+    // canvas 3b draws it on both — a mark that took the target's own box would
+    // be drawn half as large again on a build as on the shipyard
+    // (`canvas-extraction.md`, "Command bar"; Commander request 2026-08-28).
+    // Measured against the token the canvas's figure lives in rather than
+    // against the other screen alone: a mark that grew on both would still
+    // match itself.
+    const measure = async () =>
+      await page.locator('.frame__flag').evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        // A custom property resolves as it was written, so the canvas's figure
+        // comes back in `rem` and is turned into the pixels the box is
+        // measured in.
+        const root = getComputedStyle(document.documentElement);
+        const rem = parseFloat(root.fontSize);
+        const declared = (name: string): number => {
+          const value = root.getPropertyValue(name).trim();
+          return parseFloat(value) * (value.endsWith('rem') ? rem : 1);
+        };
+        return {
+          width: box.width,
+          height: box.height,
+          declaredWidth: declared('--edsb-layout-insignia-width'),
+          declaredHeight: declared('--edsb-layout-insignia-height'),
+        };
+      });
+
+    const shipyard = await measure();
+    expect(shipyard.width).toBe(shipyard.declaredWidth);
+    expect(shipyard.height).toBe(shipyard.declaredHeight);
+    expect(await page.locator('.frame__flag-home').count()).toBe(0);
+
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+
+    const home = page.locator('.frame__flag-home');
+    await expect(home).toHaveCount(1);
+    expect(await measure()).toEqual(shipyard);
+
+    // And the press around it is the baseline, which is the whole reason the
+    // two are separate boxes.
+    const target = await home.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    });
+    expect(target.width).toBeGreaterThanOrEqual(44);
+    expect(target.height).toBeGreaterThanOrEqual(44);
+  });
+
+  test('sizes the command bar to the tallest identity it carries', async ({ page }) => {
+    // The bar is drawn at one height, and the height is the workspace's
+    // two-line build identity rather than the single row of controls every
+    // other screen comes to. Sized to that row the bar was 66px on the
+    // shipyard and 74px on a build, and the whole page under it moved as a
+    // Commander opened one (`canvas-extraction.md`, "One bar height, on every
+    // screen"; Commander request 2026-08-28).
+    //
+    // The bar carries its widest set on the workspace, and below the width
+    // that set needs it folds into the named menu rather than wrapping, so
+    // this holds at every layout profile and in both shipped languages. The
+    // wrap is still measured rather than assumed: at a doubled text size and
+    // at 400% zoom the bar does wrap, and it has to, or its own controls would
+    // be cut off (011/FR-011).
+    const banner = page.getByRole('banner');
+    const bar = async () =>
+      await banner.evaluate((node) => {
+        const style = getComputedStyle(node);
+        const box = node.getBoundingClientRect();
+        const groups = [...node.children]
+          .filter((child) => getComputedStyle(child).display !== 'none')
+          .map((child) => child.getBoundingClientRect());
+        // Whether the groups wrapped, read as the band they span against the
+        // tallest of them. Their `top` values differ on one row as well —
+        // the bar centres a 23px identity beside a 44px control — so a count
+        // of distinct tops would report every bar as wrapped.
+        const spanned =
+          Math.max(...groups.map((group) => group.bottom)) -
+          Math.min(...groups.map((group) => group.top));
+        const tallest = Math.max(...groups.map((group) => group.height));
+        return {
+          drawn: box.height,
+          floor: parseFloat(style.minBlockSize),
+          // What the bar spends on itself, which the identity inside it does
+          // not get: its own block padding and the amber rule that closes it.
+          chrome:
+            parseFloat(style.paddingBlockStart) +
+            parseFloat(style.paddingBlockEnd) +
+            parseFloat(style.borderBlockEndWidth),
+          wrapped: spanned > tallest + 1,
+        };
+      });
+
+    // A plain title is exactly the floor, at every width. This is the half
+    // that was 66px.
+    const shipyard = await bar();
+    expect(shipyard.wrapped).toBe(false);
+    expect(shipyard.drawn).toBe(shipyard.floor);
+
+    await page.goto('/ships/Anaconda');
+    await page.getByRole('button', { name: 'Build stock hull' }).click();
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+
+    // The tallest identity fits inside the same floor, so the bar never grows
+    // because a screen's own identity would not fit in it.
+    const workspace = await bar();
+    const identity = await page
+      .locator('.frame__identity')
+      .evaluate((node) => node.getBoundingClientRect().height);
+
+    expect(identity + workspace.chrome).toBeLessThanOrEqual(workspace.floor);
+
+    // And where the bar's controls fit on one row, opening a build moves
+    // nothing: the same bar, at the same height, over the same page.
+    if (!workspace.wrapped) {
+      expect(workspace.drawn).toBe(shipyard.drawn);
+      return;
+    }
+
+    // Where they do not, the bar is taller for the one reason a bar may be:
+    // its own controls took another row, which is the enlarged-text case this
+    // profile does not run at.
+    expect(workspace.drawn).toBeGreaterThan(shipyard.drawn);
   });
 
   test('sets every heading in tracked uppercase condensed', async ({ page }) => {
@@ -565,7 +693,7 @@ test.describe('the saved-build surface', () => {
             declared['link'] = ground;
           }
           if (/\.action-layer__link\[[^\]]*\]:hover$/.test(styled.selectorText)) {
-            declared['compactLink'] = ground;
+            declared['foldedLink'] = ground;
           }
           if (/^\.action\[[^\]]*\]:hover/.test(styled.selectorText)) {
             declared['button'] = ground;
@@ -585,9 +713,9 @@ test.describe('the saved-build surface', () => {
 
     expect(hoverGrounds['button']).toBeTruthy();
     expect(hoverGrounds['link']).toBe(hoverGrounds['button']);
-    // The same control in the compact menu, which is where a Commander reaches
+    // The same control in the folded bar's menu, which is where a Commander reaches
     // it at narrow widths and where the complaint was first made.
-    expect(hoverGrounds['compactLink']).toBe(hoverGrounds['button']);
+    expect(hoverGrounds['foldedLink']).toBe(hoverGrounds['button']);
   });
 });
 

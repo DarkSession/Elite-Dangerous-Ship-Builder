@@ -12,13 +12,13 @@ import type { VersionFact } from '../../ui/components/version-facts/version-fact
 import { HelpDialogStore } from './help-dialog.store';
 
 /**
- * The marker a licence line's link is cut out at.
+ * The marker a sentence's link is cut out at.
  *
  * A control character rather than a word: it has to be something no catalogue,
  * in any language, could contain by accident, and it never reaches the DOM
  * because every line is split on it before it is rendered.
  */
-const LICENCE_LINK_MARKER = '\u0000licence\u0000';
+const LINK_MARKER = '\u0000link\u0000';
 
 /**
  * The LICENCE section, as a reader meets it.
@@ -35,34 +35,34 @@ const LICENCE_LINK_MARKER = '\u0000licence\u0000';
  * reader whose interface is German should not be read it in a German voice.
  */
 export interface HelpLicenceView {
-  readonly index: readonly HelpLicenceIndexEntry[];
+  readonly index: readonly LinkedSentence[];
   readonly excerpt: string;
   readonly excerptLanguage: string;
 }
 
 /**
- * One line of the licence summary, and a stable identity to track it by.
+ * One sentence with at most one link inside it, and an identity to track it by.
  *
- * A line is a sentence with at most one link inside it, so it arrives already
- * cut into the three pieces a template needs: the words before the link, the
- * link itself, and the words after. The cut is made here rather than in the
- * template because it is a property of the translated sentence — where the
- * link sits in a German line is the translator's decision, not the layout's,
- * and a template that hard-coded "text, then link" would silently move it.
+ * It arrives already cut into the three pieces a template needs: the words
+ * before the link, the link itself, and the words after. The cut is made here
+ * rather than in the template because it is a property of the translated
+ * sentence — where the link sits in a German line is the translator's decision,
+ * not the layout's, and a template that hard-coded "text, then link" would
+ * silently move it.
  *
  * `link` is `null` for a line that names terms this repository cannot point at:
  * Frontier's media-usage rules are not a document with an address here, and
  * inventing one would be exactly the unevidenced claim FR-003 refuses.
  */
-export interface HelpLicenceIndexEntry {
+export interface LinkedSentence {
   readonly id: string;
   readonly before: string;
-  readonly link: HelpLicenceLink | null;
+  readonly link: HelpLink | null;
   readonly after: string;
 }
 
-/** The linked words inside one summary line, and where they go. */
-export interface HelpLicenceLink {
+/** The linked words inside one sentence, and where they go. */
+export interface HelpLink {
   /** The visible words. They name the destination, because it leaves the app. */
   readonly label: string;
   readonly href: string;
@@ -94,16 +94,13 @@ export interface HelpAboutView {
    */
   readonly maintainer: string;
   /**
-   * Where the game values come from, in one sentence.
+   * Where the source is, in one sentence with the destination inside it.
    *
-   * Feature 002's voice ruling of 2026-08-22 stopped some thirty
-   * Commander-facing strings naming the Almanac, on the grounds that the credit
-   * belongs to this feature and is made once per application. This sentence is
-   * that once. Withdrawing it, or moving it into a help topic that a later pass
-   * could withdraw, leaves the application crediting the Almanac nowhere
-   * (FR-008).
+   * Cut into three pieces the same way a licence line is, and for the same
+   * reason: where the link sits in a German sentence is the translator's
+   * decision rather than the layout's (FR-008).
    */
-  readonly provenance: string;
+  readonly source: LinkedSentence;
   readonly facts: readonly VersionFact[];
 }
 
@@ -185,7 +182,10 @@ export class HelpPresenter {
    */
   readonly #about = computed<HelpAboutView>(() => ({
     maintainer: this.#messages.message('help.maintainer'),
-    provenance: this.#messages.message('help.provenance'),
+    source: this.#linkedSentence('source', 'help.source', 'source', {
+      label: this.#messages.message('help.source.link'),
+      href: this.manifest.destinations.repositorySource.url,
+    }),
     facts: [
       {
         id: 'application',
@@ -261,16 +261,16 @@ export class HelpPresenter {
 
     return {
       index: [
-        this.#licenceLine('application', 'help.licence.index.application', {
+        this.#linkedSentence('application', 'help.licence.index.application', 'licence', {
           label: this.#messages.message('help.licence.link.application'),
           href: destinations.repositoryLicense.url,
         }),
-        this.#licenceLine('library', 'help.licence.index.library', {
+        this.#linkedSentence('library', 'help.licence.index.library', 'licence', {
           label: this.#messages.message('help.licence.link.library'),
           href: destinations.almanacLicense.url,
         }),
-        this.#licenceLine('gameData', 'help.licence.index.gameData', null),
-        this.#licenceLine('typefaces', 'help.licence.index.typefaces', null),
+        this.#linkedSentence('gameData', 'help.licence.index.gameData', 'licence', null),
+        this.#linkedSentence('typefaces', 'help.licence.index.typefaces', 'licence', null),
       ],
       excerpt: disclaimer.exactText,
       excerptLanguage: disclaimer.language,
@@ -278,9 +278,9 @@ export class HelpPresenter {
   });
 
   /**
-   * One summary line, cut around the link its own translation placed.
+   * One sentence, cut around the link its own translation placed.
    *
-   * The sentence is resolved with the marker below standing in for the link, so
+   * The sentence is resolved with the marker above standing in for the link, so
    * the split happens on a character sequence no catalogue contains rather than
    * on the link's own words — which a translator may legitimately repeat
    * elsewhere in the same line.
@@ -291,22 +291,28 @@ export class HelpPresenter {
    * reachable while the wording is wrong. The wording itself is a build-time
    * gate — `catalogueViolations` fails any locale whose interpolation variables
    * disagree with English — so this is the belt to that braces.
+   *
+   * `variable` is the placeholder the sentence writes the link as, because the
+   * two sentences that carry one name it for what it is: a licence line's
+   * `{{licence}}`, and the source line's `{{source}}`.
    */
-  #licenceLine(
+  #linkedSentence(
     id: string,
     key:
+      | 'help.source'
       | 'help.licence.index.application'
       | 'help.licence.index.library'
       | 'help.licence.index.gameData'
       | 'help.licence.index.typefaces',
-    link: HelpLicenceLink | null,
-  ): HelpLicenceIndexEntry {
+    variable: 'licence' | 'source',
+    link: HelpLink | null,
+  ): LinkedSentence {
     if (link === null) {
       return { id, before: this.#messages.message(key), link: null, after: '' };
     }
 
-    const resolved = this.#messages.message(key, { licence: LICENCE_LINK_MARKER });
-    const marker = resolved.indexOf(LICENCE_LINK_MARKER);
+    const resolved = this.#messages.message(key, { [variable]: LINK_MARKER });
+    const marker = resolved.indexOf(LINK_MARKER);
     if (marker === -1) {
       return { id, before: `${resolved} `, link, after: '' };
     }
@@ -315,7 +321,7 @@ export class HelpPresenter {
       id,
       before: resolved.slice(0, marker),
       link,
-      after: resolved.slice(marker + LICENCE_LINK_MARKER.length),
+      after: resolved.slice(marker + LINK_MARKER.length),
     };
   }
 
@@ -324,7 +330,7 @@ export class HelpPresenter {
    * would do for a reader who cannot see what it sits beside.
    *
    * The name is the accessible name at both widths and the visible words in the
-   * compact action layer; the mark is the reference's own `?`, drawn on the
+   * folded action layer; the mark is the reference's own `?`, drawn on the
    * wide bar in place of the words and hidden from a reader, who is told the
    * name instead.
    */

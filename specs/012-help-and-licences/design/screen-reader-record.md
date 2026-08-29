@@ -12,7 +12,7 @@ in its place, and — plainly — that no run has been performed.
 
 Feature 011 owns one shared protocol rather than one per feature, so a reader is asked to hear a
 whole application rather than a slice of one. This feature's steps are **step 17** of
-[`e2e/manual/screen-reader.protocol.md`](../../../e2e/manual/screen-reader.protocol.md), version 8,
+[`e2e/manual/screen-reader.protocol.md`](../../../e2e/manual/screen-reader.protocol.md), version 9,
 and its result rows are the "Help, licences and provenance" section of
 [`e2e/manual/results/screen-reader.md`](../../../e2e/manual/results/screen-reader.md).
 
@@ -27,13 +27,15 @@ Step 17 asks a reader to:
 4. walk the reference's own three sections in the reference's own order;
 5. hear each of the questions as a heading **under** the `FAQ` heading, each answer read with
    its own question;
-6. hear `ABOUT` read its purpose, its maintainer and its Almanac provenance as three sentences in
-   that order, and then exactly two identity facts, each as its own term and value, with nothing
-   said about what kind of build it is;
+6. hear `ABOUT` read its purpose, its maintainer and where its source is as three sentences in that
+   order, with the source sentence carrying a link announced by the site it reaches, and then
+   exactly two identity facts, each as its own term and value, with nothing said about what kind of
+   build it is;
 7. hear the licence summary as four separate claims and then the Frontier notice in the language it
    is actually in, with no sentence anywhere naming that language or the notice's source;
-8. find exactly one control in the whole modal — its close — and nothing announced as leaving the
-   application or as needing a network;
+8. find exactly one control in the whole modal — its close — and exactly three links, each
+   announced by the words on screen, with nothing else announced as leaving the application or as
+   needing a network;
 9. return to the control that opened it, over an unchanged capability.
 
 Three configurations: NVDA/Firefox on Windows, TalkBack/Chromium on an Android phone, and a tablet
@@ -63,11 +65,11 @@ in feature 011's ten Chromium and Firefox layout projects unless a line says oth
 | One dialog, announced by name            | exactly one `dialog[open]`, resolved by its own accessible name                                                                                                                                                              | same file, every journey                                                     |
 | Background unreachable                   | the layer is a native `dialog` opened with `showModal()`, asserted to match `:modal`                                                                                                                                         | same file, "keeps every state immediate and textual without motion"          |
 | Section order and heading nesting        | the three sections in the reference's order; each question a heading one level under the `FAQ` heading                                                                                                                       | same file, "nests the questions under the FAQ heading rather than beside it" |
-| Three sentences, then two identity facts | purpose, maintainer and provenance in that order ahead of the facts; exactly two facts, distinct terms, non-empty values, and no release wording anywhere in the view                                                        | same file, "which artifact a Commander is looking at"                        |
+| Three sentences, then two identity facts | purpose, maintainer and source in that order ahead of the facts; exactly two facts, distinct terms, non-empty values, and no release wording anywhere in the view                                                            | same file, "which artifact a Commander is looking at"                        |
 | Answers read with their questions        | every topic, once each, in the declared order, question and answer resolved from the active catalogue                                                                                                                        | same file, "the questions the modal answers"                                 |
 | Four summary claims, then the notice     | the four summary lines above a disclaimer byte-identical to a fresh generator extraction of root `LICENSE`                                                                                                                   | same file, "the one legal body the modal embeds"                             |
 | The notice in its own language           | the excerpt region carries `lang="en"` while the interface root is `de`                                                                                                                                                      | same file, "sweeps the modal in the other shipped locale"                    |
-| One control, nothing that leaves         | exactly one button in the modal, no `a[href]`, no popup, no request to any origin                                                                                                                                            | same file, "the modal offers no way out of the application"                  |
+| One control, three audited links         | exactly one button in the modal, exactly three `a[href]`, each from the audited manifest, no popup and no request to any origin                                                                                              | same file, "the three destinations the modal points at"                      |
 | Structure, names, roles, states          | axe over the closed background and every open state; heading order, target size, document overflow and clipping alongside it                                                                                                 | same file, "the floor beneath every open state"                              |
 | Return over an unchanged capability      | route, fragment, history length, build revision, selected slot and stored records all unchanged across open and close                                                                                                        | same file, "the one destination FR-002 requires"                             |
 

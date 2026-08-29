@@ -101,20 +101,22 @@ test.describe('help offline', () => {
     await expect(modal).toContainText(englishMessages['help.section.licence']);
     await expect(modal).toContainText(englishMessages['help.purpose']);
     await expect(modal).toContainText(englishMessages['help.maintainer']);
-    await expect(modal).toContainText(englishMessages['help.provenance']);
+    await expect(modal).toContainText(
+      englishMessages['help.source'].replace('{{source}}', englishMessages['help.source.link']),
+    );
     await expect(modal).toContainText(englishMessages['help.licence.link.application']);
     await expect(modal).toContainText(englishMessages['help.licence.link.library']);
     await expect(modal).toContainText(englishMessages['help.licence.index.gameData']);
     await expect(modal).toContainText(englishMessages['help.licence.index.typefaces']);
 
-    // And both licence links are drawn, with their addresses, on a visit that
-    // has no network at all. A link is an address rather than a request: what
-    // needs a connection is following one, and nothing about drawing it waits,
+    // And all three links are drawn, with their addresses, on a visit that has
+    // no network at all. A link is an address rather than a request: what needs
+    // a connection is following one, and nothing about drawing it waits,
     // fetches or degrades. Which is the whole distinction FR-001 turns on —
     // the modal is complete offline, and one of the things it is complete
-    // about is where the terms it summarises can be read.
+    // about is where the terms it summarises, and the source, can be read.
     const links = modal.getByRole('link');
-    await expect(links).toHaveCount(2);
+    await expect(links).toHaveCount(3);
     for (const link of await links.all()) {
       expect(await link.getAttribute('href')).toMatch(/^https:\/\/github\.com\//);
     }

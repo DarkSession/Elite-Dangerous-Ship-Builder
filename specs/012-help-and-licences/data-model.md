@@ -67,15 +67,14 @@ Validation:
 
 ## ExternalDestination
 
-An audited destination, verified at build time and rendered nowhere. FR-003's in-modal link is
-withdrawn: the reference draws no control in the modal but the address the source distribution's
-terms live at is still validated, because a wrong one is still a release failure.
+An audited destination, verified at build time and offered inside the sentence that names it. There
+are three: two complete licence documents, and this application's own source.
 
 ```text
 ExternalDestination {
-  id: "repositoryLicense"
+  id: "repositoryLicense" | "almanacLicense" | "repositorySource"
   url: HTTPS URL
-  purpose: "completeLegalTerms"
+  purpose: "completeLegalTerms" | "sourceCode"
   leavesApplication: true
   mayRequireNetwork: true
 }
@@ -83,12 +82,16 @@ ExternalDestination {
 
 Validation:
 
-- `repositoryLicense` is the exact query/fragment-free GitHub URL for this repository's `LICENSE`
-  on `main` and is the only destination of any kind. There is exactly one.
-- The URL cannot receive a current route, build fragment, SLEF, hull/module identity, search
-  parameter or local data.
-- Nothing renders it. There is no presenter projection, no warning text and no anchor; the entity
-  exists so generation can fail on a wrong address.
+- each `url` is an exact query/fragment-free GitHub URL, audited against the path and the purpose
+  its own id declares: `repositoryLicense` is this repository's `LICENSE` on `main`,
+  `almanacLicense` is the Almanac repository's `LICENSE` on `main`, and `repositorySource` is this
+  repository's own page. A URL offered under another id, or under a purpose it was not audited for,
+  fails generation;
+- no URL can receive a current route, build fragment, SLEF, hull/module identity, search parameter
+  or local data;
+- what renders each one is a `LinkedSentence`: the licence lines for the two licence documents, and
+  `ABOUT`'s source line for the source. There is no control, no warning text and no fourth
+  destination.
 
 ## SourceDistributionArtifact
 
@@ -117,15 +120,17 @@ HelpManifestV1 {
   disclaimer: FrontierDisclaimer
   destinations: {
     repositoryLicense: ExternalDestination
+    almanacLicense: ExternalDestination
+    repositorySource: ExternalDestination
   }
 }
 ```
 
 Invariants:
 
-- Exactly one disclaimer and one destination exist.
-- `repositoryLicense` is the sole destination, its purpose is `completeLegalTerms`, and it is
-  verification evidence rather than a browser-facing value.
+- Exactly one disclaimer and exactly three destinations exist.
+- Each destination carries its own id and its own purpose: `completeLegalTerms` for the two licence
+  documents, `sourceCode` for the source. A key nobody expects is a navigation nobody reviewed.
 - Every value is deterministic for the same repository, installed package and build evidence.
 - No absolute path, branch, account, person, machine, timestamp, random value, build payload or
   translated copy enters the manifest.
@@ -222,23 +227,27 @@ HelpDialogViewModel {
   title: LocalisedText
   purpose: LocalisedText
   sections: { about: LocalisedText; faq: LocalisedText; licence: LocalisedText }
-  about: { maintainer: LocalisedText; provenance: LocalisedText; facts: VersionFact[2] }
+  about: { maintainer: LocalisedText; source: LinkedSentence; facts: VersionFact[2] }
   topics: LocalisedHelpTopic[2]
   licence: {
-    index: { id: string; before: string; link: HelpLicenceLink | null; after: string }[4]
+    index: LinkedSentence[4]
     excerpt: string
     excerptLanguage: string
   }
 }
+
+LinkedSentence { id: string; before: string; link: HelpLink | null; after: string }
+HelpLink { label: LocalisedText; href: HTTPS URL }
 ```
 
 Rules:
 
 - The three section headings are the reference's own `ABOUT`, `FAQ` and `LICENCE`, in that order.
-- `purpose`, `about.maintainer` and `about.provenance` are the three sentences of that section, in
-  that order, ahead of the facts. `purpose` sits beside `about` rather than inside it because it is
-  what the application is, which the title row and the reference both read before the section
-  begins; the other two are the section's own.
+- `purpose`, `about.maintainer` and `about.source` are the three sentences of that section, in that
+  order, ahead of the facts. `purpose` sits beside `about` rather than inside it because it is what
+  the application is, which the title row and the reference both read before the section begins; the
+  other two are the section's own. `about.source` is a `LinkedSentence` because it carries the
+  audited source destination inside its own words.
 - `about.facts` is exactly the application and Almanac versions, each with its own label. There is
   no third fact: build kind and build identifier are build evidence, not content.
 - `topics` is the two of FR-010 in their declared order, each already resolved to a question and
@@ -246,12 +255,14 @@ Rules:
 - `licence.index` is the summary of what covers what, resolved from the catalogue because it is
   application-owned text. Four lines, not the reference's three: the reference draws application,
   game data and typefaces, and the bundled Almanac's own licence is a fourth this application owes
-  and the reference had no reason to. Each line arrives already cut around the link its own
+  and the reference had no reason to. That fourth line names the Almanac, which is where the
+  once-per-application package credit is made. Each line arrives already cut around the link its own
   translation placed, so the template never parses a sentence.
 - The excerpt is passed unchanged to a text-only region carrying `excerptLanguage` as `lang`. It is
   never a catalogue entry, because a translated legal notice is not the notice.
-- The view model has no action of any kind, no destination and no external navigation. Closing is
-  the frame's, not the content's.
+- The view model has no action of any kind. Its only navigation out is the three audited
+  destinations, each carried inside a `LinkedSentence` rather than by a control of its own. Closing
+  is the frame's, not the content's.
 - There is no runtime loading, empty, missing-artifact or legal-error view model. Those conditions
   fail generation/build.
 

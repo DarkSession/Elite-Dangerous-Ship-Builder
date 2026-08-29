@@ -17,7 +17,7 @@ The generator reads only local installed/repository artifacts plus explicit rele
 | resolved Almanac `THIRD_PARTY_NOTICES.md`                | package notices mirrored in source distribution                |
 | `legal/almanac/LICENSE`                                  | tracked mirror of installed package licence                    |
 | `legal/almanac/THIRD_PARTY_NOTICES.md`                   | tracked mirror of installed package notices                    |
-| audited repository-licence URL constant                  | sole complete-legal-terms destination                          |
+| three audited URL constants                              | the two complete-legal-terms destinations and the source one   |
 | release-workflow evidence or non-release CI/git evidence | build classification and identifier                            |
 
 The Almanac root is located from
@@ -52,12 +52,21 @@ https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/LICENSE
 ```
 
 It must parse as HTTPS with host `github.com`, the expected repository/ref/path, and no credentials,
-port, query or fragment. It is tagged `completeLegalTerms`, and it is the **only** destination the
-manifest carries.
+port, query or fragment. It is tagged `completeLegalTerms`.
+
+Two more are audited the same way and against their own expected paths: the bundled library's
+`LICENSE`, also tagged `completeLegalTerms`, and this repository's own page, tagged `sourceCode`.
+Each id is checked against the path **and** the purpose it declares, so a page cannot be published
+as terms it is not.
+
+```text
+https://github.com/DarkSession/Elite-Dangerous-Almanac/blob/main/LICENSE
+https://github.com/DarkSession/Elite-Dangerous-Ship-Builder
+```
 
 No issue-tracker destination is emitted. FR-009 is withdrawn, so the installed package's `bugs.url`
-is not read and cannot become a second navigation. Any missing, changed or unsafe licence destination
-fails generation so a repository change receives review rather than silently widening navigation.
+is not read and cannot become a fourth navigation. Any missing, changed or unsafe destination fails
+generation so a repository change receives review rather than silently widening navigation.
 
 ## Build identity
 
@@ -174,7 +183,7 @@ HelpManifestV1 {
   build: BuildIdentity
   almanac: { packageName, version }
   disclaimer: { documentId, source, language, exactText, byteLength, sha256 }
-  destinations: { repositoryLicense }
+  destinations: { repositoryLicense, almanacLicense, repositorySource }
 }
 ```
 
@@ -218,8 +227,10 @@ Generation/check/release fails with a source-specific diagnostic when:
 - the installed package name is not `@elite-dangerous-almanac/core`, or either version is empty;
 - an installed legal artifact differs by one byte from its source-distribution mirror;
 - root `LICENSE` no longer distinguishes application MIT rights from package artwork/game data;
-- the external destination is absent, unexpected, non-HTTPS or contains forbidden URL parts;
-- more or fewer than one `completeLegalTerms` destination would be emitted;
+- any external destination is absent, unexpected, non-HTTPS or contains forbidden URL parts, or
+  carries a purpose it was not audited for;
+- other than two `completeLegalTerms` destinations and one `sourceCode` destination would be
+  emitted;
 - a declared release workflow has missing/mismatched/placeholder evidence, or a non-release ID is
   missing/unsafe;
 - generated output contains an absolute path, personal/environment identifier, build data or an

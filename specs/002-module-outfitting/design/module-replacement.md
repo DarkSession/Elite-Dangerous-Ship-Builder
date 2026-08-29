@@ -70,14 +70,19 @@ manifest as one accordion. It draws `#fit-table` as
 `grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, with:
 
 - **column 1, row 2** — the family rail: every family in package order, one row each carrying the
-  family's name and its choice count in a chip, bounded at `max-height: 470px` and scrolling on its
+  family's name and its choice count in a chip, bounded at the pane height below and scrolling on its
   own. The selected row takes the amber left rail (`border-left: 3px solid var(--amber)`) and the
   amber gradient ground, and the others take `var(--panel-2)` with a transparent border in the same
   place. **There is no caret**: `wireFamilies`' rail branch keeps its `.fam-car` update behind a
   null check, and the revised markup carries none;
 - **column 2, row 1** — the column head, over the pane alone;
 - **column 2, row 2** — the selected family's rows, `border-left: 1px solid var(--amber-a16)`,
-  bounded at the same `max-height: 470px` and scrolling on its own.
+  bounded at the same height and scrolling on its own.
+
+**The pane height is 428px, amended 2026-08-28 (Commander request).** The canvas draws 470px. One
+manifest row comes off it, the same row the fitting panel's floor gives up, because the panel and the
+pane are the same list at two widths and the panel is about a tenth shorter for the pair
+(`design/outfitting-workspace.md`, "Seven rows, and the fitting panel about a tenth shorter").
 
 **The rail's 216px is a floor and a share, amended 2026-08-26 (Commander request).** It is a quarter
 of the canvas's own 862px centre column, and held at that one number it stopped being a quarter the
@@ -93,7 +98,7 @@ selected at all times, and the pane is never empty.
 
 **The rail scrolls to the family it was told to select. Ruled 2026-08-27 (Commander request).** The
 pane already scrolled: opening a fitted mount brought the module in the mount to the middle of the
-rows. The rail did not. Its own `max-height: 470px` holds about ten of the seventy-seven families, so
+rows. The rail did not. Its own bound holds about nine of the seventy-seven families, so
 selecting `Shield Generators` for a mount that carries one changed every row in the pane while the
 rail went on showing `Armour` through `Bulkheads` — the answer was on screen and the question was
 not, and the seam between them was the one control that says which family is being read.
@@ -105,7 +110,7 @@ under the press that made it, which is the fault above drawn in the other direct
 
 **Corrected 2026-08-27: the rule is about who, not about where.** It was first written as "scroll it
 unless the row is already in the box", on the reading that a Commander pressing a row must be looking
-at it. They need not be: the rail is a 470px box of 44px rows, so the row at either edge is routinely
+at it. They need not be: the rail is a bounded box of 44px rows, so the row at either edge is routinely
 clipped, and pressing a clipped row is the ordinary case rather than the awkward one. The component
 records its own press instead and the reveal weighs that, which is the rule FR-021 and SC-007 state.
 
@@ -321,7 +326,7 @@ width, and the chooser takes the whole of it as a layer.
 **Both scrollers keep their rows' own height.** A bounded flex column gives its
 items' height up before it scrolls, and the rail is exactly that. Reading the
 screen in German is what showed it: `Unterflächenverdrängungsraketen` wraps to
-three lines, seventeen families no longer fit in the canvas's 470px, and every
+three lines, seventeen families no longer fit in the pane's own bound, and every
 row was squeezed until the names printed over one another. A scroller is what a
 list does when it has more than it can show; shrinking its rows is not.
 
@@ -380,7 +385,7 @@ ground. The ledger's rail already states this rule in its own stylesheet; the ma
 the engineering editor's now state it too.
 
 Two dozen pixels of that document survive it, and are not this: at that viewport the middle column
-has 760 px for plates that ask for 349 and a bench that will not go under its declared 26rem
+has 760 px for plates that ask for 349 and a bench that will not go under its own declared 26rem
 minimum. That is the column being asked to hold more than it has, which is a composition question
 and not a clipping one.
 

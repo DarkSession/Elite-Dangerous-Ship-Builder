@@ -11,7 +11,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
  * The shell publishes no actions of its own; capability features supply them.
  */
 
-/** Opens the compact action layer if the wanted action is not already visible. */
+/** Opens the folded action layer if the wanted action is not already visible. */
 export async function reachShellAction(page: Page, name: RegExp): Promise<void> {
   const action = page.getByRole('button', { name });
 
@@ -26,7 +26,7 @@ export async function reachShellAction(page: Page, name: RegExp): Promise<void> 
  * Follows one of the screens the bar offers, at whichever width.
  *
  * Canvas 1c puts them on the bar's trailing edge; canvas 1d puts them in the
- * same `⋮` menu as the actions, because the compact bar is one row. Same list,
+ * same `⋮` menu as the actions, because the folded bar is one row. Same list,
  * two placements, and a journey knows only which screen it wants.
  */
 export async function reachShellLink(page: Page, name: RegExp | string): Promise<void> {
@@ -40,7 +40,7 @@ export async function reachShellLink(page: Page, name: RegExp | string): Promise
 }
 
 /**
- * Opens the compact menu.
+ * Opens the folded bar's menu.
  *
  * The trigger carries visible text rather than the reference's unlabelled
  * ellipsis, so it is found by name like everything else.

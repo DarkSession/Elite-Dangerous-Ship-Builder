@@ -32,7 +32,7 @@ Expected:
 - the extracted payload is non-empty and its byte count/SHA-256 match generated runtime text;
 - application and Almanac versions are distinct manifest facts;
 - the repository `LICENSE` destination matches its exact allowlist and contains no query/fragment,
-  and it is the only destination emitted;
+  and each of the three destinations emitted matches its own allowlisted address and purpose;
 - installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` exactly equal tracked
   `legal/almanac/` mirrors.
 
@@ -112,7 +112,7 @@ pnpm start
 ```
 
 From a no-build capability, record pathname/query/fragment/history length, open Help · About from the
-frame, read it and close it. Repeat from an active build, from the compact action layer, from hull
+frame, read it and close it. Repeat from an active build, from the folded action layer, from hull
 detail (package artwork) and from the outfitting ledger (package values). Confirm that none of those
 surfaces carries a help control of its own.
 
@@ -120,13 +120,13 @@ Expected:
 
 - exactly one labelled modal appears above the unchanged capability;
 - the URL, history length, build revision, selected capability/slot and stored records do not change;
-- the wide action and the compact action-layer item reach the same single modal;
+- the wide action and the folded action-layer item reach the same single modal;
 - close returns to the same underlying state; no focus/keyboard behavior is asserted;
 - no route chunk, help file, legal file or cross-origin request occurs on open;
 - SC-005: at the mobile viewport under 4× CPU slowdown, the first complete frame of the
   already-loaded modal is presented within 100 ms of activation.
 
-## 4. Validate accepted help and provenance
+## 4. Validate accepted help and identity
 
 Confirm the modal contains every topic from
 [contracts/help-navigation.md](./contracts/help-navigation.md): browser persistence/clearing and
@@ -139,11 +139,12 @@ Expected:
 - every topic matches accepted current behavior;
 - no reference-only import promise appears;
 - no answer says partial engineering rolls are retained;
-- the `ABOUT` provenance sentence says the bundled Almanac supplies the catalogue, the checks and the
-  calculations and that this application neither maintains nor corrects those game values — this is
-  where the once-per-application Almanac credit lives;
-- `ABOUT` carries the purpose sentence, the maintainer sentence, the provenance sentence and the two
+- the `ABOUT` source sentence says where the application's source is published, and its link is the
+  audited source destination read from the generated manifest;
+- `ABOUT` carries the purpose sentence, the maintainer sentence, the source sentence and the two
   version facts, in that order, and nothing else;
+- the once-per-application Almanac credit is the licence summary's library line, which names the
+  bundled library's terms and links them;
 - nothing in the modal makes a live-game/live-catalogue currency claim;
 - no issue-tracker, support or defect-reporting action appears anywhere in the modal.
 
@@ -162,19 +163,22 @@ Expected:
   property of the text rather than a claim about it;
 - no complete MIT licence, Almanac licence, third-party notice or second legal body is embedded.
 
-## 6. Verify the modal offers no way out of the application
+## 6. Verify the three ways out, and that nothing else leaves
 
 Use Playwright interception rather than making internet requests. Open the modal in every state and
 inspect its subtree.
 
 Expected:
 
-- the modal contains no `a[href]`, no `target="_blank"`, no `form` and nothing that navigates;
-- no request or popup targets GitHub, or any other origin, at any point;
-- the only control the modal draws is its close, which is the reference's own;
-- the repository-`LICENSE` address is still validated by the generator — a wrong address for the
-  terms the source distribution carries is still a release failure — and is rendered nowhere. Assert
-  it by reading the generated manifest, not the screen.
+- the modal contains exactly three `a[href]`, in reading order: `ABOUT`'s source link, then the two
+  licence links. Each `href` is the audited destination from the generated manifest, read from the
+  generator rather than typed into the assertion;
+- each link carries `target="_blank"` and `rel="noopener noreferrer"`, names its destination in its
+  own visible words, and draws no address as text;
+- the modal contains no `form` and nothing else that navigates, and the only control it draws is its
+  close, which is the reference's own;
+- drawing them costs nothing: no request or popup targets GitHub, or any other origin, at any
+  point, and the document declares no `preconnect` or `prefetch`.
 
 ## 7. Verify initial-load and offline behavior
 
@@ -187,7 +191,8 @@ Expected:
 - both topics, all three `ABOUT` sentences, both version facts, the licence summary and the exact
   disclaimer are present;
 - opening/reading/closing causes no request and has no loading/error/stale state;
-- there is nothing to follow: the modal has no external action offline or online;
+- all three links are drawn with their addresses offline: a link is an address rather than a
+  request, and only following one needs a network;
 - uncached package artwork may be temporarily absent under its owning contract, while help remains
   complete.
 

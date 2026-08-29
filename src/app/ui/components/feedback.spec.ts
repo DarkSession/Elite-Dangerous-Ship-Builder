@@ -182,7 +182,7 @@ describe('AppFrame', () => {
   });
 
   it('gives every action visible text in both compositions', () => {
-    // The frame renders the wide row and the compact layer together and lets a
+    // The frame renders the wide row and the folded layer together and lets a
     // media query present one of them, so neither composition needs a viewport
     // measurement taken in TypeScript. A unit test has no stylesheet, so both
     // are in the DOM here — which is exactly what makes this the right place to
@@ -205,7 +205,7 @@ describe('AppFrame', () => {
     );
   });
 
-  it('closes the compact action layer when one of its actions is taken', () => {
+  it('closes the folded action layer when one of its actions is taken', () => {
     const fixture = renderComponent(AppFrame, { actions: [{ id: 'save', label: 'Save' }] });
     const emitted: string[] = [];
     fixture.componentInstance.actionSelected.subscribe((id) => emitted.push(id));

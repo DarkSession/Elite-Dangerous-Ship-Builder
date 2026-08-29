@@ -16,6 +16,27 @@ $mode-compact-max: 47.9375rem; // below this, one semantic flow
 $mode-medium-min: 48rem; // two regions where relationships stay legible
 $mode-wide-min: 64rem; // master-detail or multi-region workspace
 
+// Where the command bar folds its own controls into the named menu.
+//
+// Its own step, because it is the bar's content that decides it and not the
+// page's. The workspace's bar carries the widest set the application has: six
+// actions, a saved-build chip and a two-line build identity. Where that set
+// does not fit on a row the bar wrapped to two on a build while the shipyard's
+// stayed at one, and the whole page under it moved as a Commander opened a
+// build (Commander request 2026-08-28).
+//
+// The figure is what the **widest shipped language** needs, not what English
+// needs. German asks for 1070px of controls against English's 841, so a step
+// chosen from English would leave a German bar wrapping at exactly the widths
+// this exists to fix — a breakpoint that only works in one language is not a
+// breakpoint (constitution VI). Measured at 1152, where the German bar first
+// draws its row whole.
+//
+// The fold is canvas 1d's own composition — one row, everything else behind a
+// single named control — applied at the width the wide row stops fitting rather
+// than at a device label.
+$mode-bar-folded-max: 71.9375rem;
+
 // Container sizes for component-level composition.
 $container-compact-max: 23.9375rem;
 // The reference fits two metric cells into a 340px rail, so a container step
@@ -26,6 +47,14 @@ $container-wide-min: 40rem;
 
 @mixin compact {
   @media (max-width: #{$mode-compact-max}) {
+    @content;
+  }
+}
+
+// The command bar's own fold. Only the bar composes at this step; every other
+// region takes the three modes above.
+@mixin bar-folded {
+  @media (max-width: #{$mode-bar-folded-max}) {
     @content;
   }
 }

@@ -53,7 +53,9 @@ describe('HelpPresenter', () => {
       ]),
       ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       view.about.maintainer,
-      view.about.provenance,
+      view.about.source.before,
+      view.about.source.after,
+      ...(view.about.source.link === null ? [] : [view.about.source.link.label]),
       ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
     ];
 
@@ -124,7 +126,8 @@ describe('HelpPresenter', () => {
       const everything = [
         view.purpose,
         view.about.maintainer,
-        view.about.provenance,
+        view.about.source.before,
+        view.about.source.after,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
       ].join(' ');
 
@@ -137,7 +140,8 @@ describe('HelpPresenter', () => {
       const everything = [
         view.purpose,
         view.about.maintainer,
-        view.about.provenance,
+        view.about.source.before,
+        view.about.source.after,
         ...view.about.facts.flatMap((fact) => [fact.term, fact.value]),
         ...view.topics.flatMap((topic) => [topic.question, topic.answer]),
       ].join(' ');
@@ -146,25 +150,45 @@ describe('HelpPresenter', () => {
     });
 
     // The once-per-application Almanac credit feature 002's voice ruling put in
-    // this feature. It lived in a FAQ answer until that answer was withdrawn;
-    // it is `ABOUT` prose again, and around thirty strings elsewhere say
-    // nothing about the package because this sentence does (FR-008).
-    it('credits the bundled Almanac for the catalogue, the checks and the calculations', () => {
-      const provenance = presenter().view().about.provenance;
+    // this feature. It is the licence summary's library line: the line names
+    // the bundled library and links its terms, and around thirty strings
+    // elsewhere say nothing about the package because this one does
+    // (FR-003, FR-008).
+    it('credits the bundled library by name in the line that gives its terms', () => {
+      const library = presenter()
+        .view()
+        .licence.index.find((entry) => entry.id === 'library');
 
-      expect(provenance).toMatch(/almanac/i);
-      expect(provenance).toBe(englishMessages['help.provenance']);
+      expect(`${library?.before}${library?.after}`).toMatch(/almanac/i);
+      expect(library?.link?.href).toBe(HELP_MANIFEST.destinations.almanacLicense.url);
+    });
+
+    // Where the source is, as one sentence with the destination inside it. The
+    // link comes from the audited manifest rather than from a string typed
+    // here, and the sentence is cut at the place its own translation put the
+    // link (FR-003, FR-008).
+    it('offers this application’s own source, from the audited destination', () => {
+      const source = presenter().view().about.source;
+
+      expect(source.link?.href).toBe(HELP_MANIFEST.destinations.repositorySource.url);
+      expect(source.link?.label).toBe(englishMessages['help.source.link']);
+      expect(`${source.before}${source.link?.label ?? ''}${source.after}`).toBe(
+        englishMessages['help.source'].replace('{{source}}', englishMessages['help.source.link']),
+      );
     });
 
     it('names who maintains the application, in its own sentence', () => {
-      // Three sentences from three keys, and the presenter's whole job here is
-      // putting each in its own field. A length check would pass with all three
-      // resolving to the same string.
+      // Two sentences from two keys, and the presenter's whole job here is
+      // putting each in its own field. Asserting the resolved key rather than a
+      // length, because a length check would pass with both fields wired to the
+      // same message.
       const view = presenter().view();
 
       expect(view.about.maintainer).toBe(englishMessages['help.maintainer']);
+      expect(view.about.source.before).toBe(
+        englishMessages['help.source'].slice(0, englishMessages['help.source'].indexOf('{{')),
+      );
       expect(view.about.maintainer).not.toBe(view.purpose);
-      expect(view.about.maintainer).not.toBe(view.about.provenance);
     });
   });
 
@@ -288,18 +312,21 @@ describe('HelpPresenter', () => {
       expect([...hrefs.keys()].sort()).toEqual(['application', 'library']);
     });
 
-    it('offers no destination beyond the two licences, and no bare URL as text', () => {
-      const index = presenter().view().licence.index;
+    it('links two of the summary lines and no more, and draws no URL as text', () => {
+      const view = presenter().view();
+      const index = view.licence.index;
 
-      // Two links, both complete legal terms. An issue tracker, a homepage or a
-      // docs site reaching this list would be a navigation nobody accepted.
+      // Two links in the summary, both complete legal terms. An issue tracker
+      // or a docs site reaching this list would be a navigation nobody
+      // accepted; the source is `ABOUT`'s sentence and is not in this list.
       const links = index.filter((entry) => entry.link !== null);
       expect(links).toHaveLength(2);
 
-      // And no URL is drawn as words. A Commander reads what the destination
-      // is, not where it is: an address in the visible text is a thing to
-      // mistype, and it would wrap the line sideways at 200% text.
-      for (const entry of index) {
+      // And no URL is drawn as words, in any sentence that carries a link. A
+      // Commander reads what the destination is, not where it is: an address in
+      // the visible text is a thing to mistype, and it would wrap the line
+      // sideways at 200% text.
+      for (const entry of [...index, view.about.source]) {
         expect(entry.before).not.toMatch(/https?:/);
         expect(entry.after).not.toMatch(/https?:/);
         expect(entry.link?.label ?? '').not.toMatch(/https?:/);

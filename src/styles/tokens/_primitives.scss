@@ -344,11 +344,26 @@
   // the same reason as the ledger's.
   --edsb-measure-status-rail: 19.125rem;
 
-  // The command bar: one row of controls at the 44px target baseline inside the
-  // bar's own block padding. The canvas draws 56px around 30px chips; the extra
-  // is the target floor, which is a rule about the product rather than a
-  // measurement taken off the drawing.
-  --edsb-measure-bar-height: 4.125rem;
+  // The command bar, and the one height it is drawn at on every screen.
+  //
+  // The canvas draws 56px around 30px chips; the extra is the target floor,
+  // which is a rule about the product rather than a measurement taken off the
+  // drawing. The figure is the tallest identity the bar carries — the
+  // workspace's two-line block of a build name over its hull and ID plate —
+  // inside the bar's own block padding and the amber rule that closes it, which
+  // the border box counts. Sized to the single row of controls every other
+  // screen comes to instead, the bar stood 66px on the shipyard and 74px on a
+  // build, and the whole page under it moved as a Commander opened one
+  // (Commander request 2026-08-28).
+  //
+  // The bar's own controls have to fit on a row for that to hold, which is what
+  // `$mode-bar-folded-max` is for: below the width the widest shipped language
+  // needs for them, the bar folds them into its named menu rather than wrapping.
+  //
+  // It stays a floor rather than a fixed height. At a doubled text size and at
+  // 400% zoom the bar still wraps and still grows, because a bar that could not
+  // would cut its own controls off (011/FR-011).
+  --edsb-measure-bar-height: 4.625rem;
 
   // What a sticky bar has to overhang the edge it is frozen against by so
   // nothing prints above it. The edge is placed at a fractional device pixel
@@ -448,7 +463,7 @@
 
   // Canvas 1c's offence panel.
   //
-  // The stacked damage bar is 22px — a band, not the 66px command bar the panel
+  // The stacked damage bar is 22px — a band, not the command bar the panel
   // reached for before this measure existed. The label-bar-figure rows below it
   // set their label at 104px and their figure at 62px, and the weapon table's
   // four figure columns at 46, 44, 62 and 60px — narrowed to 42, 30 and 56 where
@@ -547,16 +562,21 @@
   // glimpse of a list rather than a list (Commander request 2026-08-26). So
   // each states a floor.
   //
-  // **Raised 2026-08-27: 18rem to 26rem.** The canvas's own 292px is the head,
-  // the manifest's column rule and five rows, and on the screens this is drawn
-  // on it was the floor doing the work rather than the share — five rows of a
-  // 478-choice manifest is a list a Commander pages through rather than reads.
-  // 26rem is eight rows over the same head, rule and foot, and it is affordable
-  // now because the editor below no longer takes its height out of the same
+  // The canvas's own 292px is the head, the manifest's column rule and five
+  // rows, and on the screens this is drawn on it is the floor doing the work
+  // rather than the share — five rows of a 478-choice manifest is a list a
+  // Commander pages through rather than reads.
+  //
+  // Seven rows over that same head, rule and foot. Any of it is affordable
+  // only because the editor below no longer takes its height out of the same
   // fixed bench: the workspace column releases while a mount is selected and
-  // the page carries what will not fit (Commander request 2026-08-27;
-  // `design/outfitting-workspace.md`, "Five rows is still a glimpse").
-  --edsb-measure-fitting-panel: 26rem;
+  // the page carries what will not fit. Seven rather than more, because the
+  // panel and the pane it holds are the tallest thing on the workspace, and
+  // the row this gives up is what a Commander was scrolling past to reach the
+  // anatomy and the rail under them (Commander requests 2026-08-27 and
+  // 2026-08-28; `design/outfitting-workspace.md`, "Five rows is still a
+  // glimpse" and "Seven rows, and the fitting panel about a tenth shorter").
+  --edsb-measure-fitting-panel: 23.375rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It
   // is now only a floor — nothing measures a share against it — and it is what
@@ -582,7 +602,7 @@
 
   // The 2026-08-25 revision of canvas 1c's manifest: `grid-template-columns:
   // 216px minmax(0, 1fr); column-gap: 14px` for the rail beside its pane, both
-  // bounded at `max-height: 470px`, and `2.6fr 70px 150px` for the three
+  // bounded at one `max-height`, and `2.6fr 70px 150px` for the three
   // columns a row is drawn in inside that pane. The rail and the two fixed
   // columns are the canvas's own pixels; the name takes what is left, as its
   // `fr` says, because there is nothing left over for it to run away with once
@@ -601,7 +621,11 @@
   --edsb-measure-family-rail-max: 20rem;
   --edsb-measure-family-rail-share: 26%;
   --edsb-measure-family-gap: 0.875rem;
-  --edsb-measure-manifest-pane: 29.375rem;
+  // What the rail and the pane are bounded at: the canvas's 470px, less the same
+  // one row the fitting panel's floor above gives up. The panel and the pane
+  // are the same list at two widths, so a row comes off both of them or
+  // neither (Commander request 2026-08-28).
+  --edsb-measure-manifest-pane: 26.75rem;
   --edsb-measure-candidate-class: 4.375rem;
   --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
@@ -618,7 +642,7 @@
   --edsb-measure-defence-resist: 2.875rem; // 46
   --edsb-measure-defence-value: 3.5rem; //    56
 
-  // The compact action menu, 196px in canvas 1d, and the width it may grow to
+  // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
   --edsb-measure-menu-row: 2.875rem;
   --edsb-measure-menu-min: 12.25rem;
@@ -636,7 +660,7 @@
 
   // The list down the leading edge of a two-region layer: 236px in canvas 1c's
   // export dialog, where the formats stand beside the payload rather than above
-  // it. Narrower than the compact action menu, because it holds a tracked title
+  // it. Narrower than the folded action menu, because it holds a tracked title
   // over a short description and nothing else.
   --edsb-measure-layer-aside: 14.75rem;
 }

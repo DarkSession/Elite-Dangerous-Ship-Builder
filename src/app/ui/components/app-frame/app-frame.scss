@@ -24,10 +24,10 @@
   z-index: 2;
   flex-wrap: wrap;
   padding-block: var(--edsb-space-control-block);
-  // The bar's own floor: one row of controls at the target baseline. What the
-  // regions below clear is `--edsb-layout-bar-height`, which is this bar as it
-  // was actually drawn — a separate token on purpose, because a bar sized from
-  // its own measurement could never shrink again (token layer,
+  // The bar's own floor: the one height it is drawn at on every screen. What
+  // the regions below clear is `--edsb-layout-bar-height`, which is this bar as
+  // it was actually drawn — a separate token on purpose, because a bar sized
+  // from its own measurement could never shrink again (token layer,
   // `--edsb-layout-bar-floor`).
   min-block-size: var(--edsb-layout-bar-floor);
 }
@@ -65,8 +65,9 @@
 // Every canvas builds the bar from exactly two groups: the screen's identity on
 // the leading edge and everything it offers on the trailing one (canvas 1a's
 // `OPEN SAVED BUILD · IMPORT · ?`, canvas 1c's `UNDO · REDO · EXPORT · SAVE ·
-// ?`). Nothing is drawn between them, so the identity takes the slack and the
-// navigation and the actions abut on the trailing edge as one row of controls.
+// ?`). Nothing is drawn between them, so the identity takes the slack and
+// whatever the trailing edge holds — the navigation and the actions where the
+// bar is drawn wide, the one named trigger where it is folded — abuts there.
 .frame__identity {
   @include layout.wrapping-row(var(--edsb-space-inline));
 
@@ -84,25 +85,31 @@
   @include layout.command-flag;
 }
 
-// The same mark, as the way back to the shipyard. It is a link, so it takes a
-// focus ring, a pointer and a target of its own.
+// The way back to the shipyard: a link around the mark, never the mark itself.
 //
 // The mark is 26 x 23 — the size the canvas draws it, and under the 24-pixel
 // floor on one axis, let alone this feature's 44-pixel baseline. A control that
 // stands on its own is held to the baseline, so the target is the box around the
 // mark rather than the mark: the drawing is unchanged and the press is the size
 // it should be (011/FR-012, reported 2026-08-26).
-.frame__flag--home {
+//
+// The box around it, because a minimum on the mark's own box is not a box
+// around anything. `min-inline-size` beats the declared `inline-size`, the
+// wedge and its underbar are cut into that box's own layers at full width, and
+// the insignia was drawn 44 x 39 wherever it was a link and 26 x 23 wherever it
+// was not — the same mark at two sizes, changing as a Commander moved from the
+// shipyard to a build (Commander request 2026-08-28).
+.frame__flag-home {
   @include layout.target-baseline;
 
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
-  // The bar's own ink rather than the user agent's link blue. The mark is drawn
-  // as a background and the link's only child is the name it carries for a
-  // reader, so nothing here is ever seen in this colour — but an inherited
-  // `#0000EE` is still a colour this design system did not choose, and it is
-  // measured as one (011/FR-009).
+  // The bar's own ink rather than the user agent's link blue. The link holds
+  // the mark and the name it carries for a reader, and neither is ever seen in
+  // this colour — but an inherited `#0000EE` is still a colour this design
+  // system did not choose, and it is measured as one (011/FR-009).
   color: var(--edsb-text-primary);
   // Taken back out of the bar, so a 44px press does not open a 44px gap beside
   // an insignia the canvas sets 26px wide.
@@ -137,7 +144,7 @@
 }
 
 // Canvas 1b's sheet bar. One composition is rendered at a time, the same way
-// the wide action row and the compact action layer are: `display: none` is the
+// the wide action row and the folded action layer are: `display: none` is the
 // hide, so the bar that is not in use leaves the accessibility tree and the
 // document never carries two `h1`s or two ways back at once.
 .frame__return {
@@ -270,9 +277,11 @@
 
 @include layout.compact {
   .frame__banner {
-    // The identity, navigation and action trigger each take a full row rather
-    // than competing for one; nothing shrinks below its target baseline and no
-    // label truncates.
+    // The bar is folded at every width this applies to, so it draws the
+    // identity and the one named trigger and nothing else. They sit at the top
+    // of the bar rather than centred on it, so that a wrapped identity — a long
+    // build name, a German label, a doubled text size — grows downwards and the
+    // trigger stays where a thumb last found it.
     align-items: flex-start;
     padding-inline: var(--edsb-space-inline-loose);
   }
@@ -281,12 +290,20 @@
     font-size: var(--edsb-text-size-heading-sm);
     letter-spacing: var(--edsb-text-tracking-dialog);
   }
+}
 
-  // Canvas 1d's compact bar is a single 52px row: the wedge, the identity, and
-  // one `⋮` control holding everything else. The screens the bar offers are in
-  // that menu with the actions, so the chip row that stood under the bar at
-  // compact width is not drawn — it was the wide bar folded, not the compact
-  // one (canvas 1d).
+// Canvas 1d's folded bar is a single row: the wedge, the identity, and one `⋮`
+// control holding everything else. The screens the bar offers are in that menu
+// with the actions, so the chip row that stood under the bar is not drawn — it
+// was the wide bar folded, not the folded bar itself (canvas 1d).
+//
+// Its own step rather than the compact one, because what decides it is the
+// bar's own content: the widest set the application has is the workspace's, and
+// in German it asks for 1070px. Left at the compact step the bar wrapped to two
+// rows on a build while the shipyard's stayed at one, and the page under it
+// moved as a Commander opened a build (`$mode-bar-folded-max`, which carries
+// how the width was chosen; Commander request 2026-08-28).
+@include layout.bar-folded {
   .frame__actions,
   .frame__navigation {
     display: none;
@@ -294,7 +311,7 @@
 
   // The menu hangs off its trigger's trailing edge (canvas 1d), so where the
   // trigger lands decides whether the panel lands on the screen at all. The
-  // compact bar wraps — a long build name, a German label, a doubled text size
+  // folded bar wraps — a long build name, a German label, a doubled text size
   // — and a trigger that has taken a row of its own sits at its leading edge,
   // dragging the panel past the left of the viewport where nothing in it can
   // be pressed. Holding it to the trailing edge of whatever row it lands on is

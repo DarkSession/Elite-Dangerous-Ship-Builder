@@ -1,7 +1,7 @@
 @use '../../../../styles/responsive' as layout;
 
 // The menu hangs off the trigger rather than pushing the bar open: canvas 1d's
-// bar is one 52px row and the panel is drawn over the screen below it, 196px
+// bar is one row and the panel is drawn over the screen below it, 196px
 // wide against the trailing edge.
 :host {
   position: relative;

@@ -44,7 +44,7 @@ export interface ShellAction {
    * Only the reference's `?` uses it, and only where the reference draws it:
    * on the trailing edge of the wide command bar, where a bar that is already
    * carrying a build's name has no room for a fourth phrase. It never replaces
-   * the label — `label` remains the action's accessible name and the compact
+   * the label — `label` remains the action's accessible name and the folded
    * action layer goes on drawing it in words, as canvas 1d does.
    */
   readonly symbol?: string;
@@ -192,7 +192,7 @@ export class AppFrame {
    * The compact bar a layered screen publishes, where one does.
    *
    * Rendered alongside the ordinary bar and hidden at the width it does not
-   * belong to, the way the wide action row and the compact action layer already
+   * belong to, the way the wide action row and the folded action layer already
    * are: `display: none` takes the composition that is not in use out of the
    * accessibility tree, so exactly one `h1` and one way back are ever exposed.
    */
@@ -232,7 +232,7 @@ export class AppFrame {
   readonly actionsCloseLabel = this.#messages.messageSignal('shell.actions.close');
 
   /**
-   * Whether the compact action layer is open.
+   * Whether the folded action layer is open.
    *
    * Pure view state: which controls are currently on screen. It is not domain
    * state, is never persisted, and is reset by nothing but the Commander, so
@@ -257,11 +257,10 @@ export class AppFrame {
   /**
    * What a region below has to clear, as the bar actually came out.
    *
-   * The token layer declares one row of controls at the target baseline, which
-   * is what the bar is on every screen that draws a plain title. The workspace
-   * draws an identity block of two 24px targets instead, and every width where
-   * the bar wraps draws more rows than one — so the declared figure is a floor
-   * the real bar passes, not the height a sticky region under it can offset by.
+   * The token layer declares the one height the bar is drawn at, which is what
+   * it is at every width where it does not wrap. Every width where it does
+   * wrap draws more rows than one — so the declared figure is a floor the real
+   * bar passes, not the height a sticky region under it can offset by.
    * Published from the measurement so a region that freezes below the bar,
    * reserves scroll room for it or subtracts it from its own height clears the
    * bar that is there.

@@ -5,10 +5,10 @@ standalone page and no per-surface control. Both compose the shared feature 011 
 
 ## Inventory
 
-| Surface                      | Kind                   | Appears in                                                             | Purpose                                                   |
-| ---------------------------- | ---------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and compact action layer | opens the shared modal without navigation                 |
-| Help · About modal           | shared modal layer     | above the current capability                                           | presents ABOUT, FAQ and LICENCE, and no other destination |
+| Surface                      | Kind                   | Appears in                                                            | Purpose                                                   |
+| ---------------------------- | ---------------------- | --------------------------------------------------------------------- | --------------------------------------------------------- |
+| Application-frame Help entry | persistent embedded UI | every capability and no-build state, wide row and folded action layer | opens the shared modal without navigation                 |
+| Help · About modal           | shared modal layer     | above the current capability                                          | presents ABOUT, FAQ and LICENCE, and no other destination |
 
 The application frame owns the single modal instance and the single entry. A capability may not embed
 a private modal, legal copy, help destination or entry control of its own.
@@ -20,29 +20,29 @@ The frame surrounds every capability, so the frame's action is the route from al
 
 ## Requirement mapping
 
-| Requirement | Application-frame entry | Help · About modal                                                      | Build/source-distribution gate   |
-| ----------- | ----------------------- | ----------------------------------------------------------------------- | -------------------------------- |
-| FR-001      | global/no-build access  | in-place, eager, offline dialog                                         | initial-bundle assertion         |
-| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy             | —                                |
-| FR-003      | —                       | the four-line summary above one exact excerpt                           | URL/text verification            |
-| FR-004      | —                       | clearly separates MIT from package/Frontier rights                      | package-mirror equality          |
-| FR-005      | —                       | renders the generated exact excerpt                                     | release fails on source mismatch |
-| FR-006      | —                       | localised labels; excerpt marked in its own language                    | byte/hash verification           |
-| FR-007      | —                       | separate application and Almanac versions in `ABOUT`                    | manifest identity checks         |
-| FR-008      | —                       | no currency claim; ownership and who maintains it, each once in `ABOUT` | wording/manifest tests           |
-| FR-009      | —                       | _withdrawn — no package-defect action is rendered_                      | —                                |
-| FR-010      | opens complete help     | both accepted topics in `FAQ`                                           | catalogue completeness           |
-| FR-011      | universal route         | complete common destination                                             | inventory coverage check         |
+| Requirement | Application-frame entry | Help · About modal                                                                | Build/source-distribution gate   |
+| ----------- | ----------------------- | --------------------------------------------------------------------------------- | -------------------------------- |
+| FR-001      | global/no-build access  | in-place, eager, offline dialog                                                   | initial-bundle assertion         |
+| FR-002      | the single access route | common provenance/legal destination; no surface owns a copy                       | —                                |
+| FR-003      | —                       | the four-line summary above one exact excerpt                                     | URL/text verification            |
+| FR-004      | —                       | clearly separates MIT from package/Frontier rights                                | package-mirror equality          |
+| FR-005      | —                       | renders the generated exact excerpt                                               | release fails on source mismatch |
+| FR-006      | —                       | localised labels; excerpt marked in its own language                              | byte/hash verification           |
+| FR-007      | —                       | separate application and Almanac versions in `ABOUT`                              | manifest identity checks         |
+| FR-008      | —                       | no currency claim; who maintains it and where the source is, each once in `ABOUT` | wording/manifest tests           |
+| FR-009      | —                       | _withdrawn — no package-defect action is rendered_                                | —                                |
+| FR-010      | opens complete help     | both accepted topics in `FAQ`                                                     | catalogue completeness           |
+| FR-011      | universal route         | complete common destination                                                       | inventory coverage check         |
 
 Every live FR has at least one user-facing owner or release-gate owner. No requirement depends on a
 standalone help page or on a per-surface control.
 
 ## Shared states
 
-| Surface     | Required states                                                                              |
-| ----------- | -------------------------------------------------------------------------------------------- |
-| Frame entry | wide row action, compact action-layer item, no-build, active-build, translated/expanded, RTL |
-| Modal       | offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom          |
+| Surface     | Required states                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Frame entry | wide row action, folded action-layer item, no-build, active-build, translated/expanded, RTL |
+| Modal       | offline, alternate locale, RTL, expanded text, reduced motion, 200% text, 400% zoom         |
 
 There is no runtime loading, missing-disclaimer, destination-error or stale-artifact state. Those
 conditions fail generation/release. There is no release/non-release state either: the generator
@@ -86,7 +86,7 @@ accepted requirement rather than to nothing.
 - Features 001–011 change nothing. There is no `ContextHelpLink` and no template of theirs is
   touched — the reciprocal-entry set an earlier revision of this document required is withdrawn.
 - **One exception, 2026-08-25**, and it is a defect fix rather than an addition: feature 011's
-  compact action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
+  folded action layer hangs its panel off a trigger inside a sticky banner, so the panel cannot be
   scrolled into view — the document scrolls the screen underneath while the banner and everything
   anchored to it stay put. At 200% text on a phone the panel grew taller than the space below the
   banner, which put this feature's Help entry at y 873 in an 844-pixel viewport with no way to reach
@@ -187,14 +187,14 @@ Automated journeys open the modal from every row of the [Release coverage
 ledger](#release-coverage-ledger) and include at least:
 
 1. a no-build hull-catalogue capability through the wide frame action;
-2. an active workspace through the compact action-layer item;
+2. an active workspace through the folded action-layer item;
 3. a package artwork capability — hull detail, whose artwork region the frame surrounds; and
 4. a package value capability — the outfitting ledger and status rail.
 
 Each journey asserts one dialog instance, unchanged URL/build state, complete content, a working
-close return, no automatic network request, that the modal itself offers no way out of the
-application, and — FR-002's prohibition — that the row's own surface embeds no legal body and offers
-no help or legal destination of its own. For an obscured row the
+close return, no automatic network request, that the modal itself offers only its three audited
+destinations, and — FR-002's prohibition — that the row's own surface embeds no legal body and
+offers no help or legal destination of its own. For an obscured row the
 journey dismisses the layer first and then opens help from the capability beneath, which is the route
 FR-011 requires there. The four classes above do not cap the ledger. All open states receive axe,
 semantic and overflow checks in the complete Chromium/Firefox viewport-orientation matrix.

@@ -70,9 +70,10 @@ async function openHelp(page: Page): Promise<void> {
 /**
  * The frame's Help entry itself, brought within reach without pressing it.
  *
- * At the wide profiles it is on the banner row; at the compact ones it is
- * inside the action layer, and a journey that wants to *look at* the control
- * rather than use it still has to open the layer holding it first.
+ * Where the bar draws its controls it is on the banner row; where the bar is
+ * folded it is inside the action layer, and a journey that wants to *look at*
+ * the control rather than use it still has to open the layer holding it first.
+ * Of the five layout profiles only 1440 is wide enough for the banner row.
  */
 async function helpEntry(page: Page) {
   const entry = page.getByRole('button', { name: HELP_ACTION });
@@ -623,7 +624,7 @@ test.describe('the one destination FR-002 requires', () => {
   });
 });
 
-test.describe('the compact route the reference draws', () => {
+test.describe('the folded route the reference draws', () => {
   test('the action layer carries the same entry as the wide row', async ({ page }) => {
     await withStockBuild(page);
 
@@ -654,7 +655,7 @@ test.describe('the compact route the reference draws', () => {
     // row of guesses; one is a convention.
     expect(await page.locator('.frame__actions .action').count()).toBeGreaterThan(1);
 
-    // The compact action layer spells the same entry out and draws no mark at
+    // The folded action layer spells the same entry out and draws no mark at
     // all, which is what canvas 1d draws there: a menu is a list of rows a
     // Commander reads rather than a bar they scan.
     await expect(page.locator('.action-layer__panel .action--symbol')).toHaveCount(0);
@@ -666,7 +667,7 @@ test.describe('the compact route the reference draws', () => {
   });
 
   test('keeps the frame’s actions inside the viewport at 200% text', async ({ page }) => {
-    // Whichever composition this width draws, and the compact one is the one
+    // Whichever composition this width draws, and the folded one is the one
     // that can escape: its panel hangs off a trigger in a wrapping sticky
     // banner, and both of its escapes are horizontal — a rem-based
     // `min-inline-size` wider than the screen, and a wrapped trigger sitting at
@@ -677,12 +678,12 @@ test.describe('the compact route the reference draws', () => {
     await withStockBuild(page);
 
     const trigger = page.locator('.action-layer__trigger');
-    const compact = await trigger.isVisible();
-    if (compact) {
+    const folded = await trigger.isVisible();
+    if (folded) {
       await openActionLayer(page);
     }
 
-    const drawn = compact ? page.locator('.action-layer__panel') : page.locator('.frame__actions');
+    const drawn = folded ? page.locator('.action-layer__panel') : page.locator('.frame__actions');
     await expect(drawn).toBeVisible();
 
     const width = page.viewportSize()?.width ?? 0;
@@ -769,7 +770,7 @@ test.describe('the questions the modal answers', () => {
     }
   });
 
-  test('draws the same set from the compact action layer', async ({ page }) => {
+  test('draws the same set from the folded action layer', async ({ page }) => {
     await withStockBuild(page);
 
     const inline = page.getByRole('button', { name: HELP_ACTION });
@@ -938,17 +939,22 @@ test.describe('the one legal body the modal embeds', () => {
   });
 });
 
-test.describe('the two documents the modal points at', () => {
+test.describe('the three destinations the modal points at', () => {
   /**
    * The audited destinations, read out of the generator itself.
    *
-   * Not typed in here. The generator is where the two URLs are declared and
-   * validated, so a change to either fails this journey rather than leaving it
-   * asserting a third thing that agrees with neither the product nor the
-   * audit. Run in its own Node process for the reason `freshDisclaimer` gives:
-   * this suite is transpiled to CommonJS and the generator is a real ES module.
+   * Not typed in here. The generator is where the three URLs are declared and
+   * validated, so a change to any of them fails this journey rather than
+   * leaving it asserting a fourth thing that agrees with neither the product
+   * nor the audit. Run in its own Node process for the reason `freshDisclaimer`
+   * gives: this suite is transpiled to CommonJS and the generator is a real ES
+   * module.
    */
-  async function auditedDestinations(): Promise<{ repository: string; almanac: string }> {
+  async function auditedDestinations(): Promise<{
+    repository: string;
+    almanac: string;
+    source: string;
+  }> {
     const { stdout } = await promisify(execFile)(
       process.execPath,
       [
@@ -957,14 +963,15 @@ test.describe('the two documents the modal points at', () => {
         "const generator = await import('./scripts/generate-help-manifest.mjs');" +
           'process.stdout.write(' +
           'JSON.stringify({ repository: generator.REPOSITORY_LICENSE_URL,' +
-          ' almanac: generator.ALMANAC_LICENSE_URL }));',
+          ' almanac: generator.ALMANAC_LICENSE_URL,' +
+          ' source: generator.REPOSITORY_SOURCE_URL }));',
       ],
       { cwd: process.cwd() },
     );
-    return JSON.parse(stdout) as { repository: string; almanac: string };
+    return JSON.parse(stdout) as { repository: string; almanac: string; source: string };
   }
 
-  test('draws exactly the two audited licence links, and asks for nothing to draw itself', async ({
+  test('draws exactly the three audited links, and asks for nothing to draw itself', async ({
     page,
     context,
   }) => {
@@ -979,14 +986,16 @@ test.describe('the two documents the modal points at', () => {
 
     await openHelp(page);
 
-    // Two links, both complete licence documents, both from the generated
-    // manifest. A third — an issue tracker, a homepage, a docs site — would be
-    // a navigation nobody accepted (FR-003).
+    // Three links, all from the generated manifest: this application's source
+    // in ABOUT, then the two complete licence documents in LICENCE, in the
+    // order a reader meets the sections. A fourth — an issue tracker, a docs
+    // site — would be a navigation nobody accepted (FR-003).
     const links = helpModal(page).getByRole('link');
-    await expect(links).toHaveCount(2);
+    await expect(links).toHaveCount(3);
     const audited = await auditedDestinations();
-    await expect(links.nth(0)).toHaveAttribute('href', audited.repository);
-    await expect(links.nth(1)).toHaveAttribute('href', audited.almanac);
+    await expect(links.nth(0)).toHaveAttribute('href', audited.source);
+    await expect(links.nth(1)).toHaveAttribute('href', audited.repository);
+    await expect(links.nth(2)).toHaveAttribute('href', audited.almanac);
 
     // Drawing them costs nothing. A link is an address, not a request: opening
     // the modal reaches no origin, opens no tab and warms no destination.
@@ -1002,7 +1011,7 @@ test.describe('the two documents the modal points at', () => {
 
     await openHelp(page);
     const links = await helpModal(page).getByRole('link').all();
-    expect(links).toHaveLength(2);
+    expect(links).toHaveLength(3);
 
     for (const link of links) {
       // Named in visible text, because a Commander is told before they leave
@@ -1047,10 +1056,10 @@ test.describe('the two documents the modal points at', () => {
     await withStockBuild(page);
     await openHelp(page);
 
-    // No reader-only sentence appended to either name. Both links read alike,
-    // which is what they are — an MIT licence on GitHub — and which document
-    // each covers is the line's own leading label rather than a second
-    // sentence only some people get.
+    // No reader-only sentence appended to any name. What each link is, is what
+    // it reads as on screen, and which document a licence link covers is its
+    // line's own leading label rather than a second sentence only some people
+    // get.
     for (const link of await helpModal(page).getByRole('link').all()) {
       await expect(link).toHaveAccessibleName((await link.textContent())?.trim() ?? '');
     }
@@ -1143,10 +1152,10 @@ test.describe('which artifact a Commander is looking at', () => {
   });
 
   // Three sentences, in one order, before the facts. The reference draws only
-  // the first; the second is the owner's maintainer line and the third is the
-  // once-per-application Almanac credit FR-008 requires, which lived in a FAQ
-  // answer until that answer was withdrawn on 2026-08-27.
-  test('reads purpose, maintainer and provenance before the facts', async ({ page }) => {
+  // the first; the second is the owner's maintainer line and the third is
+  // where the source is, with the destination named inside the sentence
+  // (FR-008).
+  test('reads purpose, maintainer and source before the facts', async ({ page }) => {
     await withStockBuild(page);
     await openHelp(page);
 
@@ -1158,7 +1167,7 @@ test.describe('which artifact a Commander is looking at', () => {
     expect(prose).toEqual([
       englishMessages['help.purpose'],
       englishMessages['help.maintainer'],
-      englishMessages['help.provenance'],
+      englishMessages['help.source'].replace('{{source}}', englishMessages['help.source.link']),
     ]);
     await expect(about.locator('edsb-version-facts')).toHaveCount(1);
   });
@@ -1223,7 +1232,7 @@ test.describe('the floor beneath every open state', () => {
 
   test('sweeps the modal over a capability with no build', async ({ page }, testInfo) => {
     // The same modal over the other kind of screen, and at the narrow profiles
-    // it is also the modal reached through the compact action layer — which
+    // it is also the modal reached through the folded action layer — which
     // `reachShellAction` opens where the width has one and leaves alone where
     // it does not. The layer is still open behind the modal when it appears,
     // which is a nesting the wide profiles never produce.

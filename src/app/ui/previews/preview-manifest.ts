@@ -1240,7 +1240,7 @@ registerPreview({
         'exposes banner, navigation and main landmarks',
         'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current navigation entry exposes aria-current',
-        'the Help entry is in the wide row and in the compact action layer, and is the only one of its kind',
+        'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity', 'nested-relationships'],
       // Isolated: the frame renders the banner and main landmarks, and a page
@@ -4181,9 +4181,26 @@ const HELP_ABOUT_FACTS = [
   },
 ];
 
+/**
+ * The source sentence, cut at its placeholder the way the presenter cuts it.
+ *
+ * The link sits inside the sentence rather than at the end of it, so both
+ * halves are kept: a catalogue that dropped the tail would draw the full stop
+ * before the link instead of after it.
+ */
+const HELP_SOURCE_SENTENCE = BUNDLED_ENGLISH['help.source'].split('{{source}}');
+
 const HELP_ABOUT = {
   maintainer: BUNDLED_ENGLISH['help.maintainer'],
-  provenance: BUNDLED_ENGLISH['help.provenance'],
+  source: {
+    id: 'source',
+    before: HELP_SOURCE_SENTENCE[0] ?? '',
+    link: {
+      label: BUNDLED_ENGLISH['help.source.link'],
+      href: HELP_MANIFEST.destinations.repositorySource.url,
+    },
+    after: HELP_SOURCE_SENTENCE[1] ?? '',
+  },
   facts: HELP_ABOUT_FACTS,
 };
 
@@ -4381,13 +4398,13 @@ registerPreview({
         'wide viewports centre a bounded dialog; narrow ones raise a full-width sheet',
         'a short viewport and 400% zoom take the full-height treatment rather than clipping',
         'reduced motion makes open and close immediate without removing content',
-        'ABOUT reads purpose, maintainer and Almanac provenance before its facts',
+        'ABOUT reads purpose, maintainer and where the source is before its facts',
         'ABOUT names the application version and the bundled Almanac as separate facts',
         'FAQ answers both questions, once each, in the order they are declared',
         'each question is a heading over its own answer, never one run of prose',
         'LICENCE opens with the four-line summary of what covers what',
         'LICENCE then carries the exact Frontier notice once, marked as English',
-        'the modal offers no link out of the application',
+        'the only links out are the two licence documents and this application’s source',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
       // Isolated: an open modal makes everything behind it inert, which is
