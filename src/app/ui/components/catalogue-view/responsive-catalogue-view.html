@@ -72,7 +72,7 @@
           [attr.aria-current]="currentFor(hull)"
           [attr.data-hull-symbol]="hull.symbol"
           (mouseenter)="preview(hull)"
-          (click)="activate(hull)"
+          (click)="activate(hull, $event)"
         >
           <!-- The reference opens a current row with an amber lozenge in its
                own narrow column (canvas 1a `.sy-mark`). -->

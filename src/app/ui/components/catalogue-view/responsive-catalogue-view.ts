@@ -183,9 +183,17 @@ export class ResponsiveCatalogueView {
    * fly it — the same second step a pointer makes by resting and then pressing.
    * Until 2026-08-28 that second press repeated the navigation the row had
    * already made and nothing happened (Commander request).
+   *
+   * The device answers this question, and the press itself overrules it. A
+   * laptop with a touch screen matches `(hover: hover)` and a finger on it has
+   * still never rested anywhere, so on that device a tap would take the first
+   * branch and build a hull the Commander has not read — from anywhere on the
+   * row, since the whole row presses. A press made by touch therefore takes the
+   * touch path whatever the device says it can do: it opens the hull, and the
+   * press after it builds, which is the same two steps and the safer one first.
    */
-  activate(hull: HullSummary): void {
-    if (this.#hoverable() || hull.selected) {
+  activate(hull: HullSummary, press?: Event): void {
+    if (hull.selected || (this.#hoverable() && !byTouch(press))) {
       this.hullBuilt.emit(hull.symbol);
       return;
     }
@@ -257,4 +265,16 @@ export class ResponsiveCatalogueView {
  */
 function hoverMatch(): MediaQueryList | null {
   return typeof matchMedia === 'function' ? matchMedia('(hover: hover)') : null;
+}
+
+/**
+ * Whether a press was made by a finger.
+ *
+ * A `click` carries the pointer that made it, so the question is answered by
+ * the press rather than about the device. A keyboard's press carries no pointer
+ * type at all, which is neither a finger nor a reason to open instead of build:
+ * it takes the device's own answer, like a mouse.
+ */
+function byTouch(press: Event | undefined): boolean {
+  return press instanceof PointerEvent && press.pointerType === 'touch';
 }

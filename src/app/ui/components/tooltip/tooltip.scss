@@ -45,9 +45,13 @@
 
 // A word inside a dense list. The reference sets these names as plain text with
 // the gloss on a `data-tip`, so the baseline above is a target this application
-// added: at 44 pixels a five-row block stands its rows twenty pixels apart and
+// added: at 44 pixels the rows of such a block stand twenty pixels apart and it
 // reads as a different block from the lists beside it. It takes the same
 // SC 2.5.8 floor the other dense controls take.
+//
+// Asked for by the block that projects the word, never taken here: a trigger
+// standing on its own has the room and keeps the baseline, and every block that
+// asks for this is named on the suite's own `DENSE_TARGETS`.
 .tooltip__trigger--dense {
   @include layout.target-floor;
 }

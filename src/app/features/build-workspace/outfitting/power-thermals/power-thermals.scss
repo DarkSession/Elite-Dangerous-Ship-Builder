@@ -490,10 +490,14 @@
   display: block;
   inline-size: var(--edsb-border-width-hairline);
   margin-inline-start: calc(var(--edsb-border-width-hairline) * -1);
+  // The canvas's own rhythm, at the nearest steps the space scale carries: two
+  // on and four off, where it draws two on and three off. A finer pattern than
+  // this resolves to a solid grey hairline at a fractional device pixel ratio,
+  // which is the one thing this mark must not look like.
   background-image: repeating-linear-gradient(
     to bottom,
-    var(--edsb-text-muted) 0 var(--edsb-space-hair),
-    transparent var(--edsb-space-hair) var(--edsb-space-3xs)
+    var(--edsb-text-muted) 0 var(--edsb-space-3xs),
+    transparent var(--edsb-space-3xs) var(--edsb-space-xs)
   );
 }
 

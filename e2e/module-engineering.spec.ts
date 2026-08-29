@@ -440,6 +440,45 @@ test.describe('engineering costs', () => {
     await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
   });
 
+  test('reserves the room the three controls take, before any is used', async ({ page }) => {
+    // The grade and the effect follow from a recipe, so an unengineered module
+    // opened a column shorter than an engineered one by both of them — and the
+    // panel under the hand that was reading it moved when a recipe was chosen
+    // (Commander request 2026-08-28). Nothing is drawn that is not there: what
+    // is reserved is the room, as the column's own floor.
+    await openStockBuild(page);
+    await openEditor(page, 'LifeSupport');
+
+    const choices = page.locator('.engineering__choices');
+    await expect(choices).toBeVisible();
+    if (
+      (await page
+        .locator('.engineering__panes')
+        .evaluate((node) => getComputedStyle(node).display)) !== 'grid'
+    ) {
+      // The full-screen composition stacks the three down a screen that
+      // scrolls, so there is nothing there for a floor to hold still.
+      return;
+    }
+
+    // Read from the token rather than written down again: the floor is one
+    // measure, and a test carrying its own copy would pass a change to it.
+    const measured = await choices.evaluate((node) => {
+      const reserved = getComputedStyle(document.documentElement).getPropertyValue(
+        '--edsb-layout-engineering-choices',
+      );
+      const probe = document.createElement('div');
+      probe.style.blockSize = reserved.trim();
+      document.body.append(probe);
+      const floor = probe.getBoundingClientRect().height;
+      probe.remove();
+      return { column: node.getBoundingClientRect().height, floor };
+    });
+
+    expect(measured.floor).toBeGreaterThan(0);
+    expect(measured.column).toBeGreaterThanOrEqual(measured.floor);
+  });
+
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');

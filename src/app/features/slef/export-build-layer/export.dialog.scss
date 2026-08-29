@@ -57,6 +57,10 @@
   }
 
   .export-dialog__content {
+    // The payload panel is shorter where the two regions stand side by side:
+    // its actions have the room to stay on one line. The floor is that panel,
+    // measured at this composition.
+    min-block-size: var(--edsb-layout-export-content-wide);
     padding: var(--edsb-space-panel);
   }
 }

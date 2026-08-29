@@ -43,10 +43,12 @@ draws none — and its name stays in the accessibility tree for anyone reading t
 **The content region has one height, whichever format is chosen (2026-08-28, Commander request).**
 The SLEF payload is a field of twelve rows and a share link is one line, so choosing between them
 moved the panel — and on a centred layer it moved under the hand that had just pressed the format
-beside it. The region carries a floor (`--edsb-layout-export-content`) that the taller of the two
-already stands at. A floor and not a cap: a refusal, a stale notice or an invalid-build sentence is
-a state of this panel and still grows it, and a translated description that takes a second line grows
-it too. Canvas 1c answers the same problem the same way — its own caption above the payload is
+beside it. The region carries a floor that the payload panel already stands at —
+`--edsb-layout-export-content` where the formats sit above the payload, and
+`--edsb-layout-export-content-wide` where they sit beside it, because the payload's actions take a
+second line at the narrower composition and one line at the wider. A floor and not a cap: a refusal,
+a stale notice or an invalid-build sentence is a state of this panel and still grows it, and a
+translated description that takes a second line grows it too. Canvas 1c answers the same problem the same way — its own caption above the payload is
 `visibility: hidden` when there is nothing to say, holding the line rather than closing it.
 
 **The link's description is the canvas's own words.** `The link to this build.` — the latest canvas

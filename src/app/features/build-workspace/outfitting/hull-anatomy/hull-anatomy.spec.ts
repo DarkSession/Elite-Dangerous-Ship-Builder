@@ -536,6 +536,31 @@ describe('HullAnatomy', () => {
     expect(announced.map((event) => event.messageKey)).toEqual(['anatomy.announce.unavailable']);
   });
 
+  it('marks itself while a guest segment is open, so it can close against that panel', () => {
+    TestBed.inject(ActiveBuildStore).commit(candidate());
+    TestBed.tick();
+
+    const fixture = TestBed.createComponent(HullAnatomy);
+    const status = { id: 'status', label: 'Status', heading: 'Build status' };
+    fixture.componentRef.setInput('guestModes', [status]);
+    fixture.detectChanges();
+
+    // The panel for a guest segment is drawn by the region that owns it,
+    // outside this box. Unmarked, this region kept the inset under a panel that
+    // is not here and the workspace put its band gap after it, which opened a
+    // band of empty ground between the strip and `BUILD STATUS`.
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.classList.contains('anatomy--guest')).toBe(false);
+
+    fixture.componentInstance.showMode('status');
+    fixture.detectChanges();
+    expect(host.classList.contains('anatomy--guest')).toBe(true);
+
+    fixture.componentInstance.showMode('mounts');
+    fixture.detectChanges();
+    expect(host.classList.contains('anatomy--guest')).toBe(false);
+  });
+
   it('falls back to its own first segment when a guest segment is withdrawn', () => {
     TestBed.inject(ActiveBuildStore).commit(candidate());
     TestBed.tick();

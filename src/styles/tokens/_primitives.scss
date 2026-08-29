@@ -653,11 +653,18 @@
   --edsb-measure-defence-value: 3.5rem; //    56
 
   // The height the export layer's content column holds whichever format is
-  // chosen: the SLEF payload's twelve rows, its metadata line and its three
-  // actions, measured at the width a phone gives them. The link is a shorter
-  // panel, and without a floor under both of them the layer changed height
-  // under the hand that chose the format (Commander request 2026-08-28).
-  --edsb-measure-export-content: 20.5rem; // 328
+  // chosen: the SLEF payload's twelve rows, its metadata line and its actions.
+  // The link is a shorter panel, and without a floor under both of them the
+  // layer changed height under the hand that chose the format (Commander
+  // request 2026-08-28).
+  //
+  // Two measures, because the payload panel is not one height: at the compact
+  // composition its actions take a second line, which the two regions side by
+  // side have the room to avoid. Each is the payload panel measured at the
+  // composition it belongs to, and each is a floor — a refusal, a stale notice
+  // or a translation that wraps still grows the panel past it.
+  --edsb-measure-export-content: 23.5rem; //      376
+  --edsb-measure-export-content-wide: 21.375rem; // 342
 
   // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.

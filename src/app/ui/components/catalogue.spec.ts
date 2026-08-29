@@ -249,6 +249,45 @@ describe('ResponsiveCatalogueView', () => {
     expect(query(fixture, 'tbody th button').getAttribute('aria-label')).toContain('Build');
   });
 
+  it('opens rather than builds when a finger presses a device that can hover', () => {
+    // A laptop with a touch screen matches `(hover: hover)`, and a finger on it
+    // has still never rested anywhere. Left to the device's answer a tap built
+    // a hull the Commander had not read — from anywhere on the row, since the
+    // whole row presses. The press says how it was made, and that overrules it.
+    const hoverAll = (query: string): MediaQueryList =>
+      ({
+        matches: true,
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }) as unknown as MediaQueryList;
+    const restore = window.matchMedia;
+    window.matchMedia = hoverAll;
+
+    try {
+      const fixture = renderComponent(ResponsiveCatalogueView, viewInputs);
+      const built: string[] = [];
+      const opened: string[] = [];
+      fixture.componentInstance.hullBuilt.subscribe((symbol) => built.push(symbol));
+      fixture.componentInstance.hullOpened.subscribe((symbol) => opened.push(symbol));
+
+      query(fixture, 'tbody tr').dispatchEvent(
+        new PointerEvent('click', { pointerType: 'touch', bubbles: true }),
+      );
+      expect(opened).toEqual(['Anaconda']);
+      expect(built).toEqual([]);
+
+      // The same row under the pointer the device was asked about: resting has
+      // already read the hull, so the press is the decision to fly it.
+      query(fixture, 'tbody tr').dispatchEvent(
+        new PointerEvent('click', { pointerType: 'mouse', bubbles: true }),
+      );
+      expect(built).toEqual(['Anaconda']);
+    } finally {
+      window.matchMedia = restore;
+    }
+  });
+
   it('keeps the sort caret’s place on every header, drawn on the sorted one', () => {
     // A caret that appeared only once a column was pressed pulled the two
     // right-ranged headings a caret's width along the first time they were used.

@@ -325,11 +325,13 @@ against 466.81. The row did not grow, so there seemed nothing here worth holding
 
 **Reversed 2026-08-28 (Commander request): the trigger takes the floor.** The comparison above is
 with the arrangement the tooltip replaced, and that arrangement is a year gone; what a Commander sees
-is this block against the canvas's own. The canvas sets a row of six bars 9 pixels apart on a
-14-pixel track, and at the baseline each row is 44 — so most of the block is the space around a name,
-and the profile reads as six separate readings rather than as one. The trigger takes
-`tooltip__trigger--dense` here: SC 2.5.8's 24-pixel floor, recorded on `DENSE_TARGETS` beside the
-rail's pip control and the ledger's power chip. That is the floor and not a waiver, and it is asked
+is this block against the canvas's own. The canvas sets its scenario rows 9 pixels apart on a
+14-pixel track — six of them, which is this block's five with a cell bank fitted — and at the
+baseline each row is 44, so most of the block is the space around a name and the profile reads as one
+separate reading per row rather than as a profile. The trigger takes `tooltip__trigger--dense` here:
+SC 2.5.8's 24-pixel floor, recorded on `DENSE_TARGETS` beside the rail's pip control and the ledger's
+power chip — and recorded there as this block's own trigger, not as the modifier, so a later caller
+cannot take the floor without a ruling of its own. That is the floor and not a waiver, and it is asked
 for by this block rather than decided inside the tooltip — a trigger standing on its own still has
 the room and still takes the baseline. What closes is the space around the name; the bar beside it is
 the height it always was.
