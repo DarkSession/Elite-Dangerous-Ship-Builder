@@ -58,6 +58,9 @@
                 [style.inset-inline-start.%]="band.preceding * 100"
                 [style.inline-size.%]="band.own * 100"
               ></span>
+              @if (halfMark(); as half) {
+                <span class="power__band-half" [style.inset-inline-start.%]="half * 100"></span>
+              }
               <span class="power__band-plant" [style.inset-inline-start.%]="plantMark() * 100">
               </span>
             </span>
@@ -73,6 +76,36 @@
             } @else {
               <span class="power__band-share" data-bidi-isolate>{{ band.share }}</span>
             }
+          </li>
+        }
+
+        <!--
+          The marks the tracks carry, named where they stand. The scale every
+          one of these bars is read on is the share of plant output the column
+          on the right prints, so the plant's own mark is its 100% and the mark
+          half way to it is its 50%.
+
+          The row follows the plant's mark, not the half one: where the demand
+          runs so far past the plant that a second name cannot stand beside the
+          first, the half mark goes and the plant's own name stays.
+
+          Decoration, and hidden: the share each row is at is printed at the end
+          of that row, so a reader is told where every bar falls on this scale
+          without being told the scale.
+        -->
+        @if (plantMark(); as plant) {
+          <li class="power__axis-row" aria-hidden="true">
+            <span></span>
+            <span class="power__axis">
+              @if (halfMark(); as half) {
+                <span class="power__axis-mark" [style.inset-inline-start.%]="half * 100">
+                  <span class="power__axis-label">{{ halfLabel() }}</span>
+                </span>
+              }
+              <span class="power__axis-mark" [style.inset-inline-start.%]="plant * 100">
+                <span class="power__axis-label">{{ plantLabel() }}</span>
+              </span>
+            </span>
           </li>
         }
       </ol>
@@ -171,8 +204,8 @@
       @if (heatAvailable()) {
         <div class="heat">
           <!--
-            The bars and the caption in one grid, so the caption's offset is a
-            share of the track it names rather than of the block around it.
+            One grid for every row, so each bar's track starts and ends on the
+            same two lines however wide the gauge beside it turns out to be.
           -->
           <div class="heat__profile">
             <ol class="heat__bars">
@@ -190,6 +223,7 @@
                     -->
                     <edsb-tooltip
                       class="heat__description"
+                      [dense]="true"
                       [label]="bar.label"
                       [tip]="bar.description"
                     />
@@ -227,11 +261,6 @@
                 </li>
               }
             </ol>
-
-            <!-- The canvas's caption on the line the bars are measured against. -->
-            <p class="heat__threshold-label" [style.inset-inline-start.%]="heatThreshold() * 100">
-              {{ heatThresholdLabel() }}
-            </p>
           </div>
 
           <!--

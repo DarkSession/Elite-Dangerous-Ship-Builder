@@ -43,6 +43,19 @@
   cursor: help;
 }
 
+// A word inside a dense list. The reference sets these names as plain text with
+// the gloss on a `data-tip`, so the baseline above is a target this application
+// added: at 44 pixels the rows of such a block stand twenty pixels apart and it
+// reads as a different block from the lists beside it. It takes the same
+// SC 2.5.8 floor the other dense controls take.
+//
+// Asked for by the block that projects the word, never taken here: a trigger
+// standing on its own has the room and keeps the baseline, and every block that
+// asks for this is named on the suite's own `DENSE_TARGETS`.
+.tooltip__trigger--dense {
+  @include layout.target-floor;
+}
+
 // A mark rather than a word. The reference draws these at 14 pixels inside a
 // ledger row, so the trigger takes the accessible floor the other dense chips
 // take rather than the comfortable baseline, and drops the dotted rule — there
@@ -89,6 +102,34 @@
   text-wrap: pretty;
 }
 
+// Raised into the top layer, which is the only ground outside the boxes that
+// cut it.
+//
+// A manifest row declares `content-visibility: auto` so unreached rows are not
+// laid out, and that is paint containment: it clips every descendant to the
+// row, `z-index` and all. The identity cell clips a long name, and the pane is
+// a scroller that clips its own edges. The component raises the bubble with the
+// platform's `popover` while it is drawn; these are the rules that go with the
+// raise, and they are keyed on the class the component adds rather than on
+// `[popover]`, so a platform without one draws exactly what it drew before.
+//
+// The placement itself is set on the element, from the trigger's own box. Only
+// the distance it stands off by is here, because that is a measure and measures
+// belong to the token layer.
+.tooltip__tip--shown.tooltip__tip--floating {
+  position: fixed;
+  inset: auto;
+  margin-block-start: var(--edsb-space-inline-tight);
+}
+
+// No room under the trigger, so it is drawn over it: the element is placed at
+// the trigger's top edge and lifted by its own height, which is a height
+// nothing here has to know.
+.tooltip__tip--shown.tooltip__tip--above {
+  margin-block-start: calc(-1 * var(--edsb-space-inline-tight));
+  translate: 0 -100%;
+}
+
 // The gap above the bubble, made part of the bubble.
 //
 // 1.4.13's "hoverable" is about geometry, not about the DOM: the bubble being a
@@ -103,4 +144,12 @@
   inset-block-end: 100%;
   inset-inline: calc(-1 * var(--edsb-border-width-hairline));
   block-size: calc(var(--edsb-space-inline-tight) + var(--edsb-border-width-hairline));
+}
+
+// Drawn over the trigger, the crossing is under the bubble rather than over it,
+// so the strip moves with it. The gap is the same gap and is bridged either way
+// — 1.4.13's "hoverable" does not care which side of the word the gloss is on.
+.tooltip__tip--above::before {
+  inset-block-end: auto;
+  inset-block-start: 100%;
 }

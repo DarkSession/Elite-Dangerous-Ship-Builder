@@ -51,7 +51,7 @@ async function submit(page: Page): Promise<void> {
 /** A build already open in the workspace, so a replacement has something to replace. */
 async function withStockBuild(page: Page): Promise<void> {
   await page.goto('/ships/Anaconda');
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   // Waits for the published fragment, not merely the route: publication is
   // asynchronous, and a hash captured before it lands would compare unequal to
   // itself a moment later.

@@ -195,6 +195,21 @@
   white-space: nowrap;
 }
 
+// The fifth column's heading is two lines rather than one, as the canvas sets
+// it: the unit, and the allocation it was read at under it.
+.damage th.damage__cell--at-pips {
+  line-height: var(--edsb-text-leading-heading);
+}
+
+// The condition under the unit, smaller than it: it says which reading the
+// column is, not what the reading is. A block, which is what puts it on its own
+// line — the column stays `nowrap`, so `× 2 SYS PIPS` is one line rather than
+// four words down a column an inch wide.
+.damage__at-pips {
+  display: block;
+  font-size: var(--edsb-text-size-micro);
+}
+
 // The bar's own column takes whatever the three columns of text leave it: the
 // figures are read exactly and must never wrap for the sake of a drawing that
 // carries no reading of its own.
@@ -257,30 +272,25 @@
   }
 }
 
-// The canvas's scale under the bars: an end, a hairline, the other end. It
-// names what every bar above it is measured against and carries no figure of
-// its own — each row's own resistance is set beside it in the table. It is the
-// bar column's own width, because it is the bar column it describes.
+// The canvas's scale under the bars. It names what every bar above it is
+// measured against and carries no figure of its own — each row's own resistance
+// is set beside it in the table. It is the bar column's own width, because it is
+// the bar column it describes.
+//
+// The scale is the track's own width, and every name on it stands on the point
+// it names. It draws no rule of its own: the lengths above it are what the
+// names are read against, and a second line under them was a rule the canvas
+// does not have.
 .scale {
-  @include layout.micro-label;
-
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  display: block;
+  block-size: var(--edsb-text-size-micro);
   min-inline-size: 0;
 }
 
-.scale__rule {
-  flex: 1 1 var(--edsb-space-2xl);
-  block-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-border-decorative);
-}
-
-// Zero, standing over the mark rather than at either end. A box of no width
-// centring what it holds, so the label straddles the mark without a transform
-// that would have to know which way the document runs.
-.scale__zero {
+// A box of no width centring what it holds, so a name straddles its mark
+// without a transform that would have to know which way the document runs.
+.scale__mark {
   position: absolute;
   inset-block: 0;
   inline-size: 0;
@@ -289,9 +299,13 @@
   justify-content: center;
 }
 
-.scale__zero-label {
-  padding-inline: var(--edsb-space-3xs);
-  background-color: var(--edsb-surface-panel);
+.scale__mark--ceiling {
+  inset-inline-start: 100%;
+}
+
+.scale__label {
+  @include layout.micro-label;
+
   white-space: nowrap;
 }
 

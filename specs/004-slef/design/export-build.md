@@ -40,6 +40,21 @@ boxes: the marker is drawn inside the chosen plate's edge rather than in place o
 format sits in the list with one side open (Commander request 2026-08-26). The list carries no visible question above it — the canvas
 draws none — and its name stays in the accessibility tree for anyone reading the group aloud.
 
+**The content region has one height, whichever format is chosen (2026-08-28, Commander request).**
+The SLEF payload is a field of twelve rows and a share link is one line, so choosing between them
+moved the panel — and on a centred layer it moved under the hand that had just pressed the format
+beside it. The region carries a floor that the payload panel already stands at —
+`--edsb-layout-export-content` where the formats sit above the payload, and
+`--edsb-layout-export-content-wide` where they sit beside it, because the payload's actions take a
+second line at the narrower composition and one line at the wider. A floor and not a cap: a refusal,
+a stale notice or an invalid-build sentence is a state of this panel and still grows it, and a
+translated description that takes a second line grows it too. Canvas 1c answers the same problem the same way — its own caption above the payload is
+`visibility: hidden` when there is nothing to say, holding the line rather than closing it.
+
+**The link's description is the canvas's own words.** `The link to this build.` — the latest canvas
+revision's wording, in place of the earlier `Read-only link to this exact loadout.`. What the link
+carries is unchanged, and the sentence about a link that could not travel is still the state's own.
+
 Where the width will not hold two regions, the same choices become the scrolling chip strip canvas 1d
 draws above the payload: the same controls, the same names, the same checked state, and the
 description carried in the accessibility tree rather than beside the chip. The arrangement resolves

@@ -112,6 +112,22 @@ describe('HullSummaryCard', () => {
 
     expect(opened).toBe('Anaconda');
   });
+
+  it('takes the press anywhere on the record, not only on the name', () => {
+    // A compact row reads as one target for the same reason a manifest row
+    // does: the price belongs to the same hull as the name.
+    const fixture = renderComponent(HullSummaryCard, { hull: hull() });
+    const opened: string[] = [];
+    fixture.componentInstance.opened.subscribe((symbol) => opened.push(symbol));
+
+    query(fixture, '.hull-card__price').click();
+    expect(opened).toEqual(['Anaconda']);
+
+    // And the name's own press is answered once, not once here and once on the
+    // record it bubbles to.
+    (query(fixture, '.hull-card__open') as HTMLButtonElement).click();
+    expect(opened).toHaveLength(2);
+  });
 });
 
 describe('ResponsiveCatalogueView', () => {
@@ -185,6 +201,105 @@ describe('ResponsiveCatalogueView', () => {
     query(fixture, 'tbody th button').click();
 
     expect(opened).toEqual(['Anaconda']);
+  });
+
+  it('takes the press anywhere on the row, not only on the name', () => {
+    // A manifest row reads as one target: the price cell belongs to the same
+    // hull as the name, and pressing it did nothing at all.
+    const fixture = renderComponent(ResponsiveCatalogueView, viewInputs);
+    const opened: string[] = [];
+    fixture.componentInstance.hullOpened.subscribe((symbol) => opened.push(symbol));
+
+    query(fixture, 'tbody td.catalogue__numeric').click();
+
+    expect(opened).toEqual(['Anaconda']);
+  });
+
+  it('answers a press on the name once, not once for the name and once for the row', () => {
+    // The name's own press bubbles to the row that holds it, so the row is the
+    // only handler and a press is one action however it arrived.
+    const fixture = renderComponent(ResponsiveCatalogueView, viewInputs);
+    const opened: string[] = [];
+    fixture.componentInstance.hullOpened.subscribe((symbol) => opened.push(symbol));
+
+    query(fixture, 'tbody th button').click();
+
+    expect(opened).toHaveLength(1);
+  });
+
+  it('builds the hull a second press lands on where the row cannot be hovered', () => {
+    // A touch screen has no resting state, so the first press opens the hull
+    // beside the manifest and the row it opened is marked. Pressing that row
+    // again is the decision to fly it — the same second step a pointer makes by
+    // resting and then pressing.
+    const fixture = renderComponent(ResponsiveCatalogueView, {
+      ...viewInputs,
+      hulls: [hull({ selected: true })],
+    });
+    const built: string[] = [];
+    const opened: string[] = [];
+    fixture.componentInstance.hullBuilt.subscribe((symbol) => built.push(symbol));
+    fixture.componentInstance.hullOpened.subscribe((symbol) => opened.push(symbol));
+
+    query(fixture, 'tbody tr').click();
+
+    expect(built).toEqual(['Anaconda']);
+    expect(opened).toEqual([]);
+    // And the control says which of the two the press will do.
+    expect(query(fixture, 'tbody th button').getAttribute('aria-label')).toContain('Build');
+  });
+
+  it('opens rather than builds when a finger presses a device that can hover', () => {
+    // A laptop with a touch screen matches `(hover: hover)`, and a finger on it
+    // has still never rested anywhere. Left to the device's answer a tap built
+    // a hull the Commander had not read — from anywhere on the row, since the
+    // whole row presses. The press says how it was made, and that overrules it.
+    const hoverAll = (query: string): MediaQueryList =>
+      ({
+        matches: true,
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }) as unknown as MediaQueryList;
+    const restore = window.matchMedia;
+    window.matchMedia = hoverAll;
+
+    try {
+      const fixture = renderComponent(ResponsiveCatalogueView, viewInputs);
+      const built: string[] = [];
+      const opened: string[] = [];
+      fixture.componentInstance.hullBuilt.subscribe((symbol) => built.push(symbol));
+      fixture.componentInstance.hullOpened.subscribe((symbol) => opened.push(symbol));
+
+      query(fixture, 'tbody tr').dispatchEvent(
+        new PointerEvent('click', { pointerType: 'touch', bubbles: true }),
+      );
+      expect(opened).toEqual(['Anaconda']);
+      expect(built).toEqual([]);
+
+      // The same row under the pointer the device was asked about: resting has
+      // already read the hull, so the press is the decision to fly it.
+      query(fixture, 'tbody tr').dispatchEvent(
+        new PointerEvent('click', { pointerType: 'mouse', bubbles: true }),
+      );
+      expect(built).toEqual(['Anaconda']);
+    } finally {
+      window.matchMedia = restore;
+    }
+  });
+
+  it('keeps the sort caret’s place on every header, drawn on the sorted one', () => {
+    // A caret that appeared only once a column was pressed pulled the two
+    // right-ranged headings a caret's width along the first time they were used.
+    const fixture = renderComponent(ResponsiveCatalogueView, viewInputs);
+    const carets = [...element(fixture).querySelectorAll('.catalogue__caret')];
+
+    expect(carets).toHaveLength(columns.length);
+    for (const caret of carets) {
+      expect(caret.textContent?.trim()).not.toBe('');
+    }
+    expect(carets[0]?.classList.contains('catalogue__caret--reserved')).toBe(false);
+    expect(carets[1]?.classList.contains('catalogue__caret--reserved')).toBe(true);
   });
 
   it('marks the hull currently being viewed in both compositions', () => {

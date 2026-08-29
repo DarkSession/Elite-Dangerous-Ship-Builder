@@ -158,6 +158,37 @@ do not mutate the active build until confirmed.
   to canvas 1d's screen, which holds a draft that has to be left on purpose (wave 4). Clearing is not
   a separate control either — see "Clearing engineering" below.
 
+### The choices column keeps its height, 2026-08-28 (Commander request)
+
+The column holds three controls — the recipe, the grade under it and the experimental effect under
+that — and the last two follow from the first: an unengineered module has a recipe list and nothing
+under it. So opening the panel on a stock module gave a short column, and choosing a recipe grew it,
+which moved the ledger under the hand that was reading it.
+
+The column carries a floor instead (`--edsb-layout-engineering-choices`, the three controls and the
+two gaps between them at the base text size). Nothing is drawn that is not there: no empty grade bar
+over an unengineered module, no placeholder effect: the canvas draws neither and neither does this.
+What is reserved is the room, so the panel is the height it will be before anything is chosen.
+
+A floor and not a cap. A translation that wraps a recipe name, a doubled text size, or a long list
+simply passes it.
+
+**Corrected 2026-08-29 (Commander request): the floor belongs to the controls, not to the two-column
+composition.** It was written inside the wide composition's own block on the reading that the narrow
+one is a full-screen layer with nothing beside it to move. Two things were wrong with that. The wide
+composition is the one place the floor does nothing — its two columns stretch to the taller of them,
+and the attribute table beside these controls is taller than the floor on all but the shortest
+article, so the column was already past the figure before the floor was consulted. And between the
+two there is a third arrangement: the inline panel with its columns stacked, which is what a tablet
+draws and is not a layer. That is where the growth actually was. Measured at 834x1112: taking a
+recipe grew the editor from 499px to 623px and the document from 2692px to 3115px.
+
+So the floor is stated once, for the inline placement at every width, and asked of the column that
+actually holds a chooser — an article the Almanac offers no recipe for keeps a panel the size of what
+it says rather than a sentence over an empty half-screen, because there nothing will ever appear and
+there is nothing to keep a place for. The layer keeps no floor: it is a screen of its own that
+scrolls, with nothing beside it to move.
+
 ## Narrow and 400%-zoom composition
 
 - Full-screen layer inspired by canvas 1d with associated title/module description and inert

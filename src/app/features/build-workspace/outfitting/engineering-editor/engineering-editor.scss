@@ -197,7 +197,9 @@
     position: relative;
   }
 
-  // The canvas rules the two columns apart rather than spacing them apart.
+  // The canvas rules the two columns apart rather than spacing them apart. The
+  // floor under the three controls is not stated here any more: it is the
+  // controls' own and is stated once, above, for every width they are drawn at.
   .engineering:not(.engineering--layer) .engineering__choices {
     padding-inline-end: var(--edsb-space-panel);
     border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
@@ -226,6 +228,34 @@
   @include layout.stack(var(--edsb-space-stack));
 
   min-inline-size: 0;
+}
+
+// The room the three controls take, kept whether or not two of them are drawn.
+//
+// The recipe is always there; the grade bar and the experimental effect follow
+// from it, and neither canvas draws either over an unengineered module. So
+// choosing a recipe used to grow this column by the height of the two that
+// appeared, and everything under the panel moved with it — measured at 834x1112
+// on the stacked composition, the editor went from 499px to 623px and the
+// document from 2692px to 3115px as a recipe was taken.
+//
+// It was a floor before, and the floor was in the wide composition's own block
+// (Commander request 2026-08-28): two columns, and the one that stretches to the
+// taller of them. That is exactly the arrangement in which a floor does nothing
+// — the attribute table beside it is taller than this on all but the shortest
+// article, so the column was already stretched past the figure and the growth
+// this was meant to stop happened at every other width instead. It belongs to
+// the controls, not to the composition (Commander request 2026-08-29).
+//
+// Asked of the column that actually holds a chooser, so an article the Almanac
+// offers no recipe for keeps a panel the size of what it says rather than a
+// sentence over an empty half-screen: there, nothing will ever appear, so there
+// is nothing to keep a place for.
+//
+// A floor, never a cap: a translation that wraps, or a doubled text size, simply
+// passes it.
+.engineering:not(.engineering--layer) .engineering__choices:has(edsb-blueprint-choice-list) {
+  min-block-size: var(--edsb-layout-engineering-choices);
 }
 
 .engineering__actions {

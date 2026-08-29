@@ -34,7 +34,9 @@ async function waitForController(page: Page): Promise<void> {
 
 async function openStockBuild(page: Page, hull: string): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+  await page
+    .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
+    .click();
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 

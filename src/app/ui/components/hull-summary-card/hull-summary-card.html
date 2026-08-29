@@ -4,7 +4,19 @@
   on the trailing edge (canvas 1b `.sm-row`). Each fact keeps the label that
   names it; only the eye sees the compressed line.
 -->
-<article class="hull-card" [attr.aria-labelledby]="cardId" [attr.aria-current]="current()">
+<!--
+  The press is taken on the whole record rather than on the name inside it. A
+  compact row reads as one target — the price belongs to the same hull as the
+  name — and pressing anywhere but the name did nothing at all (Commander
+  request 2026-08-28). The name stays a real button, so the record still has a
+  named control; its own press bubbles to here and is answered once.
+-->
+<article
+  class="hull-card"
+  [attr.aria-labelledby]="cardId"
+  [attr.aria-current]="current()"
+  (click)="opened.emit(hull().symbol)"
+>
   <dl class="hull-card__facts">
     <dt>{{ sizeLabel() }}</dt>
     <dd class="hull-card__size">
@@ -19,12 +31,7 @@
     <dt class="hull-card__spoken">{{ nameLabel() }}</dt>
     <dd class="hull-card__identity">
       <h2 class="hull-card__name" [id]="cardId">
-        <button
-          type="button"
-          class="hull-card__open"
-          [attr.aria-label]="openActionLabel()"
-          (click)="opened.emit(hull().symbol)"
-        >
+        <button type="button" class="hull-card__open" [attr.aria-label]="openActionLabel()">
           <edsb-game-text
             [text]="hull().name.text"
             [language]="hull().name.language"

@@ -61,6 +61,28 @@ Canvas 1a draws the manifest as a grid on one track list — `22px 2.1fr 1.5fr 5
 
 So the table is `table-layout: fixed` and the track list is carried on the header cells as shares of the manifest — 3/36/24/8/16/13 — which reproduces the reference's proportions at the width it is drawn at and holds them at every other. Row height follows: one block of padding lives on the open action rather than being paid twice by the cell around it, so every row is the target baseline tall and no row is taller than another.
 
+### The row is the target, and the caret keeps its place (2026-08-28, Commander request)
+
+Three things about a manifest row, at both compositions:
+
+- **The whole row takes the press.** The press was on the hull's name alone, so a Commander who
+  pressed the price, the size code or the ground between them pressed nothing. Canvas 1a draws the
+  row as one target — `cursor: pointer` across it, the wash and the marker on all of it — and every
+  cell in it belongs to the same hull. The name stays a real button, which is what gives the row a
+  named control and what a keyboard reaches; its press bubbles to the row and is answered once, so
+  there is one action and not two. The compact record is the same: the press is on the card.
+- **The second press on a touch screen builds.** With no hover, the first press opens the hull —
+  nothing else can, because a touch screen has no resting state. Pressing the row that is already
+  open used to repeat that navigation, so the row a Commander was looking at did nothing when they
+  pressed it again. It builds now, which is the same second step a pointer takes by resting and then
+  pressing. The action's own words follow: a row that will open says so, and the open row says it
+  will build.
+- **The caret keeps its place on every header.** It is drawn on all six and inked on the one the
+  list is ordered by. Drawn only when sorted, it pulled the two right-ranged headings a caret's
+  width along the first time they were pressed — a heading moving under the pointer that asked for
+  it. Hidden and not absent, so the box is the same box in both states; and it is the ascending
+  glyph that holds the place, because the two are the same width.
+
 ### Screen chrome and the command bar
 
 The reference command bar carries the screen's own name on the leading edge, the one count belonging to that screen beside it, and the screen's actions on the trailing edge. It carries no product name, and the screen it is on is never repeated as a navigation control.

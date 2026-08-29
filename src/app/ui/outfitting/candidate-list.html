@@ -297,13 +297,33 @@
         @if (resolved.mercCoin; as coins) {
           <span class="candidate__merc">
             <span class="candidate__merc-count" data-bidi-isolate>{{ coins }}</span>
-            <img
-              class="candidate__merc-icon"
-              src="assets/icons/merc-coin.png"
-              alt=""
-              width="15"
-              height="15"
-            />
+            <!--
+              The mark hangs its own gloss on the design system's tooltip, drawn
+              on hover, on focus and on a press — the same treatment the route
+              marks beside the module's name already take, and for the same
+              reason: an icon with no way to ask what it means is a mark only
+              somebody who already knows can read (011 FR-006). Not a `title`,
+              which no thumb can reach.
+
+              Presentational, because the row around it is a control: a button
+              here would be a button inside a button. The unit is beside it in
+              words for a reader either way, so the tip is a way to *see* what a
+              reader is already told.
+            -->
+            <edsb-tooltip
+              class="candidate__merc-mark"
+              aria-hidden="true"
+              [presentational]="true"
+              [tip]="mercCoinLabel()"
+            >
+              <img
+                class="candidate__merc-icon"
+                src="assets/icons/merc-coin.png"
+                alt=""
+                width="15"
+                height="15"
+              />
+            </edsb-tooltip>
             <span class="visually-hidden">{{ mercCoinLabel() }}</span>
           </span>
         }

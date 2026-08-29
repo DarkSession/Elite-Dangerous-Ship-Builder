@@ -37,7 +37,7 @@ import { reachShellAction } from './shell';
 /** Creates a stock build and lands in the workspace with the ledger rendered. */
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
@@ -438,6 +438,77 @@ test.describe('engineering costs', () => {
     // calculated figure, so this is the only state that renders either. It
     // carries the table's longest label, in a column that does not wrap.
     await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
+  });
+
+  test('reserves the room the three controls take, before any is used', async ({ page }) => {
+    // The grade and the effect follow from a recipe, so an unengineered module
+    // opened a column shorter than an engineered one by both of them — and the
+    // panel under the hand that was reading it moved when a recipe was chosen
+    // (Commander requests 2026-08-28 and 2026-08-29). Nothing is drawn that is
+    // not there: what is reserved is the room, as the column's own floor.
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    const editor = page.locator('.engineering').first();
+    const choices = page.locator('.engineering__choices');
+    await expect(choices).toBeVisible();
+
+    if (await surfacesAreLayers(page)) {
+      // The full-screen composition stacks the three down a screen that
+      // scrolls, with nothing beside them to be moved, so it keeps no floor.
+      // Asserted rather than passed over: what it must do is offer the same
+      // three controls, which is the whole of what this width owes.
+      await expect(editor).toHaveClass(/engineering--layer/);
+      await chooseRecipe(page, /increased range/i);
+      await expect(page.locator('edsb-grade-selector')).toBeVisible();
+      return;
+    }
+
+    // Read from the token rather than written down again: the floor is one
+    // measure, and a test carrying its own copy would pass a change to it.
+    const floorOf = async () =>
+      await choices.evaluate((node) => {
+        const reserved = getComputedStyle(document.documentElement).getPropertyValue(
+          '--edsb-layout-engineering-choices',
+        );
+        const probe = document.createElement('div');
+        probe.style.blockSize = reserved.trim();
+        document.body.append(probe);
+        const floor = probe.getBoundingClientRect().height;
+        probe.remove();
+        return { column: node.getBoundingClientRect().height, floor };
+      });
+
+    const before = await floorOf();
+    expect(before.floor).toBeGreaterThan(0);
+    expect(before.column).toBeGreaterThanOrEqual(before.floor);
+
+    /*
+     * And the panel is the height it will be, which is the whole point of the
+     * floor and the half that was not being checked.
+     *
+     * The floor used to be stated inside the wide composition's own block, and
+     * the wide composition is the one place it does nothing: two columns
+     * stretched to the taller of them, with an attribute table beside these
+     * controls that is taller than the floor on all but the shortest article.
+     * So a floor that was never consulted read as a floor that held, and the
+     * growth went on at every other inline width — measured at 834x1112, the
+     * editor grew from 499px to 623px as a recipe was taken (Commander request
+     * 2026-08-29).
+     */
+    const settled = await editor.evaluate((node) => node.getBoundingClientRect().height);
+    await chooseRecipe(page, /increased range/i);
+    await expect(page.locator('edsb-grade-selector')).toBeVisible();
+
+    const after = await floorOf();
+    expect(after.column).toBeGreaterThanOrEqual(after.floor);
+
+    // Within a pixel, not to the pixel: the table beside the controls gains a
+    // `MODIFIED` column as a recipe is taken, and a column changes where its
+    // rows round to by a fraction of one. What this refuses is a panel that
+    // moves, which is the two controls' own height and is measured in tens.
+    const drawn = await editor.evaluate((node) => node.getBoundingClientRect().height);
+    expect(Math.abs(drawn - settled)).toBeLessThan(1);
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {

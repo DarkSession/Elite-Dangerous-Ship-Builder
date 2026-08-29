@@ -433,6 +433,37 @@ describe('candidate list', () => {
     expect(element(fixture).querySelectorAll('.candidate--fitted')).toHaveLength(1);
   });
 
+  it('lets the Merc Coin mark be asked what it means, without a title', () => {
+    // Item 002.3: the marks in this manifest are glossed the way the marks on
+    // the left rail already are. The coin is the price's unit and nothing on
+    // the row says so in a glance, so a Commander who does not already know the
+    // icon is left to guess at a second figure that does not add to the first.
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint);
+    const priced = choicesOf(families).some(
+      (choice) => choice.kind === 'variant' && typeof choice.variant.mercCoinCost === 'number',
+    );
+    expect(priced).toBe(true);
+
+    const fixture = renderComponent(CandidateList, {
+      families,
+      label: 'Modules for this mount',
+    });
+
+    const mark = element(fixture).querySelector('.candidate__merc-mark')!;
+
+    expect(mark.tagName.toLowerCase()).toBe('edsb-tooltip');
+    expect(mark.querySelector('[role="tooltip"]')?.textContent?.trim()).toBe(
+      englishCatalogue['outfitting.engineering.materials.merc-coin'],
+    );
+    expect(mark.querySelector('img')?.getAttribute('title')).toBeNull();
+    // Presentational, and for the reason the acquisition marks are: the row
+    // around it is a `label` over its own radio, so a button here would be a
+    // button inside a button. The unit is beside it in words for a reader
+    // either way, so the tip only makes that sentence visible.
+    expect(mark.getAttribute('aria-hidden')).toBe('true');
+    expect(mark.querySelector('button, [role="button"], [tabindex]')).toBeNull();
+  });
+
   it('states the selection rather than only colouring it', () => {
     const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
     const chosen = families[0]!.choices[0]!;
@@ -662,10 +693,10 @@ describe('the wide manifest', () => {
    * The rail's own box, in the pixels `--edsb-layout-manifest-pane` declares.
    *
    * Written down here because this environment has no layout to read it from,
-   * and it is the one figure the rule below is about: nine 44px rows of the
+   * and it is the one figure the rule below is about: eight 44px rows of the
    * Almanac's seventy-seven families.
    */
-  const RAIL_HEIGHT = 428;
+  const RAIL_HEIGHT = 386;
 
   /**
    * Renders the rail with a laid-out box, and reports what was scrolled.

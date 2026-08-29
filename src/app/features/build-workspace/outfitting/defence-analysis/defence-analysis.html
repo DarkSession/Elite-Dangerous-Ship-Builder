@@ -248,7 +248,16 @@
             the heading is `null` there.
           -->
           @if (table.pipColumn; as pips) {
-            <th scope="col" class="damage__cell--numeric">{{ pips }}</th>
+            <!--
+              Two lines, as the canvas sets them: the unit, and the allocation it
+              was read at under it and smaller. One heading still — a reader is
+              given `MJ × 2 SYS PIPS`, because the condition is part of what the
+              column states.
+            -->
+            <th scope="col" class="damage__cell--numeric damage__cell--at-pips">
+              {{ pips.unit }}
+              <span class="damage__at-pips">{{ pips.atPips }}</span>
+            </th>
           }
         </tr>
       </thead>
@@ -317,21 +326,23 @@
         <tr>
           <td></td>
           <td class="damage__bar">
+            <!--
+              Two names, each standing on the point it names rather than beside
+              it: zero, at the mark every bar is measured from, and the ceiling
+              at the end of the track. Ranged inside the track instead, `100%`
+              stood a name's width short of the length it was measuring
+              (Commander request 2026-08-28).
+            -->
             <span class="scale">
-              <span>{{ table.floor }}</span>
-              <span class="scale__rule"></span>
-              <span>{{ table.ceiling }}</span>
-              @if (table.signed) {
-                <!--
-                  Zero, at the mark the bars are actually measured from. A scale
-                  that only named its ends would leave a table reaching below
-                  zero without the one point on it that says which of its bars
-                  are resistances and which are weaknesses.
-                -->
-                <span class="scale__zero" [style.inset-inline-start.%]="table.zeroAt * 100">
-                  <span class="scale__zero-label">{{ table.zero }}</span>
-                </span>
-              }
+              <span
+                class="scale__mark scale__mark--zero"
+                [style.inset-inline-start.%]="table.zeroAt * 100"
+              >
+                <span class="scale__label">{{ table.zero }}</span>
+              </span>
+              <span class="scale__mark scale__mark--ceiling">
+                <span class="scale__label">{{ table.ceiling }}</span>
+              </span>
             </span>
           </td>
           <td></td>

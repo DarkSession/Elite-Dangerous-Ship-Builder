@@ -44,6 +44,17 @@ const DENSE_TARGETS = [
   // selector and 38px for canvas 1a's catalogue filter. At 44 it stops being a
   // strip beside a heading and becomes a band across the region.
   '.tab',
+  // A gloss on one line of a dense list. The reference sets these names as
+  // plain text with the gloss on a `data-tip`, so the 44 pixels are a target
+  // this application added: at that height the heat profile's scenario rows —
+  // five, six with a cell bank fitted — stand twenty pixels apart and the block
+  // reads as a different block from the two lists above it (Commander request
+  // 2026-08-28).
+  //
+  // The block that argued for the floor is what is named, not the design
+  // system's modifier: a bare `.tooltip__trigger--dense` would let any later
+  // caller take 24 pixels without anybody ruling that it may.
+  '.heat__description .tooltip__trigger--dense',
 ];
 
 /**

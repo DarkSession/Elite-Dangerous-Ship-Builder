@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import germanMessages from '../src/app/i18n/locales/de.json';
+import englishMessages from '../src/app/i18n/locales/en.json';
 import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
 import {
   acrossEveryFamily,
@@ -35,10 +36,10 @@ import { savedToBrowser } from './shell';
 async function openStockBuild(
   page: Page,
   hull = 'Anaconda',
-  create = 'Build stock hull',
+  create = englishMessages['hullDetail.create'],
 ): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: create }).click();
+  await page.getByRole('button', { name: create, exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
@@ -836,6 +837,57 @@ test.describe('finding a replacement', () => {
       .locator('.candidate__name')
       .evaluateAll((nodes) => nodes.map((node) => node.textContent?.toLowerCase() ?? ''));
     expect(siblings.filter((name) => name.includes(rewardName)).length).toBeGreaterThan(1);
+  });
+
+  test('draws a route mark\u2019s gloss where it can actually be seen', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'SmallHardpoint1');
+    await revealFamilyHolding(page, /not sold anywhere/i);
+
+    const gloss = page
+      .locator('.candidate')
+      .filter({ hasText: /not sold anywhere/i })
+      .first()
+      .locator('edsb-tooltip')
+      .first();
+    await expect(gloss).toHaveCount(1);
+
+    await gloss.locator('.tooltip__trigger').hover();
+    const bubble = gloss.locator('.tooltip__tip');
+    await expect(bubble).toHaveClass(/tooltip__tip--shown/);
+
+    /*
+     * Painted, and painted whole.
+     *
+     * `toBeVisible` cannot say this: it reports a box with a size and a
+     * position, and a manifest row is three boxes that cut their content —
+     * `content-visibility: auto` on the row is paint containment, the identity
+     * cell hides its overflow to cut a long name, and the pane is a scroller.
+     * Drawn in place the bubble had a size, a position, a `z-index` and not one
+     * pixel on the screen (Commander request 2026-08-29).
+     *
+     * Three points across it rather than one, because the three boxes cut it in
+     * different directions: the row's containment took the whole bubble, and
+     * the pane's edge took only the end of a mark drawn in the `COST` column.
+     */
+    const painted = await bubble.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const middle = box.top + box.height / 2;
+      const edge = node.ownerDocument.documentElement;
+      return {
+        inside:
+          box.left >= 0 &&
+          box.top >= 0 &&
+          box.right <= edge.clientWidth &&
+          box.bottom <= edge.clientHeight,
+        drawn: [box.left + 2, box.left + box.width / 2, box.right - 2].map((x) => {
+          const at = node.ownerDocument.elementFromPoint(x, middle);
+          return at !== null && (at === node || node.contains(at));
+        }),
+      };
+    });
+    expect(painted.drawn).toEqual([true, true, true]);
+    expect(painted.inside).toBe(true);
   });
 
   test('matches every term, whatever case or accents it is typed in', async ({ page }) => {

@@ -34,9 +34,20 @@
               (click)="sortRequested.emit(column.field)"
             >
               {{ column.label }}
-              @if (indicator(column); as caret) {
-                <span class="catalogue__caret" aria-hidden="true">{{ caret }}</span>
-              }
+              <!--
+                Drawn on every header, empty on the ones the list is not ordered
+                by. Its place is kept either way: a caret that appeared only
+                once a column was pressed pulled the two right-ranged headings a
+                caret's width along the moment they were first used, which is a
+                heading moving under the pointer that asked for it (Commander
+                request 2026-08-28).
+              -->
+              <span
+                class="catalogue__caret"
+                [class.catalogue__caret--reserved]="caretReserved(column)"
+                aria-hidden="true"
+                >{{ indicator(column) }}</span
+              >
             </button>
           </th>
         }
@@ -48,22 +59,26 @@
           Resting on a row opens it in the inspector beside the manifest, so a
           Commander reads down the list without pressing anything; the press
           itself is the decision to fly that hull.
+
+          The press is taken on the row rather than on the name inside it. A
+          manifest row reads as one target — the price cell belongs to the same
+          hull as the name — and pressing anywhere but the name did nothing at
+          all (Commander request 2026-08-28). The name stays a real button, so
+          the row still has a named control; its own press bubbles to here and
+          is answered once.
         -->
         <tr
+          class="catalogue__row"
           [attr.aria-current]="currentFor(hull)"
           [attr.data-hull-symbol]="hull.symbol"
           (mouseenter)="preview(hull)"
+          (click)="activate(hull, $event)"
         >
           <!-- The reference opens a current row with an amber lozenge in its
                own narrow column (canvas 1a `.sy-mark`). -->
           <td class="catalogue__mark" aria-hidden="true">{{ hull.selected ? marker : '' }}</td>
           <th scope="row">
-            <button
-              type="button"
-              class="catalogue__open"
-              [attr.aria-label]="openActionLabel(hull)"
-              (click)="activate(hull)"
-            >
+            <button type="button" class="catalogue__open" [attr.aria-label]="openActionLabel(hull)">
               <edsb-game-text
                 [text]="hull.name.text"
                 [language]="hull.name.language"

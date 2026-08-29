@@ -27,7 +27,7 @@ const HULL = 'Anaconda';
 /** Creates a stock build and opens the anatomy region's `DEFENCE` mode. */
 async function openDefence(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
   await openMode(page, messages['anatomy.mode.defence']);
   await expect(page.locator('edsb-defence-analysis .defence')).toBeVisible();
 }
@@ -353,14 +353,14 @@ test.describe('reading the build', () => {
       .first()
       .boundingBox())!;
     const label = (await page
-      .locator('edsb-defence-analysis .card--armour .scale__zero-label')
+      .locator('edsb-defence-analysis .card--armour .scale__mark--zero .scale__label')
       .boundingBox())!;
 
     // And zero is named where the mark stands, not only at the ends: it is what
     // says which of the bars above are resistances and which are weaknesses.
-    await expect(page.locator('edsb-defence-analysis .card--armour .scale__zero')).toContainText(
-      /\d/u,
-    );
+    await expect(
+      page.locator('edsb-defence-analysis .card--armour .scale__mark--zero'),
+    ).toContainText(/\d/u);
     expect(Math.abs(label.x + label.width / 2 - (mark.x + mark.width / 2))).toBeLessThanOrEqual(2);
   });
 
@@ -426,8 +426,12 @@ test.describe('the allocation the pip column and the recovery are read at', () =
     // Named, not merely moved. The fourth block on systems is four pips, and
     // the heading says so: a figure that follows the allocation is never drawn
     // without the allocation it was read at (FR-002).
-    expect(caps(await heading.innerText())).toBe(
-      caps(englishMessages['defence.damage.column.megajoules-at-pips'].replace('{{pips}}', '4')),
+    // The unit and the allocation are two lines of one heading, so the words are
+    // compared with the whitespace between them collapsed.
+    expect(caps(await heading.innerText()).replace(/\s+/g, ' ')).toBe(
+      caps(
+        `${englishMessages['defence.damage.column.megajoules']} ${englishMessages['defence.damage.column.at-pips'].replace('{{pips}}', '4')}`,
+      ),
     );
     // The pool itself is not a function of the allocation, and the package says
     // so by returning the same strength.

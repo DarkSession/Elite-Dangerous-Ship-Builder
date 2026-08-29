@@ -27,7 +27,7 @@ const HULL = 'Anaconda';
 /** Creates a stock build and opens the anatomy region's `POWER` mode. */
 async function openPower(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'] }).click();
+  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
 
   await page
     .locator('edsb-hull-anatomy .anatomy__modes button')
@@ -289,11 +289,11 @@ test.describe('reading the build', () => {
       expect(level.trim()).not.toBe('');
     }
 
-    // Read through `caps` because the design system sets these in capitals: the
-    // assertion is about the words, not about the stylesheet.
-    expect(caps(await page.locator('.heat__threshold-label').innerText())).toBe(
-      caps(englishMessages['power.heat.threshold']),
-    );
+    // The line every bar is measured against is drawn through the bars and is
+    // not captioned: the canvas withdrew the caption on 2026-08-28, and the
+    // block's own figures are what say where a bar falls against it.
+    await expect(page.locator('.heat__threshold-label')).toHaveCount(0);
+
     const keys = await page.locator('.power__block--heat .heat__key').allInnerTexts();
     expect(keys.map((key) => caps(key.trim()))).toEqual([
       caps(englishMessages['power.heat.within']),

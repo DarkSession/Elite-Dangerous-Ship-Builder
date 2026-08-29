@@ -23,6 +23,7 @@ import { relationId } from '../a11y/text-equivalence';
 import { AcquisitionBadge } from './acquisition-badge';
 import { observeManifest, type CandidateManifest } from './manifest';
 import { GameText } from '../components/game-text/game-text';
+import { Tooltip } from '../components/tooltip/tooltip';
 import { UnavailableFact } from './unavailable-fact';
 
 /** One package figure, formatted, or `null` where the Almanac has none. */
@@ -71,7 +72,7 @@ interface RenderedRow {
  */
 @Component({
   selector: 'edsb-candidate-list',
-  imports: [AcquisitionBadge, GameText, NgTemplateOutlet, UnavailableFact],
+  imports: [AcquisitionBadge, GameText, NgTemplateOutlet, Tooltip, UnavailableFact],
   templateUrl: './candidate-list.html',
   styleUrl: './candidate-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

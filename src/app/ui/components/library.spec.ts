@@ -28,7 +28,7 @@ function build(overrides: Partial<SavedBuild> = {}): SavedBuild {
   };
 }
 
-const COLUMNS = { build: 'Build', hull: 'Hull', modified: 'Edited' } as const;
+const COLUMNS = { build: 'Build', hull: 'Ship', modified: 'Edited' } as const;
 
 describe('SavedBuildCard', () => {
   it('shows the title, hull, how long ago it was edited and recorded state', () => {
@@ -176,7 +176,7 @@ describe('ResponsiveRecordList', () => {
     });
     const headers = query(fixture, '.records__columns');
 
-    expect([...headers.querySelectorAll('span')].map(textOf)).toEqual(['Build', 'Hull', 'Edited']);
+    expect([...headers.querySelectorAll('span')].map(textOf)).toEqual(['Build', 'Ship', 'Edited']);
     // Every row names its own parts, so the headers are not read again per row.
     expect(headers.getAttribute('aria-hidden')).toBe('true');
   });

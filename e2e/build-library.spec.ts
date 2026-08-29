@@ -172,7 +172,7 @@ async function saveActiveBuild(
 
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   // The command bar titles an unnamed build by what the build calls itself,
   // which for a stock hull is the hull (FR-010, ruled 2026-08-25).

@@ -50,7 +50,9 @@ test.describe('help first-frame timing', () => {
     // modal ever opens over: the ledger, the status rail and the anatomy plates
     // are all mounted behind it.
     await page.goto(`/ships/Anaconda`);
-    await page.getByRole('button', { name: englishMessages['hullDetail.create'] }).click();
+    await page
+      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
+      .click();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await page.waitForLoadState('networkidle');
 

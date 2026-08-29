@@ -9,6 +9,7 @@ import {
   distributorOffBuild,
   noPlantOutputBuild,
   overheatingBuild,
+  overloadedPlantBuild,
   shedBandBuild,
   withinBudgetBuild,
 } from '../../../../domain/power-heat/power-heat.fixtures';
@@ -177,6 +178,64 @@ describe('PowerThermals', () => {
       expect(marks.length).toBeGreaterThan(1);
       expect(new Set(marks).size).toBe(1);
       expect(marks[0]).toBeGreaterThan(0);
+    });
+
+    it('marks half of the plant’s output beside it, and names both marks', () => {
+      const { component, element } = render(shedBandBuild());
+
+      // The scale every bar is read on is the share of plant output the column
+      // at the end of each row prints, so the plant's own mark is its 100% and
+      // the mark half way to it is its 50%.
+      const halves = [...element.querySelectorAll<HTMLElement>('.power__band-half')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+      expect(halves.length).toBeGreaterThan(1);
+      expect(new Set(halves).size).toBe(1);
+      expect(halves[0]).toBeCloseTo((component.plantMark() * 100) / 2, 6);
+
+      // Named where they stand, under the tracks they are drawn through, and
+      // hidden from a reader: each row already prints its own share beside it.
+      const axis = element.querySelector('.power__axis-row');
+      const names = [...element.querySelectorAll('.power__axis-label')].map((label) =>
+        label.textContent?.trim(),
+      );
+      expect(axis?.getAttribute('aria-hidden')).toBe('true');
+      expect(names).toEqual(['50%', '100%']);
+      const offsets = [...element.querySelectorAll<HTMLElement>('.power__axis-mark')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+      expect(offsets).toEqual([halves[0], component.plantMark() * 100]);
+      // And it is not one of the groups: a row of names is not a priority group.
+      expect(element.querySelectorAll('.power__axis-row.power__band')).toHaveLength(0);
+    });
+
+    it('drops the half mark where there is no room to name it beside the plant’s', () => {
+      // The two names are centred on marks half a track apart, so a demand that
+      // runs well past the plant pushes them together until they print over
+      // each other. The plant's own mark is the one a track that overruns is
+      // read for, so it is the one that stays — unnamed lines are not the
+      // answer, and neither is a pair of names nobody can read.
+      const { component, element } = render(overloadedPlantBuild());
+      expect(component.plantMark()).toBeLessThan(0.5);
+
+      expect(element.querySelectorAll('.power__band-half')).toHaveLength(0);
+      const names = [...element.querySelectorAll('.power__axis-label')].map((label) =>
+        label.textContent?.trim(),
+      );
+      expect(names).toEqual(['100%']);
+      const offsets = [...element.querySelectorAll<HTMLElement>('.power__axis-mark')].map((mark) =>
+        Number.parseFloat(mark.style.insetInlineStart),
+      );
+      expect(offsets).toEqual([component.plantMark() * 100]);
+    });
+
+    it('names no mark at all on a plant that makes nothing', () => {
+      // There is no share of nothing, so there is no axis to name. Every row
+      // says `OFFLINE` beside it, which is the reading that state has.
+      const { element } = render(noPlantOutputBuild());
+
+      expect(element.querySelectorAll('.power__axis-row')).toHaveLength(0);
+      expect(element.querySelectorAll('.power__band-half')).toHaveLength(0);
     });
 
     it('states every group’s verdict in words, not only the shed one', () => {
@@ -435,6 +494,20 @@ describe('PowerThermals', () => {
       ).toBe('Hardpoints stowed, no throttle');
     });
 
+    it('asks for the dense trigger, because the word is inside a row of bars', () => {
+      // A trigger at the 44-pixel baseline set the height of every row in this
+      // block, so six 14-pixel bars stood across the height of ten. This block
+      // asks for SC 2.5.8's 24-pixel floor instead — the tooltip does not
+      // decide it, and a trigger standing on its own still takes the baseline.
+      const { element } = render(withinBudgetBuild());
+
+      const triggers = [...element.querySelectorAll('.heat__description button')];
+      expect(triggers.length).toBeGreaterThan(0);
+      for (const trigger of triggers) {
+        expect(trigger.classList.contains('tooltip__trigger--dense')).toBe(true);
+      }
+    });
+
     it('draws a scenario gloss only once it is asked for', () => {
       const { element, detect } = render(withinBudgetBuild());
 
@@ -506,12 +579,13 @@ describe('PowerThermals', () => {
       expect(bar?.classList).toContain('heat__bar--over');
     });
 
-    it('names the threshold and both fills in words, not by colour alone', () => {
+    it('names both fills in words, not by colour alone', () => {
       const { element } = render(withinBudgetBuild());
 
-      expect(element.querySelector('.heat__threshold-label')?.textContent?.trim()).toBe(
-        '100% module damage',
-      );
+      // The line the bars are measured against is drawn through them and carries
+      // no caption: the canvas withdrew it on 2026-08-28, and each bar's own
+      // gauge beside it is what says where it falls against the line.
+      expect(element.querySelector('.heat__threshold-label')).toBeNull();
       const keys = [...element.querySelectorAll('.heat__key')].map((node) =>
         node.textContent?.trim(),
       );

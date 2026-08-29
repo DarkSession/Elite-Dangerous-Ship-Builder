@@ -135,7 +135,7 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
 /** Creates a stock build and lands in the workspace with the rail rendered. */
 async function openStockBuild(page: Page): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   await expect(page).toHaveURL(/\/build(#|$)/);
   // Canvas 1d keeps the rail behind its `STATUS` segment rather than in the
   // flow, so a compact run opens it and a wide one finds it already there.
@@ -152,6 +152,44 @@ async function openSeededBuild(page: Page, id: string): Promise<void> {
 }
 
 test.describe('the BUILD STATUS block', () => {
+  test('opens on the same seam every other segment opens on', async ({ page }) => {
+    await openStockBuild(page);
+    const region = page.locator('.outfitting').first();
+    if ((await region.getAttribute('data-composition')) !== 'compact') {
+      // The wide composition draws the rail as the third track of canvas 1c's
+      // grid, on screen whatever the strip has open, so there is no segment for
+      // it and no seam under one.
+      await expect(rail(page)).toBeVisible();
+      await expect(
+        page.locator('.anatomy__modes').getByRole('button', { name: /^status$/i }),
+      ).toHaveCount(0);
+      return;
+    }
+
+    // The panel behind `STATUS` belongs to another region, so the anatomy drew
+    // its strip and stopped — keeping the inset under a panel that is not there
+    // while the workspace put its band gap after it. Between them they opened a
+    // band of empty ground above `BUILD STATUS` that no other segment has
+    // (Commander request 2026-08-28).
+    const seam = async (panel: string): Promise<number> => {
+      const strip = await page.locator('.anatomy__modes').boundingBox();
+      const next = await page.locator(panel).first().boundingBox();
+      return (next?.y ?? 0) - ((strip?.y ?? 0) + (strip?.height ?? 0));
+    };
+
+    const status = await seam('.outfitting__status-rail');
+
+    await page
+      .locator('.anatomy__modes')
+      .getByRole('button', { name: /^power$/i })
+      .click();
+    await expect(page.locator('.anatomy__dashboard').first()).toBeVisible();
+    const power = await seam('.anatomy__dashboard');
+
+    expect(power).toBeGreaterThan(0);
+    expect(Math.abs(status - power)).toBeLessThanOrEqual(1);
+  });
+
   test('opens the rail with the heading the canvas draws', async ({ page }) => {
     await openStockBuild(page);
 

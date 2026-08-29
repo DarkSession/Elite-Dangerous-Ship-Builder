@@ -135,6 +135,30 @@ const DISTRIBUTOR_DIGITS = 1;
 const PIP_DIGITS = 1;
 
 /**
+ * The two shares of plant output the priority-group tracks are marked at.
+ *
+ * They name the scale the tracks are read on rather than any figure: the plant
+ * is the whole of it, and the mark half way to that is half of it.
+ */
+const WHOLE_OUTPUT = 1;
+const HALF_OF_OUTPUT = 0.5;
+
+/**
+ * How far along the track the plant's mark has to stand for both names to fit.
+ *
+ * The two names are centred on their own marks, half a track apart from each
+ * other, so a demand that runs well past the plant pushes them together: at a
+ * plant mark of a fifth they are a tenth of the track apart, which on a phone
+ * is the two of them printed over each other. Half the track keeps a quarter of
+ * it between them, which holds the pair apart at a doubled text size as well.
+ *
+ * Below it the half mark is not drawn at all rather than drawn unnamed: the
+ * plant's own mark is the one a Commander is reading a track that overruns for,
+ * and an unnamed second line beside it is one more thing to work out.
+ */
+const NAMEABLE_PLANT_MARK = 0.5;
+
+/**
  * The track canvas 1c draws its heat bars on: the damage threshold sits at 62.5%
  * of it, which is a track running to 160% of the threshold.
  */
@@ -274,6 +298,27 @@ export class PowerThermals {
   readonly plantMark = computed(() => this.#projection()?.power.bar.plant ?? 0);
 
   /**
+   * Half way to the plant's mark, which is half of its output on this scale.
+   *
+   * A place on the track rather than a figure: the column at the end of every
+   * row prints that row's share of plant output, so the plant's mark is where
+   * that column reads 100% and this is where it reads 50%. Nothing is claimed
+   * about the plant — a track coordinate is halved, not a megawatt.
+   *
+   * `0` where the projection has no mark to halve, and where the plant's mark
+   * stands too near the leading edge to name a second one beside it — see
+   * {@link NAMEABLE_PLANT_MARK}. Either way the mark is not drawn.
+   */
+  readonly halfMark = computed(() => {
+    const plant = this.plantMark();
+    return plant >= NAMEABLE_PLANT_MARK ? plant / 2 : 0;
+  });
+
+  /** The two marks' own names: the shares of plant output they stand at. */
+  readonly halfLabel = computed(() => this.#formatters.percent(HALF_OF_OUTPUT));
+  readonly plantLabel = computed(() => this.#formatters.percent(WHOLE_OUTPUT));
+
+  /**
    * The canvas's three tiles: `PLANT OUTPUT`, `POWERED DRAW`, `UNPOWERED`.
    *
    * All three hold in either hardpoint state, so this states them in both and
@@ -392,8 +437,6 @@ export class PowerThermals {
 
   /** Where on the track the canvas draws its `100% MODULE DAMAGE` line. */
   readonly heatThreshold = computed(() => this.#projection()?.heat?.thresholdAt ?? 0);
-
-  readonly heatThresholdLabel = this.#messages.messageSignal('power.heat.threshold');
 
   /**
    * The hottest of the readings the bars carry.

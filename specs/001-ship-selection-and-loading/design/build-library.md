@@ -8,7 +8,7 @@
 - Wide: canvas 1a's centered, route-backed saved-build modal over an inert originating screen — a scrim, an amber-hairline body, a darker title bar carrying `SAVED BUILDS` and a monospace dismiss, and a committing footer on its own plate. Narrow: canvas 1b's full-screen saved-build layer with a back arrow in its own bar and the same footer pinned. Direct navigation to `/builds` supplies an ordinary page background while keeping the same content and the same title.
 - The modal's own title bar is this screen's heading, and the record count sits beside the search field in the header row under it, where the reference draws it. The title bar's dismiss is the shared `Close` every layer carries. The command bar behind the modal keeps naming the screen the modal was opened over.
 - A header row: one search field over the records carrying its words in the placeholder rather than in a drawn label, and the count of records in monospace beside it on the same line.
-- Column headers on their own lighter plate — `BUILD`, `HULL`, `Mcr`, `EDITED` — over a scrolling body, as one semantic list rather than four unrelated columns.
+- Column headers on their own lighter plate — `BUILD`, `SHIP`, `Mcr`, `EDITED` — over a scrolling body, as one semantic list rather than four unrelated columns.
 - Semantic `ResponsiveRecordList` as one list in one order — newest first, with the record id breaking ties — with no group headings between named and unnamed records (FR-010, ruled 2026-08-27).
 - `SavedBuildCard` showing the local name or that there is none, its note on one line, package hull text, how long ago it was last edited in the active locale's own words, and recorded validation valid/complete state. The instant itself stays as text beside the row's other read-not-drawn facts, so nothing is lost to a reader who needs it exactly. An unnamed record forked from a named one says which one, so unsaved edits to a saved build are distinguishable from a build that never had a name. Note presence/content is local, written with the build from the workspace's own `SAVE` (FR-011).
 - An unnamed row is titled by the build's own ship name, or its ident, or the hull — read from the build each time it is drawn, never written onto the record, and set apart from a Commander-given name rather than passed off as one. The reference draws the name as the largest thing in a row, and a week of rows all reading one word would be a pile rather than a library. Ship name and ident are the Commander's own words and are not package text, so they carry no translation marker.
@@ -31,7 +31,7 @@ The reference rows establish the compact name/note, hull, validation badge and m
 | Scrim and modal frame over an inert originating screen                       | Closed 2026-08-28: a layer over the screen it was opened from, which stays mounted and inert behind it      |
 | Title bar reading `SAVED BUILDS` with a monospace `CLOSE ✕`                  | No title bar; the count goes to the command bar and the dismiss is a quiet button at the end of the content |
 | Header row: a search field beside a monospace record count                   | Neither. There is no way to search a library holding a week of ordinary building                            |
-| Column headers `BUILD` / `HULL` / `Mcr` / `EDITED` on a lighter plate        | None; each card repeats its own field labels                                                                |
+| Column headers `BUILD` / `SHIP` / `Mcr` / `EDITED` on a lighter plate        | None; each card repeats its own field labels                                                                |
 | Dense rows in one scrolling body under a fixed header                        | A responsive card grid, several columns wide, each card a definition list                                   |
 | The 3px leading marker, amber with a wash on the current record              | No marker and no current-record treatment at all                                                            |
 | The monospace issue badge beside the title                                   | A full `StatusNotice` inside every card                                                                     |
@@ -141,6 +141,14 @@ ago`, in the active locale's own words through `Intl.RelativeTimeFormat`, which
   which is where the build they act on is. Nothing a Commander could do is gone —
   a record is renamed by opening it and saving it over the save it came from, and
   copied by opening it and saving it as a new build.
+
+### The column is `SHIP`, 2026-08-28
+
+The latest canvas revision renames the second column head from `HULL` to `SHIP`, and the record's own
+label follows it. The column holds the package's ship text — `Krait Mk II`, `Python` — which is what
+a Commander calls the thing they built on; `HULL` is what the application calls it internally and
+what the package's own type is named. The row's other words are unchanged, and so is what the column
+holds.
 
 ## States
 

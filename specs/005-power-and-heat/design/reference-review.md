@@ -355,3 +355,44 @@ column"). The reachability the wave-14 rule was written to protect is what withd
 a second scrollbar inside a column that already had one put the distributor's own pip blocks below
 the panel's fold with a page underneath that had stopped scrolling. Nothing about the dashboard's
 own arrangement changes; it is the column outside it that gives.
+
+## Wave 16 — the latest canvas revision, and four readings the Commander sent back
+
+### The threshold caption is withdrawn, and the reading it carried is not
+
+Canvas 1c drew `100% MODULE DAMAGE` under the heat bars until the latest revision, which removes it;
+canvas 1d still draws it. The caption is dropped at both widths rather than kept for the phone alone:
+the same reading in two shapes at two widths is where the two go out of step, and there is nothing
+here for it to be alone in saying. The threshold line stays, the hatch beyond it stays, and the key
+above the tiles still names both fills in words — so what the caption said is said by the block
+without it, in one fewer line on the tallest thing on the panel.
+
+### The heat trigger takes SC 2.5.8's floor
+
+Ruled at the full 44-pixel baseline in wave 14 by comparing the block against the drawn glosses it
+replaced. That comparison is spent: what a Commander reads this block against is the canvas, which
+sets six 14-pixel bars 9 pixels apart, and at the baseline each row was 44. The trigger takes the
+dense variant, recorded on `DENSE_TARGETS` beside the rail's pip control. It is the floor and not a
+waiver, and it is asked for by the block that projects the word rather than decided inside the
+tooltip: a trigger standing on its own still takes the baseline.
+
+### The priority-group axis is named, and the label beats the line
+
+The revision adds a broken line at `left: 50%` of every group's track and a row under the list
+reading `50%` and `100%`, the second centred on the plant mark at `83.33%`. Those two labels cannot
+both be true of that track: `83.33%` is `31.20 / 37.44`, so the axis they are on is plant output, and
+half of plant output falls at `41.67%` of a track that runs to the whole demand.
+
+The label is what is built. A mark reading `50%` that does not stand at half the output is a figure
+that is wrong; the same mark eight per cent of a track further along is a line in a slightly
+different place, which is the kind of thing this review has always let the canvas lose. So the half
+mark is drawn at half the plant mark, and both marks are shares of the one axis — the axis the
+percentage at the end of every row is already on. This is not a figure combined out of package
+fields: the plant mark is a position the projection already publishes, and half of a position is not
+a reading of the build.
+
+### `PLANT OUTPUT` is still not a line across the bars
+
+Review note 2 stands. What the axis row adds is the mark's own share, `100%`, not the `31.20 MW
+PLANT` caption the canvas sets across its bars — the tile beneath the groups says the figure, and
+says it once.

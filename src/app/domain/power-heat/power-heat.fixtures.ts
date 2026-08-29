@@ -65,6 +65,23 @@ export function divergentBandBuild(): ShipLoadout {
 }
 
 /**
+ * A build whose demand runs far past its plant.
+ *
+ * The same small plant as {@link shedBandBuild} under the A-rated drives,
+ * frame shift drive and shield generator the hull can carry, so the demand is
+ * nearly three times the output and the plant's mark stands in the first third
+ * of the track. It is the build that asks whether a second mark can be named
+ * beside that one.
+ */
+export function overloadedPlantBuild(): ShipLoadout {
+  const build = plantedBuild('Int_Powerplant_Size2_Class1');
+  build.setModule(SHED_SLOT, packageModule('Int_Engine_Size7_Class5'));
+  build.setModule('FrameShiftDrive', packageModule('Int_Hyperdrive_Size6_Class5'));
+  build.setModule('Slot03_Size6', packageModule('Int_ShieldGenerator_Size6_Class5'));
+  return build;
+}
+
+/**
  * A build with no powered plant.
  *
  * Zero output, a positive draw, every band shed, `Infinity` utilisation, and

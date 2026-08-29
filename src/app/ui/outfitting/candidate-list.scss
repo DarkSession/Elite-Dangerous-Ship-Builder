@@ -316,6 +316,13 @@
   unicode-bidi: isolate;
 }
 
+// The mark's trigger stands where the icon stood: it is the icon, with a gloss
+// hung on it, so it takes the icon's own cell of the two-column price.
+.candidate__merc-mark {
+  display: inline-flex;
+  flex: none;
+}
+
 .candidate__merc-icon {
   flex: none;
   inline-size: var(--edsb-layout-icon-size);

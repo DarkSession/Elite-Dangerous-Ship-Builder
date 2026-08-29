@@ -567,16 +567,21 @@
   // rather than the share — five rows of a 478-choice manifest is a list a
   // Commander pages through rather than reads.
   //
-  // Seven rows over that same head, rule and foot. Any of it is affordable
+  // Six rows over that same head, rule and foot. Any of it is affordable
   // only because the editor below no longer takes its height out of the same
   // fixed bench: the workspace column releases while a mount is selected and
-  // the page carries what will not fit. Seven rather than more, because the
+  // the page carries what will not fit. Six rather than more, because the
   // panel and the pane it holds are the tallest thing on the workspace, and
-  // the row this gives up is what a Commander was scrolling past to reach the
-  // anatomy and the rail under them (Commander requests 2026-08-27 and
-  // 2026-08-28; `design/outfitting-workspace.md`, "Five rows is still a
+  // each row this gives up is one a Commander was scrolling past to reach the
+  // anatomy and the rail under them (Commander requests 2026-08-27, 2026-08-28
+  // and 2026-08-29; `design/outfitting-workspace.md`, "Five rows is still a
   // glimpse" and "Seven rows, and the fitting panel about a tenth shorter").
-  --edsb-measure-fitting-panel: 23.375rem;
+  //
+  // Seven took it a tenth under the canvas and it was still too tall to read
+  // past; six is another tenth off, which is the same request made twice and
+  // answered the same way — in whole rows, because a manifest that ends
+  // halfway down a row is a list with a lid on it rather than a shorter list.
+  --edsb-measure-fitting-panel: 20.75rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It
   // is now only a floor — nothing measures a share against it — and it is what
@@ -622,14 +627,24 @@
   --edsb-measure-family-rail-share: 26%;
   --edsb-measure-family-gap: 0.875rem;
   // What the rail and the pane are bounded at: the canvas's 470px, less the same
-  // one row the fitting panel's floor above gives up. The panel and the pane
+  // two rows the fitting panel's floor above gives up. The panel and the pane
   // are the same list at two widths, so a row comes off both of them or
-  // neither (Commander request 2026-08-28).
-  --edsb-measure-manifest-pane: 26.75rem;
+  // neither (Commander requests 2026-08-28 and 2026-08-29).
+  --edsb-measure-manifest-pane: 24.125rem;
   --edsb-measure-candidate-class: 4.375rem;
   --edsb-measure-candidate-cost: 9.375rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
+  // The three controls the inline editor's left column holds — the recipe, the
+  // grade under it and the experimental effect under that — measured together
+  // with the two gaps between them: 183px at the base text size.
+  //
+  // A floor, never a cap: it keeps the column's height while the two controls
+  // that follow from a recipe are not there to be drawn, so choosing a recipe
+  // no longer grows the panel and moves the ledger beside it (Commander request
+  // 2026-08-28). Content taller than this — a translation that wraps, a doubled
+  // text size — simply passes it.
+  --edsb-measure-engineering-choices: 11.4375rem; // 183
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
   // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
   // wants a button around it rather than a band.
@@ -641,6 +656,20 @@
   // figure off the end of the bar it is read against.
   --edsb-measure-defence-resist: 2.875rem; // 46
   --edsb-measure-defence-value: 3.5rem; //    56
+
+  // The height the export layer's content column holds whichever format is
+  // chosen: the SLEF payload's twelve rows, its metadata line and its actions.
+  // The link is a shorter panel, and without a floor under both of them the
+  // layer changed height under the hand that chose the format (Commander
+  // request 2026-08-28).
+  //
+  // Two measures, because the payload panel is not one height: at the compact
+  // composition its actions take a second line, which the two regions side by
+  // side have the room to avoid. Each is the payload panel measured at the
+  // composition it belongs to, and each is a floor — a refusal, a stale notice
+  // or a translation that wraps still grows the panel past it.
+  --edsb-measure-export-content: 23.5rem; //      376
+  --edsb-measure-export-content-wide: 21.375rem; // 342
 
   // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.

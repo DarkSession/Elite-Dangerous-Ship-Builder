@@ -2074,7 +2074,7 @@ const ISSUE_BUILD = {
 } as const;
 
 /** The column headers the reference draws once over the whole body. */
-const RECORD_COLUMNS = { build: 'Build', hull: 'Hull', modified: 'Edited' } as const;
+const RECORD_COLUMNS = { build: 'Build', hull: 'Ship', modified: 'Edited' } as const;
 
 registerPreview({
   componentId: 'saved-build-card',
@@ -4009,7 +4009,7 @@ const EXPORT_VIEW = {
     {
       mode: 'link',
       label: 'Share link',
-      description: 'Read-only link to this exact loadout.',
+      description: 'The link to this build.',
       selected: false,
     },
   ],

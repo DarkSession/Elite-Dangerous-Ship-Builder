@@ -27,6 +27,11 @@
 
 .export-dialog__content {
   min-inline-size: 0;
+  // One height for both formats. The payload is twelve rows and the link is one
+  // line, so choosing between them moved the layer under the hand that chose
+  // (Commander request 2026-08-28). A floor and not a cap: a refusal or a stale
+  // notice is a state of the panel and still grows it.
+  min-block-size: var(--edsb-layout-export-content);
   padding-block: var(--edsb-space-stack) var(--edsb-space-panel);
   padding-inline: var(--edsb-space-panel);
 }
@@ -52,6 +57,10 @@
   }
 
   .export-dialog__content {
+    // The payload panel is shorter where the two regions stand side by side:
+    // its actions have the room to stay on one line. The floor is that panel,
+    // measured at this composition.
+    min-block-size: var(--edsb-layout-export-content-wide);
     padding: var(--edsb-space-panel);
   }
 }

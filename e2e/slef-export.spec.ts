@@ -15,7 +15,7 @@ import { reachShellAction, savedToBrowser } from './shell';
 
 async function withStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build stock hull' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
   await expect(page).toHaveURL(/\/build/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
@@ -267,6 +267,27 @@ test.describe('the layer’s semantics', () => {
 
     await expect(link).toHaveJSProperty('checked', true);
     await expect(slef).toHaveJSProperty('checked', false);
+  });
+
+  test('stands at one height whichever format is chosen', async ({ page }) => {
+    // The payload is a field of twelve rows and the link is one line, so
+    // choosing between them moved the layer under the hand that had just
+    // pressed the format beside it (Commander request 2026-08-28). The content
+    // region carries a floor the taller of the two already stands at.
+    await withStockBuild(page);
+    await openExport(page);
+    const content = layer(page).locator('.export-dialog__content');
+    await chooseSlef(page);
+    const withPayload = await content.boundingBox();
+
+    await layer(page)
+      .getByRole('radio', { name: /share link/i })
+      .check();
+    await expect(layer(page).getByLabel(/slef payload/i)).toHaveCount(0);
+    const withLink = await content.boundingBox();
+
+    expect(withPayload?.height).toBeGreaterThan(0);
+    expect(withLink?.height).toBe(withPayload?.height);
   });
 
   test('hands the payload over readonly, and never as a disabled field', async ({ page }) => {

@@ -576,6 +576,86 @@ describe('Tooltip', () => {
     // make the trigger a control that does nothing.
     expect(expanded(fixture)).toBe('false');
   });
+
+  it('offers a smaller trigger for a word that sits in a running line', () => {
+    // The heat profile's glosses are hung on the words of a caption, so a
+    // trigger at the 44 px baseline pushes the lines of that caption apart.
+    // The dense variant takes the 24 px floor of success criterion 2.5.8
+    // instead — asked for by the component that projects the word, never
+    // decided here, because a trigger standing on its own has the room.
+    const fixture = renderComponent(Tooltip, {
+      label: 'Idle',
+      tip: 'Hardpoints stowed',
+      dense: true,
+    });
+
+    expect(query(fixture, 'button').classList.contains('tooltip__trigger--dense')).toBe(true);
+
+    const roomy = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    expect(query(roomy, 'button').classList.contains('tooltip__trigger--dense')).toBe(false);
+  });
+
+  /**
+   * A platform with a top layer, which this suite's DOM is not.
+   *
+   * `showPopover` is what the component asks for before it raises anything, so
+   * the two calls are stood up here and recorded. What is being checked is the
+   * contract around them — raised once while it is drawn, put back whole when
+   * it is not — rather than what a browser does with a popover, which is the
+   * browser's own business and is checked on a real one end to end.
+   */
+  const withATopLayer = (bubble: HTMLElement) => {
+    const calls: string[] = [];
+    Object.assign(bubble, {
+      showPopover: () => calls.push('show'),
+      hidePopover: () => calls.push('hide'),
+    });
+    return calls;
+  };
+
+  it('raises the gloss into the top layer while it is drawn, and puts it back', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+    const bubble = query(fixture, '[role="tooltip"]');
+    const calls = withATopLayer(bubble);
+
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+
+    // `manual`, not `auto`: this component already governs when the tip closes,
+    // and an `auto` popover would shut every other one that is open and answer
+    // `Escape` behind the component's own dismissal.
+    expect(bubble.getAttribute('popover')).toBe('manual');
+    expect(bubble.classList.contains('tooltip__tip--floating')).toBe(true);
+    expect(calls).toEqual(['show']);
+
+    host.dispatchEvent(mouse('pointerleave'));
+    fixture.detectChanges();
+
+    // Put back rather than merely hidden. Closed, the gloss is the same
+    // screen-reader-only text it is everywhere else in this system, and a
+    // popover attribute left behind would take it out of the page's flow.
+    expect(bubble.getAttribute('popover')).toBe(null);
+    expect(bubble.classList.contains('tooltip__tip--floating')).toBe(false);
+    expect(calls).toEqual(['show', 'hide']);
+  });
+
+  it('draws the gloss in place where the platform offers no top layer', () => {
+    const fixture = renderComponent(Tooltip, { label: 'Idle', tip: 'Hardpoints stowed' });
+    const host = fixture.nativeElement as HTMLElement;
+    const bubble = query(fixture, '[role="tooltip"]');
+
+    host.dispatchEvent(mouse('pointerenter'));
+    fixture.detectChanges();
+
+    // The raise is an improvement on the placement, never a condition of it:
+    // where there is nothing to raise into, the bubble is drawn where it is
+    // written and the gloss is read exactly as before.
+    expect(expanded(fixture)).toBe('true');
+    expect(bubble.classList.contains('tooltip__tip--shown')).toBe(true);
+    expect(bubble.hasAttribute('popover')).toBe(false);
+    expect(bubble.classList.contains('tooltip__tip--floating')).toBe(false);
+  });
 });
 
 describe('Layer', () => {

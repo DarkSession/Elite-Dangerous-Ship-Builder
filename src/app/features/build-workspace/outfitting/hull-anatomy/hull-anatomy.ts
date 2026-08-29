@@ -103,7 +103,13 @@ export interface AnatomyGuestMode {
   // does not, so the column releases and the page carries it. The column cannot
   // tell these apart from the outside, and the difference decides whether it
   // stays bounded.
-  host: { '[class.anatomy--dashboard]': 'isDashboard()' },
+  host: {
+    '[class.anatomy--dashboard]': 'isDashboard()',
+    // A segment whose panel belongs to another region: this one draws its
+    // header and stops, and the panel follows outside it. The class is what
+    // lets the region close against that panel rather than against nothing.
+    '[class.anatomy--guest]': 'guestMode() !== null',
+  },
 })
 export class HullAnatomy {
   readonly #store = inject(AnatomyStore);
