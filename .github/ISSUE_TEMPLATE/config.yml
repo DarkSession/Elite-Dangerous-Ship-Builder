@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Wrong game data or a wrong calculated value
+    url: https://github.com/DarkSession/Elite-Dangerous-Almanac/issues
+    about: Hulls, modules, blueprints, effects, materials and every build calculation come from the Almanac package. Raise it there; this application consumes the released fix.
+  - name: Security vulnerability
+    url: https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/security/advisories/new
+    about: Report privately. Do not open a public issue.
+  - name: Code of conduct concern
+    url: https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/blob/main/CODE_OF_CONDUCT.md
+    about: Report a person's behaviour privately, not in an issue. The document says how.

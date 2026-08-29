@@ -1,0 +1,93 @@
+name: Bug report
+description: Report something the application does wrong.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ship, module, blueprint and material data, and every build calculation, come from
+        `@elite-dangerous-almanac/core`. A wrong number or a missing module is fixed
+        [in that repository](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues), not
+        here.
+
+        A security vulnerability goes in a
+        [private report](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder/security/advisories/new),
+        never in an issue.
+  - type: textarea
+    id: what-happens
+    attributes:
+      label: What happens
+      description: What the application does. One or two plain sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: what-you-expect
+    attributes:
+      label: What you expect instead
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, in the order you do them. Start from an empty application.
+      placeholder: |
+        1. Open the ship catalogue.
+        2. Select a hull.
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Build link
+      description: A link to the build the defect happens on, if it needs one. A build link carries only the build.
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device class
+      multiple: true
+      options:
+        - Desktop
+        - Tablet
+        - Mobile
+    validations:
+      required: true
+  - type: dropdown
+    id: orientation
+    attributes:
+      label: Orientation
+      description: For a tablet or a phone.
+      options:
+        - Portrait
+        - Landscape
+        - Both
+        - Not applicable
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Firefox 145 on Android 16
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Application version
+      description: Read it in the application under Help · About.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, a console error, how often it happens, what makes it stop.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you file this
+      options:
+        - label: I searched the open issues and this is not one of them.
+          required: true
+        - label: This is about the application, not about game data or a calculated value.
+          required: true

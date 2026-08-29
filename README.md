@@ -305,6 +305,17 @@ With Claude Code or Codex CLI in this repository:
 /speckit-implement   # execute the tasks
 ```
 
+## Contributing
+
+[`CONTRIBUTING.md`](./CONTRIBUTING.md) says how to raise a defect, how to make a change, and what
+the gate expects before a pull request is opened. Taking part means following the
+[code of conduct](./CODE_OF_CONDUCT.md).
+
+A wrong figure or a missing module belongs to
+[Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues), which owns
+the game data and the calculations. A security vulnerability goes in a private report rather than an
+issue — [`SECURITY.md`](./SECURITY.md) says how.
+
 ## Licence
 
 This project's own code and documentation are **MIT**-licensed — see
