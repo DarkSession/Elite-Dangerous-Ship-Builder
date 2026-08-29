@@ -1,7 +1,7 @@
 {
   "$generated": {
     "tableVersion": 1,
-    "contentHash": "f05e74f830df5485ac4e89f10e7016a167e622cd68e2d86ec2febe15a5ed0150"
+    "contentHash": "cbabae30fb1057a19c54e84d6b0c0bb309fa0071547a9fbf1e24a4c1148b4586"
   },
   "SHIPS": [
     "SideWinder",
@@ -5611,70 +5611,70 @@
       "blueprint": 29,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 53
     },
     {
       "module": 1080,
       "blueprint": 28,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 53
     },
     {
       "module": 1075,
       "blueprint": 48,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 32
     },
     {
       "module": 1053,
       "blueprint": 56,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 37
     },
     {
       "module": 1066,
       "blueprint": 76,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 19
     },
     {
       "module": 1068,
       "blueprint": 82,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 12
     },
     {
       "module": 1069,
       "blueprint": 82,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 12
     },
     {
       "module": 1068,
       "blueprint": 83,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 77
     },
     {
       "module": 1068,
       "blueprint": 81,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 24
     },
     {
       "module": 1069,
       "blueprint": 80,
       "grade": 1,
       "acquisition": "mercenary",
-      "experimental": null
+      "experimental": 24
     },
     {
       "module": 606,

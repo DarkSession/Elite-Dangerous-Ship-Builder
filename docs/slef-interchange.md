@@ -80,7 +80,7 @@ is nothing to say. An ambiguous one is not moot — its recipe is one the module
 a partial quality on it completes and the candidate is accepted — and goes unread only because there
 is no surface here to offer the passed-over article on.
 
-0.2.2's third entry is not one of those two, and is the one thing in this release that changes a fit.
+0.2.2's third entry is not one of those two, and is the only one of the three that changes a fit.
 Where a stated `Modifiers` block moves no stat the module's record carries — an empty array, or
 labels the catalogues model nothing for — it describes some other module, and keeping it would
 publish unengineered figures under an engineered block. The package rolls the recipe stated beside it

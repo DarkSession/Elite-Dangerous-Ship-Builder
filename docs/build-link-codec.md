@@ -342,7 +342,7 @@ encoder refused, and a Commander who engineered one watched the build's link dis
 Since 2026-08-22 each module's set is its own menu plus the blueprints its pre-engineered variants
 carry. The six gain a set of exactly their variants' blueprints — no menu is invented, only the
 blueprint a climbed article has to name — and with it the discriminator that tells the two forms
-apart. Every one of the 22 Mercenary articles now shares at every craftable grade, as do the
+apart. Every one of the 22 Mercenary articles shares at every craftable grade, as do the
 community-goal and tech-broker variants on those same modules. The record layouts are unchanged.
 
 Festive launchers are normal fixed pre-engineered variants in the Almanac model. They therefore use
@@ -610,7 +610,7 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.2.2`. Table 1 was overwritten in
+The current application dependency is exactly pinned to Almanac `0.2.5`. Table 1 was overwritten in
 place on 2026-08-22, while it is still pre-release and no link has been published against it, so
 that a module's pre-engineered variants contribute their blueprints to its candidate set — see
 "Where neither form fits" above. It was overwritten again on 2026-08-26, under the same rule, so
@@ -619,9 +619,15 @@ those it prices above it — see "Power state" above. The third overwrite, on 20
 package: nine starter `*_free` fittings and six bundle-granted Vessel Hangars are second identities
 for articles the game already sells, and `modulesForSlot` stopped offering them, so `MODULE_SETS`
 stopped listing them. They stay in `MODULES` at the same indices, because every lookup still
-resolves them and an imported build keeps the one it arrived with. Running `pnpm run codec:tables`
-reproduces table 1 at content hash
-`f05e74f830df5485ac4e89f10e7016a167e622cd68e2d86ec2febe15a5ed0150`. The package also reconstructs
+resolves them and an imported build keeps the one it arrived with.
+
+The fourth overwrite, on 2026-08-29, also follows the package: ten Mercenary articles are recorded
+with the experimental effect the shop bakes in, so their `PRE_ENGINEERED_VARIANTS` rows carry an
+`experimental` index where they carried `null`. No row is added, removed or reordered, so every
+variant index an existing link would name is unchanged. The effect beside those ten rows is encoded
+against a default rather than written out, so a link minted against the earlier table that names
+one of them reads differently. Running `pnpm run codec:tables` reproduces table 1 at content hash
+`cbabae30fb1057a19c54e84d6b0c0bb309fa0071547a9fbf1e24a4c1148b4586`. The package also reconstructs
 every omitted required mount with the hull's default module. That changes the canonical minimal
 loadout and the current encoder output for it without changing the table's identity.
 
