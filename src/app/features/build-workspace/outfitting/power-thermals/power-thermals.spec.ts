@@ -3,7 +3,6 @@ import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics'
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
-import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
 import {
   distributorOffBuild,

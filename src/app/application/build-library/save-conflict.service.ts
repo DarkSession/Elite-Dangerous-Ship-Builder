@@ -1,6 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
 import type { LocalRecordV1 } from '../../domain/build/stored-build';
-import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import {
   NamedRecordService,
@@ -49,7 +48,6 @@ export type ConflictChoice = 'overwrite' | 'keep-both' | 'cancel';
 export class SaveConflictService {
   readonly #named = inject(NamedRecordService);
   readonly #records = inject(LocalRecordRepository);
-  readonly #uuid = inject(UuidAdapter);
 
   readonly #conflict = signal<SaveConflict | null>(null);
 
@@ -168,11 +166,6 @@ export class SaveConflictService {
       observedRevisionId: current.value.record.revisionId,
       observed: current.value.record,
     });
-  }
-
-  /** Duplicates the observed record under a fresh identity. Test and manual support. */
-  freshIdentity(): string {
-    return this.#uuid.create();
   }
 
   clear(): void {

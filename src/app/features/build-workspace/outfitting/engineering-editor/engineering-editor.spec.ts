@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
-import { BuildIngressCoordinator } from '../../../../application/active-build/build-ingress.coordinator';
 import { NO_BLUEPRINT } from '../../../../application/outfitting/engineering-draft';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import { BUNDLED_ENGLISH } from '../../../../i18n/locale-registry';

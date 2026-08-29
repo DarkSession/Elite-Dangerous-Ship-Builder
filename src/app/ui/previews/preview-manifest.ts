@@ -2916,7 +2916,7 @@ function candidateFamilies(
       ? new Set<(typeof specimen)[number]['presentation']['familyId']>()
       : new Set(
           specimen
-            .filter((choice, index) => opening === 'all' || index === 0)
+            .filter((_, index) => opening === 'all' || index === 0)
             .map((choice) => choice.presentation.familyId),
         );
 
@@ -3200,12 +3200,6 @@ function blueprintChoice(
 ): Record<string, unknown> {
   return { fdname, name: localized(name), route, applied };
 }
-
-const ENGINEERING_MATERIALS = [
-  { symbol: 'ConductivePolymers', name: localized('Conductive Polymers'), grade: 4, count: '5' },
-  { symbol: 'Selenium', name: localized('Selenium'), grade: 4, count: '1' },
-  { symbol: 'Zirconium', name: localized('Zirconium'), grade: 3, count: '5' },
-];
 
 registerPreview({
   componentId: 'blueprint-choice-list',

@@ -1,11 +1,7 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { MessageService } from '../../i18n/message.service';
 import type { MessageKey } from '../../i18n/locale-registry';
-import {
-  HELP_TOPIC_IDS,
-  assertCompleteHelpTopicCatalogue,
-  type HelpTopicId,
-} from '../../domain/help/help-topic';
+import { assertCompleteHelpTopicCatalogue, type HelpTopicId } from '../../domain/help/help-topic';
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
 import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
 import type { VersionFact } from '../../ui/components/version-facts/version-facts';
@@ -338,9 +334,6 @@ export class HelpPresenter {
   readonly actionSymbol = this.#messages.messageSignal('help.action.symbol');
   readonly actionDescription = this.#messages.messageSignal('help.action.description');
   readonly dismissLabel = this.#messages.messageSignal('action.close');
-
-  /** The identities the view is expected to carry, for tests and callers. */
-  readonly topicIds = HELP_TOPIC_IDS;
 
   openDialog(): void {
     this.#dialog.openDialog({ kind: 'global' });

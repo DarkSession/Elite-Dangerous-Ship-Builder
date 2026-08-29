@@ -24,6 +24,19 @@ function setup(locale: 'en' | 'de' = 'en'): Formatters {
   return TestBed.inject(Formatters);
 }
 
+function numberFormatConstructionSpy() {
+  const NativeNumberFormat = Intl.NumberFormat;
+  function NumberFormatMock(
+    locales?: Intl.LocalesArgument,
+    options?: Intl.NumberFormatOptions,
+  ): Intl.NumberFormat {
+    return new NativeNumberFormat(locales, options);
+  }
+  return vi
+    .spyOn(Intl, 'NumberFormat')
+    .mockImplementation(NumberFormatMock as typeof Intl.NumberFormat);
+}
+
 /** Reads the semantic parts of a formatted number rather than pinning a whole string. */
 function partsOf(locale: string, value: number, options: Intl.NumberFormatOptions) {
   return new Intl.NumberFormat(locale, options)
@@ -32,6 +45,8 @@ function partsOf(locale: string, value: number, options: Intl.NumberFormatOption
 }
 
 describe('Formatters', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it('formats integers for the active locale', () => {
     expect(setup('en').integer(1234567)).toBe(
       partsOf('en', 1234567, { maximumFractionDigits: 0 })
@@ -215,19 +230,20 @@ describe('Formatters', () => {
   });
 
   it('caches one Intl instance per locale, operation and options', () => {
+    const created = numberFormatConstructionSpy();
     const formatters = setup('en');
 
     formatters.integer(1);
     formatters.integer(2);
     formatters.integer(3);
 
-    expect(formatters.cacheSize).toBe(1);
+    expect(created).toHaveBeenCalledTimes(1);
 
     formatters.decimal(1, 2);
-    expect(formatters.cacheSize).toBe(2);
+    expect(created).toHaveBeenCalledTimes(2);
 
     formatters.decimal(1, 3);
-    expect(formatters.cacheSize).toBe(3);
+    expect(created).toHaveBeenCalledTimes(3);
   });
 
   it('returns the same collator instance for the same options', () => {
@@ -237,6 +253,7 @@ describe('Formatters', () => {
   });
 
   it('caches separately per effective locale', () => {
+    const created = numberFormatConstructionSpy();
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [provideLocalization(), ...provideIsolatedLocaleEnvironment()],
@@ -245,7 +262,7 @@ describe('Formatters', () => {
     const formatters = TestBed.inject(Formatters);
 
     formatters.integer(1);
-    expect(formatters.cacheSize).toBe(1);
+    expect(created).toHaveBeenCalledTimes(1);
 
     store.commitCandidate(
       { requested: 'de', catalogue: GERMAN, source: 'asset', failure: null },
@@ -253,7 +270,7 @@ describe('Formatters', () => {
     );
     formatters.integer(1);
 
-    expect(formatters.cacheSize).toBe(2);
+    expect(created).toHaveBeenCalledTimes(2);
   });
 
   describe('values that are states, not numbers', () => {

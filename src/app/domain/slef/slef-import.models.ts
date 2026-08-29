@@ -121,12 +121,3 @@ export interface SlefSourceAttribution {
   readonly appName: string;
   readonly appVersion: string;
 }
-
-/** How one import attempt ended. */
-export type SlefImportOperation =
-  | { readonly kind: 'ready'; readonly candidate: SlefImportCandidate }
-  | { readonly kind: 'failed'; readonly failure: SlefImportFailure }
-  /** A newer submit, close or route change invalidated this one. No-op. */
-  | { readonly kind: 'superseded' }
-  /** The Commander declined the replacement. No-op. */
-  | { readonly kind: 'cancelled' };

@@ -1813,13 +1813,6 @@ export function registeredRequirementIds(
   return new Set(ledger.flatMap((entry) => entry.requirements));
 }
 
-/** Entries whose journey runs in all ten projects. */
-export function primaryJourneyEntries(
-  ledger: readonly CoverageEntry[] = COVERAGE_LEDGER,
-): readonly CoverageEntry[] {
-  return ledger.filter((entry) => entry.journey.startsWith('product/'));
-}
-
 // ---------------------------------------------------------------------------
 // Feature 012: the release coverage ledger for the Help · About route
 // ---------------------------------------------------------------------------

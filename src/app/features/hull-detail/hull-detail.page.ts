@@ -23,7 +23,6 @@ import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ScreenChrome } from '../shared/screen-chrome';
 import { CatalogueAnchorRestorer } from '../ship-catalogue/catalogue-anchor.restorer';
 import { HullDetailUnknownSymbol } from './hull-detail-unknown-symbol';
-import type { HullFactGroup } from '../../domain/catalogue/hull-facts';
 
 /**
  * The eight figures the reference's metric grid carries, in its order (canvas

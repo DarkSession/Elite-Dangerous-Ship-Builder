@@ -409,7 +409,7 @@ describe('RecordOpenService', () => {
   });
 
   it('cannot replace active work with a record that fails to open', async () => {
-    const { open, active, coordinator } = setup((storage) => {
+    const { open, active } = setup((storage) => {
       storage.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1);
       storage.setItem(recordKey(FIXTURE_IDS.unknownHull), UNKNOWN_HULL_RECORD);
       storage.setItem(recordKey('broken'), MALFORMED_RECORD);

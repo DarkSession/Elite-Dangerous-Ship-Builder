@@ -9,10 +9,6 @@ export type OpenOutcome =
   | {
       readonly ok: true;
       readonly record: LocalRecordV1;
-      /** True when the record was rewritten in its newer form. */
-      readonly rewritten: boolean;
-      /** True when it was migrated but the rewrite could not be stored. */
-      readonly rewriteFailed: boolean;
     }
   | { readonly ok: false; readonly reason: string };
 
@@ -26,9 +22,8 @@ export type OpenOutcome =
  * something this build has already proved it cannot open (persistence
  * contract, "Version and migration behavior").
  *
- * A failed rewrite is not a failed open: the candidate is in memory and
- * perfectly usable, so opening continues and persistence says it could not
- * store the newer form.
+ * A failed rewrite is not a failed open. The candidate remains usable in
+ * memory, and the original stored bytes remain intact.
  */
 @Injectable({ providedIn: 'root' })
 export class RecordMigrationService {
@@ -54,12 +49,12 @@ export class RecordMigrationService {
     }
 
     if (!migrated) {
-      return { ok: true, record, rewritten: false, rewriteFailed: false };
+      return { ok: true, record };
     }
 
     // The reconstructed build is what gets stored, so the migrated record and
     // the build a Commander is now editing are the same thing.
-    const written = this.#records.write({
+    this.#records.write({
       id: record.id,
       kind: record.kind,
       revisionId: record.revisionId,
@@ -72,6 +67,6 @@ export class RecordMigrationService {
       sourceNamed: record.sourceNamed,
     });
 
-    return { ok: true, record, rewritten: written.ok, rewriteFailed: !written.ok };
+    return { ok: true, record };
   }
 }

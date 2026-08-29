@@ -506,7 +506,7 @@ describe('DrivesMass', () => {
   describe('when the package cannot say how the build moves', () => {
     it('draws no envelope and gives the package’s own reasons', () => {
       const loadout = thrustersOffBuild();
-      const { element, component } = render(loadout);
+      const { element } = render(loadout);
 
       expect(element.querySelector('.drives__envelope')).toBeNull();
       expect(texts(element, '.drives__issues li')).toHaveLength(

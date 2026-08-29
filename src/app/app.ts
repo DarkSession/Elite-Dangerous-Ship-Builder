@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
+import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { MessageService } from './i18n/message.service';
 import { AppNavigation, NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { BuildLibraryPage } from './features/build-library/build-library.page';
@@ -37,6 +38,9 @@ export const HELP_ACTION = 'help.open';
 
 /** The shell action that starts the application over on a newer version. */
 export const UPDATE_ACTION = 'app.update';
+
+/** The workspace action that top-level composition connects to feature 004. */
+export const WORKSPACE_EXPORT_ACTION = 'workspace.export';
 
 /**
  * The application root.
@@ -74,6 +78,7 @@ export class App {
   readonly #router = inject(Router);
   readonly #messages = inject(MessageService);
   readonly #slef = inject(SlefStore);
+  readonly #active = inject(ActiveBuildStore);
   readonly help = inject(HelpPresenter);
   readonly #updates = inject(ApplicationUpdateStore);
   readonly #announcements = inject(AnnouncementService);
@@ -390,6 +395,16 @@ export class App {
     // The screen's own actions first: the shell places them and knows nothing
     // about what they mean.
     if (this.chrome.select(id)) {
+      return;
+    }
+    if (id === WORKSPACE_EXPORT_ACTION) {
+      if (this.#active.loadout() === null) {
+        return;
+      }
+      if (this.#active.link().kind === 'refused') {
+        this.#slef.selectExportMode('slef');
+      }
+      this.#slef.openLayer('export');
       return;
     }
     if (id === IMPORT_ACTION) {

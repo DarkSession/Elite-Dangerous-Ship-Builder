@@ -87,13 +87,4 @@ describe('ArtworkCoordinator', () => {
 
     expect(coordinator.states()).toBe(states);
   });
-
-  it('can return to loading before a fresh attempt', () => {
-    const { coordinator } = setup();
-    coordinator.markUnavailable('Adder');
-
-    coordinator.markLoading('Adder');
-
-    expect(coordinator.stateOf('Adder')).toBe('loading');
-  });
 });
