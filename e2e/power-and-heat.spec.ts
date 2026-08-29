@@ -4,7 +4,8 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, expectTargetSizes, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { revealStatusRail } from './outfitting-surfaces';
+import { isCompactWorkspace, revealStatusRail } from './outfitting-surfaces';
+import { buildStockHull } from './shell';
 
 /**
  * Power and thermals, end to end.
@@ -27,7 +28,7 @@ const HULL = 'Anaconda';
 /** Creates a stock build and opens the anatomy region's `POWER` mode. */
 async function openPower(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
 
   await page
     .locator('edsb-hull-anatomy .anatomy__modes button')
@@ -619,6 +620,140 @@ test.describe('the status rail', () => {
         ),
       ).toHaveCount(0);
     }
+  });
+});
+
+test.describe('the compact strip’s power badge', () => {
+  test('closes the strip with the lit share of plant output, and holds no control', async ({
+    page,
+  }) => {
+    await openPower(page);
+
+    // Canvas 1c has no strip and no badge: the rail states the draw, the
+    // remainder and the bar in full, and a plate repeating the same figure a
+    // track away would be the one reading given twice on one screen
+    // (`design/power-and-heat-detail.md`, "The compact strip's badge").
+    if (!(await isCompactWorkspace(page))) {
+      await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+      return;
+    }
+
+    const badge = page.locator('edsb-power-badge .badge');
+    await expect(badge).toBeVisible();
+
+    // A reading, like every other cell in the strip. The canvas draws no
+    // control on the plate, and what a Commander would change is a mode away.
+    await expect(badge.locator('button, a, input, [tabindex]')).toHaveCount(0);
+
+    // The share is against **plant output**, not against the whole demand.
+    // Both figures are read off the rail on the same screen rather than
+    // written down here: what is asserted is the relation between them.
+    const share = Number(
+      /(\d+(?:[.,]\d+)?)\s*%/u.exec(await badge.innerText())?.[1] ?? '',
+    ).valueOf();
+    expect(Number.isFinite(share)).toBe(true);
+    expect(share).toBeGreaterThan(0);
+    expect(share).toBeLessThanOrEqual(100);
+
+    let figures = '';
+    await inTheRail(page, async () => {
+      figures = await page.locator('edsb-power-summary .rail-power__figures').innerText();
+    });
+    // `{{draw}} of {{available}}`, and on a build that sheds, ` · {{off}} off`
+    // after it. The suffix is cut before the split, because the words it adds
+    // would otherwise be read as part of the plant's own figure.
+    const [reading = ''] = figures.split('·');
+    const [draw = '', available = ''] = reading.split(/\bof\b/u);
+    const demandShare = (Number(digits(draw)) / Number(digits(available))) * 100;
+    expect(Number.isFinite(demandShare)).toBe(true);
+    expect(demandShare).toBeGreaterThan(0);
+
+    // Where the plant covers the build the two are the same reading; where it
+    // does not, the badge is the smaller of the two, because the draw it counts
+    // stops at what the plant actually lights (FR-014).
+    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
+    if (dark === 0) {
+      expect(Math.abs(share - demandShare)).toBeLessThanOrEqual(1);
+    } else {
+      expect(share).toBeLessThan(demandShare);
+    }
+  });
+
+  test('closes the strip on a row of its own, never over one of the six figures', async ({
+    page,
+  }) => {
+    // What the artboard's arrangement is for: the plate stands beside the six
+    // readings rather than over them. It was drawn `position: absolute` across
+    // `MASS` before the 2026-08-29 revision, so this is the regression the
+    // placement exists to prevent (005/FR-014).
+    //
+    // Asserted at a doubled text size as well as at this profile's own, because
+    // the strip's track count follows the space it is given at the size it is
+    // given it: a placement that only holds while the six fit one row is not
+    // the placement.
+    for (const scale of [null, DOUBLED_TEXT]) {
+      if (scale !== null) {
+        await withRootTextScale(page, scale);
+      }
+      await openPower(page);
+
+      if (!(await isCompactWorkspace(page))) {
+        await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+        return;
+      }
+
+      const boxes = await page
+        .locator('.outfitting__key-figures')
+        .evaluate((strip: HTMLElement) => {
+          const box = (node: Element) => {
+            const rect = node.getBoundingClientRect();
+            return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+          };
+          return {
+            strip: box(strip),
+            badge: box(strip.querySelector('edsb-power-badge')!),
+            cells: [...strip.querySelectorAll('.metric')].map(box),
+          };
+        });
+
+      expect(boxes.cells.length).toBe(6);
+      for (const cell of boxes.cells) {
+        const overlaps =
+          boxes.badge.left < cell.right - 1 &&
+          boxes.badge.right > cell.left + 1 &&
+          boxes.badge.top < cell.bottom - 1 &&
+          boxes.badge.bottom > cell.top + 1;
+        expect(overlaps).toBe(false);
+      }
+
+      // And it closes the strip rather than sitting inside it: the plate runs
+      // the width the strip gives its content, on the row it fell to.
+      expect(Math.round(boxes.badge.right - boxes.badge.left)).toBeGreaterThan(
+        Math.round((boxes.strip.right - boxes.strip.left) / 2),
+      );
+    }
+  });
+
+  test('names an unpowered group only where the package reports one', async ({ page }) => {
+    await openPower(page);
+
+    if (!(await isCompactWorkspace(page))) {
+      await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+      return;
+    }
+
+    // The plate's first spoken line is the share; every line after it names one
+    // group the plant leaves dark, and there is exactly one per dark band the
+    // dashboard draws. A build the plant covers gets no `0 OFF` — a figure the
+    // artboard never prints.
+    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
+    const spoken = await page.locator('edsb-power-badge .badge__words').allInnerTexts();
+    expect(spoken.length).toBe(dark + 1);
+
+    // And the hot tone is carried only where something actually is dark: the
+    // canvas draws the plate hot on a build that sheds, and the words are what
+    // say so in any case.
+    await expect(page.locator('edsb-power-badge .badge--shed')).toHaveCount(dark > 0 ? 1 : 0);
   });
 });
 

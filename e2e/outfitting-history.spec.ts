@@ -9,7 +9,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
-import { savedToBrowser } from './shell';
+import { buildStockHull, savedToBrowser } from './shell';
 
 /**
  * Undo and redo, end to end (US4).
@@ -25,7 +25,7 @@ import { savedToBrowser } from './shell';
 /** Creates a stock build and lands in the workspace with the ledger rendered. */
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

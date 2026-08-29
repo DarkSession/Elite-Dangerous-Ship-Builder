@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectRelationship } from './accessibility/assertions';
 import { commandBarActionState } from './outfitting-surfaces';
-import { reachShellAction, savedToBrowser } from './shell';
+import { buildStockHull, reachShellAction, savedToBrowser } from './shell';
 
 /**
  * A build, handed over as a file rather than as a link.
@@ -15,7 +15,7 @@ import { reachShellAction, savedToBrowser } from './shell';
 
 async function withStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

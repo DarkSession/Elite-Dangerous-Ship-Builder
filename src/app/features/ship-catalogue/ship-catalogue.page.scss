@@ -83,7 +83,12 @@
 
   .catalogue__inspector {
     background-color: var(--edsb-surface-rail);
+    // The rail is closed on two edges: the hairline against the manifest, and
+    // one under it. Without the second, the rail's ground stops at whatever
+    // height its contents reached and reads as content that was cut off rather
+    // than as a panel that ended (canvas 1a).
     border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
     padding: var(--edsb-space-panel);
     // The rail's ground runs from the command bar's rule down, as the canvas
     // draws it, and its resting position is therefore the position it freezes

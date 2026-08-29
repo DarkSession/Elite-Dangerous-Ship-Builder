@@ -641,7 +641,9 @@
 
 // Canvas 1d's strip of six readings over the category tabs: label above figure,
 // evenly shared across the row, on the panel ground and closed by a hairline.
-// The cells themselves are features 006 to 008's, exactly as in the rail.
+// The cells themselves are features 006 to 008's, exactly as in the rail, and
+// the plate at the end of the strip is feature 005's power badge, which takes
+// two of these tracks and sets its own span from its own stylesheet.
 .outfitting__key-figures {
   // All six across, which is what canvas 1d draws — but as a track floor rather
   // than as a count. Six columns of `minmax(0, 1fr)` hold their number at any

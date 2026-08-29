@@ -11,6 +11,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
+import { buildStockHull } from './shell';
 
 /**
  * Drives & Mass, end to end.
@@ -34,7 +35,7 @@ const ROUTE = `/ships/${HULL}`;
 /** Creates a stock build and opens the anatomy region's `DRIVES` mode. */
 async function openDrives(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(ROUTE);
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
 
   await page
     .locator('edsb-hull-anatomy .anatomy__modes button')
@@ -131,9 +132,7 @@ test.describe('Drives & Mass', () => {
 
   test('leaving the mode gives feature 010’s plates back unchanged', async ({ page }) => {
     await page.goto(ROUTE);
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
 
     // Two plates, top and bottom, and both have to come back. What is compared
     // is every mount's slot and its spoken name rather than the markup: the
@@ -362,9 +361,7 @@ test.describe('Drives & Mass', () => {
     page,
   }, testInfo) => {
     await page.goto(ROUTE);
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
     await switchThrustersOff(page);
 
     await page
@@ -978,9 +975,7 @@ test.describe('the status rail', () => {
 
   test('stands in the rail whichever mode the anatomy region has open', async ({ page }) => {
     await page.goto(ROUTE);
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
 
     // The rail is not the panel: it reports the build, not what is on screen
     // beside it.

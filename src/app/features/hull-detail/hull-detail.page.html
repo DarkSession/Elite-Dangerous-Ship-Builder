@@ -5,8 +5,8 @@
     <!--
       The reference's inspector, in its order and with its contents: the
       illustration on its plate, the hull's name over one monospace identity
-      line, the metric grid, the mounts, the price, and the two hull actions
-      (canvas 1a rail, canvas 1b detail sheet).
+      line, the metric grid, the hardpoints, what the hull carries, the price,
+      and the stock-hull action (canvas 1a rail, canvas 1b detail sheet).
     -->
     <article class="detail" [class.detail--named-by-bar]="barCarriesName()">
       <edsb-hull-artwork
@@ -49,7 +49,7 @@
       <edsb-fact-list [label]="specificationsHeading()" [facts]="summaryFacts()" />
 
       @if (mounts().length > 0) {
-        <div class="detail__mounts">
+        <div class="detail__mounts" data-slot-group="hardpoint">
           <h3 class="detail__section">{{ mountsHeading() }}</h3>
           <ul class="detail__mount-list">
             @for (mount of mounts(); track mount.label) {
@@ -62,6 +62,80 @@
         </div>
       }
 
+      @if (capacity(); as capacity) {
+        <!-- What the hull carries: the three open groups in the reference's
+             order, then the restricted mounts under their own rule (FR-022). -->
+        @for (group of capacity.groups; track group.id) {
+          <div class="detail__mounts" [attr.data-slot-group]="group.id">
+            <h3 class="detail__section">
+              {{ group.heading }}
+              <span class="detail__section-total">{{ group.total }}</span>
+            </h3>
+
+            @if (group.named.length > 0) {
+              <ul class="detail__mount-list">
+                @for (mount of group.named; track mount.id) {
+                  <li class="detail__mount">
+                    <span class="detail__mount-label">
+                      <edsb-game-text
+                        [text]="mount.name.text"
+                        [language]="mount.name.language"
+                        [translationState]="mount.name.translationState"
+                      />
+                    </span>
+                    <span class="detail__mount-count" aria-hidden="true">{{ mount.size }}</span>
+                    <span class="detail__mount-words">{{ mount.description }}</span>
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (group.chips.length > 0) {
+              <ul class="detail__mount-list">
+                @for (chip of group.chips; track chip.id) {
+                  <li class="detail__mount">
+                    <!-- `3 × 6` is a notation, so the eye reads it and a reader
+                         is given the sentence it stands for instead. -->
+                    <span class="detail__mount-count" aria-hidden="true">{{ chip.label }}</span>
+                    <span class="detail__mount-words">{{ chip.description }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
+        @if (capacity.restricted.length > 0) {
+          <div class="detail__mounts detail__mounts--restricted" data-slot-group="restricted">
+            <h3 class="detail__section">
+              {{ capacity.restrictedHeading }}
+              <span class="detail__section-total">{{ capacity.restrictedTotal }}</span>
+            </h3>
+
+            @for (group of capacity.restricted; track group.id) {
+              <div class="detail__restriction">
+                <p class="detail__restriction-takes">
+                  <span class="detail__restriction-lead">{{ takesLabel() }}</span>
+                  <edsb-game-text
+                    [text]="group.restriction.text"
+                    [language]="group.restriction.language"
+                    [translationState]="group.restriction.translationState"
+                  />
+                </p>
+                <ul class="detail__mount-list">
+                  @for (chip of group.chips; track chip.id) {
+                    <li class="detail__mount detail__mount--restricted">
+                      <span class="detail__mount-count" aria-hidden="true">{{ chip.label }}</span>
+                      <span class="detail__mount-words">{{ chip.description }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        }
+      }
+
       @if (retailPrice(); as price) {
         <p class="detail__price">
           <span class="detail__price-label">{{ priceLabel() }}</span>
@@ -71,12 +145,14 @@
 
       <div class="detail__create">
         @if (detail.canCreate) {
-          <edsb-action-button
-            block
-            [label]="createLabel()"
-            emphasis="primary"
-            (activated)="createStockBuild()"
-          />
+          <div class="detail__create-action">
+            <edsb-action-button
+              block
+              [label]="createLabel()"
+              emphasis="primary"
+              (activated)="createStockBuild()"
+            />
+          </div>
         } @else {
           <edsb-status-notice tone="warning" [message]="createUnavailable()" />
         }

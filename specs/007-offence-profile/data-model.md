@@ -320,7 +320,7 @@ and an edit changes its contents without changing the reference.
 
 The whole-build firing cost (`energyPerSecond`, `sustainedEnergyPerSecond`, `heatPerSecond`,
 `sustainedHeatPerSecond`, `thermalLoad`, `powerDraw` on `WeaponTotals`), `netDrainRate`, the returned
-`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's five columns, the
+`weaponsPips`, every per-weapon `WeaponMetrics` field beyond the row's six columns, the
 `AmmunitionCapacity`, any target result, and any distributor power observation. Each is a field no
 canvas draws, so nothing downstream can blank, dash or zero one.
 

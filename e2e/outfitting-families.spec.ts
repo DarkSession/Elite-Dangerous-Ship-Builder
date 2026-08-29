@@ -11,6 +11,7 @@ import {
   revealedFamilies,
   revealedRows,
 } from './outfitting-surfaces';
+import { buildStockHull } from './shell';
 
 /**
  * The chooser's families, end to end (US2, wave 10; revised 2026-08-25).
@@ -47,7 +48,7 @@ async function openStockBuild(
   await page.goto('/ships/Anaconda');
   // Named from the catalogue this run is actually reading, because the German
   // context below reaches the same control through the German word for it.
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

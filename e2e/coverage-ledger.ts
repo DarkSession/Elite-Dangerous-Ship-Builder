@@ -616,13 +616,17 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'ships/:symbol',
-    requirements: ['001/FR-004', '001/FR-005', '001/FR-006'],
+    requirements: ['001/FR-004', '001/FR-005', '001/FR-006', '001/FR-022'],
     journey: 'product/hull-detail',
     axe: true,
     assertions: [
       'every specified hull fact is shown with its unit, or marked as a rating with none',
       'speed and rotation endpoints name the viewing condition they were measured under',
       'the slot layout uses the game’s own keys, including the irregular ones',
+      'utility, core, optional and restricted mounts each carry the count of what they hold',
+      'repeated optional sizes are one chip with its own count, largest size first',
+      'a restricted group names what its mounts take in the package’s own words',
+      'a size chip’s notation is read out as the mounts it stands for, not as the notation',
       'an unknown symbol is a named error with no facts, no build and no creation action',
       'a missing illustration is explained as temporary and disables nothing',
     ],
@@ -1366,7 +1370,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'build/power-and-thermals-rail',
-    requirements: ['005/FR-013', '005/SC-004'],
+    requirements: ['005/FR-013', '005/FR-014', '005/SC-004'],
     journey: 'power/rail',
     axe: true,
     assertions: [
@@ -1378,6 +1382,9 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the three pip groups under the bar edit the same allocation the distributor cell edits',
       'the pip control stays on screen in anatomy modes the distributor table is not drawn in',
       'the block carries no inset of its own: the figures start where the cells they head start',
+      'the compact strip’s power badge states the lit share of plant output and holds no control',
+      'the badge closes the strip on a row of its own, never over one of the six figures',
+      'the badge names an unpowered group only where the package reports one',
     ],
     manualRecord: 'screen-reader',
   },
@@ -1535,8 +1542,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'one row per returned weapon in exact package order, with no sort and no duplicate-symbol merge',
-      'the canvas’s five columns carry the module, its damage per second, its piercing, its maximum range and its falloff',
-      'the aligned table divides its width between all five columns, so no figure column is squeezed to its digits beside an empty module track',
+      'the canvas’s six columns carry the module, its burst and sustained damage per second, its piercing, its maximum range and its falloff',
+      'the aligned table divides its width between all six columns, so no figure column is squeezed to its digits beside an empty module track',
       'the table is promoted only where every column head fits its own column, in either language, and the module name is never squeezed to make room',
       'an absent piercing, maximum range or falloff reads as field-specific not-stated text, never as a zero',
       'a disabled weapon keeps its row and its own metrics while the package totals leave it out',

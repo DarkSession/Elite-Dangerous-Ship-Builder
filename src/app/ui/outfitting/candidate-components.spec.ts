@@ -562,32 +562,62 @@ describe('candidate list', () => {
   });
 
   it('writes a word where the Almanac published no figure, never a zero', () => {
-    // A core internal carries no weapon damage, so the damage column is absent
-    // rather than nought on every one of its rows.
-    const fixture = renderComponent(CandidateList, {
-      families: familiesFor(FIXTURE_SLOTS.core),
-      label: 'Modules for this mount',
-    });
+    // The cost is the one figure a card carries since FR-024's 2026-08-29
+    // narrowing, and an article the Almanac prices at nothing says so in words
+    // rather than standing at nought (constitution IV).
+    //
+    // Asserted over every candidate of three mounts rather than over one row:
+    // which article the package prices and which it does not is the package's
+    // business, and a test that named one would be asserting the release rather
+    // than the rule. Three rather than all of them because each list is the real
+    // package expansion and rendering every one of them is a minute of test
+    // time; the closing assertions below fail loudly if these three stop
+    // carrying both cases, which is the signal to widen the set.
+    let cells = 0;
+    let words = 0;
+    for (const slot of [FIXTURE_SLOTS.core, FIXTURE_SLOTS.armour, FIXTURE_SLOTS.optional]) {
+      const fixture = renderComponent(CandidateList, {
+        families: familiesFor(slot),
+        label: 'Modules for this mount',
+      });
 
-    const firstRow = query(fixture, '.candidate');
-    const facts = firstRow.querySelectorAll('.candidate__fact');
-    expect(facts.length).toBe(5);
+      for (const cost of element(fixture).querySelectorAll('.candidate__cost')) {
+        cells += 1;
+        const value = cost.querySelector('.fact__value');
+        const word = cost.querySelector('edsb-unavailable-value');
 
-    const damage = textOf(facts[0]!);
-    expect(damage).not.toMatch(/\b0\b/);
-    expect(damage.length).toBeGreaterThan(textOf(facts[0]!.querySelector('.fact__label')).length);
+        // One or the other, never both and never an empty cell.
+        expect(value === null).toBe(word !== null);
+        expect(textOf(cost).length).toBeGreaterThan(
+          textOf(cost.querySelector('.fact__label')).length,
+        );
+
+        // Where the package published nothing the cell carries no figure at
+        // all — not a nought, which would read as an article that costs
+        // nothing, and the package does price some of them at nothing.
+        if (word !== null) {
+          words += 1;
+          expect(textOf(cost)).not.toMatch(/\d/u);
+        }
+      }
+    }
+
+    // Both halves of the rule are actually met here rather than merely stated:
+    // the fixtures include articles the package prices and articles it does not.
+    expect(cells).toBeGreaterThan(words);
+    expect(words).toBeGreaterThan(0);
   });
 
-  it('draws the column names once, and hides them from a reader who hears them per row', () => {
+  it('draws no column head at compact width, because the card is not a table', () => {
+    // Canvas 1d's chooser rows carry the module with its mount and nothing
+    // else, so there are no columns to head (FR-024, narrowed 2026-08-29). The
+    // head belongs to the wide manifest alone.
     const fixture = renderComponent(CandidateList, {
       families: familiesFor(FIXTURE_SLOTS.core),
       label: 'Modules for this mount',
     });
 
-    const header = query(fixture, '.candidates__columns');
-    expect(header.getAttribute('aria-hidden')).toBe('true');
-    // `MODULE · CLASS` and the five figure columns, as canvas 1d heads them.
-    expect(header.querySelectorAll('.candidates__column').length).toBe(7);
+    expect(fixture.nativeElement.querySelector('.candidates__columns')).toBeNull();
   });
 });
 
@@ -657,8 +687,10 @@ describe('the wide manifest', () => {
     expect(header.querySelectorAll('.candidates__column').length).toBe(3);
 
     const row = query(fixture, '.candidates__pane .candidate');
-    expect(row.querySelectorAll('.candidate__fact')).toHaveLength(1);
+    // The cost is the row's one figure. The four the narrowing withdrew are not
+    // drawn quietly somewhere else on it either.
     expect(row.querySelector('.candidate__cost')).not.toBeNull();
+    expect(row.querySelectorAll('.candidate__fact')).toHaveLength(0);
   });
 
   it('reports the manifest it measured, so the revealed set can be seeded for it', () => {

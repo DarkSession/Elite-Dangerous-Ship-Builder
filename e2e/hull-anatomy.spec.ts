@@ -9,6 +9,7 @@ import {
 } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { openChooser, revealMount } from './outfitting-surfaces';
+import { buildStockHull } from './shell';
 
 /**
  * Hull anatomy, end to end.
@@ -31,7 +32,7 @@ async function openStockBuild(
   messages: Record<string, string> = englishMessages,
 ): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 

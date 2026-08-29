@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
+import { hullCapacity, type HullCapacity } from '../../domain/catalogue/hull-capacity';
 import { hullCatalogueEntry, type HullCatalogueEntry } from '../../domain/catalogue/hull-catalogue';
 import {
   hullDetailFacts,
@@ -26,6 +27,54 @@ export interface FactGroupView {
   readonly facts: readonly FactView[];
 }
 
+/**
+ * One chip in a slot group.
+ *
+ * `label` is what the eye reads — a bare size, or a size behind the count of
+ * mounts that share it. `description` says the same thing in words, because a
+ * chip reading `3 \u00d7 6` is a notation rather than a sentence, and the notation
+ * is not what a screen reader should be left with.
+ */
+export interface SlotChipView {
+  readonly id: string;
+  readonly label: string;
+  readonly description: string;
+}
+
+/** One of the hull's three unrestricted mount groups, with its total. */
+export interface SlotGroupView {
+  readonly id: 'utility' | 'core' | 'optional';
+  readonly heading: string;
+  readonly total: string;
+  readonly chips: readonly SlotChipView[];
+  /** The core group's chips carry the package's own name for each mount. */
+  readonly named: readonly CoreMountView[];
+}
+
+/** One core mount: the package's name for it, and how big it is. */
+export interface CoreMountView {
+  readonly id: string;
+  readonly name: GameTextPresentation;
+  readonly size: string;
+  readonly description: string;
+}
+
+/** The mounts one restriction holds, with the package's phrase for it. */
+export interface RestrictedGroupView {
+  readonly id: string;
+  /** The package's phrase for what the mounts take, never a local paraphrase. */
+  readonly restriction: GameTextPresentation;
+  readonly chips: readonly SlotChipView[];
+}
+
+/** What the hull can carry: the three open groups, then the restricted ones. */
+export interface HullCapacityView {
+  readonly groups: readonly SlotGroupView[];
+  readonly restrictedHeading: string;
+  readonly restrictedTotal: string;
+  readonly restricted: readonly RestrictedGroupView[];
+}
+
 /** The screen's whole state for one hull, or the fact there is no such hull. */
 export type HullDetailView =
   | { readonly kind: 'unknown'; readonly symbol: string }
@@ -36,6 +85,8 @@ export type HullDetailView =
       readonly manufacturer: GameTextPresentation;
       readonly size: string | null;
       readonly factGroups: readonly FactGroupView[];
+      /** `null` where the package publishes no layout for the hull. */
+      readonly capacity: HullCapacityView | null;
       readonly artworkPath: string;
       readonly artworkLabel: string;
       readonly canCreate: boolean;
@@ -81,6 +132,7 @@ export class HullDetailFacade {
       manufacturer: this.#gameText.shipManufacturer(entry.symbol),
       size: this.#sizeLabel(entry),
       factGroups: this.#factGroups(entry.symbol),
+      capacity: entry.slots === null ? null : this.#capacity(hullCapacity(entry.slots)),
       artworkPath: entry.artworkPath,
       artworkLabel: this.#messages.message('hullDetail.artwork.label', {
         hull: name.text ?? entry.symbol,
@@ -117,6 +169,79 @@ export class HullDetailFacade {
 
   retryArtwork(): void {
     this.#artwork.retryUnavailable();
+  }
+
+  /**
+   * What the hull carries, as the reference's four ruled groups (FR-022).
+   *
+   * The three open groups come first — utility mounts, the seven core
+   * internals, then the optional column — and the restricted mounts follow,
+   * once per restriction. Every figure is the package's layout; nothing here is
+   * counted from a build.
+   */
+  #capacity(capacity: HullCapacity): HullCapacityView {
+    return {
+      groups: [
+        {
+          id: 'utility',
+          heading: this.#messages.message('hullDetail.slots.group.utility'),
+          total: this.#formatters.integer(capacity.utility),
+          // Every utility mount is the same size, so there is no size to chip.
+          chips: [],
+          named: [],
+        },
+        {
+          id: 'core',
+          heading: this.#messages.message('hullDetail.slots.group.core'),
+          total: this.#formatters.integer(capacity.core.length),
+          chips: [],
+          named: capacity.core.map((mount) => ({
+            id: mount.core,
+            name: this.#gameText.slotName(mount.slot),
+            size: this.#formatters.integer(mount.size),
+            description: this.#messages.message('hullDetail.slots.size', {
+              size: this.#formatters.integer(mount.size),
+            }),
+          })),
+        },
+        {
+          id: 'optional',
+          heading: this.#messages.message('hullDetail.slots.group.optional'),
+          total: this.#formatters.integer(capacity.optionalCount),
+          chips: capacity.optional.map((run) => this.#sizeChip(run)),
+          named: [],
+        },
+      ],
+      restrictedHeading: this.#messages.message('hullDetail.slots.group.restricted'),
+      restrictedTotal: this.#formatters.integer(capacity.restrictedCount),
+      restricted: capacity.restricted.map((group) => ({
+        id: group.restriction,
+        restriction: this.#gameText.slotRestrictionLabel(group.restriction),
+        chips: group.sizes.map((run) => this.#sizeChip(run)),
+      })),
+    };
+  }
+
+  /**
+   * One size chip: the reference's `7` for a lone mount, `3 × 6` for three.
+   *
+   * A run of one carries no multiplier — `1 × 7` beside a figure says nothing
+   * the figure did not — and the words behind the chip differ with it, because
+   * "one size 7 mount" and "three size 6 mounts" are different sentences rather
+   * than one sentence with a number substituted into it.
+   */
+  #sizeChip(run: { readonly size: number; readonly count: number }): SlotChipView {
+    const size = this.#formatters.integer(run.size);
+    const count = this.#formatters.integer(run.count);
+    return {
+      id: `${run.size}`,
+      label:
+        run.count === 1 ? size : this.#messages.message('hullDetail.slots.run', { count, size }),
+      description:
+        run.count === 1
+          ? this.#messages.message('hullDetail.slots.run.one', { size })
+          : this.#messages.message('hullDetail.slots.run.many', { count, size }),
+    };
   }
 
   #factGroups(symbol: string): readonly FactGroupView[] {

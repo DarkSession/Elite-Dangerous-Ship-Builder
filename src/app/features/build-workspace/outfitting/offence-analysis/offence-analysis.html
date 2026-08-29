@@ -44,23 +44,23 @@
       }
 
       <!--
-        The canvas's five columns, one row per returned weapon in package order.
+        The canvas's six columns, one row per returned weapon in package order.
         The rows are inert, as the canvas draws them: no disclosure, no action
         and no slot. A mount is opened from `HULL ANATOMY`, which is where the
         canvas puts that control.
 
         A list rather than a table, because a row's module cell is two lines —
         the name over its code line, `4A GIMBALLED · OVERCHARGED G5` — and the
-        four figure cells are one each. The column heads are drawn as the canvas draws them and marked
+        five figure cells are one each. The column heads are drawn as the canvas draws them and marked
         decorative, because every figure under them carries the same word in its
         own row: a reader is told which column a figure is in where the figure
-        is, rather than having to hold four heads in mind while moving down.
+        is, rather than having to hold five heads in mind while moving down.
       -->
       @if (weaponRows().length > 0) {
         <div class="weapons">
           <!--
             The table inside the container rather than being it: an element
-            cannot answer its own container query, so the five tracks live one
+            cannot answer its own container query, so the six tracks live one
             level in from the box whose width decides whether they appear.
           -->
           <div class="weapons__table">
@@ -68,6 +68,9 @@
               <span class="weapons__column">{{ columns().module }}</span>
               <span class="weapons__column weapons__column--figure">
                 {{ columns().damagePerSecond }}
+              </span>
+              <span class="weapons__column weapons__column--figure">
+                {{ columns().sustainedDamagePerSecond }}
               </span>
               <span class="weapons__column weapons__column--figure">{{ columns().piercing }}</span>
               <span class="weapons__column weapons__column--figure">
@@ -115,6 +118,11 @@
                     @for (
                       figure of [
                         { id: 'dps', label: columns().damagePerSecond, value: row.damagePerSecond },
+                        {
+                          id: 'sustained',
+                          label: columns().sustainedDamagePerSecond,
+                          value: row.sustainedDamagePerSecond,
+                        },
                         { id: 'pierce', label: columns().piercing, value: row.piercing },
                         {
                           id: 'range',

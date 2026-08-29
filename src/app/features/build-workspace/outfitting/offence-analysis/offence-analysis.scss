@@ -136,11 +136,11 @@
   border: 0;
 }
 
-// The rows are inert, as the canvas draws them, so the five columns are all a
-// row holds. How those five are arranged depends on the space the list is
+// The rows are inert, as the canvas draws them, so the six columns are all a
+// row holds. How those six are arranged depends on the space the list is
 // actually given, which is why the list is its own container: the block sits in
-// one half of a pair that itself narrows, and a five-column table in a list that
-// narrow is a name squeezed to nothing beside four figures.
+// one half of a pair that itself narrows, and a six-column table in a list that
+// narrow is a name squeezed to nothing beside five figures.
 .weapons {
   container-type: inline-size;
   container-name: weapons;
@@ -154,8 +154,11 @@
 }
 
 // The compact arrangement, and the default: the module on its own line with its
-// four figures labelled beneath it. The column heads are what the labels would
-// duplicate, so the heads go rather than the labels.
+// five figures labelled beneath it. The column heads are what the labels would
+// duplicate, so the heads go rather than the labels. Canvas 1d abbreviates two
+// of its own heads to `BURST` and `SUST` to keep an aligned table at that width;
+// there is no head here to abbreviate, and each figure carries its column's
+// whole word beside it instead.
 .weapons__columns {
   display: none;
   margin: 0;
@@ -196,21 +199,22 @@
   list-style: none;
 }
 
-// Canvas 1c's five columns: `MODULE` fluid, then `DPS`, `PIERCE`, `RANGE` and
-// `FALLOFF` hard against the trailing edge. The list owns the tracks and every
+// Canvas 1c's six columns: `MODULE` fluid, then `DPS BURST`, `SUSTAINED`,
+// `PIERCE`, `RANGE` and `FALLOFF` hard against the trailing edge. The list owns the tracks and every
 // row borrows them, so a longer figure on one row cannot pull that row's
 // columns out of line with the row above it. It takes room the block does not
 // always have, so it is the arrangement the list promotes to rather than the
 // one it starts from.
 //
-// 31rem, and the width is measured rather than argued. The threshold was 18rem
-// while there were four columns; the 2026-08-25 canvas revision's fifth one does
-// not fit in that room. What settles it is the width five tracks need before all
-// five can be read at once.
+// 36rem, and the width is measured rather than argued. The threshold was 18rem
+// while there were four columns, 31rem while there were five, and the 2026-08-29
+// canvas revision's `SUSTAINED` column does not fit in that room either. What
+// settles it is the width six tracks need before all six can be read at once.
 //
 // Measured in Chromium against the stock Anaconda, this block being one half of
 // a pair inside the outfitting centre column, so a 1440px desktop gives the list
-// 300px. With `1fr` beside four `auto` tracks the five resolved to:
+// 300px. With `1fr` beside content-sized tracks the figures took every pixel of
+// slack from the name, which is what the flexible tracks below fixed:
 //
 //   en, list 300px: 83 | 40 40 50 47   — the module track at 83px
 //   de, list 300px: 40 | 40 73 67 40   — the module track at 40px
@@ -221,18 +225,19 @@
 // compact one, in both languages, so the figure is held to rather than merely
 // written down.
 //
-// Five flexible tracks rather than one flexible track and four content-sized
-// ones. `minmax(0, 1fr)` beside four `auto` columns gives every pixel of slack
-// to the module name and none to the figures: the four figure tracks settle on
+// Six flexible tracks rather than one flexible track and five content-sized
+// ones. `minmax(0, 1fr)` beside `auto` columns gives every pixel of slack
+// to the module name and none to the figures: the figure tracks settle on
 // their own max-content, which is `3,000 m` at about 50px, and the row reads as
-// a name with a field of empty ground after it and four figures crushed against
+// a name with a field of empty ground after it and the figures crushed against
 // the trailing edge. Sharing the slack is what makes it a table rather than a
 // name with a margin note.
 //
 // The proportion is the canvas's. Canvas 1c sets `MODULE` about twice the width
-// of one figure column, which `2fr` against `1fr` each is; the four figures
-// divide what is left equally, so `DPS` and `FALLOFF` are the same width and a
-// figure sits under the head that names it rather than under the gap beside it.
+// of one figure column, which `2fr` against `1fr` each is; the five figures
+// divide what is left equally, so `DPS BURST` and `FALLOFF` are the same width
+// and a figure sits under the head that names it rather than under the gap
+// beside it.
 //
 // Both floors are real minimums and the flex is what happens above them. The
 // module floor is 155px — two lines of a weapon's cell, `Huge Multi-Cannon` over
@@ -247,27 +252,28 @@
 // is what the threshold below is measured from.
 //
 // The threshold follows from the columns rather than from an argument: the table
-// appears where all five of them can be read, which means the module cell at its
+// appears where all six of them can be read, which means the module cell at its
 // 155px and each figure column at least as wide as the longer of its own head
-// and its own figure. In German that is `DURCHSCHLAG`, whose min-content is
-// 73.3px, against about 50px for `3,000 m`; in English every head is shorter
-// than its own figures. So 155px + 4 × 73.3px + four 10px gutters ≈ 488px — the
-// gutter being `--edsb-space-inline`, which resolves to 0.625rem — and the
-// threshold is the next whole rem above that: 31rem, which leaves each figure
-// track 75px.
+// and its own figure. In German the widest head word is still `DURCHSCHLAG` at
+// 73.3px — `SPS FEUERSTOSS` wraps to `FEUERSTOSS` at 66.6px and `DAUERFEUER` is
+// the same 66.6px — against about 50px for `3,000 m`; in English every head is
+// shorter than its own figures. So 155px + 5 × 73.3px + five 10px gutters
+// ≈ 571px — the gutter being `--edsb-space-inline`, which resolves to
+// 0.625rem — and the threshold is the next whole rem above that: 36rem, which
+// leaves each figure track about 74px.
 //
 // A narrower table is not a tighter one — it is a broken word. The floors hold
-// the module cell at 155px and hand what is left to the four figure tracks, so
+// the module cell at 155px and hand what is left to the five figure tracks, so
 // below this width the head no longer fits its own column and breaks inside
 // itself, which is not a column head. Below it the compact arrangement carries
-// the same five figures with the word that names each one beside it, on lines
+// the same six figures with the word that names each one beside it, on lines
 // wide enough for both.
 //
 // On this application's own reference desktop that is still the compact
-// arrangement, not the canvas's table: canvas 1c draws its five columns in a
+// arrangement, not the canvas's table: canvas 1c draws its six columns in a
 // card wider than the one a 1440px viewport gives this block, which gets 300px.
 // The departure is recorded in `design/canvas-contract.md` under the 2026-08-25
-// revision rather than hidden in a threshold.
+// and 2026-08-29 revisions rather than hidden in a threshold.
 //
 // The figure floor stays 2.5rem, which is inside the 30–56px canvas 1d narrows
 // its own columns to. At this threshold the figures resolve well above it, so it
@@ -279,12 +285,12 @@
 // the one thing that can push a grid past its own container, so a content-derived
 // floor would make whether this table overflows its block a property of how long
 // a translation happens to be — and a table wider than its block is the
-// horizontal scrolling this application does not do. With lengths the five
-// tracks cannot cost more than 155px + 4 × 40px + four 10px gutters = 355px,
-// well inside the 496px the container query already guarantees. Keeping the table
+// horizontal scrolling this application does not do. With lengths the six
+// tracks cannot cost more than 155px + 5 × 40px + five 10px gutters = 405px,
+// well inside the 576px the container query already guarantees. Keeping the table
 // inside the block is that query's job; this floor only decides how narrow a
 // column may get within it.
-@container weapons (min-width: 31rem) {
+@container weapons (min-width: 36rem) {
   // One grid for the whole table, borrowed by the heads and by every row
   // through `subgrid`. Declaring the same track list on each row instead lets a
   // track resolve differently per row, and figures that do not line up
@@ -293,7 +299,7 @@
     display: grid;
     grid-template-columns:
       minmax(var(--edsb-layout-weapon-module), 2fr)
-      repeat(4, minmax(var(--edsb-layout-weapon-figure), 1fr));
+      repeat(5, minmax(var(--edsb-layout-weapon-figure), 1fr));
     column-gap: var(--edsb-space-inline);
     row-gap: var(--edsb-space-stack-tight);
   }
@@ -324,13 +330,13 @@
     row-gap: var(--edsb-space-stack);
   }
 
-  // The four figure cells sit in the row's own grid so they line up under the
+  // The five figure cells sit in the row's own grid so they line up under the
   // heads rather than in a nested row of their own.
   .weapon__figures {
     display: contents;
   }
 
-  // The heads name the four columns once. Repeating the word on every row is
+  // The heads name the six columns once. Repeating the word on every row is
   // what an aligned table exists to avoid — but the label stays in the
   // accessibility tree, so a cell is never a bare number.
   .weapon__figure-label {

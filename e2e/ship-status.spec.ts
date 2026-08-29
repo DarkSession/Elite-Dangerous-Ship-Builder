@@ -3,7 +3,7 @@ import englishMessages from '../src/app/i18n/locales/en.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
 import { revealStatusRail } from './outfitting-surfaces';
-import { openRecordFromLibrary } from './shell';
+import { buildStockHull, openRecordFromLibrary } from './shell';
 
 /**
  * The `BUILD STATUS` block, end to end.
@@ -135,7 +135,7 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
 /** Creates a stock build and lands in the workspace with the rail rendered. */
 async function openStockBuild(page: Page): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build(#|$)/);
   // Canvas 1d keeps the rail behind its `STATUS` segment rather than in the
   // flow, so a compact run opens it and a wide one finds it already there.

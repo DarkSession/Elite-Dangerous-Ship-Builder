@@ -468,6 +468,67 @@ and no diagnosis of which of those four it was. The rest of the dashboard stays 
 The canvas's compact variant omits capacity and rated recharge, and its own filled blocks disagree
 with its `3 · 1 · 2 PIPS` footer. Every width shows every field.
 
+## The compact strip's power badge
+
+Canvas 1d closes its strip of six key readings with a badge of two mono lines — `PWR 95%` over
+`GRP 4 OFF` — on a hot-tinted plate inside a hot hairline, in the hot ink. It is the last thing in
+the strip, a sibling of the six cells rather than a box positioned over them: the 2026-08-29 canvas
+revision took it out of `position: absolute` for that reason, where it had been drawn across the
+`MASS` cell beside it.
+
+**The hot tone is conditional here, and the artboard's is not.** The build the canvas draws sheds a
+group, so its plate is drawn hot; a build the plant covers has nothing to warn about, and a plate
+that is hot either way says "warning" about a state that is not one. So the plate takes the quiet
+inset ground until a group is dark, and the tone is never what carries the reading in any case — the
+second line names the groups in words.
+
+**Where it sits, and the departure that is.** The strip is `repeat(auto-fit, minmax(3.25rem, 1fr))`,
+so the number of tracks it has follows the space it was given at the text size it was given it. The
+artboard draws the plate beside the six figures on a 390px screen; at the cell floor this system
+uses, seven items do not fit one row at that width, so the plate falls to a row of its own and there
+it takes the whole of it.
+
+That is the placement at every width, not only the narrow ones. A plate two tracks wide would sit
+beside the figures where the strip has an eighth track and against the leading edge of a second row
+where it does not — reading there as a seventh figure rather than as the strip's closing plate — and
+which of the two a Commander got would turn on a threshold measured from the strip and asked of the
+window, which a doubled text size moves and a media query cannot see. One placement everywhere is
+the honest reading of "beside the six rather than over them": what the artboard's arrangement is
+_for_ is that the plate never lands on `MASS`, and a row of its own is the strongest form of that.
+
+The badge is the rail's `POWER` line, said in the space the compact artboard has for it. At wide
+width the rail is beside the workspace and carries the whole line; at compact the rail is behind the
+strip's `STATUS` segment, so the one figure a Commander watches while they fit — how close the plant
+is to its limit — stands in the strip, and the line it comes from is one segment away.
+
+Two readings, and the second is conditional:
+
+| Line        | Drawn when                                  | Read from                                                                 |
+| ----------- | ------------------------------------------- | ------------------------------------------------------------------------- |
+| `PWR 95%`   | the package reports plant output above zero | the lit deployed draw over plant output, as a share, from `powerBudget()` |
+| `GRP 4 OFF` | one line per band unpowered when deployed   | that band's own priority group, from the same result                      |
+
+`GRP 4` names the group, it does not count them: the artboard's own status block says
+`Priority group 4 is unpowered — 7.80 MW of demand sits above plant output` about the same build, so
+the `4` on the badge is the group that sentence names. A build with two dark groups therefore draws
+two lines rather than one line reading `2`, which is the same shape FR-013's rail takes — one
+statement per band, and none where there are none.
+
+A build whose plant covers everything draws the share alone. `GRP 0 OFF` under a full plant would be
+a statement about a condition the build does not have.
+
+A plant that generates nothing has no share to state either, and the badge is drawn as nothing at
+all rather than as `PWR 0%` — the division has no answer, and a figure standing in for one that does
+not exist is the fabrication constitution IV bars. The `STATUS` segment still says what such a build
+is doing.
+
+The percentage is projected in `src/app/domain/power-heat/power-heat.ts` beside the rail's bar
+shares, not worked out at the badge: every division of two package figures in this application is
+done in that one file (FR-001, FR-002).
+
+The badge is a reading and never a control. The pips that move it are the rail's own, and the
+distributor table's; a third place to press them would be a third place for them to disagree.
+
 ## The status rail
 
 **Three** contributions, between feature 003's validation issues and the six metric cells features

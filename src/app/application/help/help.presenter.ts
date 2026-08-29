@@ -20,10 +20,11 @@ const LINK_MARKER = '\u0000link\u0000';
  * The LICENCE section, as a reader meets it.
  *
  * `index` is the licence summary: what this project's code is under, what the
- * bundled library is under, what the game data and imagery are under, and what
- * the typefaces are under. It is a summary and says so by being one — two of
- * its lines link to the complete document they summarise, and the one body
- * embedded here is the notice below it.
+ * bundled library is under, what the icon files this application serves are
+ * under, what the game data and imagery are under, and what the typefaces are
+ * under. It is a summary and says so by being one — two of its lines link to the
+ * complete document they summarise, and the one body embedded here is the notice
+ * below it.
  *
  * `excerpt` is the manifest's `exactText`, passed through untouched: no trim,
  * no re-wrap, no interpolation and no translation. `excerptLanguage` travels
@@ -238,18 +239,21 @@ export class HelpPresenter {
   });
 
   /**
-   * The licence block: a four-line summary, then the notice itself.
+   * The licence block: a five-line summary, then the notice itself.
    *
    * The summary is translated, because it is this application's own writing
    * about what covers what. The notice is not: it is Frontier's wording,
    * carried rather than granted, and the manifest's own string is what reaches
    * the reader byte for byte.
    *
-   * Two of the four lines carry a link to the complete document they are
+   * Two of the five lines carry a link to the complete document they are
    * summarising — this repository's `LICENSE` and the bundled library's — from
    * the audited destinations in the manifest, never from a string typed here.
-   * The other two do not, because there is no address this repository can
-   * evidence for them.
+   * The other three do not, because there is no address this repository can
+   * evidence for them: Frontier's media-usage rules and the icons' own grant are
+   * recorded in root `LICENSE` rather than published at an address of this
+   * project's, and the typefaces' licence is not one this repository
+   * redistributes.
    */
   readonly #licence = computed<HelpLicenceView>(() => {
     const disclaimer = this.manifest.disclaimer;
@@ -265,6 +269,7 @@ export class HelpPresenter {
           label: this.#messages.message('help.licence.link.library'),
           href: destinations.almanacLicense.url,
         }),
+        this.#linkedSentence('icons', 'help.licence.index.icons', 'licence', null),
         this.#linkedSentence('gameData', 'help.licence.index.gameData', 'licence', null),
         this.#linkedSentence('typefaces', 'help.licence.index.typefaces', 'licence', null),
       ],
@@ -298,6 +303,7 @@ export class HelpPresenter {
       | 'help.source'
       | 'help.licence.index.application'
       | 'help.licence.index.library'
+      | 'help.licence.index.icons'
       | 'help.licence.index.gameData'
       | 'help.licence.index.typefaces',
     variable: 'licence' | 'source',

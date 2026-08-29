@@ -228,6 +228,21 @@ export class AppFrame {
   readonly actionsLabel = this.#messages.messageSignal('shell.actions.label');
   readonly statusLabel = this.#messages.messageSignal('shell.status.label');
   readonly betaLabel = this.#messages.messageSignal('shell.beta');
+
+  /**
+   * Which side of the bar's identity the release mark stands on.
+   *
+   * It follows a plain screen title and leads a screen's own identity block.
+   * Canvas 1a draws the first — `SHIPYARD BETA · 48 SHIPS`, a beta shipyard —
+   * and canvases 1c and 1d the second, where the identity is the Commander's
+   * own build name in a field they can edit: a chip after that reads as part of
+   * the name, and the build is not the thing in beta.
+   *
+   * A bar carrying neither leads, because there is nothing there to follow.
+   */
+  readonly betaFollowsTitle = computed(
+    () => this.identity() === null && this.routeContext() !== null,
+  );
   readonly actionsOpenLabel = this.#messages.messageSignal('shell.actions.open');
   readonly actionsCloseLabel = this.#messages.messageSignal('shell.actions.close');
 

@@ -149,8 +149,18 @@ does rather than which questions it happens to hold.
   frame's Help action is the single route, and the design reference draws no per-surface control.
 - **FR-003**: Help MUST reproduce only the exact project-specific Frontier disclaimer from the
   repository `LICENSE` as its embedded legal excerpt. Above it, help MUST carry a summary of what
-  covers what — the application's own code, the bundled library, the game data and imagery, and the
-  typefaces — as one line each. It MUST name for each only terms this repository can evidence.
+  covers what — the application's own code, the bundled library, the icon files it ships, the game
+  data and imagery, and the typefaces — as one line each. It MUST name for each only terms this
+  repository can evidence.
+
+  **Amended 2026-08-29 (canvas revision):** the icons are the fifth line, between the library and the
+  game data. This application serves eleven marks from its own origin — the five material-grade
+  marks, the community-goal, engineering and tech-broker marks, the Powerplay mark, the Merc Coin and
+  the loader mark, copies taken from `edassets.org` at build time, because nothing here
+  reaches another origin at runtime — and a file this application ships under someone else's terms is
+  a thing the summary has to name. Those terms are CC BY-NC-SA 4.0, and the repository `LICENSE`
+  states them beside the terms it already states, so the line is evidenced the way the other four
+  are.
   **Amended 2026-08-26:** a line whose complete terms this repository can point at MUST link them
   from within its own text, and exactly two can be pointed at — the repository `LICENSE` and the
   bundled library's `LICENSE`, both from the audited destinations FR-005 validates. Each link MUST
@@ -275,7 +285,7 @@ on every build, and the link points at the same file in the package's own reposi
 ## Success Criteria
 
 - **SC-001**: Help contains the exact, non-empty project-specific Frontier disclaimer from the
-  repository `LICENSE`, marked in its own language, above nothing and below the four-line summary of
+  repository `LICENSE`, marked in its own language, above nothing and below the five-line summary of
   what covers what. It is the only legal body embedded. Help offers exactly three external
   destinations from the audited manifest — two complete licence documents and this application's own
   source — each named in the visible text of the sentence it sits in, and none carries build, route

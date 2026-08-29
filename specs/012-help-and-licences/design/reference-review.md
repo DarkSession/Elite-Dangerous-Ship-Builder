@@ -24,9 +24,10 @@ versions, application behavior, legal facts, dependencies or CSS literals.
 - `FAQ` is question-then-answer pairs in one reading sequence, a question closer to its own answer
   than the pairs are to each other. Three of its four questions are asked in the reference's own
   words.
-- `LICENCE` opens with a summary of what covers what, one line each, before the notice. The
-  reference's three — the application's code, the game data and imagery, the typefaces — and the
-  bundled Almanac's own terms as a fourth (`contracts/help-navigation.md`, amended 2026-08-26).
+- `LICENCE` opens with a summary of what covers what, one line each, before the notice: the
+  application's code, the bundled Almanac's own terms, the icon files this application ships, the
+  game data and imagery, and the typefaces. The reference draws all five
+  (`contracts/help-navigation.md`, amended 2026-08-26).
 - The modal draws no control other than its close. What leaves the application is three sets of
   linked words inside its own sentences, which is not a control
   (`contracts/help-navigation.md`, "External navigation").
@@ -70,7 +71,7 @@ that no canvas of the reference draws.
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------- |
 | Two provenance sentences after the `ABOUT` version facts   | The licence summary's library and Frontier lines, which name what each covers              | FR-008              |
 | A third identity fact carrying release state and build ID  | Two version facts, as the reference draws. Generator classification is untouched           | FR-007              |
-| Prose licence framing above the excerpt                    | The four-line summary of what covers what                                                  | FR-003              |
+| Prose licence framing above the excerpt                    | The five-line summary of what covers what                                                  | FR-003              |
 | Two sentences naming the excerpt's source and its language | The excerpt's `lang`, which is the same fact as a property rather than as prose            | FR-006              |
 | The warned repository-`LICENSE` action                     | Linked words inside the summary line that names its terms; `WarnedExternalLink` is deleted | FR-003, FR-005      |
 

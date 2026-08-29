@@ -83,6 +83,11 @@
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
   --edsb-surface-danger-solid: var(--edsb-palette-hot);
 
+  // The ground under a block that says a thing is right, the counterpart of the
+  // danger wash above. Canvas 1c draws all four status tones on a ground of
+  // their own marker's hue.
+  --edsb-surface-success-quiet: var(--edsb-palette-good-a08);
+
   // Canvas 1c gives each capacitor bank its own colour on the pip display, the
   // same three the game does.
   --edsb-surface-bank-systems: var(--edsb-palette-cool);
@@ -223,6 +228,9 @@
   // The one-pixel ground a grid's gaps expose as rules.
   --edsb-rule-grid: var(--edsb-palette-amber-a14);
   --edsb-rule-section: var(--edsb-palette-amber-a14);
+  // The rule over a restricted slot group, which canvas 1a draws in the hot
+  // wash rather than the amber one.
+  --edsb-rule-danger: var(--edsb-palette-hot-a22);
   --edsb-rule-panel: var(--edsb-palette-amber-a20);
   --edsb-rule-menu: var(--edsb-palette-amber-a16);
 

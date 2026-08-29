@@ -45,17 +45,17 @@ calculations. It is not canvas 1c merely stacked.
 
 ## Adopted direction
 
-| Observed reference idea                           | Planned adaptation                                                                                   |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Offence is a mode of the anatomy strip            | Enable the `OFFENCE` segment feature 010 left disabled; the region retitles and the plates give way. |
-| Burst/sustained output leads wide analysis        | Retain prominence with correct labels and every exact package total.                                 |
-| Name, DPS, piercing and range are adjacent in 1c  | Keep the four columns and keep the row inert, as the canvas draws it.                                |
-| Damage and capacitor facts share the right region | Keep neighbouring semantic groups where room permits; bar what shares a scale, state everything.     |
-| The stacked bar and its percentages               | Build both: the shares are one package amount over another, and both are written in the legend.      |
-| The four damage-at-range rows                     | Build them from the package's own `damageFalloff()` at the canvas's own four distances.              |
-| The Shot Convergence region                       | Build it from the package's published hardpoint offsets and its own projection at range.             |
-| Canvas 1d uses vertical cards                     | Use vertical-card direction only; preserve full content parity rather than its omissions/additions.  |
-| The status rail's `DPS` cell                      | One rail cell carrying sustained damage per second, with the canvas's bare label and no unit.        |
+| Observed reference idea                             | Planned adaptation                                                                                   |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Offence is a mode of the anatomy strip              | Enable the `OFFENCE` segment feature 010 left disabled; the region retitles and the plates give way. |
+| Burst/sustained output leads wide analysis          | Retain prominence with correct labels and every exact package total.                                 |
+| Name, damage, piercing and range are adjacent in 1c | Keep the six columns and keep the row inert, as the canvas draws it.                                 |
+| Damage and capacitor facts share the right region   | Keep neighbouring semantic groups where room permits; bar what shares a scale, state everything.     |
+| The stacked bar and its percentages                 | Build both: the shares are one package amount over another, and both are written in the legend.      |
+| The four damage-at-range rows                       | Build them from the package's own `damageFalloff()` at the canvas's own four distances.              |
+| The Shot Convergence region                         | Build it from the package's published hardpoint offsets and its own projection at range.             |
+| Canvas 1d uses vertical cards                       | Use vertical-card direction only; preserve full content parity rather than its omissions/additions.  |
+| The status rail's `DPS` cell                        | One rail cell carrying sustained damage per second, with the canvas's bare label and no unit.        |
 
 The WEP condition the figures were read at, the shot sentences beside the gunsight plate, and the
 semantic empty, disabled, absent, unavailable-gunsight and infinity states are required extensions.

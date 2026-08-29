@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { savedToBrowser } from './shell';
+import { buildStockHull, savedToBrowser } from './shell';
 
 /**
  * The plan's performance goals, measured rather than assumed.
@@ -61,7 +61,7 @@ test.describe('the catalogue, at full size', () => {
 test.describe('the workspace, on arrival', () => {
   test('restores the working build before it is interactive', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build(#|$)/);
     await savedToBrowser(page);
 
@@ -77,7 +77,7 @@ test.describe('the workspace, on arrival', () => {
 
   test('coalesces autosaves instead of writing once per edit', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await savedToBrowser(page);
 
     // One record, one key, however many revisions went into it.
@@ -91,7 +91,7 @@ test.describe('the workspace, on arrival', () => {
 test.describe('the codec', () => {
   test('encodes and decodes a real build well inside the sub-50 ms target', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build#b\./);
 
     // Publication happens once per modelled edit, so the time from an edit to a

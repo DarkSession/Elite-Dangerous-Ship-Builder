@@ -108,7 +108,12 @@
 
   // Status washes. Canvas literals: the issue badge and the destructive border.
   --edsb-palette-hot-a16: rgb(255 107 61 / 0.16);
+  --edsb-palette-hot-a22: rgb(255 107 61 / 0.22);
   --edsb-palette-hot-a40: rgb(255 107 61 / 0.4);
+
+  // The ground under the canvas's green status block, `rgb(143 217 74 / .08)` —
+  // the same good the marker beside it is drawn in.
+  --edsb-palette-good-a08: rgb(143 217 74 / 0.08);
 
   // Hairline. Decorative separation only — far below any contrast floor, so it
   // may never be the sole carrier of a boundary that means something.

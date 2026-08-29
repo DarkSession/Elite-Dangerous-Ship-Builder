@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
@@ -7,7 +7,13 @@ import {
   expectOrderedHeadings,
   expectSingleVisibleH1,
 } from './accessibility/assertions';
-import { openHullFromManifest, reachShellLink, savedToBrowser } from './shell';
+import {
+  buildStockHull,
+  manifestBuildControl,
+  openHullFromManifest,
+  reachShellLink,
+  savedToBrowser,
+} from './shell';
 
 /**
  * Inspecting a hull, and asking for a stock build.
@@ -36,6 +42,24 @@ const FACTS: readonly (readonly [label: string, unit: string])[] = [
 const BARE_FACTS: readonly string[] = ['Armour', 'Hardness', 'Crew', 'Mass lock'];
 
 const detail = (page: Page) => page.getByRole('article').first();
+
+/** The `Build` action, where this composition draws one. */
+const stockAction = (page: Page): Locator =>
+  page.getByRole('button', { name: englishMessages['hullDetail.create'], exact: true });
+
+/**
+ * The control this composition actually builds a stock hull with.
+ *
+ * Canvas 1b's sheet pins a `Build` action to its footer plate. Canvas 1a's rail
+ * draws none, because the manifest beside it is the build: a rested pointer
+ * opens a hull and the press after it flies its stock loadout. On a device that
+ * cannot hover the rail keeps the action, since there a row press opens the
+ * detail instead (`hull-detail.page.scss`, "The commitment").
+ */
+async function stockBuildControl(page: Page): Promise<Locator> {
+  const action = stockAction(page);
+  return (await action.count()) > 0 ? action.first() : manifestBuildControl(page);
+}
 
 /**
  * The screen's text, folded for comparison.
@@ -79,9 +103,8 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
   await openHullFromManifest(page, name);
-  await expect(
-    page.getByRole('button', { name: englishMessages['hullDetail.create'], exact: true }),
-  ).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/ships/\\w+$`));
+  await expect(detail(page)).toBeVisible();
 }
 
 test.describe('hull detail', () => {
@@ -124,7 +147,9 @@ test.describe('hull detail', () => {
   });
 
   test('counts the mount classes the hull carries, largest first', async ({ page }) => {
-    const mounts = await detail(page).locator('.detail__mount').allInnerTexts();
+    const mounts = await detail(page)
+      .locator('[data-slot-group="hardpoint"] .detail__mount')
+      .allInnerTexts();
 
     // The design system sets the class names in capitals; the assertion is
     // about the counts and their order, not about the stylesheet.
@@ -134,6 +159,61 @@ test.describe('hull detail', () => {
       '2 medium',
       '2 small',
     ]);
+  });
+
+  test('states what the hull carries, grouped and totalled as the reference draws it', async ({
+    page,
+  }) => {
+    // FR-022. Nothing here writes down an Anaconda's layout: every figure is
+    // read back out of the page and held against another part of the same page
+    // that has to agree with it, so a package that corrects a hull corrects the
+    // assertion with it.
+    const group = (id: string) => detail(page).locator(`[data-slot-group="${id}"]`);
+
+    for (const id of ['utility', 'core', 'optional', 'restricted']) {
+      await expect(group(id)).toHaveCount(1);
+    }
+
+    // Utility mounts carry a count and no chips: every one of them is the same
+    // size, so a chip apiece would be one number written eight times.
+    await expect(group('utility').locator('.detail__mount')).toHaveCount(0);
+
+    // The seven core mounts, each named by the package rather than by a table
+    // here, and each with its own size.
+    await expect(group('core').locator('.detail__mount')).toHaveCount(7);
+    expect(Number(await group('core').locator('.detail__section-total').innerText())).toBe(7);
+
+    // The optional group's total is the number of mounts, not the number of
+    // chips: a run of three sizes is one chip that says so.
+    const optionalTotal = Number(
+      (await group('optional').locator('.detail__section-total').innerText()).replace(/\D/gu, ''),
+    );
+    // A run's spoken sentence opens with its count — `3 size 6 mounts` — except
+    // where the run is a single mount, which is written `One size 6 mount` so
+    // that it reads as a sentence rather than as a sum.
+    const runs = await group('optional').locator('.detail__mount-words').allInnerTexts();
+    expect(runs.length).toBeGreaterThan(0);
+    expect(runs.length).toBeLessThanOrEqual(optionalTotal);
+    expect(
+      runs.reduce((total, words) => total + Number(/^(\d+)\b/u.exec(words)?.[1] ?? 1), 0),
+    ).toBe(optionalTotal);
+
+    // Largest first, read off the chips the eye sees.
+    const sizes = (await group('optional').locator('.detail__mount-count').allInnerTexts()).map(
+      (chip) => Number(chip.replace(/^.*?(\d+)\s*$/u, '$1')),
+    );
+    expect(sizes).toEqual([...sizes].sort((left, right) => right - left));
+
+    // The restricted group says what its mounts take, in words, and its total
+    // is counted separately from the optional one beside it.
+    await expect(group('restricted').locator('.detail__restriction')).not.toHaveCount(0);
+    for (const words of await group('restricted')
+      .locator('.detail__restriction-takes')
+      .allInnerTexts()) {
+      expect(words.replace(/\s+/gu, ' ').trim().length).toBeGreaterThan(
+        englishMessages['hullDetail.slots.restricted.takes'].length,
+      );
+    }
   });
 
   test('shows the hull price as one headline figure in credits', async ({ page }) => {
@@ -187,10 +267,10 @@ test.describe('hull detail', () => {
 
     await expect(page.getByText(/illustration is not available right now/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Load the illustration again' })).toBeVisible();
-    // The absence of a picture never gates creating a build (FR-006).
-    await expect(
-      page.getByRole('button', { name: englishMessages['hullDetail.create'], exact: true }),
-    ).toBeEnabled();
+    // The absence of a picture never gates creating a build (FR-006). Which
+    // control that is depends on the composition, and neither of them is
+    // waiting on an illustration.
+    await expect(await stockBuildControl(page)).toBeEnabled();
   });
 
   test('recovers the illustration on retry, without reloading the page', async ({ page }) => {
@@ -233,9 +313,7 @@ test.describe('hull detail', () => {
   test('creates the package’s own default build, and only when asked', async ({ page }) => {
     await expect(page).toHaveURL(/\/ships\/Anaconda$/);
 
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
 
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
@@ -252,16 +330,12 @@ test.describe('hull detail', () => {
     // Withdrawn on 2026-08-25: the build being replaced has a record of its own,
     // so nothing is lost and nothing is asked. What is asserted instead is that
     // the first build is still there afterwards (FR-008, FR-009).
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await savedToBrowser(page);
 
     await openHullInApp(page, 'Sidewinder');
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page).toHaveURL(/\/build(#|$)/);
@@ -281,6 +355,25 @@ test.describe('hull detail', () => {
       .toBe(2);
   });
 
+  test('draws the stock-hull action only where the manifest is not the build', async ({ page }) => {
+    // Canvas 1a's rail ends at `HULL PRICE`: the manifest beside it already
+    // builds, and a rail button would be the same transaction one press further
+    // from the row a Commander is on (FR-007, `hull-detail.md`, "The wide rail
+    // has no action"). Where the device cannot hover, a row press opens the
+    // detail instead of building, so the action stays.
+    const railBuilds = await page.evaluate(
+      () => matchMedia('(hover: hover)').matches && matchMedia('(min-width: 64rem)').matches,
+    );
+
+    await expect(stockAction(page)).toHaveCount(railBuilds ? 0 : 1);
+
+    // Either way the capability is reachable, and reaching it is what proves
+    // it: an absent button is only correct while something else is the build.
+    await buildStockHull(page, englishMessages['hullDetail.create']);
+    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+  });
+
   test('never scrolls the document sideways', async ({ page }) => {
     await expectNoDocumentOverflow(page);
   });
@@ -296,14 +389,10 @@ test.describe('hull detail', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-unknown' });
 
     await page.goto(ANACONDA);
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await openHullInApp(page, 'Sidewinder');
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await expectNoAccessibilityViolations(page, testInfo, { label: 'hull-detail-second-build' });
   });

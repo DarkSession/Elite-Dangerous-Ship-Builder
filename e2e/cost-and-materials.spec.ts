@@ -16,7 +16,7 @@ import {
   revealStatusRail,
   surfacesAreLayers,
 } from './outfitting-surfaces';
-import { reachShellAction } from './shell';
+import { buildStockHull, reachShellAction } from './shell';
 
 /**
  * The cost and material blocks, end to end.
@@ -52,7 +52,7 @@ const CARGO_RACK = {
  */
 async function openStockBuild(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
   await expect(page).toHaveURL(/\/build(#|$)/);
   // Both blocks live in the status rail, which canvas 1d keeps behind its
   // `STATUS` segment rather than in the flow — so a compact run opens it, and a

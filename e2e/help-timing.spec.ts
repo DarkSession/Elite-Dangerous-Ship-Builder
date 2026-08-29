@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
-import { openActionLayer, reachShellAction } from './shell';
+import { buildStockHull, openActionLayer, reachShellAction } from './shell';
 
 /**
  * SC-005: help appears immediately, on a phone that is busy.
@@ -50,9 +50,7 @@ test.describe('help first-frame timing', () => {
     // modal ever opens over: the ledger, the status rail and the anatomy plates
     // are all mounted behind it.
     await page.goto(`/ships/Anaconda`);
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
     await page.waitForLoadState('networkidle');
 

@@ -383,13 +383,14 @@ describe('OffenceAnalysis', () => {
       expect(heads).toEqual([
         component.columns().module,
         component.columns().damagePerSecond,
+        component.columns().sustainedDamagePerSecond,
         component.columns().piercing,
         component.columns().maximumRange,
         component.columns().falloff,
       ]);
       expect(element.querySelectorAll('.weapon').length).toBeGreaterThan(0);
       for (const row of element.querySelectorAll('.weapon')) {
-        expect(row.querySelectorAll('.weapon__figure')).toHaveLength(4);
+        expect(row.querySelectorAll('.weapon__figure')).toHaveLength(5);
       }
     });
 

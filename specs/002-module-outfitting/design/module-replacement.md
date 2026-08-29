@@ -137,9 +137,16 @@ the head and every row of the pane. The canvas revision withdrew `DPS`, `MASS t`
 `DRAW WEP` from this width entirely.
 
 They are not moved and not folded into a second line: canvas 1c draws a row as one line of three
-cells. The facts survive only where canvas 1d draws them, in the compact row's own code line
-(`GIMBALLED · 23.3 DPS · 4.46 MW · 16.0 t`), which that canvas did not change. A wide manifest that
-kept them would be the screen not being the design.
+cells. A wide manifest that kept them would be the screen not being the design.
+
+**Extended to the compact card, 2026-08-29.** Canvas 1d's code line under a module's name is the
+mount alone — `GIMBALLED` — so the compact card is the same three things the wide row is: the module
+with its mount, its class and its cost. The chooser states which article a Commander is taking, at
+both widths, and the article's own figures are read where a fitted article's figures are read.
+
+The family header carries the package's family name and its count, and nothing else. Canvas 1d
+draws no summary line on a family bar, and one is not built here in any case: a min–max across a
+family is an aggregate the Almanac does not publish.
 
 **Superseded, kept for the record — ruled 2026-08-22 (wave 7, corrected wave 9).** The wide manifest
 was canvas 1c's seven-column grid

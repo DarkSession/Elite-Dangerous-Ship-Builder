@@ -115,6 +115,20 @@ export interface PowerView {
    * artboard's own percentages.
    */
   readonly bar: PowerDrawBar;
+  /**
+   * The lit draw as a share of plant output, or `null` with no output to share.
+   *
+   * Canvas 1d's compact strip closes with `PWR 95%`, which is `29.64` of
+   * `31.20 MW` — the plant, not the whole demand. It answers a different
+   * question from {@link bar}: how much of the plant is already spoken for,
+   * rather than how much of the demand it covers. Both are drawn, so both are
+   * projected here rather than either being worked out at a screen.
+   *
+   * `null` where the plant generates nothing. A share of no output is not a
+   * small percentage; it is a division with no answer, and a zero here would be
+   * a figure standing in for one that does not exist (constitution IV).
+   */
+  readonly plantShare: number | null;
 }
 
 /** Three lengths on one track, each a share of it between `0` and `1`. */
@@ -413,7 +427,23 @@ function projectPower(budget: PowerBudget, hardpoints: HardpointState): PowerVie
     poweredDraw: (deployed ? budget.deployed : budget.retracted) - unpoweredDraw(budget, deployed),
     unpowered: unpoweredDraw(budget, deployed),
     bar: drawBar(budget, deployed),
+    plantShare: plantShare(budget, deployed),
   };
+}
+
+/**
+ * The lit draw against the plant's own output — canvas 1d's `PWR 95%`.
+ *
+ * Done here rather than at the badge, because every division of two package
+ * figures in this application is done in this one file: a percentage worked out
+ * at a screen is a reading nobody can find again (005/FR-001, FR-002).
+ */
+function plantShare(budget: PowerBudget, deployed: boolean): number | null {
+  if (budget.available <= 0) {
+    return null;
+  }
+  const draw = deployed ? budget.deployed : budget.retracted;
+  return (draw - unpoweredDraw(budget, deployed)) / budget.available;
 }
 
 /**

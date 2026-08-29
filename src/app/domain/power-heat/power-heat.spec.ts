@@ -59,6 +59,7 @@ describe('projectPowerHeat', () => {
         'bands',
         'bar',
         'draw',
+        'plantShare',
         'poweredDraw',
         'unpowered',
       ]);
@@ -74,6 +75,24 @@ describe('projectPowerHeat', () => {
       expect(power.draw).toBeGreaterThan(0);
       expect(power.poweredDraw).toBe(0);
       expect(power.unpowered).toBeCloseTo(power.draw, 10);
+
+      // And no share of it. A plant of nothing has no output to take a share
+      // of, so the badge that draws one has nothing to draw rather than a zero
+      // percentage standing in for a division with no answer (FR-014).
+      expect(power.plantShare).toBeNull();
+    });
+
+    it('states the lit draw as a share of plant output, not of the demand', () => {
+      // The two are different questions and the canvas asks both: `PWR 95%` on
+      // canvas 1d's badge is the lit draw over the plant, while the rail's bar
+      // measures the same draw against the whole demand (FR-014). A build the
+      // plant covers cannot tell them apart — the bar's track is the plant
+      // there — so the one with a shed band is what separates them.
+      const power = project(shedBandBuild()).power;
+
+      expect(power.unpowered).toBeGreaterThan(0);
+      expect(power.plantShare).toBeCloseTo(power.poweredDraw / power.available, 10);
+      expect(power.bar.powered).toBeLessThan(power.plantShare ?? 0);
     });
   });
 

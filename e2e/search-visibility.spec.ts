@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { PRODUCT_URL } from './servers';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { openFirstHullFromManifest } from './shell';
+import { buildStockHull, openFirstHullFromManifest } from './shell';
 import { SITE_ORIGIN } from '../src/app/platform/browser/site-address';
 
 /**
@@ -94,7 +94,7 @@ test.describe('what the head says this page is', () => {
   test('keeps the build out of the address, because that is where it lives', async ({ page }) => {
     await page.goto(`${PRODUCT_URL}/ships`);
     await openFirstHullFromManifest(page);
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build#./);
 
     await canonical(page).toBe(`${SITE_ORIGIN}/build`);

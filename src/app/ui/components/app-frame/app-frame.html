@@ -64,11 +64,19 @@
     }
 
     <!--
-      The release mark the 2026-08-26 canvas adds, between the insignia and the
-      screen's own identity on every artboard: a solid amber chip with the
-      bar's own ground as its ink.
+      The release mark: a solid amber chip with the bar's own ground as its ink.
+
+      It stands on whichever side of the identity says what it is about. Canvas
+      1a draws `SHIPYARD BETA · 48 SHIPS`, which reads as a beta shipyard;
+      canvases 1c and 1d put it ahead of the build's name, because a chip after
+      an editable name reads as part of the name and the build is not what is in
+      beta. So it follows a plain title and leads an identity block — and leads
+      where the bar carries neither, since there is then nothing for it to
+      follow.
     -->
-    <span class="frame__beta">{{ betaLabel() }}</span>
+    @if (!betaFollowsTitle()) {
+      <span class="frame__beta">{{ betaLabel() }}</span>
+    }
     <!--
       The bar's title, or the screen's own identity where it publishes one.
       Canvas 1c and 1d both put the build's name where every other screen's
@@ -89,6 +97,9 @@
       />
     } @else if (routeContext(); as context) {
       <h1 class="frame__title">{{ context }}</h1>
+    }
+    @if (betaFollowsTitle()) {
+      <span class="frame__beta">{{ betaLabel() }}</span>
     }
     @if (routeCount(); as count) {
       <span class="frame__count">{{ count }}</span>

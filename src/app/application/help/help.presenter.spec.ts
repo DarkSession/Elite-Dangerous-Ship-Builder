@@ -270,15 +270,18 @@ describe('HelpPresenter', () => {
       expect(index.map((entry) => entry.id)).toEqual([
         'application',
         'library',
+        'icons',
         'gameData',
         'typefaces',
       ]);
 
       // A line with no link is the whole sentence and nothing after it.
-      const gameData = index.find((entry) => entry.id === 'gameData');
-      expect(gameData?.before).toBe(englishMessages['help.licence.index.gameData']);
-      expect(gameData?.link).toBeNull();
-      expect(gameData?.after).toBe('');
+      for (const id of ['icons', 'gameData'] as const) {
+        const entry = index.find((line) => line.id === id);
+        expect(entry?.before).toBe(englishMessages[`help.licence.index.${id}`]);
+        expect(entry?.link).toBeNull();
+        expect(entry?.after).toBe('');
+      }
     });
 
     it('cuts a linked line at the place its own translation put the link', () => {

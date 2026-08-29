@@ -1,0 +1,54 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Canvas 1d's plate at the end of the key-figure strip. The artboard draws it
+// beside the six figures rather than over them, so here it is one more item of
+// the strip's own grid and cannot land on anything (005/FR-014).
+//
+// It takes the whole of the row it falls to rather than a plate's width of it.
+// The strip is `repeat(auto-fit, minmax(3.25rem, 1fr))`, so how many tracks it
+// has is decided by the space it was given at the text size it was given it,
+// and the plate is an eighth item where the six figures are the first six. Two
+// tracks of it would sit beside the figures at some widths and against the
+// leading edge of a second row at others — where it reads as a seventh figure
+// rather than as the strip's closing plate — and which of the two a Commander
+// gets would turn on a threshold that a doubled text size moves and a media
+// query cannot see. The row is the one placement that is the same everywhere.
+//
+// The departure from the artboard is recorded in
+// `specs/005-power-and-heat/design/power-and-heat-detail.md`, "The compact
+// strip's power badge".
+:host {
+  display: block;
+  grid-column: 1 / -1;
+}
+
+.badge {
+  @include layout.stack(var(--edsb-space-3xs));
+
+  margin: 0;
+  padding-block: var(--edsb-space-2xs);
+  padding-inline: var(--edsb-space-sm);
+  background-color: var(--edsb-surface-inset);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-field);
+  text-align: end;
+}
+
+// The hot tone only where something is actually dark. The canvas draws the
+// plate hot because the build it draws sheds a group; a build the plant covers
+// has nothing to warn about, and the tone is never what says so in any case —
+// the second line names the groups in words.
+.badge--shed {
+  background-color: var(--edsb-surface-danger-quiet);
+  border-color: var(--edsb-border-danger-quiet);
+  color: var(--edsb-text-danger-quiet);
+}
+
+.badge__reading {
+  @include layout.metric-value(var(--edsb-text-size-micro), currentcolor);
+
+  white-space: nowrap;
+}
+
+.badge__words {
+  @include layout.visually-hidden;
+}

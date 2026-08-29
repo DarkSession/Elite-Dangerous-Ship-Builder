@@ -1996,6 +1996,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the separator are language-neutral.',
     'hullDetail.bar.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
+    'hullDetail.slots.run':
+      'A composition pattern; both variables and the multiplication sign are language-neutral. The words the chip stands for are hullDetail.slots.run.one and .many, which are translated.',
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',
@@ -2007,6 +2009,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'status.info': '"Information" is the ordinary German word.',
     'field.optional': '"Optional" is the ordinary German word.',
     'format.credits': 'CR is the in-game abbreviation and is not translated.',
+    'power.badge.reading':
+      'PWR is the canvas’s own abbreviation on the badge plate, and German abbreviates the word the same way. The sentence behind the badge, power.badge.label, is translated.',
     'hullDetail.unit.speed': 'The SI symbol for metres per second, identical in German.',
     'hullDetail.unit.mass': 'The SI symbol for the tonne, identical in German.',
     'drives.rail.metres-per-second': 'The SI symbol for metres per second, identical in German.',

@@ -29,7 +29,7 @@ creates document horizontal scrolling.
 | FR-013      | Package-defaulted fixed modules appear only as ordinary fitted state, with no provenance region.            |
 | FR-014      | No import or defaulting history is inferred or persisted from fixed-module state.                           |
 | FR-015      | A build with no issues draws nothing, so no readiness or quality claim can be made.                         |
-| FR-022      | Severity is text beside its issue, hidden as the canvas draws none; the tiers differ by ground too.         |
+| FR-022      | Severity is text beside its issue, hidden as the canvas draws none; the four tones differ by ground too.    |
 
 Requirements withdrawn or reassigned by the wave 11 rulings are listed in
 [spec.md](../spec.md#withdrawn-and-reassigned-requirements).

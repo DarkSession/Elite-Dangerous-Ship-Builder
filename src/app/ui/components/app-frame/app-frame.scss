@@ -123,8 +123,9 @@
 }
 
 // Canvas 3b's release mark: a solid amber chip, the bar's own ground as its
-// ink, condensed and widely tracked. It sits between the insignia and the
-// screen's identity on every artboard.
+// ink, condensed and widely tracked. Which side of the identity it stands on is
+// the bar's own decision rather than this rule's — it follows a plain screen
+// title and leads an editable one (`app-frame.ts`, `betaFollowsTitle`).
 .frame__beta {
   flex: none;
   padding-block: var(--edsb-space-3xs);

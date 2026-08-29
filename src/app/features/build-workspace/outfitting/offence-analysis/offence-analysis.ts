@@ -23,7 +23,7 @@ import { ModuleIdentityBadge } from '../../../../ui/outfitting/module-identity-b
 import { ShotConvergence } from './shot-convergence/shot-convergence';
 
 /**
- * One weapon as the canvas's five columns.
+ * One weapon as the canvas's six columns.
  *
  * The row is inert, as the canvas draws it: no disclosure, no action and no
  * slot of its own (`design/canvas-contract.md`, "1. WEAPONS"). A mount is
@@ -41,8 +41,10 @@ export interface WeaponRowView {
   readonly mount: string | null;
   /** What follows the mount on the canvas's code line: `OVERCHARGED G5`. */
   readonly engineering: string | null;
-  /** The canvas's `DPS` column. */
+  /** The canvas's `DPS BURST` column. */
   readonly damagePerSecond: string;
+  /** The canvas's `SUSTAINED` column, beside the burst figure. */
+  readonly sustainedDamagePerSecond: string;
   /** The canvas's `PIERCE` column. `null` where the package returned none. */
   readonly piercing: string | null;
   /** The canvas's `RANGE` column. `null` where the package returned none. */
@@ -191,10 +193,11 @@ export class OffenceAnalysis {
    */
   readonly selectedSlot = this.#outfitting.selectedSlotKey;
 
-  /** The canvas's five column heads, in its order. */
+  /** The canvas's six column heads, in its order. */
   readonly columns = computed(() => ({
     module: this.#messages.message('offence.column.module'),
     damagePerSecond: this.#messages.message('offence.column.dps'),
+    sustainedDamagePerSecond: this.#messages.message('offence.column.sustained'),
     piercing: this.#messages.message('offence.column.pierce'),
     maximumRange: this.#messages.message('offence.column.range'),
     falloff: this.#messages.message('offence.column.falloff'),
@@ -481,6 +484,13 @@ export class OffenceAnalysis {
           ? null
           : engineeringSummary(mount.module, this.#gameText, this.#messages),
       damagePerSecond: this.#perSecond(fitted.metrics.damagePerSecond),
+      // The canvas's `SUSTAINED` column, added by the 2026-08-29 revision
+      // together with the rename of the column beside it. The package's own
+      // per-weapon figure, which is what the headline above already states as a
+      // build total; a continuous-fire weapon carries the same number in both
+      // cells because the package returns the same number twice, not because
+      // one was copied from the other.
+      sustainedDamagePerSecond: this.#perSecond(fitted.metrics.sustainedDamagePerSecond),
       // The canvas's `RANGE` column, added by the 2026-08-25 revision. The
       // package's own `maximumRange`, which the projection already carries for
       // the range bands: nothing is derived from it here and nothing caps it.

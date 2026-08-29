@@ -72,8 +72,8 @@ composes none of them and passes no conditions to any of them.
   (2026-08-27).
 - **FR-022**: Issue severity MUST be expressed as text beside its issue and MUST NOT depend on
   colour alone. The text is not drawn, because neither canvas draws a severity word; it is read
-  aloud beside the sentence, and it is what carries the severity. The canvas's three tiers reinforce
-  it — two of them differ from each other in hue alone.
+  aloud beside the sentence, and it is what carries the severity. The canvas's four tones — error,
+  warning, success and info — reinforce it, and differ from each other in hue alone.
 
 ## Withdrawn and reassigned requirements
 

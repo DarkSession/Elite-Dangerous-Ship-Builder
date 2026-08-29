@@ -24,19 +24,14 @@ import type { ModuleTextResolver } from './fitted-module-view';
 /**
  * The package facts one chooser row shows.
  *
- * Exactly the columns canvas 1c draws that the Almanac actually publishes, and
- * `null` wherever it publishes none. There is no fallback to the stock record's
- * number for a variant that resolves to nothing: a reward's mass is the
- * reward's, and showing the stock module's in its place would be a figure
- * nobody measured (module-catalogue contract, "Candidate facts").
+ * One figure, because both canvases draw one: a choice is its module, its class
+ * and its price. `null` where the Almanac publishes no price, with no fallback
+ * to the stock record's number for a variant that resolves to nothing — a
+ * reward's price is the reward's, and showing the stock module's in its place
+ * would be a figure nobody measured (module-catalogue contract, "Candidate
+ * facts").
  */
 export interface CandidateFacts {
-  /** Damage per round, or per second on a continuous-fire weapon. */
-  readonly damage: number | null;
-  readonly mass: number | null;
-  readonly powerDraw: number | null;
-  /** The weapons capacitor draw canvas 1c heads `DRAW WEP`. */
-  readonly distributorDraw: number | null;
   readonly cost: number | null;
 }
 
@@ -248,13 +243,7 @@ function presentationOf(
     section: acquisitionSection(variant),
     labels: acquisitionLabels(catalogueSource(module, variant)),
     purchaseGrade: variant?.grade ?? null,
-    facts: {
-      damage: article?.damage ?? null,
-      mass: article?.mass ?? null,
-      powerDraw: article?.powerDraw ?? null,
-      distributorDraw: article?.distributorDraw ?? null,
-      cost: article?.cost ?? null,
-    },
+    facts: { cost: article?.cost ?? null },
   };
 }
 

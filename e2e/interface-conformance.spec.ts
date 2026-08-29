@@ -15,7 +15,7 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { PRODUCT_URL } from './servers';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { openFirstHullFromManifest, reachShellLink } from './shell';
+import { buildStockHull, openFirstHullFromManifest, reachShellLink } from './shell';
 
 /**
  * Every screen this feature adds, held to the same interface contract.
@@ -51,7 +51,7 @@ async function openScreen(
     await page.goto('/ships/Anaconda');
   } else {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+    await buildStockHull(page, messages['hullDetail.create']);
     await expect(page).toHaveURL(/\/build(#|$)/);
     if (screen === 'library') {
       await page.goto('/builds');
@@ -100,7 +100,7 @@ test.describe('cross-route semantics', () => {
 
     // Opening a hull marks it as the current one rather than only colouring it.
     await openFirstHullFromManifest(page);
-    await expect(page.getByRole('button', { name: 'Build', exact: true })).toBeVisible();
+    await expect(page.locator('edsb-hull-detail-page')).toBeVisible();
     await expect(page.locator('[aria-current="true"]').first()).toBeAttached();
   });
 
@@ -128,7 +128,7 @@ test.describe('cross-route semantics', () => {
     await reachShellLink(page, 'Ship Builder');
     await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill('Sidewinder');
     await openFirstHullFromManifest(page);
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();

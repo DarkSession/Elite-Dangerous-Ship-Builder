@@ -114,6 +114,26 @@ conditions here, because the design draws them inside this capability and nowher
   > requirement id is minted for it: this is FR-013's block gaining an element, and the coverage
   > ledger registers ids against journeys that exist.
 
+- **FR-014**: At compact width the strip of key readings MUST close with the share of plant output
+  the build's lit demand takes, and — only where the package reports a band unpowered with the
+  hardpoints deployed — MUST name each such band by its priority group. Both MUST be read from
+  `BuildMetrics.powerBudget()`, the same result FR-013's rail reads, and MUST NOT be a second
+  reading of it: the badge is the rail's `POWER` line at the width the rail is a segment a Commander
+  has to open.
+
+  The share is the lit demand over **plant output**, not over the whole demand: the reference sets
+  `95%` against a build whose lit draw is `29.64 MW` of a `31.20 MW` plant and whose whole demand is
+  `37.44`. Where the package reports no output at all there is no share to state, and the badge MUST
+  state none — a share of nothing is a division without an answer rather than a small percentage.
+
+  A build with every band lit MUST state the share alone. A named dark group is a fact about a build
+  that has one, and a `GRP 0 OFF` beside a full plant would state a condition rather than the
+  absence of one. Where more than one band is dark the badge MUST name each of them; the reference
+  draws a build with one and names that one, and a build with two has two things to say.
+
+  The badge MUST be a reading and MUST NOT be interactive: the pips that move it are the rail's, and
+  the rail is one segment away.
+
 ## Edge Cases
 
 - Without a plant, draw remains reportable, capacity is zero and heat is unavailable.

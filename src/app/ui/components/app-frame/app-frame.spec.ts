@@ -68,6 +68,39 @@ describe('AppFrame', () => {
     expect(element.querySelector('.frame__return-identity')).toBeNull();
   });
 
+  it('sets the release mark after a plain title and before an editable one', () => {
+    // Canvas 1a draws `SHIPYARD BETA · 48 SHIPS`, which reads as a beta
+    // shipyard. Canvases 1c and 1d put the mark ahead of the build's name,
+    // because a chip after a name a Commander can edit reads as part of that
+    // name — and the build is not the thing in beta.
+    const shipyard = render(null);
+    const marks = [...shipyard.querySelectorAll('.frame__beta, .frame__title')];
+    expect(marks.map((node) => node.className)).toEqual(['frame__title', 'frame__beta']);
+
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('routeContext', 'Build');
+    fixture.componentRef.setInput('identity', {
+      name: 'Anaconda',
+      detail: null,
+      ident: null,
+      editing: null,
+    });
+    fixture.detectChanges();
+
+    const bar = fixture.nativeElement as HTMLElement;
+    const chip = bar.querySelector('.frame__beta');
+    const identity = bar.querySelector('.frame__screen-identity');
+    expect(chip).not.toBeNull();
+    expect(identity).not.toBeNull();
+    const order = chip!.compareDocumentPosition(identity!);
+    expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    // And the mark is drawn once either way: two chips in one bar would be the
+    // release stated twice.
+    expect(shipyard.querySelectorAll('.frame__beta')).toHaveLength(1);
+    expect(bar.querySelectorAll('.frame__beta')).toHaveLength(1);
+  });
+
   it('emits the way back as an intent rather than navigating itself', () => {
     const fixture = TestBed.createComponent(AppFrame);
     fixture.componentRef.setInput('back', HULL_SHEET);
