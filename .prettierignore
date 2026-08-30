@@ -16,5 +16,5 @@ src/app/platform/build/help-topics.generated.ts
 
 # Byte-exact mirrors of the installed package's own legal documents.
 # Reformatting one would break the equality check that keeps them honest.
-legal/almanac/LICENSE
-legal/almanac/THIRD_PARTY_NOTICES.md
+docs/legal/almanac/LICENSE
+docs/legal/almanac/THIRD_PARTY_NOTICES.md

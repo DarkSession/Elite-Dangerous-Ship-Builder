@@ -21,7 +21,7 @@
  *   --check    validate everything and emit nothing; it does not compare
  *              against the artifact on disk, for the reason given below it
  *   --sync     the maintainer path: copy the installed package's legal files
- *              over the tracked mirrors in `legal/almanac/`, then emit
+ *              over the tracked mirrors in `docs/legal/almanac/`, then emit
  *
  * Every failure names the artifact and the rule, exits non-zero and writes no
  * partial output. There is no runtime fallback for any of them, because a
@@ -58,7 +58,7 @@ export const REPOSITORY_LICENSE_URL =
  *
  * The package publishes `repository.url` as this repository with a `typescript`
  * directory, but the licence it ships is the repository's root `LICENSE`, not a
- * per-directory one — `legal/almanac/LICENSE` is a byte-exact mirror of that
+ * per-directory one — `docs/legal/almanac/LICENSE` is a byte-exact mirror of that
  * file, which is what `verifySourceDistribution` proves on every build. The
  * path here is the one that document actually lives at.
  */
@@ -133,7 +133,7 @@ const MIRRORED_ARTIFACTS = [
 const LEGAL_FILE_PATTERNS = [/^LICEN[SC]E/i, /^COPYING/i, /^NOTICE/i, /THIRD_PARTY/i];
 
 /** The tracked mirror directory, relative to the repository root. */
-const MIRROR_DIRECTORY = 'legal/almanac';
+const MIRROR_DIRECTORY = 'docs/legal/almanac';
 
 /** A build identifier that is safe to publish: no person, path, host or space. */
 const SAFE_BUILD_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
@@ -502,7 +502,7 @@ export async function verifySourceDistribution({ packageRoot, repoRoot, sync }) 
       throw new HelpManifestError(
         `installed ${entry.name}`,
         'is a package legal document with no tracked mirror. An upgrade has added a term ' +
-          'this repository has not agreed to redistribute; mirror it under legal/almanac/ ' +
+          'this repository has not agreed to redistribute; mirror it under docs/legal/almanac/ ' +
           'and review it before continuing.',
       );
     }
