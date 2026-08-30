@@ -107,9 +107,13 @@ do not mutate the active build until confirmed.
   which is the same lift every one of the canvas's label washes takes. Canvas 1d numbers its five
   buttons too and keeps its own filling: it fills the chosen cell alone, because a numbered button
   filled for being _below_ the choice is four buttons claiming to be the one that is pressed.
-- Grades below the one the descriptor starts at are drawn **striped and pressable**: a bespoke
+- Grades below the one the descriptor starts at are drawn **hatched and pressable**: a bespoke
   Mercenary table begins at grade 2, the article was bought at grade 1, and that grade is one the
-  article really has (wave 5, wave 6).
+  article really has (wave 5, wave 6). The hatch runs in a band along the cell's block end rather
+  than across the whole cell, because since the 2026-08-30 revision the cell carries its own number
+  and the two cannot share a ground: a hatch far enough from the cell to be seen leaves the number
+  under 4.5:1 on it, and one the number reads on is 1.19:1 from the cell and marks nothing. Below
+  the number both are free.
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect — drawn
   only once a recipe is chosen. An effect menu or a "no values are resolved" line standing over an
   empty selection is a section about nothing (wave 4).

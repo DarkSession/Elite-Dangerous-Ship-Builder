@@ -623,6 +623,21 @@ test.describe('purchased and reward articles', () => {
     // drawings of this control state, so it is what a journey that runs at
     // every width is allowed to ask.
     await expect(page.locator('.grade[data-selected="true"] .grade__number')).toHaveText('5');
+
+    // The grades below the recipe's own lowest are marked as outside its range,
+    // and the mark is drawn rather than only published as an attribute: a cell
+    // that says it is out of range and looks exactly like one that is not says
+    // nothing to a Commander (SC 1.4.11).
+    const marks = await page.locator('.grade').evaluateAll((nodes) =>
+      nodes.map((node) => ({
+        unavailable: node.getAttribute('data-unavailable') === 'true',
+        image: getComputedStyle(node).backgroundImage,
+      })),
+    );
+    expect(marks.some((cell) => cell.unavailable)).toBe(true);
+    for (const cell of marks) {
+      expect(cell.image === 'none').toBe(!cell.unavailable);
+    }
     // Inline this has already committed; in a layer it is a draft that has to
     // be applied before the ledger says anything. Either way the panel is then
     // showing the climbed article (constitution V).

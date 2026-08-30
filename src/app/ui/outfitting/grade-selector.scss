@@ -62,43 +62,55 @@
   }
 }
 
-// A grade below the one the recipe starts at. Striped rather than solid, so it
+// A grade below the one the recipe starts at. Marked rather than solid, so it
 // reads as outside the recipe's own range, and still pressable: taking a
 // Merc-Coin article back down to grade 1 is a thing a Commander may do. The
-// stripe is never the only carrier — each cell names its own grade.
+// mark is never the only carrier — each cell names its own grade.
+//
+// The hatch is confined to a band along the block end, clear of the number the
+// cell carries. Run across the whole cell it has to be a ground that number can
+// be read on, and there is no such ground: a band 3:1 from the cell — what
+// makes the mark visible at all — leaves the number under 4.5:1 on it, and a
+// band the number reads on is 1.19:1 from the cell and is no mark. Below the
+// number both are free: the hatch takes the full contrast of the cell it
+// crosses, and the number keeps the whole of the cell's own ground.
+//
+// ponytail: a band, not a second element. It clears the number at every drawn
+// size — 6px under a 9px number in a 28px cell, and under a 12px one in canvas
+// 1d's 38px cell — but the cell's height is fixed, so a text size large enough
+// to overflow the cell would reach it. That size overflows the cell either way.
 //
 // Two rules, because the two artboards fill their cells differently. Canvas 1c
 // fills every cell up to the choice, so an unavailable grade below it is a
 // filled cell. Canvas 1d fills the chosen button alone, so that same grade is
 // unfilled — which left the phone's control drawing no difference at all
 // between a grade outside the recipe and one inside it.
-//
-// An unfilled cell is striped in the page ground over its own quiet wash: the
-// ground showing through a cell that is only lit at all. The same rule as the
-// filled cell below, read for a dark cell instead of a lit one — the number an
-// unfilled cell carries is the accent ink, which reads on both bands here
-// (8.62:1 on the wash, 9.40:1 on the ground) and measures 1.19:1 on an amber
-// one. A band a digit cannot be read on is a digit the stripe has erased.
-.grades--steps .grade[data-unavailable='true']:not([data-filled='true']) {
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 var(--edsb-space-stack-tight),
-    var(--edsb-surface-root) var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
-  );
-  background-color: var(--edsb-surface-accent-quiet);
+.grade[data-unavailable='true'][data-filled='true'],
+.grades--steps .grade[data-unavailable='true'] {
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: 100% var(--edsb-space-xs);
 }
 
-// A filled cell is striped in the second amber over the fill: both bands are a
-// ground the cell's own ink reads on — 8.50:1 on the fill and 10.12:1 on the
-// band — so the grade written on the cell survives the stripe wherever a digit
-// falls across it. The canvas stripes amber on amber here for the same reason.
+// The page ground hatched across the fill: 8.45:1 against the cell, with the
+// cell's own near-black number reading at 8.50:1 on the amber above it.
 .grade[data-unavailable='true'][data-filled='true'] {
   background-image: repeating-linear-gradient(
     135deg,
-    transparent 0 var(--edsb-space-md),
-    var(--edsb-surface-accent-band) var(--edsb-space-md) var(--edsb-space-lg)
+    var(--edsb-surface-root) 0 var(--edsb-space-2xs),
+    transparent var(--edsb-space-2xs) var(--edsb-space-xs)
   );
-  background-color: var(--edsb-surface-accent-solid);
+}
+
+// And the accent hatched across the quiet wash: 7.11:1 against the cell, with
+// the accent number reading at 8.47:1 on the wash above it.
+.grades--steps .grade[data-unavailable='true']:not([data-filled='true']) {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--edsb-surface-accent-solid) 0 var(--edsb-space-2xs),
+    transparent var(--edsb-space-2xs) var(--edsb-space-xs)
+  );
+  background-color: var(--edsb-surface-accent-quiet);
 }
 
 .grade__radio {
