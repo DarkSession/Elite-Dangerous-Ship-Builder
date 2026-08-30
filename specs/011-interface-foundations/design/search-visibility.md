@@ -215,8 +215,8 @@ one.
 
 The first pass read the repository. This one also asked what a search engine says about the site,
 and the answer was nothing: a search for `sb.edct.dev` returns the incumbents — Coriolis, EDSY,
-edshipbuilds — and no result for this site. The repository was created five days before the question
-was asked. So the ranking of the findings changes. The on-page work was nearly finished already;
+edshipbuilds — and no result for this site. The repository is eighteen days old and the site has
+been live for twelve. So the ranking of the findings changes. The on-page work was nearly finished already;
 what is scarce is **addresses worth indexing** and **links pointing at them**. Six of the seven items
 serve the first. The seventh is a README that told every visitor the application was a blank shell.
 
@@ -228,9 +228,11 @@ serve the first. The seventh is a README that told every visitor the application
 `SHIPS` and writes one `<loc>` per hull beside the three top-level routes: 51 addresses where there
 were 3.
 
-Nothing else had to change for those addresses to answer. The deployment already published one
-document per advertised address, so the hulls became documents the moment the map named them. That
-was the first pass's design and it held.
+Nothing in the deployment's design had to change for those addresses to answer. It already published
+one document per advertised address, so the hulls became documents the moment the map named them.
+That was the first pass's design and it held. The production journey's server did have to change: it
+had never resolved a published document, because none existed locally until the publisher moved into
+`pnpm run build` (see the note on `ships.html` below).
 
 Each address now says which hull it is. `/ships/:symbol` declares its own title and description
 keys, both interpolating `{{hull}}`, and `RouteTitleStrategy` supplies the name from the package.
@@ -258,8 +260,11 @@ from `pnpm run build`.
 **That move is the part worth arguing with.** The publication used to be a shell block in `ci.yml`,
 and the first pass wrote at length about keeping its comment-cutting pass identical to the policy
 checker's, because one is `sed` and the other is `.mjs` and neither can call the other. A script
-removes the problem instead of managing it: both readers are now the same module, so they cannot
-read one sitemap differently. It also puts what a crawler is served under `pnpm run test:scripts` and
+removes the problem instead of managing it: `readSitemap` in `scripts/search/published-addresses.mjs`
+is the one function that reads the generated map, and the publisher and the checker both call it, so
+there is no second spelling of the cut to keep in step. They still react differently — the publisher
+refuses a map it cannot read, the checker fails by name — which is why the defect is returned rather
+than thrown. It also puts what a crawler is served under `pnpm run test:scripts` and
 under a production journey, rather than under a deployment nobody can run twice.
 
 ### One reader, three consumers
@@ -274,8 +279,8 @@ which stops working the first time the file is formatted differently and says no
 The checker reconciles the two — a route with no key, a key no route declares, a key the catalogue
 does not carry, and an address the route table does not serve each fail the build by name.
 
-Two runtime rules are spelled a second time there for the same reason: the title composition and the
-hull artwork path. `src/app/i18n/document-title.spec.ts` holds both copies to the running
+Three runtime rules are spelled a second time there for the same reason: the placeholder
+substitution, the title composition and the hull artwork path. `src/app/i18n/document-title.spec.ts` holds both copies to the running
 application's answer for every published address, so a document cannot be published with one title
 and rewritten with another.
 
@@ -287,7 +292,7 @@ hulls. It writes the 192 and 512 icons a browser wants before it offers installa
 one, an `apple-touch-icon` and a 1200x630 card. The output is committed, so the build stays hermetic
 and the script is how the files are reproduced rather than a step the build depends on.
 
-The mark it renders has been in `.design` since 2026-08-25. The first pass's "there is no logo to
+The mark it renders has been in `.design` since 2026-08-22. The first pass's "there is no logo to
 make one from" was already untrue when it was written; it is corrected here rather than quietly
 worked around.
 
@@ -322,8 +327,8 @@ does not want anyway. The rewrite is therefore a step in `ci.yml`, beside the st
   hard-coded list of hull symbols in this repository is exactly the private copy of package data
   that constitution II forbids". A committed generated file is not that, for the reason
   `public/assets/ships/` and the schematic mount extracts are not: it is reproducible from the
-  installed package by a script in this repository, and a build that disagrees with the package
-  fails. What would forbid it is a list nobody could reproduce. Two gates hold it, because the two
+  installed package by a script in this repository, so a build never ships a stale map and a CI step
+  fails a commit whose map disagrees with the package. What would forbid it is a list nobody could reproduce. Two gates hold it, because the two
   failures are different: `pnpm run build` regenerates the file, so no deployment can ship a stale
   map even if somebody forgot to commit one; and a CI step runs the generator's `--check` before the
   build, so a pin move that adds or drops a hull cannot leave the committed file disagreeing with
@@ -353,6 +358,19 @@ does not want anyway. The rewrite is therefore a step in `ci.yml`, beside the st
   is two questions long. Amending an owner-ruled contract in three places to publish two paragraphs
   is not a trade worth making. It is recorded here because the suggestion was made in public and the
   refusal should be too.
+- **The forty-eight hull cards are gated by the checker, not by a file that names them.** No file in
+  this repository names `assets/ships/<symbol>/illustration.png`: the card is derived per hull from
+  the package. A pin move that adds a hull would otherwise add an address, a document and an
+  `og:image` pointing at artwork nobody rasterised, with everything green. The checker therefore
+  compares every published address's card against what `public/` actually serves, and names the hull
+  and the command that renders it.
+- **The preview's `noindex` is held by a rule that reads the workflow.** The `sed` that rewrites the
+  tag matches one exact spelling of it, and nothing in `pnpm run check` reads `ci.yml`, so a robots
+  tag reformatted across two lines would satisfy every other rule here and turn the rewrite into a
+  silent no-op — discovered, if at all, by a preview quietly competing with the site it previews.
+  The checker takes the expression out of the workflow and runs it against `index.html`, and checks
+  that what it substitutes says `noindex`. Two copies of one rule would have been the same fault the
+  sitemap reader was unified to avoid.
 - **Manifest `screenshots` are still absent.** They want real screenshots of the application at two
   form factors. The Playwright suite could take them, and that is a follow-up rather than a line of
   markup.

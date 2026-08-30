@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { TmplAstText, TmplAstTextAttribute, parseTemplate } from '@angular/compiler';
 import ts from 'typescript';
 import scssSyntax from 'postcss-scss';
-import { declaredOrigin, publishedAddresses } from './search/published-addresses.mjs';
+import { declaredOrigin, publishedAddresses, readSitemap } from './search/published-addresses.mjs';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -928,6 +928,7 @@ async function checkSearchMetadata() {
       manifest: await read(SEARCH_METADATA_FILES.manifest),
       domain: await read(SEARCH_METADATA_FILES.domain),
       tokens: await read(SEARCH_METADATA_FILES.tokens),
+      preview: await read(SEARCH_METADATA_FILES.preview),
       routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
       routeKeys: [...routesSource.matchAll(/(?:title|description):\s*'([^']*)'/g)].map(
         (match) => match[1],
@@ -1431,6 +1432,16 @@ export const SEARCH_METADATA_FILES = {
    * what is left to reconcile is this module against the route table.
    */
   addresses: 'scripts/search/published-addresses.mjs',
+  /**
+   * The file that rewrites the robots tag for a preview deployment.
+   *
+   * Read here because it is the only thing that carries out "a deployment that
+   * is not the production site asks not to be indexed" (011/FR-027), and its
+   * `sed` matches one exact spelling of the tag. Reformatting the tag in
+   * `index.html` would leave the expression matching nothing, and the failure
+   * would surface on a preview publish rather than in `pnpm run check`.
+   */
+  preview: '.github/workflows/ci.yml',
 };
 
 /** Head tags `index.html` must carry for a crawler that runs no script. */
@@ -1498,41 +1509,6 @@ function headContent(document, attribute, key) {
     'i',
   ).exec(document);
   return tag?.[3] ?? null;
-}
-
-/**
- * A document with its XML comments removed, so nothing inside one is read.
- *
- * The body is "anything but `--`" rather than a lazy `[\s\S]*?`, so that this
- * matches character for character what the deployment's `sed` can express
- * (`.github/workflows/ci.yml`, "Serve client-side routes as real addresses").
- * XML forbids `--` inside a comment, and neither reader validates the file, so
- * a malformed one has to fail the same way in both: the lazy form would strip
- * it here and publish a route from inside it there. This form strips neither.
- *
- * One pass therefore leaves some documents holding a comment delimiter still —
- * a nested `<!<!-- -->--` reassembles one — so this is deliberately not a
- * sanitiser and nothing may treat it as one. The caller checks what is left
- * over and fails on it by name; the deployment does the same, in the same
- * words.
- */
-function withoutXmlComments(document) {
-  // Written as "keep what is between the comments" rather than as a replace,
-  // because a replace of a multi-character delimiter reads as a sanitiser and
-  // this is not one — the leftovers are what the callers act on. Same regexp,
-  // same single left-to-right pass over non-overlapping matches, so the result
-  // is identical to the replace form and to the deployment's `sed`; the
-  // difference is only in what the code claims to be.
-  const kept = [];
-  let cut = 0;
-
-  for (const comment of document.matchAll(/<!--(?:[^-]|-[^-])*-->/g)) {
-    kept.push(document.slice(cut, comment.index));
-    cut = comment.index + comment[0].length;
-  }
-  kept.push(document.slice(cut));
-
-  return kept.join('');
 }
 
 /**
@@ -1751,35 +1727,20 @@ export function searchMetadataViolations(input) {
 
   // `sitemap.xml`: exactly the addressable routes, no more and no fewer.
   //
-  // Comments are cut first, because the deployment cuts them: this file is also
-  // the route list `.github/workflows/ci.yml` publishes from, and a `<loc>` the
-  // two read differently is a route that passes here and never gets a file.
-  const body = withoutXmlComments(input.sitemap ?? '');
-
-  // Nothing that opens or closes a comment may survive the cut. One pass
-  // cannot: `<!<!-- -->--` leaves `<!--` behind, and a `--` inside a comment
-  // leaves the whole thing, so a `<loc>` nobody meant to publish can end up
-  // inside what the next reader takes for live markup. Neither this nor the
-  // deployment's `sed` makes a second pass — a second pass would strip more
-  // here than there, which is the drift they are written to avoid — so what
-  // is left over is checked instead of cut, and a file that leaves anything
-  // over fails by name.
-  //
-  // `--!>` is named alongside `-->` because it ends a comment in HTML and ends
-  // nothing in XML. A sitemap holding one is malformed either way, and this is
-  // a refusal rather than a cut, so covering both can only turn a file nobody
-  // can read from an accepted one into a named failure.
-  if (/<!--|--!?>/.test(body)) {
+  // Read through `readSitemap`, which is the same function
+  // `scripts/publish-static-routes.mjs` publishes from. That is the point of it
+  // being a function rather than a rule spelled here and a `sed` spelled there:
+  // a `<loc>` the two read differently is an address that passes this gate and
+  // never gets a file, or a file published from inside a comment.
+  const { addresses, defect } = readSitemap(input.sitemap ?? '');
+  if (defect !== null) {
     fail(
       SEARCH_METADATA_FILES.sitemap,
-      'A comment here is nested or contains "--", so the file does not say what it appears to. ' +
-        'Neither this check nor the deployment can read it; write plain comments.',
+      `${defect} Neither this check nor the publisher can read it; write plain comments.`,
     );
   }
 
-  const listed = new Set(
-    [...body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]),
-  );
+  const listed = new Set(addresses);
 
   // The map is generated from `published`, so the two agree unless the file was
   // edited by hand or the generator was not re-run after a package pin move.
@@ -2002,6 +1963,20 @@ export function searchMetadataViolations(input) {
         );
       }
     }
+
+    // The forty-eight hull cards, which no file in this repository names: they
+    // are derived per hull from the installed package, so a pin move that adds
+    // a hull adds an address, a document and an `og:image` pointing at artwork
+    // nobody has rendered. Every other rule here would stay green while that
+    // hull's link unfurled as a broken image.
+    for (const entry of published ?? []) {
+      if (!present.has(entry.image)) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"/${entry.path}" shows "${entry.image}" but no such file is served. Run \`node scripts/convert-ship-artwork.mjs\`.`,
+        );
+      }
+    }
   }
 
   // The card is fetched by a chat client from its own machine, so a relative
@@ -2024,6 +1999,39 @@ export function searchMetadataViolations(input) {
       SEARCH_METADATA_FILES.index,
       'The document asks not to be indexed. That belongs to a preview deployment, not to the site.',
     );
+  }
+
+  // ...and the preview's rewrite can still find it. The workflow's expression is
+  // taken from the workflow rather than restated here, and run against this
+  // file, because the two only ever fail together: a tag spelled across two
+  // lines, or in single quotes, still satisfies every rule above while leaving
+  // the `sed` matching nothing — and a preview that quietly asks to be indexed
+  // competes with the site it is a preview of, which is the one failure nobody
+  // is looking at a build log for.
+  if (input.preview !== undefined && index.length > 0) {
+    const expression = /sed -i 's\|(<meta name="robots"[^|]*)\|([^|]*)\|' index\.html/.exec(
+      input.preview,
+    );
+    if (expression === null) {
+      fail(
+        SEARCH_METADATA_FILES.preview,
+        'No step rewrites the robots tag, so a preview deployment asks to be indexed alongside the site.',
+      );
+    } else {
+      const [, search, replacement] = expression;
+      if (!new RegExp(search).test(index)) {
+        fail(
+          SEARCH_METADATA_FILES.index,
+          `The robots tag is not spelled the way the preview step matches it (/${search}/), so a preview would keep asking to be indexed.`,
+        );
+      }
+      if (!/\bnoindex\b/.test(replacement)) {
+        fail(
+          SEARCH_METADATA_FILES.preview,
+          `The preview step rewrites the robots tag to "${replacement}", which does not say noindex.`,
+        );
+      }
+    }
   }
 
   return found;

@@ -1,12 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  advertisedAddresses,
-  attribute,
-  documentFor,
-  fileFor,
-  withoutXmlComments,
-} from './publish-static-routes.mjs';
+import { advertisedAddresses, attribute, documentFor, fileFor } from './publish-static-routes.mjs';
+import { withoutXmlComments } from './search/published-addresses.mjs';
 import { sitemapDocument } from './generate-sitemap.mjs';
 
 /**
@@ -74,7 +69,7 @@ describe('reading the map', () => {
   });
 
   it('refuses a map that advertises nothing', () => {
-    assert.throws(() => advertisedAddresses('<urlset></urlset>'), /no <loc>/);
+    assert.throws(() => advertisedAddresses('<urlset></urlset>'), /No <loc>/);
   });
 
   it('cuts a comment without swallowing the markup after it', () => {

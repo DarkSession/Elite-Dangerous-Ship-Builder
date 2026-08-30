@@ -5,11 +5,10 @@
  * crawler follows, `scripts/publish-static-routes.mjs` writes the document each
  * address answers with, and `searchMetadataViolations` in
  * `scripts/check-interface-foundations.mjs` reconciles both against the route
- * table. Before this module the route list existed twice — in `app.routes.ts`
- * and in a hand-written sitemap — and the deployment read the second one with
- * `sed` while the checker read it with a regular expression. Two readers of one
- * file, in two languages, was a drift the first pass could only manage; one
- * module is the fix rather than the management (`design/search-visibility.md`).
+ * table. The address list is stated here and nowhere else, and `readSitemap`
+ * below is the single way the generated map is read back, so no two consumers
+ * can disagree about which addresses this application publishes
+ * (`design/search-visibility.md`).
  *
  * **The hulls come from the package.** `SHIPS` is the Almanac's own catalogue,
  * so the address list tracks a pin move by being regenerated rather than by
@@ -174,4 +173,53 @@ export function declaredOrigin(source) {
     );
   }
   return declared[1];
+}
+
+/**
+ * A document with its XML comments removed, so nothing inside one is read.
+ *
+ * The body is "anything but `--`" rather than a lazy `[\s\S]*?`, because XML
+ * forbids `--` inside a comment and this does not validate the file: the lazy
+ * form would quietly close a malformed comment early and expose a `<loc>`
+ * nobody meant to publish. This form closes nothing early and leaves the
+ * delimiters of a malformed comment standing, which is what `readSitemap`
+ * refuses on.
+ *
+ * One pass therefore leaves some documents holding a delimiter still — a
+ * nested `<!<!-- -->--` reassembles one — so this is deliberately not a
+ * sanitiser and nothing may treat it as one.
+ */
+export function withoutXmlComments(document) {
+  return document.replace(/<!--(?:[^-]|-[^-])*-->/g, '');
+}
+
+/**
+ * The addresses a sitemap advertises, and the reason it cannot be read.
+ *
+ * The one reader of the generated map, shared by the publisher and by the
+ * policy checker so the two cannot read one file differently: an address they
+ * disagree about is either a `<loc>` that passes the gate and never gets a
+ * file, or a file published from inside a comment. They react differently — the
+ * publisher refuses, the checker fails by name — so the defect is returned
+ * rather than thrown, and each consumer says it in its own words.
+ *
+ * `--!>` is refused alongside `-->` because it ends a comment in HTML and ends
+ * nothing in XML: a map holding one is malformed either way, and refusing it
+ * can only turn a file nobody can read into a named failure.
+ */
+export function readSitemap(document) {
+  const body = withoutXmlComments(document);
+  if (/<!--|--!?>/.test(body)) {
+    return {
+      addresses: [],
+      defect:
+        'A comment here is nested or contains "--", so the file does not say what it appears to.',
+    };
+  }
+
+  const addresses = [...body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]);
+  if (addresses.length === 0) {
+    return { addresses, defect: 'No <loc> is listed, so the map advertises nothing.' };
+  }
+  return { addresses, defect: null };
 }

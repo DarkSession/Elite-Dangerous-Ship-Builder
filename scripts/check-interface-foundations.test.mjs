@@ -1113,6 +1113,24 @@ describe('search metadata', () => {
     },
   ];
 
+  // What the rule finds under `public/`. Everything the manifest, the index and
+  // the published addresses name has to be here, or the rule fails by name.
+  const ASSETS = [
+    'favicon.ico',
+    'assets/icons/app-icon-192.png',
+    'assets/icons/app-icon-512.png',
+    'assets/icons/app-icon-maskable-512.png',
+    'assets/icons/apple-touch-icon.png',
+    'assets/link-card.png',
+  ];
+
+  // The one line of the workflow this rule reads: the expression that turns a
+  // preview deployment's robots tag into `noindex`.
+  const PREVIEW = `      - name: Ask search engines to leave the preview alone
+        run: |
+          sed -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
+`;
+
   const MESSAGE_KEYS = [
     'catalogue.title',
     'catalogue.description',
@@ -1133,6 +1151,8 @@ describe('search metadata', () => {
     manifest: MANIFEST,
     domain: 'sb.edct.dev\n',
     tokens: TOKENS,
+    assets: ASSETS,
+    preview: PREVIEW,
     locales: ['en', 'de'],
     routes: ['', 'ships', ':symbol', 'build', '**'],
     ...overrides,
@@ -1530,5 +1550,131 @@ describe('search metadata', () => {
     );
 
     assert.match(found[0].message, /"id"/);
+  });
+
+  /**
+   * The rules that make a link, an install prompt or a preview deployment work.
+   *
+   * Each one is checked by making it fail, because a rule that has only ever
+   * been run against a passing fixture is a rule nobody has seen work.
+   */
+  const withIcons = (icons) =>
+    JSON.stringify({ ...JSON.parse(MANIFEST), icons: [...JSON.parse(MANIFEST).icons, ...icons] });
+  const withoutIcon = (matches) =>
+    JSON.stringify({
+      ...JSON.parse(MANIFEST),
+      icons: JSON.parse(MANIFEST).icons.filter((icon) => !matches(icon)),
+    });
+
+  for (const size of ['192x192', '512x512']) {
+    it(`rejects a manifest with no icon at ${size}, which offers no installation`, () => {
+      const found = rules.searchMetadataViolations(
+        complete({ manifest: withoutIcon((icon) => icon.sizes === size) }),
+      );
+
+      assert.ok(found.some((violation) => violation.message.includes(size)));
+    });
+  }
+
+  it('rejects a manifest with no maskable icon, so a round platform crops the mark', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: withoutIcon((icon) => icon.purpose === 'maskable') }),
+    );
+
+    assert.ok(found.some((violation) => /maskable/.test(violation.message)));
+  });
+
+  it('rejects an icon no file answers, which installs without one', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        manifest: withIcons([{ src: 'assets/icons/never-rendered.png', sizes: '96x96' }]),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /never-rendered\.png/.test(violation.message)));
+  });
+
+  it('rejects a card no file answers, which unfurls as a broken image', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('link-card.png', 'no-such-card.png') }),
+    );
+
+    assert.ok(found.some((violation) => /no-such-card\.png/.test(violation.message)));
+  });
+
+  it('rejects a hull whose illustration nobody rendered', () => {
+    // The card of a published address, which no file in the repository names:
+    // a package pin move that adds a hull adds one of these and nothing else
+    // would notice.
+    const found = rules.searchMetadataViolations(
+      complete({
+        published: [
+          ...PUBLISHED,
+          {
+            path: 'ships/Anaconda',
+            route: 'ships/:symbol',
+            address: 'https://sb.edct.dev/ships/Anaconda',
+            titleKey: 'hullDetail.title',
+            descriptionKey: 'hullDetail.description',
+            image: 'assets/ships/Anaconda/illustration.png',
+          },
+        ],
+        sitemap: `${SITEMAP.replace('</urlset>', '<url><loc>https://sb.edct.dev/ships/Anaconda</loc></url></urlset>')}`,
+      }),
+    );
+
+    assert.ok(found.some((violation) => /Anaconda\/illustration\.png/.test(violation.message)));
+  });
+
+  it('rejects a relative card, which a chat client fetches from its own machine', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          'content="https://sb.edct.dev/assets/link-card.png" />\n<meta property="og:image:alt"',
+          'content="assets/link-card.png" />\n<meta property="og:image:alt"',
+        ),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /must be absolute/.test(violation.message)));
+  });
+
+  it('rejects a document that asks not to be indexed, which belongs to a preview', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('index,follow,max-image-preview:large', 'noindex') }),
+    );
+
+    assert.ok(found.some((violation) => /not to be indexed/.test(violation.message)));
+  });
+
+  it('rejects a robots tag the preview step’s expression cannot match', () => {
+    // Reformatting the tag satisfies every other rule here and silently turns
+    // the preview's rewrite into a no-op.
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          '<meta name="robots" content="index,follow,max-image-preview:large" />',
+          "<meta\n  name='robots'\n  content='index,follow,max-image-preview:large'\n/>",
+        ),
+      }),
+    );
+
+    assert.ok(
+      found.some((violation) => /the way the preview step matches it/.test(violation.message)),
+    );
+  });
+
+  it('rejects a preview step that rewrites the tag to something other than noindex', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ preview: PREVIEW.replace('content="noindex"', 'content="index"') }),
+    );
+
+    assert.ok(found.some((violation) => /does not say noindex/.test(violation.message)));
+  });
+
+  it('rejects a workflow with no step to leave a preview out of an index', () => {
+    const found = rules.searchMetadataViolations(complete({ preview: 'jobs:\n  build:\n' }));
+
+    assert.ok(found.some((violation) => /No step rewrites the robots tag/.test(violation.message)));
   });
 });

@@ -22,10 +22,11 @@
  * Every substitution is checked rather than assumed, because a silent no-op
  * here looks exactly like a published address.
  *
- * **This used to be a shell block in `ci.yml`.** It reads the sitemap with the
- * same module the policy checker reads it with, which is the whole reason it
- * moved: `sed` and a regular expression cutting the same comments in two
- * languages was a drift that could only be managed, and one module is the fix.
+ * **This used to be a shell block in `ci.yml`.** It reads the sitemap through
+ * `readSitemap`, the same function the policy checker reads it through, which is
+ * the whole reason it moved: `sed` and a regular expression cutting the same
+ * comments in two languages was a drift that could only be managed, and one
+ * function both call is the fix.
  * It also means what a crawler is served is covered by `pnpm run test:scripts`
  * and by the production journey, rather than by a deployment nobody can run
  * twice.
@@ -35,7 +36,12 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { declaredOrigin, documentHead, publishedAddresses } from './search/published-addresses.mjs';
+import {
+  declaredOrigin,
+  documentHead,
+  publishedAddresses,
+  readSitemap,
+} from './search/published-addresses.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
@@ -49,43 +55,19 @@ const ORIGIN_SOURCE = 'src/app/platform/browser/site-address.ts';
 const BUNDLED_ENGLISH = 'src/app/i18n/locales/en.json';
 
 /**
- * A document with its XML comments removed, so nothing inside one is read.
+ * The addresses a sitemap advertises, or a refusal naming why it cannot be read.
  *
- * The body is "anything but two hyphens" rather than a lazy match, so a comment
- * cannot swallow the live markup that follows it. Spelled exactly as
- * `withoutXmlComments` in `scripts/check-interface-foundations.mjs` spells it:
- * a `<loc>` the two read differently is an address that passes the gate and
- * never gets a file.
- */
-export function withoutXmlComments(document) {
-  return document.replace(/<!--([^-]|-[^-])*-->/g, '');
-}
-
-/**
- * The addresses a sitemap advertises.
- *
- * One cutting pass, then a refusal rather than a second pass. One pass cannot
- * cut everything — a nested opener leaves `<!` `--` behind, and a body holding
- * two hyphens is not cut at all — so an address nobody meant to publish can end
- * up inside what the next reader takes for live markup. Cutting twice is not
- * the fix: it would cut more here than the checker cuts there, which is the
- * drift the single pass exists to prevent. So what is left over is checked
- * instead. `--!>` ends a comment in HTML and ends nothing in XML, and is
- * refused with the other two.
+ * `readSitemap` is shared with the policy checker so the two cannot read one
+ * file differently. Here a defect is fatal: a map this cannot read is a map the
+ * gate read some other way, and publishing from it would write files for
+ * addresses nobody advertised.
  */
 export function advertisedAddresses(sitemap) {
-  const body = withoutXmlComments(sitemap);
-  if (/<!--|--!?>/.test(body)) {
-    throw new Error(
-      'A comment in sitemap.xml is nested or contains two hyphens, so the file does not say what it appears to.',
-    );
+  const { addresses, defect } = readSitemap(sitemap);
+  if (defect !== null) {
+    throw new Error(`sitemap.xml cannot be published from. ${defect}`);
   }
-
-  const listed = [...body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]);
-  if (listed.length === 0) {
-    throw new Error('sitemap.xml listed no <loc> to publish.');
-  }
-  return listed;
+  return addresses;
 }
 
 /** An attribute value, with the four characters that would end it escaped. */

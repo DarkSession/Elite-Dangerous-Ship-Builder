@@ -11,6 +11,7 @@ import { BUNDLED_ENGLISH, type MessageCatalogue } from '../../i18n/locale-regist
 import { hullArtworkPath } from '../../platform/assets/hull-artwork-path';
 import { LINK_CARD, SITE_ORIGIN } from '../../platform/browser/site-address';
 import { RouteTitleStrategy } from './route-title.strategy';
+import GERMAN from '../../i18n/locales/de.json';
 
 /**
  * A route declares message keys; the document shows sentences.
@@ -247,5 +248,40 @@ describe('RouteTitleStrategy, on an address about one hull', () => {
     expect(locale.description()).toBe(BUNDLED_ENGLISH['catalogue.description']);
     expect(locale.route().image).toBe(LINK_CARD);
     expect(locale.canonical()).toBe(`${SITE_ORIGIN}/ships/Not_A_Hull`);
+  });
+
+  it('keeps the English name inside the German sentence, with nothing said about it', () => {
+    // The one case the head exception exists for (011/FR-027, and
+    // `contracts/localization-and-formatting.md`). Everywhere else, canonical
+    // package text carries a `lang` boundary and a visible untranslated
+    // disclosure; a title and a description are bare strings with no element
+    // structure to hang either on, and a disclosure written into the sentence
+    // would be read out as part of the page's name in every search result.
+    // What stands in for it is the document's own `lang`, which the same commit
+    // publishes.
+    const { strategy, locale, snapshot } = strategyWith(hullRoute('Anaconda'), '/ships/Anaconda');
+    strategy.updateTitle(snapshot);
+
+    const german: MessageCatalogue = {
+      ...BUNDLED_ENGLISH,
+      'hullDetail.title': GERMAN['hullDetail.title'],
+      'hullDetail.description': GERMAN['hullDetail.description'],
+    };
+    locale.commitCandidate(
+      { requested: 'de', catalogue: german, source: 'asset', failure: null },
+      'browser',
+    );
+
+    expect(locale.effectiveLocale()).toBe('de');
+    expect(locale.page()).toBe('Anaconda');
+    expect(locale.description()).toBe(
+      GERMAN['hullDetail.description'].replace('{{hull}}', 'Anaconda'),
+    );
+    // The German sentence, the English proper noun, and no disclosure anywhere
+    // in it — not the word the application uses for one, nor a parenthesis
+    // holding one.
+    expect(locale.description()).toContain('Anaconda');
+    expect(locale.description()).not.toContain(GERMAN['game-text.untranslated.description']);
+    expect(locale.description()).not.toMatch(/\{\{|\}\}/);
   });
 });
