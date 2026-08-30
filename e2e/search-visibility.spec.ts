@@ -172,6 +172,12 @@ test.describe('what the head says this page is', () => {
     expect(value(/property="og:image"[^>]*content="([^"]*)"/)).toBe(
       `${SITE_ORIGIN}/assets/link-card.png`,
     );
+    // The alternative text is the document's own title, here as at runtime, so
+    // the picture is described in whatever language the page is in rather than
+    // in one of its own.
+    expect(value(/property="og:image:alt"[^>]*content="([^"]*)"/)).toBe(
+      englishMessages['app.document-title.default'],
+    );
     // The site asks to be indexed. Only a preview deployment rewrites this, and
     // it rewrites its own built copy rather than the file in the repository.
     expect(value(/name="robots"[^>]*content="([^"]*)"/)).toContain('index');

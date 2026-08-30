@@ -118,7 +118,11 @@ export function publishedAddresses({ origin, ships = SHIPS } = {}) {
   }
 
   const hulls = [...ships]
-    .sort((one, other) => one.symbol.localeCompare(other.symbol, 'en'))
+    // By code unit rather than by collation. This order is the byte order of a
+    // committed file that CI compares exactly, and ICU collation varies with
+    // how Node was built — a small-icu runner would reorder the map and fail
+    // the comparison with a message about the package.
+    .sort((one, other) => (one.symbol < other.symbol ? -1 : one.symbol > other.symbol ? 1 : 0))
     .map((ship) => ({
       path: `${HULL_PARENT}/${ship.symbol}`,
       route: HULL_ROUTE,

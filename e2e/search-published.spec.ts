@@ -32,22 +32,44 @@ const description = (document: string) =>
 const canonical = (document: string) => value(document, /rel="canonical"[^>]*href="([^"]*)"/);
 
 test.describe('the document each published address answers with', () => {
-  test('answers without a redirect, rather than from the 404 page', async ({ page }) => {
+  test('answers from its own document, without a redirect', async ({ page }) => {
     // A crawler drops a 404 whatever the body says, canonical link and all, and
     // a redirect indexes the address it lands on rather than the one advertised.
+    //
+    // The status alone proves nothing here: this server, like the static host
+    // it mirrors, answers an unpublished path with the application shell at
+    // 200. What separates a published document from that fallback is the
+    // canonical it carries — the shell's names the site root — so that is what
+    // is read.
     for (const path of ['/ships', '/build', '/builds', '/ships/Anaconda']) {
       const response = await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 });
 
       expect(response.status(), path).toBe(200);
+      expect(canonical(await response.text()), path).toBe(`${SITE_ORIGIN}${path}`);
     }
+
+    // The other half of that claim: an address nobody published does fall
+    // through, so the assertion above is about publication and not about the
+    // server answering everything.
+    const fallback = await (await page.request.get(`${PRODUCT_URL}/nothing-here`)).text();
+    expect(canonical(fallback)).toBe(`${SITE_ORIGIN}/`);
   });
 
   test('carries the screen its address is, not the application in general', async ({ page }) => {
+    // All three top-level addresses, because a mapping exchanged between two of
+    // them would leave every key declared somewhere and only the pairing wrong.
     const catalogue = await (await page.request.get(`${PRODUCT_URL}/ships`)).text();
+    const workspace = await (await page.request.get(`${PRODUCT_URL}/build`)).text();
     const library = await (await page.request.get(`${PRODUCT_URL}/builds`)).text();
 
     expect(description(catalogue)).toBe(englishMessages['catalogue.description']);
     expect(canonical(catalogue)).toBe(`${SITE_ORIGIN}/ships`);
+
+    expect(description(workspace)).toBe(englishMessages['workspace.description']);
+    expect(title(workspace)).toBe(
+      `${englishMessages['workspace.title']} · ${englishMessages['app.name']}`,
+    );
+    expect(canonical(workspace)).toBe(`${SITE_ORIGIN}/build`);
 
     expect(description(library)).toBe(englishMessages['library.description']);
     expect(title(library)).toBe(

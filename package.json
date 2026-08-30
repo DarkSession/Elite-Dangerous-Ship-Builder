@@ -7,7 +7,7 @@
     "build": "pnpm run help:artifacts && pnpm run search:sitemap && ng build && node scripts/publish-static-routes.mjs",
     "watch": "pnpm run help:artifacts && ng build --watch --configuration development",
     "test": "pnpm run help:artifacts && ng test",
-    "test:scripts": "node --test scripts/*.test.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs scripts/**/*.test.mjs",
     "help:manifest": "node scripts/generate-help-manifest.mjs",
     "help:manifest:check": "node scripts/generate-help-manifest.mjs --check",
     "help:topics": "node scripts/check-help-topics.mjs",

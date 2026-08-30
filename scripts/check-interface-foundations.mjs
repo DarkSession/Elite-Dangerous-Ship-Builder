@@ -885,11 +885,93 @@ export async function runChecks({ scope = SCOPE } = {}) {
 }
 
 /**
+ * The two inputs the search-metadata rule derives rather than reads.
+ *
+ * Both can fail, and a failure here has to be a violation rather than a missing
+ * one: five of the rules below are guarded by "if this input arrived", which is
+ * there for the unit fixtures. Letting a real failure through that guard would
+ * retire the sitemap reconciliation, the route-table check, the two message-key
+ * checks and the hull-card check all at once, in silence. A rule that passes
+ * because there was nothing to inspect is not a gate.
+ *
+ * Separated from the reading so it can be run without a filesystem, which is
+ * the only way the silence above can be tested for.
+ */
+export function searchMetadataSources(originSource, englishText) {
+  const violations = [];
+  const fail = (file, message) =>
+    violations.push({ file, line: 0, rule: 'search-metadata', message });
+
+  // The origin and the addresses fail separately, because they fail in
+  // different files: an undeclared origin is `site-address.ts`, and naming the
+  // address module for it would send the reader to an innocent one.
+  let published;
+  try {
+    const origin = declaredOrigin(originSource);
+    try {
+      published = publishedAddresses({ origin });
+    } catch (failure) {
+      fail(
+        SEARCH_METADATA_FILES.addresses,
+        `The published addresses could not be built, so nothing was reconciled against them: ${failure.message}`,
+      );
+    }
+  } catch (failure) {
+    fail(
+      SEARCH_METADATA_FILES.origin,
+      `The production origin could not be read, so no address was built from it: ${failure.message}`,
+    );
+  }
+
+  let messages;
+  try {
+    messages = Object.keys(JSON.parse(englishText));
+  } catch (failure) {
+    fail(
+      'src/app/i18n/locales/en.json',
+      `Bundled English does not parse, so no published message key was checked: ${failure.message}`,
+    );
+  }
+
+  return { published, messages, violations };
+}
+
+/**
+ * The route table as the rule compares it: one triple per addressable route.
+ *
+ * Paired rather than flattened. Two routes whose keys were exchanged declare
+ * every key somewhere, so a check that the two key *sets* match passes while
+ * the published document names one screen and the application names another.
+ *
+ * Read with a pattern rather than with the TypeScript parser because the shape
+ * is the route table's own and does not vary: a `path`, then the `title` and
+ * `data.description` that belong to it. A route missing either is a triple with
+ * `undefined` in it, which is what the rule reports.
+ */
+export function routeTableTriples(source) {
+  const starts = [...source.matchAll(/path:\s*'([^']*)'/g)];
+  return starts.map((start, index) => {
+    // Everything between this `path` and the next one belongs to this route.
+    const segment = source.slice(
+      start.index,
+      index + 1 < starts.length ? starts[index + 1].index : source.length,
+    );
+    return {
+      path: start[1],
+      titleKey: /title:\s*'([^']*)'/.exec(segment)?.[1],
+      descriptionKey: /description:\s*'([^']*)'/.exec(segment)?.[1],
+    };
+  });
+}
+
+/**
  * IO wrapper: reads every file the search-metadata rule compares.
  *
- * Nine of them — the seven in `SEARCH_METADATA_FILES` plus the route table and
- * the locale registry. The rule does not require its inputs, so a caller that
- * reads fewer loses the checks that need them without being told.
+ * The nine in `SEARCH_METADATA_FILES`, plus the route table, the locale
+ * registry, bundled English and everything `public/` serves. The rule does not
+ * require its inputs, so what is derived rather than read goes through
+ * `searchMetadataSources`, which reports a failure instead of returning
+ * nothing.
  */
 async function checkSearchMetadata() {
   const read = async (path) => {
@@ -899,44 +981,11 @@ async function checkSearchMetadata() {
 
   const routesSource = await read('src/app/app.routes.ts');
   const originSource = await read(SEARCH_METADATA_FILES.origin);
-
-  // The addresses come from the same module the sitemap and the deployment are
-  // built from, so what is compared here is that module against the route
-  // table, the catalogue and the files on disk — never one copy of the address
-  // list against another.
-  //
-  // A failure to read either input is a violation rather than a missing one.
-  // Five rules below are guarded by "if this input arrived", which is there for
-  // the unit fixtures; letting a real failure through that guard would retire
-  // the sitemap reconciliation, the route-table check, the two message-key
-  // checks and the hull-card check all at once, silently. A rule that passes
-  // because there was nothing to inspect is not a gate.
-  let published;
-  try {
-    published = publishedAddresses({ origin: declaredOrigin(originSource) });
-  } catch (failure) {
-    published = undefined;
-    violations.push({
-      file: SEARCH_METADATA_FILES.addresses,
-      line: 0,
-      rule: 'search-metadata',
-      message: `The published addresses could not be read, so nothing here was reconciled: ${failure.message}`,
-    });
-  }
-
   const english = await read('src/app/i18n/locales/en.json');
-  let messages;
-  try {
-    messages = Object.keys(JSON.parse(english));
-  } catch (failure) {
-    messages = undefined;
-    violations.push({
-      file: 'src/app/i18n/locales/en.json',
-      line: 0,
-      rule: 'search-metadata',
-      message: `Bundled English does not parse, so no published message key was checked: ${failure.message}`,
-    });
-  }
+
+  const sources = searchMetadataSources(originSource, english);
+  violations.push(...sources.violations);
+  const { published, messages } = sources;
 
   violations.push(
     ...searchMetadataViolations({
@@ -949,9 +998,7 @@ async function checkSearchMetadata() {
       tokens: await read(SEARCH_METADATA_FILES.tokens),
       preview: await read(SEARCH_METADATA_FILES.preview),
       routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
-      routeKeys: [...routesSource.matchAll(/(?:title|description):\s*'([^']*)'/g)].map(
-        (match) => match[1],
-      ),
+      routeTable: routeTableTriples(routesSource),
       locales: [
         ...(await read('src/app/i18n/locale-registry.ts')).matchAll(/^\s{4}tag: '([^']+)',$/gm),
       ].map((match) => match[1]),
@@ -1571,13 +1618,19 @@ function linkHref(document, rel) {
  * fifth copy of it, and an `id` a sixth.
  *
  * `input` is `{ origin, index, robots, sitemap, manifest, domain, tokens,
- * routes, locales }`. Each is the text of its file except `routes`, the paths
- * parsed out of the route table, and `locales`, the tags this build ships;
- * `origin` is `site-address.ts`, `domain` is `public/CNAME` and `tokens` is the
- * primitives stylesheet the theme colour is read from. Every one of them is
- * read, and a caller that omits one loses the checks that need it. An empty
- * input is itself a violation: a rule that passes when there is nothing to
- * inspect is not a gate.
+ * preview, routes, routeTable, locales, published, messages, assets }`. Each of
+ * the first eight is the text of its file — `origin` is `site-address.ts`,
+ * `domain` is `public/CNAME`, `tokens` is the primitives stylesheet the theme
+ * colour is read from, and `preview` is the workflow that rewrites a preview's
+ * robots tag. `routes` is the paths parsed out of the route table and
+ * `routeTable` the same table as `(path, titleKey, descriptionKey)` triples;
+ * `locales` is the tags this build ships; `published` is the address set from
+ * `scripts/search/published-addresses.mjs`; `messages` is the keys bundled
+ * English carries; `assets` is what `public/` serves. Every one of them is
+ * read, and a caller that omits one loses the checks that need it — which is
+ * why `checkSearchMetadata` reports a failure to read one rather than passing
+ * `undefined` and going quiet. An empty input is itself a violation: a rule
+ * that passes when there is nothing to inspect is not a gate.
  */
 export function searchMetadataViolations(input) {
   const found = [];
@@ -1830,16 +1883,28 @@ export function searchMetadataViolations(input) {
       }
     }
   }
-  if (published !== undefined && input.routeKeys !== undefined) {
-    const declared = new Set(input.routeKeys);
-    for (const key of new Set(
-      published.flatMap((entry) => [entry.titleKey, entry.descriptionKey]),
-    )) {
-      if (!declared.has(key)) {
-        fail(
-          SEARCH_METADATA_FILES.addresses,
-          `"${key}" is published but no route declares it, so the document a crawler is served and the one the application writes would differ.`,
-        );
+  // Route by route, not key by key. Two addresses whose keys were exchanged
+  // between them declare every key somewhere, so a check that both sets match
+  // passes while the published document names one screen and the application
+  // names another a moment later.
+  if (published !== undefined && input.routeTable !== undefined) {
+    const declared = new Map(input.routeTable.map((route) => [route.path, route]));
+    for (const entry of published) {
+      const leaf = entry.route.split('/').at(-1) ?? '';
+      const route = declared.get(leaf);
+      if (route === undefined) {
+        continue; // Already failed above, by name, as a route the table lacks.
+      }
+      for (const [what, published_, table] of [
+        ['title', entry.titleKey, route.titleKey],
+        ['description', entry.descriptionKey, route.descriptionKey],
+      ]) {
+        if (published_ !== table) {
+          fail(
+            SEARCH_METADATA_FILES.addresses,
+            `"/${entry.path}" publishes "${published_}" as its ${what}, but the route table declares "${table ?? 'none'}". A crawler and a Commander would be told different things.`,
+          );
+        }
       }
     }
   }
@@ -2616,6 +2681,8 @@ export const rules = {
   ledgerReconciliationViolations,
   productionOutputViolations,
   searchMetadataViolations,
+  searchMetadataSources,
+  routeTableTriples,
   copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,

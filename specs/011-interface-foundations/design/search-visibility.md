@@ -49,16 +49,12 @@ validation and atomic publication").
 `index.html` carries the English defaults for the crawler that reads the document and never runs
 the bundle.
 
-What that crawler gets, stated rather than implied. The deployment publishes one file per sitemap
-route, and each is `index.html` with that route's canonical address and `og:url` substituted in —
-so a crawler that runs nothing still reads `/ships` as `/ships` rather than as the root. Its title
-and description are the application's, not the route's: resolving those before the bundle runs
-means reading the message catalogue at deploy time, which is the build step the owner ruled out for
-this pass. So the per-route title and description are the running application's alone. A crawler
-that renders — Googlebot does — sees them; one that does not sees three distinct addresses under
-one honest application title, which is a smaller loss than three addresses all claiming to be the
-root. Closing it is the same generator that would list the hull pages, and it is recorded with them
-under "Not done" below.
+What that crawler gets, stated rather than implied. The build publishes one document per advertised
+address, each carrying that address's own canonical, `og:url`, title, description and card — so a
+crawler that runs nothing reads `/ships` as `/ships` rather than as the root, and reads it as the
+catalogue rather than as the application in general. The second pass below is where the title and
+the description joined the canonical there; what the running application writes and what the build
+publishes are held equal, address by address, by `src/app/i18n/document-title.spec.ts`.
 
 ### 2. Nothing said which URL was the page _(fixed)_
 
@@ -253,8 +249,9 @@ which stops working the first time the file is formatted differently and says no
 The checker reconciles the two — a route with no key, a key no route declares, a key the catalogue
 does not carry, and an address the route table does not serve each fail the build by name.
 
-Three runtime rules are spelled a second time there for the same reason: the placeholder
-substitution, the title composition and the hull artwork path. `src/app/i18n/document-title.spec.ts` holds both copies to the running
+Four runtime rules are spelled a second time there for the same reason: the placeholder
+substitution, the title composition, the hull artwork path and the card the rest of the site
+shows. `src/app/i18n/document-title.spec.ts` holds both copies to the running
 application's answer for every published address, so a document cannot be published with one title
 and rewritten with another.
 

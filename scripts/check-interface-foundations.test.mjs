@@ -10,7 +10,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rules } from './check-interface-foundations.mjs';
+import { rules, SEARCH_METADATA_FILES } from './check-interface-foundations.mjs';
 
 const ruleIds = (found) => found.map((violation) => violation.rule);
 
@@ -1131,6 +1131,16 @@ describe('search metadata', () => {
           sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
 `;
 
+  // The route table as the rule pairs it: one triple per addressable route.
+  const ROUTE_TABLE = [
+    { path: '' },
+    { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
+    { path: ':symbol', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
+    { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
+    { path: 'builds', titleKey: 'library.title', descriptionKey: 'library.description' },
+    { path: '**' },
+  ];
+
   const MESSAGE_KEYS = [
     'catalogue.title',
     'catalogue.description',
@@ -1144,7 +1154,7 @@ describe('search metadata', () => {
     origin: ORIGIN,
     published: PUBLISHED,
     messages: MESSAGE_KEYS,
-    routeKeys: MESSAGE_KEYS,
+    routeTable: ROUTE_TABLE,
     index: INDEX,
     robots: ROBOTS,
     sitemap: SITEMAP,
@@ -1552,6 +1562,23 @@ describe('search metadata', () => {
     assert.match(found[0].message, /"id"/);
   });
 
+  // A published hull address, with the sitemap entry that goes with it.
+  const HULL = {
+    path: 'ships/Anaconda',
+    route: 'ships/:symbol',
+    address: 'https://sb.edct.dev/ships/Anaconda',
+    titleKey: 'hullDetail.title',
+    descriptionKey: 'hullDetail.description',
+    image: 'assets/ships/Anaconda/illustration.png',
+  };
+  const withHull = (overrides = {}) =>
+    complete({
+      published: [...PUBLISHED, HULL],
+      sitemap: SITEMAP.replace('</urlset>', `<url><loc>${HULL.address}</loc></url></urlset>`),
+      assets: [...ASSETS, HULL.image],
+      ...overrides,
+    });
+
   /**
    * The rules that make a link, an install prompt or a preview deployment work.
    *
@@ -1657,23 +1684,6 @@ describe('search metadata', () => {
     assert.ok(found.some((violation) => /does not say noindex/.test(violation.message)));
   });
 
-  // A published hull address, with the sitemap entry that goes with it.
-  const HULL = {
-    path: 'ships/Anaconda',
-    route: 'ships/:symbol',
-    address: 'https://sb.edct.dev/ships/Anaconda',
-    titleKey: 'hullDetail.title',
-    descriptionKey: 'hullDetail.description',
-    image: 'assets/ships/Anaconda/illustration.png',
-  };
-  const withHull = (overrides = {}) =>
-    complete({
-      published: [...PUBLISHED, HULL],
-      sitemap: SITEMAP.replace('</urlset>', `<url><loc>${HULL.address}</loc></url></urlset>`),
-      assets: [...ASSETS, HULL.image],
-      ...overrides,
-    });
-
   it('rejects a published address the route table declares no route for', () => {
     const found = rules.searchMetadataViolations(
       withHull({ routes: ['', 'ships', 'build', '**'] }),
@@ -1690,25 +1700,118 @@ describe('search metadata', () => {
     assert.ok(found.some((violation) => /catalogue\.description/.test(violation.message)));
   });
 
-  it('rejects a published message key no route declares', () => {
-    const found = rules.searchMetadataViolations(
-      complete({ routeKeys: MESSAGE_KEYS.filter((key) => key !== 'workspace.title') }),
+  it('rejects an address whose keys are not the ones its own route declares', () => {
+    // Two routes with their keys exchanged declare every key somewhere, so a
+    // rule comparing the two key *sets* passes while the published document
+    // names one screen and the application names another a moment later.
+    const swapped = ROUTE_TABLE.map((route) =>
+      route.path === 'build'
+        ? { ...route, titleKey: 'library.title', descriptionKey: 'library.description' }
+        : route,
     );
+    const found = rules.searchMetadataViolations(complete({ routeTable: swapped }));
 
-    assert.ok(found.some((violation) => /workspace\.title/.test(violation.message)));
+    assert.ok(
+      found.some((violation) => /"\/build" publishes "workspace\.title"/.test(violation.message)),
+    );
+    assert.ok(
+      found.some((violation) =>
+        /"\/build" publishes "workspace\.description"/.test(violation.message),
+      ),
+    );
   });
 
-  it('reports a catalogue that does not parse rather than checking no key at all', () => {
-    // The rules below the read are guarded by "if this input arrived". A real
-    // failure passing through that guard would retire five of them at once.
+  it('rejects a route that declares no description for an address that publishes one', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        routeTable: ROUTE_TABLE.map((route) =>
+          route.path === 'ships' ? { path: 'ships', titleKey: 'catalogue.title' } : route,
+        ),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /declares "none"/.test(violation.message)));
+  });
+
+  it('skips the message-key rules when the catalogue could not be read', () => {
+    // The guard the fixtures need. That a real failure to read it is reported
+    // rather than passed through this guard is `searchMetadataSources`' job,
+    // and is asserted below.
     const found = rules.searchMetadataViolations(complete({ messages: undefined }));
 
     assert.deepEqual(found, []);
+  });
+
+  it('reports a preview expression this rule cannot read, rather than crashing', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ preview: PREVIEW.replace('content="[^"]*"', 'content="[a-"') }),
+    );
+
+    assert.ok(found.some((violation) => /cannot be read here/.test(violation.message)));
   });
 
   it('rejects a workflow with no step to leave a preview out of an index', () => {
     const found = rules.searchMetadataViolations(complete({ preview: 'jobs:\n  build:\n' }));
 
     assert.ok(found.some((violation) => /No `sed -E -i` step rewrites/.test(violation.message)));
+  });
+
+  /**
+   * What the rule is handed, rather than what it does with it.
+   *
+   * Five rules above are guarded by "if this input arrived", which the fixtures
+   * need. What must not happen is a real failure arriving as the same absence:
+   * five gates would retire at once and say nothing.
+   */
+  const ORIGIN_SOURCE = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
+
+  it('hands over the addresses and the keys when both can be read', () => {
+    const sources = rules.searchMetadataSources(ORIGIN_SOURCE, '{ "app.name": "Ship Builder" }');
+
+    assert.deepEqual(sources.violations, []);
+    assert.ok(sources.published.length > 40);
+    assert.deepEqual(sources.messages, ['app.name']);
+  });
+
+  it('reports an origin it cannot read against the file that declares it', () => {
+    const sources = rules.searchMetadataSources('export const NOTHING = 1;', '{}');
+
+    assert.equal(sources.published, undefined);
+    assert.equal(sources.violations[0].file, SEARCH_METADATA_FILES.origin);
+    assert.match(sources.violations[0].message, /could not be read/);
+  });
+
+  it('reports a catalogue that does not parse rather than checking no key at all', () => {
+    const sources = rules.searchMetadataSources(ORIGIN_SOURCE, '{ not json');
+
+    assert.equal(sources.messages, undefined);
+    assert.ok(
+      sources.violations.some((violation) =>
+        /Bundled English does not parse/.test(violation.message),
+      ),
+    );
+  });
+
+  /** The route table, read as the pairs the rule compares rather than as keys. */
+  it('reads a route’s title and description as that route’s, not as the table’s', () => {
+    const source = `
+      { path: '', redirectTo: 'ships' },
+      {
+        path: 'ships',
+        title: 'catalogue.title',
+        data: { description: 'catalogue.description' },
+        children: [
+          { path: ':symbol', title: 'hullDetail.title', data: { description: 'hullDetail.description' } },
+        ],
+      },
+      { path: '**', redirectTo: 'ships' },
+    `;
+
+    assert.deepEqual(rules.routeTableTriples(source), [
+      { path: '', titleKey: undefined, descriptionKey: undefined },
+      { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
+      { path: ':symbol', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
+      { path: '**', titleKey: undefined, descriptionKey: undefined },
+    ]);
   });
 });

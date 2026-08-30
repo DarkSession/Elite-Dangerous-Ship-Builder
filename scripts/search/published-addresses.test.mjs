@@ -9,7 +9,7 @@ import {
   hullCard,
   interpolate,
   publishedAddresses,
-} from './search/published-addresses.mjs';
+} from './published-addresses.mjs';
 
 /**
  * The module three readers share.

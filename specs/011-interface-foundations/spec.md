@@ -214,11 +214,9 @@ offered and therefore carries no way to hold the page.
   the same name on the screen behind it still follows the presenter order in full.
 
   _Recorded 2026-08-27 (Commander request: "analyse the application and propose ways to optimize for
-  search engines")._ The analysis, its three named omissions — no card image, no hull pages in the
-  sitemap, no installable icon, each with the asset or build step it waits on — and what was
-  deliberately not done are in `design/search-visibility.md`. Prerendering is out of scope by the
-  owner's decision: this requirement is what a client-side application can state about itself
-  without one.
+  search engines")._ The analysis, and what was deliberately not done, are in
+  `design/search-visibility.md`. Prerendering is out of scope by the owner's decision: this
+  requirement is what a client-side application can state about itself without one.
 
   _Amended 2026-08-30 (Commander request: "provide suggestions to improve its discoverability and
   SEO")._ The second analysis, what it closed and what it left, is in the same design record.

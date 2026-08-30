@@ -78,7 +78,8 @@ ${entries}
 
 async function main() {
   const origin = declaredOrigin(await readFile(join(ROOT, ORIGIN_SOURCE), 'utf8'));
-  const document = sitemapDocument(publishedAddresses({ origin }));
+  const addresses = publishedAddresses({ origin });
+  const document = sitemapDocument(addresses);
   const path = join(ROOT, SITEMAP);
 
   if (process.argv.includes('--check')) {
@@ -96,7 +97,7 @@ async function main() {
   }
 
   await writeFile(path, document, 'utf8');
-  console.log(`${SITEMAP}: ${publishedAddresses({ origin }).length} addresses`);
+  console.log(`${SITEMAP}: ${addresses.length} addresses`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
