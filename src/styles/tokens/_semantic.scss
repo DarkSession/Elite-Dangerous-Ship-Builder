@@ -386,15 +386,15 @@
   // segmented strip is ruled with and the region's own block padding. Stated
   // here rather than on the screen so the two heights stay one decision.
   @include bar-derived;
-  // Canvas 1c's manifest, as the 2026-08-25 revision draws it: `2.6fr 70px
-  // 150px` — the module, its class and rating, and its price, and no other
-  // column. The two fixed columns are the canvas's own pixels; the name takes
-  // what is left.
+  // Canvas 1c's manifest: `2.6fr 56px 104px` — the module, its class and rating,
+  // and its price, and no other column. The two fixed columns are the canvas's
+  // own pixels; the name takes what is left. They are also the tracks the step
+  // ② bar is drawn on, because that bar is the column head.
   //
   // **The wave-9 cap is gone with them.** The name was capped at 27.25rem
   // because the workspace's third track was not built and the centre column
   // held 306px the canvas never gave it, which a `2.2fr` name column took the
-  // whole of. The third track is built, and this manifest now gives 216px of
+  // whole of. The third track is built, and this manifest now gives 264px of
   // its own width to the family rail before the name sees any of it, so there
   // is no surplus left to run away with (module-replacement design, "The
   // manifest's own columns").
@@ -415,6 +415,7 @@
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
   --edsb-layout-engineering-choices: var(--edsb-measure-engineering-choices);
+  --edsb-layout-engineering-column: var(--edsb-measure-engineering-column);
   --edsb-layout-export-content: var(--edsb-measure-export-content);
   --edsb-layout-export-content-wide: var(--edsb-measure-export-content-wide);
   --edsb-layout-grade-step: var(--edsb-measure-grade-step);

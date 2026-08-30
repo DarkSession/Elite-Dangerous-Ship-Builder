@@ -45,6 +45,14 @@ $container-compact-min: 17rem;
 $container-medium-min: 24rem;
 $container-wide-min: 40rem;
 
+// The width the outfitting bench's own column needs before the engineering
+// editor is drawn beside the manifest rather than under it: canvas 1c's
+// `264px + 360px + 396px` and its two 14px gaps, plus the bench's own inset.
+// Below it the editor keeps both its cards and takes the manifest's full width
+// (`specs/002-module-outfitting/design/outfitting-workspace.md`, "The bench is
+// two columns where it has room for three").
+$bench-columns-min: 67.75rem;
+
 @mixin compact {
   @media (max-width: #{$mode-compact-max}) {
     @content;
@@ -101,6 +109,16 @@ $container-wide-min: 40rem;
 
 @mixin container-wide-up($name) {
   @container #{$name} (min-width: #{$container-wide-min}) {
+    @content;
+  }
+}
+
+// The bench wide enough for canvas 1c's three columns. Declared once and asked
+// from both sides of the seam: the workspace lays the two panels out, and the
+// chooser's step ② draws its chevron only where step ③ is actually beside it.
+// `bench` is the container name `.outfitting__centre` sets.
+@mixin bench-columns {
+  @container bench (min-width: #{$bench-columns-min}) {
     @content;
   }
 }
@@ -412,4 +430,66 @@ $container-wide-min: 40rem;
   background-image: var(--edsb-surface-plate);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
   overflow: hidden;
+}
+
+// The outfitting bench's numbered step strip, one bar per column: the panel's
+// raised ground behind a hairline, opened by the same amber marker a selected
+// row carries, with a solid amber square for the step's number and a tracked
+// name beside it. Two components draw a bar of this strip — the chooser draws
+// steps 1 and 2, the engineering editor draws 3 — and they have to be the same
+// bar, so it is declared once here (canvas 1c's `#fit-table` head row).
+//
+// Four mixins rather than one nested block, because each part is a flat
+// selector in the component that uses it and a nested one would carry both
+// halves of Angular's scoping attribute.
+@mixin step-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-sm);
+  margin: 0;
+  padding: var(--edsb-space-sm) var(--edsb-space-md);
+  background-color: var(--edsb-surface-panel-raised);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  border-inline-start: var(--edsb-border-width-thick) solid var(--edsb-marker-selected);
+}
+
+// Decoration, and sized to the digit rather than to a target: nothing here is
+// pressed. The name beside it is the step.
+@mixin step-number {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--edsb-layout-icon-size);
+  block-size: var(--edsb-layout-icon-size);
+  background-color: var(--edsb-surface-accent-solid);
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  font-weight: var(--edsb-text-weight-heading);
+  line-height: 1;
+  color: var(--edsb-text-on-accent);
+}
+
+@mixin step-name {
+  @include micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// The chevron hangs off the end of the bar, into the gap between this column
+// and the next. Out of the flow, so it never takes width from the name.
+@mixin step-chevron {
+  position: absolute;
+  inset-inline-end: calc(var(--edsb-space-lg) * -1);
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-caption);
+  line-height: 1;
+  color: var(--edsb-text-accent);
 }

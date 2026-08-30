@@ -65,6 +65,13 @@ Each is a heading over its own answer, so a reader moving by heading meets the q
 than one block of prose. A question sits closer to its own answer than the pairs sit to each other,
 which is the reference's own 4-against-11-pixel rhythm expressed in stack tokens.
 
+**A question is set as the reference sets it: body type, sentence case.** The reference draws
+`Where are my builds stored?` in `500 12px/1.3 Barlow` on the dialog's brightest ink — a sentence with a
+question mark, one step up in weight from its answer, and not a label. It is a heading in the
+document because it heads its own answer, and this is the one place the shared heading face is
+overridden: condensed uppercase turns the question into a section title and takes the question mark
+with it.
+
 The exact translated wording belongs to locale catalogues, not this screen. Answers implement the
 behavioral boundaries in [../contracts/help-navigation.md](../contracts/help-navigation.md). The
 reference FAQ's import claim and retained-partial-roll answer are not included: the first is feature
@@ -80,7 +87,9 @@ A semantic fact group inside `ABOUT` presents two facts, which is what the refer
   credit lives.
 
 Each is a term with its own value rather than one run-together line: a reader who meets `0.1.8`
-alone has been told a number, not a version.
+alone has been told a number, not a version. The reference stacks the two: the term above its value
+in tracked micro type, and the pairs set well apart from each other. Set on one line the term reads
+as a prefix of the number beside it rather than as the label of the number under it.
 
 The wording never calls either version live-game/live-catalogue currency. Release state is **not**
 displayed — the reference draws no third fact, FR-007's display half is withdrawn, and the
@@ -97,7 +106,10 @@ action appears either: FR-009 is withdrawn and the reference draws no such contr
   application ships the package's code and serves those icon files from its own origin
   (`contracts/help-navigation.md`, amended 2026-08-26).
 - The exact generated disclaimer appears as plain text in a `lang="en"` region, with no translation,
-  Markdown interpretation, automatic linking or alteration.
+  Markdown interpretation, automatic linking or alteration. The reference draws it as the quietest
+  prose in the dialog and rules nothing off it: it is the last thing in the last section, and a rule
+  or an indent around it would make it a quotation inside a section that is already one block of
+  small print.
 - No complete legal document appears, and **no external control appears at all**. What the modal
   offers instead is three sets of linked words inside its own sentences — the two licence documents
   the summary is a summary of, and this application's source — each from an audited destination
@@ -173,7 +185,7 @@ with the icons: the line art is not EDAssets'.
 
 ## Narrow and constrained composition
 
-- At mobile widths, use feature 011's bottom-sheet treatment: full available inline size, persistent
+- At mobile widths, use feature 011's sheet treatment: full available inline size, persistent
   header/close action and one vertically scrolling body, matching `.design`'s mobile intent.
 - Tablet/mobile landscape and actual 400% zoom may promote the sheet to the full available viewport
   so every action remains reachable.

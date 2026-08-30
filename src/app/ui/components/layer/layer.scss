@@ -107,17 +107,30 @@
   overflow-y: auto;
 }
 
-// A sheet rises from the block end. Reachable by thumb on a phone.
+// A sheet fills the screen from the top and grows down to a bound.
+//
+// It used to rise from the block end instead, sized by its content, which put a
+// short screen's worth of scrim above every short layer: `Import build` began
+// 449px down an 844px phone, over a ship list that had nothing to do with
+// importing (Commander request 2026-08-30). Anchored at the top a layer starts
+// where the screen starts and takes exactly the room its content needs.
+//
+// The bound is the reference's 88%: enough of the screen behind it stays visible
+// to say what the layer is over, and no more. `svh` rather than `vh` because a
+// phone's toolbars are the difference between the two, and the larger viewport
+// is the one that is not on screen yet.
 @mixin sheet-presentation {
   inline-size: 100%;
   max-inline-size: 100%;
-  margin-block-start: auto;
-  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-block-end: auto;
   margin-inline: auto;
-  max-block-size: 80vh;
+  max-block-size: 88svh;
   overflow-y: auto;
   border-radius: var(--edsb-shape-layer);
-  border-block-end: 0;
+  // The edge the sheet shares with the edge of the screen is not drawn. That is
+  // the leading one now that the sheet starts at the top.
+  border-block-start: 0;
 }
 
 // A full-height layer owns the viewport. Used where content, expansion or a

@@ -285,8 +285,7 @@ export class EngineeringEditor {
   /**
    * The layer's own title: the module the screen is open on.
    *
-   * Canvas 1d writes the screen's name — `DETAILS AND ENGINEERING` — in the bar
-   * and the module under it. A Commander arriving from a ledger row already
+   * Canvas 1d writes the screen's name in the bar and the module under it. A Commander arriving from a ledger row already
    * knows which screen they opened and does not know which of forty mounts it
    * landed on, so the module takes the bar and the screen's name is what the
    * region is called for a reader (Commander request 2026-08-27). Where there
@@ -316,8 +315,14 @@ export class EngineeringEditor {
     this.#messages.message('outfitting.engineering.region', { slot: this.#slotLabel() }),
   );
 
-  /** Canvas 1c's panel heading, over the panel it heads. */
+  /** Canvas 1c's step ③ bar, over the two cards it heads. */
   readonly panelHeading = this.#messages.messageSignal('outfitting.engineering.heading');
+
+  /** The first card's own bar: the article's attributes. */
+  readonly detailsHeading = this.#messages.messageSignal('outfitting.engineering.details.heading');
+
+  /** The second card's own bar: the recipe, the grade and the effect. */
+  readonly choicesHeading = this.#messages.messageSignal('outfitting.engineering.choices.heading');
 
   readonly headingId = relationId('engineering-panel');
 

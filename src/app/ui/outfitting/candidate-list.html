@@ -3,14 +3,28 @@
 
   @if (manifest() === 'rail') {
     <!--
-      Canvas 1c since the 2026-08-25 revision: `#fit-table` as
-      `grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, with the
-      family rail in column 1 row 2, the column head over column 2 alone, and
-      the selected family's rows in column 2 row 2. Two scrollers, each bounded
-      at the pane's own declared height, so neither list carries the other off
-      the panel.
+      Canvas 1c's `#fit-table`, first two tracks:
+      `grid-template-columns: 264px minmax(360px, 1fr); column-gap: 14px`, with a
+      numbered step bar over each column in row 1 and the lists in row 2. Two
+      scrollers, each bounded at the pane's own declared height, so neither list
+      carries the other off the panel. The third track is the engineering
+      editor's and is placed by the bench (`design/module-replacement.md`, "The
+      three steps, numbered").
     -->
     <div class="candidates__manifest">
+      <!--
+        Step ①, over the rail. The number and the chevron are decoration: the
+        name beside them is the step, and the rail under it is already a named
+        group. It is drawn `FAMILIES` rather than the canvas's `CATEGORY`
+        because this screen already spends that word on the ledger's own
+        category strip.
+      -->
+      <p class="candidates__step candidates__step--rail">
+        <span class="candidates__step-number" aria-hidden="true">1</span>
+        <span class="candidates__step-name">{{ familiesLabel() }}</span>
+        <span class="candidates__step-chevron" aria-hidden="true">›</span>
+      </p>
+
       <!--
         The rail. Every family, one row each, exactly one selected — there is no
         caret at this width because there is nothing to expand: the pane beside
@@ -41,15 +55,21 @@
       </div>
 
       <!--
-        The canvas's header row, over the pane alone: `MODULE`, `CLASS`, `COST`
-        and no other column. It names the columns for anyone reading them; every
-        row restates the same labels for a reader, so this is decoration rather
-        than a second announcement.
+        Step ②, which is also the column head: `MODULE` is the step's own name
+        and `CLASS` and `COST` are cells of the same bar, on the pane's own
+        tracks. The canvas merged the two — drawn apart there is a labelled bar
+        and a second set of labels a few pixels under it saying the same thing.
+        Every row restates the same labels for a reader, so the whole bar is
+        decoration rather than a second announcement.
       -->
-      <div class="candidates__columns" aria-hidden="true">
-        <span class="candidates__column">{{ moduleColumn() }}</span>
+      <div class="candidates__step candidates__columns" aria-hidden="true">
+        <span class="candidates__step-lead">
+          <span class="candidates__step-number">2</span>
+          <span class="candidates__step-name">{{ moduleColumn() }}</span>
+        </span>
         <span class="candidates__column">{{ classColumn() }}</span>
         <span class="candidates__column candidates__column--figure">{{ costColumn() }}</span>
+        <span class="candidates__step-chevron">›</span>
       </div>
 
       @if (revealedFamily(); as revealed) {

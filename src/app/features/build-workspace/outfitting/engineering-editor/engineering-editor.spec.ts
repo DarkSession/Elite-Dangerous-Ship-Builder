@@ -62,6 +62,27 @@ describe('engineering editor surface', () => {
     return fixture;
   }
 
+  /**
+   * The layer, rendered.
+   *
+   * `<dialog>` has no native modal methods in this environment and the layer
+   * calls them the moment it opens, so they are stubbed for the tests that read
+   * the layer's own markup rather than only what the component decides.
+   */
+  function openLayer(slotKey: string) {
+    const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+    prototype['showModal'] = function showModal(this: HTMLDialogElement) {
+      this.setAttribute('open', '');
+    };
+    prototype['close'] = function close(this: HTMLDialogElement) {
+      this.removeAttribute('open');
+    };
+
+    const fixture = open(slotKey);
+    fixture.detectChanges();
+    return fixture;
+  }
+
   function openInline(slotKey: string) {
     store.select(slotKey);
     const fixture = TestBed.createComponent(EngineeringEditor);
@@ -279,6 +300,65 @@ describe('engineering editor surface', () => {
     });
   });
 
+  describe('canvas 1c’s third column', () => {
+    it('opens with step ③ and heads its two cards', () => {
+      commit(defaultBuild());
+
+      const host = openInline(FIXTURE_SLOTS.frameShiftDrive).nativeElement as HTMLElement;
+
+      // The bar the family rail and the module pane also carry, third in the
+      // strip (`design/module-replacement.md`, "The three steps, numbered").
+      const step = host.querySelector('.engineering__step');
+      expect(step?.querySelector('.engineering__step-name')?.textContent?.trim()).toBe(
+        BUNDLED_ENGLISH['outfitting.engineering.heading'],
+      );
+      expect(step?.querySelector('.engineering__step-number')?.getAttribute('aria-hidden')).toBe(
+        'true',
+      );
+
+      // Two cards under it, each with its own name.
+      const headings = [...host.querySelectorAll('.engineering__card-heading')].map((heading) =>
+        heading.textContent?.trim(),
+      );
+      expect(headings).toEqual([
+        BUNDLED_ENGLISH['outfitting.engineering.details.heading'],
+        BUNDLED_ENGLISH['outfitting.engineering.choices.heading'],
+      ]);
+    });
+
+    it('reads the details before the engineering inline, and after it in the layer', () => {
+      commit(defaultBuild());
+
+      // Canvas 1c switched the two: what a Commander is deciding about is the
+      // article's own figures, and the controls that change them follow. Canvas
+      // 1d draws its plates the other way round and is unchanged, so the order
+      // is a property of the placement rather than of the content.
+      const order = (host: HTMLElement) =>
+        [...host.querySelectorAll('.engineering__result, .engineering__choices')].map((pane) =>
+          pane.classList.contains('engineering__result') ? 'details' : 'engineering',
+        );
+
+      expect(order(openInline(FIXTURE_SLOTS.frameShiftDrive).nativeElement)).toEqual([
+        'details',
+        'engineering',
+      ]);
+
+      expect(order(openLayer(FIXTURE_SLOTS.frameShiftDrive).nativeElement)).toEqual([
+        'engineering',
+        'details',
+      ]);
+    });
+
+    it('draws no card bars in the layer, which heads its own plates', () => {
+      commit(defaultBuild());
+
+      const host = openLayer(FIXTURE_SLOTS.frameShiftDrive).nativeElement as HTMLElement;
+
+      expect(host.querySelectorAll('.engineering__card-bar')).toHaveLength(0);
+      expect(host.querySelector('.engineering__step')).toBeNull();
+    });
+  });
+
   describe('the comparison', () => {
     it('still draws the details of an article the package will not engineer', () => {
       const { build, slot } = lockedArticleBuild();
@@ -286,17 +366,17 @@ describe('engineering editor surface', () => {
       const mounted = open(slot);
       const editor = mounted.componentInstance;
 
-      // `DETAILS AND ENGINEERING` names two halves and the details do not
-      // depend on the engineering. A final article accepts no further
-      // engineering and still has every attribute it was catalogued with;
-      // gating the whole grid on there being choices left the panel stating a
-      // restriction over nothing at all (wave 11, Commander request).
+      // Step ③ names two cards and the details do not depend on the
+      // engineering. A final article accepts no further engineering and still
+      // has every attribute it was catalogued with; gating both cards on there
+      // being choices left the panel stating a restriction over nothing at all
+      // (wave 11, Commander request).
       expect(editor.state()).toBe('final');
       expect(editor.showChoices()).toBe(false);
       expect(editor.attributes().length).toBeGreaterThan(0);
 
-      // The restriction takes the half the controls would have taken, and the
-      // table stays in the half it is in on every other article.
+      // The restriction takes the card the controls would have taken, and the
+      // table stays in the card it is in on every other article.
       const host = mounted.nativeElement as HTMLElement;
       expect(host.querySelector('.engineering__choices .engineering__state')?.textContent).toMatch(
         /final article/i,
@@ -322,8 +402,8 @@ describe('engineering editor surface', () => {
 
       const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
 
-      // The panel is `DETAILS AND ENGINEERING`: the details are the article's
-      // own attributes and they are readable the moment the mount is opened.
+      // Step ③ is `ATTRIBUTES · ENGINEERING`: the details are the article's own
+      // attributes and they are readable the moment the mount is opened.
       // What is not there yet is the comparison — nothing has been chosen to
       // compare against, and a modified column repeating the stock one reads as
       // a recipe that did nothing.

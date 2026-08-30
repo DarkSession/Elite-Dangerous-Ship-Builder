@@ -193,8 +193,15 @@ below clears is the bar as it was measured, not this declaration.
 
 ### Panel dialog
 
-Centred at wide widths over a `rgba(6,6,7,.78)` scrim; bottom sheet at compact widths
-over `rgba(6,6,7,.8)`. Body `background: var(--panel)`, `border: 1px solid var(--amber-a45)`,
+Centred at wide widths over a `rgba(6,6,7,.78)` scrim; a sheet at compact widths
+over `rgba(6,6,7,.8)`. A centred dialog is bounded at `82%` of the viewport and a sheet at `88%`:
+each gives up a strip so the screen behind it still shows, and no more than that.
+
+**The sheet is anchored at the block start, not the block end. Ruled 2026-08-30 (Commander
+request).** The reference draws `align-items: flex-end` and sizes its compact modals by their
+content, which puts a short screen's worth of scrim above every short one — `Import build` began 449
+pixels down an 844-pixel phone. A sheet starts where the screen starts, grows down as its content
+needs and stops at the bound; the edge it shares with the edge of the screen is not drawn. Body `background: var(--panel)`, `border: 1px solid var(--amber-a45)`,
 `box-shadow: 0 24px 60px rgba(0,0,0,.6)`. Title bar `background: var(--panel-4)`,
 `border-bottom: 1px solid var(--amber-a3)`, title condensed 700 tracked 0.22em in
 `--amber-3`, trailing `CLOSE ✕` in mono. Footer bar `background: var(--panel-2)`,
@@ -206,6 +213,15 @@ middle step; the one that stands two regions side by side — canvas 1c's export
 takes the widest, because two regions need the room. The canvas's fifth width, the 860px
 `SAVED BUILDS` modal, has no step: the library is a route here rather than a dialog, so
 nothing in this family sizes it.
+
+### Step strip
+
+Canvas 1c opens each column of the outfitting bench with a bar on `var(--panel-2)`,
+`border: 1px solid var(--amber-a12)` and `border-left: 3px solid var(--amber)`, carrying a 16px solid
+amber square with the step's number in `var(--bg)` and the step's name in mono 600 tracked 0.16em in
+`var(--amber-2)`. A `›` hangs `right: -12px` off the end of every bar but the last, in the gap between
+that column and the next. Two components draw a bar of it, so it is one declaration in the shared
+chrome rather than a copy in each.
 
 ### Buttons
 

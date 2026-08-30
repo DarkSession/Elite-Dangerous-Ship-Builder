@@ -7,9 +7,9 @@ The rendered source is `.design/Ship Builder.dc.html`:
 | Canvas | Reference content                                                                | Foundation evidence                                                                                     |
 | ------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | 1a     | 1320px Shipyard manifest, hull inspector, saved builds, import and help dialogs  | Wide frame/action group, search/filter/sort, selectable table, detail rail, modal layers                |
-| 1b     | 390×844 Shipyard cards, full-screen hull/saved-build flows and bottom sheets     | Compact title/actions, card collection, sort strip, drill-in, sheet/full-height adaptation              |
-| 1c     | 1560px Outfitting ledger, anatomy/work area, status rail, fitting/editor/dialogs | Three-region workspace, tabs, metrics/status, visual-to-ledger correlation, contextual action hierarchy |
-| 1d     | 390×844 Outfitting modes, ledger, module/engineer drill-ins and action sheets    | Compact overflow, mode/category tabs, sticky actions, full-screen editors, bottom sheets                |
+| 1b     | 390×844 Shipyard cards, full-screen hull/saved-build flows and sheets            | Compact title/actions, card collection, sort strip, drill-in, sheet/full-height adaptation              |
+| 1c     | 2020px Outfitting ledger, anatomy/work area, status rail, fitting/editor/dialogs | Three-region workspace, tabs, metrics/status, visual-to-ledger correlation, contextual action hierarchy |
+| 1d     | 390×844 Outfitting modes, ledger, module/engineer drill-ins and action sheets    | Compact overflow, mode/category tabs, sticky actions, full-screen editors, sheets                       |
 
 The canvases define product appearance and hierarchy. Shipyard and Outfitting remain routes/screens
 owned by their capability features; feature 011 owns the system those screens compose.
@@ -32,7 +32,7 @@ owned by their capability features; feature 011 owns the system those screens co
 
 | Prototype evidence                                                         | Production treatment                                                                                         | Requirement/constraint     |
 | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------- |
-| Fixed 1320/1560/390 canvases; no tablet/landscape/zoom                     | Content-driven wide/medium/compact layouts plus synthesized tablet and short-landscape rules                 | FR-011, FR-014             |
+| Fixed 1320/2020/390 canvases; no tablet/landscape/zoom                     | Content-driven wide/medium/compact layouts plus synthesized tablet and short-landscape rules                 | FR-011, FR-014             |
 | Hundreds of inline color/type/spacing/border/motion values                 | One primitive source and one contrast-audited semantic dark token set                                        | FR-001–003                 |
 | Small muted alpha text and meaningful faint borders below AA pairs         | Documented token pair contrast; enlarge/reweight/recolor without losing hierarchy                            | FR-012                     |
 | Google Fonts preconnect/stylesheet and remote `edassets.org` material SVGs | Same-origin licensed font subsets and package/local assets; text/unavailable state when an asset is absent   | Constitution I, FR-019     |

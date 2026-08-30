@@ -370,7 +370,7 @@ test.describe('the conditions that break layouts', () => {
   test('passes an accessibility scan with the editor open in every layer', async ({
     page,
   }, testInfo) => {
-    // Two scans, and both got dearer on 2026-08-27. `DETAILS AND ENGINEERING`
+    // Two scans, and both got dearer on 2026-08-27. The engineering editor
     // no longer scrolls inside itself: it expands, the workspace column
     // releases and the page carries it, so there is more rendered tree for axe
     // to walk and fewer rows the manifest's `content-visibility` can skip.

@@ -2,7 +2,7 @@
 
 ## Reference and selection rule
 
-`.design/Ship Builder.dc.html` supplies only canvas 1c at 1560 CSS px and canvas 1d at 390 CSS px
+`.design/Ship Builder.dc.html` supplies only canvas 1c at 2020 CSS px and canvas 1d at 390 CSS px
 with a minimum 844px height. These are reference canvases, not implementation breakpoints. There is no
 tablet design. Feature 011 content/container tokens select a composition from available inline space,
 localized content and zoom—not device detection or a hard-coded user-agent class.
@@ -28,20 +28,29 @@ succeeded, which is the tone of a refusal on the one path that did not refuse an
 
 ## Declared content minimums
 
-Every "minimum" this document and the verification tasks refer to is one of these three. They are
-content minimums measured on the region's own inline size, never a viewport label.
+Every "minimum" this document and the verification tasks refer to is one of these. They are content
+minimums measured on the region's own inline size, never a viewport label — except the two the canvas
+fixes, the family rail and the engineering column, which are drawn tracks rather than measured
+content and are marked as such.
 
 | Region                                 | Minimum inline size | What must fit at it                                                                     |
 | -------------------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
 | Ledger / master pane                   | 320 CSS px          | A slot card's exact key, one wrapped module name and its 44px controls without clipping |
 | Selected-slot pane (chooser or editor) | 360 CSS px          | A candidate row's name, class, rating, mount and stacked labels plus a 44px fit control |
-| Chooser family rail (wide only)        | 216 CSS px          | A family's localized name on one line beside its count chip, at a 44px row height       |
+| Chooser family rail (wide only)        | 264 CSS px (drawn)  | A family's localized name on one line beside its count chip, at a 44px row height       |
+| Engineering column (side by side only) | 396 CSS px (drawn)  | The attribute table's three columns, and the recipe and effect menus under them         |
 | Wide right rail                        | 280 CSS px          | One validation or cost line with its number and unit on at most two lines               |
 
 Two panes are used only when both the ledger and selected-slot minimums fit together in the available
 inline space, at the active text size, expansion and zoom. Three regions are used only when all three
 fit. Otherwise the next composition down applies. A region that cannot reach its minimum is never
 narrowed below it — the composition changes instead.
+
+The engineering column is the same rule one level down, inside the bench: the editor is drawn beside
+the manifest only where the family rail, the selected-slot pane and the editor's own minimum all fit
+across the bench at once. Otherwise the editor is drawn under the manifest, which is the same content
+in the same order (`design/outfitting-workspace.md`, "The bench is two columns where it has room for
+three").
 
 Height selects the compact composition on its own. Below the stylesheets' own `max-height: 30rem`
 query — the same one that releases the sticky feet and the bounded scrollers — an inline composition
@@ -59,12 +68,13 @@ canvas 1c's three visual regions:
 - left: persistent `ALL`, hardpoint, core, optional and utility controls plus the complete grouped
   slot ledger;
 - center: shared anatomy/calculation outlet followed by selected-slot replacement and engineering
-  regions inline. Since the 2026-08-25 canvas revision the replacement region is itself two panes —
-  a 216 px family rail beside the variant list, the canvas's own
-  `grid-template-columns: 216px minmax(0, 1fr)` — each bounded and scrolling on its own, with the
-  `MODULE` / `CLASS` / `COST` head over the variant pane alone. Where the rail's own minimum and the
-  360 px selected-slot minimum cannot both be met, the compact composition applies, which is where
-  the accordion canvas 1d draws lives;
+  regions inline. The replacement region is itself two panes — a 264 px family rail beside the
+  variant list, the canvas's own `grid-template-columns: 264px minmax(360px, 1fr)` — each bounded and
+  scrolling on its own, with `MODULE`, `CLASS` and `COST` in the step ② bar over the variant pane.
+  The engineering region is the canvas's third track beside them where the bench has the room for it
+  and under them where it has not. Where the rail's own minimum and the 360 px selected-slot minimum
+  cannot both be met, the compact composition applies, which is where the accordion canvas 1d draws
+  lives;
 - right: shared package validation, cost/material and downstream status outlets.
 
 The wide header exposes the feature 002 editable ship name/ident control (FR-019) beside feature 001's

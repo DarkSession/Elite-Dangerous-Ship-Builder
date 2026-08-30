@@ -11,8 +11,8 @@ import { BENCH_CONTENT_MINIMUM_REM } from './composition';
  */
 export type CandidateManifest = 'rail' | 'accordion';
 
-/** Canvas 1c's `216px` rail and the `14px` between it and the pane. */
-const FAMILY_RAIL_REM = 13.5;
+/** Canvas 1c's `264px` rail and the `14px` between it and the pane. */
+const FAMILY_RAIL_REM = 16.5;
 const FAMILY_GAP_REM = 0.875;
 
 /**
@@ -21,7 +21,7 @@ const FAMILY_GAP_REM = 0.875;
  * Derived rather than measured off the drawing, and derived from a figure that
  * already exists: the pane is a candidate row, so it may not be narrowed below
  * the content minimum a candidate row already declares, and the rail is canvas
- * 1c's own fixed 216px beside it with the canvas's 14px between them.
+ * 1c's own fixed 264px beside it with the canvas's 14px between them.
  *
  * **Lowered from a flat 44rem on 2026-08-25.** That figure was the width seven
  * columns needed, and the revision cut the manifest to three — so the old

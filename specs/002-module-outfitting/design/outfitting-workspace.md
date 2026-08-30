@@ -25,6 +25,20 @@ workspace and never creates or owns a second build.
   `ENGINEERING` panel below the anatomy, and a Commander changes what they are looking at by marking
   a different row. `Change module` and `Engineer` are canvas 1d's controls and appear only in the
   compact composition (reference review, "Opening controls for the two surfaces").
+- **The bench is two columns where it has room for three. Ruled 2026-08-30, against the canvas
+  revision of that date.** Canvas 1c draws the bench as `264px minmax(360px, 1fr) 396px`: the family
+  rail, the module pane and the engineering editor, in one row under one numbered step strip. The
+  first two of those tracks are the manifest's own and are drawn inside the fitting panel, so the
+  bench itself is the two panels side by side — the fitting column taking what is left, the editor
+  taking the canvas's 396px and starting at the top of the bench rather than stretching to it.
+  The mount's name, the search and `REMOVE MODULE` are the fitting column's head and stop where that
+  column stops, which is how the canvas's `13px 430px 11px 20px` head is read here.
+- **Under 65.5rem of bench the editor goes back under the manifest.** The three tracks and their two
+  gaps need `264 + 360 + 396 + 28`, and a 1440 window has about 700px of bench once the ledger's
+  392px and the status rail's 306px are paid for. So the side-by-side arrangement is the one the
+  canvas was drawn at — 2020px — and everything narrower keeps the stack, which is the same content
+  in the same order. Asked of the bench's own container rather than of the window, so a doubled text
+  size or 400% zoom takes the stack for the same reason a narrow window does.
 - Removal is drawn once, in the fitting panel's own header beside the search, exactly as canvas 1c
   draws `REMOVE MODULE` — and the mount's name is on that same line, not on a bench header above it
   (wave 5). Where no fitting panel is drawn at all — a mount the Almanac takes nothing else in — the
@@ -136,7 +150,7 @@ beside it, so a mode that lands next is bounded or released by what it draws rat
 somebody remembered to add it to (Commander request 2026-08-26).
 
 **Ruled 2026-08-27 — and a bench is not bounded by the column either.** The same reasoning reaches
-the other thing this column holds. `DETAILS AND ENGINEERING` is drawn inline for whichever mount is
+the other thing this column holds. The engineering editor is drawn inline for whichever mount is
 marked, and its height is whatever the article has to say: a weapon publishes around seventy
 attribute rows, and the panel was being handed a share of a bench inside a column bounded to the
 screen. Wave 11 answered that by scrolling each of the panel's two halves in its own column, which

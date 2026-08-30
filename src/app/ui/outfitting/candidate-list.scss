@@ -377,6 +377,11 @@
     overscroll-behavior-block: contain;
   }
 
+  .candidates__step--rail {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
   .candidates__columns {
     grid-column: 2;
     grid-row: 1;
@@ -443,8 +448,7 @@
     // of the widths the canvas sets.
     gap: 0;
     grid-template-columns: var(--edsb-layout-candidate-columns);
-    padding-inline: var(--edsb-space-row);
-    padding-block-end: var(--edsb-space-stack-tight);
+    align-items: center;
   }
 
   .candidates__column {
@@ -570,4 +574,48 @@
 
 .visually-hidden {
   @include layout.visually-hidden;
+}
+
+// Canvas 1c's numbered step bars. Two of the three are here — the family rail's
+// and the pane's; the third heads the engineering editor and is that surface's
+// own. The strip is what says the columns are one sequence rather than three
+// panels that happen to be adjacent (`design/module-replacement.md`, "The three
+// steps, numbered").
+.candidates__step {
+  @include layout.step-bar;
+
+  margin-block-end: var(--edsb-space-sm);
+}
+
+.candidates__step-number {
+  @include layout.step-number;
+}
+
+.candidates__step-name {
+  @include layout.step-name;
+}
+
+.candidates__step-chevron {
+  @include layout.step-chevron;
+}
+
+// Step ②'s bar is the column head as well, so its first cell is the step and
+// the other two are the pane's own `CLASS` and `COST` tracks.
+.candidates__step-lead {
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-sm);
+  min-inline-size: 0;
+}
+
+// Step ②'s chevron points at step ③, so it is drawn only where step ③ is
+// beside it: stacked, the engineering editor is underneath.
+.candidates__columns .candidates__step-chevron {
+  display: none;
+}
+
+@include layout.bench-columns {
+  .candidates__columns .candidates__step-chevron {
+    display: block;
+  }
 }

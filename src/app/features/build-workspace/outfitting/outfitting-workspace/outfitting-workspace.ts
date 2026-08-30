@@ -217,7 +217,7 @@ export class OutfittingWorkspace {
    *
    * The middle column bounds an anatomy of plates over an empty bench, which is
    * the arrangement it was written for. A bench with a mount in it is the other
-   * thing that does not fit: `DETAILS AND ENGINEERING` is as tall as the
+   * thing that does not fit: the engineering editor is as tall as the
    * article has to say — around seventy attribute rows on a weapon — and it no
    * longer scrolls inside itself, so the column releases and the page carries
    * it (`design/outfitting-workspace.md`, "a bench is not bounded by the column

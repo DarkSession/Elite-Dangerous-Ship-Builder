@@ -6,6 +6,7 @@ import {
   expectNoDocumentOverflow,
   expectTargetSizes,
 } from './accessibility/assertions';
+import { reachShellAction } from './shell';
 
 /**
  * The responsive journey (US2).
@@ -72,6 +73,38 @@ test.describe('responsive availability', () => {
       }
       await expect(page.getByRole('main')).toBeVisible();
     }
+  });
+
+  test('opens a compact layer at the top of the screen, not part-way down it', async ({ page }) => {
+    // A sheet used to rise from the block end, sized by its content, so a short
+    // one began part-way down the screen with scrim over everything above it —
+    // `Import build` 449 pixels down an 844-pixel phone (Commander request
+    // 2026-08-30). It starts where the screen starts now and grows down to its
+    // bound (`design/canvas-extraction.md`, "Panel dialog").
+    await reachShellAction(page, /^import build$/i);
+
+    const layer = page.locator('dialog[open]');
+    await expect(layer).toBeVisible();
+
+    const measured = await layer.evaluate((node) => ({
+      top: Math.round(node.getBoundingClientRect().top),
+      height: Math.round(node.getBoundingClientRect().height),
+      viewport: window.innerHeight,
+      // A sheet takes the whole width of the screen; the centred dialog the
+      // wide profiles draw is bounded by its own measure.
+      sheet: Math.round(node.getBoundingClientRect().width) >= window.innerWidth - 1,
+    }));
+
+    if (!measured.sheet) {
+      // The wide profiles centre the dialog instead, which is the canvas's own
+      // treatment at that width and is not what this is about.
+      return;
+    }
+
+    expect(measured.top).toBeLessThanOrEqual(1);
+    // And it still leaves the screen behind it visible rather than taking the
+    // whole of it: that is what parts a sheet from a full-height layer.
+    expect(measured.height).toBeLessThanOrEqual(measured.viewport);
   });
 
   test('passes an accessibility scan at every profile', async ({ page }, testInfo) => {

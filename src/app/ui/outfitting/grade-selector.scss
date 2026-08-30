@@ -87,11 +87,21 @@
   @include layout.visually-hidden;
 }
 
-// Canvas 1c draws the cells bare and puts the chosen grade beside the legend.
-// The number stays in each cell's accessible name, so a reader still hears
-// which grade a cell is. Canvas 1d writes it on the cell instead — see below.
+// Canvas 1c writes the grade on the cell as well as beside the legend
+// (2026-08-30). The bar is filled up to the chosen grade and each cell says
+// which grade it is, so the fill and the numbering carry the same fact; a cell
+// past the choice dims its number, which is the third way the same thing is
+// said. Dimmed to the faintest ink that still reads rather than to the canvas's
+// own wash, which measures 2.4:1.
 .grades:not(.grades--steps) .grade__number {
-  @include layout.visually-hidden;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-micro);
+  font-weight: var(--edsb-text-weight-emphasis);
+  line-height: 1;
+}
+
+.grades:not(.grades--steps) .grade:not([data-filled='true']) .grade__number {
+  color: var(--edsb-text-faint);
 }
 
 // Canvas 1d's control: `GRADE` beside five numbered buttons `flex: 1; height:

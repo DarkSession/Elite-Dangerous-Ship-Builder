@@ -988,6 +988,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a known-zero cost and an unavailable one read as different things',
       'no material rarity is fetched from another origin',
       'a supported partial roll is completed to quality 1 and said out loud',
+      'the editor is a column beside the manifest where the bench holds three, and under it where it does not',
+      'every grade cell names its grade, and a cell past the choice is unfilled and dimmed',
     ],
     manualRecord: 'screen-reader',
   },

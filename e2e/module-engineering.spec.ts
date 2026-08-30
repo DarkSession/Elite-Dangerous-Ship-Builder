@@ -345,10 +345,10 @@ test.describe('engineering costs', () => {
     await chooseRecipe(page, /increased range/i);
     await chooseGrade(page, 5);
 
-    // Neither canvas draws a materials list inside `DETAILS AND ENGINEERING`:
-    // `eng-grid` is the recipe, the grade and the effect on the left and the
-    // article's attributes on the right, and the only `MATERIALS` block on
-    // either canvas is the build-wide one in the rail (wave 11, Commander
+    // Neither canvas draws a materials list inside the editor: it holds the
+    // article's attributes, and the recipe, the grade and the effect, and the
+    // only `MATERIALS` block on either canvas is the build-wide one in the
+    // rail (wave 11, Commander
     // request, reversing waves 5 and 9). Its rarity marks, its ordering, its
     // counts and its Merc Coin row are covered where it lives, in
     // `cost-and-materials.spec.ts`.
@@ -518,11 +518,11 @@ test.describe('engineering costs', () => {
 
     const panes = page.locator('.engineering__panes');
     await expect(panes).toBeVisible();
-    if ((await panes.evaluate((node) => getComputedStyle(node).display)) !== 'grid') {
+    if (await surfacesAreLayers(page)) {
       // The full-screen composition owns the viewport and has no page to grow
-      // into: it draws the two halves as one column and the layer around it is
-      // what scrolls. That is the canvas at that width, not a fault to assert
-      // on (`design/engineering-editor.md`, "Nothing here scrolls").
+      // into: the layer around it is what scrolls, and the column this asserts
+      // on releases only for the inline placement
+      // (`design/engineering-editor.md`, "Nothing here scrolls").
       return;
     }
 
@@ -560,10 +560,10 @@ test.describe('engineering costs', () => {
       expect(region.hidden).toBeLessThanOrEqual(1);
     }
 
-    // The panel is as tall as the taller of its two halves, which is what
-    // "expands" means once neither of them can give way.
+    // The panel holds both cards whole, which is what "expands" means once
+    // neither of them can give way.
     expect(measured.panel.height + 1).toBeGreaterThanOrEqual(
-      Math.max(measured.choices.height, measured.result.height),
+      measured.choices.height + measured.result.height,
     );
     expect(measured.centre).toBe('static');
   });
@@ -739,4 +739,120 @@ test.describe('reading a build in', () => {
     expect(['normalized', 'unsupported', 'unchanged']).toContain(refusal);
     expect(await ledgerEngineering(page, 'FrameShiftDrive')).toBe(before);
   });
+});
+
+/**
+ * Canvas 1c's three-stage flow, and the width it needs.
+ *
+ * The bench draws the family rail, the module pane and the engineering editor
+ * side by side under one numbered strip. Three tracks need more than the
+ * desktop project's 1440 leaves once the ledger and the status rail are paid
+ * for, so the arrangement is asked for at the width the artboard was drawn at
+ * and the fallback is asserted at the project's own
+ * (`design/outfitting-workspace.md`, "The bench is two columns where it has
+ * room for three").
+ */
+test.describe('the bench’s three columns', () => {
+  /** The top edge of each numbered bar, in document order. */
+  async function stripTops(page: Page): Promise<number[]> {
+    return await page.evaluate(() =>
+      [...document.querySelectorAll('.candidates__step, .engineering__step')].map((bar) =>
+        Math.round(bar.getBoundingClientRect().top),
+      ),
+    );
+  }
+
+  test('draws the editor beside the manifest, on the step strip’s own line', async ({ page }) => {
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+
+    const manifest = page.locator('edsb-module-replacement');
+    const editor = page.locator('edsb-engineering-editor');
+    await expect(manifest).toBeVisible();
+    await expect(editor).toBeVisible();
+
+    const [manifestBox, editorBox] = await Promise.all([
+      manifest.boundingBox(),
+      editor.boundingBox(),
+    ]);
+
+    // Beside, not under: the editor starts after the manifest ends across, and
+    // the two share the bench's own row.
+    expect(editorBox!.x).toBeGreaterThanOrEqual(manifestBox!.x + manifestBox!.width);
+
+    // One strip, three bars, one line. Steps ① and ② are the chooser's; step ③
+    // is the editor's, and it pays the fitting panel's head so that it lands on
+    // their line rather than on the head's.
+    const tops = await stripTops(page);
+    expect(tops).toHaveLength(3);
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
+  });
+
+  test('stacks the editor under the manifest where three columns do not fit', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+
+    if (await surfacesAreLayers(page)) {
+      // Canvas 1d opens each surface as a screen of its own, so there is no
+      // bench to arrange. What that width owes is asserted where the layers are.
+      return;
+    }
+
+    const manifest = page.locator('edsb-module-replacement');
+    const editor = page.locator('edsb-engineering-editor');
+    const [manifestBox, editorBox] = await Promise.all([
+      manifest.boundingBox(),
+      editor.boundingBox(),
+    ]);
+
+    expect(editorBox!.y).toBeGreaterThanOrEqual(manifestBox!.y + manifestBox!.height - 1);
+  });
+});
+
+/**
+ * The grade bar says the same thing twice, on purpose.
+ *
+ * Canvas 1c fills the bar up to the chosen grade and numbers every cell, so a
+ * cell past the choice is both unfilled and dimmed. Neither is the only carrier
+ * — each cell names its own grade to a reader (`design/engineering-editor.md`).
+ */
+test('numbers every grade cell and dims the ones past the choice', async ({ page }) => {
+  await openStockBuild(page);
+  await openEditor(page, 'FrameShiftDrive');
+  await chooseRecipe(page, /increased range/i);
+  await chooseGrade(page, 2);
+
+  const cells = page.locator('edsb-grade-selector .grade');
+  await expect(cells).toHaveCount(5);
+
+  const drawn = await cells.evaluateAll((nodes) =>
+    nodes.map((node) => ({
+      filled: node.getAttribute('data-filled') === 'true',
+      number: node.querySelector('.grade__number')?.textContent?.trim() ?? '',
+      colour: getComputedStyle(node.querySelector('.grade__number')!).color,
+    })),
+  );
+
+  expect(drawn.map((cell) => cell.number)).toEqual(['1', '2', '3', '4', '5']);
+
+  // Canvas 1c fills the bar up to the choice, so grade 2 reads as two. Canvas
+  // 1d fills the chosen button alone, because a numbered button filled for
+  // being *below* the choice is four buttons claiming to be the one that is
+  // pressed. Both number every cell, which is the part this is about.
+  const steps = await page
+    .locator('edsb-grade-selector .grades')
+    .first()
+    .evaluate((node) => node.classList.contains('grades--steps'));
+  expect(drawn.map((cell) => cell.filled)).toEqual(
+    steps ? [false, true, false, false, false] : [true, true, false, false, false],
+  );
+
+  // The two states are drawn in different inks. Which ink is the stylesheet's
+  // business; that they differ is the claim.
+  const filled = new Set(drawn.filter((cell) => cell.filled).map((cell) => cell.colour));
+  const unfilled = new Set(drawn.filter((cell) => !cell.filled).map((cell) => cell.colour));
+  expect(filled.size).toBe(1);
+  expect(unfilled.size).toBe(1);
+  expect([...filled][0]).not.toBe([...unfilled][0]);
 });

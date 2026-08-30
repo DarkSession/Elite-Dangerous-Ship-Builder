@@ -14,7 +14,7 @@ versions, application behavior, legal facts, dependencies or CSS literals.
   `APP VERSION … · LIBRARY VERSION …` line — above the questions, not in a section after them — and
   under the reference's own two terms.
 - Wide layouts center a bounded modal over a dimmed capability.
-- Narrow layouts use a full-width bottom sheet aligned to the viewport edge.
+- Narrow layouts use a full-width sheet aligned to the viewport's leading edge.
 - Header title and close action remain separate from the scrolling body.
 - The action is present in wide chrome and in the narrow mobile action menu, and **nowhere else**.
   The reference draws no help control on any other surface in any of its four canvases.
