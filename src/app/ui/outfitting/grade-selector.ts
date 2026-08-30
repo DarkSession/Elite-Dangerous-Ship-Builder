@@ -67,7 +67,7 @@ export class GradeSelector {
   /**
    * True where this grade is below the one the recipe starts at.
    *
-   * Drawn striped rather than refused. A Merc-Coin article bought at grade 2
+   * Drawn hatched rather than refused. A Merc-Coin article bought at grade 2
    * can still be taken back down to 1, and a cell that could not be pressed
    * would make that a thing a Commander can see and not do (wave 5).
    */
@@ -92,6 +92,20 @@ export class GradeSelector {
     return this.asSteps() ? grade === selected : grade <= selected;
   };
 
+  /**
+   * What each cell is called.
+   *
+   * A grade outside the recipe's range says so. The hatch over the cell is what
+   * a Commander sees, and it is drawn to the non-text contrast floor, but a mark
+   * is not a statement: nothing else on the cell distinguishes a grade the
+   * recipe cannot reach from one it can, and a state carried by the drawing
+   * alone is the one thing that is never allowed (constitution V).
+   */
   readonly optionLabel = (grade: number): string =>
-    this.#messages.message('outfitting.engineering.grade.option', { grade });
+    this.#messages.message(
+      this.unavailable(grade)
+        ? 'outfitting.engineering.grade.option-outside'
+        : 'outfitting.engineering.grade.option',
+      { grade },
+    );
 }

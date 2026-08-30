@@ -40,12 +40,12 @@ route regions. Both use named tokens; the reference canvas widths are not copied
 
 ## Adaptive layer rule
 
-| Content kind                         | Wide/medium                         | Compact/short landscape                       |
-| ------------------------------------ | ----------------------------------- | --------------------------------------------- |
-| Confirmation or short form           | Named centered dialog               | Bottom sheet; promote if content does not fit |
-| Searchable collection/detail chooser | Dialog or route-backed detail panel | Full-height drill-in                          |
-| Complex editor                       | In-workspace panel or large dialog  | Full-height editor                            |
-| Global/context action list           | Inline actions or named popup layer | Named sheet/full-height action layer          |
+| Content kind                         | Wide/medium                         | Compact/short landscape                |
+| ------------------------------------ | ----------------------------------- | -------------------------------------- |
+| Confirmation or short form           | Named centered dialog               | Sheet; promote if content does not fit |
+| Searchable collection/detail chooser | Dialog or route-backed detail panel | Full-height drill-in                   |
+| Complex editor                       | In-workspace panel or large dialog  | Full-height editor                     |
+| Global/context action list           | Inline actions or named popup layer | Named sheet/full-height action layer   |
 
 All variants share one state/intent contract. Background inertness, title/description, dismissal and
 invoker restoration do not change with presentation.

@@ -155,10 +155,11 @@ test.describe('the BUILD STATUS block', () => {
   test('opens on the same seam every other segment opens on', async ({ page }) => {
     await openStockBuild(page);
     const region = page.locator('.outfitting').first();
-    if ((await region.getAttribute('data-composition')) !== 'compact') {
+    if ((await region.getAttribute('data-composition')) === 'wide') {
       // The wide composition draws the rail as the third track of canvas 1c's
       // grid, on screen whatever the strip has open, so there is no segment for
-      // it and no seam under one.
+      // it and no seam under one. Every narrower arrangement reaches it through
+      // the strip, and the seam under it is what this measures.
       await expect(rail(page)).toBeVisible();
       await expect(
         page.locator('.anatomy__modes').getByRole('button', { name: /^status$/i }),
@@ -188,6 +189,45 @@ test.describe('the BUILD STATUS block', () => {
 
     expect(power).toBeGreaterThan(0);
     expect(Math.abs(status - power)).toBeLessThanOrEqual(1);
+  });
+
+  test('is a segment, and opens under the strip, wherever it has no column', async ({ page }) => {
+    // Only canvas 1c's widest arrangement draws the rail as a track. Between
+    // that and the compact artboard the region is two columns and the rail had
+    // neither: it ran the full width under the bench, a tall band of readings
+    // squeezed beneath the module a Commander was working on. It is the strip's
+    // `STATUS` segment at every one of those widths now, and the panel it opens
+    // is drawn where the strip's own panels are drawn — under the strip
+    // (Commander request 2026-08-30, `design/outfitting-workspace.md`).
+    await page.setViewportSize({ width: 900, height: 1000 });
+    await page.goto(`/ships/${HULL}`);
+    await buildStockHull(page, 'Build');
+    await expect(page).toHaveURL(/\/build(#|$)/);
+
+    const region = page.locator('.outfitting').first();
+    await expect(region).toHaveAttribute('data-composition', 'two-pane');
+
+    // Closed until it is asked for, and not merely washed out: a panel that is
+    // not the open one is not on the page at all, or every reading in it is
+    // announced twice.
+    await expect(rail(page)).toBeHidden();
+
+    const segment = page.locator('.anatomy__modes').getByRole('button', { name: /^status$/i });
+    await expect(segment).toHaveCount(1);
+    await segment.click();
+    await expect(rail(page)).toBeVisible();
+
+    // Under the strip that opened it, rather than at the foot of a page the
+    // strip did not move. Drawn at the end of the grid it opened over a
+    // thousand pixels below the segment, so pressing `STATUS` did nothing a
+    // Commander could see.
+    const measured = await page.evaluate(() => {
+      const strip = document.querySelector('.anatomy__modes')!.getBoundingClientRect();
+      const panel = document.querySelector('.outfitting__status-rail')!.getBoundingClientRect();
+      return { seam: panel.top - strip.bottom, viewport: window.innerHeight };
+    });
+    expect(measured.seam).toBeGreaterThanOrEqual(0);
+    expect(measured.seam).toBeLessThan(measured.viewport);
   });
 
   test('opens the rail with the heading the canvas draws', async ({ page }) => {

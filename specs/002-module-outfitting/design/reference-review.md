@@ -23,7 +23,7 @@
 - Canvas **1c**: wide outfitting workspace, module manifest and engineering/material regions
 - Canvas **1d**: narrow slot list, change-module layer and engineering layer
 
-Canvas 1c is 1560px wide. Canvas 1d is 390px wide with an 844px minimum root height. No tablet or
+Canvas 1c is 2020px wide. Canvas 1d is 390px wide with an 844px minimum root height. No tablet or
 intermediate-width canvas exists; [responsive-composition.md](./responsive-composition.md) records
 the intentional tablet interpolation.
 

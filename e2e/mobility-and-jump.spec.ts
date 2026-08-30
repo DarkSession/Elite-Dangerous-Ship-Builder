@@ -7,6 +7,7 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import {
   fitCommitted,
   isCompactWorkspace,
+  statusRailIsColumn,
   openChooserRows,
   revealMount,
   surfacesAreLayers,
@@ -894,11 +895,13 @@ test.describe('the status rail', () => {
     // three of them, and drawn as three grids the six would rule off in threes
     // — `DPS` could never share a row with `JUMP`.
     //
-    // That band is canvas 1c's. Canvas 1d states the same six above the
-    // category tabs instead and draws no cell band at all, so what the claim
-    // becomes at that width is that the six are still stated, exactly once
-    // (`design/outfitting-workspace.md`, "The compact key figures").
-    if (await isCompactWorkspace(page)) {
+    // That band is canvas 1c's, and it is drawn where the rail is that canvas's
+    // third column. Everywhere else the rail is the strip's `STATUS` segment and
+    // the same six are stated above the category strip instead, with no cell
+    // band at all — so what the claim becomes at those widths is that the six
+    // are still stated, exactly once (`design/outfitting-workspace.md`, "The
+    // compact key figures").
+    if (!(await statusRailIsColumn(page))) {
       await expect(page.locator('.outfitting__key-figures .metric')).toHaveCount(6);
       await expect(page.locator('.outfitting__status-cells')).toHaveCount(0);
       return;

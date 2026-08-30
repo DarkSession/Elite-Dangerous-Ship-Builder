@@ -683,14 +683,43 @@ describe('the wide manifest', () => {
 
     const header = query(fixture, '.candidates__columns');
     // `MODULE`, `CLASS`, `COST`, and no damage, mass, power or weapon draw
-    // (FR-024's 2026-08-25 narrowing, SC-006).
-    expect(header.querySelectorAll('.candidates__column').length).toBe(3);
+    // (FR-024's 2026-08-25 narrowing, SC-006). `MODULE` is the step ② bar's own
+    // name, because the head and the step bar are one bar.
+    expect(header.querySelectorAll('.edsb-step__name').length).toBe(1);
+    expect(header.querySelectorAll('.candidates__column').length).toBe(2);
 
     const row = query(fixture, '.candidates__pane .candidate');
     // The cost is the row's one figure. The four the narrowing withdrew are not
     // drawn quietly somewhere else on it either.
     expect(row.querySelector('.candidate__cost')).not.toBeNull();
     expect(row.querySelectorAll('.candidate__fact')).toHaveLength(0);
+  });
+
+  it('opens each column with its numbered step bar, and hides the numbers from a reader', () => {
+    // Canvas 1c's step strip: `① CATEGORY › ② MODULE …`, over the rail and over
+    // the pane. The name is the step; the number and the chevron are decoration
+    // and are hidden, because the columns under them are already named regions
+    // (`design/module-replacement.md`, "The three steps, numbered").
+    const { fixture } = railFixture();
+    const root = element(fixture);
+
+    const steps = [...root.querySelectorAll('.edsb-step')];
+    expect(steps).toHaveLength(2);
+    expect(steps.map((step) => textOf(step.querySelector('.edsb-step__name')))).toEqual([
+      englishCatalogue['outfitting.family.heading'],
+      englishCatalogue['outfitting.column.module'],
+    ]);
+
+    for (const step of steps) {
+      expect(step.querySelector('.edsb-step__number')).not.toBeNull();
+      expect(step.querySelector('.edsb-step__chevron')).not.toBeNull();
+      // Either the bar itself is hidden from a reader or every decorative part
+      // of it is: step ② is the column head, which is hidden whole.
+      expect(
+        step.getAttribute('aria-hidden') === 'true' ||
+          step.querySelector('.edsb-step__number')?.getAttribute('aria-hidden') === 'true',
+      ).toBe(true);
+    }
   });
 
   it('reports the manifest it measured, so the revealed set can be seeded for it', () => {

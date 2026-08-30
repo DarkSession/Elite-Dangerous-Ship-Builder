@@ -64,6 +64,7 @@
   --edsb-palette-amber-a40: rgb(255 140 26 / 0.4);
   --edsb-palette-amber-a45: rgb(255 140 26 / 0.45);
   --edsb-palette-amber-a50: rgb(255 140 26 / 0.5);
+  --edsb-palette-amber-a55: rgb(255 140 26 / 0.55);
   --edsb-palette-amber-a60: rgb(255 140 26 / 0.6);
   --edsb-palette-amber-a70: rgb(255 140 26 / 0.7);
 
@@ -606,50 +607,100 @@
   // The two icons the canvas draws inline in a row — the engineered mark and
   // the Merc Coin — at 14 to 16px depending on the artboard.
   --edsb-measure-icon: 0.9375rem;
+  // The step strip's numbered square, which the canvas draws at 16px. Its own
+  // measure rather than the icon's: it is a numbered chip, and the two were the
+  // same size only by coincidence (`design/module-replacement.md`, "The three
+  // steps, numbered").
+  --edsb-measure-step-number: 1rem; // 16
   // The canvas's manifest row: 13px of name between 11px of padding, plus the
   // 2px that separates one row from the next.
   --edsb-measure-candidate-row: 2.625rem;
+  // Canvas 1d's `min-height: 60px`, which is the same row at the width that
+  // draws it one under the other rather than in aligned columns.
+  --edsb-measure-candidate-row-compact: 3.75rem; // 60
 
-  // The 2026-08-25 revision of canvas 1c's manifest: `grid-template-columns:
-  // 216px minmax(0, 1fr); column-gap: 14px` for the rail beside its pane, both
-  // bounded at one `max-height`, and `2.6fr 70px 150px` for the three
-  // columns a row is drawn in inside that pane. The rail and the two fixed
-  // columns are the canvas's own pixels; the name takes what is left, as its
-  // `fr` says, because there is nothing left over for it to run away with once
-  // the rail has its 216px.
-  --edsb-measure-family-rail: 13.5rem;
+  // Canvas 1c's manifest: `grid-template-columns: 264px minmax(360px, 1fr)
+  // 396px; column-gap: 14px` for the family rail, the variant pane and the
+  // engineering column, and `2.6fr 56px 104px` for the three columns a row is
+  // drawn in inside that pane. The rail and the two fixed columns are the
+  // canvas's own pixels; the name takes what is left, as its `fr` says, because
+  // there is nothing left over for it to run away with once the rail has its
+  // 264px.
+  --edsb-measure-family-rail: 16.5rem;
   // How wide that rail is allowed to get where the column has room to spare.
   //
-  // 216px is the canvas's figure for the canvas's own 862px centre column — a
-  // quarter of it. Held at 216 everywhere the rail stopped being a quarter and
-  // started being a sliver: at 2560 the pane beside it was 1595px of mostly
-  // empty row while seventeen family names went on wrapping in 216
-  // (Commander request 2026-08-26). It now takes a quarter of what it is
-  // actually given, bounded — the bound is where a family name stops needing
-  // the width, and past it the rows beside it are the better home for the
-  // pixels.
+  // The share is taken against the chooser's own column rather than the bench,
+  // because that is the box the rail is a track of: the editor beside it is the
+  // bench's third track, not a second track of this grid. Canvas 1c draws the
+  // rail at 264px of a chooser column of 872 — its own 264 and 594 tracks with
+  // the 14px between them — which is three tenths of it.
+  //
+  // No floor under the share, because it cannot reach one: the manifest is only
+  // drawn at all from 39.875rem of chooser column up, and three tenths of that
+  // is 11.96rem. The narrowest rail this draws is 192px, at the narrowest bench
+  // that draws three columns (Commander request 2026-08-30). Held at one number instead, the rail is a
+  // share at one width and a sliver at every other — at 2560 the pane beside it
+  // was mostly empty row while seventeen family names went on wrapping
+  // (Commander request 2026-08-26). The bound is where a family name stops
+  // needing the width, and past it the rows beside it are the better home for
+  // the pixels.
   --edsb-measure-family-rail-max: 20rem;
-  --edsb-measure-family-rail-share: 26%;
+  --edsb-measure-family-rail-share: 30%;
   --edsb-measure-family-gap: 0.875rem;
-  // What the rail and the pane are bounded at: the canvas's 470px, less the same
-  // two rows the fitting panel's floor above gives up. The panel and the pane
-  // are the same list at two widths, so a row comes off both of them or
-  // neither (Commander requests 2026-08-28 and 2026-08-29).
+  // What the rail and the pane are bounded at: two rows short of the figure the
+  // fitting panel's own floor above is measured from. The panel and the pane are
+  // the same list at two widths, so a row comes off both of them or neither
+  // (Commander requests 2026-08-28 and 2026-08-29).
+  //
+  // The canvas draws 648px, for a bench that stands the engineering editor
+  // beside the list rather than under it. That figure is not adopted: what the
+  // two requests above are about is how far a Commander scrolls to reach the
+  // anatomy and the status rail, and what stands beside the list does not
+  // answer it (`design/module-replacement.md`, "The canvas's own bound is not
+  // adopted").
   --edsb-measure-manifest-pane: 24.125rem;
-  --edsb-measure-candidate-class: 4.375rem;
-  --edsb-measure-candidate-cost: 9.375rem;
+  // Canvas 1d's `width: 28px` gutter for the class code, which is what lines
+  // `4A` up down a list of rows that each carry their own grid.
+  --edsb-measure-candidate-code: 1.75rem; // 28
+  --edsb-measure-candidate-class: 3.5rem;
+  --edsb-measure-candidate-cost: 6.5rem;
+  // Canvas 1c's third bench column: the attribute table's three columns, and the
+  // recipe and effect menus under it. A fixed track, as the canvas draws it —
+  // the pane beside it is what takes the width a wider window has.
+  --edsb-measure-engineering-column: 24.75rem;
+  // The three controls the engineering card holds — the recipe, the grade under
+  // it and the experimental effect under that — measured together with the two
+  // gaps between them at the base text size: 183px.
+  //
+  // The room is kept whether or not the last two are drawn. The grade bar and
+  // the effect follow from a recipe, and neither canvas draws either over an
+  // unengineered module, so choosing a recipe grows the card by both of them
+  // and moves whatever the card stands over (Commander requests 2026-08-28 and
+  // 2026-08-30). Nothing is drawn that is not there: what is reserved is the
+  // room.
+  //
+  // A floor, never a cap: a translation that wraps a recipe name, or a doubled
+  // text size, simply passes it.
+  --edsb-measure-engineering-choices: 11.4375rem; // 183
+
+  // How short the attribute table may get before it stops being a reading. It is
+  // the half of the editor that takes whatever the column has spare, so it is
+  // also the half a short window takes it back from — and with no floor at all
+  // the whole of a short column's shortfall came out of it, because the card
+  // above it is reserved room and cannot give way.
+  //
+  // The box, not its content: the card body carries the canvas's 14px inside the
+  // card's edge on all four sides, so this is a heading row and four attribute
+  // rows at the base text size. It is what the table is guaranteed at the
+  // shortest window the bench is bounded to and nowhere else — every taller one
+  // hands it what the column has spare, which is 215px at the height the canvas
+  // is drawn at. Below the bound the bench asks the page for its height and the
+  // table is as tall as the article (`_responsive.scss`,
+  // `$bench-bounded-min-height`).
+  --edsb-measure-engineering-details: 8rem; // 128
+
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
-  // The three controls the inline editor's left column holds — the recipe, the
-  // grade under it and the experimental effect under that — measured together
-  // with the two gaps between them: 183px at the base text size.
-  //
-  // A floor, never a cap: it keeps the column's height while the two controls
-  // that follow from a recipe are not there to be drawn, so choosing a recipe
-  // no longer grows the panel and moves the ledger beside it (Commander request
-  // 2026-08-28). Content taller than this — a translation that wraps, a doubled
-  // text size — simply passes it.
-  --edsb-measure-engineering-choices: 11.4375rem; // 183
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
   // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
   // wants a button around it rather than a band.

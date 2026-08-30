@@ -11,6 +11,7 @@ import {
   revealedFamilies,
   revealedRows,
 } from './outfitting-surfaces';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { buildStockHull } from './shell';
 
 /**
@@ -192,6 +193,127 @@ test.describe('module families', () => {
     const railAfter = (await rail.boundingBox())!;
     const after = (await rows.nth(clipped!.index).boundingBox())!;
     expect(Math.abs(after.y - railAfter.y - clipped!.offset)).toBeLessThanOrEqual(1);
+  });
+
+  test('draws the rail at the canvas\u2019s own width, and as a share either side of it', async ({
+    page,
+  }) => {
+    // Canvas 1c draws the rail at 264px of a chooser column of 872 — its own 264
+    // and 594 tracks with the 14px between them — and the share is taken against
+    // that column rather than against the bench, because the editor beside it is
+    // the bench's third track and not a second track of this grid. Taken against
+    // the bench the same ratio drew 176px where the canvas draws 264
+    // (`design/module-replacement.md`, "The rail's 264px is a floor and a
+    // share").
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    const railWidth = async (): Promise<{ rail: number; column: number } | null> =>
+      await page.evaluate(() => {
+        const rail = document.querySelector('.candidates__rail');
+        const column = document.querySelector('.candidates__manifest');
+        return rail === null || column === null
+          ? null
+          : {
+              rail: rail.getBoundingClientRect().width,
+              column: column.getBoundingClientRect().width,
+            };
+      });
+
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await expect.poll(async () => (await railWidth())?.rail ?? 0).toBeGreaterThan(0);
+    const drawn = (await railWidth())!;
+    expect(Math.abs(drawn.rail - 264)).toBeLessThanOrEqual(2);
+
+    // Narrower, it is a share of a narrower column rather than the same 264px
+    // taking two fifths of it away from the rows.
+    await page.setViewportSize({ width: 1790, height: 1100 });
+    await expect
+      .poll(async () => Math.round((await railWidth())?.rail ?? 0))
+      .toBeLessThan(drawn.rail);
+
+    // And wider it grows with the column, up to the width a family name stops
+    // needing.
+    await page.setViewportSize({ width: 2560, height: 1100 });
+    await expect
+      .poll(async () => Math.round((await railWidth())?.rail ?? 0))
+      .toBeGreaterThan(drawn.rail);
+  });
+
+  test('draws a compact row on one line, with the price on its trailing edge', async ({ page }) => {
+    // Canvas 1d's row: the class code in a fixed gutter, the module beside it
+    // and the price on the trailing edge, `min-height: 60px`. Stacked instead —
+    // which is what a single-column row does to those three cells — the same
+    // row stood three deep, so a screen of modules showed a handful of them and
+    // every price was a line of its own to read down (Commander request
+    // 2026-08-30).
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+    if ((await revealedRows(page).count()) === 0) {
+      await familyControls(page).first().click();
+    }
+    await expect(revealedRows(page).first()).toBeVisible();
+
+    const drawn = await revealedRows(page).evaluateAll((nodes) =>
+      nodes.slice(0, 6).map((node) => {
+        const centre = (selector: string): number | null => {
+          const cell = node.querySelector(selector);
+          if (cell === null) {
+            return null;
+          }
+          const box = cell.getBoundingClientRect();
+          return box.top + box.height / 2;
+        };
+        const row = node.getBoundingClientRect();
+        const cost = node.querySelector('.candidate__cost')?.getBoundingClientRect();
+        const name = node.querySelector('.candidate__name')?.getBoundingClientRect();
+        return {
+          height: row.height,
+          lines: [
+            centre('.candidate__class'),
+            centre('.candidate__identity'),
+            centre('.candidate__cost'),
+          ],
+          trailing: cost === undefined ? 0 : row.right - cost.right,
+          afterName: cost === undefined || name === undefined ? 1 : cost.left - name.right,
+        };
+      }),
+    );
+
+    expect(drawn.length).toBeGreaterThan(1);
+    for (const row of drawn) {
+      // One line: the three cells are centred on the same line, whatever their
+      // own heights are.
+      const centres = row.lines.filter((line): line is number => line !== null);
+      expect(centres.length).toBe(3);
+      expect(Math.max(...centres) - Math.min(...centres)).toBeLessThanOrEqual(2);
+
+      // And the price is at the row's own end, after the name rather than under
+      // it. The inset it stands off is the row's, and the same on every row.
+      expect(row.afterName).toBeGreaterThan(0);
+      expect(row.trailing).toBeGreaterThanOrEqual(0);
+      expect(row.trailing).toBeLessThanOrEqual(drawn[0]!.trailing + 1);
+    }
+
+    // At a doubled text size the row stacks again, and the point of that is the
+    // name. The gutter and the price are stated in rem and grow with the text
+    // while only the name is allowed to shrink, so held on one line the three
+    // cells took this row down to a class code, an ellipsis and a price with the
+    // module's name gone (SC 1.4.4).
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const name = document.querySelector('.candidate .candidate__name');
+          return name === null
+            ? -1
+            : Math.round(name.scrollWidth - name.getBoundingClientRect().width);
+        }),
+      )
+      .toBeLessThanOrEqual(1);
   });
 
   test('orders a family\u2019s rows by class, then by what they cost', async ({ page }) => {

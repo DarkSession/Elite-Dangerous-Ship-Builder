@@ -101,51 +101,67 @@
         (modeChanged)="showAnatomyMode($event)"
       />
 
+      @if (statusIsGuest()) {
+        <ng-container [ngTemplateOutlet]="statusRail" />
+        <ng-container [ngTemplateOutlet]="keyFigures" />
+      }
+
       <!--
-      The selected mount's bench. Canvas 1c gives it no opening control at all:
-      the fitting panel and the engineering panel are simply there, under the
-      anatomy, for whichever row is marked in the ledger. Canvas 1d is the one
-      that draws `CHANGE MODULE` and `ENGINEER` — a sticky bar of exactly two
-      actions, because at that width each of those panels is a screen of its own
-      (design-canvas rule; responsive composition, "Reference and selection
-      rule").
-    -->
+        The selected mount's bench. Canvas 1c gives it no opening control at
+        all: the fitting panel and the engineering panel are simply there, under
+        the anatomy, for whichever row is marked in the ledger. Canvas 1d is the
+        one that draws `CHANGE MODULE` and `ENGINEER` — a sticky bar of exactly
+        two actions, because at that width each of those panels is a screen of
+        its own (design-canvas rule; responsive composition, "Reference and
+        selection rule").
+
+        Canvas 1c's `#fit-table`: the family rail, the module pane and the
+        engineering editor in one row under one numbered step strip. The first
+        two of those tracks are the chooser's own, so the bench itself is the
+        two panels side by side — the fitting column taking what is left, the
+        editor taking the canvas's 396px. Where the bench has no room for three
+        columns the editor goes back under the fitting column, which is the same
+        content in the same order (`design/outfitting-workspace.md`, "The bench
+        is two columns where it has room for three").
+      -->
       <div class="outfitting__bench">
         @if (selectedSlot(); as slot) {
-          <!--
-          Canvas 1c writes the mount on the fitting panel's own head, beside the
-          search and `REMOVE MODULE`. Where no fitting panel is drawn — a mount
-          the Almanac takes nothing else in — the bench keeps the rule itself,
-          so the region is never nameless (wave 5).
+          <div class="outfitting__bench-fitting">
+            <!--
+              Canvas 1c writes the mount on the fitting panel's own head, beside
+              the search and `REMOVE MODULE`. Where no fitting panel is drawn —
+              a mount the Almanac takes nothing else in — the bench keeps the
+              rule itself, so the region is never nameless (wave 5).
 
-          At layer width the head is not drawn at all. There the fitting panel
-          is a screen a Commander opens, and that screen carries the mount in
-          its own head; a second copy on the page behind it named a mount with
-          nothing under it, above a ledger that already marks the row
-          (Commander request 2026-08-28).
-        -->
-          @if (!replacementShown() && !benchIsLayer()) {
-            <div class="outfitting__bench-header">
-              <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
-            </div>
-          }
+              At layer width the head is not drawn at all. There the fitting
+              panel is a screen a Commander opens, and that screen carries the
+              mount in its own head; a second copy on the page behind it named a
+              mount with nothing under it, above a ledger that already marks the
+              row (Commander request 2026-08-28).
+            -->
+            @if (!replacementShown() && !benchIsLayer()) {
+              <div class="outfitting__bench-header">
+                <h3 class="outfitting__bench-title">{{ benchTitle() }}</h3>
+              </div>
+            }
 
-          @if (benchReason(); as reason) {
-            <p class="outfitting__bench-reason">{{ reason }}</p>
-          }
+            @if (benchReason(); as reason) {
+              <p class="outfitting__bench-reason">{{ reason }}</p>
+            }
 
-          @if (benchRestriction(); as restriction) {
-            <p class="outfitting__bench-reason">{{ restriction }}</p>
-          }
+            @if (benchRestriction(); as restriction) {
+              <p class="outfitting__bench-reason">{{ restriction }}</p>
+            }
 
-          @if (replacementShown()) {
-            <edsb-module-replacement
-              [slot]="slot"
-              [asLayer]="benchIsLayer()"
-              [panelHeading]="benchTitle()"
-              (closed)="closeSurface()"
-            />
-          }
+            @if (replacementShown()) {
+              <edsb-module-replacement
+                [slot]="slot"
+                [asLayer]="benchIsLayer()"
+                [panelHeading]="benchTitle()"
+                (closed)="closeSurface()"
+              />
+            }
+          </div>
 
           @if (engineeringShown()) {
             <edsb-engineering-editor
@@ -158,24 +174,8 @@
       </div>
     </div>
 
-    <!--
-      Canvas 1d's six key readings, drawn once and above the category tabs where
-      the artboard draws them. The same three components as the rail's cell
-      band, rendered here instead of there at this width — one instance either
-      way, so a reader meets each figure once (`design/outfitting-workspace.md`,
-      "The compact key figures").
-
-      The strip closes with feature 005's power badge, which the artboard draws
-      beside the six rather than over them: it is one more item of this grid, so
-      it cannot land on `MASS` (005/FR-014).
-    -->
-    @if (benchIsLayer()) {
-      <div class="outfitting__key-figures" [attr.aria-label]="keyFiguresLabel()" role="group">
-        <edsb-defence-summary />
-        <edsb-offence-summary />
-        <edsb-drives-summary />
-        <edsb-power-badge />
-      </div>
+    @if (!statusIsGuest()) {
+      <ng-container [ngTemplateOutlet]="statusRail" />
     }
 
     <!--
@@ -207,94 +207,126 @@
         }
       </div>
     }
-
-    <!--
-      Canvas 1c's third track: the 306px status rail closing its
-      `392px 1fr 306px` grid, and canvas 1d's Status stack. The canvas's order is
-      the order below — the heading, what the Almanac reports about the build,
-      then cost and materials. Features 005 to 008 add the power line and the six
-      metric cells between them, and all of them have landed.
-
-      A group with a tab stop, not a bare overflow box. At the widest
-      composition a long material list makes this column taller than the
-      viewport, and a sticky column with no scroll box of its own would pin with
-      its lower rows permanently off-screen — content lost, which is in scope
-      whatever keyboard operation's status is. The scroll box prevents that, and
-      no block inside holds a control (009 ruling F, 003 ruling A), so `tabindex`
-      is what the axe gate requires of it — the same pattern `edsb-data-table`
-      already uses.
-
-      The region is named by the heading it draws rather than by an invisible
-      label: both canvases open this region with `BUILD STATUS`, so its name
-      belongs on the screen (003 wave 11, `design/status-rail.md`).
-    -->
-    <div
-      class="outfitting__status-rail"
-      [class.outfitting__status-rail--guest]="statusModeOpen()"
-      tabindex="0"
-      role="group"
-      [attr.aria-labelledby]="statusRailHeadingId"
-    >
-      <div class="outfitting__status-head">
-        <p class="outfitting__status-heading" [id]="statusRailHeadingId">
-          {{ statusRailLabel() }}
-        </p>
-        <edsb-build-status />
-      </div>
-
-      <!--
-        Canvas 1c's second rail block. The canvas draws its `POWER` line, its
-        bar and its pips together with the six metric cells inside one inset,
-        closed by the same amber hairline that separates every block in the
-        rail — it stacks the cells under the power line inside one padding
-        rather than ruling the two off each other. So this holds feature 005's
-        block and the cells features 006 to 008 own, and it is where feature
-        005's pip control lands when that feature draws it
-        (`specs/005-power-and-heat/tasks.md`, T074 — not built yet).
-
-        Feature 005's contributions come first, in the rail's own order: one
-        statement per band its plant cannot keep lit, and then the `POWER` line.
-        There is no heat sentence beside them, and that is a ruling rather than
-        a reading of the artboard: canvas 1d prints one, and feature 005's
-        wave-13 ruling withdrew the tier it belonged to
-        (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The status
-        rail").
-      -->
-      <div class="outfitting__status-band">
-        <edsb-power-summary />
-
-        <!--
-          The six metric cells under the `POWER` line, in the canvas's order:
-          `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006 owns
-          the first two, feature 007 owns `DPS` and feature 008 the last three,
-          and they are drawn in that order
-          (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
-          composition"; `specs/007-offence-profile/design/canvas-contract.md`,
-          "The status rail cell").
-
-          One grid holds all six, because that is what the canvas draws: a single
-          band of cells whose one-pixel gaps show the amber ground through as the
-          only rules between them. Three features contribute to it and none of
-          them owns it, so the grid is declared here and each of them draws its
-          cells straight into it. Drawn as three grids the six would be ruled off
-          each other in threes — `DPS` could never share a row with `JUMP`, which
-          is the row the canvas puts them on.
-
-          The grid carries the ground and nothing else: the block around it
-          carries the inset. Set on one element the padding would be painted in
-          that ground too, and the six cells would sit inside an amber band the
-          canvas does not draw.
-        -->
-        @if (!benchIsLayer()) {
-          <div class="outfitting__status-cells">
-            <edsb-defence-summary />
-            <edsb-offence-summary />
-            <edsb-drives-summary />
-          </div>
-        }
-      </div>
-
-      <edsb-cost-materials />
-    </div>
   }
 </section>
+
+<!--
+  The two regions the anatomy strip draws as guests, written once and placed
+  twice. Where the region has a third column the rail is that column and the six
+  readings are inside it; where it has not, both are drawn in the centre column
+  beside the strip that opens them — which is where canvas 1d draws them and the
+  only place at those widths that is on the same screen as the strip. A band
+  spanning the two columns instead lands under the taller of them, a screen or
+  more below the segment that opened it.
+-->
+<ng-template #statusRail>
+  <!--
+    Canvas 1c's third track: the 306px status rail closing its
+    `392px 1fr 306px` grid, and canvas 1d's Status stack. The canvas's order is
+    the order below — the heading, what the Almanac reports about the build,
+    then cost and materials. Features 005 to 008 add the power line and the six
+    metric cells between them, and all of them have landed.
+
+    A group with a tab stop, not a bare overflow box. At the widest
+    composition a long material list makes this column taller than the
+    viewport, and a sticky column with no scroll box of its own would pin with
+    its lower rows permanently off-screen — content lost, which is in scope
+    whatever keyboard operation's status is. The scroll box prevents that, and
+    no block inside holds a control (009 ruling F, 003 ruling A), so `tabindex`
+    is what the axe gate requires of it — the same pattern `edsb-data-table`
+    already uses.
+
+    The region is named by the heading it draws rather than by an invisible
+    label: both canvases open this region with `BUILD STATUS`, so its name
+    belongs on the screen (003 wave 11, `design/status-rail.md`).
+  -->
+  <div
+    class="outfitting__status-rail"
+    [class.outfitting__status-rail--guest]="statusModeOpen()"
+    tabindex="0"
+    role="group"
+    [attr.aria-labelledby]="statusRailHeadingId"
+  >
+    <div class="outfitting__status-head">
+      <p class="outfitting__status-heading" [id]="statusRailHeadingId">
+        {{ statusRailLabel() }}
+      </p>
+      <edsb-build-status />
+    </div>
+
+    <!--
+      Canvas 1c's second rail block. The canvas draws its `POWER` line, its
+      bar and its pips together with the six metric cells inside one inset,
+      closed by the same amber hairline that separates every block in the
+      rail — it stacks the cells under the power line inside one padding
+      rather than ruling the two off each other. So this holds feature 005's
+      block and the cells features 006 to 008 own, and it is where feature
+      005's pip control lands when that feature draws it
+      (`specs/005-power-and-heat/tasks.md`, T074 — not built yet).
+
+      Feature 005's contributions come first, in the rail's own order: one
+      statement per band its plant cannot keep lit, and then the `POWER` line.
+      There is no heat sentence beside them, and that is a ruling rather than
+      a reading of the artboard: canvas 1d prints one, and feature 005's
+      wave-13 ruling withdrew the tier it belonged to
+      (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The status
+      rail").
+    -->
+    <div class="outfitting__status-band">
+      <edsb-power-summary />
+
+      <!--
+        The six metric cells under the `POWER` line, in the canvas's order:
+        `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006 owns
+        the first two, feature 007 owns `DPS` and feature 008 the last three,
+        and they are drawn in that order
+        (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
+        composition"; `specs/007-offence-profile/design/canvas-contract.md`,
+        "The status rail cell").
+
+        One grid holds all six, because that is what the canvas draws: a single
+        band of cells whose one-pixel gaps show the amber ground through as the
+        only rules between them. Three features contribute to it and none of
+        them owns it, so the grid is declared here and each of them draws its
+        cells straight into it. Drawn as three grids the six would be ruled off
+        each other in threes — `DPS` could never share a row with `JUMP`, which
+        is the row the canvas puts them on.
+
+        The grid carries the ground and nothing else: the block around it
+        carries the inset. Set on one element the padding would be painted in
+        that ground too, and the six cells would sit inside an amber band the
+        canvas does not draw.
+      -->
+      @if (!statusIsGuest()) {
+        <div class="outfitting__status-cells">
+          <edsb-defence-summary />
+          <edsb-offence-summary />
+          <edsb-drives-summary />
+        </div>
+      }
+    </div>
+
+    <edsb-cost-materials />
+  </div>
+</ng-template>
+
+<ng-template #keyFigures>
+  <!--
+    Canvas 1d's six key readings, drawn once. The same three components as the
+    rail's own cell band, rendered here instead of there wherever the rail is a
+    segment rather than a column — one instance either way, so a reader meets
+    each figure once (`design/outfitting-workspace.md`, "The compact key
+    figures"). Where the rail is a column the six are in it, and this is not
+    drawn at all.
+
+    The strip closes with feature 005's power badge, which the artboard draws
+    beside the six rather than over them: it is one more item of this grid, so
+    it cannot land on `MASS` (005/FR-014).
+  -->
+  <div class="outfitting__key-figures" [attr.aria-label]="keyFiguresLabel()" role="group">
+    <edsb-defence-summary />
+    <edsb-offence-summary />
+    <edsb-drives-summary />
+    <edsb-power-badge />
+  </div>
+</ng-template>

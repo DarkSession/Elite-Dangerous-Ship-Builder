@@ -10,16 +10,23 @@
   // floor below is what stops it being a strip.
   min-block-size: 0;
 
-  // **No bound of its own. Ruled 2026-08-27 (Commander request).** There used
-  // to be one — the bench's, written the same way — and inside it wave 11 gave
-  // each of the panel's two halves a scroller. That left a Commander reading a
-  // weapon's seventy attribute rows four at a time, in the innermost of three
-  // nested boxes. Nothing here bounds itself now: each half is as tall as its
-  // content, the panel is as tall as its taller half, the workspace column
-  // releases to hold it and the page carries the result
-  // (`design/engineering-editor.md`, "Nothing here scrolls"). The full-screen
-  // placement is untouched: it sits in a `full-height` layer, and the layer is
-  // what scrolls.
+  // **No bound of its own. Ruled 2026-08-27 (Commander request).** The bench had
+  // one, written the same way, and inside it wave 11 gave each of the panel's
+  // two halves a scroller — which left a Commander reading a weapon's seventy
+  // attribute rows four at a time, in the innermost of three nested boxes.
+  // Nothing here bounds itself: each card is as tall as its content, the panel
+  // is as tall as the two of them, the workspace column releases to hold it and
+  // the page carries the result (`design/engineering-editor.md`, "Nothing here
+  // scrolls").
+  //
+  // The one exception is the bench actually bounded to the window, which is
+  // three columns and a window tall enough to hold what they cannot fold. There
+  // the column has a height to divide and the attribute table scrolls inside it,
+  // and the page does not scroll as well — so it is one box rather than the
+  // innermost of three (`_responsive.scss`, `bench-bounded`).
+  //
+  // The full-screen placement is untouched: it sits in a `full-height` layer,
+  // and the layer is what scrolls.
 }
 
 // How short this panel may get before it stops being one: a recipe, the grade
@@ -72,10 +79,10 @@
 // Canvas 1d draws three plates on the screen's ground — `BLUEPRINT` with the
 // grade inside it, `EXPERIMENTAL EFFECT` and the result — each with the same
 // hairline border, panel ground and inset the dashboard's blocks carry. Canvas
-// 1c draws no plates at all: inline the editor is already one bordered box with
-// a ruled bar, and boxes inside a box is a frame around a frame. So the plate
-// belongs to this placement rather than to the content, and the content is the
-// same either way (reported 2026-08-26).
+// 1c draws none of them inside its own two cards: the card is the bordered box
+// there, and a plate inside it is a frame around a frame. So the plate belongs
+// to this placement rather than to the content, and the content is the same
+// either way (reported 2026-08-26).
 // What a card holds is a stack at both placements. Only the plate around it is
 // the layer's. Inline, the recipe's menu and the grade bar under it stood with
 // nothing between them, so the bar read as part of the control above it rather
@@ -100,50 +107,65 @@
   border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }
 
-// Inline, canvas 1c draws a bordered box rather than a heading over loose
-// content: a hairline amber edge, the panel's own ground inside it, and a ruled
-// bar across the top (wave 7). The bar used to stay where the canvas puts it
-// because the body under it was the scroller; it stays there now because
-// nothing moves — the whole panel is drawn at the height of what it holds.
-//
-// The `overflow: hidden` that went with that scroller is gone with it. It
-// clipped what the body scrolled, and a box sized by its own content has
-// nothing to clip; left in place it would be a scroll container that never
-// scrolls, which is the one arrangement that can hide content outright.
+// Inline, canvas 1c draws the editor as the bench's third column: step ③'s bar
+// and two bordered cards under it. The panel itself carries no edge and no
+// ground — the cards do, and a box around two boxes is a frame around a frame.
 .engineering--panel {
-  gap: 0;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-  background-color: var(--edsb-surface-panel);
+  gap: var(--edsb-space-sm);
 }
 
-.engineering__bar {
+// Step ③, the third bar of the chooser's own strip. The two are the same strip
+// and are drawn by the same rules (`styles/_chrome.scss`).
+.engineering__step {
+  flex: none;
+}
+
+.engineering__body {
+  @include layout.stack(var(--edsb-space-stack));
+
+  // A containing block for what is positioned out of the page inside it, and
+  // not a scroller.
+  position: relative;
+  flex: 1;
+  min-block-size: 0;
+}
+
+// Each card carries the box: a hairline amber edge, the panel's own ground, and
+// a ruled bar across the top with its name in it. The panel around them carries
+// none of that.
+.engineering:not(.engineering--layer) .engineering__result,
+.engineering:not(.engineering--layer) .engineering__choices {
+  gap: 0;
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+.engineering__card-bar {
   display: flex;
   flex: none;
   align-items: center;
-  justify-content: space-between;
   gap: var(--edsb-space-inline);
   // Canvas 1c's `11px 14px`.
   padding: var(--edsb-space-row) var(--edsb-space-xl);
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }
 
-.engineering__body {
-  @include layout.stack(var(--edsb-space-stack));
-
-  // As above: a containing block for what is positioned out of the page inside
-  // it, and no longer a scroller.
-  position: relative;
-  flex: 1;
-  min-block-size: 0;
-  padding: var(--edsb-space-xl);
-}
-
-// Canvas 1c's panel heading: tracked mono in amber, at one end of the bar.
-.engineering__heading {
+// Canvas 1c's card heading: tracked mono in amber, at one end of the bar.
+.engineering__card-heading {
   @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
 
   margin: 0;
   font-size: var(--edsb-text-size-label);
+}
+
+.engineering__card-body {
+  @include layout.stack(var(--edsb-space-stack));
+
+  min-inline-size: 0;
+}
+
+.engineering:not(.engineering--layer) .engineering__card-body {
+  padding: var(--edsb-space-xl);
 }
 
 .engineering__state {
@@ -158,75 +180,42 @@
   margin: 0;
 }
 
-// Canvas 1c's two columns: the choices on the left, what they would do on the
-// right. One column until the region is wide enough for both to keep their own
-// content readable, because two narrow columns is worse than one wide one.
+// The two cards, stacked with the canvas's 14px between them. Stacked rather
+// than ruled off each other in two columns: the editor is a 396px track, and
+// nothing that narrow divides in two.
+//
+// The engineering comes first and keeps one height; the details follow and take
+// whatever the column has spare. Attributes are the half that can use it — a
+// weapon publishes around seventy rows and a recipe menu publishes three
+// controls — so a column taller than the two of them puts the room where there
+// is something to put in it (Commander request 2026-08-30,
+// `design/engineering-editor.md`, "The third column").
 .engineering__panes {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--edsb-space-xl));
+
+  flex: 1;
+  min-block-size: 0;
 }
 
-// Inline only, which is canvas 1c's placement. Canvas 1d's screen is one
-// scrolling column of plates and draws no second column at all, and a wide but
-// short viewport reaches that screen too: the layer owns the whole of it, so a
-// grid drawn inside it would stand two columns in a box that is not bounded to
-// scroll them apart — both would simply grow and the layer would scroll them
-// together, which is the arrangement the rule below exists to replace
-// (`design/engineering-editor.md`, corrected 2026-08-26).
-@include layout.container-wide-up(engineering) {
-  .engineering:not(.engineering--layer) .engineering__panes {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 0;
-    // Stretched, so the rule the canvas draws between the two halves runs the
-    // whole height of the taller of them. Wave 11 stretched them for a
-    // different reason — to give each its own scroller inside a bounded panel,
-    // because one shared scroller measured both halves against the taller and
-    // reaching the end of the attribute table carried the recipe controls off
-    // the top. 2026-08-27 took the scrollers and the bound away instead: each
-    // column is as tall as its own content, the row is as tall as the taller
-    // column, and a panel with no scroller in it cannot carry anything off
-    // anywhere (canvas 1c; `design/engineering-editor.md`, "Nothing here
-    // scrolls").
-    align-items: stretch;
-  }
-
-  .engineering:not(.engineering--layer) .engineering__choices,
-  .engineering:not(.engineering--layer) .engineering__result {
-    // A containing block for what each column positions out of the page, and
-    // nothing else: neither column scrolls.
-    position: relative;
-  }
-
-  // The canvas rules the two columns apart rather than spacing them apart. The
-  // floor under the three controls is not stated here any more: it is the
-  // controls' own and is stated once, above, for every width they are drawn at.
-  .engineering:not(.engineering--layer) .engineering__choices {
-    padding-inline-end: var(--edsb-space-panel);
-    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
-  }
-
-  .engineering:not(.engineering--layer) .engineering__result {
-    padding-inline-start: var(--edsb-space-panel);
-  }
+.engineering__choices {
+  flex: none;
 }
 
-// The table heads its own column, so it is ruled off only where something
-// stands above it — which is the stacked composition, where the two columns
-// become one and the choices are directly above. On canvas 1d's screen the
-// plate around it already separates it, so no rule is drawn there.
+.engineering__result {
+  flex: 1;
+}
+
 .engineering__attributes {
   display: block;
-}
-
-.engineering:not(.engineering--layer) .engineering__attributes:not(:first-child) {
-  padding-block-start: var(--edsb-space-stack);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
 }
 
 .engineering__choices,
 .engineering__result {
   @include layout.stack(var(--edsb-space-stack));
 
+  // A containing block for what each card positions out of the page, and
+  // nothing else: neither card scrolls.
+  position: relative;
   min-inline-size: 0;
 }
 
@@ -234,28 +223,25 @@
 //
 // The recipe is always there; the grade bar and the experimental effect follow
 // from it, and neither canvas draws either over an unengineered module. So
-// choosing a recipe used to grow this column by the height of the two that
-// appeared, and everything under the panel moved with it — measured at 834x1112
-// on the stacked composition, the editor went from 499px to 623px and the
-// document from 2692px to 3115px as a recipe was taken.
+// choosing a recipe grew this card by the height of the two that appeared, and
+// the details card under it moved with them — measured at 834x1112, the editor
+// went from 499px to 623px and the document from 2692px to 3115px as a recipe
+// was taken (Commander requests 2026-08-28 and 2026-08-30).
 //
-// It was a floor before, and the floor was in the wide composition's own block
-// (Commander request 2026-08-28): two columns, and the one that stretches to the
-// taller of them. That is exactly the arrangement in which a floor does nothing
-// — the attribute table beside it is taller than this on all but the shortest
-// article, so the column was already stretched past the figure and the growth
-// this was meant to stop happened at every other width instead. It belongs to
-// the controls, not to the composition (Commander request 2026-08-29).
+// Asked of the card that actually holds a chooser, so an article the Almanac
+// offers no recipe for keeps a card the size of what it says rather than a
+// sentence over an empty half-column: there, nothing will ever appear, and
+// there is nothing to keep a place for.
 //
-// Asked of the column that actually holds a chooser, so an article the Almanac
-// offers no recipe for keeps a panel the size of what it says rather than a
-// sentence over an empty half-screen: there, nothing will ever appear, so there
-// is nothing to keep a place for.
-//
-// A floor, never a cap: a translation that wraps, or a doubled text size, simply
-// passes it.
-.engineering:not(.engineering--layer) .engineering__choices:has(edsb-blueprint-choice-list) {
-  min-block-size: var(--edsb-layout-engineering-choices);
+// Stated on the card body, which carries the canvas's 14px inside the card's
+// edge, so the inset is paid on top of the figure rather than out of the room
+// reserved for the controls.
+.engineering:not(.engineering--layer)
+  .engineering__choices:has(edsb-blueprint-choice-list)
+  .engineering__card-body {
+  min-block-size: calc(
+    var(--edsb-layout-engineering-choices) + var(--edsb-space-xl) + var(--edsb-space-xl)
+  );
 }
 
 .engineering__actions {

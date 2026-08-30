@@ -34,6 +34,14 @@
   text-wrap: pretty;
 }
 
+// The sentence that says what this application is stands a step above the two
+// under it, as the reference sets it: the purpose is the answer a reader opened
+// the dialog for, and who builds it and where the source is are the facts after
+// it.
+.help-dialog__purpose {
+  color: var(--edsb-text-muted);
+}
+
 // The questions are parted more loosely from each other than a question is
 // from its own answer, so the pair reads as one unit rather than as two lines
 // in a list — the reference's own 11px-between-pairs, 4px-within rhythm.
@@ -45,10 +53,19 @@
   @include layout.stack(var(--edsb-space-2xs));
 }
 
+// A question, set as a question. The reference draws it in body type, in
+// sentence case, one weight above its own answer — a sentence ending in a
+// question mark rather than a section title. It is a heading in the document
+// because it heads its answer, so this is where the shared condensed uppercase
+// heading face is put back to prose (canvas 1a/1c, "Help · About").
 .help-dialog__question {
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-body);
   font-weight: var(--edsb-text-weight-control);
+  letter-spacing: var(--edsb-text-tracking-body);
   line-height: var(--edsb-text-leading-heading);
   color: var(--edsb-text-primary);
+  text-transform: none;
   text-wrap: pretty;
 }
 

@@ -2,16 +2,17 @@
   display: block;
 }
 
-// The quoted document itself: set apart by the same hairline the reference uses
-// to part sections, and never given a horizontal scroller. Legal prose that has
-// to be dragged sideways to be read is legal prose a reader does not finish.
+// The quoted document itself, drawn as the reference draws it: the quietest
+// prose in the dialog, running the full measure, with nothing ruled off it. It
+// is the last block of a section that is already small print, so a rule and an
+// indent would make it a quotation inside a quotation. It is never given a
+// horizontal scroller either — legal prose that has to be dragged sideways to
+// be read is legal prose a reader does not finish.
 .legal-excerpt__body {
   margin: 0;
-  padding-inline-start: var(--edsb-space-panel);
-  border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
   font-weight: var(--edsb-text-weight-prose);
   line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-primary);
+  color: var(--edsb-text-faint);
 
   // No horizontal scroller and no preserved source wrapping: the notice is
   // carried exactly in the DOM and reflowed to the reader's measure, so a

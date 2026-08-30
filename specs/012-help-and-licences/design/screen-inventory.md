@@ -65,7 +65,7 @@ accepted requirement rather than to nothing.
 
 - Semantic order is title, then `ABOUT`, `FAQ` and `LICENCE` — the reference's own order, the same at
   every viewport and in every locale.
-- Wide viewports use a centered bounded modal; narrow viewports use a full-width bottom sheet. Both
+- Wide viewports use a centered bounded modal; narrow viewports use a full-width sheet. Both
   are responsive states of one surface. The header stays pinned over a vertically scrolling body.
 - At 200% text, actual 400% zoom and landscape phones every section and action stays reachable and
   the document has no horizontal overflow. The disclaimer wraps; it is never clipped or truncated.

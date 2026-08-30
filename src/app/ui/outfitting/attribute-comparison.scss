@@ -29,6 +29,13 @@
   text-align: end;
 }
 
+// The canvas names the table in the accent and its two figure columns in the
+// quiet ink: `ATTRIBUTES` is what the card is showing, and `STOCK` and
+// `MODIFIED` are labels on the numbers under them.
+.comparison__column:not(.comparison__column--figure) {
+  color: var(--edsb-text-accent);
+}
+
 // The canvas writes the whole row in one mono face — the name and both figures
 // — so an attribute lines up with its own numbers rather than sitting in a
 // different type from them (canvas 1c `eng-right`).

@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { sweepOutfittingState } from './accessibility';
+import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   applyDraft,
   benchFollowedSelection,
@@ -107,6 +108,10 @@ async function chooseGrade(page: Page, grade: number): Promise<void> {
     .first();
   await cell.click();
   await expect(cell.locator('input[type="radio"]')).toBeChecked();
+  // The radio is checked by the platform the moment it is pressed, before the
+  // store has answered, so the checked state is not the panel agreeing. The cell
+  // publishes what the panel decided, and that is what the next read needs.
+  await expect(cell).toHaveAttribute('data-selected', 'true');
 }
 
 /** What the ledger's code line says about one mount's engineering. */
@@ -345,10 +350,10 @@ test.describe('engineering costs', () => {
     await chooseRecipe(page, /increased range/i);
     await chooseGrade(page, 5);
 
-    // Neither canvas draws a materials list inside `DETAILS AND ENGINEERING`:
-    // `eng-grid` is the recipe, the grade and the effect on the left and the
-    // article's attributes on the right, and the only `MATERIALS` block on
-    // either canvas is the build-wide one in the rail (wave 11, Commander
+    // Neither canvas draws a materials list inside the editor: it holds the
+    // article's attributes, and the recipe, the grade and the effect, and the
+    // only `MATERIALS` block on either canvas is the build-wide one in the
+    // rail (wave 11, Commander
     // request, reversing waves 5 and 9). Its rarity marks, its ordering, its
     // counts and its Merc Coin row are covered where it lives, in
     // `cost-and-materials.spec.ts`.
@@ -439,75 +444,53 @@ test.describe('engineering costs', () => {
     await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
   });
 
-  test('reserves the room the three controls take, before any is used', async ({ page }) => {
-    // The grade and the effect follow from a recipe, so an unengineered module
-    // opened a column shorter than an engineered one by both of them — and the
-    // panel under the hand that was reading it moved when a recipe was chosen
-    // (Commander requests 2026-08-28 and 2026-08-29). Nothing is drawn that is
-    // not there: what is reserved is the room, as the column's own floor.
+  test('keeps the engineering one height as a recipe fills it', async ({ page }) => {
+    // The grade and the effect follow from a recipe, so choosing one would grow
+    // the engineering card by both of them and move whatever the card stands
+    // over. The room the three controls take is kept whether or not the last
+    // two are drawn, so the card is the height it will be before anything is
+    // chosen. Nothing is drawn that is not there: what is reserved is the room
+    // (`design/engineering-editor.md`, "The engineering keeps one height").
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
 
-    const editor = page.locator('.engineering').first();
+    const details = page.locator('.engineering__result');
     const choices = page.locator('.engineering__choices');
     await expect(choices).toBeVisible();
+    await expect(details).toBeVisible();
+
+    // The controls come first and the article's own figures follow them, at
+    // both placements.
+    const boxOf = async () =>
+      await page.evaluate(() => ({
+        details: document.querySelector('.engineering__result')!.getBoundingClientRect(),
+        choices: document.querySelector('.engineering__choices')!.getBoundingClientRect(),
+      }));
+
+    const before = await boxOf();
+    expect(before.choices.bottom).toBeLessThanOrEqual(before.details.top + 1);
 
     if (await surfacesAreLayers(page)) {
-      // The full-screen composition stacks the three down a screen that
-      // scrolls, with nothing beside them to be moved, so it keeps no floor.
-      // Asserted rather than passed over: what it must do is offer the same
-      // three controls, which is the whole of what this width owes.
-      await expect(editor).toHaveClass(/engineering--layer/);
+      // Canvas 1d's screen scrolls and reserves nothing: there the three
+      // controls are a plate on a page of plates, and what follows them follows
+      // them down. What that width owes is the same three controls.
+      await expect(page.locator('.engineering')).toHaveClass(/engineering--layer/);
       await chooseRecipe(page, /increased range/i);
       await expect(page.locator('edsb-grade-selector')).toBeVisible();
       return;
     }
 
-    // Read from the token rather than written down again: the floor is one
-    // measure, and a test carrying its own copy would pass a change to it.
-    const floorOf = async () =>
-      await choices.evaluate((node) => {
-        const reserved = getComputedStyle(document.documentElement).getPropertyValue(
-          '--edsb-layout-engineering-choices',
-        );
-        const probe = document.createElement('div');
-        probe.style.blockSize = reserved.trim();
-        document.body.append(probe);
-        const floor = probe.getBoundingClientRect().height;
-        probe.remove();
-        return { column: node.getBoundingClientRect().height, floor };
-      });
-
-    const before = await floorOf();
-    expect(before.floor).toBeGreaterThan(0);
-    expect(before.column).toBeGreaterThanOrEqual(before.floor);
-
-    /*
-     * And the panel is the height it will be, which is the whole point of the
-     * floor and the half that was not being checked.
-     *
-     * The floor used to be stated inside the wide composition's own block, and
-     * the wide composition is the one place it does nothing: two columns
-     * stretched to the taller of them, with an attribute table beside these
-     * controls that is taller than the floor on all but the shortest article.
-     * So a floor that was never consulted read as a floor that held, and the
-     * growth went on at every other inline width — measured at 834x1112, the
-     * editor grew from 499px to 623px as a recipe was taken (Commander request
-     * 2026-08-29).
-     */
-    const settled = await editor.evaluate((node) => node.getBoundingClientRect().height);
     await chooseRecipe(page, /increased range/i);
     await expect(page.locator('edsb-grade-selector')).toBeVisible();
+    await expect(page.locator('edsb-experimental-effect-list')).toBeVisible();
 
-    const after = await floorOf();
-    expect(after.column).toBeGreaterThanOrEqual(after.floor);
-
-    // Within a pixel, not to the pixel: the table beside the controls gains a
-    // `MODIFIED` column as a recipe is taken, and a column changes where its
-    // rows round to by a fraction of one. What this refuses is a panel that
-    // moves, which is the two controls' own height and is measured in tens.
-    const drawn = await editor.evaluate((node) => node.getBoundingClientRect().height);
-    expect(Math.abs(drawn - settled)).toBeLessThan(1);
+    const after = await boxOf();
+    // Two controls appeared into room that was already paid for, so the card is
+    // the height it was. Within a pixel, not to the pixel: a recipe gives the
+    // table beside it a `MODIFIED` column, and a column changes where its rows
+    // round to by a fraction of one.
+    expect(Math.abs(after.choices.height - before.choices.height)).toBeLessThan(1);
+    expect(Math.abs(after.details.top - before.details.top)).toBeLessThan(1);
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {
@@ -518,11 +501,11 @@ test.describe('engineering costs', () => {
 
     const panes = page.locator('.engineering__panes');
     await expect(panes).toBeVisible();
-    if ((await panes.evaluate((node) => getComputedStyle(node).display)) !== 'grid') {
+    if (await surfacesAreLayers(page)) {
       // The full-screen composition owns the viewport and has no page to grow
-      // into: it draws the two halves as one column and the layer around it is
-      // what scrolls. That is the canvas at that width, not a fault to assert
-      // on (`design/engineering-editor.md`, "Nothing here scrolls").
+      // into: the layer around it is what scrolls, and the column this asserts
+      // on releases only for the inline placement
+      // (`design/engineering-editor.md`, "Nothing here scrolls").
       return;
     }
 
@@ -544,6 +527,8 @@ test.describe('engineering costs', () => {
       return {
         choices: box(choices),
         result: box(result),
+        panes: box(node),
+        gap: Number.parseFloat(getComputedStyle(node).rowGap),
         body: box(node.closest('.engineering__body')!),
         panel: box(node.closest('.engineering')!),
         // The column that used to bound the panel releases while a mount is
@@ -560,10 +545,13 @@ test.describe('engineering costs', () => {
       expect(region.hidden).toBeLessThanOrEqual(1);
     }
 
-    // The panel is as tall as the taller of its two halves, which is what
-    // "expands" means once neither of them can give way.
-    expect(measured.panel.height + 1).toBeGreaterThanOrEqual(
-      Math.max(measured.choices.height, measured.result.height),
+    // The panel holds both cards whole and nothing else: their two heights and
+    // the one gap between them, with no room reserved past what is drawn. That
+    // is what "expands" means once neither card can give way, and the sum is
+    // what a floor left over from an earlier arrangement would break.
+    expect(measured.panes.height).toBeCloseTo(
+      measured.choices.height + measured.result.height + measured.gap,
+      0,
     );
     expect(measured.centre).toBe('static');
   });
@@ -634,6 +622,37 @@ test.describe('purchased and reward articles', () => {
     // drawings of this control state, so it is what a journey that runs at
     // every width is allowed to ask.
     await expect(page.locator('.grade[data-selected="true"] .grade__number')).toHaveText('5');
+
+    // The grades below the recipe's own lowest are marked as outside its range,
+    // and the mark is drawn rather than only published as an attribute: a cell
+    // that says it is out of range and looks exactly like one that is not says
+    // nothing to a Commander (SC 1.4.11).
+    const marks = await page.locator('.grade').evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        const drawn = getComputedStyle(node);
+        return {
+          unavailable: node.getAttribute('data-unavailable') === 'true',
+          image: drawn.backgroundImage,
+          size: drawn.backgroundSize,
+          height: Math.round(box.height),
+        };
+      }),
+    );
+    expect(marks.some((cell) => cell.unavailable)).toBe(true);
+    for (const cell of marks) {
+      expect(cell.image === 'none').toBe(!cell.unavailable);
+      if (!cell.unavailable) {
+        continue;
+      }
+
+      // And it crosses the whole cell, which is how the canvas draws it. Held
+      // to a band along one edge the mark is a rule under the number rather
+      // than a hatch over the cell, and a Commander reads the cell as one the
+      // recipe reaches (Commander request 2026-08-30).
+      const [, band] = cell.size.split(' ');
+      expect(band === undefined || Number.parseFloat(band) >= cell.height).toBe(true);
+    }
     // Inline this has already committed; in a layer it is a draft that has to
     // be applied before the ledger says anything. Either way the panel is then
     // showing the climbed article (constitution V).
@@ -739,4 +758,396 @@ test.describe('reading a build in', () => {
     expect(['normalized', 'unsupported', 'unchanged']).toContain(refusal);
     expect(await ledgerEngineering(page, 'FrameShiftDrive')).toBe(before);
   });
+});
+
+/**
+ * Canvas 1c's three-stage flow, and the width it needs.
+ *
+ * The bench draws the family rail, the module pane and the engineering editor
+ * side by side under one numbered strip. Three tracks need more than the
+ * desktop project's 1440 leaves once the ledger and the status rail are paid
+ * for, so the arrangement is asked for at the width the artboard was drawn at
+ * and the fallback is asserted at the project's own
+ * (`design/outfitting-workspace.md`, "The bench is two columns where it has
+ * room for three").
+ */
+test.describe('the bench’s three columns', () => {
+  /** The top edge of each numbered bar, in document order. */
+  async function stripTops(page: Page): Promise<number[]> {
+    return await page.evaluate(() =>
+      [...document.querySelectorAll('.edsb-step')].map((bar) =>
+        Math.round(bar.getBoundingClientRect().top),
+      ),
+    );
+  }
+
+  test('draws the editor beside the manifest, on the step strip’s own line', async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+
+    const manifest = page.locator('edsb-module-replacement');
+    const editor = page.locator('edsb-engineering-editor');
+    await expect(manifest).toBeVisible();
+    await expect(editor).toBeVisible();
+
+    const [manifestBox, editorBox] = await Promise.all([
+      manifest.boundingBox(),
+      editor.boundingBox(),
+    ]);
+
+    // Beside, not under: the editor starts after the manifest ends across, and
+    // the two share the bench's own row.
+    expect(editorBox!.x).toBeGreaterThanOrEqual(manifestBox!.x + manifestBox!.width);
+
+    // One strip, three bars, one line. Steps ① and ② are the chooser's; step ③
+    // is the editor's, and it pays the fitting panel's head so that it lands on
+    // their line rather than on the head's.
+    const tops = await stripTops(page);
+    expect(tops).toHaveLength(3);
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
+
+    // No project viewport is wide enough to reach this arrangement, so the gate
+    // that scans every rendered state never sees it. It is scanned here, at the
+    // width it was asked for.
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'bench-three-columns' });
+  });
+
+  test('holds the strip on one line at the narrowest bench, in the longer language', async ({
+    browser,
+    baseURL,
+  }) => {
+    // Step ③ is stood on the strip's line by an offset the height of the fitting
+    // panel's head — a declared figure, not a shared row, because aligning by
+    // grid would be a subgrid chain through three components. So the head has to
+    // be the one row that figure assumes, and the case that would break it is
+    // the narrowest bench that draws three columns in the language with the
+    // longest labels: 1790 x 1010 puts the fitting column at 645px, and German
+    // draws `MODUL ENTFERNEN` in it (`styles/_chrome.scss`).
+    const context = await browser.newContext({
+      baseURL,
+      locale: 'de-DE',
+      viewport: { width: 1790, height: 1010 },
+    });
+    const page = await context.newPage();
+
+    try {
+      await openStockBuild(page);
+      await openEditor(page, 'FrameShiftDrive');
+
+      const measured = await page.evaluate(() => ({
+        toolbar: document.querySelector('.replacement__toolbar')?.getBoundingClientRect().height,
+        tops: [...document.querySelectorAll('.edsb-step')].map((bar) =>
+          Math.round(bar.getBoundingClientRect().top),
+        ),
+      }));
+
+      expect(measured.tops).toHaveLength(3);
+      expect(Math.max(...measured.tops) - Math.min(...measured.tops)).toBeLessThanOrEqual(1);
+
+      // And the head is one row, which is the assumption the offset rests on. A
+      // wrapped head steps the editor a whole row off the strip.
+      expect(measured.toolbar).toBeLessThanOrEqual(48);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('stacks the editor under the manifest where three columns do not fit', async ({ page }) => {
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+
+    if (await surfacesAreLayers(page)) {
+      // Canvas 1d opens each surface as a screen of its own, so there is no
+      // bench to arrange. What that width owes is asserted where the layers are.
+      return;
+    }
+
+    const manifest = page.locator('edsb-module-replacement');
+    const editor = page.locator('edsb-engineering-editor');
+    const [manifestBox, editorBox] = await Promise.all([
+      manifest.boundingBox(),
+      editor.boundingBox(),
+    ]);
+
+    expect(editorBox!.y).toBeGreaterThanOrEqual(manifestBox!.y + manifestBox!.height - 1);
+  });
+
+  test('bounds the bench and hands what is left to the list and the attributes', async ({
+    page,
+  }) => {
+    // Canvas 1c draws the bench as a card of a fixed height with the list
+    // scrolling in one column and the attributes in the other. Beside each other
+    // the two panels are not sharing one screen's height, they are each given
+    // one, so the column ends where the window ends and what is left over goes
+    // to the two boxes that have something to put in it (Commander request
+    // 2026-08-30).
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    // With a recipe taken, because that is the state the table has something to
+    // scroll: every comparison row then carries a direction drawn only for a
+    // reader, and around a hundred boxes positioned out of the page are what
+    // find a scroller that is not a containing block.
+    await chooseRecipe(page, /increased range/i);
+
+    const measured = await page.evaluate(() => {
+      const box = (selector: string) => {
+        const element = document.querySelector(selector)!;
+        return {
+          height: element.getBoundingClientRect().height,
+          scrollable: element.scrollHeight - element.clientHeight > 1,
+          overflow: getComputedStyle(element).overflowY,
+        };
+      };
+      const declared = document.createElement('div');
+      declared.style.blockSize = getComputedStyle(document.documentElement)
+        .getPropertyValue('--edsb-layout-manifest-pane')
+        .trim();
+      document.body.append(declared);
+      const pane = declared.getBoundingClientRect().height;
+      declared.remove();
+
+      return {
+        pane,
+        list: box('.candidates__pane'),
+        choices: box('.engineering__choices .engineering__card-body'),
+        details: box('.engineering__result .engineering__card-body'),
+        document: document.documentElement.scrollHeight,
+        viewport: window.innerHeight,
+      };
+    });
+
+    // The page does not carry the bench here: the bench carries itself.
+    expect(measured.document).toBeLessThanOrEqual(measured.viewport + 1);
+
+    // The list takes more than the height it declares for itself, which is the
+    // whole of what "the room that is left" means.
+    expect(measured.pane).toBeGreaterThan(0);
+    expect(measured.list.height).toBeGreaterThan(measured.pane);
+    expect(measured.list.scrollable).toBe(true);
+
+    // And of the editor's two cards it is the attributes that scroll. The three
+    // controls above them are reserved room, not a scroller.
+    expect(measured.details.overflow).toBe('auto');
+    expect(measured.choices.overflow).toBe('visible');
+    expect(measured.choices.scrollable).toBe(false);
+
+    // The bench clips what stands past it, so the shortest window it is bounded
+    // at has to hold the whole of what the editor cannot fold: the step bar, the
+    // reserved engineering card and the table's own floor. A pixel over and the
+    // rest is unreachable, because nothing here scrolls to it
+    // (`design/outfitting-workspace.md`, "The bench is bounded where it is three
+    // columns").
+    const bench = async () =>
+      await page.evaluate(() => {
+        const element = document.querySelector('.outfitting__bench')!;
+        return {
+          clipped: element.scrollHeight - element.clientHeight,
+          document: document.documentElement.scrollHeight,
+          viewport: window.innerHeight,
+        };
+      });
+
+    await page.setViewportSize({ width: 2020, height: 1012 });
+    await expect(async () => {
+      const shortest = await bench();
+      expect(shortest.clipped).toBeLessThanOrEqual(1);
+      expect(shortest.document).toBeLessThanOrEqual(shortest.viewport + 1);
+    }).toPass({ timeout: 5_000 });
+
+    // And a window under it releases the column, which is the stacked
+    // arrangement's own answer: the page carries the bench and there is nothing
+    // to clip.
+    //
+    // The three columns are still drawn here — this window is wide enough for
+    // them and only too short for the bound — so this is the state that catches
+    // a scroller keyed on the width alone. Nothing in the editor may scroll
+    // while the page is scrolling too: that is a weapon's seventy rows read a
+    // few at a time inside a page that moves under them, which is the nested
+    // arrangement the record forbids (`design/engineering-editor.md`, "Nothing
+    // here scrolls"). The chooser's pane is not part of that question — its
+    // height is its own declared bound, and it holds at every width.
+    await page.setViewportSize({ width: 2020, height: 960 });
+    await expect(async () => {
+      const released = await bench();
+      expect(released.clipped).toBeLessThanOrEqual(1);
+      expect(released.document).toBeGreaterThan(released.viewport);
+
+      const scrollers = await page.evaluate(() =>
+        [...document.querySelectorAll('edsb-engineering-editor *')]
+          .filter((box) => {
+            const drawn = getComputedStyle(box);
+            const scrolls = /auto|scroll/.test(drawn.overflowY);
+            return scrolls && box.scrollHeight - box.clientHeight > 1;
+          })
+          .map((box) => box.className.toString().split(' ')[0]),
+      );
+      expect(scrollers).toEqual([]);
+    }).toPass({ timeout: 5_000 });
+  });
+
+  test('lets nothing scroll inside a bench the anatomy has released', async ({ page }) => {
+    // The workspace releases this column whenever the strip has a dashboard
+    // open: a dashboard is a panel of figures as tall as the build has to say,
+    // and the page is the better carrier for it. That release is the same fact
+    // the bench's own bound is, so the scrollers inside the bench have to ask
+    // it too — asked on the width and the window's height alone they stayed on,
+    // and pressing `POWER` over a three-column bench left a list scrolling
+    // inside a page that scrolled, with the chooser's declared height lifted in
+    // the one state nothing was bounding it (`styles/_chrome.scss`).
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+    await chooseRecipe(page, /increased range/i);
+
+    const inside = async () =>
+      await page.evaluate(() => {
+        const scrollers = [...document.querySelectorAll('edsb-engineering-editor *')].filter(
+          (box) => {
+            const drawn = getComputedStyle(box);
+            return /auto|scroll/.test(drawn.overflowY) && box.scrollHeight - box.clientHeight > 1;
+          },
+        );
+        const pane = document.querySelector('.candidates__pane');
+        return {
+          scrollers: scrollers.map((box) => box.className.toString().split(' ')[0]),
+          cap: pane === null ? 'none' : getComputedStyle(pane).maxBlockSize,
+          released: document
+            .querySelector('.outfitting')
+            ?.classList.contains('outfitting--dashboard'),
+          document: document.documentElement.scrollHeight,
+          viewport: window.innerHeight,
+        };
+      });
+
+    // Bounded, the column decides the list's height and the page does not move.
+    await expect(async () => {
+      const bounded = await inside();
+      expect(bounded.released).toBe(false);
+      expect(bounded.document).toBeLessThanOrEqual(bounded.viewport + 1);
+      expect(bounded.cap).toBe('none');
+    }).toPass({ timeout: 5_000 });
+
+    await page
+      .locator('.anatomy__modes')
+      .getByRole('button', { name: /^power$/i })
+      .click();
+
+    await expect(async () => {
+      const released = await inside();
+      expect(released.released).toBe(true);
+      expect(released.document).toBeGreaterThan(released.viewport);
+      expect(released.scrollers).toEqual([]);
+
+      // And the chooser's own declared height is back, which is what keeps a
+      // 478-choice list from running the released page down two hundred rows.
+      expect(released.cap).not.toBe('none');
+    }).toPass({ timeout: 10_000 });
+  });
+
+  test('numbers step ③ only where the chooser numbers ① and ②', async ({ page }) => {
+    // The number belongs to the strip, not to the bar. Where the chooser has no
+    // room for its rail it draws the accordion and numbers nothing, and a lone
+    // ③ over a bench with no other step on it names a flow that is not on the
+    // screen (`design/module-replacement.md`, "The three steps, numbered").
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+
+    if (await surfacesAreLayers(page)) {
+      // Canvas 1d draws no strip at all: each surface is a screen of its own.
+      await expect(page.locator('.edsb-step')).toHaveCount(0);
+      return;
+    }
+
+    const chooserSteps = await page.locator('edsb-candidate-list .edsb-step').count();
+    const editorNumber = page.locator('.engineering__step .edsb-step__number');
+    await expect(editorNumber).toHaveCount(1);
+
+    if (chooserSteps === 0) {
+      await expect(editorNumber).toBeHidden();
+      return;
+    }
+
+    // Two bars from the chooser, and the editor's makes three.
+    expect(chooserSteps).toBe(2);
+    await expect(editorNumber).toBeVisible();
+  });
+
+  test('draws no numbered step over a mount with no chooser at all', async ({ page }) => {
+    // The cargo hatch is a mount the Almanac offers no replacement for, so the
+    // bench holds the editor and nothing else — at every width, not only at the
+    // narrow ones the two rules above are about. The bar keeps its name; the
+    // number would be the third step of a flow with no first or second.
+    await openStockBuild(page);
+    await selectMount(page, 'CargoHatch');
+
+    if (await surfacesAreLayers(page)) {
+      await expect(page.locator('.edsb-step')).toHaveCount(0);
+      return;
+    }
+
+    await expect(page.locator('edsb-module-replacement')).toHaveCount(0);
+    await expect(page.locator('.engineering__step .edsb-step__name')).toBeVisible();
+    await expect(page.locator('.engineering__step .edsb-step__number')).toBeHidden();
+
+    // And the editor takes the bench, rather than a 396px track with an empty
+    // column beside it.
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    const [bench, editor] = await Promise.all([
+      page.locator('.outfitting__bench').boundingBox(),
+      page.locator('edsb-engineering-editor').boundingBox(),
+    ]);
+    expect(editor!.width).toBeGreaterThan(bench!.width * 0.9);
+  });
+});
+
+/**
+ * The grade bar says the same thing twice, on purpose.
+ *
+ * Canvas 1c fills the bar up to the chosen grade and numbers every cell, so a
+ * cell past the choice is both unfilled and dimmed. Neither is the only carrier
+ * — each cell names its own grade to a reader (`design/engineering-editor.md`).
+ */
+test('numbers every grade cell and dims the ones past the choice', async ({ page }) => {
+  await openStockBuild(page);
+  await openEditor(page, 'FrameShiftDrive');
+  await chooseRecipe(page, /increased range/i);
+  await chooseGrade(page, 2);
+
+  const cells = page.locator('edsb-grade-selector .grade');
+  await expect(cells).toHaveCount(5);
+
+  const drawn = await cells.evaluateAll((nodes) =>
+    nodes.map((node) => ({
+      filled: node.getAttribute('data-filled') === 'true',
+      number: node.querySelector('.grade__number')?.textContent?.trim() ?? '',
+      colour: getComputedStyle(node.querySelector('.grade__number')!).color,
+    })),
+  );
+
+  expect(drawn.map((cell) => cell.number)).toEqual(['1', '2', '3', '4', '5']);
+
+  // Canvas 1c fills the bar up to the choice, so grade 2 reads as two. Canvas
+  // 1d fills the chosen button alone, because a numbered button filled for
+  // being *below* the choice is four buttons claiming to be the one that is
+  // pressed. Both number every cell, which is the part this is about.
+  const steps = await page
+    .locator('edsb-grade-selector .grades')
+    .first()
+    .evaluate((node) => node.classList.contains('grades--steps'));
+  expect(drawn.map((cell) => cell.filled)).toEqual(
+    steps ? [false, true, false, false, false] : [true, true, false, false, false],
+  );
+
+  // The two states are drawn in different inks. Which ink is the stylesheet's
+  // business; that they differ is the claim.
+  const filled = new Set(drawn.filter((cell) => cell.filled).map((cell) => cell.colour));
+  const unfilled = new Set(drawn.filter((cell) => !cell.filled).map((cell) => cell.colour));
+  expect(filled.size).toBe(1);
+  expect(unfilled.size).toBe(1);
+  expect([...filled][0]).not.toBe([...unfilled][0]);
 });

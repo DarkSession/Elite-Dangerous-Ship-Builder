@@ -88,7 +88,7 @@ describe('blueprint choice list', () => {
 });
 
 describe('grade selector', () => {
-  it('stripes the grades below the one a recipe starts at, and keeps them pressable', () => {
+  it('hatches the grades below the one a recipe starts at, and keeps them pressable', () => {
     // A bespoke Mercenary recipe starts at the grade the article was bought
     // at. The cells below it are still drawn — the article carries them — and
     // refused, so the bar never says the article is a grade short (wave 4).
@@ -100,11 +100,23 @@ describe('grade selector', () => {
 
     const cells = queryAll(fixture, '.grade');
     expect(cells).toHaveLength(5);
-    // Striped, not refused: an article bought at grade 2 can still be taken
+    // Hatched, not refused: an article bought at grade 2 can still be taken
     // back down to 1, so the cell has to be pressable (wave 5).
     expect(cells[0]!.getAttribute('data-unavailable')).toBe('true');
     expect((cells[0]!.querySelector('input') as HTMLInputElement).disabled).toBe(false);
     expect(cells[1]!.getAttribute('data-unavailable')).toBe('false');
+
+    // And the cell says which it is. The hatch is drawn to the non-text
+    // contrast floor, but a mark is not a statement: nothing else on the cell
+    // distinguishes a grade the recipe cannot reach from one it can, and a
+    // state carried by the drawing alone is the one thing never allowed
+    // (constitution V).
+    const nameOf = (cell: Element): string =>
+      (cell.querySelector('input') as HTMLInputElement).getAttribute('aria-label') ?? '';
+    expect(nameOf(cells[0]!)).not.toBe(nameOf(cells[1]!));
+    expect(nameOf(cells[0]!).length).toBeGreaterThan(nameOf(cells[1]!).length);
+    expect(nameOf(cells[0]!)).toContain('1');
+    expect(nameOf(cells[1]!)).toContain('2');
   });
 
   it('names each cell, so a bare number is never the whole label', () => {

@@ -157,7 +157,21 @@ export async function buildStockHull(page: Page, label: string): Promise<void> {
   // Longer than the default, because the wait here spans a route's first paint:
   // every journey reaches this straight off a navigation.
   await expect(action.or(row).first()).toBeVisible({ timeout: 15_000 });
-  await ((await action.first().isVisible()) ? action.first() : row).click();
+
+  // Asked again on every attempt, and answered in favour of the action.
+  //
+  // A journey arrives here mid-navigation, where the screen being left still
+  // answers the question: the manifest row of the hull just opened is in the
+  // document a moment longer than the route that is going. Asked once, the
+  // answer can be that row — and by the time it is pressed the row is gone,
+  // which is a thirty-second wait on a control that will never appear. The two
+  // are not interchangeable either, so the pair cannot simply be pressed
+  // together: a document holds both, and the first of them in document order is
+  // the manifest's, not the screen's.
+  await expect(async () => {
+    const target = (await action.first().isVisible()) ? action.first() : row;
+    await target.click({ timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
 }
 
 /**

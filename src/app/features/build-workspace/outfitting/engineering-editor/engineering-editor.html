@@ -28,24 +28,23 @@
   }
 
   <!--
-    Two halves, and both keep their place. `DETAILS AND ENGINEERING` names them,
-    and the details do not depend on the engineering: a final article accepts no
-    further engineering and still has every attribute it was catalogued with, as
-    does a mount the Almanac offers no recipe for.
-
-    Where there is nothing to choose, the left half states why rather than
-    standing empty, and the attributes stay on the right where they are on every
-    other article. Collapsing to one column instead — which is what this did
-    when the restriction was drawn above the grid — moved the table under a
-    sentence and made the panel a different shape for the articles a Commander
-    is least able to predict (wave 11, Commander request).
+    Two cards, stacked, and step ③'s bar names both. Where there is nothing to
+    choose, the engineering card states why rather than standing empty, and the
+    details card stays under it where it is on every other article.
   -->
   @if (state() !== 'noModule') {
     <div class="engineering__panes">
       <div class="engineering__choices">
-        @switch (state()) {
-          @case ('packageEmpty') {
-            <!--
+        @if (!asLayer()) {
+          <div class="engineering__card-bar">
+            <h5 class="engineering__card-heading">{{ choicesHeading() }}</h5>
+          </div>
+        }
+
+        <div class="engineering__card-body">
+          @switch (state()) {
+            @case ('packageEmpty') {
+              <!--
               A mount the Almanac offers no engineering for keeps its panel and
               says so. The panel is the region a Commander looks in to find out
               what a module can be engineered to; removing it left the bench
@@ -53,83 +52,93 @@
               is none — is one the ledger cannot give from the outside (wave 9,
               reversing wave 5).
             -->
-            <p class="engineering__state">{{ packageEmptyLabel() }}</p>
-          }
-          @case ('final') {
-            <!--
+              <p class="engineering__state">{{ packageEmptyLabel() }}</p>
+            }
+            @case ('final') {
+              <!--
               A final article. The Almanac's restriction is stated and its
               current fixed state stays visible; no apply or clear control is
               drawn, because neither is an operation the package offers here
               (FR-009).
             -->
-            <p class="engineering__state">{{ finalLabel() }}</p>
-          }
-          @default {
-            <!--
+              <p class="engineering__state">{{ finalLabel() }}</p>
+            }
+            @default {
+              <!--
               The recipe and the grade are one card, because canvas 1d draws
               them as one: `GRADE` sits inside the `BLUEPRINT` plate under a
               hairline, not on a plate of its own. It is the same reading — a
               grade with no recipe behind it is a control over nothing — and the
               drawing now says so (reported 2026-08-26).
             -->
-            <div class="engineering__card">
-              <edsb-blueprint-choice-list
-                [asDropdown]="!asLayer()"
-                [fixed]="fixedRecipe()"
-                [choices]="blueprintChoices()"
-                [selected]="selectedBlueprint()"
-                [clearConsequence]="clearConsequence()"
-                (chosen)="chooseBlueprint($event)"
-              />
+              <div class="engineering__card">
+                <edsb-blueprint-choice-list
+                  [asDropdown]="!asLayer()"
+                  [fixed]="fixedRecipe()"
+                  [choices]="blueprintChoices()"
+                  [selected]="selectedBlueprint()"
+                  [clearConsequence]="clearConsequence()"
+                  (chosen)="chooseBlueprint($event)"
+                />
 
-              <!--
+                <!--
                 Everything under the recipe follows from it. A grade bar or an
                 effect menu with no recipe behind it is a control over nothing,
                 and neither canvas draws one (design-canvas rule).
               -->
-              @if (grades().length > 0) {
-                <edsb-grade-selector
-                  class="engineering__grade"
-                  [asSteps]="asLayer()"
-                  [grades]="grades()"
-                  [lowest]="lowestGrade()"
-                  [selected]="selectedGrade()"
-                  (chosen)="chooseGrade($event)"
+                @if (grades().length > 0) {
+                  <edsb-grade-selector
+                    class="engineering__grade"
+                    [asSteps]="asLayer()"
+                    [grades]="grades()"
+                    [lowest]="lowestGrade()"
+                    [selected]="selectedGrade()"
+                    (chosen)="chooseGrade($event)"
+                  />
+                }
+              </div>
+
+              @if (recipeChosen() && effectChoices().length > 0) {
+                <edsb-experimental-effect-list
+                  class="engineering__card"
+                  [asDropdown]="!asLayer()"
+                  [effects]="effectChoices()"
+                  [selected]="selectedEffect()"
+                  (chosen)="chooseEffect($event)"
                 />
               }
-            </div>
-
-            @if (recipeChosen() && effectChoices().length > 0) {
-              <edsb-experimental-effect-list
-                class="engineering__card"
-                [asDropdown]="!asLayer()"
-                [effects]="effectChoices()"
-                [selected]="selectedEffect()"
-                (chosen)="chooseEffect($event)"
-              />
             }
           }
-        }
+        </div>
       </div>
 
+      <!--
+        The article's own attributes, under the controls that change them, and
+        the same order at both placements — canvas 1d draws its result plate
+        after the two it offers, and canvas 1c's second card is the one that
+        takes whatever height the column has spare (Commander request
+        2026-08-30).
+
+        The details do not depend on the engineering: a final article accepts no
+        further engineering and still has every attribute it was catalogued
+        with, as does a mount the Almanac offers no recipe for. So the card is
+        drawn whenever there is an attribute to draw, whatever the state above
+        it.
+      -->
       @if (attributes().length > 0) {
         <div class="engineering__result engineering__card">
-          <!--
-            Canvas 1c's `eng-right`: the article's own attributes, across the
-            rule from the controls that change them. This supersedes wave 8,
-            which put the table under those controls in the left column on the
-            reading that it was "the consequence of the three choices above it".
-            The canvas draws it as the other half of the panel — which is what
-            `DETAILS AND ENGINEERING` names: the details on one side, the
-            engineering on the other — and the table is no longer only a
-            consequence, because it is drawn for a module nothing has been done
-            to yet.
-          -->
-          <edsb-attribute-comparison
-            class="engineering__attributes"
-            [rows]="attributes()"
-            [comparing]="comparingAttributes()"
-          />
+          @if (!asLayer()) {
+            <div class="engineering__card-bar">
+              <h5 class="engineering__card-heading">{{ detailsHeading() }}</h5>
+            </div>
+          }
+          <div class="engineering__card-body">
+            <edsb-attribute-comparison
+              class="engineering__attributes"
+              [rows]="attributes()"
+              [comparing]="comparingAttributes()"
+            />
+          </div>
         </div>
       }
     </div>
@@ -169,25 +178,28 @@
   </edsb-layer>
 } @else {
   <!--
-    Inline, this is canvas 1c's `ENGINEERING` panel, under the fitting panel and
-    headed the way the canvas heads it. The mount is not repeated in the
-    heading: the bench above already carries it as `FITTING · HARDPOINT 1`, and
-    the region's accessible name names the mount for a reader who arrived here
-    without passing it.
+    Inline, this is canvas 1c's third column: the `ENGINEERING` panel beside the
+    fitting panel where the bench has room for it and under the fitting panel
+    where it has not, headed the way the canvas heads it. The mount is not
+    repeated in the heading — the fitting panel already carries it as
+    `FITTING · HARDPOINT 1` — and the region's accessible name names the mount
+    for a reader who arrived here without passing it.
   -->
 
   <section class="engineering engineering--panel" [attr.aria-label]="regionLabel()">
     <!--
-        Canvas 1c's own bar across the head of the panel, ruled off from the
-        body under it: the heading is not a line of text floating over the
-        choices — the panel is a bordered box and this is its head (wave 7).
-        The canvas's `CLEAR ✕` at the other end of the bar stays withdrawn: the
-        recipe menu's own first option already clears, and two controls for one
-        operation is what that ruling removed.
-      -->
-    <div class="engineering__bar">
-      <h4 class="engineering__heading" [id]="headingId">{{ panelHeading() }}</h4>
-    </div>
+      Canvas 1c's step ③ bar, the third of the numbered strip the family rail
+      and the module pane carry (`design/module-replacement.md`, "The three
+      steps, numbered"). It names the two cards under it rather than standing
+      over loose content, and the number is decoration: the name beside it is
+      the step. The canvas's `CLEAR ✕` stays withdrawn — the recipe menu's own
+      first option already clears, and the 2026-08-30 revision withdrew it from
+      the artboard too.
+    -->
+    <h4 class="edsb-step engineering__step">
+      <span class="edsb-step__number" aria-hidden="true">3</span>
+      <span class="edsb-step__name">{{ panelHeading() }}</span>
+    </h4>
     <div class="engineering__body">
       <ng-container [ngTemplateOutlet]="body" />
     </div>

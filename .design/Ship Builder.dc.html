@@ -6764,7 +6764,7 @@
               <a class="dv-oid" href="#1c">1c</a>Outfitting — slot ledger · anatomy plates (top /
               bottom) · details &amp; engineering · live stats · export &amp; save
             </div>
-            <div class="dv-card" style="width: 1560px">
+            <div class="dv-card" style="width: 2020px">
               <div style="background: var(--bg); color: var(--ink); position: relative">
                 <div
                   id="exp-modal"
@@ -16928,7 +16928,7 @@
                           justify-content: space-between;
                           gap: 14px;
                           flex-wrap: wrap;
-                          padding: 13px 20px 11px;
+                          padding: 13px 430px 11px 20px;
                         "
                       >
                         <div style="display: flex; align-items: baseline; gap: 12px; min-width: 0">
@@ -17023,41 +17023,200 @@
                         style="
                           padding: 0 20px 18px;
                           display: grid;
-                          grid-template-columns: 216px minmax(0, 1fr);
-                          grid-template-rows: auto auto;
+                          grid-template-columns: 264px minmax(360px, 1fr) 396px;
+                          grid-template-rows: auto auto auto;
                           column-gap: 14px;
                           align-content: start;
                         "
                       >
                         <div
                           style="
-                            grid-column: 2;
+                            grid-column: 1;
                             grid-row: 1;
-                            align-self: start;
-                            display: grid;
-                            grid-template-columns: 2.6fr 70px 150px;
-                            padding: 0 12px 7px;
-                            font:
-                              500 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            letter-spacing: 0.16em;
-                            color: var(--ink-38);
+                            position: relative;
+                            display: flex;
+                            align-items: center;
+                            gap: 9px;
+                            padding: 8px 10px;
+                            margin-bottom: 9px;
+                            background: var(--panel-2);
+                            border: 1px solid var(--amber-a12);
+                            border-left: 3px solid var(--amber);
                           "
                         >
-                          <div>MODULE</div>
-                          <div>CLASS</div>
-                          <div style="text-align: right">COST</div>
+                          <span
+                            style="
+                              width: 16px;
+                              height: 16px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--amber);
+                              color: var(--bg);
+                              font:
+                                700 9px/1 'JetBrains Mono',
+                                monospace;
+                            "
+                            >1</span
+                          ><span
+                            style="
+                              font:
+                                600 9px/1 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.16em;
+                              color: var(--amber-2);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                            >CATEGORY</span
+                          ><span
+                            style="
+                              position: absolute;
+                              right: -12px;
+                              top: 50%;
+                              transform: translateY(-50%);
+                              z-index: 2;
+                              font:
+                                400 13px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--amber-a45);
+                            "
+                            >›</span
+                          >
+                        </div>
+                        <div
+                          style="
+                            grid-column: 2;
+                            grid-row: 1;
+                            position: relative;
+                            display: grid;
+                            grid-template-columns: 2.6fr 56px 104px;
+                            align-items: center;
+                            padding: 8px 12px;
+                            margin-bottom: 9px;
+                            background: var(--panel-2);
+                            border: 1px solid var(--amber-a12);
+                            border-left: 3px solid var(--amber);
+                          "
+                        >
+                          <span style="display: flex; align-items: center; gap: 9px; min-width: 0"
+                            ><span
+                              style="
+                                width: 16px;
+                                height: 16px;
+                                flex: none;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                background: var(--amber);
+                                color: var(--bg);
+                                font:
+                                  700 9px/1 'JetBrains Mono',
+                                  monospace;
+                              "
+                              >2</span
+                            ><span
+                              style="
+                                font:
+                                  600 9px/1 'JetBrains Mono',
+                                  monospace;
+                                letter-spacing: 0.16em;
+                                color: var(--amber-2);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                              "
+                              >MODULE</span
+                            ></span
+                          ><span
+                            style="
+                              font:
+                                500 8.5px/1 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.16em;
+                              color: var(--ink-38);
+                            "
+                            >CLASS</span
+                          ><span
+                            style="
+                              font:
+                                500 8.5px/1 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.16em;
+                              color: var(--ink-38);
+                              text-align: right;
+                            "
+                            >COST</span
+                          ><span
+                            style="
+                              position: absolute;
+                              right: -12px;
+                              top: 50%;
+                              transform: translateY(-50%);
+                              z-index: 2;
+                              font:
+                                400 13px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--amber-a45);
+                            "
+                            >›</span
+                          >
+                        </div>
+                        <div
+                          style="
+                            grid-column: 3;
+                            grid-row: 1;
+                            display: flex;
+                            align-items: center;
+                            gap: 9px;
+                            padding: 8px 10px;
+                            margin-bottom: 9px;
+                            background: var(--panel-2);
+                            border: 1px solid var(--amber-a12);
+                            border-left: 3px solid var(--amber);
+                          "
+                        >
+                          <span
+                            style="
+                              width: 16px;
+                              height: 16px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--amber);
+                              color: var(--bg);
+                              font:
+                                700 9px/1 'JetBrains Mono',
+                                monospace;
+                            "
+                            >3</span
+                          ><span
+                            style="
+                              font:
+                                600 9px/1 'JetBrains Mono',
+                                monospace;
+                              letter-spacing: 0.16em;
+                              color: var(--amber-2);
+                              white-space: nowrap;
+                              overflow: hidden;
+                              text-overflow: ellipsis;
+                            "
+                            >ATTRIBUTES · ENGINEERING</span
+                          ><span style="flex: 1"></span>
                         </div>
                         <div
                           style="
                             grid-column: 1;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: flex;
                             flex-direction: column;
                             align-self: start;
                             border: 1px solid var(--amber-a12);
                             background: var(--panel-0);
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
@@ -18016,20 +18175,20 @@
                           data-v="dmc"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: flex;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: linear-gradient(
@@ -18075,7 +18234,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18117,7 +18276,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18162,7 +18321,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18207,7 +18366,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18252,7 +18411,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18297,7 +18456,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18342,7 +18501,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18390,20 +18549,20 @@
                           data-v="dpa"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: #0e0e0e;
@@ -18521,7 +18680,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18645,7 +18804,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18690,7 +18849,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18738,20 +18897,20 @@
                           data-v="dbl"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18814,7 +18973,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18859,7 +19018,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18904,7 +19063,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18949,7 +19108,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -18994,7 +19153,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19042,20 +19201,20 @@
                           data-v="dcn"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: #0e0e0e;
@@ -19120,7 +19279,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19165,7 +19324,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19210,7 +19369,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19258,20 +19417,20 @@
                           data-v="dfc"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19316,7 +19475,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19361,7 +19520,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19406,7 +19565,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19454,20 +19613,20 @@
                           data-v="drg"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19512,7 +19671,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19560,20 +19719,20 @@
                           data-v="dmr"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19618,7 +19777,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19663,7 +19822,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19708,7 +19867,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19756,20 +19915,20 @@
                           data-v="dsc"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19814,7 +19973,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19859,7 +20018,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19907,20 +20066,20 @@
                           data-v="dml"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -19965,7 +20124,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20013,20 +20172,20 @@
                           data-v="dpl"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20071,7 +20230,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20116,7 +20275,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20161,7 +20320,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20206,7 +20365,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20251,7 +20410,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20299,20 +20458,20 @@
                           data-v="dbu"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20357,7 +20516,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20402,7 +20561,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20447,7 +20606,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20495,20 +20654,20 @@
                           data-v="dtl"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20553,7 +20712,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20598,7 +20757,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20646,20 +20805,20 @@
                           data-v="dgd"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20704,7 +20863,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20749,7 +20908,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20794,7 +20953,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20842,20 +21001,20 @@
                           data-v="dax"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20900,7 +21059,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20945,7 +21104,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -20990,7 +21149,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21038,20 +21197,20 @@
                           data-v="dut"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21096,7 +21255,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21141,7 +21300,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21186,7 +21345,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21231,7 +21390,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21276,7 +21435,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21321,7 +21480,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21369,20 +21528,20 @@
                           data-v="dsg"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21427,7 +21586,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21472,7 +21631,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21517,7 +21676,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21565,20 +21724,20 @@
                           data-v="dth"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21623,7 +21782,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21668,7 +21827,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21713,7 +21872,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21761,20 +21920,20 @@
                           data-v="dfs"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21819,7 +21978,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21864,7 +22023,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21909,7 +22068,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -21957,20 +22116,20 @@
                           data-v="dpp"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22015,7 +22174,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22060,7 +22219,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22105,7 +22264,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22153,20 +22312,20 @@
                           data-v="dpd"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22211,7 +22370,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22256,7 +22415,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22301,7 +22460,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22349,20 +22508,20 @@
                           data-v="dhr"
                           style="
                             grid-column: 2;
-                            grid-row: 2;
+                            grid-row: 2 / span 2;
                             display: none;
                             flex-direction: column;
                             gap: 2px;
                             border-left: 1px solid var(--amber-a16);
                             align-self: start;
-                            max-height: 470px;
+                            max-height: 648px;
                             overflow-y: auto;
                           "
                         >
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22407,7 +22566,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22452,7 +22611,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22497,7 +22656,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22542,7 +22701,7 @@
                           <div
                             style="
                               display: grid;
-                              grid-template-columns: 2.6fr 70px 150px;
+                              grid-template-columns: 2.6fr 56px 104px;
                               align-items: center;
                               padding: 11px 12px;
                               background: var(--panel-0);
@@ -22585,357 +22744,217 @@
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      <div
-                        style="
-                          margin: 0 20px 18px;
-                          border: 1px solid var(--amber-a22);
-                          background: var(--panel);
-                        "
-                      >
                         <div
                           style="
+                            grid-column: 3;
+                            grid-row: 2 / span 2;
+                            align-self: start;
                             display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            padding: 11px 14px;
-                            border-bottom: 1px solid var(--amber-a16);
+                            flex-direction: column;
+                            gap: 14px;
                           "
                         >
-                          <div
-                            style="
-                              font:
-                                600 10px/1 'JetBrains Mono',
-                                monospace;
-                              color: var(--amber-2);
-                              letter-spacing: 0.18em;
-                            "
-                          >
-                            DETAILS AND ENGINEERING
-                          </div>
-                          <div
-                            id="eng-clear"
-                            style="
-                              font:
-                                400 9.5px/1 'JetBrains Mono',
-                                monospace;
-                              color: var(--ink-45);
-                              letter-spacing: 0.1em;
-                              cursor: pointer;
-                            "
-                            style-hover="color:var(--amber-3)"
-                          >
-                            CLEAR ✕
-                          </div>
-                        </div>
-                        <div
-                          id="eng-grid"
-                          style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 0"
-                        >
-                          <div
-                            id="eng-left"
-                            style="
-                              padding: 14px;
-                              display: flex;
-                              flex-direction: column;
-                              gap: 12px;
-                              border-right: 1px solid var(--amber-a14);
-                            "
-                          >
-                            <div style="display: flex; flex-direction: column; gap: 7px">
-                              <div
-                                id="eng-bp-label"
-                                style="
-                                  font:
-                                    400 8.5px/1 'JetBrains Mono',
-                                    monospace;
-                                  color: var(--ink-45);
-                                  letter-spacing: 0.14em;
-                                "
-                              >
-                                BLUEPRINT
-                              </div>
-                              <div style="position: relative">
-                                <div
-                                  id="eng-bp-btn"
-                                  style="
-                                    height: 34px;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: space-between;
-                                    padding: 0 12px;
-                                    background: #171716;
-                                    border: 1px solid var(--amber-a3);
-                                    font:
-                                      500 12px/1 Barlow,
-                                      sans-serif;
-                                    color: var(--amber-3);
-                                    cursor: pointer;
-                                  "
-                                  style-hover="border-color:var(--amber-a6)"
-                                >
-                                  <span id="eng-bp-val">Overcharged</span
-                                  ><span
-                                    id="eng-bp-caret"
-                                    style="
-                                      font:
-                                        400 9.5px/1 'JetBrains Mono',
-                                        monospace;
-                                      color: var(--ink-5);
-                                    "
-                                    >▾</span
-                                  >
-                                </div>
-                                <div
-                                  id="eng-bp-menu"
-                                  style="
-                                    display: none;
-                                    position: absolute;
-                                    left: 0;
-                                    right: 0;
-                                    top: calc(100% + 4px);
-                                    z-index: 30;
-                                    background: #171716;
-                                    border: 1px solid var(--amber-a35);
-                                    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
-                                  "
-                                >
-                                  <div
-                                    class="eng-opt"
-                                    data-kind="bp"
-                                    data-label="None — stock module"
-                                    data-desc="REMOVES ENGINEERING"
-                                    style="
-                                      display: flex;
-                                      align-items: baseline;
-                                      justify-content: space-between;
-                                      gap: 10px;
-                                      padding: 8px 11px;
-                                      cursor: pointer;
-                                      background: transparent;
-                                    "
-                                    style-hover="background:rgba(255,140,26,.1)"
-                                  >
-                                    <div
-                                      style="
-                                        font:
-                                          400 12px/1.2 Barlow,
-                                          sans-serif;
-                                        font-style: italic;
-                                        color: var(--ink-66);
-                                      "
-                                    >
-                                      None — stock module
-                                    </div>
-                                    <div
-                                      style="
-                                        flex: none;
-                                        font:
-                                          400 8px/1 'JetBrains Mono',
-                                          monospace;
-                                        color: var(--ink-38);
-                                        letter-spacing: 0.08em;
-                                      "
-                                    >
-                                      REMOVES ENGINEERING
-                                    </div>
-                                  </div>
-                                  <div
-                                    class="eng-opt"
-                                    data-kind="bp"
-                                    data-label="Overcharged"
-                                    data-desc="DAMAGE ▲ · THERMAL LOAD ▲"
-                                    style="
-                                      display: flex;
-                                      align-items: baseline;
-                                      justify-content: space-between;
-                                      gap: 10px;
-                                      padding: 8px 11px;
-                                      cursor: pointer;
-                                      background: rgba(255, 140, 26, 0.14);
-                                    "
-                                    style-hover="background:rgba(255,140,26,.1)"
-                                  >
-                                    <div
-                                      style="
-                                        font:
-                                          500 12px/1.2 Barlow,
-                                          sans-serif;
-                                        font-style: normal;
-                                        color: var(--amber-3);
-                                      "
-                                    >
-                                      Overcharged
-                                    </div>
-                                    <div
-                                      style="
-                                        flex: none;
-                                        font:
-                                          400 8px/1 'JetBrains Mono',
-                                          monospace;
-                                        color: var(--ink-38);
-                                        letter-spacing: 0.08em;
-                                      "
-                                    >
-                                      DAMAGE ▲ · THERMAL LOAD ▲
-                                    </div>
-                                  </div>
-                                  <div
-                                    class="eng-opt"
-                                    data-kind="bp"
-                                    data-label="Rapid Fire"
-                                    data-desc="RATE OF FIRE ▲ · ACCURACY ▼"
-                                    style="
-                                      display: flex;
-                                      align-items: baseline;
-                                      justify-content: space-between;
-                                      gap: 10px;
-                                      padding: 8px 11px;
-                                      cursor: pointer;
-                                      background: transparent;
-                                    "
-                                    style-hover="background:rgba(255,140,26,.1)"
-                                  >
-                                    <div
-                                      style="
-                                        font:
-                                          500 12px/1.2 Barlow,
-                                          sans-serif;
-                                        font-style: normal;
-                                        color: var(--ink-2);
-                                      "
-                                    >
-                                      Rapid Fire
-                                    </div>
-                                    <div
-                                      style="
-                                        flex: none;
-                                        font:
-                                          400 8px/1 'JetBrains Mono',
-                                          monospace;
-                                        color: var(--ink-38);
-                                        letter-spacing: 0.08em;
-                                      "
-                                    >
-                                      RATE OF FIRE ▲ · ACCURACY ▼
-                                    </div>
-                                  </div>
-                                  <div
-                                    class="eng-opt"
-                                    data-kind="bp"
-                                    data-label="Long Range"
-                                    data-desc="FALLOFF RANGE ▲ · POWER DRAW ▲"
-                                    style="
-                                      display: flex;
-                                      align-items: baseline;
-                                      justify-content: space-between;
-                                      gap: 10px;
-                                      padding: 8px 11px;
-                                      cursor: pointer;
-                                      background: transparent;
-                                    "
-                                    style-hover="background:rgba(255,140,26,.1)"
-                                  >
-                                    <div
-                                      style="
-                                        font:
-                                          500 12px/1.2 Barlow,
-                                          sans-serif;
-                                        font-style: normal;
-                                        color: var(--ink-2);
-                                      "
-                                    >
-                                      Long Range
-                                    </div>
-                                    <div
-                                      style="
-                                        flex: none;
-                                        font:
-                                          400 8px/1 'JetBrains Mono',
-                                          monospace;
-                                        color: var(--ink-38);
-                                        letter-spacing: 0.08em;
-                                      "
-                                    >
-                                      FALLOFF RANGE ▲ · POWER DRAW ▲
-                                    </div>
-                                  </div>
-                                  <div
-                                    class="eng-opt"
-                                    data-kind="bp"
-                                    data-label="Sturdy"
-                                    data-desc="INTEGRITY ▲ · MASS ▲"
-                                    style="
-                                      display: flex;
-                                      align-items: baseline;
-                                      justify-content: space-between;
-                                      gap: 10px;
-                                      padding: 8px 11px;
-                                      cursor: pointer;
-                                      background: transparent;
-                                    "
-                                    style-hover="background:rgba(255,140,26,.1)"
-                                  >
-                                    <div
-                                      style="
-                                        font:
-                                          500 12px/1.2 Barlow,
-                                          sans-serif;
-                                        font-style: normal;
-                                        color: var(--ink-2);
-                                      "
-                                    >
-                                      Sturdy
-                                    </div>
-                                    <div
-                                      style="
-                                        flex: none;
-                                        font:
-                                          400 8px/1 'JetBrains Mono',
-                                          monospace;
-                                        color: var(--ink-38);
-                                        letter-spacing: 0.08em;
-                                      "
-                                    >
-                                      INTEGRITY ▲ · MASS ▲
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                          <div style="border: 1px solid var(--amber-a22); background: var(--panel)">
                             <div
-                              id="eng-grade"
-                              style="display: flex; flex-direction: column; gap: 7px"
+                              style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                padding: 11px 14px;
+                                border-bottom: 1px solid var(--amber-a16);
+                              "
                             >
                               <div
                                 style="
-                                  display: flex;
-                                  justify-content: space-between;
                                   font:
-                                    400 8.5px/1 'JetBrains Mono',
+                                    600 10px/1 'JetBrains Mono',
                                     monospace;
-                                  color: var(--ink-45);
-                                  letter-spacing: 0.14em;
+                                  color: var(--amber-2);
+                                  letter-spacing: 0.18em;
                                 "
                               >
-                                <span>GRADE</span
-                                ><span id="eng-grade-val" style="color: var(--amber-3)">5</span>
-                              </div>
-                              <div id="eng-grade-bar" style="display: flex; gap: 4px">
-                                <div style="flex: 1; height: 28px; background: var(--amber)"></div>
-                                <div style="flex: 1; height: 28px; background: var(--amber)"></div>
-                                <div style="flex: 1; height: 28px; background: var(--amber)"></div>
-                                <div style="flex: 1; height: 28px; background: var(--amber)"></div>
-                                <div style="flex: 1; height: 28px; background: var(--amber)"></div>
+                                MODULE DETAILS
                               </div>
                             </div>
                             <div
-                              id="eng-xwrap"
-                              style="display: flex; flex-direction: column; gap: 7px"
+                              id="eng-right"
+                              style="
+                                padding: 14px;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 11px;
+                              "
+                            >
+                              <div
+                                id="eng-attrs"
+                                style="display: flex; flex-direction: column; gap: 9px"
+                              >
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    font:
+                                      400 8.5px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-38);
+                                    letter-spacing: 0.14em;
+                                    padding-bottom: 3px;
+                                  "
+                                >
+                                  <div
+                                    style="
+                                      font-weight: 600;
+                                      color: var(--amber-2);
+                                      letter-spacing: 0.16em;
+                                    "
+                                  >
+                                    ATTRIBUTES
+                                  </div>
+                                  <div style="text-align: right">STOCK</div>
+                                  <div style="text-align: right">MODIFIED</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">Damage</div>
+                                  <div style="text-align: right; color: var(--ink-5)">5.72</div>
+                                  <div style="text-align: right; color: var(--good)">6.90 ▲</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">DPS</div>
+                                  <div style="text-align: right; color: var(--ink-5)">35.2</div>
+                                  <div style="text-align: right; color: var(--good)">42.4 ▲</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">Power Draw</div>
+                                  <div style="text-align: right; color: var(--ink-5)">0.73</div>
+                                  <div style="text-align: right; color: var(--hot)">0.88 ▼</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">Clip Size</div>
+                                  <div style="text-align: right; color: var(--ink-5)">90</div>
+                                  <div style="text-align: right; color: var(--hot)">81 ▼</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">Thermal Load</div>
+                                  <div style="text-align: right; color: var(--ink-5)">0.34</div>
+                                  <div style="text-align: right; color: var(--hot)">0.41 ▼</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">Falloff</div>
+                                  <div style="text-align: right; color: var(--ink-5)">1,800 m</div>
+                                  <div style="text-align: right; color: var(--ink-5)">1,800 m</div>
+                                </div>
+                                <div
+                                  style="
+                                    display: grid;
+                                    grid-template-columns: 1.4fr 1fr 1fr;
+                                    align-items: center;
+                                    font:
+                                      400 11px/1 'JetBrains Mono',
+                                      monospace;
+                                  "
+                                >
+                                  <div style="color: var(--ink-7)">Max Range</div>
+                                  <div style="text-align: right; color: var(--ink-5)">4,000 m</div>
+                                  <div style="text-align: right; color: var(--ink-5)">4,000 m</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              display: flex;
+                              flex-direction: column;
+                              border: 1px solid var(--amber-a22);
+                              background: var(--panel);
+                            "
+                          >
+                            <div
+                              style="
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                padding: 11px 14px;
+                                border-bottom: 1px solid var(--amber-a16);
+                              "
+                            >
+                              <div
+                                style="
+                                  font:
+                                    600 10px/1 'JetBrains Mono',
+                                    monospace;
+                                  color: var(--amber-2);
+                                  letter-spacing: 0.18em;
+                                "
+                              >
+                                ENGINEERING
+                              </div>
+                            </div>
+                            <div
+                              id="eng-left"
+                              style="
+                                padding: 14px;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 12px;
+                              "
                             >
                               <div style="display: flex; flex-direction: column; gap: 7px">
                                 <div
+                                  id="eng-bp-label"
                                   style="
                                     font:
                                       400 8.5px/1 'JetBrains Mono',
@@ -22944,11 +22963,11 @@
                                     letter-spacing: 0.14em;
                                   "
                                 >
-                                  EXPERIMENTAL EFFECT
+                                  BLUEPRINT
                                 </div>
                                 <div style="position: relative">
                                   <div
-                                    id="eng-x-btn"
+                                    id="eng-bp-btn"
                                     style="
                                       height: 34px;
                                       display: flex;
@@ -22956,18 +22975,18 @@
                                       justify-content: space-between;
                                       padding: 0 12px;
                                       background: #171716;
-                                      border: 1px solid rgba(95, 208, 224, 0.35);
+                                      border: 1px solid var(--amber-a3);
                                       font:
                                         500 12px/1 Barlow,
                                         sans-serif;
-                                      color: var(--cool);
+                                      color: var(--amber-3);
                                       cursor: pointer;
                                     "
-                                    style-hover="border-color:rgba(95,208,224,.6)"
+                                    style-hover="border-color:var(--amber-a6)"
                                   >
-                                    <span id="eng-x-val">Corrosive Shell</span
+                                    <span id="eng-bp-val">Overcharged</span
                                     ><span
-                                      id="eng-x-caret"
+                                      id="eng-bp-caret"
                                       style="
                                         font:
                                           400 9.5px/1 'JetBrains Mono',
@@ -22978,7 +22997,7 @@
                                     >
                                   </div>
                                   <div
-                                    id="eng-x-menu"
+                                    id="eng-bp-menu"
                                     style="
                                       display: none;
                                       position: absolute;
@@ -22987,15 +23006,15 @@
                                       top: calc(100% + 4px);
                                       z-index: 30;
                                       background: #171716;
-                                      border: 1px solid rgba(95, 208, 224, 0.4);
+                                      border: 1px solid var(--amber-a35);
                                       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
                                     "
                                   >
                                     <div
                                       class="eng-opt"
-                                      data-kind="x"
-                                      data-label="None — remove effect"
-                                      data-desc="CLEARS EFFECT"
+                                      data-kind="bp"
+                                      data-label="None — stock module"
+                                      data-desc="REMOVES ENGINEERING"
                                       style="
                                         display: flex;
                                         align-items: baseline;
@@ -23016,7 +23035,7 @@
                                           color: var(--ink-66);
                                         "
                                       >
-                                        None — remove effect
+                                        None — stock module
                                       </div>
                                       <div
                                         style="
@@ -23028,14 +23047,14 @@
                                           letter-spacing: 0.08em;
                                         "
                                       >
-                                        CLEARS EFFECT
+                                        REMOVES ENGINEERING
                                       </div>
                                     </div>
                                     <div
                                       class="eng-opt"
-                                      data-kind="x"
-                                      data-label="Corrosive Shell"
-                                      data-desc="−3% ENEMY HULL RESIST · −20% AMMO"
+                                      data-kind="bp"
+                                      data-label="Overcharged"
+                                      data-desc="DAMAGE ▲ · THERMAL LOAD ▲"
                                       style="
                                         display: flex;
                                         align-items: baseline;
@@ -23056,7 +23075,7 @@
                                           color: var(--amber-3);
                                         "
                                       >
-                                        Corrosive Shell
+                                        Overcharged
                                       </div>
                                       <div
                                         style="
@@ -23068,14 +23087,14 @@
                                           letter-spacing: 0.08em;
                                         "
                                       >
-                                        −3% ENEMY HULL RESIST · −20% AMMO
+                                        DAMAGE ▲ · THERMAL LOAD ▲
                                       </div>
                                     </div>
                                     <div
                                       class="eng-opt"
-                                      data-kind="x"
-                                      data-label="Auto Loader"
-                                      data-desc="RELOADS WHILE FIRING · CLIP SIZE ▼"
+                                      data-kind="bp"
+                                      data-label="Rapid Fire"
+                                      data-desc="RATE OF FIRE ▲ · ACCURACY ▼"
                                       style="
                                         display: flex;
                                         align-items: baseline;
@@ -23096,7 +23115,7 @@
                                           color: var(--ink-2);
                                         "
                                       >
-                                        Auto Loader
+                                        Rapid Fire
                                       </div>
                                       <div
                                         style="
@@ -23108,14 +23127,14 @@
                                           letter-spacing: 0.08em;
                                         "
                                       >
-                                        RELOADS WHILE FIRING · CLIP SIZE ▼
+                                        RATE OF FIRE ▲ · ACCURACY ▼
                                       </div>
                                     </div>
                                     <div
                                       class="eng-opt"
-                                      data-kind="x"
-                                      data-label="Incendiary Rounds"
-                                      data-desc="90% THERMAL DAMAGE · +200% HEAT"
+                                      data-kind="bp"
+                                      data-label="Long Range"
+                                      data-desc="FALLOFF RANGE ▲ · POWER DRAW ▲"
                                       style="
                                         display: flex;
                                         align-items: baseline;
@@ -23136,7 +23155,7 @@
                                           color: var(--ink-2);
                                         "
                                       >
-                                        Incendiary Rounds
+                                        Long Range
                                       </div>
                                       <div
                                         style="
@@ -23148,143 +23167,377 @@
                                           letter-spacing: 0.08em;
                                         "
                                       >
-                                        90% THERMAL DAMAGE · +200% HEAT
+                                        FALLOFF RANGE ▲ · POWER DRAW ▲
+                                      </div>
+                                    </div>
+                                    <div
+                                      class="eng-opt"
+                                      data-kind="bp"
+                                      data-label="Sturdy"
+                                      data-desc="INTEGRITY ▲ · MASS ▲"
+                                      style="
+                                        display: flex;
+                                        align-items: baseline;
+                                        justify-content: space-between;
+                                        gap: 10px;
+                                        padding: 8px 11px;
+                                        cursor: pointer;
+                                        background: transparent;
+                                      "
+                                      style-hover="background:rgba(255,140,26,.1)"
+                                    >
+                                      <div
+                                        style="
+                                          font:
+                                            500 12px/1.2 Barlow,
+                                            sans-serif;
+                                          font-style: normal;
+                                          color: var(--ink-2);
+                                        "
+                                      >
+                                        Sturdy
+                                      </div>
+                                      <div
+                                        style="
+                                          flex: none;
+                                          font:
+                                            400 8px/1 'JetBrains Mono',
+                                            monospace;
+                                          color: var(--ink-38);
+                                          letter-spacing: 0.08em;
+                                        "
+                                      >
+                                        INTEGRITY ▲ · MASS ▲
                                       </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </div>
-                          <div
-                            id="eng-right"
-                            style="padding: 14px; display: flex; flex-direction: column; gap: 11px"
-                          >
-                            <div
-                              id="eng-attrs"
-                              style="display: flex; flex-direction: column; gap: 9px"
-                            >
                               <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  font:
-                                    400 8.5px/1 'JetBrains Mono',
-                                    monospace;
-                                  color: var(--ink-38);
-                                  letter-spacing: 0.14em;
-                                  padding-bottom: 3px;
-                                "
+                                id="eng-grade"
+                                style="display: flex; flex-direction: column; gap: 7px"
                               >
                                 <div
                                   style="
-                                    font-weight: 600;
-                                    color: var(--amber-2);
-                                    letter-spacing: 0.16em;
+                                    display: flex;
+                                    justify-content: space-between;
+                                    font:
+                                      400 8.5px/1 'JetBrains Mono',
+                                      monospace;
+                                    color: var(--ink-45);
+                                    letter-spacing: 0.14em;
                                   "
                                 >
-                                  ATTRIBUTES
+                                  <span>GRADE</span
+                                  ><span id="eng-grade-val" style="color: var(--amber-3)">5</span>
                                 </div>
-                                <div style="text-align: right">STOCK</div>
-                                <div style="text-align: right">MODIFIED</div>
+                                <div id="eng-grade-bar" style="display: flex; gap: 4px">
+                                  <div
+                                    style="
+                                      flex: 1;
+                                      height: 28px;
+                                      display: flex;
+                                      align-items: center;
+                                      justify-content: center;
+                                      background: var(--amber);
+                                      font:
+                                        600 10px/1 'JetBrains Mono',
+                                        monospace;
+                                      color: var(--bg);
+                                    "
+                                  >
+                                    1
+                                  </div>
+                                  <div
+                                    style="
+                                      flex: 1;
+                                      height: 28px;
+                                      display: flex;
+                                      align-items: center;
+                                      justify-content: center;
+                                      background: var(--amber);
+                                      font:
+                                        600 10px/1 'JetBrains Mono',
+                                        monospace;
+                                      color: var(--bg);
+                                    "
+                                  >
+                                    2
+                                  </div>
+                                  <div
+                                    style="
+                                      flex: 1;
+                                      height: 28px;
+                                      display: flex;
+                                      align-items: center;
+                                      justify-content: center;
+                                      background: var(--amber);
+                                      font:
+                                        600 10px/1 'JetBrains Mono',
+                                        monospace;
+                                      color: var(--bg);
+                                    "
+                                  >
+                                    3
+                                  </div>
+                                  <div
+                                    style="
+                                      flex: 1;
+                                      height: 28px;
+                                      display: flex;
+                                      align-items: center;
+                                      justify-content: center;
+                                      background: var(--amber);
+                                      font:
+                                        600 10px/1 'JetBrains Mono',
+                                        monospace;
+                                      color: var(--bg);
+                                    "
+                                  >
+                                    4
+                                  </div>
+                                  <div
+                                    style="
+                                      flex: 1;
+                                      height: 28px;
+                                      display: flex;
+                                      align-items: center;
+                                      justify-content: center;
+                                      background: var(--amber);
+                                      font:
+                                        600 10px/1 'JetBrains Mono',
+                                        monospace;
+                                      color: var(--bg);
+                                    "
+                                  >
+                                    5
+                                  </div>
+                                </div>
                               </div>
                               <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
+                                id="eng-xwrap"
+                                style="display: flex; flex-direction: column; gap: 7px"
                               >
-                                <div style="color: var(--ink-7)">Damage</div>
-                                <div style="text-align: right; color: var(--ink-5)">5.72</div>
-                                <div style="text-align: right; color: var(--good)">6.90 ▲</div>
-                              </div>
-                              <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
-                              >
-                                <div style="color: var(--ink-7)">DPS</div>
-                                <div style="text-align: right; color: var(--ink-5)">35.2</div>
-                                <div style="text-align: right; color: var(--good)">42.4 ▲</div>
-                              </div>
-                              <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
-                              >
-                                <div style="color: var(--ink-7)">Power Draw</div>
-                                <div style="text-align: right; color: var(--ink-5)">0.73</div>
-                                <div style="text-align: right; color: var(--hot)">0.88 ▼</div>
-                              </div>
-                              <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
-                              >
-                                <div style="color: var(--ink-7)">Clip Size</div>
-                                <div style="text-align: right; color: var(--ink-5)">90</div>
-                                <div style="text-align: right; color: var(--hot)">81 ▼</div>
-                              </div>
-                              <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
-                              >
-                                <div style="color: var(--ink-7)">Thermal Load</div>
-                                <div style="text-align: right; color: var(--ink-5)">0.34</div>
-                                <div style="text-align: right; color: var(--hot)">0.41 ▼</div>
-                              </div>
-                              <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
-                              >
-                                <div style="color: var(--ink-7)">Falloff</div>
-                                <div style="text-align: right; color: var(--ink-5)">1,800 m</div>
-                                <div style="text-align: right; color: var(--ink-5)">1,800 m</div>
-                              </div>
-                              <div
-                                style="
-                                  display: grid;
-                                  grid-template-columns: 1.4fr 1fr 1fr;
-                                  align-items: center;
-                                  font:
-                                    400 11px/1 'JetBrains Mono',
-                                    monospace;
-                                "
-                              >
-                                <div style="color: var(--ink-7)">Max Range</div>
-                                <div style="text-align: right; color: var(--ink-5)">4,000 m</div>
-                                <div style="text-align: right; color: var(--ink-5)">4,000 m</div>
+                                <div style="display: flex; flex-direction: column; gap: 7px">
+                                  <div
+                                    style="
+                                      font:
+                                        400 8.5px/1 'JetBrains Mono',
+                                        monospace;
+                                      color: var(--ink-45);
+                                      letter-spacing: 0.14em;
+                                    "
+                                  >
+                                    EXPERIMENTAL EFFECT
+                                  </div>
+                                  <div style="position: relative">
+                                    <div
+                                      id="eng-x-btn"
+                                      style="
+                                        height: 34px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: space-between;
+                                        padding: 0 12px;
+                                        background: #171716;
+                                        border: 1px solid rgba(95, 208, 224, 0.35);
+                                        font:
+                                          500 12px/1 Barlow,
+                                          sans-serif;
+                                        color: var(--cool);
+                                        cursor: pointer;
+                                      "
+                                      style-hover="border-color:rgba(95,208,224,.6)"
+                                    >
+                                      <span id="eng-x-val">Corrosive Shell</span
+                                      ><span
+                                        id="eng-x-caret"
+                                        style="
+                                          font:
+                                            400 9.5px/1 'JetBrains Mono',
+                                            monospace;
+                                          color: var(--ink-5);
+                                        "
+                                        >▾</span
+                                      >
+                                    </div>
+                                    <div
+                                      id="eng-x-menu"
+                                      style="
+                                        display: none;
+                                        position: absolute;
+                                        left: 0;
+                                        right: 0;
+                                        top: calc(100% + 4px);
+                                        z-index: 30;
+                                        background: #171716;
+                                        border: 1px solid rgba(95, 208, 224, 0.4);
+                                        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+                                      "
+                                    >
+                                      <div
+                                        class="eng-opt"
+                                        data-kind="x"
+                                        data-label="None — remove effect"
+                                        data-desc="CLEARS EFFECT"
+                                        style="
+                                          display: flex;
+                                          align-items: baseline;
+                                          justify-content: space-between;
+                                          gap: 10px;
+                                          padding: 8px 11px;
+                                          cursor: pointer;
+                                          background: transparent;
+                                        "
+                                        style-hover="background:rgba(255,140,26,.1)"
+                                      >
+                                        <div
+                                          style="
+                                            font:
+                                              400 12px/1.2 Barlow,
+                                              sans-serif;
+                                            font-style: italic;
+                                            color: var(--ink-66);
+                                          "
+                                        >
+                                          None — remove effect
+                                        </div>
+                                        <div
+                                          style="
+                                            flex: none;
+                                            font:
+                                              400 8px/1 'JetBrains Mono',
+                                              monospace;
+                                            color: var(--ink-38);
+                                            letter-spacing: 0.08em;
+                                          "
+                                        >
+                                          CLEARS EFFECT
+                                        </div>
+                                      </div>
+                                      <div
+                                        class="eng-opt"
+                                        data-kind="x"
+                                        data-label="Corrosive Shell"
+                                        data-desc="−3% ENEMY HULL RESIST · −20% AMMO"
+                                        style="
+                                          display: flex;
+                                          align-items: baseline;
+                                          justify-content: space-between;
+                                          gap: 10px;
+                                          padding: 8px 11px;
+                                          cursor: pointer;
+                                          background: rgba(255, 140, 26, 0.14);
+                                        "
+                                        style-hover="background:rgba(255,140,26,.1)"
+                                      >
+                                        <div
+                                          style="
+                                            font:
+                                              500 12px/1.2 Barlow,
+                                              sans-serif;
+                                            font-style: normal;
+                                            color: var(--amber-3);
+                                          "
+                                        >
+                                          Corrosive Shell
+                                        </div>
+                                        <div
+                                          style="
+                                            flex: none;
+                                            font:
+                                              400 8px/1 'JetBrains Mono',
+                                              monospace;
+                                            color: var(--ink-38);
+                                            letter-spacing: 0.08em;
+                                          "
+                                        >
+                                          −3% ENEMY HULL RESIST · −20% AMMO
+                                        </div>
+                                      </div>
+                                      <div
+                                        class="eng-opt"
+                                        data-kind="x"
+                                        data-label="Auto Loader"
+                                        data-desc="RELOADS WHILE FIRING · CLIP SIZE ▼"
+                                        style="
+                                          display: flex;
+                                          align-items: baseline;
+                                          justify-content: space-between;
+                                          gap: 10px;
+                                          padding: 8px 11px;
+                                          cursor: pointer;
+                                          background: transparent;
+                                        "
+                                        style-hover="background:rgba(255,140,26,.1)"
+                                      >
+                                        <div
+                                          style="
+                                            font:
+                                              500 12px/1.2 Barlow,
+                                              sans-serif;
+                                            font-style: normal;
+                                            color: var(--ink-2);
+                                          "
+                                        >
+                                          Auto Loader
+                                        </div>
+                                        <div
+                                          style="
+                                            flex: none;
+                                            font:
+                                              400 8px/1 'JetBrains Mono',
+                                              monospace;
+                                            color: var(--ink-38);
+                                            letter-spacing: 0.08em;
+                                          "
+                                        >
+                                          RELOADS WHILE FIRING · CLIP SIZE ▼
+                                        </div>
+                                      </div>
+                                      <div
+                                        class="eng-opt"
+                                        data-kind="x"
+                                        data-label="Incendiary Rounds"
+                                        data-desc="90% THERMAL DAMAGE · +200% HEAT"
+                                        style="
+                                          display: flex;
+                                          align-items: baseline;
+                                          justify-content: space-between;
+                                          gap: 10px;
+                                          padding: 8px 11px;
+                                          cursor: pointer;
+                                          background: transparent;
+                                        "
+                                        style-hover="background:rgba(255,140,26,.1)"
+                                      >
+                                        <div
+                                          style="
+                                            font:
+                                              500 12px/1.2 Barlow,
+                                              sans-serif;
+                                            font-style: normal;
+                                            color: var(--ink-2);
+                                          "
+                                        >
+                                          Incendiary Rounds
+                                        </div>
+                                        <div
+                                          style="
+                                            flex: none;
+                                            font:
+                                              400 8px/1 'JetBrains Mono',
+                                              monospace;
+                                            color: var(--ink-38);
+                                            letter-spacing: 0.08em;
+                                          "
+                                        >
+                                          90% THERMAL DAMAGE · +200% HEAT
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -38102,6 +38355,7 @@
             s.style.background = on
               ? (i === 0 ? 'repeating-linear-gradient(135deg,var(--amber) 0 3px,rgba(255,140,26,.28) 3px 6px)' : 'var(--panel-5)')
               : 'var(--amber)';
+            s.style.color = on && i !== 0 ? 'var(--ink-38)' : 'var(--bg)';
           });
         }
 

@@ -45,6 +45,39 @@ $container-compact-min: 17rem;
 $container-medium-min: 24rem;
 $container-wide-min: 40rem;
 
+// The width the editor's own container needs before the chooser it belongs to
+// draws its rail rather than its accordion. It is `manifest.ts`'s
+// `RAIL_MINIMUM_REM`, asked of the editor because the two boxes are the same
+// width wherever the bench is one column: the chooser is above the editor, both
+// take the bench's full width, and the editor cannot see the chooser's own
+// decision. The numbered strip is what the answer is spent on — step ③ is not
+// drawn where there is no step ① or ② on the screen beside it.
+$rail-manifest-min: 39.875rem;
+
+// The width the outfitting bench's own column needs before the engineering
+// editor is drawn beside the chooser rather than under it: the chooser's rail
+// minimum above, canvas 1c's 14px gap and its 396px editor track, and then the
+// bench's own 18px inset and hairline on both edges. Below it the editor keeps
+// both its cards and takes the chooser's full width
+// (`specs/002-module-outfitting/design/outfitting-workspace.md`, "The bench is
+// two columns where it has room for three").
+$bench-columns-min: 67.875rem;
+
+// The same threshold, asked of the whole region instead of the bench's own
+// column: the wide composition puts a fixed rail on each side of that column, so
+// this is `$bench-columns-min` plus both of them. It exists because the column
+// the bench sits in is the container the query above is asked of, and a
+// container query cannot style its own container — the column's height has to be
+// decided from outside it.
+//
+// Added up here rather than written out, because the two have to be the same
+// width. Stated apart they can drift, and a region that crossed its threshold
+// while the bench had not crossed its own would bound and clip a bench that is
+// still one column under another. The grid it is measured against has no column
+// gap and no inline padding, so the region is the three tracks and nothing else
+// (`outfitting-workspace.scss`, `grid-template-columns`).
+$bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
+
 @mixin compact {
   @media (max-width: #{$mode-compact-max}) {
     @content;
@@ -102,6 +135,61 @@ $container-wide-min: 40rem;
 @mixin container-wide-up($name) {
   @container #{$name} (min-width: #{$container-wide-min}) {
     @content;
+  }
+}
+
+// The bench wide enough for canvas 1c's three columns. Declared once and asked
+// from both sides of the seam: the workspace lays the two panels out, and the
+// chooser's step ② draws its chevron only where step ③ is actually beside it.
+// `bench` is the container name `.outfitting__centre` sets.
+@mixin bench-columns {
+  @container bench (min-width: #{$bench-columns-min}) {
+    @content;
+  }
+}
+
+// How short a window may get before the bench stops being bounded to it.
+//
+// A bounded bench divides one screen's height between a chooser that scrolls and
+// an editor that mostly cannot: the three engineering controls are reserved room
+// and the attribute table under them has a floor, so a window short enough puts
+// the editor past the bench, which clips. Below this the column is released and
+// the page carries the bench, which is what every stacked arrangement does
+// anyway (`design/outfitting-workspace.md`, "The bench is bounded where it is
+// three columns").
+//
+// The figure is what the bench cannot fold, measured at the largest hull: the
+// command bar (74), the hull plates (348), the region gap (22) and the bench at
+// its shortest (568: the step strip's own 56px head offset, the editor column's
+// 474 — its bar, the reserved engineering card and the table's floor — and the
+// bench's 36px inset with its two hairlines). That is 1012, measured at the
+// largest hull with nothing engineered, and it is this figure exactly: a window
+// 4px under it spends the bench's bottom inset on the shortfall.
+$bench-bounded-min-height: 63.25rem;
+
+// The bench actually bounded: three columns *and* a window tall enough to hold
+// what they cannot fold. Everything that scrolls inside the bench is asked this
+// rather than the width alone, because a scroller inside a column the page is
+// carrying is the nested arrangement both records forbid — an inner list with
+// its own foot below the fold of a page that scrolls too
+// (`design/engineering-editor.md`, "Nothing here scrolls"). A 1920 x 950 window
+// is wide enough for the columns and too short for the bound, and that is the
+// window it was found in.
+@mixin bench-bounded {
+  @container bench (min-width: #{$bench-columns-min}) {
+    @media (min-height: #{$bench-bounded-min-height}) {
+      @content;
+    }
+  }
+}
+
+// For the one box the mixins above cannot reach: the bench's own column, which
+// is the container the width question is asked of.
+@mixin bench-columns-region {
+  @container outfitting (min-width: #{$bench-columns-region-min}) {
+    @media (min-height: #{$bench-bounded-min-height}) {
+      @content;
+    }
   }
 }
 

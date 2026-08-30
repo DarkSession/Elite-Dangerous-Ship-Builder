@@ -4,19 +4,22 @@
   display: block;
 }
 
-// The reference's single version line, allowed to become several lines when
-// the identifiers are long or the measure is narrow.
+// The reference's version block: the facts side by side, well apart, each one
+// its term over its own value. Several rows where the identifiers are long or
+// the measure is narrow.
 .version-facts {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--edsb-space-region));
 
   margin: 0;
 }
 
+// Term above value, as the reference stacks them. Side by side the term reads
+// as a prefix of the number beside it rather than as the label of the number
+// under it, and a row of four pieces has to be read in pairs to be read at all.
 .version-facts__fact {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--edsb-space-inline-tight);
+  flex-direction: column;
+  gap: var(--edsb-space-stack-tight);
   // Without this a long build id makes the flex item refuse to shrink, and the
   // document scrolls sideways instead of the value wrapping.
   min-inline-size: 0;

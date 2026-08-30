@@ -16,6 +16,12 @@ the build.
   takes — `Fitting · Hardpoint 1 · Huge`. The package's own slot name counts _huge_ hardpoints rather
   than hardpoints, so on a hull with several classes it names a different mount from the one the
   ledger marked (wave 6). Every other kind keeps the package's name.
+- **The head stops at the module list's edge.** Canvas 1c pads it
+  `13px 430px 11px 20px`: the field and `REMOVE MODULE` end where the manifest ends, and the
+  engineering column beside it keeps its own width clear. The two controls act on the manifest, so
+  they stand over the manifest and over nothing else. Here that is the arrangement rather than a
+  padding — the head belongs to the fitting column of the bench's two, so it ends where that column
+  ends at every width the column is drawn at.
 - Visibly labeled `CandidateSearch` and clear action. The result count is drawn in canvas 1d's screen
   header only; canvas 1c's panel head carries no count, and the search announces it at both widths.
 - A focus shortcut and its hint, as canvas 1c draws beside the field. **Ruled 2026-08-21: adopted as
@@ -65,32 +71,56 @@ The region may scroll internally. It cannot cause page-level horizontal overflow
 
 ## The wide manifest is a rail and a pane
 
-**Ruled 2026-08-25, against the canvas revision of that date.** Canvas 1c no longer draws the wide
-manifest as one accordion. It draws `#fit-table` as
-`grid-template-columns: 216px minmax(0, 1fr); column-gap: 14px`, with:
+**Ruled 2026-08-25, against the canvas revision of that date; extended 2026-08-30.** Canvas 1c does
+not draw the wide manifest as one accordion. It draws `#fit-table` as
+`grid-template-columns: 264px minmax(360px, 1fr) 396px; column-gap: 14px`, with:
 
+- **column 1, row 1** — step ①, the family rail's own bar;
 - **column 1, row 2** — the family rail: every family in package order, one row each carrying the
   family's name and its choice count in a chip, bounded at the pane height below and scrolling on its
   own. The selected row takes the amber left rail (`border-left: 3px solid var(--amber)`) and the
   amber gradient ground, and the others take `var(--panel-2)` with a transparent border in the same
   place. **There is no caret**: `wireFamilies`' rail branch keeps its `.fam-car` update behind a
   null check, and the revised markup carries none;
-- **column 2, row 1** — the column head, over the pane alone;
+- **column 2, row 1** — step ②, which is also the column head: `MODULE`, `CLASS` and `COST` are cells
+  of that same bar rather than a row above the pane;
 - **column 2, row 2** — the selected family's rows, `border-left: 1px solid var(--amber-a16)`,
-  bounded at the same height and scrolling on its own.
+  bounded at the same height and scrolling on its own;
+- **column 3** — step ③ and the engineering editor under it, which is that surface's own
+  (`design/engineering-editor.md`).
 
-**The pane height is 428px, amended 2026-08-28 (Commander request).** The canvas draws 470px. One
-manifest row comes off it, the same row the fitting panel's floor gives up, because the panel and the
-pane are the same list at two widths and the panel is about a tenth shorter for the pair
-(`design/outfitting-workspace.md`, "Seven rows, and the fitting panel about a tenth shorter").
+**The pane height is 386px, amended 2026-08-29 (Commander request).** Two manifest rows come off the
+canvas's own figure, the same two the fitting panel's floor gives up, because the panel and the pane
+are the same list at two widths (`design/outfitting-workspace.md`, "Six rows, and another tenth
+off").
 
-**The rail's 216px is a floor and a share, amended 2026-08-26 (Commander request).** It is a quarter
-of the canvas's own 862px centre column, and held at that one number it stopped being a quarter the
-moment the column was wider: at 2560 the pane beside it ran 1595px of mostly empty row while
-seventeen family names went on wrapping inside 216. The rail now takes a quarter of what it is
-actually given, floored at the canvas's figure so nothing moves at the width the canvas was drawn at,
-and bounded at 20rem — past the width a family name needs, the pixels belong to the rows. 216 at 1440
-and 1560, 308 at 1920, 320 at 2560.
+**The canvas's own bound is not adopted.** The artboard draws 648px, because the 2026-08-30 revision
+stood the engineering editor beside the manifest rather than under it and grew the list into the room
+that left. What the two requests above are about is how far a Commander scrolls to reach the anatomy
+and the status rail, which is not changed by what stands beside the list. The bound stays where those
+requests put it.
+
+**The rail's 264px is a share, amended 2026-08-26 and 2026-08-30 (Commander requests).** Held at
+that one number it is the canvas's own proportion at one width and nothing like it at any other: at
+2560 the pane beside it ran mostly empty row while seventeen family names went on wrapping inside it,
+and at the narrowest column that draws a rail at all it took two fifths of it — 264 of 638 — with the
+rows it exists to open squeezed into what was left.
+
+So it is a share of the chooser's own column, bounded at 20rem, past which a family name has the
+width it needs and the pixels belong to the rows. The share is taken against that column rather than
+against the bench because that is the box the rail is a track of: the editor beside it is the bench's
+third track, not a second track of this grid. Canvas 1c draws the rail at 264px of a chooser column
+of 872 — its own 264 and 594 tracks with the 14px between them — which is three tenths of it. Drawn:
+192px at the narrowest bench that draws three columns, 263px at the canvas's own width, and 320px at 2560.
+
+**The declared height is a cap, and a column is better than a cap. Amended 2026-08-30 (Commander
+request).** `--edsb-layout-manifest-pane` is what the rail and the pane are held to while nothing
+above them says how tall the list may be: unbounded, a list of four hundred rows is four hundred rows
+tall and the page is that much longer. Where the bench is bounded the cap is lifted and the column
+decides — the two scrollers share the row under the step bars, which is everything the column has
+left. The room is there, and left unused it is empty row beside a list that is scrolling. No floor is
+stated with it: the column's own height is the floor, and a figure larger than the column would be
+clipped by the bench rather than honoured.
 
 **Selection is exclusive.** The revised script's rail branch shows the chosen family's `.fam-v` and
 hides every other, and returns before the accordion branch it replaced. Exactly one family is
@@ -129,12 +159,55 @@ summary and its caret. So the two compositions now differ in kind and not only i
 rail with one pane at wide, an accordion at compact. What that costs FR-021 to FR-023 is ruled in
 "Module families" below.
 
+## The three steps, numbered
+
+**Ruled 2026-08-30, against the canvas revision of that date.** Canvas 1c opens each of the bench's
+three columns with a bar on `var(--panel-2)`, `border: 1px solid var(--amber-a12)` and
+`border-left: 3px solid var(--amber)`, carrying a 16px solid amber square with the step's number in
+it and the step's name in tracked mono. A `›` hangs `right: -12px` off the end of steps ① and ②, in
+the gap between that column and the next.
+
+The strip is what says the three columns are one sequence — pick a family, pick a module, engineer it
+— rather than three panels that happen to be adjacent. The number and the chevron are decoration and
+are hidden from a reader: the name beside them is the step, and each column is already a named region
+of its own.
+
+**Step ① is drawn `CATEGORY`, as the canvas draws it. Ruled 2026-08-30 (Commander request).** The
+rail lists the Almanac's module families, and the word is spent twice on this screen: the ledger's
+own `ALL / HARDPOINTS / CORE / OPTIONAL / UTILITY` strip is a category strip too. The Commander's
+call is that the reference's word wins, and the two are far enough apart — one opens the ledger, the
+other opens the chooser's first column — that the strip a Commander is looking at says which is
+meant. The same word is drawn at every width, so canvas 1d's `FAMILIES` rule takes it as well: one
+thing has one name, and a rail that is `CATEGORY` beside the bench and `FAMILIES` on a phone is two.
+
+**Step ② carries the column head.** `MODULE` is the step's own name and `CLASS` and `COST` are cells
+of the same bar, on the pane's own `2.6fr 56px 104px` tracks. There is no separate head row: the
+canvas merged the two, and drawn as two there is a labelled bar and then a second set of labels a few
+pixels under it, saying the same thing twice.
+
+**Step ③ heads the engineering column** and belongs to that surface
+(`design/engineering-editor.md`, "The third column").
+
+**The strip is drawn wherever the rail manifest is.** Where the bench has no room for three columns
+the editor sits under the fitting column instead of beside it, and steps ① and ② still head the rail
+and the pane — they are the manifest's own heads. Step ②'s chevron is drawn only where step ③ is
+actually beside it, because it points at the column that is next in the flow. Where the manifest is
+the accordion there are no columns to number: it draws no bars, and step ③ drops its number and keeps
+its name, so a lone `③` never heads a flow with no other step on the screen.
+
+**The three bars are drawn by one set of rules, in `src/styles/_chrome.scss`.** They span three
+components and are owned by none of them, and the claim the strip makes is that they are one strip;
+stated as a mixin the same rules land in three stylesheets, free to drift apart
+(`specs/011-interface-foundations/design/reference-review.md`).
+
 ## The manifest's own columns
 
-**Ruled 2026-08-25.** The wide manifest is three columns, not seven:
-`grid-template-columns: 2.6fr 70px 150px` — `MODULE`, `CLASS` and a right-aligned `COST` — on both
-the head and every row of the pane. The canvas revision withdrew `DPS`, `MASS t`, `PWR MW` and
-`DRAW WEP` from this width entirely.
+**Ruled 2026-08-25, amended 2026-08-30.** The wide manifest is three columns, not seven:
+`grid-template-columns: 2.6fr 56px 104px` — `MODULE`, `CLASS` and a right-aligned `COST` — on the
+step ② bar and on every row of the pane. The canvas revision withdrew `DPS`, `MASS t`, `PWR MW` and
+`DRAW WEP` from this width entirely. The 2026-08-30 revision narrowed the two figure columns from
+`70px 150px`, which is where the third column's width comes from: a cost of nine digits and a unit
+still fits in 104px, and the module name keeps the rest.
 
 They are not moved and not folded into a second line: canvas 1c draws a row as one line of three
 cells. A wide manifest that kept them would be the screen not being the design.
@@ -143,6 +216,16 @@ cells. A wide manifest that kept them would be the screen not being the design.
 mount alone — `GIMBALLED` — so the compact card is the same three things the wide row is: the module
 with its mount, its class and its cost. The chooser states which article a Commander is taking, at
 both widths, and the article's own figures are read where a fitted article's figures are read.
+
+**And the three stand on one line, 2026-08-30 (Commander request).** Canvas 1d draws them as one:
+`display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 30px; min-height: 60px`, the
+class code in a 28px gutter, the module beside it and the price on the trailing edge. Stacked in a
+single column instead, the same row stood three deep — a name, a class under it and a price under
+that — so a screen of modules showed a handful of them and every price was a line of its own to read
+down. The gutter is a declared width rather than `auto` because each row carries its own grid: at
+`auto` every code is as wide as its own row's code, and the column the canvas lines them up in stops
+being a column. Neither canvas writes `COST` on a row, so the label is drawn at neither width and
+stays in the accessibility tree at both.
 
 The family header carries the package's family name and its count, and nothing else. Canvas 1d
 draws no summary line on a family bar, and one is not built here in any case: a min–max across a
@@ -324,8 +407,8 @@ rule cannot disagree for a frame.
 **The threshold is derived, not measured off the drawing.** The pane is a
 candidate row, so it may not be narrowed below the content minimum a candidate
 row already declares — 22.5rem, the same figure the workspace's own composition
-observer uses — and the rail is canvas 1c's fixed 216px beside it with the
-canvas's 14px between them: 36.875rem. **This is lower than the 44rem the
+observer uses — and the rail is canvas 1c's fixed 264px beside it with the
+canvas's 14px between them: 39.875rem. **This is lower than the 44rem the
 aligned manifest used to need**, and deliberately so: 44rem was the width seven
 columns took, the revision cut them to three, and at 44rem exactly the desktop
 profile came out one CSS pixel above the threshold, which is a coin toss between

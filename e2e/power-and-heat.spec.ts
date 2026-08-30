@@ -4,7 +4,7 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, expectTargetSizes, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { isCompactWorkspace, revealStatusRail } from './outfitting-surfaces';
+import { revealStatusRail, statusRailIsColumn } from './outfitting-surfaces';
 import { buildStockHull } from './shell';
 
 /**
@@ -629,11 +629,13 @@ test.describe('the compact strip’s power badge', () => {
   }) => {
     await openPower(page);
 
-    // Canvas 1c has no strip and no badge: the rail states the draw, the
-    // remainder and the bar in full, and a plate repeating the same figure a
-    // track away would be the one reading given twice on one screen
-    // (`design/power-and-heat-detail.md`, "The compact strip's badge").
-    if (!(await isCompactWorkspace(page))) {
+    // Canvas 1c has no strip and no badge: where the rail is its own column it
+    // states the draw, the remainder and the bar in full, and a plate repeating
+    // the same figure a track away would be the one reading given twice on one
+    // screen (`design/power-and-heat-detail.md`, "The compact strip's badge").
+    // Wherever the rail is a segment instead, the strip is drawn and closes with
+    // the badge.
+    if (await statusRailIsColumn(page)) {
       await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
       return;
     }
@@ -697,7 +699,7 @@ test.describe('the compact strip’s power badge', () => {
       }
       await openPower(page);
 
-      if (!(await isCompactWorkspace(page))) {
+      if (await statusRailIsColumn(page)) {
         await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
         return;
       }
@@ -737,7 +739,7 @@ test.describe('the compact strip’s power badge', () => {
   test('names an unpowered group only where the package reports one', async ({ page }) => {
     await openPower(page);
 
-    if (!(await isCompactWorkspace(page))) {
+    if (await statusRailIsColumn(page)) {
       await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
       return;
     }

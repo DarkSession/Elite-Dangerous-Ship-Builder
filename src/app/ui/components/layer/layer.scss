@@ -96,28 +96,44 @@
 // The three presentations, as mixins, so the adaptive presentation composes
 // exactly the same rules rather than a second nearly-identical copy of them.
 
-// Centred dialog: bounded by a named measure, and never taller than the
-// viewport, so its own content scrolls instead of the document.
+// Centred dialog: bounded by a named measure, and by the reference's 82% of the
+// viewport down the block axis, so its own content scrolls instead of the
+// document and the screen behind it still shows above and below
+// (`specs/011-interface-foundations/design/canvas-extraction.md`, "Panel
+// dialog").
 @mixin dialog-presentation($measure: var(--edsb-layout-layer-max)) {
   // `inline-size`, not `max-inline-size`: the platform's own modal rule is a
   // `max-width` that holds a dialog off the edges of the screen, and an author
   // maximum here would beat it for every layer in the application.
   inline-size: min($measure, 100%);
-  max-block-size: 90vh;
+  max-block-size: 82vh;
   overflow-y: auto;
 }
 
-// A sheet rises from the block end. Reachable by thumb on a phone.
+// A sheet fills the screen from the top and grows down to a bound.
+//
+// Anchored at the top, so a layer starts where the screen starts and takes
+// exactly the room its content needs. Risen from the block end and sized by its
+// content instead, a short layer puts a short screen's worth of scrim above
+// itself: `Import build` began 449px down an 844px phone, over a ship list that
+// had nothing to do with importing (Commander request 2026-08-30).
+//
+// The bound is the reference's 88%: enough of the screen behind it stays visible
+// to say what the layer is over, and no more. `svh` rather than `vh` because a
+// phone's toolbars are the difference between the two, and the larger viewport
+// is the one that is not on screen yet.
 @mixin sheet-presentation {
   inline-size: 100%;
   max-inline-size: 100%;
-  margin-block-start: auto;
-  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-block-end: auto;
   margin-inline: auto;
-  max-block-size: 80vh;
+  max-block-size: 88svh;
   overflow-y: auto;
   border-radius: var(--edsb-shape-layer);
-  border-block-end: 0;
+  // The edge the sheet shares with the edge of the screen is not drawn, and a
+  // sheet that starts at the top shares its leading one.
+  border-block-start: 0;
 }
 
 // A full-height layer owns the viewport. Used where content, expansion or a

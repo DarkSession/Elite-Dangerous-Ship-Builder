@@ -346,6 +346,7 @@ export class CandidateList {
 
   /** The one pane the rail's rows all point at. */
   readonly paneId = relationId('candidate-pane');
+  readonly railHeadingId = relationId('candidate-families');
 
   /**
    * The family the rail has selected, and whose rows the pane draws.

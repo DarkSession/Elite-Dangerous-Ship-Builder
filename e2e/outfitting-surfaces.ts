@@ -43,6 +43,21 @@ export async function isCompactWorkspace(page: Page): Promise<boolean> {
 }
 
 /**
+ * Whether the status rail is canvas 1c's third column rather than a segment.
+ *
+ * Only the widest arrangement draws it as a track. Everywhere else it is the
+ * anatomy strip's `STATUS` segment, and the six key readings it carries are
+ * drawn above the category strip instead — so a journey reading either has to
+ * know which of the two it is looking at (`outfitting-workspace.ts`,
+ * `statusIsGuest`).
+ */
+export async function statusRailIsColumn(page: Page): Promise<boolean> {
+  const region = page.locator('.outfitting').first();
+  await expect(region).toBeVisible();
+  return (await region.getAttribute('data-composition')) === 'wide';
+}
+
+/**
  * Brings the status rail on screen, however this width keeps it.
  *
  * Canvas 1c draws the rail as the third track of its grid, on screen whatever
@@ -68,16 +83,19 @@ export async function revealStatusRail(
   const segment = page.locator('.anatomy__modes').getByRole('button', { name });
 
   // Read from the region's own published composition rather than from whether
-  // the rail happens to be on screen yet. The composition is measured after the
-  // first paint, so a rail asked about too early answers for the arrangement it
-  // is about to leave — and the branch taken on that answer is the wrong one at
-  // both widths.
+  // the rail happens to be on screen yet. Only the widest arrangement draws the
+  // rail as a column; every narrower one reaches it through the strip's
+  // `STATUS` segment (`outfitting-workspace.ts`, `statusIsGuest`).
+  //
+  // The composition is measured after the first paint, so a rail asked about too
+  // early answers for the arrangement it is about to leave — and the branch
+  // taken on that answer is the wrong one at both widths.
   //
   // Retried as a whole for the same reason `pressCommandBarAction` is: the
   // strip republishes its segments when the composition changes, so a control
   // located a moment ago can be gone by the time it is pressed.
   await expect(async () => {
-    if ((await region.getAttribute('data-composition')) !== 'compact') {
+    if ((await region.getAttribute('data-composition')) === 'wide') {
       await expect(rail).toBeVisible({ timeout: 2_000 });
       return;
     }

@@ -25,6 +25,63 @@ workspace and never creates or owns a second build.
   `ENGINEERING` panel below the anatomy, and a Commander changes what they are looking at by marking
   a different row. `Change module` and `Engineer` are canvas 1d's controls and appear only in the
   compact composition (reference review, "Opening controls for the two surfaces").
+- **The bench is two columns where it has room for three. Ruled 2026-08-30, against the canvas
+  revision of that date.** Canvas 1c draws the bench as `264px minmax(360px, 1fr) 396px`: the family
+  rail, the module pane and the engineering editor, in one row under one numbered step strip. The
+  first two of those tracks are the manifest's own and are drawn inside the fitting panel, so the
+  bench itself is the two panels side by side — the fitting column taking what is left, the editor
+  taking the canvas's 396px, and the two stretch to the same height.
+  The mount's name, the search and `REMOVE MODULE` are the fitting column's head and stop where that
+  column stops, which is how the canvas's `13px 430px 11px 20px` head is read here.
+- **Under 67.875rem of bench the editor goes back under the manifest.** The figure is the manifest's
+  own rail minimum of 638px, the canvas's 14px gap and its 396px editor track, and then the bench's
+  18px inset and hairline on both edges: `638 + 14 + 396 + 38`. It is asked of the manifest's
+  minimum rather than of the canvas's `264 + 360`, because a fitting column below that minimum draws
+  the accordion instead of the rail, and the editor would then stand beside an accordion with no
+  step ① or ② to line up with. A 1440 window has about 700px of bench once the ledger's 392px and the
+  status rail's 306px are paid for. So the side-by-side arrangement is the one the
+  canvas was drawn at — 2020px — and everything narrower keeps the stack, which is the same content
+  in the same order. Asked of the bench's own container rather than of the window, so a doubled text
+  size or 400% zoom takes the stack for the same reason a narrow window does.
+- **The style ceiling is 11kB. Ruled 2026-08-30.** `angular.json` sets a
+  per-component ceiling on emitted styles, and the answer to crossing it is to take the shared thing
+  out rather than to raise the number (`specs/005-power-and-heat/design/power-and-heat-detail.md`).
+  That was done first: canvas 1c's step strip and the three-column bench are stated once in
+  `src/styles/_chrome.scss` instead of once per component, which put the chooser's stylesheet back
+  under 10kB with room to spare. `outfitting-workspace.scss` is the whole outfitting screen — the
+  ledger, the centre column, the status rail and the compact foot — measured 10,127 bytes of 10,240
+  before this change and 10,414 after it, and it has no block left in it that is a component boundary
+  rather than a piece of one screen. `anyComponentStyle` is one figure for every component in the
+  build, so raising it raises the ceiling for all of them; the alternative is a per-file exception
+  list, which is a worse record of the same decision. A global home was the other candidate and is
+  rejected on the
+  cascade: an emulated-encapsulation stylesheet appends an attribute to every compound selector, so a
+  component's own `.outfitting__centre` outweighs a global rule of the same shape and the global one
+  never takes effect. The ceiling is raised by 1kB and the reason is written here so the next raise
+  has to argue with it.
+- **The bench is bounded where it is three columns. Ruled 2026-08-30 (Commander request), narrowing
+  the 2026-08-27 release.** The release below holds wherever the bench is one column under another:
+  two panels sharing one screen's height leave the chooser a couple of hundred pixels and the
+  attributes less, so the page is the better carrier. Side by side they are not sharing a height,
+  they are each given one — which is what the artboard draws, a card of a fixed height with the list
+  scrolling in one column and the attribute table in the other — and a column that ends where the
+  window ends is what lets those two take the room that is left rather than leave it empty at the
+  foot. The anatomy dashboard keeps its own release: it is a different arrangement, ruled separately,
+  and its plates are what that column is bounded for.
+
+  The bound is asked of the region rather than of the bench's own column, because the column is the
+  container the three-column question is asked of and a container query cannot style its own
+  container. `$bench-columns-region-min` is `$bench-columns-min` plus the two fixed rails either side
+  of that column, and the two figures move together.
+
+  It is asked of the window's height as well. A bounded bench divides one screen between a chooser
+  that scrolls and an editor that mostly cannot: the three engineering controls are reserved room and
+  the attribute table under them has a floor. A window shorter than the two of them together puts the
+  editor past the bench, which clips it, and nothing scrolls to what is clipped. So the bound holds
+  from `$bench-bounded-min-height` up, and below it the column is released and the page carries the
+  bench, which is what every stacked arrangement does anyway. The figure is the sum of what the bench
+  cannot fold at the largest hull, and it is written out where it is declared.
+
 - Removal is drawn once, in the fitting panel's own header beside the search, exactly as canvas 1c
   draws `REMOVE MODULE` — and the mount's name is on that same line, not on a bench header above it
   (wave 5). Where no fitting panel is drawn at all — a mount the Almanac takes nothing else in — the
@@ -136,7 +193,7 @@ beside it, so a mode that lands next is bounded or released by what it draws rat
 somebody remembered to add it to (Commander request 2026-08-26).
 
 **Ruled 2026-08-27 — and a bench is not bounded by the column either.** The same reasoning reaches
-the other thing this column holds. `DETAILS AND ENGINEERING` is drawn inline for whichever mount is
+the other thing this column holds. The engineering editor is drawn inline for whichever mount is
 marked, and its height is whatever the article has to say: a weapon publishes around seventy
 attribute rows, and the panel was being handed a share of a bench inside a column bounded to the
 screen. Wave 11 answered that by scrolling each of the panel's two halves in its own column, which
@@ -160,10 +217,25 @@ however long the bench below it grows.
 
 It is worth writing down because a journey was counting rather than naming: it asked for two frozen
 columns at any non-compact width, which the ledger and the centre satisfied together until the centre
-released. At the two-pane width the status rail is a band under both columns and draws no vertical
-seam at all, so the count came to one and read the release as a lost seam. The rule is that every
-region drawing a seam is frozen — the ledger always, the status rail wherever this width gives it a
-column of its own (`e2e/outfitting-responsive.spec.ts`, corrected 2026-08-27).
+released. At the two-pane width the status rail draws no vertical seam at all, so the count came to
+one and read the release as a lost seam. The rule is that every region drawing a seam is frozen — the
+ledger always, the status rail wherever this width gives it a column of its own
+(`e2e/outfitting-responsive.spec.ts`, corrected 2026-08-27).
+
+**The status rail is a segment wherever it has no column. Ruled 2026-08-30 (Commander request).**
+Only the widest arrangement draws it as canvas 1c's third track. Below that the region has two
+columns and the rail had neither: it ran the full width under the bench, a tall band of readings
+squeezed beneath the module a Commander was working on. Canvas 1d already answers this — the rail is
+the strip's `STATUS` segment there — and the answer is the same wherever there is no column for it,
+so the segment is offered from the compact artboard up to the width the third track appears at. The
+panel it opens is drawn where the strip's own panels are drawn, under the strip: placed at the end of
+the grid instead it opened 1,304px below the segment that opened it, on a page the segment did not
+move, so pressing `STATUS` did nothing a Commander could see.
+
+The width the third track appears at is the three tracks added up rather than a rounded figure, and
+the region and the grid read the same sum (`composition.ts`, `MINIMUMS`;
+`outfitting-workspace.scss`). Stated apart they disagreed by 1.625rem, and in that band the region
+was a two-column grid that believed it had a rail.
 
 **What the release takes with it.** The bench's `1.1 : 1` share and the manifest's floor-against-the
 -editor's-floor guard both existed to divide a fixed box between two panels. There is no fixed box to
@@ -367,8 +439,12 @@ STATUS`. Five of the six are the anatomy region's own; see "The status segment" 
    anatomy, which is where the artboard puts it and why it is not inside the bench — at this width
    the bench is the layer these two open.
 
-The DOM stays in the wide composition's order, which is the reading order the three regions were
-written in; the compact arrangement asks for the artboard's order in CSS. Undo and redo keep their
+The three regions keep one order in the document — the notices, the ledger, the middle track — and
+the compact arrangement asks for the artboard's own order of them in CSS. What moves in the document
+is the two regions the anatomy strip draws as guests: where the rail has no column of its own, it and
+the six key readings are inside the middle track, beside the strip that opens them. There is no CSS
+that moves a box between parents, and every other home for them at those widths is a band under a
+column a screen tall — which is a panel opened a screen below the segment that opened it. Undo and redo keep their
 place in the shell's own action menu with identical accessible names and state, and package
 validation and later calculation details remain available through their owning outlets — no
 capability is removed in landscape.

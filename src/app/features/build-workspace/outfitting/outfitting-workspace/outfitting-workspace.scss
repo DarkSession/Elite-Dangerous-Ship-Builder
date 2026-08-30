@@ -271,10 +271,12 @@
   // bounded by the column either").
 
   // Two columns is not yet enough room for the canvas's third track, so the
-  // rail runs under both of them instead of squeezing the bench.
-  .outfitting__status-rail {
-    grid-column: 1 / -1;
-  }
+  // rail has no column at all: it is the strip's `STATUS` segment, drawn in the
+  // centre column beside the strip that opens it, with canvas 1d's six key
+  // readings under it (`outfitting-workspace.html`, `statusIsGuest`). A band
+  // spanning the two columns instead lands under the taller of them — the
+  // ledger is a screen tall on its own — so the panel opened a screen or more
+  // below the segment that opened it (Commander request 2026-08-30).
 
   // A dashboard is not a pair of plates.
   //
@@ -303,7 +305,7 @@
   // request).
   //
   // The same release, for the same reason, about the other thing this column
-  // holds. `DETAILS AND ENGINEERING` is drawn inline for whichever mount is
+  // holds. The engineering editor is drawn inline for whichever mount is
   // marked — canvas 1c gives it no opening control, so it is simply there — and
   // its height is whatever the article has to say: around seventy attribute
   // rows on a weapon, beside the recipe that would change them. Wave 11
@@ -332,6 +334,34 @@
     overflow: visible;
   }
 
+  // **Except where the bench is canvas 1c's three-column card. Ruled
+  // 2026-08-30 (Commander request).**
+  //
+  // The release above is what a bench with one column under another needs: two
+  // panels sharing one screen's height leave the chooser a couple of hundred
+  // pixels and the attributes less, and the page is the better carrier. Beside
+  // each other they are not sharing a height, they are each given one — the
+  // artboard draws exactly that, a card of a fixed height with the list
+  // scrolling in one column and the attributes in the other — and a column
+  // that ends where the window ends is what lets the chooser's list and the
+  // article's attributes take the room that is left rather than leave it empty
+  // (`design/outfitting-workspace.md`, "The bench is bounded where it is three
+  // columns").
+  //
+  // The dashboard keeps its own release: it is a different arrangement, ruled
+  // separately, and its plates are what that column is bounded for.
+  @include layout.bench-columns-region {
+    .outfitting--bench:not(.outfitting--dashboard) .outfitting__centre {
+      position: sticky;
+      block-size: calc(100svh - var(--edsb-layout-bar-height));
+    }
+
+    .outfitting--bench:not(.outfitting--dashboard) .outfitting__bench {
+      flex: 1 1 0;
+      overflow: hidden;
+    }
+  }
+
   // **The dashboard's own rule for the two panels is gone with the share it
   // overrode.** It was `flex: none; min-block-size: 0` on both, and neither
   // half survives the two changes above. `flex: none` overrode the `1.1 : 1`
@@ -349,12 +379,12 @@
 }
 
 // The canvas's full `392px 1fr 306px`. Its own threshold, because the three
-// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side — half
-// again the two-column minimum. Below this the rail is a band under the bench,
-// which is the same content in the same order and is what the tablet widths get:
-// there is no source tablet canvas, so this composition is decided by what fits
-// rather than copied from a measurement.
-@container outfitting (min-width: 68rem) {
+// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side. It is
+// those three added up rather than a rounded figure, so the region and this
+// grid change arrangement at the same width (`composition.ts`, `MINIMUMS`).
+// Below this the rail has no column and is the strip's `STATUS` segment
+// instead, which is what canvas 1d does with it.
+@container outfitting (min-width: 66.125rem) {
   .outfitting {
     grid-template-columns:
       var(--edsb-layout-ledger-rail)
@@ -541,16 +571,10 @@
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
-// Canvas 1c stacks the fitting panel and the engineering panel down the same
-// column, both on screen at once. The bench is therefore a column that divides
-// its height between them rather than a stack that runs the second one off the
-// bottom of a box it clips.
+// The bench's own look. How it arranges the two panels inside it is canvas 1c's
+// three-column question and is answered in one place for all of them
+// (`styles/_chrome.scss`).
 .outfitting__bench {
-  display: flex;
-  flex-direction: column;
-  gap: var(--edsb-space-stack);
-  min-inline-size: 0;
-  min-block-size: 0;
   padding: var(--edsb-space-panel);
   background-color: var(--edsb-surface-panel);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
@@ -558,7 +582,9 @@
 
 // The canvas's middle column: the anatomy plates on the page ground, the bench
 // panel under them. One column at every width, because that is the order both
-// canvases draw and the bench is the selected mount's facts.
+// canvases draw and the bench is the selected mount's facts. It is also the
+// `bench` container the three-column arrangement is asked of, which is declared
+// with that arrangement in `styles/_chrome.scss`.
 .outfitting__centre {
   display: flex;
   flex-direction: column;
@@ -669,6 +695,20 @@
   margin: 0;
 }
 
+// Closed unless the strip has it open, at every width that draws no third
+// column for it. Not `visibility` and not a wash: the segment is a tab, and a
+// panel that is not the open one is not on the page at all — or every reading in
+// it would be announced twice, once here and once from the rail itself.
+//
+// Asked of the composition the region publishes, which is the same question the
+// strip asks before it offers the segment: a rail hidden by a rule the strip
+// disagreed with would be a panel with no control that opens it
+// (`outfitting-workspace.ts`, `statusIsGuest`).
+.outfitting:not([data-composition='wide'])
+  .outfitting__status-rail:not(.outfitting__status-rail--guest) {
+  display: none;
+}
+
 // ---------------------------------------------------------------------------
 // Canvas 1d's order
 // ---------------------------------------------------------------------------
@@ -676,9 +716,10 @@
 // The compact artboard is not the wide one stacked. It opens with the mode
 // strip and whatever that has open, then the six key readings, then the
 // category tabs and the ledger, and closes with the sticky pair of actions for
-// whichever mount is marked. The DOM stays in the wide composition's order —
-// which is the reading order the three regions were written in — and this is
-// where the artboard's own order is asked for (Commander request 2026-08-26).
+// whichever mount is marked. The notices, the ledger and the middle track keep
+// one order in the document at every width — the reading order the three regions
+// were written in — and this is where the artboard's own order of them is asked
+// for (Commander request 2026-08-26).
 // Keyed to the composition the region reports rather than to a container query
 // of its own. The two would disagree: a short viewport takes the compact
 // arrangement whatever the region's width is, which a width query cannot ask,
@@ -763,14 +804,6 @@
 
   .outfitting__bench-actions {
     order: 6;
-  }
-
-  // Closed unless the strip has it open. Not `visibility` and not a wash:
-  // the segment is a tab, and a panel that is not the open one is not on the
-  // page at all — or every reading in it would be announced twice, once here
-  // and once from the key figures above the tabs.
-  .outfitting__status-rail:not(.outfitting__status-rail--guest) {
-    display: none;
   }
 
   // The gutter is the frame's, and this screen does not want it.

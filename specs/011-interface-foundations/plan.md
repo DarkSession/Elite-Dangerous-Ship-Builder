@@ -122,7 +122,8 @@ src/
 │   │   └── _semantic.scss            # one contrast-audited dark semantic set
 │   ├── _fonts.scss                   # same-origin Barlow/JetBrains declarations and fallbacks
 │   ├── _base.scss
-│   └── _responsive.scss              # named layout/container primitives
+│   ├── _responsive.scss              # named layout/container primitives
+│   └── _chrome.scss                  # the chrome no one component owns
 └── app/
     ├── i18n/
     │   ├── locales/                   # canonical en.json and de.json

@@ -181,8 +181,8 @@ Commander whose chosen language is not their browser's. The shared comparator
 takes the active-locale collator, and feature 002 called it.
 
 **Amended 2026-08-23 (feature 002 wave 11, Commander request).** There is now one
-list, not two: neither outfitting canvas draws a `MATERIALS` block inside
-`DETAILS AND ENGINEERING`, so feature 002 withdrew the Engineer panel's list and
+list, not two: neither outfitting canvas draws a `MATERIALS` block inside the
+engineering panel, so feature 002 withdrew the Engineer panel's list and
 `edsb-material-cost-list` with it. This block is the application's only statement
 of material requirements. The ruling stands unchanged — the order is still the
 shopping list's and still not the artboard's — and `sortMaterialLines` stays in

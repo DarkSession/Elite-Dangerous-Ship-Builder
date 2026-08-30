@@ -78,6 +78,16 @@
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
 
+  // The hatch over a choice the package offers but this recipe does not reach,
+  // and the ground it is drawn on. Both are chosen together, because the cell
+  // has to carry a mark a Commander can see and a number they can read: on the
+  // page's own ground the hatch measures 3.21:1 against the cell and the
+  // ordinary ink 4.62:1 on the hatch and 14.80:1 on the cell between the
+  // strokes. The mark clears the non-text floor and the number clears the text
+  // one, which is the pair no other ground manages.
+  --edsb-surface-accent-hatch: var(--edsb-palette-amber-a55);
+  --edsb-surface-hatched: var(--edsb-palette-bg);
+
   // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
   --edsb-surface-accent-underbar: var(--edsb-palette-amber-a50);
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
@@ -386,17 +396,17 @@
   // segmented strip is ruled with and the region's own block padding. Stated
   // here rather than on the screen so the two heights stay one decision.
   @include bar-derived;
-  // Canvas 1c's manifest, as the 2026-08-25 revision draws it: `2.6fr 70px
-  // 150px` — the module, its class and rating, and its price, and no other
-  // column. The two fixed columns are the canvas's own pixels; the name takes
-  // what is left.
+  // Canvas 1c's manifest: `2.6fr 56px 104px` — the module, its class and rating,
+  // and its price, and no other column. The two fixed columns are the canvas's
+  // own pixels; the name takes what is left. They are also the tracks the step
+  // ② bar is drawn on, because that bar is the column head.
   //
   // **The wave-9 cap is gone with them.** The name was capped at 27.25rem
   // because the workspace's third track was not built and the centre column
   // held 306px the canvas never gave it, which a `2.2fr` name column took the
-  // whole of. The third track is built, and this manifest now gives 216px of
-  // its own width to the family rail before the name sees any of it, so there
-  // is no surplus left to run away with (module-replacement design, "The
+  // whole of. The third track is built, and this manifest gives 264px of its
+  // own width to the family rail before the name sees any of it, so there is
+  // no surplus left to run away with (module-replacement design, "The
   // manifest's own columns").
   --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
     var(--edsb-measure-candidate-cost);
@@ -405,7 +415,10 @@
   // the wrong columns; canvas 1a's own `1fr 150px 84px`, once the `Mcr` column
   // it draws between them is taken out (feature 001 build-library design).
   --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
-  --edsb-layout-family-rail: var(--edsb-measure-family-rail);
+  --edsb-layout-family-rail: min(
+    var(--edsb-measure-family-rail-share),
+    var(--edsb-measure-family-rail)
+  );
   --edsb-layout-family-rail-max: min(
     var(--edsb-measure-family-rail-max),
     var(--edsb-measure-family-rail-share)
@@ -413,8 +426,12 @@
   --edsb-layout-family-gap: var(--edsb-measure-family-gap);
   --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
+  --edsb-layout-candidate-row-compact: var(--edsb-measure-candidate-row-compact);
+  --edsb-layout-candidate-code: var(--edsb-measure-candidate-code);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
   --edsb-layout-engineering-choices: var(--edsb-measure-engineering-choices);
+  --edsb-layout-engineering-details: var(--edsb-measure-engineering-details);
+  --edsb-layout-engineering-column: var(--edsb-measure-engineering-column);
   --edsb-layout-export-content: var(--edsb-measure-export-content);
   --edsb-layout-export-content-wide: var(--edsb-measure-export-content-wide);
   --edsb-layout-grade-step: var(--edsb-measure-grade-step);
@@ -448,6 +465,7 @@
   --edsb-layout-editor-panel: var(--edsb-measure-editor-panel);
   --edsb-layout-key-figure: var(--edsb-measure-key-figure);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
+  --edsb-layout-step-number: var(--edsb-measure-step-number);
   --edsb-layout-menu-row: var(--edsb-measure-menu-row);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);
   --edsb-layout-menu-max: var(--edsb-measure-menu-max);
