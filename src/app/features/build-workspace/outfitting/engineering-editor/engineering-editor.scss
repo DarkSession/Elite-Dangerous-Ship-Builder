@@ -231,6 +231,15 @@
   // to is tall enough to pay both, and shorter windows release the column
   // rather than squeeze it (`_responsive.scss`, `$bench-bounded-min-height`).
   .engineering:not(.engineering--layer) .engineering__result .engineering__card-body {
+    // A containing block, so this box actually clips what it scrolls. Every
+    // comparison row carries a direction drawn only for a reader, positioned
+    // out of the page the standard way; without this their containing block is
+    // the card outside the scroller, and around a hundred of them then stand
+    // past the bench — which is `overflow: hidden`, so the bench scrolls with
+    // no scrollbar and one `scrollIntoView` takes the whole step strip behind
+    // its own clip. The same rule the ledger and the two chooser panes each
+    // carry, for the same reason.
+    position: relative;
     flex: 1;
     min-block-size: var(--edsb-layout-engineering-details);
     overflow-y: auto;

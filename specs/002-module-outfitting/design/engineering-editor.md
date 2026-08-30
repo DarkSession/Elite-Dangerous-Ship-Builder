@@ -72,9 +72,10 @@ do not mutate the active build until confirmed.
   panels are not sharing one screen's height, they are each given one, and the column ends where the
   window ends (`outfitting-workspace.md`, "The bench is bounded where it is three columns"). The
   attribute table is the one box inside the editor that scrolls, and it is given the whole of what
-  the column has left under the reserved engineering card — around 500px at the width the canvas was
-  drawn at, against the four rows wave 11's arrangement showed. One scroller, holding the thing that
-  is long, is not the fault this ruling was made about. This is not a new mechanism: the anatomy region's dashboards already release
+  the column has left under the reserved engineering card — around 215px at the size the canvas is
+  drawn at, against the four rows its own floor guarantees at the shortest window that bounds the
+  bench at all. One scroller, holding the thing that is long, is not the fault this ruling was made
+  about. This is not a new mechanism: the anatomy region's dashboards already release
   that column for exactly this reason, and a short viewport already releases the whole workspace the
   same way (`outfitting-workspace.md`, "a detail panel is not bounded by the column"). The rule the
   canvas draws between the two halves still runs their whole height — there is simply more of it.

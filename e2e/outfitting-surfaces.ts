@@ -70,10 +70,11 @@ export async function revealStatusRail(
   // Read from the region's own published composition rather than from whether
   // the rail happens to be on screen yet. Only the widest arrangement draws the
   // rail as a column; every narrower one reaches it through the strip's
-  // `STATUS` segment (`outfitting-workspace.ts`, `statusIsGuest`). The composition is measured after the
-  // first paint, so a rail asked about too early answers for the arrangement it
-  // is about to leave — and the branch taken on that answer is the wrong one at
-  // both widths.
+  // `STATUS` segment (`outfitting-workspace.ts`, `statusIsGuest`).
+  //
+  // The composition is measured after the first paint, so a rail asked about too
+  // early answers for the arrangement it is about to leave — and the branch
+  // taken on that answer is the wrong one at both widths.
   //
   // Retried as a whole for the same reason `pressCommandBarAction` is: the
   // strip republishes its segments when the composition changes, so a control

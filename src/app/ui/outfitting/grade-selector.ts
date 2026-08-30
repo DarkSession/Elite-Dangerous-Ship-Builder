@@ -92,6 +92,20 @@ export class GradeSelector {
     return this.asSteps() ? grade === selected : grade <= selected;
   };
 
+  /**
+   * What each cell is called.
+   *
+   * A grade outside the recipe's range says so. The hatch over the cell is what
+   * a Commander sees, and it is drawn to the non-text contrast floor, but a mark
+   * is not a statement: nothing else on the cell distinguishes a grade the
+   * recipe cannot reach from one it can, and a state carried by the drawing
+   * alone is the one thing that is never allowed (constitution V).
+   */
   readonly optionLabel = (grade: number): string =>
-    this.#messages.message('outfitting.engineering.grade.option', { grade });
+    this.#messages.message(
+      this.unavailable(grade)
+        ? 'outfitting.engineering.grade.option-outside'
+        : 'outfitting.engineering.grade.option',
+      { grade },
+    );
 }

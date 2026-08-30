@@ -65,7 +65,8 @@
 // A grade below the one the recipe starts at. Hatched across the whole cell, so
 // it reads as outside the recipe's own range, and still pressable: taking a
 // Merc-Coin article back down to grade 1 is a thing a Commander may do. The
-// hatch is never the only carrier — each cell names its own grade.
+// hatch is never the only carrier — the cell says it is outside the recipe in
+// its own name (`grade-selector.ts`, `optionLabel`).
 //
 // One rule for both artboards. Canvas 1c fills every cell up to the choice and
 // canvas 1d fills the chosen button alone, so the same out-of-range grade is a

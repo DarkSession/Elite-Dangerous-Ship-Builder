@@ -159,10 +159,13 @@ $bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
 // three columns").
 //
 // The figure is what the bench cannot fold, measured at the largest hull: the
-// command bar (74), the hull plates (348), the region gap (22) and the editor
-// column at its shortest (547, which is the step bar, the reserved engineering
-// card and the table's own floor). That is 991, rounded up to here.
-$bench-bounded-min-height: 63rem;
+// command bar (74), the hull plates (348), the region gap (22) and the bench at
+// its shortest (568: the step strip's own 56px head offset, the editor column's
+// 474 — its bar, the reserved engineering card and the table's floor — and the
+// bench's 36px inset with its two hairlines). That is 1012, measured at the
+// largest hull with nothing engineered, and it is this figure exactly: a window
+// 4px under it spends the bench's bottom inset on the shortfall.
+$bench-bounded-min-height: 63.25rem;
 
 // The bench actually bounded: three columns *and* a window tall enough to hold
 // what they cannot fold. Everything that scrolls inside the bench is asked this

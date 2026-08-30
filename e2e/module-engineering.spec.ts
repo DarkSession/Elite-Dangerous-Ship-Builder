@@ -888,6 +888,12 @@ test.describe('the bench’s three columns', () => {
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
 
+    // With a recipe taken, because that is the state the table has something to
+    // scroll: every comparison row then carries a direction drawn only for a
+    // reader, and around a hundred boxes positioned out of the page are what
+    // find a scroller that is not a containing block.
+    await chooseRecipe(page, /increased range/i);
+
     const measured = await page.evaluate(() => {
       const box = (selector: string) => {
         const element = document.querySelector(selector)!;
@@ -946,7 +952,7 @@ test.describe('the bench’s three columns', () => {
         };
       });
 
-    await page.setViewportSize({ width: 2020, height: 1008 });
+    await page.setViewportSize({ width: 2020, height: 1012 });
     await expect(async () => {
       const shortest = await bench();
       expect(shortest.clipped).toBeLessThanOrEqual(1);

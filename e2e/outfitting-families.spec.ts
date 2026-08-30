@@ -194,6 +194,52 @@ test.describe('module families', () => {
     expect(Math.abs(after.y - railAfter.y - clipped!.offset)).toBeLessThanOrEqual(1);
   });
 
+  test('draws the rail at the canvas\u2019s own width, and as a share either side of it', async ({
+    page,
+  }) => {
+    // Canvas 1c draws the rail at 264px of a chooser column of 872 — its own 264
+    // and 594 tracks with the 14px between them — and the share is taken against
+    // that column rather than against the bench, because the editor beside it is
+    // the bench's third track and not a second track of this grid. Taken against
+    // the bench the same ratio drew 176px where the canvas draws 264
+    // (`design/module-replacement.md`, "The rail's 264px is a floor and a
+    // share").
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+
+    const railWidth = async (): Promise<{ rail: number; column: number } | null> =>
+      await page.evaluate(() => {
+        const rail = document.querySelector('.candidates__rail');
+        const column = document.querySelector('.candidates__manifest');
+        return rail === null || column === null
+          ? null
+          : {
+              rail: rail.getBoundingClientRect().width,
+              column: column.getBoundingClientRect().width,
+            };
+      });
+
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await expect.poll(async () => (await railWidth())?.rail ?? 0).toBeGreaterThan(0);
+    const drawn = (await railWidth())!;
+    expect(Math.abs(drawn.rail - 264)).toBeLessThanOrEqual(2);
+
+    // Narrower, it is a share of a narrower column rather than the same 264px
+    // taking two fifths of it away from the rows.
+    await page.setViewportSize({ width: 1790, height: 1100 });
+    await expect
+      .poll(async () => Math.round((await railWidth())?.rail ?? 0))
+      .toBeLessThan(drawn.rail);
+
+    // And wider it grows with the column, up to the width a family name stops
+    // needing.
+    await page.setViewportSize({ width: 2560, height: 1100 });
+    await expect
+      .poll(async () => Math.round((await railWidth())?.rail ?? 0))
+      .toBeGreaterThan(drawn.rail);
+  });
+
   test('draws a compact row on one line, with the price on its trailing edge', async ({ page }) => {
     // Canvas 1d's row: the class code in a fixed gutter, the module beside it
     // and the price on the trailing edge, `min-height: 60px`. Stacked instead —

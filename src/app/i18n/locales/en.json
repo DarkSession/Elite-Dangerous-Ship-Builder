@@ -381,6 +381,7 @@
   "outfitting.engineering.blueprint.choose": "Engineer with {{blueprint}}",
   "outfitting.engineering.grade.legend": "Grade",
   "outfitting.engineering.grade.option": "Grade {{grade}}",
+  "outfitting.engineering.grade.option-outside": "Grade {{grade}}, outside this blueprint",
   "outfitting.engineering.effect.legend": "Experimental effect",
   "outfitting.engineering.effect.none": "None",
   "outfitting.engineering.effect.choose": "Apply {{effect}}",
