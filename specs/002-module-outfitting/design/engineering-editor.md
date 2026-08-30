@@ -216,8 +216,8 @@ screen was headed `Engineer Hardpoint 1`. Four corrections:
 - **Three plates, not four groups.** Canvas 1d draws `BLUEPRINT`, `EXPERIMENTAL EFFECT` and the
   result as bordered plates on the screen's ground, each with the same hairline, panel ground and
   `13px 14px` inset the dashboard's blocks carry. The plate belongs to this placement rather than to
-  the content: canvas 1c draws none, because inline the editor is already one bordered box with a
-  ruled bar and a box inside a box is a frame around a frame. The content is the same either way —
+  the content: canvas 1c draws none inside its own two cards, because the card is the bordered box
+  there and a plate inside it is a frame around a frame. The content is the same either way —
   and that includes how the card stacks what is in it. Amended 2026-08-26: the stack was written into
   the layer's rule together with the plate, so inline the recipe's menu and the grade bar under it
   stood with nothing between them and the bar read as part of the control above it rather than as the

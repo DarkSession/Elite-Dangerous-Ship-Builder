@@ -72,10 +72,10 @@
 // Canvas 1d draws three plates on the screen's ground — `BLUEPRINT` with the
 // grade inside it, `EXPERIMENTAL EFFECT` and the result — each with the same
 // hairline border, panel ground and inset the dashboard's blocks carry. Canvas
-// 1c draws no plates at all: inline the editor is already one bordered box with
-// a ruled bar, and boxes inside a box is a frame around a frame. So the plate
-// belongs to this placement rather than to the content, and the content is the
-// same either way (reported 2026-08-26).
+// 1c draws none of them inside its own two cards: the card is the bordered box
+// there, and a plate inside it is a frame around a frame. So the plate belongs
+// to this placement rather than to the content, and the content is the same
+// either way (reported 2026-08-26).
 // What a card holds is a stack at both placements. Only the plate around it is
 // the layer's. Inline, the recipe's menu and the grade bar under it stood with
 // nothing between them, so the bar read as part of the control above it rather
