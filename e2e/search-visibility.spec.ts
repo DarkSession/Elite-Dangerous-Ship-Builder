@@ -82,13 +82,44 @@ test.describe('what the head says this page is', () => {
     await canonical(page).not.toContain('localhost');
   });
 
-  test('lets an open hull inherit the screen it sits inside', async ({ page }) => {
+  test('names the hull an open address is about', async ({ page }) => {
     await page.goto(`${PRODUCT_URL}/ships`);
     await openFirstHullFromManifest(page);
     await expect(page).toHaveURL(/\/ships\/[^/]+$/);
 
+    const symbol = new URL(page.url()).pathname.split('/').at(-1) ?? '';
+
+    // The hull's own name and the hull's own picture. Forty-eight addresses
+    // that describe themselves identically are one address as far as a search
+    // engine is concerned (011/FR-027, amended 2026-08-30).
+    //
+    // The name is read out of the title rather than out of the package: the
+    // Almanac is ESM-only and this suite is loaded as CommonJS, and what is
+    // under test is that the title, the description and the card all name the
+    // same hull — which the title itself is enough to check.
+    await expect.poll(() => page.title()).not.toBe(englishMessages['app.document-title.default']);
+    const hull = (await page.title()).split(' · ')[0];
+    expect(hull.length).toBeGreaterThan(0);
+
+    await description(page).toContain(hull);
+    await description(page).not.toBe(englishMessages['catalogue.description']);
+    await head(page, 'head meta[property="og:image"]', 'content').toBe(
+      `${SITE_ORIGIN}/assets/ships/${symbol}/illustration.png`,
+    );
+    await canonical(page).toBe(`${SITE_ORIGIN}/ships/${symbol}`);
+  });
+
+  test('falls back to the screen it sits inside where the hull is not one', async ({ page }) => {
+    // An address for a symbol the package does not carry. The title and the
+    // description both interpolate the hull, so publishing them here would put
+    // a sentence with a hole in it into a search result; the catalogue's own
+    // identity is what the screen behind the notice is.
+    await page.goto(`${PRODUCT_URL}/ships/Not_A_Hull`);
+    await expect(page.getByRole('main')).toBeVisible();
+
     await description(page).toBe(englishMessages['catalogue.description']);
-    await canonical(page).toMatch(new RegExp(`^${SITE_ORIGIN}/ships/[^/]+$`));
+    await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
+    await canonical(page).toBe(`${SITE_ORIGIN}/ships/Not_A_Hull`);
   });
 
   test('keeps the build out of the address, because that is where it lives', async ({ page }) => {
@@ -137,7 +168,14 @@ test.describe('what the head says this page is', () => {
     );
     expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(englishMessages['app.name']);
     expect(value(/rel="canonical"[^>]*href="([^"]*)"/)).toBe(`${SITE_ORIGIN}/`);
-    expect(value(/name="twitter:card"[^>]*content="([^"]*)"/)).toBe('summary');
+    expect(value(/name="twitter:card"[^>]*content="([^"]*)"/)).toBe('summary_large_image');
+    expect(value(/property="og:image"[^>]*content="([^"]*)"/)).toBe(
+      `${SITE_ORIGIN}/assets/link-card.png`,
+    );
+    // The site asks to be indexed. Only a preview deployment rewrites this, and
+    // it rewrites its own built copy rather than the file in the repository.
+    expect(value(/name="robots"[^>]*content="([^"]*)"/)).toContain('index');
+    expect(value(/name="robots"[^>]*content="([^"]*)"/)).not.toContain('noindex');
     expect(document).toContain('application/ld+json');
     expect(document).toContain('rel="manifest"');
   });
@@ -155,12 +193,27 @@ test.describe('what the head says this page is', () => {
       expect(sitemap).toContain(`<loc>${SITE_ORIGIN}${route}</loc>`);
     }
 
-    const manifest: unknown = JSON.parse(await read('/manifest.webmanifest'));
+    // One address per hull, enumerated from the package rather than listed by
+    // hand. Counted rather than named: the set belongs to the Almanac, and a
+    // list of symbols here would be the private copy of package data the
+    // generator exists to avoid.
+    const hulls = [...sitemap.matchAll(/<loc>[^<]*\/ships\/[^<]+<\/loc>/g)];
+    expect(hulls.length).toBeGreaterThan(40);
+
+    const manifest = JSON.parse(await read('/manifest.webmanifest')) as {
+      icons: { sizes?: string; purpose?: string }[];
+    };
     expect(manifest).toMatchObject({
       name: englishMessages['app.name'],
       short_name: englishMessages['app.name'],
       description: englishMessages['app.description'],
       display: 'standalone',
     });
+
+    // Installability is the icon sizes, not the presence of the member.
+    for (const size of ['192x192', '512x512']) {
+      expect(manifest.icons.some((icon) => icon.sizes === size)).toBe(true);
+    }
+    expect(manifest.icons.some((icon) => icon.purpose === 'maskable')).toBe(true);
   });
 });

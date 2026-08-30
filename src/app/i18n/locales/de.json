@@ -110,6 +110,8 @@
   "catalogue.selected": "Ausgewählt",
   "catalogue.empty.description": "Kein Rumpf im Katalog entspricht diesem Filter.",
   "catalogue.inspector": "Schiffsdetails",
+  "hullDetail.title": "{{hull}}",
+  "hullDetail.description": "{{hull}}: alle Werte, die Elite Dangerous für den Rumpf angibt, mit der vollständigen Slot-Aufteilung. Im Browser ausrüsten und den Build als Link teilen.",
   "hullDetail.back": "Zurück zu Ship Builder",
   "hullDetail.bar.detail": "{{manufacturer}} · {{size}}",
   "hullDetail.specifications": "Rumpfdaten",

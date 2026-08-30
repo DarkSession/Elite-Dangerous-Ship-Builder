@@ -14,7 +14,10 @@ import { Routes } from '@angular/router';
  * `RouteTitleStrategy` resolves both in the committed locale, so the document
  * title and the sentence a search result quotes change language with everything
  * else rather than one navigation later (011/FR-027). A route that declares no
- * description inherits the nearest ancestor's.
+ * description inherits the nearest ancestor's — and so does one whose key names
+ * a subject the route cannot resolve, which is what makes a hull address for a
+ * symbol the package does not carry read as the catalogue rather than as a
+ * blank.
  *
  * No route carries build data in its path or query. The only build payload in
  * a URL is the `/build` fragment (FR-015).
@@ -37,12 +40,26 @@ export const routes: Routes = [
       ),
     children: [
       {
-        // No title of its own: the bar keeps the catalogue's own name while a
-        // hull is open in the inspector, as the reference's does (canvas 1a),
-        // and the compact sheet carries the hull's name in its own heading. No
-        // description of its own either — an open hull is the catalogue screen
-        // with one hull selected, and the description it inherits says so.
+        // The command bar keeps the catalogue's own name while a hull is open in
+        // the inspector, as the reference's does (canvas 1a), and the compact
+        // sheet carries the hull's name in its own heading. The bar is drawn
+        // from `ScreenChrome` and takes nothing from here, so what these two
+        // keys change is the *document*, not the screen.
+        //
+        // They name the hull, where the first search pass had this route
+        // inherit the catalogue's identity. That reading was right for a screen
+        // and wrong for an address: forty-eight addresses describing themselves
+        // identically are one address as far as a search engine is concerned,
+        // which is the defect the top-level routes were given their own
+        // descriptions to fix (011/FR-027, amended 2026-08-30).
+        //
+        // Both patterns interpolate `{{hull}}`. `RouteTitleStrategy` supplies it
+        // from the package and, where a symbol resolves to no hull, publishes
+        // the catalogue's identity instead rather than a sentence with a hole
+        // in it.
         path: ':symbol',
+        title: 'hullDetail.title',
+        data: { description: 'hullDetail.description' },
         loadComponent: () =>
           import('./features/hull-detail/hull-detail.page').then((module) => module.HullDetailPage),
       },

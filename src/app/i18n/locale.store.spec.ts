@@ -3,7 +3,7 @@ import { DocumentAdapter, type RootDocumentState } from '../platform/browser/doc
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
 import { CatalogueLoader } from './catalogue-loader';
 import { BUNDLED_ENGLISH, type LocaleCandidate, type ShippedLocale } from './locale-registry';
-import { SITE_ORIGIN } from '../platform/browser/site-address';
+import { LINK_CARD, SITE_ORIGIN, absoluteAsset } from '../platform/browser/site-address';
 import { LocaleStore } from './locale.store';
 
 /** Records every root-document commit so atomicity can be asserted. */
@@ -128,7 +128,7 @@ describe('LocaleStore', () => {
     expect(store.commitBundledEnglish('browser').selectionSource).toBe('browser');
   });
 
-  it('publishes language, direction, title, description and address in one commit', () => {
+  it('publishes language, direction, title, description, address and card in one commit', () => {
     const { store, document } = setup();
 
     store.commitCandidate(
@@ -143,6 +143,11 @@ describe('LocaleStore', () => {
         title: BUNDLED_ENGLISH['app.document-title.default'],
         description: germanCatalogue['app.description'],
         canonical: `${SITE_ORIGIN}/`,
+        // The application's own card, because no route has said otherwise, and
+        // described by the title, so the picture is named in whatever language
+        // the document is in rather than in one of its own.
+        image: absoluteAsset(LINK_CARD),
+        imageAlt: BUNDLED_ENGLISH['app.document-title.default'],
       },
     ]);
   });

@@ -1,5 +1,13 @@
+import { documentHead, publishedAddresses } from '../../../scripts/search/published-addresses.mjs';
+import { hullArtworkPath } from '../platform/assets/hull-artwork-path';
+import { LINK_CARD, SITE_ORIGIN } from '../platform/browser/site-address';
 import { resolveDocumentTitle } from './document-title';
-import { BUNDLED_ENGLISH, type MessageCatalogue } from './locale-registry';
+import {
+  BUNDLED_ENGLISH,
+  interpolate,
+  type MessageCatalogue,
+  type MessageKey,
+} from './locale-registry';
 import germanCatalogue from './locales/de.json';
 
 /** The bundled catalogue, with only the keys a test is about varied. */
@@ -86,5 +94,44 @@ describe('resolveDocumentTitle', () => {
     expect(resolveDocumentTitle(catalogue(), 'C++ (beta)')).toBe(
       `C++ (beta) · ${BUNDLED_ENGLISH['app.name']}`,
     );
+  });
+});
+
+/**
+ * The two implementations of one rule, held to the same answer.
+ *
+ * A published document is written by a Node script before any bundle exists,
+ * and rewritten by this application a moment after one does. The script cannot
+ * import TypeScript, so it carries its own copy of the composition rule — and a
+ * copy nobody compares is how a crawler and a Commander come to be told two
+ * different names for one page. This is the comparison.
+ */
+describe('what a published document is titled', () => {
+  it('is what the running application would title it, for every published address', () => {
+    for (const entry of publishedAddresses({ origin: SITE_ORIGIN })) {
+      const page = interpolate(BUNDLED_ENGLISH[entry.titleKey as MessageKey], entry.params);
+
+      expect(documentHead(entry, BUNDLED_ENGLISH, SITE_ORIGIN).title).toBe(
+        resolveDocumentTitle(BUNDLED_ENGLISH, page),
+      );
+    }
+  });
+
+  it('describes it with the same sentence the application publishes', () => {
+    for (const entry of publishedAddresses({ origin: SITE_ORIGIN })) {
+      expect(documentHead(entry, BUNDLED_ENGLISH, SITE_ORIGIN).description).toBe(
+        interpolate(BUNDLED_ENGLISH[entry.descriptionKey as MessageKey], entry.params),
+      );
+    }
+  });
+
+  it('shows the same picture the application would show', () => {
+    // The script spells the artwork path a second time, for the same reason it
+    // spells the title rule a second time.
+    for (const entry of publishedAddresses({ origin: SITE_ORIGIN })) {
+      const symbol = entry.path.startsWith('ships/') ? entry.path.slice('ships/'.length) : null;
+
+      expect(entry.image).toBe(symbol === null ? LINK_CARD : hullArtworkPath(symbol));
+    }
   });
 });

@@ -37,7 +37,17 @@ const TYPES = new Map([
   ['.webmanifest', 'application/manifest+json'],
 ]);
 
-/** Resolves a request path to a file inside the output, or null if it escapes. */
+/**
+ * Resolves a request path to a file inside the output, or null if it escapes.
+ *
+ * `<path>.html` is tried before the directory, because that is the order GitHub
+ * Pages resolves in and this server stands in for it. `scripts/publish-static-routes.mjs`
+ * writes `ships.html` beside a `ships/` directory of hull documents, and the
+ * whole point of writing the file rather than the directory is that `/ships`
+ * answers 200 rather than redirecting to `/ships/`. A server that preferred the
+ * directory would serve the journey a different document than the deployment
+ * does, and the assertion would be about this file instead of about the site.
+ */
 async function resolveFile(urlPath) {
   const decoded = decodeURIComponent(urlPath.split('?')[0]);
   const candidate = resolve(join(root, normalize(decoded)));
@@ -47,9 +57,23 @@ async function resolveFile(urlPath) {
   try {
     const info = await stat(candidate);
     if (info.isDirectory()) {
-      return resolveFile(join(decoded, 'index.html'));
+      const published = await publishedDocument(candidate);
+      return published ?? resolveFile(join(decoded, 'index.html'));
     }
     return candidate;
+  } catch {
+    return publishedDocument(candidate);
+  }
+}
+
+/** The `<path>.html` a published address answers with, where one exists. */
+async function publishedDocument(candidate) {
+  if (candidate.endsWith('.html')) {
+    return null;
+  }
+  try {
+    const document = `${candidate}.html`;
+    return (await stat(document)).isFile() ? document : null;
   } catch {
     return null;
   }

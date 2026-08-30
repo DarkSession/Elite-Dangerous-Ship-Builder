@@ -115,6 +115,14 @@ package-owned canonical field. The presenter follows this order:
 Do not translate diagnostic codes/parameters privately, parse English messages, expose raw symbols as
 names or label canonical package text as localized.
 
+_Amended 2026-08-30._ Step 4 governs what a Commander reads on a screen. The document head is
+outside it: a `<title>`, a `<meta name="description">` and an `og:title` are single attribute
+values that can carry neither a `lang` boundary nor a programmatically associated disclosure, and a
+disclosure written into the sentence would become part of the page's name in every search result.
+A hull name may therefore appear in the head of that hull's address without one, in a sentence that
+is itself in the committed locale, under a document whose `lang` states which locale that is
+(011/FR-027). The head is the whole of the exception; the screen behind it follows the order above.
+
 ## Offline and privacy boundary
 
 Feature 011 owns the application's sole service-worker dependency, registration and base

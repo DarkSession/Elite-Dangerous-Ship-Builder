@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { DocumentAdapter, type RootDocumentState } from './document.adapter';
-import { SITE_ORIGIN } from './site-address';
+import { LINK_CARD, SITE_ORIGIN, absoluteAsset } from './site-address';
 
 /** A complete commit, so a test can vary the one field it is about. */
 function state(overrides: Partial<RootDocumentState> = {}): RootDocumentState {
@@ -10,6 +10,8 @@ function state(overrides: Partial<RootDocumentState> = {}): RootDocumentState {
     title: 'Saved builds · Elite Dangerous Ship Builder',
     description: 'Plan Elite Dangerous loadouts.',
     canonical: `${SITE_ORIGIN}/ships`,
+    image: absoluteAsset(LINK_CARD),
+    imageAlt: 'Saved builds · Elite Dangerous Ship Builder',
     ...overrides,
   };
 }

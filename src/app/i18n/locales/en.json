@@ -110,6 +110,8 @@
   "catalogue.selected": "Selected",
   "catalogue.empty.description": "No hull in the catalogue matches that filter.",
   "catalogue.inspector": "Hull detail",
+  "hullDetail.title": "{{hull}}",
+  "hullDetail.description": "{{hull}}: every figure Elite Dangerous publishes for the hull, with its full slot layout. Outfit one in your browser and share the build as a link.",
   "hullDetail.back": "Back to Ship Builder",
   "hullDetail.bar.detail": "{{manufacturer}} · {{size}}",
   "hullDetail.specifications": "Hull specifications",

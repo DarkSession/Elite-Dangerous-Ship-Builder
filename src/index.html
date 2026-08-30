@@ -22,6 +22,13 @@
     />
     <link rel="canonical" href="https://sb.edct.dev/" />
 
+    <!-- Stated rather than left to a default, so that the one deployment that
+         must not be indexed can say so by rewriting this one tag: a preview is
+         built with a sub-path base href and `ci.yml` turns this into `noindex`
+         there. `max-image-preview:large` lets a result show the card at the
+         size it was drawn. -->
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+
     <!-- The dark theme is the only theme (011/FR-003); saying so keeps the
          browser from drawing a light frame around it before the styles land. -->
     <meta name="color-scheme" content="dark" />
@@ -37,18 +44,26 @@
     />
     <meta property="og:url" content="https://sb.edct.dev/" />
     <meta property="og:locale" content="en" />
+    <meta property="og:image" content="https://sb.edct.dev/assets/link-card.png" />
+    <meta property="og:image:alt" content="Elite Dangerous Ship Builder" />
 
-    <!-- `summary` rather than `summary_large_image`: there is no card image,
-         because there is no logo to make one from. See the named omission in
-         specs/011-interface-foundations/design/search-visibility.md. -->
-    <meta name="twitter:card" content="summary" />
+    <!-- The card carries the mark on the application's own ground and no words:
+         a picture with `SHIP BUILDER` baked into it is display text in one
+         language that no translation can reach (constitution VI). What the
+         picture is gets said in `og:image:alt`, which is rewritten with the
+         title and so moves with the language. `scripts/generate-brand-assets.mjs`
+         renders it; a hull address is published with its own illustration
+         instead. -->
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Elite Dangerous Ship Builder" />
     <meta
       name="twitter:description"
       content="Ship Builder is an Elite Dangerous outfitting bench. Pick a hull, outfit it, read the numbers, and share a build as a link."
     />
+    <meta name="twitter:image" content="https://sb.edct.dev/assets/link-card.png" />
 
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
 
     <script type="application/ld+json">
@@ -58,6 +73,7 @@
         "name": "Elite Dangerous Ship Builder",
         "url": "https://sb.edct.dev/",
         "description": "Ship Builder is an Elite Dangerous outfitting bench. Pick a hull, outfit it, read the numbers, and share a build as a link.",
+        "image": "https://sb.edct.dev/assets/link-card.png",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Any",
         "browserRequirements": "Requires JavaScript.",

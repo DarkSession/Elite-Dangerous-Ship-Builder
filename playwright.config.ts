@@ -55,6 +55,10 @@ const NEVER_IN_A_DEVELOPMENT_RUN = IS_PRODUCTION_RUN
       '**/schematic-offline.spec.ts',
       '**/application-update.spec.ts',
       '**/help-offline.spec.ts',
+      // Not a service-worker journey, but the same requirement: it reads the
+      // documents `scripts/publish-static-routes.mjs` writes, and a development
+      // server has none of them.
+      '**/search-published.spec.ts',
     ];
 
 /**
@@ -256,7 +260,10 @@ export default defineConfig({
   webServer: IS_PRODUCTION_RUN
     ? [
         {
-          command: `pnpm exec ng build && node scripts/serve-production.mjs dist/elite-dangerous-ship-builder/browser ${PRODUCTION_PORT}`,
+          // `pnpm run build` rather than `pnpm exec ng build`: the build is
+          // what writes one document per published address, and a run served
+          // without them tests a deployment nobody ships.
+          command: `pnpm run build && node scripts/serve-production.mjs dist/elite-dangerous-ship-builder/browser ${PRODUCTION_PORT}`,
           url: `http://localhost:${PRODUCTION_PORT}`,
           reuseExistingServer: !isCI,
           timeout: 300_000,

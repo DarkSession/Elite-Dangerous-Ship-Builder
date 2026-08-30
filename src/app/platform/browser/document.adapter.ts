@@ -29,6 +29,23 @@ export interface RootDocumentState {
    * should rank rather than at itself.
    */
   readonly canonical: string;
+  /**
+   * The absolute address of the picture a link preview shows for this page.
+   *
+   * Absolute rather than relative, because the consumer is a chat client or a
+   * search engine fetching it from its own machine: a path resolved against
+   * wherever *it* is resolves to nothing.
+   */
+  readonly image: string;
+  /**
+   * What that picture is, in the committed locale.
+   *
+   * The page's own title. The card is the application's mark or a hull's
+   * illustration, and in both cases the honest description of the picture is
+   * the name of the page it belongs to — so this moves with the language for
+   * free rather than being one more string to keep true.
+   */
+  readonly imageAlt: string;
 }
 
 /**
@@ -92,6 +109,9 @@ export class DocumentAdapter {
     this.#meta('name', 'twitter:title', title);
     this.#meta('property', 'og:url', state.canonical);
     this.#meta('property', 'og:locale', state.language);
+    this.#meta('property', 'og:image', state.image);
+    this.#meta('name', 'twitter:image', state.image);
+    this.#meta('property', 'og:image:alt', state.imageAlt);
     this.#canonical(state.canonical);
   }
 

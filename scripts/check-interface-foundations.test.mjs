@@ -1039,15 +1039,19 @@ describe('search metadata', () => {
   const INDEX_WITHOUT_JSON_LD = [
     '<meta name="description" content="What this is." />',
     '<meta name="theme-color" content="#0b0b0c" />',
-    '<meta name="twitter:card" content="summary" />',
+    '<meta name="robots" content="index,follow,max-image-preview:large" />',
+    '<meta name="twitter:card" content="summary_large_image" />',
     '<meta name="twitter:title" content="Ship Builder" />',
     '<meta name="twitter:description" content="What this is." />',
+    '<meta name="twitter:image" content="https://sb.edct.dev/assets/link-card.png" />',
     '<meta property="og:type" content="website" />',
     '<meta property="og:site_name" content="Ship Builder" />',
     '<meta property="og:title" content="Ship Builder" />',
     '<meta property="og:description" content="What this is." />',
     '<meta property="og:url" content="https://sb.edct.dev/" />',
     '<meta property="og:locale" content="en" />',
+    '<meta property="og:image" content="https://sb.edct.dev/assets/link-card.png" />',
+    '<meta property="og:image:alt" content="Ship Builder" />',
     '<link rel="canonical" href="https://sb.edct.dev/" />',
     '<link rel="manifest" href="manifest.webmanifest" />',
   ].join('\n');
@@ -1075,11 +1079,54 @@ describe('search metadata', () => {
     display: 'standalone',
     background_color: '#0b0b0c',
     theme_color: '#0b0b0c',
-    icons: [{ src: 'favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+    icons: [
+      { src: 'favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+      { src: 'assets/icons/app-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: 'assets/icons/app-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      {
+        src: 'assets/icons/app-icon-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
   });
+
+  // What `scripts/search/published-addresses.mjs` hands the rule: the addresses
+  // the deployment writes documents for, each with the keys that name it.
+  const PUBLISHED = [
+    {
+      path: 'ships',
+      route: 'ships',
+      address: 'https://sb.edct.dev/ships',
+      titleKey: 'catalogue.title',
+      descriptionKey: 'catalogue.description',
+      image: 'assets/link-card.png',
+    },
+    {
+      path: 'build',
+      route: 'build',
+      address: 'https://sb.edct.dev/build',
+      titleKey: 'workspace.title',
+      descriptionKey: 'workspace.description',
+      image: 'assets/link-card.png',
+    },
+  ];
+
+  const MESSAGE_KEYS = [
+    'catalogue.title',
+    'catalogue.description',
+    'workspace.title',
+    'workspace.description',
+    'hullDetail.title',
+    'hullDetail.description',
+  ];
 
   const complete = (overrides = {}) => ({
     origin: ORIGIN,
+    published: PUBLISHED,
+    messages: MESSAGE_KEYS,
+    routeKeys: MESSAGE_KEYS,
     index: INDEX,
     robots: ROBOTS,
     sitemap: SITEMAP,
@@ -1249,7 +1296,7 @@ describe('search metadata', () => {
     assert.match(found[0].message, /Sitemap/);
   });
 
-  it('rejects an addressable route the sitemap does not list', () => {
+  it('rejects an addressable route no published address names', () => {
     const found = rules.searchMetadataViolations(
       complete({ routes: ['', 'ships', ':symbol', 'build', 'builds', '**'] }),
     );
@@ -1300,7 +1347,7 @@ describe('search metadata', () => {
     const rooted = { ...JSON.parse(MANIFEST), icons: [{ src: '/favicon.ico' }] };
     const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
 
-    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+    assert.ok(found.some((violation) => /icons\[0\]\.src/.test(violation.message)));
   });
   it('rejects an absolute path even when it names the declared origin', () => {
     // The one that slips past everything else: `https://sb.edct.dev/` is the
@@ -1324,7 +1371,7 @@ describe('search metadata', () => {
       complete({ manifest: JSON.stringify(pinnedIcon) }),
     );
 
-    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+    assert.ok(found.some((violation) => /icons\[0\]\.src/.test(violation.message)));
   });
 
   it('accepts a protocol-relative path nowhere either', () => {

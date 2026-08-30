@@ -201,3 +201,175 @@ directory redirect. So the agreement between those files is checked where a chan
 the one-file-per-route publication is checked where it is published. Putting `pnpm run policy` in CI
 as well is the obvious follow-up, and it is a decision about every checker rather than about this
 one.
+
+---
+
+# Second pass
+
+> **Asked for on 2026-08-30.** "Provide suggestions to improve its discoverability and SEO." The
+> owner chose seven of the answer's items to build. This half of the page records what those were,
+> what was decided while building them, and what was proposed and refused. The first pass above is
+> left as it was written.
+
+## What the first pass could not see
+
+The first pass read the repository. This one also asked what a search engine says about the site,
+and the answer was nothing: a search for `sb.edct.dev` returns the incumbents — Coriolis, EDSY,
+edshipbuilds — and no result for this site. The repository was created five days before the question
+was asked. So the ranking of the findings changes. The on-page work was nearly finished already;
+what is scarce is **addresses worth indexing** and **links pointing at them**. Six of the seven items
+serve the first. The seventh is a README that told every visitor the application was a blank shell.
+
+## What changed
+
+### The hulls are addresses
+
+`public/sitemap.xml` is generated. `scripts/generate-sitemap.mjs` reads the installed package's
+`SHIPS` and writes one `<loc>` per hull beside the three top-level routes: 51 addresses where there
+were 3.
+
+Nothing else had to change for those addresses to answer. The deployment already published one
+document per advertised address, so the hulls became documents the moment the map named them. That
+was the first pass's design and it held.
+
+Each address now says which hull it is. `/ships/:symbol` declares its own title and description
+keys, both interpolating `{{hull}}`, and `RouteTitleStrategy` supplies the name from the package.
+The first pass had this route inherit the catalogue's description deliberately, because an open hull
+is the catalogue with one hull selected. That reading is right for a screen and wrong for an address:
+48 addresses describing themselves identically are one address as far as ranking is concerned, which
+is the defect the top-level routes were given their own descriptions to fix.
+
+Where a symbol resolves to no hull, the route publishes the catalogue's identity instead. Both
+patterns interpolate the hull, so publishing them unfilled would put a sentence with a hole in it
+into a search result. The rule is general rather than special-cased: the strategy passes over any key
+whose variables it cannot fill, and takes the nearest ancestor's.
+
+### A published address carries its own head before the bundle runs
+
+The first pass listed this under "considered and deliberately not done", because resolving a title
+and a description at deploy time means reading the message catalogue, and the owner had ruled a build
+step out of that pass. The owner asked for it in this pass, and the sitemap needs a build step
+anyway.
+
+`scripts/publish-static-routes.mjs` writes each address's document from the built `index.html`,
+substituting the canonical, `og:url`, the title, the description, the card and its alt text. It runs
+from `pnpm run build`.
+
+**That move is the part worth arguing with.** The publication used to be a shell block in `ci.yml`,
+and the first pass wrote at length about keeping its comment-cutting pass identical to the policy
+checker's, because one is `sed` and the other is `.mjs` and neither can call the other. A script
+removes the problem instead of managing it: both readers are now the same module, so they cannot
+read one sitemap differently. It also puts what a crawler is served under `pnpm run test:scripts` and
+under a production journey, rather than under a deployment nobody can run twice.
+
+### One reader, three consumers
+
+`scripts/search/published-addresses.mjs` is the only place that turns the route table and the
+package's hull list into addresses, each with the message keys that name it. The sitemap generator,
+the publisher and the policy checker all import it.
+
+It states the map from address to message key, which `app.routes.ts` also states. That is a second
+statement of one fact, and it is deliberate: the alternative is a script that parses TypeScript,
+which stops working the first time the file is formatted differently and says nothing when it does.
+The checker reconciles the two — a route with no key, a key no route declares, a key the catalogue
+does not carry, and an address the route table does not serve each fail the build by name.
+
+Two runtime rules are spelled a second time there for the same reason: the title composition and the
+hull artwork path. `src/app/i18n/document-title.spec.ts` holds both copies to the running
+application's answer for every published address, so a document cannot be published with one title
+and rewritten with another.
+
+### The application is installable, and a link carries a picture
+
+`scripts/generate-brand-assets.mjs` renders the icon set and the card from
+`.design/assets/icons/app-icon-512.png`, in Chromium, as `convert-ship-artwork.mjs` rasterises the
+hulls. It writes the 192 and 512 icons a browser wants before it offers installation, a maskable
+one, an `apple-touch-icon` and a 1200x630 card. The output is committed, so the build stays hermetic
+and the script is how the files are reproduced rather than a step the build depends on.
+
+The mark it renders has been in `.design` since 2026-08-25. The first pass's "there is no logo to
+make one from" was already untrue when it was written; it is corrected here rather than quietly
+worked around.
+
+**The card carries no words.** A 1200x630 image with `SHIP BUILDER` in it is display text this
+application owns, in one language, in a file no translation can reach (constitution VI). The card is
+the mark on the application's ground. What the picture is gets said in `og:image:alt`, which carries
+the page title and so moves with the language.
+
+A hull's card is its own illustration — `assets/ships/<symbol>/illustration.png`, already served —
+rather than a rendered card per hull. Forty-eight composed images would be two megabytes to carry and
+48 files to re-render at every pin move, to say what the illustration already says. The illustration
+is 900x600 where a card is 1200x630, so a consumer crops or letterboxes it. That is the whole cost.
+
+`twitter:card` becomes `summary_large_image`, which the first pass could not use because there was
+nothing to show.
+
+### A preview no longer asks to be indexed
+
+`index.html` carries `<meta name="robots" content="index,follow,max-image-preview:large">`, and the
+preview job rewrites that one tag to `noindex` in its own built output. The first pass ruled this out
+because the build did not know it was building a preview.
+
+It still does not, and that is worth stating precisely, because it decides where the rewrite lives. A
+preview is built with `pnpm exec ng build --base-href=...`, not with `pnpm run build`, so nothing
+hung off the npm script runs for a preview — including `publish-static-routes.mjs`, which a preview
+does not want anyway. The rewrite is therefore a step in `ci.yml`, beside the step that copies
+`404.html`, and it fails the run if the tag it rewrote is not `noindex` afterwards.
+
+## Decisions recorded rather than buried
+
+- **The generated sitemap is committed, and that is a reversal.** The first pass wrote that "a
+  hard-coded list of hull symbols in this repository is exactly the private copy of package data
+  that constitution II forbids". A committed generated file is not that, for the reason
+  `public/assets/ships/` and the schematic mount extracts are not: it is reproducible from the
+  installed package by a script in this repository, and a build that disagrees with the package
+  fails. What would forbid it is a list nobody could reproduce. Two gates hold it, because the two
+  failures are different: `pnpm run build` regenerates the file, so no deployment can ship a stale
+  map even if somebody forgot to commit one; and a CI step runs the generator's `--check` before the
+  build, so a pin move that adds or drops a hull cannot leave the committed file disagreeing with
+  the package. The check is a CI step of its own rather than part of `pnpm run policy`, which CI
+  does not run.
+- **No `<lastmod>`.** A generated sitemap that stamps the time it was generated says every address
+  changed whenever anything was built, and a committed one would then change on every run. A date
+  that tracked each address's real content would have to come from the package's own release, which
+  the sitemap does not know. `changefreq` and `priority` go in the same pass: Google has ignored both
+  for years, and a file that states things nobody reads invites belief in them.
+- **The token ground is baked into committed rasters.** Every other statement of
+  `--edsb-palette-bg` is reconciled by the checker; a PNG is not, and cannot be. What holds it is the
+  generator: it reads the token rather than carrying a copy of the colour, so a token change is
+  carried into the assets by `pnpm run brand:assets` and the change is visible in the diff. A token
+  change without that command leaves the mark on the old ground, and nothing will say so.
+- **`/ships` answers from `ships.html`, beside a `ships/` directory.** GitHub Pages resolves a file
+  with the extension before a directory index, which is why the first pass wrote `<route>.html`
+  rather than `<route>/index.html`; the hull addresses now put a directory next to one of those
+  files. `scripts/serve-production.mjs` resolves in the same order, so the production journey asserts
+  the address a crawler asks for answers 200 with no redirect. That is a mirror of Pages, not Pages
+  itself: the first deployment after this change is where the order is confirmed on the real host.
+- **The JSON-LD still names the site's root on every address.** It describes the application, not
+  the page, as `site-address.ts` says. It gains the card image and nothing else.
+- **`/help` was proposed and refused.** The answer that started this pass suggested routing the help
+  topics so their prose could be indexed. Feature 012's contract says the Help action "does not
+  invoke Angular Router or History" and that opening and closing preserve the pathname, and the FAQ
+  is two questions long. Amending an owner-ruled contract in three places to publish two paragraphs
+  is not a trade worth making. It is recorded here because the suggestion was made in public and the
+  refusal should be too.
+- **Manifest `screenshots` are still absent.** They want real screenshots of the application at two
+  form factors. The Playwright suite could take them, and that is a follow-up rather than a line of
+  markup.
+
+## What this changed elsewhere
+
+The ledger and the journey it describes both said an open hull inherits the description of the
+screen it sits inside. That assertion is withdrawn and replaced by the two that are true now: an
+address about one hull names the hull, and an address for a symbol the package does not carry
+publishes the catalogue's identity. A second surface joins them, `shell/published-addresses`, for
+the half no running application can answer: what each address actually serves.
+
+## What no change in this repository can do
+
+The site is not linked from anywhere a search engine can follow. Registering it with Google Search
+Console and Bing Webmaster Tools, and listing it where Commanders look — EDCodex, the Frontier
+forums, the EDCD Discord, the subreddits — is the half of this that is not code, and it decides
+whether any of the above is ever read. The README correction in this pass is the one piece of that
+half which lives here: the repository page is the strongest link the project controls, and it told
+every visitor the application did not exist yet.
