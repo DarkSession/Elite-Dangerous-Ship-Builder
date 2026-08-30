@@ -78,6 +78,14 @@
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
 
+  // The second amber, used as a ground: the band a stripe draws across a filled
+  // control to mark it out of its own range. It is a ground rather than an ink
+  // because a stripe over the page ground cuts a near-invisible slash through
+  // whatever the control has written on it — `--edsb-text-on-accent` measures
+  // 1.01:1 there and 10.12:1 here, and the canvas stripes amber on amber for
+  // the same reason (canvas 1c's grade bar).
+  --edsb-surface-accent-band: var(--edsb-palette-amber-2);
+
   // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
   --edsb-surface-accent-underbar: var(--edsb-palette-amber-a50);
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);

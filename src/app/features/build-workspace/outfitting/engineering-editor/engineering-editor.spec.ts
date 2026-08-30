@@ -367,6 +367,12 @@ describe('engineering editor surface', () => {
 
       const host = openLayer(FIXTURE_SLOTS.frameShiftDrive).nativeElement as HTMLElement;
 
+      // The layer is rendered, and the two assertions below are about what it
+      // draws rather than about a body that never arrived: absence proves
+      // nothing on an empty host.
+      expect(host.querySelector('.engineering--layer')).not.toBeNull();
+      expect(host.querySelectorAll('.engineering__card').length).toBeGreaterThan(0);
+
       expect(host.querySelectorAll('.engineering__card-bar')).toHaveLength(0);
       expect(host.querySelector('.engineering__step')).toBeNull();
     });

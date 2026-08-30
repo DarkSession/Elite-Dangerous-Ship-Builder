@@ -73,30 +73,30 @@
 // unfilled — which left the phone's control drawing no difference at all
 // between a grade outside the recipe and one inside it.
 //
-// An unfilled cell keeps its own quiet ground and takes the stripe in the
-// accent: thin lit diagonals across a dark cell. The dark is the majority of
-// the cell on purpose — the number an unfilled cell carries is the accent ink,
-// and over the amber band that ink measures 1.19:1, so a band wide enough to
-// hold a digit is a digit that cannot be read.
+// An unfilled cell is striped in the page ground over its own quiet wash: the
+// ground showing through a cell that is only lit at all. The same rule as the
+// filled cell below, read for a dark cell instead of a lit one — the number an
+// unfilled cell carries is the accent ink, which reads on both bands here
+// (8.62:1 on the wash, 9.40:1 on the ground) and measures 1.19:1 on an amber
+// one. A band a digit cannot be read on is a digit the stripe has erased.
 .grades--steps .grade[data-unavailable='true']:not([data-filled='true']) {
   background-image: repeating-linear-gradient(
     135deg,
     transparent 0 var(--edsb-space-stack-tight),
-    var(--edsb-surface-accent-solid) var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
+    var(--edsb-surface-root) var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
   );
   background-color: var(--edsb-surface-accent-quiet);
 }
 
-// A filled cell is striped the other way round: the page ground over the fill,
-// in a narrow band. The number a filled cell carries is the ink the fill takes,
-// and over the first rule's transparent bands that ink measures 1.19:1 — the
-// grade written on the cell is the thing the stripe made unreadable. Here the
-// cell stays amber under the whole digit and the ground only cuts across it.
+// A filled cell is striped in the second amber over the fill: both bands are a
+// ground the cell's own ink reads on — 8.50:1 on the fill and 10.12:1 on the
+// band — so the grade written on the cell survives the stripe wherever a digit
+// falls across it. The canvas stripes amber on amber here for the same reason.
 .grade[data-unavailable='true'][data-filled='true'] {
   background-image: repeating-linear-gradient(
     135deg,
     transparent 0 var(--edsb-space-md),
-    var(--edsb-surface-root) var(--edsb-space-md) var(--edsb-space-lg)
+    var(--edsb-surface-accent-band) var(--edsb-space-md) var(--edsb-space-lg)
   );
   background-color: var(--edsb-surface-accent-solid);
 }

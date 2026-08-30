@@ -12,8 +12,10 @@
 // Held as mixins instead, the chrome is emitted once per component that includes
 // it, and the regions it lands in are already the largest stylesheets in the
 // application: two of them passed the 10kB ceiling `angular.json` sets for one
-// component's styles, and that budget is not moved to meet a measurement
-// (`specs/002-module-outfitting/design/module-replacement.md`).
+// component's styles. What the project does about that ceiling is take the
+// shared thing out, not raise the number
+// (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The block is its
+// own component").
 
 @use 'responsive' as layout;
 
