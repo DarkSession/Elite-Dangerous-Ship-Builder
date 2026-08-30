@@ -63,6 +63,15 @@ $rail-manifest-min: 39.875rem;
 // two columns where it has room for three").
 $bench-columns-min: 67.875rem;
 
+// The same threshold, asked of the whole region instead of the bench's own
+// column: the wide composition puts a fixed rail on each side of that column, so
+// this is `$bench-columns-min` plus both of them. It exists because the column
+// the bench sits in is the container the query above is asked of, and a
+// container query cannot style its own container — the column's height has to be
+// decided from outside it. The two figures move together or the bench is bounded
+// in an arrangement that cannot use the bound.
+$bench-columns-region-min: 111.5rem;
+
 @mixin compact {
   @media (max-width: #{$mode-compact-max}) {
     @content;
@@ -129,6 +138,13 @@ $bench-columns-min: 67.875rem;
 // `bench` is the container name `.outfitting__centre` sets.
 @mixin bench-columns {
   @container bench (min-width: #{$bench-columns-min}) {
+    @content;
+  }
+}
+
+// For the one box the mixin above cannot reach: the bench's own column.
+@mixin bench-columns-region {
+  @container outfitting (min-width: #{$bench-columns-region-min}) {
     @content;
   }
 }

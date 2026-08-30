@@ -69,7 +69,10 @@
   .outfitting__bench:has(.replacement__toolbar) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--edsb-layout-engineering-column);
-    align-items: start;
+    // Stretched, not started: the bench is bounded here, and a column that
+    // stops at its content leaves the room it was given empty at the foot
+    // instead of handing it to the list and the attribute table inside it.
+    align-items: stretch;
     column-gap: var(--edsb-space-xl);
   }
 

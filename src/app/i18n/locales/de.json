@@ -348,7 +348,7 @@
   "outfitting.replacement.not-replaceable": "Diese Halterung nimmt kein anderes Modul an.",
   "outfitting.family.count": "{{count}} zur Auswahl",
   "outfitting.family.fitted": "Hier verbaut",
-  "outfitting.family.heading": "Familien",
+  "outfitting.family.heading": "Kategorie",
   "outfitting.family.summary": "{{families}} · {{count}} passend",
   "outfitting.candidate.fitted": "Verbaut",
   "outfitting.candidate.pre-engineered": "Vormodifiziert",

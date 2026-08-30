@@ -175,11 +175,47 @@
 
 // The two cards, stacked with the canvas's 14px between them. Stacked rather
 // than ruled off each other in two columns: the editor is a 396px track, and
-// nothing that narrow divides in two. The details come first, so they are read
-// before the controls that change them (`design/engineering-editor.md`, "The
-// third column").
+// nothing that narrow divides in two.
+//
+// The engineering comes first and keeps one height; the details follow and take
+// whatever the column has spare. Attributes are the half that can use it — a
+// weapon publishes around seventy rows and a recipe menu publishes three
+// controls — so a column taller than the two of them puts the room where there
+// is something to put in it (Commander request 2026-08-30,
+// `design/engineering-editor.md`, "The third column").
 .engineering__panes {
   @include layout.stack(var(--edsb-space-xl));
+
+  flex: 1;
+  min-block-size: 0;
+}
+
+.engineering__choices {
+  flex: none;
+}
+
+.engineering__result {
+  flex: 1;
+  min-block-size: 0;
+}
+
+// The one scroller in this panel, and only where the column it is in has a
+// height to scroll inside. Bounded there, the attribute table is the half with
+// something to do with the room: a weapon publishes around seventy rows against
+// the three controls above it, so the table takes what the column has left and
+// scrolls the rest (Commander request 2026-08-30).
+//
+// Everywhere else nothing here scrolls. The column is released, each half is as
+// tall as its content and the page carries the result — which is what keeps a
+// weapon's seventy rows from being read four at a time
+// (`design/engineering-editor.md`, "Nothing here scrolls").
+@include layout.bench-columns {
+  .engineering:not(.engineering--layer) .engineering__result .engineering__card-body {
+    flex: 1;
+    min-block-size: 0;
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
+  }
 }
 
 .engineering__attributes {
@@ -194,6 +230,31 @@
   // nothing else: neither card scrolls.
   position: relative;
   min-inline-size: 0;
+}
+
+// The room the three controls take, kept whether or not two of them are drawn.
+//
+// The recipe is always there; the grade bar and the experimental effect follow
+// from it, and neither canvas draws either over an unengineered module. So
+// choosing a recipe grew this card by the height of the two that appeared, and
+// the details card under it moved with them — measured at 834x1112, the editor
+// went from 499px to 623px and the document from 2692px to 3115px as a recipe
+// was taken (Commander requests 2026-08-28 and 2026-08-30).
+//
+// Asked of the card that actually holds a chooser, so an article the Almanac
+// offers no recipe for keeps a card the size of what it says rather than a
+// sentence over an empty half-column: there, nothing will ever appear, and
+// there is nothing to keep a place for.
+//
+// Stated on the card body, which carries the canvas's 14px inside the card's
+// edge, so the inset is paid on top of the figure rather than out of the room
+// reserved for the controls.
+.engineering:not(.engineering--layer)
+  .engineering__choices:has(edsb-blueprint-choice-list)
+  .engineering__card-body {
+  min-block-size: calc(
+    var(--edsb-layout-engineering-choices) + var(--edsb-space-xl) + var(--edsb-space-xl)
+  );
 }
 
 .engineering__actions {

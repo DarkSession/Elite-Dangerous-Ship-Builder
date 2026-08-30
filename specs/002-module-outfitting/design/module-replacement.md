@@ -108,6 +108,15 @@ ratio — floored at 264px and bounded at 20rem, past which a family name has th
 the pixels belong to the rows. The floor is what holds at the canvas's own width and below: 264 at
 1440 and at 2020, 283 at 2560.
 
+**The declared height is a cap, and a column is better than a cap. Amended 2026-08-30 (Commander
+request).** `--edsb-layout-manifest-pane` is what the rail and the pane are held to while nothing
+above them says how tall the list may be: unbounded, a list of four hundred rows is four hundred rows
+tall and the page is that much longer. Where the bench is bounded the cap is lifted and the column
+decides — the two scrollers share the row under the step bars, which is everything the column has
+left. The room is there, and left unused it is empty row beside a list that is scrolling. No floor is
+stated with it: the column's own height is the floor, and a figure larger than the column would be
+clipped by the bench rather than honoured.
+
 **Selection is exclusive.** The revised script's rail branch shows the chosen family's `.fam-v` and
 hides every other, and returns before the accordion branch it replaced. Exactly one family is
 selected at all times, and the pane is never empty.
@@ -158,10 +167,13 @@ The strip is what says the three columns are one sequence — pick a family, pic
 are hidden from a reader: the name beside them is the step, and each column is already a named region
 of its own.
 
-**Step ① is drawn `FAMILIES`, not the canvas's `CATEGORY`.** The rail lists the Almanac's module
-families, and this screen already spends the word _category_ on the ledger's own
-`ALL / HARDPOINTS / CORE / OPTIONAL / UTILITY` strip. One word, one meaning: a second `CATEGORY` a
-column away would name two different things on one screen.
+**Step ① is drawn `CATEGORY`, as the canvas draws it. Ruled 2026-08-30 (Commander request).** The
+rail lists the Almanac's module families, and the word is spent twice on this screen: the ledger's
+own `ALL / HARDPOINTS / CORE / OPTIONAL / UTILITY` strip is a category strip too. The Commander's
+call is that the reference's word wins, and the two are far enough apart — one opens the ledger, the
+other opens the chooser's first column — that the strip a Commander is looking at says which is
+meant. The same word is drawn at every width, so canvas 1d's `FAMILIES` rule takes it as well: one
+thing has one name, and a rail that is `CATEGORY` beside the bench and `FAMILIES` on a phone is two.
 
 **Step ② carries the column head.** `MODULE` is the step's own name and `CLASS` and `COST` are cells
 of the same bar, on the pane's own `2.6fr 56px 104px` tracks. There is no separate head row: the

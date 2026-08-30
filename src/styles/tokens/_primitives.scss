@@ -648,6 +648,21 @@
   // recipe and effect menus under it. A fixed track, as the canvas draws it —
   // the pane beside it is what takes the width a wider window has.
   --edsb-measure-engineering-column: 24.75rem;
+  // The three controls the engineering card holds — the recipe, the grade under
+  // it and the experimental effect under that — measured together with the two
+  // gaps between them at the base text size: 183px.
+  //
+  // The room is kept whether or not the last two are drawn. The grade bar and
+  // the effect follow from a recipe, and neither canvas draws either over an
+  // unengineered module, so choosing a recipe grows the card by both of them
+  // and moves whatever the card stands over (Commander requests 2026-08-28 and
+  // 2026-08-30). Nothing is drawn that is not there: what is reserved is the
+  // room.
+  //
+  // A floor, never a cap: a translation that wraps a recipe name, or a doubled
+  // text size, simply passes it.
+  --edsb-measure-engineering-choices: 11.4375rem; // 183
+
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its

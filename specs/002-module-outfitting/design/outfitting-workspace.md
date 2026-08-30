@@ -43,6 +43,31 @@ workspace and never creates or owns a second build.
   canvas was drawn at — 2020px — and everything narrower keeps the stack, which is the same content
   in the same order. Asked of the bench's own container rather than of the window, so a doubled text
   size or 400% zoom takes the stack for the same reason a narrow window does.
+- **The outfitting screen's own style ceiling is 11kB. Ruled 2026-08-30.** `angular.json` sets a
+  per-component ceiling on emitted styles, and the answer to crossing it is to take the shared thing
+  out rather than to raise the number (`specs/005-power-and-heat/design/power-and-heat-detail.md`).
+  That was done first: canvas 1c's step strip and the three-column bench are stated once in
+  `src/styles/_chrome.scss` instead of once per component, which put the chooser's stylesheet back
+  under 10kB with room to spare. `outfitting-workspace.scss` is the whole outfitting screen — the
+  ledger, the centre column, the status rail and the compact foot — it was at 10,018 of 10,240 bytes
+  before any of this, and it has no block left in it that is a component boundary rather than a piece
+  of one screen. The ceiling is raised by 1kB and the reason is written here so the next raise has to
+  argue with it.
+- **The bench is bounded where it is three columns. Ruled 2026-08-30 (Commander request), narrowing
+  the 2026-08-27 release.** The release below holds wherever the bench is one column under another:
+  two panels sharing one screen's height leave the chooser a couple of hundred pixels and the
+  attributes less, so the page is the better carrier. Side by side they are not sharing a height,
+  they are each given one — which is what the artboard draws, a card of a fixed height with the list
+  scrolling in one column and the attribute table in the other — and a column that ends where the
+  window ends is what lets those two take the room that is left rather than leave it empty at the
+  foot. The anatomy dashboard keeps its own release: it is a different arrangement, ruled separately,
+  and its plates are what that column is bounded for.
+
+  The bound is asked of the region rather than of the bench's own column, because the column is the
+  container the three-column question is asked of and a container query cannot style its own
+  container. `$bench-columns-region-min` is `$bench-columns-min` plus the two fixed rails either side
+  of that column, and the two figures move together.
+
 - Removal is drawn once, in the fitting panel's own header beside the search, exactly as canvas 1c
   draws `REMOVE MODULE` — and the mount's name is on that same line, not on a bench header above it
   (wave 5). Where no fitting panel is drawn at all — a mount the Almanac takes nothing else in — the

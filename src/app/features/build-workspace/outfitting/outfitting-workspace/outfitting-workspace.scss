@@ -332,6 +332,34 @@
     overflow: visible;
   }
 
+  // **Except where the bench is canvas 1c's three-column card. Ruled
+  // 2026-08-30 (Commander request).**
+  //
+  // The release above is what a bench with one column under another needs: two
+  // panels sharing one screen's height leave the chooser a couple of hundred
+  // pixels and the attributes less, and the page is the better carrier. Beside
+  // each other they are not sharing a height, they are each given one — the
+  // artboard draws exactly that, a card of a fixed height with the list
+  // scrolling in one column and the attributes in the other — and a column
+  // that ends where the window ends is what lets the chooser's list and the
+  // article's attributes take the room that is left rather than leave it empty
+  // (`design/outfitting-workspace.md`, "The bench is bounded where it is three
+  // columns").
+  //
+  // The dashboard keeps its own release: it is a different arrangement, ruled
+  // separately, and its plates are what that column is bounded for.
+  @include layout.bench-columns-region {
+    .outfitting--bench:not(.outfitting--dashboard) .outfitting__centre {
+      position: sticky;
+      block-size: calc(100svh - var(--edsb-layout-bar-height));
+    }
+
+    .outfitting--bench:not(.outfitting--dashboard) .outfitting__bench {
+      flex: 1 1 0;
+      overflow: hidden;
+    }
+  }
+
   // **The dashboard's own rule for the two panels is gone with the share it
   // overrode.** It was `flex: none; min-block-size: 0` on both, and neither
   // half survives the two changes above. `flex: none` overrode the `1.1 : 1`

@@ -348,7 +348,7 @@
   "outfitting.replacement.not-replaceable": "This mount takes no other module.",
   "outfitting.family.count": "{{count}} to choose from",
   "outfitting.family.fitted": "Fitted here",
-  "outfitting.family.heading": "Families",
+  "outfitting.family.heading": "Category",
   "outfitting.family.summary": "{{families}} · {{count}} fit",
   "outfitting.candidate.fitted": "Fitted",
   "outfitting.candidate.pre-engineered": "Pre-engineered",

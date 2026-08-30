@@ -402,6 +402,23 @@
     border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
   }
 
+  // The declared height is a cap while nothing above the list says how tall it
+  // may be: unbounded, a list of four hundred rows is four hundred rows tall and
+  // the page is that much longer.
+  //
+  // Where the bench is bounded the cap is lifted and the column decides: the two
+  // scrollers take the row they share, which is everything the column has left
+  // under the step bar. The room is there, and left unused it is empty row
+  // beside a list that scrolls (Commander request 2026-08-30). No floor is
+  // stated with it — the column's own height is the floor, and a figure larger
+  // than the column would be clipped by the bench rather than honoured.
+  @include layout.bench-columns {
+    .candidates__rail,
+    .candidates__pane {
+      max-block-size: none;
+    }
+  }
+
   // A rail row is a name and a count and nothing else. No caret: there is
   // nothing to expand at this width, because the rows are in the pane beside it
   // — `wireFamilies`' rail branch keeps its caret update behind a null check and

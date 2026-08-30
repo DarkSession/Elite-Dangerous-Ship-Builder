@@ -68,9 +68,17 @@ do not mutate the active build until confirmed.
   recipe beside it in a second short window; two short windows side by side are not the comparison
   the two columns were drawn for, and giving each its own bar did not make either of them taller.
 
-  So none of the three bounds is left in the inline placement. Each half is as tall as its content,
-  the panel is as tall as the taller half, the workspace's middle column releases to hold it, and the
-  page is what scrolls. This is not a new mechanism: the anatomy region's dashboards already release
+  So none of the three bounds is left in the inline placement where the editor is under the chooser.
+  Each half is as tall as its content, the panel is as tall as the taller half, the workspace's
+  middle column releases to hold it, and the page is what scrolls.
+
+  **Except in canvas 1c's three-column bench. Ruled 2026-08-30 (Commander request.)** There the two
+  panels are not sharing one screen's height, they are each given one, and the column ends where the
+  window ends (`outfitting-workspace.md`, "The bench is bounded where it is three columns"). The
+  attribute table is the one box inside the editor that scrolls, and it is given the whole of what
+  the column has left under the reserved engineering card — around 500px at the width the canvas was
+  drawn at, against the four rows wave 11's arrangement showed. One scroller, holding the thing that
+  is long, is not the fault this ruling was made about. This is not a new mechanism: the anatomy region's dashboards already release
   that column for exactly this reason, and a short viewport already releases the whole workspace the
   same way (`outfitting-workspace.md`, "a detail panel is not bounded by the column"). The rule the
   canvas draws between the two halves still runs their whole height — there is simply more of it.
@@ -181,7 +189,7 @@ do not mutate the active build until confirmed.
   to canvas 1d's screen, which holds a draft that has to be left on purpose (wave 4). Clearing is not
   a separate control either — see "Clearing engineering" below.
 
-### Nothing a Commander is reading moves as a recipe is taken, 2026-08-28 (Commander request)
+### The engineering keeps one height, 2026-08-28 (Commander request)
 
 The engineering card holds three controls — the recipe, the grade under it and the experimental
 effect under that — and the last two follow from the first: an unengineered module has a recipe list
@@ -189,15 +197,25 @@ and nothing under it. So choosing a recipe grows that card by the height of both
 below it moves under the hand that was reading it. Measured at 834x1112 before the answer below: the
 editor went from 499px to 623px and the document from 2692px to 3115px as a recipe was taken.
 
-The order is the answer. `MODULE DETAILS` is the first card and `ENGINEERING` is the second, so the
-two controls appear below everything a Commander reads and nothing above them moves. Nothing is drawn
-that is not there either: no empty grade bar over an unengineered module and no placeholder effect —
-the canvas draws neither and neither does this.
+The card carries a floor instead — `--edsb-layout-engineering-choices`, the three controls and the
+two gaps between them at the base text size — so it is the height it will be before anything is
+chosen. Nothing is drawn that is not there: no empty grade bar over an unengineered module and no
+placeholder effect, because the canvas draws neither and neither does this. What is reserved is the
+room.
 
-**Amended 2026-08-30, with the canvas revision that switched the two cards.** A reserved floor under
-the controls answered the same request while the details were beside them or below them. With the
-details above them the reservation buys nothing at any width, and it is visible as an empty half of a
-bordered card, so it is withdrawn and the order carries the ruling alone.
+It is asked of the card that actually holds a chooser. An article the Almanac offers no recipe for
+keeps a card the size of what it says, rather than a sentence over an empty half-column: there,
+nothing will ever appear and there is nothing to keep a place for.
+
+A floor, never a cap. A translation that wraps a recipe name, or a doubled text size, simply passes
+it.
+
+**Amended 2026-08-30 (Commander request): the controls come first and the details follow them.** The
+2026-08-30 canvas revision put the details above the controls, and the Commander's call is the other
+way round: with the card above fixed at its floor, the card below is free to take whatever height the
+column has spare, and of the two it is the attribute table that has something to do with the room. A
+weapon publishes around seventy rows against three controls. The order is now the same at both
+placements, which is also canvas 1d's own — its result plate comes after the two it offers.
 
 ## Narrow and 400%-zoom composition
 

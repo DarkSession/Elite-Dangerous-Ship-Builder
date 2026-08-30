@@ -444,16 +444,15 @@ test.describe('engineering costs', () => {
     await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
   });
 
-  test('keeps the details still while a recipe grows the engineering under them', async ({
-    page,
-  }) => {
-    // The grade and the effect follow from a recipe, so choosing one grows the
-    // engineering card by both of them, and the panel under the hand that was
-    // reading it moved (Commander requests 2026-08-28 and 2026-08-29). The
-    // 2026-08-30 revision answers it by order rather than by reserved room: the
-    // details are read above the controls that change them, so what appears
-    // appears below everything a Commander is reading
-    // (`design/engineering-editor.md`, "The third column").
+  test('keeps the engineering one height as a recipe fills it', async ({ page }) => {
+    // The grade and the effect follow from a recipe, so choosing one used to
+    // grow the engineering card by both of them and move whatever the card
+    // stood over — measured at 834x1112, the editor went from 499px to 623px
+    // and the document from 2692px to 3115px (Commander requests 2026-08-28 and
+    // 2026-08-30). The room the three controls take is kept whether or not the
+    // last two are drawn, so the card is the height it will be before anything
+    // is chosen. Nothing is drawn that is not there: what is reserved is the
+    // room (`design/engineering-editor.md`, "The engineering keeps one height").
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
 
@@ -462,16 +461,8 @@ test.describe('engineering costs', () => {
     await expect(choices).toBeVisible();
     await expect(details).toBeVisible();
 
-    if (await surfacesAreLayers(page)) {
-      // Canvas 1d draws its plates the other way round — the result comes after
-      // the two controls on a screen that scrolls — so the order this asserts is
-      // the inline one. What that width owes is the same three controls.
-      await expect(page.locator('.engineering')).toHaveClass(/engineering--layer/);
-      await chooseRecipe(page, /increased range/i);
-      await expect(page.locator('edsb-grade-selector')).toBeVisible();
-      return;
-    }
-
+    // The controls come first and the article's own figures follow them, at
+    // both placements.
     const boxOf = async () =>
       await page.evaluate(() => ({
         details: document.querySelector('.engineering__result')!.getBoundingClientRect(),
@@ -479,18 +470,28 @@ test.describe('engineering costs', () => {
       }));
 
     const before = await boxOf();
-    // Above, not beside: the details end before the controls begin.
-    expect(before.details.bottom).toBeLessThanOrEqual(before.choices.top + 1);
+    expect(before.choices.bottom).toBeLessThanOrEqual(before.details.top + 1);
+
+    if (await surfacesAreLayers(page)) {
+      // Canvas 1d's screen scrolls and reserves nothing: there the three
+      // controls are a plate on a page of plates, and what follows them follows
+      // them down. What that width owes is the same three controls.
+      await expect(page.locator('.engineering')).toHaveClass(/engineering--layer/);
+      await chooseRecipe(page, /increased range/i);
+      await expect(page.locator('edsb-grade-selector')).toBeVisible();
+      return;
+    }
 
     await chooseRecipe(page, /increased range/i);
     await expect(page.locator('edsb-grade-selector')).toBeVisible();
+    await expect(page.locator('edsb-experimental-effect-list')).toBeVisible();
 
     const after = await boxOf();
-    // The controls grew — otherwise there is nothing here to be moved by.
-    expect(after.choices.height).toBeGreaterThan(before.choices.height + 10);
-    // And nothing above them moved. Within a pixel, not to the pixel: the table
-    // gains a `MODIFIED` column as a recipe is taken, and a column changes where
-    // its rows round to by a fraction of one.
+    // Two controls appeared into room that was already paid for, so the card is
+    // the height it was. Within a pixel, not to the pixel: a recipe gives the
+    // table beside it a `MODIFIED` column, and a column changes where its rows
+    // round to by a fraction of one.
+    expect(Math.abs(after.choices.height - before.choices.height)).toBeLessThan(1);
     expect(Math.abs(after.details.top - before.details.top)).toBeLessThan(1);
   });
 
@@ -818,6 +819,62 @@ test.describe('the bench’s three columns', () => {
     ]);
 
     expect(editorBox!.y).toBeGreaterThanOrEqual(manifestBox!.y + manifestBox!.height - 1);
+  });
+
+  test('bounds the bench and hands what is left to the list and the attributes', async ({
+    page,
+  }) => {
+    // Canvas 1c draws the bench as a card of a fixed height with the list
+    // scrolling in one column and the attributes in the other. Beside each other
+    // the two panels are not sharing one screen's height, they are each given
+    // one, so the column ends where the window ends and what is left over goes
+    // to the two boxes that have something to put in it (Commander request
+    // 2026-08-30).
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    const measured = await page.evaluate(() => {
+      const box = (selector: string) => {
+        const element = document.querySelector(selector)!;
+        return {
+          height: element.getBoundingClientRect().height,
+          scrollable: element.scrollHeight - element.clientHeight > 1,
+          overflow: getComputedStyle(element).overflowY,
+        };
+      };
+      const declared = document.createElement('div');
+      declared.style.blockSize = getComputedStyle(document.documentElement)
+        .getPropertyValue('--edsb-layout-manifest-pane')
+        .trim();
+      document.body.append(declared);
+      const pane = declared.getBoundingClientRect().height;
+      declared.remove();
+
+      return {
+        pane,
+        list: box('.candidates__pane'),
+        choices: box('.engineering__choices .engineering__card-body'),
+        details: box('.engineering__result .engineering__card-body'),
+        document: document.documentElement.scrollHeight,
+        viewport: window.innerHeight,
+      };
+    });
+
+    // The page does not carry the bench here: the bench carries itself.
+    expect(measured.document).toBeLessThanOrEqual(measured.viewport + 1);
+
+    // The list takes more than the height it declares for itself, which is the
+    // whole of what "the room that is left" means.
+    expect(measured.pane).toBeGreaterThan(0);
+    expect(measured.list.height).toBeGreaterThan(measured.pane);
+    expect(measured.list.scrollable).toBe(true);
+
+    // And of the editor's two cards it is the attributes that scroll. The three
+    // controls above them are reserved room, not a scroller.
+    expect(measured.details.overflow).toBe('auto');
+    expect(measured.choices.overflow).toBe('visible');
+    expect(measured.choices.scrollable).toBe(false);
   });
 
   test('numbers step ③ only where the chooser numbers ① and ②', async ({ page }) => {

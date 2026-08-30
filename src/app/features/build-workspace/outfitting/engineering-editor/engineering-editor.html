@@ -28,47 +28,12 @@
   }
 
   <!--
-    The article's own attributes, which canvas 1c draws as `MODULE DETAILS` — the
-    first of step ③'s two cards, above the engineering rather than beside it.
-    Written once and placed twice: inline it comes before the choices, and on
-    canvas 1d's screen it comes after them, which is the order that artboard
-    draws its plates in.
-
-    The details do not depend on the engineering: a final article accepts no
-    further engineering and still has every attribute it was catalogued with, as
-    does a mount the Almanac offers no recipe for. So the card is drawn whenever
-    there is an attribute to draw, whatever the state below it.
-  -->
-  <ng-template #details>
-    @if (attributes().length > 0) {
-      <div class="engineering__result engineering__card">
-        @if (!asLayer()) {
-          <div class="engineering__card-bar">
-            <h5 class="engineering__card-heading">{{ detailsHeading() }}</h5>
-          </div>
-        }
-        <div class="engineering__card-body">
-          <edsb-attribute-comparison
-            class="engineering__attributes"
-            [rows]="attributes()"
-            [comparing]="comparingAttributes()"
-          />
-        </div>
-      </div>
-    }
-  </ng-template>
-
-  <!--
     Two cards, stacked, and step ③'s bar names both. Where there is nothing to
     choose, the engineering card states why rather than standing empty, and the
-    details card stays above it where it is on every other article.
+    details card stays under it where it is on every other article.
   -->
   @if (state() !== 'noModule') {
     <div class="engineering__panes">
-      @if (!asLayer()) {
-        <ng-container [ngTemplateOutlet]="details" />
-      }
-
       <div class="engineering__choices">
         @if (!asLayer()) {
           <div class="engineering__card-bar">
@@ -147,8 +112,34 @@
         </div>
       </div>
 
-      @if (asLayer()) {
-        <ng-container [ngTemplateOutlet]="details" />
+      <!--
+        The article's own attributes, under the controls that change them, and
+        the same order at both placements — canvas 1d draws its result plate
+        after the two it offers, and canvas 1c's second card is the one that
+        takes whatever height the column has spare (Commander request
+        2026-08-30).
+
+        The details do not depend on the engineering: a final article accepts no
+        further engineering and still has every attribute it was catalogued
+        with, as does a mount the Almanac offers no recipe for. So the card is
+        drawn whenever there is an attribute to draw, whatever the state above
+        it.
+      -->
+      @if (attributes().length > 0) {
+        <div class="engineering__result engineering__card">
+          @if (!asLayer()) {
+            <div class="engineering__card-bar">
+              <h5 class="engineering__card-heading">{{ detailsHeading() }}</h5>
+            </div>
+          }
+          <div class="engineering__card-body">
+            <edsb-attribute-comparison
+              class="engineering__attributes"
+              [rows]="attributes()"
+              [comparing]="comparingAttributes()"
+            />
+          </div>
+        </div>
       }
     </div>
 

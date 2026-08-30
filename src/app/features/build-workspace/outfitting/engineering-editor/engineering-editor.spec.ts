@@ -334,26 +334,26 @@ describe('engineering editor surface', () => {
         heading.textContent?.trim(),
       );
       expect(headings).toEqual([
-        BUNDLED_ENGLISH['outfitting.engineering.details.heading'],
         BUNDLED_ENGLISH['outfitting.engineering.choices.heading'],
+        BUNDLED_ENGLISH['outfitting.engineering.details.heading'],
       ]);
     });
 
-    it('reads the details before the engineering inline, and after it in the layer', () => {
+    it('reads the engineering before the details, at both placements', () => {
       commit(defaultBuild());
 
-      // Canvas 1c switched the two: what a Commander is deciding about is the
-      // article's own figures, and the controls that change them follow. Canvas
-      // 1d draws its plates the other way round and is unchanged, so the order
-      // is a property of the placement rather than of the content.
+      // One order, drawn once. Canvas 1d puts its result plate after the two it
+      // offers, and the inline card that follows the controls is the one that
+      // takes whatever height the column has spare — the attribute table is the
+      // half with something to do with the room (Commander request 2026-08-30).
       const order = (host: HTMLElement) =>
         [...host.querySelectorAll('.engineering__result, .engineering__choices')].map((pane) =>
           pane.classList.contains('engineering__result') ? 'details' : 'engineering',
         );
 
       expect(order(openInline(FIXTURE_SLOTS.frameShiftDrive).nativeElement)).toEqual([
-        'details',
         'engineering',
+        'details',
       ]);
 
       expect(order(openLayer(FIXTURE_SLOTS.frameShiftDrive).nativeElement)).toEqual([

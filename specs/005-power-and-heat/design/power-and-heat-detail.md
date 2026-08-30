@@ -448,7 +448,7 @@ does not.
 
 **The block is its own component** (`outfitting/distributor-block`). The table, the four pip blocks
 and the arrangement that stacks them were a third of the dashboard's stylesheet — enough of it that
-the panel crossed the project's 10kB per-component style ceiling when the stacked arrangement was
+the panel crossed the project's per-component style ceiling when the stacked arrangement was
 added — and none of the panel's other three blocks touch any of it. It is presentation only: the rows
 arrive already formatted and a press leaves as intent, so the one pip condition stays where it lives.
 It is feature 005's own source and is fenced as such in `scripts/policy/power-heat-ownership.mjs`.
