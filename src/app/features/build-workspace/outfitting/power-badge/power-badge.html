@@ -1,0 +1,17 @@
+@if (badge(); as badge) {
+  <!--
+    Two short runs for the eye and two sentences for a reader. `PWR 95%` and
+    `GRP 4 OFF` are the canvas's own shorthand; read out as they stand they are
+    three abbreviations and a percentage, so each is paired with the sentence it
+    stands for and the shorthand is hidden from the reading.
+  -->
+  <p class="badge" [class.badge--shed]="badge.shed.length > 0">
+    <span class="badge__reading" aria-hidden="true">{{ badge.reading }}</span>
+    <span class="badge__words">{{ badge.label }}</span>
+
+    @for (group of badge.shed; track group.id) {
+      <span class="badge__reading" aria-hidden="true">{{ group.reading }}</span>
+      <span class="badge__words">{{ group.label }}</span>
+    }
+  </p>
+}

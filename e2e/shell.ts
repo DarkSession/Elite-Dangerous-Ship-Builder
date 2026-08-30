@@ -128,6 +128,67 @@ export async function openFirstHullFromManifest(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Starts a stock build for the hull the detail screen is showing.
+ *
+ * Canvas 1b's sheet pins a `Build` action to its footer plate. Canvas 1a's rail
+ * draws none: the manifest is beside the inspector at that width and a row's own
+ * press is the build, so a second control a centimetre away would be the same
+ * transaction reached twice (`hull-detail.page.scss`, "The commitment"). The
+ * rail keeps the action on a device that cannot hover, because there a row press
+ * opens the detail rather than building.
+ *
+ * A journey wanting a build should not have to know which of the two it is
+ * looking at, so the question is asked here, once, by looking for the action
+ * rather than by measuring the viewport. Both candidates are waited for before
+ * either is pressed: a journey reaches here straight off a `goto`, which
+ * resolves on `load` — before the route's own chunk has drawn anything — and a
+ * question asked then is answered "the sheet has no action" on a composition
+ * where it has one.
+ *
+ * Which hull is asked for is taken from the screen rather than passed in, so no
+ * journey has to spell a symbol twice and none of them has to spell it the
+ * package's way.
+ */
+export async function buildStockHull(page: Page, label: string): Promise<void> {
+  const action = page.getByRole('button', { name: label, exact: true });
+  const row = manifestBuildControl(page);
+
+  // Longer than the default, because the wait here spans a route's first paint:
+  // every journey reaches this straight off a navigation.
+  await expect(action.or(row).first()).toBeVisible({ timeout: 15_000 });
+  await ((await action.first().isVisible()) ? action.first() : row).click();
+}
+
+/**
+ * The manifest's own control for the hull whose detail is open, which at a
+ * hovering width is the build itself: a rested pointer opens a hull and the
+ * press after it flies its stock loadout, so the row's button reads
+ * `Build a stock <hull>` rather than `View <hull>`
+ * (`responsive-catalogue-view.ts`, `openActionLabel`).
+ *
+ * Found by the hull's own hook rather than by the name on the control, which is
+ * game text in the reader's language — `Federation_Corvette` is drawn `Federal
+ * Corvette`, and the whole sentence is German on a German journey.
+ *
+ * Two ways to the same row, because a hull is reached two ways. A hull opened
+ * from the manifest leaves its row marked current, and that mark is the answer
+ * while the address is still catching up with the press that opened it. A hull
+ * loaded at its own address marks no row, so there the address names it —
+ * matched without regard to case, since the route accepts `Sidewinder` for a
+ * hull the package calls `SideWinder`.
+ *
+ * `:visible` sits on the control rather than on the row, because the manifest is
+ * drawn twice — a table and a card list, one of them hidden at any width.
+ */
+export function manifestBuildControl(page: Page): Locator {
+  const symbol = decodeURIComponent(new URL(page.url()).pathname.split('/').pop() ?? '');
+  return page
+    .locator('[data-hull-symbol][aria-current="true"] button:visible')
+    .or(page.locator(`[data-hull-symbol="${symbol}" i] button:visible`))
+    .first();
+}
+
 async function reachHull(page: Page, row: Locator): Promise<void> {
   if (await page.evaluate(() => matchMedia('(hover: hover)').matches)) {
     await row.hover();

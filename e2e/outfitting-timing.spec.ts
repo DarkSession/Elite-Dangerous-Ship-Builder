@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { revealMount } from './outfitting-surfaces';
+import { buildStockHull } from './shell';
 
 /**
  * SC-002: the chooser keeps up with typing, on the largest list there is.
@@ -44,7 +45,7 @@ test.describe('candidate search timing', () => {
     await session.send('Emulation.setCPUThrottlingRate', { rate: 4 });
 
     await page.goto(`/ships/${LARGEST.hull}`);
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build(#|$)/);
 
     // The mobile viewport draws canvas 1d's ledger, which is one category at a

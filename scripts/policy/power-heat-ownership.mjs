@@ -24,6 +24,7 @@ export const OWNED = [
   'src/app/application/power-heat',
   'src/app/features/build-workspace/outfitting/power-thermals',
   'src/app/features/build-workspace/outfitting/power-summary',
+  'src/app/features/build-workspace/outfitting/power-badge',
   'src/app/features/build-workspace/outfitting/distributor-block',
 ];
 

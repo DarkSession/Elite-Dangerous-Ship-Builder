@@ -28,6 +28,7 @@ import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
 import { DefenceSummary } from '../defence-summary/defence-summary';
 import { DrivesSummary } from '../drives-summary/drives-summary';
+import { PowerBadge } from '../power-badge/power-badge';
 import { OffenceSummary } from '../offence-summary/offence-summary';
 import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
@@ -102,6 +103,7 @@ const HISTORY_REDO_MARK = '\u21b7';
     DefenceSummary,
     OffenceSummary,
     DrivesSummary,
+    PowerBadge,
     PowerSummary,
     EditRefusalNotice,
     HullAnatomy,

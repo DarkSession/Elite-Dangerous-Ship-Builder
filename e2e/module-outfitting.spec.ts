@@ -20,7 +20,7 @@ import {
   surfacesAreLayers,
 } from './outfitting-surfaces';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { savedToBrowser } from './shell';
+import { buildStockHull, savedToBrowser } from './shell';
 
 /**
  * Fitting modules, end to end (US1).
@@ -39,7 +39,7 @@ async function openStockBuild(
   create = englishMessages['hullDetail.create'],
 ): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: create, exact: true }).click();
+  await buildStockHull(page, create);
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

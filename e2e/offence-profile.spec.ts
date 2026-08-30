@@ -4,6 +4,7 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { everyPublishedSlotKey, sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+import { buildStockHull } from './shell';
 
 /**
  * The offence profile, end to end.
@@ -26,7 +27,7 @@ const HULL = 'Anaconda';
 /** Creates a stock build and opens the anatomy region's `OFFENCE` mode. */
 async function openOffence(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
 
   await page
     .locator('edsb-hull-anatomy .anatomy__modes button')
@@ -346,7 +347,7 @@ async function weaponRows(
 }
 
 test.describe('inspecting the weapons', () => {
-  test('draws one row per weapon with the canvas’s five columns', async ({ page }) => {
+  test('draws one row per weapon with the canvas’s six columns', async ({ page }) => {
     await openOffence(page);
 
     const rows = await weaponRows(page);
@@ -360,10 +361,11 @@ test.describe('inspecting the weapons', () => {
 
     for (const row of rows) {
       expect(row.module).not.toBe('');
-      // Damage per second, piercing, maximum range and falloff: four cells since
-      // the 2026-08-25 canvas revision added `RANGE`, every one of them saying
-      // something rather than sitting blank.
-      expect(row.figures).toHaveLength(4);
+      // Burst and sustained damage per second, piercing, maximum range and
+      // falloff: five cells since the 2026-08-29 canvas revision added
+      // `SUSTAINED` beside the burst figure `RANGE` joined on 2026-08-25, every
+      // one of them saying something rather than sitting blank.
+      expect(row.figures).toHaveLength(5);
       for (const figure of row.figures) {
         expect(figure).not.toBe('');
       }
@@ -377,7 +379,7 @@ test.describe('inspecting the weapons', () => {
     ['English', 'en-US', englishMessages],
     ['German', 'de-DE', germanMessages],
   ] as const) {
-    test(`aligns the five columns, and leaves the module its room, in ${language}`, async ({
+    test(`aligns the six columns, and leaves the module its room, in ${language}`, async ({
       browser,
       baseURL,
     }, testInfo) => {
@@ -391,7 +393,7 @@ test.describe('inspecting the weapons', () => {
       const context = await browser.newContext({
         baseURL,
         locale,
-        viewport: { width: 1920, height: 900 },
+        viewport: { width: 2400, height: 900 },
       });
       const page = await context.newPage();
       await openOffence(page, messages);
@@ -439,19 +441,19 @@ test.describe('inspecting the weapons', () => {
 
       expect(table.display).toBe('grid');
       expect(table.headShown).not.toBe('none');
-      // `MODULE` and the four figure heads.
-      expect(table.heads).toHaveLength(5);
-      expect(table.tracks).toHaveLength(5);
+      // `MODULE` and the five figure heads.
+      expect(table.heads).toHaveLength(6);
+      expect(table.tracks).toHaveLength(6);
 
       // The module track keeps the room a name over its code line needs.
       expect(table.tracks[0]).toBeGreaterThanOrEqual(155);
 
-      // And the four figure tracks divide what is left between them equally,
+      // And the five figure tracks divide what is left between them equally,
       // rather than settling on their own content and leaving every spare pixel
-      // to the module column. `minmax(0, 1fr)` beside four `auto` tracks drew
-      // exactly that — a name with a field of empty ground after it and four
+      // to the module column. `minmax(0, 1fr)` beside `auto` figure tracks drew
+      // exactly that — a name with a field of empty ground after it and the
       // figures crushed against the trailing edge — which is the regression
-      // these four assertions name.
+      // these assertions name.
       const figures = table.tracks.slice(1);
       for (const track of figures) {
         expect(Math.abs(track - (figures[0] ?? 0))).toBeLessThanOrEqual(1);
@@ -460,7 +462,7 @@ test.describe('inspecting the weapons', () => {
       // Every head fits on one line, in both languages: a column head broken
       // across two lines inside its own word is not a column head, and that is
       // what the promotion width is measured to avoid.
-      expect(table.headBoxes).toHaveLength(5);
+      expect(table.headBoxes).toHaveLength(6);
       for (const box of table.headBoxes) {
         expect(box.single).toBeGreaterThan(0);
         expect(box.height).toBeLessThanOrEqual(box.single + 1);
@@ -473,24 +475,24 @@ test.describe('inspecting the weapons', () => {
       const figureHeads = table.heads.slice(1);
       expect(table.rows.length).toBeGreaterThan(0);
       for (const row of table.rows) {
-        expect(row).toHaveLength(4);
+        expect(row).toHaveLength(5);
         for (const [index, edge] of row.entries()) {
           expect(Math.abs(edge - (figureHeads[index] ?? 0))).toBeLessThanOrEqual(1);
         }
       }
 
       // The promoted table is scanned here or nowhere: no layout profile in the
-      // matrix gives this block the 31rem it promotes at, so this is the only
+      // matrix gives this block the 36rem it promotes at, so this is the only
       // place the subgrid arrangement renders at all.
       await sweepOutfittingState(page, testInfo, `offence-analysis/weapons table ${language}`);
 
-      // And the threshold is held from below as well. 1780px gives this block
-      // about 470px — enough for five tracks to be *drawn*, not enough for a
-      // figure column to be as wide as `DURCHSCHLAG`, so the table promoted here
-      // would break a head inside its own word. The stylesheet's answer is to
-      // stay compact until the heads fit; this is that answer asserted rather
-      // than described.
-      await page.setViewportSize({ width: 1780, height: 900 });
+      // And the threshold is held from below as well. 1920px gives this block
+      // less than the 576px six tracks need — enough for them to be *drawn*, not
+      // enough for a figure column to be as wide as `DURCHSCHLAG`, so the table
+      // promoted here would break a head inside its own word. The stylesheet's
+      // answer is to stay compact until the heads fit; this is that answer
+      // asserted rather than described.
+      await page.setViewportSize({ width: 1920, height: 900 });
       await settled(page);
       await expect(page.locator('edsb-offence-analysis .weapons__table')).not.toHaveCSS(
         'display',
@@ -510,14 +512,14 @@ test.describe('inspecting the weapons', () => {
       baseURL,
     }) => {
       // The reference desktop, where the block is given about 300px — too little
-      // for five aligned columns in either language. Which arrangement answers
+      // for six aligned columns in either language. Which arrangement answers
       // that is the stylesheet's business; what is asserted here is the outcome
       // the promotion width exists to protect, so the assertion holds whichever
       // arrangement is chosen and fails whenever the name is starved.
       //
-      // This is the regression guard for the promotion width itself. Five tracks
-      // at their floors — the module's 155px, four figure columns' 40px each and
-      // four 10px gutters — come to 355px, so promoting the table in a 300px
+      // This is the regression guard for the promotion width itself. Six tracks
+      // at their floors — the module's 155px, five figure columns' 40px each and
+      // five 10px gutters — come to 405px, so promoting the table in a 300px
       // block either overflows it or takes the room out of the name, which is
       // where a weapon's name renders one or two characters per line
       // (`offence-analysis.scss`, the promotion comment).
@@ -540,20 +542,21 @@ test.describe('inspecting the weapons', () => {
       }
 
       // And nothing is lost to the arrangement that protects it: every row still
-      // carries all four figures, each with the word that names it — which in
+      // carries all five figures, each with the word that names it — which in
       // the compact arrangement is the only thing naming it, the heads being
       // gone.
       const rows = await weaponRows(page);
       expect(rows.length).toBeGreaterThan(0);
       for (const row of rows) {
         expect(row.module).not.toBe('');
-        expect(row.figures).toHaveLength(4);
+        expect(row.figures).toHaveLength(5);
         for (const figure of row.figures) {
           expect(figure).not.toBe('');
         }
       }
       for (const label of [
         messages['offence.column.dps'],
+        messages['offence.column.sustained'],
         messages['offence.column.pierce'],
         messages['offence.column.range'],
         messages['offence.column.falloff'],
@@ -651,9 +654,7 @@ test.describe('the status rail', () => {
 
   test('stands in the rail whichever mode the anatomy region has open', async ({ page }) => {
     await page.goto(`/ships/${HULL}`);
-    await page
-      .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-      .click();
+    await buildStockHull(page, englishMessages['hullDetail.create']);
 
     // The rail is not the panel: it reports the build, not what is on screen
     // beside it.

@@ -39,8 +39,26 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
   Commander opens a build. It stays a floor rather than a fixed height: at a doubled text size and
   at 400% zoom the bar still wraps and grows (`design/canvas-extraction.md`, "One bar height, on
   every screen").
-- **The release mark follows it.** A solid amber chip reading `BETA`, with the bar's own ground as
-  its ink, between the insignia and the screen's identity on every artboard.
+- **The release mark says what it stands beside.** A solid amber chip reading `BETA`, with the bar's
+  own ground as its ink. Where the bar carries a plain screen title the chip follows that title and
+  precedes the screen's count, as canvas 1a draws it — `SHIPYARD`, `BETA`, `48 SHIPS` — because
+  `SHIPYARD BETA` reads as a beta shipyard, which is what it is. Where the bar carries a build's
+  identity — an editable name over its hull line, on canvases 1c and 1d — the chip stands ahead of
+  it instead, because a chip after an editable name reads as part of the name and the build is not
+  what is in beta.
+
+  So the chip is the product's mark wherever the bar names a screen, and the product's mark before
+  the Commander's own build wherever the bar names one of those. The accessible name and the
+  reading order follow the drawing in both cases: the chip is a word in the document at the place
+  it is drawn, never a decoration positioned over the bar.
+
+  **The canvases disagree about the plain-title case, and this rule follows 1a.** Canvas 1b's
+  compact shipyard bar draws the chip first — `BETA`, then `SHIPYARD`, then `8 OF 48 SHIPS` — over
+  the same plain title 1a puts it after. One rule is applied at both widths, because the chip
+  changing sides with the viewport would make the mark read as a property of the window rather than
+  of the product; 1a's order is the one kept, for the sentence it makes. The divergence from 1b is
+  recorded here rather than resolved silently.
+
 - **A screen opened over another one replaces the group.** Canvas 1b's hull sheet draws a bare `←`,
   its own name and one line under it, and no insignia, release mark or count. Both compositions are
   in the document and the stylesheet shows one, so exactly one `h1` and one way back are ever exposed

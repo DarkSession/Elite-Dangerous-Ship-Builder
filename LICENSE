@@ -55,6 +55,34 @@ them. A distribution or use that retains the covered game data or imagery must
 comply with those terms, including the non-commercial condition; the MIT License
 above does not lift them.
 
+Interface icons (EDAssets)
+--------------------------
+
+Eleven interface marks are EDAssets files, taken once at build time and served from
+this application's own origin because nothing here reaches another origin at
+runtime:
+
+    public/assets/icons/materials/grade-1.svg
+    public/assets/icons/materials/grade-2.svg
+    public/assets/icons/materials/grade-3.svg
+    public/assets/icons/materials/grade-4.svg
+    public/assets/icons/materials/grade-5.svg
+    public/assets/icons/community-goal.svg
+    public/assets/icons/engineered.svg
+    public/assets/icons/merc-coin.png
+    public/assets/icons/powerplay.svg
+    public/assets/icons/tech-broker.svg
+    public/assets/loader.svg
+
+They come from https://edassets.org and travel under Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International:
+
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+The MIT License above does not cover them and does not relicense them. A
+distribution or use that retains these files must credit EDAssets, must remain
+non-commercial, and must place any adaptation of them under the same terms.
+
 Third-party data and its terms
 ------------------------------
 

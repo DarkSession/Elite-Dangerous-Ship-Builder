@@ -42,8 +42,7 @@ interface RenderedRow {
   readonly code: string | null;
   readonly codeDescription: string | null;
   readonly purchaseGrade: string | null;
-  readonly facts: readonly RenderedFact[];
-  /** The credit price, kept out of the loop because the coin price sits under it. */
+  /** The credit price. The one figure either manifest draws. */
   readonly cost: RenderedFact;
   /** The article's Merc Coin price, formatted, where the Almanac states one. */
   readonly mercCoin: string | null;
@@ -369,14 +368,7 @@ export class CandidateList {
   readonly familiesLabel = this.#messages.messageSignal('outfitting.family.heading');
   readonly moduleColumn = this.#messages.messageSignal('outfitting.column.module');
   readonly classColumn = this.#messages.messageSignal('outfitting.column.class');
-  /**
-   * The third and last column of the revised wide manifest.
-   *
-   * Named on its own rather than taken from `factColumns()`, because that list
-   * is the compact card's five labelled figures and this head has three cells.
-   * Reading the last of five to draw the third of three is the kind of coupling
-   * that survives exactly until one of the two changes.
-   */
+  /** The third and last column, at both widths. */
   readonly costColumn = this.#messages.messageSignal('outfitting.column.cost');
   readonly fittedLabel = this.#messages.messageSignal('outfitting.candidate.fitted');
   readonly mercCoinLabel = this.#messages.messageSignal(
@@ -401,9 +393,6 @@ export class CandidateList {
     }
     return null;
   });
-
-  /** The figure columns, named once for the wide manifest's header row. */
-  readonly factColumns = computed(() => this.#factLabels());
 
   /** The family control's id, so its own region can be named by it. */
   familyControlId(familyId: OutfittingFamilyId): string {
@@ -499,7 +488,6 @@ export class CandidateList {
   #resolve(choice: ModuleChoice): RenderedRow {
     const presentation = choice.presentation;
     const facts = presentation.facts;
-    const labels = this.#factLabels();
     const parts = [
       presentation.name.text ?? choice.module.symbol,
       `${presentation.class}${presentation.rating}`,
@@ -525,14 +513,9 @@ export class CandidateList {
           : this.#messages.message('outfitting.candidate.purchase-grade', {
               grade: presentation.purchaseGrade,
             }),
-      facts: [
-        { ...labels[0]!, value: this.#decimal(facts.damage, 1) },
-        { ...labels[1]!, value: this.#decimal(facts.mass, 1) },
-        { ...labels[2]!, value: this.#decimal(facts.powerDraw, 2) },
-        { ...labels[3]!, value: this.#decimal(facts.distributorDraw, 2) },
-      ],
       cost: {
-        ...labels[4]!,
+        field: 'cost',
+        label: this.#messages.message('outfitting.column.cost'),
         value: facts.cost === null ? null : this.#formatters.integer(facts.cost),
         // The canvas heads the column `COST` and writes `cr` after every figure
         // in it, in its own quieter ink and its own narrow column — which is
@@ -562,21 +545,5 @@ export class CandidateList {
       default:
         return '';
     }
-  }
-
-  #factLabels(): readonly { readonly field: string; readonly label: string }[] {
-    return [
-      { field: 'damage', label: this.#messages.message('outfitting.column.damage') },
-      { field: 'mass', label: this.#messages.message('outfitting.column.mass') },
-      { field: 'power', label: this.#messages.message('outfitting.column.power') },
-      { field: 'draw', label: this.#messages.message('outfitting.column.draw') },
-      { field: 'cost', label: this.#messages.message('outfitting.column.cost') },
-    ];
-  }
-
-  #decimal(value: number | null, digits: number): string | null {
-    return value === null || !Number.isFinite(value)
-      ? null
-      : this.#formatters.decimal(value, digits);
   }
 }

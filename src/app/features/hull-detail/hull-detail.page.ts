@@ -94,6 +94,7 @@ export class HullDetailPage {
   readonly manufacturerLabel = this.#messages.messageSignal('hullDetail.fact.manufacturer');
   readonly sizeLabel = this.#messages.messageSignal('hullDetail.fact.size');
   readonly mountsHeading = this.#messages.messageSignal('hullDetail.slots.group.hardpoint');
+  readonly takesLabel = this.#messages.messageSignal('hullDetail.slots.restricted.takes');
   readonly priceLabel = this.#messages.messageSignal('hullDetail.price');
 
   readonly view = this.#detail.view;
@@ -136,6 +137,18 @@ export class HullDetailPage {
       .map((count, index) => ({ count, label: this.#messages.message(MOUNT_LABELS[index]!) }))
       .filter((mount) => mount.count > 0)
       .map((mount) => ({ count: this.#formatters.integer(mount.count), label: mount.label }));
+  });
+
+  /**
+   * What the hull carries: utility mounts, core internals, the optional column
+   * and the restricted mounts (FR-022).
+   *
+   * `null` where the package publishes no layout for the hull — the groups are
+   * then drawn as nothing at all rather than as four empty rules.
+   */
+  readonly capacity = computed(() => {
+    const view = this.view();
+    return view?.kind === 'populated' ? view.capacity : null;
   });
 
   /** The ready-to-fly price, as the reference's one headline number. */

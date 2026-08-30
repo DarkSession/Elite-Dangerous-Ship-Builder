@@ -19,7 +19,7 @@ import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { helpRouteCoverage, type HelpRouteRow } from './coverage-ledger';
 import { openChooser, openEditor, revealMount, revealStatusRail } from './outfitting-surfaces';
-import { openActionLayer, reachShellAction, reachShellLink } from './shell';
+import { buildStockHull, openActionLayer, reachShellAction, reachShellLink } from './shell';
 
 /**
  * Help, reached from everywhere.
@@ -135,9 +135,7 @@ async function settled(page: Page): Promise<string> {
 /** A stock build, open in the workspace. */
 async function withStockBuild(page: Page, hull = HULL): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page
-    .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-    .click();
+  await buildStockHull(page, englishMessages['hullDetail.create']);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -199,10 +197,11 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await expect(page.locator('edsb-ship-catalogue-page')).toBeVisible();
   },
   'hull-detail': async (page) => {
+    // Waited for by the screen rather than by its build action: the wide
+    // composition draws no action at all, because the manifest beside it is the
+    // build (001/FR-007).
     await page.goto(`/ships/${HULL}`);
-    await expect(
-      page.getByRole('button', { name: englishMessages['hullDetail.create'], exact: true }),
-    ).toBeVisible();
+    await expect(page.locator('edsb-hull-detail-page')).toBeVisible();
   },
   'build-workspace': async (page) => {
     await page.goto('/build');
@@ -883,15 +882,16 @@ test.describe('the one legal body the modal embeds', () => {
     await openHelp(page);
     const lines = helpModal(page).locator('.help-dialog__licence-line');
 
-    // Four claims about four different things: this application's own code,
-    // the library it was built against, the game data and imagery, and the
-    // typefaces. The reference draws three; the library's line arrives with
-    // the link to its terms, which is what a summary of what covers what was
-    // missing while there was nowhere to point.
-    await expect(lines).toHaveCount(4);
+    // Five claims about five different things: this application's own code,
+    // the library it was built against, the icon files it serves, the game data
+    // and imagery, and the typefaces. Two of them carry the link to the
+    // complete terms they summarise, which is what a summary of what covers
+    // what was missing while there was nowhere to point.
+    await expect(lines).toHaveCount(5);
     await expect(lines).toHaveText([
       new RegExp(englishMessages['help.licence.link.application'], 'i'),
       new RegExp(englishMessages['help.licence.link.library'], 'i'),
+      new RegExp(englishMessages['help.licence.index.icons'], 'i'),
       new RegExp(englishMessages['help.licence.index.gameData'], 'i'),
       new RegExp(englishMessages['help.licence.index.typefaces'], 'i'),
     ]);

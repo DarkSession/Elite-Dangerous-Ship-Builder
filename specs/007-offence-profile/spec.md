@@ -30,8 +30,9 @@ because it is why the first implementation shipped a third of the canvas.
 
 ### Story 2 — Inspect weapons (P1)
 
-1. Each weapon shows the four figures the canvas draws for it: its module identity and engineering,
-   its damage per second, its armour piercing and its falloff range.
+1. Each weapon shows the figures the canvas draws for it: its module identity and engineering, its
+   burst and sustained damage per second, its armour piercing, its maximum range and its falloff
+   range.
 2. Missing fields remain missing rather than being inferred.
 3. The build's damage is stated again at each of the canvas's four range bands, using the package's
    own falloff for every enabled weapon.
@@ -85,14 +86,25 @@ because it is why the first implementation shipped a third of the canvas.
   and this feature therefore does not read (`design/canvas-contract.md`, review note 7).
 
 - **FR-004**: Every returned weapon MUST remain visible with its identity, its enabled state and
-  the five figures the canvas's columns draw — damage per second, piercing, maximum range and
-  falloff range beside the module. Missing damage, range or piercing MUST remain missing.
+  the five figures the canvas's six columns draw beside the module — burst damage per second,
+  sustained damage per second, piercing, maximum range and falloff range. Missing damage, range or
+  piercing MUST remain missing.
 
   > **`RANGE` added 2026-08-25.** The canvas revision of that date gave the weapon list a `RANGE`
   > column, `4,000 m` above `FALL 1,800` on canvas 1d, before the falloff column on canvas 1c. It is
   > the package's own `maximumRange`, which the projection already carries for `damageFalloff()`;
   > nothing is derived and nothing is capped. A weapon the package gives no maximum range remains
   > not stated, exactly as an absent falloff does.
+
+  > **`SUSTAINED` added 2026-08-29.** The same revision renamed the column beside it from `DPS` to
+  > `DPS BURST`. Both are the package's own per-weapon figures — `damagePerSecond` and
+  > `sustainedDamagePerSecond` — and the pair the block's headline already states as a build total;
+  > the list now says the same pair per weapon. Neither is derived from the other, and a weapon the
+  > package gives no sustained figure remains not stated.
+  >
+  > A continuous-fire weapon is the case that makes the two columns look alike: a beam has no
+  > cadence, so the package reports the same figure twice and the row draws it twice. That is the
+  > package's answer restated, not a cell copied from its neighbour.
 
   An earlier revision of this item also required the weapon's slot on the row. The canvas draws its
   weapon rows inert and gives a slot nowhere to go; the row keeps its exact package slot key as its

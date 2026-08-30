@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
-import { reachShellAction } from './shell';
+import { buildStockHull, reachShellAction } from './shell';
 
 /**
  * A build arriving from somewhere else.
@@ -51,7 +51,7 @@ async function submit(page: Page): Promise<void> {
 /** A build already open in the workspace, so a replacement has something to replace. */
 async function withStockBuild(page: Page): Promise<void> {
   await page.goto('/ships/Anaconda');
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   // Waits for the published fragment, not merely the route: publication is
   // asynchronous, and a hash captured before it lands would compare unequal to
   // itself a moment later.

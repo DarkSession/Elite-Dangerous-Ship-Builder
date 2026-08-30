@@ -1,16 +1,16 @@
 @use '../../../../../styles/responsive' as layout;
 
-// Canvas 1c's warning block, and the three canvas 1d draws above its Status
-// summary: a three-pixel inline-start marker, a quiet ground tinted to match it,
-// and the sentence set in the prose voice rather than in the mono numeric voice
-// the figures below use.
+// Canvas 1c's status blocks: a three-pixel inline-start marker, a quiet ground
+// tinted to match it, and the sentence set in the prose voice rather than in the
+// mono numeric voice the figures below use.
 //
-// The canvas draws three tiers and the package publishes three severities, one
-// for each: tier one for an `error`, the amber middle tier for a `warning`, and
-// tier three for an `incomplete`. The authored power and heat sentences the
-// canvas puts in the middle tier are feature 005's and are not
-// `LoadoutValidation` issues (`design/reference-review.md`, "Rejected mock
-// content"); the tier they were drawn in carries a package severity instead.
+// The canvas draws four blocks and every one of them has a marker and a ground.
+// Only one of the four is a `LoadoutValidation` issue: the neutral one. The hot
+// and amber sentences are feature 005's authored power and heat lines and the
+// green one is feature 008's authored mobility line
+// (`design/reference-review.md`, "1d — the compact Status mode"), so the tones
+// they are drawn in carry package severities here instead, and the all-clear
+// below is this rail's own line in the shape the green block gives it.
 :host {
   display: block;
 }
@@ -23,15 +23,23 @@
   list-style: none;
 }
 
-// The tier's colour is set on the block and inherited, because the canvas sets
-// the whole warning in it — `hot-2` for tier one, `ink-66` for tier three —
-// rather than colouring a label over ink-coloured prose.
+// The tone's colour is set on the block and inherited, because the canvas sets
+// the whole sentence in it rather than colouring a label over ink-coloured
+// prose. This is the quiet tone, which an `incomplete` takes; the three below
+// override it.
+//
+// It is the system's info role rather than the canvas's neutral ink — the
+// canvas draws that block `rgba(232, 222, 209, 0.28)` over `0.04` — because an
+// `incomplete` is a statement about a build that is not finished and the system
+// has a role for exactly that. The departure is recorded in
+// `specs/003-ship-statistics/design/status-rail.md`, "The issue block".
 .issue {
   @include layout.stack(var(--edsb-space-stack-tight));
 
   padding-block: var(--edsb-space-control-block);
   padding-inline: var(--edsb-space-inline-loose);
   border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-info);
+  background-color: var(--edsb-surface-info-quiet);
   color: var(--edsb-text-info);
 }
 
@@ -45,28 +53,27 @@
   text-wrap: pretty;
 }
 
-// Canvas tier one: the hot marker over its own tinted ground.
+// The error tone: the hot marker over its own tinted ground.
 .issue--error {
   border-inline-start-color: var(--edsb-border-danger);
   background-color: var(--edsb-surface-danger-quiet);
   color: var(--edsb-text-danger);
 }
 
-// Canvas tier two, the amber middle: the accent marker over the quieter accent
-// ground. A `warning` leaves the build valid and complete — the package raises
-// one where a load a pilot chooses, rather than the fit, crosses a limit — so
-// it says less than the hot tier and more than the quiet one.
+// The warning tone: the accent marker over the quieter accent ground. A
+// `warning` leaves the build valid and complete — the package raises one where a
+// load a pilot chooses, rather than the fit, crosses a limit — so it says less
+// than the error tone and more than the quiet one.
 .issue--warning {
   border-inline-start-color: var(--edsb-border-accent);
   background-color: var(--edsb-surface-accent-quiet);
   color: var(--edsb-text-accent);
 }
 
-// Canvas tier three is the default above: the quiet marker, no tint.
-// Unreachable from a `ShipLoadout` at the pinned package version — `incomplete`
-// belongs to `missingRequiredSlot`, which a build never raises — and drawn
-// anyway, so a release that starts raising it does not fall through to an
-// unstyled block (`almanac-validation-contract.spec.ts`).
+// The quiet tone is the default above. Unreachable from a `ShipLoadout` at the
+// pinned package version — `incomplete` belongs to `missingRequiredSlot`, which a
+// build never raises — and drawn anyway, so a release that starts raising it does
+// not fall through to an unstyled block (`almanac-validation-contract.spec.ts`).
 
 // The severity's name, read aloud and never drawn. Declared per component
 // because view encapsulation scopes it — the same way `outfitting-workspace`
@@ -76,11 +83,14 @@
 }
 
 // The all-clear, drawn as a block of the same shape as an issue so the rail
-// reads the same either way: one marker on the leading edge and one sentence.
-// It takes the system's `success` pair rather than a tier of its own — the
-// canvas has no fourth tier, and this is not a warning.
+// reads the same either way: one marker on the leading edge, one ground and one
+// sentence. It takes the system's `success` trio. The canvas's green block is
+// feature 008's authored mobility sentence rather than a verdict on the
+// loadout, so this line remains a departure; what the block settles is the
+// shape a success-toned block is drawn in.
 .issue--valid {
   margin: 0;
   border-inline-start-color: var(--edsb-border-success);
+  background-color: var(--edsb-surface-success-quiet);
   color: var(--edsb-text-success);
 }

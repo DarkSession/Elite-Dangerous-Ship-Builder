@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import englishMessages from '../src/app/i18n/locales/en.json';
+import { buildStockHull } from './shell';
 
 /**
  * The hull schematics with no network (FR-009, FR-010).
@@ -34,9 +35,7 @@ async function waitForController(page: Page): Promise<void> {
 
 async function openStockBuild(page: Page, hull: string): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page
-    .getByRole('button', { name: englishMessages['hullDetail.create'], exact: true })
-    .click();
+  await buildStockHull(page, englishMessages['hullDetail.create']);
   await expect(page).toHaveURL(/\/build(#|$)/);
 }
 

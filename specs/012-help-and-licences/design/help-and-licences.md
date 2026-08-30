@@ -89,12 +89,13 @@ action appears either: FR-009 is withdrawn and the reference draws no such contr
 
 ### 4. LICENCE
 
-- A four-line summary of what covers what, one localised line each: the application's code under
-  MIT; the bundled Almanac under its own terms; the game data and imagery under Frontier's
-  media-usage rules; the typefaces under the SIL Open Font Licence. The reference draws the first,
-  third and fourth; the library's terms are a separate claim from the application's and are owed
-  whether or not the reference thought to draw them (`contracts/help-navigation.md`, amended
-  2026-08-26).
+- A five-line summary of what covers what, one localised line each and in this order: the
+  application's code under MIT; the bundled Almanac under its own terms; the icon files this
+  application ships under CC BY-NC-SA 4.0, crediting `edassets.org`; the game data and imagery under
+  Frontier's media-usage rules; the typefaces under the SIL Open Font Licence. The reference draws
+  all five. Each is owed on its own terms in any case, the library's and the icons' included: this
+  application ships the package's code and serves those icon files from its own origin
+  (`contracts/help-navigation.md`, amended 2026-08-26).
 - The exact generated disclaimer appears as plain text in a `lang="en"` region, with no translation,
   Markdown interpretation, automatic linking or alteration.
 - No complete legal document appears, and **no external control appears at all**. What the modal
@@ -143,15 +144,21 @@ Conformance for this section is stated under the same qualification as everythin
 feature: WCAG 2.2 AA except success criteria 2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7 and 2.4.11,
 which the constitution excludes.
 
-### Known gap: EDAssets interface marks
+### EDAssets interface marks
 
-The rarity marks, the Merc Coin, the Tech Broker mark and the loader mark are EDAssets files, taken
-once at build time and served from this origin under feature 002's Icons ruling of 2026-08-22. The
-repository records **no licence** for them — not in root `LICENSE`, not in `legal/`, nowhere. The
-reference's own summary asserts CC BY-NC-SA 4.0 over them, and that assertion is not carried into
-the product, because a licence claim this repository cannot evidence is worse than a missing one.
-This is a defect against FR-004's source-distribution obligation rather than a display question, and
-it is recorded here for the pass that resolves it.
+The five material-grade marks, the community-goal, engineering and tech-broker marks, the Powerplay
+mark, the Merc Coin and the loader mark are EDAssets files — eleven in all — taken once at build time
+and served from this origin under feature 002's Icons ruling of 2026-08-22.
+Their provenance is that ruling's, not this feature's: it is what established that these eleven files
+come from EDAssets, and EDAssets publishes them under CC BY-NC-SA 4.0. What was missing was the
+record. Root `LICENSE` now carries it: it names all eleven files, names EDAssets as their source, and
+states those terms with a link to the deed.
+
+The evidence the icons line stands on is therefore EDAssets' own published grant, which root
+`LICENSE` records rather than creates — the same relation the game-data line has to Frontier's
+media-usage rules. That record is what FR-004's source-distribution obligation asks for. What the
+line still does not do is repeat the reference's own summary, which ran the ship line art together
+with the icons: the line art is not EDAssets'.
 
 ## Wide composition
 

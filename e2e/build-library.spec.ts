@@ -1,7 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
-import { openRecordFromLibrary, reachShellAction, savedToBrowser, reachShellLink } from './shell';
+import {
+  buildStockHull,
+  openRecordFromLibrary,
+  reachShellAction,
+  savedToBrowser,
+  reachShellLink,
+} from './shell';
 
 /**
  * Managing what this browser is holding.
@@ -172,7 +178,7 @@ async function saveActiveBuild(
 
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build(#|$)/);
   // The command bar titles an unnamed build by what the build calls itself,
   // which for a stock hull is the hull (FR-010, ruled 2026-08-25).

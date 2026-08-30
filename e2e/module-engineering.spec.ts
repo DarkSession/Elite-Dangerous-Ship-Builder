@@ -20,7 +20,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
-import { reachShellAction } from './shell';
+import { buildStockHull, reachShellAction } from './shell';
 
 /**
  * Engineering a module, end to end (US3).
@@ -36,7 +36,7 @@ import { reachShellAction } from './shell';
 /** Creates a stock build and lands in the workspace with the ledger rendered. */
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

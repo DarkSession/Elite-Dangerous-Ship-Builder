@@ -76,21 +76,6 @@
     </div>
   } @else {
     <!--
-      The canvas's single header row, drawn once above the manifest: `MODULE ·
-      CLASS · DPS · MASS t · PWR MW · DRAW WEP · COST cr`. It names the columns
-      for anyone reading the wide composition; every row restates the same labels
-      for a reader, so this is decoration and is hidden from them rather than
-      announced a second time. The compact composition removes it entirely.
-    -->
-    <div class="candidates__columns" aria-hidden="true">
-      <span class="candidates__column">{{ moduleColumn() }}</span>
-      <span class="candidates__column">{{ classColumn() }}</span>
-      @for (column of factColumns(); track column.field) {
-        <span class="candidates__column candidates__column--figure">{{ column.label }}</span>
-      }
-    </div>
-
-    <!--
       What scrolls is the rows, not the head above them. The head is a sibling of
       the scroller rather than a sticky box inside it: a sticky box is placed at a
       rounded device pixel while the rows under it move at a fractional one, so at
@@ -262,25 +247,15 @@
     </span>
 
     <!--
-      The damage, mass, power and weapon-draw figures, and only where a canvas
-      draws them. The 2026-08-25 revision cut canvas 1c's manifest to `MODULE`,
-      `CLASS` and `COST`, so at the rail width these four are not drawn at all —
-      not moved, not folded into a second line, and not hidden behind a rule
-      that would leave them in the reading. Canvas 1d did not change, and its
-      card still carries every one of them with its own label, which is where
-      they survive (FR-024's 2026-08-25 narrowing, SC-006).
+      The chooser draws three things at every width, and the damage, mass, power
+      and weapon-draw figures are none of them. The 2026-08-25 revision cut
+      canvas 1c's manifest to `MODULE`, `CLASS` and `COST`, and the 2026-08-29
+      one cut canvas 1d's code line to the module's mount — so the four are not
+      drawn at all: not moved, not folded into a second line, and not hidden
+      behind a rule that would leave them in the reading. They are read where a
+      fitted article's figures are read (FR-024, narrowed twice).
     -->
     <span class="candidate__facts">
-      @if (manifest() !== 'rail') {
-        @for (fact of resolved.facts; track fact.field) {
-          <edsb-unavailable-fact
-            class="candidate__fact"
-            [label]="fact.label"
-            [value]="fact.value"
-          />
-        }
-      }
-
       <!--
         The canvas's `COST` cell. A Mercenary article carries two prices and
         they do not add up — credits above, Merc Coin below, each with its own
@@ -289,7 +264,6 @@
       -->
       <span class="candidate__cost">
         <edsb-unavailable-fact
-          class="candidate__fact"
           [label]="resolved.cost.label"
           [value]="resolved.cost.value"
           [unit]="resolved.cost.unit ?? null"

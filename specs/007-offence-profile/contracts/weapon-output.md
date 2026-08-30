@@ -104,17 +104,25 @@ is recorded as ruled exception 1 in `design/canvas-contract.md`.
 
 ## Per-weapon output
 
-Every returned weapon remains a separate entry in returned order. Canvas 1c draws five columns —
-`MODULE`, `DPS`, `PIERCE`, `RANGE`, `FALLOFF` — and draws the row **inert**. Preserve and present:
+Every returned weapon remains a separate entry in returned order. Canvas 1c draws six columns —
+`MODULE`, `DPS BURST`, `SUSTAINED`, `PIERCE`, `RANGE`, `FALLOFF` — and draws the row **inert**.
+Preserve and present:
 
 - exact `slot`, `symbol`, canonical returned `name` and `enabled`;
-- `metrics.damagePerSecond`, `armourPiercing`, `maximumRange` and `falloffRange`.
+- `metrics.damagePerSecond`, `sustainedDamagePerSecond`, `armourPiercing`, `maximumRange` and
+  `falloffRange`.
 
 `maximumRange` gained its column in the 2026-08-25 canvas revision. It is the same field the falloff
 call already reads, presented as the package returns it: nothing derives it and nothing caps it, and
-a weapon the package gives none keeps the not-stated text an absent falloff gets. Every other
-`WeaponMetrics` field, `projectileRange`, and the weapon's `AmmunitionCapacity | null` are **not
-read at all**: no canvas draws them, and the row the canvas draws has nowhere to put them. The
+a weapon the package gives none keeps the not-stated text an absent falloff gets.
+`sustainedDamagePerSecond` gained its column, and `damagePerSecond` its `DPS BURST` heading, in the
+2026-08-29 revision: the two are a pair, and a table that drew one of them unqualified was naming a
+burst figure as though it were the whole answer. It is presented the same way — the package's own
+value, and the same not-stated text where the package gives none. A weapon that fires continuously
+returns the two equal, and the row draws them equal rather than folding them into one column.
+
+Every other `WeaponMetrics` field, `projectileRange`, and the weapon's `AmmunitionCapacity | null`
+are **not read at all**: no canvas draws them, and the row the canvas draws has nowhere to put them. The
 package's `ships/ammunition` subpath is deliberately absent from
 `scripts/policy/offence-ownership.mjs`'s allow-list, so importing it fails the gate rather than
 passing quietly. An earlier revision added a row-owned disclosure and a per-row slot action to carry

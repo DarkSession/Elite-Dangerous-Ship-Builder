@@ -32,8 +32,23 @@
   </div>
 
   <!-- The hull-detail child route: an inspector here, a full-screen layer at
-       narrow widths. Same address either way. -->
-  <div class="catalogue__inspector">
+       narrow widths. Same address either way.
+
+       A group with a tab stop, not a bare overflow box. At the wide composition
+       the rail is a scroll box of its own — a hull taller than the space under
+       the command bar scrolls inside it — and the rail holds no control at that
+       width, because the manifest beside it is the build (FR-007). A scroll box
+       nothing inside can be reached by is content a keyboard cannot get to, so
+       the box itself takes the stop, the same way `edsb-data-table` does
+       (009 ruling F).
+
+       Declared once rather than per composition, as `outfitting__status-rail`
+       declares its own: below the wide step the box does not scroll and the
+       stop is one extra tab on a region that is already the whole screen, which
+       is cheaper than a stop that appears and disappears with the width. The
+       region is not drawn at all until a hull is open, so an empty group is
+       never focusable. -->
+  <div class="catalogue__inspector" tabindex="0" role="group" [attr.aria-label]="inspectorLabel()">
     <router-outlet />
   </div>
 </div>

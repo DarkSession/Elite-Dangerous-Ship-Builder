@@ -39,16 +39,21 @@ COST / MATERIALS                      feature 009, built
 ### 1d — the compact Status mode
 
 Read at byte offset 1064071 and following. The same blocks, one step down the ramp, with a three-column
-metric grid — and **three** warning blocks rather than one, in three tiers:
+metric grid — and **four** status blocks rather than one, each in its own tone. Canvas 1c draws the
+same four:
 
-| Tier | Treatment                                                                  | Canvas text                                                     |
-| ---- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| 1    | `border-left 3px var(--hot)`, `rgba(255,107,61,.1)`, `hot-2`               | `Priority group 4 is unpowered — 7.80 MW … above plant output.` |
-| 2    | `border-left 3px rgba(255,140,26,.55)`, `rgba(255,140,26,.08)`, `ink-8`    | `Sustained fire peaks at 131% heat — module damage above 100%.` |
-| 3    | `border-left 3px rgba(232,222,209,.28)`, `rgba(232,222,209,.04)`, `ink-66` | `2 hardpoints and 3 optional slots are empty.`                  |
+| Block   | Treatment                                                                  | Canvas text                                                       |
+| ------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| hot     | `border-left 3px var(--hot)`, `rgba(255,107,61,.1)`, `hot-2`               | `Priority group 4 is unpowered — 7.80 MW … above plant output.`   |
+| amber   | `border-left 3px rgba(255,140,26,.55)`, `rgba(255,140,26,.08)`, `ink-8`    | `Sustained fire peaks at 131% heat — module damage above 100%.`   |
+| green   | `border-left 3px var(--good-2)`, `rgba(143,217,74,.08)`, `good-2`          | `Jump range and mass lock clear the requirements for this build.` |
+| neutral | `border-left 3px rgba(232,222,209,.28)`, `rgba(232,222,209,.04)`, `ink-66` | `2 hardpoints and 3 optional slots are empty.`                    |
 
-Only the third is a structural fact the package reports. Tiers 1 and 2 are authored power and heat
-sentences belonging to feature 005; they are not `LoadoutValidation` issues and are not built here.
+Only the neutral one is a structural fact the package reports. The hot and amber blocks are authored
+power and heat sentences belonging to feature 005, and the green one is an authored mobility
+sentence belonging to feature 008; none of the three is a `LoadoutValidation` issue and none is
+built here. The green block is why this rail's own all-clear line has a shape to take, and it is not
+why the line exists — see [status-rail](./status-rail.md#the-issue-block).
 
 ### The capability selectors
 
@@ -141,11 +146,11 @@ capability's own surface offers.
 
 ## Departures that remain, on constitutional grounds
 
-| Canvas                              | Built instead                                         | Reason                                                                                                                                                                                                         |
-| ----------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Warning blocks as unsemantic `div`s | A list, each item naming its severity in hidden words | Meaning may not be carried by a coloured border alone. The word is not drawn — the design draws none — and it is what carries the severity, because two of the three tiers differ from each other in hue alone |
-| Package sentences set as plain text | The shared `edsb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                                                                               |
-| Inline colours and sizes            | Design tokens                                         | One design system                                                                                                                                                                                              |
+| Canvas                              | Built instead                                         | Reason                                                                                                                                                                                                           |
+| ----------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Warning blocks as unsemantic `div`s | A list, each item naming its severity in hidden words | Meaning may not be carried by a coloured border alone. The word is not drawn — the design draws none — and it is what carries the severity, because the canvas's four blocks differ from each other in hue alone |
+| Package sentences set as plain text | The shared `edsb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                                                                                 |
+| Inline colours and sizes            | Design tokens                                         | One design system                                                                                                                                                                                                |
 
 `edsb-game-text` is the design system's existing behaviour for every package string in the
 application, not a feature-003 addition — the same argument feature 009 settled under its ruling F.

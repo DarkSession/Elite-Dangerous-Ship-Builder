@@ -97,10 +97,50 @@ browser and share builds by URL. SLEF import and export are specified in
   and the illustration, with units for every measured value that has one. Hull facts MUST be
   distinguished from module-dependent build results.
 
-  Heat capacity and dissipation, reserve fuel, rotation rates and the slot layout are deliberately
-  out of scope for this feature: the reference draws none of them on the shipyard, and the slot
-  layout belongs to the outfitting ledger (canvas 1c), not to hull selection. Hardness, crew and
-  mass lock replaced them on the reference's metric grid on 2026-08-21.
+  Heat capacity and dissipation, reserve fuel and the rotation rates are deliberately out of scope
+  for this feature: the reference draws none of them on the shipyard. Hardness, crew and mass lock
+  replaced them on the reference's metric grid on 2026-08-21.
+
+- **FR-022**: Hull detail MUST state what the hull can carry, beside what it can do: how many
+  utility mounts it has, the size of each of its seven core-internal mounts named by function, the
+  sizes of its unrestricted optional-internal mounts, and how many mounts each of those three groups
+  holds. Optional mounts the package restricts to one module family MUST be stated separately from
+  the rest, under a group of their own, with what each of them is restricted to. A hull with no
+  restricted mount MUST state nothing about restriction — an empty group is not drawn as an absence.
+
+  The two optional groups **partition** the hull's optional column: a mount is counted in one of
+  them and never in both, so the two totals add up to what the hull actually offers. The reference
+  draws its optional total as `12` for a hull whose column is fourteen mounts, two of them
+  restricted, which is the partition and not a discrepancy.
+
+  Every hull the installed package publishes carries at least one restricted mount — the planetary
+  approach suite has a mount of its own on all 48 — and nineteen of them carry two or three
+  restrictions between them. So the group MUST take a hull's restrictions as a list rather than as
+  one, and MUST name each restriction beside the mounts it holds. The reference draws a single
+  `MILITARY ONLY` note against an empty chip row, which is one restriction on a mocked hull; the
+  application states each restriction the package actually publishes for the hull in front of it.
+
+  The restriction MUST be named in the package's own words, through
+  `getSlotRestrictionLabel`, and MUST carry the untranslated disclosure where the package has no
+  entry for the active locale — the same rule every other game noun on this screen follows
+  (011/FR-020, constitution VI). `MILITARY ONLY` is the reference's own wording for one of the six
+  values and is not a string this application owns.
+
+  This is what the hull offers, not what a build has put in it. The outfitting ledger states the
+  second (canvas 1c), one row per mount, and it stays feature 002's. Every size, count and
+  restriction here is the package's own layout for the hull, read through `getShipSlots` and never
+  counted from a build.
+
+  Sizes MUST be grouped rather than listed one by one where a hull repeats one: the reference draws
+  twelve optional mounts as the seven chips `7`, `3 × 6`, `3 × 5`, `2 × 4`, `3`, `2`, `1`, largest
+  first. The grouping is presentation over the package's list, and it MUST NOT change what the list
+  says: the total MUST be the number of mounts rather than the number of groups, and no size may be
+  added to or dropped from what the package published. Ordering the chips largest first is part of
+  the presentation — the package already publishes a hull's mounts that way, and the sort is what
+  makes the grouping correct rather than dependent on it.
+
+  > **Numbering:** FR-022 is the next free id in this feature and is declared here rather than at
+  > the end, because it is the other half of FR-004's readout and the two are read together.
 
 - **FR-005**: Hull detail URLs MUST use the hull `symbol`. An unknown symbol MUST show an error and
   MUST NOT create a build.

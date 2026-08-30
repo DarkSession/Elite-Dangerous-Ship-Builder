@@ -85,11 +85,6 @@
   scroll-margin-block-start: var(--edsb-layout-bar-height);
 }
 
-// Hidden until there is room to align columns under it.
-.candidates__columns {
-  display: none;
-}
-
 // Canvas 1d's `FITTED HERE` and `FAMILIES` rules: a tracked mono label on the
 // panel ground with its counter against the trailing edge. Compact only — the
 // wide manifest passes neither heading and draws neither rule.
@@ -534,15 +529,11 @@
     text-overflow: ellipsis;
   }
 
-  // The five figure cells sit in the row's own grid so they line up under the
-  // header rather than in a nested grid of their own — one template, seven
-  // columns, exactly as the canvas sets it.
+  // The cost cell sits in the row's own grid so it lines up under the header
+  // rather than in a nested grid of its own — one template, three columns,
+  // exactly as the canvas sets it.
   .candidate__facts {
     display: contents;
-  }
-
-  .candidate__fact {
-    text-align: end;
   }
 
   // In the manifest the cell is one grid column, so its two prices line up on
@@ -569,15 +560,11 @@
     content-visibility: visible;
   }
 
-  // The header row already names these columns once. Repeating the label on
-  // every row is what the canvas's aligned manifest exists to avoid — but the
-  // label stays in the accessibility tree, so a cell is never a bare number.
-  .candidate__fact ::ng-deep .fact__label {
+  // The header row already names the column once. Repeating the label on every
+  // row is what the canvas's aligned manifest exists to avoid — but the label
+  // stays in the accessibility tree, so the cell is never a bare number.
+  .candidate__cost ::ng-deep .fact__label {
     @include layout.visually-hidden;
-  }
-
-  .candidate__fact ::ng-deep .fact {
-    justify-content: flex-end;
   }
 }
 

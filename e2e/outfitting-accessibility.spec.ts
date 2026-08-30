@@ -19,6 +19,7 @@ import {
   revealMount,
   surfacesAreLayers,
 } from './outfitting-surfaces';
+import { buildStockHull } from './shell';
 
 /**
  * The states this feature can be in, held to the same floor.
@@ -37,7 +38,7 @@ import {
 
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }

@@ -350,14 +350,14 @@ its ship name and ident — belongs here.
   a separate standard or unique-reward section, and the removal of those sections MUST NOT remove or
   weaken any label FR-006 requires.
 
-  > **Narrowed 2026-08-25 — the wide manifest is three columns.** The canvas revision of that date
-  > cut canvas 1c's manifest from seven columns to `MODULE`, `CLASS` and `COST`. So the wide manifest
-  > MUST draw a choice as the module, its class and rating, and its price, and no other column; the
-  > package's damage, mass, power draw and weapon draw MUST NOT be drawn at that width. They remain
-  > drawn in the compact composition, on canvas 1d's own code line, which that canvas did not change.
-  > This is presentation only: FR-003's rule that a missing package fact stays unavailable rather
-  > than becoming zero is untouched wherever a fact is drawn. No requirement id is minted for it —
-  > the coverage ledger registers ids against journeys that exist, and this one is not built.
+  > **The chooser draws three things at every width** (narrowed 2026-08-25, and again 2026-08-29).
+  > Canvas 1c's manifest is `MODULE`, `CLASS` and `COST`; canvas 1d's code line is the module's
+  > mount alone. So the chooser MUST draw a
+  > choice as the module with its mount, its class and rating, and its price, and nothing else; the
+  > package's damage, mass, power draw and weapon draw MUST NOT be drawn at either width. This is
+  > presentation only: FR-003's rule that a missing package fact stays unavailable rather than
+  > becoming zero is untouched wherever a fact is drawn. No requirement id is minted for it — the
+  > coverage ledger registers ids against journeys that exist, and this one is not built.
 
 ## Assumptions
 

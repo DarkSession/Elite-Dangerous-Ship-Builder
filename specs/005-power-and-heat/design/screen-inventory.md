@@ -22,6 +22,7 @@ draws, and to the status rail feature 003 already draws, one read-only block and
 | Heat profile                                     | Bars beside the canvas's four tiles                                               | The same bars over the same tiles                                                                                                                                                                     | FR-009–FR-011          |
 | Power distributor and pip allocation             | Five columns across SYS, ENG and WEP, the pip blocks in their own                 | The same five fields per bank, on three lines: the bank against its recharge, the pip blocks across the full width, then capacity and max recharge each beside its own column name (built 2026-08-26) | FR-007, FR-008, FR-011 |
 | Status rail power block (feature 003's rail)     | Between the validation issues and the metric cells                                | The same block in canvas 1d's Status mode                                                                                                                                                             | FR-013                 |
+| Key-figure power badge                           | Not drawn: the rail beside the workspace carries the whole line                   | The last thing in canvas 1d's strip of key readings — the share of plant output, and one line naming each dark priority group where the build has any                                                 | FR-014                 |
 
 ## Requirement ownership
 
@@ -40,6 +41,7 @@ draws, and to the status rail feature 003 already draws, one read-only block and
 | FR-011      | Field-specific presentation distinguishes a plant of zero, non-settling heat and never-overheating time.                                                                                                                                                                                                    |
 | FR-012      | **Withdrawn (wave 13)** — the artboard hides the plates outside `mounts`, so no mount carries a power state.                                                                                                                                                                                                |
 | FR-013      | The rail's shed sentences, `POWER` line and bar read the same projection and name only returned fields; none of the three is interactive. Its `SYS` / `ENG` / `WEP` blocks edit the one pip condition the distributor cell edits, under the same six-pip rule, and name the allocation each bank stands at. |
+| FR-014      | The compact strip's badge states the lit share of plant output from the same `powerBudget()` result the rail reads, names each unpowered priority group only where the build has one, and is inert.                                                                                                         |
 
 ## Cross-feature composition
 

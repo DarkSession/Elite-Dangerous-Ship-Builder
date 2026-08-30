@@ -58,11 +58,29 @@ one broken out.
 One list item per package issue, drawn as the canvas draws its warnings: a three-pixel inline-start
 marker, a quiet tinted ground, and the sentence set in prose rather than in the mono numeric voice.
 
-| Package severity | Canvas tier | Treatment                          |
-| ---------------- | ----------- | ---------------------------------- |
-| `error`          | 1           | danger marker, danger quiet ground |
-| `warning`        | 2           | accent marker, accent quiet ground |
-| `incomplete`     | 3           | info marker, no tint               |
+| Package severity | Canvas block     | Treatment                            |
+| ---------------- | ---------------- | ------------------------------------ |
+| `error`          | the hot one      | danger marker, danger quiet ground   |
+| `warning`        | the amber one    | accent marker, accent quiet ground   |
+| `incomplete`     | the neutral one  | info marker, info quiet ground       |
+| — (`valid`)      | none — see below | success marker, success quiet ground |
+
+The canvas draws four blocks in its `BUILD STATUS` list, each with a marker and a ground of its own,
+and every block in this list has both. Two of the four rows above are departures:
+
+- **The `incomplete` row is drawn in the system's info tone, and the canvas's fourth block is
+  neutral ink** — a `rgba(232, 222, 209, 0.28)` marker over a `0.04` ground, against this
+  application's cool `--edsb-text-info`. The tone was chosen when the row was: an `incomplete` is a
+  statement about a build that is not finished, and the system has a role for that. The 2026-08-29
+  revision added the ground under it and did not change the hue.
+- **The green block is not this feature's `valid` verdict.** Its sentence is
+  `Jump range and mass lock clear the requirements for this build` — an authored mobility sentence,
+  the same class as the two power and heat sentences above it, and feature 008's subject rather than
+  a `LoadoutValidation` issue (`design/reference-review.md`, "Tiers 1 and 2 are authored power and
+  heat sentences"). So the all-clear line this rail draws for a build the package calls valid is
+  still a departure from the reference, exactly as it was before the revision. What the green block
+  settles is only what such a line should _look_ like: a marker and a quiet ground in the success
+  role, drawn in the shape the other three blocks are drawn in.
 
 A `warning` stands beside `valid` and `complete`: the package raises one where a load the pilot
 chooses, rather than the fit itself, crosses a limit. The block draws the severity the package
@@ -71,8 +89,8 @@ states, never one read off `valid`.
 The severity is also written in words — hidden, because neither canvas draws one. The reference
 carries the tier in its marker and its ground, and a word the design does not draw does not go on the
 screen; it stays as the accessibility floor, read aloud beside the sentence and costing the design
-nothing. That word is what carries the severity, because tiers 1 and 2 differ from each other in hue
-alone. The tiers reinforce it; they do not state it.
+nothing. That word is what carries the severity, because the four tones differ from each other in
+hue alone. The tones reinforce it; they do not state it.
 
 The sentence itself is package game text, resolved through `getLoadoutIssueMessage` by way of feature
 011's presenter and rendered by `edsb-game-text`, so a locale the package has no translation for shows
@@ -91,10 +109,12 @@ package diagnostic and parses none.
 - A build the package calls valid draws one line saying so, and nothing beyond it — no count, no
   structural facts, no readiness or flyability claim. The line is read from
   `LoadoutValidation.valid`, so it stands whether the package raised nothing at all or raised only a
-  `warning`, and the issue blocks are drawn beneath it in that second case. The canvas draws no
-  such line; it was added because a Commander read the silence as a rail that had failed to load
-  rather than as an all-clear (2026-08-27, revising FR-015 and half of ruling A). It states the
-  package's verdict and nothing built on top of it.
+  `warning`, and the issue blocks are drawn beneath it in that second case. It was added ahead of
+  the canvas, because a Commander read the silence as a rail that had failed to load rather than as
+  an all-clear (2026-08-27, revising FR-015 and half of ruling A), and it is still ahead of it: the
+  2026-08-29 revision's green block is an authored mobility sentence, not a verdict on the loadout.
+  What that block settles is the shape — a success marker over a success quiet ground, drawn like
+  the other three. The line states the package's verdict and nothing built on top of it.
 - Where there is no build, nothing is drawn at all. No build is not a valid build.
 - Visible content is not live. A revalidated build is ordinary re-rendered content, not an event, and
   ruling A withdrew the announcer that would have reported one.

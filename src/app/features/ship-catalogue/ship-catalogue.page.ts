@@ -68,6 +68,7 @@ export class ShipCataloguePage {
 
   readonly emptyDescription = this.#messages.messageSignal('catalogue.empty.description');
   readonly caption = this.#messages.messageSignal('catalogue.table.caption');
+  readonly inspectorLabel = this.#messages.messageSignal('catalogue.inspector');
 
   readonly countText = this.#catalogue.countText;
   readonly search = computed(() => this.#catalogue.filters().query);

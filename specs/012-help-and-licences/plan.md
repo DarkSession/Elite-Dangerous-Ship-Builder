@@ -11,7 +11,7 @@ every capability and no-build state, and it is the only entry — no other surfa
 control, because the design reference draws none. Opening and closing the modal changes no route, URL
 fragment, build, storage or capability state. The modal presents the reference's own three sections
 in its own order: `ABOUT` (purpose, maintainer, where the source is, and the separate application and
-bundled-Almanac versions), `FAQ` (the two accepted help topics) and `LICENCE` (the four-line summary of what covers what, then
+bundled-Almanac versions), `FAQ` (the two accepted help topics) and `LICENCE` (the five-line summary of what covers what, then
 the exact project-specific Frontier disclaimer extracted from the root `LICENSE`).
 The modal draws no control other than its close — **amended 2026-08-25**, when the additions the
 reference does not draw were withdrawn. Its navigation out of the application is three audited

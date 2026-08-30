@@ -316,9 +316,12 @@ The filter is what makes package line art read as amber; it is adopted as a toke
 
 `grid-template-columns: 1fr 340px`. Left region padded `18px 22px`, stacking the
 toolbar, the column-header row and the manifest. Right rail
-`border-left: 1px solid var(--amber-a18)`, `background: #0f0f0f`, `padding: 18px`,
-stacking artwork, name block, metric grid, hardpoint section, price row and the two
-hull actions.
+`border-left: 1px solid var(--amber-a18)` with `border-bottom` of the same
+hairline and `align-self: start`, `background: #0f0f0f`, `padding: 18px`,
+stacking artwork, name block, metric grid, hardpoint section, the three slot
+groups, the restricted-slot group and the price row. It carries no action: the
+2026-08-29 revision withdrew both hull buttons from this rail, and canvas 1b's
+sheet keeps them.
 
 ## Compact shipyard layout (1b)
 

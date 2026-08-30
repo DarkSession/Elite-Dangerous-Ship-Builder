@@ -4,6 +4,7 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+import { buildStockHull } from './shell';
 
 /**
  * Defence analysis, end to end.
@@ -27,7 +28,7 @@ const HULL = 'Anaconda';
 /** Creates a stock build and opens the anatomy region's `DEFENCE` mode. */
 async function openDefence(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
-  await page.getByRole('button', { name: messages['hullDetail.create'], exact: true }).click();
+  await buildStockHull(page, messages['hullDetail.create']);
   await openMode(page, messages['anatomy.mode.defence']);
   await expect(page.locator('edsb-defence-analysis .defence')).toBeVisible();
 }

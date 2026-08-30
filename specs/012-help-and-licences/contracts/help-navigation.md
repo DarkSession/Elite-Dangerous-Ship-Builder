@@ -60,9 +60,9 @@ hairline dividers in one scrolling column. The invariant DOM/reading order is:
    sentence, then the application and bundled-Almanac identity facts where the reference draws its
    `APP VERSION … · LIBRARY VERSION …` line;
 3. the `FAQ` section — the help topics as question/answer pairs; and
-4. the `LICENCE` section — heading, the four-line summary of what covers what (the reference's
-   three plus the bundled library's own terms, amended below), then the exact project-specific
-   Frontier disclaimer marked in its own language.
+4. the `LICENCE` section — heading, the five-line summary of what covers what (the reference's own
+   five, amended below), then the exact project-specific Frontier disclaimer marked in its own
+   language.
 
 **Corrected 2026-08-25, against the design reference.** `ABOUT` previously also carried a bounded
 provenance statement after the version facts, and `LICENCE` previously opened with prose framing and
@@ -181,24 +181,26 @@ the mechanical set/reference/catalogue checks; it is not replaced by a passing u
 
 ## Legal presentation
 
-- The section opens with a four-line summary, one localised line each for the application's own
-  code, the bundled library, the game data and imagery, and the typefaces. **Amended 2026-08-26:**
-  the reference draws three and this draws four. The library's terms are a separate claim from
-  Frontier's — MIT over a package's code against media-usage rules over game data — and folding them
-  together would be the kind of unsupportable line this section already refuses elsewhere.
+- The section opens with a five-line summary, one localised line each for the application's own
+  code, the bundled library, the icon files this application ships, the game data and imagery, and
+  the typefaces. **Amended 2026-08-26:** the library's terms are a separate claim from Frontier's —
+  MIT over a package's code against media-usage rules over game data — and folding them together
+  would be the kind of unsupportable line this section already refuses elsewhere. **Amended
+  2026-08-29:** the icons are a third separate claim, and the reference draws all five.
 - The two lines whose complete terms this repository can point at link them from inside their own
-  text; the two that cannot, do not. Frontier's media-usage rules are not a document with an address
-  here, and the typefaces' licence is not one this repository redistributes.
-- Each line names only terms this repository can evidence. **Corrected 2026-08-25:** the reference's
-  second line reads `SHIP LINE ART & MATERIAL ICONS · EDASSETS.ORG, CC BY-NC-SA 4.0`, and this
-  repository can support neither half of it. Ship line art is not EDAssets' — it reaches this
-  application from `@elite-dangerous-almanac/core` under Frontier's media-usage rules, which is what
-  root `LICENSE` records — and no CC BY-NC-SA 4.0 grant for the material icons is recorded anywhere
-  in the repository. The line names Frontier's media-usage rules for the game data and imagery
-  instead. The icons, the Merc Coin and the loader mark are EDAssets files served from this origin
-  under feature 002's Icons ruling of 2026-08-22; that they carry no recorded licence here is a
-  **known gap** and is recorded as a defect in `design/help-and-licences.md`, not papered over with
-  a grant nobody has evidenced.
+  text; the three that cannot, do not. Frontier's media-usage rules are not a document with an
+  address here, the typefaces' licence is not one this repository redistributes, and the icons'
+  terms are a Creative Commons deed rather than a document in either of the two repositories the
+  audited manifest holds — so the icons line names its terms and links nothing.
+- Each line names only terms this repository can evidence. The reference once ran the ship line art
+  and the icons together, as `SHIP LINE ART & MATERIAL ICONS · EDASSETS.ORG, CC BY-NC-SA 4.0`, and
+  the two are separate claims: ship line art is not EDAssets', it reaches this application from
+  `@elite-dangerous-almanac/core` under Frontier's media-usage rules, which is what root `LICENSE`
+  records. So the game-data line names Frontier's rules and the icons line names EDAssets' — the eleven
+  marks this application serves from its own origin under feature 002's Icons ruling of 2026-08-22,
+  under CC BY-NC-SA 4.0. The grant is EDAssets' own, published at the deed root `LICENSE` links; root
+  `LICENSE` records it and names the eleven files it covers, and that record is what the line reads
+  from.
 - The modal embeds exactly one legal body: `FrontierDisclaimer.exactText` from root `LICENSE`.
 - Render it as text content in an English-language region. Do not use `innerHTML`, Markdown, iframe,
   translated copy, automatic links or a separately typed quotation.
@@ -300,7 +302,7 @@ Feature 011's preview catalogue must include:
 - the open modal state;
 - both populated help topics;
 - long application and package identifiers;
-- the four-line licence summary and the exact disclaimer;
+- the five-line licence summary and the exact disclaimer;
 - desktop centered, tablet/mobile portrait and landscape sheet states;
 - doubled/expanded text, RTL section with English disclaimer, reduced motion and 400%-zoom reflow.
 

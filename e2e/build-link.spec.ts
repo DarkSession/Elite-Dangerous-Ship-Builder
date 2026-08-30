@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
-import { openFirstHullFromManifest, reachShellAction } from './shell';
+import { buildStockHull, openFirstHullFromManifest, reachShellAction } from './shell';
 
 /**
  * A build, passed to someone else.
@@ -19,7 +19,7 @@ const MAX_LENGTH = 500;
 /** Creates a stock build and waits for its link to be published. */
 async function buildWithLink(page: Page, hull = 'Anaconda'): Promise<string> {
   await page.goto(`/ships/${hull}`);
-  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await buildStockHull(page, 'Build');
   await expect(page).toHaveURL(/\/build#b\./);
   return new URL(page.url()).hash.slice(1);
 }
@@ -70,7 +70,7 @@ test.describe('publishing a build link', () => {
 
   test('replaces the fragment rather than growing history', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build#b\./);
 
     await page.goBack();
@@ -182,7 +182,7 @@ test.describe('a link that cannot be read', () => {
 
   test('leaves a fragment that is not a build link alone', async ({ page }) => {
     await page.goto('/ships/Anaconda');
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build#b\./);
 
     await page.evaluate(() => {
@@ -206,7 +206,7 @@ test.describe('what a link never sends', () => {
     // about which ship. Whichever the manifest lists first is reachable at every
     // layout profile without opening a filter panel.
     await openFirstHullFromManifest(page);
-    await page.getByRole('button', { name: 'Build', exact: true }).click();
+    await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build#b\./);
     await openShare(page);
     await page.goto('/builds');

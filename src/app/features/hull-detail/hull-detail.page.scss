@@ -2,7 +2,8 @@
 
 // The hull inspector: artwork on a hatched plate, the hull name in tracked
 // condensed amber over a monospace identity line, a ruled metric grid, the
-// hardpoint section, the price, then the two hull actions (canvas 1a/1b).
+// hardpoint section, what the hull carries, the price, then the stock-hull
+// action (canvas 1a/1b).
 :host {
   display: block;
 }
@@ -88,6 +89,59 @@
   @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
 }
 
+// The total the reference puts on the trailing edge of a group's rule. The rule
+// itself is `section-rule`'s `::after`, which is the last flex item at the
+// default order, so the total takes the order after it rather than a place in
+// the markup that would read before the rule.
+.detail__section-total {
+  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-faint));
+
+  order: 1;
+}
+
+// The words a size chip stands for. `3 × 6` is a notation the eye reads
+// quickly; a reader is given "3 size 6 mounts" in its place, so nothing is
+// carried by the notation alone.
+.detail__mount-words {
+  @include layout.visually-hidden;
+}
+
+// One restriction: what its mounts take, then their sizes.
+.detail__restriction {
+  @include layout.stack(var(--edsb-space-stack-tight));
+}
+
+.detail__restriction-takes {
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail__restriction-lead {
+  color: var(--edsb-text-faint);
+}
+
+// The restricted group is drawn in the reference's hot tone: its rule, its
+// heading and its chips all say the mounts take one family only, so the tone is
+// never the only thing saying it — the group's own heading and the phrase under
+// it carry the meaning in words.
+.detail__mounts--restricted {
+  .detail__section {
+    color: var(--edsb-text-danger-quiet);
+  }
+
+  .detail__section::after {
+    background-color: var(--edsb-rule-danger);
+  }
+}
+
+.detail__mount--restricted {
+  border-color: var(--edsb-border-danger-quiet);
+}
+
 // The one headline number on the rail, on a rule of its own.
 .detail__price {
   display: flex;
@@ -119,9 +173,36 @@
   @include layout.stack(var(--edsb-space-stack));
 }
 
-// The commitment is drawn full-bleed on its own row (canvas 1a). The
-// reference's second rail button opens the library, which the command bar
+// The commitment is drawn full-bleed on its own row (canvas 1b). The
+// reference's second sheet button opens the library, which the command bar
 // already offers on this screen; it is not drawn twice.
+//
+// Canvas 1a's rail ends at the hull price and offers no action at all, because
+// there a manifest row's own press is the build (`ResponsiveCatalogueView`). It
+// is the press and not the width that decides: a manifest row builds only where
+// the device can hover, since a row that both reads a hull and builds it needs a
+// pointer that can rest without pressing. So the action is withdrawn exactly
+// where something else carries it, and a wide touch screen — which the canvases
+// do not draw — keeps it.
+//
+// The width is the rail's own, not the medium step: the rail composition starts
+// at `wide-up` (`ship-catalogue.page.scss`), and below it the detail is a panel
+// stacked under the manifest rather than the rail beside it. That panel is the
+// nearest thing to canvas 1b's sheet at that width, so it keeps the sheet's
+// action.
+@include layout.wide-up {
+  @media (hover: hover) {
+    .detail__create-action {
+      display: none;
+    }
+
+    // With the action gone the block has nothing left but a notice, and an
+    // empty one would still draw its rule and its row of space.
+    .detail__create:not(:has(edsb-status-notice)) {
+      display: none;
+    }
+  }
+}
 
 // The way back and the hull's name are the command bar's at compact width: the
 // sheet publishes them and the shell draws them, exactly as canvas 1b draws the

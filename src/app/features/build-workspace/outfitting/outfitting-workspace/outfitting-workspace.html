@@ -164,12 +164,17 @@
       band, rendered here instead of there at this width — one instance either
       way, so a reader meets each figure once (`design/outfitting-workspace.md`,
       "The compact key figures").
+
+      The strip closes with feature 005's power badge, which the artboard draws
+      beside the six rather than over them: it is one more item of this grid, so
+      it cannot land on `MASS` (005/FR-014).
     -->
     @if (benchIsLayer()) {
       <div class="outfitting__key-figures" [attr.aria-label]="keyFiguresLabel()" role="group">
         <edsb-defence-summary />
         <edsb-offence-summary />
         <edsb-drives-summary />
+        <edsb-power-badge />
       </div>
     }
 
