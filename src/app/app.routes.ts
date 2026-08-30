@@ -46,12 +46,9 @@ export const routes: Routes = [
         // from `ScreenChrome` and takes nothing from here, so what these two
         // keys change is the *document*, not the screen.
         //
-        // They name the hull, where the first search pass had this route
-        // inherit the catalogue's identity. That reading was right for a screen
-        // and wrong for an address: forty-eight addresses describing themselves
-        // identically are one address as far as a search engine is concerned,
-        // which is the defect the top-level routes were given their own
-        // descriptions to fix (011/FR-027, amended 2026-08-30).
+        // They name the hull because an address has to say which one it is:
+        // forty-eight addresses describing themselves identically are one
+        // address as far as a search engine is concerned (011/FR-027).
         //
         // Both patterns interpolate `{{hull}}`. `RouteTitleStrategy` supplies it
         // from the package and, where a symbol resolves to no hull, publishes

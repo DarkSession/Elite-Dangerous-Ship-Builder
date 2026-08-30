@@ -132,12 +132,11 @@ jobs:
       # here keeps the source, checks and Pages artifact on one trusted event and
       # avoids checking out a SHA supplied by a later `workflow_run` event.
       #
-      # Publishing one document per address used to be a shell block here. It is
-      # `scripts/publish-static-routes.mjs` now, run by `pnpm run build` above,
-      # because the deployment and `scripts/check-interface-foundations.mjs` were
-      # reading one sitemap in two languages and only a script they both import
-      # can stop them reading it differently. Everything that block guarded it
-      # guards, and refuses the build rather than the deployment.
+      # One document per published address is written by
+      # `scripts/publish-static-routes.mjs`, which `pnpm run build` above runs.
+      # It refuses the build rather than the deployment, and it reads the
+      # sitemap through the same function `scripts/check-interface-foundations.mjs`
+      # reads it through, so the two cannot read one file differently.
       - name: Upload the build as a Pages artifact
         if: ${{ github.event_name == 'push' }}
         uses: actions/upload-pages-artifact@v5
@@ -438,7 +437,7 @@ jobs:
         if: ${{ steps.token.outputs.available == 'true' }}
         working-directory: dist/elite-dangerous-ship-builder/browser
         run: |
-          sed -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
+          sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
           if ! grep -q '<meta name="robots" content="noindex"' index.html; then
             echo "::error title=Preview still asks to be indexed::the robots tag was not rewritten."
             exit 1

@@ -91,7 +91,7 @@ test.describe('what the head says this page is', () => {
 
     // The hull's own name and the hull's own picture. Forty-eight addresses
     // that describe themselves identically are one address as far as a search
-    // engine is concerned (011/FR-027, amended 2026-08-30).
+    // engine is concerned (011/FR-027).
     //
     // The name is read out of the title rather than out of the package: the
     // Almanac is ESM-only and this suite is loaded as CommonJS, and what is

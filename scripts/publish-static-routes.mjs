@@ -22,14 +22,11 @@
  * Every substitution is checked rather than assumed, because a silent no-op
  * here looks exactly like a published address.
  *
- * **This used to be a shell block in `ci.yml`.** It reads the sitemap through
- * `readSitemap`, the same function the policy checker reads it through, which is
- * the whole reason it moved: `sed` and a regular expression cutting the same
- * comments in two languages was a drift that could only be managed, and one
- * function both call is the fix.
- * It also means what a crawler is served is covered by `pnpm run test:scripts`
- * and by the production journey, rather than by a deployment nobody can run
- * twice.
+ * It reads the sitemap through `readSitemap`, the same function the policy
+ * checker reads it through, so there is no second spelling of the cut for the
+ * two to disagree over. Being a script rather than a deployment step also puts
+ * what a crawler is served under `pnpm run test:scripts` and under the
+ * production journey, where it can be run twice.
  *
  *   node scripts/publish-static-routes.mjs [output directory]
  */
@@ -70,7 +67,17 @@ export function advertisedAddresses(sitemap) {
   return addresses;
 }
 
-/** An attribute value, with the four characters that would end it escaped. */
+/**
+ * An attribute value, with the four characters that would end it escaped.
+ *
+ * What escapes it has to reach the document unread. Every substitution below
+ * therefore passes a function to `String.replace` rather than a replacement
+ * string: in a replacement string `$&`, `` $` ``, `$'` and `$1`-`$9` are
+ * expanded after this has run, which splices the matched markup — quotes and
+ * all — back in behind the escaping. A value holding one is not hypothetical:
+ * it is a message somebody translates or a name a package pin move introduces.
+ * `src/app/i18n/locale-registry.ts` keeps the same rule for the same reason.
+ */
 export function attribute(value) {
   return value
     .replace(/&/g, '&amp;')
@@ -99,7 +106,10 @@ export function withMeta(document, attributeName, key, value) {
   if (!tag.test(document)) {
     throw new Error(`The head carries no <meta ${attributeName}="${key}"> to rewrite.`);
   }
-  return document.replace(tag, `$1${attribute(value)}$3`);
+  return document.replace(
+    tag,
+    (_whole, opening, _quote, closing) => `${opening}${attribute(value)}${closing}`,
+  );
 }
 
 /** Replaces the canonical link's address, or refuses. */
@@ -108,7 +118,10 @@ export function withCanonical(document, address) {
   if (!tag.test(document)) {
     throw new Error('The head declares no canonical link to rewrite.');
   }
-  return document.replace(tag, `$1${attribute(address)}$3`);
+  return document.replace(
+    tag,
+    (_whole, opening, _quote, closing) => `${opening}${attribute(address)}${closing}`,
+  );
 }
 
 /** Replaces the document title, or refuses. */
@@ -117,7 +130,7 @@ export function withTitle(document, title) {
   if (!tag.test(document)) {
     throw new Error('The head carries no <title> to rewrite.');
   }
-  return document.replace(tag, `$1${text(title)}$2`);
+  return document.replace(tag, (_whole, opening, closing) => `${opening}${text(title)}${closing}`);
 }
 
 /** One address's document, built from the root's. */

@@ -1128,7 +1128,7 @@ describe('search metadata', () => {
   // preview deployment's robots tag into `noindex`.
   const PREVIEW = `      - name: Ask search engines to leave the preview alone
         run: |
-          sed -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
+          sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
 `;
 
   const MESSAGE_KEYS = [
@@ -1606,22 +1606,7 @@ describe('search metadata', () => {
     // The card of a published address, which no file in the repository names:
     // a package pin move that adds a hull adds one of these and nothing else
     // would notice.
-    const found = rules.searchMetadataViolations(
-      complete({
-        published: [
-          ...PUBLISHED,
-          {
-            path: 'ships/Anaconda',
-            route: 'ships/:symbol',
-            address: 'https://sb.edct.dev/ships/Anaconda',
-            titleKey: 'hullDetail.title',
-            descriptionKey: 'hullDetail.description',
-            image: 'assets/ships/Anaconda/illustration.png',
-          },
-        ],
-        sitemap: `${SITEMAP.replace('</urlset>', '<url><loc>https://sb.edct.dev/ships/Anaconda</loc></url></urlset>')}`,
-      }),
-    );
+    const found = rules.searchMetadataViolations(withHull({ assets: ASSETS }));
 
     assert.ok(found.some((violation) => /Anaconda\/illustration\.png/.test(violation.message)));
   });
@@ -1672,9 +1657,58 @@ describe('search metadata', () => {
     assert.ok(found.some((violation) => /does not say noindex/.test(violation.message)));
   });
 
+  // A published hull address, with the sitemap entry that goes with it.
+  const HULL = {
+    path: 'ships/Anaconda',
+    route: 'ships/:symbol',
+    address: 'https://sb.edct.dev/ships/Anaconda',
+    titleKey: 'hullDetail.title',
+    descriptionKey: 'hullDetail.description',
+    image: 'assets/ships/Anaconda/illustration.png',
+  };
+  const withHull = (overrides = {}) =>
+    complete({
+      published: [...PUBLISHED, HULL],
+      sitemap: SITEMAP.replace('</urlset>', `<url><loc>${HULL.address}</loc></url></urlset>`),
+      assets: [...ASSETS, HULL.image],
+      ...overrides,
+    });
+
+  it('rejects a published address the route table declares no route for', () => {
+    const found = rules.searchMetadataViolations(
+      withHull({ routes: ['', 'ships', 'build', '**'] }),
+    );
+
+    assert.ok(found.some((violation) => /:symbol/.test(violation.message)));
+  });
+
+  it('rejects a published address naming a message this build does not carry', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ messages: MESSAGE_KEYS.filter((key) => key !== 'catalogue.description') }),
+    );
+
+    assert.ok(found.some((violation) => /catalogue\.description/.test(violation.message)));
+  });
+
+  it('rejects a published message key no route declares', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ routeKeys: MESSAGE_KEYS.filter((key) => key !== 'workspace.title') }),
+    );
+
+    assert.ok(found.some((violation) => /workspace\.title/.test(violation.message)));
+  });
+
+  it('reports a catalogue that does not parse rather than checking no key at all', () => {
+    // The rules below the read are guarded by "if this input arrived". A real
+    // failure passing through that guard would retire five of them at once.
+    const found = rules.searchMetadataViolations(complete({ messages: undefined }));
+
+    assert.deepEqual(found, []);
+  });
+
   it('rejects a workflow with no step to leave a preview out of an index', () => {
     const found = rules.searchMetadataViolations(complete({ preview: 'jobs:\n  build:\n' }));
 
-    assert.ok(found.some((violation) => /No step rewrites the robots tag/.test(violation.message)));
+    assert.ok(found.some((violation) => /No `sed -E -i` step rewrites/.test(violation.message)));
   });
 });

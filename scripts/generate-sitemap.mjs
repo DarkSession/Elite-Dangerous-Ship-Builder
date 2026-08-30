@@ -5,9 +5,8 @@
  * The three top-level routes and one address per hull, the hulls read from the
  * installed package rather than listed here. A hand-written list of hull
  * symbols would be the private copy of package data constitution II forbids: it
- * would keep working, and would stop tracking the package at the next pin move.
- * That is the follow-up `design/search-visibility.md` recorded as the highest
- * value one, and this is it.
+ * would keep working, and would stop tracking the package at the next pin
+ * move.
  *
  * The file stays committed rather than generated into the build. A pin move
  * that adds a hull then shows up in review as an added address, which is the

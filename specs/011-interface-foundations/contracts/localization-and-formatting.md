@@ -115,8 +115,7 @@ package-owned canonical field. The presenter follows this order:
 Do not translate diagnostic codes/parameters privately, parse English messages, expose raw symbols as
 names or label canonical package text as localized.
 
-_Amended 2026-08-30._ Step 4 governs what a Commander reads on a screen. The document head is
-outside it: every value in it — the document's title, its description, and the card title,
+Step 4 governs what a Commander reads on a screen. The document head is outside it: every value in it — the document's title, its description, and the card title,
 description and image alternative that restate them — is a bare string with no element structure to
 hang a `lang` boundary or a programmatically associated disclosure on, and a disclosure written
 into the sentence would become part of the page's name in every search result. A hull name may

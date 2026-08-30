@@ -115,4 +115,34 @@ describe('DocumentAdapter', () => {
 
     expect(content('meta[name="description"]')).toBe('What this page is.');
   });
+
+  it('shows the picture this page is about in both card blocks, and says what it is', () => {
+    // A hull address carries the hull's own illustration rather than the
+    // application's mark, and the alternative text is the page's own title, so
+    // the picture is described in the language the document is in.
+    const illustration = `${SITE_ORIGIN}/assets/ships/Anaconda/illustration.png`;
+    adapter.commitRootState(
+      state({
+        title: 'Anaconda · Elite Dangerous Ship Builder',
+        image: illustration,
+        imageAlt: 'Anaconda · Elite Dangerous Ship Builder',
+      }),
+    );
+
+    expect(content('meta[property="og:image"]')).toBe(illustration);
+    expect(content('meta[name="twitter:image"]')).toBe(illustration);
+    expect(content('meta[property="og:image:alt"]')).toBe(
+      'Anaconda · Elite Dangerous Ship Builder',
+    );
+  });
+
+  it('rewrites the picture rather than leaving the previous page’s standing', () => {
+    adapter.commitRootState(
+      state({ image: `${SITE_ORIGIN}/assets/ships/Anaconda/illustration.png` }),
+    );
+    adapter.commitRootState(state({ image: absoluteAsset(LINK_CARD) }));
+
+    expect(document.head.querySelectorAll('meta[property="og:image"]')).toHaveLength(1);
+    expect(content('meta[property="og:image"]')).toBe(absoluteAsset(LINK_CARD));
+  });
 });

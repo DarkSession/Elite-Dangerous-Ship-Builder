@@ -7,10 +7,9 @@ import { sitemapDocument } from './generate-sitemap.mjs';
 /**
  * The step that decides what a crawler is served.
  *
- * It used to be a shell block in the deployment, where the only way to test it
- * was to deploy. Every guard that block carried is here, plus the one it could
- * not have: that a substitution which silently did nothing is a failure rather
- * than a published address that names the site's root.
+ * The guard worth naming is the one a deployment step cannot have: a
+ * substitution that silently did nothing is a failure here, rather than a
+ * published address quietly carrying the site's root as its identity.
  */
 
 const ORIGIN = 'https://sb.edct.dev';
@@ -139,5 +138,22 @@ describe('the document an address answers with', () => {
 
     const document = documentFor(INDEX, { ...HEAD, description: 'He said "no" & left' });
     assert.match(document, /content="He said &quot;no&quot; &amp; left"/);
+  });
+
+  it('writes a dollar sign as a dollar sign rather than as what it once matched', () => {
+    // `$&`, `` $` ``, `$'` and `$1` are expanded by a replacement string after
+    // the escaping has run, which splices the matched markup — quotes and all —
+    // back in behind it. A value holding one is a message somebody translates
+    // or a name a package pin move introduces, so the attribute it lands in has
+    // to survive it.
+    const injection = "Costs $1 $& $` $' $$";
+    const document = documentFor(INDEX, { ...HEAD, title: injection, description: injection });
+
+    // `&` is an entity in both, as it is for any other value; every dollar
+    // sign is itself, and nothing the pattern matched came back with it.
+    assert.equal(document.match(/<title>([^<]*)<\/title>/)[1], "Costs $1 $&amp; $` $' $$");
+    assert.match(document, /content="Costs \$1 \$&amp; \$` \$' \$\$"/);
+    // One description tag, not a document that grew a second one out of a value.
+    assert.equal(document.match(/<meta name="description"/g).length, 1);
   });
 });

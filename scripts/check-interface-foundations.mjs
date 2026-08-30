@@ -904,19 +904,38 @@ async function checkSearchMetadata() {
   // built from, so what is compared here is that module against the route
   // table, the catalogue and the files on disk — never one copy of the address
   // list against another.
+  //
+  // A failure to read either input is a violation rather than a missing one.
+  // Five rules below are guarded by "if this input arrived", which is there for
+  // the unit fixtures; letting a real failure through that guard would retire
+  // the sitemap reconciliation, the route-table check, the two message-key
+  // checks and the hull-card check all at once, silently. A rule that passes
+  // because there was nothing to inspect is not a gate.
   let published;
   try {
     published = publishedAddresses({ origin: declaredOrigin(originSource) });
-  } catch {
+  } catch (failure) {
     published = undefined;
+    violations.push({
+      file: SEARCH_METADATA_FILES.addresses,
+      line: 0,
+      rule: 'search-metadata',
+      message: `The published addresses could not be read, so nothing here was reconciled: ${failure.message}`,
+    });
   }
 
   const english = await read('src/app/i18n/locales/en.json');
   let messages;
   try {
     messages = Object.keys(JSON.parse(english));
-  } catch {
+  } catch (failure) {
     messages = undefined;
+    violations.push({
+      file: 'src/app/i18n/locales/en.json',
+      line: 0,
+      rule: 'search-metadata',
+      message: `Bundled English does not parse, so no published message key was checked: ${failure.message}`,
+    });
   }
 
   violations.push(
@@ -2003,23 +2022,35 @@ export function searchMetadataViolations(input) {
 
   // ...and the preview's rewrite can still find it. The workflow's expression is
   // taken from the workflow rather than restated here, and run against this
-  // file, because the two only ever fail together: a tag spelled across two
+  // file, so the two only ever fail together: a tag spelled across two
   // lines, or in single quotes, still satisfies every rule above while leaving
   // the `sed` matching nothing — and a preview that quietly asks to be indexed
   // competes with the site it is a preview of, which is the one failure nobody
   // is looking at a build log for.
   if (input.preview !== undefined && index.length > 0) {
-    const expression = /sed -i 's\|(<meta name="robots"[^|]*)\|([^|]*)\|' index\.html/.exec(
+    const expression = /sed -E -i 's\|(<meta name="robots"[^|]*)\|([^|]*)\|' index\.html/.exec(
       input.preview,
     );
     if (expression === null) {
       fail(
         SEARCH_METADATA_FILES.preview,
-        'No step rewrites the robots tag, so a preview deployment asks to be indexed alongside the site.',
+        'No `sed -E -i` step rewrites the robots tag, so a preview deployment asks to be indexed ' +
+          'alongside the site. `-E` is required: this rule reads the expression as a JavaScript ' +
+          'regular expression, and only an extended one means the same thing to both.',
       );
     } else {
       const [, search, replacement] = expression;
-      if (!new RegExp(search).test(index)) {
+      let pattern;
+      try {
+        pattern = new RegExp(search);
+      } catch (failure) {
+        pattern = null;
+        fail(
+          SEARCH_METADATA_FILES.preview,
+          `The preview step's expression cannot be read here (${failure.message}), so nothing checks that it still matches the tag.`,
+        );
+      }
+      if (pattern !== null && !pattern.test(index)) {
         fail(
           SEARCH_METADATA_FILES.index,
           `The robots tag is not spelled the way the preview step matches it (/${search}/), so a preview would keep asking to be indexed.`,

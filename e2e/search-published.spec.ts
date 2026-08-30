@@ -57,6 +57,10 @@ test.describe('the document each published address answers with', () => {
   });
 
   test('names the hull, and shows the hull, on a hull address', async ({ page }) => {
+    // One hull by name, deliberately. The address *set* belongs to the Almanac
+    // and is counted rather than listed below; a single well-known member of it
+    // is a fixture, and naming it is what lets this assert that the title, the
+    // description and the card all say the same hull.
     const document = await (await page.request.get(`${PRODUCT_URL}/ships/Anaconda`)).text();
 
     expect(title(document)).toBe(`Anaconda · ${englishMessages['app.name']}`);
@@ -76,8 +80,8 @@ test.describe('the document each published address answers with', () => {
       (match) => match[1],
     );
 
-    // More than the three top-level addresses, because the hulls are in the map
-    // now. Counted rather than named: the set belongs to the Almanac.
+    // More than the three top-level addresses, because every hull has one.
+    // Counted rather than named: the set belongs to the Almanac.
     expect(advertised.length).toBeGreaterThan(40);
 
     for (const address of advertised) {
