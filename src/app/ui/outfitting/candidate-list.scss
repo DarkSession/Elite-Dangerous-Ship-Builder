@@ -355,8 +355,10 @@
 // screen of modules showed a handful of them and every price was a line of its
 // own to read down.
 //
-// Scoped to the compact composition by the box only it draws. The gutter is a
-// declared width rather than `auto` because each row carries its own grid: at
+// Scoped by the box the accordion manifest draws, which is where these rows are
+// drawn at every width that draws them one under another rather than in aligned
+// columns. The gutter is a declared width rather than `auto` because each row
+// carries its own grid: at
 // `auto` every code is as wide as its own row's code, and the column the canvas
 // lines them up in stops being a column.
 .candidates__body .candidate {
@@ -402,16 +404,18 @@
 // was, but it is now measured once — the reveal rule and the arrangement have
 // to agree, and two thresholds cannot be relied on to (`manifest.ts`).
 :host([data-manifest='rail']) {
-  // Canvas 1c's `#fit-table`: `grid-template-columns: 216px minmax(0, 1fr);
-  // column-gap: 14px`. The head sits in column 2 row 1, over the pane alone;
+  // Canvas 1c's `#fit-table`: `grid-template-columns: 264px minmax(0, 1fr);
+  // column-gap: 14px`. Each column is headed by its own step bar in row 1, and
   // the rail and the pane share row 2 and scroll independently.
   //
-  // The rail's 216px is a quarter of the canvas's own centre column, and it is
-  // written here as a floor and a share rather than as the one number: held at
-  // 216 everywhere, a rail that is a quarter of the canvas became a sliver
-  // beside a pane of mostly empty row on a wide screen, while its family names
-  // went on wrapping (Commander request 2026-08-26). The share is bounded, so
-  // past the width a name needs the pixels go back to the rows.
+  // The rail's 264px is a fifth of the canvas's own centre column, and it is
+  // written here as a share between two bounds rather than as the one number.
+  // Held at 264 everywhere it is a fifth at one width only: a sliver beside a
+  // pane of mostly empty row on a wide screen, with its family names still
+  // wrapping, and two fifths of the narrowest column that draws a rail at all
+  // (Commander requests 2026-08-26 and 2026-08-30). Both bounds are what stop
+  // the share: below one a family name has no width to read in, and above the
+  // other it has all the width it needs and the pixels belong to the rows.
   .candidates__manifest {
     display: grid;
     grid-template-columns:
@@ -475,7 +479,7 @@
   // beside a list that scrolls (Commander request 2026-08-30). No floor is
   // stated with it — the column's own height is the floor, and a figure larger
   // than the column would be clipped by the bench rather than honoured.
-  @include layout.bench-columns {
+  @include layout.bench-bounded {
     .candidates__rail,
     .candidates__pane {
       max-block-size: none;

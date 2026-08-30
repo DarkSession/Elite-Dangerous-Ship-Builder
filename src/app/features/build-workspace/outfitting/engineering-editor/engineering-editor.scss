@@ -10,16 +10,23 @@
   // floor below is what stops it being a strip.
   min-block-size: 0;
 
-  // **No bound of its own. Ruled 2026-08-27 (Commander request).** There used
-  // to be one — the bench's, written the same way — and inside it wave 11 gave
-  // each of the panel's two halves a scroller. That left a Commander reading a
-  // weapon's seventy attribute rows four at a time, in the innermost of three
-  // nested boxes. Nothing here bounds itself now: each half is as tall as its
-  // content, the panel is as tall as its taller half, the workspace column
-  // releases to hold it and the page carries the result
-  // (`design/engineering-editor.md`, "Nothing here scrolls"). The full-screen
-  // placement is untouched: it sits in a `full-height` layer, and the layer is
-  // what scrolls.
+  // **No bound of its own. Ruled 2026-08-27 (Commander request).** The bench had
+  // one, written the same way, and inside it wave 11 gave each of the panel's
+  // two halves a scroller — which left a Commander reading a weapon's seventy
+  // attribute rows four at a time, in the innermost of three nested boxes.
+  // Nothing here bounds itself: each card is as tall as its content, the panel
+  // is as tall as the two of them, the workspace column releases to hold it and
+  // the page carries the result (`design/engineering-editor.md`, "Nothing here
+  // scrolls").
+  //
+  // The one exception is the bench actually bounded to the window, which is
+  // three columns and a window tall enough to hold what they cannot fold. There
+  // the column has a height to divide and the attribute table scrolls inside it,
+  // and the page does not scroll as well — so it is one box rather than the
+  // innermost of three (`_responsive.scss`, `bench-bounded`).
+  //
+  // The full-screen placement is untouched: it sits in a `full-height` layer,
+  // and the layer is what scrolls.
 }
 
 // How short this panel may get before it stops being one: a recipe, the grade
@@ -208,7 +215,7 @@
 // tall as its content and the page carries the result — which is what keeps a
 // weapon's seventy rows from being read four at a time
 // (`design/engineering-editor.md`, "Nothing here scrolls").
-@include layout.bench-columns {
+@include layout.bench-bounded {
   // Shrinkable, and only the body below carries a floor. A flex item is no
   // smaller than its own content by default, and this card's content is a table
   // of around seventy rows: left at that it takes the column's whole height,

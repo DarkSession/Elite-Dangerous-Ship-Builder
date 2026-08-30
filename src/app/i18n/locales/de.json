@@ -362,7 +362,7 @@
   "outfitting.acquisition.short.communityGoal": "Belohnung für ein Gemeinschaftsziel",
   "outfitting.acquisition.short.techBroker": "Technikhändler-Modul",
   "outfitting.acquisition.short.powerplay": "Powerplay-Modul",
-  "outfitting.engineering.heading": "Attribute · Technik",
+  "outfitting.engineering.heading": "Technik · Attribute",
   "outfitting.engineering.details.heading": "Moduldetails",
   "outfitting.engineering.choices.heading": "Technik",
   "outfitting.engineering.region": "Technik für {{slot}}",

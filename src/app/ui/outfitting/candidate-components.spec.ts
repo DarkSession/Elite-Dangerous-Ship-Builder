@@ -696,7 +696,7 @@ describe('the wide manifest', () => {
   });
 
   it('opens each column with its numbered step bar, and hides the numbers from a reader', () => {
-    // Canvas 1c's step strip: `① FAMILIES › ② MODULE …`, over the rail and over
+    // Canvas 1c's step strip: `① CATEGORY › ② MODULE …`, over the rail and over
     // the pane. The name is the step; the number and the chevron are decoration
     // and are hidden, because the columns under them are already named regions
     // (`design/module-replacement.md`, "The three steps, numbered").

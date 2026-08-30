@@ -74,16 +74,19 @@
 // the cell takes the quiet wash whichever it was, and the hatch crosses all of
 // it.
 //
-// The wash is what makes the number readable. Hatched over the solid amber
-// fill, a near-black number measures 1.19:1 wherever the hatch crosses it, and
-// no single ink clears 4.5:1 against both a bright amber stroke and the dark
-// ground between: the two are 7.11:1 apart. On the quiet wash the ordinary ink
-// reads at 12.46:1 on the cell and 4.97:1 on the stroke, and the stroke is
-// 2.51:1 against the cell it marks. That is the one pair of grounds a number
-// can be written across, and the mark stays the canvas's own full-cell hatch
-// (2026-08-30).
+// The ground under the hatch is what makes both readable. Hatched over the solid
+// amber fill, a near-black number measures 1.19:1 wherever the hatch crosses it,
+// and no single ink clears 4.5:1 against both a bright amber stroke and the dark
+// ground between: the two are 7.11:1 apart. On the page's own ground the hatch
+// is 3.21:1 against the cell and the ordinary ink is 4.62:1 on the hatch and
+// 14.80:1 on the cell, so the mark clears the non-text floor (SC 1.4.11) and the
+// number clears the text one. The quiet amber wash the cells around it carry
+// cannot: it is the ground an unchosen in-range cell already has on canvas 1d,
+// so on that artboard the hatch would be the whole of the difference between
+// the two states, and the strongest hatch a number can be read on there is
+// 2.51:1 (2026-08-30).
 .grade[data-unavailable='true'] {
-  background-color: var(--edsb-surface-accent-quiet);
+  background-color: var(--edsb-surface-hatched);
   background-image: repeating-linear-gradient(
     135deg,
     var(--edsb-surface-accent-hatch) 0 var(--edsb-space-stack-tight),
@@ -139,7 +142,7 @@
 // against the fill rather than over it: both selectors weigh the same, and this
 // one is written later, so a plain `.grades--steps .grade` would take the amber
 // off the very cell the control exists to mark.
-.grades--steps .grade:not([data-filled='true']) {
+.grades--steps .grade:not([data-filled='true']):not([data-unavailable='true']) {
   background-color: var(--edsb-surface-accent-quiet);
 }
 

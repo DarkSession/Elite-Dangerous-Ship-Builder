@@ -14,7 +14,7 @@ do not mutate the active build until confirmed.
 
 - **The third column. Ruled 2026-08-30, against the canvas revision of that date.** The editor is the
   bench's third column, beside the manifest rather than under it, opened by step ③
-  `ATTRIBUTES · ENGINEERING` — the same numbered bar the family rail and the pane carry
+  `ENGINEERING · ATTRIBUTES` — the same numbered bar the family rail and the pane carry
   (`design/module-replacement.md`, "The three steps, numbered"). Under that bar it is **two bordered
   cards** on `396px`, stacked with 14px between them: `ENGINEERING`, holding the blueprint, the grade
   and the experimental effect, and `MODULE DETAILS` under it, holding the attribute table. Each card
@@ -244,10 +244,12 @@ screen was headed `Engineer Hardpoint 1`. Four corrections:
   on a plate of its own. It is the recipe's own grade, which is what the drawing now says: a grade
   with no recipe behind it was already a control over nothing.
 - **The screen is called what the panel is called.** Canvas 1d's own title is
-  `DETAILS AND ENGINEERING`, and canvas 1c's step ③ bar names the same two things in the order it
-  draws them — `ATTRIBUTES · ENGINEERING`. The application says the second at both widths: one screen
-  with two names across two widths is worse than either name, and the name that survives is the one
-  from the artboard that was revised.
+  `DETAILS AND ENGINEERING` and canvas 1c's step ③ bar is `ATTRIBUTES · ENGINEERING`; both name the
+  same two things. The application says canvas 1c's at both widths — one screen with two names across
+  two widths is worse than either name, and the name that survives is the one from the artboard that
+  was revised — and says them in the order the cards are drawn in, `ENGINEERING · ATTRIBUTES`. Either
+  artboard's order would announce the sections in reverse: the controls come first under this bar,
+  which is ruled below.
 - **What it is open on goes on the second line**, as `<module> · <mount>` — 1d's
   `HUGE MULTI-CANNON 4A · HARDPOINT 1`. The mount is still announced with the screen even though it
   left the title.

@@ -11,14 +11,14 @@
 //
 // Held as mixins instead, the chrome is emitted once per component that includes
 // it, and the regions it lands in are already the largest stylesheets in the
-// application: two of them passed the 10kB ceiling `angular.json` sets for one
+// application: two of them passed the 10kB ceiling `angular.json` sets for a
 // component's styles. The first answer to that ceiling is to take the shared
 // thing out rather than to raise the number, and this file is that answer
 // (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The block is its
 // own component"). It is not the whole of it: the outfitting screen's own
-// stylesheet has nothing shared left in it and the ceiling is raised for that
-// one, which is recorded where the raise is
-// (`specs/002-module-outfitting/design/outfitting-workspace.md`).
+// stylesheet has nothing shared left in it, so `anyComponentStyle` is raised to
+// 11kB — a build-wide ceiling, not one screen's — which is recorded with the
+// reason (`specs/002-module-outfitting/design/outfitting-workspace.md`).
 
 @use 'responsive' as layout;
 
@@ -60,10 +60,10 @@
 }
 
 // The three columns, once the bench is wide enough: the chooser's rail and pane
-// in the first track, and the editor in canvas 1c's fixed 396px beside them, as
-// tall as it needs to be rather than stretched to the column beside it. Asked of
-// the bench's own container, so a doubled text size or 400% zoom takes the
-// stacked arrangement for the same reason a narrow window does.
+// in the first track, and the editor in canvas 1c's fixed 396px beside them,
+// each as tall as the row. Asked of the bench's own container, so a doubled text
+// size or 400% zoom takes the stacked arrangement for the same reason a narrow
+// window does.
 @include layout.bench-columns {
   // Asked of the chooser's own toolbar, because a mount the Almanac takes
   // nothing else in has no chooser at all: the editor is the only panel the
@@ -72,9 +72,11 @@
   .outfitting__bench:has(.replacement__toolbar) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--edsb-layout-engineering-column);
-    // Stretched, not started: the bench is bounded here, and a column that
-    // stops at its content leaves the room it was given empty at the foot
-    // instead of handing it to the list and the attribute table inside it.
+    // Stretched, not started. Where the window is tall enough the bench is
+    // bounded, and a column that stops at its content leaves the room it was
+    // given empty at the foot instead of handing it to the list and the
+    // attribute table inside it. Where it is not, the two columns are the same
+    // height as each other, which is what the canvas draws either way.
     align-items: stretch;
     column-gap: var(--edsb-space-xl);
   }

@@ -159,13 +159,29 @@ $bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
 // three columns").
 //
 // The figure is what the bench cannot fold, measured at the largest hull: the
-// command bar (74), the hull plates (348), the region gap (26) and the editor
+// command bar (74), the hull plates (348), the region gap (22) and the editor
 // column at its shortest (547, which is the step bar, the reserved engineering
-// card and the table's own floor). That is 995, rounded up to here.
+// card and the table's own floor). That is 991, rounded up to here.
 $bench-bounded-min-height: 63rem;
 
-// For the one box the mixin above cannot reach: the bench's own column, which is
-// the container the width question is asked of.
+// The bench actually bounded: three columns *and* a window tall enough to hold
+// what they cannot fold. Everything that scrolls inside the bench is asked this
+// rather than the width alone, because a scroller inside a column the page is
+// carrying is the nested arrangement both records forbid — an inner list with
+// its own foot below the fold of a page that scrolls too
+// (`design/engineering-editor.md`, "Nothing here scrolls"). A 1920 x 950 window
+// is wide enough for the columns and too short for the bound, and that is the
+// window it was found in.
+@mixin bench-bounded {
+  @container bench (min-width: #{$bench-columns-min}) {
+    @media (min-height: #{$bench-bounded-min-height}) {
+      @content;
+    }
+  }
+}
+
+// For the one box the mixins above cannot reach: the bench's own column, which
+// is the container the width question is asked of.
 @mixin bench-columns-region {
   @container outfitting (min-width: #{$bench-columns-region-min}) {
     @media (min-height: #{$bench-bounded-min-height}) {

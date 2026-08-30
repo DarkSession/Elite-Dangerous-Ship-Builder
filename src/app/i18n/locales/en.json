@@ -362,7 +362,7 @@
   "outfitting.acquisition.short.communityGoal": "Community goal reward",
   "outfitting.acquisition.short.techBroker": "Tech broker module",
   "outfitting.acquisition.short.powerplay": "Powerplay module",
-  "outfitting.engineering.heading": "Attributes · engineering",
+  "outfitting.engineering.heading": "Engineering · attributes",
   "outfitting.engineering.details.heading": "Module details",
   "outfitting.engineering.choices.heading": "Engineering",
   "outfitting.engineering.region": "Engineering for {{slot}}",

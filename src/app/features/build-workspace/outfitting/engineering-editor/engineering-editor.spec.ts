@@ -421,8 +421,8 @@ describe('engineering editor surface', () => {
 
       const editor = open(FIXTURE_SLOTS.frameShiftDrive).componentInstance;
 
-      // Step ③ is `ATTRIBUTES · ENGINEERING`: the details are the article's own
-      // attributes and they are readable the moment the mount is opened.
+      // Step ③ names two cards, and the details are one of them: the article's
+      // own attributes, readable the moment the mount is opened.
       // What is not there yet is the comparison — nothing has been chosen to
       // compare against, and a modified column repeating the stock one reads as
       // a recipe that did nothing.

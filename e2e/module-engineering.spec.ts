@@ -815,6 +815,46 @@ test.describe('the bench’s three columns', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'bench-three-columns' });
   });
 
+  test('holds the strip on one line at the narrowest bench, in the longer language', async ({
+    browser,
+    baseURL,
+  }) => {
+    // Step ③ is stood on the strip's line by an offset the height of the fitting
+    // panel's head — a declared figure, not a shared row, because aligning by
+    // grid would be a subgrid chain through three components. So the head has to
+    // be the one row that figure assumes, and the case that would break it is
+    // the narrowest bench that draws three columns in the language with the
+    // longest labels: 1790 x 1010 puts the fitting column at 645px, and German
+    // draws `MODUL ENTFERNEN` in it (`styles/_chrome.scss`).
+    const context = await browser.newContext({
+      baseURL,
+      locale: 'de-DE',
+      viewport: { width: 1790, height: 1010 },
+    });
+    const page = await context.newPage();
+
+    try {
+      await openStockBuild(page);
+      await openEditor(page, 'FrameShiftDrive');
+
+      const measured = await page.evaluate(() => ({
+        toolbar: document.querySelector('.replacement__toolbar')?.getBoundingClientRect().height,
+        tops: [...document.querySelectorAll('.edsb-step')].map((bar) =>
+          Math.round(bar.getBoundingClientRect().top),
+        ),
+      }));
+
+      expect(measured.tops).toHaveLength(3);
+      expect(Math.max(...measured.tops) - Math.min(...measured.tops)).toBeLessThanOrEqual(1);
+
+      // And the head is one row, which is the assumption the offset rests on. A
+      // wrapped head steps the editor a whole row off the strip.
+      expect(measured.toolbar).toBeLessThanOrEqual(48);
+    } finally {
+      await context.close();
+    }
+  });
+
   test('stacks the editor under the manifest where three columns do not fit', async ({ page }) => {
     await openStockBuild(page);
     await selectMount(page, 'FrameShiftDrive');
@@ -916,11 +956,31 @@ test.describe('the bench’s three columns', () => {
     // And a window under it releases the column, which is the stacked
     // arrangement's own answer: the page carries the bench and there is nothing
     // to clip.
+    //
+    // The three columns are still drawn here — this window is wide enough for
+    // them and only too short for the bound — so this is the state that catches
+    // a scroller keyed on the width alone. Nothing in the editor may scroll
+    // while the page is scrolling too: that is a weapon's seventy rows read a
+    // few at a time inside a page that moves under them, which is the nested
+    // arrangement the record forbids (`design/engineering-editor.md`, "Nothing
+    // here scrolls"). The chooser's pane is not part of that question — its
+    // height is its own declared bound, and it holds at every width.
     await page.setViewportSize({ width: 2020, height: 960 });
     await expect(async () => {
       const released = await bench();
       expect(released.clipped).toBeLessThanOrEqual(1);
       expect(released.document).toBeGreaterThan(released.viewport);
+
+      const scrollers = await page.evaluate(() =>
+        [...document.querySelectorAll('edsb-engineering-editor *')]
+          .filter((box) => {
+            const drawn = getComputedStyle(box);
+            const scrolls = /auto|scroll/.test(drawn.overflowY);
+            return scrolls && box.scrollHeight - box.clientHeight > 1;
+          })
+          .map((box) => box.className.toString().split(' ')[0]),
+      );
+      expect(scrollers).toEqual([]);
     }).toPass({ timeout: 5_000 });
   });
 

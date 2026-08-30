@@ -21,7 +21,10 @@ const FAMILY_GAP_REM = 0.875;
  * Derived rather than measured off the drawing, and derived from a figure that
  * already exists: the pane is a candidate row, so it may not be narrowed below
  * the content minimum a candidate row already declares, and the rail is canvas
- * 1c's own fixed 264px beside it with the canvas's 14px between them.
+ * 1c's own 264px beside it with the canvas's 14px between them. The rail is
+ * drawn as a share of the column between two bounds rather than at that one
+ * number, so at this threshold it is the narrower of them and the pane has more
+ * than the sum promises (`candidate-list.scss`).
  *
  * **Lowered from a flat 44rem on 2026-08-25.** That figure was the width seven
  * columns needed, and the revision cut the manifest to three — so the old

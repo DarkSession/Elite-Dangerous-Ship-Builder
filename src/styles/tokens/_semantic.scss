@@ -78,11 +78,15 @@
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
 
-  // The hatch over a choice the package offers but this recipe does not reach.
-  // It is the strongest amber a number can still be read on where it crosses:
-  // 2.51:1 against the cell it marks, with the ordinary ink at 4.97:1 on the
-  // hatch itself and 12.46:1 on the cell between the strokes.
-  --edsb-surface-accent-hatch: var(--edsb-palette-amber-a45);
+  // The hatch over a choice the package offers but this recipe does not reach,
+  // and the ground it is drawn on. Both are chosen together, because the cell
+  // has to carry a mark a Commander can see and a number they can read: on the
+  // page's own ground the hatch measures 3.21:1 against the cell and the
+  // ordinary ink 4.62:1 on the hatch and 14.80:1 on the cell between the
+  // strokes. The mark clears the non-text floor and the number clears the text
+  // one, which is the pair no other ground manages.
+  --edsb-surface-accent-hatch: var(--edsb-palette-amber-a55);
+  --edsb-surface-hatched: var(--edsb-palette-bg);
 
   // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
   --edsb-surface-accent-underbar: var(--edsb-palette-amber-a50);

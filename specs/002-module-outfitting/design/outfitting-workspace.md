@@ -30,7 +30,7 @@ workspace and never creates or owns a second build.
   rail, the module pane and the engineering editor, in one row under one numbered step strip. The
   first two of those tracks are the manifest's own and are drawn inside the fitting panel, so the
   bench itself is the two panels side by side — the fitting column taking what is left, the editor
-  taking the canvas's 396px and starting at the top of the bench rather than stretching to it.
+  taking the canvas's 396px, and the two stretch to the same height.
   The mount's name, the search and `REMOVE MODULE` are the fitting column's head and stop where that
   column stops, which is how the canvas's `13px 430px 11px 20px` head is read here.
 - **Under 67.875rem of bench the editor goes back under the manifest.** The figure is the manifest's
@@ -43,7 +43,7 @@ workspace and never creates or owns a second build.
   canvas was drawn at — 2020px — and everything narrower keeps the stack, which is the same content
   in the same order. Asked of the bench's own container rather than of the window, so a doubled text
   size or 400% zoom takes the stack for the same reason a narrow window does.
-- **The outfitting screen's own style ceiling is 11kB. Ruled 2026-08-30.** `angular.json` sets a
+- **The style ceiling is 11kB. Ruled 2026-08-30.** `angular.json` sets a
   per-component ceiling on emitted styles, and the answer to crossing it is to take the shared thing
   out rather than to raise the number (`specs/005-power-and-heat/design/power-and-heat-detail.md`).
   That was done first: canvas 1c's step strip and the three-column bench are stated once in
@@ -51,7 +51,10 @@ workspace and never creates or owns a second build.
   under 10kB with room to spare. `outfitting-workspace.scss` is the whole outfitting screen — the
   ledger, the centre column, the status rail and the compact foot — measured 10,127 bytes of 10,240
   before this change and 10,414 after it, and it has no block left in it that is a component boundary
-  rather than a piece of one screen. A global home was the other candidate and is rejected on the
+  rather than a piece of one screen. `anyComponentStyle` is one figure for every component in the
+  build, so raising it raises the ceiling for all of them; the alternative is a per-file exception
+  list, which is a worse record of the same decision. A global home was the other candidate and is
+  rejected on the
   cascade: an emulated-encapsulation stylesheet appends an attribute to every compound selector, so a
   component's own `.outfitting__centre` outweighs a global rule of the same shape and the global one
   never takes effect. The ceiling is raised by 1kB and the reason is written here so the next raise
