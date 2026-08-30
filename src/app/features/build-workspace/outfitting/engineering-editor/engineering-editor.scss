@@ -123,8 +123,9 @@
   min-block-size: 0;
 }
 
-// Each card is the box the panel used to be: a hairline amber edge, the panel's
-// own ground, and a ruled bar across the top carrying its name.
+// Each card carries the box: a hairline amber edge, the panel's own ground, and
+// a ruled bar across the top with its name in it. The panel around them carries
+// none of that.
 .engineering:not(.engineering--layer) .engineering__result,
 .engineering:not(.engineering--layer) .engineering__choices {
   gap: 0;

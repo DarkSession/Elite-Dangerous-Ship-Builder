@@ -991,6 +991,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the editor is a column beside the manifest where the bench holds three, and under it where it does not',
       'the module details stand above the engineering and stay put while a recipe grows it',
       'step ③ is numbered only where the chooser numbers steps ① and ②',
+      'a mount with no chooser keeps the whole bench and no numbered step',
       'every grade cell names its grade, and a cell past the choice is unfilled and dimmed',
     ],
     manualRecord: 'screen-reader',

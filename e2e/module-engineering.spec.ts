@@ -832,6 +832,33 @@ test.describe('the bench’s three columns', () => {
     expect(chooserSteps).toBe(2);
     await expect(editorNumber).toBeVisible();
   });
+
+  test('draws no numbered step over a mount with no chooser at all', async ({ page }) => {
+    // The cargo hatch is a mount the Almanac offers no replacement for, so the
+    // bench holds the editor and nothing else — at every width, not only at the
+    // narrow ones the two rules above are about. The bar keeps its name; the
+    // number would be the third step of a flow with no first or second.
+    await openStockBuild(page);
+    await selectMount(page, 'CargoHatch');
+
+    if (await surfacesAreLayers(page)) {
+      await expect(page.locator('.edsb-step')).toHaveCount(0);
+      return;
+    }
+
+    await expect(page.locator('edsb-module-replacement')).toHaveCount(0);
+    await expect(page.locator('.engineering__step .edsb-step__name')).toBeVisible();
+    await expect(page.locator('.engineering__step .edsb-step__number')).toBeHidden();
+
+    // And the editor takes the bench, rather than a 396px track with an empty
+    // column beside it.
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    const [bench, editor] = await Promise.all([
+      page.locator('.outfitting__bench').boundingBox(),
+      page.locator('edsb-engineering-editor').boundingBox(),
+    ]);
+    expect(editor!.width).toBeGreaterThan(bench!.width * 0.9);
+  });
 });
 
 /**

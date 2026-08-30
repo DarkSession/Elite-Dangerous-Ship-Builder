@@ -73,13 +73,16 @@
 // unfilled — which left the phone's control drawing no difference at all
 // between a grade outside the recipe and one inside it.
 //
-// An unfilled cell is striped in the accent over its own quiet ground, and its
-// number is the accent: the stripe is the lit part of a dark cell.
+// An unfilled cell keeps its own quiet ground and takes the stripe in the
+// accent: thin lit diagonals across a dark cell. The dark is the majority of
+// the cell on purpose — the number an unfilled cell carries is the accent ink,
+// and over the amber band that ink measures 1.19:1, so a band wide enough to
+// hold a digit is a digit that cannot be read.
 .grades--steps .grade[data-unavailable='true']:not([data-filled='true']) {
   background-image: repeating-linear-gradient(
     135deg,
-    var(--edsb-surface-accent-solid) 0 var(--edsb-space-stack-tight),
-    transparent var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
+    transparent 0 var(--edsb-space-stack-tight),
+    var(--edsb-surface-accent-solid) var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
   );
   background-color: var(--edsb-surface-accent-quiet);
 }
@@ -107,7 +110,7 @@
 // which grade it is, so the fill and the numbering carry the same fact; a cell
 // past the choice dims its number, which is the third way the same thing is
 // said. Dimmed to the faintest ink that still reads rather than to the canvas's
-// own wash, which measures 2.4:1.
+// own wash, which measures 2.99:1 against the cell's ground.
 .grades:not(.grades--steps) .grade__number {
   font-family: var(--edsb-font-metric);
   font-size: var(--edsb-text-size-micro);

@@ -101,11 +101,12 @@ and the status rail, which is not changed by what stands beside the list. The bo
 requests put it.
 
 **The rail's 264px is a floor and a share, amended 2026-08-26 (Commander request).** It is a fifth
-of the canvas's 1322px centre column, and held at that one number it stopped being a share the moment
-the column was wider: at 2560 the pane beside it ran mostly empty row while seventeen family names
-went on wrapping inside it. The rail now takes 26% of the chooser's own width, floored at 264px and
-bounded at 20rem — past the width a family name needs, the pixels belong to the rows. The floor is
-what holds at the canvas's own width and below: 264 at 1440 and at 2020, 320 at 2560.
+of the canvas's 1322px centre column, and held at that one number it is a share at one width and a
+sliver at every other: at 2560 the pane beside it ran mostly empty row while seventeen family names
+went on wrapping inside it. So the rail takes 20% of the chooser's own width — the canvas's own
+ratio — floored at 264px and bounded at 20rem, past which a family name has the width it needs and
+the pixels belong to the rows. The floor is what holds at the canvas's own width and below: 264 at
+1440 and at 2020, 283 at 2560.
 
 **Selection is exclusive.** The revised script's rail branch shows the chosen family's `.fam-v` and
 hides every other, and returns before the accordion branch it replaced. Exactly one family is

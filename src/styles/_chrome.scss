@@ -60,7 +60,11 @@
 // the bench's own container, so a doubled text size or 400% zoom takes the
 // stacked arrangement for the same reason a narrow window does.
 @include layout.bench-columns {
-  .outfitting__bench {
+  // Asked of the chooser's own toolbar, because a mount the Almanac takes
+  // nothing else in has no chooser at all: the editor is the only panel the
+  // bench holds, and a second track beside it is 690px of empty column at 2020
+  // with the editor squeezed into 396px of it.
+  .outfitting__bench:has(.replacement__toolbar) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--edsb-layout-engineering-column);
     align-items: start;
@@ -134,6 +138,14 @@
   .engineering__step .edsb-step__number {
     display: flex;
   }
+}
+
+// And not at all where the bench holds no chooser. Both questions above are
+// about width, and width is only a proxy for the one that matters: whether
+// steps ① and ② are on the screen. A mount the Almanac offers no replacement
+// for has no chooser at any width, so the strip is the editor's bar alone.
+.outfitting__bench:not(:has(.replacement__toolbar)) .engineering__step .edsb-step__number {
+  display: none;
 }
 
 .edsb-step__name {

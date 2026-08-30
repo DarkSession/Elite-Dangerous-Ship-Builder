@@ -18,8 +18,8 @@ do not mutate the active build until confirmed.
   (`design/module-replacement.md`, "The three steps, numbered"). Under that bar it is **two bordered
   cards** on `396px`, stacked with 14px between them: `MODULE DETAILS`, holding the attribute table,
   and `ENGINEERING` under it, holding the blueprint, the grade and the experimental effect. Each card
-  is a hairline amber edge, the panel's own ground and a ruled bar across the top, which is what the
-  one box used to be.
+  is a hairline amber edge, the panel's own ground and a ruled bar across the top; the panel around
+  the two carries none of that, because a box around two boxes is a frame around a frame.
 - **The details are above the engineering.** The canvas switched them: what a Commander is deciding
   about is the article's own figures, and the controls that change them read as what follows from
   that rather than as what it answers. It is also the order the two are read in: a weapon publishes
@@ -35,7 +35,7 @@ do not mutate the active build until confirmed.
   and a lone `③` over a bench with no other step on it names a flow that is not on the screen. The
   bar and its name stay at every inline width — it is the region's head either way.
 - The canvas's `CLEAR ✕` stays withdrawn — see "Clearing engineering". The 2026-08-30 revision
-  removes it from the artboard as well, so the reference and this screen now agree.
+  carries none either, so the reference and this screen agree.
 - **The frozen family bar keeps its own top rule. Ruled 2026-08-23 (wave 11, Commander report).**
   The bar is pulled two pixels above the scroller's edge to cover the sliver the browser's rounding
   leaves between them, and the scroller clips what hangs over — which took the bar's own
@@ -103,7 +103,7 @@ do not mutate the active build until confirmed.
 - Grade cells run 1 to the selected descriptor's highest, and **each cell carries its own number**
   (2026-08-30). The bar is filled up to the chosen grade; a cell past it takes the quiet ground and
   dims its number, so the fill and the numbering say the same thing. The canvas dims to
-  `var(--ink-38)`, which measures 2.4:1; the number is drawn at the faintest ink that still reads,
+  `var(--ink-38)`, which measures 2.99:1 on that ground; the number takes the faintest ink that reads,
   which is the same lift every one of the canvas's label washes takes. Canvas 1d numbers its five
   buttons too and keeps its own filling: it fills the chosen cell alone, because a numbered button
   filled for being _below_ the choice is four buttons claiming to be the one that is pressed.

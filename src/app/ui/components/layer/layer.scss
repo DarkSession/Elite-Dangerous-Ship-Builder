@@ -131,8 +131,8 @@
   max-block-size: 88svh;
   overflow-y: auto;
   border-radius: var(--edsb-shape-layer);
-  // The edge the sheet shares with the edge of the screen is not drawn. That is
-  // the leading one now that the sheet starts at the top.
+  // The edge the sheet shares with the edge of the screen is not drawn, and a
+  // sheet that starts at the top shares its leading one.
   border-block-start: 0;
 }
 

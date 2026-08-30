@@ -630,10 +630,10 @@
   --edsb-measure-family-rail-max: 20rem;
   --edsb-measure-family-rail-share: 20%;
   --edsb-measure-family-gap: 0.875rem;
-  // What the rail and the pane are bounded at: the canvas's 470px, less the same
-  // two rows the fitting panel's floor above gives up. The panel and the pane
-  // are the same list at two widths, so a row comes off both of them or
-  // neither (Commander requests 2026-08-28 and 2026-08-29).
+  // What the rail and the pane are bounded at: two rows short of the figure the
+  // fitting panel's own floor above is measured from. The panel and the pane are
+  // the same list at two widths, so a row comes off both of them or neither
+  // (Commander requests 2026-08-28 and 2026-08-29).
   //
   // The canvas draws 648px, for a bench that stands the engineering editor
   // beside the list rather than under it. That figure is not adopted: what the

@@ -394,9 +394,9 @@
   // **The wave-9 cap is gone with them.** The name was capped at 27.25rem
   // because the workspace's third track was not built and the centre column
   // held 306px the canvas never gave it, which a `2.2fr` name column took the
-  // whole of. The third track is built, and this manifest now gives 264px of
-  // its own width to the family rail before the name sees any of it, so there
-  // is no surplus left to run away with (module-replacement design, "The
+  // whole of. The third track is built, and this manifest gives 264px of its
+  // own width to the family rail before the name sees any of it, so there is
+  // no surplus left to run away with (module-replacement design, "The
   // manifest's own columns").
   --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
     var(--edsb-measure-candidate-cost);

@@ -437,9 +437,10 @@
 // Wide enough to align the manifest's columns without truncating a module name.
 // Below it the cards take over rather than the name being cut.
 :host([data-manifest='rail']) {
-  // Canvas 1c's header row: `padding: 0 12px 7px`, and nothing else — no
-  // ground, no rule under it, no sticky offset. It sits above the scroller
-  // rather than inside it, so it stays put without any of that (wave 9).
+  // Step ②'s bar is the column head as well, so it carries the pane's own
+  // tracks across it (`styles/_chrome.scss` draws the bar itself). It sits
+  // above the scroller rather than inside it, so it stays put with no sticky
+  // offset of its own (wave 9).
   .candidates__columns {
     flex: none;
     display: grid;

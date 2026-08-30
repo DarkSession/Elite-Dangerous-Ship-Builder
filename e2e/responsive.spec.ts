@@ -76,11 +76,11 @@ test.describe('responsive availability', () => {
   });
 
   test('opens a compact layer at the top of the screen, not part-way down it', async ({ page }) => {
-    // A sheet used to rise from the block end, sized by its content, so a short
-    // one began part-way down the screen with scrim over everything above it —
-    // `Import build` 449 pixels down an 844-pixel phone (Commander request
-    // 2026-08-30). It starts where the screen starts now and grows down to its
-    // bound (`design/canvas-extraction.md`, "Panel dialog").
+    // A sheet starts where the screen starts and grows down to its bound
+    // (`design/canvas-extraction.md`, "Panel dialog"). Risen from the block end
+    // and sized by its content instead, a short one begins part-way down the
+    // screen with scrim over everything above it — `Import build` 449 pixels
+    // down an 844-pixel phone (Commander request 2026-08-30).
     await reachShellAction(page, /^import build$/i);
 
     const layer = page.locator('dialog[open]');
