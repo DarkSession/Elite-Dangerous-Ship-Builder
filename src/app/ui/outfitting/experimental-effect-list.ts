@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -60,6 +61,10 @@ export interface ExperimentalEffectView {
     // here first, found to be inside, and left for the trigger's own toggle —
     // which would otherwise re-open what this had just shut.
     '(document:pointerdown)': 'dismissOutside($event)',
+    // And focus leaving shuts it too, which is the same rule for the other way
+    // out: `Tab` from the list belongs to the page, so the focus goes on and
+    // the list would otherwise stay drawn over the attribute table behind it.
+    '(focusout)': 'dismissOnFocusOut($event)',
   },
 })
 export class ExperimentalEffectList {
@@ -196,7 +201,49 @@ export class ExperimentalEffectList {
     effect(() => {
       this.list()?.nativeElement.focus();
     });
+
+    this.#followActiveOption();
   }
+
+  /**
+   * Keeps the option the list is on inside the box it scrolls in.
+   *
+   * The list is bounded at `--edsb-layout-menu-drop` and scrolls inside itself,
+   * so an option the keyboard walks to — or the applied one the menu opens on —
+   * is otherwise named by `aria-activedescendant` while sitting hundreds of
+   * pixels below the fold. Nothing on screen would move.
+   *
+   * The list's own box is scrolled rather than `scrollIntoView`, which walks
+   * every scrollable ancestor up to the document and would take the panel this
+   * menu is drawn over off screen to reveal a row inside it — the same reason
+   * the chooser's list gives (`candidate-list.ts`, `#centreFitted`).
+   *
+   * Moved by the least that puts the option inside the box, rather than centred:
+   * a list that re-centres on every arrow press moves the rows either side of
+   * the one being read, and a Commander walking a menu is reading those too.
+   */
+  readonly #followActiveOption = () =>
+    afterRenderEffect(() => {
+      const list = this.list()?.nativeElement;
+      const active = list?.querySelector<HTMLElement>(`#${CSS.escape(this.activeOptionId())}`);
+      if (!list || !active) {
+        return;
+      }
+
+      // `clientTop` is the scroller's own block-start border, which stands
+      // between the box a rect measures from and the padding box `clientHeight`
+      // describes.
+      const listBox = list.getBoundingClientRect();
+      const optionBox = active.getBoundingClientRect();
+      const above = optionBox.top - listBox.top - list.clientTop;
+      const below = above + optionBox.height - list.clientHeight;
+
+      if (above < 0) {
+        list.scrollTop += above;
+      } else if (below > 0) {
+        list.scrollTop += below;
+      }
+    });
 
   toggle(): void {
     const opening = !this.#open();
@@ -268,6 +315,20 @@ export class ExperimentalEffectList {
     // The trigger, not the document. Focus left inside a box that is no longer
     // drawn is focus a reader has to find again from the top of the page.
     this.#host.nativeElement.querySelector<HTMLElement>('.menu__trigger')?.focus();
+  }
+
+  /** Shuts the list where the focus has gone somewhere outside this control. */
+  dismissOnFocusOut(event: FocusEvent): void {
+    const next = event.relatedTarget;
+    // `null` is focus leaving the document altogether — another window, or the
+    // browser's own chrome. The menu stays open for that, because the
+    // Commander has not moved on from it and will come back to it.
+    if (!this.#open() || next === null || !(next instanceof Node)) {
+      return;
+    }
+    if (!this.#host.nativeElement.contains(next)) {
+      this.#open.set(false);
+    }
   }
 
   dismissOutside(event: Event): void {

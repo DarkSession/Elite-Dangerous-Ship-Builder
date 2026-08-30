@@ -662,14 +662,19 @@ test.describe('the compact strip’s power badge', () => {
     // (Commander request 2026-08-30). The badge is outside that grid, and
     // absent here, so the six take the strip.
     const spread = await page.locator('.outfitting__key-figures').evaluate((strip: HTMLElement) => {
+      const style = getComputedStyle(strip);
       const cells = [...strip.querySelectorAll('.metric')];
       const first = cells[0]!.getBoundingClientRect();
       const last = cells[cells.length - 1]!.getBoundingClientRect();
+      const box = strip.getBoundingClientRect();
       return {
         count: cells.length,
         rows: new Set(cells.map((cell) => Math.round(cell.getBoundingClientRect().top))).size,
         covered: last.right - first.left,
-        strip: strip.getBoundingClientRect().width,
+        strip: box.width,
+        // What is left between the last reading and the strip's own content
+        // edge, which is the space an absent badge would otherwise still hold.
+        trailingGap: box.right - parseFloat(style.paddingRight) - last.right,
       };
     });
 
@@ -677,6 +682,12 @@ test.describe('the compact strip’s power badge', () => {
     // Whatever number of rows this width puts them on, they fill what they are
     // given rather than sitting at their floor with the rest of the strip empty.
     expect(spread.covered).toBeGreaterThan((spread.strip / spread.rows) * 0.8);
+
+    // Right up to the edge. A badge that draws nothing is still a flex item
+    // unless it takes itself out of the row, and a flex item is still one gap —
+    // which would stand here on every build the plant covers, which is most of
+    // them.
+    expect(spread.trailingGap).toBeLessThan(1);
   });
 });
 

@@ -90,9 +90,11 @@ export class PowerBadge {
    * to name, and the share on its own is a reading the Status mode states in
    * full a segment away (FR-014).
    *
-   * A plant generating nothing draws the plate rather than escaping it. Its
-   * share has no answer, so the plate opens on the groups instead — which is
-   * every group there is, and the loudest thing this warning ever has to say.
+   * A plant generating nothing draws the plate too, and its share has no
+   * answer: every group on such a build is dark, which is the condition above
+   * at its widest, so the plate carries the group lines alone. A badge
+   * conditioned on the share instead would warn about a build with one dark
+   * group and say nothing about a build with no power at all.
    */
   readonly badge = computed<BadgeView | null>(() => {
     const power = this.#projection()?.power;

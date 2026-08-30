@@ -618,6 +618,11 @@ export function effectOptions(page: Page): Locator {
   );
 }
 
+/** True where the editor draws canvas 1c's menu rather than canvas 1d's cards. */
+export async function effectMenuIsDrawn(page: Page): Promise<boolean> {
+  return (await page.locator('edsb-experimental-effect-list .menu__trigger').count()) > 0;
+}
+
 /** Puts every offered effect on the page, whichever shape this width draws. */
 export async function revealEffectOptions(page: Page): Promise<void> {
   if (await surfacesAreLayers(page)) {

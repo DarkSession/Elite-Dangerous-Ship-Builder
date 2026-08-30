@@ -415,6 +415,32 @@ describe('experimental effect menu', () => {
     expect(document.activeElement).toBe(query(fixture, '.menu__trigger'));
   });
 
+  it('shuts when the focus leaves it, so Tab does not leave a list behind', () => {
+    const fixture = openMenu(renderMenu());
+
+    // `Tab` is the page's, so the focus goes on and nothing here stops it. What
+    // must not happen is the list staying drawn over the card behind it.
+    query(fixture, '.menu__list').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }),
+    );
+    fixture.detectChanges();
+
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+  });
+
+  it('stays open when the focus leaves the document altogether', () => {
+    const fixture = openMenu(renderMenu());
+
+    // A null `relatedTarget` is another window or the browser's own chrome. The
+    // Commander has not moved on from the menu and comes back to it.
+    query(fixture, '.menu__list').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: null }),
+    );
+    fixture.detectChanges();
+
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(1);
+  });
+
   it('leaves Tab to the page, so the list is not a trap', () => {
     const fixture = openMenu(renderMenu());
     const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });

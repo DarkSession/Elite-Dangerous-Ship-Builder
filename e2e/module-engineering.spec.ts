@@ -14,6 +14,7 @@ import {
   clearRecipe,
   draftAbandoned,
   editorOffered,
+  effectMenuIsDrawn,
   effectOptions,
   revealEffectOptions,
   fitCommitted,
@@ -153,6 +154,46 @@ test.describe('engineering a module', () => {
       await revealEffectOptions(page);
       await expect(effectOptions(page)).toHaveCount(menu.effects.length);
     }
+  });
+
+  test('keeps the option the effect menu is on inside the box it scrolls in', async ({ page }) => {
+    // The list is bounded at `--edsb-layout-menu-drop` and scrolls inside
+    // itself, so an option the keyboard walks to is otherwise named by
+    // `aria-activedescendant` while sitting below the fold — the reading moves
+    // and nothing on screen does. Only a real layout can show this, which is
+    // why it is asserted here rather than in the component's own suite.
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+    await chooseRecipe(page, /increased range/i);
+
+    if (!(await effectMenuIsDrawn(page))) {
+      return;
+    }
+
+    await page.locator('edsb-experimental-effect-list .menu__trigger').click();
+    const list = page.locator('edsb-experimental-effect-list .menu__list');
+    await expect(list).toBeVisible();
+
+    // Only where the package offers more effects than the box can hold; with a
+    // shorter menu there is nothing to scroll and nothing to assert.
+    const scrolls = await list.evaluate((box) => box.scrollHeight > box.clientHeight);
+    if (!scrolls) {
+      return;
+    }
+
+    await page.keyboard.press('End');
+
+    const inView = await list.evaluate((box) => {
+      const active = box.querySelector(
+        `#${CSS.escape(box.getAttribute('aria-activedescendant') ?? '')}`,
+      );
+      const listBox = box.getBoundingClientRect();
+      const optionBox = active!.getBoundingClientRect();
+      return optionBox.top >= listBox.top - 1 && optionBox.bottom <= listBox.bottom + 1;
+    });
+
+    expect(inView).toBe(true);
+    expect(await list.evaluate((box) => box.scrollTop)).toBeGreaterThan(0);
   });
 
   test('opens with nothing selected on an unengineered module', async ({ page }) => {
