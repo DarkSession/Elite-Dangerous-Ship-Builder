@@ -1,4 +1,7 @@
-import type { OutfittingModule } from '@elite-dangerous-almanac/core/ships/modules';
+import {
+  getModuleBySymbol,
+  type OutfittingModule,
+} from '@elite-dangerous-almanac/core/ships/modules';
 import type {
   AvailableBlueprint,
   ShipLoadout,
@@ -12,7 +15,11 @@ import {
 } from '../../domain/outfitting/engineering-cost';
 import type { BuildEditIntent } from './build-edit-intent';
 import { engineeringView, type EngineeringView } from './engineering-view';
-import { fittedModuleView, type ModuleTextResolver } from './fitted-module-view';
+import {
+  fittedModuleView,
+  type FittedModuleView,
+  type ModuleTextResolver,
+} from './fitted-module-view';
 import { carryPower, powerStateOf } from './power-carry';
 
 /**
@@ -435,7 +442,7 @@ export function openEngineeringDraft(
     effects,
     selectedEffectFdname,
     current,
-    preview: previewOf(loadout, slotKey, resolved, current, module.article),
+    preview: previewOf(loadout, slotKey, resolved, current, stockArticleOf(module)),
     cost: engineeringCost({
       blueprintFdname: resolved.blueprintFdname === NO_BLUEPRINT ? null : resolved.blueprintFdname,
       grade: selectedGrade,
@@ -849,6 +856,26 @@ function modifiedArticleOf(
 
   const article = restored.loadout.fittedModuleAt(slotKey)?.effectiveStats ?? null;
   return article === null ? { kind: 'refused' } : { kind: 'article', article };
+}
+
+/**
+ * The module as it is catalogued, before any engineering.
+ *
+ * `FittedModule.stats` is that record for every module the application can
+ * engineer, and it is what the `STOCK` column wants. A fixed pre-engineered
+ * article is the one exception: the package publishes its resolved article
+ * there as well as through `effectiveStats`, so that stats a journal capture
+ * left out still describe the article. Read as the stock column, that prints
+ * the article's own figures in both columns and the engineering it was bought
+ * with disappears (Commander request 2026-08-30).
+ *
+ * So the column asks the package for the same module in stock. That is a second
+ * package record, not a correction of the first: nothing is re-derived and
+ * nothing is adjusted, and a symbol the catalogue does not carry states its
+ * absence like any other unavailable figure.
+ */
+function stockArticleOf(module: FittedModuleView): OutfittingModule | null {
+  return module.variant === null ? module.article : getModuleBySymbol(module.symbol);
 }
 
 /** Package identities are compared the way the package matches them. */

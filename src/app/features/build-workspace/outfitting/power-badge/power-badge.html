@@ -5,9 +5,16 @@
     three abbreviations and a percentage, so each is paired with the sentence it
     stands for and the shorthand is hidden from the reading.
   -->
-  <p class="badge" [class.badge--shed]="badge.shed.length > 0">
-    <span class="badge__reading" aria-hidden="true">{{ badge.reading }}</span>
-    <span class="badge__words">{{ badge.label }}</span>
+  <p class="badge">
+    <!--
+      The share is absent on a plant that generates nothing, where the division
+      has no answer. The plate opens on the groups instead rather than printing
+      a `0%` that stands in for a figure which does not exist.
+    -->
+    @if (badge.reading !== null && badge.label !== null) {
+      <span class="badge__reading" aria-hidden="true">{{ badge.reading }}</span>
+      <span class="badge__words">{{ badge.label }}</span>
+    }
 
     @for (group of badge.shed; track group.id) {
       <span class="badge__reading" aria-hidden="true">{{ group.reading }}</span>

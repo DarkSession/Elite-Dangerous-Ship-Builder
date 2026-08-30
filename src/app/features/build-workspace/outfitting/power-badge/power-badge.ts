@@ -15,11 +15,19 @@ interface ShedGroupView {
 
 /** What the badge draws, and the same readings in words. */
 interface BadgeView {
-  /** The canvas's `PWR 95%`. */
-  readonly reading: string;
-  /** That reading as a sentence, for a reader who has no badge to look at. */
-  readonly label: string;
-  /** One line per group the plant cannot keep lit. Empty where it keeps them all. */
+  /**
+   * The canvas's `PWR 95%`, and that reading as a sentence for a reader who has
+   * no badge to look at.
+   *
+   * `null` together where the plant generates nothing: a share of no output is
+   * a division with no answer, and a `0%` there would be a figure standing in
+   * for one that does not exist (constitution IV). The plate is still drawn,
+   * because a plant generating nothing is the build this warning most needs to
+   * be on — it is every group that is dark, not one.
+   */
+  readonly reading: string | null;
+  readonly label: string | null;
+  /** One line per group the plant cannot keep lit. Never empty: see `badge`. */
   readonly shed: readonly ShedGroupView[];
 }
 
@@ -27,20 +35,20 @@ interface BadgeView {
  * The compact strip's power badge (FR-014).
  *
  * Canvas 1d closes its key-figure strip with a two-line plate — `PWR 95%` over
- * `GRP 4 OFF` — standing beside the six figures rather than over them. It is
- * the one power reading a Commander gets without leaving the mode they are in:
- * the sentences, the `POWER` line and the bar are all in the Status mode, and
- * this says whether it is worth going there.
+ * `GRP 4 OFF` — standing beside the six figures rather than over them.
+ *
+ * It is drawn where the plant leaves a group dark, and not otherwise. The
+ * artboard's build sheds a group, so its plate is hot; a plate drawn on every
+ * build to say that nothing is wrong is a warning a Commander stops reading
+ * (Commander request 2026-08-30). The share itself is not lost with it: the
+ * `POWER` line in the Status mode states the whole budget in figures on every
+ * build, which is more than this ever said.
  *
  * The share is the lit draw against **plant output**, not against the whole
  * demand: the artboard's `95%` is `29.64` of `31.20 MW`, and the whole demand
- * behind that build is `37.44`. So it answers "how much of the plant is spoken
- * for", which is the question a Commander fitting a module is asking, and the
- * bar in the Status mode answers the other one.
- *
- * The second line names the groups the plant leaves dark, as the canvas names
- * one. A build the plant covers draws no second line — not a `0 OFF`, which
- * would be a figure the artboard never prints and a reading nobody needs.
+ * behind that build is `37.44`. So it says how much of the plant is spoken for
+ * by the load that is still lit, which is what a group going dark is measured
+ * against.
  *
  * Inert, like every other cell in the strip: the canvas draws no control here,
  * and what a Commander would change is a mode away.
@@ -77,35 +85,48 @@ export class PowerBadge {
   /**
    * The badge, or nothing at all.
    *
-   * Nothing is drawn without a build, and nothing is drawn where the package
-   * reports no plant output: a share of zero output is not a small percentage,
-   * it is a division that has no answer, and the artboard draws no state for
-   * it. The Status mode still says what such a build is doing.
+   * A dark group is the whole condition. Nothing is drawn without a build and
+   * nothing is drawn where the plant covers every band: there is then no group
+   * to name, and the share on its own is a reading the Status mode states in
+   * full a segment away (FR-014).
+   *
+   * A plant generating nothing draws the plate rather than escaping it. Its
+   * share has no answer, so the plate opens on the groups instead — which is
+   * every group there is, and the loudest thing this warning ever has to say.
    */
   readonly badge = computed<BadgeView | null>(() => {
     const power = this.#projection()?.power;
-    if (power === undefined || power.plantShare === null) {
+    if (power === undefined) {
       return null;
+    }
+
+    // One line per shed group rather than one line naming several. The canvas
+    // draws a build with a single dark group and prints `GRP 4 OFF`; a build
+    // with two has two things to say, and the plate stacks them the way the
+    // status rail stacks its sentences.
+    const shed = power.bands
+      .filter((band) => !band.powered)
+      .map((band) => {
+        const group = this.#formatters.integer(band.priority);
+        return {
+          id: `band-${band.priority}`,
+          reading: this.#messages.message('power.badge.off', { group }),
+          label: this.#messages.message('power.badge.off.label', { group }),
+        };
+      });
+    if (shed.length === 0) {
+      return null;
+    }
+
+    if (power.plantShare === null) {
+      return { reading: null, label: null, shed };
     }
 
     const share = this.#formatters.percent(power.plantShare);
     return {
       reading: this.#messages.message('power.badge.reading', { share }),
       label: this.#messages.message('power.badge.label', { share }),
-      // One line per shed group rather than one line naming several. The canvas
-      // draws a build with a single dark group and prints `GRP 4 OFF`; a build
-      // with two has two things to say, and the plate stacks them the way the
-      // status rail stacks its sentences.
-      shed: power.bands
-        .filter((band) => !band.powered)
-        .map((band) => {
-          const group = this.#formatters.integer(band.priority);
-          return {
-            id: `band-${band.priority}`,
-            reading: this.#messages.message('power.badge.off', { group }),
-            label: this.#messages.message('power.badge.off.label', { group }),
-          };
-        }),
+      shed,
     };
   });
 }

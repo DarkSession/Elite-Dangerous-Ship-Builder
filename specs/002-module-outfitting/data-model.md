@@ -68,7 +68,10 @@ empty and the mount is immutable.
 | `labels`           | readonly `AcquisitionLabel[]`     | Package entitlement and identified route projections |
 
 `stats === null` and missing fields remain unavailable. A fixed reward's `stats` is the resolved
-article, not necessarily stock. Variant purchase grade remains separate from current ordinary grade.
+article, not necessarily stock, so the `STOCK` column reads `getModuleBySymbol(symbol)` wherever
+`variant` is non-null and `article` everywhere else (`design/engineering-editor.md`, "Attribute and
+cost honesty"). That lookup is the editor's, taken at the draft rather than held as a field here:
+this record describes the fitted module, and the module in stock is a different article. Variant purchase grade remains separate from current ordinary grade.
 
 ## ModuleChoice
 

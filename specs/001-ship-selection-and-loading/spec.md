@@ -93,9 +93,10 @@ browser and share builds by URL. SLEF import and export are specified in
 - **FR-003**: Catalogue search, filters, sort and scroll position MUST survive a trip to hull detail
   and back during the browser session. They MUST NOT become build or link state.
 - **FR-004**: Hull detail MUST show the package name, manufacturer, size, speed and boost, base
-  shield and armour, hull mass, hardness, crew, mass-lock factor, the hardpoint mix, the hull price
-  and the illustration, with units for every measured value that has one. Hull facts MUST be
-  distinguished from module-dependent build results.
+  shield and armour, hull mass, hardness, crew, mass-lock factor, the hardpoint mix and how many
+  hardpoints there are altogether, the hull price and the illustration, with units for every
+  measured value that has one. Hull facts MUST be distinguished from module-dependent build
+  results.
 
   Heat capacity and dissipation, reserve fuel and the rotation rates are deliberately out of scope
   for this feature: the reference draws none of them on the shipyard. Hardness, crew and mass lock

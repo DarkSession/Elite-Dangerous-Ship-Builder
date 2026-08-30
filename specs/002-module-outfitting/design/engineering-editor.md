@@ -160,8 +160,9 @@ do not mutate the active build until confirmed.
   panel reports, not a condition on the panel existing. Both compositions follow it: the compact
   `Engineer` action opens the same panel with the same sentence (constitution V).
 - The comparison both canvases draw, under the headings they use: `Stock` — the package's catalogue
-  record for the fitted article, which on a recognised reward is that article's own record — against
-  `Modified`, what the current selection would make of it. No locally interpreted better/worse arrows
+  record for the article in stock, which on an identified pre-engineered variant is asked for by
+  symbol rather than read from `stats` ("Attribute and cost honesty" below) — against `Modified`,
+  what the current selection would make of it. No locally interpreted better/worse arrows
   (reference review, "Attribute column headings"). Wave 8 put it in the **choices column** under the
   three controls, reading it as their consequence; wave 10 moved it across the rule into `eng-right`,
   where the canvas draws it and where it is also the article's own record before anything is chosen.
@@ -272,12 +273,70 @@ Canvas 1d's summary line under each recipe — `DAMAGE ▲ · THERMAL LOAD ▲` 
 reason it was withdrawn on 2026-08-21: the Almanac publishes no description for a blueprint and no
 direction for what one moves, so those lines would be a private claim about game mechanics
 (`reference-review.md`, "Blueprint option descriptions"). The experimental effect descriptions beside
-them are package text and are drawn — **where the package has one**. It has none for any effect
-today, so every option in that card carried `Name unavailable` under its own name until 2026-08-26.
-That stand-in is right for a name, because an article a reader cannot be told the name of is a fact
-worth stating; it is wrong for a description twice over, since it is not a name and the option is
-fully named on the line above it. The line is now absent where the text is (Commander request
-2026-08-26).
+them are package text and are drawn — **where the catalogue has one**. Where it has none the line is
+absent (Commander request 2026-08-26). `edsb-game-text` stands in for a missing string with `Name
+unavailable`, which is right for a name, because an article a reader cannot be told the name of is a
+fact worth stating; it is wrong for a description twice over, since it is not a name and the option
+is fully named on the line above it.
+
+### The effect menu is the application's own control (Commander request 2026-08-30)
+
+Every other menu in this editor is a native `<select>`, and the recipe menu still is. The effect
+menu is not, because the catalogue carries a description for every effect and a `<select>` has
+nowhere to put one. An option can hold a single run of text, so the description was glued to the
+name — `Auto Loader · An experimental upgrade that automatically reloads the weapon, even when
+firing.` — and a multi-cannon offers twelve effects whose descriptions run from 79 to 194
+characters. Thirteen rows of that, counting the way out, is a menu a Commander reads instead of
+scanning.
+
+So this one control is drawn by the application: a trigger carrying the chosen effect's name, and a
+list of options under it. Each option is the effect's name at the body step over its description at
+the caption step in muted ink — the same two lines, at the same two weights, the card list already
+draws inside the layer. The description is subordinate to the name in size and in ink, so the name
+is what the eye lands on.
+
+What a drawn menu gives up, and why only this one gives it up:
+
+- **A native menu brings the platform's own listbox** — the full-screen picker a phone renders, and
+  a listbox every screen reader already operates. A drawn one has to state all of that itself, so
+  only the one menu whose options carry a second line does; the recipe menu keeps the native
+  control.
+- **The roles are stated rather than implied.** The trigger is a button that says it opens a
+  listbox and whether it is open; the list is a `listbox` of `option`s, each saying whether it is
+  the selected one. A reader is told what the eye is shown.
+- **Both halves are named by the card's own label.** `EXPERIMENTAL EFFECT` names the trigger and
+  the list. The trigger is named by that label and its own content together, so it reads as the
+  choice it is and the effect it holds; either alone is half the answer. The `listbox` is named by
+  the label, which is the only thing that names it once it is off the trigger.
+- **The trigger draws the name through `edsb-game-text`,** exactly as the options do. A name the
+  catalogue cannot translate is disclosed as untranslated and carries the language it is in, rather
+  than being presented as a translation (FR-020, constitution VI). Nothing chosen reads as `None`,
+  which is the application's own string. A symbol is never a display name, so an effect that is not
+  among the offered ones — which the draft does not produce, since a selection off the package's
+  menu is no selection — reads as `None` rather than as its symbol.
+- **Each option is held to SC 2.5.8's 24-pixel floor,** like every other list row in this editor,
+  and the list itself takes a tab stop: a scroll box nothing inside can be reached by is content
+  some readers cannot get into.
+- **It is a shared component with a preview of its own.** The control lives in `ui/outfitting`, and
+  the menu shape is declared in the preview catalogue separately from the card shape — two
+  declarations rather than more states on one, because a contract names one role and these two state
+  different ones. Its fixtures carry an effect chosen, nothing chosen, an untranslated name and an
+  option the catalogue has no description for; the open list is reached by pressing the trigger, in
+  the preview exactly as in the editor. A drawn control that is only ever seen inside the editor is
+  a control whose states nobody audits (constitution VII; `contracts/feedback-and-semantics.md`,
+  "Tabs, listboxes and custom choices").
+- **Nothing is carried by the panel alone.** The chosen effect is named on the trigger while the
+  list is shut, so a Commander who never opens it still reads what is applied.
+- **The list is drawn over the card rather than inside it.** In flow, thirteen two-line options
+  would push `MODULE DETAILS` a screenful down every time the menu opened. It is bounded and
+  scrolls inside itself instead, so the panel beneath it does not move.
+- **Pressing the trigger again shuts it, and so does a press outside it.** There is no third way in
+  and no state left behind: the menu holds no selection of its own, because choosing an option is
+  the edit. A menu left open while the editor changes shape comes back shut, since the list is
+  drawn in this shape alone.
+
+The card list inside the layer is unchanged. It already gives each option two lines, which is what
+this brings to the menu.
 
 **Two more, 2026-08-26 (Commander request: "mobile engineering still doesn't look like the
 design").** The plates above were built and the drawing inside them was not:
@@ -351,8 +410,32 @@ that `CLEAR ✕` created by existing at wide width only.
 
 ## Attribute and cost honesty
 
-- `stats`/`effectiveStats`, package modifiers and the package's own calculations over those two
-  records are the only attribute values.
+- Package records, package modifiers and the package's own calculations over those records are the
+  only attribute values. Three records are read: `FittedModule.stats`, `FittedModule.effectiveStats`
+  and — on an identified pre-engineered variant alone — the catalogue record asked for by symbol,
+  which the next bullet rules.
+- **`STOCK` is the article before its engineering, and on an identified pre-engineered variant that
+  is the catalogue record rather than `stats` (Commander request 2026-08-30).** For every other
+  module `FittedModule.stats` is the base catalogue record and is exactly what the column wants. On
+  a fixed pre-engineered variant the package deliberately publishes the resolved article there as
+  well as through `effectiveStats`, so that stats a journal capture omitted still describe the
+  article. Taken as the stock column, that record prints the same figures in both columns: a
+  Commander looking at a community-goal multi-cannon read `STOCK` and `MODIFIED` agreeing on every
+  row, and the engineering the article is bought for was nowhere on the panel. So the column reads
+  `getModuleBySymbol(symbol)`, the same module in stock. That is a second package record, not a
+  second calculation and not a correction of the first: nothing is re-derived, clamped or adjusted.
+  - **The condition is identification, not the article's kind.** `FittedModule.preEngineeredVariant`
+    is the only route to variant identity (`data-model.md`, `FittedModuleView.variant`), so an
+    article the package does not recognise as a variant keeps `stats` like any other module. There
+    is then nothing that says its `stats` hold a resolved article, and a symbol lookup on it would
+    be this application guessing.
+  - **`MODIFIED` still decides the rows.** FR-012a asks for every numeric attribute the package
+    publishes on the fitted article and only those the article itself carries, and that is the
+    fitted article's record, unchanged by this bullet. The stock record fills the `STOCK` cell of
+    those rows; a row it has no field for states the absence in that cell, exactly as a missing
+    field does anywhere else.
+  - Where the package carries no catalogue record for the symbol, every `STOCK` cell states the
+    absence. Nothing is copied across from `stats` to stand in for it.
 - Missing `stats`, missing modifiers or missing fields render unavailable — as a value, through
   `edsb-unavailable-value`. The cell holds a figure, so it states the absence of a figure; the
   game-text message for a lost _name_ belongs to a name.
@@ -423,7 +506,11 @@ that `CLEAR ✕` created by existing at wide width only.
 
 ## Accessibility
 
-- Blueprint/effect choices use native radio/list semantics; grade is a named radio group/select.
+- Blueprint choices use native radio/list semantics; grade is a named radio group/select. The
+  effect menu is the one application-drawn listbox in this editor, and states its own roles: a
+  button that names the chosen effect and says whether its list is open, over a `listbox` whose
+  `option`s each say whether they are the selected one (see [the effect menu is the application's
+  own control](#the-effect-menu-is-the-applications-own-control-commander-request-2026-08-30)).
 - Each option exposes current/selected/unavailable state and associated route/restriction text.
 - Attribute comparison uses headers/definition relationships and never relies on column position or
   color alone.

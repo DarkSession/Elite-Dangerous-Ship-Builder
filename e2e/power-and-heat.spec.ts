@@ -4,7 +4,14 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, expectTargetSizes, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
-import { revealStatusRail, statusRailIsColumn } from './outfitting-surfaces';
+import {
+  fitCommitted,
+  revealFamilyHolding,
+  revealMount,
+  revealStatusRail,
+  statusRailIsColumn,
+  surfacesAreLayers,
+} from './outfitting-surfaces';
 import { buildStockHull } from './shell';
 
 /**
@@ -624,18 +631,121 @@ test.describe('the status rail', () => {
 });
 
 test.describe('the compact strip’s power badge', () => {
-  test('closes the strip with the lit share of plant output, and holds no control', async ({
-    page,
-  }) => {
+  test('draws no badge at all where the plant covers the build', async ({ page }) => {
     await openPower(page);
 
-    // Canvas 1c has no strip and no badge: where the rail is its own column it
-    // states the draw, the remainder and the bar in full, and a plate repeating
-    // the same figure a track away would be the one reading given twice on one
-    // screen (`design/power-and-heat-detail.md`, "The compact strip's badge").
-    // Wherever the rail is a segment instead, the strip is drawn and closes with
-    // the badge.
+    // The badge is a warning, and a warning drawn over a build with nothing
+    // wrong with it is a warning a Commander learns to stop reading (005/FR-014,
+    // Commander request 2026-08-30). The stock hull's plant covers it, so there
+    // is nothing here to warn about at any width — canvas 1c never draws the
+    // plate, and canvas 1d draws it only on a build that sheds.
+    await expect(page.locator('edsb-power-thermals .power__band--offline')).toHaveCount(0);
+    await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+
+    // And the share is not lost with it: the rail states the whole budget in
+    // figures, on every build, one segment away.
+    await revealStatusRail(page);
+    await expect(page.locator('edsb-power-summary .rail-power__figures')).toContainText(/\d/u);
+  });
+
+  test('gives the six key figures the whole strip where no badge is drawn', async ({ page }) => {
+    await openPower(page);
+
     if (await statusRailIsColumn(page)) {
+      await expect(page.locator('.outfitting__key-figures')).toHaveCount(0);
+      return;
+    }
+
+    // The other half of the same fix. The badge used to span every track of the
+    // six's own grid, so `auto-fit` could collapse none of them and the readings
+    // were held to their floor across a strip with half of it blank (Commander
+    // request 2026-08-30). With the badge outside that grid — and absent here —
+    // the six take the strip.
+    const spread = await page.locator('.outfitting__key-figures').evaluate((strip: HTMLElement) => {
+      const cells = [...strip.querySelectorAll('.metric')];
+      const first = cells[0]!.getBoundingClientRect();
+      const last = cells[cells.length - 1]!.getBoundingClientRect();
+      return {
+        count: cells.length,
+        rows: new Set(cells.map((cell) => Math.round(cell.getBoundingClientRect().top))).size,
+        covered: last.right - first.left,
+        strip: strip.getBoundingClientRect().width,
+      };
+    });
+
+    expect(spread.count).toBe(6);
+    // Whatever number of rows this width puts them on, they fill what they are
+    // given rather than sitting at their floor with the rest of the strip empty.
+    expect(spread.covered).toBeGreaterThan((spread.strip / spread.rows) * 0.8);
+  });
+});
+
+test.describe('the compact strip’s power badge, on a build that sheds', () => {
+  /**
+   * A build whose plant cannot cover it, made the way a Commander makes one.
+   *
+   * The smallest hull has the least headroom, so one hungry utility module is
+   * the whole journey. It is then moved to a priority group of its own, which
+   * is what leaves the rest of the build lit and one group dark — the artboard's
+   * own case, and the one the badge is drawn for. With everything in group 1
+   * instead, that single group goes dark and the plant lights nothing, which is
+   * a real reading but a degenerate one to measure a share against.
+   *
+   * Nothing here writes down a megawatt: what is asserted is that the dashboard
+   * reports a dark group and the badge agrees with it.
+   */
+  async function shedBuild(page: Page): Promise<void> {
+    await page.goto('/ships/SideWinder');
+    await buildStockHull(page, englishMessages['hullDetail.create']);
+
+    const mount = await revealMount(page, 'TinyHardpoint1');
+    await mount.click();
+    // Whichever manifest this width draws: the accordion opens with every
+    // family shut, and the rail reveals exactly one at a time, so neither puts
+    // an arbitrary candidate on screen by itself.
+    await revealFamilyHolding(page, /cargo scanner/i);
+    const scanner = page
+      .locator('.candidates__choices .candidate')
+      .filter({ hasText: /cargo scanner/i })
+      .first();
+    await scanner.scrollIntoViewIfNeeded();
+    // The name rather than the row: a row's centre falls in the gap between the
+    // identity and the figures, and a click landing on no content activates no
+    // label in Firefox.
+    await scanner.locator('.candidate__name').click();
+    // Canvas 1c fits inline on that click; canvas 1d's chooser is a screen of
+    // its own, so leaving it is the decision.
+    if (await surfacesAreLayers(page)) {
+      await page.getByRole('button', { name: /fit module/i }).click();
+    }
+    await fitCommitted(page);
+
+    // Into a group of its own. The options carry the package's own 0-based
+    // priority and are labelled with the 1-based group a Commander reads, so
+    // `'1'` here is the `2` on screen. Located again after the fit rather than
+    // through the handle the chooser was opened from: the ledger redraws the
+    // row around the module now in the mount.
+    await revealMount(page, 'TinyHardpoint1');
+    await page
+      .locator('[data-slot-key="TinyHardpoint1"] .power__priority')
+      .first()
+      .selectOption({ value: '1' });
+
+    await page
+      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .filter({ hasText: englishMessages['anatomy.mode.power'] })
+      .click();
+    await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
+    await expect(page.locator('edsb-power-thermals .power__band--offline')).not.toHaveCount(0);
+  }
+
+  test('names each dark group, and holds no control', async ({ page }) => {
+    await shedBuild(page);
+
+    if (await statusRailIsColumn(page)) {
+      // Canvas 1c has no strip and no badge: the rail beside the workspace
+      // states the draw, the remainder and the bar in full, and a plate
+      // repeating one of those a track away would be the same reading twice.
       await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
       return;
     }
@@ -643,61 +753,77 @@ test.describe('the compact strip’s power badge', () => {
     const badge = page.locator('edsb-power-badge .badge');
     await expect(badge).toBeVisible();
 
-    // A reading, like every other cell in the strip. The canvas draws no
-    // control on the plate, and what a Commander would change is a mode away.
+    // A reading, like every other cell in the strip.
     await expect(badge.locator('button, a, input, [tabindex]')).toHaveCount(0);
 
-    // The share is against **plant output**, not against the whole demand.
-    // Both figures are read off the rail on the same screen rather than
-    // written down here: what is asserted is the relation between them.
+    // The share, then one line per dark group the dashboard draws — never a
+    // single line counting them, which the artboard never prints.
+    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
+    const spoken = await page.locator('edsb-power-badge .badge__words').allInnerTexts();
+    expect(spoken.length).toBe(dark + 1);
+  });
+
+  test('states the lit share of plant output, not of the whole demand', async ({ page }) => {
+    await shedBuild(page);
+
+    if (await statusRailIsColumn(page)) {
+      return;
+    }
+
+    const badge = page.locator('edsb-power-badge .badge');
     const share = Number(
       /(\d+(?:[.,]\d+)?)\s*%/u.exec(await badge.innerText())?.[1] ?? '',
     ).valueOf();
     expect(Number.isFinite(share)).toBe(true);
-    expect(share).toBeGreaterThan(0);
-    expect(share).toBeLessThanOrEqual(100);
 
+    // Both figures are read off the rail on the same screen rather than written
+    // down here: what is asserted is the relation between them.
     let figures = '';
     await inTheRail(page, async () => {
       figures = await page.locator('edsb-power-summary .rail-power__figures').innerText();
     });
-    // `{{draw}} of {{available}}`, and on a build that sheds, ` · {{off}} off`
-    // after it. The suffix is cut before the split, because the words it adds
-    // would otherwise be read as part of the plant's own figure.
-    const [reading = ''] = figures.split('·');
-    const [draw = '', available = ''] = reading.split(/\bof\b/u);
-    const demandShare = (Number(digits(draw)) / Number(digits(available))) * 100;
-    expect(Number.isFinite(demandShare)).toBe(true);
-    expect(demandShare).toBeGreaterThan(0);
 
-    // Where the plant covers the build the two are the same reading; where it
-    // does not, the badge is the smaller of the two, because the draw it counts
-    // stops at what the plant actually lights (FR-014).
-    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
-    if (dark === 0) {
-      expect(Math.abs(share - demandShare)).toBeLessThanOrEqual(1);
-    } else {
-      expect(share).toBeLessThan(demandShare);
-    }
+    // `{{draw}} of {{available}}`, then ` · {{off}} off` on a build that sheds.
+    // Every figure is taken through `digits`, which drops the separator a locale
+    // chose: the three are all in megawatts to two places, so the ratios below
+    // are the same ratios at whatever scale that leaves them on.
+    const [reading = '', shed = ''] = figures.split('·');
+    const [lit = '', available = ''] = reading.split(/\bof\b/u);
+    const output = Number(digits(available));
+    const poweredDraw = Number(digits(lit));
+    const unpowered = Number(digits(shed));
+
+    // The build this journey made draws more than its plant makes, which is why
+    // a group is dark. That is the reading the badge is *not*.
+    expect(unpowered).toBeGreaterThan(0);
+    expect(poweredDraw + unpowered).toBeGreaterThan(output);
+
+    // The badge counts only the draw the plant actually lights, so it cannot
+    // exceed the output it is measured against — and it is below the share the
+    // whole demand would have taken (FR-014).
+    expect(share).toBeGreaterThan(0);
+    expect(share).toBeLessThanOrEqual(100);
+    expect(share).toBeLessThan(((poweredDraw + unpowered) / output) * 100);
+
+    // And it is exactly the lit draw over that output, to the place it is drawn.
+    expect(Math.abs(share - (poweredDraw / output) * 100)).toBeLessThanOrEqual(1);
   });
 
-  test('closes the strip on a row of its own, never over one of the six figures', async ({
-    page,
-  }) => {
+  test('stands beside the six figures, never over one of them', async ({ page }) => {
     // What the artboard's arrangement is for: the plate stands beside the six
     // readings rather than over them. It was drawn `position: absolute` across
     // `MASS` before the 2026-08-29 revision, so this is the regression the
     // placement exists to prevent (005/FR-014).
     //
     // Asserted at a doubled text size as well as at this profile's own, because
-    // the strip's track count follows the space it is given at the size it is
-    // given it: a placement that only holds while the six fit one row is not
-    // the placement.
+    // the strip's arrangement follows the space it is given at the size it is
+    // given it: a placement that only holds while the six fit one row is not the
+    // placement.
     for (const scale of [null, DOUBLED_TEXT]) {
       if (scale !== null) {
         await withRootTextScale(page, scale);
       }
-      await openPower(page);
+      await shedBuild(page);
 
       if (await statusRailIsColumn(page)) {
         await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
@@ -728,34 +854,11 @@ test.describe('the compact strip’s power badge', () => {
         expect(overlaps).toBe(false);
       }
 
-      // And it closes the strip rather than sitting inside it: the plate runs
-      // the width the strip gives its content, on the row it fell to.
-      expect(Math.round(boxes.badge.right - boxes.badge.left)).toBeGreaterThan(
-        Math.round((boxes.strip.right - boxes.strip.left) / 2),
-      );
+      // And it closes the strip: the plate takes the trailing edge, so nothing
+      // in the strip starts after it does.
+      const trailing = Math.max(...boxes.cells.map((cell) => cell.right));
+      expect(Math.round(boxes.badge.right)).toBeGreaterThanOrEqual(Math.round(trailing) - 1);
     }
-  });
-
-  test('names an unpowered group only where the package reports one', async ({ page }) => {
-    await openPower(page);
-
-    if (await statusRailIsColumn(page)) {
-      await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
-      return;
-    }
-
-    // The plate's first spoken line is the share; every line after it names one
-    // group the plant leaves dark, and there is exactly one per dark band the
-    // dashboard draws. A build the plant covers gets no `0 OFF` — a figure the
-    // artboard never prints.
-    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
-    const spoken = await page.locator('edsb-power-badge .badge__words').allInnerTexts();
-    expect(spoken.length).toBe(dark + 1);
-
-    // And the hot tone is carried only where something actually is dark: the
-    // canvas draws the plate hot on a build that sheds, and the words are what
-    // say so in any case.
-    await expect(page.locator('edsb-power-badge .badge--shed')).toHaveCount(dark > 0 ? 1 : 0);
   });
 });
 

@@ -26,6 +26,18 @@ export type HardpointProfile = readonly [
 ];
 
 /**
+ * How many hardpoints the hull carries altogether.
+ *
+ * The tuple above is what the manifest sorts by, and it is not a total: the
+ * shipyard's own hardpoint rule states one, on its trailing edge, exactly as
+ * the three slot groups under it state theirs (001/FR-004). Counted here rather
+ * than at the screen, beside the tuple it counts.
+ */
+export function hardpointTotal(profile: HardpointProfile): number {
+  return profile.reduce((total, count) => total + count, 0);
+}
+
+/**
  * One hull, as the catalogue presents it.
  *
  * Every field is a projection of the package's own `Ship` record. `null` means

@@ -158,8 +158,11 @@ text and RTL direction.
 
 Expected:
 
-- paired views appear only when container space supports them; constrained layouts use one labelled
-  side selector;
+- paired views appear only where the block has the inline size for two plates **and** the window is
+  not a short one; constrained layouts use one labelled side selector;
+- 844×390 mobile landscape draws **one** plate and its `TOP`/`BOTTOM` selector, not the pair: it has
+  the inline size and not the height, which is the case the pair's second condition exists for
+  (`design/hull-anatomy.md`, "Intermediate tablet");
 - no document horizontal overflow occurs; only bounded schematic regions may pan;
 - every geometry target is a named button at the canvas's own mark size, operable from the keyboard
   one mount at a time and raised above the marks it overlaps while it is being worked with — which

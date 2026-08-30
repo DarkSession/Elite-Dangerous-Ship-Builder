@@ -12,8 +12,8 @@ available without an active build.
 Canvases 1c and 1d draw the capability in one order, and it is stable across all layouts:
 
 1. the localized `HULL ANATOMY` heading;
-2. the labelled schematic regions — both sides at wide width, one side and its `TOP`/`BOTTOM`
-   selector when constrained; and
+2. the labelled schematic regions — both sides where the block has room in both axes, one side and
+   its `TOP`/`BOTTOM` selector otherwise; and
 3. the mount state legend.
 
 That is the whole capability. Feature 002's ledger and bench stand beside it in the same workspace
@@ -23,18 +23,32 @@ Visual columns never reorder this reading sequence.
 
 ## Responsive composition
 
-### Wide
+### Paired
 
 Canvas 1c's `grid-template-columns: 1fr 1fr`: top and bottom render as two fluid labelled plates
 sharing one selected state and one legend, and the side selector is not drawn because both sides are
-already shown. The complete ledger remains beside the capability according to the feature 002
-workspace definition.
+already shown. Drawn where the block has the inline size for two plates and the window is not a
+short one — both conditions, for the reason "Intermediate tablet" gives below. The complete ledger
+remains beside the capability according to the feature 002 workspace definition.
 
 ### Intermediate tablet
 
 Container queries choose paired or single-side presentation from available inline size and expanded
-text, not a named device breakpoint. In portrait the schematics may stack or use the side selector;
-in landscape they may pair. Nothing required disappears in either orientation.
+text, not a named device breakpoint. Nothing required disappears in either orientation: the side
+selector reaches whichever plate is not drawn, and the complete ledger reaches every mount on both.
+
+**The pair needs room in both axes, ruled 2026-08-30 (Commander request).** Inline size alone chose
+between the two arrangements, and inline size alone cannot tell canvas 1c's block apart from canvas
+1d's. A landscape phone is 844px across and 390px tall: wide enough for the pair by the inline
+measure, and the one screen the pair should never be on. It drew both plates at 395px each, on a
+window less than one plate tall. A 1440px desktop, where canvas 1c's arrangement belongs, draws its
+pair inside a 742px centre column — narrower than the phone's whole block. So no width separates
+them, and width is not the measure that can. What the phone lacks is height.
+
+The pair is therefore drawn where the container has the inline size for two plates **and** the
+window is not a short one — the same short-viewport step the shell already releases its sticky bar
+at. Below either, the block is canvas 1d's: one labelled side and the `TOP`/`BOTTOM` selector. No
+phone draws both sides of a hull in either orientation.
 
 ### Narrow, mobile and zoomed
 
@@ -52,8 +66,8 @@ this capability's placement — the anatomy sits in the centre track, which is w
 **The block's inset belongs to its arrangement, not to a width (2026-08-26).** Canvas 1c pads the
 block `16px 20px 6px` around the header row and `10px 20px 14px` around the plates; canvas 1d pads
 its header row `12px 14px 8px` and runs the mode strip full-bleed under it. The narrow figure is the
-base and the roomy one is stated with the two-plate arrangement, at the same threshold the second
-plate opens at. Read the other way round, a one-plate block stood 8px further in than every other
+base and the roomy one is stated with the two-plate arrangement, under the same pair of conditions
+the second plate opens under. Read the other way round, a one-plate block stood 8px further in than every other
 band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not line up with
 a mount name in the ledger below it — which is the misalignment reported that day.
 

@@ -733,6 +733,11 @@
   --edsb-measure-menu-min: 12.25rem;
   --edsb-measure-menu-max: 20rem;
 
+  // How tall a menu drawn over the page may get before it scrolls inside
+  // itself. Around six two-line options, which is enough to read a list as a
+  // list and short enough to leave the card it opens over still visible.
+  --edsb-measure-menu-drop: 21rem;
+
   // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export
   // and 860 saved builds. Four named steps: one region of prose and a field
   // takes the second, the layer that stands two regions side by side takes the

@@ -5,15 +5,15 @@
 
 ## Composition
 
-- Wide: canvas 1a's inspector rail beside the manifest. Narrow: canvas 1b's full-screen detail sheet, which replaces the shipyard's command bar with one of its own (see [the sheet's own bar](#the-sheets-own-bar)). Neither carries a page heading of its own: the bar names the screen (see [screen chrome](#screen-chrome-and-the-command-bar)).
+- Two compositions, and the rail's own width decides between them. **At the rail** — at and above that width — canvas 1a's inspector rail beside the manifest. **Below the rail's width**, canvas 1b's full-screen detail sheet, which takes the screen and replaces the shipyard's command bar with one of its own (see [the sheet's own bar](#the-sheets-own-bar)). Neither carries a page heading of its own: the bar names the screen (see [screen chrome](#screen-chrome-and-the-command-bar)).
 - `HullArtwork` on the hatched plate, loaded from the same-origin package asset path with reserved area and temporary-unavailable text.
-- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. The pad class is named as a pad class — `LARGE LANDING PAD`, not a bare `LARGE` — through `hullDetail.landing-pad`. Both facts keep their labels in the markup; only the eye sees the compressed line. At compact width the same two facts are the bar's title and the line under it instead, and the body's block is not drawn — the canvas puts them in the bar and draws them once.
+- The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. The pad class is named as a pad class — `LARGE LANDING PAD`, not a bare `LARGE` — through `hullDetail.landing-pad`. Both facts keep their labels in the markup; only the eye sees the compressed line. Wherever the sheet is drawn the same two facts are the bar's title and the line under it instead, and the body's block is not drawn — the canvas puts them in the bar and draws them once.
 - A ruled two-column `FactList` of the eight figures the reference's metric grid carries: speed, boost, shield, armour, hull mass, hardness, crew and mass lock, each with its localized unit where the reference draws one.
-- The mount classes the hull carries, under a section rule, as `<count> <CLASS>` chips with the classes it has none of left out.
+- The mount classes the hull carries, under a section rule carrying how many hardpoints there are in total on its trailing edge, as `<count> <CLASS>` chips with the classes it has none of left out. The total is the sum of the four class counts from `getShipSlots(symbol)`, drawn exactly as the three slot groups below draw theirs — one rule shape, one place a total goes (canvas 1a `sy-hp-total`). Adding up a package array is not a claim of ours; where the package publishes no layout for the hull there are no counts to add, and the rule carries no total rather than a `0`.
 - The three slot groups under section rules of the same shape, in the canvas's order: `UTILITY MOUNTS` with its count and nothing else, `CORE INTERNALS` with its total and seven chips reading the package's name for each mount and its size, and `OPTIONAL INTERNALS` with its total and one chip per size run (see [what the hull carries](#what-the-hull-carries)).
 - `RESTRICTED SLOTS` on its own rule, in the hot tone, where the hull has any: the count of restricted mounts on the trailing edge, and under it one entry per restriction — the restriction's name over its sizes as chips. Drawn only where the hull has a restriction besides the planetary-approach mount, which is left out; nineteen of the 48 hulls the installed package publishes do.
 - One `HULL PRICE` row: the ready-to-fly cost, on a rule of its own.
-- Primary `ActionButton` requesting stock-build creation, below the wide composition only, present only when `getDefaultLoadout(symbol)` succeeds (see [the wide rail has no action](#the-wide-rail-has-no-action)).
+- Primary `ActionButton` requesting stock-build creation, drawn below the rail's width, and at the rail only on a device that cannot hover; present only when `getDefaultLoadout(symbol)` succeeds (see [the wide rail has no action](#the-wide-rail-has-no-action)).
 - `InlineNotice`/`ErrorSummary` for default unavailability, or for an address no hull answers to.
 
 ### The inspector is the reference composition
@@ -115,15 +115,21 @@ because the manifest beside it already builds: a rested pointer opens a hull and
 flies that hull's stock build (`responsive-catalogue-view.ts`, `activate`). The rail button was the
 same transaction reached a second way, one press further from the row a Commander was already on.
 
-At compact width there is no row to press twice — the sheet is over it — so the sheet keeps the
+Below the rail's width there is no row to press twice — the sheet is over it — so the sheet keeps the
 action, and it stays the one thing on this screen that creates a build. The transaction below is the
 same either way. Canvas 1b pins that action to a footer plate, beside the library button this
 screen does not draw.
 
-Between the two the action stays as well. The rail is a wide composition — below it the detail is a
-panel stacked under the manifest rather than a rail beside it — and a panel under a manifest is the
-nearer of the two canvases to canvas 1b's sheet. The withdrawal is therefore keyed to the width the
-rail itself starts at, not to the medium step where the two-column arrangement has not begun.
+There is no third arrangement between the two. The rail's own width is the one threshold: at it the
+detail is the rail beside the manifest, and below it the detail is canvas 1b's sheet over the
+screen. So the withdrawal is keyed to that width, and every width below it keeps the action along
+with the rest of the sheet.
+
+**Every width below the rail's is the sheet's, ruled 2026-08-30 (Commander request).** There is no
+band that stacks the detail under the manifest. With 48 hulls the manifest is several screenfuls, so
+a hull opened at 900px would land below all of them: the Commander presses a row and the page does
+not appear to change. A screen the reader has to scroll past the whole list to reach is not a second
+region, and the sheet is what the reference draws when there is no room for two.
 
 The reference's second button opens the saved-build library, which the command bar already offers on
 this screen. Canvas 1a's rail does not draw it; canvas 1b's sheet pins it to the footer plate beside
@@ -151,10 +157,10 @@ manifest by looking at it, so there is no back arrow at that width and never was
 
 Two consequences follow, both recorded rather than assumed:
 
-- **The name is drawn once.** At compact width the body's identity block is not drawn, because the
-  bar is already carrying it. The labelled `dt`/`dd` pair survives at wide width, where the block is;
-  at compact the same two facts are stated in the bar's own line, unlabelled, exactly as the canvas
-  draws them. The text is there either way, which is what FR-010 of feature 011 asks for.
+- **The name is drawn once.** Wherever the sheet is drawn the body's identity block is not, because the
+  bar is already carrying it. The labelled `dt`/`dd` pair survives at the rail, where the block is;
+  under the sheet the same two facts are stated in the bar's own line, unlabelled, exactly as the
+  canvas draws them. The text is there either way, which is what FR-010 of feature 011 asks for.
 - **A hull the package cannot name keeps its body block.** `ScreenReturn.title` admits `null`; the
   bar then carries the way back alone and the body's block — which says what it could not name and
   why — is what a Commander reads. A bar with an empty title and a body with nothing in it would be
@@ -195,8 +201,8 @@ from a record `/builds` lists, so creating a stock hull takes nothing from them.
 
 ## Responsive and accessibility notes
 
-- The exact same `/ships/:hull` state appears as a wide inspector or narrow full-screen layer; browser history and hull identity do not depend on the breakpoint.
-- Facts reflow from inspector groups to one narrow column without changing heading or definition order.
+- The exact same `/ships/:hull` state appears at the rail as an inspector and below the rail's width as a full-screen sheet; browser history and hull identity do not depend on the breakpoint.
+- Facts reflow from inspector groups to one column without changing heading or definition order.
 - Hardness, crew, mass lock and armour are drawn bare, as the reference draws them, rather than being given an invented unit; every figure that has a unit names it.
 - Canonical package text is marked untranslated when appropriate.
 - The canvas's hard-coded mock values are visual references only; every displayed value is read from the active package record. Runtime art is the package `illustration.svg` rasterised to PNG by `scripts/convert-ship-artwork.mjs` and served from this application's origin, matching the reference's own `assets/ships/*.png`.
@@ -206,16 +212,16 @@ from a record `/builds` lists, so creating a stock hull takes nothing from them.
 
 Measured from canvas 1a's inspector rail and canvas 1b's `sd-screen`.
 
-| Part           | Canvas                                                                                                                                                                                                                                                                                                    |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Artwork        | A fixed-height hatched plate inside an amber hairline; the illustration is contained, not cropped, and pushed into amber by a filter rather than by shipping a tinted copy                                                                                                                                |
-| Missing art    | The same plate, with the reason centred in Barlow 300 inside it                                                                                                                                                                                                                                           |
-| Identity       | Hull name in condensed 700 tracked 0.08em at the display step, over a monospace line reading `MANUFACTURER · LANDING PAD`                                                                                                                                                                                 |
-| Facts          | A two-column grid whose one-pixel gaps expose an amber ground as rules; each cell is a tracked monospace label over a larger monospace value; a final cell spans both columns                                                                                                                             |
-| Hardpoints     | A section rule — tracked label, a hairline filling the width, the total on the trailing edge — over count-and-size pills                                                                                                                                                                                  |
-| Slot groups    | The same rule three times over — `UTILITY MOUNTS` carrying its count in amber where a total goes and no chips, `CORE INTERNALS` and `OPTIONAL INTERNALS` carrying a quiet total over chips on the inset ground inside an amber hairline, each chip a tracked monospace label beside a larger amber figure |
-| Restricted     | The same rule in the hot tone with a hot-tinted hairline, the count of restricted mounts where a total goes, over one entry per restriction — the restriction's name, over chips of the same shape. Absent where the hull restricts nothing but the approach mount                                        |
-| Price          | Its own rule, the label on the leading edge and the value in large monospace amber with a quiet `cr` suffix                                                                                                                                                                                               |
-| Actions        | None on canvas 1a's rail, which ends at the price. Canvas 1b's sheet draws two on its footer plate — the stock-hull action filled amber, condensed 700 tracked 0.22em, full width, and the saved-build button beside it, which this screen does not draw because the command bar already carries it       |
-| Panel          | The rail takes its content's height rather than the row's, and closes with the same amber hairline that runs down its leading edge                                                                                                                                                                        |
-| Compact layout | The same stack as a full-screen layer whose command bar is the sheet's own — `←`, the hull's name, its manufacturer line — with the stock-hull action pinned to a footer plate                                                                                                                            |
+| Part                   | Canvas                                                                                                                                                                                                                                                                                                    |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Artwork                | A fixed-height hatched plate inside an amber hairline; the illustration is contained, not cropped, and pushed into amber by a filter rather than by shipping a tinted copy                                                                                                                                |
+| Missing art            | The same plate, with the reason centred in Barlow 300 inside it                                                                                                                                                                                                                                           |
+| Identity               | Hull name in condensed 700 tracked 0.08em at the display step, over a monospace line reading `MANUFACTURER · LANDING PAD`                                                                                                                                                                                 |
+| Facts                  | A two-column grid whose one-pixel gaps expose an amber ground as rules; each cell is a tracked monospace label over a larger monospace value; a final cell spans both columns                                                                                                                             |
+| Hardpoints             | A section rule — tracked label, a hairline filling the width, the total on the trailing edge — over count-and-size pills                                                                                                                                                                                  |
+| Slot groups            | The same rule three times over — `UTILITY MOUNTS` carrying its count in amber where a total goes and no chips, `CORE INTERNALS` and `OPTIONAL INTERNALS` carrying a quiet total over chips on the inset ground inside an amber hairline, each chip a tracked monospace label beside a larger amber figure |
+| Restricted             | The same rule in the hot tone with a hot-tinted hairline, the count of restricted mounts where a total goes, over one entry per restriction — the restriction's name, over chips of the same shape. Absent where the hull restricts nothing but the approach mount                                        |
+| Price                  | Its own rule, the label on the leading edge and the value in large monospace amber with a quiet `cr` suffix                                                                                                                                                                                               |
+| Actions                | None on canvas 1a's rail, which ends at the price. Canvas 1b's sheet draws two on its footer plate — the stock-hull action filled amber, condensed 700 tracked 0.22em, full width, and the saved-build button beside it, which this screen does not draw because the command bar already carries it       |
+| Panel                  | The rail takes its content's height rather than the row's, and closes with the same amber hairline that runs down its leading edge                                                                                                                                                                        |
+| Below the rail's width | The same stack as a full-screen layer whose command bar is the sheet's own — `←`, the hull's name, its manufacturer line — with the stock-hull action pinned to a footer plate                                                                                                                            |

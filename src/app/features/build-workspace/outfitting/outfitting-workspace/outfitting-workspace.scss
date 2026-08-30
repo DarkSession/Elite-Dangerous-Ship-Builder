@@ -668,22 +668,38 @@
 // Canvas 1d's strip of six readings over the category tabs: label above figure,
 // evenly shared across the row, on the panel ground and closed by a hairline.
 // The cells themselves are features 006 to 008's, exactly as in the rail, and
-// the plate at the end of the strip is feature 005's power badge, which takes
-// two of these tracks and sets its own span from its own stylesheet.
+// the plate against the trailing edge is feature 005's power badge.
+//
+// A row rather than a grid, so the badge takes the width its own two lines need
+// and the six readings take the rest, and so the badge wraps under them where
+// the strip cannot hold both.
 .outfitting__key-figures {
-  // All six across, which is what canvas 1d draws — but as a track floor rather
-  // than as a count. Six columns of `minmax(0, 1fr)` hold their number at any
-  // text size, and a figure that no longer fits its share of 390px hangs over
-  // the edge of the screen instead: `1fr` with a zero floor shrinks the track
-  // and never the number inside it. `auto-fit` against the canvas's own 56px
-  // cell keeps the six on one row where they fit and drops to three on two rows
-  // where they do not, which is what a doubled text size needs (FR-014).
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-key-figure), 1fr));
-  gap: var(--edsb-space-inline-tight);
+  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+
+  align-items: stretch;
   padding-block: var(--edsb-space-stack-tight);
   padding-inline: var(--edsb-space-inline-loose);
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+}
+
+// All six across, which is what canvas 1d draws — but as a track floor rather
+// than as a count. Six columns of `minmax(0, 1fr)` hold their number at any
+// text size, and a figure that no longer fits its share of 390px hangs over
+// the edge of the screen instead: `1fr` with a zero floor shrinks the track
+// and never the number inside it. `auto-fit` against the canvas's own 56px
+// cell keeps the six on one row where they fit and drops to three on two rows
+// where they do not, which is what a doubled text size needs (FR-014).
+//
+// The badge is outside this grid. Inside it, it spanned every track, so no
+// track was ever empty for `auto-fit` to collapse and the six were held to
+// their floor across a strip with half of it blank (Commander request
+// 2026-08-30).
+.outfitting__key-figure-cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-key-figure), 1fr));
+  gap: var(--edsb-space-inline-tight);
+  flex: 1 1 var(--edsb-layout-key-figure);
+  min-inline-size: 0;
 }
 
 // Why a mount cannot be emptied, and what the Almanac restricts it to. Neither

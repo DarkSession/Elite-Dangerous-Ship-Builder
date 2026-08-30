@@ -12,9 +12,9 @@
   @include layout.stack(var(--edsb-space-panel));
 }
 
-// At narrow widths the same route is the whole screen. The address, the state
-// and the history entry do not change with the breakpoint.
-@include layout.compact {
+// Below the rail's own width the same route is the whole screen. The address,
+// the state and the history entry do not change with the breakpoint.
+@include layout.below-wide {
   .detail {
     padding-block: var(--edsb-space-inline-loose);
   }
@@ -197,11 +197,9 @@
 // where something else carries it, and a wide touch screen — which the canvases
 // do not draw — keeps it.
 //
-// The width is the rail's own, not the medium step: the rail composition starts
-// at `wide-up` (`ship-catalogue.page.scss`), and below it the detail is a panel
-// stacked under the manifest rather than the rail beside it. That panel is the
-// nearest thing to canvas 1b's sheet at that width, so it keeps the sheet's
-// action.
+// The width is the rail's own, which is the only threshold this screen has:
+// the rail composition starts at `wide-up` (`ship-catalogue.page.scss`), and
+// every width below it draws canvas 1b's sheet, which keeps the action.
 @include layout.wide-up {
   @media (hover: hover) {
     .detail__create-action {
@@ -216,11 +214,12 @@
   }
 }
 
-// The way back and the hull's name are the command bar's at compact width: the
-// sheet publishes them and the shell draws them, exactly as canvas 1b draws the
-// sheet's own bar (011/`ScreenReturn`). So the sheet's body does not draw them
-// a second time — the name and the line under it are already the bar's title.
-@include layout.compact {
+// The way back and the hull's name are the command bar's wherever the sheet is
+// drawn: the sheet publishes them and the shell draws them, exactly as canvas 1b
+// draws the sheet's own bar (011/`ScreenReturn`). So the sheet's body does not
+// draw them a second time — the name and the line under it are already the bar's
+// title.
+@include layout.below-wide {
   // The name stays in the outline, hidden rather than dropped. The bar's title
   // is an `h1` in the banner, and the sheet's own `HARDPOINTS` is an `h3`: take
   // the `h2` between them off the page entirely and the article a reader lands

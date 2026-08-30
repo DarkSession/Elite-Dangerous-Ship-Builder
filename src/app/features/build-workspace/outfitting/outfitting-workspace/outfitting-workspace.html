@@ -342,13 +342,18 @@
     are being worked, not a second status surface.
 
     The strip closes with feature 005's power badge, which the artboard draws
-    beside the six rather than over them: it is one more item of this grid, so
-    it cannot land on `MASS` (005/FR-014).
+    beside the six rather than over them: it is the item after their grid, so it
+    cannot land on `MASS` (005/FR-014). The six have a grid of their own rather
+    than sharing one with the badge — a badge spanning every track of theirs is
+    a track that is never empty, and `auto-fit` then collapses none of them
+    (`design/outfitting-workspace.md`, "The compact key figures").
   -->
   <div class="outfitting__key-figures" [attr.aria-label]="keyFiguresLabel()" role="group">
-    <edsb-defence-summary />
-    <edsb-offence-summary />
-    <edsb-drives-summary />
+    <div class="outfitting__key-figure-cells">
+      <edsb-defence-summary />
+      <edsb-offence-summary />
+      <edsb-drives-summary />
+    </div>
     <edsb-power-badge />
   </div>
 </ng-template>

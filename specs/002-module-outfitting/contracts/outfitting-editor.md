@@ -11,7 +11,9 @@ atomically installs it only on success. Components cannot call the Almanac or re
 
 - Enumerate known mounts with `ShipLoadout.slots()` and identify them by `LoadoutSlot.key`.
 - Read base/resolved article facts from `FittedModule.stats` and current post-engineering facts from
-  `effectiveStats`.
+  `effectiveStats`. On an identified pre-engineered variant `stats` holds the resolved article, so
+  the stock reading is `getModuleBySymbol(symbol)` instead — a third catalogue read, never a
+  recalculation of the first two.
 - Read compatibility from `modulesForSlot`, removability/reason from `LoadoutSlot`, engineering menus
   from `availableBlueprints`/`availableExperimentalEffects`, and build validity from `validation`.
 - Re-read every snapshot/result after commit. Never mutate a returned frozen object.
@@ -64,8 +66,9 @@ is used.
 - Offer exactly the grades in the selected `AvailableBlueprint` and effects returned for that slot.
 - Quality is always explicitly `1` and is never editable/presented as a roll slider.
 - Purchase variant grade and current `Engineering.Level` are separate.
-- Attribute values are package `stats`/`effectiveStats`/modifiers, and the package's own
-  calculations over those two records; unavailable remains unavailable.
+- Attribute values are package `stats`/`effectiveStats`/modifiers, the catalogue record read by
+  symbol for an identified pre-engineered variant's stock column, and the package's own calculations
+  over those records; unavailable remains unavailable.
 - Do not claim better/worse direction from `LessIsGood`, which the package documents as unreliable.
 - Fixed/final articles expose only package-supported operations.
 

@@ -3357,6 +3357,83 @@ registerPreview({
   ],
 });
 
+// The same component in its other shape. A separate declaration rather than
+// more states on the one above, because the two shapes state different roles —
+// a radio group of cards there, a button over a listbox here — and a contract
+// names one role. The open list is reached by pressing the trigger, in the
+// preview exactly as in the editor: the menu holds that state itself, and an
+// input that forced it open would be a control the editor never sets
+// (`specs/002-module-outfitting/design/engineering-editor.md`, "The effect menu
+// is the application's own control").
+registerPreview({
+  componentId: 'experimental-effect-menu',
+  group: 'Engineering',
+  component: ExperimentalEffectList,
+  contract: contract(
+    'experimental-effect-menu',
+    {
+      role: 'listbox',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['expanded', 'selected'],
+      relationships: ['label', 'description', 'untranslated-disclosure'],
+      textEquivalents: [
+        'the effect the trigger holds, and whether its list is open',
+        'the package’s own description of each option, or its absence',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        asDropdown: true,
+        effects: [
+          {
+            fdname: 'special_corrosive_shell',
+            name: localized('Corrosive Shell'),
+            description: localized('Rounds reduce the target’s hull resistance.'),
+            applied: true,
+          },
+          {
+            fdname: 'special_auto_loader',
+            name: canonical('Auto Loader'),
+            description: canonical(
+              'An experimental upgrade that automatically reloads the weapon, even when firing.',
+            ),
+            applied: false,
+          },
+          {
+            fdname: 'special_unknown_effect',
+            name: localized('Effect the catalogue has no description for'),
+            description: { text: null, language: null, translationState: 'unavailable' },
+            applied: false,
+          },
+        ],
+        selected: 'special_corrosive_shell',
+      },
+      [
+        'the trigger names the chosen effect, and draws an untranslated name as one',
+        'pressing the trigger opens the list, and pressing it again shuts it',
+        'the selected option carries a wash, an edge and a marker — never a tint alone',
+        'an option the catalogue has no description for draws its name and nothing under it',
+        'every option clears the 24-pixel target floor, and the list itself takes a tab stop',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'unavailable-text'],
+    ),
+    state('empty', { asDropdown: true, effects: [], selected: null }, [
+      'nothing chosen reads as the no-effect option on the trigger, never as a symbol',
+      'the explicit no-effect option is still the whole removal route',
+    ]),
+    notApplicable('loading', 'The menu is read synchronously from the package.'),
+    notApplicable(
+      'error',
+      'A refusal belongs to the edit that was attempted, not to the list of choices.',
+    ),
+    notApplicable('disabled', 'A final article renders no effect menu at all.'),
+  ],
+});
+
 registerPreview({
   componentId: 'attribute-comparison',
   group: 'Engineering',

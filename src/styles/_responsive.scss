@@ -15,6 +15,7 @@
 $mode-compact-max: 47.9375rem; // below this, one semantic flow
 $mode-medium-min: 48rem; // two regions where relationships stay legible
 $mode-wide-min: 64rem; // master-detail or multi-region workspace
+$mode-wide-max: 63.9375rem; // the last width below the wide mode
 
 // Where the command bar folds its own controls into the named menu.
 //
@@ -104,10 +105,51 @@ $bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
   }
 }
 
+// Everything under the wide mode, compact and medium alike.
+//
+// For the screen that is a region beside another one where the wide mode has
+// room for two and the whole screen where it has not. There is no third
+// arrangement between them, so there is one step rather than two: a screen
+// stacked under the region it belongs beside is a screen a Commander has to
+// scroll the region past to reach (`specs/001-ship-selection-and-loading/design/hull-detail.md`).
+@mixin below-wide {
+  @media (max-width: #{$mode-wide-max}) {
+    @content;
+  }
+}
+
+// The medium mode alone: below the wide split, above the compact step.
+//
+// For the one thing that differs between the two modes under the split. The
+// frame gives a compact page its own gutter and gives a medium one none, so a
+// region that is the whole screen at both has to carry the inset at one of them
+// (`app-frame.scss`, `.frame__main`).
+@mixin medium-only {
+  @media (min-width: #{$mode-medium-min}) and (max-width: #{$mode-wide-max}) {
+    @content;
+  }
+}
+
+// How short a window is before what it holds has to be arranged for the height
+// rather than the width. A landscape phone is the case the canvases omit.
+$viewport-short-max: 30rem;
+
 // Short viewports promote a sheet to a full-height scrollable layer rather than
-// letting content be cut off — the landscape-phone case the canvases omit.
+// letting content be cut off.
 @mixin short-viewport {
-  @media (max-height: 30rem) {
+  @media (max-height: #{$viewport-short-max}) {
+    @content;
+  }
+}
+
+// The complement, for an arrangement that needs room in both axes.
+//
+// A region wide enough for two things beside each other may still be on a
+// window too short to read them on. Asked together with the width, this is what
+// separates a landscape phone from a desktop whose column happens to be
+// narrower than the phone's whole screen (feature 010's plate pair).
+@mixin not-short-viewport {
+  @media (min-height: #{$viewport-short-max + 0.0625rem}) {
     @content;
   }
 }

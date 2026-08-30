@@ -22,6 +22,7 @@ import { HullArtwork } from '../../ui/components/hull-artwork/hull-artwork';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ScreenChrome } from '../shared/screen-chrome';
+import { hardpointTotal } from '../../domain/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from '../ship-catalogue/catalogue-anchor.restorer';
 import { HullDetailUnknownHull } from './hull-detail-unknown-hull';
 
@@ -63,9 +64,10 @@ export interface MountCount {
  * Commander asks, and then only after the shared coordinator has confirmed
  * anything unsaved would not be lost (FR-007, FR-009).
  *
- * At wide widths this is the inspector beside the manifest; at narrow widths it
- * is a full-screen layer with its own way back. Same route, same state, same
- * history entry: the breakpoint changes the composition, never the address.
+ * At the rail's own width this is the inspector beside the manifest; below it
+ * the screen is a full-screen layer with its own way back. Same route, same
+ * state, same history entry: the breakpoint changes the composition, never the
+ * address.
  */
 @Component({
   selector: 'edsb-hull-detail-page',
@@ -113,7 +115,7 @@ export class HullDetailPage {
   readonly view = this.#detail.view;
 
   /**
-   * Whether the command bar is carrying this hull's name at compact width.
+   * Whether the command bar is carrying this hull's name where the sheet is.
    *
    * When it is, the body does not draw it again; when the package could supply
    * no name there is nothing in the bar to draw, and the body's own identity
@@ -150,6 +152,19 @@ export class HullDetailPage {
       .map((count, index) => ({ count, label: this.#messages.message(MOUNT_LABELS[index]!) }))
       .filter((mount) => mount.count > 0)
       .map((mount) => ({ count: this.#formatters.integer(mount.count), label: mount.label }));
+  });
+
+  /**
+   * How many hardpoints there are, for the trailing edge of their rule.
+   *
+   * `null` where the package publishes no hardpoint layout for the hull: the
+   * chips are then empty too, and a total over no chips would be a `0` that
+   * states a count rather than the absence of one.
+   */
+  readonly mountsTotal = computed<string | null>(() => {
+    const view = this.view();
+    const profile = view?.kind === 'populated' ? view.entry.hardpoints : null;
+    return profile === null ? null : this.#formatters.integer(hardpointTotal(profile));
   });
 
   /**

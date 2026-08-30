@@ -152,7 +152,12 @@
   display: none;
 }
 
-@include layout.compact {
+// Below the wide mode, a screen opened over another one is the whole screen, so
+// it carries the bar. The step is the wide split rather than the compact one:
+// there is no width where such a screen is a second region under the first, and
+// a bar drawn only under the compact step would leave the medium mode with a
+// screen a Commander could not name or leave (hull-detail design, "Composition").
+@include layout.below-wide {
   .frame__return {
     @include layout.wrapping-row(var(--edsb-space-inline-tight));
 
