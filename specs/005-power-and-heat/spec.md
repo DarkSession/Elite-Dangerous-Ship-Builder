@@ -115,8 +115,9 @@ conditions here, because the design draws them inside this capability and nowher
   > ledger registers ids against journeys that exist.
 
 - **FR-014**: At compact width, **where and only where** the package reports a band unpowered with
-  the hardpoints deployed, the strip of key readings MUST close with a badge naming each such band
-  by its priority group, over the share of plant output the build's lit demand takes. Both figures
+  the hardpoints deployed, the strip of key readings MUST close with a badge stating the share of
+  plant output the build's lit demand takes, over one line naming each such band by its priority
+  group. Both figures
   MUST be read from `BuildMetrics.powerBudget()`, the same result FR-013's rail reads, and MUST NOT
   be a second reading of it: the badge is the rail's `POWER` line at the width the rail is a segment
   a Commander has to open.

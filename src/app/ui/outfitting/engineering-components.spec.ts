@@ -204,7 +204,7 @@ describe('experimental effect list', () => {
     // on the reading that going quiet hides a gap. It is not a name, and the
     // option is already named on the line above it. The catalogue carries a
     // description for every effect it knows, so this is the floor for a symbol
-    // it does not — not the common case it once was (Commander request).
+    // it does not (Commander request).
     const fixture = renderComponent(ExperimentalEffectList, {
       effects: [
         {
@@ -345,10 +345,119 @@ describe('experimental effect menu', () => {
     expect(query(fixture, '.menu__list').getAttribute('aria-labelledby')).toBe(label.id);
   });
 
-  it('gives the list a tab stop, because it scrolls inside itself', () => {
-    const fixture = openMenu(renderMenu());
+  it('takes the focus when it opens, and names the option it is on', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
 
-    expect(query(fixture, '.menu__list').getAttribute('tabindex')).toBe('0');
+    const list = query(fixture, '.menu__list');
+    expect(list.getAttribute('tabindex')).toBe('0');
+    expect(document.activeElement).toBe(list);
+    // Opened on the applied option, which with nothing chosen is the way out.
+    expect(list.getAttribute('aria-activedescendant')).toBe(
+      query(fixture, '.menu__option--none').id,
+    );
+  });
+
+  it('opens on the applied option rather than at the top of the list', () => {
+    const fixture = openMenu(renderMenu({ selected: 'special_auto_loader' }));
+
+    const active = query(fixture, '.menu__list').getAttribute('aria-activedescendant');
+    expect(queryAll(fixture, '.menu__option')[2]?.id).toBe(active);
+  });
+
+  it('walks the options with the arrows, and reaches the ends', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+    const list = query(fixture, '.menu__list');
+    const idAt = (index: number) => queryAll(fixture, '.menu__option')[index]?.id;
+
+    press(fixture, 'ArrowDown');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(1));
+
+    press(fixture, 'End');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(2));
+
+    // The ends hold rather than wrapping, which is what a native menu does.
+    press(fixture, 'ArrowDown');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(2));
+
+    press(fixture, 'Home');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(0));
+
+    press(fixture, 'ArrowUp');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(0));
+  });
+
+  it('takes the option the list is on with Enter, and with Space', () => {
+    for (const key of ['Enter', ' ']) {
+      const fixture = openMenu(renderMenu({ selected: null }));
+      const chosen: (string | null)[] = [];
+      fixture.componentInstance.chosen.subscribe((value) => chosen.push(value));
+
+      press(fixture, 'ArrowDown');
+      press(fixture, key);
+
+      expect(chosen).toEqual(['special_corrosive_shell']);
+      expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+    }
+  });
+
+  it('leaves on Escape without taking anything, and gives the trigger back', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+    const chosen: (string | null)[] = [];
+    fixture.componentInstance.chosen.subscribe((value) => chosen.push(value));
+
+    press(fixture, 'ArrowDown');
+    press(fixture, 'Escape');
+
+    expect(chosen).toEqual([]);
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+    // Focus left inside a box that is no longer drawn is focus a reader has to
+    // find again from the top of the page.
+    expect(document.activeElement).toBe(query(fixture, '.menu__trigger'));
+  });
+
+  it('leaves Tab to the page, so the list is not a trap', () => {
+    const fixture = openMenu(renderMenu());
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+
+    query(fixture, '.menu__list').dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('names each option by its name line and describes it by the package’s', () => {
+    // The whole reason this control is drawn rather than taken from the
+    // platform: a native option holds one run of text, so the description could
+    // only be read as part of the name.
+    const fixture = openMenu(renderMenu());
+    const option = queryAll(fixture, '.menu__option')[1]!;
+
+    expect(option.getAttribute('aria-labelledby')).toBe(
+      option.querySelector('.menu__option-name')?.id,
+    );
+    expect(option.getAttribute('aria-describedby')).toBe(
+      option.querySelector('.menu__option-description')?.id,
+    );
+  });
+
+  it('describes an option by nothing where the catalogue has no description', () => {
+    const fixture = openMenu(
+      renderMenu({
+        effects: [
+          {
+            ...EFFECTS[0]!,
+            description: {
+              text: null,
+              language: null,
+              translationState: 'unavailable',
+              disclosureKey: 'game-text.unavailable',
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(queryAll(fixture, '.menu__option')[1]?.getAttribute('aria-describedby')).toBeNull();
   });
 
   it('draws no description line for an option the catalogue has none for', () => {
@@ -704,6 +813,14 @@ describe('ingress refusal notice', () => {
 /** Every match, since the shared helpers only expose the first. */
 function queryAll<T>(fixture: ComponentFixture<T>, selector: string): HTMLElement[] {
   return [...element(fixture).querySelectorAll<HTMLElement>(selector)];
+}
+
+/** One key, on the effect menu's list, and the redraw that follows it. */
+function press<T>(fixture: ComponentFixture<T>, key: string): void {
+  query(fixture, '.menu__list').dispatchEvent(
+    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
 }
 
 describe('ship identity fields', () => {

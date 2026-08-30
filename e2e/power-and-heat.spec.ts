@@ -656,11 +656,11 @@ test.describe('the compact strip’s power badge', () => {
       return;
     }
 
-    // The other half of the same fix. The badge used to span every track of the
-    // six's own grid, so `auto-fit` could collapse none of them and the readings
-    // were held to their floor across a strip with half of it blank (Commander
-    // request 2026-08-30). With the badge outside that grid — and absent here —
-    // the six take the strip.
+    // The other half of the same rule. A badge inside the six's own grid spans
+    // every track of it, so `auto-fit` can collapse none of them and the
+    // readings sit at their floor across a strip with half of it blank
+    // (Commander request 2026-08-30). The badge is outside that grid, and
+    // absent here, so the six take the strip.
     const spread = await page.locator('.outfitting__key-figures').evaluate((strip: HTMLElement) => {
       const cells = [...strip.querySelectorAll('.metric')];
       const first = cells[0]!.getBoundingClientRect();

@@ -8,6 +8,7 @@ import {
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import type { GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
@@ -67,7 +68,16 @@ export class ExperimentalEffectList {
 
   readonly effects = input.required<readonly ExperimentalEffectView[]>();
 
-  /** True where the editor has room for canvas 1c's menu rather than cards. */
+  /**
+   * True where the editor has room for canvas 1c's menu rather than cards.
+   *
+   * Named for the shape the editor is asking for rather than for the control
+   * that answers, which is what lets the editor set this and the recipe list's
+   * own input from one expression. The recipe list answers with the platform's
+   * dropdown; this one answers with the menu below, for the reason
+   * `design/engineering-editor.md` gives in "The effect menu is the
+   * application's own control".
+   */
   readonly asDropdown = input(false);
 
   /** The selected effect `fdname`, or `null` for the explicit no-effect. */
@@ -101,6 +111,45 @@ export class ExperimentalEffectList {
   readonly open = this.#open.asReadonly();
 
   /**
+   * Which option the keyboard is on, as an index into {@link rows}.
+   *
+   * The list keeps the focus and names the option it is on through
+   * `aria-activedescendant`, rather than moving focus onto the options
+   * themselves. Either pattern is a listbox; this one keeps the scroll box the
+   * one thing in the tab order, which is what the trigger says it controls.
+   */
+  readonly #activeIndex = signal(0);
+
+  /**
+   * The way out, then the package's own effects: the options in drawn order.
+   *
+   * One list, so the keyboard walks exactly what the eye sees and the `None`
+   * row is reached the same way as the rest. `null` is the no-effect choice,
+   * which is the value {@link choose} already takes for it.
+   */
+  readonly rows = computed<readonly (string | null)[]>(() => [
+    null,
+    ...this.effects().map((effect) => effect.fdname),
+  ]);
+
+  readonly activeIndex = computed<number>(() => {
+    const rows = this.rows();
+    const index = this.#activeIndex();
+    // Clamped rather than trusted: the package's menu is rebuilt whenever the
+    // recipe changes, and an index kept across that would name a row that is no
+    // longer there.
+    return Math.min(Math.max(index, 0), Math.max(rows.length - 1, 0));
+  });
+
+  /** The `id` of the option the keyboard is on, for `aria-activedescendant`. */
+  readonly activeOptionId = computed<string>(() => this.optionId(this.activeIndex()));
+
+  /** One stable `id` per option, so the list can name the one it is on. */
+  optionId(index: number): string {
+    return `${this.listId}-option-${index}`;
+  }
+
+  /**
    * The chosen effect, for the trigger. `null` where nothing is chosen, which
    * the trigger reads as `None` — an application string rather than game text.
    *
@@ -124,6 +173,14 @@ export class ExperimentalEffectList {
     return this.effects().find((candidate) => candidate.fdname === selected) ?? null;
   });
 
+  /**
+   * The list itself, which takes the focus while it is drawn.
+   *
+   * `private` rather than `#private`, which Angular's compiler does not accept
+   * on a signal query.
+   */
+  private readonly list = viewChild<ElementRef<HTMLElement>>('list');
+
   constructor() {
     // The list is drawn in the menu shape alone, so a menu left open while the
     // editor changed shape would come back open when the shape came back. It
@@ -133,16 +190,84 @@ export class ExperimentalEffectList {
       this.asDropdown();
       this.#open.set(false);
     });
+
+    // Opening moves the focus onto the list, so the keys below reach it without
+    // a Commander first tabbing to a box that appeared under their hands.
+    effect(() => {
+      this.list()?.nativeElement.focus();
+    });
   }
 
   toggle(): void {
-    this.#open.update((open) => !open);
+    const opening = !this.#open();
+    if (opening) {
+      // Opened on the option that is applied, so the list starts where the
+      // build is rather than at the top of the menu.
+      this.#activeIndex.set(Math.max(this.rows().indexOf(this.selected()), 0));
+    }
+    this.#open.set(opening);
   }
 
-  /** Choosing is the edit, exactly as it was in the native menu. */
+  /** Choosing is the edit, exactly as it is in the card list beside it. */
   choose(fdname: string | null): void {
-    this.#open.set(false);
+    this.#shut();
     this.chosen.emit(fdname);
+  }
+
+  /**
+   * The list's own keys, which a drawn listbox has to state for itself.
+   *
+   * A native menu brings these from the platform. This one does not, so the
+   * arrows walk the options, `Home` and `End` reach the ends, `Enter` and
+   * `Space` take the one the list is on, and `Escape` leaves without taking
+   * anything. Each of them is the platform menu's own behaviour, and a control
+   * that opens on a press and can then only be left by a second press is a
+   * control a keyboard cannot finish using.
+   */
+  onListKeydown(event: KeyboardEvent): void {
+    const last = this.rows().length - 1;
+    const index = this.activeIndex();
+
+    switch (event.key) {
+      case 'ArrowDown':
+        this.#activeIndex.set(Math.min(index + 1, last));
+        break;
+      case 'ArrowUp':
+        this.#activeIndex.set(Math.max(index - 1, 0));
+        break;
+      case 'Home':
+        this.#activeIndex.set(0);
+        break;
+      case 'End':
+        this.#activeIndex.set(last);
+        break;
+      case 'Enter':
+      case ' ':
+        this.choose(this.rows()[index] ?? null);
+        break;
+      case 'Escape':
+        this.#shut();
+        break;
+      default:
+        // Every other key is the page's, including `Tab`, which leaves the list
+        // the way it leaves any other control.
+        return;
+    }
+
+    // Only for the keys above: a key this control acted on is one the page must
+    // not also act on, and `Space` and the arrows would otherwise scroll it.
+    event.preventDefault();
+  }
+
+  /** Shuts the list and puts the focus back where it was opened from. */
+  #shut(): void {
+    if (!this.#open()) {
+      return;
+    }
+    this.#open.set(false);
+    // The trigger, not the document. Focus left inside a box that is no longer
+    // drawn is focus a reader has to find again from the top of the page.
+    this.#host.nativeElement.querySelector<HTMLElement>('.menu__trigger')?.focus();
   }
 
   dismissOutside(event: Event): void {
@@ -151,6 +276,8 @@ export class ExperimentalEffectList {
       return;
     }
     if (!this.#host.nativeElement.contains(target)) {
+      // Not `#shut`: a press somewhere else is a press that is taking the focus
+      // somewhere else, and pulling it back to the trigger would fight it.
       this.#open.set(false);
     }
   }

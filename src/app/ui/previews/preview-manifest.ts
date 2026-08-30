@@ -3373,7 +3373,7 @@ registerPreview({
     'experimental-effect-menu',
     {
       role: 'listbox',
-      visibleNameMatchesAccessibleName: false,
+      visibleNameMatchesAccessibleName: true,
       exposedStates: ['expanded', 'selected'],
       relationships: ['label', 'description', 'untranslated-disclosure'],
       textEquivalents: [
@@ -3417,7 +3417,9 @@ registerPreview({
         'pressing the trigger opens the list, and pressing it again shuts it',
         'the selected option carries a wash, an edge and a marker — never a tint alone',
         'an option the catalogue has no description for draws its name and nothing under it',
-        'every option clears the 24-pixel target floor, and the list itself takes a tab stop',
+        'every option clears the target baseline every other list row in the editor clears',
+        'the arrows walk the options, Enter takes one, and Escape leaves without taking any',
+        'each option is named by its own name line and described by the package’s sentence',
       ],
       ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'unavailable-text'],
     ),

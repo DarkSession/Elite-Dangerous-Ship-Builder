@@ -40,7 +40,7 @@ selector reaches whichever plate is not drawn, and the complete ledger reaches e
 **The pair needs room in both axes, ruled 2026-08-30 (Commander request).** Inline size alone chose
 between the two arrangements, and inline size alone cannot tell canvas 1c's block apart from canvas
 1d's. A landscape phone is 844px across and 390px tall: wide enough for the pair by the inline
-measure, and the one screen the pair should never be on. It drew both plates at 395px each, on a
+measure, and the one screen the pair should never be on. Two plates there are 395px each, on a
 window less than one plate tall. A 1440px desktop, where canvas 1c's arrangement belongs, draws its
 pair inside a 742px centre column — narrower than the phone's whole block. So no width separates
 them, and width is not the measure that can. What the phone lacks is height.

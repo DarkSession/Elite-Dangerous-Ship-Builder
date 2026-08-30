@@ -19,6 +19,14 @@
   min-inline-size: 0;
 }
 
+// A host with no plate in it is still a flex item, and a flex item is still a
+// gap. The badge is absent on every build the plant covers, which is most of
+// them, so that gap would stand at the trailing edge of the six cells almost
+// always — a space the strip does not owe anything.
+:host:not(:has(.badge)) {
+  display: none;
+}
+
 // Always the hot tone, because the plate is drawn only where a group is dark:
 // there is then always something to warn about. The tone is never what says so
 // — the lines under the share name the groups in words.

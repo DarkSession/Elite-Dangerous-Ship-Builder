@@ -512,6 +512,27 @@ export async function chooseFirstRecipe(page: Page): Promise<void> {
   await select.selectOption(values[1]!);
 }
 
+/**
+ * Opens the effect menu, which is the application's own rather than the
+ * platform's.
+ *
+ * Canvas 1c draws a button over a listbox instead of a native `<select>`,
+ * because an option there holds one run of text and each of these carries the
+ * package's description under its name (`design/engineering-editor.md`, "The
+ * effect menu is the application's own control"). So the options are not on the
+ * page until the trigger is pressed.
+ */
+async function openEffectMenu(page: Page): Promise<Locator> {
+  const trigger = page.locator('edsb-experimental-effect-list .menu__trigger').first();
+  await expect(trigger).toBeVisible();
+  if ((await trigger.getAttribute('aria-expanded')) !== 'true') {
+    await trigger.click();
+  }
+  const list = page.locator('edsb-experimental-effect-list .menu__list').first();
+  await expect(list).toBeVisible();
+  return list;
+}
+
 /** Chooses one experimental effect, however this width offers them. */
 export async function chooseEffect(page: Page, name: string | RegExp): Promise<void> {
   if (await surfacesAreLayers(page)) {
@@ -520,7 +541,12 @@ export async function chooseEffect(page: Page, name: string | RegExp): Promise<v
     await expect(row.locator('input[type="radio"]')).toBeChecked();
     return;
   }
-  await chooseFromSelect(page.locator('edsb-experimental-effect-list select').first(), name);
+  const list = await openEffectMenu(page);
+  await list
+    .locator('.menu__option:not(.menu__option--none)')
+    .filter({ hasText: name })
+    .first()
+    .click();
 }
 
 /** The first effect the package offers here, whatever it is called. */
@@ -529,11 +555,8 @@ export async function chooseFirstEffect(page: Page): Promise<void> {
     await page.locator('.effect:not(.effect--none)').first().click();
     return;
   }
-  const select = page.locator('edsb-experimental-effect-list select').first();
-  const values = await select
-    .locator('option')
-    .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
-  await select.selectOption(values[1] ?? '');
+  const list = await openEffectMenu(page);
+  await list.locator('.menu__option:not(.menu__option--none)').first().click();
 }
 
 /** Takes the no-blueprint option, however this width offers it. */
@@ -551,7 +574,8 @@ export async function clearEffect(page: Page): Promise<void> {
     await page.locator('.effect--none').click();
     return;
   }
-  await page.locator('edsb-experimental-effect-list select').first().selectOption('');
+  const list = await openEffectMenu(page);
+  await list.locator('.menu__option--none').click();
 }
 
 /**
@@ -582,11 +606,24 @@ export async function chosenRecipe(page: Page): Promise<string | null> {
   return (await select.locator('option:checked').textContent())?.trim() ?? null;
 }
 
-/** The effects the editor is currently offering, however this width draws them. */
+/**
+ * The effects the editor is currently offering, however this width draws them.
+ *
+ * The menu's own options are only in the document while it is open, so a
+ * journey counting them opens it first with {@link revealEffectOptions}.
+ */
 export function effectOptions(page: Page): Locator {
   return page.locator(
-    '.effect:not(.effect--none), edsb-experimental-effect-list option:not(:first-child)',
+    '.effect:not(.effect--none), edsb-experimental-effect-list .menu__option:not(.menu__option--none)',
   );
+}
+
+/** Puts every offered effect on the page, whichever shape this width draws. */
+export async function revealEffectOptions(page: Page): Promise<void> {
+  if (await surfacesAreLayers(page)) {
+    return;
+  }
+  await openEffectMenu(page);
 }
 
 /**

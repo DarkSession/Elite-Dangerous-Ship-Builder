@@ -15,6 +15,7 @@ import {
   draftAbandoned,
   editorOffered,
   effectOptions,
+  revealEffectOptions,
   fitCommitted,
   openEditor as bringEditorOnScreen,
   revealFamilyHolding,
@@ -149,11 +150,8 @@ test.describe('engineering a module', () => {
       // Nothing under the recipe is drawn until there is a recipe: an effect
       // menu over no blueprint is a control over nothing (wave 4).
       await chooseRecipe(page, /increased range/i);
-      await expect(
-        page.locator(
-          '.effect:not(.effect--none), edsb-experimental-effect-list option:not(:first-child)',
-        ),
-      ).toHaveCount(menu.effects.length);
+      await revealEffectOptions(page);
+      await expect(effectOptions(page)).toHaveCount(menu.effects.length);
     }
   });
 
@@ -212,9 +210,12 @@ test.describe('engineering a module', () => {
     await applyDraft(page);
 
     await openEditor(page, 'FrameShiftDrive');
-    const names = await effectOptions(page).evaluateAll((nodes) =>
-      nodes.map((node) => node.textContent?.trim() ?? ''),
-    );
+    await revealEffectOptions(page);
+    // The name line alone: an option carries the package's description under it
+    // as well, and what the journey needs back is what to ask for next.
+    const names = await effectOptions(page)
+      .locator('.effect__name, .menu__option-name')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent?.trim() ?? ''));
     await chooseFirstEffect(page);
     await applyDraft(page);
     const withFirst = await ledgerEngineering(page, 'FrameShiftDrive');

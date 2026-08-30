@@ -465,12 +465,11 @@ test.describe('hull detail', () => {
   });
 
   test('is the sheet over the manifest at every width below the rail’s', async ({ page }) => {
-    // Ruled 2026-08-30 (Commander request). There used to be a band between the
-    // two compositions — 768 to 1023 — where the detail was a panel stacked
-    // under the manifest. With 48 hulls that manifest is several screenfuls, so
-    // a hull opened at 900px landed below all of them and the page did not
-    // appear to change (`design/hull-detail.md`, "Every width below the rail's
-    // is the sheet's").
+    // Ruled 2026-08-30 (Commander request). There is no band between the two
+    // compositions. With 48 hulls the manifest is several screenfuls, so a hull
+    // opened at 900px under it would land below all of them: the Commander
+    // presses a row and the page does not appear to change
+    // (`design/hull-detail.md`, "Every width below the rail's is the sheet's").
     //
     // The rail's own width is the one threshold, and it is read from the page
     // rather than written here: a second copy of it in this suite would be one

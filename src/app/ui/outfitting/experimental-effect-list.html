@@ -50,34 +50,53 @@
       <!--
         Drawn over the card rather than inside it: in flow, thirteen two-line
         options would push the attribute table a screenful down every time the
-        menu opened. It is bounded and scrolls inside itself, and takes the tab
-        stop the listbox pattern gives it — a scroll box nothing inside can be
-        reached by is content some readers cannot get into.
+        menu opened. It is bounded and scrolls inside itself, holds the focus
+        while it is drawn, and names the option the keyboard is on through
+        `aria-activedescendant` — the arrows walk the options, `Enter` takes
+        one and `Escape` leaves without taking any.
       -->
       <ul
+        #list
         class="menu__list"
         role="listbox"
         tabindex="0"
         [id]="listId"
         [attr.aria-labelledby]="labelId"
+        [attr.aria-activedescendant]="activeOptionId()"
+        (keydown)="onListKeydown($event)"
       >
         <li
           class="menu__option menu__option--none"
           role="option"
+          [id]="optionId(0)"
+          [class.menu__option--active]="activeIndex() === 0"
           [attr.aria-selected]="selected() === null"
           (click)="choose(null)"
         >
           <span class="menu__option-name">{{ noneLabel() }}</span>
         </li>
 
-        @for (effect of effects(); track effect.fdname) {
+        @for (effect of effects(); track effect.fdname; let index = $index) {
+          <!--
+            Named by its own name line and described by the package's sentence
+            under it, rather than leaving both to be read as one run. That run
+            is what the native menu could only offer, and it is the whole reason
+            this control is drawn (`design/engineering-editor.md`, "The effect
+            menu is the application's own control").
+          -->
           <li
             class="menu__option"
             role="option"
+            [id]="optionId(index + 1)"
+            [class.menu__option--active]="activeIndex() === index + 1"
             [attr.aria-selected]="selected() === effect.fdname"
+            [attr.aria-labelledby]="optionId(index + 1) + '-name'"
+            [attr.aria-describedby]="
+              effect.description.text === null ? null : optionId(index + 1) + '-description'
+            "
             (click)="choose(effect.fdname)"
           >
-            <span class="menu__option-name">
+            <span class="menu__option-name" [id]="optionId(index + 1) + '-name'">
               <edsb-game-text
                 [text]="effect.name.text"
                 [language]="effect.name.language"
@@ -91,7 +110,7 @@
               one for a description.
             -->
             @if (effect.description.text !== null) {
-              <span class="menu__option-description">
+              <span class="menu__option-description" [id]="optionId(index + 1) + '-description'">
                 <edsb-game-text
                   [text]="effect.description.text"
                   [language]="effect.description.language"
@@ -146,9 +165,7 @@
             a name — an article a reader cannot be told the name of is a fact
             worth stating — and the wrong one here twice over: this is not a
             name, and an effect whose description the catalogue does not carry is
-            already fully named on the line above. Every option in the card once
-            read `Name unavailable` under its own name (Commander request
-            2026-08-26).
+            already fully named on the line above (Commander request 2026-08-26).
           -->
           @if (effect.description.text !== null) {
             <edsb-game-text

@@ -314,9 +314,17 @@ What a drawn menu gives up, and why only this one gives it up:
   which is the application's own string. A symbol is never a display name, so an effect that is not
   among the offered ones — which the draft does not produce, since a selection off the package's
   menu is no selection — reads as `None` rather than as its symbol.
-- **Each option is held to SC 2.5.8's 24-pixel floor,** like every other list row in this editor,
-  and the list itself takes a tab stop: a scroll box nothing inside can be reached by is content
-  some readers cannot get into.
+- **Each option is held to the target baseline** every other list row in this editor is held to.
+- **The list states its own keys,** because a drawn one brings none from the platform. It takes the
+  focus while it is open and names the option it is on with `aria-activedescendant`; the arrows walk
+  the options, `Home` and `End` reach the ends, `Enter` and `Space` take the one the list is on, and
+  `Escape` leaves without taking any and gives the trigger back. `Tab` is the page's, so the list is
+  not a trap. A control that opens on a press and can then only be left by a second press is one a
+  keyboard cannot finish using.
+- **An option is named by its name line and described by the package's sentence.** That is the
+  difference this control buys. A native option holds one run of text, so the description was read
+  as part of the name; here `aria-labelledby` and `aria-describedby` keep them the two things they
+  are, and an option the catalogue has no description for is described by nothing.
 - **It is a shared component with a preview of its own.** The control lives in `ui/outfitting`, and
   the menu shape is declared in the preview catalogue separately from the card shape — two
   declarations rather than more states on one, because a contract names one role and these two state
@@ -420,8 +428,8 @@ that `CLEAR ✕` created by existing at wide width only.
   a fixed pre-engineered variant the package deliberately publishes the resolved article there as
   well as through `effectiveStats`, so that stats a journal capture omitted still describe the
   article. Taken as the stock column, that record prints the same figures in both columns: a
-  Commander looking at a community-goal multi-cannon read `STOCK` and `MODIFIED` agreeing on every
-  row, and the engineering the article is bought for was nowhere on the panel. So the column reads
+  Commander looking at a community-goal multi-cannon reads `STOCK` and `MODIFIED` agreeing on every
+  row, and the engineering the article is bought for is nowhere on the panel. So the column reads
   `getModuleBySymbol(symbol)`, the same module in stock. That is a second package record, not a
   second calculation and not a correction of the first: nothing is re-derived, clamped or adjusted.
   - **The condition is identification, not the article's kind.** `FittedModule.preEngineeredVariant`
@@ -429,11 +437,12 @@ that `CLEAR ✕` created by existing at wide width only.
     article the package does not recognise as a variant keeps `stats` like any other module. There
     is then nothing that says its `stats` hold a resolved article, and a symbol lookup on it would
     be this application guessing.
-  - **`MODIFIED` still decides the rows.** FR-012a asks for every numeric attribute the package
-    publishes on the fitted article and only those the article itself carries, and that is the
-    fitted article's record, unchanged by this bullet. The stock record fills the `STOCK` cell of
-    those rows; a row it has no field for states the absence in that cell, exactly as a missing
-    field does anywhere else.
+  - **A row is drawn where either record carries the field.** FR-012a asks for every numeric
+    attribute the package publishes on the fitted article and only those the article itself carries;
+    with two records in play that is the union of the two, so a field one of them has and the other
+    does not is still a row, with the absence stated in the cell that has no figure. Dropping it
+    instead would lose a figure the package published, which is the one thing FR-012a exists to
+    prevent.
   - Where the package carries no catalogue record for the symbol, every `STOCK` cell states the
     absence. Nothing is copied across from `stats` to stand in for it.
 - Missing `stats`, missing modifiers or missing fields render unavailable — as a value, through

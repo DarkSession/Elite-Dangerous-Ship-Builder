@@ -523,11 +523,11 @@ A build whose plant covers everything draws nothing at all — neither the group
 of, nor the share, which the `STATUS` segment states in full.
 
 **A plant that generates nothing draws the badge, without the share.** Every group is dark on such a
-build, so it is the build this warning most needs to be on. Its share has no answer: a division by
-no output is not a small percentage, and `PWR 0%` would be a figure standing in for one that does
-not exist (constitution IV). So the plate opens on the `GRP n OFF` lines instead. Escaping the plate
-on the one build with no power at all, while warning about a build with a single dark group, is the
-gap this closes.
+build, so the condition above holds at its widest. Its share has no answer: a division by no output
+is not a small percentage, and `PWR 0%` would be a figure standing in for one that does not exist
+(constitution IV). So the plate carries the `GRP n OFF` lines alone. A badge conditioned on the
+share instead would warn about a build with one dark group and say nothing about a build with no
+power at all.
 
 The percentage is projected in `src/app/domain/power-heat/power-heat.ts` beside the rail's bar
 shares, not worked out at the badge: every division of two package figures in this application is

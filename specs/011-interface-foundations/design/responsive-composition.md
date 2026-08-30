@@ -30,13 +30,12 @@ window is only asked what it alone knows (feature 010's plate pair,
 ## Shipyard-pattern derivation
 
 - Wide: semantic sortable manifest plus selected detail rail.
-- Medium: the manifest keeps its own composition and the detail is a route-backed drill-in over it,
-  in both orientations. A two-pane medium was allowed here until 2026-08-30; feature 001 measured it
-  and closed it, because a manifest of 48 records is several screenfuls and a detail stacked under
-  them is a screen the reader has to scroll the whole list to reach
-  (`specs/001-ship-selection-and-loading/design/hull-detail.md`, "Every width below the rail's is
-  the sheet's"). A pattern that fits in the medium band is still allowed one; the shipyard's does
-  not.
+- Medium: a two-pane manifest and detail only where the collection fits beside the detail. The
+  shipyard's does not, so its detail is a route-backed drill-in over the manifest in both
+  orientations: a manifest of 48 records is several screenfuls, and a detail stacked under them is a
+  screen the reader has to scroll the whole list to reach (ruled 2026-08-30,
+  `specs/001-ship-selection-and-loading/design/hull-detail.md`, "Every width below the rail's is the
+  sheet's").
 - Compact/zoom: semantic stacked records, named sort/filter controls and full-height detail/library
   layers. Internal horizontal controls may scroll only when labelled and when every choice remains
   discoverable; the page never scrolls horizontally.
@@ -56,11 +55,11 @@ window is only asked what it alone knows (feature 010's plate pair,
 | ------------------------------------ | ----------------------------------- | -------------------------------------- |
 | Confirmation or short form           | Named centered dialog               | Sheet; promote if content does not fit |
 | Searchable collection/detail chooser | Dialog or route-backed detail panel | Full-height drill-in                   |
+| Complex editor                       | In-workspace panel or large dialog  | Full-height editor                     |
+| Global/context action list           | Inline actions or named popup layer | Named sheet/full-height action layer   |
 
 A chooser whose collection does not fit beside its detail in the medium band takes the compact
 column there too. The table gives the roomier option where there is room for it, not a floor.
-| Complex editor | In-workspace panel or large dialog | Full-height editor |
-| Global/context action list | Inline actions or named popup layer | Named sheet/full-height action layer |
 
 All variants share one state/intent contract. Background inertness, title/description, dismissal and
 invoker restoration do not change with presentation.

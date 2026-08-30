@@ -632,6 +632,47 @@ test.describe('the conditions that break layouts', () => {
     await expectNoPlateScrolling(page);
   });
 
+  test('draws one plate on a window too short for the pair, however wide it is', async ({
+    page,
+  }) => {
+    // The pair needs room in both axes (Commander request 2026-08-30). Inline
+    // size alone cannot separate canvas 1c's block from canvas 1d's: a landscape
+    // phone is 844px across and less than one plate tall, while the desktop the
+    // pair belongs on draws it inside a 742px centre column — narrower than the
+    // phone's whole block (`design/hull-anatomy.md`, "Intermediate tablet").
+    //
+    // Asserted at whatever this profile is, in both directions, so a regression
+    // to a width-only rule fails here rather than passing quietly.
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const room = await page.locator('edsb-hull-anatomy').evaluate((host: HTMLElement) => ({
+      wideEnough: host.getBoundingClientRect().width >= 41 * 16,
+      tallEnough: window.matchMedia('(min-height: 30.0625rem)').matches,
+    }));
+
+    // Counted by what is actually laid out rather than by the class: the hidden
+    // side keeps `anatomy__plate--hidden` and the container query gives it
+    // `display: block` again, so the class says which side canvas 1d would drop
+    // and not how many are on screen.
+    const drawn = await page
+      .locator('edsb-hull-anatomy .anatomy__plate')
+      .evaluateAll((plates) => plates.filter((plate) => plate.getClientRects().length > 0).length);
+    const selector = page.locator('edsb-hull-anatomy .anatomy__sides');
+
+    if (room.wideEnough && room.tallEnough) {
+      // Both sides are drawn, so there is nothing for the selector to choose.
+      expect(drawn).toBe(2);
+      await expect(selector).toBeHidden();
+      return;
+    }
+
+    // Either axis short of the pair is canvas 1d's block: one labelled side, and
+    // the selector that reaches the other.
+    expect(drawn).toBe(1);
+    await expect(selector).toBeVisible();
+  });
+
   test('mirrors the layout without mirroring the hull or renaming a mount', async ({ page }) => {
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();

@@ -176,6 +176,10 @@
 // after this one in the document paints over the list.
 .menu__list {
   position: absolute;
+  // The list holds the focus while it is drawn, and the option it is on carries
+  // the ring instead — a ring around the whole scroll box says only that the
+  // menu is open, which the trigger already says.
+  outline: none;
   inset-inline: 0;
   inset-block-start: 100%;
   z-index: 2;
@@ -226,6 +230,16 @@
 
 .menu__option[aria-selected='true'] .menu__option-name {
   font-weight: var(--edsb-text-weight-heading);
+}
+
+// Where the keyboard is, which is not the same thing as what is chosen: a
+// Commander walking the list has moved off the applied effect without applying
+// anything yet. Drawn as the focus ring is drawn everywhere else, inside the
+// option so it does not move the row, because the focus is on the list itself
+// and this is the only thing that says which option the list is on.
+.menu__option--active {
+  outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+  outline-offset: calc(var(--edsb-focus-ring-width) * -1);
 }
 
 // The way out, drawn dashed as the canvas draws it in the card list.

@@ -16,14 +16,14 @@ import { PowerBadge } from './power-badge';
  *
  * Most of this suite is about when the plate is absent. It is a warning, so a
  * dark priority group is its whole condition: a build the plant covers draws
- * nothing, and the share it used to state on every build is the `STATUS`
- * segment's `POWER` line instead.
+ * nothing at all, and the `STATUS` segment's `POWER` line is where the share
+ * stands on every build.
  *
- * The one case that is easy to get backwards is a plant generating nothing.
- * Its share is a division with no answer, and reading the share first excused
- * the badge from the one build where every group is dark — the loudest thing
- * it ever has to say. The groups are read first for that reason, and the last
- * test here fails if that order comes back.
+ * The one case that is easy to get backwards is a plant generating nothing. Its
+ * share is a division with no answer, so a badge that reads the share first
+ * draws nothing on the one build where every group is dark. The groups are read
+ * first for that reason, and the last test here fails if that order comes
+ * back.
  */
 describe('PowerBadge', () => {
   let active: ActiveBuildStore;
