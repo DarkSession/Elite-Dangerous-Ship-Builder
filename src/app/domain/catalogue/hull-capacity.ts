@@ -44,8 +44,13 @@ export interface RestrictedMounts {
  *
  * The optional mounts are partitioned rather than counted twice. `optional`
  * holds the mounts that take anything that fits; `restricted` holds the ones
- * that take one family only. A mount appears in exactly one of them, so the two
- * totals add up to the hull's optional column.
+ * that take one family, each entry carrying its own count. A mount appears in
+ * exactly one of them, so the counts add up to the hull's optional column.
+ *
+ * Every restriction the package publishes is reported. Which of them a screen
+ * states is the screen's own question: hull detail leaves the planetary
+ * approach mount out (001/FR-022), and that is decided where the screen's view
+ * is assembled, not here.
  */
 export interface HullCapacity {
   /** How many tiny utility mounts. Every one is the same size, so there is no run. */
@@ -61,13 +66,10 @@ export interface HullCapacity {
    *
    * Every hull the installed package publishes carries at least one — the
    * planetary approach suite's own mount — and nineteen carry two or three. The
-   * list is still allowed to be empty, and an empty one is drawn as nothing
-   * rather than as an absence: a hull that restricted nothing would have
-   * nothing to say here.
+   * list is still allowed to be empty: a hull that restricted nothing would
+   * have nothing to say here.
    */
   readonly restricted: readonly RestrictedMounts[];
-  /** How many mounts are restricted, across every restriction. */
-  readonly restrictedCount: number;
 }
 
 /**
@@ -116,7 +118,6 @@ export function hullCapacity(slots: readonly BuildSlot[]): HullCapacity {
     optional: groupBySize(optionalSizes),
     optionalCount: optionalSizes.length,
     restricted,
-    restrictedCount: restricted.reduce((total, entry) => total + entry.count, 0),
   };
 }
 

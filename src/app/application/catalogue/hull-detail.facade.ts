@@ -1,6 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import type { OptionalRestriction } from '@elite-dangerous-almanac/core/ships/slots';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../i18n/game-text.presenter';
+import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
 import { hullCapacity, type HullCapacity } from '../../domain/catalogue/hull-capacity';
 import { hullCatalogueEntry, type HullCatalogueEntry } from '../../domain/catalogue/hull-catalogue';
@@ -30,14 +32,17 @@ export interface FactGroupView {
 /**
  * One chip in a slot group.
  *
- * `label` is what the eye reads — a bare size, or a size behind the count of
- * mounts that share it. `description` says the same thing in words, because a
- * chip reading `3 \u00d7 6` is a notation rather than a sentence, and the notation
- * is not what a screen reader should be left with.
+ * A chip states a size, and a multiplier in front of it where more than one
+ * mount shares that size. The two are separate fields because the reference
+ * draws them at different weights. `description` says the same thing in words,
+ * because a chip reading `3 \u00d7 6` is a notation rather than a sentence, and the
+ * notation is not what a screen reader should be left with.
  */
 export interface SlotChipView {
   readonly id: string;
-  readonly label: string;
+  /** The multiplier and its sign, or `null` for a run of one. */
+  readonly multiplier: string | null;
+  readonly size: string;
   readonly description: string;
 }
 
@@ -59,11 +64,11 @@ export interface CoreMountView {
   readonly description: string;
 }
 
-/** The mounts one restriction holds, with the package's phrase for it. */
+/** The mounts one restriction holds, under the restriction's own name. */
 export interface RestrictedGroupView {
   readonly id: string;
-  /** The package's phrase for what the mounts take, never a local paraphrase. */
-  readonly restriction: GameTextPresentation;
+  /** The name of the group: the package's restriction identity, in words. */
+  readonly name: string;
   readonly chips: readonly SlotChipView[];
 }
 
@@ -93,6 +98,31 @@ export type HullDetailView =
     };
 
 const FACT_GROUP_ORDER: readonly HullFactGroup[] = ['performance', 'defence', 'mass', 'prices'];
+
+/**
+ * What the screen calls each restriction it states, and which it states.
+ *
+ * The name is the package's own restriction identity spelled for a reader, and
+ * it names a group of mounts rather than describing what fits in them — the
+ * same kind of string as the three group headings above it, and owned here
+ * (001/FR-022). `getSlotRestrictionLabel` answers a different question: which
+ * module families a mount accepts, in English alone.
+ *
+ * A restriction absent from this table is a restriction the screen does not
+ * state. `planetaryApproachSuite` is the one such restriction: every hull the
+ * package publishes has that mount and it takes the approach suite alone, so a
+ * row for it separates no hull from another. The package still reports it, and
+ * a release that added a restriction would land here as a missing name rather
+ * than as a silent omission — `RESTRICTION_NAMES` is checked against the
+ * package's own set in `hull-detail.facade.spec.ts`.
+ */
+const RESTRICTION_NAMES: Partial<Record<OptionalRestriction, MessageKey>> = {
+  military: 'hullDetail.slots.restriction.military',
+  cargo: 'hullDetail.slots.restriction.cargo',
+  limpetController: 'hullDetail.slots.restriction.limpetController',
+  vesselHangar: 'hullDetail.slots.restriction.vesselHangar',
+  passenger: 'hullDetail.slots.restriction.passenger',
+};
 
 /**
  * Everything the hull-detail screen renders.
@@ -180,6 +210,10 @@ export class HullDetailFacade {
    * counted from a build.
    */
   #capacity(capacity: HullCapacity): HullCapacityView {
+    const stated = capacity.restricted.filter(
+      (group) => RESTRICTION_NAMES[group.restriction] !== undefined,
+    );
+
     return {
       groups: [
         {
@@ -213,10 +247,12 @@ export class HullDetailFacade {
         },
       ],
       restrictedHeading: this.#messages.message('hullDetail.slots.group.restricted'),
-      restrictedTotal: this.#formatters.integer(capacity.restrictedCount),
-      restricted: capacity.restricted.map((group) => ({
+      restrictedTotal: this.#formatters.integer(
+        stated.reduce((total, group) => total + group.count, 0),
+      ),
+      restricted: stated.map((group) => ({
         id: group.restriction,
-        restriction: this.#gameText.slotRestrictionLabel(group.restriction),
+        name: this.#messages.message(RESTRICTION_NAMES[group.restriction]!),
         chips: group.sizes.map((run) => this.#sizeChip(run)),
       })),
     };
@@ -225,18 +261,22 @@ export class HullDetailFacade {
   /**
    * One size chip: the reference's `7` for a lone mount, `3 × 6` for three.
    *
-   * A run of one carries no multiplier — `1 × 7` beside a figure says nothing
-   * the figure did not — and the words behind the chip differ with it, because
-   * "one size 7 mount" and "three size 6 mounts" are different sentences rather
-   * than one sentence with a number substituted into it.
+   * A run of one carries no multiplier. `1 × 7` beside a figure says nothing
+   * the figure did not. The words behind the chip differ with it: "one size 7
+   * mount" and "three size 6 mounts" are two sentences rather than one with a
+   * number substituted into it. The multiplier carries its own sign, so a
+   * locale writes the notation its own way.
    */
   #sizeChip(run: { readonly size: number; readonly count: number }): SlotChipView {
     const size = this.#formatters.integer(run.size);
     const count = this.#formatters.integer(run.count);
     return {
       id: `${run.size}`,
-      label:
-        run.count === 1 ? size : this.#messages.message('hullDetail.slots.run', { count, size }),
+      multiplier:
+        run.count === 1
+          ? null
+          : this.#messages.message('hullDetail.slots.run.multiplier', { count }),
+      size,
       description:
         run.count === 1
           ? this.#messages.message('hullDetail.slots.run.one', { size })

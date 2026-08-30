@@ -2,6 +2,11 @@ import { SHIPS, getShipSlots } from '@elite-dangerous-almanac/core/ships/ships';
 import { enumerateSlots } from '@elite-dangerous-almanac/core/ships/slots';
 import { hullCapacity } from './hull-capacity';
 
+/** How many mounts a capacity's restricted groups hold between them. */
+function restrictedCount(capacity: ReturnType<typeof hullCapacity>): number {
+  return capacity.restricted.reduce((total, group) => total + group.count, 0);
+}
+
 /** The package's own layout for one hull. Every symbol asked for here has one. */
 function slotsOf(symbol: string) {
   return enumerateSlots(getShipSlots(symbol)!);
@@ -18,7 +23,7 @@ describe('hull capacity', () => {
 
     expect(capacity.utility).toBe(slots.filter((slot) => slot.kind === 'utility').length);
     expect(capacity.core).toHaveLength(slots.filter((slot) => slot.kind === 'core').length);
-    expect(capacity.optionalCount + capacity.restrictedCount).toBe(
+    expect(capacity.optionalCount + restrictedCount(capacity)).toBe(
       slots.filter((slot) => slot.kind === 'optional').length,
     );
   });
@@ -37,7 +42,7 @@ describe('hull capacity', () => {
     expect(capacity.optionalCount).toBe(
       slots.filter((slot) => slot.kind === 'optional').length - restricted.length,
     );
-    expect(capacity.restrictedCount).toBe(restricted.length);
+    expect(restrictedCount(capacity)).toBe(restricted.length);
   });
 
   it('reads the core mounts by function, in the package’s own order', () => {
@@ -96,10 +101,10 @@ describe('hull capacity', () => {
       expect(capacity.optionalCount).toBe(
         capacity.optional.reduce((total, run) => total + run.count, 0),
       );
-      expect(capacity.restrictedCount).toBe(
-        capacity.restricted.reduce((total, group) => total + group.count, 0),
-      );
-      expect(capacity.optionalCount + capacity.restrictedCount).toBe(
+      for (const group of capacity.restricted) {
+        expect(group.count).toBe(group.sizes.reduce((total, run) => total + run.count, 0));
+      }
+      expect(capacity.optionalCount + restrictedCount(capacity)).toBe(
         slots.filter((slot) => slot.kind === 'optional').length,
       );
 
@@ -110,16 +115,16 @@ describe('hull capacity', () => {
     }
   });
 
-  it('draws nothing at all where a hull restricts nothing', () => {
+  it('reports no restriction at all where a hull restricts nothing', () => {
     // No hull in the installed package reaches this state — all of them carry a
     // planetary-approach mount — so it is asserted against a layout rather than
-    // a hull. An empty group is an absence, and an absence is not drawn.
+    // a hull. The list is empty rather than an entry holding no mounts.
     const capacity = hullCapacity([
       { kind: 'optional', key: 'Slot01_Size5', size: 5 },
       { kind: 'utility', key: 'TinyHardpoint1' },
     ] as never);
 
     expect(capacity.restricted).toEqual([]);
-    expect(capacity.restrictedCount).toBe(0);
+    expect(capacity.optionalCount).toBe(1);
   });
 });

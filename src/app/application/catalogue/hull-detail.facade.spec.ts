@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
+import { SHIPS, getShipBySymbol, getShipSlots } from '@elite-dangerous-almanac/core/ships/ships';
+import { enumerateSlots } from '@elite-dangerous-almanac/core/ships/slots';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
@@ -153,21 +154,70 @@ describe('HullDetailFacade', () => {
 
     // The optional group is chips of runs, largest first, with no size twice.
     expect(optional?.named).toEqual([]);
-    const sizes = (optional?.chips ?? []).map((chip) => Number(/(\d+)\s*$/u.exec(chip.label)?.[1]));
+    const sizes = (optional?.chips ?? []).map((chip) => Number(chip.size));
     expect(sizes.length).toBeGreaterThan(0);
     expect(sizes).toEqual([...sizes].sort((left, right) => right - left));
     expect(new Set(sizes).size).toBe(sizes.length);
 
     // And the restricted mounts are their own list, one entry per rule, each
-    // saying in the package's own words what it takes.
+    // under the restriction's own name.
     expect(capacity.restrictedTotal).toMatch(/\d/u);
     expect(capacity.restricted.length).toBeGreaterThan(0);
     expect(new Set(capacity.restricted.map((group) => group.id)).size).toBe(
       capacity.restricted.length,
     );
     for (const group of capacity.restricted) {
-      expect(group.restriction.text?.length ?? 0).toBeGreaterThan(0);
+      expect(group.name.length).toBeGreaterThan(0);
       expect(group.chips.length).toBeGreaterThan(0);
+    }
+
+    // The planetary-approach mount is stated nowhere: not as a restriction of
+    // its own, and not among the mounts that take anything (001/FR-022).
+    expect(capacity.restricted.map((group) => group.id)).not.toContain('planetaryApproachSuite');
+  });
+
+  it('names every restriction it states, and states every one but the approach mount', () => {
+    // Read off the package rather than written down here, so a release that
+    // adds a restriction fails this rather than reaching a Commander as an
+    // unnamed group — and one that stops restricting something fails it too.
+    const detail = facade();
+
+    for (const ship of SHIPS) {
+      const layout = getShipSlots(ship.symbol);
+      if (layout === null) {
+        continue;
+      }
+
+      const published = new Set(
+        enumerateSlots(layout)
+          .filter((slot) => slot.kind === 'optional' && slot.restriction !== undefined)
+          .map((slot) => (slot.kind === 'optional' ? slot.restriction : undefined)),
+      );
+      published.delete('planetaryApproachSuite');
+
+      detail.setSymbol(ship.symbol);
+      const view = detail.view();
+      if (view?.kind !== 'populated' || view.capacity === null) {
+        throw new Error(`the package publishes a layout for ${ship.symbol}`);
+      }
+
+      const stated = view.capacity.restricted;
+      expect(new Set(stated.map((group) => group.id)), ship.symbol).toEqual(published);
+
+      // The group's total is the mounts it states and no others, so an approach
+      // mount counted in it would fail here rather than pass as a bigger number
+      // on both sides of the screen.
+      const mounts = enumerateSlots(layout).filter(
+        (slot) =>
+          slot.kind === 'optional' &&
+          slot.restriction !== undefined &&
+          slot.restriction !== 'planetaryApproachSuite',
+      ).length;
+      expect(view.capacity.restrictedTotal, ship.symbol).toBe(String(mounts));
+      for (const group of stated) {
+        expect(group.name.length, ship.symbol).toBeGreaterThan(0);
+        expect(group.chips.length, ship.symbol).toBeGreaterThan(0);
+      }
     }
   });
 
@@ -180,8 +230,8 @@ describe('HullDetailFacade', () => {
     }
 
     const chips = view.capacity.groups.flatMap((group) => group.chips);
-    const lone = chips.filter((chip) => /^\d+$/u.test(chip.label));
-    const runs = chips.filter((chip) => !/^\d+$/u.test(chip.label));
+    const lone = chips.filter((chip) => chip.multiplier === null);
+    const runs = chips.filter((chip) => chip.multiplier !== null);
 
     // The Anaconda's optional column has both, which is why it is the hull the
     // two branches are read off.
@@ -191,11 +241,15 @@ describe('HullDetailFacade', () => {
     // A lone mount carries no multiplier — `1 × 7` beside a figure says nothing
     // the figure did not — and the sentence behind it is singular either way.
     for (const chip of lone) {
-      expect(chip.description).not.toMatch(new RegExp(`\\b${chip.label}\\s*×`, 'u'));
-      expect(chip.description).toContain(chip.label);
+      expect(chip.description).not.toMatch(/×/u);
+      expect(chip.description).toContain(chip.size);
     }
+
+    // A run carries its count and its sign in front of the size, as two fields
+    // rather than one string, so the two halves can be drawn at two weights.
     for (const chip of runs) {
-      expect(chip.label).toMatch(/\d+\s*×\s*\d+/u);
+      expect(chip.multiplier).toMatch(/\d+\s*×/u);
+      expect(chip.size).toMatch(/^\d+$/u);
       expect(chip.description).toMatch(/\d/u);
     }
 

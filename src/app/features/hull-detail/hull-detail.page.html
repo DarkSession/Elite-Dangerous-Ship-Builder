@@ -95,8 +95,15 @@
                 @for (chip of group.chips; track chip.id) {
                   <li class="detail__mount">
                     <!-- `3 × 6` is a notation, so the eye reads it and a reader
-                         is given the sentence it stands for instead. -->
-                    <span class="detail__mount-count" aria-hidden="true">{{ chip.label }}</span>
+                         is given the sentence it stands for instead. The
+                         multiplier is drawn quieter than the size it counts,
+                         and the two stay on one line at any zoom. -->
+                    <span class="detail__mount-figure" aria-hidden="true">
+                      @if (chip.multiplier; as multiplier) {
+                        <span class="detail__mount-multiplier">{{ multiplier }}</span>
+                      }
+                      <span class="detail__mount-count">{{ chip.size }}</span>
+                    </span>
                     <span class="detail__mount-words">{{ chip.description }}</span>
                   </li>
                 }
@@ -114,18 +121,16 @@
 
             @for (group of capacity.restricted; track group.id) {
               <div class="detail__restriction">
-                <p class="detail__restriction-takes">
-                  <span class="detail__restriction-lead">{{ takesLabel() }}</span>
-                  <edsb-game-text
-                    [text]="group.restriction.text"
-                    [language]="group.restriction.language"
-                    [translationState]="group.restriction.translationState"
-                  />
-                </p>
+                <p class="detail__restriction-name">{{ group.name }}</p>
                 <ul class="detail__mount-list">
                   @for (chip of group.chips; track chip.id) {
                     <li class="detail__mount detail__mount--restricted">
-                      <span class="detail__mount-count" aria-hidden="true">{{ chip.label }}</span>
+                      <span class="detail__mount-figure" aria-hidden="true">
+                        @if (chip.multiplier; as multiplier) {
+                          <span class="detail__mount-multiplier">{{ multiplier }}</span>
+                        }
+                        <span class="detail__mount-count">{{ chip.size }}</span>
+                      </span>
                       <span class="detail__mount-words">{{ chip.description }}</span>
                     </li>
                   }
