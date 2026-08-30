@@ -6,7 +6,6 @@ import {
   getLoadoutIssueMessage,
   getSlefDiagnosticMessage,
 } from '@elite-dangerous-almanac/core/i18n/diagnostics';
-import { getEngineeringGroupName } from '@elite-dangerous-almanac/core/i18n/engineering-groups';
 import { getExperimentalEffectDescription } from '@elite-dangerous-almanac/core/i18n/experimental-effect-descriptions';
 import { getExperimentalEffectName } from '@elite-dangerous-almanac/core/i18n/experimental-effects';
 import { getMaterialName } from '@elite-dangerous-almanac/core/i18n/materials';
@@ -14,11 +13,11 @@ import { getMicroResourceName } from '@elite-dangerous-almanac/core/i18n/micro-r
 import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
-import { getShipManufacturer, getShipName } from '@elite-dangerous-almanac/core/i18n/ships';
 import {
   getLoadoutSlotName,
   getSlotRestrictionLabel,
 } from '@elite-dangerous-almanac/core/i18n/slots';
+import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import { FALLBACK_LOCALE, type MessageKey } from './locale-registry';
 import { LocaleStore } from './locale.store';
 
@@ -33,9 +32,11 @@ import { LocaleStore } from './locale.store';
  * string, never echoes a raw symbol as a display name, and keeps no private
  * game-text catalogue.
  *
- * Every leaf helper in the package shares one shape — `(identity, locale) =>
- * string | null` — so one presentation rule covers all of them, and adding a
- * family is one line rather than a new policy.
+ * Every package lookup shares one shape — `(identity, locale) => string | null`
+ * — so one presentation rule covers all of them, and adding a family is one
+ * line rather than a new policy. Most are the package's own i18n leaves. A hull
+ * name and its manufacturer have no leaf, because the game translates neither,
+ * so they are read off the ships catalogue in that same shape.
  */
 
 /** How the presented text relates to the active locale. */
@@ -110,6 +111,31 @@ export function presentGameText<TIdentity>(
 }
 
 /**
+ * A hull's name and its manufacturer, in the one language the game writes them.
+ *
+ * The package publishes no localized lookup for either, because the game does
+ * not translate them: both are proper nouns, and every source that carries a
+ * localized ship column carries the English spelling. So the catalogue answers
+ * for the canonical locale and for no other, and the presentation rule above
+ * then states the name as canonical wherever a Commander is reading something
+ * else — which is what it is, and what a hull name has always been on screen.
+ */
+function shipCatalogueText(field: 'name' | 'manufacturer'): GameTextLookup<string> {
+  return (symbol, locale) =>
+    // A regional tag asks for its own language, which is the rule every package
+    // lookup follows: `de-DE` is German and `en-GB` is English.
+    locale.split('-')[0]?.toLowerCase() === FALLBACK_LOCALE
+      ? (getShipBySymbol(symbol)?.[field] ?? null)
+      : null;
+}
+
+/** A hull's name, as a lookup the presentation rule can take. */
+export const shipNameLookup = shipCatalogueText('name');
+
+/** A hull's manufacturer, as a lookup the presentation rule can take. */
+export const shipManufacturerLookup = shipCatalogueText('manufacturer');
+
+/**
  * The injectable presenter, bound to the committed locale.
  *
  * One method per package family. The identity types come from the package's own
@@ -161,10 +187,6 @@ export class GameTextPresenter {
     return this.present(getExperimentalEffectDescription, fdname);
   }
 
-  engineeringGroupName(groupId: string): GameTextPresentation {
-    return this.present(getEngineeringGroupName, groupId);
-  }
-
   materialName(symbol: string): GameTextPresentation {
     return this.present(getMaterialName, symbol);
   }
@@ -174,11 +196,11 @@ export class GameTextPresenter {
   }
 
   shipName(symbol: string): GameTextPresentation {
-    return this.present(getShipName, symbol);
+    return this.present(shipNameLookup, symbol);
   }
 
   shipManufacturer(symbol: string): GameTextPresentation {
-    return this.present(getShipManufacturer, symbol);
+    return this.present(shipManufacturerLookup, symbol);
   }
 
   slotName(slot: Parameters<typeof getLoadoutSlotName>[0]): GameTextPresentation {

@@ -88,10 +88,18 @@ unavailable and semantic infinity states go to state components instead of numer
 Use stable package identity and the matching installed-package leaf export:
 
 - `i18n/modules`, `i18n/blueprints`, `i18n/experimental-effects`;
-- `i18n/experimental-effect-descriptions`, `i18n/engineering-groups`;
+- `i18n/experimental-effect-descriptions`, `i18n/module-families`;
 - `i18n/materials`, `i18n/micro-resources`;
-- `i18n/ships`, `i18n/slots`, `i18n/pre-engineered`;
+- `i18n/slots`, `i18n/pre-engineered`;
 - `i18n/diagnostics` for loadout, calculation, SLEF and edit diagnostics.
+
+A hull's name and its manufacturer have no leaf export, because the game does not translate them:
+both are proper nouns, and every source that carries a localized ship column carries the English
+spelling. They come from the ships catalogue — `getShipBySymbol(symbol)?.name` and `?.manufacturer`
+— through a lookup that answers for English and for no other language, so a Commander reading
+something else gets the canonical text with the untranslated disclosure the order below requires.
+An engineering group has no name either: its menu is headed by the module's own outfitting family,
+which `i18n/module-families` names.
 
 The caller must establish whether the identity/diagnostic is known from package data and pass any
 package-owned canonical field. The presenter follows this order:

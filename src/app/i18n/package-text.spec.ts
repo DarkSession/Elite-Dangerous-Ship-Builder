@@ -1,5 +1,4 @@
 import { getBlueprintName } from '@elite-dangerous-almanac/core/i18n/blueprints';
-import { getEngineeringGroupName } from '@elite-dangerous-almanac/core/i18n/engineering-groups';
 import { getExperimentalEffectName } from '@elite-dangerous-almanac/core/i18n/experimental-effects';
 import { getMaterialName } from '@elite-dangerous-almanac/core/i18n/materials';
 import {
@@ -10,12 +9,11 @@ import { CORE_MODULES } from '@elite-dangerous-almanac/core/ships/modules-core';
 import { HARDPOINT_MODULES } from '@elite-dangerous-almanac/core/ships/modules-hardpoint';
 import { INTERNAL_MODULES } from '@elite-dangerous-almanac/core/ships/modules-internal';
 import { UTILITY_MODULES } from '@elite-dangerous-almanac/core/ships/modules-utility';
-import { getShipManufacturer, getShipName } from '@elite-dangerous-almanac/core/i18n/ships';
 import { getLoadoutEditErrorMessage } from '@elite-dangerous-almanac/core/i18n/diagnostics';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
-import { presentGameText } from './game-text.presenter';
+import { presentGameText, shipManufacturerLookup, shipNameLookup } from './game-text.presenter';
 import germanCatalogue from './locales/de.json';
 import { BUNDLED_ENGLISH } from './locale-registry';
 
@@ -23,11 +21,13 @@ import { BUNDLED_ENGLISH } from './locale-registry';
  * Game text comes from the installed package, and from nowhere else.
  *
  * A hull's name, its manufacturer and the package's own diagnostics are the
- * Almanac's nouns. This application resolves them through the package's i18n
- * leaves, renders the canonical text with a disclosure when a translation is
- * missing, and says so plainly when the package has nothing — it never invents
- * a string, never echoes a raw symbol as a display name, and keeps no private
- * catalogue of translated game text (FR-020, constitution II).
+ * Almanac's nouns. This application resolves them through the package — the
+ * ships catalogue for the two proper nouns the game does not translate, the
+ * i18n leaves for everything it does — renders the canonical text with a
+ * disclosure when a translation is missing, and says so plainly when the
+ * package has nothing. It never invents a string, never echoes a raw symbol as
+ * a display name, and keeps no private catalogue of translated game text
+ * (FR-020, constitution II).
  */
 
 /** A locale the package certainly does not translate into. */
@@ -38,13 +38,13 @@ describe('package text', () => {
     let renamed = 0;
 
     for (const ship of SHIPS) {
-      const name = presentGameText(getShipName, ship.symbol, 'en');
-      const manufacturer = presentGameText(getShipManufacturer, ship.symbol, 'en');
+      const name = presentGameText(shipNameLookup, ship.symbol, 'en');
+      const manufacturer = presentGameText(shipManufacturerLookup, ship.symbol, 'en');
 
       expect(name.translationState, ship.symbol).toBe('localized');
-      expect(name.text, ship.symbol).toBe(getShipName(ship.symbol, 'en'));
+      expect(name.text, ship.symbol).toBe(shipNameLookup(ship.symbol, 'en'));
       expect(manufacturer.translationState, ship.symbol).toBe('localized');
-      expect(manufacturer.text, ship.symbol).toBe(getShipManufacturer(ship.symbol, 'en'));
+      expect(manufacturer.text, ship.symbol).toBe(shipManufacturerLookup(ship.symbol, 'en'));
 
       if (name.text !== ship.symbol) {
         renamed += 1;
@@ -59,16 +59,16 @@ describe('package text', () => {
   });
 
   it('renders canonical package text with an untranslated disclosure', () => {
-    const presented = presentGameText(getShipName, SHIPS[0]!.symbol, UNTRANSLATED_LOCALE);
+    const presented = presentGameText(shipNameLookup, SHIPS[0]!.symbol, UNTRANSLATED_LOCALE);
 
-    expect(presented.text).toBe(getShipName(SHIPS[0]!.symbol, 'en'));
+    expect(presented.text).toBe(shipNameLookup(SHIPS[0]!.symbol, 'en'));
     expect(presented.language).toBe('en');
     expect(presented.translationState).toBe('canonical');
     expect(presented.disclosureKey).toBe('game-text.untranslated.description');
   });
 
   it('states an absence rather than echoing the identity', () => {
-    const presented = presentGameText(getShipName, 'No_Such_Hull', 'en');
+    const presented = presentGameText(shipNameLookup, 'No_Such_Hull', 'en');
 
     expect(presented).toEqual({
       text: null,
@@ -108,7 +108,10 @@ describe('package text', () => {
     // catalogue that the package could contradict on its next release.
     const nouns = new Set<string>();
     for (const ship of SHIPS) {
-      for (const text of [getShipName(ship.symbol, 'en'), getShipManufacturer(ship.symbol, 'en')]) {
+      for (const text of [
+        shipNameLookup(ship.symbol, 'en'),
+        shipManufacturerLookup(ship.symbol, 'en'),
+      ]) {
         if (text !== null && text.length > 0) {
           nouns.add(text.toLowerCase());
         }
@@ -164,7 +167,7 @@ describe('package text', () => {
 
   it('resolves every package leaf this feature needs through one rule', () => {
     // Each family feature 002 renders — slot label, restriction, blueprint,
-    // effect, engineering group, material — goes through the same presenter, so
+    // effect, material — goes through the same presenter, so
     // the untranslated disclosure and the unavailable answer are the same rule
     // everywhere rather than six near-copies of it (FR-020).
     const build = ShipLoadout.default('Anaconda');
@@ -180,9 +183,6 @@ describe('package text', () => {
     expect(
       presentGameText(getExperimentalEffectName, 'special_engine_cooled', 'en').translationState,
     ).toBe('localized');
-    expect(presentGameText(getEngineeringGroupName, 'thrusters', 'en').translationState).toBe(
-      'localized',
-    );
     expect(presentGameText(getMaterialName, 'Iron', 'en').translationState).toBe('localized');
 
     // The same rule at an untranslated locale: canonical text, disclosed.
