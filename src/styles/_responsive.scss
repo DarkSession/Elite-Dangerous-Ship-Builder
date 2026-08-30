@@ -142,10 +142,29 @@ $bench-columns-region-min: 111.5rem;
   }
 }
 
-// For the one box the mixin above cannot reach: the bench's own column.
+// How short a window may get before the bench stops being bounded to it.
+//
+// A bounded bench divides one screen's height between a chooser that scrolls and
+// an editor that mostly cannot: the three engineering controls are reserved room
+// and the attribute table under them has a floor, so a window short enough puts
+// the editor past the bench, which clips. Below this the column is released and
+// the page carries the bench, which is what every stacked arrangement does
+// anyway (`design/outfitting-workspace.md`, "The bench is bounded where it is
+// three columns").
+//
+// The figure is what the bench cannot fold, measured at the largest hull: the
+// command bar (74), the hull plates (348), the region gap (26) and the editor
+// column at its shortest (547, which is the step bar, the reserved engineering
+// card and the table's own floor). That is 995, rounded up to here.
+$bench-bounded-min-height: 63rem;
+
+// For the one box the mixin above cannot reach: the bench's own column, which is
+// the container the width question is asked of.
 @mixin bench-columns-region {
   @container outfitting (min-width: #{$bench-columns-region-min}) {
-    @content;
+    @media (min-height: #{$bench-bounded-min-height}) {
+      @content;
+    }
   }
 }
 

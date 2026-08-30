@@ -663,6 +663,13 @@
   // text size, simply passes it.
   --edsb-measure-engineering-choices: 11.4375rem; // 183
 
+  // How short the attribute table may get before it stops being a reading. It is
+  // the half of the editor that takes whatever the column has spare, so it is
+  // also the half a short window takes it back from — and the arrangement this
+  // replaced was rejected for leaving that reading four rows tall. Eight rows,
+  // and below it the bench asks the page for the height instead.
+  --edsb-measure-engineering-details: 8rem; // 128
+
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its

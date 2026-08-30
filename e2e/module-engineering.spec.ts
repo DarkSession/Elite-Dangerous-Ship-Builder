@@ -445,14 +445,12 @@ test.describe('engineering costs', () => {
   });
 
   test('keeps the engineering one height as a recipe fills it', async ({ page }) => {
-    // The grade and the effect follow from a recipe, so choosing one used to
-    // grow the engineering card by both of them and move whatever the card
-    // stood over — measured at 834x1112, the editor went from 499px to 623px
-    // and the document from 2692px to 3115px (Commander requests 2026-08-28 and
-    // 2026-08-30). The room the three controls take is kept whether or not the
-    // last two are drawn, so the card is the height it will be before anything
-    // is chosen. Nothing is drawn that is not there: what is reserved is the
-    // room (`design/engineering-editor.md`, "The engineering keeps one height").
+    // The grade and the effect follow from a recipe, so choosing one would grow
+    // the engineering card by both of them and move whatever the card stands
+    // over. The room the three controls take is kept whether or not the last
+    // two are drawn, so the card is the height it will be before anything is
+    // chosen. Nothing is drawn that is not there: what is reserved is the room
+    // (`design/engineering-editor.md`, "The engineering keeps one height").
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
 
@@ -875,6 +873,39 @@ test.describe('the bench’s three columns', () => {
     expect(measured.details.overflow).toBe('auto');
     expect(measured.choices.overflow).toBe('visible');
     expect(measured.choices.scrollable).toBe(false);
+
+    // The bench clips what stands past it, so the shortest window it is bounded
+    // at has to hold the whole of what the editor cannot fold: the step bar, the
+    // reserved engineering card and the table's own floor. A pixel over and the
+    // rest is unreachable, because nothing here scrolls to it
+    // (`design/outfitting-workspace.md`, "The bench is bounded where it is three
+    // columns").
+    const bench = async () =>
+      await page.evaluate(() => {
+        const element = document.querySelector('.outfitting__bench')!;
+        return {
+          clipped: element.scrollHeight - element.clientHeight,
+          document: document.documentElement.scrollHeight,
+          viewport: window.innerHeight,
+        };
+      });
+
+    await page.setViewportSize({ width: 2020, height: 1008 });
+    await expect(async () => {
+      const shortest = await bench();
+      expect(shortest.clipped).toBeLessThanOrEqual(1);
+      expect(shortest.document).toBeLessThanOrEqual(shortest.viewport + 1);
+    }).toPass({ timeout: 5_000 });
+
+    // And a window under it releases the column, which is the stacked
+    // arrangement's own answer: the page carries the bench and there is nothing
+    // to clip.
+    await page.setViewportSize({ width: 2020, height: 960 });
+    await expect(async () => {
+      const released = await bench();
+      expect(released.clipped).toBeLessThanOrEqual(1);
+      expect(released.document).toBeGreaterThan(released.viewport);
+    }).toPass({ timeout: 5_000 });
   });
 
   test('numbers step ③ only where the chooser numbers ① and ②', async ({ page }) => {

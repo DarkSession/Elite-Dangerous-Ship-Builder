@@ -49,10 +49,13 @@ workspace and never creates or owns a second build.
   That was done first: canvas 1c's step strip and the three-column bench are stated once in
   `src/styles/_chrome.scss` instead of once per component, which put the chooser's stylesheet back
   under 10kB with room to spare. `outfitting-workspace.scss` is the whole outfitting screen — the
-  ledger, the centre column, the status rail and the compact foot — it was at 10,018 of 10,240 bytes
-  before any of this, and it has no block left in it that is a component boundary rather than a piece
-  of one screen. The ceiling is raised by 1kB and the reason is written here so the next raise has to
-  argue with it.
+  ledger, the centre column, the status rail and the compact foot — measured 10,127 bytes of 10,240
+  before this change and 10,414 after it, and it has no block left in it that is a component boundary
+  rather than a piece of one screen. A global home was the other candidate and is rejected on the
+  cascade: an emulated-encapsulation stylesheet appends an attribute to every compound selector, so a
+  component's own `.outfitting__centre` outweighs a global rule of the same shape and the global one
+  never takes effect. The ceiling is raised by 1kB and the reason is written here so the next raise
+  has to argue with it.
 - **The bench is bounded where it is three columns. Ruled 2026-08-30 (Commander request), narrowing
   the 2026-08-27 release.** The release below holds wherever the bench is one column under another:
   two panels sharing one screen's height leave the chooser a couple of hundred pixels and the
@@ -67,6 +70,14 @@ workspace and never creates or owns a second build.
   container the three-column question is asked of and a container query cannot style its own
   container. `$bench-columns-region-min` is `$bench-columns-min` plus the two fixed rails either side
   of that column, and the two figures move together.
+
+  It is asked of the window's height as well. A bounded bench divides one screen between a chooser
+  that scrolls and an editor that mostly cannot: the three engineering controls are reserved room and
+  the attribute table under them has a floor. A window shorter than the two of them together puts the
+  editor past the bench, which clips it, and nothing scrolls to what is clipped. So the bound holds
+  from `$bench-bounded-min-height` up, and below it the column is released and the page carries the
+  bench, which is what every stacked arrangement does anyway. The figure is the sum of what the bench
+  cannot fold at the largest hull, and it is written out where it is declared.
 
 - Removal is drawn once, in the fitting panel's own header beside the search, exactly as canvas 1c
   draws `REMOVE MODULE` — and the mount's name is on that same line, not on a bench header above it

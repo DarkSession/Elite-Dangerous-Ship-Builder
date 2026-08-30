@@ -210,12 +210,12 @@ nothing will ever appear and there is nothing to keep a place for.
 A floor, never a cap. A translation that wraps a recipe name, or a doubled text size, simply passes
 it.
 
-**Amended 2026-08-30 (Commander request): the controls come first and the details follow them.** The
-2026-08-30 canvas revision put the details above the controls, and the Commander's call is the other
-way round: with the card above fixed at its floor, the card below is free to take whatever height the
-column has spare, and of the two it is the attribute table that has something to do with the room. A
-weapon publishes around seventy rows against three controls. The order is now the same at both
-placements, which is also canvas 1d's own — its result plate comes after the two it offers.
+**The controls come first and the details follow them** (Commander request 2026-08-30, over the
+2026-08-30 canvas revision, which draws them the other way round). With the card above fixed at its
+floor, the card below is free to take whatever height the column has spare, and of the two it is the
+attribute table that has something to do with the room: a weapon publishes around seventy rows
+against three controls. The order is the same at both placements, and it is canvas 1d's own — its
+result plate comes after the two it offers.
 
 ## Narrow and 400%-zoom composition
 

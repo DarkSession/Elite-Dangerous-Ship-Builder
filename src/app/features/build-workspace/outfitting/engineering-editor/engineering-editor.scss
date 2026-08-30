@@ -196,7 +196,6 @@
 
 .engineering__result {
   flex: 1;
-  min-block-size: 0;
 }
 
 // The one scroller in this panel, and only where the column it is in has a
@@ -210,9 +209,23 @@
 // weapon's seventy rows from being read four at a time
 // (`design/engineering-editor.md`, "Nothing here scrolls").
 @include layout.bench-columns {
+  // Shrinkable, and only the body below carries a floor. A flex item is no
+  // smaller than its own content by default, and this card's content is a table
+  // of around seventy rows: left at that it takes the column's whole height,
+  // the card above it cannot give way, and the two together stand taller than
+  // the bench and are clipped by it. The scroller is one box in.
+  .engineering:not(.engineering--layer) .engineering__result {
+    min-block-size: 0;
+  }
+
+  // The floor, because the card above is reserved room and cannot give way:
+  // every pixel a short column is short comes out of this one, and with nothing
+  // to stop it that is the whole of the table. The window the bench is bounded
+  // to is tall enough to pay both, and shorter windows release the column
+  // rather than squeeze it (`_responsive.scss`, `$bench-bounded-min-height`).
   .engineering:not(.engineering--layer) .engineering__result .engineering__card-body {
     flex: 1;
-    min-block-size: 0;
+    min-block-size: var(--edsb-layout-engineering-details);
     overflow-y: auto;
     overscroll-behavior-block: contain;
   }
