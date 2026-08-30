@@ -43,6 +43,26 @@ is the middle of what that annotation draws. Both are arithmetic over the packag
 coordinates, in the package's own `viewBox` space, so the picture and the marks over it share one
 coordinate system by construction.
 
+## Feature highlights in the raster
+
+The package fills nine categories of feature, each in the hue its own `data-feature-color` names:
+`hardpoint`, `utility_mount`, `canopy`, `engine`, `thruster`, `heat_vent`, `landing_gear`,
+`cargo_hatch` and `fighter_bay`. The hull's line art is the last layer in the file, so it is drawn
+over those fills.
+
+The raster keeps three of them: `hardpoint`, `utility_mount` and `canopy`. Every other category is
+drawn with its fill removed, so its shapes stay in the picture as the outlines the package strokes
+them with. The plate is a map of the mounts a Commander can fit, and the canopy says which end of
+the hull is the front. An engine bell or a landing-gear bay answers no question the plate asks, and
+a filled one competes with the marks drawn over it.
+
+A side draws only the categories its own view has, so a plate keeps whichever of the three its side
+carries. The canopy is drawn on every top view and on no bottom view.
+
+The suppression belongs to the rendering and to nothing else. It is applied while the PNG is drawn,
+it moves no coordinate, and `scripts/extract-schematic-mounts.mts` reads the package's own file, so
+the marks and the geometry under them are unchanged.
+
 ## Build-time audit
 
 The extractor runs the application's own parser, so a file the parser refuses is a file that never

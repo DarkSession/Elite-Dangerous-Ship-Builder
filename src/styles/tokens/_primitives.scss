@@ -283,15 +283,15 @@
   // The same amber, over a drawing whose own ink is nearly black.
   //
   // The Almanac draws a hull schematic's structure in `#17242d` — a navy that
-  // is all but invisible on this ground — and its feature panels in seven
-  // bright hues. Multiplying brightness lifts the lines and blows the panels
-  // out to white with them, so the lift is additive instead:
-  // `brightness(1.5) contrast(0.5)` composes to `out = 0.75 x in + 0.25`, which
-  // raises the near-black ink to a legible step and lands white exactly on
-  // white with nothing clipped. The offset is the whole knob: raise it and the
-  // whole plate greys up, lower it and the structure sinks back into the
-  // ground. The illustrations keep the filter above — they are full-colour
-  // renders and have no black to lift.
+  // is all but invisible on this ground — over feature panels in bright hues of
+  // their own, three of which a plate keeps. Multiplying brightness lifts the
+  // lines and blows the panels out to white with them, so the lift is additive
+  // instead: `brightness(1.5) contrast(0.5)` composes to
+  // `out = 0.75 x in + 0.25`, which raises the near-black ink to a legible step
+  // and lands white exactly on white with nothing clipped. The offset is the
+  // whole knob: raise it and the plate greys up, lower it and the structure
+  // sinks back into the ground. The illustrations keep the filter above — they
+  // are full-colour renders and have no black to lift.
   --edsb-filter-schematic: grayscale(1) brightness(1.5) contrast(0.5) sepia(1) hue-rotate(-18deg)
     saturate(1.6);
 

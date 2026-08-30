@@ -132,6 +132,15 @@ plate holds its whole document at its own ratio at every width.
   PNG and about a kilobyte of JSON, and the picture is drawn as one `image` at the package's own
   `viewBox` inside the same turned group the marks are placed from — so the hull and the marks over
   it cannot drift apart either.
+- **The plate keeps three of the package's feature highlights.** The package fills nine categories
+  of feature in their own hues. The raster keeps `hardpoint`, `utility_mount` and `canopy`, and
+  draws the rest with the fill removed, as the outlines the package strokes them with. The plate is
+  a map of the mounts a Commander can fit, and the canopy says which end of the hull is the front.
+  An engine bell, thruster, heat vent, landing-gear bay, cargo hatch or fighter bay answers no
+  question the plate asks, and a filled one competes with the marks drawn over it. A plate keeps
+  whichever of the three its side draws: the canopy is on every top view and on no bottom view. The rule is in the
+  raster and nowhere else: no coordinate moves, and the extract still reads the package's own file
+  (`contracts/schematic-assets.md`, "Feature highlights in the raster").
 - **The package contract moved to the build.** `svg`, `g`, `path`, `circle`, no script, no style, no
   reference, no foreign element: a file outside that fails the extractor by name rather than reaching
   a plate as a `contractDefect`. What can still go wrong at runtime is a deployment serving something
@@ -140,12 +149,12 @@ plate holds its whole document at its own ratio at every width.
   `pnpm run policy` fails if the installed package has moved past it (FR-009).
 - The drawing's own ink is a near-black navy on a near-black plate, so the schematic takes its own
   filter: an additive lift rather than a multiplied brightness, which raises the structure to a
-  legible step without blowing the package's seven bright feature hues out to white. **The filter is
+  legible step without blowing out to white the feature hues a plate keeps. **The filter is
   declared on an ordinary box around the drawing, not on a group inside it**, and the reason is a
   defect this repository cannot reproduce. The symptom reported was "on iPad OS the hulls are blue";
-  unfiltered, the package's own ink is exactly that — a hull drawn in near-black navy over seven
-  bright feature hues — and the reason a filter would not apply is that it was a CSS filter
-  _function_ on an SVG container element, which WebKit declines. **The fix is confirmed on the
+  unfiltered, the package's own ink is exactly that — a hull drawn in near-black navy over the
+  bright hues of its feature layers — and the reason a filter would not apply is that it was a CSS
+  filter _function_ on an SVG container element, which WebKit declines. **The fix is confirmed on the
   device** (2026-08-26; `e2e/manual/results/webkit-filter.md`). What is confirmed is the plate: the
   hull draws amber there now. The mechanism is the explanation that predicted it rather than
   something measured here, which matters only if the symptom returns — the first thing to check is

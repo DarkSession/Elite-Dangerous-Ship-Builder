@@ -8,6 +8,9 @@
 // resolution is a fraction of the work to draw, and the reference's own
 // artboards use PNGs.
 //
+// A schematic keeps three of the package's feature highlights and drops the
+// rest; see `HIGHLIGHTED_FEATURES` below for which and why.
+//
 // **A schematic PNG is a rendering, not a geometry catalogue.** Every mount's
 // identity and position comes out of the same SVG, through the application's
 // own parser, in `scripts/extract-schematic-mounts.mts` — run that after this
@@ -47,6 +50,36 @@ const WIDTH = 900;
 const HEIGHT = 600;
 
 /**
+ * The feature categories a schematic keeps a highlight for.
+ *
+ * The package fills nine categories of feature in their own hues. A plate is a
+ * map of the mounts a Commander can fit, so the two mount categories keep their
+ * fill, and the canopy keeps its own because it says which end of the hull is
+ * the front. The other six answer no question the plate asks, and a filled one
+ * competes with the marks drawn over it. They are drawn with the fill removed
+ * and stay in the picture as the outlines the package strokes them with
+ * (feature 010, `contracts/schematic-assets.md`).
+ *
+ * A name here that no schematic uses would silently strip a fill it was meant
+ * to keep, and the only evidence would be 96 committed binaries. So the run
+ * reads the categories the package publishes first, and stops before it writes
+ * anything if one of these is not among them.
+ */
+const HIGHLIGHTED_FEATURES = ['hardpoint', 'utility_mount', 'canopy'];
+
+/**
+ * The rule that takes the other fills off.
+ *
+ * A stylesheet rather than an edit to the file: the source stays the package's
+ * own, and a declaration beats the `fill` presentation attribute on the leaf
+ * shapes without anything here rewriting a path.
+ */
+const SCHEMATIC_CSS =
+  `g[data-feature-category]` +
+  HIGHLIGHTED_FEATURES.map((feature) => `:not([data-feature-category="${feature}"])`).join('') +
+  ` *{fill:none}`;
+
+/**
  * The schematics, at their own 3:2 proportion.
  *
  * The plate turns a hull a quarter turn, so what ends up across the plate is
@@ -57,12 +90,12 @@ const SCHEMATIC_WIDTH = 1800;
 const SCHEMATIC_HEIGHT = 1200;
 
 /** One SVG rendered at one size, quantised, written where the application looks. */
-async function rasterise(page, source, target, width, height) {
+async function rasterise(page, source, target, width, height, css = '') {
   const svg = readFileSync(source, 'utf8');
   await page.setViewportSize({ width, height });
   await page.setContent(
     `<style>html,body{margin:0;padding:0;background:transparent}` +
-      `svg{display:block;width:${width}px;height:${height}px}</style>${svg}`,
+      `svg{display:block;width:${width}px;height:${height}px}${css}</style>${svg}`,
   );
   writeFileSync(target, await page.screenshot({ omitBackground: true }));
   execFileSync('convert', [target, '-strip', `PNG8:${target}`]);
@@ -73,7 +106,47 @@ const symbols = readdirSync(SOURCE_ROOT, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 
-const browser = await chromium.launch();
+/** Every side of every hull, whether or not the package ships the file. */
+const schematicSources = symbols.flatMap((symbol) =>
+  ['top', 'bottom'].map((side) => join(SOURCE_ROOT, symbol, `schematic-${side}.svg`)),
+);
+
+/**
+ * Every category the installed package publishes, on the element the rule
+ * selects.
+ *
+ * Read as `g[data-feature-category]` rather than as the attribute anywhere,
+ * because that is what `SCHEMATIC_CSS` selects: a release that moved the
+ * attribute onto a shape would keep every fill, which is the same silent
+ * outcome as a misspelt name.
+ */
+const publishedCategories = new Set();
+for (const source of schematicSources.filter((path) => existsSync(path))) {
+  for (const [, category] of readFileSync(source, 'utf8').matchAll(
+    /<g[^>]*\sdata-feature-category="([^"]+)"/gu,
+  )) {
+    publishedCategories.add(category);
+  }
+}
+
+const unseen = HIGHLIGHTED_FEATURES.filter((feature) => !publishedCategories.has(feature));
+if (unseen.length > 0) {
+  const published =
+    publishedCategories.size === 0
+      ? 'no schematic group carries one at all'
+      : `the package publishes ${[...publishedCategories].sort().join(', ')}`;
+  process.stderr.write(
+    `no schematic group carries the feature ${unseen.join(', ')}; ${published}\n`,
+  );
+  process.exit(1);
+}
+
+// The same override the end-to-end suite takes, for the same reason: where the
+// installed Chromium is not the build Playwright pins, point at the executable
+// rather than editing what is pinned (`playwright.config.ts`).
+const browser = await chromium.launch({
+  ...(process.env['E2E_CHROMIUM_PATH'] ? { executablePath: process.env['E2E_CHROMIUM_PATH'] } : {}),
+});
 const page = await browser.newPage({
   viewport: { width: WIDTH, height: HEIGHT },
   deviceScaleFactor: 1,
@@ -105,6 +178,7 @@ for (const symbol of symbols) {
       join(directory, `schematic-${side}.png`),
       SCHEMATIC_WIDTH,
       SCHEMATIC_HEIGHT,
+      SCHEMATIC_CSS,
     );
     schematics += 1;
   }
@@ -112,5 +186,6 @@ for (const symbol of symbols) {
 
 await browser.close();
 process.stdout.write(
-  `converted ${converted} of ${symbols.length} hull illustrations and ${schematics} schematics\n`,
+  `converted ${converted} of ${symbols.length} hull illustrations and ${schematics} schematics, ` +
+    `keeping the ${HIGHLIGHTED_FEATURES.join(', ')} fills\n`,
 );
