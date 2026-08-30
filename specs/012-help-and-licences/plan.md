@@ -151,11 +151,12 @@ records are created when the work they record is performed, not at plan time; se
 ### Source Code (repository root)
 
 ```text
-legal/
-└── almanac/
-    ├── LICENSE                         # exact installed-package source-distribution mirror
-    ├── THIRD_PARTY_NOTICES.md          # exact installed-package source-distribution mirror
-    └── README.md                       # mirror ownership, sync path and review rule
+docs/
+└── legal/
+    └── almanac/
+        ├── LICENSE                     # exact installed-package source-distribution mirror
+        ├── THIRD_PARTY_NOTICES.md      # exact installed-package source-distribution mirror
+        └── README.md                   # mirror ownership, sync path and review rule
 
 scripts/
 ├── help-topic-definitions.mjs         # exact IDs/message keys and tooling-only governing refs

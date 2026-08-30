@@ -279,7 +279,7 @@ The installed package supplies its version, ship assets and the provenance of ga
 calculations. The repository `LICENSE` supplies the exact project-specific Frontier disclaimer. Its
 GitHub location is where the complete terms live, is audited at build time, and — since 2026-08-26 —
 is linked from the summary line that names them. The package's own `LICENSE` is the second such
-document: `legal/almanac/LICENSE` is a byte-exact mirror of it, which is what the generator verifies
+document: `docs/legal/almanac/LICENSE` is a byte-exact mirror of it, which is what the generator verifies
 on every build, and the link points at the same file in the package's own repository.
 
 ## Success Criteria

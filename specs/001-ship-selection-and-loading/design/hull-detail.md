@@ -11,7 +11,7 @@
 - A ruled two-column `FactList` of the eight figures the reference's metric grid carries: speed, boost, shield, armour, hull mass, hardness, crew and mass lock, each with its localized unit where the reference draws one.
 - The mount classes the hull carries, under a section rule, as `<count> <CLASS>` chips with the classes it has none of left out.
 - The three slot groups under section rules of the same shape, in the canvas's order: `UTILITY MOUNTS` with its count and nothing else, `CORE INTERNALS` with its total and seven chips reading the package's name for each mount and its size, and `OPTIONAL INTERNALS` with its total and one chip per size run (see [what the hull carries](#what-the-hull-carries)).
-- `RESTRICTED SLOTS` on its own rule, in the hot tone, where the hull has any: the count of restricted mounts on the trailing edge, and under it one entry per restriction — what those mounts take, in the package's own words, over their sizes as chips. Drawn only where the hull has one; every hull the installed package publishes has at least one.
+- `RESTRICTED SLOTS` on its own rule, in the hot tone, where the hull has any: the count of restricted mounts on the trailing edge, and under it one entry per restriction — the restriction's name over its sizes as chips. Drawn only where the hull has a restriction besides the planetary-approach mount, which is left out; nineteen of the 48 hulls the installed package publishes do.
 - One `HULL PRICE` row: the ready-to-fly cost, on a rule of its own.
 - Primary `ActionButton` requesting stock-build creation, below the wide composition only, present only when `getDefaultLoadout(symbol)` succeeds (see [the wide rail has no action](#the-wide-rail-has-no-action)).
 - `InlineNotice`/`ErrorSummary` for default unavailability or unknown symbol.
@@ -48,11 +48,11 @@ trailing edge.
 
 The three groups are drawn differently because they say different things:
 
-| Group                | Total                                 | Chips                                                                                                                                                                              |
-| -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `UTILITY MOUNTS`     | The count, amber, in place of a total | None. Every utility mount is the same size, so a chip per mount would be one number written eight times                                                                            |
-| `CORE INTERNALS`     | Always `7`                            | Seven, in the package's own core order, each reading the mount's name and its size — the canvas abbreviates them `PWR 8`, `THR 7`, `FSD 6`, `LIFE 7`, `DIST 7`, `SENS 8`, `FUEL 5` |
-| `OPTIONAL INTERNALS` | The number of unrestricted mounts     | One per run of equal sizes, largest first, a run of more than one prefixed by its multiplier — `7`, `3 × 6`, `3 × 5`, `2 × 4`, `3`, `2`, `1`                                       |
+| Group                | Total                                 | Chips                                                                                                                                                                                                                                         |
+| -------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UTILITY MOUNTS`     | The count, amber, in place of a total | None. Every utility mount is the same size, so a chip per mount would be one number written eight times                                                                                                                                       |
+| `CORE INTERNALS`     | Always `7`                            | Seven, in the package's own core order, each reading the mount's name and its size — the canvas abbreviates them `PWR 8`, `THR 7`, `FSD 6`, `LIFE 7`, `DIST 7`, `SENS 8`, `FUEL 5`                                                            |
+| `OPTIONAL INTERNALS` | The number of unrestricted mounts     | One per run of equal sizes, largest first, a run of more than one prefixed by its multiplier — `7`, `3 × 6`, `3 × 5`, `2 × 4`, `3`, `2`, `1`. The canvas draws `3 ×` at the micro step in faint ink and the size at the compact step in amber |
 
 The canvas abbreviates the seven core functions to fit an 8.5px chip of tracked monospace. This
 screen does not: a core mount's name is game text, and the package names it — `Power Plant`,
@@ -63,30 +63,44 @@ recorded departure from the reference, and it is the same one the ledger's mount
 
 `RESTRICTED SLOTS` follows. It is the same rule in the hot tone, its hairline tinted to match, and
 the count of restricted mounts on its trailing edge where the other three carry their own total.
-Under it, one entry per restriction the hull has: what those mounts take, in the package's own
-words, over their sizes grouped the way the optional ones are.
+Under it, one entry per restriction the hull has: the restriction's name, over its sizes grouped the
+way the optional ones are.
 
 The canvas draws that group with a single `MILITARY ONLY` note against an empty chip row, and hides
-the group entirely on the hull it draws. It is a mock of one restriction on one hull, and the shape
-does not survive contact with the package: `getShipSlots(...).optional[].restriction` is one of six
-values, all 48 hulls carry at least one restricted mount — the planetary approach suite has its own
-— and nineteen carry two or three, the Type-11 Prospector three. A single note on the rule's edge
-cannot say what an Anaconda's military and planetary mounts are, so the group takes a list.
+the group entirely on the hull it draws. Sixteen hulls carry the military restriction the canvas
+mocks. Three carry another: the Panther Clipper Mk II restricts two mounts to cargo, the Lynx
+Highliner three to passenger cabins, and the Type-11 Prospector one to limpet controllers and
+another to vessel hangars. A single note on the rule's edge cannot name both of the Prospector's, so
+the group takes a list.
 
-`MILITARY ONLY` is the canvas's own wording, not the package's. The package's phrase for that value
-is `reinforcement packages and shield cell banks`, from `getSlotRestrictionLabel`, and it answers in
-English alone — so the phrase is drawn through `edsb-game-text` and carries the untranslated
-disclosure in every other locale, exactly as a module name does (011/FR-020, constitution VI).
+The name is the package's restriction identity spelled for a reader — `Military`, `Cargo`,
+`Limpet controller`, `Vessel hangar`, `Passenger` — and it is a string the application owns, in the
+localisation layer beside the three group headings above it. It heads the mounts under it rather
+than describing what fits in them, which is how `MILITARY ONLY` sits on the canvas.
 
-The two optional groups **partition** the column. `OPTIONAL INTERNALS` is the mounts that take
-anything of their kind that fits; `RESTRICTED SLOTS` is the mounts that take one family. A mount is
-counted in one of them and never both, so the two totals add up to the hull's optional column and
-neither figure is a subset of the other silently. The canvas's own `12` is the partition: the hull
-it draws has fourteen optional mounts, two of them restricted, and `12` is what is left.
+Military, cargo and limpet-controller mounts each take several of the package's outfitting families,
+so the package has no one noun for them. Vessel-hangar and passenger mounts take one family each,
+and `getOutfittingFamilyName` names those families in every locale the package carries; for those
+two this application holds a word it could have asked for. Naming three restrictions here and asking
+the package for two would draw one of the five as a different kind of thing, so all five are named
+here. A package name for a restriction replaces all five. A core mount is not this case: the package
+publishes its name, so a table of abbreviations here would fork a noun the package already has.
 
-A hull with no restricted mount draws no rule and no empty group — a heading over nothing states an
-absence the canvas does not. No hull in the installed package reaches that state; the rule stands
-because a release that dropped a restriction should draw one group fewer rather than an empty one.
+`getSlotRestrictionLabel` is not what the group draws. Its phrase for the military value is
+`reinforcement packages and shield cell banks`, which describes the modules a mount accepts rather
+than naming the group, and it answers in English alone. Feature 002's ledger keeps that phrase,
+because a row a Commander is fitting a module into is asking what the mount takes.
+
+**The planetary-approach mount is left out.** Every one of the 48 hulls has one and it takes the
+approach suite alone, so a row for it separates no hull from another. It is drawn in neither
+optional group and counted in neither total. It is the only mount both groups leave out.
+
+`OPTIONAL INTERNALS` is the mounts that take anything of their kind that fits; `RESTRICTED SLOTS` is
+the mounts that take one family, less the approach mount. So the hull's optional column is the two
+totals plus that one mount, and neither total is a subset of the other.
+
+Twenty-nine hulls restrict nothing else, and they draw no rule and no empty group — a heading over
+nothing states an absence the canvas does not.
 
 Everything here is `getShipSlots(symbol)`: `utility`, `core`, `optional` and the `restriction` on an
 optional mount, read as the package publishes them. Nothing is counted from a build, and the
@@ -157,14 +171,14 @@ thing on this screen that creates a build.
 
 ## States
 
-| State                            | Required presentation and behavior                                                                                                                                                                                                                                                                                                                                                                                                      |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Populated                        | Every figure the reference inspector carries is shown with its unit, and every slot group with its total; no build is created by entry.                                                                                                                                                                                                                                                                                                 |
-| No restricted mount              | The restricted rule and its entries are not drawn. Nothing states that the hull has none: the other three groups are complete without it, and a heading over an empty group would read as a fact about the hull rather than as the absence of one. No hull the installed package publishes reaches this state — all 48 carry a planetary-approach mount — so it is a guard against a future layout rather than a state on screen today. |
-| Artwork loading                  | Facts remain usable, and the stock action with them wherever it is drawn; the loading mark is drawn inside the artwork plate so nothing below it moves when the illustration arrives, and the plate carries the mark alone — a hull that is no longer the hull being asked for is hidden rather than held up until the new one decodes. The load state stays textually available beside the mark.                                       |
-| Artwork missing/offline uncached | Temporary same-origin asset absence is explained; the artwork coordinator retries when connectivity returns without a page reload; action remains usable.                                                                                                                                                                                                                                                                               |
-| Unknown symbol                   | Named error, catalogue-return action, no facts guessed, no build mutation/action.                                                                                                                                                                                                                                                                                                                                                       |
-| Package factory failure          | Blocking error is announced once; current build and route state remain.                                                                                                                                                                                                                                                                                                                                                                 |
+| State                            | Required presentation and behavior                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Populated                        | Every figure the reference inspector carries is shown with its unit, and every slot group with its total; no build is created by entry.                                                                                                                                                                                                                                                                             |
+| No restricted mount              | The restricted rule and its entries are not drawn. Nothing states that the hull has none: the other three groups are complete without it, and a heading over an empty group would read as a fact about the hull rather than as the absence of one. Twenty-nine of the 48 hulls the installed package publishes are in this state, because the planetary-approach mount every hull carries is left out of the group. |
+| Artwork loading                  | Facts remain usable, and the stock action with them wherever it is drawn; the loading mark is drawn inside the artwork plate so nothing below it moves when the illustration arrives, and the plate carries the mark alone — a hull that is no longer the hull being asked for is hidden rather than held up until the new one decodes. The load state stays textually available beside the mark.                   |
+| Artwork missing/offline uncached | Temporary same-origin asset absence is explained; the artwork coordinator retries when connectivity returns without a page reload; action remains usable.                                                                                                                                                                                                                                                           |
+| Unknown symbol                   | Named error, catalogue-return action, no facts guessed, no build mutation/action.                                                                                                                                                                                                                                                                                                                                   |
+| Package factory failure          | Blocking error is announced once; current build and route state remain.                                                                                                                                                                                                                                                                                                                                             |
 
 ## Creation transaction
 
@@ -200,7 +214,7 @@ Measured from canvas 1a's inspector rail and canvas 1b's `sd-screen`.
 | Facts          | A two-column grid whose one-pixel gaps expose an amber ground as rules; each cell is a tracked monospace label over a larger monospace value; a final cell spans both columns                                                                                                                             |
 | Hardpoints     | A section rule — tracked label, a hairline filling the width, the total on the trailing edge — over count-and-size pills                                                                                                                                                                                  |
 | Slot groups    | The same rule three times over — `UTILITY MOUNTS` carrying its count in amber where a total goes and no chips, `CORE INTERNALS` and `OPTIONAL INTERNALS` carrying a quiet total over chips on the inset ground inside an amber hairline, each chip a tracked monospace label beside a larger amber figure |
-| Restricted     | The same rule in the hot tone with a hot-tinted hairline, the count of restricted mounts where a total goes, over one entry per restriction — the package's phrase for what those mounts take, over chips of the same shape. Absent where the hull has none                                               |
+| Restricted     | The same rule in the hot tone with a hot-tinted hairline, the count of restricted mounts where a total goes, over one entry per restriction — the restriction's name, over chips of the same shape. Absent where the hull restricts nothing but the approach mount                                        |
 | Price          | Its own rule, the label on the leading edge and the value in large monospace amber with a quiet `cr` suffix                                                                                                                                                                                               |
 | Actions        | None on canvas 1a's rail, which ends at the price. Canvas 1b's sheet draws two on its footer plate — the stock-hull action filled amber, condensed 700 tracked 0.22em, full width, and the saved-build button beside it, which this screen does not draw because the command bar already carries it       |
 | Panel          | The rail takes its content's height rather than the row's, and closes with the same amber hairline that runs down its leading edge                                                                                                                                                                        |

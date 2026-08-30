@@ -41,7 +41,7 @@
 // It is here rather than on the `g` inside the picture because WebKit does not
 // apply a CSS filter *function* to an SVG container element. Hulls were
 // reported blue on iPadOS, and unfiltered the package's own ink is exactly that
-// — near-black navy structure over seven bright feature hues. Confirmed fixed
+// — near-black navy structure over bright feature hues. Confirmed fixed
 // on the device, 2026-08-26 (`e2e/manual/results/webkit-filter.md`).
 //
 // Nothing automated guards it. The engine matrix is Chromium and Firefox by
@@ -112,7 +112,7 @@
   pointer-events: none;
 }
 
-// The package draws its technical layers in seven hues of its own, over a hull
+// The package draws its technical layers in hues of its own, under a hull
 // whose structure is drawn in a near-black navy. The schematic filter pushes
 // them all into the interface's one amber and lifts that navy off the ground it
 // is drawn on, so the ship reads as a technical drawing rather than as a shape

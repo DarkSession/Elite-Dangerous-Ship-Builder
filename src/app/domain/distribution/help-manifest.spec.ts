@@ -41,7 +41,7 @@ const manifest = (overrides: Partial<HelpManifestV1> = {}): HelpManifestV1 =>
     sourceDistribution: [
       {
         id: 'almanacLicense',
-        mirrorPath: 'legal/almanac/LICENSE',
+        mirrorPath: 'docs/legal/almanac/LICENSE',
         byteLength: 2426,
         sha256: DIGEST,
       },

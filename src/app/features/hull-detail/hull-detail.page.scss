@@ -84,6 +84,23 @@
   @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-accent-strong));
 }
 
+// A size chip's figure: the count of mounts, then the size they share. One row
+// that does not wrap, so `3 × 6` never breaks into two numbers at 400% zoom.
+.detail__mount-figure {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--edsb-space-inline-tight);
+}
+
+// The multiplier in front of a size, at the canvas's own weighting: a step
+// smaller, tracked, and in faint ink beside the amber figure. The size is the
+// figure a Commander is reading, so the two are not drawn alike (canvas 1a
+// `#sy-opt`).
+.detail__mount-multiplier {
+  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+}
+
 .detail__mount-label,
 .detail__blurb {
   @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
@@ -106,13 +123,12 @@
   @include layout.visually-hidden;
 }
 
-// One restriction: what its mounts take, then their sizes.
+// One restriction: its name, then the sizes of the mounts it holds.
 .detail__restriction {
   @include layout.stack(var(--edsb-space-stack-tight));
 }
 
-.detail__restriction-takes {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+.detail__restriction-name {
   @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
 
   margin: 0;
@@ -120,14 +136,10 @@
   overflow-wrap: anywhere;
 }
 
-.detail__restriction-lead {
-  color: var(--edsb-text-faint);
-}
-
 // The restricted group is drawn in the reference's hot tone: its rule, its
 // heading and its chips all say the mounts take one family only, so the tone is
-// never the only thing saying it — the group's own heading and the phrase under
-// it carry the meaning in words.
+// never the only thing saying it — the group's own heading and the restriction
+// name under it carry the meaning in words.
 .detail__mounts--restricted {
   .detail__section {
     color: var(--edsb-text-danger-quiet);

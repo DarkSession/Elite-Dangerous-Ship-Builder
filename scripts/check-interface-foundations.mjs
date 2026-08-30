@@ -1996,8 +1996,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the separator are language-neutral.',
     'hullDetail.bar.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
-    'hullDetail.slots.run':
-      'A composition pattern; both variables and the multiplication sign are language-neutral. The words the chip stands for are hullDetail.slots.run.one and .many, which are translated.',
+    'hullDetail.slots.run.multiplier':
+      'A composition pattern; both the variable and the multiplication sign are language-neutral. The words the chip stands for are hullDetail.slots.run.one and .many, which are translated.',
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
     'app.document-title.default': 'The product name again.',

@@ -204,16 +204,61 @@ test.describe('hull detail', () => {
     );
     expect(sizes).toEqual([...sizes].sort((left, right) => right - left));
 
-    // The restricted group says what its mounts take, in words, and its total
-    // is counted separately from the optional one beside it.
+    // The restricted group names each restriction it holds, and its total is
+    // counted separately from the optional one beside it.
     await expect(group('restricted').locator('.detail__restriction')).not.toHaveCount(0);
-    for (const words of await group('restricted')
-      .locator('.detail__restriction-takes')
-      .allInnerTexts()) {
-      expect(words.replace(/\s+/gu, ' ').trim().length).toBeGreaterThan(
-        englishMessages['hullDetail.slots.restricted.takes'].length,
-      );
+    const restrictionNames = [
+      englishMessages['hullDetail.slots.restriction.military'],
+      englishMessages['hullDetail.slots.restriction.cargo'],
+      englishMessages['hullDetail.slots.restriction.limpetController'],
+      englishMessages['hullDetail.slots.restriction.vesselHangar'],
+      englishMessages['hullDetail.slots.restriction.passenger'],
+    ];
+    // The rule draws a restriction's name in the same upper case as the group
+    // headings above it, so the comparison is against the message's own words
+    // rather than against the casing the stylesheet applies to them.
+    const stated = (
+      await group('restricted').locator('.detail__restriction-name').allInnerTexts()
+    ).map((words) => words.replace(/\s+/gu, ' ').trim().toLowerCase());
+    expect(stated.length).toBeGreaterThan(0);
+    for (const name of stated) {
+      expect(restrictionNames.map((label) => label.toLowerCase())).toContain(name);
     }
+
+    // A restriction the screen does not name is a restriction it does not draw,
+    // which is how the planetary-approach mount every hull carries stays off
+    // the group: the allowlist above is what holds that, and the unit suite
+    // holds it over all 48 hulls against the package's own layout. Here the
+    // group's total is held against the mounts the group itself states, so a
+    // count that included something the list does not show would fail
+    // (001/FR-022).
+    const restrictedTotal = Number(
+      (await group('restricted').locator('.detail__section-total').innerText()).replace(/\D/gu, ''),
+    );
+    const restrictedRuns = await group('restricted')
+      .locator('.detail__mount-words')
+      .allInnerTexts();
+    expect(
+      restrictedRuns.reduce((total, words) => total + Number(/^(\d+)\b/u.exec(words)?.[1] ?? 1), 0),
+    ).toBe(restrictedTotal);
+  });
+
+  test('draws no restricted rule at all on a hull that restricts nothing it states', async ({
+    page,
+  }) => {
+    // Twenty-nine of the 48 hulls restrict the planetary-approach mount and
+    // nothing else, and that mount is left out, so the group is absent rather
+    // than empty. The Sidewinder is one of them (001/FR-022).
+    await page.goto('/ships/SideWinder');
+    await expect(page.getByRole('heading', { level: 2, name: 'Sidewinder' })).toBeVisible();
+
+    const optional = detail(page).locator('[data-slot-group="optional"]');
+    await expect(optional).toHaveCount(1);
+    await expect(detail(page).locator('[data-slot-group="restricted"]')).toHaveCount(0);
+
+    // Nothing states the absence either: no heading, and no restriction name.
+    const text = await readableText(page);
+    expect(text).not.toContain(englishMessages['hullDetail.slots.group.restricted'].toLowerCase());
   });
 
   test('shows the hull price as one headline figure in credits', async ({ page }) => {

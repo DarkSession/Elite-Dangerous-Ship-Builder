@@ -15,7 +15,7 @@ That leaves one thing this project can get wrong and never see: a CSS **filter f
 element WebKit does not apply it to. Chromium and Firefox apply such a filter on an SVG container
 element (`svg`, `g`) as readily as on an ordinary box, so both report a pass either way. WebKit does
 not, and the plate then draws the package's own ink: hull structure in the near-black navy the
-Almanac uses, over the seven bright hues of its feature panels. It reads as a blue ship on a dark
+Almanac uses, over the bright hues of its feature panels. It reads as a blue ship on a dark
 plate, and it is what was reported from an iPad on 2026-08-26.
 
 The fix is to declare the filter on an ordinary box — `.schematic__picture`, which wraps the drawing
@@ -53,7 +53,7 @@ Every run records all of it. A result without versions cannot be reproduced or t
    because its underside carries the densest artwork.
 2. Look at the `HULL ANATOMY` plates in `MOUNTS` mode, both sides.
 3. **Expected**: the hull reads as an amber technical drawing on the plate's own ground, in the same
-   hue as the rest of the interface. The Almanac's seven feature hues are pushed into that one hue
+   hue as the rest of the interface. The feature hues a plate keeps are pushed into that one hue
    rather than surviving as their own colours, and the structure is lifted clear of the ground rather
    than sinking into it.
 4. **The failure this catches**: the hull reads as blue or blue-grey, visibly a different palette

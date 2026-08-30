@@ -34,7 +34,7 @@ Expected:
 - the repository `LICENSE` destination matches its exact allowlist and contains no query/fragment,
   and each of the three destinations emitted matches its own allowlisted address and purpose;
 - installed Almanac `LICENSE` and `THIRD_PARTY_NOTICES.md` exactly equal tracked
-  `legal/almanac/` mirrors.
+  `docs/legal/almanac/` mirrors.
 
 `help:manifest:check` validates those sources and writes nothing; it does not compare against the
 artifact on disk, which carries the commit id and would therefore differ after any commit for a

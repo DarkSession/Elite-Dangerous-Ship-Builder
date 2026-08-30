@@ -5,7 +5,7 @@ import {
   OUTFITTING_FAMILIES,
   type OutfittingFamilyId,
 } from '@elite-dangerous-almanac/core/ships/module-families';
-import { getShipName } from '@elite-dangerous-almanac/core/i18n/ships';
+import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import { provideIsolatedLocaleEnvironment } from './testing/localization-harness';
 import { GameTextPresenter, presentGameText } from './game-text.presenter';
 import { provideLocalization } from './i18n.providers';
@@ -108,7 +108,7 @@ describe('GameTextPresenter', () => {
   it('covers every package family through one presentation rule', () => {
     const presented = presenter();
 
-    expect(presented.shipName('sidewinder').text).toBe(getShipName('sidewinder', 'en'));
+    expect(presented.shipName('sidewinder').text).toBe(getShipBySymbol('sidewinder')?.name);
     expect(presented.blueprintName('not-a-blueprint').translationState).toBe('unavailable');
     expect(presented.materialName('not-a-material').translationState).toBe('unavailable');
     expect(presented.microResourceName('not-a-resource').translationState).toBe('unavailable');
@@ -116,7 +116,6 @@ describe('GameTextPresenter', () => {
     expect(presented.experimentalEffectDescription('not-an-effect').translationState).toBe(
       'unavailable',
     );
-    expect(presented.engineeringGroupName('not-a-group').translationState).toBe('unavailable');
     expect(presented.shipManufacturer('not-a-ship').translationState).toBe('unavailable');
   });
 

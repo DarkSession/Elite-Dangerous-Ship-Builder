@@ -46,11 +46,11 @@ async function fixtureRepo({ version = '1.4.0', license } = {}) {
     license ?? (await readFile(join(REPO, 'LICENSE'), 'utf8')),
     'utf8',
   );
-  await mkdir(join(root, 'legal/almanac'), { recursive: true });
-  await cp(join(PACKAGE_ROOT, 'LICENSE'), join(root, 'legal/almanac/LICENSE'));
+  await mkdir(join(root, 'docs/legal/almanac'), { recursive: true });
+  await cp(join(PACKAGE_ROOT, 'LICENSE'), join(root, 'docs/legal/almanac/LICENSE'));
   await cp(
     join(PACKAGE_ROOT, 'THIRD_PARTY_NOTICES.md'),
-    join(root, 'legal/almanac/THIRD_PARTY_NOTICES.md'),
+    join(root, 'docs/legal/almanac/THIRD_PARTY_NOTICES.md'),
   );
 
   return root;
@@ -129,7 +129,7 @@ describe('the help manifest generator', () => {
     // that moved, a package that is no longer the one this application reads —
     // rather than letting a build discover it.
     const drifted = await fixtureRepo();
-    const mirror = join(drifted, 'legal/almanac/LICENSE');
+    const mirror = join(drifted, 'docs/legal/almanac/LICENSE');
     await writeFile(mirror, `${await readFile(mirror, 'utf8')} `, 'utf8');
 
     await refuses(drifted, /is not byte-identical to the installed package/, { mode: 'check' });
@@ -292,7 +292,7 @@ describe('the help manifest generator', () => {
   describe('the boundary between what this project grants and what it does not', () => {
     it('refuses a mirror that has drifted by a single byte', async () => {
       const root = await fixtureRepo();
-      const path = join(root, 'legal/almanac/LICENSE');
+      const path = join(root, 'docs/legal/almanac/LICENSE');
       await writeFile(path, `${await readFile(path, 'utf8')} `, 'utf8');
 
       await refuses(root, /is not byte-identical to the installed package/);
@@ -300,7 +300,7 @@ describe('the help manifest generator', () => {
 
     it('refuses a mirror that is not there to compare', async () => {
       const root = await fixtureRepo();
-      await rm(join(root, 'legal/almanac/THIRD_PARTY_NOTICES.md'));
+      await rm(join(root, 'docs/legal/almanac/THIRD_PARTY_NOTICES.md'));
 
       await refuses(root, /THIRD_PARTY_NOTICES\.md: cannot be read/);
     });

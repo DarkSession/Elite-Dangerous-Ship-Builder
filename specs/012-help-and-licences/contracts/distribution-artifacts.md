@@ -15,8 +15,8 @@ The generator reads only local installed/repository artifacts plus explicit rele
 | resolved Almanac `package.json`                          | exact package name and version                                 |
 | resolved Almanac `LICENSE`                               | package terms mirrored in source distribution                  |
 | resolved Almanac `THIRD_PARTY_NOTICES.md`                | package notices mirrored in source distribution                |
-| `legal/almanac/LICENSE`                                  | tracked mirror of installed package licence                    |
-| `legal/almanac/THIRD_PARTY_NOTICES.md`                   | tracked mirror of installed package notices                    |
+| `docs/legal/almanac/LICENSE`                             | tracked mirror of installed package licence                    |
+| `docs/legal/almanac/THIRD_PARTY_NOTICES.md`              | tracked mirror of installed package notices                    |
 | three audited URL constants                              | the two complete-legal-terms destinations and the source one   |
 | release-workflow evidence or non-release CI/git evidence | build classification and identifier                            |
 
@@ -152,7 +152,7 @@ live-catalogue version.
 ## Source-distribution mirrors
 
 Both installed Almanac legal inputs must be valid UTF-8, non-empty and non-whitespace. Their tracked
-counterparts under `legal/almanac/` must be byte-for-byte identical. Normal generation/check commands
+counterparts under `docs/legal/almanac/` must be byte-for-byte identical. Normal generation/check commands
 are read-only with respect to tracked mirrors and fail on any drift.
 
 The two mirrored artifacts are `LICENSE` and `THIRD_PARTY_NOTICES.md`, and that count is derived
@@ -243,7 +243,7 @@ There is no runtime missing/loading/error fallback for these failures.
 - Add a generator/check command before every Angular command importing the generated module.
 - Run generator tests through `pnpm run test:scripts` and therefore `pnpm run check`.
 - Verify generated/runtime exact-text bytes and identity values in unit and production E2E tests.
-- Keep generated output and temporary test fixtures ignored; keep `LICENSE` and `legal/almanac/`
+- Keep generated output and temporary test fixtures ignored; keep `LICENSE` and `docs/legal/almanac/`
   tracked.
 - Do not use Angular's generic `3rdpartylicenses.txt` as a replacement for required source mirrors or
   as modal content.

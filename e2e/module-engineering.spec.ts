@@ -357,12 +357,22 @@ test.describe('engineering costs', () => {
     // request, reversing waves 5 and 9). Its rarity marks, its ordering, its
     // counts and its Merc Coin row are covered where it lives, in
     // `cost-and-materials.spec.ts`.
+    //
+    // Read as the block and the heading it would carry, not as the word: the
+    // package's description of a lightweight effect says its components are
+    // "crafted from lightweight materials", and game text inside the panel is
+    // not this panel making a materials list.
     const editor = page.locator('.engineering').first();
-    await expect(editor.locator('.materials, edsb-material-cost-list')).toHaveCount(0);
-    await expect(editor).not.toContainText(/materials/i);
+    await expect(
+      editor.locator('edsb-cost-materials, .block--materials, .rail-materials, .materials-box'),
+    ).toHaveCount(0);
+    await expect(
+      editor.getByText(englishMessages['cost-materials.materials.heading'], { exact: true }),
+    ).toHaveCount(0);
     // A completed grade is the only thing this application models, so no
-    // surface calls the recipe a roll (FR-013, reference review).
-    await expect(editor).not.toContainText(/roll/i);
+    // surface calls the recipe a roll (FR-013, reference review). Read as a
+    // word: `Controller` is a package noun that carries the letters.
+    await expect(editor).not.toContainText(/\broll(s|ed|ing)?\b/iu);
 
     // Gone from the panel, not from the build: once the job is on the module,
     // the rail states its materials. Counted rather than seen — at compact

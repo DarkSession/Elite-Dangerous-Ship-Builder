@@ -610,7 +610,7 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.2.5`. Table 1 was overwritten in
+The current application dependency is exactly pinned to Almanac `0.2.6`. Table 1 was overwritten in
 place on 2026-08-22, while it is still pre-release and no link has been published against it, so
 that a module's pre-engineered variants contribute their blueprints to its candidate set — see
 "Where neither form fits" above. It was overwritten again on 2026-08-26, under the same rule, so

@@ -94,7 +94,6 @@ export class HullDetailPage {
   readonly manufacturerLabel = this.#messages.messageSignal('hullDetail.fact.manufacturer');
   readonly sizeLabel = this.#messages.messageSignal('hullDetail.fact.size');
   readonly mountsHeading = this.#messages.messageSignal('hullDetail.slots.group.hardpoint');
-  readonly takesLabel = this.#messages.messageSignal('hullDetail.slots.restricted.takes');
   readonly priceLabel = this.#messages.messageSignal('hullDetail.price');
 
   readonly view = this.#detail.view;

@@ -105,26 +105,45 @@ browser and share builds by URL. SLEF import and export are specified in
   utility mounts it has, the size of each of its seven core-internal mounts named by function, the
   sizes of its unrestricted optional-internal mounts, and how many mounts each of those three groups
   holds. Optional mounts the package restricts to one module family MUST be stated separately from
-  the rest, under a group of their own, with what each of them is restricted to. A hull with no
-  restricted mount MUST state nothing about restriction — an empty group is not drawn as an absence.
+  the rest, under a group of their own, with each restriction named. A hull with no restricted mount
+  to state MUST state nothing about restriction — an empty group is not drawn as an absence.
 
-  The two optional groups **partition** the hull's optional column: a mount is counted in one of
-  them and never in both, so the two totals add up to what the hull actually offers. The reference
-  draws its optional total as `12` for a hull whose column is fourteen mounts, two of them
-  restricted, which is the partition and not a discrepancy.
+  **The planetary-approach mount is left out.** All 48 hulls the installed package publishes carry
+  one, and it takes the approach suite and nothing else. A mount every hull has separates no hull
+  from another, so it MUST appear in neither optional group and MUST be counted in neither total. It
+  is the only mount both groups leave out. Nineteen hulls restrict something else as well; the other
+  twenty-nine draw no restricted group.
 
-  Every hull the installed package publishes carries at least one restricted mount — the planetary
-  approach suite has a mount of its own on all 48 — and nineteen of them carry two or three
-  restrictions between them. So the group MUST take a hull's restrictions as a list rather than as
-  one, and MUST name each restriction beside the mounts it holds. The reference draws a single
-  `MILITARY ONLY` note against an empty chip row, which is one restriction on a mocked hull; the
-  application states each restriction the package actually publishes for the hull in front of it.
+  Each total MUST count the mounts of its own group and nothing else. The hull's optional column is
+  therefore the two totals plus the approach mount, and neither total is a subset of the other.
 
-  The restriction MUST be named in the package's own words, through
-  `getSlotRestrictionLabel`, and MUST carry the untranslated disclosure where the package has no
-  entry for the active locale — the same rule every other game noun on this screen follows
-  (011/FR-020, constitution VI). `MILITARY ONLY` is the reference's own wording for one of the six
-  values and is not a string this application owns.
+  Sixteen hulls restrict mounts to military modules, one to cargo, one to passenger cabins, and one
+  to both limpet controllers and vessel hangars. So the group MUST take a hull's restrictions as a
+  list rather than as one, and MUST name each restriction beside the mounts it holds. The reference
+  draws a single `MILITARY ONLY` note against an empty chip row, which is one restriction on a
+  mocked hull; the application states every restriction the package publishes for the hull in front
+  of it.
+
+  **The application names each restriction**: `Military`, `Cargo`, `Limpet controller`,
+  `Vessel hangar` and `Passenger`, resolved through the localisation layer like every other string
+  the application owns. The name is the package's restriction identity spelled for a reader, and it
+  heads a group of mounts rather than describing what fits in them.
+
+  Constitution VI gives the package the names of ships, modules, blueprints, effects and materials. A
+  restriction is none of those: it is a category in the package's slot model, and the group takes its
+  name rather than a module's. Three of the five span several of the package's outfitting families —
+  military takes reinforcement packages and shield cell banks, cargo takes racks and fuel tanks,
+  limpet controller takes every limpet family — so the package has no one noun for them. Two are one
+  family each, and `getOutfittingFamilyName` names those families in every locale the package
+  carries. Naming three restrictions here and asking the package for two would draw one of the five
+  as a different kind of thing, so all five are named here. A package name for a restriction replaces
+  all five.
+
+  `getSlotRestrictionLabel` says which module families a mount accepts —
+  `reinforcement packages and shield cell banks` for a military mount. It describes the contents
+  rather than naming the group, it answers in English alone, and the screen MUST NOT head a
+  restricted group with it. Feature 002's ledger keeps it, because a row a Commander is fitting a
+  module into is asking what the mount takes.
 
   This is what the hull offers, not what a build has put in it. The outfitting ledger states the
   second (canvas 1c), one row per mount, and it stays feature 002's. Every size, count and

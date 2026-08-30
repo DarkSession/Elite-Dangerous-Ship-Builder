@@ -101,7 +101,7 @@ Evidence that source distributions retain package-owned terms.
 | --------------- | ------------------------------------ | ---------------------------------------- |
 | `id`            | `almanacLicense` \| `almanacNotices` | required package document                |
 | `installedPath` | build-time path                      | authoritative installed package artifact |
-| `mirrorPath`    | repository-relative path             | tracked `legal/almanac/` mirror          |
+| `mirrorPath`    | repository-relative path             | tracked `docs/legal/almanac/` mirror     |
 | `byteLength`    | positive integer                     | installed/mirror byte count              |
 | `sha256`        | 64 lowercase hex chars               | installed/mirror digest                  |
 
@@ -278,6 +278,6 @@ HelpManifestV1 + locale + BrowserHelpTopic[] --> HelpDialogViewModel
         (ExternalDestination is verified above and projected into neither)
 HelpDialogState ------------------------------> shared HelpDialog visibility
 
-installed package legal files <==byte equality==> legal/almanac mirrors
+installed package legal files <==byte equality==> docs/legal/almanac mirrors
                                               (build evidence only)
 ```
