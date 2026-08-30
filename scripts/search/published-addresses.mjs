@@ -180,7 +180,7 @@ export function declaredOrigin(source) {
 }
 
 /**
- * A document with its XML comments removed, so nothing inside one is read.
+ * What a document says outside its XML comments, so nothing inside one is read.
  *
  * The body is "anything but `--`" rather than a lazy `[\s\S]*?`, because XML
  * forbids `--` inside a comment and this does not validate the file: the lazy
@@ -189,12 +189,28 @@ export function declaredOrigin(source) {
  * delimiters of a malformed comment standing, which is what `readSitemap`
  * refuses on.
  *
- * One pass therefore leaves some documents holding a delimiter still — a
- * nested `<!<!-- -->--` reassembles one — so this is deliberately not a
- * sanitiser and nothing may treat it as one.
+ * **This is not a sanitiser and nothing may treat it as one.** One pass leaves
+ * some documents holding a delimiter still — a nested `<!<!-- -->--`
+ * reassembles one — and looping until none is left would be unpredictable from
+ * the input. The leftovers are what the caller acts on.
+ *
+ * Written as "keep what lies between the comments" rather than as a replace,
+ * because removing a multi-character delimiter from a string reads as an
+ * attempt to make that string safe, which this is not. Same regular expression
+ * and the same single left-to-right pass over non-overlapping matches, so the
+ * result is identical; the difference is only in what the code claims to be.
  */
 export function withoutXmlComments(document) {
-  return document.replace(/<!--(?:[^-]|-[^-])*-->/g, '');
+  const kept = [];
+  let cut = 0;
+
+  for (const comment of document.matchAll(/<!--(?:[^-]|-[^-])*-->/g)) {
+    kept.push(document.slice(cut, comment.index));
+    cut = comment.index + comment[0].length;
+  }
+  kept.push(document.slice(cut));
+
+  return kept.join('');
 }
 
 /**
