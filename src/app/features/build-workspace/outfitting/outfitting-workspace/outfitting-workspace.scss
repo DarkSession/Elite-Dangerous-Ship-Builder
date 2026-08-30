@@ -271,53 +271,12 @@
   // bounded by the column either").
 
   // Two columns is not yet enough room for the canvas's third track, so the
-  // rail has no column: it is the strip's `STATUS` segment.
-  .outfitting__status-rail {
-    grid-column: 1 / -1;
-  }
-
-  // And the panel that segment opens is drawn where the strip's own panels are
-  // drawn: under the strip, at the head of the centre column. Placed at the end
-  // of the grid instead it opened 1,304px below the segment that opened it, on
-  // a page the segment did not move — so pressing `STATUS` did nothing a
-  // Commander could see (Commander request 2026-08-30).
-  //
-  // `display: contents` is what lets a box between two of the column's children
-  // be one that is not a child of it. The column is already released while this
-  // panel is open — the strip is showing a mode rather than the mounts, which
-  // is the `--dashboard` case above — so there is no bound here to lose, and
-  // the anatomy and the bench simply take their own rows of the grid.
-  //
-  // Guarded against the compact arrangement, which is a flex column with its
-  // own order and reaches this container query on a short viewport.
-  .outfitting--status:not([data-composition='compact']) {
-    .outfitting__centre {
-      display: contents;
-    }
-
-    // The rail spans the ledger and the centre alike, so the ledger is what
-    // holds the column open across all three of the rows beside it. An absent
-    // row is a row of no height, so the span costs nothing when one is.
-    .outfitting__ledger-region {
-      grid-row: span 3;
-    }
-
-    edsb-hull-anatomy {
-      grid-column: 2;
-      order: 1;
-    }
-
-    .outfitting__status-rail {
-      grid-column: 2;
-      grid-row: auto;
-      order: 2;
-    }
-
-    .outfitting__bench {
-      grid-column: 2;
-      order: 3;
-    }
-  }
+  // rail has no column at all: it is the strip's `STATUS` segment, drawn in the
+  // centre column beside the strip that opens it, with canvas 1d's six key
+  // readings under it (`outfitting-workspace.html`, `statusIsGuest`). A band
+  // spanning the two columns instead lands under the taller of them — the
+  // ledger is a screen tall on its own — so the panel opened a screen or more
+  // below the segment that opened it (Commander request 2026-08-30).
 
   // A dashboard is not a pair of plates.
   //
@@ -757,9 +716,10 @@
 // The compact artboard is not the wide one stacked. It opens with the mode
 // strip and whatever that has open, then the six key readings, then the
 // category tabs and the ledger, and closes with the sticky pair of actions for
-// whichever mount is marked. The DOM stays in the wide composition's order —
-// which is the reading order the three regions were written in — and this is
-// where the artboard's own order is asked for (Commander request 2026-08-26).
+// whichever mount is marked. The notices, the ledger and the middle track keep
+// one order in the document at every width — the reading order the three regions
+// were written in — and this is where the artboard's own order of them is asked
+// for (Commander request 2026-08-26).
 // Keyed to the composition the region reports rather than to a container query
 // of its own. The two would disagree: a short viewport takes the compact
 // arrangement whatever the region's width is, which a width query cannot ask,

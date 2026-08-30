@@ -115,13 +115,15 @@ do not mutate the active build until confirmed.
 - Grades below the one the descriptor starts at are drawn **hatched and pressable**: a bespoke
   Mercenary table begins at grade 2, the article was bought at grade 1, and that grade is one the
   article really has (wave 5, wave 6). The hatch crosses the whole cell, as the canvas draws it, and
-  the cell takes the quiet amber wash whichever artboard is drawing it. The wash is what makes the
-  number on the cell readable: hatched over the solid amber fill instead, a near-black number
-  measures 1.19:1 wherever the hatch crosses it, and no single ink clears 4.5:1 against both a
-  bright amber stroke and the dark ground between, which are 7.11:1 apart. On the wash the ordinary
-  ink reads at 12.46:1 on the cell and 4.97:1 on the stroke, and the stroke is 2.51:1 against the
-  cell it marks. That is the one pair of grounds a number can be written across (Commander request
-  2026-08-30).
+  the cell takes the page's own ground whichever artboard is drawing it. The ground is what lets the
+  mark and the number on it clear different floors on the same two bands: the hatch measures 3.21:1
+  against the cell (SC 1.4.11) and the ordinary ink 4.62:1 on the stroke and 14.80:1 between strokes
+  (SC 1.4.3). Neither of the other grounds manages both — over the solid amber fill a near-black
+  number is 1.19:1 wherever the hatch crosses it and no single ink clears 4.5:1 against two bands
+  7.11:1 apart, and over the quiet amber wash the strongest hatch a number can be read on is 2.51:1,
+  which is below the non-text floor and is also the ground an unchosen in-range cell already carries
+  on canvas 1d. The state is never the hatch alone: the cell says it is outside the recipe in its own
+  accessible name (Commander request 2026-08-30; `design/token-evidence.md`, "The hatched cell").
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect — drawn
   only once a recipe is chosen. An effect menu or a "no values are resolved" line standing over an
   empty selection is a section about nothing (wave 4).

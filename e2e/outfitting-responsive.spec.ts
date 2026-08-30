@@ -6,6 +6,7 @@ import {
   chooserOffered,
   editorOffered,
   isCompactWorkspace,
+  statusRailIsColumn,
   openChooser,
   openChooserRows,
   openEditor,
@@ -141,9 +142,11 @@ test.describe('the composition this width has room for', () => {
         return {
           selector,
           frozen: style.position === 'sticky',
-          // A region spanning the whole grid is a band under the columns rather
-          // than a column beside them, and a band draws no vertical seam.
-          band: style.gridColumnEnd === '-1',
+          // A region is a column of this grid only if it is an item of it. The
+          // status rail is one at the widest arrangement and nowhere else: below
+          // that it is the anatomy strip's `STATUS` panel, drawn inside the
+          // centre column, and a panel draws no vertical seam.
+          column: node.parentElement?.classList.contains('outfitting') === true,
           height: node.getBoundingClientRect().height,
         };
       });
@@ -167,7 +170,7 @@ test.describe('the composition this width has room for', () => {
 
     const frozen = measured.columns.filter((column) => column.frozen);
     const seams = measured.columns.filter(
-      (column) => column.selector !== '.outfitting__centre' && !column.band,
+      (column) => column.selector !== '.outfitting__centre' && column.column,
     );
 
     if (drawn === 'compact') {
@@ -184,7 +187,7 @@ test.describe('the composition this width has room for', () => {
       // is not bounded by the column either").
       //
       // So: every region that draws a seam is frozen, and the status rail is
-      // exempt exactly when this width draws it as a band under the columns.
+      // exempt exactly when this width draws it as a panel rather than a column.
       expect(seams.length).toBeGreaterThanOrEqual(1);
       expect(seams.every((column) => column.frozen)).toBe(true);
     }
@@ -221,9 +224,10 @@ test.describe('the composition this width has room for', () => {
     }
   });
 
-  test('keeps the same source order in every composition', async ({ page }) => {
+  test('reads in the order it is drawn, in every composition', async ({ page }) => {
     await openStockBuild(page);
     const compact = await isCompactWorkspace(page);
+    const railIsColumn = await statusRailIsColumn(page);
     // The two actions are drawn for whichever mount is marked, so at compact
     // width one is marked before the order is read.
     if (compact) {
@@ -240,10 +244,11 @@ test.describe('the composition this width has room for', () => {
           .filter((name) => name.length > 0),
       );
 
-    // Feedback, then the ledger, then the middle track, then the status rail —
-    // the same DOM at every width, arranged differently. A composition that
-    // reordered the document would give a reader a different screen from the
-    // one drawn.
+    // Feedback, then the ledger, then the middle track — the same three at
+    // every width, in the same order. What follows them is what that width
+    // draws: a reader meets the regions in the order they are on the screen,
+    // and a composition that put them in the document in some other order would
+    // give a reader a different screen from the one drawn.
     expect(order).toEqual([
       // The region's own heading, hidden because neither canvas draws one.
       'visually-hidden',
@@ -259,23 +264,34 @@ test.describe('the composition this width has room for', () => {
       // over the selected mount's bench, in one column so the bench stays under
       // the plates (feature 010).
       'outfitting__centre',
-      // Canvas 1d's six key readings and its two mount actions, drawn only at
-      // that width: the strip goes above the tabs and the actions under the
-      // ledger the canvas draws them under, and both are between the middle
-      // track and the rail in the document
-      // (`design/outfitting-workspace.md`, "The compact key figures").
-      ...(compact ? ['outfitting__key-figures', 'outfitting__bench-actions'] : []),
-      // Canvas 1c's third track, and canvas 1d's Status stack. It is last in
-      // the document at every width: a band under the bench until there is
-      // room for the full `392px 1fr 306px` grid, and the trailing column after
-      // that (feature 009).
-      'outfitting__status-rail',
+      // Canvas 1d's two mount actions, drawn only at that width, under the
+      // ledger the canvas draws them under.
+      ...(compact ? ['outfitting__bench-actions'] : []),
+      // Canvas 1c's third track, and only where there is room for the full
+      // `392px 1fr 306px` grid. Below that the rail has no column: it is the
+      // strip's `STATUS` panel, inside the middle track above (feature 009).
+      ...(railIsColumn ? ['outfitting__status-rail'] : []),
     ]);
 
     const centre = await page
       .locator('.outfitting__centre > *')
-      .evaluateAll((nodes) => nodes.map((node) => node.tagName.toLowerCase()));
-    expect(centre).toEqual(['edsb-hull-anatomy', 'div']);
+      .evaluateAll((nodes) =>
+        nodes.map(
+          (node) => node.className.toString().trim().split(/\s+/)[0] || node.tagName.toLowerCase(),
+        ),
+      );
+
+    // Inside that track, the strip first and the bench last, with the two
+    // regions the strip draws as guests between them: the panel `STATUS` opens
+    // and canvas 1d's six key readings under it. Both are drawn where the strip
+    // that opens them is, which is the only place at those widths that is on the
+    // same screen as it (`design/outfitting-workspace.md`, "The status rail is a
+    // segment wherever it has no column").
+    expect(centre).toEqual([
+      'edsb-hull-anatomy',
+      ...(railIsColumn ? [] : ['outfitting__status-rail', 'outfitting__key-figures']),
+      'outfitting__bench',
+    ]);
   });
 
   test('is accessible in the composition this width draws', async ({ page }, testInfo) => {

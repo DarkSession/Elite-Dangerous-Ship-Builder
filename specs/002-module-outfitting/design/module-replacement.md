@@ -100,17 +100,18 @@ that left. What the two requests above are about is how far a Commander scrolls 
 and the status rail, which is not changed by what stands beside the list. The bound stays where those
 requests put it.
 
-**The rail's 264px is a floor and a share, amended 2026-08-26 (Commander request).** It is a fifth
-of the canvas's 1322px centre column, and held at that one number it is a share at one width and a
-sliver at every other: at 2560 the pane beside it ran mostly empty row while seventeen family names
-went on wrapping inside it. So the rail takes 20% of the chooser's own width — the canvas's own
-ratio — bounded at 20rem, past which a family name has the width it needs and the pixels belong to
-the rows.
+**The rail's 264px is a share, amended 2026-08-26 and 2026-08-30 (Commander requests).** Held at
+that one number it is the canvas's own proportion at one width and nothing like it at any other: at
+2560 the pane beside it ran mostly empty row while seventeen family names went on wrapping inside it,
+and at the narrowest column that draws a rail at all it took two fifths of it — 264 of 638 — with the
+rows it exists to open squeezed into what was left.
 
-**And a share at the narrow end too, amended 2026-08-30 (Commander request).** Held at 264px below
-the canvas's own width, the rail was two fifths of the narrowest column that draws a rail at all —
-264 of 638 — with the rows it exists to open squeezed into what was left. It is the same fifth at
-both ends now, floored at 11rem, which is the width a family name reads in.
+So it is a share of the chooser's own column, bounded at 20rem, past which a family name has the
+width it needs and the pixels belong to the rows. The share is taken against that column rather than
+against the bench because that is the box the rail is a track of: the editor beside it is the bench's
+third track, not a second track of this grid. Canvas 1c draws the rail at 264px of a chooser column
+of 872 — its own 264 and 594 tracks with the 14px between them — which is three tenths of it. Drawn:
+192px at the narrowest bench that draws three columns, 263px at the canvas's own width, and 320px at 2560.
 
 **The declared height is a cap, and a column is better than a cap. Amended 2026-08-30 (Commander
 request).** `--edsb-layout-manifest-pane` is what the rail and the pane are held to while nothing

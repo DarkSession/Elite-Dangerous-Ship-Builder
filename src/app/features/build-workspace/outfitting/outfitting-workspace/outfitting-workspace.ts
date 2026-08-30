@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import type { SlotKind } from '@elite-dangerous-almanac/core/ships/slots';
 import { engineeringSummary } from '../../../../application/outfitting/engineering-summary';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
@@ -98,6 +99,7 @@ const HISTORY_REDO_MARK = '\u21b7';
 @Component({
   selector: 'edsb-outfitting-workspace',
   imports: [
+    NgTemplateOutlet,
     BuildStatus,
     CostMaterials,
     DefenceSummary,

@@ -415,8 +415,7 @@
   // the wrong columns; canvas 1a's own `1fr 150px 84px`, once the `Mcr` column
   // it draws between them is taken out (feature 001 build-library design).
   --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
-  --edsb-layout-family-rail: clamp(
-    var(--edsb-measure-family-rail-floor),
+  --edsb-layout-family-rail: min(
     var(--edsb-measure-family-rail-share),
     var(--edsb-measure-family-rail)
   );

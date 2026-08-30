@@ -86,6 +86,22 @@ alone" — and the argument for this plate is written out in
 | ----------------------- | -------------------------------- | ------------------------------------- | -------- | ---------- | ------- |
 | `--edsb-text-on-accent` | `--edsb-palette-bg-deep` #0a0a0b | `--edsb-surface-accent-solid` #ff8c1a | 4.5:1    | **8.50:1** | PASS    |
 
+## The hatched cell
+
+A grade the recipe cannot reach is drawn as a hatch across the whole cell. The
+mark and the number on it have to clear different floors on the same two bands,
+and the ground is what makes both possible: the quiet amber wash an in-range
+cell already carries leaves the strongest hatch a number can be read on at
+2.51:1, below the non-text floor. The cell takes the page's own ground instead.
+The state is never the hatch alone — the cell says it is outside the recipe in
+its own accessible name (`grade-selector.ts`, `optionLabel`).
+
+| Token                         | Foreground / mark                 | Background               | Required | Measured    | Verdict |
+| ----------------------------- | --------------------------------- | ------------------------ | -------- | ----------- | ------- |
+| `--edsb-surface-accent-hatch` | `--edsb-palette-amber-a55` @ 0.55 | `--edsb-surface-hatched` | 3:1      | **3.21:1**  | PASS    |
+| `--edsb-text-primary`         | `--edsb-palette-ink` #e8ded1      | the hatch stroke         | 4.5:1    | **4.62:1**  | PASS    |
+| `--edsb-text-primary`         | `--edsb-palette-ink` #e8ded1      | `--edsb-surface-hatched` | 4.5:1    | **14.80:1** | PASS    |
+
 ## Decorative tokens — exempt, and constrained
 
 These are below 3:1 by construction. They exist for optical separation. A

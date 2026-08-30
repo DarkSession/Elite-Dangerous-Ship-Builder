@@ -67,7 +67,7 @@ export class GradeSelector {
   /**
    * True where this grade is below the one the recipe starts at.
    *
-   * Drawn striped rather than refused. A Merc-Coin article bought at grade 2
+   * Drawn hatched rather than refused. A Merc-Coin article bought at grade 2
    * can still be taken back down to 1, and a cell that could not be pressed
    * would make that a thing a Commander can see and not do (wave 5).
    */

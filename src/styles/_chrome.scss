@@ -208,3 +208,83 @@
     margin-block-start: calc(var(--edsb-target-size) + var(--edsb-space-stack));
   }
 }
+
+// What scrolls inside the bench, and only where the bench is actually bounded.
+//
+// Two questions have to be one here. `bench-bounded` asks the width and the
+// window's height; the workspace also releases the column whenever the anatomy
+// strip has a dashboard open, because a dashboard is a panel of figures as tall
+// as the build has to say and the page is the better carrier for it. Asked
+// separately, pressing `POWER` over a three-column bench released the column and
+// left these scrollers on: a 928px list with 1668px still to scroll, starting
+// 937px down a page that scrolled too, and the chooser's declared height lifted
+// in the one state nothing was bounding it.
+//
+// Written here rather than in the two components because the fact is the
+// workspace's. A component stylesheet has its own attribute appended to every
+// compound it writes, so neither of them can name `.outfitting--dashboard` at
+// all — and a global rule of the same shape as a component's own loses to it on
+// specificity, which is why each selector below runs the whole way down from the
+// region.
+@include layout.bench-bounded {
+  // The declared height is a cap while nothing above the list says how tall it
+  // may be: unbounded, a list of four hundred rows is four hundred rows tall and
+  // the page is that much longer.
+  //
+  // Bounded, the cap is lifted and the column decides: the two scrollers take
+  // the row they share, which is everything the column has left under the step
+  // bar. The room is there, and left unused it is empty row beside a list that
+  // scrolls (Commander request 2026-08-30). No floor is stated with it — the
+  // column's own height is the floor, and a figure larger than the column would
+  // be clipped by the bench rather than honoured.
+  // Named through the centre column as well, so the selector outweighs the
+  // component's own: an emulated stylesheet appends an attribute to every
+  // compound it writes, so `:host([data-manifest='rail']) .candidates__pane`
+  // arrives here as four, and a global rule that ties loses on source order.
+  .outfitting--bench:not(.outfitting--dashboard)
+    .outfitting__centre
+    .outfitting__bench
+    .candidates__rail,
+  .outfitting--bench:not(.outfitting--dashboard)
+    .outfitting__centre
+    .outfitting__bench
+    .candidates__pane {
+    max-block-size: none;
+  }
+
+  // Shrinkable, and only the body below carries a floor. A flex item is no
+  // smaller than its own content by default, and this card's content is a table
+  // of around seventy rows: left at that it takes the column's whole height, the
+  // card above it cannot give way, and the two together stand taller than the
+  // bench and are clipped by it. The scroller is one box in.
+  .outfitting--bench:not(.outfitting--dashboard)
+    .outfitting__bench
+    .engineering:not(.engineering--layer)
+    .engineering__result {
+    min-block-size: 0;
+  }
+
+  // The one scroller in this panel. The attribute table is the half with
+  // something to do with the room — a weapon publishes around seventy rows
+  // against the three controls above it — so it takes what the column has left
+  // and scrolls the rest, on the floor below, because the card above is reserved
+  // room and cannot give way (Commander request 2026-08-30).
+  //
+  // A containing block as well, so the box actually clips what it scrolls. Every
+  // comparison row carries a direction drawn only for a reader, positioned out
+  // of the page the standard way; without this their containing block is the
+  // card outside the scroller, and around a hundred of them then stand past the
+  // bench — which is `overflow: hidden`, so the bench scrolls with no scrollbar
+  // and one `scrollIntoView` takes the whole step strip behind its own clip.
+  .outfitting--bench:not(.outfitting--dashboard)
+    .outfitting__bench
+    .engineering:not(.engineering--layer)
+    .engineering__result
+    .engineering__card-body {
+    position: relative;
+    flex: 1;
+    min-block-size: var(--edsb-layout-engineering-details);
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
+  }
+}

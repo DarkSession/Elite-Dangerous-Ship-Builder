@@ -37,7 +37,7 @@ content and are marked as such.
 | -------------------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
 | Ledger / master pane                   | 320 CSS px          | A slot card's exact key, one wrapped module name and its 44px controls without clipping |
 | Selected-slot pane (chooser or editor) | 360 CSS px          | A candidate row's name, class, rating, mount and stacked labels plus a 44px fit control |
-| Chooser family rail (wide only)        | 176 CSS px (floor)  | A family's localized name on one line beside its count chip, at a 44px row height       |
+| Chooser family rail (wide only)        | 192 CSS px (drawn)  | A family's localized name on one line beside its count chip, at a 44px row height       |
 | Engineering column (side by side only) | 396 CSS px (drawn)  | The attribute table's three columns, and the recipe and effect menus under them         |
 | Wide right rail                        | 306 CSS px          | One validation or cost line with its number and unit on at most two lines               |
 

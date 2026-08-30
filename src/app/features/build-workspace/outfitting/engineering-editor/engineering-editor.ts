@@ -287,9 +287,9 @@ export class EngineeringEditor {
    * Canvas 1d writes the screen's name in the bar and the module under it. A
    * Commander arriving from a ledger row already knows which screen they opened
    * and does not know which of forty mounts it landed on, so the module takes
-   * the bar and the screen's name is what the
-   * region is called for a reader (Commander request 2026-08-27). Where there
-   * is no module there is nothing to name, so the screen's name stands.
+   * the bar and the screen's name is what the region is called for a reader
+   * (Commander request 2026-08-27). Where there is no module there is nothing
+   * to name, so the screen's name stands.
    */
   readonly layerTitle = computed(() => {
     const module = this.slot().module;

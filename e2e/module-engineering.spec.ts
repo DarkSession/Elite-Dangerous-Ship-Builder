@@ -990,6 +990,65 @@ test.describe('the bench’s three columns', () => {
     }).toPass({ timeout: 5_000 });
   });
 
+  test('lets nothing scroll inside a bench the anatomy has released', async ({ page }) => {
+    // The workspace releases this column whenever the strip has a dashboard
+    // open: a dashboard is a panel of figures as tall as the build has to say,
+    // and the page is the better carrier for it. That release is the same fact
+    // the bench's own bound is, so the scrollers inside the bench have to ask
+    // it too — asked on the width and the window's height alone they stayed on,
+    // and pressing `POWER` over a three-column bench left a list scrolling
+    // inside a page that scrolled, with the chooser's declared height lifted in
+    // the one state nothing was bounding it (`styles/_chrome.scss`).
+    await page.setViewportSize({ width: 2020, height: 1100 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+    await chooseRecipe(page, /increased range/i);
+
+    const inside = async () =>
+      await page.evaluate(() => {
+        const scrollers = [...document.querySelectorAll('edsb-engineering-editor *')].filter(
+          (box) => {
+            const drawn = getComputedStyle(box);
+            return /auto|scroll/.test(drawn.overflowY) && box.scrollHeight - box.clientHeight > 1;
+          },
+        );
+        const pane = document.querySelector('.candidates__pane');
+        return {
+          scrollers: scrollers.map((box) => box.className.toString().split(' ')[0]),
+          cap: pane === null ? 'none' : getComputedStyle(pane).maxBlockSize,
+          released: document
+            .querySelector('.outfitting')
+            ?.classList.contains('outfitting--dashboard'),
+          document: document.documentElement.scrollHeight,
+          viewport: window.innerHeight,
+        };
+      });
+
+    // Bounded, the column decides the list's height and the page does not move.
+    await expect(async () => {
+      const bounded = await inside();
+      expect(bounded.released).toBe(false);
+      expect(bounded.document).toBeLessThanOrEqual(bounded.viewport + 1);
+      expect(bounded.cap).toBe('none');
+    }).toPass({ timeout: 5_000 });
+
+    await page
+      .locator('.anatomy__modes')
+      .getByRole('button', { name: /^power$/i })
+      .click();
+
+    await expect(async () => {
+      const released = await inside();
+      expect(released.released).toBe(true);
+      expect(released.document).toBeGreaterThan(released.viewport);
+      expect(released.scrollers).toEqual([]);
+
+      // And the chooser's own declared height is back, which is what keeps a
+      // 478-choice list from running the released page down two hundred rows.
+      expect(released.cap).not.toBe('none');
+    }).toPass({ timeout: 10_000 });
+  });
+
   test('numbers step ③ only where the chooser numbers ① and ②', async ({ page }) => {
     // The number belongs to the strip, not to the bar. Where the chooser has no
     // room for its rail it draws the accordion and numbers nothing, and a lone

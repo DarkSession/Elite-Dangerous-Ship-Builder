@@ -381,7 +381,7 @@
   "outfitting.engineering.blueprint.choose": "Mit {{blueprint}} verbessern",
   "outfitting.engineering.grade.legend": "Stufe",
   "outfitting.engineering.grade.option": "Stufe {{grade}}",
-  "outfitting.engineering.grade.option-outside": "Stufe {{grade}}, ausserhalb dieses Bauplans",
+  "outfitting.engineering.grade.option-outside": "Stufe {{grade}}, außerhalb dieses Bauplans",
   "outfitting.engineering.effect.legend": "Experimenteller Effekt",
   "outfitting.engineering.effect.none": "Kein",
   "outfitting.engineering.effect.choose": "{{effect}} anwenden",

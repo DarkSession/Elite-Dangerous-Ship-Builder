@@ -43,6 +43,21 @@ export async function isCompactWorkspace(page: Page): Promise<boolean> {
 }
 
 /**
+ * Whether the status rail is canvas 1c's third column rather than a segment.
+ *
+ * Only the widest arrangement draws it as a track. Everywhere else it is the
+ * anatomy strip's `STATUS` segment, and the six key readings it carries are
+ * drawn above the category strip instead — so a journey reading either has to
+ * know which of the two it is looking at (`outfitting-workspace.ts`,
+ * `statusIsGuest`).
+ */
+export async function statusRailIsColumn(page: Page): Promise<boolean> {
+  const region = page.locator('.outfitting').first();
+  await expect(region).toBeVisible();
+  return (await region.getAttribute('data-composition')) === 'wide';
+}
+
+/**
  * Brings the status rail on screen, however this width keeps it.
  *
  * Canvas 1c draws the rail as the third track of its grid, on screen whatever

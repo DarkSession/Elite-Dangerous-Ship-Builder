@@ -439,8 +439,12 @@ STATUS`. Five of the six are the anatomy region's own; see "The status segment" 
    anatomy, which is where the artboard puts it and why it is not inside the bench — at this width
    the bench is the layer these two open.
 
-The DOM stays in the wide composition's order, which is the reading order the three regions were
-written in; the compact arrangement asks for the artboard's order in CSS. Undo and redo keep their
+The three regions keep one order in the document — the notices, the ledger, the middle track — and
+the compact arrangement asks for the artboard's own order of them in CSS. What moves in the document
+is the two regions the anatomy strip draws as guests: where the rail has no column of its own, it and
+the six key readings are inside the middle track, beside the strip that opens them. There is no CSS
+that moves a box between parents, and every other home for them at those widths is a band under a
+column a screen tall — which is a panel opened a screen below the segment that opened it. Undo and redo keep their
 place in the shell's own action menu with identical accessible names and state, and package
 validation and later calculation details remain available through their owning outlets — no
 capability is removed in landscape.

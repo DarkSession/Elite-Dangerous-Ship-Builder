@@ -11,6 +11,7 @@ import {
   revealedFamilies,
   revealedRows,
 } from './outfitting-surfaces';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { buildStockHull } from './shell';
 
 /**
@@ -296,6 +297,23 @@ test.describe('module families', () => {
       expect(row.trailing).toBeGreaterThanOrEqual(0);
       expect(row.trailing).toBeLessThanOrEqual(drawn[0]!.trailing + 1);
     }
+
+    // At a doubled text size the row stacks again, and the point of that is the
+    // name. The gutter and the price are stated in rem and grow with the text
+    // while only the name is allowed to shrink, so held on one line the three
+    // cells took this row down to a class code, an ellipsis and a price with the
+    // module's name gone (SC 1.4.4).
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await expect
+      .poll(async () =>
+        page.evaluate(() => {
+          const name = document.querySelector('.candidate .candidate__name');
+          return name === null
+            ? -1
+            : Math.round(name.scrollWidth - name.getBoundingClientRect().width);
+        }),
+      )
+      .toBeLessThanOrEqual(1);
   });
 
   test('orders a family\u2019s rows by class, then by what they cost', async ({ page }) => {
