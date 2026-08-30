@@ -1659,7 +1659,7 @@ describe('search metadata', () => {
     assert.ok(found.some((violation) => /not to be indexed/.test(violation.message)));
   });
 
-  it('rejects a robots tag the preview step’s expression cannot match', () => {
+  it('rejects a robots tag the preview step cannot rewrite', () => {
     // Reformatting the tag satisfies every other rule here and silently turns
     // the preview's rewrite into a no-op.
     const found = rules.searchMetadataViolations(
@@ -1671,9 +1671,17 @@ describe('search metadata', () => {
       }),
     );
 
-    assert.ok(
-      found.some((violation) => /the way the preview step matches it/.test(violation.message)),
+    assert.ok(found.some((violation) => /is not one line of/.test(violation.message)));
+  });
+
+  it('rejects a preview step whose expression is not the one this tag needs', () => {
+    // The same no-op from the other side: the tag is fine and the workflow
+    // matches something else.
+    const found = rules.searchMetadataViolations(
+      complete({ preview: PREVIEW.replace('content="[^"]*"', 'content="[^\']*"') }),
     );
+
+    assert.ok(found.some((violation) => /No step rewrites the robots tag/.test(violation.message)));
   });
 
   it('rejects a preview step that rewrites the tag to something other than noindex', () => {
@@ -1742,18 +1750,10 @@ describe('search metadata', () => {
     assert.deepEqual(found, []);
   });
 
-  it('reports a preview expression this rule cannot read, rather than crashing', () => {
-    const found = rules.searchMetadataViolations(
-      complete({ preview: PREVIEW.replace('content="[^"]*"', 'content="[a-"') }),
-    );
-
-    assert.ok(found.some((violation) => /cannot be read here/.test(violation.message)));
-  });
-
   it('rejects a workflow with no step to leave a preview out of an index', () => {
     const found = rules.searchMetadataViolations(complete({ preview: 'jobs:\n  build:\n' }));
 
-    assert.ok(found.some((violation) => /No `sed -E -i` step rewrites/.test(violation.message)));
+    assert.ok(found.some((violation) => /No step rewrites the robots tag/.test(violation.message)));
   });
 
   /**

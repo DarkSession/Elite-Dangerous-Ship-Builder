@@ -2085,47 +2085,46 @@ export function searchMetadataViolations(input) {
     );
   }
 
-  // ...and the preview's rewrite can still find it. The workflow's expression is
-  // taken from the workflow rather than restated here, and run against this
-  // file, so the two only ever fail together: a tag spelled across two
-  // lines, or in single quotes, still satisfies every rule above while leaving
-  // the `sed` matching nothing — and a preview that quietly asks to be indexed
+  // ...and the preview's rewrite can still find it. A tag spelled across two
+  // lines, or in single quotes, satisfies every rule above while leaving the
+  // `sed` matching nothing — and a preview that quietly asks to be indexed
   // competes with the site it is a preview of, which is the one failure nobody
   // is looking at a build log for.
+  //
+  // The two are compared as strings, in the one direction that compiles
+  // nothing: the expression the workflow would need is *derived from the tag
+  // this file actually carries*, and the workflow is searched for it. Reading
+  // it the other way — compiling the workflow's expression and running it over
+  // this file — would build a regular expression out of file contents, which is
+  // a catastrophic-backtracking pattern away from a check that never returns.
   if (input.preview !== undefined && index.length > 0) {
-    const expression = /sed -E -i 's\|(<meta name="robots"[^|]*)\|([^|]*)\|' index\.html/.exec(
-      input.preview,
-    );
-    if (expression === null) {
+    const tag = /<meta name="robots" content="([^"]*)"/.exec(index);
+    if (tag === null || tag[1].length === 0) {
       fail(
-        SEARCH_METADATA_FILES.preview,
-        'No `sed -E -i` step rewrites the robots tag, so a preview deployment asks to be indexed ' +
-          'alongside the site. `-E` is required: this rule reads the expression as a JavaScript ' +
-          'regular expression, and only an extended one means the same thing to both.',
+        SEARCH_METADATA_FILES.index,
+        'The robots tag is not one line of `<meta name="robots" content="…">` with a value in it, ' +
+          'so the preview step cannot rewrite it and a preview would keep asking to be indexed.',
       );
     } else {
-      const [, search, replacement] = expression;
-      let pattern;
-      try {
-        pattern = new RegExp(search);
-      } catch (failure) {
-        pattern = null;
+      // The tag with its value widened to the class the `sed` matches: exactly
+      // the left-hand side of the expression the workflow has to carry.
+      const search = tag[0].replace(tag[1], '[^"]*');
+      const rewrite = `sed -E -i 's|${search}|`;
+      const at = input.preview.indexOf(rewrite);
+      if (at === -1) {
         fail(
           SEARCH_METADATA_FILES.preview,
-          `The preview step's expression cannot be read here (${failure.message}), so nothing checks that it still matches the tag.`,
+          `No step rewrites the robots tag as this file spells it. It needs \`${rewrite}…|' index.html\`; ` +
+            '`-E` is named so the expression means one thing rather than two.',
         );
-      }
-      if (pattern !== null && !pattern.test(index)) {
-        fail(
-          SEARCH_METADATA_FILES.index,
-          `The robots tag is not spelled the way the preview step matches it (/${search}/), so a preview would keep asking to be indexed.`,
-        );
-      }
-      if (!/\bnoindex\b/.test(replacement)) {
-        fail(
-          SEARCH_METADATA_FILES.preview,
-          `The preview step rewrites the robots tag to "${replacement}", which does not say noindex.`,
-        );
+      } else {
+        const replacement = input.preview.slice(at + rewrite.length).split('|')[0];
+        if (!/\bnoindex\b/.test(replacement)) {
+          fail(
+            SEARCH_METADATA_FILES.preview,
+            `The preview step rewrites the robots tag to "${replacement}", which does not say noindex.`,
+          );
+        }
       }
     }
   }
