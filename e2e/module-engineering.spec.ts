@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { sweepOutfittingState } from './accessibility';
+import { expectNoAccessibilityViolations } from './accessibility/axe';
 import {
   applyDraft,
   benchFollowedSelection,
@@ -107,6 +108,10 @@ async function chooseGrade(page: Page, grade: number): Promise<void> {
     .first();
   await cell.click();
   await expect(cell.locator('input[type="radio"]')).toBeChecked();
+  // The radio is checked by the platform the moment it is pressed, before the
+  // store has answered, so the checked state is not the panel agreeing. The cell
+  // publishes what the panel decided, and that is what the next read needs.
+  await expect(cell).toHaveAttribute('data-selected', 'true');
 }
 
 /** What the ledger's code line says about one mount's engineering. */
@@ -439,75 +444,54 @@ test.describe('engineering costs', () => {
     await sweepOutfittingState(page, testInfo, 'engineering/weapon figures');
   });
 
-  test('reserves the room the three controls take, before any is used', async ({ page }) => {
-    // The grade and the effect follow from a recipe, so an unengineered module
-    // opened a column shorter than an engineered one by both of them — and the
-    // panel under the hand that was reading it moved when a recipe was chosen
-    // (Commander requests 2026-08-28 and 2026-08-29). Nothing is drawn that is
-    // not there: what is reserved is the room, as the column's own floor.
+  test('keeps the details still while a recipe grows the engineering under them', async ({
+    page,
+  }) => {
+    // The grade and the effect follow from a recipe, so choosing one grows the
+    // engineering card by both of them, and the panel under the hand that was
+    // reading it moved (Commander requests 2026-08-28 and 2026-08-29). The
+    // 2026-08-30 revision answers it by order rather than by reserved room: the
+    // details are read above the controls that change them, so what appears
+    // appears below everything a Commander is reading
+    // (`design/engineering-editor.md`, "The third column").
     await openStockBuild(page);
     await openEditor(page, 'FrameShiftDrive');
 
-    const editor = page.locator('.engineering').first();
+    const details = page.locator('.engineering__result');
     const choices = page.locator('.engineering__choices');
     await expect(choices).toBeVisible();
+    await expect(details).toBeVisible();
 
     if (await surfacesAreLayers(page)) {
-      // The full-screen composition stacks the three down a screen that
-      // scrolls, with nothing beside them to be moved, so it keeps no floor.
-      // Asserted rather than passed over: what it must do is offer the same
-      // three controls, which is the whole of what this width owes.
-      await expect(editor).toHaveClass(/engineering--layer/);
+      // Canvas 1d draws its plates the other way round — the result comes after
+      // the two controls on a screen that scrolls — so the order this asserts is
+      // the inline one. What that width owes is the same three controls.
+      await expect(page.locator('.engineering')).toHaveClass(/engineering--layer/);
       await chooseRecipe(page, /increased range/i);
       await expect(page.locator('edsb-grade-selector')).toBeVisible();
       return;
     }
 
-    // Read from the token rather than written down again: the floor is one
-    // measure, and a test carrying its own copy would pass a change to it.
-    const floorOf = async () =>
-      await choices.evaluate((node) => {
-        const reserved = getComputedStyle(document.documentElement).getPropertyValue(
-          '--edsb-layout-engineering-choices',
-        );
-        const probe = document.createElement('div');
-        probe.style.blockSize = reserved.trim();
-        document.body.append(probe);
-        const floor = probe.getBoundingClientRect().height;
-        probe.remove();
-        return { column: node.getBoundingClientRect().height, floor };
-      });
+    const boxOf = async () =>
+      await page.evaluate(() => ({
+        details: document.querySelector('.engineering__result')!.getBoundingClientRect(),
+        choices: document.querySelector('.engineering__choices')!.getBoundingClientRect(),
+      }));
 
-    const before = await floorOf();
-    expect(before.floor).toBeGreaterThan(0);
-    expect(before.column).toBeGreaterThanOrEqual(before.floor);
+    const before = await boxOf();
+    // Above, not beside: the details end before the controls begin.
+    expect(before.details.bottom).toBeLessThanOrEqual(before.choices.top + 1);
 
-    /*
-     * And the panel is the height it will be, which is the whole point of the
-     * floor and the half that was not being checked.
-     *
-     * The floor used to be stated inside the wide composition's own block, and
-     * the wide composition is the one place it does nothing: two columns
-     * stretched to the taller of them, with an attribute table beside these
-     * controls that is taller than the floor on all but the shortest article.
-     * So a floor that was never consulted read as a floor that held, and the
-     * growth went on at every other inline width — measured at 834x1112, the
-     * editor grew from 499px to 623px as a recipe was taken (Commander request
-     * 2026-08-29).
-     */
-    const settled = await editor.evaluate((node) => node.getBoundingClientRect().height);
     await chooseRecipe(page, /increased range/i);
     await expect(page.locator('edsb-grade-selector')).toBeVisible();
 
-    const after = await floorOf();
-    expect(after.column).toBeGreaterThanOrEqual(after.floor);
-
-    // Within a pixel, not to the pixel: the table beside the controls gains a
-    // `MODIFIED` column as a recipe is taken, and a column changes where its
-    // rows round to by a fraction of one. What this refuses is a panel that
-    // moves, which is the two controls' own height and is measured in tens.
-    const drawn = await editor.evaluate((node) => node.getBoundingClientRect().height);
-    expect(Math.abs(drawn - settled)).toBeLessThan(1);
+    const after = await boxOf();
+    // The controls grew — otherwise there is nothing here to be moved by.
+    expect(after.choices.height).toBeGreaterThan(before.choices.height + 10);
+    // And nothing above them moved. Within a pixel, not to the pixel: the table
+    // gains a `MODIFIED` column as a recipe is taken, and a column changes where
+    // its rows round to by a fraction of one.
+    expect(Math.abs(after.details.top - before.details.top)).toBeLessThan(1);
   });
 
   test('expands the details and the engineering instead of scrolling either', async ({ page }) => {
@@ -544,6 +528,8 @@ test.describe('engineering costs', () => {
       return {
         choices: box(choices),
         result: box(result),
+        panes: box(node),
+        gap: Number.parseFloat(getComputedStyle(node).rowGap),
         body: box(node.closest('.engineering__body')!),
         panel: box(node.closest('.engineering')!),
         // The column that used to bound the panel releases while a mount is
@@ -560,10 +546,13 @@ test.describe('engineering costs', () => {
       expect(region.hidden).toBeLessThanOrEqual(1);
     }
 
-    // The panel holds both cards whole, which is what "expands" means once
-    // neither of them can give way.
-    expect(measured.panel.height + 1).toBeGreaterThanOrEqual(
-      measured.choices.height + measured.result.height,
+    // The panel holds both cards whole and nothing else: their two heights and
+    // the one gap between them, with no room reserved past what is drawn. That
+    // is what "expands" means once neither card can give way, and the sum is
+    // what a floor left over from an earlier arrangement would break.
+    expect(measured.panes.height).toBeCloseTo(
+      measured.choices.height + measured.result.height + measured.gap,
+      0,
     );
     expect(measured.centre).toBe('static');
   });
@@ -756,13 +745,15 @@ test.describe('the bench’s three columns', () => {
   /** The top edge of each numbered bar, in document order. */
   async function stripTops(page: Page): Promise<number[]> {
     return await page.evaluate(() =>
-      [...document.querySelectorAll('.candidates__step, .engineering__step')].map((bar) =>
+      [...document.querySelectorAll('.edsb-step')].map((bar) =>
         Math.round(bar.getBoundingClientRect().top),
       ),
     );
   }
 
-  test('draws the editor beside the manifest, on the step strip’s own line', async ({ page }) => {
+  test('draws the editor beside the manifest, on the step strip’s own line', async ({
+    page,
+  }, testInfo) => {
     await page.setViewportSize({ width: 2020, height: 1100 });
     await openStockBuild(page);
     await selectMount(page, 'FrameShiftDrive');
@@ -787,6 +778,11 @@ test.describe('the bench’s three columns', () => {
     const tops = await stripTops(page);
     expect(tops).toHaveLength(3);
     expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
+
+    // No project viewport is wide enough to reach this arrangement, so the gate
+    // that scans every rendered state never sees it. It is scanned here, at the
+    // width it was asked for.
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'bench-three-columns' });
   });
 
   test('stacks the editor under the manifest where three columns do not fit', async ({ page }) => {
@@ -807,6 +803,34 @@ test.describe('the bench’s three columns', () => {
     ]);
 
     expect(editorBox!.y).toBeGreaterThanOrEqual(manifestBox!.y + manifestBox!.height - 1);
+  });
+
+  test('numbers step ③ only where the chooser numbers ① and ②', async ({ page }) => {
+    // The number belongs to the strip, not to the bar. Where the chooser has no
+    // room for its rail it draws the accordion and numbers nothing, and a lone
+    // ③ over a bench with no other step on it names a flow that is not on the
+    // screen (`design/module-replacement.md`, "The three steps, numbered").
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+
+    if (await surfacesAreLayers(page)) {
+      // Canvas 1d draws no strip at all: each surface is a screen of its own.
+      await expect(page.locator('.edsb-step')).toHaveCount(0);
+      return;
+    }
+
+    const chooserSteps = await page.locator('edsb-candidate-list .edsb-step').count();
+    const editorNumber = page.locator('.engineering__step .edsb-step__number');
+    await expect(editorNumber).toHaveCount(1);
+
+    if (chooserSteps === 0) {
+      await expect(editorNumber).toBeHidden();
+      return;
+    }
+
+    // Two bars from the chooser, and the editor's makes three.
+    expect(chooserSteps).toBe(2);
+    await expect(editorNumber).toBeVisible();
   });
 });
 

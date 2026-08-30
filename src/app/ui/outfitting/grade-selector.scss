@@ -67,20 +67,35 @@
 // Merc-Coin article back down to grade 1 is a thing a Commander may do. The
 // stripe is never the only carrier — each cell names its own grade.
 //
-// Two selectors, because the two artboards fill their cells differently. Canvas
-// 1c fills every cell up to the choice, so an unavailable grade below it is a
-// filled cell and the stripe is what marks it out of range. Canvas 1d fills the
-// chosen button alone, so that same grade is unfilled and the first selector
-// never reaches it — which left the phone's control drawing no difference at
-// all between a grade outside the recipe and one inside it.
-.grade[data-unavailable='true'][data-filled='true'],
-.grades--steps .grade[data-unavailable='true'] {
+// Two rules, because the two artboards fill their cells differently. Canvas 1c
+// fills every cell up to the choice, so an unavailable grade below it is a
+// filled cell. Canvas 1d fills the chosen button alone, so that same grade is
+// unfilled — which left the phone's control drawing no difference at all
+// between a grade outside the recipe and one inside it.
+//
+// An unfilled cell is striped in the accent over its own quiet ground, and its
+// number is the accent: the stripe is the lit part of a dark cell.
+.grades--steps .grade[data-unavailable='true']:not([data-filled='true']) {
   background-image: repeating-linear-gradient(
     135deg,
     var(--edsb-surface-accent-solid) 0 var(--edsb-space-stack-tight),
     transparent var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
   );
   background-color: var(--edsb-surface-accent-quiet);
+}
+
+// A filled cell is striped the other way round: the page ground over the fill,
+// in a narrow band. The number a filled cell carries is the ink the fill takes,
+// and over the first rule's transparent bands that ink measures 1.19:1 — the
+// grade written on the cell is the thing the stripe made unreadable. Here the
+// cell stays amber under the whole digit and the ground only cuts across it.
+.grade[data-unavailable='true'][data-filled='true'] {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 var(--edsb-space-md),
+    var(--edsb-surface-root) var(--edsb-space-md) var(--edsb-space-lg)
+  );
+  background-color: var(--edsb-surface-accent-solid);
 }
 
 .grade__radio {

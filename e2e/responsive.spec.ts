@@ -93,6 +93,11 @@ test.describe('responsive availability', () => {
       // A sheet takes the whole width of the screen; the centred dialog the
       // wide profiles draw is bounded by its own measure.
       sheet: Math.round(node.getBoundingClientRect().width) >= window.innerWidth - 1,
+      // A screen too short to divide promotes the sheet to a full-height layer,
+      // which is a different presentation with a different bound. Asked as the
+      // stylesheet's own query, so a Commander's larger root text moves both
+      // together.
+      short: window.matchMedia('(max-height: 30rem)').matches,
     }));
 
     if (!measured.sheet) {
@@ -102,9 +107,17 @@ test.describe('responsive availability', () => {
     }
 
     expect(measured.top).toBeLessThanOrEqual(1);
+    if (measured.short) {
+      // Promoted: the layer owns the screen and scrolls, which is what keeps a
+      // landscape phone and a 400% zoom readable at all (FR-011).
+      expect(measured.height).toBe(measured.viewport);
+      return;
+    }
+
     // And it still leaves the screen behind it visible rather than taking the
-    // whole of it: that is what parts a sheet from a full-height layer.
-    expect(measured.height).toBeLessThanOrEqual(measured.viewport);
+    // whole of it: that is what parts a sheet from a full-height layer, and a
+    // bound equal to the screen would not.
+    expect(measured.height).toBeLessThan(measured.viewport);
   });
 
   test('passes an accessibility scan at every profile', async ({ page }, testInfo) => {

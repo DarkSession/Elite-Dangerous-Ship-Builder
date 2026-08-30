@@ -9,18 +9,18 @@ Verified 2026-08-21 against the working tree at commit `7100dc1d`.
 
 ## Feature 011 — interface foundations
 
-| Boundary                | Repository evidence                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Design tokens           | `src/styles/tokens/_primitives.scss`, `src/styles/tokens/_semantic.scss`; shared chrome mixins in `src/styles/_responsive.scss`                         |
-| Canvas measurement      | `specs/011-interface-foundations/design/canvas-extraction.md`                                                                                           |
-| Localization            | `src/app/i18n/message.service.ts`, `src/app/i18n/locale-registry.ts`, `src/app/i18n/locales/{en,de}.json`                                               |
-| Package text presenter  | `src/app/i18n/game-text.presenter.ts` — the presenter the plan calls `package-text`; `src/app/i18n/package-text.spec.ts` is its package-ownership proof |
-| Shared components       | `src/app/ui/components/**`, contract in `src/app/ui/component-contract.ts`                                                                              |
-| Announcements           | `src/app/ui/announcements/announcement.service.ts`, `announcement-outlet.ts`                                                                            |
-| Preview catalogue       | `src/app/ui/previews/preview-manifest.ts`, rendered by `projects/ui-preview/`                                                                           |
-| Ten Playwright projects | `playwright.config.ts` generates `ENGINES × LAYOUT_PROFILES` from `e2e/coverage-ledger.ts`                                                              |
-| Axe scans               | `e2e/accessibility/axe.ts` (`@axe-core/playwright`, WCAG 2.0/2.1/2.2 A and AA, no disabled rules)                                                       |
-| Policy checker          | `scripts/check-interface-foundations.mjs`, run by `pnpm run policy`                                                                                     |
+| Boundary                | Repository evidence                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Design tokens           | `src/styles/tokens/_primitives.scss`, `src/styles/tokens/_semantic.scss`; shared chrome mixins in `src/styles/_responsive.scss`, cross-component chrome in `src/styles/_chrome.scss` |
+| Canvas measurement      | `specs/011-interface-foundations/design/canvas-extraction.md`                                                                                                                        |
+| Localization            | `src/app/i18n/message.service.ts`, `src/app/i18n/locale-registry.ts`, `src/app/i18n/locales/{en,de}.json`                                                                            |
+| Package text presenter  | `src/app/i18n/game-text.presenter.ts` — the presenter the plan calls `package-text`; `src/app/i18n/package-text.spec.ts` is its package-ownership proof                              |
+| Shared components       | `src/app/ui/components/**`, contract in `src/app/ui/component-contract.ts`                                                                                                           |
+| Announcements           | `src/app/ui/announcements/announcement.service.ts`, `announcement-outlet.ts`                                                                                                         |
+| Preview catalogue       | `src/app/ui/previews/preview-manifest.ts`, rendered by `projects/ui-preview/`                                                                                                        |
+| Ten Playwright projects | `playwright.config.ts` generates `ENGINES × LAYOUT_PROFILES` from `e2e/coverage-ledger.ts`                                                                                           |
+| Axe scans               | `e2e/accessibility/axe.ts` (`@axe-core/playwright`, WCAG 2.0/2.1/2.2 A and AA, no disabled rules)                                                                                    |
+| Policy checker          | `scripts/check-interface-foundations.mjs`, run by `pnpm run policy`                                                                                                                  |
 
 ## Feature 001 — ship selection and loading
 

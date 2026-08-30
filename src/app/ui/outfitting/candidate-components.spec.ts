@@ -685,7 +685,7 @@ describe('the wide manifest', () => {
     // `MODULE`, `CLASS`, `COST`, and no damage, mass, power or weapon draw
     // (FR-024's 2026-08-25 narrowing, SC-006). `MODULE` is the step ② bar's own
     // name, because the head and the step bar are one bar.
-    expect(header.querySelectorAll('.candidates__step-name').length).toBe(1);
+    expect(header.querySelectorAll('.edsb-step__name').length).toBe(1);
     expect(header.querySelectorAll('.candidates__column').length).toBe(2);
 
     const row = query(fixture, '.candidates__pane .candidate');
@@ -703,21 +703,21 @@ describe('the wide manifest', () => {
     const { fixture } = railFixture();
     const root = element(fixture);
 
-    const steps = [...root.querySelectorAll('.candidates__step')];
+    const steps = [...root.querySelectorAll('.edsb-step')];
     expect(steps).toHaveLength(2);
-    expect(steps.map((step) => textOf(step.querySelector('.candidates__step-name')))).toEqual([
+    expect(steps.map((step) => textOf(step.querySelector('.edsb-step__name')))).toEqual([
       englishCatalogue['outfitting.family.heading'],
       englishCatalogue['outfitting.column.module'],
     ]);
 
     for (const step of steps) {
-      expect(step.querySelector('.candidates__step-number')).not.toBeNull();
-      expect(step.querySelector('.candidates__step-chevron')).not.toBeNull();
+      expect(step.querySelector('.edsb-step__number')).not.toBeNull();
+      expect(step.querySelector('.edsb-step__chevron')).not.toBeNull();
       // Either the bar itself is hidden from a reader or every decorative part
       // of it is: step ② is the column head, which is hidden whole.
       expect(
         step.getAttribute('aria-hidden') === 'true' ||
-          step.querySelector('.candidates__step-number')?.getAttribute('aria-hidden') === 'true',
+          step.querySelector('.edsb-step__number')?.getAttribute('aria-hidden') === 'true',
       ).toBe(true);
     }
   });

@@ -33,9 +33,13 @@ workspace and never creates or owns a second build.
   taking the canvas's 396px and starting at the top of the bench rather than stretching to it.
   The mount's name, the search and `REMOVE MODULE` are the fitting column's head and stop where that
   column stops, which is how the canvas's `13px 430px 11px 20px` head is read here.
-- **Under 65.5rem of bench the editor goes back under the manifest.** The three tracks and their two
-  gaps need `264 + 360 + 396 + 28`, and a 1440 window has about 700px of bench once the ledger's
-  392px and the status rail's 306px are paid for. So the side-by-side arrangement is the one the
+- **Under 67.875rem of bench the editor goes back under the manifest.** The figure is the manifest's
+  own rail minimum of 638px, the canvas's 14px gap and its 396px editor track, and then the bench's
+  18px inset and hairline on both edges: `638 + 14 + 396 + 38`. It is asked of the manifest's
+  minimum rather than of the canvas's `264 + 360`, because a fitting column below that minimum draws
+  the accordion instead of the rail, and the editor would then stand beside an accordion with no
+  step ① or ② to line up with. A 1440 window has about 700px of bench once the ledger's 392px and the
+  status rail's 306px are paid for. So the side-by-side arrangement is the one the
   canvas was drawn at — 2020px — and everything narrower keeps the stack, which is the same content
   in the same order. Asked of the bench's own container rather than of the window, so a doubled text
   size or 400% zoom takes the stack for the same reason a narrow window does.

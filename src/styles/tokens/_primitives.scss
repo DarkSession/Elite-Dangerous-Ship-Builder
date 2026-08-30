@@ -620,26 +620,27 @@
   --edsb-measure-family-rail: 16.5rem;
   // How wide that rail is allowed to get where the column has room to spare.
   //
-  // 264px is the canvas's figure for the canvas's own 1322px centre column — a
-  // fifth of it. Held at one number the rail stopped being a share and started
-  // being a sliver: at 2560 the pane beside it was mostly empty row while
-  // seventeen family names went on wrapping (Commander request 2026-08-26). It
-  // now takes a quarter of what it is actually given, bounded — the bound is
-  // where a family name stops needing the width, and past it the rows beside it
-  // are the better home for the pixels.
+  // 264px is the canvas's figure for the canvas's own 1322px centre column, so
+  // the share is that ratio: a fifth. Held at one number instead, the rail is a
+  // share at one width and a sliver at every other — at 2560 the pane beside it
+  // was mostly empty row while seventeen family names went on wrapping
+  // (Commander request 2026-08-26). The bound is where a family name stops
+  // needing the width, and past it the rows beside it are the better home for
+  // the pixels.
   --edsb-measure-family-rail-max: 20rem;
-  --edsb-measure-family-rail-share: 26%;
+  --edsb-measure-family-rail-share: 20%;
   --edsb-measure-family-gap: 0.875rem;
   // What the rail and the pane are bounded at: the canvas's 470px, less the same
   // two rows the fitting panel's floor above gives up. The panel and the pane
   // are the same list at two widths, so a row comes off both of them or
   // neither (Commander requests 2026-08-28 and 2026-08-29).
   //
-  // The canvas draws 648px since it stood the engineering editor beside the
-  // list rather than under it. That is not adopted: what the two requests above
-  // are about is how far a Commander scrolls to reach the anatomy and the status
-  // rail, which is unchanged by what stands beside the list
-  // (`design/module-replacement.md`, "The canvas's 648px is not adopted").
+  // The canvas draws 648px, for a bench that stands the engineering editor
+  // beside the list rather than under it. That figure is not adopted: what the
+  // two requests above are about is how far a Commander scrolls to reach the
+  // anatomy and the status rail, and what stands beside the list does not
+  // answer it (`design/module-replacement.md`, "The canvas's 648px is not
+  // adopted").
   --edsb-measure-manifest-pane: 24.125rem;
   --edsb-measure-candidate-class: 3.5rem;
   --edsb-measure-candidate-cost: 6.5rem;
@@ -649,16 +650,6 @@
   --edsb-measure-engineering-column: 24.75rem;
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
   --edsb-measure-grade-cell: 1.75rem;
-  // The three controls the inline editor's left column holds — the recipe, the
-  // grade under it and the experimental effect under that — measured together
-  // with the two gaps between them: 183px at the base text size.
-  //
-  // A floor, never a cap: it keeps the column's height while the two controls
-  // that follow from a recipe are not there to be drawn, so choosing a recipe
-  // no longer grows the panel and moves the ledger beside it (Commander request
-  // 2026-08-28). Content taller than this — a translation that wraps, a doubled
-  // text size — simply passes it.
-  --edsb-measure-engineering-choices: 11.4375rem; // 183
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
   // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
   // wants a button around it rather than a band.

@@ -25,19 +25,17 @@ do not mutate the active build until confirmed.
   that rather than as what it answers. It is also the order the two are read in: a weapon publishes
   around seventy attribute rows, so controls under the table are controls a Commander scrolls back
   up to.
-- **The editor is stacked under the manifest where three columns do not fit.** The three tracks need
-  `264 + 360 + 396` and two 14px gaps before they will stand side by side, which is more than a 1440
-  window has left after the ledger and the status rail. Below that the editor keeps both cards and
-  takes the fitting column's full width, in the same order; nothing is withdrawn and nothing moves to
-  a different card.
+- **The editor is stacked under the manifest where three columns do not fit.** The bench needs
+  67.875rem before the three will stand side by side, which is more than a 1440 window has left after
+  the ledger and the status rail (`design/outfitting-workspace.md`, "The bench is two columns where
+  it has room for three"). Below that the editor keeps both cards and takes the fitting column's full
+  width, in the same order; nothing is withdrawn and nothing moves to a different card.
+- **Step ③'s number is drawn only where steps ① and ② are.** The number belongs to the strip, not to
+  the bar: below the manifest's own rail minimum the chooser draws the accordion and numbers nothing,
+  and a lone `③` over a bench with no other step on it names a flow that is not on the screen. The
+  bar and its name stay at every inline width — it is the region's head either way.
 - The canvas's `CLEAR ✕` stays withdrawn — see "Clearing engineering". The 2026-08-30 revision
   removes it from the artboard as well, so the reference and this screen now agree.
-- **Superseded, kept for the record — the panel was two halves side by side (wave 10, Commander
-  request).** Canvas 1c's `eng-grid` was `1.1fr 1fr`: the engineering on the left and the article's
-  own attributes on the right, under one `DETAILS AND ENGINEERING` bar. That reading survives in the
-  2026-08-30 arrangement — the details still do not depend on the engineering — but the two are now
-  stacked in one column rather than ruled off each other in two, because the column they are in is
-  396px wide.
 - **The frozen family bar keeps its own top rule. Ruled 2026-08-23 (wave 11, Commander report).**
   The bar is pulled two pixels above the scroller's edge to cover the sliver the browser's rounding
   leaves between them, and the scroller clips what hangs over — which took the bar's own
@@ -140,7 +138,8 @@ do not mutate the active build until confirmed.
   entry was `None`: a control over nothing (FR-009). The recipe list is also the **offered** one, with
   Mercenary-only recipes filtered out for a module that was not bought that way, because a mount whose
   only recipe is one nobody here can take has no engineering either. That filter belongs to the draft
-  rather than to the component that draws it, so the emptiness is decided once. The panel is the one region a Commander looks in to find out what a module can
+  rather than to the component that draws it, so the emptiness is decided once. The panel is the one
+  region a Commander looks in to find out what a module can
   be engineered to; a bench that simply omits it answers that question by saying nothing, and nothing
   on the ledger outside the panel distinguishes "no recipe exists" from "the panel failed to draw".
   `canOpenEngineering` is therefore `fitted` alone — whether the Almanac offers a recipe is what the
@@ -155,7 +154,8 @@ do not mutate the active build until confirmed.
   See "The third column" above.
 - **The panel prices no job. Ruled 2026-08-23 (wave 11, Commander request), superseding every
   materials ruling this section once carried.** Canvas 1c's engineering column holds the article's
-  attributes, and the blueprint, the grade and the experimental effect under them, and nothing else; the only `MATERIALS` block on either canvas is the build-wide one feature 009 draws in the
+  attributes, and the blueprint, the grade and the experimental effect under them, and nothing else;
+  the only `MATERIALS` block on either canvas is the build-wide one feature 009 draws in the
   status rail. The panel's own list was this application's addition, and the design-canvas rule
   removes it. Waves 5 and 9 spent four rulings on how to head it, how to fold its two halves, how to
   order its rows and where to put the Merc Coin the climb bills; all four go with the list. The
@@ -177,42 +177,23 @@ do not mutate the active build until confirmed.
   to canvas 1d's screen, which holds a draft that has to be left on purpose (wave 4). Clearing is not
   a separate control either — see "Clearing engineering" below.
 
-### The choices column keeps its height, 2026-08-28 (Commander request)
+### Nothing a Commander is reading moves as a recipe is taken, 2026-08-28 (Commander request)
 
-The column holds three controls — the recipe, the grade under it and the experimental effect under
-that — and the last two follow from the first: an unengineered module has a recipe list and nothing
-under it. So opening the panel on a stock module gave a short column, and choosing a recipe grew it,
-which moved the ledger under the hand that was reading it.
+The engineering card holds three controls — the recipe, the grade under it and the experimental
+effect under that — and the last two follow from the first: an unengineered module has a recipe list
+and nothing under it. So choosing a recipe grows that card by the height of both, and whatever stands
+below it moves under the hand that was reading it. Measured at 834x1112 before the answer below: the
+editor went from 499px to 623px and the document from 2692px to 3115px as a recipe was taken.
 
-The column carries a floor instead (`--edsb-layout-engineering-choices`, the three controls and the
-two gaps between them at the base text size). Nothing is drawn that is not there: no empty grade bar
-over an unengineered module, no placeholder effect: the canvas draws neither and neither does this.
-What is reserved is the room, so the panel is the height it will be before anything is chosen.
+The order is the answer. `MODULE DETAILS` is the first card and `ENGINEERING` is the second, so the
+two controls appear below everything a Commander reads and nothing above them moves. Nothing is drawn
+that is not there either: no empty grade bar over an unengineered module and no placeholder effect —
+the canvas draws neither and neither does this.
 
-A floor and not a cap. A translation that wraps a recipe name, a doubled text size, or a long list
-simply passes it.
-
-**Corrected 2026-08-29 (Commander request): the floor belongs to the controls, not to the two-column
-composition.** It was written inside the wide composition's own block on the reading that the narrow
-one is a full-screen layer with nothing beside it to move. Two things were wrong with that. The wide
-composition is the one place the floor does nothing — its two columns stretch to the taller of them,
-and the attribute table beside these controls is taller than the floor on all but the shortest
-article, so the column was already past the figure before the floor was consulted. And between the
-two there is a third arrangement: the inline panel with its columns stacked, which is what a tablet
-draws and is not a layer. That is where the growth actually was. Measured at 834x1112: taking a
-recipe grew the editor from 499px to 623px and the document from 2692px to 3115px.
-
-So the floor is stated for the inline placement, and asked of the card that actually holds a chooser —
-an article the Almanac offers no recipe for keeps a panel the size of what it says rather than a
-sentence over an empty half-screen, because there nothing will ever appear and there is nothing to
-keep a place for. The layer keeps no floor: it is a screen of its own that scrolls, with nothing
-beside it to move.
-
-**Amended 2026-08-30: not where the editor is a column of its own.** The floor buys one thing, which
-is that nothing under the controls moves as a recipe is taken. Side by side there is nothing under
-them — the editor is the bench's third column and the page below it is the page — so the reservation
-buys nothing and is drawn instead as an empty half of a bordered card. It is kept in the arrangement
-it was measured in, which is the stacked one.
+**Amended 2026-08-30, with the canvas revision that switched the two cards.** A reserved floor under
+the controls answered the same request while the details were beside them or below them. With the
+details above them the reservation buys nothing at any width, and it is visible as an empty half of a
+bordered card, so it is withdrawn and the order carries the ruling alone.
 
 ## Narrow and 400%-zoom composition
 

@@ -37,25 +37,6 @@
   }
 }
 
-// Step ③ starts on step ②'s line where the editor is a column of the bench: the
-// three bars are one strip, and a strip that steps down between columns is not
-// one. The canvas gets that from its grid, where the fitting panel's head is a
-// row above all three bars. Here that head belongs to the chooser, which is a
-// column beside this one rather than a row above it, so the editor pays the
-// head's own height — one row of controls at the target size, and the bench
-// column's stack gap under it.
-//
-// ponytail: an offset, not a shared grid row. Aligning by grid would be a
-// subgrid chain through three components, and one that still broke where the
-// chooser draws a sentence above its head. A head that wrapped would step the
-// strip down; it cannot at these widths, where the column is 638px at its
-// narrowest and a doubled text size takes the stacked arrangement.
-@include layout.bench-columns {
-  :host {
-    margin-block-start: calc(var(--edsb-target-size) + var(--edsb-space-stack));
-  }
-}
-
 // A viewport this short cannot divide a screen into a scroller and a foot and
 // still show one choice, so the layer's actions stop sticking and the layer's
 // own scroller carries them — the same release the command bar and the bench
@@ -126,21 +107,10 @@
   gap: var(--edsb-space-sm);
 }
 
-// Step ③, drawn exactly as the chooser draws steps ① and ②: the panel's raised
-// ground behind a hairline, opened by the same amber marker a selected row
-// carries. The two are the same strip and have to be the same bar.
+// Step ③, the third bar of the chooser's own strip. The two are the same strip
+// and are drawn by the same rules (`styles/_chrome.scss`).
 .engineering__step {
-  @include layout.step-bar;
-
   flex: none;
-}
-
-.engineering__step-number {
-  @include layout.step-number;
-}
-
-.engineering__step-name {
-  @include layout.step-name;
 }
 
 .engineering__body {
@@ -202,13 +172,13 @@
   margin: 0;
 }
 
-// The two cards, stacked with the canvas's 14px between them. They were two
-// columns ruled off each other until the 2026-08-30 revision put the editor in
-// a 396px track of its own; nothing that narrow divides in two, and the details
-// are read before the controls that change them rather than beside them
-// (`design/engineering-editor.md`, "The third column").
+// The two cards, stacked with the canvas's 14px between them. Stacked rather
+// than ruled off each other in two columns: the editor is a 396px track, and
+// nothing that narrow divides in two. The details come first, so they are read
+// before the controls that change them (`design/engineering-editor.md`, "The
+// third column").
 .engineering__panes {
-  @include layout.stack(var(--edsb-space-region));
+  @include layout.stack(var(--edsb-space-xl));
 }
 
 .engineering__attributes {
@@ -223,54 +193,6 @@
   // nothing else: neither card scrolls.
   position: relative;
   min-inline-size: 0;
-}
-
-// The room the three controls take, kept whether or not two of them are drawn.
-//
-// The recipe is always there; the grade bar and the experimental effect follow
-// from it, and neither canvas draws either over an unengineered module. So
-// choosing a recipe used to grow this column by the height of the two that
-// appeared, and everything under the panel moved with it — measured at 834x1112
-// on the stacked composition, the editor went from 499px to 623px and the
-// document from 2692px to 3115px as a recipe was taken.
-//
-// It was a floor before, and the floor was in the wide composition's own block
-// (Commander request 2026-08-28): two columns, and the one that stretches to the
-// taller of them. That is exactly the arrangement in which a floor does nothing
-// — the attribute table beside it is taller than this on all but the shortest
-// article, so the column was already stretched past the figure and the growth
-// this was meant to stop happened at every other width instead. It belongs to
-// the controls, not to the composition (Commander request 2026-08-29).
-//
-// Asked of the column that actually holds a chooser, so an article the Almanac
-// offers no recipe for keeps a panel the size of what it says rather than a
-// sentence over an empty half-screen: there, nothing will ever appear, so there
-// is nothing to keep a place for.
-//
-// A floor, never a cap: a translation that wraps, or a doubled text size, simply
-// passes it.
-.engineering:not(.engineering--layer)
-  .engineering__choices:has(edsb-blueprint-choice-list)
-  .engineering__card-body {
-  // The card's own inset is paid on top of the figure. The floor is the three
-  // controls and the two gaps between them; the box it is stated on is the card
-  // body, which carries the canvas's 14px inside the card's edge, and a border
-  // box would spend the inset out of the room reserved for the controls.
-  min-block-size: calc(
-    var(--edsb-layout-engineering-choices) + var(--edsb-space-xl) + var(--edsb-space-xl)
-  );
-}
-
-// The reservation is not paid where the editor is a column of its own. Nothing
-// stands under it there, so the two controls that follow from a recipe appear
-// into empty column rather than moving anything, and the room kept for them is
-// visible as an empty half of a bordered card.
-@include layout.bench-columns {
-  .engineering:not(.engineering--layer)
-    .engineering__choices:has(edsb-blueprint-choice-list)
-    .engineering__card-body {
-    min-block-size: 0;
-  }
 }
 
 .engineering__actions {

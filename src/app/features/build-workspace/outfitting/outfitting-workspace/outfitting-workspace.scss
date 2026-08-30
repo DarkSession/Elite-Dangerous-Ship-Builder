@@ -541,57 +541,26 @@
   border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
-// The fitting panel and the engineering panel, both on screen at once for the
-// marked mount. They stack until the bench has room for canvas 1c's three
-// columns; the rule that stands them side by side is below.
-// The second of those is the bench's first column: the mount's head and the
-// manifest under it. A box of its own so the two stay one column when the
-// editor takes the second, and so the head's field and `REMOVE MODULE` stop
-// where the manifest stops — canvas 1c does that with its
-// `13px 430px 11px 20px` head padding.
-.outfitting__bench,
-.outfitting__bench-fitting {
-  display: flex;
-  flex-direction: column;
-  gap: var(--edsb-space-stack);
-  min-inline-size: 0;
-  min-block-size: 0;
-}
-
+// The bench's own look. How it arranges the two panels inside it is canvas 1c's
+// three-column question and is answered in one place for all of them
+// (`styles/_chrome.scss`).
 .outfitting__bench {
   padding: var(--edsb-space-panel);
   background-color: var(--edsb-surface-panel);
   border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
 }
 
-// Canvas 1c's three columns, once the bench is wide enough: the chooser's rail
-// and pane, and the editor in a fixed 396px track beside them, as tall as it
-// needs to be rather than stretched to the column beside it.
-@include layout.bench-columns {
-  .outfitting__bench {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--edsb-layout-engineering-column);
-    align-items: start;
-    column-gap: var(--edsb-space-region);
-  }
-}
-
 // The canvas's middle column: the anatomy plates on the page ground, the bench
 // panel under them. One column at every width, because that is the order both
-// canvases draw and the bench is the selected mount's facts.
-//
-// It is also the container the bench's arrangement is asked of: how much room
-// the bench was given, not how wide the window is, so a doubled text size or
-// 400% zoom takes the stacked arrangement for the same reason a narrow window
-// does. Named `bench`, because the chooser's step ② asks it too.
+// canvases draw and the bench is the selected mount's facts. It is also the
+// `bench` container the three-column arrangement is asked of, which is declared
+// with that arrangement in `styles/_chrome.scss`.
 .outfitting__centre {
   display: flex;
   flex-direction: column;
   gap: var(--edsb-space-region);
   min-inline-size: 0;
   min-block-size: 0;
-  container-type: inline-size;
-  container-name: bench;
 }
 
 .outfitting__bench-header,

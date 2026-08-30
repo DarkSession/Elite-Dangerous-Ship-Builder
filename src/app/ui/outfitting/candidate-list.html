@@ -14,15 +14,16 @@
     <div class="candidates__manifest">
       <!--
         Step ①, over the rail. The number and the chevron are decoration: the
-        name beside them is the step, and the rail under it is already a named
-        group. It is drawn `FAMILIES` rather than the canvas's `CATEGORY`
-        because this screen already spends that word on the ledger's own
-        category strip.
+        name beside them is the step, and that name is the rail's own — the bar
+        is what the group below it is named by, so the word is on the screen
+        once and announced once. It is drawn `FAMILIES` rather than the canvas's
+        `CATEGORY` because this screen already spends that word on the ledger's
+        own category strip.
       -->
-      <p class="candidates__step candidates__step--rail">
-        <span class="candidates__step-number" aria-hidden="true">1</span>
-        <span class="candidates__step-name">{{ familiesLabel() }}</span>
-        <span class="candidates__step-chevron" aria-hidden="true">›</span>
+      <p class="edsb-step candidates__step--rail">
+        <span class="edsb-step__number" aria-hidden="true">1</span>
+        <span class="edsb-step__name" [id]="railHeadingId">{{ familiesLabel() }}</span>
+        <span class="edsb-step__chevron" aria-hidden="true">›</span>
       </p>
 
       <!--
@@ -31,7 +32,7 @@
         it is where the rows are. The selected state is published as
         `aria-pressed`, so it is never carried by the amber edge alone (FR-022).
       -->
-      <div class="candidates__rail" role="group" [attr.aria-label]="familiesLabel()">
+      <div class="candidates__rail" role="group" [attr.aria-labelledby]="railHeadingId">
         @for (family of families(); track family.familyId) {
           <button
             class="family family--rail"
@@ -62,14 +63,14 @@
         Every row restates the same labels for a reader, so the whole bar is
         decoration rather than a second announcement.
       -->
-      <div class="candidates__step candidates__columns" aria-hidden="true">
+      <div class="edsb-step candidates__columns" aria-hidden="true">
         <span class="candidates__step-lead">
-          <span class="candidates__step-number">2</span>
-          <span class="candidates__step-name">{{ moduleColumn() }}</span>
+          <span class="edsb-step__number">2</span>
+          <span class="edsb-step__name">{{ moduleColumn() }}</span>
         </span>
         <span class="candidates__column">{{ classColumn() }}</span>
         <span class="candidates__column candidates__column--figure">{{ costColumn() }}</span>
-        <span class="candidates__step-chevron">›</span>
+        <span class="edsb-step__chevron">›</span>
       </div>
 
       @if (revealedFamily(); as revealed) {

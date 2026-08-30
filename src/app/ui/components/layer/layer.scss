@@ -96,24 +96,27 @@
 // The three presentations, as mixins, so the adaptive presentation composes
 // exactly the same rules rather than a second nearly-identical copy of them.
 
-// Centred dialog: bounded by a named measure, and never taller than the
-// viewport, so its own content scrolls instead of the document.
+// Centred dialog: bounded by a named measure, and by the reference's 82% of the
+// viewport down the block axis, so its own content scrolls instead of the
+// document and the screen behind it still shows above and below
+// (`specs/011-interface-foundations/design/canvas-extraction.md`, "Panel
+// dialog").
 @mixin dialog-presentation($measure: var(--edsb-layout-layer-max)) {
   // `inline-size`, not `max-inline-size`: the platform's own modal rule is a
   // `max-width` that holds a dialog off the edges of the screen, and an author
   // maximum here would beat it for every layer in the application.
   inline-size: min($measure, 100%);
-  max-block-size: 90vh;
+  max-block-size: 82vh;
   overflow-y: auto;
 }
 
 // A sheet fills the screen from the top and grows down to a bound.
 //
-// It used to rise from the block end instead, sized by its content, which put a
-// short screen's worth of scrim above every short layer: `Import build` began
-// 449px down an 844px phone, over a ship list that had nothing to do with
-// importing (Commander request 2026-08-30). Anchored at the top a layer starts
-// where the screen starts and takes exactly the room its content needs.
+// Anchored at the top, so a layer starts where the screen starts and takes
+// exactly the room its content needs. Risen from the block end and sized by its
+// content instead, a short layer puts a short screen's worth of scrim above
+// itself: `Import build` began 449px down an 844px phone, over a ship list that
+// had nothing to do with importing (Commander request 2026-08-30).
 //
 // The bound is the reference's 88%: enough of the screen behind it stays visible
 // to say what the layer is over, and no more. `svh` rather than `vh` because a

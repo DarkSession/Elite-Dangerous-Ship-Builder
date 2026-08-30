@@ -114,6 +114,13 @@ the manifest row and its marker, the ruled metric grid, the section rule, the fi
 hull-artwork plate — is named once as mixins in `src/styles/_responsive.scss` and composed by the
 components rather than restated per component.
 
+`src/styles/_chrome.scss` is the one partial that emits rules of its own rather than mixins. It holds
+the chrome no single component owns: canvas 1c's three-column bench and the numbered step strip
+across it, which run through the outfitting workspace, the module chooser and the engineering editor
+at once. A mixin would put the same rules in three stylesheets and leave the three free to drift; here
+each bar is the same bar by construction. Its selectors are global, so every class it draws carries
+the `edsb-` prefix or names a region it arranges.
+
 ### The one deliberate transform
 
 The type ramp is lifted; nothing else is. Canvas 1b is a 390 × 844 viewport with 44 px inputs and

@@ -28,7 +28,6 @@ import type { SlotView } from '../../../../application/outfitting/slot-view';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
-import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { Layer } from '../../../../ui/components/layer/layer';
 import {
   AttributeComparison,
@@ -285,9 +284,10 @@ export class EngineeringEditor {
   /**
    * The layer's own title: the module the screen is open on.
    *
-   * Canvas 1d writes the screen's name in the bar and the module under it. A Commander arriving from a ledger row already
-   * knows which screen they opened and does not know which of forty mounts it
-   * landed on, so the module takes the bar and the screen's name is what the
+   * Canvas 1d writes the screen's name in the bar and the module under it. A
+   * Commander arriving from a ledger row already knows which screen they opened
+   * and does not know which of forty mounts it landed on, so the module takes
+   * the bar and the screen's name is what the
    * region is called for a reader (Commander request 2026-08-27). Where there
    * is no module there is nothing to name, so the screen's name stands.
    */
@@ -323,8 +323,6 @@ export class EngineeringEditor {
 
   /** The second card's own bar: the recipe, the grade and the effect. */
   readonly choicesHeading = this.#messages.messageSignal('outfitting.engineering.choices.heading');
-
-  readonly headingId = relationId('engineering-panel');
 
   /**
    * The article the module was bought as, and the grade it was bought at.

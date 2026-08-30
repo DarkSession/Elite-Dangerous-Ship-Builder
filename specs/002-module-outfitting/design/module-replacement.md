@@ -173,7 +173,14 @@ pixels under it, saying the same thing twice.
 **The strip is drawn wherever the rail manifest is.** Where the bench has no room for three columns
 the editor sits under the fitting column instead of beside it, and steps ① and ② still head the rail
 and the pane — they are the manifest's own heads. Step ②'s chevron is drawn only where step ③ is
-actually beside it, because it points at the column that is next in the flow.
+actually beside it, because it points at the column that is next in the flow. Where the manifest is
+the accordion there are no columns to number: it draws no bars, and step ③ drops its number and keeps
+its name, so a lone `③` never heads a flow with no other step on the screen.
+
+**The three bars are drawn by one set of rules, in `src/styles/_chrome.scss`.** They span three
+components and are owned by none of them, and the claim the strip makes is that they are one strip;
+stated as a mixin the same rules land in three stylesheets, free to drift apart
+(`specs/011-interface-foundations/design/reference-review.md`).
 
 ## The manifest's own columns
 

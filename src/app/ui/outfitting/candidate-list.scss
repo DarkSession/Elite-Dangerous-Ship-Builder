@@ -581,22 +581,8 @@
 // own. The strip is what says the columns are one sequence rather than three
 // panels that happen to be adjacent (`design/module-replacement.md`, "The three
 // steps, numbered").
-.candidates__step {
-  @include layout.step-bar;
-
+.edsb-step {
   margin-block-end: var(--edsb-space-sm);
-}
-
-.candidates__step-number {
-  @include layout.step-number;
-}
-
-.candidates__step-name {
-  @include layout.step-name;
-}
-
-.candidates__step-chevron {
-  @include layout.step-chevron;
 }
 
 // Step ②'s bar is the column head as well, so its first cell is the step and
@@ -610,12 +596,12 @@
 
 // Step ②'s chevron points at step ③, so it is drawn only where step ③ is
 // beside it: stacked, the engineering editor is underneath.
-.candidates__columns .candidates__step-chevron {
+.candidates__columns .edsb-step__chevron {
   display: none;
 }
 
 @include layout.bench-columns {
-  .candidates__columns .candidates__step-chevron {
+  .candidates__columns .edsb-step__chevron {
     display: block;
   }
 }

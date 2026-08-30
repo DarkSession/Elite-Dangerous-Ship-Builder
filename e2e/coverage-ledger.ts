@@ -989,6 +989,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'no material rarity is fetched from another origin',
       'a supported partial roll is completed to quality 1 and said out loud',
       'the editor is a column beside the manifest where the bench holds three, and under it where it does not',
+      'the module details stand above the engineering and stay put while a recipe grows it',
+      'step ③ is numbered only where the chooser numbers steps ① and ②',
       'every grade cell names its grade, and a cell past the choice is unfilled and dimmed',
     ],
     manualRecord: 'screen-reader',

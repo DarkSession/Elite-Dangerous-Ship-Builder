@@ -43,6 +43,7 @@ function candidateFor(loadout: ShipLoadout): BuildCandidate {
 describe('engineering editor surface', () => {
   let store: OutfittingStore;
   let active: ActiveBuildStore;
+  const stubbed: (() => void)[] = [];
 
   /**
    * The editor over one mount, in the composition that holds a draft.
@@ -71,12 +72,20 @@ describe('engineering editor surface', () => {
    */
   function openLayer(slotKey: string) {
     const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
+    const restore = { showModal: prototype['showModal'], close: prototype['close'] };
     prototype['showModal'] = function showModal(this: HTMLDialogElement) {
       this.setAttribute('open', '');
     };
     prototype['close'] = function close(this: HTMLDialogElement) {
       this.removeAttribute('open');
     };
+    // Put back after the test that asked for it: a patched prototype is shared
+    // by every later test in the file, and one that opens a layer without
+    // meaning to would then get one.
+    stubbed.push(() => {
+      prototype['showModal'] = restore.showModal;
+      prototype['close'] = restore.close;
+    });
 
     const fixture = open(slotKey);
     fixture.detectChanges();
@@ -109,6 +118,12 @@ describe('engineering editor surface', () => {
     });
     active = TestBed.inject(ActiveBuildStore);
     store = TestBed.inject(OutfittingStore);
+  });
+
+  afterEach(() => {
+    while (stubbed.length > 0) {
+      stubbed.pop()!();
+    }
   });
 
   describe('canvas 1d’s own screen', () => {
@@ -309,12 +324,10 @@ describe('engineering editor surface', () => {
       // The bar the family rail and the module pane also carry, third in the
       // strip (`design/module-replacement.md`, "The three steps, numbered").
       const step = host.querySelector('.engineering__step');
-      expect(step?.querySelector('.engineering__step-name')?.textContent?.trim()).toBe(
+      expect(step?.querySelector('.edsb-step__name')?.textContent?.trim()).toBe(
         BUNDLED_ENGLISH['outfitting.engineering.heading'],
       );
-      expect(step?.querySelector('.engineering__step-number')?.getAttribute('aria-hidden')).toBe(
-        'true',
-      );
+      expect(step?.querySelector('.edsb-step__number')?.getAttribute('aria-hidden')).toBe('true');
 
       // Two cards under it, each with its own name.
       const headings = [...host.querySelectorAll('.engineering__card-heading')].map((heading) =>
