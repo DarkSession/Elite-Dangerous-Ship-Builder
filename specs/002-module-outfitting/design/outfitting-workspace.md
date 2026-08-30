@@ -214,10 +214,25 @@ however long the bench below it grows.
 
 It is worth writing down because a journey was counting rather than naming: it asked for two frozen
 columns at any non-compact width, which the ledger and the centre satisfied together until the centre
-released. At the two-pane width the status rail is a band under both columns and draws no vertical
-seam at all, so the count came to one and read the release as a lost seam. The rule is that every
-region drawing a seam is frozen — the ledger always, the status rail wherever this width gives it a
-column of its own (`e2e/outfitting-responsive.spec.ts`, corrected 2026-08-27).
+released. At the two-pane width the status rail draws no vertical seam at all, so the count came to
+one and read the release as a lost seam. The rule is that every region drawing a seam is frozen — the
+ledger always, the status rail wherever this width gives it a column of its own
+(`e2e/outfitting-responsive.spec.ts`, corrected 2026-08-27).
+
+**The status rail is a segment wherever it has no column. Ruled 2026-08-30 (Commander request).**
+Only the widest arrangement draws it as canvas 1c's third track. Below that the region has two
+columns and the rail had neither: it ran the full width under the bench, a tall band of readings
+squeezed beneath the module a Commander was working on. Canvas 1d already answers this — the rail is
+the strip's `STATUS` segment there — and the answer is the same wherever there is no column for it,
+so the segment is offered from the compact artboard up to the width the third track appears at. The
+panel it opens is drawn where the strip's own panels are drawn, under the strip: placed at the end of
+the grid instead it opened 1,304px below the segment that opened it, on a page the segment did not
+move, so pressing `STATUS` did nothing a Commander could see.
+
+The width the third track appears at is the three tracks added up rather than a rounded figure, and
+the region and the grid read the same sum (`composition.ts`, `MINIMUMS`;
+`outfitting-workspace.scss`). Stated apart they disagreed by 1.625rem, and in that band the region
+was a two-column grid that believed it had a rail.
 
 **What the release takes with it.** The bench's `1.1 : 1` share and the manifest's floor-against-the
 -editor's-floor guard both existed to divide a fixed box between two panels. There is no fixed box to

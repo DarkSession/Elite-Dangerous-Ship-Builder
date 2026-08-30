@@ -62,55 +62,40 @@
   }
 }
 
-// A grade below the one the recipe starts at. Marked rather than solid, so it
-// reads as outside the recipe's own range, and still pressable: taking a
+// A grade below the one the recipe starts at. Hatched across the whole cell, so
+// it reads as outside the recipe's own range, and still pressable: taking a
 // Merc-Coin article back down to grade 1 is a thing a Commander may do. The
-// mark is never the only carrier — each cell names its own grade.
+// hatch is never the only carrier — each cell names its own grade.
 //
-// The hatch is confined to a band along the block end, clear of the number the
-// cell carries. Run across the whole cell it has to be a ground that number can
-// be read on, and there is no such ground: a band 3:1 from the cell — what
-// makes the mark visible at all — leaves the number under 4.5:1 on it, and a
-// band the number reads on is 1.19:1 from the cell and is no mark. Below the
-// number both are free: the hatch takes the full contrast of the cell it
-// crosses, and the number keeps the whole of the cell's own ground.
+// One rule for both artboards. Canvas 1c fills every cell up to the choice and
+// canvas 1d fills the chosen button alone, so the same out-of-range grade is a
+// filled cell on one and an unfilled one on the other — and the range it is
+// outside of is the recipe's, which neither fill has anything to do with. So
+// the cell takes the quiet wash whichever it was, and the hatch crosses all of
+// it.
 //
-// ponytail: a band, not a second element. It clears the number at every drawn
-// size — 6px under a 9px number in a 28px cell, and under a 12px one in canvas
-// 1d's 38px cell — but the cell's height is fixed, so a text size large enough
-// to overflow the cell would reach it. That size overflows the cell either way.
-//
-// Two rules, because the two artboards fill their cells differently. Canvas 1c
-// fills every cell up to the choice, so an unavailable grade below it is a
-// filled cell. Canvas 1d fills the chosen button alone, so that same grade is
-// unfilled — which left the phone's control drawing no difference at all
-// between a grade outside the recipe and one inside it.
-.grade[data-unavailable='true'][data-filled='true'],
-.grades--steps .grade[data-unavailable='true'] {
-  background-position: bottom;
-  background-repeat: no-repeat;
-  background-size: 100% var(--edsb-space-xs);
-}
-
-// The page ground hatched across the fill: 8.45:1 against the cell, with the
-// cell's own near-black number reading at 8.50:1 on the amber above it.
-.grade[data-unavailable='true'][data-filled='true'] {
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--edsb-surface-root) 0 var(--edsb-space-2xs),
-    transparent var(--edsb-space-2xs) var(--edsb-space-xs)
-  );
-}
-
-// And the accent hatched across the quiet wash: 7.11:1 against the cell, with
-// the accent number reading at 8.47:1 on the wash above it.
-.grades--steps .grade[data-unavailable='true']:not([data-filled='true']) {
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--edsb-surface-accent-solid) 0 var(--edsb-space-2xs),
-    transparent var(--edsb-space-2xs) var(--edsb-space-xs)
-  );
+// The wash is what makes the number readable. Hatched over the solid amber
+// fill, a near-black number measures 1.19:1 wherever the hatch crosses it, and
+// no single ink clears 4.5:1 against both a bright amber stroke and the dark
+// ground between: the two are 7.11:1 apart. On the quiet wash the ordinary ink
+// reads at 12.46:1 on the cell and 4.97:1 on the stroke, and the stroke is
+// 2.51:1 against the cell it marks. That is the one pair of grounds a number
+// can be written across, and the mark stays the canvas's own full-cell hatch
+// (2026-08-30).
+.grade[data-unavailable='true'] {
   background-color: var(--edsb-surface-accent-quiet);
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--edsb-surface-accent-hatch) 0 var(--edsb-space-stack-tight),
+    transparent var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
+  );
+  border-color: var(--edsb-border-quiet);
+}
+
+// The ink the hatch was chosen for, at both artboards and whether or not the
+// cell would otherwise have been filled.
+.grade[data-unavailable='true'] .grade__number {
+  color: var(--edsb-text-primary);
 }
 
 .grade__radio {
@@ -130,7 +115,9 @@
   line-height: 1;
 }
 
-.grades:not(.grades--steps) .grade:not([data-filled='true']) .grade__number {
+.grades:not(.grades--steps)
+  .grade:not([data-filled='true']):not([data-unavailable='true'])
+  .grade__number {
   color: var(--edsb-text-faint);
 }
 

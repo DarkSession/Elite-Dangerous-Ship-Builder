@@ -104,9 +104,13 @@ requests put it.
 of the canvas's 1322px centre column, and held at that one number it is a share at one width and a
 sliver at every other: at 2560 the pane beside it ran mostly empty row while seventeen family names
 went on wrapping inside it. So the rail takes 20% of the chooser's own width — the canvas's own
-ratio — floored at 264px and bounded at 20rem, past which a family name has the width it needs and
-the pixels belong to the rows. The floor is what holds at the canvas's own width and below: 264 at
-1440 and at 2020, 283 at 2560.
+ratio — bounded at 20rem, past which a family name has the width it needs and the pixels belong to
+the rows.
+
+**And a share at the narrow end too, amended 2026-08-30 (Commander request).** Held at 264px below
+the canvas's own width, the rail was two fifths of the narrowest column that draws a rail at all —
+264 of 638 — with the rows it exists to open squeezed into what was left. It is the same fifth at
+both ends now, floored at 11rem, which is the width a family name reads in.
 
 **The declared height is a cap, and a column is better than a cap. Amended 2026-08-30 (Commander
 request).** `--edsb-layout-manifest-pane` is what the rail and the pane are held to while nothing
@@ -211,6 +215,16 @@ cells. A wide manifest that kept them would be the screen not being the design.
 mount alone — `GIMBALLED` — so the compact card is the same three things the wide row is: the module
 with its mount, its class and its cost. The chooser states which article a Commander is taking, at
 both widths, and the article's own figures are read where a fitted article's figures are read.
+
+**And the three stand on one line, 2026-08-30 (Commander request).** Canvas 1d draws them as one:
+`display: flex; align-items: center; gap: 12px; padding: 12px 14px 12px 30px; min-height: 60px`, the
+class code in a 28px gutter, the module beside it and the price on the trailing edge. Stacked in a
+single column instead, the same row stood three deep — a name, a class under it and a price under
+that — so a screen of modules showed a handful of them and every price was a line of its own to read
+down. The gutter is a declared width rather than `auto` because each row carries its own grid: at
+`auto` every code is as wide as its own row's code, and the column the canvas lines them up in stops
+being a column. Neither canvas writes `COST` on a row, so the label is drawn at neither width and
+stays in the accessibility tree at both.
 
 The family header carries the package's family name and its count, and nothing else. Canvas 1d
 draws no summary line on a family bar, and one is not built here in any case: a min–max across a

@@ -68,9 +68,15 @@ $bench-columns-min: 67.875rem;
 // this is `$bench-columns-min` plus both of them. It exists because the column
 // the bench sits in is the container the query above is asked of, and a
 // container query cannot style its own container — the column's height has to be
-// decided from outside it. The two figures move together or the bench is bounded
-// in an arrangement that cannot use the bound.
-$bench-columns-region-min: 111.5rem;
+// decided from outside it.
+//
+// Added up here rather than written out, because the two have to be the same
+// width. Stated apart they can drift, and a region that crossed its threshold
+// while the bench had not crossed its own would bound and clip a bench that is
+// still one column under another. The grid it is measured against has no column
+// gap and no inline padding, so the region is the three tracks and nothing else
+// (`outfitting-workspace.scss`, `grid-template-columns`).
+$bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
 
 @mixin compact {
   @media (max-width: #{$mode-compact-max}) {

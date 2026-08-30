@@ -45,8 +45,18 @@ const MINIMUMS = {
   ledger: 24.5,
   /** A candidate row's name, class, rating, mount and a 44px fit control. */
   bench: BENCH_CONTENT_MINIMUM_REM,
-  /** One validation or cost line with its number and unit, on two lines. */
-  rail: 17.5,
+  /**
+   * The rail's own track in canvas 1c's grid.
+   *
+   * **Corrected 2026-08-30: 17.5 to 19.125.** This was one validation or cost
+   * line with its number and unit on two lines, which is what the rail's
+   * *content* needs — but the third column is a fixed track, and the grid
+   * reserves 19.125rem for it. So this reported `wide` 1.625rem before the grid
+   * would draw three columns, and in that band the region was a two-column grid
+   * that believed it had a rail: the status ran full width under the bench,
+   * which is where the reading squeezed below the module details came from.
+   */
+  rail: 19.125,
 } as const;
 
 /**

@@ -78,6 +78,12 @@
   --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
   --edsb-surface-accent-solid: var(--edsb-palette-amber);
 
+  // The hatch over a choice the package offers but this recipe does not reach.
+  // It is the strongest amber a number can still be read on where it crosses:
+  // 2.51:1 against the cell it marks, with the ordinary ink at 4.97:1 on the
+  // hatch itself and 12.46:1 on the cell between the strokes.
+  --edsb-surface-accent-hatch: var(--edsb-palette-amber-a45);
+
   // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
   --edsb-surface-accent-underbar: var(--edsb-palette-amber-a50);
   --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
@@ -405,7 +411,11 @@
   // the wrong columns; canvas 1a's own `1fr 150px 84px`, once the `Mcr` column
   // it draws between them is taken out (feature 001 build-library design).
   --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
-  --edsb-layout-family-rail: var(--edsb-measure-family-rail);
+  --edsb-layout-family-rail: clamp(
+    var(--edsb-measure-family-rail-floor),
+    var(--edsb-measure-family-rail-share),
+    var(--edsb-measure-family-rail)
+  );
   --edsb-layout-family-rail-max: min(
     var(--edsb-measure-family-rail-max),
     var(--edsb-measure-family-rail-share)
@@ -413,6 +423,8 @@
   --edsb-layout-family-gap: var(--edsb-measure-family-gap);
   --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
   --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
+  --edsb-layout-candidate-row-compact: var(--edsb-measure-candidate-row-compact);
+  --edsb-layout-candidate-code: var(--edsb-measure-candidate-code);
   --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
   --edsb-layout-engineering-choices: var(--edsb-measure-engineering-choices);
   --edsb-layout-engineering-details: var(--edsb-measure-engineering-details);
@@ -450,6 +462,7 @@
   --edsb-layout-editor-panel: var(--edsb-measure-editor-panel);
   --edsb-layout-key-figure: var(--edsb-measure-key-figure);
   --edsb-layout-icon-size: var(--edsb-measure-icon);
+  --edsb-layout-step-number: var(--edsb-measure-step-number);
   --edsb-layout-menu-row: var(--edsb-measure-menu-row);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);
   --edsb-layout-menu-max: var(--edsb-measure-menu-max);

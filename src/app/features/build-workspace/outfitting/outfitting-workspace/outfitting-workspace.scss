@@ -271,9 +271,52 @@
   // bounded by the column either").
 
   // Two columns is not yet enough room for the canvas's third track, so the
-  // rail runs under both of them instead of squeezing the bench.
+  // rail has no column: it is the strip's `STATUS` segment.
   .outfitting__status-rail {
     grid-column: 1 / -1;
+  }
+
+  // And the panel that segment opens is drawn where the strip's own panels are
+  // drawn: under the strip, at the head of the centre column. Placed at the end
+  // of the grid instead it opened 1,304px below the segment that opened it, on
+  // a page the segment did not move — so pressing `STATUS` did nothing a
+  // Commander could see (Commander request 2026-08-30).
+  //
+  // `display: contents` is what lets a box between two of the column's children
+  // be one that is not a child of it. The column is already released while this
+  // panel is open — the strip is showing a mode rather than the mounts, which
+  // is the `--dashboard` case above — so there is no bound here to lose, and
+  // the anatomy and the bench simply take their own rows of the grid.
+  //
+  // Guarded against the compact arrangement, which is a flex column with its
+  // own order and reaches this container query on a short viewport.
+  .outfitting--status:not([data-composition='compact']) {
+    .outfitting__centre {
+      display: contents;
+    }
+
+    // The rail spans the ledger and the centre alike, so the ledger is what
+    // holds the column open across all three of the rows beside it. An absent
+    // row is a row of no height, so the span costs nothing when one is.
+    .outfitting__ledger-region {
+      grid-row: span 3;
+    }
+
+    edsb-hull-anatomy {
+      grid-column: 2;
+      order: 1;
+    }
+
+    .outfitting__status-rail {
+      grid-column: 2;
+      grid-row: auto;
+      order: 2;
+    }
+
+    .outfitting__bench {
+      grid-column: 2;
+      order: 3;
+    }
   }
 
   // A dashboard is not a pair of plates.
@@ -377,12 +420,12 @@
 }
 
 // The canvas's full `392px 1fr 306px`. Its own threshold, because the three
-// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side — half
-// again the two-column minimum. Below this the rail is a band under the bench,
-// which is the same content in the same order and is what the tablet widths get:
-// there is no source tablet canvas, so this composition is decided by what fits
-// rather than copied from a measurement.
-@container outfitting (min-width: 68rem) {
+// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side. It is
+// those three added up rather than a rounded figure, so the region and this
+// grid change arrangement at the same width (`composition.ts`, `MINIMUMS`).
+// Below this the rail has no column and is the strip's `STATUS` segment
+// instead, which is what canvas 1d does with it.
+@container outfitting (min-width: 66.125rem) {
   .outfitting {
     grid-template-columns:
       var(--edsb-layout-ledger-rail)
@@ -693,6 +736,20 @@
   margin: 0;
 }
 
+// Closed unless the strip has it open, at every width that draws no third
+// column for it. Not `visibility` and not a wash: the segment is a tab, and a
+// panel that is not the open one is not on the page at all — or every reading in
+// it would be announced twice, once here and once from the rail itself.
+//
+// Asked of the composition the region publishes, which is the same question the
+// strip asks before it offers the segment: a rail hidden by a rule the strip
+// disagreed with would be a panel with no control that opens it
+// (`outfitting-workspace.ts`, `statusIsGuest`).
+.outfitting:not([data-composition='wide'])
+  .outfitting__status-rail:not(.outfitting__status-rail--guest) {
+  display: none;
+}
+
 // ---------------------------------------------------------------------------
 // Canvas 1d's order
 // ---------------------------------------------------------------------------
@@ -787,14 +844,6 @@
 
   .outfitting__bench-actions {
     order: 6;
-  }
-
-  // Closed unless the strip has it open. Not `visibility` and not a wash:
-  // the segment is a tab, and a panel that is not the open one is not on the
-  // page at all — or every reading in it would be announced twice, once here
-  // and once from the key figures above the tabs.
-  .outfitting__status-rail:not(.outfitting__status-rail--guest) {
-    display: none;
   }
 
   // The gutter is the frame's, and this screen does not want it.

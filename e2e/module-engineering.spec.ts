@@ -628,14 +628,30 @@ test.describe('purchased and reward articles', () => {
     // that says it is out of range and looks exactly like one that is not says
     // nothing to a Commander (SC 1.4.11).
     const marks = await page.locator('.grade').evaluateAll((nodes) =>
-      nodes.map((node) => ({
-        unavailable: node.getAttribute('data-unavailable') === 'true',
-        image: getComputedStyle(node).backgroundImage,
-      })),
+      nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        const drawn = getComputedStyle(node);
+        return {
+          unavailable: node.getAttribute('data-unavailable') === 'true',
+          image: drawn.backgroundImage,
+          size: drawn.backgroundSize,
+          height: Math.round(box.height),
+        };
+      }),
     );
     expect(marks.some((cell) => cell.unavailable)).toBe(true);
     for (const cell of marks) {
       expect(cell.image === 'none').toBe(!cell.unavailable);
+      if (!cell.unavailable) {
+        continue;
+      }
+
+      // And it crosses the whole cell, which is how the canvas draws it. Held
+      // to a band along one edge the mark is a rule under the number rather
+      // than a hatch over the cell, and a Commander reads the cell as one the
+      // recipe reaches (Commander request 2026-08-30).
+      const [, band] = cell.size.split(' ');
+      expect(band === undefined || Number.parseFloat(band) >= cell.height).toBe(true);
     }
     // Inline this has already committed; in a layer it is a draft that has to
     // be applied before the ledger says anything. Either way the panel is then

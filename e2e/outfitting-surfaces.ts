@@ -68,7 +68,9 @@ export async function revealStatusRail(
   const segment = page.locator('.anatomy__modes').getByRole('button', { name });
 
   // Read from the region's own published composition rather than from whether
-  // the rail happens to be on screen yet. The composition is measured after the
+  // the rail happens to be on screen yet. Only the widest arrangement draws the
+  // rail as a column; every narrower one reaches it through the strip's
+  // `STATUS` segment (`outfitting-workspace.ts`, `statusIsGuest`). The composition is measured after the
   // first paint, so a rail asked about too early answers for the arrangement it
   // is about to leave — and the branch taken on that answer is the wrong one at
   // both widths.
@@ -77,7 +79,7 @@ export async function revealStatusRail(
   // strip republishes its segments when the composition changes, so a control
   // located a moment ago can be gone by the time it is pressed.
   await expect(async () => {
-    if ((await region.getAttribute('data-composition')) !== 'compact') {
+    if ((await region.getAttribute('data-composition')) === 'wide') {
       await expect(rail).toBeVisible({ timeout: 2_000 });
       return;
     }

@@ -194,6 +194,64 @@ test.describe('module families', () => {
     expect(Math.abs(after.y - railAfter.y - clipped!.offset)).toBeLessThanOrEqual(1);
   });
 
+  test('draws a compact row on one line, with the price on its trailing edge', async ({ page }) => {
+    // Canvas 1d's row: the class code in a fixed gutter, the module beside it
+    // and the price on the trailing edge, `min-height: 60px`. Stacked instead —
+    // which is what a single-column row does to those three cells — the same
+    // row stood three deep, so a screen of modules showed a handful of them and
+    // every price was a line of its own to read down (Commander request
+    // 2026-08-30).
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStockBuild(page);
+    await selectMount(page, 'MediumHardpoint1');
+    await openChooser(page);
+    if ((await revealedRows(page).count()) === 0) {
+      await familyControls(page).first().click();
+    }
+    await expect(revealedRows(page).first()).toBeVisible();
+
+    const drawn = await revealedRows(page).evaluateAll((nodes) =>
+      nodes.slice(0, 6).map((node) => {
+        const centre = (selector: string): number | null => {
+          const cell = node.querySelector(selector);
+          if (cell === null) {
+            return null;
+          }
+          const box = cell.getBoundingClientRect();
+          return box.top + box.height / 2;
+        };
+        const row = node.getBoundingClientRect();
+        const cost = node.querySelector('.candidate__cost')?.getBoundingClientRect();
+        const name = node.querySelector('.candidate__name')?.getBoundingClientRect();
+        return {
+          height: row.height,
+          lines: [
+            centre('.candidate__class'),
+            centre('.candidate__identity'),
+            centre('.candidate__cost'),
+          ],
+          trailing: cost === undefined ? 0 : row.right - cost.right,
+          afterName: cost === undefined || name === undefined ? 1 : cost.left - name.right,
+        };
+      }),
+    );
+
+    expect(drawn.length).toBeGreaterThan(1);
+    for (const row of drawn) {
+      // One line: the three cells are centred on the same line, whatever their
+      // own heights are.
+      const centres = row.lines.filter((line): line is number => line !== null);
+      expect(centres.length).toBe(3);
+      expect(Math.max(...centres) - Math.min(...centres)).toBeLessThanOrEqual(2);
+
+      // And the price is at the row's own end, after the name rather than under
+      // it. The inset it stands off is the row's, and the same on every row.
+      expect(row.afterName).toBeGreaterThan(0);
+      expect(row.trailing).toBeGreaterThanOrEqual(0);
+      expect(row.trailing).toBeLessThanOrEqual(drawn[0]!.trailing + 1);
+    }
+  });
+
   test('orders a family\u2019s rows by class, then by what they cost', async ({ page }) => {
     await openStockBuild(page);
     // A medium mount, because it takes more than one class: a small hardpoint

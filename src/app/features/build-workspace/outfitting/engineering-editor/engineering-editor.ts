@@ -318,10 +318,10 @@ export class EngineeringEditor {
   /** Canvas 1c's step ③ bar, over the two cards it heads. */
   readonly panelHeading = this.#messages.messageSignal('outfitting.engineering.heading');
 
-  /** The first card's own bar: the article's attributes. */
+  /** The second card's own bar: the article's attributes. */
   readonly detailsHeading = this.#messages.messageSignal('outfitting.engineering.details.heading');
 
-  /** The second card's own bar: the recipe, the grade and the effect. */
+  /** The first card's own bar: the recipe, the grade and the effect. */
   readonly choicesHeading = this.#messages.messageSignal('outfitting.engineering.choices.heading');
 
   /**

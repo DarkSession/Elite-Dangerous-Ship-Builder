@@ -16,15 +16,11 @@ do not mutate the active build until confirmed.
   bench's third column, beside the manifest rather than under it, opened by step ③
   `ATTRIBUTES · ENGINEERING` — the same numbered bar the family rail and the pane carry
   (`design/module-replacement.md`, "The three steps, numbered"). Under that bar it is **two bordered
-  cards** on `396px`, stacked with 14px between them: `MODULE DETAILS`, holding the attribute table,
-  and `ENGINEERING` under it, holding the blueprint, the grade and the experimental effect. Each card
+  cards** on `396px`, stacked with 14px between them: `ENGINEERING`, holding the blueprint, the grade
+  and the experimental effect, and `MODULE DETAILS` under it, holding the attribute table. Each card
   is a hairline amber edge, the panel's own ground and a ruled bar across the top; the panel around
-  the two carries none of that, because a box around two boxes is a frame around a frame.
-- **The details are above the engineering.** The canvas switched them: what a Commander is deciding
-  about is the article's own figures, and the controls that change them read as what follows from
-  that rather than as what it answers. It is also the order the two are read in: a weapon publishes
-  around seventy attribute rows, so controls under the table are controls a Commander scrolls back
-  up to.
+  the two carries none of that, because a box around two boxes is a frame around a frame. The order
+  is ruled below, under "The controls come first and the details follow them".
 - **The editor is stacked under the manifest where three columns do not fit.** The bench needs
   67.875rem before the three will stand side by side, which is more than a 1440 window has left after
   the ledger and the status rail (`design/outfitting-workspace.md`, "The bench is two columns where
@@ -117,11 +113,14 @@ do not mutate the active build until confirmed.
   filled for being _below_ the choice is four buttons claiming to be the one that is pressed.
 - Grades below the one the descriptor starts at are drawn **hatched and pressable**: a bespoke
   Mercenary table begins at grade 2, the article was bought at grade 1, and that grade is one the
-  article really has (wave 5, wave 6). The hatch runs in a band along the cell's block end rather
-  than across the whole cell, because since the 2026-08-30 revision the cell carries its own number
-  and the two cannot share a ground: a hatch far enough from the cell to be seen leaves the number
-  under 4.5:1 on it, and one the number reads on is 1.19:1 from the cell and marks nothing. Below
-  the number both are free.
+  article really has (wave 5, wave 6). The hatch crosses the whole cell, as the canvas draws it, and
+  the cell takes the quiet amber wash whichever artboard is drawing it. The wash is what makes the
+  number on the cell readable: hatched over the solid amber fill instead, a near-black number
+  measures 1.19:1 wherever the hatch crosses it, and no single ink clears 4.5:1 against both a
+  bright amber stroke and the dark ground between, which are 7.11:1 apart. On the wash the ordinary
+  ink reads at 12.46:1 on the cell and 4.97:1 on the stroke, and the stroke is 2.51:1 against the
+  cell it marks. That is the one pair of grounds a number can be written across (Commander request
+  2026-08-30).
 - Experimental choices from `availableExperimentalEffects()`, including explicit no-effect — drawn
   only once a recipe is chosen. An effect menu or a "no values are resolved" line standing over an
   empty selection is a section about nothing (wave 4).

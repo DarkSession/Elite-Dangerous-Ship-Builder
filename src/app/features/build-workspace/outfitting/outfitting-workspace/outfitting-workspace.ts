@@ -178,6 +178,18 @@ export class OutfittingWorkspace {
   readonly benchIsLayer = computed(() => this.composition() === 'compact');
 
   /**
+   * Whether the status rail is the strip's guest segment rather than a column.
+   *
+   * The rail is canvas 1c's third track, and only the widest arrangement draws
+   * it. Below that the grid has two columns and the rail had neither: it ran
+   * the full width under the bench, a tall band of readings squeezed beneath
+   * the module a Commander was working on. Canvas 1d already answers this — the
+   * rail is the strip's `STATUS` segment there — and the answer is the same
+   * wherever there is no column for it (Commander request 2026-08-30).
+   */
+  readonly statusIsGuest = computed(() => this.composition() !== 'wide');
+
+  /**
    * Which segment of the anatomy strip is open, as the strip reports it.
    *
    * The strip is the anatomy's; this is only what the workspace needs in order
@@ -209,7 +221,7 @@ export class OutfittingWorkspace {
     // column for a dashboard while the region was drawing plates
     // (`hull-anatomy.ts`, `#mode`). `STATUS` is the one guest segment, and
     // whether it is offered is the same question as below.
-    return mode !== STATUS_MODE || this.benchIsLayer();
+    return mode !== STATUS_MODE || this.statusIsGuest();
   });
 
   /**
@@ -242,10 +254,11 @@ export class OutfittingWorkspace {
    * Offered only where the artboard draws it. At wide width the rail is the
    * third track of canvas 1c's grid and is on screen whatever the strip has
    * open, so there is nothing for a segment to reveal (Commander request
-   * 2026-08-26).
+   * 2026-08-26). At every narrower arrangement there is no such track, and the
+   * segment is how the rail is reached.
    */
   readonly anatomyGuestModes = computed<readonly AnatomyGuestMode[]>(() =>
-    this.benchIsLayer()
+    this.statusIsGuest()
       ? [
           {
             id: STATUS_MODE,
@@ -256,9 +269,9 @@ export class OutfittingWorkspace {
       : [],
   );
 
-  /** Whether the compact strip currently has the status rail open. */
+  /** Whether the strip currently has the status rail open as its guest. */
   readonly statusModeOpen = computed(
-    () => this.benchIsLayer() && this.#anatomyMode() === STATUS_MODE,
+    () => this.statusIsGuest() && this.#anatomyMode() === STATUS_MODE,
   );
 
   readonly regionHeadingId = relationId('outfitting-region');

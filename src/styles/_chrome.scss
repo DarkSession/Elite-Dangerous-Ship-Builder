@@ -12,10 +12,13 @@
 // Held as mixins instead, the chrome is emitted once per component that includes
 // it, and the regions it lands in are already the largest stylesheets in the
 // application: two of them passed the 10kB ceiling `angular.json` sets for one
-// component's styles. What the project does about that ceiling is take the
-// shared thing out, not raise the number
+// component's styles. The first answer to that ceiling is to take the shared
+// thing out rather than to raise the number, and this file is that answer
 // (`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The block is its
-// own component").
+// own component"). It is not the whole of it: the outfitting screen's own
+// stylesheet has nothing shared left in it and the ceiling is raised for that
+// one, which is recorded where the raise is
+// (`specs/002-module-outfitting/design/outfitting-workspace.md`).
 
 @use 'responsive' as layout;
 
@@ -117,8 +120,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--edsb-layout-icon-size);
-  block-size: var(--edsb-layout-icon-size);
+  inline-size: var(--edsb-layout-step-number);
+  block-size: var(--edsb-layout-step-number);
   background-color: var(--edsb-surface-accent-solid);
   font-family: var(--edsb-font-metric);
   font-size: var(--edsb-text-size-micro);
@@ -145,11 +148,14 @@
   }
 }
 
-// And not at all where the bench holds no chooser. Both questions above are
-// about width, and width is only a proxy for the one that matters: whether
-// steps ① and ② are on the screen. A mount the Almanac offers no replacement
-// for has no chooser at any width, so the strip is the editor's bar alone.
-.outfitting__bench:not(:has(.replacement__toolbar)) .engineering__step .edsb-step__number {
+// And not at all where the bench draws no numbered steps beside it. Both
+// questions above are about width, and width is only a proxy for the one that
+// matters: whether steps ① and ② are on the screen. A mount the Almanac offers
+// no replacement for has no chooser at any width, and a search that matches
+// nothing keeps the chooser's toolbar and draws no manifest under it — so the
+// box the two steps are in is what is asked about, rather than the toolbar,
+// which outlives them both.
+.outfitting__bench:not(:has(.candidates__manifest)) .engineering__step .edsb-step__number {
   display: none;
 }
 

@@ -606,9 +606,17 @@
   // The two icons the canvas draws inline in a row — the engineered mark and
   // the Merc Coin — at 14 to 16px depending on the artboard.
   --edsb-measure-icon: 0.9375rem;
+  // The step strip's numbered square, which the canvas draws at 16px. Its own
+  // measure rather than the icon's: it is a numbered chip, and the two were the
+  // same size only by coincidence (`design/module-replacement.md`, "The three
+  // steps, numbered").
+  --edsb-measure-step-number: 1rem; // 16
   // The canvas's manifest row: 13px of name between 11px of padding, plus the
   // 2px that separates one row from the next.
   --edsb-measure-candidate-row: 2.625rem;
+  // Canvas 1d's `min-height: 60px`, which is the same row at the width that
+  // draws it one under the other rather than in aligned columns.
+  --edsb-measure-candidate-row-compact: 3.75rem; // 60
 
   // Canvas 1c's manifest: `grid-template-columns: 264px minmax(360px, 1fr)
   // 396px; column-gap: 14px` for the family rail, the variant pane and the
@@ -629,6 +637,13 @@
   // the pixels.
   --edsb-measure-family-rail-max: 20rem;
   --edsb-measure-family-rail-share: 20%;
+  // And how narrow it may get where the column has none to spare. The rail's
+  // full width is a fifth of the canvas's own 1322px centre column, so at the
+  // narrowest column that draws a rail at all it is two fifths of it — 264px of
+  // 638, with the rows it exists to open squeezed into what is left. It is a
+  // share at both ends now, floored here at the width a family name reads in
+  // (Commander request 2026-08-30).
+  --edsb-measure-family-rail-floor: 11rem;
   --edsb-measure-family-gap: 0.875rem;
   // What the rail and the pane are bounded at: two rows short of the figure the
   // fitting panel's own floor above is measured from. The panel and the pane are
@@ -642,6 +657,9 @@
   // answer it (`design/module-replacement.md`, "The canvas's own bound is not
   // adopted").
   --edsb-measure-manifest-pane: 24.125rem;
+  // Canvas 1d's `width: 28px` gutter for the class code, which is what lines
+  // `4A` up down a list of rows that each carry their own grid.
+  --edsb-measure-candidate-code: 1.75rem; // 28
   --edsb-measure-candidate-class: 3.5rem;
   --edsb-measure-candidate-cost: 6.5rem;
   // Canvas 1c's third bench column: the attribute table's three columns, and the
@@ -665,9 +683,18 @@
 
   // How short the attribute table may get before it stops being a reading. It is
   // the half of the editor that takes whatever the column has spare, so it is
-  // also the half a short window takes it back from — and the arrangement this
-  // replaced was rejected for leaving that reading four rows tall. Eight rows,
-  // and below it the bench asks the page for the height instead.
+  // also the half a short window takes it back from — and with no floor at all
+  // the whole of a short column's shortfall came out of it, because the card
+  // above it is reserved room and cannot give way.
+  //
+  // The box, not its content: the card body carries the canvas's 14px inside the
+  // card's edge on all four sides, so this is a heading row and four attribute
+  // rows at the base text size. It is what the table is guaranteed at the
+  // shortest window the bench is bounded to and nowhere else — every taller one
+  // hands it what the column has spare, which is 265px at the height the canvas
+  // is drawn at. Below the bound the bench asks the page for its height and the
+  // table is as tall as the article (`_responsive.scss`,
+  // `$bench-bounded-min-height`).
   --edsb-measure-engineering-details: 8rem; // 128
 
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
