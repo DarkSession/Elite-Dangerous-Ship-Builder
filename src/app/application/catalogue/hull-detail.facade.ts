@@ -82,7 +82,11 @@ export interface HullCapacityView {
 
 /** The screen's whole state for one hull, or the fact there is no such hull. */
 export type HullDetailView =
-  | { readonly kind: 'unknown'; readonly symbol: string }
+  /**
+   * `address` rather than `symbol`: what the screen was pointed at resolved to
+   * no hull, so it is whatever was asked for and not an identity (001/FR-005).
+   */
+  | { readonly kind: 'unknown'; readonly address: string }
   | {
       readonly kind: 'populated';
       readonly entry: HullCatalogueEntry;
@@ -151,7 +155,7 @@ export class HullDetailFacade {
 
     const entry = hullCatalogueEntry(symbol);
     if (entry === null) {
-      return { kind: 'unknown', symbol };
+      return { kind: 'unknown', address: symbol };
     }
 
     const name = this.#gameText.shipName(entry.symbol);
@@ -178,7 +182,12 @@ export class HullDetailFacade {
     return symbol === null ? 'loading' : this.#artwork.stateOf(symbol);
   });
 
-  /** Points the screen at a hull. Called from the route's own parameters. */
+  /**
+   * Points the screen at a hull.
+   *
+   * The package's own symbol wherever the address resolved to a hull, and the
+   * address itself where it did not: the screen then says what was asked for.
+   */
   setSymbol(symbol: string | null): void {
     this.#symbol.set(symbol);
   }

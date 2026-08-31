@@ -158,7 +158,7 @@
   "hullDetail.create.unavailable": "Für diesen Rumpf ist keine Standardausrüstung verzeichnet, daher lässt sich kein Serienaufbau erstellen.",
   "hullDetail.create.failed": "Dieser Serienaufbau konnte nicht erstellt werden: {{reason}}",
   "hullDetail.unknown.title": "Kein solcher Rumpf",
-  "hullDetail.unknown.description": "Es gibt keinen Rumpf mit der Kennung „{{symbol}}“. Es wurde nichts erstellt oder verändert.",
+  "hullDetail.unknown.description": "Es gibt keinen Rumpf unter der Adresse „{{hull}}“. Es wurde nichts erstellt oder verändert.",
   "workspace.title": "Aufbau",
   "workspace.description": "Rüste einen Elite-Dangerous-Rumpf Slot für Slot aus und verfolge, wie sich Sprungreichweite, Schilde, Schaden und Energie verändern.",
   "workspace.empty.title": "Es ist kein Aufbau geöffnet",

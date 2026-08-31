@@ -1,4 +1,8 @@
-import { SHIPS, getShipBySymbol, type Ship } from '@elite-dangerous-almanac/core/ships/ships';
+import {
+  getShipByName,
+  getShipBySymbol,
+  type Ship,
+} from '@elite-dangerous-almanac/core/ships/ships';
 
 /**
  * How a hull is spelled in an address, and which hull an address names.
@@ -17,6 +21,9 @@ import { SHIPS, getShipBySymbol, type Ship } from '@elite-dangerous-almanac/core
 
 /** The one character an address is spelled differently from a name. */
 const SPACE = / /g;
+
+/** The same substitution, read back. No package name carries an underscore. */
+const UNDERSCORE = /_/g;
 
 /** The address segment one hull answers to. */
 export function hullAddressSegment(name: string): string {
@@ -39,10 +46,10 @@ export function hullAddressForSymbol(symbol: string): string | null {
  *
  * Both forms are matched without regard to case, which is what an address has to
  * do — a Commander typing one, and a link that lower-cased it on the way, name
- * the same ship as the map does.
+ * the same ship as the map does. Both are the package's own lookups: reading the
+ * catalogue here would be this application deciding which hull a name belongs
+ * to (constitution II).
  */
 export function hullForAddressSegment(segment: string): Ship | null {
-  const wanted = segment.toLowerCase();
-  const named = SHIPS.find((ship) => hullAddressSegment(ship.name).toLowerCase() === wanted);
-  return named ?? getShipBySymbol(segment);
+  return getShipByName(segment.replace(UNDERSCORE, ' ')) ?? getShipBySymbol(segment);
 }

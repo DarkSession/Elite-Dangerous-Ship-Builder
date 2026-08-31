@@ -914,8 +914,9 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'the rail states a cargo capacity and a passenger capacity, each as one cell of its own band',
-      'both figures are the package’s own, for the build in memory, and follow an edit that changes either',
-      'a build with no rack and no cabin draws both cells at zero rather than dropping them',
+      'both figures are the package’s own for the build in memory, compared against it rather than written down',
+      'a build carrying both a hold and berths reads each into its own cell, neither crossed nor nought',
+      'a build with no cabin draws that cell at zero rather than dropping it',
       'the cells are the last two of the rail’s band, after the six the other features own',
       'the band is drawn wherever the rail is, so the compact STATUS segment carries every cell the column does',
       'the compact key-figures strip stands down while STATUS is open, so no figure is on one screen twice',

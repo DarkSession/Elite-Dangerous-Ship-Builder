@@ -1,9 +1,9 @@
 @if (shown()) {
   <!--
-    Two of the rail's six cells, in the one grid the canvas draws all six on.
+    Two of the rail's cells, in the one grid the canvas draws its band on.
     The group runs in flow so its cells become items of that grid rather than of
-    a second one nested inside it: the canvas rules the six off each other with
-    one hairline ground, and three grids stacked would rule three blocks off each
+    a second one nested inside it: the canvas rules the cells off each other with
+    one hairline ground, and grids stacked would rule blocks off each
     other instead (`design/status-rail.md`, "The metric cells").
   -->
   <edsb-metric-group [flow]="true" [label]="railLabel()" [metrics]="cells()" />

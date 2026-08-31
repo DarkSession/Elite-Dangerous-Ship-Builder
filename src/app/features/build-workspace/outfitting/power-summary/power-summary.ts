@@ -71,7 +71,7 @@ const PIP_DIGITS = 1;
  * What the plant is doing, in the outfitting status rail.
  *
  * Canvas 1c draws three things here, between feature 003's validation issues
- * and the six metric cells features 006 to 008 own: the sentence about a group
+ * and the metric cells features 006, 007, 008 and 003 own: the sentence about a group
  * the plant cannot keep lit, the `POWER` line — `29.64 / 31.20 MW · 7.80 OFF`
  * over a bar of the same four figures — and, since the 2026-08-25 revision, the
  * `SYS` / `ENG` / `WEP` pip control. **All three are built**: the pips were

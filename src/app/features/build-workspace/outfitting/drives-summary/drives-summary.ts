@@ -26,11 +26,11 @@ const MASS_DIGITS = 0;
 /**
  * The `JUMP`, `SPEED` and `MASS` cells of canvas 1c's status rail.
  *
- * The rail closes with a metric grid of six cells — `SHIELD`, `ARMOUR`, `DPS`,
- * `JUMP`, `SPEED` and `MASS` — and features 006 to 008 own them between them.
- * These are this feature's three, drawn under feature 007's `DPS` and above the
- * cost block, exactly where canvas 1c draws them. Canvas 1d draws the same
- * three in its Status mode.
+ * The rail carries a metric grid of cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`,
+ * `SPEED` and `MASS`, then feature 003's `CARGO` and `PASSENGERS` — and four
+ * features own them between them. These are this feature's three, drawn under
+ * feature 007's `DPS`, exactly where canvas 1c draws them. Canvas 1d draws the
+ * same three in its Status mode.
  *
  * Every one is the same figure the `DRIVES` mode of the anatomy region draws,
  * from the same projection asked the same way: `JUMP` is the laden profile the
@@ -38,7 +38,7 @@ const MASS_DIGITS = 0;
  * envelope, and `MASS` the thruster card's own headline. One reading of one
  * build, so the rail and the card can never disagree.
  *
- * Nothing here is interactive, as none of the rail's six cells is: the canvas
+ * Nothing here is interactive, as no cell in the rail's band is: the canvas
  * draws no control in that grid. The rail around it is another matter since
  * the 2026-08-25 revision, which put feature 005's pip control in it
  * (`specs/003-ship-statistics/design/status-rail.md`, item 4). At both widths

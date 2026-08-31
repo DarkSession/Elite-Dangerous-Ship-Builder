@@ -23,7 +23,7 @@ import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ScreenChrome } from '../shared/screen-chrome';
 import { CatalogueAnchorRestorer } from '../ship-catalogue/catalogue-anchor.restorer';
-import { HullDetailUnknownSymbol } from './hull-detail-unknown-symbol';
+import { HullDetailUnknownHull } from './hull-detail-unknown-hull';
 
 /**
  * The eight figures the reference's metric grid carries, in its order (canvas
@@ -69,7 +69,7 @@ export interface MountCount {
  */
 @Component({
   selector: 'edsb-hull-detail-page',
-  imports: [ActionButton, FactList, GameText, HullArtwork, HullDetailUnknownSymbol, StatusNotice],
+  imports: [ActionButton, FactList, GameText, HullArtwork, HullDetailUnknownHull, StatusNotice],
   templateUrl: './hull-detail.page.html',
   styleUrl: './hull-detail.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -247,7 +247,7 @@ export class HullDetailPage {
       if (this.hull() === canonical) {
         return;
       }
-      void this.#router.navigate(['/ships', canonical], { replaceUrl: true });
+      void this.#router.navigate([NAVIGATION_ROUTES.catalogue, canonical], { replaceUrl: true });
     });
 
     // One assertive announcement per new blocking condition, and none for the

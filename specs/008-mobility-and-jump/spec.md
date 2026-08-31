@@ -155,10 +155,11 @@ inline notes below record each correction and why.
 
 - **FR-009**: The `JUMP`, `SPEED` and `MASS` cells of canvas 1c's status rail MUST be drawn, and each
   MUST carry the same figure, read at the same load and the same ENG allocation and printed at the
-  same precision, as the card in the `DRIVES` mode that already states it. The rail closes with a
-  grid of six cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS` — of which features 006 and
-  007 own the first three; these are this feature's, and they were absent from this specification
-  while the design has drawn them all along. The design wins.
+  same precision, as the card in the `DRIVES` mode that already states it. The rail carries a grid of
+  cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED` and `MASS`, the six the canvas draws, and then
+  feature 003's `CARGO` and `PASSENGERS` — of which features 006 and 007 own the first three; the
+  next three are this feature's, and they were absent from this specification while the design has
+  drawn them all along. The design wins.
 
   > The rail and the two cards are one reading of one build seen twice. A rail cell that weighed the
   > hold, read a different allocation or rounded to different digits would put two different numbers

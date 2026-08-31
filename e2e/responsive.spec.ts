@@ -130,6 +130,14 @@ test.describe('responsive availability', () => {
     expect(measured.top).toBe(measured.inset);
     expect(measured.top).toBeLessThan(measured.viewport / 8);
 
+    // The inset is taken out of the 88% bound rather than added to it, so a
+    // sheet gives up the same strip of screen it always did and the scrim below
+    // it is unchanged. Without this the bound could go back to a plain `88svh`
+    // and only the strip below would shrink, which nothing above would notice.
+    expect(measured.top + measured.height).toBeLessThanOrEqual(
+      Math.round(0.88 * measured.viewport) + 1,
+    );
+
     // And it still leaves the screen behind it visible rather than taking the
     // whole of it: that is what parts a sheet from a full-height layer, and a
     // bound equal to the screen would not.

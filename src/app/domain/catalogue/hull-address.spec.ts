@@ -29,8 +29,15 @@ describe('hullAddressSegment', () => {
     // Names of letters, digits, spaces and hyphens are what make this rule
     // enough on its own: a name needing an escape would address one hull as
     // another's neighbour, or as nothing at all.
+    //
+    // The underscore is asserted absent from the *name* rather than allowed in
+    // the segment. It is the one character the substitution spends, so a name
+    // carrying one would leave `Type-11_Prospector` naming either that hull or
+    // a literal `Type-11_Prospector`, and the address would stop being
+    // reversible.
     for (const { name } of SHIPS) {
-      expect(hullAddressSegment(name)).toMatch(/^[A-Za-z0-9_-]+$/);
+      expect(name).toMatch(/^[A-Za-z0-9 -]+$/);
+      expect(name).not.toContain('_');
       expect(encodeURIComponent(hullAddressSegment(name))).toBe(hullAddressSegment(name));
     }
   });

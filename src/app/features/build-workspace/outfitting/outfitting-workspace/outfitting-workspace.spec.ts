@@ -214,8 +214,12 @@ describe('the compact workspace', () => {
   it('draws the key readings once, in the strip while the rail is closed', () => {
     const element = render().nativeElement as HTMLElement;
 
-    // The rail is not drawn at all until its segment is opened, so the strip is
-    // the only copy of the figures here.
+    // The rail is in the document whether or not its segment is open — the
+    // stylesheet is what withholds a closed one — so its band is what has to
+    // stay unbuilt, or every cell would be live twice for one screen.
+    expect(element.querySelectorAll('.outfitting__status-rail')).toHaveLength(1);
+    expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(0);
+    expect(element.querySelectorAll('edsb-capacity-summary')).toHaveLength(0);
     expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(1);
     expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
   });

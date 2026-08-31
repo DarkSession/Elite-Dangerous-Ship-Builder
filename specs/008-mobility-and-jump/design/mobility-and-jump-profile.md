@@ -155,10 +155,11 @@ under the ranges.
 
 ## The status rail
 
-Canvas 1c closes its status rail with a grid of six cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`,
-`SPEED` and `MASS`. Features 006 and 007 own the first three; the last three are this feature's, and
-they are drawn under feature 007's `DPS` and above the cost block, exactly where the canvas puts
-them. Canvas 1d draws the same three in its Status mode.
+Canvas 1c draws a grid of six cells in its status rail — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`
+and `MASS`. Features 006 and 007 own the first three; the next three are this feature's, and they are
+drawn under feature 007's `DPS`, exactly where the canvas puts them. Canvas 1d draws the same three
+in its Status mode. Feature 003's `CARGO` and `PASSENGERS` follow them in the same grid, ruled
+2026-08-31 (`specs/003-ship-statistics/spec.md`, FR-023); nothing about these three moves with them.
 
 Every one is a figure the two cards already state, from the same projection asked the same way:
 `JUMP` is the drive card's `Jump laden` cell, `SPEED` the top speed at the head of its speed

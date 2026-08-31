@@ -55,16 +55,20 @@ describe('CapacitySummary', () => {
   });
 
   it('carries the package hold and berths, in that order', () => {
-    const build = ShipLoadout.default('BelugaLiner');
+    // The Orca is the fixture because its two figures differ — a hold of 24
+    // tonnes over 40 berths — so a pair drawn the wrong way round is caught
+    // here. A hull whose figures match would let them be swapped in silence.
+    const build = ShipLoadout.default('Orca');
     const { component } = render(build);
 
+    expect(build.cargoCapacity).not.toBe(build.passengerCapacity);
     expect(component.cells().map(({ id }) => id)).toEqual(['cargo', 'passengers']);
     expect(component.cells()[0]?.value).toBe(String(build.cargoCapacity));
     expect(component.cells()[1]?.value).toBe(String(build.passengerCapacity));
   });
 
   it('states the hold in tonnes and leaves the berths bare', () => {
-    const { component } = render(ShipLoadout.default('BelugaLiner'));
+    const { component } = render(ShipLoadout.default('Orca'));
 
     expect(component.cells()[0]?.unit).toBe('t');
     expect(component.cells()[1]?.unit).toBeUndefined();
@@ -83,7 +87,7 @@ describe('CapacitySummary', () => {
   it('follows an edit that changes what the build carries', () => {
     const build = ShipLoadout.empty('SideWinder');
     const { component } = render(build);
-    const before = component.cells()[0]?.value;
+    const before = component.cells().map(({ value }) => value);
     const rack = build
       .modulesForSlot('Slot02_Size2')
       .find(({ symbol }) => /CargoRack/i.test(symbol));
@@ -92,6 +96,10 @@ describe('CapacitySummary', () => {
     build.setModule('Slot02_Size2', rack!);
     active.commit(candidateFor(build));
 
-    expect(component.cells()[0]?.value).not.toBe(before);
+    // The rack moves the hold and nothing else: an edit read into the wrong
+    // cell would move the other one, or both.
+    expect(component.cells()[0]?.value).toBe(String(build.cargoCapacity));
+    expect(component.cells()[0]?.value).not.toBe(before[0]);
+    expect(component.cells()[1]?.value).toBe(before[1]);
   });
 });

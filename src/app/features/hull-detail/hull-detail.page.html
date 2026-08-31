@@ -1,6 +1,6 @@
 @if (view(); as detail) {
   @if (detail.kind === 'unknown') {
-    <edsb-hull-detail-unknown-symbol [symbol]="detail.symbol" />
+    <edsb-hull-detail-unknown-hull [hull]="detail.address" />
   } @else {
     <!--
       The reference's inspector, in its order and with its contents: the
