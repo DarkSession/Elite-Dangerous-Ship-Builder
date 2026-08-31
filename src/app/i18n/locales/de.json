@@ -379,7 +379,7 @@
   "outfitting.engineering.package-empty": "Für dieses Modul gibt es keine Technik.",
   "outfitting.engineering.final": "Dies ist ein endgültiges Exemplar: Es nimmt keine weitere Technik an.",
   "outfitting.engineering.stale": "Der Build hat sich geändert, während dies geöffnet war; die Auswahl wurde neu aufgebaut. Es wurde nichts angewandt.",
-  "outfitting.engineering.loading": "Die Technik für diese Halterung wird gelesen.",
+  "outfitting.engineering.loading": "Die Technik für dieses Modul wird gelesen.",
   "outfitting.engineering.no-module": "Diese Halterung ist leer: Es ist nichts eingebaut, das technisch bearbeitet werden könnte.",
   "outfitting.engineering.clear-consequence": "Damit entfällt auch der Nachweis, dass das Modul ein gekauftes Exemplar ist.",
   "outfitting.engineering.blueprint.legend": "Blaupause",

@@ -25,10 +25,6 @@ const MW_DIGITS = 2;
  * about the build that is now open, and the block that opens the rail is where
  * a Commander looks for it (003 spec, "Scope"; 005/FR-013).
  *
- * Before that it was drawn a block lower, over the `POWER` line, where a
- * Commander reading the status block had to look past the metric cells to find
- * out that part of their ship was dark (Commander request 2026-08-31).
- *
  * A build the plant covers draws nothing at all — not an all-clear line, not a
  * zero count. Neither canvas draws such a state, and silence claims strictly
  * less than an all-clear would.

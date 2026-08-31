@@ -97,11 +97,15 @@ export function slotViews(loadout: ShipLoadout, text: SlotTextResolver): readonl
 /**
  * The one mount the ledger does not draw.
  *
- * Every hull the package publishes carries exactly one, it takes the approach
- * suite alone, and so the row said the same thing on all of them — the same
- * reason hull detail leaves it out of its capacity statement (001/FR-022). It
- * is withheld from this list and from nothing else: the suite stays fitted, and
- * every calculation, export and build link still carries it.
+ * Every hull the package publishes carries exactly one, and the two suites it
+ * takes carry the same class, mass, draw and cost with no engineering group on
+ * either — so the row offered a choice between two names and no reading. Hull
+ * detail leaves the same mount out of its capacity statement (001/FR-022).
+ *
+ * The mount is removable, so this withholds the plain suite and the empty
+ * mount along with the row. Both consequences are ruled in FR-002a rather than
+ * left here. Nothing else changes: the suite stays fitted, and every
+ * calculation, export and build link still carries it.
  *
  * Matched on the package's own restriction rather than on the key, because the
  * key is a spelling and the restriction is the identity (FR-002a).

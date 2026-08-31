@@ -4,7 +4,9 @@
 
 Commanders can locate hardpoints and utility mounts on the Almanac top and bottom hull schematics
 and move between a located mount and its outfitting slot. Internal mounts remain available through
-the complete slot list in [002](../002-module-outfitting/spec.md).
+the complete slot list in [002](../002-module-outfitting/spec.md) — every one that list draws. That
+list withholds the planetary approach mount (002/FR-002a), which this capability locates no more
+than it locates the other internals, so that one mount is reachable from neither surface.
 
 ## Clarifications
 
@@ -62,7 +64,8 @@ real hardware.
    state visually and as text.
 3. Selecting a hardpoint or utility mount selects its outfitting slot, whose slot key, size, fitted
    module, priority and power state the outfitting capability already carries.
-4. Every slot without package schematic geometry remains available through the complete slot list.
+4. Every slot without package schematic geometry remains available through the complete slot list,
+   less the one mount that list withholds (002/FR-002a).
 
 ### Story 2 — Move between geometry and outfitting (P1)
 
@@ -87,7 +90,9 @@ real hardware.
   draws in, the middle of an annotation — is that geometry read, not a second source for it, and is
   permitted (design/hull-anatomy.md, "Schematic regions").
 - **FR-004**: Core, optional, armour and cargo-hatch slots MUST NOT receive invented geometry. The
-  complete slot list MUST remain the route to every slot.
+  complete slot list MUST remain the route to every slot it draws, and this capability MUST NOT
+  become a second route to the one mount that list withholds (002/FR-002a) — an internal mount is
+  not this capability's to locate either way.
 - **FR-005**: Each located hardpoint and utility mount MUST expose fitted, empty, engineering and
   focused state with a complete text equivalent naming its slot.
 - **FR-006**: Activating a located hardpoint or utility mount MUST reach its slot. Focusing a located
@@ -143,7 +148,7 @@ real hardware.
 The package ships three SVG assets for every hull. The two schematics carry journal slot keys on
 hardpoint and utility-mount features. The application consumes both kinds of annotation as
 interactive geometry without deriving physical measurements or maintaining geometry; internal
-mounts remain represented by the complete slot list.
+mounts remain represented by the complete slot list, less the one it withholds (002/FR-002a).
 
 ## Success Criteria
 

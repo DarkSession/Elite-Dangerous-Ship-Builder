@@ -2,7 +2,8 @@
 
 ## Scope
 
-Commanders can inspect every slot; fit, replace, remove and engineer modules; manage module power;
+Commanders can inspect every slot the ledger draws; fit, replace, remove and engineer modules;
+manage module power;
 name the loaded ship; and undo or redo build edits. Build creation belongs to
 [001](../001-ship-selection-and-loading/spec.md); once a build is active, every edit to it — including
 its ship name and ident — belongs here.
@@ -124,11 +125,18 @@ its ship name and ident — belongs here.
   > it, so the `ALL` list was the one place that put every optional mount between the core internals
   > and the hatch. Drawing it where its own category already puts it makes one order out of two.
   >
-  > Every hull the package publishes carries exactly one planetary approach mount, and it takes the
-  > approach suite alone, so a row for it separates no build from another. Hull detail withholds the
-  > same mount for the same reason (001/FR-022). One consequence is stated rather than discovered:
-  > with no row there is no route to empty that mount, and a build link that recorded it empty
-  > before this rule opens with it empty and draws nothing for it.
+  > All 48 hulls the installed package publishes carry exactly one planetary approach mount, and
+  > every default loadout fits the advanced suite in it. The mount takes two modules, and the
+  > package gives them the same class, the same rating, the same 0 t of mass, the same 0 MW of draw,
+  > the same 500 Cr and no engineering group either side — so the row is a choice between two names
+  > and no figure this application draws. Hull detail leaves the same mount out of its counts
+  > (001/FR-022).
+  >
+  > Two consequences are stated rather than discovered, because the mount is removable and the row
+  > is the only place either was offered. There is no route to choose the plain suite over the
+  > advanced one, so a build that opens with one keeps it. And there is no route to empty the
+  > mount, so a build link that recorded it empty before this rule opens with it empty and draws
+  > nothing for it.
 
 - **FR-003**: Missing facts for package-resolved modules MUST remain unavailable rather than becoming
   zero or an estimate. Only package-resolved module identities are supported.

@@ -19,8 +19,9 @@ export interface SlotGroupView {
  * because a reader moving by heading and by list item is exactly the movement
  * the visual grouping affords a sighted one.
  *
- * Order is never touched. The groups arrive in the order `slots()` returned
- * them, which is the game's own outfitting order.
+ * Order is never touched here. The groups arrive in the order the ledger built
+ * them, which is the package's own outfitting order with the cargo hatch moved
+ * above the optional mounts (002/FR-002a).
  */
 @Component({
   selector: 'edsb-slot-group',

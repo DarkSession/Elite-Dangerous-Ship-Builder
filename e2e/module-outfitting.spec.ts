@@ -222,7 +222,7 @@ async function fitFromChooser(
 }
 
 test.describe('the slot ledger', () => {
-  test('renders every package mount, by exact key, including the cargo hatch', async ({ page }) => {
+  test('renders every package mount by exact key, less the approach mount', async ({ page }) => {
     await openStockBuild(page);
 
     // Across the categories, not down this screenful: canvas 1d draws one
@@ -237,8 +237,9 @@ test.describe('the slot ledger', () => {
     expect(keys).toContain('PowerPlant');
     expect(keys).toContain('CargoHatch');
     expect(keys).toContain('Slot01_Size7');
-    // Every hull has one planetary approach mount, it takes the approach suite
-    // alone, and the ledger draws no row for it (002/FR-002a).
+    // Every hull has one planetary approach mount, the two suites it takes are
+    // the same module in every published figure, and the ledger draws no row
+    // for it (002/FR-002a).
     expect(keys).not.toContain('PlanetaryApproachSuite');
     // Every key is unique: two rows sharing one identity would be two views of
     // one mount, and an edit to either would be an edit to both.

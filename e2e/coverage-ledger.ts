@@ -948,7 +948,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'outfitting/ledger',
     axe: true,
     assertions: [
-      'every package mount is listed by its exact game slot key, including the cargo hatch',
+      'every package mount but one is listed by its exact game slot key, including the cargo hatch',
       'the planetary approach mount is the one mount no row is drawn for',
       'the cargo hatch closes the core internals rather than the whole list',
       'a slot key is never visible text; it is the hidden identity beside the drawn label',

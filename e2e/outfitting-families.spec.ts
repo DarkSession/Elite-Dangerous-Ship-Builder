@@ -542,12 +542,14 @@ test.describe('module families', () => {
     expect(matched).toBeGreaterThan(1);
     expect(await revealedFamilies(page)).toHaveLength(matched);
 
-    // One family closed, and a module taken from the next one along.
+    // One family closed, and a module taken from the next one along. Only an
+    // open family draws a `.family__choices`, so once the first is closed the
+    // first of those belongs to the second family.
     await families.first().click();
     await expect(families.first()).toHaveAttribute('aria-expanded', 'false');
     await page
       .locator('.family__choices')
-      .nth(1)
+      .first()
       .locator('.candidate .candidate__name')
       .first()
       .click();

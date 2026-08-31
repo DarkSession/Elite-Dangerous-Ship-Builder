@@ -367,6 +367,13 @@ export class OutfittingStore {
     this.#surface.set('workspace');
     this.#lastEditFailure.set(null);
     this.#query.set('');
+    // Cleared by hand, because the presentation a replacement lands on can be
+    // the one it left: the selection falls back to the first mount, and a
+    // replacement that keeps that mount, that language and the empty search
+    // would otherwise hand the new build the reveals a Commander set on the old
+    // one. What is in this mount is a different module now, and FR-021's seed
+    // is what opens its family.
+    this.#revealOverride.set(null);
     // Both directions, because the decisions on the tape were about a build
     // that is no longer the one on screen. A refused incoming candidate never
     // reaches here, so its history survives (edit-history contract, "Reset").

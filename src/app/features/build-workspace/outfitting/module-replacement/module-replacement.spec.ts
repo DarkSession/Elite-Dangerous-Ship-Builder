@@ -253,12 +253,6 @@ describe('module replacement surface', () => {
         ),
       ].find((input) => input.value === key) ?? null;
 
-    // An empty mount reveals no family under the accordion, so the row has to
-    // be revealed before it can be pressed — which is the only way a Commander
-    // reaches one either.
-    store.toggleFamily(choice.presentation.familyId);
-    fixture.detectChanges();
-
     fixture.componentInstance.choose(choice.key);
     fixture.detectChanges();
     expect(radioFor(choice.key)?.checked).toBe(true);

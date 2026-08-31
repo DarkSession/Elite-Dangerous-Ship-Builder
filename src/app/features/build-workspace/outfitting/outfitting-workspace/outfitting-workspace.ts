@@ -323,7 +323,7 @@ export class OutfittingWorkspace {
     })),
   );
 
-  /** The visible mounts, grouped by kind in the package's own order. */
+  /** The visible mounts, grouped by kind in the order the ledger draws them. */
   readonly groups = computed<readonly SlotGroupView[]>(() => {
     const category = this.category();
     const groups: SlotGroupView[] = [];

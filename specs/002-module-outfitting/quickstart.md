@@ -39,15 +39,16 @@ Do not implement a local substitute, captured-event checkpoints, inverse command
 
 ## 2. Inspect every slot
 
-1. Open a default build with hardpoint, utility, core, optional, armour, planetary and cargo-hatch
-   mounts.
+1. Open a default build with hardpoint, utility, core, optional, armour, planetary approach and
+   cargo-hatch mounts.
 2. Compare the rendered groups/order/keys with `loadout.slots()`.
 3. Load fixtures with empty removable slots, omitted fixed entries and package-reported invalid states.
 4. Inspect invalid/incomplete package validation states.
 
 Expected:
 
-- every package slot appears by exact game key;
+- every package slot appears by exact game key, in the ledger's own order — the cargo hatch closing
+  the core internals, and no row at all for the planetary approach mount (FR-002a);
 - unavailable package facts remain explicit, never zero/guessed;
 - fixed mounts are populated before activation and unknown modules are outside the fixture contract;
 - invalid/incomplete builds remain editable wherever the package offers an operation;

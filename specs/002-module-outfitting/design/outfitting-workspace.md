@@ -5,7 +5,8 @@
 
 ## Purpose
 
-Inspect every package slot and its current module, select an editable slot, control module power, see
+Inspect every package slot the ledger draws and its current module, select an editable slot, control
+module power, see
 normalization/refusal state, and undo/redo Commander decisions. It extends feature 001's active-build
 workspace and never creates or owns a second build.
 
@@ -17,7 +18,8 @@ workspace and never creates or owns a second build.
 - Persistent accepted-normalization/edit-refusal notices below the heading. Pre-activation ingress
   refusal belongs to the owning open/import flow and is not a workspace state for the rejected build.
 - A fluid three-region layout inspired by canvas 1c:
-  - grouped semantic slot ledger in package outfitting order;
+  - grouped semantic slot ledger in the ledger's own order (FR-002a: package outfitting order, with
+    the cargo hatch closing the core internals and no row for the planetary approach mount);
   - selected-slot facts and outlet for replacement/engineering;
   - composition outlet for package validation and later calculation features.
 - The replacement and engineering panels are **present, not opened**. Canvas 1c draws no control that
@@ -644,12 +646,17 @@ up, so it closes the core internals instead of the whole ship: under `CORE` the 
 last row, and `ALL` was the one list that stood every optional mount between the core internals and
 it. One order at both widths and in every category (002/FR-002a).
 
-The planetary approach mount is not drawn. Every hull carries exactly one, it takes the approach
-suite alone, and the `PLANETARY APPROACH` row therefore said the same thing on all forty-eight hulls
-— the same reason hull detail leaves that mount out of its capacity statement (001/FR-022). It is
-found by the package's own `planetaryApproachSuite` restriction, never by the spelling of the key,
-and it is withheld from this list alone: the suite is still fitted, still weighed, still drawing
-power and still in every export.
+The planetary approach mount is not drawn. All forty-eight hulls carry exactly one and every
+default fits the advanced suite in it, and the two suites the mount takes are the same module in
+every figure the package publishes — class 1 I, 0 t, 0 MW, 500 Cr, no engineering group on either —
+so the row offered a choice between two names and no reading. Hull detail leaves the same mount out
+of its capacity statement (001/FR-022).
+
+The mount is removable, so withholding the row withholds two things a Commander could reach before:
+the plain suite, and an empty approach mount. Both are stated in 002/FR-002a. Nothing else changes —
+the mount is found by the package's own `planetaryApproachSuite` restriction, never by the spelling
+of the key, and it is withheld from this list alone: the suite is still fitted, still weighed, still
+drawing power and still in every export.
 
 ## Slot presentation
 

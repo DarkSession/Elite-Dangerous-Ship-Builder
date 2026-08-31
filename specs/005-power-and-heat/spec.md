@@ -99,12 +99,13 @@ conditions here, because the design draws them inside this capability and nowher
   drawn here. These three MUST NOT be interactive.
 
   > **Moved into the status block 2026-08-31 (Commander request).** The sentence opened this
-  > feature's own block, over the `POWER` line and under the metric cells feature 003 and three
-  > others draw. A group the plant leaves dark is something wrong with the build, and the block a
-  > Commander reads that in is the one the rail opens with — so the sentence is drawn there, with
-  > the package's issues, and this feature's block begins at the `POWER` line. Only the placement
-  > moves: the wording, the deployed reading behind it and the silence on a build the plant covers
-  > are unchanged, and feature 003 places it without owning it (003 spec, "Scope").
+  > feature's own block, over the `POWER` line and inside the inset that block shares with the
+  > metric cells feature 003 and three others draw. A group the plant leaves dark is something
+  > wrong with the build, and the block a Commander reads that in is the one the rail opens with —
+  > so the sentence is drawn there, with the package's issues, and this feature's block begins at
+  > the `POWER` line. Only the placement moves: the wording, the deployed reading behind it and
+  > the silence on a build the plant covers are unchanged, and feature 003 places it without
+  > owning it (003 spec, "Scope").
 
   > **Extended 2026-08-25 — the rail carries the pip control too.** The canvas revision of that date
   > drew three `.pipset` groups under the rail's `POWER` bar — `SYS`, `ENG` and `WEP`, each over four

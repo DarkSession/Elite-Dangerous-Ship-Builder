@@ -5,8 +5,11 @@
 // to match it, and the sentence set in the prose voice. The hot tone is the
 // canvas's own for this sentence — a group the plant cannot keep lit is a fault
 // in the build, not a note about it.
+// `contents` rather than `block`: the block that opens the rail stacks its
+// children with a gap, and a host that draws nothing on every build the plant
+// covers would still stand there as one more gap under the issues.
 :host {
-  display: block;
+  display: contents;
 }
 
 .statements {

@@ -131,12 +131,13 @@ export interface CandidateQueryState {
    * Which families are open right now.
    *
    * Seeded, not remembered. It is replaced wholesale every time the chooser is
-   * presented for a different mount, a different reading language or a different
-   * query, and a Commander's toggle lives only until the next one — which is
-   * what FR-021 and FR-023 describe and what keeps the open set from needing an
-   * invalidation rule of its own (decision 15). A rebuild that changes none of
-   * those three is the same presentation at a later revision and carries the
-   * toggles across it: see `withCarriedReveal`.
+   * presented for a different mount, a different reading language, a different
+   * reveal model or a different query, and a Commander's toggle lives only
+   * until the next one — which is what FR-021 and FR-023 describe and what
+   * keeps the open set from needing an invalidation rule of its own
+   * (decision 15). A rebuild that changes none of those four is the same
+   * presentation at a later revision and keeps the toggles: the store holds
+   * them and lays them over the seed through `withRevealedFamilies`.
    */
   readonly openFamilies: ReadonlySet<OutfittingFamilyId>;
   /**
