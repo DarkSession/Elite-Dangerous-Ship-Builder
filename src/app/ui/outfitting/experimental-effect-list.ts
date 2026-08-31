@@ -39,7 +39,8 @@ export interface ExperimentalEffectView {
  * Unlike the blueprint list, each option here *does* carry a description: the
  * Almanac publishes one per effect, so the canvas's `−3% ENEMY HULL RESIST ·
  * −20% AMMO` line is package text rather than a claim of ours. Where the
- * package has none, the row says so instead of going quiet.
+ * package has none, the row draws the name alone: a stand-in line would state
+ * an absence rather than describe the effect (reversed 2026-08-26).
  *
  * Two shapes, and the menu is the application's own rather than the platform's.
  * A native option holds one run of text, so a description could only be joined
