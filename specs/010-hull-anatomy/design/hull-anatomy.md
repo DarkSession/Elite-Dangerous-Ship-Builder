@@ -36,11 +36,9 @@ remains beside the capability according to the feature 002 workspace definition.
 
 Available space chooses paired or single-side presentation, not a named device breakpoint: two
 container queries — the room this block was given, and the arrangement it was given that room inside
-— and one media query for the only thing no container knows, the window's height. Expanded text
-moves the two container questions, because a container query's `rem` is the reader's current text
-size; the height step is stated in rem too and cannot move, because a media query's `rem` is the
-browser's initial size by definition (`ui/short-viewport.ts`). Nothing required disappears in
-either orientation: the side selector reaches whichever plate is not drawn, and the complete ledger
+— and one media query for the only thing no container knows, the window's height. A `font-size` set
+on the root element moves the two container questions and not the height one, for the reason
+`responsive-composition.md` gives. Nothing required disappears in either orientation: the side selector reaches whichever plate is not drawn, and the complete ledger
 reaches every mount on both.
 
 **The pair needs room in both axes, ruled 2026-08-30 (Commander request).** Inline size alone chose
@@ -63,15 +61,14 @@ one column of a three-region page, and 744px is a single-flow window entire.
 
 What is asked instead is the workspace's own container, at the seam this workspace already stops
 being one flow at (`_responsive.scss`, `$outfitting-regions-min`, `layout.outfitting-regions`). One
-declaration, asked from both sides of it: the workspace lays its regions out at that step, and a
-region inside it asks whether it is one of several or the whole flow. They cannot disagree, because
-there is nothing to keep in step.
+declaration, asked from every side of it: the workspace lays its regions out at that step, and the
+regions inside it ask whether they are one of several or the whole flow. They cannot disagree,
+because there is nothing to keep in step.
 
-Not the page, and the difference is not cosmetic. A page media query cannot see a Commander who has
-doubled their text — `rem` in a media query is the browser's initial size — so at 200% text a 1440px
-window reads as wide to one while this workspace has already folded to a single flow. Asked that
-way, both plates were drawn into that flow from 1320 to 1500px. A container query's `rem` is the
-root's current size, so the seam moves with the reader.
+Not the page, and the difference is not cosmetic: asked of the page, both plates were drawn into a
+single flow from 1320 to 1500px with the text doubled. The seam has to move with a root `font-size`
+and a page media query's `rem` does not, which `responsive-composition.md` sets out once for every
+region that has this choice to make.
 
 The pair is therefore drawn where all three hold: the **workspace composes more than one region**,
 the **container has the inline size for two plates**, and the **window is not a short one**. Each

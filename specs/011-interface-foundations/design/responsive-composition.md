@@ -33,14 +33,26 @@ column of a multi-region page at some widths and the whole of a single flow at o
 answers cross — feature 010's anatomy is given 742px as the centre column of a 1440px page and 744px
 by a single-flow window entire, so its own width cannot tell the arrangement it is in from the one it
 is not. The **enclosing region's** container answers it, at the seam that region already stops being
-one flow at: one declaration asked from both sides of it, so the region and the block inside it
+one flow at: one declaration asked from every side of it, so the region and the blocks inside it
 change arrangement together (`_responsive.scss`, `$outfitting-regions-min`).
 
-Not the page, and the difference is not cosmetic. `rem` in a media query is the browser's initial
-text size by definition, so a page-level step cannot see a Commander who has doubled theirs: at 200%
-text a 1440px window is still wide to a media query while the workspace inside it has already folded
-to one flow. `rem` in a container query is the root's current size and moves with the reader
-(`ui/short-viewport.ts`, `stackableMinimum`).
+A container answers the width half of an arrangement and only that half. A viewport too short to
+stack anything takes the single flow at any width, which no container can see — so the region
+applies that itself (`ui/outfitting/composition.ts`, `observeComposition`) and publishes the result
+as `data-composition`, and a block whose own arrangement needs the whole answer asks
+`not-short-viewport` alongside the seam, as feature 010's plate pair does.
+
+Not the page, and the difference is not cosmetic. `rem` in a media query is the **initial value** of
+`font-size`, which is the Commander's own browser default: the query follows a text size set there,
+and cannot follow a `font-size` set on the root element. `rem` in a container query is the root's
+**computed** size, and follows both. So a page-level step is sound only where what it is reconciled
+against is another page-level step — feature 001's inspector rail, where the same query decides the
+arrangement and the behaviour (`ui/wide-composition.ts`) — and unsound wherever an arrangement has to
+fold with the root. Asked of the page, feature 010's plate pair was drawn into a single flow from
+1320 to 1500px at a doubled root size (`ui/short-viewport.ts`, `stackableMinimum`).
+
+This is the one place that difference is set out. Everywhere it decides something, the code points
+here rather than restating it.
 
 Where **behaviour** rather than arrangement turns on a composition, the route region asks the
 question in TypeScript and passes the answer to the components inside it. The shipyard's manifest

@@ -47,7 +47,7 @@
 //
 // Asked of the workspace's container, because this is the inline arrangement:
 // the compact one is a layer with the screen to itself.
-@container outfitting (min-width: 47rem) {
+@include layout.outfitting-regions {
   :host {
     min-block-size: min(
       var(--edsb-layout-fitting-panel),

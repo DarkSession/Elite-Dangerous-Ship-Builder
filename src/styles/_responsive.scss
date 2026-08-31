@@ -187,15 +187,23 @@ $viewport-short-max: 30rem;
 $outfitting-regions-min: 47rem;
 
 // That seam, asked of the workspace's own container. Declared once and asked
-// from both sides of it: the workspace lays its regions out, and a region inside
-// it asks whether it is one of several or the whole flow.
+// from every side of it: the workspace lays its regions out, and the regions
+// inside it ask whether they are one of several or the whole flow.
+//
+// The width half of the arrangement, and only that half. A viewport too short to
+// stack anything takes the single flow at any width, which no container can see
+// and which `observeComposition` applies on the workspace's own element
+// (`ui/outfitting/composition.ts`); a block whose arrangement needs the whole
+// answer asks `not-short-viewport` alongside this, as feature 010's plate pair
+// does.
 //
 // A container query rather than a page media query, and the difference is not
-// cosmetic. `rem` inside a media query is the browser's *initial* text size by
-// definition, so a page-level step cannot see a Commander who has doubled
-// theirs: at 200% text a 1440px window is still "wide" to a media query while
-// this workspace has already folded to one flow (`short-viewport.ts`,
-// `stackableMinimum`).
+// cosmetic. `rem` inside a media query is the *initial* value of `font-size` —
+// the Commander's browser default — so it follows a text size set there and
+// cannot follow a `font-size` set on the root element. A container query's `rem`
+// is the root's computed size and follows both. Asked of the page, this seam
+// held at 1440px while the workspace inside it had already folded to one flow
+// (`ui/short-viewport.ts`, `stackableMinimum`).
 @mixin outfitting-regions {
   @container outfitting (min-width: #{$outfitting-regions-min}) {
     @content;

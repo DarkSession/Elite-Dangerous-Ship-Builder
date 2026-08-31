@@ -17,15 +17,14 @@ import { DestroyRef, inject, signal, type Signal } from '@angular/core';
  * this comment promising they agree.
  *
  * In rem because the stylesheets state it that way, and the point of restating
- * it is that it is the same figure. It is not the reader's rem: `rem` inside a
- * media query is the browser's initial text size by definition and does not move
- * when a Commander enlarges theirs (`ui/short-viewport.ts`). That is what makes
- * the two agree — the rail this answer is about is drawn by a media query at the
- * same step, so both are the same fixed width at every text size, and browser
- * zoom moves both together because zoom changes the window's own CSS width. A
- * question about an *arrangement* that folds with the reader's text cannot be
- * asked this way; the plate pair's is asked of a container instead
- * (`_responsive.scss`, `$outfitting-regions-min`).
+ * it is that it is the same figure. The rail this answers for is drawn by a
+ * media query at this same step, so the two are the same query and cannot
+ * disagree about a width.
+ *
+ * That is what makes a media query the right one *here*, and it is not the right
+ * one everywhere: an arrangement that folds with a `font-size` set on the root
+ * element has to be asked of a container, which this cannot be
+ * (`_responsive.scss`, `$outfitting-regions-min`; `ui/short-viewport.ts`).
  */
 const WIDE_MODE_MIN_REM = 64;
 

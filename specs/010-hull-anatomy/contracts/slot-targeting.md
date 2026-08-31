@@ -45,7 +45,7 @@ The rule is bounded three ways:
 - **nothing to reveal moves nothing.** An internal, unlocated, pending or undrawn mount leaves the
   shown side alone: there is no side to choose, and changing to one would suggest the mount is there.
 
-At the wide composition both plates are on screen and the reveal is only the selected treatment. No
+Where the pair is drawn both plates are on screen and the reveal is only the selected treatment. No
 scrolling is performed: the plates fit their own frames, and nothing pans, zooms or scrolls inside
 one.
 

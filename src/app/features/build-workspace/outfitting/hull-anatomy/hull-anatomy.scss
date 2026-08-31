@@ -125,17 +125,15 @@
 // drew both plates (Commander request 2026-08-30).
 //
 // And it lacks the arrangement around it: a 744px portrait window is not short,
-// and a workspace that is one flow hands this block all of it — 744px of
-// container, two pixels more than the 742px centre column a 1440px desktop
-// draws its pair inside. So it drew both sides in the middle of a single flow
-// (Commander request 2026-08-31). This block's own width says how much room it
-// was given; it cannot say what it was given that room inside.
+// and a workspace that is one flow gives this block 744px of container — two
+// pixels more than the 742px centre column a 1440px desktop draws its pair
+// inside. So it drew both sides in the middle of a single flow (Commander
+// request 2026-08-31). This block's own width says how much room it was given;
+// it cannot say what it was given that room inside.
 //
-// The workspace's container answers that, rather than the page: a page media
-// query cannot see a reader who has doubled their text — `rem` in a media query
-// is the browser's initial size by definition — and at 200% text a 1440px window
-// is still wide to one while this workspace has already folded to a single flow.
-// Asked that way, both plates were drawn in that flow at 1320 to 1500px.
+// The workspace's own container answers that, and a page media query cannot
+// (`_responsive.scss`, `outfitting-regions`). Asked of the page, both plates
+// were drawn into a single flow at 1320 to 1500px with the text doubled.
 //
 // Three conditions, each about a different thing: whether this block is one
 // region of several or the whole flow, how much room it has, and whether the

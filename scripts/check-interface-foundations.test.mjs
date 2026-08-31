@@ -386,8 +386,8 @@ describe('duplicated composition steps', () => {
     for (const pair of SCOPE.duplicatedSteps) {
       const found = rules.duplicatedStepViolations(
         pair,
-        readFileSync(pair.scss.file, 'utf8'),
-        readFileSync(pair.ts.file, 'utf8'),
+        readFileSync(new URL(`../${pair.scss.file}`, import.meta.url), 'utf8'),
+        readFileSync(new URL(`../${pair.ts.file}`, import.meta.url), 'utf8'),
       );
 
       assert.deepEqual(found, [], `${pair.scss.name} and ${pair.ts.name} disagree`);
