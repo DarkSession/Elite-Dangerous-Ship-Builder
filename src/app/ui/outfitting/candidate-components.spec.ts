@@ -561,6 +561,36 @@ describe('candidate list', () => {
     expect(row.querySelector('.candidate__state')).toBeNull();
   });
 
+  it('marks the row in the mount apart from the row the Commander picked', () => {
+    // A pick is not a fit until `FIT MODULE` commits it, so a mount whose
+    // Commander has taken a different row has two rows to say something about.
+    // They are two different marks, on two different rows, and each is carried
+    // by the row's own state rather than by the ground alone (FR-025).
+    const families = familiesFor(FIXTURE_SLOTS.hardpoint, 'multi-cannon');
+    const choices = families[0]!.choices;
+    const fitted = choices[0]!;
+    const picked = choices.find((choice) => choice.key !== fitted.key)!;
+    expect(picked).toBeDefined();
+
+    const fixture = renderComponent(CandidateList, {
+      families,
+      label: 'Modules for this mount',
+      fittedSymbol: fitted.module.symbol,
+      selectedKey: picked.key,
+    });
+
+    const fittedRow = query(fixture, '.candidate--fitted');
+    const pickedRow = query(fixture, "[data-selected='true']");
+    expect(fittedRow).not.toBe(pickedRow);
+
+    // The fitted row is the one in the mount and is not the checked one; the
+    // picked row is checked and is not marked fitted.
+    expect(fittedRow.getAttribute('data-selected')).not.toBe('true');
+    expect(textOf(fittedRow)).toContain('Fitted');
+    expect(pickedRow.classList.contains('candidate--fitted')).toBe(false);
+    expect(pickedRow.querySelector<HTMLInputElement>('.candidate__radio')!.checked).toBe(true);
+  });
+
   it('writes a word where the Almanac published no figure, never a zero', () => {
     // The cost is the one figure a card carries since FR-024's 2026-08-29
     // narrowing, and an article the Almanac prices at nothing says so in words

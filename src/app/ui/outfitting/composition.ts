@@ -60,6 +60,68 @@ const MINIMUMS = {
 } as const;
 
 /**
+ * The bench's own inset: canvas 1c's 18px and a hairline on each edge.
+ *
+ * The same 2.375rem `_responsive.scss` adds to `$bench-columns-min`, which is
+ * the one other threshold measured across the bench's content rather than its
+ * box. Stated here because the width below is measured the same way and the two
+ * may not drift apart.
+ */
+const BENCH_INSET_REM = 2.375;
+
+/** Canvas 1c's `264px` family rail and the `14px` between it and the pane. */
+const FAMILY_RAIL_REM = 16.5;
+const FAMILY_GAP_REM = 0.875;
+
+/**
+ * The width at which the chooser draws the rail and its pane instead of cards.
+ *
+ * Derived rather than measured off the drawing, and derived from a figure just
+ * above: the pane is a candidate row, so it may not be narrowed below the
+ * content minimum a candidate row already declares, and the rail is canvas 1c's
+ * own 264px beside it with the canvas's 14px between them. The rail is drawn as
+ * a share of the column between two bounds rather than at that one number, so at
+ * this threshold it is the narrower of them and the pane has more than the sum
+ * promises (`candidate-list.scss`).
+ *
+ * **Lowered from a flat 44rem on 2026-08-25.** That figure was the width seven
+ * columns needed, and the revision cut the manifest to three — so the old
+ * threshold left the desktop profile one CSS pixel above it, which is not a
+ * threshold at all but a coin toss between two manifests. Nothing about the
+ * cards changed; what changed is that the aligned manifest now fits in less.
+ *
+ * It is stated here rather than beside the chooser that spends it because the
+ * width below is built from it: what the bench keeps in the wide composition is
+ * what the aligned manifest needs, and the chooser and the workspace may not
+ * hold two answers to the same question (`manifest.ts`, `observeManifest`).
+ */
+export const RAIL_MINIMUM_REM = BENCH_CONTENT_MINIMUM_REM + FAMILY_RAIL_REM + FAMILY_GAP_REM;
+
+/**
+ * What the bench has to keep before a third region may be taken out of it.
+ *
+ * The rail is a fixed track, and the track it takes its 306px from is the
+ * bench's — so a wide composition selected on the bench's own floor is a wide
+ * composition that folds the bench to one candidate row to pay for the rail.
+ * Measured that way the three regions fit from 1058px, and from there to 1374px
+ * the middle column is 360-odd pixels at the bottom of the band and 675px at the
+ * top: never the 676px the chooser's rail-and-pane manifest needs, so the
+ * chooser draws canvas 1d's stacked cards inside canvas 1c's workspace on a
+ * tablet in landscape and on any laptop under 1374px. A third column bought by
+ * folding the middle one back to its floor is not a third column worth having
+ * (Commander request 2026-08-31; responsive composition, "The third region is
+ * taken from what is left over").
+ *
+ * So the bench's share of the wide composition is what the aligned manifest
+ * needs rather than what one row needs. Below it the rail is the anatomy strip's
+ * `STATUS` segment, which is what every narrower arrangement already does with
+ * it, and the bench draws the family rail beside the variant pane from
+ * `MINIMUMS.ledger` plus this — 66.75rem, or 1068 CSS pixels at the default text
+ * size — up.
+ */
+const BENCH_WIDE_MINIMUM_REM = RAIL_MINIMUM_REM + BENCH_INSET_REM;
+
+/**
  * The height below which nothing can be stacked, in the CSS's own words.
  *
  * The same query the stylesheets use for the sticky feet and the released
@@ -104,7 +166,7 @@ export function observeComposition(): Signal<OutfittingComposition> {
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     const rems = width / rem;
 
-    if (rems >= MINIMUMS.ledger + MINIMUMS.bench + MINIMUMS.rail) {
+    if (rems >= MINIMUMS.ledger + BENCH_WIDE_MINIMUM_REM + MINIMUMS.rail) {
       composition.set('wide');
     } else if (rems >= MINIMUMS.ledger + MINIMUMS.bench) {
       composition.set('two-pane');

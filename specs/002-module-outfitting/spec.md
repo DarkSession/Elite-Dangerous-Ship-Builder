@@ -72,7 +72,7 @@ its ship name and ident — belongs here.
    ascending, stock before variants and the package's own ordinals settle what is left. A unique
    reward is labelled where it sits rather than moved to a section of its own.
 2. When a fitted module has an available family, that family alone is revealed by default; otherwise
-   the wide composition reveals the first family and the compact one reveals none. A Commander can
+   the rail reveals the first family and the accordion reveals none. A Commander can
    reveal any family without editing the build, and the families they revealed stay as they left them
    through an edit to the same mount. A family the application revealed is brought into
    view where the families are drawn as a list of their own; one the Commander revealed is left
@@ -80,8 +80,8 @@ its ship name and ident — belongs here.
 3. Every whitespace-separated search term must match at least one of name, class, rating or weapon
    mount type as a case- and accent-insensitive substring; a choice matches only when every term does.
    Presenting changed search results reveals every family containing a match where the match set is
-   within a screenful of the compact composition, and otherwise leaves the compact families closed
-   with their counts; the wide composition reveals the first family holding a match. Either way no
+   within a screenful of the accordion, and otherwise leaves the accordion's families closed with
+   their counts; the rail reveals the first family holding a match. Either way no
    family holding a match is absent.
 4. No matches shows an empty result, cleared from the search field itself.
 5. Acquisition and entitlement restrictions remain visible before and after fitting.
@@ -328,8 +328,8 @@ its ship name and ident — belongs here.
   same change. Nothing else may be added beside them on this precedent.
 
 - **FR-020**: Available replacement choices MUST be presented grouped into module families, which
-  are the only grouping level in the chooser, with exactly one family revealed at a time in the wide
-  composition and any number in the compact one. A choice's family MUST be the Almanac's own
+  are the only grouping level in the chooser, with exactly one family revealed at a time where the
+  chooser draws its rail beside the variant pane and any number where it draws the accordion. A choice's family MUST be the Almanac's own
   `familyId` for that module, and its name MUST be the Almanac's localized family name; the
   application MUST NOT derive, abbreviate, translate or override either. A variant takes the family
   of the module it is built on. Every available choice MUST appear in exactly one family.
@@ -337,8 +337,8 @@ its ship name and ident — belongs here.
   or a search the Commander has changed, the family containing the exact fitted stock or variant
   choice MUST be the revealed one. If no available family contains that
   exact fitted choice, the family revealed on the mount the Commander came from MUST be revealed
-  where this mount offers it; failing that, the wide composition MUST reveal the first family in
-  package order and the compact composition MUST reveal none. The carry MUST survive exactly one
+  where this mount offers it; failing that, the rail MUST reveal the first family in
+  package order and the accordion MUST reveal none. The carry MUST survive exactly one
   step, MUST be consulted only where the mount has no fitted family of its own, and MUST NOT be
   taken from a chooser revealing more or fewer than one family. Revealing a family is view state
   only and MUST NOT edit the build or enter edit history.
@@ -371,13 +371,13 @@ its ship name and ident — belongs here.
   its localized family name, available-choice count and revealed state to sighted and screen-reader
   users, and MUST remain operable by touch and pointer on desktop, tablet and mobile.
 - **FR-023**: Applying or changing a non-empty replacement search MUST leave families without matches
-  absent, and MUST leave every family holding at least one match present and counted. In the compact
-  composition, where the search matched no more than a screenful of choices it MUST reveal every
+  absent, and MUST leave every family holding at least one match present and counted. In the
+  accordion, where the search matched no more than a screenful of choices it MUST reveal every
   family containing at least one matching choice, and where it matched more it MUST reveal none, each
   family still stating how many of the matches it holds, so the Commander narrows or reveals the one
-  they want rather than being handed hundreds of rows. In the wide composition it MUST reveal the
-  first family holding a match, whatever the match count: that composition draws one family's rows at
-  a time and cannot hand over hundreds. A Commander MAY then reveal any family. Clearing the search
+  they want rather than being handed hundreds of rows. The rail MUST reveal the
+  first family holding a match, whatever the match count: it draws one family's rows at a time and
+  cannot hand over hundreds. A Commander MAY then reveal any family. Clearing the search
   MUST restore the default from FR-021.
 
   > **Restated 2026-08-25.** These three were written when both canvases drew an accordion. Canvas 1c
@@ -401,6 +401,18 @@ its ship name and ident — belongs here.
   > presentation only: FR-003's rule that a missing package fact stays unavailable rather than
   > becoming zero is untouched wherever a fact is drawn. No requirement id is minted for it — the
   > coverage ledger registers ids against journeys that exist, and this one is not built.
+
+- **FR-025**: Where replacement choices are presented, the choice currently in the mount and the
+  choice the Commander has picked MUST each be identified, MUST be distinguishable from each other
+  wherever they are different rows, and MUST each be conveyed in text and in programmatic state as
+  well as visually. A picked choice is not a fitted choice until the Commander commits it, and the
+  chooser MUST NOT present the two alike while they differ.
+
+  > **Ruled 2026-08-31 (Commander request).** The two were drawn alike, because at canvas 1c's width
+  > picking a row is the fit and they are the same row. On canvas 1d's screen a pick waits for
+  > `FIT MODULE`, so a Commander who tapped a row saw two rows carrying the identical mark and
+  > nothing saying which was which (`design/module-replacement.md`, "The fitted row and the row in
+  > hand are two different marks").
 
 ## Assumptions
 
@@ -460,13 +472,13 @@ No game rule, value or variant-recognition heuristic is application-owned.
 - **SC-006**: Across desktop, tablet and mobile, 100% of available replacement choices appear in
   exactly one Almanac family, and revealing a family never changes the build. Within every family the
   rows descend by class and then by the package's price, with a choice the package publishes no price
-  for after the priced ones of its class. At the wide composition every drawn choice row carries exactly
+  for after the priced ones of its class. Where the chooser draws its rail every drawn choice row carries exactly
   three cells — the module, its class and rating, and its price — with no damage, mass, power or
   weapon-draw figure at that width.
 - **SC-007**: Whenever the exact fitted choice has an available family, that family is the only family
   revealed on initial presentation and on each change of mount, reading language, reveal model or
-  search; when it has none, the wide composition reveals
-  the first family in package order and the compact one reveals none. Where the composition draws the
+  search; when it has none, the rail reveals
+  the first family in package order and the accordion reveals none. Where the composition draws the
   families as a list of their own, every family the application reveals is inside that list's visible
   box once presented, and every family the Commander reveals is left where they pressed it.
 - **SC-008**: Every choice matching a newly applied or changed non-empty search is either visible

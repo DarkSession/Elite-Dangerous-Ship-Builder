@@ -24,6 +24,20 @@ const GAP = MARK_SEPARATION * FRAME.width;
  */
 const SLACK = GAP * 1e-9;
 
+/**
+ * How far short of the whole separation a settled pair is allowed to be.
+ *
+ * The placement is not a construction that lands on the gap and stops; it is
+ * one rule run until it stops changing anything, and it stops when no mark has
+ * moved more than a millionth of a mark. A pair approaching its separation from
+ * inside therefore ends a few hundred-thousandths of a unit short of it — under
+ * a thousandth of a screen pixel at every plate size, and far below anything the
+ * squares themselves can show. What the cases below hold to is that no two
+ * squares overlap, which this tolerance is wide enough to read and still far
+ * narrower than a mark.
+ */
+const SETTLED = GAP * 1e-4;
+
 function apart(a: PlatePoint, b: PlatePoint): number {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }
@@ -67,25 +81,46 @@ describe('placeMarks', () => {
 
     expect(first.displaced).toBe(true);
     expect(second.displaced).toBe(true);
-    expect(apart(first.mark, second.mark)).toBeGreaterThanOrEqual(GAP - SLACK);
+    expect(apart(first.mark, second.mark)).toBeGreaterThanOrEqual(GAP - SETTLED);
   });
 
-  it('moves a crowd’s mounts the same distance, around the middle of them', () => {
+  it('moves a mark no further than it takes to clear the one it would cover', () => {
+    // Nothing is sent anywhere, so nothing has a distance to choose: a pair
+    // pushes apart until neither square covers the other and stops. Half a
+    // separation each is the whole of the answer for a pair on one point, and
+    // less than that for a pair already partly apart.
     const anchors = [
       { x: 360, y: 146 },
       { x: 366, y: 146 },
-      { x: 363, y: 152 },
+    ];
+
+    for (const one of placeMarks(anchors, FRAME)) {
+      expect(apart(one.mark, one.anchor)).toBeLessThanOrEqual(GAP / 2 + SLACK);
+    }
+  });
+
+  it('draws mirrored mounts as mirrored marks', () => {
+    // The Mandalay's case: two mounts above the hull's centreline and their
+    // twins below. Every push is symmetric and they are all applied at once, so
+    // nothing is placed against what was placed already and the two sides of a
+    // hull cannot be answered differently (design/hull-anatomy.md, "Marks that
+    // would touch").
+    const middle = FRAME.height / 2;
+    const anchors = [
+      { x: 300, y: middle - 4 },
+      { x: 300, y: middle + 4 },
+      { x: 300 + GAP * 0.6, y: middle - 10 },
+      { x: 300 + GAP * 0.6, y: middle + 10 },
     ];
 
     const placed = placeMarks(anchors, FRAME);
-    const middle = {
-      x: anchors.reduce((sum, one) => sum + one.x, 0) / anchors.length,
-      y: anchors.reduce((sum, one) => sum + one.y, 0) / anchors.length,
-    };
 
-    const radii = placed.map((one) => Math.hypot(one.mark.x - middle.x, one.mark.y - middle.y));
-    for (const radius of radii) {
-      expect(radius).toBeCloseTo(radii[0], 6);
+    for (const [above, below] of [
+      [0, 1],
+      [2, 3],
+    ]) {
+      expect(placed[above].mark.x).toBeCloseTo(placed[below].mark.x, 6);
+      expect(placed[above].mark.y - middle).toBeCloseTo(middle - placed[below].mark.y, 6);
     }
   });
 
@@ -150,7 +185,7 @@ describe('placeMarks', () => {
 
     for (let i = 0; i < placed.length; i += 1) {
       for (let j = i + 1; j < placed.length; j += 1) {
-        expect(apart(placed[i].mark, placed[j].mark)).toBeGreaterThanOrEqual(GAP - SLACK);
+        expect(apart(placed[i].mark, placed[j].mark)).toBeGreaterThanOrEqual(GAP - SETTLED);
       }
     }
   });
@@ -251,7 +286,7 @@ describe('placeMarks', () => {
     // mark near a fellow member's point is the arrangement rather than a defect
     // — which is what each member's own leader is there to tell apart.
     for (const one of placed.slice(0, 2)) {
-      expect(apart(one.mark, outsider)).toBeGreaterThanOrEqual(GAP - SLACK);
+      expect(apart(one.mark, outsider)).toBeGreaterThanOrEqual(GAP - SETTLED);
     }
   });
 
@@ -269,25 +304,24 @@ describe('placeMarks', () => {
     expect(placeMarks(anchors, FRAME, 0.12).map((one) => one.displaced)).toEqual([true, true]);
   });
 
-  it('moves a mark far enough that the leader explaining it can be seen', () => {
-    // A mark's own square covers half its width of its leader, so a mark that
-    // shifts less than that draws nothing at all. Every mark that moves has to
-    // move far enough to leave a segment behind — including the outermost
-    // member of a crowd, whose mount is already displaced from the middle the
-    // ring is measured from and which therefore travels least.
-    const mark = 0.04 * FRAME.width;
+  it('leaves a mark on its own mount where its neighbours push it equally', () => {
+    // The Corsair's foremost large hardpoint in miniature: a mount on the
+    // centreline with one neighbour above it and one below. The two pushes
+    // cancel, so that mark does not move at all and the pair steps apart around
+    // it. The rule this replaced sent it a quarter of the hull forward to earn
+    // a leader long enough to see (Commander request 2026-08-31).
     const anchors = [
       { x: 300, y: 150 },
-      { x: 306, y: 150 },
-      { x: 303, y: 158 },
+      { x: 306, y: 150 - GAP * 0.6 },
+      { x: 306, y: 150 + GAP * 0.6 },
     ];
 
-    for (const one of placeMarks(anchors, FRAME, 0.05, 0.04)) {
-      if (one.displaced) {
-        const travel = Math.hypot(one.mark.x - one.anchor.x, one.mark.y - one.anchor.y);
-        expect(travel).toBeGreaterThan(mark / 2);
-      }
-    }
+    const placed = placeMarks(anchors, FRAME);
+
+    expect(placed[0].displaced).toBe(false);
+    expect(placed[0].mark).toEqual(anchors[0]);
+    expect(placed[1].displaced).toBe(true);
+    expect(placed[2].displaced).toBe(true);
   });
 
   it('leaves marks alone when they are already a comfortable distance apart', () => {
@@ -306,11 +340,11 @@ describe('placeMarks', () => {
     expect(placed.map((one) => one.mark)).toEqual(anchors);
   });
 
-  it('turns a crowd towards the room rather than into its neighbours', () => {
+  it('keeps a crowded pair away from the mounts standing beside it', () => {
     // A pair that has to spread, with a wall of mounts close on one side and
-    // open plate on the other. Aligned to its own mounts the ring would send a
-    // mark into the wall; it should go the other way. This is the Corsair's top
-    // plate in miniature (design/hull-anatomy.md, "Marks that would touch").
+    // open plate on the other. Neither of the two may end up on the wall: a
+    // mark travels only as far as its own neighbour makes it, and every mount's
+    // published point pushes back.
     const anchors = [
       { x: 360, y: 146 },
       { x: 366, y: 146 },
@@ -321,7 +355,6 @@ describe('placeMarks', () => {
 
     const placed = placeMarks(anchors, FRAME);
 
-    // Neither of the crowded pair ends up on the crowded side of its own mount.
     for (const one of placed.slice(0, 2)) {
       expect(one.mark.x).toBeGreaterThan(300);
     }
@@ -382,19 +415,18 @@ describe('placeMarks', () => {
     expect(placeMarks(anchors, FRAME).map((one) => one.anchor)).toEqual(anchors);
   });
 
-  it('sends the Corsair\u2019s crowded hardpoints where the hull points', () => {
+  it('leaves the Corsair\u2019s foremost hardpoint on its own mount', () => {
     // The reported case, at the anchors the shipped extract produces for the
     // Corsair's top plate (`public/assets/ships/Corsair/schematic-top.json`,
     // turned a quarter and padded to the plate's own ratio). Node 1 sits on the
     // centreline just ahead of the mirrored pair 4 and 5, with 2 and 3 further
     // forward again.
     //
-    // Before the aligned turn was asked for first, this crowd settled a
-    // quarter-circle off: node 1's mark went *down*, node 4's went up and left
-    // across the hull, and node 5's went right. Which way round that fell was
-    // decided by a room difference of under two thousandths of a frame unit,
-    // produced by the package's own rounding of two mirrored mounts — so it
-    // could have flipped on a re-export.
+    // The ring this replaced sent node 1 forward along the hull's own axis and
+    // grew the ring until it cleared 2 and 3 — a mark a quarter of a ship from
+    // its mount, with its leader threaded between two other numbers (Commander
+    // request 2026-08-31). Pushed equally by 4 above it and 5 below, it does not
+    // move at all: the pair steps apart around it.
     const frame = { width: 1423.2329, height: 577.2 };
     const anchors = [
       { x: 659.555, y: 288.6 }, // node 1
@@ -405,38 +437,27 @@ describe('placeMarks', () => {
       { x: 788.334, y: 546.449 }, // utility
       { x: 788.334, y: 30.75 }, // utility
     ];
-    const placed = placeMarks(anchors, frame, 0.03825, 0.0306);
-    const moved = (index: number) => ({
-      x: placed[index]!.mark.x - anchors[index]!.x,
-      y: placed[index]!.mark.y - anchors[index]!.y,
-    });
 
-    // Node 1 leaves along the hull's own axis, towards the nose.
-    const one = moved(0);
-    expect(one.x).toBeLessThan(0);
-    expect(Math.abs(one.y)).toBeLessThan(Math.abs(one.x));
+    const placed = placeMarks(anchors, frame, 0.03825, 0.0306);
+
+    expect(placed[0].displaced).toBe(false);
+    expect(placed[1].displaced).toBe(false);
+    expect(placed[2].displaced).toBe(false);
 
     // Nodes 4 and 5 keep their own sides: the upper one goes up, the lower one
     // goes down, and neither crosses the centreline the other sits on.
-    expect(moved(4).y).toBeLessThan(0);
-    expect(moved(3).y).toBeGreaterThan(0);
-
-    // And the pair that has room to itself is left where the package drew it.
-    expect(placed[1]!.displaced).toBe(false);
-    expect(placed[2]!.displaced).toBe(false);
+    expect(placed[4].mark.y - anchors[4].y).toBeLessThan(0);
+    expect(placed[3].mark.y - anchors[3].y).toBeGreaterThan(0);
+    expect(placed[4].mark.x).toBeCloseTo(anchors[4].x, 6);
+    expect(placed[3].mark.x).toBeCloseTo(anchors[3].x, 6);
   });
 
-  it('does not send the Corsair\u2019s first hardpoint across the hull as the plate resizes', () => {
-    // The reported case, as a Commander meets it: a plate is not one width. It
-    // is drawn at whatever the column leaves it, and the mark's own size is
-    // `clamp(0.875rem, 3.06cqw, 1.375rem)`, so the separation asked for changes
-    // with every few pixels. Node 1's mark used to answer that by crossing the
-    // whole ship — forward of the nose at one width, aft of the mounts behind
-    // it at the next, and back again a few pixels later.
-    //
-    // What is asserted is *stability*, not a position: over the widths a plate
-    // is actually drawn at, the mark stays on one side of its own mount. Which
-    // side is the aligned one, and the test above pins that.
+  it('holds the Corsair\u2019s marks still as the plate is resized', () => {
+    // A plate is not one width. It is drawn at whatever the column leaves it,
+    // and the mark's own size is `clamp(0.875rem, 3.06cqw, 1.375rem)`, so the
+    // separation asked for changes with every few pixels. Node 1's mark used to
+    // answer that by crossing the whole ship — forward of the nose at one width,
+    // aft of the mounts behind it at the next.
     const frame = { width: 1423.2329, height: 577.2 };
     const anchors = [
       { x: 659.555, y: 288.6 },
@@ -451,14 +472,20 @@ describe('placeMarks', () => {
     // The stylesheet's own two numbers, as the plate measures them: a mark of
     // `clamp(14px, 3.06%, 22px)` on a plate of `plate` CSS pixels, and the
     // separation the component asks for from that.
-    const sides: number[] = [];
     for (let plate = 240; plate <= 900; plate += 5) {
       const mark = Math.min(22, Math.max(14, plate * 0.0306));
       const share = mark / plate;
       const placed = placeMarks(anchors, frame, Math.min(0.2, share * 1.25), share);
-      sides.push(Math.sign(placed[0]!.mark.x - anchors[0]!.x));
-    }
 
-    expect(new Set(sides).size).toBe(1);
+      // It stays on the hull's own centreline, because the mounts above and
+      // below it push it equally, and it never travels a mark's width from the
+      // mount it belongs to — let alone forward of the two ahead of it.
+      const width = share * frame.width;
+      expect(placed[0].mark.y, `${plate}px`).toBeCloseTo(anchors[0].y, 1);
+      expect(apart(placed[0].mark, anchors[0]), `${plate}px`).toBeLessThan(width);
+      expect(placed[0].mark.x, `${plate}px`).toBeGreaterThan(anchors[1].x);
+      expect(placed[4].mark.y, `${plate}px`).toBeLessThan(anchors[4].y);
+      expect(placed[3].mark.y, `${plate}px`).toBeGreaterThan(anchors[3].y);
+    }
   });
 });

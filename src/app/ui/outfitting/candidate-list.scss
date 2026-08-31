@@ -240,18 +240,31 @@
   overflow-wrap: break-word;
 }
 
-// The row already in the mount is marked the same way as the row in hand, and
-// with the same three things the canvas draws: the amber wash from the leading
-// edge, the 3px marker that opens it, and the amber ink. `selectable-row` keys
-// on `[data-selected]` alone, and an inline fit clears that the moment it
-// commits — which left the fitted row carrying amber text over the ordinary
-// ground, with no marker at all (canvas 1c, the row under `COST`).
-.candidate--fitted {
-  background-image: var(--edsb-surface-row-selected);
+// The row already in the mount carries the marker and nothing else: the 3px
+// amber edge without the wash behind it and without the amber ink.
+//
+// The wash, the marker and the ink together say _this is the row in hand_, and
+// that is the checked row. At canvas 1c's width the two are one row, because
+// choosing a row there is the fit. On canvas 1d's screen a pick waits for
+// `FIT MODULE`, so between the press and the commit there are two rows to
+// mark — the one the mount holds and the one the Commander has taken — and
+// drawn alike the screen carried three identical amber rows with nothing to
+// tell them apart (Commander request 2026-08-31;
+// `design/module-replacement.md`, "The fitted row and the row in hand are two
+// different marks"). Marker against wash is the same distinction the anatomy
+// legend draws between `SELECTED` and `FITTED`.
+//
+// Never the only carrier, either way: the row says `fitted` in its own text,
+// the `FITTED HERE` rule names the block above, and the checked row is checked
+// on its own control.
+//
+// Dropped where the fitted row *is* the checked row, which is the state a mount
+// opens in: there the checked treatment wins outright and the row is amber,
+// exactly as the canvas draws it.
+.candidate--fitted:not([data-selected='true']) {
   border-inline-start-color: var(--edsb-marker-selected);
 }
 
-.candidate--fitted .candidate__name,
 [data-selected='true'] .candidate__name {
   color: var(--edsb-text-accent-strong);
 }
@@ -283,7 +296,6 @@
   @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-muted));
 }
 
-.candidate--fitted .candidate__class,
 [data-selected='true'] .candidate__class {
   color: var(--edsb-text-accent-strong);
 }

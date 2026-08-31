@@ -165,12 +165,13 @@ design? no → remove it — the chip goes, with its two computed markers, its t
 `outfitting.immovable.short.cargoHatch` string in both catalogues. The full sentence stays: it is the
 reading, and it is now the only one.
 
-**Two-pane threshold, ruled 2026-08-21 during US1 implementation.** The wide composition is selected
-at the sum of the two declared content minimums (24.5rem + 22.5rem = 47rem; **corrected 2026-08-22,
-wave 9**, from a 20rem ledger — the wide grid's leading track is canvas 1c's fixed 392px rail, not
+**Two-pane threshold, ruled 2026-08-21 during US1 implementation.** The two-pane composition is
+selected at the sum of the two declared content minimums (24.5rem + 22.5rem = 47rem; **corrected
+2026-08-22, wave 9**, from a 20rem ledger — the leading track is canvas 1c's fixed 392px rail, not
 the width a slot card's wrapped name needs, so the composition had been opening 4.5rem before it
-could hold itself),
-not at feature 011's generic wide container step. The generic step is smaller, and granting two panes
+could hold itself), not at feature 011's generic wide container step. The wide composition takes a
+third region on top of it, at its own and higher step (`responsive-composition.md`, "The third region
+is taken from what is left over"). The generic step is smaller, and granting two panes
 below the sum produces exactly the state
 [responsive-composition.md](./responsive-composition.md) rules out: both panes present and neither
 able to hold its content. Expressed in rem, so a reader at 200% text steps down to the compact

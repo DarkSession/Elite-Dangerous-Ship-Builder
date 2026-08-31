@@ -37,14 +37,33 @@ content and are marked as such.
 | -------------------------------------- | ------------------- | --------------------------------------------------------------------------------------- |
 | Ledger / master pane                   | 320 CSS px          | A slot card's exact key, one wrapped module name and its 44px controls without clipping |
 | Selected-slot pane (chooser or editor) | 360 CSS px          | A candidate row's name, class, rating, mount and stacked labels plus a 44px fit control |
-| Chooser family rail (wide only)        | 192 CSS px (drawn)  | A family's localized name on one line beside its count chip, at a 44px row height       |
+| Chooser family rail (rail manifest)    | 192 CSS px (drawn)  | A family's localized name on one line beside its count chip, at a 44px row height       |
 | Engineering column (side by side only) | 396 CSS px (drawn)  | The attribute table's three columns, and the recipe and effect menus under them         |
 | Wide right rail                        | 306 CSS px          | One validation or cost line with its number and unit on at most two lines               |
 
 Two panes are used only when both the ledger and selected-slot minimums fit together in the available
-inline space, at the active text size, expansion and zoom. Three regions are used only when all three
-fit. Otherwise the next composition down applies. A region that cannot reach its minimum is never
-narrowed below it — the composition changes instead.
+inline space, at the active text size, expansion and zoom. Otherwise the next composition down
+applies. A region that cannot reach its minimum is never narrowed below it — the composition changes
+instead.
+
+**The third region is taken from what is left over, so what is left over has to be enough. Ruled
+2026-08-31 (Commander request).** The wide right rail is a fixed track, and the track it takes its
+306px from is the bench's. Measured against the selected-slot minimum alone, the three regions fit
+from 1058px, and across the band from there to 1374px the bench they leave in the middle never
+reaches the 676px the chooser's rail-and-pane manifest needs: 360px at the bottom of the band and
+675px at the top. So the chooser draws canvas 1d's stacked cards inside canvas 1c's workspace, on a
+tablet in landscape and on any laptop under 1374px. A third column bought by folding the middle one
+back to its floor is not a third column worth having.
+
+So the third region is drawn only where the bench keeps the width that manifest needs —
+`$rail-manifest-min` plus the fitting panel's own 18px inset and hairline on each edge, which is
+42.25rem — rather than the one row it can be narrowed to. The wide composition therefore begins at
+24.5 + 42.25 + 19.125rem. Below it the rail is the anatomy strip's `STATUS` segment, which is what
+every narrower arrangement already does with it, and the bench draws the family rail beside the
+variant pane from 66.75rem of workspace up: 1068 CSS pixels at the default text size, and wider in
+proportion at any other, because both thresholds are read against the root's own size and a window
+width is not what either of them asks. Nothing above that step loses the aligned manifest to a
+rail.
 
 The engineering column is the same rule one level down, inside the bench: the editor is drawn beside
 the manifest only where the family rail, the selected-slot pane and the editor's own minimum all fit
@@ -62,8 +81,8 @@ the stylesheets and the layer decision from disagreeing.
 
 ## Wide composition
 
-At space equivalent to the 1440×900 project viewport and where all three declared minimums fit, adapt
-canvas 1c's three visual regions:
+At space equivalent to the 1440×900 project viewport and where the ledger, the chooser's own aligned
+manifest and the right rail all fit together, adapt canvas 1c's three visual regions:
 
 - left: persistent `ALL`, hardpoint, core, optional and utility controls plus the complete grouped
   slot ledger;
@@ -72,9 +91,9 @@ canvas 1c's three visual regions:
   variant list, the canvas's own `grid-template-columns: 264px minmax(360px, 1fr)` — each bounded and
   scrolling on its own, with `MODULE`, `CLASS` and `COST` in the step ② bar over the variant pane.
   The engineering region is the canvas's third track beside them where the bench has the room for it
-  and under them where it has not. Where the rail's own minimum and the 360 px selected-slot minimum
-  cannot both be met, the compact composition applies, which is where the accordion canvas 1d draws
-  lives;
+  and under them where it has not. The rail's own minimum is met here by construction, because it is
+  what this composition's bench is selected on; where it is not met the two-pane composition applies,
+  which is where the accordion canvas 1d draws lives;
 - right: shared package validation, cost/material and downstream status outlets.
 
 The wide header exposes the feature 002 editable ship name/ident control (FR-019) beside feature 001's
@@ -100,9 +119,13 @@ Tablet is an intentional plan-time interpolation because `.design` provides none
 
 - At a roomy landscape container (verified at 1112×834), use two panes below feedback/shared status:
   a complete ledger master on the left and selected-slot facts/chooser/editor on the right. Collapse
-  the wide right rail into the shared status/outlet region above. Keep every action.
-- At 834×1112 portrait, or whenever expanded/RTL/zoomed content cannot satisfy the 320 px ledger and
-  360 px selected-slot minimums together, use the compact composition.
+  the wide right rail into the shared status/outlet region above. Keep every action. The bench is
+  then wide enough for the chooser's family rail beside its variant pane, which is what the width
+  buys by leaving the third region out.
+- At 834×1112 portrait the two panes still fit — the seam is 47rem — and the bench they leave is
+  442px, which holds a candidate row and not the family rail beside it, so the chooser draws the
+  accordion inside the two-pane composition. Wherever expanded, RTL or zoomed content cannot satisfy
+  the 320 px ledger and 360 px selected-slot minimums together, the compact composition applies.
 - If a future feature 011 token selects two panes at another size, tests must prove both declared
   content minimums, 44px controls and no document overflow; the viewport label alone is insufficient.
 

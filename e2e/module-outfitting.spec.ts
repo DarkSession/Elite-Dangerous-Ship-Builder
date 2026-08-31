@@ -578,16 +578,21 @@ test.describe('the slot ledger', () => {
     // `background: linear-gradient(90deg, var(--amber-a16), \u2026)` and
     // `border-left: 3px solid var(--amber)` \u2014 the ground and the opening line,
     // not amber ink alone. The shared row treatment keys on `[data-selected]`,
-    // which an inline fit clears the moment it commits, so the fitted row was
-    // left drawn like every other row but for its colour.
+    // and a mount at rest has picked nothing, so its checked row is the module
+    // it holds and carries all three.
     await openStockBuild(page);
     await fitFromChooser(page, () => 1);
     await openChooser(page);
 
     // No family is opened by hand here: the chooser seeds the fitted module's
     // own family open, so the row that was just fitted is on screen (FR-021).
-    const fitted = page.locator('.candidate--fitted').first();
+    // Scoped to the rows inside a family: canvas 1d pins a second copy of the
+    // fitted row above them, and that copy carries no control, so it is never
+    // the checked row (`design/module-replacement.md`, "The fitted row and the
+    // row in hand are two different marks").
+    const fitted = page.locator('.candidates__choices .candidate--fitted').first();
     await expect(fitted).toBeVisible();
+    await expect(fitted).toHaveAttribute('data-selected', 'true');
 
     const drawn = await fitted.evaluate((element) => {
       const style = getComputedStyle(element);
@@ -599,6 +604,53 @@ test.describe('the slot ledger', () => {
     expect(drawn.wash).toContain('linear-gradient');
     expect(drawn.wash).toContain('255, 140, 26');
     expect(drawn.marker).toBe('3px rgb(255, 140, 26)');
+  });
+
+  test('marks the row in the mount apart from the row the Commander picked', async ({ page }) => {
+    // The reported case (Commander request 2026-08-31). A pick is not a fit
+    // until it is committed, so pressing a second row left two rows carrying
+    // the identical amber ground with nothing saying which was which. The amber
+    // belongs to the checked row; what the mount already holds keeps the marker
+    // and gives up the wash and the ink.
+    //
+    // At canvas 1c's width picking a row *is* the fit and the two are one row,
+    // so the case only exists where the chooser is a layer with its own
+    // `FIT MODULE`. The width is set here rather than left to the profile,
+    // because a test that stood down on the profiles that cannot reach the case
+    // would assert nothing on four of the five.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStockBuild(page);
+    await fitFromChooser(page, () => 1);
+    await openChooser(page);
+
+    const held = page.locator('.candidates__choices .candidate--fitted').first();
+    const other = page.locator('.candidates__choices .candidate:not(.candidate--fitted)').first();
+    await expect(other).toBeVisible();
+    await other.click();
+
+    // Two rows, two marks. The picked row is the checked one; the row the mount
+    // holds is not, and there is exactly one of each.
+    const picked = page.locator(".candidates__choices .candidate[data-selected='true']");
+    await expect(picked).toHaveCount(1);
+    await expect(picked).not.toHaveClass(/candidate--fitted/);
+    await expect(held).not.toHaveAttribute('data-selected', 'true');
+
+    // The amber wash and ink go with the pick; the mount keeps the marker.
+    const marks = await held.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        wash: style.backgroundImage,
+        marker: `${style.borderInlineStartWidth} ${style.borderInlineStartColor}`,
+      };
+    });
+    expect(marks.wash).toBe('none');
+    expect(marks.marker).toBe('3px rgb(255, 140, 26)');
+
+    const washed = await picked.evaluate((element) => getComputedStyle(element).backgroundImage);
+    expect(washed).toContain('linear-gradient');
+
+    // And it is never the mark alone: the row says so in its own text.
+    expect(await held.textContent()).toContain(englishMessages['outfitting.candidate.fitted']);
   });
 
   test('marks an empty mount as selected the same way it marks a fitted one', async ({ page }) => {

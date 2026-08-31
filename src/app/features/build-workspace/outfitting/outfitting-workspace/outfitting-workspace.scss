@@ -379,12 +379,14 @@
 }
 
 // The canvas's full `392px 1fr 306px`. Its own threshold, because the three
-// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side. It is
-// those three added up rather than a rounded figure, so the region and this
-// grid change arrangement at the same width (`composition.ts`, `MINIMUMS`).
-// Below this the rail has no column and is the strip's `STATUS` segment
-// instead, which is what canvas 1d does with it.
-@container outfitting (min-width: 66.125rem) {
+// tracks need 24.5 + 42.25 + 19.125rem before they will sit side by side — the
+// two fixed rails, and between them what the bench has to keep rather than what
+// one candidate row needs. It is those three added up rather than a rounded
+// figure, so the region and this grid change arrangement at the same width
+// (`composition.ts`, `BENCH_WIDE_MINIMUM_REM`). Below this the rail has no
+// column and is the strip's `STATUS` segment instead, which is what canvas 1d
+// does with it.
+@container outfitting (min-width: 85.875rem) {
   .outfitting {
     grid-template-columns:
       var(--edsb-layout-ledger-rail)
