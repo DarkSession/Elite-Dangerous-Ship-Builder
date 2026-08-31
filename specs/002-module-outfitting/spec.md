@@ -132,11 +132,13 @@ its ship name and ident — belongs here.
   > and no figure this application draws. Hull detail leaves the same mount out of its counts
   > (001/FR-022).
   >
-  > Two consequences are stated rather than discovered, because the mount is removable and the row
-  > is the only place either was offered. There is no route to choose the plain suite over the
-  > advanced one, so a build that opens with one keeps it. And there is no route to empty the
-  > mount, so a build link that recorded it empty before this rule opens with it empty and draws
-  > nothing for it.
+  > Three consequences are stated rather than discovered, because the row was the only place any of
+  > them was offered. There is no route to choose the plain suite over the advanced one, so a build
+  > that opens with one keeps it. There is no route to empty the mount, so a build link that
+  > recorded it empty before this rule opens with it empty and draws nothing for it. And the mount's
+  > enabled state and priority group are no longer editable, because FR-015's controls are drawn on
+  > the ledger row and nowhere else — so a build carries whatever it arrived with. The suite draws
+  > 0 MW, so none of the three changes a figure this application states.
 
 - **FR-003**: Missing facts for package-resolved modules MUST remain unavailable rather than becoming
   zero or an estimate. Only package-resolved module identities are supported.
@@ -351,8 +353,9 @@ its ship name and ident — belongs here.
   > same mount, the same language and the same search. The reveals a Commander set MUST survive that
   > rebuild rather than being seeded again: with a search in force on the compact composition, a
   > family they had closed re-opened as soon as they fitted something from another family, which is
-  > their own toggle undone by an edit that had nothing to do with it. A change of mount, language or
-  > search text is a different presentation and still takes the seed above.
+  > their own toggle undone by an edit that had nothing to do with it. A presentation is the mount,
+  > the reading language, the reveal model (FR-020's rail or accordion) and the search text; a change
+  > to any of the four is a different presentation and still takes the seed above.
 
   > **Brought into view 2026-08-27 (Commander request).** Where a composition draws the families as a
   > list of their own, a family the application reveals MUST be brought into that list's visible box;

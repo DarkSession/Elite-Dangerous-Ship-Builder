@@ -95,10 +95,11 @@ Family open state is part of the query state and is seeded, never accumulated:
 - a query that returns to empty re-seeds the fitted-family default;
 - a Commander toggle adds or removes exactly one family id;
 - toggles hold for as long as the presentation they were made in — the selected mount, the reading
-  language, the fitted-family seed and the search text. A rebuild that lands on the same four keeps
-  them, which is what fitting a module at the open mount does, so a family a Commander closed does
-  not reopen under them. A change to any of the four drops them and the rules above seed the set
-  again.
+  language, the reveal model (rail or accordion) and the search text. A rebuild that lands on the
+  same four keeps them, which is what fitting a module at the open mount does, so a family a
+  Commander closed does not reopen under them. A change to any of the four drops them and the rules
+  above seed the set again. The fitted choice is not one of the four: it moves with every fit, and
+  the whole point of the rule is that a fit leaves the toggles standing.
 
 Toggling reads nothing from the build and writes nothing to it. It is not an edit, not a decision and
 not a history step, and it never invalidates the index or the retained package records.

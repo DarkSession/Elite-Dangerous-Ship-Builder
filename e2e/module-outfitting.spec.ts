@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
@@ -627,6 +627,85 @@ test.describe('the slot ledger', () => {
     await openChooserRows(page);
     await expect(page.getByRole('radio').first()).toBeVisible();
     await sweepOutfittingState(page, testInfo, 'ledger/chooser open');
+  });
+});
+
+/**
+ * The pointer wash on the outfitting lists (Commander request 2026-08-31).
+ *
+ * Three of this feature's four lists are here — the ledger's mounts, the
+ * fitting rail's categories and the module rows beside them; the fourth, the
+ * experimental effect's options, is in `module-engineering.spec.ts` beside the
+ * rest of that surface.
+ *
+ * Read as the ground actually computed under a pointer rather than as a rule
+ * declared somewhere in the cascade. A declared rule is what was already there
+ * for the rail's categories and never reached them: the rail gives every row a
+ * ground of its own in a block written later, and the hover rule lost to it on
+ * source order. Only the computed ground catches that.
+ *
+ * Where the profile reports no hovering pointer the claim is the other one, and
+ * it is asserted rather than skipped: the wash is inside a `(hover: hover)`
+ * query precisely so a touch device is offered nothing it cannot use
+ * (011/FR-006, `design/outfitting-workspace.md`, "Pointer hover").
+ *
+ * Only the desktop profile reports one. The other four are declared with touch
+ * as their primary input, and Chromium and Firefox both answer `(hover: hover)`
+ * false there — so the wash itself is evidenced at desktop, on the rail
+ * manifest, and the four touch profiles evidence the restraint. The accordion's
+ * families are drawn at widths this matrix gives touch to, so their wash has no
+ * profile to be measured in and the rule they share with the rail is what the
+ * stylesheet holds.
+ */
+test.describe('a pointer resting on a list', () => {
+  /** Whether this profile has a pointer that can rest on anything at all. */
+  async function canHover(page: Page): Promise<boolean> {
+    return page.evaluate(() => window.matchMedia('(hover: hover)').matches);
+  }
+
+  /** The ground the row computes at rest, and the one it computes under a pointer. */
+  async function groundsOf(row: Locator): Promise<{ resting: string; hovered: string }> {
+    await expect(row).toBeVisible();
+    const resting = await row.evaluate((node) => getComputedStyle(node).backgroundColor);
+    await row.hover();
+    const hovered = await row.evaluate((node) => getComputedStyle(node).backgroundColor);
+    return { resting, hovered };
+  }
+
+  async function expectAnswersThePointer(page: Page, row: Locator): Promise<void> {
+    const { resting, hovered } = await groundsOf(row);
+    if (await canHover(page)) {
+      expect(hovered).not.toBe(resting);
+    } else {
+      expect(hovered).toBe(resting);
+    }
+  }
+
+  test('is answered by the ledger’s mounts, the categories and the module rows', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+
+    // An unchosen mount, measured on the row that carries the ground rather
+    // than on the button inside it. The chosen row keeps its own ground, which
+    // is the distinction the wash exists to preserve.
+    await selectMount(page, 'SmallHardpoint1');
+    await expectAnswersThePointer(page, page.locator('.slot:not([data-selected="true"])').first());
+
+    await openChooser(page);
+
+    // A category that is not the revealed one. At the rail this is the row that
+    // was declared and never drawn; the revealed row keeps the gradient the
+    // canvas marks it with, so it is not the row to ask.
+    await expectAnswersThePointer(page, page.locator('.family:not([aria-pressed="true"])').first());
+
+    // A module row that offers a choice. `FITTED HERE` is a statement of what
+    // is in the mount and carries no radio, so it takes no wash — and it is
+    // excluded here rather than left to chance.
+    await expectAnswersThePointer(
+      page,
+      page.locator('.candidate:has(.candidate__radio):not([data-selected="true"])').first(),
+    );
   });
 });
 

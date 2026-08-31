@@ -638,6 +638,18 @@ and offers no way to choose it — takes no wash at all. Hover carries nothing o
 of these lists says what it is and what is chosen in text and in state, and this is the enhancement
 011/FR-006 allows on top of that.
 
+**The claim is the ground a row computes, not a rule declared somewhere.** The rail gives each of its
+category rows a ground of its own, in a block written after the wash, so a wash declared once at the
+top of the stylesheet is written and never drawn. The wash is therefore stated again wherever a
+composition sets a ground of its own, and it is verified by reading the computed ground under a
+pointer.
+
+Only a profile with a hovering pointer can be asked. Of the five the browser matrix runs, the desktop
+one reports `(hover: hover)`; the other four are declared with touch as their primary input and
+report it false, and there the claim under test is the restraint — a row that does not change. So the
+wash is evidenced on the rail, which is what the desktop width draws, and the accordion's own
+categories share the rule without a profile to be measured in.
+
 ## The ledger's own order, and the mount it does not draw
 
 The package enumerates the hardpoints, then the utility mounts, armour, the seven core internals, the
@@ -652,8 +664,9 @@ every figure the package publishes — class 1 I, 0 t, 0 MW, 500 Cr, no engineer
 so the row offered a choice between two names and no reading. Hull detail leaves the same mount out
 of its capacity statement (001/FR-022).
 
-The mount is removable, so withholding the row withholds two things a Commander could reach before:
-the plain suite, and an empty approach mount. Both are stated in 002/FR-002a. Nothing else changes —
+The row was the only place three things were offered, so withholding it withholds all three: the
+plain suite, an empty approach mount, and that mount's enabled state and priority group. All three
+are stated in 002/FR-002a. Nothing else changes —
 the mount is found by the package's own `planetaryApproachSuite` restriction, never by the spelling
 of the key, and it is withheld from this list alone: the suite is still fitted, still weighed, still
 drawing power and still in every export.

@@ -278,12 +278,16 @@ describe('candidate ordering', () => {
 });
 
 /**
- * The open set: three seeds, one toggle, and no memory across a rebuild.
+ * The open set: three seeds and one toggle.
  *
- * Everything here is about `openFamilies` being *derived* rather than
- * remembered. It is replaced wholesale on every rebuild and every query change,
- * which is what FR-021 and FR-023 describe and what means there is no second
- * lifetime to invalidate (decision 15).
+ * Everything here is about the seeds this module computes. `openFamilies` is
+ * *derived* at this level and nothing in it is remembered: `openCandidateQuery`
+ * and `applyQuery` set it outright every time they are called, which is what
+ * FR-021 and FR-023 describe.
+ *
+ * A Commander's own toggles are laid over that seed by the store, through
+ * `withRevealedFamilies`, and the store is where their lifetime is decided and
+ * tested (decision 15, `outfitting.store.spec.ts`).
  */
 describe('open families', () => {
   /** The mount the default build arrives with something already fitted in. */

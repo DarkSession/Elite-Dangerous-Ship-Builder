@@ -102,10 +102,11 @@ export function slotViews(loadout: ShipLoadout, text: SlotTextResolver): readonl
  * either — so the row offered a choice between two names and no reading. Hull
  * detail leaves the same mount out of its capacity statement (001/FR-022).
  *
- * The mount is removable, so this withholds the plain suite and the empty
- * mount along with the row. Both consequences are ruled in FR-002a rather than
- * left here. Nothing else changes: the suite stays fitted, and every
- * calculation, export and build link still carries it.
+ * The row was the only place the plain suite, an empty approach mount and that
+ * mount's power controls were offered, so withholding it withholds all three.
+ * FR-002a rules on them rather than leaving them here. Nothing else changes:
+ * the suite stays fitted, and every calculation, export and build link still
+ * carries it.
  *
  * Matched on the package's own restriction rather than on the key, because the
  * key is a spelling and the restriction is the identity (FR-002a).

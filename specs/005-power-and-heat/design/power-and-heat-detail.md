@@ -550,11 +550,10 @@ metric cells features 006–008 own. The first two are read-only; the third is a
 | The pips     | this feature's own block         | always, with a build                  | `SYS` · `ENG` · `WEP`, each over four blocks filled to that bank's allocation                   |
 
 The sentence sits with the issues because that is what it is: a statement of something wrong with
-the build, in the block a Commander reads a build's status in. Over the `POWER` line it stood
-inside the inset this feature's block shares with the metric cells, ruled off the issues it reads
-like and set among the readings instead (Commander request 2026-08-31). Feature 003's rail places
-it and this feature owns it, which is the arrangement feature 004's import-completion notice
-already has (FR-013).
+the build, in the block a Commander reads a build's status in — not among the readings inside the
+inset this feature's block shares with the metric cells. Feature 003's rail places it and this
+feature owns it, which is the arrangement feature 004's import-completion notice already has
+(FR-013).
 
 ### The rail's pip control (2026-08-25)
 

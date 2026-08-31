@@ -6,10 +6,12 @@ import {
   benchFollowedSelection,
   commandBarActionState,
   familyControls,
+  fitCommitted,
   manifestOf,
   openChooser,
   revealedFamilies,
   revealedRows,
+  surfacesAreLayers,
 } from './outfitting-surfaces';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { buildStockHull } from './shell';
@@ -530,10 +532,17 @@ test.describe('module families', () => {
 
     if ((await manifestOf(page)) === 'rail') {
       // The rail reveals exactly one family at a time, so there is no second
-      // family standing open for a fit to disturb. The accordion is where the
-      // report was made and where the rule has something to keep.
+      // family standing open for a fit to disturb.
       return;
     }
+
+    // The accordion is where the rule has something to keep, and the widths
+    // that draw it with an inline bench are where it is proved: there the press
+    // on a module row *is* the fit, so the chooser is rebuilt at a new revision
+    // for the same mount, language, manifest and search — which is the only
+    // shape the rule can be caught in. The report named a phone; the
+    // arrangement it describes is the accordion, and the layer widths are
+    // handled at the foot of this test.
 
     await page.locator('input[type="search"]').fill('laser');
     const families = familyControls(page);
@@ -555,11 +564,31 @@ test.describe('module families', () => {
       .click();
 
     // Where the bench is inline that press is the fit, so the chooser is
-    // rebuilt at a new revision for the same mount and the same search. Where
-    // it is a layer the press only marks the row. Either way the family the
-    // Commander closed is still closed (FR-021, Commander request 2026-08-31).
+    // rebuilt at a new revision for the same mount and the same search, and the
+    // family the Commander closed has to still be closed under it (FR-021,
+    // Commander request 2026-08-31).
     await expect(familyControls(page).first()).toHaveAttribute('aria-expanded', 'false');
     expect(await revealedFamilies(page)).not.toContain(0);
+
+    if (!(await surfacesAreLayers(page))) {
+      return;
+    }
+
+    // Where the chooser is a layer, the press above marked the row and fitted
+    // nothing: the fit is the separate `FIT MODULE` press, and the layer closes
+    // on it. So the two assertions above hold at these widths whatever the rule
+    // says, and what they evidence is the marking, not the rule.
+    //
+    // Nor does reopening the layer put the rule back in reach. A chooser opens
+    // with an empty search, so the presentation a Commander comes back to is
+    // not the one they left and the seed is meant to apply — asserting the
+    // family stayed closed there would assert the opposite of FR-021. That the
+    // search is cleared is stated here so a reader does not go looking for
+    // coverage that would be wrong to add.
+    await page.getByRole('button', { name: /fit module/i }).click();
+    await fitCommitted(page);
+    await openChooser(page);
+    await expect(page.locator('input[type="search"]')).toHaveValue('');
   });
 
   test('answers a search past a screenful in its own composition\u2019s terms', async ({

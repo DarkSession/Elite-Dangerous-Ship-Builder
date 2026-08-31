@@ -580,6 +580,18 @@
     border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
   }
 
+  // The pointer wash, said again inside the rail's own block. The rule near the
+  // top of this file draws it for the accordion, and it cannot reach here: this
+  // block gives every rail row a ground and the block above gives an unpressed
+  // one another, and both outrank a rule written before them. So the wash is
+  // set where those grounds are, over the same ground an unpressed row carries
+  // (`design/outfitting-workspace.md`, "Pointer hover").
+  @media (hover: hover) {
+    .family--rail[aria-pressed='false']:hover {
+      background-color: var(--edsb-surface-accent-quiet);
+    }
+  }
+
   .family__name {
     font-family: var(--edsb-font-heading);
     font-size: var(--edsb-text-size-lead);

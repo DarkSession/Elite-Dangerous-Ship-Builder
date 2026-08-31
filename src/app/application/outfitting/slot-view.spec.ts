@@ -96,6 +96,35 @@ describe('slot views', () => {
     }
   });
 
+  it('keeps the numbers of the optional mounts that follow the withheld one', () => {
+    // Stated over a hull the package does not publish, because on all 48 that it
+    // does the withheld mount is the last optional one — so no published build
+    // can tell counting before the filter from counting after it. The rule is
+    // still the rule: a mount the ledger does not draw must not renumber the
+    // ones behind it, and a package release that moves the approach mount up the
+    // list would otherwise renumber every optional after it in one go.
+    const packaged = defaultBuild().slots();
+    const withheld = packaged.find((slot) => slot.restriction === 'planetaryApproachSuite')!;
+    const optionals = packaged.filter(
+      (slot) => slot.kind === 'optional' && slot.key !== withheld.key,
+    );
+    expect(optionals.length).toBeGreaterThan(1);
+
+    // The approach mount stood second among the optional mounts instead of last.
+    const reordered = [optionals[0]!, withheld, ...optionals.slice(1)];
+    const hull = { slots: () => reordered } as unknown as ShipLoadout;
+
+    const drawn = slotViews(hull, text);
+
+    expect(drawn.map((view) => view.key)).toEqual(optionals.map((slot) => slot.key));
+    // 1, then 3 upwards: the second number belongs to the mount that is not
+    // drawn, and the mounts behind it keep the place the package gave them.
+    expect(drawn.map((view) => view.node)).toEqual([
+      1,
+      ...optionals.slice(1).map((_, index) => index + 3),
+    ]);
+  });
+
   it('keeps empty removable mounts visible', () => {
     const loadout = defaultBuild();
     loadout.removeModule(FIXTURE_SLOTS.fittedOptional);
