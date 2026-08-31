@@ -210,7 +210,7 @@ export function manifestBuildControl(page: Page): Locator {
  * to be able to rest a pointer somewhere, and the rail that reading appears in
  * has to be drawn. Below the rail's width a rest reads nothing at every device,
  * so a journey that hovered there would wait on a navigation that never comes
- * (`responsive-catalogue-view.ts`, `restingMatch`).
+ * (`src/app/ui/wide-composition.ts`, `observeRestingReads`).
  */
 export function restsToRead(page: Page): Promise<boolean> {
   return page.evaluate(() => matchMedia('(hover: hover) and (min-width: 64rem)').matches);

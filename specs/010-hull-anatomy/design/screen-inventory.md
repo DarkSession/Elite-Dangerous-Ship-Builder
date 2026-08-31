@@ -77,8 +77,9 @@ Previews and tests cover:
 - Semantic order within the region is heading and mode strip, side selector and status, plates, then
   legend. The region itself follows feature 002's complete ledger in the workspace's own source
   order (design/hull-anatomy.md, "Narrow, mobile and zoomed").
-- Available inline size and window height—not device detection—choose paired or single-side layout;
-  the pair needs both. At 200% text,
+- The page's own composition, the block's available inline size and the window's height—not device
+  detection—choose paired or single-side layout; the pair needs all three
+  (design/hull-anatomy.md, "Intermediate tablet"). At 200% text,
   actual 400% zoom and landscape phones, content stacks with no document horizontal overflow;
   only schematic containers may pan.
 - Native touch/trackpad/wheel scrolling has visible affordance. No hover, multipointer gesture or

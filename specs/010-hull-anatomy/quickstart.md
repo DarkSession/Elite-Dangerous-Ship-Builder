@@ -153,9 +153,10 @@ Run the primary journey and axe scan in Chromium and Firefox at:
 - 390×844 mobile portrait; and
 - 844×390 mobile landscape.
 
-Check 744×1133 as well. It is not a matrix profile, and it is the one width at which the plate pair's
-three conditions disagree: tall enough and wide enough, on a single-flow page (`design/hull-anatomy.md`,
-"Intermediate tablet"). The automated suite asserts it at that size for the same reason.
+Check 744×1133 as well. It is not a matrix profile, and it sits in the band where the plate pair's
+three conditions disagree — roughly 656 to 767 CSS pixels wide on a window that is not short: wide
+enough and tall enough, on a single-flow page (`design/hull-anatomy.md`, "Intermediate tablet"). The
+automated suite asserts one width in that band for the same reason.
 
 Repeat meaningful states with 200% text, actual 400% browser zoom, reduced motion, long expanded
 text and RTL direction.

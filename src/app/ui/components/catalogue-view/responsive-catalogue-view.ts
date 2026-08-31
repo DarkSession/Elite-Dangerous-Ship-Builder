@@ -145,7 +145,13 @@ export class ResponsiveCatalogueView {
         view.removeEventListener('pointermove', moved);
         const entered = this.#enteredBeforeMoving;
         this.#enteredBeforeMoving = null;
-        if (entered !== null) {
+        // Asked again rather than carried over from the row being entered. The
+        // stash outlives that moment, and the answer can change inside it: a
+        // window zoomed or dragged below the rail's own width between the
+        // `mouseenter` and the move that releases it would otherwise read a
+        // hull into a rail that is no longer drawn — the reported behaviour, at
+        // one row instead of every row the pointer crosses.
+        if (entered !== null && this.restsToRead()) {
           this.hullPreviewed.emit(entered);
         }
       };

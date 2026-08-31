@@ -12,8 +12,8 @@ available without an active build.
 Canvases 1c and 1d draw the capability in one order, and it is stable across all layouts:
 
 1. the localized `HULL ANATOMY` heading;
-2. the labelled schematic regions — both sides where the block has room in both axes, one side and
-   its `TOP`/`BOTTOM` selector otherwise; and
+2. the labelled schematic regions — both sides where the page composes more than one region and the
+   block has room in both axes, one side and its `TOP`/`BOTTOM` selector otherwise; and
 3. the mount state legend.
 
 That is the whole capability. Feature 002's ledger and bench stand beside it in the same workspace

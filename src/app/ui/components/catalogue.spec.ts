@@ -283,6 +283,31 @@ describe('ResponsiveCatalogueView', () => {
     expect(query(fixture, 'tbody th button').getAttribute('aria-label')).toContain('View');
   });
 
+  it('drops a rest it stashed when the answer changes before the move releases it', () => {
+    // The row entered before the first `pointermove` is held rather than
+    // answered, and the hold outlives the moment it was made in: a window zoomed
+    // or dragged below the rail's own width in between would read a hull into a
+    // rail that is no longer drawn. The answer is therefore asked again when the
+    // stash is released, not carried over from when it was made.
+    const fixture = renderComponent(ResponsiveCatalogueView, {
+      ...viewInputs,
+      restsToRead: true,
+    });
+    const previewed: string[] = [];
+    fixture.componentInstance.hullPreviewed.subscribe((symbol) => previewed.push(symbol));
+
+    // Entered while the rail is drawn, and before any move: stashed, not read.
+    query(fixture, 'tbody tr').dispatchEvent(new MouseEvent('mouseenter', { bubbles: false }));
+    expect(previewed).toEqual([]);
+
+    // The rail goes, and only then does the move arrive.
+    fixture.componentRef.setInput('restsToRead', false);
+    fixture.detectChanges();
+    window.dispatchEvent(new Event('pointermove'));
+
+    expect(previewed).toEqual([]);
+  });
+
   it('reads a hull on a rest where it is told the rail is drawn', () => {
     // The other side of the same answer, so the row is not simply inert.
     const fixture = renderComponent(ResponsiveCatalogueView, {

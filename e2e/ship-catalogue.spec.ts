@@ -171,10 +171,11 @@ test.describe('hull catalogue', () => {
     // row the layout happened to put under the cursor took over the address: a
     // shared or bookmarked `/ships/Anaconda` landed on some other hull entirely
     // (reported 2026-08-28).
-    // Parked over the manifest, then loaded under it without moving again. A
-    // device that cannot hover parks nothing and reads no row, so the address
-    // has to survive there too — by having nothing to take it.
-    const hoverable = await restsToRead(page);
+    // Parked over the manifest, then loaded under it without moving again.
+    // Where a rest reads nothing — a touch screen, or any width below the rail's
+    // — no row is read at all, so the address has to survive there too, by
+    // having nothing to take it.
+    const reads = await restsToRead(page);
     await page.goto('/ships');
     await visibleHulls(page).first().hover();
 
@@ -192,7 +193,7 @@ test.describe('hull catalogue', () => {
     // width: the anchored element carries the symbol, the control inside it
     // carries the action.
     const control = row.getByRole('button').first();
-    await (hoverable ? control.hover() : control.click());
+    await (reads ? control.hover() : control.click());
 
     // The address is the hull's name with an underscore for each space, and the
     // row carries the package symbol, so the two are the same string only where
@@ -214,17 +215,18 @@ test.describe('hull catalogue', () => {
       nodes.map((node) => node.getAttribute('data-hull-symbol')),
     );
 
-    // Where the manifest can be hovered, resting on a row opens the hull beside
-    // it and pressing one flies it, so the trip is a hover and there is no entry
-    // to come back from: the inspector replaces the address rather than stacking
-    // one per row the pointer crossed. Where it cannot, the press is the trip.
-    const hoverable = await restsToRead(page);
+    // Where a rest reads a hull, resting on a row opens it beside the manifest
+    // and pressing one flies it, so the trip is a hover and there is no entry to
+    // come back from: the inspector replaces the address rather than stacking
+    // one per row the pointer crossed. Where a rest reads nothing, the press is
+    // the trip.
+    const reads = await restsToRead(page);
     const row = page.getByRole('button', { name: /(view|build a stock) /i }).first();
-    await (hoverable ? row.hover() : row.click());
+    await (reads ? row.hover() : row.click());
     await expect(page).toHaveURL(/\/ships\/[^/]+$/);
     await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
 
-    if (!hoverable) {
+    if (!reads) {
       await page.goBack();
       await expect(page).toHaveURL(/\/ships$/);
     }

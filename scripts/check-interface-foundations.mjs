@@ -709,6 +709,63 @@ async function checkPreviewCoverage() {
 }
 
 // ---------------------------------------------------------------------------
+// Rule: the composition steps are declared once
+// ---------------------------------------------------------------------------
+
+/**
+ * Where a behaviour turns on a composition rather than an arrangement, the step
+ * has to be stated in TypeScript as well, because behaviour is not decided in a
+ * stylesheet. That is a second copy of a figure the stylesheets own, and a
+ * second copy that drifts is a manifest reading a hull into a rail that is not
+ * drawn (`src/app/ui/wide-composition.ts`).
+ *
+ * So the two are reconciled here rather than by a comment promising they agree.
+ */
+const DUPLICATED_STEPS = [
+  {
+    scss: { file: 'src/styles/_responsive.scss', name: '$mode-wide-min' },
+    ts: { file: 'src/app/ui/wide-composition.ts', name: 'WIDE_MODE_MIN_REM' },
+  },
+  {
+    scss: { file: 'src/styles/_responsive.scss', name: '$viewport-short-max' },
+    ts: { file: 'src/app/ui/short-viewport.ts', name: 'STACKABLE_MINIMUM_REM' },
+  },
+];
+
+async function checkDuplicatedSteps() {
+  for (const { scss, ts } of DUPLICATED_STEPS) {
+    const scssPath = resolve(ROOT, scss.file);
+    const tsPath = resolve(ROOT, ts.file);
+    if (!existsSync(scssPath) || !existsSync(tsPath)) {
+      continue;
+    }
+
+    const scssSource = await readFile(scssPath, 'utf8');
+    const tsSource = await readFile(tsPath, 'utf8');
+    const declared = new RegExp(`\\${scss.name}\\s*:\\s*(\\d*\\.?\\d+)rem`).exec(scssSource);
+    const restated = new RegExp(`${ts.name}\\s*=\\s*(\\d*\\.?\\d+)\\b`).exec(tsSource);
+
+    if (declared === null) {
+      report(scssPath, 1, 'composition-step', `${scss.name} is not declared in rem here.`);
+      continue;
+    }
+    if (restated === null) {
+      report(tsPath, 1, 'composition-step', `${ts.name} is not declared as a number here.`);
+      continue;
+    }
+    if (Number(declared[1]) !== Number(restated[1])) {
+      report(
+        tsPath,
+        lineOf(tsSource, restated.index),
+        'composition-step',
+        `${ts.name} is ${restated[1]}rem where ${scss.name} is ${declared[1]}rem. ` +
+          'A behaviour keyed to a composition has to turn at the width the stylesheets draw it at.',
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Rule: no skipped, focused or quarantined interface tests
 // ---------------------------------------------------------------------------
 
@@ -871,6 +928,7 @@ export async function runChecks({ scope = SCOPE } = {}) {
   }
 
   await checkPreviewCoverage();
+  await checkDuplicatedSteps();
   await checkTestDiscipline();
   await checkLedgerCoverage();
   await checkCatalogues();

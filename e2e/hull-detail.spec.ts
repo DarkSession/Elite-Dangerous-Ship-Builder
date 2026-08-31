@@ -12,6 +12,7 @@ import {
   manifestBuildControl,
   openHullFromManifest,
   reachShellLink,
+  restsToRead,
   savedToBrowser,
 } from './shell';
 
@@ -451,9 +452,7 @@ test.describe('hull detail', () => {
     // from the row a Commander is on (FR-007, `hull-detail.md`, "The wide rail
     // has no action"). Where the device cannot hover, a row press opens the
     // detail instead of building, so the action stays.
-    const railBuilds = await page.evaluate(
-      () => matchMedia('(hover: hover)').matches && matchMedia('(min-width: 64rem)').matches,
-    );
+    const railBuilds = await restsToRead(page);
 
     await expect(stockAction(page)).toHaveCount(railBuilds ? 0 : 1);
 

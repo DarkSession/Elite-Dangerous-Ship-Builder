@@ -1,27 +1,28 @@
 import { DestroyRef, inject, signal, type Signal } from '@angular/core';
 
 /**
- * The width at and above which the application draws more than one region.
+ * The application's own step for a page that composes more than one region.
  *
- * The master-detail compositions start here: the shipyard's inspector rail
- * beside its manifest, and the workspace's own regions beside each other.
- * Below it there is one flow, and a screen opened over another one is the whole
- * screen (`_responsive.scss`, `$mode-wide-min`; responsive composition,
- * "Derived layout modes").
+ * The shipyard's inspector rail appears here, beside its manifest, and below it
+ * a screen opened over another one is the whole screen. Regions that compose
+ * from the room they were each given — the outfitting workspace's do — reach
+ * their own arrangements at their own container steps and are not governed by
+ * this; what this names is the page (`_responsive.scss`, `$mode-wide-min`;
+ * responsive composition, "Derived layout modes").
  *
- * Declared here as well as in the stylesheets because one *behaviour* turns on
- * it rather than one arrangement, and behaviour is decided in TypeScript.
- * Stating it at a second figure of its own would let that behaviour and the
- * stylesheets disagree about which composition is on screen, which is the
- * disagreement this exists to prevent.
+ * Restated here because one *behaviour* turns on it rather than one
+ * arrangement, and behaviour is decided in TypeScript rather than in a
+ * stylesheet. It is a second statement of a figure the stylesheets own, so the
+ * two are reconciled by `scripts/check-interface-foundations.mjs` rather than by
+ * this comment promising they agree.
  *
  * In rem, like the stylesheets' own step, so a window zoomed down to a single
  * region is treated as the single region it is.
  */
-export const WIDE_MODE_MIN_REM = 64;
+const WIDE_MODE_MIN_REM = 64;
 
 /** The stylesheets' own query, composed from that width. */
-export const WIDE_COMPOSITION = `(min-width: ${WIDE_MODE_MIN_REM}rem)`;
+const WIDE_COMPOSITION = `(min-width: ${WIDE_MODE_MIN_REM}rem)`;
 
 /**
  * Whether resting a pointer on a shipyard manifest row can read the hull it
@@ -32,7 +33,7 @@ export const WIDE_COMPOSITION = `(min-width: ${WIDE_MODE_MIN_REM}rem)`;
  *
  * The **device** has to be able to rest a pointer somewhere without pressing. A
  * touch screen cannot: there the press opens the hull instead, and the sheet's
- * own action builds it (constitution III, "touch as well as pointer").
+ * own action builds it (constitution V, "Works on Desktop, Tablet and Mobile").
  *
  * And the **rail** has to be drawn, because that is where the reading appears.
  * Below the rail's own width the hull detail is canvas 1b's sheet over the
@@ -42,8 +43,10 @@ export const WIDE_COMPOSITION = `(min-width: ${WIDE_MODE_MIN_REM}rem)`;
  *
  * Asked here, by the route region that draws the rail, rather than by the
  * manifest inside it: a reusable component composes from the box it is given,
- * and the width of that box does not say whether there is a rail beside it —
- * the manifest is wider at the rail's width than it is without one. The same
+ * and the width of that box cannot say whether there is a rail beside it. The
+ * two ranges overlap rather than meeting — the manifest is 640px wide at 1024
+ * with a rail and 979px at 1023 without one, and it passes back through 640 to
+ * 979 as the page grows — so no width it could measure separates them. The same
  * pair decides whether the sheet draws its own create action, in the hull
  * detail's stylesheet, so exactly one of the two carries the transaction at
  * every width (`design/hull-catalogue.md`, "Resting reads a hull only where the
