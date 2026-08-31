@@ -21,8 +21,8 @@ Feature 003 owns 1, 2 and its own two cells in 6. The rest of 6 and items 3, 4, 
 owners' and are listed here only because the rail is where the canvas puts them and the order is the
 canvas's.
 
-Items 1 to 3 are the block the rail opens with; items 4 onwards are drawn inside the inset the
-canvas gives the power figures and the cells. Item 3 is on the near side of that line because it
+Items 1 to 3 are the block the rail opens with; items 4 to 6 are drawn inside the inset the canvas
+gives the power figures and the cells, and item 7 closes the rail in a block of its own. Item 3 is on the near side of that line because it
 says something is wrong with the build, which is what items 2 and feature 004's import-completion
 notice say too (005/FR-013).
 

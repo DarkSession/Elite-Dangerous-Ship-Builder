@@ -18,6 +18,7 @@ import {
   openCandidateQuery,
   toggleFamily,
   withReveal,
+  withRevealedFamilies,
   type CandidateQueryState,
 } from './candidate-query';
 import { compareRating } from './rating-order';
@@ -687,5 +688,48 @@ describe('the family carried from the mount before', () => {
     const state = open(FIXTURE_SLOTS.hardpoint, 'en', 1, null, carried);
 
     expect([...applyQuery(applyQuery(state, 'zzz'), '').openFamilies]).toEqual([carried]);
+  });
+
+  describe('the reveals the store lays over the seed', () => {
+    it('takes them in place of the seed', () => {
+      const state = open(FIXTURE_SLOTS.hardpoint);
+      const families = [...new Set(state.results.map((choice) => choice.presentation.familyId))];
+      expect(families.length).toBeGreaterThan(1);
+
+      const revealed = withRevealedFamilies(state, new Set(families.slice(0, 2)));
+
+      expect([...revealed.openFamilies]).toEqual(families.slice(0, 2));
+    });
+
+    it('keeps an empty set, because closing them all is a Commander\u2019s own answer', () => {
+      const state = open(FIXTURE_SLOTS.hardpoint);
+
+      expect([...withRevealedFamilies(state, new Set()).openFamilies]).toEqual([]);
+    });
+
+    it('drops a reveal for a family these results no longer hold', () => {
+      const state = open(FIXTURE_SLOTS.hardpoint);
+      const held = [...new Set(state.results.map((choice) => choice.presentation.familyId))];
+      expect(held.length).toBeGreaterThan(0);
+
+      // A rebuild at the same presentation can offer a different set of
+      // families. An id for one that is gone must not be carried on.
+      const revealed = withRevealedFamilies(
+        state,
+        new Set([held[0]!, 'not-a-family' as OutfittingFamilyId]),
+      );
+
+      expect([...revealed.openFamilies]).toEqual([held[0]]);
+    });
+
+    it('falls back to the seed when every revealed family is gone', () => {
+      const state = open(FIXTURE_SLOTS.hardpoint);
+
+      // Not the same statement as "I closed them all", so the seed answers
+      // rather than an empty rail with nothing to draw.
+      const revealed = withRevealedFamilies(state, new Set(['not-a-family' as OutfittingFamilyId]));
+
+      expect([...revealed.openFamilies]).toEqual([...state.openFamilies]);
+    });
   });
 });

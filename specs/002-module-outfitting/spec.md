@@ -333,9 +333,9 @@ its ship name and ident — belongs here.
   `familyId` for that module, and its name MUST be the Almanac's localized family name; the
   application MUST NOT derive, abbreviate, translate or override either. A variant takes the family
   of the module it is built on. Every available choice MUST appear in exactly one family.
-- **FR-021**: When replacement choices are presented for a mount, a reading language or a search the
-  Commander has changed, the family containing the exact fitted stock or variant choice MUST be the
-  revealed one. If no available family contains that
+- **FR-021**: When replacement choices are presented for a mount, a reading language, a reveal model
+  or a search the Commander has changed, the family containing the exact fitted stock or variant
+  choice MUST be the revealed one. If no available family contains that
   exact fitted choice, the family revealed on the mount the Commander came from MUST be revealed
   where this mount offers it; failing that, the wide composition MUST reveal the first family in
   package order and the compact composition MUST reveal none. The carry MUST survive exactly one

@@ -90,7 +90,8 @@ describe('parseSchematicMounts', () => {
 
   it('refuses one bad mount rather than dropping it', () => {
     // A drawing missing a mount nobody was told about is worse than a side that
-    // says it could not be read: the ledger still reaches every slot either way.
+    // says it could not be read: the ledger still reaches every mount it draws
+    // either way, and it draws every hardpoint.
     const document = parse(
       extract({
         mounts: [

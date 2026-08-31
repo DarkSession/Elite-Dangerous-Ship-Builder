@@ -145,8 +145,16 @@ Application-localized explanations of exact package enum/token values.
 and nothing else, or with nothing at all when no available family holds that exact choice. A query
 that becomes or changes while non-empty replaces it with every family holding a match, or — where it
 matched more than a screenful of choices — with nothing at all, the families then standing closed
-with their counts; a query that returns to empty re-seeds the fitted-family default. A toggle adds or removes exactly one id. It is
-view state: it never reaches the build, the snapshot, history, persistence or the fragment.
+with their counts; a query that returns to empty re-seeds the fitted-family default. A toggle adds
+or removes exactly one id.
+
+A Commander's toggles hold for as long as the presentation they were made in — the mount, the reading
+language, the reveal model and the search text. They are laid over the seed rather than written into
+it, so a rebuild at the same four keeps them and a change to any of the four drops them and the seeds
+above apply again (FR-021, `contracts/module-catalogue.md`).
+
+All of it is view state: it never reaches the build, the snapshot, history, persistence or the
+fragment.
 
 ## CandidateFamilyView
 

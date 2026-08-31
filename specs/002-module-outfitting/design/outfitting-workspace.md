@@ -628,8 +628,8 @@ under `CORE` on a phone finds it there on a desktop.
 
 Four of this feature's lists answer a pointer resting on a row: the ledger's mounts, the fitting
 rail's categories, the module rows beside it, and the experimental effect's options. Each takes the
-quiet accent wash — `--edsb-surface-accent-quiet`, a step under the `--edsb-surface-accent-selected`
-a chosen row carries — inside a `(hover: hover)` query, so a row a Commander is pointing at is
+quiet accent wash — `--edsb-surface-accent-quiet`, a step under the ground a chosen row carries —
+inside a `(hover: hover)` query, so a row a Commander is pointing at is
 never mistaken for the one they chose and a touch device is given nothing it cannot use.
 
 A row that is already chosen keeps its own ground rather than taking the hover wash over it, and a
@@ -645,10 +645,12 @@ composition sets a ground of its own, and it is verified by reading the computed
 pointer.
 
 Only a profile with a hovering pointer can be asked. Of the five the browser matrix runs, the desktop
-one reports `(hover: hover)`; the other four are declared with touch as their primary input and
-report it false, and there the claim under test is the restraint — a row that does not change. So the
-wash is evidenced on the rail, which is what the desktop width draws, and the accordion's own
-categories share the rule without a profile to be measured in.
+one reports `(hover: hover)`; the other four are declared with touch as their primary input and an
+engine may report it false for them, and there the claim under test is the restraint — a row that
+does not change. The test reads the media query the page reports rather than assuming it from the
+profile, so each profile evidences whichever half of the rule it is in a position to. The wash is
+therefore evidenced on the rail, which is what the desktop width draws, and the accordion's own
+categories may share the rule without a profile to be measured in.
 
 ## The ledger's own order, and the mount it does not draw
 
@@ -668,8 +670,8 @@ The row was the only place three things were offered, so withholding it withhold
 plain suite, an empty approach mount, and that mount's enabled state and priority group. All three
 are stated in 002/FR-002a. Nothing else changes —
 the mount is found by the package's own `planetaryApproachSuite` restriction, never by the spelling
-of the key, and it is withheld from this list alone: the suite is still fitted, still weighed, still
-drawing power and still in every export.
+of the key, and it is withheld from this list alone: the suite is still fitted, still read by every
+calculation and still in every export.
 
 ## Slot presentation
 

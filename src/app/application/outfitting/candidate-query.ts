@@ -304,14 +304,25 @@ function revealedAfterQuery(
  * the moment they fitted something from another one, which is a toggle undone
  * by an edit that had nothing to do with it (Commander request 2026-08-31).
  *
- * A family the new results do not hold simply draws nothing: `groupFamilies`
- * renders the families the results contain and no others.
+ * The reveals are narrowed to the families the new results actually hold. A
+ * rebuild at the same presentation can offer a different set of them — undoing
+ * a fit gives a mount back a family the fitted module was excluding — and an id
+ * for a family that is gone would otherwise be carried for the rest of the
+ * presentation. Where that narrowing empties a set the Commander had something
+ * in, the seed answers instead, because "every family I revealed is gone" is
+ * not the same statement as "I closed them all" and only the second is theirs.
  */
 export function withRevealedFamilies(
   state: CandidateQueryState,
   openFamilies: ReadonlySet<OutfittingFamilyId>,
 ): CandidateQueryState {
-  return { ...state, openFamilies };
+  if (openFamilies.size === 0) {
+    return { ...state, openFamilies };
+  }
+
+  const held = familiesOf(state.results);
+  const revealed = new Set([...openFamilies].filter((familyId) => held.has(familyId)));
+  return revealed.size === 0 ? state : { ...state, openFamilies: revealed };
 }
 
 /**

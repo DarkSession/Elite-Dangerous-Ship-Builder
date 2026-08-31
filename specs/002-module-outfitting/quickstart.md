@@ -114,7 +114,9 @@ Expected:
 
 Expected:
 
-- exactly one open family, or none, on first presentation and after each rebuild;
+- exactly one open family, or none, on first presentation and on each change of mount, reading
+  language, reveal model or search; a rebuild at the same presentation — which is what step 7 is —
+  leaves the families exactly as the Commander left them (FR-021);
 - toggling changes no build revision, adds no history step and leaves undo/redo exactly as it was;
 - every family holding a match is present and counted on each query change and families without a
   match are absent; where the match set is within a screenful every one of them is open and no

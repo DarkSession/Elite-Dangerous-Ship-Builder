@@ -1228,7 +1228,11 @@ test('washes an experimental effect a pointer rests on, and only where there is 
   // edge and its marker, and the wash is written not to stand over them.
   const option = effectOptions(page).first();
   await expect(option).toBeVisible();
+  // The two shapes publish a chosen option differently — the cards through
+  // `data-selected`, the menu through `aria-selected` — so both are ruled out
+  // rather than the one this width happens to draw.
   await expect(option).not.toHaveAttribute('data-selected', 'true');
+  await expect(option).not.toHaveAttribute('aria-selected', 'true');
 
   const resting = await option.evaluate((node) => getComputedStyle(node).backgroundColor);
   await option.hover();

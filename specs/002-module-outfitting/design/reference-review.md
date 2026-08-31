@@ -35,7 +35,7 @@ The canvas is a visual/product reference, not source code, package data or a com
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Dense grouped slot ledger with exact module summaries | Render the package slots in the ledger's own order (FR-002a) with semantic group/list structure and explicit keys. |
 | Wide selected-slot editor and candidate manifest      | Replacement and engineering compose inline without leaving `/build`.                                               |
-| Narrow category controls and stacked slot cards       | Same complete package slot collection reflows for touch/mobile.                                                    |
+| Narrow category controls and stacked slot cards       | The same slot collection, in the same ledger order, reflows for touch/mobile.                                      |
 | Narrow full-screen change/engineering views           | Responsive application layers with explicit cancel/apply and inert background.                                     |
 | Direct wide undo/redo and compact narrow actions      | Same session-history capability at every width.                                                                    |
 | Per-module enabled/priority control                   | Separate accessible switch/select, with package zero-based values and one-based labels.                            |

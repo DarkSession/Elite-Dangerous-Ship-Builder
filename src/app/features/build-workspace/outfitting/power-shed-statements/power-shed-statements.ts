@@ -20,10 +20,10 @@ const MW_DIGITS = 2;
  *
  * Feature 005 owns the sentence — what it says, what it reads and when it is
  * drawn at all — and feature 003's rail places it, beneath the package's own
- * validation issues. That is the same arrangement feature 004's
- * import-completion notice already sits under: both are what there is to say
- * about the build that is now open, and the block that opens the rail is where
- * a Commander looks for it (003 spec, "Scope"; 005/FR-013).
+ * validation issues. Feature 003's rail rules the same placement for feature
+ * 004's import-completion notice: both are what there is to say about the build
+ * that is now open, and the block that opens the rail is where a Commander
+ * looks for it (003 spec, "Scope"; 005/FR-013).
  *
  * A build the plant covers draws nothing at all — not an all-clear line, not a
  * zero count. Neither canvas draws such a state, and silence claims strictly

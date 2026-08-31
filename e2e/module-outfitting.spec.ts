@@ -254,10 +254,32 @@ test.describe('the slot ledger', () => {
     // The package puts the hatch last of all. The ledger draws it where the
     // `CORE` category already lists it, so the complete list and the category
     // agree (002/FR-002a).
-    const keys = await everyPublishedSlotKey(page);
+    //
+    // The claim belongs to the complete list, which is the one place the two
+    // could disagree: a category holds one kind, so `CORE` closes with the
+    // hatch and `OPTIONAL` never held it whatever this rule says. Only the wide
+    // composition draws `ALL`; the compact one offers no such list
+    // (`design/outfitting-workspace.md`, "No `ALL` at compact width"), and
+    // there what is left to say is that the hatch is under `CORE` and under
+    // nothing else.
+    const categories = page.locator('.outfitting__category');
+    const all = categories.first();
+    const wide = (await categories.count()) > 0 && (await all.innerText()).match(/all/i) !== null;
 
-    expect(keys.indexOf('CargoHatch')).toBe(keys.indexOf('FuelTank') + 1);
-    expect(keys.indexOf('CargoHatch')).toBeLessThan(keys.indexOf('Slot01_Size7'));
+    if (wide) {
+      await all.click();
+      await expect(all).toHaveAttribute('aria-pressed', 'true');
+
+      const keys = await publishedSlotKeys(page);
+      expect(keys.indexOf('CargoHatch')).toBe(keys.indexOf('FuelTank') + 1);
+      expect(keys.indexOf('CargoHatch')).toBeLessThan(keys.indexOf('Slot01_Size7'));
+      return;
+    }
+
+    const drawn = await everyPublishedSlotKey(page);
+    expect(drawn).toContain('CargoHatch');
+    expect(drawn.indexOf('CargoHatch')).toBe(drawn.indexOf('FuelTank') + 1);
+    expect(drawn.indexOf('CargoHatch')).toBeLessThan(drawn.indexOf('Slot01_Size7'));
   });
 
   test('never renders a game slot key as visible text', async ({ page }) => {
@@ -649,12 +671,14 @@ test.describe('the slot ledger', () => {
  * query precisely so a touch device is offered nothing it cannot use
  * (011/FR-006, `design/outfitting-workspace.md`, "Pointer hover").
  *
- * Only the desktop profile reports one. The other four are declared with touch
- * as their primary input, and Chromium and Firefox both answer `(hover: hover)`
- * false there — so the wash itself is evidenced at desktop, on the rail
- * manifest, and the four touch profiles evidence the restraint. The accordion's
- * families are drawn at widths this matrix gives touch to, so their wash has no
- * profile to be measured in and the rule they share with the rail is what the
+ * The other four profiles are declared with touch as their primary input, and
+ * an engine may answer `(hover: hover)` false for that reason. So the branch is
+ * taken from the media query the page itself reports rather than from the
+ * profile name, and each profile evidences whichever half of the rule it is in
+ * a position to. In the runs measured so far that is the wash at desktop, on
+ * the rail manifest, and the restraint at the other four under Chromium. The
+ * accordion's families are drawn at those widths, so their wash may have no
+ * profile to be measured in, and the rule they share with the rail is what the
  * stylesheet holds.
  */
 test.describe('a pointer resting on a list', () => {

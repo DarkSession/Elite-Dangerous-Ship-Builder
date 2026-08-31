@@ -685,6 +685,18 @@ test.describe('the status rail', () => {
         ),
       ).toHaveCount(0);
     }
+  });
+
+  test('keeps the shed sentence read-only too', async ({ page }) => {
+    // On a build that sheds nothing there is no sentence, and a count of zero
+    // controls inside a component that drew nothing proves nothing. So this is
+    // asked of a build the plant cannot cover.
+    await shedBuild(page);
+    await revealStatusRail(page);
+
+    const statements = page.locator('edsb-power-shed-statements .statement');
+    await expect(statements.first()).toBeVisible();
+
     await expect(
       page.locator(
         'edsb-power-shed-statements button, edsb-power-shed-statements a, edsb-power-shed-statements input',
