@@ -396,7 +396,8 @@ the ledger is complete and does not depend on artwork.
 mount, its kind, its side and its complete state, which is the text equivalent SC-003 asks for at
 the geometry itself; the ledger is the enumerable, order-stable one.
 
-**Left open.** Nothing. FR-004 already names the complete slot list as the route to every slot.
+**Left open.** Nothing. FR-004 already names the complete slot list as the route to every slot it
+draws.
 
 ## Divergence from FR-005 and the legend — mount power
 

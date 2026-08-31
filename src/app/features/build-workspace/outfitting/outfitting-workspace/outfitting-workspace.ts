@@ -32,6 +32,7 @@ import { DefenceSummary } from '../defence-summary/defence-summary';
 import { DrivesSummary } from '../drives-summary/drives-summary';
 import { PowerBadge } from '../power-badge/power-badge';
 import { OffenceSummary } from '../offence-summary/offence-summary';
+import { PowerShedStatements } from '../power-shed-statements/power-shed-statements';
 import { PowerSummary } from '../power-summary/power-summary';
 import { EngineeringEditor } from '../engineering-editor/engineering-editor';
 import { HullAnatomy, type AnatomyGuestMode } from '../hull-anatomy/hull-anatomy';
@@ -108,6 +109,7 @@ const HISTORY_REDO_MARK = '\u21b7';
     OffenceSummary,
     DrivesSummary,
     PowerBadge,
+    PowerShedStatements,
     PowerSummary,
     EditRefusalNotice,
     HullAnatomy,
@@ -321,7 +323,7 @@ export class OutfittingWorkspace {
     })),
   );
 
-  /** The visible mounts, grouped by kind in the package's own order. */
+  /** The visible mounts, grouped by kind in the order the ledger draws them. */
   readonly groups = computed<readonly SlotGroupView[]>(() => {
     const category = this.category();
     const groups: SlotGroupView[] = [];

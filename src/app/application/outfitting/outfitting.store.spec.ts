@@ -437,19 +437,78 @@ describe('outfitting store - fitting', () => {
       expect([...state.openFamilies]).toEqual([state.fittedFamilyId]);
     });
 
-    it('discards the Commander\u2019s open set on a rebuild, for the seed again', () => {
+    it('keeps the Commander\u2019s open set across a rebuild at the same mount', () => {
       store.select(FIXTURE_SLOTS.fittedHardpoint);
-      const seeded = [...store.candidateQuery()!.openFamilies];
       const closed = store.candidateQuery()!.openFamilies.values().next().value!;
 
       store.toggleFamily(closed);
       expect([...store.candidateQuery()!.openFamilies]).toEqual([]);
 
-      // Anything that rebuilds the chooser reseeds it: the open set belongs to
-      // the presentation, and that presentation is gone.
+      // Fitting a module, undoing a fit and redoing one all rebuild the chooser
+      // at a new revision for the same mount, the same language and the same
+      // search — so the reveals are still about what is in front of the
+      // Commander and survive it (FR-021, Commander request 2026-08-31).
       active.touch();
 
+      expect([...store.candidateQuery()!.openFamilies]).toEqual([]);
+    });
+
+    it('seeds again when the search changes, whatever the Commander had open', () => {
+      store.select(FIXTURE_SLOTS.fittedHardpoint);
+      const seeded = [...store.candidateQuery()!.openFamilies];
+      for (const familyId of seeded) {
+        store.toggleFamily(familyId);
+      }
+      expect([...store.candidateQuery()!.openFamilies]).toEqual([]);
+
+      // A different search is a different presentation, and the seed is what a
+      // presentation opens with (FR-023).
+      store.setQuery('pulse');
+      expect([...store.candidateQuery()!.openFamilies].length).toBeGreaterThan(0);
+
+      // Clearing it is a different presentation again, and an empty search
+      // seeds from the fitted module's family (FR-021).
+      store.clearQuery();
       expect([...store.candidateQuery()!.openFamilies]).toEqual(seeded);
+    });
+
+    it('leaves a family the Commander closed closed when they fit from another', () => {
+      // The report, at the level it was made: search on a phone, close one
+      // family, fit a module from a different one, and the closed family opened
+      // again (Commander request 2026-08-31).
+      store.select(FIXTURE_SLOTS.hardpoint);
+      store.setQuery('laser');
+
+      const families = [
+        ...new Set(store.candidateQuery()!.results.map((choice) => choice.presentation.familyId)),
+      ];
+      expect(families.length).toBeGreaterThan(1);
+      const [closed, kept] = families;
+
+      // Both open, whatever the search seeded, and then one closed.
+      for (const familyId of [closed!, kept!]) {
+        if (!store.candidateQuery()!.openFamilies.has(familyId)) {
+          store.toggleFamily(familyId);
+        }
+      }
+      store.toggleFamily(closed!);
+      expect(store.candidateQuery()!.openFamilies.has(closed!)).toBe(false);
+
+      const choice = store
+        .candidateQuery()!
+        .results.find(
+          (candidate) => candidate.kind === 'stock' && candidate.presentation.familyId === kept,
+        )!;
+      expect(
+        store.dispatch({
+          kind: 'fitStock',
+          slotKey: FIXTURE_SLOTS.hardpoint,
+          choiceKey: choice.key,
+        }).kind,
+      ).toBe('committed');
+
+      expect(store.candidateQuery()!.openFamilies.has(closed!)).toBe(false);
+      expect(store.candidateQuery()!.openFamilies.has(kept!)).toBe(true);
     });
 
     it('carries the open family exactly one step, and not two', () => {

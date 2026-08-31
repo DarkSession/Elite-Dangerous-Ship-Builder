@@ -11,16 +11,22 @@ so there is one status surface at every width and the compact arrangement is the
 
 1. `BUILD STATUS`, the visible heading that names the region.
 2. Every `ShipLoadout.validation()` issue, once, in package order.
-3. Power — feature 005.
-4. The `SYS` / `ENG` / `WEP` pip control — feature 005, added by the 2026-08-25 canvas revision.
-5. The metric cells: six from features 006–008, then `CARGO` and `PASSENGERS` from this feature.
-6. `COST` and `MATERIALS` — feature 009, built.
+3. One sentence per priority group the plant cannot keep lit — feature 005, moved here 2026-08-31.
+4. Power — feature 005.
+5. The `SYS` / `ENG` / `WEP` pip control — feature 005, added by the 2026-08-25 canvas revision.
+6. The metric cells: six from features 006–008, then `CARGO` and `PASSENGERS` from this feature.
+7. `COST` and `MATERIALS` — feature 009, built.
 
-Feature 003 owns 1, 2 and its own two cells in 5. The rest of 5 and items 3, 4 and 6 are their
+Feature 003 owns 1, 2 and its own two cells in 6. The rest of 6 and items 3, 4, 5 and 7 are their
 owners' and are listed here only because the rail is where the canvas puts them and the order is the
 canvas's.
 
-**Item 4 makes the rail interactive for the first time.** Until the 2026-08-25 revision every block
+Items 1 to 3 are the block the rail opens with; items 4 to 6 are drawn inside the inset the canvas
+gives the power figures and the cells; item 7 closes the rail in a block of its own. Item 3 is on the
+near side of that line because it says something is wrong with the build, which is what item 2 says
+and what feature 004's import-completion notice will say (005/FR-013).
+
+**Item 5 makes the rail interactive for the first time.** Until the 2026-08-25 revision every block
 in it was a read-out, and this file said so. It is still not feature 003's control: the pips are
 feature 005's one viewing condition, the same one its distributor cell edits, and the rail is only
 where the canvas now also draws it (005 FR-013's 2026-08-25 extension,
@@ -28,7 +34,7 @@ where the canvas now also draws it (005 FR-013's 2026-08-25 extension,
 
 ## The metric cells are one grid, not several blocks
 
-_Relocated here from `AGENTS.md` on 2026-08-25._ Four features own cells in item 5 — `SHIELD` and
+_Relocated here from `AGENTS.md` on 2026-08-25._ Four features own cells in item 6 — `SHIELD` and
 `ARMOUR` from 006, `DPS` from 007, `JUMP`, `SPEED` and `MASS` from 008, and `CARGO` and
 `PASSENGERS` from this one — but the canvas rules the six it draws off each other through the gaps
 of a **single** `1fr 1fr` container, two to a row, and the two FR-023 adds take the next row of the

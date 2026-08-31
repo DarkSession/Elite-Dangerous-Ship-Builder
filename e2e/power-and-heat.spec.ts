@@ -574,6 +574,64 @@ test.describe('the conditions', () => {
   });
 });
 
+/**
+ * A build whose plant cannot cover it, made the way a Commander makes one.
+ *
+ * The smallest hull has the least headroom, so one hungry utility module is
+ * the whole journey. It is then moved to a priority group of its own, which
+ * is what leaves the rest of the build lit and one group dark — the artboard's
+ * own case, and the one the badge is drawn for. With everything in group 1
+ * instead, that single group goes dark and the plant lights nothing, which is
+ * a real reading but a degenerate one to measure a share against.
+ *
+ * Nothing here writes down a megawatt: what is asserted is that the dashboard
+ * reports a dark group and that what reads it agrees with it.
+ */
+async function shedBuild(page: Page): Promise<void> {
+  await page.goto('/ships/SideWinder');
+  await buildStockHull(page, englishMessages['hullDetail.create']);
+
+  const mount = await revealMount(page, 'TinyHardpoint1');
+  await mount.click();
+  // Whichever manifest this width draws: the accordion opens with every
+  // family shut, and the rail reveals exactly one at a time, so neither puts
+  // an arbitrary candidate on screen by itself.
+  await revealFamilyHolding(page, /cargo scanner/i);
+  const scanner = page
+    .locator('.candidates__choices .candidate')
+    .filter({ hasText: /cargo scanner/i })
+    .first();
+  await scanner.scrollIntoViewIfNeeded();
+  // The name rather than the row: a row's centre falls in the gap between the
+  // identity and the figures, and a click landing on no content activates no
+  // label in Firefox.
+  await scanner.locator('.candidate__name').click();
+  // Canvas 1c fits inline on that click; canvas 1d's chooser is a screen of
+  // its own, so leaving it is the decision.
+  if (await surfacesAreLayers(page)) {
+    await page.getByRole('button', { name: /fit module/i }).click();
+  }
+  await fitCommitted(page);
+
+  // Into a group of its own. The options carry the package's own 0-based
+  // priority and are labelled with the 1-based group a Commander reads, so
+  // `'1'` here is the `2` on screen. Located again after the fit rather than
+  // through the handle the chooser was opened from: the ledger redraws the
+  // row around the module now in the mount.
+  await revealMount(page, 'TinyHardpoint1');
+  await page
+    .locator('[data-slot-key="TinyHardpoint1"] .power__priority')
+    .first()
+    .selectOption({ value: '1' });
+
+  await page
+    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .filter({ hasText: englishMessages['anatomy.mode.power'] })
+    .click();
+  await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
+  await expect(page.locator('edsb-power-thermals .power__band--offline')).not.toHaveCount(0);
+}
+
 test.describe('the status rail', () => {
   test('states the plant against the draw, and the remainder the canvas states', async ({
     page,
@@ -615,18 +673,57 @@ test.describe('the status rail', () => {
     await expect(bar.locator('.rail-bar__plant')).toBeVisible();
   });
 
-  test('keeps the sentence, the figures and the bar read-only', async ({ page }) => {
+  test('keeps the figures, the bar and the sentence read-only', async ({ page }) => {
     await openPower(page);
 
-    // The pips under them are the block's only control; none of the three
-    // readings above it is interactive, exactly as the canvas draws them.
-    for (const selector of ['.statements', '.rail-power', '.rail-bar']) {
+    // The pips are the block's only control; neither reading above them is
+    // interactive, exactly as the canvas draws them.
+    for (const selector of ['.rail-power', '.rail-bar']) {
       await expect(
         page.locator(
           `edsb-power-summary ${selector} button, edsb-power-summary ${selector} a, edsb-power-summary ${selector} input`,
         ),
       ).toHaveCount(0);
     }
+  });
+
+  test('keeps the shed sentence read-only too', async ({ page }) => {
+    // On a build that sheds nothing there is no sentence, and a count of zero
+    // controls inside a component that drew nothing proves nothing. So this is
+    // asked of a build the plant cannot cover.
+    await shedBuild(page);
+    await revealStatusRail(page);
+
+    const statements = page.locator('edsb-power-shed-statements .statement');
+    await expect(statements.first()).toBeVisible();
+
+    await expect(
+      page.locator(
+        'edsb-power-shed-statements button, edsb-power-shed-statements a, edsb-power-shed-statements input',
+      ),
+    ).toHaveCount(0);
+  });
+
+  test('states a shed group in the build status block, and not in the power one', async ({
+    page,
+  }) => {
+    await shedBuild(page);
+
+    // The dashboard is what says a group is dark, and the sentence answers to
+    // the same projection.
+    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
+    expect(dark).toBeGreaterThan(0);
+
+    await inTheRail(page, async () => {
+      // Feature 005 owns the sentence; feature 003's block is where it is
+      // drawn, under the package's own validation issues (005/FR-013).
+      const statements = page.locator('.outfitting__status-head .statement');
+      await expect(statements).toHaveCount(dark);
+      await expect(statements.first()).toBeVisible();
+      // Not in this feature's own block as well: on the screen twice is one
+      // sentence too many.
+      await expect(page.locator('edsb-power-summary .statement')).toHaveCount(0);
+    });
   });
 });
 
@@ -692,64 +789,6 @@ test.describe('the compact strip’s power badge', () => {
 });
 
 test.describe('the compact strip’s power badge, on a build that sheds', () => {
-  /**
-   * A build whose plant cannot cover it, made the way a Commander makes one.
-   *
-   * The smallest hull has the least headroom, so one hungry utility module is
-   * the whole journey. It is then moved to a priority group of its own, which
-   * is what leaves the rest of the build lit and one group dark — the artboard's
-   * own case, and the one the badge is drawn for. With everything in group 1
-   * instead, that single group goes dark and the plant lights nothing, which is
-   * a real reading but a degenerate one to measure a share against.
-   *
-   * Nothing here writes down a megawatt: what is asserted is that the dashboard
-   * reports a dark group and the badge agrees with it.
-   */
-  async function shedBuild(page: Page): Promise<void> {
-    await page.goto('/ships/SideWinder');
-    await buildStockHull(page, englishMessages['hullDetail.create']);
-
-    const mount = await revealMount(page, 'TinyHardpoint1');
-    await mount.click();
-    // Whichever manifest this width draws: the accordion opens with every
-    // family shut, and the rail reveals exactly one at a time, so neither puts
-    // an arbitrary candidate on screen by itself.
-    await revealFamilyHolding(page, /cargo scanner/i);
-    const scanner = page
-      .locator('.candidates__choices .candidate')
-      .filter({ hasText: /cargo scanner/i })
-      .first();
-    await scanner.scrollIntoViewIfNeeded();
-    // The name rather than the row: a row's centre falls in the gap between the
-    // identity and the figures, and a click landing on no content activates no
-    // label in Firefox.
-    await scanner.locator('.candidate__name').click();
-    // Canvas 1c fits inline on that click; canvas 1d's chooser is a screen of
-    // its own, so leaving it is the decision.
-    if (await surfacesAreLayers(page)) {
-      await page.getByRole('button', { name: /fit module/i }).click();
-    }
-    await fitCommitted(page);
-
-    // Into a group of its own. The options carry the package's own 0-based
-    // priority and are labelled with the 1-based group a Commander reads, so
-    // `'1'` here is the `2` on screen. Located again after the fit rather than
-    // through the handle the chooser was opened from: the ledger redraws the
-    // row around the module now in the mount.
-    await revealMount(page, 'TinyHardpoint1');
-    await page
-      .locator('[data-slot-key="TinyHardpoint1"] .power__priority')
-      .first()
-      .selectOption({ value: '1' });
-
-    await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
-      .filter({ hasText: englishMessages['anatomy.mode.power'] })
-      .click();
-    await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
-    await expect(page.locator('edsb-power-thermals .power__band--offline')).not.toHaveCount(0);
-  }
-
   test('names each dark group, and holds no control', async ({ page }) => {
     await shedBuild(page);
 

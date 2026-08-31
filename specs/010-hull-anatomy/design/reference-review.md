@@ -59,7 +59,7 @@ Almanac `data-feature="utility_mount"` plus an exact resolved package `kind === 
   with state and relationships.
 - Both sides have visible headings and accessible image descriptions.
 - Feature 002's ledger already represents every hardpoint and utility exactly once in package
-  order, and remains the route to every slot with or without artwork.
+  order, and remains the route to every slot it draws, with or without artwork.
 - Side availability, selected state and side failure are text, and a side change is announced once.
 - Geometry state is never conveyed by color/shape/position alone.
 - Every occurrence is a named button, operable by keyboard and pointer without hover, and raised

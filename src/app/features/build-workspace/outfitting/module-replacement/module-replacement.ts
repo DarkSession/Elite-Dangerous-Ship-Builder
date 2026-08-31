@@ -288,10 +288,11 @@ export class ModuleReplacement {
   /**
    * Opens or closes one family.
    *
-   * Straight through to the query state and nowhere near the transaction: no
+   * Straight through to the store and nowhere near the transaction: no
    * revision, no checkpoint, no rebuilt index. What a Commander opens lives
-   * until the next rebuild or the next query change, which is where FR-021's
-   * seed takes over again.
+   * until the chooser is presented for a different mount, reading language,
+   * reveal model or search, which is where FR-021's seed takes over again. An
+   * edit to this same mount is not one of the four.
    */
   toggleFamily(familyId: OutfittingFamilyId): void {
     this.store.toggleFamily(familyId);

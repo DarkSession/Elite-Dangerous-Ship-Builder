@@ -90,12 +90,22 @@ conditions here, because the design draws them inside this capability and nowher
   for every mode but `mounts`, so the `POWER` mode replaces the plates rather than annotating them
   and no mount carries a power state.
 - **FR-013**: The build status rail MUST carry one sentence per priority group the package reports
-  unpowered with the hardpoints deployed, each naming its group and its own deployed draw; the
+  unpowered with the hardpoints deployed, each naming its group and its own deployed draw, **in the
+  rail's opening `BUILD STATUS` block beneath the package's validation issues**; the
   canvas's `POWER` line carrying the lit draw against plant output, with its unpowered remainder
   named after it only where something is dark; and the canvas's bar under it, drawing those same
   figures over the whole demand with a mark where the plant runs out. Each MUST name only fields the
   package returned, no severity word MUST stand beside a sentence, and no heat sentence MUST be
   drawn here. These three MUST NOT be interactive.
+
+  > **Moved into the status block 2026-08-31 (Commander request).** The sentence opened this
+  > feature's own block, over the `POWER` line and inside the inset that block shares with the
+  > metric cells feature 003 and three others draw. A group the plant leaves dark is something
+  > wrong with the build, and the block a Commander reads that in is the one the rail opens with —
+  > so the sentence is drawn there, with the package's issues, and this feature's block begins at
+  > the `POWER` line. Only the placement moves: the wording, the deployed reading behind it and
+  > the silence on a build the plant covers are unchanged, and feature 003 places it without
+  > owning it (003 spec, "Scope").
 
   > **Extended 2026-08-25 — the rail carries the pip control too.** The canvas revision of that date
   > drew three `.pipset` groups under the rail's `POWER` bar — `SYS`, `ENG` and `WEP`, each over four

@@ -7,20 +7,6 @@
 -->
 @if (shown()) {
   <!--
-    The sentence first, as the canvas stacks it under feature 003's issues, then
-    the `POWER` line, then the bar, then the pips. A build with a plant that
-    covers everything draws no sentence: silence about a group says strictly
-    less than an all-clear would, and that is what it has to say.
-  -->
-  @if (statements().length > 0) {
-    <ul class="statements">
-      @for (statement of statements(); track statement.id) {
-        <li class="statement">{{ statement.text }}</li>
-      }
-    </ul>
-  }
-
-  <!--
     Canvas 1c's `POWER` block: the label, the figures, and the bar of the same
     figures again — what is lit, what is not, and where the plant runs out.
   -->

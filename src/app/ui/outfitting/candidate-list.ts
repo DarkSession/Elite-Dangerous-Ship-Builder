@@ -352,10 +352,11 @@ export class CandidateList {
    * The family the rail has selected, and whose rows the pane draws.
    *
    * Exactly one, by construction: under the rail the revealed set is always a
-   * single id and `seedFamilies` falls back to the first family in package
-   * order, so the pane is never empty. The `?? families()[0]` is not a second
-   * rule — it is what the pane draws for the one frame between a resize and the
-   * re-seed that follows it, rather than painting nothing.
+   * single id, `seedFamilies` falls back to the first family in package order,
+   * and `withRevealedFamilies` drops a Commander's reveal for a family the
+   * results no longer hold — so the pane is never empty. The `?? families()[0]`
+   * is not a second rule: it is what the pane draws for the one frame between a
+   * resize and the re-seed that follows it, rather than painting nothing.
    *
    * The rail marks its selected row from this rather than from each family's
    * own `open`, so the row that is marked and the rows that are drawn can never

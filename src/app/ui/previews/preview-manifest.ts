@@ -3839,7 +3839,7 @@ registerPreview({
       },
       [
         'a side the package annotates no mount on draws its artwork and claims nothing',
-        'the complete outfitting ledger beside it is still the route to every slot',
+        'the complete outfitting ledger beside it is still the route to every slot it draws',
       ],
       ['normal', 'rtl', 'reduced-motion'],
     ),

@@ -15,7 +15,7 @@ of one capability, not separate screens. Side choice, pan and list disclosure ar
 Three surfaces this inventory planned are not built, because the reference canvases do not draw
 them: a second unique located-mount list, a selected-mount facts block and a provenance control of
 this capability's own. Feature 002's complete ledger is the text equivalent and the route to every
-mount, and feature 012 owns provenance from the application's help capability
+mount it draws, and feature 012 owns provenance from the application's help capability
 (design/hull-anatomy.md, "Divergence from FR-008", "Divergence from FR-004 and SC-003", "Divergence from
 FR-011").
 
@@ -26,7 +26,7 @@ FR-011").
 | FR-001      | Active build supplies exact hull symbol; only installed package top/bottom assets are requested.                                                                                                        |
 | FR-002      | `hardpoint` and `utility_mount` annotations become interactive only after exact key and matching package-kind resolution.                                                                               |
 | FR-003      | Package group shapes and journal keys are retained; no position, order, id, number, prefix, coordinate or measurement identifies a mount.                                                               |
-| FR-004      | The feature 002 complete ledger remains the route to all slots and is unaffected by anatomy state.                                                                                                      |
+| FR-004      | The feature 002 complete ledger remains the route to all the slots it draws and is unaffected by anatomy state. The mount it withholds (002/FR-002a) gains no route here.                               |
 | FR-005      | Each mark exposes fitted, empty, engineered and selected state visually, programmatically and as text. Power is the `POWER` mode's, which feature 005 owns.                                             |
 | FR-006      | A mark targets the exact feature 002 slot; a selected located ledger item deterministically reveals a containing side.                                                                                  |
 | FR-007      | One canonical item drives every top/bottom occurrence for a key.                                                                                                                                        |

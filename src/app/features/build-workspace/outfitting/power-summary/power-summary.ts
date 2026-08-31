@@ -15,13 +15,6 @@ import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 
-/** One rail statement: a group the plant cannot keep lit, said in a sentence. */
-interface StatementView {
-  /** Stable within one projection, for tracking only. Never translated. */
-  readonly id: string;
-  readonly text: string;
-}
-
 /** The bar under the figures, as three lengths and the reading it carries. */
 interface BarView {
   readonly powered: number;
@@ -70,34 +63,35 @@ const PIP_DIGITS = 1;
 /**
  * What the plant is doing, in the outfitting status rail.
  *
- * Canvas 1c draws three things here, between feature 003's validation issues
- * and the metric cells features 006, 007, 008 and 003 own: the sentence about a group
- * the plant cannot keep lit, the `POWER` line — `29.64 / 31.20 MW · 7.80 OFF`
- * over a bar of the same four figures — and, since the 2026-08-25 revision, the
- * `SYS` / `ENG` / `WEP` pip control. **All three are built**: the pips were
- * this feature's open T074 and landed here, because the allocation is one
- * viewing condition and this is the rail's half of it
- * (`design/power-and-heat-detail.md`, "The rail's pip control"). Canvas 1d
- * draws the first two in its Status mode and no pip control at all; the
- * application builds one DOM at both widths, and withdrawing the control at one
- * of them would be the capability going missing there (constitution V).
+ * Two readings and one control, above the metric cells features 006, 007, 008
+ * and 003 own: the `POWER` line — `29.64 / 31.20 MW · 7.80 OFF` over a bar of
+ * the same four figures — and, since the 2026-08-25 revision, the
+ * `SYS` / `ENG` / `WEP` pip control. The pips were this feature's open T074 and
+ * landed here, because the allocation is one viewing condition and this is the
+ * rail's half of it (`design/power-and-heat-detail.md`, "The rail's pip
+ * control"). Canvas 1d draws the readings in its Status mode and no pip control
+ * at all; the application builds one DOM at both widths, and withdrawing the
+ * control at one of them would be the capability going missing there
+ * (constitution V).
  *
- * No severity word and no all-clear line, because neither canvas draws either.
- * And no heat sentence — but that one is absent by ruling rather than for want
- * of a drawing: canvas 1d does print `Sustained fire peaks at 131% heat` in its
- * `BUILD STATUS` block, and this feature's wave-13 ruling withdrew that tier
- * entirely (`specs/005-power-and-heat/design/reference-review.md`, "Tier 2 is
- * withdrawn entirely").
+ * The sentence about a group the plant cannot keep lit is not here. It is drawn
+ * a block higher, in `edsb-power-shed-statements`, beneath feature 003's
+ * validation issues in the block that opens the rail (Commander request
+ * 2026-08-31). No heat sentence is drawn anywhere: canvas 1d does print
+ * `Sustained fire peaks at 131% heat` in its `BUILD STATUS` block, and this
+ * feature's wave-13 ruling withdrew that tier entirely
+ * (`specs/005-power-and-heat/design/reference-review.md`, "Tier 2 is withdrawn
+ * entirely").
  *
  * The bar's `79%`, `21%` and `83.3%` are the artboard's own figures over the
  * whole demand — `29.64`, `7.80` and `31.20` against `37.44` — so it is drawn
  * from the projection rather than reverse-engineered, and the projection is
  * where the division is done.
  *
- * The sentence, the `POWER` line and the bar are read-only by ruling, exactly
- * as feature 003's issue list above them is: the canvas draws no control in any
- * of them, and at both widths the dashboard these sentences describe is a
- * segment away. The pips under them are this block's one control.
+ * The `POWER` line and the bar are read-only by ruling, exactly as feature
+ * 003's issue list above them is: the canvas draws no control in either, and at
+ * both widths the dashboard they describe is a segment away. The pips under
+ * them are this block's one control.
  *
  * They edit the **same** viewing condition the distributor table's cell edits,
  * through the same store action: one allocation, shown in two places, never a
@@ -106,8 +100,8 @@ const PIP_DIGITS = 1;
  * figures at an allocation — so this is where a Commander can move the pips
  * without leaving the region whose figures move with them.
  *
- * The sentence is this application's own, not a package diagnostic, so it is
- * translated like every other string it owns and does not go through
+ * Every string here is this application's own, not a package diagnostic, so it
+ * is translated like every other string it owns and does not go through
  * `edsb-game-text`.
  */
 @Component({
@@ -155,30 +149,6 @@ export class PowerSummary {
 
   /** Nothing is drawn without a build. The workspace already says why it is empty. */
   readonly shown = computed(() => this.#projection() !== null);
-
-  /**
-   * One sentence per group the plant leaves dark, and nothing else.
-   *
-   * A build the plant covers draws no sentence at all — not an all-clear line,
-   * not a zero count. Neither canvas draws such a state, and silence claims
-   * strictly less than an all-clear would.
-   */
-  readonly statements = computed<readonly StatementView[]>(() => {
-    const projection = this.#projection();
-    if (projection === null) {
-      return [];
-    }
-
-    return projection.power.bands
-      .filter((band) => !band.powered)
-      .map((band) => ({
-        id: `band-${band.priority}`,
-        text: this.#messages.message('power.rail.shed', {
-          group: this.#formatters.integer(band.priority),
-          draw: this.#megawatts(band.draw),
-        }),
-      }));
-  });
 
   /**
    * The canvas's `29.64 / 31.20 MW · 7.80 OFF`.

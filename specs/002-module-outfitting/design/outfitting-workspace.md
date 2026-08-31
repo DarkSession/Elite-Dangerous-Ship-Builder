@@ -5,7 +5,8 @@
 
 ## Purpose
 
-Inspect every package slot and its current module, select an editable slot, control module power, see
+Inspect every package slot the ledger draws and its current module, select an editable slot, control
+module power, see
 normalization/refusal state, and undo/redo Commander decisions. It extends feature 001's active-build
 workspace and never creates or owns a second build.
 
@@ -17,7 +18,8 @@ workspace and never creates or owns a second build.
 - Persistent accepted-normalization/edit-refusal notices below the heading. Pre-activation ingress
   refusal belongs to the owning open/import flow and is not a workspace state for the rejected build.
 - A fluid three-region layout inspired by canvas 1c:
-  - grouped semantic slot ledger in package outfitting order;
+  - grouped semantic slot ledger in the ledger's own order (FR-002a: package outfitting order, with
+    the cargo hatch closing the core internals and no row for the planetary approach mount);
   - selected-slot facts and outlet for replacement/engineering;
   - composition outlet for package validation and later calculation features.
 - The replacement and engineering panels are **present, not opened**. Canvas 1c draws no control that
@@ -622,9 +624,58 @@ last row — so the hatch is a core internal as far as both artboards are concer
 tab it could be reached from. The rule is the same at both widths, so a Commander who found armour
 under `CORE` on a phone finds it there on a desktop.
 
+## Pointer hover
+
+Four of this feature's lists answer a pointer resting on a row: the ledger's mounts, the fitting
+rail's categories, the module rows beside it, and the experimental effect's options. Each takes the
+quiet accent wash — `--edsb-surface-accent-quiet`, a step under the ground a chosen row carries —
+inside a `(hover: hover)` query, so a row a Commander is pointing at is
+never mistaken for the one they chose and a touch device is given nothing it cannot use.
+
+A row that is already chosen keeps its own ground rather than taking the hover wash over it, and a
+row with no control on it — the fitting rail's `FITTED HERE` copy, which states what is in the mount
+and offers no way to choose it — takes no wash at all. Hover carries nothing on its own: every one
+of these lists says what it is and what is chosen in text and in state, and this is the enhancement
+011/FR-006 allows on top of that.
+
+**The claim is the ground a row computes, not a rule declared somewhere.** The rail gives each of its
+category rows a ground of its own, in a block written after the wash, so a wash declared once at the
+top of the stylesheet is written and never drawn. The wash is therefore stated again wherever a
+composition sets a ground of its own, and it is verified by reading the computed ground under a
+pointer.
+
+Only a profile with a hovering pointer can be asked. Of the five the browser matrix runs, the desktop
+one reports `(hover: hover)`; the other four are declared with touch as their primary input and an
+engine may report it false for them, and there the claim under test is the restraint — a row that
+does not change. The test reads the media query the page reports rather than assuming it from the
+profile, so each profile evidences whichever half of the rule it is in a position to. The wash is
+therefore evidenced on the rail, which is what the desktop width draws, and the accordion's own
+categories may share the rule without a profile to be measured in.
+
+## The ledger's own order, and the mount it does not draw
+
+The package enumerates the hardpoints, then the utility mounts, armour, the seven core internals, the
+optional internals, and the cargo hatch last of all. The ledger draws that order with the hatch moved
+up, so it closes the core internals instead of the whole ship: under `CORE` the hatch was already the
+last row, and `ALL` was the one list that stood every optional mount between the core internals and
+it. One order at both widths and in every category (002/FR-002a).
+
+The planetary approach mount is not drawn. All forty-eight hulls carry exactly one and every
+default fits the advanced suite in it, and the two suites the mount takes are the same module in
+every figure the package publishes — class 1 I, 0 t, 0 MW, 500 Cr, no engineering group on either —
+so the row offered a choice between two names and no reading. Hull detail leaves the same mount out
+of its capacity statement (001/FR-022).
+
+The row was the only place three things were offered, so withholding it withholds all three: the
+plain suite, an empty approach mount, and that mount's enabled state and priority group. All three
+are stated in 002/FR-002a. Nothing else changes —
+the mount is found by the package's own `planetaryApproachSuite` restriction, never by the spelling
+of the key, and it is withheld from this list alone: the suite is still fitted, still read by every
+calculation and still in every export.
+
 ## Slot presentation
 
-Every package slot shows:
+Every package slot the ledger draws shows:
 
 - the slot label the canvas draws — kind, size and, for hardpoints, the node number, as in
   `SIZE · NODE NO.`. On an **empty** row that label is not drawn as prose either: the canvas draws

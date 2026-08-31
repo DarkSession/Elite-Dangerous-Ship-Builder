@@ -1,0 +1,31 @@
+@use '../../../../../styles/responsive' as layout;
+
+// Drawn in the shape feature 003's issues are drawn in, because they are
+// stacked with them in one block: a marker on the leading edge, a ground tinted
+// to match it, and the sentence set in the prose voice. The hot tone is the
+// canvas's own for this sentence — a group the plant cannot keep lit is a fault
+// in the build, not a note about it.
+// `contents` rather than `block`: the block that opens the rail stacks its
+// children with a gap, and a host that draws nothing on every build the plant
+// covers would still stand there as one more gap under the issues.
+:host {
+  display: contents;
+}
+
+.statements {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statement {
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-inline-loose);
+  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
+  background-color: var(--edsb-surface-danger-quiet);
+  color: var(--edsb-text-danger);
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}

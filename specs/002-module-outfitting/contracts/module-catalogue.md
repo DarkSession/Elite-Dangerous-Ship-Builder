@@ -93,7 +93,13 @@ Family open state is part of the query state and is seeded, never accumulated:
   family closed where it matched more — a family holding a match is never absent either way, and a
   closed one states its own share of the matches;
 - a query that returns to empty re-seeds the fitted-family default;
-- a Commander toggle adds or removes exactly one family id.
+- a Commander toggle adds or removes exactly one family id;
+- toggles hold for as long as the presentation they were made in — the selected mount, the reading
+  language, the reveal model (rail or accordion) and the search text. A rebuild that lands on the
+  same four keeps them, which is what fitting a module at the open mount does, so a family a
+  Commander closed does not reopen under them. A change to any of the four drops them and the rules
+  above seed the set again. The fitted choice is not one of the four: it moves with every fit, and
+  the whole point of the rule is that a fit leaves the toggles standing.
 
 Toggling reads nothing from the build and writes nothing to it. It is not an edit, not a decision and
 not a history step, and it never invalidates the index or the retained package records.
@@ -166,8 +172,9 @@ visibly disclosed as untranslated. The app never maintains private game-name or 
   installed package.
 - Stock precedes variants inside a family, and a reward keeps its labels on its own row now that no
   section carries them.
-- The fitted choice's family, and only that one, is open on open and after a rebuild; none is open
-  when the fitted choice has no available family.
+- The fitted choice's family, and only that one, is open on open and on each change of mount,
+  reading language, reveal model or search; none is open when the fitted choice has no available
+  family. A rebuild at the same four keeps whatever the Commander had open.
 - A non-empty search within a screenful leaves no match inside a closed family, and above a screenful leaves every family closed and none absent; clearing it restores the fitted default.
 - Toggling a family produces no build revision and no history step.
 - A family the active language does not name renders its canonical English name with the untranslated

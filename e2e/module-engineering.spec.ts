@@ -1203,3 +1203,44 @@ test('numbers every grade cell and dims the ones past the choice', async ({ page
   expect(unfilled.size).toBe(1);
   expect([...filled][0]).not.toBe([...unfilled][0]);
 });
+
+/**
+ * The fourth of the outfitting lists a pointer answers (Commander request
+ * 2026-08-31). The other three are in `module-outfitting.spec.ts`, and the
+ * reason this one is measured rather than read out of the cascade is written
+ * there too.
+ *
+ * Both shapes are asked, because both are drawn: canvas 1c's menu at the widths
+ * that have a pointer, canvas 1d's cards at the rest. Only the desktop profile
+ * reports a hovering pointer, so it is there the wash is evidenced and on the
+ * touch profiles that the restraint is.
+ */
+test('washes an experimental effect a pointer rests on, and only where there is one', async ({
+  page,
+}) => {
+  await openStockBuild(page);
+  await openEditor(page, 'FrameShiftDrive');
+  await chooseRecipe(page, /increased range/i);
+  await revealEffectOptions(page);
+
+  // The recipe was chosen a line above and no effect with it, so every option
+  // on screen is an unchosen one. A chosen option keeps its own ground, its
+  // edge and its marker, and the wash is written not to stand over them.
+  const option = effectOptions(page).first();
+  await expect(option).toBeVisible();
+  // The two shapes publish a chosen option differently — the cards through
+  // `data-selected`, the menu through `aria-selected` — so both are ruled out
+  // rather than the one this width happens to draw.
+  await expect(option).not.toHaveAttribute('data-selected', 'true');
+  await expect(option).not.toHaveAttribute('aria-selected', 'true');
+
+  const resting = await option.evaluate((node) => getComputedStyle(node).backgroundColor);
+  await option.hover();
+  const hovered = await option.evaluate((node) => getComputedStyle(node).backgroundColor);
+
+  if (await page.evaluate(() => window.matchMedia('(hover: hover)').matches)) {
+    expect(hovered).not.toBe(resting);
+  } else {
+    expect(hovered).toBe(resting);
+  }
+});

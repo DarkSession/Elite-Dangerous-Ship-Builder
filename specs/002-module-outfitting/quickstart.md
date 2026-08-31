@@ -39,15 +39,16 @@ Do not implement a local substitute, captured-event checkpoints, inverse command
 
 ## 2. Inspect every slot
 
-1. Open a default build with hardpoint, utility, core, optional, armour, planetary and cargo-hatch
-   mounts.
+1. Open a default build with hardpoint, utility, core, optional, armour, planetary approach and
+   cargo-hatch mounts.
 2. Compare the rendered groups/order/keys with `loadout.slots()`.
 3. Load fixtures with empty removable slots, omitted fixed entries and package-reported invalid states.
 4. Inspect invalid/incomplete package validation states.
 
 Expected:
 
-- every package slot appears by exact game key;
+- every package slot appears by exact game key, in the ledger's own order — the cargo hatch closing
+  the core internals, and no row at all for the planetary approach mount (FR-002a);
 - unavailable package facts remain explicit, never zero/guessed;
 - fixed mounts are populated before activation and unknown modules are outside the fixture contract;
 - invalid/incomplete builds remain editable wherever the package offers an operation;
@@ -113,7 +114,9 @@ Expected:
 
 Expected:
 
-- exactly one open family, or none, on first presentation and after each rebuild;
+- exactly one open family, or none, on first presentation and on each change of mount, reading
+  language, reveal model or search; a rebuild at the same presentation — which is what step 7 is —
+  leaves the families exactly as the Commander left them (FR-021);
 - toggling changes no build revision, adds no history step and leaves undo/redo exactly as it was;
 - every family holding a match is present and counted on each query change and families without a
   match are absent; where the match set is within a screenful every one of them is open and no

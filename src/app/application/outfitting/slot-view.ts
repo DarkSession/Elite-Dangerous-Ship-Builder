@@ -63,21 +63,78 @@ export interface SlotTextResolver extends ModuleTextResolver {
 }
 
 /**
- * Every mount on the build, in the package's own outfitting order.
+ * Every mount the ledger draws, in the order it draws them.
  *
- * Order comes from `slots()` and is not re-sorted. The package groups hardpoints
- * before utility before armour before core before optional before the cargo
- * hatch, which is the order the outfitting screen uses, and reordering it here
- * would make the ledger disagree with the game for no reason.
+ * The package groups hardpoints before utility before armour before core before
+ * optional, and puts the cargo hatch last of all. Two things are this
+ * application's, and both are stated in FR-002a rather than left to a reader of
+ * this file. The hatch is drawn where its own category already puts it — after
+ * the core internals and before the optional ones — because `CORE` counts it as
+ * a core internal at both widths, and the complete list was the one place that
+ * stood every optional mount between the two. The planetary approach mount is
+ * not drawn at all.
+ *
+ * Node numbers are counted over the package's whole list, before either rule
+ * applies. The number is a mount's position within its kind, so a mount the
+ * ledger withholds must not renumber the ones after it.
  */
 export function slotViews(loadout: ShipLoadout, text: SlotTextResolver): readonly SlotView[] {
   const nodes = new Map<SlotKind, number>();
+  const drawn: SlotView[] = [];
 
-  return loadout.slots().map((slot) => {
+  for (const slot of loadout.slots()) {
     const node = (nodes.get(slot.kind) ?? 0) + 1;
     nodes.set(slot.kind, node);
-    return slotView(slot, text, node);
-  });
+    if (restrictionOf(slot) === WITHHELD_RESTRICTION) {
+      continue;
+    }
+    drawn.push(slotView(slot, text, node));
+  }
+
+  return withCargoHatchAboveTheOptionalMounts(drawn);
+}
+
+/**
+ * The one mount the ledger does not draw.
+ *
+ * Every hull the package publishes carries exactly one, and the two suites it
+ * takes carry the same class, mass, draw and cost with no engineering group on
+ * either — so the row offered a choice between two names and no reading. Hull
+ * detail leaves the same mount out of its capacity statement (001/FR-022).
+ *
+ * The row was the only place the plain suite, an empty approach mount and that
+ * mount's power controls were offered, so withholding it withholds all three.
+ * FR-002a rules on them rather than leaving them here. Nothing else changes:
+ * the suite stays fitted, and every calculation, export and build link still
+ * carries it.
+ *
+ * Matched on the package's own restriction rather than on the key, because the
+ * key is a spelling and the restriction is the identity (FR-002a).
+ */
+const WITHHELD_RESTRICTION: SlotRestriction = 'planetaryApproachSuite';
+
+/**
+ * The cargo hatch, moved to the head of the optional mounts.
+ *
+ * A copy with one entry moved, not a sort: everything else keeps the package's
+ * own order. A build with no optional mount, or none after the hatch, is
+ * returned as it arrived rather than being rearranged into an order nothing
+ * asked for.
+ */
+function withCargoHatchAboveTheOptionalMounts(slots: readonly SlotView[]): readonly SlotView[] {
+  const hatchAt = slots.findIndex((slot) => slot.kind === 'cargoHatch');
+  const firstOptionalAt = slots.findIndex((slot) => slot.kind === 'optional');
+
+  if (hatchAt === -1 || firstOptionalAt === -1 || hatchAt < firstOptionalAt) {
+    return slots;
+  }
+
+  return [
+    ...slots.slice(0, firstOptionalAt),
+    slots[hatchAt]!,
+    ...slots.slice(firstOptionalAt, hatchAt),
+    ...slots.slice(hatchAt + 1),
+  ];
 }
 
 /** One mount's view. */

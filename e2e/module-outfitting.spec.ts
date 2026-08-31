@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import germanMessages from '../src/app/i18n/locales/de.json';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { everyPublishedSlotKey, publishedSlotKeys, sweepOutfittingState } from './accessibility';
@@ -222,24 +222,64 @@ async function fitFromChooser(
 }
 
 test.describe('the slot ledger', () => {
-  test('renders every package mount, by exact key, including the cargo hatch', async ({ page }) => {
+  test('renders every package mount by exact key, less the approach mount', async ({ page }) => {
     await openStockBuild(page);
 
     // Across the categories, not down this screenful: canvas 1d draws one
     // category at a time and the claim is about the hull's mounts.
     const keys = await everyPublishedSlotKey(page);
 
-    // The Anaconda's own layout, in the package's outfitting order. Asserted
-    // against the game's spellings rather than against a count, because a count
-    // would still pass if a mount were rendered under the wrong key.
+    // The Anaconda's own layout. Asserted against the game's spellings rather
+    // than against a count, because a count would still pass if a mount were
+    // rendered under the wrong key.
     expect(keys).toContain('HugeHardpoint1');
     expect(keys).toContain('Armour');
     expect(keys).toContain('PowerPlant');
     expect(keys).toContain('CargoHatch');
-    expect(keys).toContain('PlanetaryApproachSuite');
+    expect(keys).toContain('Slot01_Size7');
+    // Every hull has one planetary approach mount, the two suites it takes are
+    // the same module in every published figure, and the ledger draws no row
+    // for it (002/FR-002a).
+    expect(keys).not.toContain('PlanetaryApproachSuite');
     // Every key is unique: two rows sharing one identity would be two views of
     // one mount, and an edit to either would be an edit to both.
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  test('closes the core internals with the cargo hatch, above the optional mounts', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+
+    // The package puts the hatch last of all. The ledger draws it where the
+    // `CORE` category already lists it, so the complete list and the category
+    // agree (002/FR-002a).
+    //
+    // The claim belongs to the complete list, which is the one place the two
+    // could disagree: a category holds one kind, so `CORE` closes with the
+    // hatch and `OPTIONAL` never held it whatever this rule says. Only the wide
+    // composition draws `ALL`; the compact one offers no such list
+    // (`design/outfitting-workspace.md`, "No `ALL` at compact width"), and
+    // there what is left to say is that the hatch is under `CORE` and under
+    // nothing else.
+    const categories = page.locator('.outfitting__category');
+    const all = categories.first();
+    const wide = (await categories.count()) > 0 && (await all.innerText()).match(/all/i) !== null;
+
+    if (wide) {
+      await all.click();
+      await expect(all).toHaveAttribute('aria-pressed', 'true');
+
+      const keys = await publishedSlotKeys(page);
+      expect(keys.indexOf('CargoHatch')).toBe(keys.indexOf('FuelTank') + 1);
+      expect(keys.indexOf('CargoHatch')).toBeLessThan(keys.indexOf('Slot01_Size7'));
+      return;
+    }
+
+    const drawn = await everyPublishedSlotKey(page);
+    expect(drawn).toContain('CargoHatch');
+    expect(drawn.indexOf('CargoHatch')).toBe(drawn.indexOf('FuelTank') + 1);
+    expect(drawn.indexOf('CargoHatch')).toBeLessThan(drawn.indexOf('Slot01_Size7'));
   });
 
   test('never renders a game slot key as visible text', async ({ page }) => {
@@ -320,29 +360,30 @@ test.describe('the slot ledger', () => {
   /**
    * German, because English is where the names are shortest.
    *
-   * **Measured again on 2026-08-28, and it changed.** The untranslated tag used
-   * to stand beside this row's English name — seventy-odd pixels the ledger did
-   * not have at a phone's width, and the one place in a stock build where the
-   * rule that cuts a name actually fired. The tag is gone (owner's decision,
-   * 011/FR-020), and with it that overflow: `Advanced Planetary Approach Suite`
-   * now measures 205 against 205 at every one of the five layout profiles, at
-   * 100% text and at 200%, and the longest name anything fittable carries
-   * clears the widest ledger too.
+   * The row is the stock Anaconda's own longest drawn name: `Slot14_Size1`,
+   * which carries the supercruise assistant. The longer one belonged to the
+   * planetary approach mount, and the ledger no longer draws that mount at all
+   * (002/FR-002a).
    *
-   * So what these two assert today is the branch a row that fits owes: the
-   * whole name drawn, and **no** mark standing in for something that was not
-   * cut. `expectTheWholeNameIsReachable` still carries the other branch and
-   * still runs it the moment a row overflows again — a longer name, a narrower
-   * profile, another hull — and until then the cut-and-reach path is proved
-   * over the port, in `outfitting-components.spec.ts`, where the overflow is
-   * declared rather than waited for. Written down rather than left as two tests
-   * that pass while measuring nothing.
+   * What these two assert is the branch a row that fits owes: the whole name
+   * drawn, and **no** mark standing in for something that was not cut. Nothing
+   * a stock build carries overflows the ledger at any of the five layout
+   * profiles, at 100% text or at 200%. `expectTheWholeNameIsReachable` still
+   * carries the other branch and still runs it the moment a row overflows again
+   * — a longer name, a narrower profile, another hull — and until then the
+   * cut-and-reach path is proved over the port, in
+   * `outfitting-components.spec.ts`, where the overflow is declared rather than
+   * waited for. Written down rather than left as two tests that pass while
+   * measuring nothing.
    */
   test.describe('in German', () => {
     test.use({ locale: 'de-DE' });
 
+    /** The mount whose name is the longest the stock Anaconda's ledger draws. */
+    const LONGEST_NAMED_MOUNT = 'Slot14_Size1';
+
     /**
-     * What the package calls the approach suite in the language under test.
+     * What the package calls that mount's module in the language under test.
      *
      * Asked of the installed Almanac rather than written down: the catalogue
      * names every module in each of its six languages, and a release that
@@ -351,11 +392,11 @@ test.describe('the slot ledger', () => {
      * package is ESM-only and its `exports` map has no CommonJS entry for the
      * leaf subpath.
      */
-    async function suiteName(): Promise<string> {
+    async function longestName(): Promise<string> {
       const catalogue = await import('@elite-dangerous-almanac/core/i18n/modules');
-      const name = catalogue.getModuleName('Int_PlanetApproachSuite_Advanced', 'de');
+      const name = catalogue.getModuleName('Int_SupercruiseAssist', 'de');
       if (name === null) {
-        throw new Error('The package names no approach suite in German.');
+        throw new Error('The package names no supercruise assistant in German.');
       }
       return name;
     }
@@ -376,9 +417,9 @@ test.describe('the slot ledger', () => {
      * rule that cuts, so a lapse would exempt the sweep from noticing itself.
      */
     async function expectTheWholeNameIsReachable(page: Page): Promise<void> {
-      const name = await suiteName();
-      const row = await revealMount(page, 'PlanetaryApproachSuite');
-      await expectLedgerCarries(page, 'PlanetaryApproachSuite', name);
+      const name = await longestName();
+      const row = await revealMount(page, LONGEST_NAMED_MOUNT);
+      await expectLedgerCarries(page, LONGEST_NAMED_MOUNT, name);
 
       const mark = row.locator('.identity__more');
       const drawnWhole = await row
@@ -418,10 +459,8 @@ test.describe('the slot ledger', () => {
     }
 
     test('never loses a module name the row is too narrow to draw', async ({ page }) => {
-      // The stock Anaconda's own longest name, and the one the accessibility
-      // sweep once reported cut. It fits at every profile now that nothing
-      // stands beside it — see the block comment above for what that costs and
-      // where the other branch is proved.
+      // The stock Anaconda's own longest drawn name. It fits at every profile —
+      // see the block comment above for where the other branch is proved.
       await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
       await expectTheWholeNameIsReachable(page);
     });
@@ -610,6 +649,116 @@ test.describe('the slot ledger', () => {
     await openChooserRows(page);
     await expect(page.getByRole('radio').first()).toBeVisible();
     await sweepOutfittingState(page, testInfo, 'ledger/chooser open');
+  });
+});
+
+/**
+ * The pointer wash on the outfitting lists (Commander request 2026-08-31).
+ *
+ * Three of this feature's four lists are here — the ledger's mounts, the
+ * fitting rail's categories and the module rows beside them; the fourth, the
+ * experimental effect's options, is in `module-engineering.spec.ts` beside the
+ * rest of that surface.
+ *
+ * Read as the ground actually computed under a pointer rather than as a rule
+ * declared somewhere in the cascade. A declared rule is what was already there
+ * for the rail's categories and never reached them: the rail gives every row a
+ * ground of its own in a block written later, and the hover rule lost to it on
+ * source order. Only the computed ground catches that.
+ *
+ * Where the profile reports no hovering pointer the claim is the other one, and
+ * it is asserted rather than skipped: the wash is inside a `(hover: hover)`
+ * query precisely so a touch device is offered nothing it cannot use
+ * (011/FR-006, `design/outfitting-workspace.md`, "Pointer hover").
+ *
+ * The other four profiles are declared with touch as their primary input, and
+ * an engine may answer `(hover: hover)` false for that reason. So the branch is
+ * taken from the media query the page itself reports rather than from the
+ * profile name, and each profile evidences whichever half of the rule it is in
+ * a position to. In the runs measured so far that is the wash at desktop, on
+ * the rail manifest, and the restraint at the other four under Chromium. The
+ * accordion's families are drawn at those widths, so their wash may have no
+ * profile to be measured in, and the rule they share with the rail is what the
+ * stylesheet holds.
+ */
+test.describe('a pointer resting on a list', () => {
+  /** Whether this profile has a pointer that can rest on anything at all. */
+  async function canHover(page: Page): Promise<boolean> {
+    return page.evaluate(() => window.matchMedia('(hover: hover)').matches);
+  }
+
+  /** The ground the row computes at rest, and the one it computes under a pointer. */
+  async function groundsOf(row: Locator): Promise<{ resting: string; hovered: string }> {
+    await expect(row).toBeVisible();
+    const resting = await row.evaluate((node) => getComputedStyle(node).backgroundColor);
+    await row.hover();
+    const hovered = await row.evaluate((node) => getComputedStyle(node).backgroundColor);
+    return { resting, hovered };
+  }
+
+  async function expectAnswersThePointer(page: Page, row: Locator): Promise<void> {
+    const { resting, hovered } = await groundsOf(row);
+    if (await canHover(page)) {
+      expect(hovered).not.toBe(resting);
+    } else {
+      expect(hovered).toBe(resting);
+    }
+  }
+
+  /** A row the wash must leave alone, whether or not this profile can hover. */
+  async function expectKeepsItsOwnGround(row: Locator): Promise<void> {
+    const { resting, hovered } = await groundsOf(row);
+    expect(hovered).toBe(resting);
+  }
+
+  test('is answered by the ledger’s mounts, the categories and the module rows', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+
+    // An unchosen mount, measured on the row that carries the ground rather
+    // than on the button inside it. The chosen row keeps its own ground, which
+    // is the distinction the wash exists to preserve.
+    await selectMount(page, 'SmallHardpoint1');
+    await expectAnswersThePointer(page, page.locator('.slot:not([data-selected="true"])').first());
+
+    await openChooser(page);
+
+    // A category that is not the revealed one. At the rail this is the row that
+    // was declared and never drawn; the revealed row keeps the gradient the
+    // canvas marks it with, so it is not the row to ask.
+    await expectAnswersThePointer(page, page.locator('.family:not([aria-pressed="true"])').first());
+
+    // A module row that offers a choice.
+    await expectAnswersThePointer(
+      page,
+      page.locator('.candidate:has(.candidate__radio):not([data-selected="true"])').first(),
+    );
+
+    // And the rows the wash must not touch, asserted rather than left out of
+    // the locators above.
+    //
+    // The revealed category is the one of them a profile can actually prove:
+    // it is drawn by the rail, the rail is the wide manifest, and the wide
+    // width is the one profile with a hovering pointer. Delete the
+    // `[aria-pressed='false']` from the rail's wash and this fails. The
+    // `FITTED HERE` copy below is the other way round — it is drawn only at the
+    // compact widths, and every one of those is a touch profile — so its check
+    // states the claim without being able to press on it. It is written down
+    // rather than left out, and the coverage ledger says which of the two is
+    // measured.
+    if ((await manifestOf(page)) === 'rail') {
+      // The accordion marks an open family with its caret rather than with
+      // `aria-pressed`, so the rail is where a pressed row exists to ask.
+      await expectKeepsItsOwnGround(page.locator('.family[aria-pressed="true"]').first());
+    }
+
+    // Only canvas 1d draws the `FITTED HERE` copy; the wide composition passes
+    // it no heading and draws none of it, so there is no such row to ask there.
+    const pinned = page.locator('.candidates__pinned .candidate');
+    if ((await pinned.count()) > 0) {
+      await expectKeepsItsOwnGround(pinned.first());
+    }
   });
 });
 
