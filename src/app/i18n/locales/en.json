@@ -376,7 +376,7 @@
   "outfitting.engineering.apply": "Apply blueprint",
   "outfitting.engineering.revert": "Revert",
   "outfitting.engineering.purchase": "Bought as {{article}} at grade {{grade}}.",
-  "outfitting.engineering.package-empty": "There is no engineering for this mount.",
+  "outfitting.engineering.package-empty": "There is no engineering for this module.",
   "outfitting.engineering.final": "This is a final article: it accepts no further engineering.",
   "outfitting.engineering.stale": "The build changed while this was open, so these choices were rebuilt. Nothing was applied.",
   "outfitting.engineering.loading": "Reading the engineering offered for this mount.",

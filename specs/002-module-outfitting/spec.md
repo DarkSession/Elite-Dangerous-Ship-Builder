@@ -55,8 +55,8 @@ its ship name and ident — belongs here.
 
 ### Story 1 — Fit modules (P1)
 
-1. Every Almanac slot is shown, including empty removable slots; every fixed mount is populated when
-   the workspace becomes active.
+1. Every Almanac slot except the planetary approach mount is shown, including empty removable slots;
+   every fixed mount is populated when the workspace becomes active.
 2. A slot offers exactly the modules the Almanac reports as fittable for the current build.
 3. Fitting, replacing or removing a module updates the build and all Almanac results.
    Replacing keeps the mount's power priority group and on/off state; the new module arrives in the
@@ -72,7 +72,8 @@ its ship name and ident — belongs here.
    reward is labelled where it sits rather than moved to a section of its own.
 2. When a fitted module has an available family, that family alone is revealed by default; otherwise
    the wide composition reveals the first family and the compact one reveals none. A Commander can
-   reveal any family without editing the build. A family the application revealed is brought into
+   reveal any family without editing the build, and the families they revealed stay as they left them
+   through an edit to the same mount. A family the application revealed is brought into
    view where the families are drawn as a list of their own; one the Commander revealed is left
    where they pressed it.
 3. Every whitespace-separated search term must match at least one of name, class, rating or weapon
@@ -110,6 +111,25 @@ its ship name and ident — belongs here.
 - **FR-001**: Outfitting MUST require an active build and MUST NOT create one.
 - **FR-002**: Slots, module facts, post-engineering attributes, compatibility, removability and edit
   results MUST come from `ShipLoadout`. Slot identity MUST be the game slot key, never position.
+- **FR-002a**: The ledger MUST draw every mount `ShipLoadout.slots()` returns, in the package's own
+  order, with two stated exceptions. The cargo hatch MUST be drawn after the core internals and
+  before the optional internals. The planetary approach mount MUST NOT be drawn at all, and MUST be
+  recognised by the package's `planetaryApproachSuite` restriction rather than by the spelling of its
+  slot key (FR-002). Both exceptions are presentation and nothing else: the withheld mount stays
+  ordinary build state, still fitted, still read by every package calculation, still exported and
+  still carried by a build link.
+
+  > **Ruled 2026-08-31 (Commander request).** The package enumerates the cargo hatch last, after the
+  > optional internals. The ledger already lists it under `CORE`, which is where both canvases draw
+  > it, so the `ALL` list was the one place that put every optional mount between the core internals
+  > and the hatch. Drawing it where its own category already puts it makes one order out of two.
+  >
+  > Every hull the package publishes carries exactly one planetary approach mount, and it takes the
+  > approach suite alone, so a row for it separates no build from another. Hull detail withholds the
+  > same mount for the same reason (001/FR-022). One consequence is stated rather than discovered:
+  > with no row there is no route to empty that mount, and a build link that recorded it empty
+  > before this rule opens with it empty and draws nothing for it.
+
 - **FR-003**: Missing facts for package-resolved modules MUST remain unavailable rather than becoming
   zero or an estimate. Only package-resolved module identities are supported.
 - **FR-004**: Replacement choices MUST contain the stock form and each package pre-engineered
@@ -303,8 +323,9 @@ its ship name and ident — belongs here.
   `familyId` for that module, and its name MUST be the Almanac's localized family name; the
   application MUST NOT derive, abbreviate, translate or override either. A variant takes the family
   of the module it is built on. Every available choice MUST appear in exactly one family.
-- **FR-021**: When replacement choices are first presented or rebuilt, the family containing the
-  exact fitted stock or variant choice MUST be the revealed one. If no available family contains that
+- **FR-021**: When replacement choices are presented for a mount, a reading language or a search the
+  Commander has changed, the family containing the exact fitted stock or variant choice MUST be the
+  revealed one. If no available family contains that
   exact fitted choice, the family revealed on the mount the Commander came from MUST be revealed
   where this mount offers it; failing that, the wide composition MUST reveal the first family in
   package order and the compact composition MUST reveal none. The carry MUST survive exactly one
@@ -316,6 +337,14 @@ its ship name and ident — belongs here.
   > utility mounts meant opening the same category once per mount, because an empty mount seeded from
   > nothing. What is in the mount still wins outright; the carry only answers where the mount itself
   > is silent.
+
+  > **A rebuild at the same mount keeps the reveals 2026-08-31 (Commander request).** Fitting a
+  > module, undoing a fit and redoing one all rebuild the chooser at a new build revision for the
+  > same mount, the same language and the same search. The reveals a Commander set MUST survive that
+  > rebuild rather than being seeded again: with a search in force on the compact composition, a
+  > family they had closed re-opened as soon as they fitted something from another family, which is
+  > their own toggle undone by an edit that had nothing to do with it. A change of mount, language or
+  > search text is a different presentation and still takes the seed above.
 
   > **Brought into view 2026-08-27 (Commander request).** Where a composition draws the families as a
   > list of their own, a family the application reveals MUST be brought into that list's visible box;

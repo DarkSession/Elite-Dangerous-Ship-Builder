@@ -130,10 +130,13 @@ export interface CandidateQueryState {
   /**
    * Which families are open right now.
    *
-   * Seeded, not remembered. It is replaced wholesale on every rebuild and on
-   * every query change, and a Commander's toggle lives only until the next one
-   * — which is what FR-021 and FR-023 describe and what keeps the open set from
-   * needing an invalidation rule of its own (decision 15).
+   * Seeded, not remembered. It is replaced wholesale every time the chooser is
+   * presented for a different mount, a different reading language or a different
+   * query, and a Commander's toggle lives only until the next one — which is
+   * what FR-021 and FR-023 describe and what keeps the open set from needing an
+   * invalidation rule of its own (decision 15). A rebuild that changes none of
+   * those three is the same presentation at a later revision and carries the
+   * toggles across it: see `withCarriedReveal`.
    */
   readonly openFamilies: ReadonlySet<OutfittingFamilyId>;
   /**
@@ -287,6 +290,27 @@ function revealedAfterQuery(
   // was asked for, and how many — and opening them all draws hundreds of rows
   // a Commander is about to type past anyway (FR-023).
   return matched.length > OPEN_ON_SEARCH_LIMIT ? new Set() : familiesOf(matched);
+}
+
+/**
+ * The same state with the Commander's own reveals in place of the seed.
+ *
+ * A rebuild is not always a new presentation. Fitting a module, undoing a fit
+ * and redoing it all move the build revision, and the chooser is built again
+ * for the same mount, the same reading language and the same query — so the
+ * families a Commander opened and closed are still about exactly what is in
+ * front of them. Seeding again there re-opened a family they had just closed
+ * the moment they fitted something from another one, which is a toggle undone
+ * by an edit that had nothing to do with it (Commander request 2026-08-31).
+ *
+ * A family the new results do not hold simply draws nothing: `groupFamilies`
+ * renders the families the results contain and no others.
+ */
+export function withRevealedFamilies(
+  state: CandidateQueryState,
+  openFamilies: ReadonlySet<OutfittingFamilyId>,
+): CandidateQueryState {
+  return { ...state, openFamilies };
 }
 
 /**

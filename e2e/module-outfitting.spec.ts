@@ -229,17 +229,34 @@ test.describe('the slot ledger', () => {
     // category at a time and the claim is about the hull's mounts.
     const keys = await everyPublishedSlotKey(page);
 
-    // The Anaconda's own layout, in the package's outfitting order. Asserted
-    // against the game's spellings rather than against a count, because a count
-    // would still pass if a mount were rendered under the wrong key.
+    // The Anaconda's own layout. Asserted against the game's spellings rather
+    // than against a count, because a count would still pass if a mount were
+    // rendered under the wrong key.
     expect(keys).toContain('HugeHardpoint1');
     expect(keys).toContain('Armour');
     expect(keys).toContain('PowerPlant');
     expect(keys).toContain('CargoHatch');
-    expect(keys).toContain('PlanetaryApproachSuite');
+    expect(keys).toContain('Slot01_Size7');
+    // Every hull has one planetary approach mount, it takes the approach suite
+    // alone, and the ledger draws no row for it (002/FR-002a).
+    expect(keys).not.toContain('PlanetaryApproachSuite');
     // Every key is unique: two rows sharing one identity would be two views of
     // one mount, and an edit to either would be an edit to both.
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  test('closes the core internals with the cargo hatch, above the optional mounts', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+
+    // The package puts the hatch last of all. The ledger draws it where the
+    // `CORE` category already lists it, so the complete list and the category
+    // agree (002/FR-002a).
+    const keys = await everyPublishedSlotKey(page);
+
+    expect(keys.indexOf('CargoHatch')).toBe(keys.indexOf('FuelTank') + 1);
+    expect(keys.indexOf('CargoHatch')).toBeLessThan(keys.indexOf('Slot01_Size7'));
   });
 
   test('never renders a game slot key as visible text', async ({ page }) => {
@@ -320,29 +337,30 @@ test.describe('the slot ledger', () => {
   /**
    * German, because English is where the names are shortest.
    *
-   * **Measured again on 2026-08-28, and it changed.** The untranslated tag used
-   * to stand beside this row's English name — seventy-odd pixels the ledger did
-   * not have at a phone's width, and the one place in a stock build where the
-   * rule that cuts a name actually fired. The tag is gone (owner's decision,
-   * 011/FR-020), and with it that overflow: `Advanced Planetary Approach Suite`
-   * now measures 205 against 205 at every one of the five layout profiles, at
-   * 100% text and at 200%, and the longest name anything fittable carries
-   * clears the widest ledger too.
+   * The row is the stock Anaconda's own longest drawn name: `Slot14_Size1`,
+   * which carries the supercruise assistant. The longer one belonged to the
+   * planetary approach mount, and the ledger no longer draws that mount at all
+   * (002/FR-002a).
    *
-   * So what these two assert today is the branch a row that fits owes: the
-   * whole name drawn, and **no** mark standing in for something that was not
-   * cut. `expectTheWholeNameIsReachable` still carries the other branch and
-   * still runs it the moment a row overflows again — a longer name, a narrower
-   * profile, another hull — and until then the cut-and-reach path is proved
-   * over the port, in `outfitting-components.spec.ts`, where the overflow is
-   * declared rather than waited for. Written down rather than left as two tests
-   * that pass while measuring nothing.
+   * What these two assert is the branch a row that fits owes: the whole name
+   * drawn, and **no** mark standing in for something that was not cut. Nothing
+   * a stock build carries overflows the ledger at any of the five layout
+   * profiles, at 100% text or at 200%. `expectTheWholeNameIsReachable` still
+   * carries the other branch and still runs it the moment a row overflows again
+   * — a longer name, a narrower profile, another hull — and until then the
+   * cut-and-reach path is proved over the port, in
+   * `outfitting-components.spec.ts`, where the overflow is declared rather than
+   * waited for. Written down rather than left as two tests that pass while
+   * measuring nothing.
    */
   test.describe('in German', () => {
     test.use({ locale: 'de-DE' });
 
+    /** The mount whose name is the longest the stock Anaconda's ledger draws. */
+    const LONGEST_NAMED_MOUNT = 'Slot14_Size1';
+
     /**
-     * What the package calls the approach suite in the language under test.
+     * What the package calls that mount's module in the language under test.
      *
      * Asked of the installed Almanac rather than written down: the catalogue
      * names every module in each of its six languages, and a release that
@@ -351,11 +369,11 @@ test.describe('the slot ledger', () => {
      * package is ESM-only and its `exports` map has no CommonJS entry for the
      * leaf subpath.
      */
-    async function suiteName(): Promise<string> {
+    async function longestName(): Promise<string> {
       const catalogue = await import('@elite-dangerous-almanac/core/i18n/modules');
-      const name = catalogue.getModuleName('Int_PlanetApproachSuite_Advanced', 'de');
+      const name = catalogue.getModuleName('Int_SuperCruiseAssist', 'de');
       if (name === null) {
-        throw new Error('The package names no approach suite in German.');
+        throw new Error('The package names no supercruise assistant in German.');
       }
       return name;
     }
@@ -376,9 +394,9 @@ test.describe('the slot ledger', () => {
      * rule that cuts, so a lapse would exempt the sweep from noticing itself.
      */
     async function expectTheWholeNameIsReachable(page: Page): Promise<void> {
-      const name = await suiteName();
-      const row = await revealMount(page, 'PlanetaryApproachSuite');
-      await expectLedgerCarries(page, 'PlanetaryApproachSuite', name);
+      const name = await longestName();
+      const row = await revealMount(page, LONGEST_NAMED_MOUNT);
+      await expectLedgerCarries(page, LONGEST_NAMED_MOUNT, name);
 
       const mark = row.locator('.identity__more');
       const drawnWhole = await row
@@ -418,10 +436,8 @@ test.describe('the slot ledger', () => {
     }
 
     test('never loses a module name the row is too narrow to draw', async ({ page }) => {
-      // The stock Anaconda's own longest name, and the one the accessibility
-      // sweep once reported cut. It fits at every profile now that nothing
-      // stands beside it — see the block comment above for what that costs and
-      // where the other branch is proved.
+      // The stock Anaconda's own longest drawn name. It fits at every profile —
+      // see the block comment above for where the other branch is proved.
       await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
       await expectTheWholeNameIsReachable(page);
     });

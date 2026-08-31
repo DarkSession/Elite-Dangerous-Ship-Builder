@@ -1,0 +1,14 @@
+<!--
+  No wrapper and no inset of its own. The block that opens the rail is one
+  padded box holding the heading, feature 003's issues and these sentences, and
+  the workspace owns that box — so the host element is this list and a box of
+  its own inside it would stand these sentences a padding further in than the
+  issues above them.
+-->
+@if (statements().length > 0) {
+  <ul class="statements">
+    @for (statement of statements(); track statement.id) {
+      <li class="statement">{{ statement.text }}</li>
+    }
+  </ul>
+}

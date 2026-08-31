@@ -456,7 +456,7 @@ different icon wearing the same description, and was withdrawn.
 
 **Voice, ruled 2026-08-22 (wave 9), amended 2026-08-28.** Commander-facing copy no longer names the
 Almanac. The package is the source of every figure and every refusal, and the design's own drawings
-state facts — `There is no engineering for this mount.` — without crediting a dependency for them.
+state facts — `There is no engineering for this module.` — without crediting a dependency for them.
 Naming it made a library the speaker of sentences about a Commander's ship, and the credit belongs
 to feature 012, once per application rather than in thirty strings. Where that credit is made is
 feature 012's to decide: it is the licence summary's library line, which names the bundled library's

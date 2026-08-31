@@ -43,6 +43,7 @@ import {
   openCandidateQuery,
   toggleFamily,
   withReveal,
+  withRevealedFamilies,
   type CandidateQueryState,
   type FamilyReveal,
 } from './candidate-query';
@@ -230,23 +231,50 @@ export class OutfittingStore {
   });
 
   /**
-   * The chooser as the Commander currently has it: filtered, and opened.
+   * What the chooser is a presentation *of*, as one value.
    *
-   * A `linkedSignal` rather than a `computed`, and that is the whole mechanism
-   * behind FR-021's reseeding. The open family set is view state a Commander can
-   * change, so it has to be writable — but it must not outlive the presentation
-   * it belongs to. Recomputing the source whenever the mount, the revision, the
-   * reading language or the query changes throws the Commander's toggles away
-   * and re-seeds from the fitted family, which is exactly what the requirement
-   * asks for and is a lifetime nothing has to remember to invalidate
-   * (decision 15).
+   * The mount, the reading language, the reveal model and the search text, and
+   * deliberately not the build revision. Changing any of the four is a different
+   * presentation and takes FR-021's seed; changing the revision alone — which is
+   * what fitting, undoing and redoing do — is the same presentation at a later
+   * moment, and the Commander's own reveals still describe what is in front of
+   * them (Commander request 2026-08-31).
    */
-  readonly #candidateQuery = linkedSignal<CandidateQueryState | null>(() => {
-    const open = this.#openQuery();
-    return open === null ? null : applyQuery(withReveal(open, this.#reveal()), this.#query());
+  readonly #presentation = computed(
+    () =>
+      `${this.selectedSlotKey() ?? ''}\u0000${this.#gameText.locale}\u0000${this.#reveal()}\u0000${this.#query()}`,
+  );
+
+  /**
+   * The reveals the Commander set themselves, or `null` while they have set
+   * none.
+   *
+   * A `linkedSignal` over the presentation above, and that is the whole
+   * mechanism behind FR-021's reseeding. The open family set is view state a
+   * Commander can change, so it has to be writable — but it must not outlive
+   * the presentation it belongs to, and dropping it whenever that presentation
+   * changes is a lifetime nothing has to remember to invalidate (decision 15).
+   *
+   * Held apart from the state rather than written into it, so the rule does not
+   * depend on when anything happens to be read: a presentation is a value, and
+   * this is reset when that value changes rather than when the difference is
+   * noticed.
+   */
+  readonly #revealOverride = linkedSignal<string, ReadonlySet<OutfittingFamilyId> | null>({
+    source: () => this.#presentation(),
+    computation: () => null,
   });
 
-  readonly candidateQuery = this.#candidateQuery.asReadonly();
+  /** The chooser as the Commander currently has it: filtered, and opened. */
+  readonly candidateQuery = computed<CandidateQueryState | null>(() => {
+    const open = this.#openQuery();
+    if (open === null) {
+      return null;
+    }
+    const rebuilt = applyQuery(withReveal(open, this.#reveal()), this.#query());
+    const revealed = this.#revealOverride();
+    return revealed === null ? rebuilt : withRevealedFamilies(rebuilt, revealed);
+  });
 
   constructor() {
     // A build that was *replaced* is a different build, so a slot key, a query
@@ -278,7 +306,7 @@ export class OutfittingStore {
    * behaviour that was there before.
    */
   #carryOpenFamily(): void {
-    const open = untracked(() => this.#candidateQuery()?.openFamilies);
+    const open = untracked(() => this.candidateQuery()?.openFamilies);
     // Set unconditionally, `null` included. Written only when there was one
     // family to carry, the previous mount's carry outlived the step it belonged
     // to: leaving a chooser with none open or three open left the earlier value
@@ -309,7 +337,11 @@ export class OutfittingStore {
    * open set (FR-021, FR-022).
    */
   toggleFamily(familyId: OutfittingFamilyId): void {
-    this.#candidateQuery.update((state) => (state === null ? null : toggleFamily(state, familyId)));
+    const state = untracked(() => this.candidateQuery());
+    if (state === null) {
+      return;
+    }
+    this.#revealOverride.set(toggleFamily(state, familyId).openFamilies);
   }
 
   /**

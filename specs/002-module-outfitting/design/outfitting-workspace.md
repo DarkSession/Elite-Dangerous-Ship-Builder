@@ -622,9 +622,38 @@ last row — so the hatch is a core internal as far as both artboards are concer
 tab it could be reached from. The rule is the same at both widths, so a Commander who found armour
 under `CORE` on a phone finds it there on a desktop.
 
+## Pointer hover
+
+Four of this feature's lists answer a pointer resting on a row: the ledger's mounts, the fitting
+rail's categories, the module rows beside it, and the experimental effect's options. Each takes the
+quiet accent wash — `--edsb-surface-accent-quiet`, a step under the `--edsb-surface-accent-selected`
+a chosen row carries — inside a `(hover: hover)` query, so a row a Commander is pointing at is
+never mistaken for the one they chose and a touch device is given nothing it cannot use.
+
+A row that is already chosen keeps its own ground rather than taking the hover wash over it, and a
+row with no control on it — the fitting rail's `FITTED HERE` copy, which states what is in the mount
+and offers no way to choose it — takes no wash at all. Hover carries nothing on its own: every one
+of these lists says what it is and what is chosen in text and in state, and this is the enhancement
+011/FR-006 allows on top of that.
+
+## The ledger's own order, and the mount it does not draw
+
+The package enumerates the hardpoints, then the utility mounts, armour, the seven core internals, the
+optional internals, and the cargo hatch last of all. The ledger draws that order with the hatch moved
+up, so it closes the core internals instead of the whole ship: under `CORE` the hatch was already the
+last row, and `ALL` was the one list that stood every optional mount between the core internals and
+it. One order at both widths and in every category (002/FR-002a).
+
+The planetary approach mount is not drawn. Every hull carries exactly one, it takes the approach
+suite alone, and the `PLANETARY APPROACH` row therefore said the same thing on all forty-eight hulls
+— the same reason hull detail leaves that mount out of its capacity statement (001/FR-022). It is
+found by the package's own `planetaryApproachSuite` restriction, never by the spelling of the key,
+and it is withheld from this list alone: the suite is still fitted, still weighed, still drawing
+power and still in every export.
+
 ## Slot presentation
 
-Every package slot shows:
+Every package slot the ledger draws shows:
 
 - the slot label the canvas draws — kind, size and, for hardpoints, the node number, as in
   `SIZE · NODE NO.`. On an **empty** row that label is not drawn as prose either: the canvas draws

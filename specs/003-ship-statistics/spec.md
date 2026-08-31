@@ -22,6 +22,13 @@ what counts as a completion all belong to [004](../004-slef/spec.md) — but it 
 place, on the same reading that puts the issues there: both are what the package says about the build
 that is now open.
 
+Feature [005](../005-power-and-heat/spec.md)'s sentence about a priority group its plant cannot keep
+lit is drawn under that same heading, beneath the issues, since 2026-08-31 (Commander request). It
+is placed on the same reading and owned no more than the notice above it: what it says, what it
+reads and whether there is anything to say at all are 005/FR-013's. It was drawn a block lower,
+over that feature's `POWER` line, where a Commander reading the build's status had to look past the
+metric cells to learn that part of their ship was dark.
+
 The headline results, power block and viewing conditions the canvas draws further down that rail
 belong to [005](../005-power-and-heat/spec.md), [006](../006-defence-profile/spec.md),
 [007](../007-offence-profile/spec.md) and [008](../008-mobility-and-jump/spec.md); the cost and

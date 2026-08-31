@@ -18,8 +18,10 @@ import { slotCapabilities } from './slot-capabilities';
 import { slotViews, type SlotTextResolver } from './slot-view';
 
 /**
- * The ledger shows what the package says is there — all of it, and nothing
- * else. Empty mounts stay visible because a Commander fits into them; the
+ * The ledger shows what the package says is there, with the two exceptions
+ * FR-002a states and no third: the cargo hatch is drawn above the optional
+ * mounts rather than after them, and the planetary approach mount is not drawn
+ * at all. Empty mounts stay visible because a Commander fits into them; the
  * package's own reasons stay visible because a missing action with no reason is
  * indistinguishable from a bug.
  */
@@ -35,12 +37,63 @@ const text: SlotTextResolver = {
 };
 
 describe('slot views', () => {
-  it('renders every package slot, in the package’s own outfitting order', () => {
+  it('renders every package slot but the planetary approach mount', () => {
     const loadout = defaultBuild();
 
     const views = slotViews(loadout, text);
 
-    expect(views.map((view) => view.key)).toEqual(loadout.slots().map((slot) => slot.key));
+    const withheld = loadout
+      .slots()
+      .filter((slot) => slot.kind === 'optional' && slot.restriction === 'planetaryApproachSuite');
+    expect(withheld.length).toBe(1);
+    expect([...views].map((view) => view.key).sort()).toEqual(
+      loadout
+        .slots()
+        .map((slot) => slot.key)
+        .filter((key) => key !== withheld[0]!.key)
+        .sort(),
+    );
+    // Withheld from the ledger and from nothing else: the suite is still in the
+    // build the package holds.
+    expect(loadout.fittedModuleAt(withheld[0]!.key)).not.toBeNull();
+  });
+
+  it('draws the cargo hatch above the optional mounts, and keeps every other place', () => {
+    const loadout = defaultBuild();
+
+    const kinds = slotViews(loadout, text).map((view) => view.kind);
+
+    // The package puts the hatch last of all. The ledger closes the core
+    // internals with it, which is where the `CORE` category already lists it
+    // (FR-002a).
+    expect(kinds.indexOf('cargoHatch')).toBe(kinds.lastIndexOf('core') + 1);
+    expect(kinds.indexOf('cargoHatch')).toBeLessThan(kinds.indexOf('optional'));
+    // Everything else is the package's own order, with the hatch taken out.
+    expect(kinds.filter((kind) => kind !== 'cargoHatch')).toEqual(
+      loadout
+        .slots()
+        .filter((slot) => slot.kind !== 'cargoHatch')
+        .filter(
+          (slot) => !(slot.kind === 'optional' && slot.restriction === 'planetaryApproachSuite'),
+        )
+        .map((slot) => slot.kind),
+    );
+  });
+
+  it('numbers a mount by its place in the package’s own list, not the drawn one', () => {
+    const loadout = defaultBuild();
+
+    const views = slotViews(loadout, text);
+
+    // Node numbers are counted before the withheld mount is dropped and before
+    // the hatch moves, so no mount is renumbered by what the ledger does not
+    // draw or by where it draws it.
+    for (const kind of ['hardpoint', 'utility', 'optional'] as const) {
+      const packaged = loadout.slots().filter((slot) => slot.kind === kind);
+      for (const view of views.filter((candidate) => candidate.kind === kind)) {
+        expect(view.node).toBe(packaged.findIndex((slot) => slot.key === view.key) + 1);
+      }
+    }
   });
 
   it('keeps empty removable mounts visible', () => {

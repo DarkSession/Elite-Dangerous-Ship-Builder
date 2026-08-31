@@ -521,6 +521,45 @@ test.describe('module families', () => {
     expect(await revealedFamilies(page)).toEqual(seeded);
   });
 
+  test('leaves a family the Commander closed closed when they fit from another', async ({
+    page,
+  }) => {
+    await openStockBuild(page);
+    await selectMount(page, FITTED_MOUNT);
+    await openChooser(page);
+
+    if ((await manifestOf(page)) === 'rail') {
+      // The rail reveals exactly one family at a time, so there is no second
+      // family standing open for a fit to disturb. The accordion is where the
+      // report was made and where the rule has something to keep.
+      return;
+    }
+
+    await page.locator('input[type="search"]').fill('laser');
+    const families = familyControls(page);
+    await expect(families).not.toHaveCount(0);
+    const matched = await families.count();
+    expect(matched).toBeGreaterThan(1);
+    expect(await revealedFamilies(page)).toHaveLength(matched);
+
+    // One family closed, and a module taken from the next one along.
+    await families.first().click();
+    await expect(families.first()).toHaveAttribute('aria-expanded', 'false');
+    await page
+      .locator('.family__choices')
+      .nth(1)
+      .locator('.candidate .candidate__name')
+      .first()
+      .click();
+
+    // Where the bench is inline that press is the fit, so the chooser is
+    // rebuilt at a new revision for the same mount and the same search. Where
+    // it is a layer the press only marks the row. Either way the family the
+    // Commander closed is still closed (FR-021, Commander request 2026-08-31).
+    await expect(familyControls(page).first()).toHaveAttribute('aria-expanded', 'false');
+    expect(await revealedFamilies(page)).not.toContain(0);
+  });
+
   test('answers a search past a screenful in its own composition\u2019s terms', async ({
     page,
   }) => {

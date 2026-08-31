@@ -37,6 +37,18 @@
   border-block-end: 0;
 }
 
+// A pointer resting on a mount washes the row it is on. Hover is an enhancement
+// and carries nothing: a touch device has no pointer to rest, and the row
+// already says what it holds and whether it is the one in hand (011/FR-006).
+// The wash is a step under `--edsb-surface-accent-selected`, and a row already
+// in hand keeps its own ground rather than taking a quieter one over it
+// (`design/outfitting-workspace.md`, "Pointer hover").
+@media (hover: hover) {
+  .slot:not([data-selected='true']):hover {
+    background-color: var(--edsb-surface-accent-quiet);
+  }
+}
+
 .slot__select {
   display: grid;
   grid-template-columns: minmax(2.5rem, auto) minmax(0, 1fr);

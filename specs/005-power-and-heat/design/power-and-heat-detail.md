@@ -538,15 +538,22 @@ distributor table's; a third place to press them would be a third place for them
 
 ## The status rail
 
-**Three** contributions, between feature 003's validation issues and the six metric cells features
-006–008 own. The canvas prints three things in this block and no others. The first two are
-read-only; the third is a control, added by the 2026-08-25 canvas revision.
+**Three** contributions, and no others. The sentence is drawn in the block that opens the rail,
+under feature 003's validation issues, and the other two open this feature's own block above the six
+metric cells features 006–008 own. The first two are read-only; the third is a control, added by the
+2026-08-25 canvas revision.
 
-| Contribution | Drawn when                            | Text                                                                                            |
-| ------------ | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| The sentence | any band has `poweredDeployed: false` | one per shed band: `Priority group 4 is unpowered — 7.80 MW of demand sits above plant output.` |
-| `POWER`      | always, with a build                  | `29.64 / 31.20 MW · 7.80 OFF`, over a bar of the same four figures                              |
-| The pips     | always, with a build                  | `SYS` · `ENG` · `WEP`, each over four blocks filled to that bank's allocation                   |
+| Contribution | Drawn where                      | Drawn when                            | Text                                                                                            |
+| ------------ | -------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| The sentence | `BUILD STATUS`, under the issues | any band has `poweredDeployed: false` | one per shed band: `Priority group 4 is unpowered — 7.80 MW of demand sits above plant output.` |
+| `POWER`      | this feature's own block         | always, with a build                  | `29.64 / 31.20 MW · 7.80 OFF`, over a bar of the same four figures                              |
+| The pips     | this feature's own block         | always, with a build                  | `SYS` · `ENG` · `WEP`, each over four blocks filled to that bank's allocation                   |
+
+The sentence sits with the issues because that is what it is: a statement of something wrong with
+the build, in the block a Commander reads a build's status in. Over the `POWER` line it was below
+the metric cells at compact width, a scroll away from the heading that names it (Commander request
+2026-08-31). Feature 003's rail places it and this feature owns it, which is the arrangement
+feature 004's import-completion notice already has (FR-013).
 
 ### The rail's pip control (2026-08-25)
 

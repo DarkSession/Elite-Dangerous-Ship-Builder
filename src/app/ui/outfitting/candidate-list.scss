@@ -190,6 +190,28 @@
   cursor: pointer;
 }
 
+// A pointer resting on a category or a module washes the row it is on, under
+// the same rule the ledger's rows follow: a step under the chosen row's own
+// wash, inside a `(hover: hover)` query, carrying nothing a touch device is
+// then without (011/FR-006, and `design/outfitting-workspace.md`, "Pointer
+// hover").
+//
+// The rail's selected family keeps its own gradient rather than taking a
+// quieter wash over it. The accordion's families set no pressed state — the
+// caret is what says open — so every one of them answers a pointer. The
+// `FITTED HERE` copy is a statement of what is in the mount and carries no
+// radio, so it is the one module row that does not: `:has()` is what tells the
+// two apart, because both are drawn as the same row.
+@media (hover: hover) {
+  .family:not([aria-pressed='true']):hover {
+    background-color: var(--edsb-surface-accent-quiet);
+  }
+
+  .candidate:has(.candidate__radio):not([data-selected='true']):hover {
+    background-color: var(--edsb-surface-accent-quiet);
+  }
+}
+
 .candidate__radio {
   // The control stays in the accessibility tree and stays operable; the row's
   // own ground is what shows the state, exactly as both canvases draw it.

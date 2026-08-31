@@ -144,7 +144,7 @@ do not mutate the active build until confirmed.
   wherever the panel is opened.
 
 - Where the mount has **no recipe to offer and none already on it**, the panel is **still drawn**,
-  and what it says is that there is no engineering for this mount (wave 9, reversing wave 5).
+  and what it says is that there is no engineering for this module (wave 9, reversing wave 5).
   **Ruled 2026-08-22 (wave 9):** that condition is the recipe list alone, not the recipe list _and_
   the effect list. The effect menu is drawn only once a recipe is chosen, so an empty recipe list is
   an empty panel however many effects the package holds — a stock Abrasion Blaster has effects and no
