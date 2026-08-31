@@ -114,17 +114,15 @@
   }
 }
 
-// Narrow widths give hull detail the screen rather than stacking it beneath
-// the manifest. Same route, same history entry, same state — only the
-// composition changes (hull-detail design, "Responsive and accessibility
-// notes").
-@include layout.compact {
-  // The frame supplies the compact gutter now, so the region only insets the
-  // block axis. Its own 22px would have doubled the 14px above it.
-  .catalogue__manifest-region {
-    padding-inline: 0;
-  }
-
+// Below the rail's own width, hull detail is the screen rather than a panel
+// under the manifest. Same route, same history entry, same state — only the
+// composition changes (hull-detail design, "Composition").
+//
+// The step is the rail's, not the compact one. With 48 hulls the manifest is
+// several screenfuls, so a detail stacked under it at 900px opened below every
+// row of it: a Commander pressed a row and the page did not appear to change
+// (Commander request 2026-08-30).
+@include layout.below-wide {
   .catalogue--detail-open .catalogue__browse {
     display: none;
   }
@@ -135,5 +133,22 @@
   .catalogue--detail-open .catalogue__manifest-region {
     padding-block: 0;
     gap: 0;
+  }
+}
+
+// The detail is the screen at both modes under the split, and only one of them
+// is given a gutter by the frame. So the medium mode pays the manifest's own
+// inset here, and the compact one takes the frame's 14px and adds none.
+@include layout.medium-only {
+  .catalogue__inspector {
+    padding-inline: var(--edsb-space-region);
+  }
+}
+
+@include layout.compact {
+  // The frame supplies the compact gutter now, so the region only insets the
+  // block axis. Its own 22px would have doubled the 14px above it.
+  .catalogue__manifest-region {
+    padding-inline: 0;
   }
 }

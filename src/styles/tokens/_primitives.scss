@@ -340,6 +340,23 @@
   // The inspector rail, 340px in canvas 1a.
   --edsb-measure-rail-min: 21.25rem;
 
+  // The hull sheet's column: canvas 1b's own content width, 362px.
+  //
+  // Its sheet body is `padding: 12px 14px 14px` inside the 390px artboard, and
+  // the canvases synthesize no artboard between that sheet and canvas 1a's
+  // rail. So below the rail's width the sheet is drawn at the width its own
+  // canvas draws it at, rather than at the width of the window it was opened on.
+  //
+  // The bound is needed because the artwork plate here is not the canvas's.
+  // Canvas 1b gives it a fixed `height: 180px`; this application draws a fluid
+  // 3:2 instead, so the plate reserves its area before an illustration arrives
+  // at any width it is given. Unbounded, that ratio grew the illustration with
+  // the screen while the screen's height did not: 362 x 241 at 390px, 856 x 571
+  // at 900px and 979 x 653 at 1023px — 73% of a 900px-tall window spent before a
+  // figure is read, against the 22% the rail draws the same plate at (Commander
+  // request 2026-08-31).
+  --edsb-measure-sheet-column: 22.625rem;
+
   // The slot ledger's rail, 392px in canvas 1c: the fixed leading track of its
   // `392px 1fr 306px` workspace grid. Stated in rem so it grows with the
   // reader's text rather than pinching the ledger's own rows at 200%.
@@ -732,6 +749,11 @@
   --edsb-measure-menu-row: 2.875rem;
   --edsb-measure-menu-min: 12.25rem;
   --edsb-measure-menu-max: 20rem;
+
+  // How tall a menu drawn over the page may get before it scrolls inside
+  // itself. Around six two-line options, which is enough to read a list as a
+  // list and short enough to leave the card it opens over still visible.
+  --edsb-measure-menu-drop: 21rem;
 
   // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export
   // and 860 saved builds. Four named steps: one region of prose and a field

@@ -521,6 +521,20 @@ a doubled text size ran the page 34px wide of the glass on exactly that (found 2
 tracks are `repeat(auto-fit, minmax(3.25rem, 1fr))`, so the six stay on one row where they fit and
 become three on two rows where they do not.
 
+**The six are a grid, and the strip around them is a row (revised 2026-08-30).** Feature 005's power
+badge closes the strip, and it stands outside the six's grid rather than inside it — an item of that
+grid spans every track, and a track that is never empty is one `auto-fit` cannot collapse. Feature
+005 owns that derivation and the measurements behind it
+(`specs/005-power-and-heat/design/power-and-heat-detail.md`, "The compact strip's power badge").
+What this region rules is the arrangement: the six have a grid of their own that takes the space
+left over, and the badge is the item after it, at its own width against the trailing edge. The badge
+wraps to a row of its own only where the strip cannot hold both, which is what a wrapping row does
+rather than something measured.
+
+The badge is not drawn on every build — feature 005 draws it where the plant leaves a group dark and
+not otherwise (`specs/005-power-and-heat/spec.md`, FR-014) — and where it is absent the six take the
+whole strip.
+
 Canvas 1d draws the same six readings twice: once in the strip above the category tabs and again
 inside the `STATUS` panel's cell band. **The application draws them once**, and which of the two
 carries them depends on what is open: the rail draws its own band whenever it is on screen, and the

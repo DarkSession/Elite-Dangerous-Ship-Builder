@@ -371,6 +371,7 @@
   --edsb-layout-content-max: var(--edsb-measure-content-max);
   --edsb-layout-prose-max: var(--edsb-measure-prose-max);
   --edsb-layout-rail-min: var(--edsb-measure-rail-min);
+  --edsb-layout-sheet-column: var(--edsb-measure-sheet-column);
   --edsb-layout-ledger-rail: var(--edsb-measure-ledger-rail);
   --edsb-layout-status-rail: var(--edsb-measure-status-rail);
 
@@ -478,6 +479,7 @@
   --edsb-layout-menu-row: var(--edsb-measure-menu-row);
   --edsb-layout-menu-min: var(--edsb-measure-menu-min);
   --edsb-layout-menu-max: var(--edsb-measure-menu-max);
+  --edsb-layout-menu-drop: var(--edsb-measure-menu-drop);
   --edsb-layout-layer-max: var(--edsb-measure-layer-md);
   --edsb-layout-layer-narrow: var(--edsb-measure-layer-sm);
   --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);

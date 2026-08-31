@@ -10,6 +10,16 @@
   max-inline-size: var(--edsb-layout-prose-max);
 }
 
+// The sheet this screen is drawn as is a centred column below the rail's own
+// width, and this state is a sibling of the populated one rather than inside it
+// (`hull-detail.page.scss`). Left at the leading edge it was the one hull-detail
+// state that did not sit where the others do.
+@include layout.below-wide {
+  .unknown {
+    margin-inline: auto;
+  }
+}
+
 .unknown h2 {
   @include layout.display-title(var(--edsb-text-size-heading-md));
 }

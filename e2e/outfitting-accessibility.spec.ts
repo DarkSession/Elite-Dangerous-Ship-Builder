@@ -12,6 +12,7 @@ import {
   chooseRecipe,
   chosenRecipe,
   closeAllFamilies,
+  effectMenuIsDrawn,
   manifestOf,
   openAllFamilies,
   openChooser,
@@ -397,5 +398,37 @@ test.describe('the conditions that break layouts', () => {
     }
     await openEditor(page);
     await expectNoAccessibilityViolations(page, testInfo, { label: 'engineering open' });
+  });
+
+  test('passes an accessibility scan with the effect menu open', async ({ page }, testInfo) => {
+    // The one control in this feature the application draws instead of taking
+    // from the platform, and the state it draws is only in the document while
+    // it is open (`design/engineering-editor.md`, "The effect menu is the
+    // application's own control"). Every other sweep here leaves it shut, so
+    // without this the roles, the names and the option targets of a hand-rolled
+    // listbox are scanned by nothing (011/FR-022).
+    testInfo.setTimeout(testInfo.timeout + 20_000);
+
+    await openStockBuild(page);
+    await selectMount(page, 'FrameShiftDrive');
+    await openEditor(page);
+    await chooseRecipe(page, /increased range/i);
+
+    if (!(await effectMenuIsDrawn(page))) {
+      // This composition draws the card list instead, which the sweeps above
+      // already reach because its options are always in the document.
+      await expect(page.locator('.effect').first()).toBeVisible();
+      return;
+    }
+
+    await page.locator('edsb-experimental-effect-list .menu__trigger').first().click();
+    await expect(page.locator('edsb-experimental-effect-list .menu__list')).toBeVisible();
+    await settled(page);
+
+    await expectNoAccessibilityViolations(page, testInfo, { label: 'effect menu open' });
+    // The default selector names no `option`, and every row of this list is one
+    // a Commander presses.
+    await expectTargetSizes(page, 'edsb-experimental-effect-list [role="option"]');
+    await expectNoDocumentOverflow(page);
   });
 });

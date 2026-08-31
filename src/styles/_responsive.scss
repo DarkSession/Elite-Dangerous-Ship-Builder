@@ -15,6 +15,7 @@
 $mode-compact-max: 47.9375rem; // below this, one semantic flow
 $mode-medium-min: 48rem; // two regions where relationships stay legible
 $mode-wide-min: 64rem; // master-detail or multi-region workspace
+$mode-wide-max: 63.9375rem; // the last width below the wide mode
 
 // Where the command bar folds its own controls into the named menu.
 //
@@ -104,10 +105,51 @@ $bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
   }
 }
 
+// Everything under the wide mode, compact and medium alike.
+//
+// For the screen that is a region beside another one where the wide mode has
+// room for two and the whole screen where it has not. There is no third
+// arrangement between them, so there is one step rather than two: a screen
+// stacked under the region it belongs beside is a screen a Commander has to
+// scroll the region past to reach (`specs/001-ship-selection-and-loading/design/hull-detail.md`).
+@mixin below-wide {
+  @media (max-width: #{$mode-wide-max}) {
+    @content;
+  }
+}
+
+// The medium mode alone: below the wide split, above the compact step.
+//
+// For the one thing that differs between the two modes under the split. The
+// frame gives a compact page its own gutter and gives a medium one none, so a
+// region that is the whole screen at both has to carry the inset at one of them
+// (`app-frame.scss`, `.frame__main`).
+@mixin medium-only {
+  @media (min-width: #{$mode-medium-min}) and (max-width: #{$mode-wide-max}) {
+    @content;
+  }
+}
+
+// How short a window is before what it holds has to be arranged for the height
+// rather than the width. A landscape phone is the case the canvases omit.
+$viewport-short-max: 30rem;
+
 // Short viewports promote a sheet to a full-height scrollable layer rather than
-// letting content be cut off — the landscape-phone case the canvases omit.
+// letting content be cut off.
 @mixin short-viewport {
-  @media (max-height: 30rem) {
+  @media (max-height: #{$viewport-short-max}) {
+    @content;
+  }
+}
+
+// The complement, for an arrangement that needs room in both axes.
+//
+// A region wide enough for two things beside each other may still be on a
+// window too short to read them on. Asked together with the width, this is what
+// separates a landscape phone from a desktop whose column happens to be
+// narrower than the phone's whole screen (feature 010's plate pair).
+@mixin not-short-viewport {
+  @media (min-height: #{$viewport-short-max + 0.0625rem}) {
     @content;
   }
 }
@@ -134,6 +176,36 @@ $bench-columns-region-min: $bench-columns-min + 24.5rem + 19.125rem;
 
 @mixin container-wide-up($name) {
   @container #{$name} (min-width: #{$container-wide-min}) {
+    @content;
+  }
+}
+
+// Where the outfitting workspace stops being one flow: canvas 1c's ledger beside
+// its bench. It is the ledger's and the bench's own content minimums added up
+// rather than a rounded figure, so the region and anything asking about it change
+// arrangement at the same width (`ui/outfitting/composition.ts`, `MINIMUMS`).
+$outfitting-regions-min: 47rem;
+
+// That seam, asked of the workspace's own container. Declared once and asked
+// from every side of it: the workspace lays its regions out, and the regions
+// inside it ask whether they are one of several or the whole flow.
+//
+// The width half of the arrangement, and only that half. A viewport too short to
+// stack anything takes the single flow at any width, which no container can see
+// and which `observeComposition` applies on the workspace's own element
+// (`ui/outfitting/composition.ts`); a block whose arrangement needs the whole
+// answer asks `not-short-viewport` alongside this, as feature 010's plate pair
+// does.
+//
+// A container query rather than a page media query, and the difference is not
+// cosmetic. `rem` inside a media query is the *initial* value of `font-size` —
+// the Commander's browser default — so it follows a text size set there and
+// cannot follow a `font-size` set on the root element. A container query's `rem`
+// is the root's computed size and follows both. Asked of the page, this seam
+// held at 1440px while the workspace inside it had already folded to one flow
+// (`ui/short-viewport.ts`, `stackableMinimum`).
+@mixin outfitting-regions {
+  @container outfitting (min-width: #{$outfitting-regions-min}) {
     @content;
   }
 }

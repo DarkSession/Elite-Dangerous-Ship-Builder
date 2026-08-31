@@ -10,7 +10,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rules, SEARCH_METADATA_FILES } from './check-interface-foundations.mjs';
+import { rules, SCOPE, SEARCH_METADATA_FILES } from './check-interface-foundations.mjs';
 
 const ruleIds = (found) => found.map((violation) => violation.rule);
 
@@ -311,6 +311,87 @@ describe('test discipline', () => {
     const found = rules.testDisciplineViolations('a.spec.ts', '\n\n\nit.only("x", () => {});');
 
     assert.equal(found[0].line, 4);
+  });
+});
+
+describe('duplicated composition steps', () => {
+  const PAIR = {
+    scss: { file: 'src/styles/_responsive.scss', name: '$mode-wide-min' },
+    ts: { file: 'src/app/ui/wide-composition.ts', name: 'WIDE_MODE_MIN_REM' },
+  };
+
+  it('accepts a step both sources state at the same width', () => {
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$mode-wide-min: 64rem;',
+      'const WIDE_MODE_MIN_REM = 64;',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a restatement that has drifted from the declaration', () => {
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$mode-wide-min: 64rem;',
+      '\n\nconst WIDE_MODE_MIN_REM = 48;',
+    );
+
+    assert.deepEqual(ruleIds(found), ['composition-step']);
+    assert.equal(found[0].file, 'src/app/ui/wide-composition.ts');
+    assert.equal(found[0].line, 3);
+    assert.match(found[0].message, /48rem where \$mode-wide-min is 64rem/);
+  });
+
+  it('rejects a stylesheet that states the step in anything but rem', () => {
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$mode-wide-min: 1024px;',
+      'const WIDE_MODE_MIN_REM = 64;',
+    );
+
+    assert.deepEqual(ruleIds(found), ['composition-step']);
+    assert.equal(found[0].file, 'src/styles/_responsive.scss');
+  });
+
+  it('rejects a TypeScript source that no longer restates it', () => {
+    const found = rules.duplicatedStepViolations(
+      PAIR,
+      '$mode-wide-min: 64rem;',
+      'const SOMETHING_ELSE = 64;',
+    );
+
+    assert.deepEqual(ruleIds(found), ['composition-step']);
+    assert.equal(found[0].file, 'src/app/ui/wide-composition.ts');
+  });
+
+  // A missing file is the failure this rule is most likely to be silenced by:
+  // rename either side and there is nothing left to compare, which is the one
+  // outcome that must not read as agreement.
+  it('rejects a pair whose files are gone rather than passing on absence', () => {
+    assert.deepEqual(ruleIds(rules.duplicatedStepViolations(PAIR, null, 'const X = 1;')), [
+      'composition-step',
+    ]);
+    assert.deepEqual(
+      ruleIds(rules.duplicatedStepViolations(PAIR, '$mode-wide-min: 64rem;', null)),
+      ['composition-step'],
+    );
+    assert.deepEqual(ruleIds(rules.duplicatedStepViolations(PAIR, null, null)), [
+      'composition-step',
+      'composition-step',
+    ]);
+  });
+
+  it('reconciles every pair the policy actually declares', () => {
+    for (const pair of SCOPE.duplicatedSteps) {
+      const found = rules.duplicatedStepViolations(
+        pair,
+        readFileSync(new URL(`../${pair.scss.file}`, import.meta.url), 'utf8'),
+        readFileSync(new URL(`../${pair.ts.file}`, import.meta.url), 'utf8'),
+      );
+
+      assert.deepEqual(found, [], `${pair.scss.name} and ${pair.ts.name} disagree`);
+    }
   });
 });
 

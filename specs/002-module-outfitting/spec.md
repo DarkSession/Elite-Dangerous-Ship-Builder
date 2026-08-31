@@ -154,8 +154,11 @@ its ship name and ident — belongs here.
   Removing only the effect MUST preserve the blueprint and grade. Availability, modified attributes
   and restrictions on further engineering MUST come from the package.
 - **FR-012a**: The engineering surface MUST present every numeric attribute the package publishes on
-  the fitted article, and only those the article itself carries. It MUST NOT present a chosen subset,
-  and MUST NOT invent, derive or estimate an attribute the package does not publish. Where the
+  the fitted article, and only those the article itself carries. Where a reading is drawn from more
+  than one package record — the stock column of an identified pre-engineered variant is read from the
+  catalogue rather than from `stats` — an attribute either record carries MUST be presented, with the
+  absence stated in the reading that has no figure for it. It MUST NOT present a chosen subset, and
+  MUST NOT invent, derive or estimate an attribute the package does not publish. Where the
   package calculates a figure for the kind of article the mount holds, that figure MUST be presented
   beside the catalogued attributes, on both readings, and MUST come from the package's own
   calculation rather than from arithmetic over the rows: a weapon's damage per shot and per second,

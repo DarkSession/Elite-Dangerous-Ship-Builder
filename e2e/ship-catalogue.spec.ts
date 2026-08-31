@@ -7,6 +7,7 @@ import {
   expectOrderedHeadings,
   expectSingleVisibleH1,
 } from './accessibility/assertions';
+import { restsToRead } from './shell';
 
 /**
  * The shipyard journey: find a hull among all of them.
@@ -170,10 +171,11 @@ test.describe('hull catalogue', () => {
     // row the layout happened to put under the cursor took over the address: a
     // shared or bookmarked `/ships/Anaconda` landed on some other hull entirely
     // (reported 2026-08-28).
-    // Parked over the manifest, then loaded under it without moving again. A
-    // device that cannot hover parks nothing and reads no row, so the address
-    // has to survive there too — by having nothing to take it.
-    const hoverable = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+    // Parked over the manifest, then loaded under it without moving again.
+    // Where a rest reads nothing — a touch screen, or any width below the rail's
+    // — no row is read at all, so the address has to survive there too, by
+    // having nothing to take it.
+    const reads = await restsToRead(page);
     await page.goto('/ships');
     await visibleHulls(page).first().hover();
 
@@ -191,7 +193,7 @@ test.describe('hull catalogue', () => {
     // width: the anchored element carries the symbol, the control inside it
     // carries the action.
     const control = row.getByRole('button').first();
-    await (hoverable ? control.hover() : control.click());
+    await (reads ? control.hover() : control.click());
 
     // The address is the hull's name with an underscore for each space, and the
     // row carries the package symbol, so the two are the same string only where
@@ -213,17 +215,18 @@ test.describe('hull catalogue', () => {
       nodes.map((node) => node.getAttribute('data-hull-symbol')),
     );
 
-    // Where the manifest can be hovered, resting on a row opens the hull beside
-    // it and pressing one flies it, so the trip is a hover and there is no entry
-    // to come back from: the inspector replaces the address rather than stacking
-    // one per row the pointer crossed. Where it cannot, the press is the trip.
-    const hoverable = await page.evaluate(() => matchMedia('(hover: hover)').matches);
+    // Where a rest reads a hull, resting on a row opens it beside the manifest
+    // and pressing one flies it, so the trip is a hover and there is no entry to
+    // come back from: the inspector replaces the address rather than stacking
+    // one per row the pointer crossed. Where a rest reads nothing, the press is
+    // the trip.
+    const reads = await restsToRead(page);
     const row = page.getByRole('button', { name: /(view|build a stock) /i }).first();
-    await (hoverable ? row.hover() : row.click());
+    await (reads ? row.hover() : row.click());
     await expect(page).toHaveURL(/\/ships\/[^/]+$/);
     await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
 
-    if (!hoverable) {
+    if (!reads) {
       await page.goBack();
       await expect(page).toHaveURL(/\/ships$/);
     }
@@ -238,6 +241,44 @@ test.describe('hull catalogue', () => {
         nodes.map((node) => node.getAttribute('data-hull-symbol')),
       ),
     ).toEqual(before);
+  });
+
+  test('reads a hull on a rest only where the rail that reading appears in is drawn', async ({
+    page,
+  }) => {
+    // Resting used to be the device's question alone, so a pointer crossing the
+    // manifest below the rail's width threw canvas 1b's sheet up over the list
+    // it was crossing — one hull after another, with no press behind any of it
+    // (Commander request 2026-08-31).
+    //
+    // Asserted in both directions at whatever this profile is: where the rail is
+    // drawn a rest still reads, and where it is not the press does the reading
+    // and the row's own words say so.
+    const reads = await restsToRead(page);
+    await page.mouse.move(4, 4);
+    await page.mouse.move(12, 12);
+
+    const row = visibleHulls(page).first();
+    const symbol = await row.getAttribute('data-hull-symbol');
+    const action = row.getByRole('button').first();
+    await expect(action).toHaveAttribute('aria-label', reads ? /^Build a stock/ : /^View/);
+
+    await row.hover();
+    if (reads) {
+      await expect(page).toHaveURL(new RegExp(`/ships/${symbol}$`));
+      return;
+    }
+
+    // Nothing moved, and the wait is real rather than an immediate read: the
+    // navigation this refuses would have happened by now.
+    await expect(page).toHaveURL(/\/ships$/);
+    await page.waitForTimeout(500);
+    await expect(page).toHaveURL(/\/ships$/);
+
+    // The press is what opens the hull there, which is the compact behaviour at
+    // every device rather than only where the pointer is a finger.
+    await row.click();
+    await expect(page).toHaveURL(new RegExp(`/ships/${symbol}$`));
   });
 
   test('never renders a missing fact as a zero', async ({ page }) => {

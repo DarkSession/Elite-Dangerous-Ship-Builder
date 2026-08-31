@@ -1,6 +1,6 @@
 import { SHIPS, getShipSlots } from '@elite-dangerous-almanac/core/ships/ships';
 import { enumerateSlots } from '@elite-dangerous-almanac/core/ships/slots';
-import { hullCatalogue, hullCatalogueEntry } from './hull-catalogue';
+import { hardpointTotal, hullCatalogue, hullCatalogueEntry } from './hull-catalogue';
 
 describe('hull catalogue projection', () => {
   it('projects every installed hull exactly once', () => {
@@ -38,6 +38,19 @@ describe('hull catalogue projection', () => {
       ship.hardpoints.filter((mount) => mount.size === 2).length,
       ship.hardpoints.filter((mount) => mount.size === 1).length,
     ]);
+  });
+
+  it('totals the four class counts, so the section rule can carry one', () => {
+    const ship = SHIPS.find((candidate) => candidate.symbol === 'Anaconda')!;
+    const entry = hullCatalogueEntry('Anaconda')!;
+
+    // Adding up a package array is not a claim of ours: the total is exactly
+    // the number of mounts the package publishes, counted no other way.
+    expect(hardpointTotal(entry.hardpoints!)).toBe(ship.hardpoints.length);
+  });
+
+  it('totals a hull with no hardpoints as zero rather than refusing', () => {
+    expect(hardpointTotal([0, 0, 0, 0])).toBe(0);
   });
 
   it('enumerates slots through the package, keeping its irregular keys', () => {

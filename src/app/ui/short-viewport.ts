@@ -21,12 +21,12 @@ export const SHORT_VIEWPORT = `(max-height: ${STACKABLE_MINIMUM_REM}rem)`;
  * The same minimum, in the CSS pixels a Commander's own text size makes of it.
  *
  * This deliberately does not agree with the query above, and the difference is
- * the point. `rem` inside a media query is the browser's *initial* text size by
- * definition — the query cannot see a Commander who has doubled theirs — so it
- * is the floor a zoomed-down window hits and nothing else. This is the one that
- * moves with the text, and it is read fresh on every measurement rather than
- * resolved once, so a text-scale change moves the threshold with it instead of
- * leaving it at load-time pixels.
+ * the point. `rem` inside a media query is the *initial* value of `font-size`,
+ * which is the Commander's own browser default: the query follows a text size
+ * set there, and cannot follow a `font-size` set on the root element. This one
+ * is the root's computed size, so it follows both — and it is read fresh on
+ * every measurement rather than resolved once, so a text-scale change moves the
+ * threshold with it instead of leaving it at load-time pixels.
  */
 export function stackableMinimum(): number {
   const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;

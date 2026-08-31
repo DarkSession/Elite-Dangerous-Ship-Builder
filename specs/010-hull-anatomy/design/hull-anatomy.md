@@ -12,8 +12,8 @@ available without an active build.
 Canvases 1c and 1d draw the capability in one order, and it is stable across all layouts:
 
 1. the localized `HULL ANATOMY` heading;
-2. the labelled schematic regions — both sides at wide width, one side and its `TOP`/`BOTTOM`
-   selector when constrained; and
+2. the labelled schematic regions — both sides where the workspace composes more than one region and the
+   block has room in both axes, one side and its `TOP`/`BOTTOM` selector otherwise; and
 3. the mount state legend.
 
 That is the whole capability. Feature 002's ledger and bench stand beside it in the same workspace
@@ -23,18 +23,60 @@ Visual columns never reorder this reading sequence.
 
 ## Responsive composition
 
-### Wide
+### Paired
 
 Canvas 1c's `grid-template-columns: 1fr 1fr`: top and bottom render as two fluid labelled plates
 sharing one selected state and one legend, and the side selector is not drawn because both sides are
-already shown. The complete ledger remains beside the capability according to the feature 002
-workspace definition.
+already shown. Drawn where the workspace around this block composes more than one region, the block
+has the inline size for two plates, and the window is not a short one — all three, for the reason
+"Intermediate tablet" gives below. The complete ledger
+remains beside the capability according to the feature 002 workspace definition.
 
 ### Intermediate tablet
 
-Container queries choose paired or single-side presentation from available inline size and expanded
-text, not a named device breakpoint. In portrait the schematics may stack or use the side selector;
-in landscape they may pair. Nothing required disappears in either orientation.
+Available space chooses paired or single-side presentation, not a named device breakpoint: two
+container queries — the room this block was given, and the arrangement it was given that room inside
+— and one media query for the only thing no container knows, the window's height. A `font-size` set
+on the root element moves the two container questions and not the height one, for the reason
+`responsive-composition.md` gives. Nothing required disappears in either orientation: the side selector reaches whichever plate is not drawn, and the complete ledger
+reaches every mount on both.
+
+**The pair needs room in both axes, ruled 2026-08-30 (Commander request).** Inline size alone chose
+between the two arrangements, and inline size alone cannot tell canvas 1c's block apart from canvas
+1d's. A landscape phone is 844px across and 390px tall: wide enough for the pair by the inline
+measure, and the one screen the pair should never be on. Two plates there are 395px each, on a
+window less than one plate tall. A 1440px desktop, where canvas 1c's arrangement belongs, draws its
+pair inside a 742px centre column — narrower than the phone's whole block. So no width separates
+them, and width is not the measure that can. What the phone lacks is height.
+
+**And the workspace has room for more than one region, ruled 2026-08-31 (Commander request).** Those
+two conditions still admitted a case neither of them is about. A 744px window in portrait is not
+short, and the compact composition hands this block the whole screen — 744px of container, two
+pixels more than the 742px centre column a 1440px desktop draws its pair inside. So the block drew
+both sides of the hull in the middle of a single-flow screen.
+
+The container's inline size answers how much room this block was given. It cannot answer what it was
+given that room _inside_, and on this region the two have opposite answers two pixels apart: 742px is
+one column of a three-region page, and 744px is a single-flow window entire.
+
+What is asked instead is the workspace's own container, at the seam this workspace already stops
+being one flow at (`_responsive.scss`, `$outfitting-regions-min`, `layout.outfitting-regions`). One
+declaration, asked from every side of it: the workspace lays its regions out at that step, and the
+regions inside it ask whether they are one of several or the whole flow. They cannot disagree,
+because there is nothing to keep in step.
+
+Not the page, and the difference is not cosmetic: asked of the page, both plates were drawn into a
+single flow from 1320 to 1500px with the text doubled. The seam has to move with a root `font-size`
+and a page media query's `rem` does not, which `responsive-composition.md` sets out once for every
+region that has this choice to make.
+
+The pair is therefore drawn where all three hold: the **workspace composes more than one region**,
+the **container has the inline size for two plates**, and the **window is not a short one**. Each
+asks about a different thing — what arrangement this block is a part of, how much room it was given
+inside it, and whether the screen has the height to read a pair at all — and dropping any one of
+them puts two plates somewhere one belongs. Below any of them the block is canvas 1d's: one labelled
+side and the `TOP`/`BOTTOM` selector. No single flow draws both sides of a hull, in either
+orientation, at any height or any text size.
 
 ### Narrow, mobile and zoomed
 
@@ -52,10 +94,10 @@ this capability's placement — the anatomy sits in the centre track, which is w
 **The block's inset belongs to its arrangement, not to a width (2026-08-26).** Canvas 1c pads the
 block `16px 20px 6px` around the header row and `10px 20px 14px` around the plates; canvas 1d pads
 its header row `12px 14px 8px` and runs the mode strip full-bleed under it. The narrow figure is the
-base and the roomy one is stated with the two-plate arrangement, at the same threshold the second
-plate opens at. Read the other way round, a one-plate block stood 8px further in than every other
-band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not line up with
-a mount name in the ledger below it — which is the misalignment reported that day.
+base and the roomy one is stated with the two-plate arrangement, under the same three conditions the
+second plate opens under. Read the other way round, a one-plate block stood 8px further in than
+every other band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not
+line up with a mount name in the ledger below it — which is the misalignment reported that day.
 
 Selecting a mount selects its ledger row, which is what canvas 1d's bench then opens on. At 400%
 zoom and long or RTL text every group stacks, and no part of the document scrolls sideways — the

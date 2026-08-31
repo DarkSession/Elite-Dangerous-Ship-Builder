@@ -60,6 +60,50 @@ async function expectNoPlateScrolling(page: Page): Promise<void> {
   expect(overflowing).toBe(0);
 }
 
+/**
+ * What the plate pair has to work with, read from the page itself.
+ *
+ * Two facts, not three, because the workspace already publishes two of the
+ * pair's conditions as one: `data-composition` is anything but `compact` where
+ * the region has the inline size for a ledger beside a bench **and** the window
+ * is tall enough to stack anything at all, which is the same pair of facts the
+ * stylesheet asks as `outfitting-regions` and `not-short-viewport`
+ * (`ui/outfitting/composition.ts`, `observeComposition`). Reading it is what the
+ * workspace publishes it for — "the one thing about that decision a test can
+ * read without measuring pixels and re-deriving the rule it is checking"
+ * (`outfitting-workspace.html`).
+ *
+ * Only the block's own room is measured, because nothing publishes it.
+ */
+async function plateRoom(page: Page): Promise<{
+  composition: string | null;
+  wideEnough: boolean;
+}> {
+  return page.locator('edsb-hull-anatomy').evaluate((host: HTMLElement) => ({
+    composition: host.closest('.outfitting')?.getAttribute('data-composition') ?? null,
+    // The root's size now, not 16: `@container anatomy (min-width: 41rem)`
+    // resolves its `rem` against the root's computed font size, so the step the
+    // block is actually held to moves with the reader's text.
+    wideEnough:
+      host.getBoundingClientRect().width >=
+      41 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+  }));
+}
+
+/**
+ * How many sides are actually on screen.
+ *
+ * Counted by what is laid out rather than by the class: the hidden side keeps
+ * `anatomy__plate--hidden` and the pair's own query gives it `display: block`
+ * again, so the class says which side canvas 1d would drop and not how many are
+ * drawn.
+ */
+function drawnPlates(page: Page): Promise<number> {
+  return page
+    .locator('edsb-hull-anatomy .anatomy__plate')
+    .evaluateAll((plates) => plates.filter((plate) => plate.getClientRects().length > 0).length);
+}
+
 test.describe('the plates', () => {
   test('draw both package schematics from the hull own geometry', async ({ page }) => {
     await openStockBuild(page);
@@ -615,6 +659,21 @@ test.describe('the conditions that break layouts', () => {
     // nothing to pan and nothing to cut off — at any text size.
     await expectNoDocumentOverflow(page);
     await expectNoPlateScrolling(page);
+
+    // And one plate, in every profile: the workspace's seam is 47rem, which
+    // doubled text makes 1504px — wider than the 1440px of the widest window
+    // the matrix runs (`playwright.config.ts`). So every profile folds to a
+    // single flow here, and a single flow is canvas 1d's block whatever the
+    // window measures.
+    //
+    // Asserted here rather than beside the other layout tests because this is
+    // where the failing configuration already ran, and passed: asked of the
+    // page, the seam held at 1440px at every text size and drew the pair into
+    // the middle of that flow (`hull-anatomy.scss`, `layout.outfitting-regions`).
+    const room = await plateRoom(page);
+    expect(room.composition).toBe('compact');
+    expect(await drawnPlates(page)).toBe(1);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
   });
 
   test('reflows to one plate at 400% zoom rather than scrolling sideways', async ({ page }) => {
@@ -630,6 +689,61 @@ test.describe('the conditions that break layouts', () => {
     await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
     await expectNoDocumentOverflow(page);
     await expectNoPlateScrolling(page);
+  });
+
+  test('draws the pair only where the arrangement and the room both allow it', async ({ page }) => {
+    // The pair needs an arrangement of more than one region and the inline size
+    // for two plates, and neither implies the other (Commander requests
+    // 2026-08-30 and 2026-08-31). A landscape phone has the width and is a
+    // single flow because it is too short to stack anything; a 744px portrait
+    // window is a single flow for its width alone and still hands this block
+    // 744px of container, two pixels more than the 742px centre column the
+    // desktop the pair belongs on draws it inside (`design/hull-anatomy.md`,
+    // "Intermediate tablet").
+    //
+    // Asserted at whatever this profile is, in both directions, so a regression
+    // to either half fails here rather than passing quietly.
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const room = await plateRoom(page);
+    const drawn = await drawnPlates(page);
+    const selector = page.locator('edsb-hull-anatomy .anatomy__sides');
+
+    if (room.composition !== 'compact' && room.wideEnough) {
+      // Both sides are drawn, so there is nothing for the selector to choose.
+      expect(drawn).toBe(2);
+      await expect(selector).toBeHidden();
+      return;
+    }
+
+    // Either half missing is canvas 1d's block: one labelled side, and the
+    // selector that reaches the other.
+    expect(drawn).toBe(1);
+    await expect(selector).toBeVisible();
+  });
+
+  test('draws one plate on a tall window the compact composition owns', async ({ page }) => {
+    // The case the arrangement condition exists for, stated at its own size
+    // rather than left to whichever profile happens to run this. A 744px
+    // portrait window is not short and is wider than the 742px centre column the
+    // pair is drawn in on a 1440px desktop, so the room condition held and the
+    // block drew both sides of the hull in the middle of canvas 1d's single flow
+    // (Commander request 2026-08-31).
+    await page.setViewportSize({ width: 744, height: 1133 });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // The block has the room, and the window has the height — this one is not
+    // short. The reason it draws one plate is the arrangement around it, and
+    // nothing else.
+    const room = await plateRoom(page);
+    expect(room).toEqual({ wideEnough: true, composition: 'compact' });
+    expect(await page.evaluate(() => matchMedia('(min-height: 30.0625rem)').matches)).toBe(true);
+
+    expect(await drawnPlates(page)).toBe(1);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expectNoDocumentOverflow(page);
   });
 
   test('mirrors the layout without mirroring the hull or renaming a mount', async ({ page }) => {

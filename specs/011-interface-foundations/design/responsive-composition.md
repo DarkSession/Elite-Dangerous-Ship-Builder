@@ -19,12 +19,62 @@ because what decides it is the bar's own content rather than the page's
 Container queries govern reusable component composition. Page-level media queries govern shell and
 route regions. Both use named tokens; the reference canvas widths are not copied as breakpoints.
 
+A component may ask the window for what no container can report, and there is one such thing: the
+viewport's **height**. A container query measures the box, and a box's inline size does not say
+whether the window it is in is a short one — a landscape phone and a bounded desktop column present
+the same width. The container query states the inline condition — how much room _this_ block was
+given — and a media query nested inside it states the height. The composition still belongs to the
+component; the window is never asked something a box could have answered (feature 010's plate pair,
+`specs/010-hull-anatomy/design/hull-anatomy.md`, "Intermediate tablet").
+
+**Whether the block is one region of several or the whole flow** is such a thing, and the box that
+answers it is not this component's own. Its own inline size does not say: on a region that is one
+column of a multi-region page at some widths and the whole of a single flow at others, the two
+answers cross — feature 010's anatomy is given 742px as the centre column of a 1440px page and 744px
+by a single-flow window entire, so its own width cannot tell the arrangement it is in from the one it
+is not. The **enclosing region's** container answers it, at the seam that region already stops being
+one flow at: one declaration asked from every side of it, so the region and the blocks inside it
+change arrangement together (`_responsive.scss`, `$outfitting-regions-min`).
+
+A container answers the width half of an arrangement and only that half. A viewport too short to
+stack anything takes the single flow at any width, which no container can see — so the region
+applies that itself (`ui/outfitting/composition.ts`, `observeComposition`) and publishes the result
+as `data-composition`, and a block whose own arrangement needs the whole answer asks
+`not-short-viewport` alongside the seam, as feature 010's plate pair does.
+
+Not the page, and the difference is not cosmetic. `rem` in a media query is the **initial value** of
+`font-size`, which is the Commander's own browser default: the query follows a text size set there,
+and cannot follow a `font-size` set on the root element. `rem` in a container query is the root's
+**computed** size, and follows both. So a page-level step is sound only where what it is reconciled
+against is another page-level step — feature 001's inspector rail, where the same query decides the
+arrangement and the behaviour (`ui/wide-composition.ts`) — and unsound wherever an arrangement has to
+fold with the root. Asked of the page, feature 010's plate pair was drawn into a single flow from
+1320 to 1500px at a doubled root size (`ui/short-viewport.ts`, `stackableMinimum`).
+
+This is the one place that difference is set out. Everywhere it decides something, the code points
+here rather than restating it.
+
+Where **behaviour** rather than arrangement turns on a composition, the route region asks the
+question in TypeScript and passes the answer to the components inside it. The shipyard's manifest
+reads a hull on a rested pointer only where the inspector rail that reading appears in is drawn — and
+the manifest cannot see a rail beside itself, nor tell the two apart by its own width, since it is
+the wider box at the width the rail exists. So the screen that draws the rail answers it, composed
+with the device's own `(hover: hover)` as one query, and the manifest takes it as an input
+(`specs/001-ship-selection-and-loading/design/hull-catalogue.md`, "Resting reads a hull only where
+the rail is drawn"). Behaviour keyed to a composition is stated at the same step the stylesheets use,
+never at a second threshold of its own.
+
 ## Shipyard-pattern derivation
 
 - Wide: semantic sortable manifest plus selected detail rail.
-- Medium landscape: manifest/detail may remain two-pane when translated content and target size fit.
-- Medium portrait: list and detail become one flow or route-backed drill-in without losing facts/
-  actions.
+- Medium: a two-pane manifest and detail only where the collection fits beside the detail. The
+  shipyard's does not, so its detail is a route-backed drill-in over the manifest in both
+  orientations: a manifest of 48 records is several screenfuls, and a detail stacked under them is a
+  screen the reader has to scroll the whole list to reach (ruled 2026-08-30,
+  `specs/001-ship-selection-and-loading/design/hull-detail.md`, "Every width below the rail's is the
+  sheet's"). The drill-in takes the compact composition's behaviour with it: the press opens a hull
+  and the sheet's own action builds it, because there is no rail for a rested pointer to read into,
+  and the sheet is drawn as a bounded column rather than at the width of the window.
 - Compact/zoom: semantic stacked records, named sort/filter controls and full-height detail/library
   layers. Internal horizontal controls may scroll only when labelled and when every choice remains
   discoverable; the page never scrolls horizontally.
@@ -46,6 +96,9 @@ route regions. Both use named tokens; the reference canvas widths are not copied
 | Searchable collection/detail chooser | Dialog or route-backed detail panel | Full-height drill-in                   |
 | Complex editor                       | In-workspace panel or large dialog  | Full-height editor                     |
 | Global/context action list           | Inline actions or named popup layer | Named sheet/full-height action layer   |
+
+A chooser whose collection does not fit beside its detail in the medium band takes the compact
+column there too. The table gives the roomier option where there is room for it, not a floor.
 
 All variants share one state/intent contract. Background inertness, title/description, dismissal and
 invoker restoration do not change with presentation.

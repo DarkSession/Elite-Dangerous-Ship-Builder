@@ -397,6 +397,43 @@ describe('engineering draft', () => {
       expect(mass?.stock).toBe(loadout.fittedModuleAt(SLOT)?.stats?.mass);
     });
 
+    it('reads a pre-engineered article’s stock column from the catalogue, not from stats', () => {
+      // The package publishes the *resolved* article in `stats` for a fixed
+      // pre-engineered variant, so that stats a journal capture left out still
+      // describe the article. Taken as the stock column, that prints the same
+      // figures in both columns and the engineering the article is bought for
+      // is nowhere on the panel (Commander request 2026-08-30).
+      const loadout = fixedRewardBuild();
+      const draft = driveDraft(NO_SELECTION, loadout);
+
+      const fitted = loadout.fittedModuleAt(SLOT);
+      expect(fitted?.preEngineeredVariant).not.toBeNull();
+
+      const catalogued = getModuleBySymbol(FIXED_REWARD_REGRESSION.symbol);
+      const resolved = fitted?.stats;
+      // The fixture only says something if the two records actually differ.
+      // This article's long-range engineering moves its optimal mass furthest.
+      expect(catalogued?.optMass).not.toBe(resolved?.optMass);
+
+      const attributes = draft.preview.kind === 'known' ? draft.preview.attributes : [];
+      const optMass = attributes.find((row) => row.attribute === 'optMass');
+      expect(optMass?.stock).toBe(catalogued?.optMass);
+      expect(optMass?.stock).not.toBe(resolved?.optMass);
+    });
+
+    it('keeps stats as the stock column for a module the package does not call a variant', () => {
+      // The condition is identification, not the article's kind: `stats` is the
+      // base catalogue record everywhere else, and a symbol lookup on it would
+      // be a second reading of the same thing.
+      const loadout = defaultBuild();
+      const draft = driveDraft(NO_SELECTION, loadout);
+
+      expect(loadout.fittedModuleAt(SLOT)?.preEngineeredVariant ?? null).toBeNull();
+      const attributes = draft.preview.kind === 'known' ? draft.preview.attributes : [];
+      const mass = attributes.find((row) => row.attribute === 'mass');
+      expect(mass?.stock).toBe(loadout.fittedModuleAt(SLOT)?.stats?.mass);
+    });
+
     it('changes nothing about the build it previewed against', () => {
       const loadout = defaultBuild();
       const before = loadout.fittedModuleAt(SLOT)?.engineering;

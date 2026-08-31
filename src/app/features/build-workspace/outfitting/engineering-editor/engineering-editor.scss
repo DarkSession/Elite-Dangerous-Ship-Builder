@@ -38,7 +38,7 @@
 // figure answers one question only: how short before an article with nothing to
 // engineer stops being a panel (`module-replacement.scss`; Commander requests
 // 2026-08-26 and 2026-08-27).
-@container outfitting (min-width: 47rem) {
+@include layout.outfitting-regions {
   :host {
     min-block-size: var(--edsb-layout-editor-panel);
   }

@@ -64,6 +64,14 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
   in the document and the stylesheet shows one, so exactly one `h1` and one way back are ever exposed
   (`ScreenReturn`).
 
+  The bar shows the return group wherever a screen is opened over another one, which is every width
+  below the wide composition rather than the compact band alone (2026-08-30). The step is the
+  shell's: a route hands the bar its return group whenever its screen is drawn, at every width,
+  and the frame reveals the group below the wide composition. That is the same width at which such a
+  screen becomes a full-height layer, because the group and the layer are the same decision — so the
+  two never disagree, and no route can ask for a way back the shell would draw beside the screen it
+  leads out of.
+
 ## Wide composition
 
 - Keep route/product identity at the inline start and a named action group at the inline end,

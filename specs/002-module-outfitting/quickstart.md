@@ -170,7 +170,9 @@ Expected:
 - clear-all differs and may intentionally erase package Mercenary identification;
 - no separate clear control exists at any width, and clearing dispatches `clearEngineering`;
 - purchase grade remains distinct from current grade until package identity disappears;
-- package `stats`/`effectiveStats`/modifiers drive values; no private delta/better-worse math appears.
+- package `stats`/`effectiveStats`/modifiers and, for an identified pre-engineered variant's stock
+  column, the catalogue record read by symbol drive values; no private delta/better-worse math
+  appears.
 
 ## 8. Engineer fixed/final rewards and validate costs
 
@@ -183,6 +185,9 @@ Expected:
 
 - fixed base modifiers, acquisition and `preEngineeredVariant` survive effect-only changes while
   effect-dependent stats recompute;
+- the fixed reward's `STOCK` and `MODIFIED` columns differ on the attributes its own engineering
+  moves — `STOCK` is the catalogue record for the symbol, not the resolved article `stats` holds —
+  and a symbol the catalogue does not carry states the absence in every `STOCK` cell;
 - final article exposes the package restriction and no unsupported actions;
 - fixed baked engineering adds no craft cost;
 - Mercenary progression starts above purchase grade; Merc Coin is separate;

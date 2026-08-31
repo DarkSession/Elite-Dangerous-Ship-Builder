@@ -201,10 +201,10 @@ describe('experimental effect list', () => {
 
   it('draws no description line for an effect the catalogue has none for', () => {
     // Reversed 2026-08-26. The line used to stand in with `Name unavailable`,
-    // on the reading that going quiet hides a gap. It is not a name and the
-    // option is already named on the line above it, and since the Almanac
-    // carries no description for any effect the card read `Name unavailable`
-    // under every one of its own options (Commander request).
+    // on the reading that going quiet hides a gap. It is not a name, and the
+    // option is already named on the line above it. The catalogue carries a
+    // description for every effect it knows, so this is the floor for a symbol
+    // it does not (Commander request).
     const fixture = renderComponent(ExperimentalEffectList, {
       effects: [
         {
@@ -222,6 +222,355 @@ describe('experimental effect list', () => {
     expect(queryAll(fixture, '.effect__description')).toHaveLength(0);
     // The effect is still named, and a name the catalogue has lost still says so.
     expect(textOf(query(fixture, '.effect__name')).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The same component in canvas 1c's shape, which is the application's own
+ * control rather than the platform's.
+ *
+ * A native `<select>` option holds one run of text, so the package's
+ * description had to be glued onto the name and the menu became thirteen
+ * sentences (Commander request 2026-08-30). What a drawn menu owes in return is
+ * everything the platform was providing: the roles, the open state, the way
+ * out, and a name that is disclosed rather than assumed — which is what this
+ * suite holds it to.
+ */
+describe('experimental effect menu', () => {
+  const EFFECTS = [
+    {
+      fdname: 'special_corrosive_shell',
+      name: named('Corrosive Shell'),
+      description: named('Rounds reduce the target’s hull resistance.'),
+      applied: true,
+    },
+    {
+      fdname: 'special_auto_loader',
+      name: named('Auto Loader'),
+      description: named('Reloads the weapon while it continues firing.'),
+      applied: false,
+    },
+  ];
+
+  function renderMenu(inputs: Record<string, unknown> = {}) {
+    return renderComponent(ExperimentalEffectList, {
+      asDropdown: true,
+      effects: EFFECTS,
+      ...inputs,
+    });
+  }
+
+  function openMenu(fixture: ComponentFixture<ExperimentalEffectList>) {
+    query(fixture, '.menu__trigger').click();
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('draws a trigger and no list until the trigger is pressed', () => {
+    const fixture = renderMenu();
+
+    const trigger = query(fixture, '.menu__trigger');
+    expect(trigger.getAttribute('aria-haspopup')).toBe('listbox');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+    // Nothing to control while there is no list: an `aria-controls` pointing at
+    // an element that is not in the document is a broken reference.
+    expect(trigger.getAttribute('aria-controls')).toBeNull();
+  });
+
+  it('names the chosen effect on the trigger while the list is shut', () => {
+    const fixture = renderMenu({ selected: 'special_auto_loader' });
+
+    expect(textOf(query(fixture, '.menu__value'))).toContain('Auto Loader');
+  });
+
+  it('reads as the no-effect option when nothing is chosen, never as a symbol', () => {
+    const fixture = renderMenu({ selected: null });
+
+    const value = textOf(query(fixture, '.menu__value'));
+    expect(value).toContain('None');
+    expect(value).not.toContain('special_');
+  });
+
+  it('draws the trigger’s name through the game-text component', () => {
+    // The one place in this control where the disclosure could be dropped: a
+    // name printed as plain text presents an untranslated noun as a translation
+    // (constitution VI, FR-020). The options were always drawn this way.
+    const fixture = renderMenu({ selected: 'special_corrosive_shell' });
+
+    expect(query(fixture, '.menu__value').querySelector('edsb-game-text')).not.toBeNull();
+  });
+
+  it('opens a listbox whose options carry the package’s two lines', () => {
+    const fixture = openMenu(renderMenu({ selected: 'special_corrosive_shell' }));
+
+    const list = query(fixture, '.menu__list');
+    expect(list.getAttribute('role')).toBe('listbox');
+    expect(query(fixture, '.menu__trigger').getAttribute('aria-expanded')).toBe('true');
+    expect(query(fixture, '.menu__trigger').getAttribute('aria-controls')).toBe(list.id);
+
+    const options = queryAll(fixture, '.menu__option');
+    // The way out, then the package's own two.
+    expect(options).toHaveLength(EFFECTS.length + 1);
+    expect(options[0]?.classList.contains('menu__option--none')).toBe(true);
+    expect(textOf(options[1]!)).toContain('Corrosive Shell');
+    expect(textOf(options[1]!)).toContain('reduce the target’s hull resistance');
+  });
+
+  it('says which option is the selected one', () => {
+    const fixture = openMenu(renderMenu({ selected: 'special_auto_loader' }));
+
+    const selected = queryAll(fixture, '.menu__option').filter(
+      (option) => option.getAttribute('aria-selected') === 'true',
+    );
+    expect(selected).toHaveLength(1);
+    expect(textOf(selected[0]!)).toContain('Auto Loader');
+  });
+
+  it('marks the no-effect option as selected when nothing is chosen', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+
+    const none = query(fixture, '.menu__option--none');
+    expect(none.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('names both the trigger and the list from the control’s own label', () => {
+    const fixture = openMenu(renderMenu());
+
+    const label = query(fixture, '.menu__label');
+    const trigger = query(fixture, '.menu__trigger');
+    // The label says which choice this is and the trigger says what it holds;
+    // either alone is half the answer.
+    expect(trigger.getAttribute('aria-labelledby')).toBe(`${label.id} ${trigger.id}`);
+    expect(query(fixture, '.menu__list').getAttribute('aria-labelledby')).toBe(label.id);
+  });
+
+  it('takes the focus when it opens, and names the option it is on', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+
+    const list = query(fixture, '.menu__list');
+    expect(list.getAttribute('tabindex')).toBe('0');
+    expect(document.activeElement).toBe(list);
+    // Opened on the applied option, which with nothing chosen is the way out.
+    expect(list.getAttribute('aria-activedescendant')).toBe(
+      query(fixture, '.menu__option--none').id,
+    );
+  });
+
+  it('opens on the applied option rather than at the top of the list', () => {
+    const fixture = openMenu(renderMenu({ selected: 'special_auto_loader' }));
+
+    const active = query(fixture, '.menu__list').getAttribute('aria-activedescendant');
+    expect(queryAll(fixture, '.menu__option')[2]?.id).toBe(active);
+  });
+
+  it('walks the options with the arrows, and reaches the ends', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+    const list = query(fixture, '.menu__list');
+    const idAt = (index: number) => queryAll(fixture, '.menu__option')[index]?.id;
+
+    press(fixture, 'ArrowDown');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(1));
+
+    press(fixture, 'End');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(2));
+
+    // The ends hold rather than wrapping, which is what a native menu does.
+    press(fixture, 'ArrowDown');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(2));
+
+    press(fixture, 'Home');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(0));
+
+    press(fixture, 'ArrowUp');
+    expect(list.getAttribute('aria-activedescendant')).toBe(idAt(0));
+  });
+
+  it('takes the option the list is on with Enter, and with Space', () => {
+    for (const key of ['Enter', ' ']) {
+      const fixture = openMenu(renderMenu({ selected: null }));
+      const chosen: (string | null)[] = [];
+      fixture.componentInstance.chosen.subscribe((value) => chosen.push(value));
+
+      press(fixture, 'ArrowDown');
+      press(fixture, key);
+
+      expect(chosen).toEqual(['special_corrosive_shell']);
+      expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+    }
+  });
+
+  it('leaves on Escape without taking anything, and gives the trigger back', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+    const chosen: (string | null)[] = [];
+    fixture.componentInstance.chosen.subscribe((value) => chosen.push(value));
+
+    press(fixture, 'ArrowDown');
+    press(fixture, 'Escape');
+
+    expect(chosen).toEqual([]);
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+    // Focus left inside a box that is no longer drawn is focus a reader has to
+    // find again from the top of the page.
+    expect(document.activeElement).toBe(query(fixture, '.menu__trigger'));
+  });
+
+  it('shuts when the focus leaves it, so Tab does not leave a list behind', () => {
+    const fixture = openMenu(renderMenu());
+
+    // `Tab` is the page's, so the focus goes on and nothing here stops it. What
+    // must not happen is the list staying drawn over the card behind it.
+    query(fixture, '.menu__list').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }),
+    );
+    fixture.detectChanges();
+
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+  });
+
+  it('stays open when the focus leaves the document altogether', () => {
+    const fixture = openMenu(renderMenu());
+
+    // A null `relatedTarget` is another window or the browser's own chrome. The
+    // Commander has not moved on from the menu and comes back to it.
+    query(fixture, '.menu__list').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: null }),
+    );
+    fixture.detectChanges();
+
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(1);
+  });
+
+  it('leaves Tab to the page, so the list is not a trap', () => {
+    const fixture = openMenu(renderMenu());
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+
+    query(fixture, '.menu__list').dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('names each option by its name line and describes it by the package’s', () => {
+    // The whole reason this control is drawn rather than taken from the
+    // platform: a native option holds one run of text, so the description could
+    // only be read as part of the name.
+    const fixture = openMenu(renderMenu());
+    const option = queryAll(fixture, '.menu__option')[1]!;
+
+    expect(option.getAttribute('aria-labelledby')).toBe(
+      option.querySelector('.menu__option-name')?.id,
+    );
+    expect(option.getAttribute('aria-describedby')).toBe(
+      option.querySelector('.menu__option-description')?.id,
+    );
+  });
+
+  it('describes an option by nothing where the catalogue has no description', () => {
+    const fixture = openMenu(
+      renderMenu({
+        effects: [
+          {
+            ...EFFECTS[0]!,
+            description: {
+              text: null,
+              language: null,
+              translationState: 'unavailable',
+              disclosureKey: 'game-text.unavailable',
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(queryAll(fixture, '.menu__option')[1]?.getAttribute('aria-describedby')).toBeNull();
+  });
+
+  it('draws no description line for an option the catalogue has none for', () => {
+    const fixture = openMenu(
+      renderMenu({
+        effects: [
+          {
+            ...EFFECTS[0]!,
+            description: {
+              text: null,
+              language: null,
+              translationState: 'unavailable',
+              disclosureKey: 'game-text.unavailable',
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(queryAll(fixture, '.menu__option-description')).toHaveLength(0);
+    // The option after the way out is the effect's own, and it is still named.
+    const option = queryAll(fixture, '.menu__option')[1]!;
+    expect(textOf(option)).toContain('Corrosive Shell');
+  });
+
+  it('shuts on a second press of the trigger', () => {
+    const fixture = openMenu(renderMenu());
+
+    query(fixture, '.menu__trigger').click();
+    fixture.detectChanges();
+
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+  });
+
+  it('shuts on a press outside it, and leaves a press inside alone', () => {
+    const fixture = openMenu(renderMenu());
+
+    element(fixture).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    fixture.detectChanges();
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(1);
+
+    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    fixture.detectChanges();
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+  });
+
+  it('emits the chosen effect and shuts, because choosing is the edit', () => {
+    const fixture = openMenu(renderMenu({ selected: null }));
+    const chosen: (string | null)[] = [];
+    fixture.componentInstance.chosen.subscribe((value) => chosen.push(value));
+
+    queryAll(fixture, '.menu__option')[2]?.click();
+    fixture.detectChanges();
+
+    expect(chosen).toEqual(['special_auto_loader']);
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+  });
+
+  it('emits the removal through the no-effect option', () => {
+    const fixture = openMenu(renderMenu({ selected: 'special_auto_loader' }));
+    const chosen: (string | null)[] = [];
+    fixture.componentInstance.chosen.subscribe((value) => chosen.push(value));
+
+    query(fixture, '.menu__option--none').click();
+
+    expect(chosen).toEqual([null]);
+  });
+
+  it('comes back shut when the editor changes shape', () => {
+    const fixture = openMenu(renderMenu());
+
+    fixture.componentRef.setInput('asDropdown', false);
+    fixture.detectChanges();
+    fixture.componentRef.setInput('asDropdown', true);
+    fixture.detectChanges();
+
+    expect(queryAll(fixture, '.menu__list')).toHaveLength(0);
+  });
+
+  it('draws the card list rather than the menu in the other shape', () => {
+    const fixture = renderComponent(ExperimentalEffectList, {
+      asDropdown: false,
+      effects: EFFECTS,
+    });
+
+    expect(queryAll(fixture, '.menu')).toHaveLength(0);
+    expect(queryAll(fixture, '.effect').length).toBeGreaterThan(0);
   });
 });
 
@@ -490,6 +839,14 @@ describe('ingress refusal notice', () => {
 /** Every match, since the shared helpers only expose the first. */
 function queryAll<T>(fixture: ComponentFixture<T>, selector: string): HTMLElement[] {
   return [...element(fixture).querySelectorAll<HTMLElement>(selector)];
+}
+
+/** One key, on the effect menu's list, and the redraw that follows it. */
+function press<T>(fixture: ComponentFixture<T>, key: string): void {
+  query(fixture, '.menu__list').dispatchEvent(
+    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+  );
+  fixture.detectChanges();
 }
 
 describe('ship identity fields', () => {

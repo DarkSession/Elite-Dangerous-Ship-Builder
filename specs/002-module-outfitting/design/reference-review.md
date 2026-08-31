@@ -288,14 +288,18 @@ the route line stays where the package itself says a recipe is not an ordinary o
 does is shown instead in the comparison the draft actually computes.
 
 The **experimental effect** descriptions are kept exactly as drawn: `getExperimentalEffectDescription`
-publishes one per effect, so `−3% ENEMY HULL RESIST · −20% AMMO` is package text rather than a claim
-of ours. Where the package has none, the row says so.
+publishes one for every effect the catalogue carries, so `−3% ENEMY HULL RESIST · −20% AMMO` is
+package text rather than a claim of ours. A symbol the catalogue does not carry has none, and the
+line is then absent rather than standing in for itself.
 
 **Attribute column headings, ruled 2026-08-21 during US3 implementation, corrected the same day.**
 Adopted as drawn. The columns read `Stock` and `Modified`, the canvas's own headings, and they hold
-the canvas's own pair: the package's catalogue record for the fitted article — `FittedModule.stats`,
-which is the resolved article record on a recognised reward — against what the selection would make
-of it. An earlier pass headed them `Current` and `Candidate` and compared the module _as it now
+the canvas's own pair: the package's catalogue record for the article in stock against what the
+selection would make of it. `FittedModule.stats` is that stock record for every module the
+application can engineer, with one exception — an identified pre-engineered variant, where the
+package publishes the resolved article there and the stock record is asked for by symbol
+(`engineering-editor.md`, "Attribute and cost honesty"). An earlier pass headed them `Current` and
+`Candidate` and compared the module _as it now
 stands_ instead; that was invented text over an invented pair, and it also diverged from the game's
 own engineering panel, which shows stock beside modified. Where a module is unengineered the two
 readings coincide, which is why the substitution survived a first review.

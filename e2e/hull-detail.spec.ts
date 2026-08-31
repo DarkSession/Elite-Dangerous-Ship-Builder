@@ -12,6 +12,7 @@ import {
   manifestBuildControl,
   openHullFromManifest,
   reachShellLink,
+  restsToRead,
   savedToBrowser,
 } from './shell';
 
@@ -159,6 +160,24 @@ test.describe('hull detail', () => {
       '2 medium',
       '2 small',
     ]);
+  });
+
+  test('carries the hardpoint total on its rule, as every other group does', async ({ page }) => {
+    // The rule was the one section rule on this screen with no total on its
+    // trailing edge, against three below it that all have one (Commander
+    // request 2026-08-30). Nothing here writes the Anaconda's mount count down:
+    // the total is held against the class counts drawn beside it on the same
+    // screen, so a package that corrects the hull corrects both together.
+    const group = detail(page).locator('[data-slot-group="hardpoint"]');
+    const total = Number(
+      (await group.locator('.detail__section-total').innerText()).replace(/\D/gu, ''),
+    );
+
+    const counts = await group.locator('.detail__mount').allInnerTexts();
+    expect(counts.length).toBeGreaterThan(0);
+    expect(
+      counts.reduce((sum, chip) => sum + Number(/^(\d+)\b/u.exec(chip.trim())?.[1] ?? 0), 0),
+    ).toBe(total);
   });
 
   test('states what the hull carries, grouped and totalled as the reference draws it', async ({
@@ -433,9 +452,7 @@ test.describe('hull detail', () => {
     // from the row a Commander is on (FR-007, `hull-detail.md`, "The wide rail
     // has no action"). Where the device cannot hover, a row press opens the
     // detail instead of building, so the action stays.
-    const railBuilds = await page.evaluate(
-      () => matchMedia('(hover: hover)').matches && matchMedia('(min-width: 64rem)').matches,
-    );
+    const railBuilds = await restsToRead(page);
 
     await expect(stockAction(page)).toHaveCount(railBuilds ? 0 : 1);
 
@@ -444,6 +461,81 @@ test.describe('hull detail', () => {
     await buildStockHull(page, englishMessages['hullDetail.create']);
     await expect(page).toHaveURL(/\/build(#|$)/);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+  });
+
+  test('is the sheet over the manifest at every width below the rail’s', async ({ page }) => {
+    // Ruled 2026-08-30 (Commander request). There is no band between the two
+    // compositions. With 48 hulls the manifest is several screenfuls, so a hull
+    // opened at 900px under it would land below all of them: the Commander
+    // presses a row and the page does not appear to change
+    // (`design/hull-detail.md`, "Every width below the rail's is the sheet's").
+    //
+    // The rail's own width is the one threshold, and it is read from the page
+    // rather than written here: a second copy of it in this suite would be one
+    // that could disagree with the stylesheet.
+    const atTheRail = await page.evaluate(() => matchMedia('(min-width: 64rem)').matches);
+
+    const manifest = page.locator('.catalogue__browse');
+    if (atTheRail) {
+      // Beside the manifest, which keeps its track whether or not a hull is open.
+      await expect(manifest).toBeVisible();
+      return;
+    }
+
+    // Below it the detail takes the screen: the manifest is not drawn, and the
+    // command bar carries the sheet's own return group rather than the
+    // shipyard's identity.
+    await expect(manifest).toBeHidden();
+    await expect(page.locator('.frame__return')).toBeVisible();
+  });
+
+  test('draws the sheet as a column rather than at the width of the window', async ({ page }) => {
+    // Ruled 2026-08-31 (Commander request). The sheet took whatever width the
+    // screen gave it, and its artwork plate is `100%` of that at a fixed 3:2 —
+    // so the illustration grew with the window while the window's height did
+    // not: 979 x 653 at 1023px, 73% of a 900px-tall window spent before a
+    // figure is read, against the 22% the rail draws the same plate at
+    // (`design/hull-detail.md`, "The sheet is a column, not a screenful").
+    //
+    // The bound is read from the page rather than written here, so this cannot
+    // hold a second copy of a figure the stylesheet owns.
+    const atTheRail = await page.evaluate(() => matchMedia('(min-width: 64rem)').matches);
+    const sheet = page.locator('.detail').first();
+    const measured = await sheet.evaluate((element: HTMLElement) => {
+      const box = element.getBoundingClientRect();
+      const parent = element.parentElement?.getBoundingClientRect() ?? box;
+      return {
+        bound: getComputedStyle(element).maxInlineSize,
+        width: box.width,
+        leading: box.left - parent.left,
+        trailing: parent.right - box.right,
+      };
+    });
+
+    if (atTheRail) {
+      // The rail's own track is the bound there, and the sheet's is not applied.
+      expect(measured.bound).toBe('none');
+      return;
+    }
+
+    // A column of the declared width, centred in whatever it was opened on.
+    expect(measured.bound).not.toBe('none');
+    const bound = Number.parseFloat(measured.bound);
+    expect(measured.width).toBeLessThanOrEqual(bound + 1);
+    expect(Math.abs(measured.leading - measured.trailing)).toBeLessThan(1);
+
+    // And the illustration follows the column rather than the screen. The plate
+    // is the column at a 3:2 ratio, so bounding the column is what bounds it:
+    // unbounded it reached 979 x 653 at the last width before the rail.
+    const plate = await page
+      .locator('edsb-hull-artwork .artwork__frame')
+      .first()
+      .evaluate((frame) => {
+        const box = frame.getBoundingClientRect();
+        return { width: box.width, height: box.height };
+      });
+    expect(plate.width).toBeLessThanOrEqual(bound + 1);
+    expect(plate.height).toBeLessThanOrEqual(bound / 1.5 + 1);
   });
 
   test('never scrolls the document sideways', async ({ page }) => {

@@ -50,7 +50,12 @@
 
       @if (mounts().length > 0) {
         <div class="detail__mounts" data-slot-group="hardpoint">
-          <h3 class="detail__section">{{ mountsHeading() }}</h3>
+          <h3 class="detail__section">
+            {{ mountsHeading() }}
+            @if (mountsTotal(); as total) {
+              <span class="detail__section-total">{{ total }}</span>
+            }
+          </h3>
           <ul class="detail__mount-list">
             @for (mount of mounts(); track mount.label) {
               <li class="detail__mount">

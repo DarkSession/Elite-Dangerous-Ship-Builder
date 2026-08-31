@@ -109,10 +109,151 @@
   margin-inline-start: auto;
 }
 
-// Canvas 1c sets the effect dropdown apart from the amber one above it in the
-// cool it uses for an effect everywhere else. Never the only carrier: the
-// control is labelled `Experimental effect` and sits under its own label.
-.effects__field ::ng-deep .field__control {
+// ---------------------------------------------------------------------------
+// Canvas 1c's menu
+// ---------------------------------------------------------------------------
+
+// The trigger and the list it opens. The list is positioned against this box,
+// so the box is the containing block for it.
+.menu {
+  @include layout.stack(var(--edsb-space-stack-tight));
+
+  position: relative;
+}
+
+.menu__label {
+  @include layout.micro-label(var(--edsb-text-subtle));
+
+  margin: 0;
+}
+
+// Canvas 1c's own control, and it is drawn as the shared field's is: the
+// field's ground and hairline, its own inset, a mono caret against the trailing
+// edge. The cool border and ink are what the canvas sets this control apart
+// with, because an experimental effect is drawn cool everywhere else in the
+// application. Never the only carrier: the control sits under its own label and
+// names the effect it holds.
+.menu__trigger {
+  @include layout.target-baseline;
+  @include layout.field-surface;
+
+  display: flex;
+  align-items: center;
+  gap: var(--edsb-space-inline);
+  inline-size: 100%;
+  padding-block: var(--edsb-space-control-block);
+  padding-inline: var(--edsb-space-control-inline);
   border-color: var(--edsb-border-info);
   color: var(--edsb-text-info);
+  font-family: var(--edsb-font-body);
+  font-size: var(--edsb-text-size-body);
+  text-align: start;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+    outline-offset: var(--edsb-space-3xs);
+  }
+}
+
+.menu__value {
+  flex: 1;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.menu__caret {
+  flex: none;
+  font-family: var(--edsb-font-metric);
+  font-size: var(--edsb-text-size-caption);
+  line-height: var(--edsb-text-leading-flat);
+  color: var(--edsb-text-muted);
+}
+
+// Over the card rather than in it, so the attribute table under the card does
+// not move a screenful every time the menu opens. The `z-index` is against the
+// card's own siblings, which are positioned too: without it the details card
+// after this one in the document paints over the list.
+.menu__list {
+  position: absolute;
+  // The list holds the focus while it is drawn, and the option it is on carries
+  // the ring instead — a ring around the whole scroll box says only that the
+  // menu is open, which the trigger already says.
+  outline: none;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-block-size: var(--edsb-layout-menu-drop);
+  overflow-y: auto;
+  overscroll-behavior-block: contain;
+  background-color: var(--edsb-surface-panel);
+  border: var(--edsb-border-width-hairline) solid var(--edsb-border-info);
+  box-shadow: var(--edsb-elevation-menu);
+}
+
+// One option: the effect's name, and the package's description under it a step
+// down and a wash quieter. The two steps are the card list's own, so the menu
+// and the cards read alike.
+.menu__option {
+  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.target-baseline;
+
+  position: relative;
+  justify-content: center;
+  padding: var(--edsb-space-row) var(--edsb-space-inline);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  cursor: pointer;
+}
+
+.menu__option:last-child {
+  border-block-end: 0;
+}
+
+// The chosen option, marked the way every other list in this application marks
+// one: a wash, an edge and a marker inside the leading edge. A tint on its own
+// is a state carried by colour, which this design system does not do.
+.menu__option[aria-selected='true'] {
+  background-color: var(--edsb-surface-accent-selected);
+}
+
+.menu__option[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--edsb-border-width-marker);
+  background-color: var(--edsb-marker-selected);
+}
+
+.menu__option[aria-selected='true'] .menu__option-name {
+  font-weight: var(--edsb-text-weight-heading);
+}
+
+// Where the keyboard is, which is not the same thing as what is chosen: a
+// Commander walking the list has moved off the applied effect without applying
+// anything yet. Drawn as the focus ring is drawn everywhere else, inside the
+// option so it does not move the row, because the focus is on the list itself
+// and this is the only thing that says which option the list is on.
+.menu__option--active {
+  outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+  outline-offset: calc(var(--edsb-focus-ring-width) * -1);
+}
+
+// The way out, drawn dashed as the canvas draws it in the card list.
+.menu__option--none {
+  border-block-end-style: dashed;
+}
+
+.menu__option-name {
+  color: var(--edsb-text-primary);
+  font-size: var(--edsb-text-size-body);
+}
+
+.menu__option-description {
+  color: var(--edsb-text-muted);
+  font-size: var(--edsb-text-size-caption);
+  line-height: var(--edsb-text-leading-body);
 }

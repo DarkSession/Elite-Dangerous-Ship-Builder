@@ -9,7 +9,7 @@
 - `CollectionToolbar` as the reference draws it and no further: a localized search field carrying its words in the placeholder rather than in a drawn label, and the size choices as an abutted segmented strip led by `ALL`. The strip is exclusive — `ALL` or one pad class, never two at once — so it is a radio group, not a set of checkboxes. Ordering is the wide manifest's own column headers, and canvas 1b's sort chips in the compact composition.
 - Wide `ResponsiveCatalogueView`: canvas 1a's manifest — a leading marker column, then ship, manufacturer, the size code, the mount code and the price in Mcr, the last two hard against the trailing edge as the reference sets them. Column headers are named bidirectional sort buttons; the column in force takes the reference's amber and its `▲`/`▼` caret, which is decoration beside `aria-sort`. The current row is marked by the amber lozenge, the 3px marker on its leading edge, the wash and the amber hull name, and by `aria-current`; it carries no drawn label.
 - Narrow `ResponsiveCatalogueView`: canvas 1b's stacked records — the size code on the leading edge, the hull name over one `manufacturer · mounts` line, the price and `Mcr` on the trailing edge — preceded by the horizontally scrolling sort chips.
-- When `/ships/:hull` is active at wide widths, the manifest shares the page with the [hull-detail inspector](./hull-detail.md). `/ships` itself requires no implicit first selection.
+- When `/ships/:hull` is active at the rail, the manifest shares the page with the [hull-detail inspector](./hull-detail.md); below the rail's width the detail takes the screen and the manifest is not drawn. `/ships` itself requires no implicit first selection.
 - One centred sentence for no matches, on the manifest's own ground. No notice above the list: the reference draws none, and a cell with no value already says "Unavailable" in place.
 
 ### Narrowing is the search and the size strip, and nothing else
@@ -53,7 +53,7 @@ Canvas 1a draws the inspector only with a hull in it, and an empty inspector is 
 
 The manifest is what a Commander is reading when they open their first hull, and resting on a row is what opens it — so under the earlier ruling the act of reading reflowed the thing being read: the region gave up the rail's width, five columns re-measured, and the row under the cursor moved out from under it. Reserving the track costs nothing while it is empty (a grid column with a `display: none` item paints no ink) and buys a manifest whose measure does not depend on whether a hull happens to be open.
 
-Below the rail width there is no second track to reserve and the question does not arise: the compact composition stacks, and an open hull takes the screen.
+Below the rail's width there is no second track to reserve and the question does not arise: an open hull takes the screen and the manifest is not drawn while it is open. That is one composition and not two — no band stacks the detail under the manifest (see [hull detail](./hull-detail.md), "Every width below the rail's is the sheet's").
 
 ### The manifest holds its column track list
 
@@ -71,17 +71,44 @@ Three things about a manifest row, at both compositions:
   cell in it belongs to the same hull. The name stays a real button, which is what gives the row a
   named control and what a keyboard reaches; its press bubbles to the row and is answered once, so
   there is one action and not two. The compact record is the same: the press is on the card.
-- **The second press on a touch screen builds.** With no hover, the first press opens the hull —
-  nothing else can, because a touch screen has no resting state. Pressing the row that is already
-  open used to repeat that navigation, so the row a Commander was looking at did nothing when they
-  pressed it again. It builds now, which is the same second step a pointer takes by resting and then
-  pressing. The action's own words follow: a row that will open says so, and the open row says it
-  will build.
+- **The second press builds, where there is a row left to press.** Where a rested pointer opens the
+  hull, the press after it flies it. On a touch screen at the rail's width there is no resting
+  state, so the first press opens the hull beside the manifest and the second flies it — the same
+  two steps, and until 2026-08-28 that second press repeated the navigation the row had already made
+  and nothing happened. Below the rail's width the sheet takes the screen and the manifest is not
+  drawn at all, so there is no open row to press again: the press opens the hull and the sheet's own
+  action builds it (`hull-detail.md`, "Every width below the rail's is the sheet's"). The action's
+  own words follow wherever the row is on screen: a row that will open says so, and the open row
+  says it will build.
 - **The caret keeps its place on every header.** It is drawn on all six and inked on the one the
   list is ordered by. Drawn only when sorted, it pulled the two right-ranged headings a caret's
   width along the first time they were pressed — a heading moving under the pointer that asked for
   it. Hidden and not absent, so the box is the same box in both states; and it is the ascending
   glyph that holds the place, because the two are the same width.
+
+### Resting reads a hull only where the rail is drawn (2026-08-31, Commander request)
+
+The manifest asked the device one question — can it hover — and read a hull on every rest that
+answered yes. Below the rail's own width there is no rail for the reading to appear in: the hull
+detail is canvas 1b's sheet over the whole screen. So a pointer crossing the manifest at 900px opened
+that sheet over the list it was crossing, one hull after another, with no press behind any of it, and
+the manifest it covered was the thing being read.
+
+Resting is therefore the rail's own behaviour, and its two halves are asked as one question: can this
+device rest a pointer somewhere, **and** is the rail drawn. Below that width the manifest takes the
+same path a touch screen takes — the press opens the hull, and the sheet's own action builds it —
+which is the composition the sheet is already drawing everything else in. The row's words follow the
+same answer, so a row never announces a build the next press will not make.
+
+The screen that draws the rail is what answers it, and the manifest takes the answer as an input. A
+manifest cannot see a rail beside itself, and it cannot tell the two compositions apart by its own
+width either: it is the _wider_ box at the width the rail exists, because the page it is on is wider
+still (feature 011, `design/responsive-composition.md`).
+
+The other decision this governs was already keyed to the same width on the far side of the screen:
+canvas 1a's rail draws no stock-hull action _because_ the row's press is the build there, and canvas
+1b's sheet keeps it (`hull-detail.md`, "The wide rail has no action"). One question, asked once, is
+what keeps the row and the sheet from disagreeing about which of them carries the transaction.
 
 ### Screen chrome and the command bar
 

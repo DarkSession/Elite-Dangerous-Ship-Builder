@@ -1,16 +1,128 @@
 <!--
-  Canvas 1c's cool-bordered dropdown, canvas 1d's card list. The package's own
-  description rides in the option label, so the dropdown offers what the cards
-  offer rather than a shorter version of it (constitution V).
+  Canvas 1c's cool-bordered menu, canvas 1d's card list. Both give an option two
+  lines — the effect's name over the package's own description of it — because
+  the package publishes a description for every effect and a name alone is half
+  of what a Commander is choosing between.
 -->
 @if (asDropdown()) {
-  <edsb-select-field
-    class="effects__field"
-    [label]="legend()"
-    [options]="options()"
-    [value]="selected() ?? noEffect"
-    (changed)="chosen.emit($event === noEffect ? null : $event)"
-  />
+  <!--
+    The menu is drawn here rather than taken from the platform. A native option
+    holds one run of text, so the description had to be glued onto the name, and
+    thirteen options of two hundred characters each is a menu that is read
+    instead of scanned (`design/engineering-editor.md`, "The effect menu is the
+    application's own control").
+  -->
+  <div class="menu">
+    <p class="menu__label" [id]="labelId">{{ legend() }}</p>
+
+    <!--
+      The chosen effect is named on the trigger, so a Commander who never opens
+      the list still reads what is applied. Through `edsb-game-text`, like every
+      other place this application prints a game noun, so an untranslated name
+      is disclosed as one here too. The caret is decoration: the button says it
+      opens a listbox and whether that listbox is open.
+    -->
+    <button
+      class="menu__trigger"
+      type="button"
+      [id]="triggerId"
+      aria-haspopup="listbox"
+      [attr.aria-expanded]="open()"
+      [attr.aria-controls]="open() ? listId : null"
+      [attr.aria-labelledby]="triggerNameIds"
+      (click)="toggle()"
+    >
+      <span class="menu__value">
+        @if (triggerEffect(); as effect) {
+          <edsb-game-text
+            [text]="effect.name.text"
+            [language]="effect.name.language"
+            [translationState]="effect.name.translationState"
+          />
+        } @else {
+          {{ noneLabel() }}
+        }
+      </span>
+      <span class="menu__caret" aria-hidden="true">▾</span>
+    </button>
+
+    @if (open()) {
+      <!--
+        Drawn over the card rather than inside it: in flow, thirteen two-line
+        options would push the attribute table a screenful down every time the
+        menu opened. It is bounded and scrolls inside itself, holds the focus
+        while it is drawn, and names the option the keyboard is on through
+        `aria-activedescendant` — the arrows walk the options, `Enter` takes
+        one and `Escape` leaves without taking any.
+      -->
+      <ul
+        #list
+        class="menu__list"
+        role="listbox"
+        tabindex="0"
+        [id]="listId"
+        [attr.aria-labelledby]="labelId"
+        [attr.aria-activedescendant]="activeOptionId()"
+        (keydown)="onListKeydown($event)"
+      >
+        <li
+          class="menu__option menu__option--none"
+          role="option"
+          [id]="optionId(0)"
+          [class.menu__option--active]="activeIndex() === 0"
+          [attr.aria-selected]="selected() === null"
+          (click)="choose(null)"
+        >
+          <span class="menu__option-name">{{ noneLabel() }}</span>
+        </li>
+
+        @for (effect of effects(); track effect.fdname; let index = $index) {
+          <!--
+            Named by its own name line and described by the package's sentence
+            under it, rather than leaving both to be read as one run. That run
+            is what the native menu could only offer, and it is the whole reason
+            this control is drawn (`design/engineering-editor.md`, "The effect
+            menu is the application's own control").
+          -->
+          <li
+            class="menu__option"
+            role="option"
+            [id]="optionId(index + 1)"
+            [class.menu__option--active]="activeIndex() === index + 1"
+            [attr.aria-selected]="selected() === effect.fdname"
+            [attr.aria-labelledby]="optionId(index + 1) + '-name'"
+            [attr.aria-describedby]="
+              effect.description.text === null ? null : optionId(index + 1) + '-description'
+            "
+            (click)="choose(effect.fdname)"
+          >
+            <span class="menu__option-name" [id]="optionId(index + 1) + '-name'">
+              <edsb-game-text
+                [text]="effect.name.text"
+                [language]="effect.name.language"
+                [translationState]="effect.name.translationState"
+              />
+            </span>
+            <!--
+              Only where the package has one, for the reason the card list gives
+              below: `edsb-game-text` stands in for a missing string with `Name
+              unavailable`, which is the right answer for a name and the wrong
+              one for a description.
+            -->
+            @if (effect.description.text !== null) {
+              <span class="menu__option-description" [id]="optionId(index + 1) + '-description'">
+                <edsb-game-text
+                  [text]="effect.description.text"
+                  [language]="effect.description.language"
+                  [translationState]="effect.description.translationState"
+                />
+              </span>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
 } @else {
   <fieldset class="effects">
     <legend class="effects__legend">{{ legend() }}</legend>
@@ -53,10 +165,7 @@
             a name — an article a reader cannot be told the name of is a fact
             worth stating — and the wrong one here twice over: this is not a
             name, and an effect whose description the catalogue does not carry is
-            already fully named on the line above. The Almanac carries no
-            description for any of them today, so every option in the card read
-            `Name unavailable` under its own name (Commander request
-            2026-08-26).
+            already fully named on the line above (Commander request 2026-08-26).
           -->
           @if (effect.description.text !== null) {
             <edsb-game-text
