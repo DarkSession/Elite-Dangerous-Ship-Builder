@@ -394,7 +394,7 @@ test.describe('the slot ledger', () => {
      */
     async function longestName(): Promise<string> {
       const catalogue = await import('@elite-dangerous-almanac/core/i18n/modules');
-      const name = catalogue.getModuleName('Int_SuperCruiseAssist', 'de');
+      const name = catalogue.getModuleName('Int_SupercruiseAssist', 'de');
       if (name === null) {
         throw new Error('The package names no supercruise assistant in German.');
       }
@@ -705,6 +705,12 @@ test.describe('a pointer resting on a list', () => {
     }
   }
 
+  /** A row the wash must leave alone, whether or not this profile can hover. */
+  async function expectKeepsItsOwnGround(row: Locator): Promise<void> {
+    const { resting, hovered } = await groundsOf(row);
+    expect(hovered).toBe(resting);
+  }
+
   test('is answered by the ledger’s mounts, the categories and the module rows', async ({
     page,
   }) => {
@@ -723,13 +729,36 @@ test.describe('a pointer resting on a list', () => {
     // canvas marks it with, so it is not the row to ask.
     await expectAnswersThePointer(page, page.locator('.family:not([aria-pressed="true"])').first());
 
-    // A module row that offers a choice. `FITTED HERE` is a statement of what
-    // is in the mount and carries no radio, so it takes no wash — and it is
-    // excluded here rather than left to chance.
+    // A module row that offers a choice.
     await expectAnswersThePointer(
       page,
       page.locator('.candidate:has(.candidate__radio):not([data-selected="true"])').first(),
     );
+
+    // And the rows the wash must not touch, asserted rather than left out of
+    // the locators above.
+    //
+    // The revealed category is the one of them a profile can actually prove:
+    // it is drawn by the rail, the rail is the wide manifest, and the wide
+    // width is the one profile with a hovering pointer. Delete the
+    // `[aria-pressed='false']` from the rail's wash and this fails. The
+    // `FITTED HERE` copy below is the other way round — it is drawn only at the
+    // compact widths, and every one of those is a touch profile — so its check
+    // states the claim without being able to press on it. It is written down
+    // rather than left out, and the coverage ledger says which of the two is
+    // measured.
+    if ((await manifestOf(page)) === 'rail') {
+      // The accordion marks an open family with its caret rather than with
+      // `aria-pressed`, so the rail is where a pressed row exists to ask.
+      await expectKeepsItsOwnGround(page.locator('.family[aria-pressed="true"]').first());
+    }
+
+    // Only canvas 1d draws the `FITTED HERE` copy; the wide composition passes
+    // it no heading and draws none of it, so there is no such row to ask there.
+    const pinned = page.locator('.candidates__pinned .candidate');
+    if ((await pinned.count()) > 0) {
+      await expectKeepsItsOwnGround(pinned.first());
+    }
   });
 });
 

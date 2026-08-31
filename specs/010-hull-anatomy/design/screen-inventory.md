@@ -15,7 +15,7 @@ of one capability, not separate screens. Side choice, pan and list disclosure ar
 Three surfaces this inventory planned are not built, because the reference canvases do not draw
 them: a second unique located-mount list, a selected-mount facts block and a provenance control of
 this capability's own. Feature 002's complete ledger is the text equivalent and the route to every
-mount, and feature 012 owns provenance from the application's help capability
+mount it draws, and feature 012 owns provenance from the application's help capability
 (design/hull-anatomy.md, "Divergence from FR-008", "Divergence from FR-004 and SC-003", "Divergence from
 FR-011").
 

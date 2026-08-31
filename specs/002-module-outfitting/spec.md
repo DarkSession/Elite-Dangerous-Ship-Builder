@@ -464,7 +464,8 @@ No game rule, value or variant-recognition heuristic is application-owned.
   three cells — the module, its class and rating, and its price — with no damage, mass, power or
   weapon-draw figure at that width.
 - **SC-007**: Whenever the exact fitted choice has an available family, that family is the only family
-  revealed on initial presentation and after a rebuild; when it has none, the wide composition reveals
+  revealed on initial presentation and on each change of mount, reading language, reveal model or
+  search; when it has none, the wide composition reveals
   the first family in package order and the compact one reveals none. Where the composition draws the
   families as a list of their own, every family the application reveals is inside that list's visible
   box once presented, and every family the Commander reveals is left where they pressed it.

@@ -216,8 +216,10 @@ The full decisions and alternatives are in [research.md](./research.md):
 - The chooser groups on the package's `familyId` and labels with its family lookup; a displayed-name
   group cannot reproduce either canvas, and no local family table, abbreviation or aggregate is added
   (decisions 13 and 14).
-- Open family state is one seeded set inside `CandidateQueryState`, replaced on every rebuild and
-  every query change rather than remembered across them (decision 15).
+- Open family state is one seeded set inside `CandidateQueryState`, replaced on each change of
+  mount, reading language, reveal model or query. The store lays a Commander's own toggles over that
+  seed and holds them for exactly as long as those four hold, so a rebuild at the same presentation
+  keeps them (decision 15, FR-021).
 
 No `NEEDS CLARIFICATION` marker remains.
 

@@ -22,9 +22,9 @@ owners' and are listed here only because the rail is where the canvas puts them 
 canvas's.
 
 Items 1 to 3 are the block the rail opens with; items 4 to 6 are drawn inside the inset the canvas
-gives the power figures and the cells, and item 7 closes the rail in a block of its own. Item 3 is on the near side of that line because it
-says something is wrong with the build, which is what items 2 and feature 004's import-completion
-notice say too (005/FR-013).
+gives the power figures and the cells; item 7 closes the rail in a block of its own. Item 3 is on the
+near side of that line because it says something is wrong with the build, which is what item 2 says
+and what feature 004's import-completion notice will say (005/FR-013).
 
 **Item 5 makes the rail interactive for the first time.** Until the 2026-08-25 revision every block
 in it was a read-out, and this file said so. It is still not feature 003's control: the pips are

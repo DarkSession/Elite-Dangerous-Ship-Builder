@@ -172,8 +172,9 @@ visibly disclosed as untranslated. The app never maintains private game-name or 
   installed package.
 - Stock precedes variants inside a family, and a reward keeps its labels on its own row now that no
   section carries them.
-- The fitted choice's family, and only that one, is open on open and after a rebuild; none is open
-  when the fitted choice has no available family.
+- The fitted choice's family, and only that one, is open on open and on each change of mount,
+  reading language, reveal model or search; none is open when the fitted choice has no available
+  family. A rebuild at the same four keeps whatever the Commander had open.
 - A non-empty search within a screenful leaves no match inside a closed family, and above a screenful leaves every family closed and none absent; clearing it restores the fitted default.
 - Toggling a family produces no build revision and no history step.
 - A family the active language does not name renders its canonical English name with the untranslated

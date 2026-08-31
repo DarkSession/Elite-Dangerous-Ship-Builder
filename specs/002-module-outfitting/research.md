@@ -100,6 +100,12 @@ misrepresent its contract.
 the shared ingress boundary has refused an unknown hull and package construction has populated every
 fixed mount. Re-read all views after each commit.
 
+> **Two exceptions to the order and the list 2026-08-31 (Commander request).** The cargo hatch is
+> drawn after the core internals rather than after every optional mount, and the planetary approach
+> mount is drawn nowhere. Both are presentation and neither touches what this decision is about:
+> every mount is still read from `slots()` after package construction, and the withheld one is still
+> ordinary build state (FR-002a).
+
 Capability comes from current package evidence. Removal mirrors `LoadoutSlot.removable`; replacement
 queries `modulesForSlot()`; engineering comes from current menus/result state; power setters apply to
 fitted modules. Cargo hatch is visible and power-editable but package-empty menus plus its immutable
@@ -377,6 +383,16 @@ an assumption, and the whole-list rule that governs the open family is unchanged
 its own invalidation on every slot, revision and locale change, which is the exact bookkeeping the
 query state exists to hold. Native `<details>` open state was rejected as the source of truth for the
 same reason: FR-023 has to reseed it from outside on every query change, so the state has to be ours.
+
+> **The store now owns the Commander's own reveals 2026-08-31 (Commander request).** The rejection
+> above was right about the cost and wrong about the revision. A rebuild at a new build revision is
+> the same presentation at a later moment, and re-seeding there undid a Commander's toggle with an
+> edit that had nothing to do with it (FR-021). The seeds stay in `CandidateQueryState`, which is
+> what this decision was for. What the store holds beside them is only the set a Commander pressed,
+> under a lifetime that is one value rather than a list of events to catch: `#revealOverride` is a
+> `linkedSignal` over the mount, the reading language, the reveal model and the search text, so it
+> is dropped when that value changes rather than when a change is noticed. That is the bookkeeping
+> this decision wanted to avoid, and it is not written anywhere — it is the signal's own source.
 
 ## Research status
 
