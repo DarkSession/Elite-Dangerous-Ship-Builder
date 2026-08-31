@@ -328,6 +328,15 @@
   --edsb-space-region: var(--edsb-space-4xl);
   --edsb-space-section: var(--edsb-space-5xl);
 
+  // The strip of screen a sheet leaves above itself.
+  //
+  // A sheet is anchored at the block start, and flush against it its title bar
+  // met the top of the screen with nothing above it to say the sheet was a
+  // layer over anything (Commander request 2026-08-31). The inset comes out of
+  // the sheet's own 88% bound rather than being added to it, so the scrim below
+  // it is unchanged.
+  --edsb-space-sheet-inset: var(--edsb-space-4xl);
+
   // ---------------------------------------------------------------------------
   // Shape, elevation, motion and target roles
   // ---------------------------------------------------------------------------

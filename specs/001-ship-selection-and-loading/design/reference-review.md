@@ -12,17 +12,17 @@ The design file is a product visual reference. It is not application source, a g
 
 ## Adopted decisions
 
-| Reference decision                                                                                 | Planning interpretation                                                                                 |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Dark, dense amber-accented visual language                                                         | Implement through feature 011's single dark token set and shared components.                            |
-| Wide shipyard uses a sortable manifest plus hull inspector rail                                    | `/ships/:symbol` composes the catalogue and detail in a master-detail layout at wide widths.            |
-| Narrow shipyard uses search/filters/sort controls and stacked hull records                         | `/ships` switches to the semantic card/list variant without losing facts or actions.                    |
-| Narrow detail replaces the catalogue visually and has a back action                                | The same `/ships/:symbol` route renders a full-screen layer and restores the catalogue session on back. |
-| Saved builds are a centered overlay on wide screens and full screen on narrow screens              | `/builds` is route-backed; wide uses a modal surface, narrow an ordinary full-screen surface.           |
-| Saved rows emphasize name/note, hull, issue state and modification age                             | Build cards preserve this hierarchy while adding working state and exact recorded validation.           |
-| Workspace exposes save/export directly when space permits and via overflow when narrow             | `AppShell`/workspace actions adapt by width but retain identical capability and accessible names.       |
-| Save dialog captures a local build name and one note and distinguishes replacement from a new copy | The dialog binds to UUID/revision semantics, duplicate-name warning and conflict-safe save operations.  |
-| Export surface includes a dedicated share-link mode                                                | Feature 001 supplies canonical fragment links inside the surface; feature 004 supplies SLEF modes.      |
+| Reference decision                                                                                 | Planning interpretation                                                                                |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Dark, dense amber-accented visual language                                                         | Implement through feature 011's single dark token set and shared components.                           |
+| Wide shipyard uses a sortable manifest plus hull inspector rail                                    | `/ships/:hull` composes the catalogue and detail in a master-detail layout at wide widths.             |
+| Narrow shipyard uses search/filters/sort controls and stacked hull records                         | `/ships` switches to the semantic card/list variant without losing facts or actions.                   |
+| Narrow detail replaces the catalogue visually and has a back action                                | The same `/ships/:hull` route renders a full-screen layer and restores the catalogue session on back.  |
+| Saved builds are a centered overlay on wide screens and full screen on narrow screens              | `/builds` is route-backed; wide uses a modal surface, narrow an ordinary full-screen surface.          |
+| Saved rows emphasize name/note, hull, issue state and modification age                             | Build cards preserve this hierarchy while adding working state and exact recorded validation.          |
+| Workspace exposes save/export directly when space permits and via overflow when narrow             | `AppShell`/workspace actions adapt by width but retain identical capability and accessible names.      |
+| Save dialog captures a local build name and one note and distinguishes replacement from a new copy | The dialog binds to UUID/revision semantics, duplicate-name warning and conflict-safe save operations. |
+| Export surface includes a dedicated share-link mode                                                | Feature 001 supplies canonical fragment links inside the surface; feature 004 supplies SLEF modes.     |
 
 ## Required adaptations
 
@@ -38,7 +38,7 @@ The design file is a product visual reference. It is not application source, a g
 - The visible size controls and search/sort treatments are retained. **The adaptation that added manufacturer, hardpoint and price controls to the toolbar was withdrawn on 2026-08-21**, and the facets themselves were deleted the same day when FR-002 was narrowed to the two controls the reference draws. See [hull-catalogue, "Narrowing is the search and the size strip"](./hull-catalogue.md#narrowing-is-the-search-and-the-size-strip-and-nothing-else).
 - Wide column headers become semantic sort buttons with announced field/direction. Narrow sort chips expose the same state and are at least 44 CSS px.
 - Selected-row amber/lozenge styling gains programmatic state. The lozenge and the wash are drawn as the reference draws them and `aria-current` carries the same fact, so nothing depends on colour alone; the visible “Currently viewing” label the earlier build added is gone.
-- The selected inspector corresponds to `/ships/:symbol`. The `/ships` route does not silently create a build or require an arbitrary default hull.
+- The selected inspector corresponds to `/ships/:hull`. The `/ships` route does not silently create a build or require an arbitrary default hull.
 
 ### Persistence and saved builds
 

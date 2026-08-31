@@ -4,7 +4,7 @@
     "appName": "elite-dangerous-ship-builder",
     "appVersion": "0.1.0"
   },
-  "almanacVersion": "0.2.6",
+  "almanacVersion": "0.2.7",
   "serialization": {
     "moduleOrder": "fitted",
     "explicitPower": false,

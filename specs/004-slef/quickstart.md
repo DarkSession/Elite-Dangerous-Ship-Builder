@@ -52,7 +52,7 @@ wait for a released fix.
 
 ## Acceptance scenarios
 
-1. **Import without a build**: From `/ships`, `/ships/:symbol`, `/build` with no build and `/builds`,
+1. **Import without a build**: From `/ships`, `/ships/:hull`, `/build` with no build and `/builds`,
    import one package-generated bare journal event and one one-entry envelope. Each needs no prior hull
    and, after commit, reaches `/build` as working provenance.
 2. **Byte-first and exact input**: Try 65,536 ASCII bytes, 65,537 bytes, multibyte strings straddling

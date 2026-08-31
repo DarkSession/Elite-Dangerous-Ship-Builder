@@ -18,7 +18,7 @@ export interface AddressedShip {
 export interface PublishedAddress {
   /** The path below the origin, e.g. `ships/Anaconda`. */
   readonly path: string;
-  /** The route table's own path for it, e.g. `ships/:symbol`. */
+  /** The route table's own path for it, e.g. `ships/:hull`. */
   readonly route: string;
   /** The absolute address, origin included. */
   readonly address: string;
@@ -43,6 +43,7 @@ export declare const HULL_PARENT: string;
 export declare const HULL_ROUTE: string;
 export declare const SITE_CARD: string;
 
+export declare function hullAddressSegment(name: string): string;
 export declare function hullCard(symbol: string): string;
 export declare function interpolate(
   pattern: string,

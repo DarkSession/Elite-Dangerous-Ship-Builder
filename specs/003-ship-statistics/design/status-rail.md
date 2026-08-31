@@ -13,11 +13,12 @@ so there is one status surface at every width and the compact arrangement is the
 2. Every `ShipLoadout.validation()` issue, once, in package order.
 3. Power — feature 005.
 4. The `SYS` / `ENG` / `WEP` pip control — feature 005, added by the 2026-08-25 canvas revision.
-5. The six metric cells — features 006–008.
+5. The metric cells: six from features 006–008, then `CARGO` and `PASSENGERS` from this feature.
 6. `COST` and `MATERIALS` — feature 009, built.
 
-Feature 003 owns 1 and 2. Items 3–6 are their owners' and are listed here only because the rail is
-where the canvas puts them and the order is the canvas's.
+Feature 003 owns 1, 2 and its own two cells in 5. The rest of 5 and items 3, 4 and 6 are their
+owners' and are listed here only because the rail is where the canvas puts them and the order is the
+canvas's.
 
 **Item 4 makes the rail interactive for the first time.** Until the 2026-08-25 revision every block
 in it was a read-out, and this file said so. It is still not feature 003's control: the pips are
@@ -25,12 +26,14 @@ feature 005's one viewing condition, the same one its distributor cell edits, an
 where the canvas now also draws it (005 FR-013's 2026-08-25 extension,
 `specs/005-power-and-heat/design/power-and-heat-detail.md`).
 
-## The six metric cells are one grid, not three blocks
+## The metric cells are one grid, not several blocks
 
-_Relocated here from `AGENTS.md` on 2026-08-25._ Features 006, 007 and 008 each own cells in item 5 —
-`SHIELD` and `ARMOUR`, `DPS`, and `JUMP`, `SPEED` and `MASS` — but the canvas rules all six off each
-other through the gaps of a **single** `1fr 1fr` container, two to a row. Three grids stacked would
-rule three blocks off each other instead, and `DPS` and `JUMP` could not share a row.
+_Relocated here from `AGENTS.md` on 2026-08-25._ Four features own cells in item 5 — `SHIELD` and
+`ARMOUR` from 006, `DPS` from 007, `JUMP`, `SPEED` and `MASS` from 008, and `CARGO` and
+`PASSENGERS` from this one — but the canvas rules the six it draws off each other through the gaps
+of a **single** `1fr 1fr` container, two to a row, and the two FR-023 adds take the next row of the
+same one. Grids stacked would rule blocks off each other instead, and `DPS` and `JUMP` could not
+share a row.
 
 So the workspace owns that grid as `.outfitting__status-cells`, and each feature's summary flattens
 into it through `MetricGroup`'s `flow` input (`display: contents`). **Ownership does not move**: each
@@ -39,15 +42,23 @@ scripts still fence them. A feature adding a cell adds it to its own summary, ne
 
 The grid carries the amber ground and nothing else — no inset. The canvas's ground is exactly the
 extent of the cells: it shows through the one-pixel gaps and nowhere else, so a ground carried by a
-padded element would be painted across that padding too and draw the six cells inside an amber band
+padded element would be painted across that padding too and draw the cells inside an amber band
 the canvas does not draw.
+
+## The band goes wherever the rail goes
+
+The rail is one surface at every width, so its cell band is drawn at every width (FR-024). Where the
+rail is a column it is always on screen and so is the band. Where the rail is the anatomy strip's
+`STATUS` segment, both appear when a Commander opens that segment — and the compact key-figures
+strip stands down for as long as it is open, so the same figures are never on one screen twice
+(`specs/002-module-outfitting/design/outfitting-workspace.md`, "The compact key figures").
 
 ## Items 3 to 5 are one block
 
 Canvas 1c does not rule the power line off the cells. It draws items 3, 4 and 5 — `POWER`, the pips
-and the six cells — inside a **single** padded block, closed by the same one-pixel amber rule that
+and the cell band — inside a **single** padded block, closed by the same one-pixel amber rule that
 separates every block in the rail, and stacks them in it. The workspace owns that block as
-`.outfitting__status-band`, because four features draw into it and none of them owns it: it carries
+`.outfitting__status-band`, because five features draw into it and none of them owns it: it carries
 the inset once and the closing rule once, and feature 005's power block and this grid sit in it with
 no padding of their own. Two insets stacked would put the figures a block's padding further in than
 the cells they head, and a rule between them would read as a second reading rather than as the same

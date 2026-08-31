@@ -13,13 +13,13 @@ const POOL_DIGITS = 0;
 /**
  * The `SHIELD` and `ARMOUR` cells of canvas 1c's status rail.
  *
- * The rail closes with a metric grid of six cells — `SHIELD`, `ARMOUR`, `DPS`,
- * `JUMP`, `SPEED` and `MASS` — and features 006 to 008 own two apiece. These
- * are this feature's two, drawn under feature 005's `POWER` line and above the
- * cost block, exactly where canvas 1c draws them. Canvas 1d draws the same two
- * in its Status mode.
+ * The rail carries a metric grid of cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`,
+ * `SPEED` and `MASS`, then feature 003's `CARGO` and `PASSENGERS` — and four
+ * features own them between them. These are this feature's two, drawn under
+ * feature 005's `POWER` line and ahead of the rest, exactly where canvas 1c
+ * draws them. Canvas 1d draws the same two in its Status mode.
  *
- * Nothing here is interactive, as none of the rail's six cells is: the canvas
+ * Nothing here is interactive, as no cell in the rail's band is: the canvas
  * draws no control in that grid. The rail around it is another matter since
  * the 2026-08-25 revision, which put feature 005's pip control in it
  * (`specs/003-ship-statistics/design/status-rail.md`, item 4). At both widths

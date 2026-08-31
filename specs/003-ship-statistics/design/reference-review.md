@@ -88,7 +88,18 @@ no slot action in either block.
 - The severity treatment: tier 1 for a package `error`, tier 2 for a package `warning`, tier 3 for a
   package `incomplete`, and no severity word on the screen, because neither canvas draws one.
 - The rail as the wide home for build status, and the stacked Status mode as the compact one.
-- Warnings → power → six metrics → cost → materials, at both widths.
+- Warnings → power → the metric cells → cost → materials, at both widths.
+
+## Added beyond the canvas
+
+**`CARGO` and `PASSENGERS`. Ruled 2026-08-31 (Commander request; FR-023).** The standing rule is
+that a reading neither canvas draws is not restored, whatever the specification says. This is the
+one exception, and it is a Commander's own ask rather than a reading of the artboards: a rail that
+says what a build is worth, how far it jumps and how hard it hits, and not what it can carry, leaves
+out the question a trader and a passenger runner open the screen with. The two cells take the last
+row of the rail's own cell band, in the band's own treatment, so the addition is two more cells and
+not a block of its own. Feature 008's `DRIVES` card is untouched: it draws no cargo capacity, and
+its own ruling against one stands.
 
 ## Ruled divergences (wave 11, 2026-08-22)
 
@@ -159,7 +170,7 @@ application, not a feature-003 addition — the same argument feature 009 settle
 
 Wide 1c proximity and compact 1d stacking are the compositional intent. DOM and read order stay
 `BUILD STATUS` → issues → (feature 004's completion notice) → (feature 005's power) →
-(005–008's metrics) → `COST` → `MATERIALS` at every width.
+(the metric cells) → `COST` → `MATERIALS` at every width.
 
 **The completion notice joined the first block 2026-08-26 (Commander request).** What the Almanac
 completed while a build was read in used to stand over the whole workspace as a banner, which said

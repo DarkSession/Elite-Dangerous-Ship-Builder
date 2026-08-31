@@ -111,6 +111,14 @@ inline notes below record each correction and why.
   > `buildMass(load)` answer the whole legend comes from. The requirement stands as written for the
   > day a canvas draws one of the three again.
   >
+  > **A screen draws `cargoCapacity` again. Ruled 2026-08-31 (Commander request).** The status rail states it,
+  > as feature 003's own cell (`specs/003-ship-statistics/spec.md`, FR-023). Nothing about this card
+  > changes — it still draws no cargo capacity and still reads none — but the rule that followed from
+  > this narrowing was written over the whole application rather than over this card, and a figure
+  > another feature draws cannot be one no file may read. So `mobility-jump-ownership` withholds
+  > `unladenMass` and `fuelCapacity` alone, and this feature's own files are where the reading of
+  > `cargoCapacity` would still be wrong.
+  >
   > **Corrected against the installed package.** This requirement previously named
   > `unladenMassResult`, `fuelCapacityResult` and `cargoCapacityResult`. Those getters do not exist
   > in `@elite-dangerous-almanac/core` and their absence is deliberate: the package documents
@@ -147,10 +155,11 @@ inline notes below record each correction and why.
 
 - **FR-009**: The `JUMP`, `SPEED` and `MASS` cells of canvas 1c's status rail MUST be drawn, and each
   MUST carry the same figure, read at the same load and the same ENG allocation and printed at the
-  same precision, as the card in the `DRIVES` mode that already states it. The rail closes with a
-  grid of six cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS` — of which features 006 and
-  007 own the first three; these are this feature's, and they were absent from this specification
-  while the design has drawn them all along. The design wins.
+  same precision, as the card in the `DRIVES` mode that already states it. The rail carries a grid of
+  cells — `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED` and `MASS`, the six the canvas draws, and then
+  feature 003's `CARGO` and `PASSENGERS` — of which features 006 and 007 own the first three; the
+  next three are this feature's, and they were absent from this specification while the design has
+  drawn them all along. The design wins.
 
   > The rail and the two cards are one reading of one build seen twice. A rail cell that weighed the
   > hold, read a different allocation or rounded to different digits would put two different numbers

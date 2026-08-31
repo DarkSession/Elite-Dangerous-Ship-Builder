@@ -76,11 +76,11 @@ describe('HullDetailFacade', () => {
     expect(detail.view()).toMatchObject({ canCreate: true });
   });
 
-  it('reports an unknown symbol as its own state, with no facts', () => {
+  it('reports an address no hull answers to as its own state, with no facts', () => {
     const detail = facade();
     detail.setSymbol('Nonexistent_Hull');
 
-    expect(detail.view()).toEqual({ kind: 'unknown', symbol: 'Nonexistent_Hull' });
+    expect(detail.view()).toEqual({ kind: 'unknown', address: 'Nonexistent_Hull' });
   });
 
   it('resolves a symbol the way the package does', () => {

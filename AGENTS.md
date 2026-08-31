@@ -163,7 +163,7 @@ planning ship loadouts.
   | Region                                       | Feature | Spec                            |
   | -------------------------------------------- | ------- | ------------------------------- |
   | Slot ledger, fitting bench, engineering      | 002     | `specs/002-module-outfitting/`  |
-  | Status rail: heading and validation issues   | 003     | `specs/003-ship-statistics/`    |
+  | Status rail: heading, issues, capacity cells | 003     | `specs/003-ship-statistics/`    |
   | Anatomy region, `POWER` mode + rail power    | 005     | `specs/005-power-and-heat/`     |
   | Anatomy region, `DEFENCE` mode + rail cells  | 006     | `specs/006-defence-profile/`    |
   | Anatomy region, `OFFENCE` mode + rail cell   | 007     | `specs/007-offence-profile/`    |
@@ -174,7 +174,8 @@ planning ship loadouts.
 
   Two things follow that no single spec can tell you. The anatomy region's
   five-mode strip is one control with **five different owners**, so a change to
-  it crosses five boundaries. And several of these features are fenced by a
+  it crosses five boundaries. The status rail's cell band is one grid with
+  **four**, for the same reason. And several of these features are fenced by a
   `scripts/policy/*-ownership.mjs` script — read the script before crossing the
   boundary it guards, because it will fail the build rather than argue.
 

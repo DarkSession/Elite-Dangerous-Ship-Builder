@@ -201,7 +201,17 @@ each gives up a strip so the screen behind it still shows, and no more than that
 request).** The reference draws `align-items: flex-end` and sizes its compact modals by their
 content, which puts a short screen's worth of scrim above every short one — `Import build` began 449
 pixels down an 844-pixel phone. A sheet starts where the screen starts, grows down as its content
-needs and stops at the bound; the edge it shares with the edge of the screen is not drawn. Body `background: var(--panel)`, `border: 1px solid var(--amber-a45)`,
+needs and stops at the bound.
+
+**A sheet is inset from the top of the screen. Ruled 2026-08-31 (Commander request), narrowing the
+ruling above.** Flush against that edge the sheet began at pixel zero: its title bar met the top of
+the screen, a phone's own status bar cut into it, and nothing said the sheet was a layer over the
+screen behind it. The inset is `--edsb-space-sheet-inset`, one step of the space scale at 22px, and
+it is taken out of the 88% bound rather than added to it, so a sheet gives up the same strip of
+screen overall and the scrim below it is unchanged. A sheet therefore draws its hairline on all four
+edges, where an anchored one left its block-start edge undrawn. A short viewport still promotes the
+sheet to a full-height layer, and that layer owns the viewport with no inset: the promotion exists
+because there is no room to give away. Body `background: var(--panel)`, `border: 1px solid var(--amber-a45)`,
 `box-shadow: 0 24px 60px rgba(0,0,0,.6)`. Title bar `background: var(--panel-4)`,
 `border-bottom: 1px solid var(--amber-a3)`, title condensed 700 tracked 0.22em in
 `--amber-3`, trailing `CLOSE ✕` in mono. Footer bar `background: var(--panel-2)`,

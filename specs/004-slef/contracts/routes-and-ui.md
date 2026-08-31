@@ -7,7 +7,7 @@ navigates to `/build` only after feature 001 commits the candidate.
 | Host               | Import                                                            | Export/SLEF                                                                  |
 | ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `/ships`           | Shared shell action; no active build required                     | No Export action; enter the active `/build` workspace first                  |
-| `/ships/:symbol`   | Same shell action; selected hull does not constrain incoming hull | No Export action; enter the active `/build` workspace first                  |
+| `/ships/:hull`     | Same shell action; selected hull does not constrain incoming hull | No Export action; enter the active `/build` workspace first                  |
 | `/build`, no build | Primary recovery action                                           | Host explains prerequisite and offers Import/Create; no layer/artifact       |
 | `/build`, active   | Available; shared replacement rule                                | Shared Export Build layer, SLEF mode available                               |
 | `/builds`          | Shared shell action; accepted candidate navigates to `/build`     | No selected-row export; open a record as the active `/build` workspace first |

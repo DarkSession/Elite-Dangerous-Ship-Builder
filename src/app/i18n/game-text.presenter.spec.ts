@@ -18,7 +18,14 @@ import { provideLocalization } from './i18n.providers';
  * stale literal behind (constitution II).
  */
 const LOCALIZED_MODULE = 'Int_Hyperdrive_Size6_Class5';
-const CANONICAL_ONLY_MODULE = 'Int_LargeCargoRack_Size8_class1';
+/**
+ * A language the module catalogue does not store.
+ *
+ * The catalogue names every module in each of its six languages, so a stored
+ * language never reaches the canonical arm for a module. An unstored one always
+ * does, which is the same absence seen from the other side.
+ */
+const UNSTORED_LANGUAGE = 'it';
 const UNKNOWN_MODULE = 'Not_A_Real_Module_Symbol';
 const UNKNOWN_FAMILY = 'notAFamilyTheAlmanacPublishes';
 
@@ -36,11 +43,11 @@ describe('presentGameText', () => {
   });
 
   it('falls back to the package canonical text and says so', () => {
-    const presentation = presentGameText(getModuleName, CANONICAL_ONLY_MODULE, 'de');
+    const presentation = presentGameText(getModuleName, LOCALIZED_MODULE, UNSTORED_LANGUAGE);
 
-    expect(getModuleName(CANONICAL_ONLY_MODULE, 'de')).toBeNull();
+    expect(getModuleName(LOCALIZED_MODULE, UNSTORED_LANGUAGE)).toBeNull();
     expect(presentation.translationState).toBe('canonical');
-    expect(presentation.text).toBe(getModuleName(CANONICAL_ONLY_MODULE, 'en'));
+    expect(presentation.text).toBe(getModuleName(LOCALIZED_MODULE, 'en'));
     expect(presentation.language).toBe('en');
     expect(presentation.disclosureKey).toBe('game-text.untranslated.description');
   });
@@ -82,7 +89,7 @@ describe('presentGameText', () => {
   });
 
   it('reports English text as localized rather than as a fallback', () => {
-    const presentation = presentGameText(getModuleName, CANONICAL_ONLY_MODULE, 'en');
+    const presentation = presentGameText(getModuleName, LOCALIZED_MODULE, 'en');
 
     expect(presentation.translationState).toBe('localized');
     expect(presentation.disclosureKey).toBeNull();

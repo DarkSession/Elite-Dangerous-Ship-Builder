@@ -103,7 +103,15 @@
 
       @if (statusIsGuest()) {
         <ng-container [ngTemplateOutlet]="statusRail" />
-        <ng-container [ngTemplateOutlet]="keyFigures" />
+
+        <!--
+          The strip stands down while the rail is open. The rail draws the same
+          cells in its own band, and two copies of one figure on one screen
+          leave a reader no way to tell which is the reading (003/FR-024).
+        -->
+        @if (!statusModeOpen()) {
+          <ng-container [ngTemplateOutlet]="keyFigures" />
+        }
       }
 
       <!--
@@ -212,7 +220,7 @@
 
 <!--
   The two regions the anatomy strip draws as guests, written once and placed
-  twice. Where the region has a third column the rail is that column and the six
+  twice. Where the region has a third column the rail is that column and the
   readings are inside it; where it has not, both are drawn in the centre column
   beside the strip that opens them — which is where canvas 1d draws them and the
   only place at those widths that is on the same screen as the strip. A band
@@ -224,8 +232,9 @@
     Canvas 1c's third track: the 306px status rail closing its
     `392px 1fr 306px` grid, and canvas 1d's Status stack. The canvas's order is
     the order below — the heading, what the Almanac reports about the build,
-    then cost and materials. Features 005 to 008 add the power line and the six
-    metric cells between them, and all of them have landed.
+    then cost and materials. Features 005 to 008 add the power line and six of
+    the metric cells between them, feature 003 adds the two that close the band,
+    and all of them have landed.
 
     A group with a tab stop, not a bare overflow box. At the widest
     composition a long material list makes this column taller than the
@@ -256,12 +265,12 @@
 
     <!--
       Canvas 1c's second rail block. The canvas draws its `POWER` line, its
-      bar and its pips together with the six metric cells inside one inset,
+      bar and its pips together with the metric cells inside one inset,
       closed by the same amber hairline that separates every block in the
       rail — it stacks the cells under the power line inside one padding
       rather than ruling the two off each other. So this holds feature 005's
-      block and the cells features 006 to 008 own, and it is where feature
-      005's pip control lands when that feature draws it
+      block and the cells features 006, 007, 008 and 003 own, and it is where
+      feature 005's pip control lands when that feature draws it
       (`specs/005-power-and-heat/tasks.md`, T074 — not built yet).
 
       Feature 005's contributions come first, in the rail's own order: one
@@ -276,32 +285,43 @@
       <edsb-power-summary />
 
       <!--
-        The six metric cells under the `POWER` line, in the canvas's order:
-        `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`. Feature 006 owns
-        the first two, feature 007 owns `DPS` and feature 008 the last three,
+        The metric cells under the `POWER` line, in the canvas's order:
+        `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`, and then this rail's
+        own `CARGO` and `PASSENGERS`. Feature 006 owns the first two, feature
+        007 owns `DPS`, feature 008 the next three and feature 003 the last two,
         and they are drawn in that order
         (`specs/006-defence-profile/design/screen-inventory.md`, "Cross-feature
         composition"; `specs/007-offence-profile/design/canvas-contract.md`,
-        "The status rail cell").
+        "The status rail cell"; 003/FR-023).
 
-        One grid holds all six, because that is what the canvas draws: a single
+        One grid holds them all, because that is what the canvas draws: a single
         band of cells whose one-pixel gaps show the amber ground through as the
-        only rules between them. Three features contribute to it and none of
+        only rules between them. Four features contribute to it and none of
         them owns it, so the grid is declared here and each of them draws its
-        cells straight into it. Drawn as three grids the six would be ruled off
-        each other in threes — `DPS` could never share a row with `JUMP`, which
+        cells straight into it. Drawn as four grids the cells would be ruled off
+        each other in groups — `DPS` could never share a row with `JUMP`, which
         is the row the canvas puts them on.
 
         The grid carries the ground and nothing else: the block around it
         carries the inset. Set on one element the padding would be painted in
-        that ground too, and the six cells would sit inside an amber band the
+        that ground too, and the cells would sit inside an amber band the
         canvas does not draw.
+
+        The band goes wherever the rail goes, at every composition. The rail is
+        drawn as a column at wide width and as the anatomy strip's `STATUS`
+        segment below it, and a segment a Commander opens to read the build's
+        status without the readings in it was the one place they were not
+        (003/FR-024). The condition is on the rail being drawn rather than on
+        the composition: below wide width the rail is in the document whether or
+        not its segment is open, and a band built there while the strip below
+        also holds one would be two live copies of every cell for one screen.
       -->
-      @if (!statusIsGuest()) {
+      @if (statusRailDrawn()) {
         <div class="outfitting__status-cells">
           <edsb-defence-summary />
           <edsb-offence-summary />
           <edsb-drives-summary />
+          <edsb-capacity-summary />
         </div>
       }
     </div>
@@ -312,12 +332,14 @@
 
 <ng-template #keyFigures>
   <!--
-    Canvas 1d's six key readings, drawn once. The same three components as the
-    rail's own cell band, rendered here instead of there wherever the rail is a
-    segment rather than a column — one instance either way, so a reader meets
-    each figure once (`design/outfitting-workspace.md`, "The compact key
-    figures"). Where the rail is a column the six are in it, and this is not
-    drawn at all.
+    Canvas 1d's six key readings, drawn once. The same three components the rail
+    heads its own cell band with, rendered here instead of there while the rail
+    is closed — one instance either way, so a reader meets each figure once
+    (`design/outfitting-workspace.md`, "The compact key figures"). Where the
+    rail is a column, or its segment is open, the readings are in it and this is
+    not drawn at all. The rail's band closes with feature 003's two capacity
+    cells as well; this strip is canvas 1d's glance at the six while the mounts
+    are being worked, not a second status surface.
 
     The strip closes with feature 005's power badge, which the artboard draws
     beside the six rather than over them: it is one more item of this grid, so

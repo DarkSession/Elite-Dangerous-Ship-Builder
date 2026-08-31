@@ -75,12 +75,17 @@ test.describe('responsive availability', () => {
     }
   });
 
-  test('opens a compact layer at the top of the screen, not part-way down it', async ({ page }) => {
-    // A sheet starts where the screen starts and grows down to its bound
+  test('opens a compact layer near the top of the screen, not part-way down it', async ({
+    page,
+  }) => {
+    // A sheet starts near the top of the screen and grows down to its bound
     // (`design/canvas-extraction.md`, "Panel dialog"). Risen from the block end
     // and sized by its content instead, a short one begins part-way down the
     // screen with scrim over everything above it — `Import build` 449 pixels
-    // down an 844-pixel phone (Commander request 2026-08-30).
+    // down an 844-pixel phone (Commander request 2026-08-30). Flush against the
+    // top instead, its title bar met the edge of the screen with nothing above
+    // it to say the sheet was a layer over anything (Commander request
+    // 2026-08-31), so it keeps one step of the space scale there.
     await reachShellAction(page, /^import build$/i);
 
     const layer = page.locator('dialog[open]');
@@ -98,6 +103,10 @@ test.describe('responsive availability', () => {
       // stylesheet's own query, so a Commander's larger root text moves both
       // together.
       short: window.matchMedia('(max-height: 30rem)').matches,
+      // The inset the sheet declares, read off the layer rather than restated
+      // here: the token is the design system's to set, and this test is about
+      // where the sheet lands rather than about how far the token reaches.
+      inset: Math.round(Number.parseFloat(getComputedStyle(node).marginBlockStart)),
     }));
 
     if (!measured.sheet) {
@@ -106,13 +115,28 @@ test.describe('responsive availability', () => {
       return;
     }
 
-    expect(measured.top).toBeLessThanOrEqual(1);
     if (measured.short) {
       // Promoted: the layer owns the screen and scrolls, which is what keeps a
-      // landscape phone and a 400% zoom readable at all (FR-011).
+      // landscape phone and a 400% zoom readable at all (FR-011). There is no
+      // room to give away, so a promoted layer takes no inset.
+      expect(measured.top).toBeLessThanOrEqual(1);
       expect(measured.height).toBe(measured.viewport);
       return;
     }
+
+    // Off the edge of the screen, and only just: the sheet begins at its own
+    // inset and nowhere else.
+    expect(measured.inset).toBeGreaterThan(0);
+    expect(measured.top).toBe(measured.inset);
+    expect(measured.top).toBeLessThan(measured.viewport / 8);
+
+    // The inset is taken out of the 88% bound rather than added to it, so a
+    // sheet gives up the same strip of screen it always did and the scrim below
+    // it is unchanged. Without this the bound could go back to a plain `88svh`
+    // and only the strip below would shrink, which nothing above would notice.
+    expect(measured.top + measured.height).toBeLessThanOrEqual(
+      Math.round(0.88 * measured.viewport) + 1,
+    );
 
     // And it still leaves the screen behind it visible rather than taking the
     // whole of it: that is what parts a sheet from a full-height layer, and a

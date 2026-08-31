@@ -228,7 +228,9 @@ alone, and stays excluded for its own reason: no package field publishes it.
 
 Canvas 1c's status rail (@749242) draws six metric cells under feature 005's
 `POWER` line: `SHIELD 1,842 MJ` · `ARMOUR 3,914` · `DPS 248.6` · `JUMP 21.4 ly` ·
-`SPEED 200 m/s` · `MASS 1,142 t`. Canvas 1d draws the same six.
+`SPEED 200 m/s` · `MASS 1,142 t`. Canvas 1d draws the same six. Feature 003's
+`CARGO` and `PASSENGERS` follow them in the same grid, ruled 2026-08-31; neither
+canvas draws either, and neither changes anything about this cell.
 
 `DPS` is this feature's cell and the only one it may add. It is a label and a
 bare figure: the canvas gives it no unit, no second figure and no condition.

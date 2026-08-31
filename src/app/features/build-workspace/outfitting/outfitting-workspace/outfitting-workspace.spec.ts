@@ -211,15 +211,33 @@ describe('the compact workspace', () => {
     );
   });
 
-  it('draws the six key readings once, above the category tabs', () => {
+  it('draws the key readings once, in the strip while the rail is closed', () => {
     const element = render().nativeElement as HTMLElement;
 
-    // Both the strip and the rail's cell band would state the same six
-    // figures, and both are on screen together whenever the status segment is
-    // open. The strip is the one that is always there, so it is the one kept.
-    expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(1);
+    // The rail is in the document whether or not its segment is open — the
+    // stylesheet is what withholds a closed one — so its band is what has to
+    // stay unbuilt, or every cell would be live twice for one screen.
+    expect(element.querySelectorAll('.outfitting__status-rail')).toHaveLength(1);
     expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(0);
+    expect(element.querySelectorAll('edsb-capacity-summary')).toHaveLength(0);
+    expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(1);
     expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
+  });
+
+  it('moves the key readings into the rail when the status segment opens', () => {
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    fixture.componentInstance.showAnatomyMode('status');
+    fixture.detectChanges();
+
+    // The band goes wherever the rail goes, and the strip stands down for as
+    // long as the rail is open: two copies of one figure on one screen leave a
+    // reader no way to tell which is the reading (003/FR-024).
+    expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(1);
+    expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(0);
+    expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
+    expect(element.querySelectorAll('edsb-capacity-summary')).toHaveLength(1);
   });
 
   it('hands the anatomy strip a status segment, and draws the rail for it', () => {

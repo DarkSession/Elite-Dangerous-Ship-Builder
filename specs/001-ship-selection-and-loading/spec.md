@@ -161,8 +161,29 @@ browser and share builds by URL. SLEF import and export are specified in
   > **Numbering:** FR-022 is the next free id in this feature and is declared here rather than at
   > the end, because it is the other half of FR-004's readout and the two are read together.
 
-- **FR-005**: Hull detail URLs MUST use the hull `symbol`. An unknown symbol MUST show an error and
-  MUST NOT create a build.
+- **FR-005**: A hull detail address MUST name the hull by its package `name`, made URL-ready by
+  replacing each space with an underscore and changing nothing else — `Type-11 Prospector` is
+  addressed as `Type-11_Prospector`. That address MUST be matched without regard to case, and it is
+  the canonical one: the address bar MUST carry it, and it is the address the sitemap lists and the
+  deployment publishes. A hull's package `symbol` MUST remain accepted as an address and MUST be
+  replaced in history by the canonical one, so an address published before this rule still opens the
+  hull it named and is not a second address for it afterwards. A segment naming neither MUST show an
+  error and MUST NOT create a build.
+
+  > **A hull's address is its name; its identity is still its symbol. Ruled 2026-08-31 (Commander
+  > request).** FR-001 makes `symbol` the hull identity, and it stays the identity in stored builds,
+  > links, SLEF and the artwork paths. The address is a different thing: it is what a Commander reads
+  > in the address bar and what a search result quotes, and `LakonMiner` says nothing about a
+  > Type-11 Prospector to either. Names are unique across the package catalogue, carry only letters,
+  > digits, spaces and hyphens, and the game does not translate them, so a name is an address the
+  > whole catalogue can be spelled with.
+  >
+  > **Only the canonical address is published.** The deployment writes one document per address the
+  > map lists, so a symbol address is answered by `404.html` and the router opens the hull from
+  > there. That is the intended difference between the two: a bookmark still works, and the withdrawn
+  > address is not offered to a crawler as a second address for one hull
+  > (`specs/011-interface-foundations/design/search-visibility.md`).
+
 - **FR-006**: Hull artwork MUST come from the Almanac package assets, be served from the
   application's origin and never carry information without a text equivalent. Missing or uncached
   artwork MUST NOT block hull selection or build creation.

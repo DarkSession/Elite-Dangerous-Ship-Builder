@@ -2,7 +2,7 @@
 // Status mode.
 //
 // The cell is the shared metric group's; the grid it sits in belongs to the
-// rail, because the canvas draws one grid for all six cells and this feature
+// rail, because the canvas draws one grid for every cell and this feature
 // owns one of them. So this component generates no box and its cell falls
 // straight into that grid, exactly as features 006 and 008 do on either side.
 :host {

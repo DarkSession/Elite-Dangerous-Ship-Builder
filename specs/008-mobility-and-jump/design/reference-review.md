@@ -65,8 +65,8 @@ components, localized messages and real semantic controls.
   legend takes — the canvas draws both legends the same way.
 - Keep the hairlines the canvas rules its blocks off with: one in the thruster card, under the mass
   legend, and two in the drive card, under the headline trio and between the ranges and the legend.
-- Keep the `JUMP`, `SPEED` and `MASS` cells of the status rail, closing the six-cell grid features
-  006 and 007 open.
+- Keep the `JUMP`, `SPEED` and `MASS` cells of the status rail, following the cells features 006 and
+  007 open in the one grid the rail draws.
 - Keep the `SCO` badge inside the drive card's heading, on its line, where the canvas puts it.
 - Keep compact labelled value/unit rows and definition groups.
 

@@ -38,7 +38,8 @@ is read at is the one feature 005's dashboard already owns.
 - Feature 001 owns the active build, its revision and the `/build` workspace.
 - Feature 002 owns enabled/priority mutations and exact-slot selection. Feature 006 selects nothing:
   the canvas draws no action inside either card.
-- Feature 003 owns the status rail's heading and its validation issues. Feature 006 adds one block.
+- Feature 003 owns the status rail's heading, its validation issues and the two capacity cells that
+  close its band. Feature 006 adds one block.
 - Feature 005 owns the SYS pip allocation. Feature 006 reads it and sets none.
 - Feature 010 owns the plates, their side selector, their legend and the mode strip. Feature 006
   enables one segment of that strip and takes the space the plates occupy while it is open.

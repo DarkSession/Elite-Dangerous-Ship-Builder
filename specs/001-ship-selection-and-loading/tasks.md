@@ -561,3 +561,11 @@ planned and which was built as two buttons inside the library instead.
   `BuildIngressCoordinator`, and the layer ledger row for the withdrawn confirmation was removed from
   `e2e/coverage-ledger.ts` and from feature 012's screen inventory, which transcribes it
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently
+
+- [x] T189 Address a hull by its name rather than by its symbol. Add
+      `src/app/domain/catalogue/hull-address.ts` spelling the segment and resolving one back, restate
+      the same rule in `scripts/search/published-addresses.mjs` with a parity test beside it, rename
+      the route parameter to `:hull`, resolve it in `hull-detail.page.ts` and replace a symbol or
+      mis-cased address in history with the canonical one, navigate to it from
+      `ship-catalogue.page.ts`, regenerate `public/sitemap.xml`, and cover the three address forms in
+      `e2e/hull-detail.spec.ts` (FR-005)

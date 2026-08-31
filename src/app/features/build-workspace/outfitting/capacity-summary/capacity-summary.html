@@ -1,0 +1,10 @@
+@if (shown()) {
+  <!--
+    The last two cells of the rail's band, in the one grid the canvas draws every
+    cell on. The group runs in flow so its cells become items of that grid rather
+    than of a second one nested inside it: the band is ruled by one hairline
+    ground, and a grid of its own would rule these two off the six beside them
+    (`specs/003-ship-statistics/design/status-rail.md`, "The metric cells").
+  -->
+  <edsb-metric-group [flow]="true" [label]="railLabel()" [metrics]="cells()" />
+}

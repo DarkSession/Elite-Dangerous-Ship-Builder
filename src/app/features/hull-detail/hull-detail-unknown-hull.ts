@@ -6,27 +6,27 @@ import { ActionLink } from '../../ui/components/action/action-link';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 
 /**
- * What the detail screen says about a hull the Almanac does not carry.
+ * What the detail screen says about an address no hull answers to.
  *
  * Three things it deliberately does not do: guess a hull from a near miss,
- * show any fact, or offer to create a build. A mistyped or stale symbol is a
+ * show any fact, or offer to create a build. A mistyped or stale address is a
  * dead end that says so and offers the way back — not a screen that quietly
  * builds something else (FR-005).
  *
- * The symbol is echoed so a Commander can see what was actually asked for,
- * isolated from the surrounding text direction because it is an identifier.
+ * The address is echoed so a Commander can see what was actually asked for,
+ * isolated from the surrounding text direction because it is not prose.
  */
 @Component({
-  selector: 'edsb-hull-detail-unknown-symbol',
+  selector: 'edsb-hull-detail-unknown-hull',
   imports: [ActionLink, RouterLink, StatusNotice],
-  templateUrl: './hull-detail-unknown-symbol.html',
-  styleUrl: './hull-detail-unknown-symbol.scss',
+  templateUrl: './hull-detail-unknown-hull.html',
+  styleUrl: './hull-detail-unknown-hull.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HullDetailUnknownSymbol {
+export class HullDetailUnknownHull {
   readonly #messages = inject(MessageService);
 
-  readonly symbol = input.required<string>();
+  readonly hull = input.required<string>();
 
   readonly catalogueRoute = NAVIGATION_ROUTES.catalogue;
 
@@ -34,6 +34,6 @@ export class HullDetailUnknownSymbol {
   readonly backLabel = this.#messages.messageSignal('hullDetail.back');
 
   readonly description = computed(() =>
-    this.#messages.message('hullDetail.unknown.description', { symbol: this.symbol() }),
+    this.#messages.message('hullDetail.unknown.description', { hull: this.hull() }),
   );
 }

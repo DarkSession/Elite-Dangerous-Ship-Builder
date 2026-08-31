@@ -126,25 +126,37 @@ export const PACKAGE_CALLS = [
 const PACKAGE_CALL = new RegExp(`\\.(?:${PACKAGE_CALLS.join('|')})\\s*\\(`);
 
 /**
- * The three aggregates the canvases do not draw.
+ * The two aggregates no canvas draws.
  *
- * `unladenMass`, `fuelCapacity` and `cargoCapacity` are real package getters
- * that always answer, which is exactly why they need a rule: nothing fails if
- * one is read, and the reading formats to a plausible tonnage beside the ones
- * the canvas does draw. None is drawn — the last of them, the fuel legend row's
+ * `unladenMass` and `fuelCapacity` are real package getters that always answer,
+ * which is exactly why they need a rule: nothing fails if one is read, and the
+ * reading formats to a plausible tonnage beside the ones the canvas does draw.
+ * Neither is drawn — the second of them, the fuel legend row's
  * `TANK 32 T + RESERVE` qualifier, was cut to the bare word `TANK` by the
  * canvas revision of 2026-08-25 — and by this project's rule a package field no
  * canvas draws is not read at all (FR-006 in spec.md, and the amendment in
  * `design/reference-review.md`).
  *
+ * `cargoCapacity` was withheld beside them until 2026-08-31, when the status
+ * rail began stating it as feature 003's own cell (003/FR-023). A figure the
+ * application draws cannot be one no file may read, so it is withheld from this
+ * feature's own files instead — where the `DRIVES` card still draws no cargo
+ * capacity and still reads none.
+ *
  * The rule is on the read rather than on the word, so `fuelCapacity` in a
  * message key, a class name or the SLEF export's own `FuelCapacity` payload is
  * untouched: only `.fuelCapacity` off an object is a reading.
  */
-export const WITHDRAWN_AGGREGATES = ['unladenMass', 'fuelCapacity', 'cargoCapacity'];
+export const WITHDRAWN_AGGREGATES = ['unladenMass', 'fuelCapacity'];
+
+/** The aggregate this feature does not draw, though another feature does. */
+export const WITHDRAWN_FROM_THIS_FEATURE = ['cargoCapacity'];
 
 /** One of those aggregates, read off something. */
 const WITHDRAWN_READ = new RegExp(`\\.(?:${WITHDRAWN_AGGREGATES.join('|')})\\b`);
+
+/** The cargo capacity, read off something inside this feature's own files. */
+const LOCALLY_WITHDRAWN_READ = new RegExp(`\\.(?:${WITHDRAWN_FROM_THIS_FEATURE.join('|')})\\b`);
 
 /**
  * The package fields that are measured rather than counted.
@@ -298,6 +310,11 @@ export function withdrawnReads(source) {
   return scan(source, (text) => WITHDRAWN_READ.exec(text)?.[0]?.slice(1) ?? null);
 }
 
+/** The lines where one of this feature's own files reads the cargo capacity. */
+export function locallyWithdrawnReads(source) {
+  return scan(source, (text) => LOCALLY_WITHDRAWN_READ.exec(text)?.[0]?.slice(1) ?? null);
+}
+
 /** The lines where one source combines two package figures. */
 export function combinedFigures(source) {
   return scan(source, (text) => FIGURE_READ.test(text) && ARITHMETIC.test(text));
@@ -374,7 +391,26 @@ const RULES = [
           violations.push({
             file: name,
             line,
-            reason: `"${hit}" is read; neither canvas draws an unladen mass, a tank capacity or a cargo capacity, and a package field no canvas draws is not read at all — the fuel row's qualifier is the bare word "TANK" (FR-006)`,
+            reason: `"${hit}" is read; neither canvas draws an unladen mass or a tank capacity, and a package field no canvas draws is not read at all — the fuel row's qualifier is the bare word "TANK" (FR-006)`,
+          });
+        }
+      }
+    },
+  },
+  {
+    name: 'the cargo capacity another feature draws is not read back here',
+    async run(violations) {
+      // This feature's own files alone. The status rail states the cargo
+      // capacity as feature 003's cell, so the application-wide rule above
+      // cannot cover it — but the `DRIVES` card draws no cargo capacity, and a
+      // reading of one here would put it back on the card that dropped it.
+      for (const name of await filesUnder(OWNED, ['.ts', '.html'])) {
+        const source = await readFile(resolve(ROOT, name), 'utf8');
+        for (const { line, hit } of locallyWithdrawnReads(source)) {
+          violations.push({
+            file: name,
+            line,
+            reason: `"${hit}" is read; the DRIVES card draws no cargo capacity, and the rail cell that does state one belongs to feature 003 (FR-006)`,
           });
         }
       }

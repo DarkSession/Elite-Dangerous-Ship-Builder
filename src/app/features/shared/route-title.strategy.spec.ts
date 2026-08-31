@@ -200,9 +200,9 @@ describe('RouteTitleStrategy', () => {
  * name in every language because the game does not translate one.
  */
 describe('RouteTitleStrategy, on an address about one hull', () => {
-  const hullRoute = (symbol: string): readonly Level[] => [
+  const hullRoute = (hull: string): readonly Level[] => [
     { title: 'catalogue.title', description: 'catalogue.description' },
-    { title: 'hullDetail.title', description: 'hullDetail.description', params: { symbol } },
+    { title: 'hullDetail.title', description: 'hullDetail.description', params: { hull } },
   ];
 
   it('names the hull in the title and in the description', () => {
@@ -224,9 +224,9 @@ describe('RouteTitleStrategy, on an address about one hull', () => {
   });
 
   it('takes the package spelling of the symbol, not the address bar’s', () => {
-    // The package resolves a symbol case-insensitively and the artwork
-    // directories do not, so a lower-cased address would otherwise name a
-    // picture that does not exist.
+    // An address matches case-insensitively and the artwork directories do not,
+    // so a lower-cased address would otherwise name a picture that does not
+    // exist.
     const { strategy, locale, snapshot } = strategyWith(hullRoute('anaconda'), '/ships/anaconda');
 
     strategy.updateTitle(snapshot);
@@ -234,7 +234,33 @@ describe('RouteTitleStrategy, on an address about one hull', () => {
     expect(locale.route().image).toBe(hullArtworkPath('Anaconda'));
   });
 
-  it('publishes the catalogue’s identity where the symbol is no hull', () => {
+  it('names the hull an address published before the name form still opens', () => {
+    // `LakonMiner` is the symbol the map advertised before it advertised
+    // `Type-11_Prospector`, and it still names the hull it named (001/FR-005).
+    const { strategy, locale, snapshot } = strategyWith(
+      hullRoute('LakonMiner'),
+      '/ships/LakonMiner',
+    );
+
+    strategy.updateTitle(snapshot);
+
+    expect(locale.page()).toBe('Type-11 Prospector');
+    expect(locale.route().image).toBe(hullArtworkPath('LakonMiner'));
+  });
+
+  it('names the hull its own address is spelled with', () => {
+    const { strategy, locale, snapshot } = strategyWith(
+      hullRoute('Type-11_Prospector'),
+      '/ships/Type-11_Prospector',
+    );
+
+    strategy.updateTitle(snapshot);
+
+    expect(locale.page()).toBe('Type-11 Prospector');
+    expect(locale.route().image).toBe(hullArtworkPath('LakonMiner'));
+  });
+
+  it('publishes the catalogue’s identity where the address is no hull', () => {
     // Both keys interpolate the hull. Publishing them here would put a sentence
     // with a hole in it into a search result.
     const { strategy, locale, snapshot } = strategyWith(

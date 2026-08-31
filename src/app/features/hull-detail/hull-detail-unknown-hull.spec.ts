@@ -2,29 +2,29 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { DocumentAdapter } from '../../platform/browser/document.adapter';
 import { provideLocalization } from '../../i18n/i18n.providers';
-import { HullDetailUnknownSymbol } from './hull-detail-unknown-symbol';
+import { HullDetailUnknownHull } from './hull-detail-unknown-hull';
 
 class SilentDocumentAdapter {
   commitRootState(): void {}
 }
 
-function render(symbol: string): HTMLElement {
+function render(address: string): HTMLElement {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
-    imports: [HullDetailUnknownSymbol],
+    imports: [HullDetailUnknownHull],
     providers: [
       provideLocalization(),
       provideRouter([]),
       { provide: DocumentAdapter, useValue: new SilentDocumentAdapter() },
     ],
   });
-  const fixture = TestBed.createComponent(HullDetailUnknownSymbol);
-  fixture.componentRef.setInput('symbol', symbol);
+  const fixture = TestBed.createComponent(HullDetailUnknownHull);
+  fixture.componentRef.setInput('hull', address);
   fixture.detectChanges();
   return fixture.nativeElement as HTMLElement;
 }
 
-describe('unknown hull symbol', () => {
+describe('an address no hull answers to', () => {
   it('names the problem and echoes what was actually asked for', () => {
     const element = render('Nonexistent_Hull');
     const text = (element.textContent ?? '').replace(/\s+/g, ' ');

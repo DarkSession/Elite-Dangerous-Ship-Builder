@@ -1,4 +1,5 @@
 import { documentHead, publishedAddresses } from '../../../scripts/search/published-addresses.mjs';
+import { hullForAddressSegment } from '../domain/catalogue/hull-address';
 import { hullArtworkPath } from '../platform/assets/hull-artwork-path';
 import { LINK_CARD, SITE_ORIGIN } from '../platform/browser/site-address';
 import { resolveDocumentTitle } from './document-title';
@@ -127,11 +128,15 @@ describe('what a published document is titled', () => {
 
   it('shows the same picture the application would show', () => {
     // The script spells the artwork path a second time, for the same reason it
-    // spells the title rule a second time.
+    // spells the title rule a second time. The address names the hull and the
+    // artwork directory is keyed by its symbol, so the address is resolved to
+    // the package's record before the path is spelled (001/FR-005).
     for (const entry of publishedAddresses({ origin: SITE_ORIGIN })) {
-      const symbol = entry.path.startsWith('ships/') ? entry.path.slice('ships/'.length) : null;
+      const segment = entry.path.startsWith('ships/') ? entry.path.slice('ships/'.length) : null;
+      const hull = segment === null ? null : hullForAddressSegment(segment);
 
-      expect(entry.image).toBe(symbol === null ? LINK_CARD : hullArtworkPath(symbol));
+      expect(segment === null || hull !== null).toBe(true);
+      expect(entry.image).toBe(hull === null ? LINK_CARD : hullArtworkPath(hull.symbol));
     }
   });
 });

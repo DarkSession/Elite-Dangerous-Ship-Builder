@@ -4,7 +4,7 @@ import { Routes } from '@angular/router';
  * The application's routes.
  *
  * Four screens and one redirect. Every one of them is addressable: hull detail
- * by the package's own hull symbol, the build library by its own path even
+ * by the hull's own name, the build library by its own path even
  * though it usually appears as a layer over the screen that opened it. A
  * surface that is only reachable by clicking through another one cannot be
  * bookmarked, cannot be returned to with the back button, and cannot be told
@@ -15,9 +15,8 @@ import { Routes } from '@angular/router';
  * title and the sentence a search result quotes change language with everything
  * else rather than one navigation later (011/FR-027). A route that declares no
  * description inherits the nearest ancestor's — and so does one whose key names
- * a subject the route cannot resolve, which is what makes a hull address for a
- * symbol the package does not carry read as the catalogue rather than as a
- * blank.
+ * a subject the route cannot resolve, which is what makes a hull address no
+ * hull answers to read as the catalogue rather than as a blank.
  *
  * No route carries build data in its path or query. The only build payload in
  * a URL is the `/build` fragment (FR-015).
@@ -51,10 +50,16 @@ export const routes: Routes = [
         // address as far as a search engine is concerned (011/FR-027).
         //
         // Both patterns interpolate `{{hull}}`. `RouteTitleStrategy` supplies it
-        // from the package and, where a symbol resolves to no hull, publishes
-        // the catalogue's identity instead rather than a sentence with a hole
-        // in it.
-        path: ':symbol',
+        // from the package and, where the segment resolves to no hull,
+        // publishes the catalogue's identity instead rather than a sentence
+        // with a hole in it.
+        //
+        // The segment is the hull's name made URL-ready — `Type-11_Prospector`,
+        // not `LakonMiner` — because an address a Commander reads and a search
+        // result quotes should name the ship (001/FR-005). The symbol is still
+        // the identity everywhere else, and is still accepted here so an
+        // address published before the rule opens the hull it named.
+        path: ':hull',
         title: 'hullDetail.title',
         data: { description: 'hullDetail.description' },
         loadComponent: () =>

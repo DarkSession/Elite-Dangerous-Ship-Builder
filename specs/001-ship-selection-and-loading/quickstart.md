@@ -39,13 +39,13 @@ Expected: constraints, order and anchored position return exactly; no active bui
 
 ## Scenario 2: Inspect and create a stock build
 
-1. Open a known `/ships/<symbol>` detail URL.
+1. Open a known `/ships/<hull name, underscored>` detail URL.
 2. Verify every FR-004 fact, unit, slot group and the same-origin package illustration. Confirm the text distinguishes hull specifications from build results.
 3. Abort/fail the image request and repeat the creation action.
-4. Open an unknown symbol URL.
+4. Open an address no hull is named or symbolled.
 5. With a build already active, request creation for a different known hull.
 
-Expected: image absence is temporary/nonblocking; unknown symbol shows an error and creates nothing; creation asks nothing and produces the exact `ShipLoadout.default(symbol)`, records package validation and navigates to the workspace. The build that was active is still listed in `/builds`, under its own record, with everything it had.
+Expected: image absence is temporary/nonblocking; an address no hull answers to shows an error and creates nothing; creation asks nothing and produces the exact `ShipLoadout.default(symbol)`, records package validation and navigates to the workspace. The build that was active is still listed in `/builds`, under its own record, with everything it had.
 
 ## Scenario 3: Restore work without being asked to save it
 

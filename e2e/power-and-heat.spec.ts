@@ -901,7 +901,7 @@ test.describe('the rail’s pip control', () => {
     await openPower(page);
     await revealStatusRail(page);
 
-    // Canvas 1c draws this block and the six metric cells under it inside one
+    // Canvas 1c draws this block and the metric cells under it inside one
     // padded block, which the workspace owns. So the figures start where the
     // cells start: an inset of this block's own would be a second one inside
     // that padding, and the reading would stand further in than the cells it
@@ -911,21 +911,11 @@ test.describe('the rail’s pip control', () => {
     const cells = page.locator('.outfitting__status-cells .metric');
     await expect(line).toBeVisible();
 
-    if ((await cells.count()) === 0) {
-      // Canvas 1d draws the same six readings above the category tabs instead,
-      // so the rail has no cell band at this width and there is nothing here for
-      // the block to head. What the claim reduces to is the same one either way:
-      // the block stands on the rail's own inset and adds none of its own, which
-      // is the inset the heading above it stands on.
-      const [start, headStart] = await line.evaluate((node) => [
-        (node as HTMLElement).getBoundingClientRect().left,
-        document.querySelector('.outfitting__status-heading')?.getBoundingClientRect().left ?? -1,
-      ]);
-      expect(Math.round(start)).toBe(Math.round(headStart));
-      return;
-    }
-
-    await expect(cells).toHaveCount(6);
+    // The band goes wherever the rail goes, so a rail that has been opened has
+    // one at every composition (003/FR-024). How many cells are in it is the
+    // contributing features' business, not this one's — what is under test here
+    // is where the power line starts relative to them.
+    expect(await cells.count()).toBeGreaterThan(0);
 
     // The leading edge of the grid, not of its first cell in DOM order: the
     // cells are two to a row, so mirrored the first of them is the one in the

@@ -51,12 +51,12 @@ export class MetricGroup {
   /**
    * Whether this group's cells join a grid an ancestor owns.
    *
-   * The canvas draws the status rail's six cells as one grid on one hairline
-   * ground, and three separate features own two, one and three of them. Set
+   * The canvas draws the status rail's cells as one grid on one hairline
+   * ground, and four separate features own two, one, three and two of them. Set
    * here, the group stops laying its own grid and lets its cells fall into the
-   * rail's — so the six sit in one grid without any feature having to know what
-   * the other two contribute. The group keeps its list and its name either way:
-   * a reader still meets three named groups of terms and definitions.
+   * rail's — so they sit in one grid without any feature having to know what
+   * the others contribute. The group keeps its list and its name either way:
+   * a reader still meets one named group of terms and definitions per feature.
    */
   readonly flow = input(false);
 
