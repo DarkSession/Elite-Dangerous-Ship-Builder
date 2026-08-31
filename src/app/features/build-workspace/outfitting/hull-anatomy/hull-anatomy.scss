@@ -123,15 +123,15 @@
 
 // Canvas 1c's `grid-template-columns: 1fr 1fr`, at the width two plates can
 // actually hold — which is the width two *whole* plates hold, not two plates
-// squeezed. The threshold used to be two plates of 20rem, the width below which
-// a hull is too small to aim at, and everything from there to about 1185px drew
-// the pair as two drawings smaller than the single drawing it replaced: a 1440px
-// desktop gave the pair 344px a plate where one plate at 1280px is 554px, so
-// widening the window shrank the hull (Commander request 2026-08-31). So the
-// threshold is the plate's own bound doubled, with the gap between the two and
-// the pair's own inset: `2 × 35.35rem + 0.625rem + 2 × 1.375rem`. Stated in rem,
-// so doubled text steps down to one plate for the same reason a phone does
-// (responsive composition, "Declared content minimums").
+// squeezed. The threshold is the plate's own bound doubled, with the gap between
+// the two and the pair's own inset: `2 × 35.35rem + 0.625rem + 2 × 1.375rem`.
+//
+// A lower step buys the second plate by shrinking the first, which is the
+// opposite of what a wider window is for: at a 1440px desktop the block is 742px
+// and a pair is 344px a plate, against the 566px bound one plate is drawn at
+// (Commander request 2026-08-31). Stated in rem, so doubled text steps down to
+// one plate for the same reason a phone does (responsive composition, "Declared
+// content minimums").
 //
 // The window is asked twice as well, because the container's width cannot tell
 // canvas 1c's block from canvas 1d's on its own.

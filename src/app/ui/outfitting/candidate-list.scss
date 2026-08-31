@@ -245,22 +245,22 @@
 //
 // The wash, the marker and the ink together say _this is the row in hand_, and
 // that is the checked row. At canvas 1c's width the two are one row, because
-// choosing a row there is the fit. On canvas 1d's screen a pick waits for
-// `FIT MODULE`, so between the press and the commit there are two rows to
-// mark — the one the mount holds and the one the Commander has taken — and
-// drawn alike the screen carried three identical amber rows with nothing to
-// tell them apart (Commander request 2026-08-31;
+// choosing a row there is the fit; on canvas 1d's screen a pick waits for
+// `FIT MODULE`, so between the press and the commit there are two rows to mark —
+// the one the mount holds and the one the Commander has taken. Marked alike the
+// screen carries three identical amber rows, the `FITTED HERE` copy among them,
+// with nothing saying which is which (Commander request 2026-08-31;
 // `design/module-replacement.md`, "The fitted row and the row in hand are two
 // different marks"). Marker against wash is the same distinction the anatomy
 // legend draws between `SELECTED` and `FITTED`.
 //
-// Never the only carrier, either way: the row says `fitted` in its own text,
-// the `FITTED HERE` rule names the block above, and the checked row is checked
-// on its own control.
+// Never the only carrier, either way: the row says `fitted` in its own text, the
+// `FITTED HERE` rule names the block above, and the checked row is checked on
+// its own control.
 //
-// Dropped where the fitted row *is* the checked row, which is the state a mount
-// opens in: there the checked treatment wins outright and the row is amber,
-// exactly as the canvas draws it.
+// Not asked where the fitted row *is* the checked row, which is the state a
+// mount opens in: there the checked treatment is the whole of the answer and the
+// row is amber, exactly as the canvas draws it.
 .candidate--fitted:not([data-selected='true']) {
   border-inline-start-color: var(--edsb-marker-selected);
 }

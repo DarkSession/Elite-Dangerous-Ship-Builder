@@ -133,8 +133,10 @@ real hardware.
   coordinates the package published and the application's own measurement of how large it drew the
   mark, and the result is deterministic for a given hull and plate size. A mark MUST NOT be drawn
   further from its anchor than the separation between it and the marks it would otherwise cover, and
-  a mark that covers neither another mark nor another mount's published position MUST NOT be moved at
-  all. Where the package draws two mounts as mirror images of each other, the plate MUST draw their
+  a mark that covers neither another mark nor another mount's published position, and that the plate
+  can draw whole where the package put it, MUST NOT be moved at all. A mark whose square would
+  otherwise hang off the plate MUST be drawn just inside it, which is a mount the package published
+  within half a mark of the hull's own nose or tail. Where the package draws two mounts as mirror images of each other, the plate MUST draw their
   marks as mirror images too. Because a mark's drawn width does not scale with the plate at every
   size, how close is too close MUST be measured rather than assumed (design/hull-anatomy.md, "Marks
   that would touch").

@@ -498,7 +498,7 @@ is the rule.
 **A mark moves as little as the plate allows.** There is nowhere for a mark to be sent, so there is
 no distance to choose and no destination to prefer — only the shorter way out of an overlap. The
 furthest any mark travels on any shipped plate, at any width from 280 to 900 pixels, is one and a
-fifth of its own width, and one and three fifths with the text doubled.
+fifth of its own width, and one and a half with the text doubled.
 
 A mark touching nothing does not move at all. Two things can make a mark touch something: another
 mark, and another mount's published point, which the paragraph below explains.
@@ -524,7 +524,7 @@ instead, and all three squares sit on the mounts they belong to.
 frame and the two measured fractions, in a fixed number of rounds and a fixed order, so the same
 inputs give the same marks every time. It also holds still as a window is dragged: over the same
 eleven widths, no mark in the shipped package changes which side of its mount it sits on as the plate
-is resized, and seven do with the text doubled. That steadiness is what a Commander asked for on
+is resized, and five do with the text doubled. That steadiness is what a Commander asked for on
 2026-08-26, and it comes out of the rule rather than being tuned in.
 
 **What the settling guarantees, and what it does not.** Measured over every shipped plate at eleven
@@ -535,8 +535,8 @@ them the same pair on the Beluga Liner's underside at the two narrowest widths m
 other at 280 pixels and grazes it at 340.
 
 With the text doubled, on plates from 228 pixels up — where eight twenty-eight-pixel marks share a
-two-hundred-and-twenty-eight-pixel plate and no arrangement can separate them all — fifty pairs cover
-part of each other and the worst of them stands a third of a mark apart. The rule degrades by leaving
+two-hundred-and-twenty-eight-pixel plate and no arrangement can separate them all — fifty-four pairs
+cover part of each other and the worst of them stands two fifths of a mark apart. The rule degrades by leaving
 marks close together rather than by moving one somewhere it does not belong, which is the way round
 it should degrade: the complete ledger is the equivalent that does not degrade at all.
 

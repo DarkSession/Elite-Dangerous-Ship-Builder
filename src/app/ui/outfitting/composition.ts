@@ -12,11 +12,11 @@ export type OutfittingComposition = 'wide' | 'two-pane' | 'compact';
 /**
  * What a candidate row needs: its name, class, rating, mount and a 44px control.
  *
- * Exported because the chooser's own manifest threshold is built from it — a
- * rail beside a pane is this minimum plus the canvas's fixed rail — and the two
- * decisions should not be able to drift apart (`manifest.ts`).
+ * The chooser's own manifest threshold is built from it — a rail beside a pane
+ * is this minimum plus the canvas's fixed rail — which is why `RAIL_MINIMUM_REM`
+ * below is stated here rather than beside the chooser that spends it.
  */
-export const BENCH_CONTENT_MINIMUM_REM = 22.5;
+const BENCH_CONTENT_MINIMUM_REM = 22.5;
 
 /**
  * The declared content minimums, in rem.
@@ -100,24 +100,22 @@ export const RAIL_MINIMUM_REM = BENCH_CONTENT_MINIMUM_REM + FAMILY_RAIL_REM + FA
 /**
  * What the bench has to keep before a third region may be taken out of it.
  *
- * The rail is a fixed track, and the track it takes its 306px from is the
- * bench's — so a wide composition selected on the bench's own floor is a wide
- * composition that folds the bench to one candidate row to pay for the rail.
- * Measured that way the three regions fit from 1058px, and from there to 1374px
- * the middle column is 360-odd pixels at the bottom of the band and 675px at the
- * top: never the 676px the chooser's rail-and-pane manifest needs, so the
- * chooser draws canvas 1d's stacked cards inside canvas 1c's workspace on a
- * tablet in landscape and on any laptop under 1374px. A third column bought by
+ * The bench's share of the wide composition is what the chooser's own
+ * rail-and-pane manifest needs, not what one candidate row needs. The rail is a
+ * fixed track and the track it takes its 306px from is the bench's, so a wide
+ * composition selected on the bench's floor folds the bench to one row to pay
+ * for the rail: measured that way the three regions fit from 1058px, and across
+ * the whole band up to 1374px the middle column runs from 360px to 675px and
+ * never reaches the 676px the aligned manifest needs. A third column bought by
  * folding the middle one back to its floor is not a third column worth having
  * (Commander request 2026-08-31; responsive composition, "The third region is
  * taken from what is left over").
  *
- * So the bench's share of the wide composition is what the aligned manifest
- * needs rather than what one row needs. Below it the rail is the anatomy strip's
- * `STATUS` segment, which is what every narrower arrangement already does with
- * it, and the bench draws the family rail beside the variant pane from
- * `MINIMUMS.ledger` plus this — 66.75rem, or 1068 CSS pixels at the default text
- * size — up.
+ * Below the step the rail is the anatomy strip's `STATUS` segment, which is what
+ * every narrower arrangement does with it, and the whole of what is left over is
+ * the bench's — so the family rail is drawn beside the variant pane from
+ * `MINIMUMS.ledger` plus this, 66.75rem or 1068 CSS pixels at the default text
+ * size. Nothing above that step loses the aligned manifest to a rail.
  */
 const BENCH_WIDE_MINIMUM_REM = RAIL_MINIMUM_REM + BENCH_INSET_REM;
 

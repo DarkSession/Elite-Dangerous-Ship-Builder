@@ -32,9 +32,9 @@ answers it is not this component's own. Its own inline size does not say: on a r
 column of a multi-region page at some widths and the whole of a single flow at others, the two
 answers cross. Feature 010's anatomy is the worked case — it is given 742px as the centre column of a
 1440px page and 744px by a single-flow window entire, so its own width cannot tell the arrangement it
-is in from the one it is not. Its plate pair now asks for more room than either, so the crossing no
-longer decides that block's arrangement; the crossing is a property of the region and is there for
-whatever next has to ask. The **enclosing region's** container answers it, at the seam that region already stops being
+is in from the one it is not. Its plate pair asks for more room than either of those, so the crossing
+does not decide that block's arrangement on its own; the crossing is a property of the region rather
+than of what happens to be inside it, and the condition stands for whatever asks next. The **enclosing region's** container answers it, at the seam that region already stops being
 one flow at: one declaration asked from every side of it, so the region and the blocks inside it
 change arrangement together (`_responsive.scss`, `$outfitting-regions-min`).
 

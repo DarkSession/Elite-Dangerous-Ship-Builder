@@ -180,8 +180,9 @@
 // third track is what makes this a bounded column: below its threshold the rail
 // is a band under the bench with the page's height to grow into, and a box that
 // filled it there would run the whole shopping list down the screen. The same
-// query the workspace draws that track with.
-@container outfitting (min-width: 85.875rem) {
+// declaration the workspace draws that track with (`_responsive.scss`,
+// `$outfitting-wide-min`).
+@include layout.outfitting-wide {
   :host {
     display: flex;
     flex-direction: column;

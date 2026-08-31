@@ -651,6 +651,23 @@ test.describe('the slot ledger', () => {
 
     // And it is never the mark alone: the row says so in its own text.
     expect(await held.textContent()).toContain(englishMessages['outfitting.candidate.fitted']);
+
+    // Canvas 1d's `FITTED HERE` copy above the families is a statement of what
+    // is in the mount and carries no control, so it is never the checked row and
+    // is drawn the same way as the row it copies: the marker, and no wash.
+    const pinned = page.locator('.candidates__pinned .candidate').first();
+    await expect(pinned).toBeVisible();
+    await expect(pinned).toHaveClass(/candidate--fitted/);
+    await expect(pinned.locator('.candidate__radio')).toHaveCount(0);
+    expect(
+      await pinned.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          wash: style.backgroundImage,
+          marker: `${style.borderInlineStartWidth} ${style.borderInlineStartColor}`,
+        };
+      }),
+    ).toEqual({ wash: 'none', marker: '3px rgb(255, 140, 26)' });
   });
 
   test('marks an empty mount as selected the same way it marks a fitted one', async ({ page }) => {

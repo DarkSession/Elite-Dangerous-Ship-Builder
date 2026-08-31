@@ -206,11 +206,14 @@ export function placeMarks(
 ): readonly MarkPlacement[] {
   const gap = separationFraction * frame.width;
   const mark = markFraction * frame.width;
-  // Half a separation in from each edge, which is where a mark's neighbour
-  // would have stood: the plate's own edge is one more thing a mark keeps clear
-  // of, and a square a Commander presses is drawn whole rather than hanging off
-  // the plate.
-  const inset = gap / 2;
+  // Half a mark in from each edge, which is exactly where a square stops
+  // hanging off the plate: a mark is drawn about its point, so a point any
+  // closer than this puts part of the square a Commander presses outside the
+  // frame. Half a *separation* would be a quarter of a mark further in, and a
+  // mark is pushed as far as it is asked to be — so that quarter displaced
+  // mounts the package draws near the hull's own nose or tail, with nothing
+  // beside them and a leader saying so.
+  const inset = mark / 2;
 
   const marks: PlatePoint[] = anchors.map((anchor) => anchor);
 

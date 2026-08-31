@@ -15,6 +15,9 @@ const FRAME: PlateFrame = { width: 720, height: 292 };
 /** How far apart two marks have to be on that frame before neither moves. */
 const GAP = MARK_SEPARATION * FRAME.width;
 
+/** How wide one of those marks is, at the fraction the placement defaults to. */
+const MARK = GAP / 2;
+
 /**
  * The same slack the placement itself allows.
  *
@@ -224,30 +227,74 @@ describe('placeMarks', () => {
     });
   });
 
+  it('draws a mark on the plate\u2019s own edge just inside it, and no further', () => {
+    // The package puts a few mounts within half a mark of the hull's nose or
+    // tail — `MediumTransport01`'s two medium hardpoints, at every plate size.
+    // Nothing is beside them, so nothing pushes them; what moves them is that
+    // the square drawn about their point would hang off the plate. They come in
+    // exactly as far as it takes for the square to be whole, and no further.
+    const share = 0.0306;
+    const mark = share * FRAME.width;
+    const anchors = [
+      { x: mark / 4, y: FRAME.height / 2 },
+      // Far from it, and comfortably inside the frame.
+      { x: FRAME.width / 2, y: FRAME.height / 2 },
+    ];
+
+    const [edge, inside] = placeMarks(anchors, FRAME, share * 1.25, share);
+
+    expect(edge.displaced).toBe(true);
+    expect(edge.mark.x).toBeCloseTo(mark / 2, 6);
+    expect(edge.mark.y).toBeCloseTo(anchors[0].y, 6);
+    expect(inside.displaced).toBe(false);
+  });
+
+  it('leaves a mount the plate can draw whole exactly where the package put it', () => {
+    // Half a *separation* in from each edge would be a quarter of a mark further
+    // than a square needs, and a mark is moved as far as it is asked to be — so
+    // that quarter drew a leader on mounts with nothing beside them (FR-012, "a
+    // mark that covers neither another mark nor another mount's published
+    // position, and that the plate can draw whole where the package put it").
+    const share = 0.0306;
+    const mark = share * FRAME.width;
+    const anchors = [
+      { x: mark * 0.55, y: FRAME.height / 2 },
+      { x: FRAME.width - mark * 0.55, y: FRAME.height / 2 },
+    ];
+
+    for (const placed of placeMarks(anchors, FRAME, share * 1.25, share)) {
+      expect(placed.displaced).toBe(false);
+      expect(placed.mark).toEqual(placed.anchor);
+    }
+  });
+
   it('never steps a mark off the plate', () => {
     // A cluster in the corner: every outward step leaves the frame, so the ones
-    // that move have to come back inward instead of hanging off the edge.
+    // that move have to come back inward instead of hanging off the edge. Half a
+    // mark is where a square stops hanging off, and a mark is drawn about its
+    // point, so that is how far in the frame holds them.
     const anchors = [
       { x: 4, y: 4 },
       { x: 7, y: 5 },
       { x: 5, y: 8 },
     ];
+    const inset = MARK / 2;
 
     for (const placed of placeMarks(anchors, FRAME)) {
       if (placed.displaced) {
-        expect(placed.mark.x).toBeGreaterThanOrEqual(GAP / 2 - SLACK);
-        expect(placed.mark.y).toBeGreaterThanOrEqual(GAP / 2 - SLACK);
-        expect(placed.mark.x).toBeLessThanOrEqual(FRAME.width - GAP / 2 + SLACK);
-        expect(placed.mark.y).toBeLessThanOrEqual(FRAME.height - GAP / 2 + SLACK);
+        expect(placed.mark.x).toBeGreaterThanOrEqual(inset - SLACK);
+        expect(placed.mark.y).toBeGreaterThanOrEqual(inset - SLACK);
+        expect(placed.mark.x).toBeLessThanOrEqual(FRAME.width - inset + SLACK);
+        expect(placed.mark.y).toBeLessThanOrEqual(FRAME.height - inset + SLACK);
       }
     }
   });
 
   it('never puts a mark outside the plate, however crowded the hull', () => {
-    // Forty mounts on one point — past anything the package ships. Whatever the
-    // search settles on, every mark it reports has to be somewhere a Commander
-    // can press: on the plate, and either spread onto a ring or left on its own
-    // mount. Nothing may hang off the edge.
+    // Forty mounts on one point — past anything the package ships. Wherever the
+    // settling stops, every mark it reports has to be somewhere a Commander can
+    // press: on the plate, whether it was pushed clear or left on its own mount.
+    // Nothing may hang off the edge.
     const anchors = Array.from({ length: 40 }, () => ({ x: 360, y: 146 }));
 
     const placed = placeMarks(anchors, FRAME);
@@ -308,8 +355,8 @@ describe('placeMarks', () => {
     // The Corsair's foremost large hardpoint in miniature: a mount on the
     // centreline with one neighbour above it and one below. The two pushes
     // cancel, so that mark does not move at all and the pair steps apart around
-    // it. The rule this replaced sent it a quarter of the hull forward to earn
-    // a leader long enough to see (Commander request 2026-08-31).
+    // it. A rule that instead sent it a quarter of the hull forward, to earn a
+    // leader long enough to see, is what a Commander reported on 2026-08-31.
     const anchors = [
       { x: 300, y: 150 },
       { x: 306, y: 150 - GAP * 0.6 },
@@ -361,9 +408,10 @@ describe('placeMarks', () => {
   });
 
   it('takes a short leader over a mark left stacked', () => {
-    // A plate with no room for a legible ring: refusing to move the crowd keeps
-    // the overlap this exists to remove, for the sake of a line nobody could
-    // have seen. Separating them is the lesser evil and is what happens.
+    // A plate with no room for a leader anyone could see: refusing to move the
+    // crowd keeps the overlap this exists to remove, for the sake of a line
+    // nobody could have read. Separating them is the lesser evil and is what
+    // happens.
     const tight: PlateFrame = { width: 120, height: 49 };
     const anchors = [
       { x: 60, y: 24 },
@@ -377,17 +425,16 @@ describe('placeMarks', () => {
   });
 
   it('never lets two leaders cross each other', () => {
-    // The guarantee that slot order gives — a crowd's marks go round the ring
-    // in the same cyclic order its mounts go round the middle — holds only
-    // while the ring sits where the mounts point. The search turns it away from
-    // there to find room, and a pair turned far enough swaps sides: each mark
-    // ends up across the crowd from its own mount and the two lines make an X.
-    // The Corsair's nodes 4 and 5 did exactly that at any plate wider than
-    // about four hundred pixels.
+    // A crowd against a wall, which is where a rule that arranges its marks
+    // around the crowd's own middle breaks: turned far enough to find room, a
+    // pair swaps sides, each mark ends up across the crowd from its own mount
+    // and the two lines make an X. Here a mark moves only away from what it
+    // covers, so a leader is as short as the overlap and there is nothing to
+    // cross.
     const anchors = [
       { x: 360, y: 140 },
       { x: 360, y: 152 },
-      // A wall on one side, so the ring is pushed off its aligned turn.
+      // A wall on one side, so every mark of the pair is pushed the same way.
       { x: 300, y: 100 },
       { x: 300, y: 146 },
       { x: 300, y: 192 },
@@ -422,11 +469,11 @@ describe('placeMarks', () => {
     // centreline just ahead of the mirrored pair 4 and 5, with 2 and 3 further
     // forward again.
     //
-    // The ring this replaced sent node 1 forward along the hull's own axis and
-    // grew the ring until it cleared 2 and 3 — a mark a quarter of a ship from
-    // its mount, with its leader threaded between two other numbers (Commander
-    // request 2026-08-31). Pushed equally by 4 above it and 5 below, it does not
-    // move at all: the pair steps apart around it.
+    // A rule that sent node 1 forward along the hull's own axis until it cleared
+    // 2 and 3 left the mark a quarter of a ship from its mount, with its leader
+    // threaded between two other numbers, which is what a Commander reported on
+    // 2026-08-31. Pushed equally by 4 above it and 5 below, it does not move at
+    // all: the pair steps apart around it.
     const frame = { width: 1423.2329, height: 577.2 };
     const anchors = [
       { x: 659.555, y: 288.6 }, // node 1
@@ -455,9 +502,9 @@ describe('placeMarks', () => {
   it('holds the Corsair\u2019s marks still as the plate is resized', () => {
     // A plate is not one width. It is drawn at whatever the column leaves it,
     // and the mark's own size is `clamp(0.875rem, 3.06cqw, 1.375rem)`, so the
-    // separation asked for changes with every few pixels. Node 1's mark used to
-    // answer that by crossing the whole ship — forward of the nose at one width,
-    // aft of the mounts behind it at the next.
+    // separation asked for changes with every few pixels. A mark that answered
+    // that by crossing the whole ship — forward of the nose at one width, aft of
+    // the mounts behind it at the next — is the reshuffling this holds still.
     const frame = { width: 1423.2329, height: 577.2 };
     const anchors = [
       { x: 659.555, y: 288.6 },
@@ -486,6 +533,26 @@ describe('placeMarks', () => {
       expect(placed[0].mark.x, `${plate}px`).toBeGreaterThan(anchors[1].x);
       expect(placed[4].mark.y, `${plate}px`).toBeLessThan(anchors[4].y);
       expect(placed[3].mark.y, `${plate}px`).toBeGreaterThan(anchors[3].y);
+
+      // The two utility mounts have nothing near them, so the only thing that
+      // can move them is the plate's own edge: both sit 30.75 frame units in
+      // from a long edge. While the plate can draw their squares whole they stay
+      // exactly where the package put them, and where it cannot they come in to
+      // half a mark and no further — which is the whole of what the frame is
+      // allowed to do to a mark nothing is beside (FR-012).
+      for (const index of [5, 6]) {
+        const one = placed[index];
+        if (width / 2 <= 30.75) {
+          expect(one.displaced, `${plate}px #${index}`).toBe(false);
+          expect(one.mark, `${plate}px #${index}`).toEqual(anchors[index]);
+        } else {
+          expect(one.mark.x, `${plate}px #${index}`).toBeCloseTo(anchors[index].x, 6);
+          expect(
+            Math.abs(one.mark.y - anchors[index].y),
+            `${plate}px #${index}`,
+          ).toBeLessThanOrEqual(width / 2 - 30.75 + 1e-6);
+        }
+      }
     }
   });
 });
