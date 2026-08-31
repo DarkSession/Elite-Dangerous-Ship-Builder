@@ -594,6 +594,7 @@ function reconstructLoadout(codec: CodecContext, state: CodecState): ShipLoadout
     Modules: modules,
   };
   const loadout = ShipLoadout.fromLoadout(event);
+  emptyTheMountsThePayloadLeavesEmpty(loadout, slots, state.moduleIndexes);
   occupiedSlots.forEach((slotIndex, occupiedIndex) => {
     const engineering = state.engineeringStates[occupiedIndex];
     if (engineering?.kind !== 'ordinary') return;
@@ -613,6 +614,36 @@ function reconstructLoadout(codec: CodecContext, state: CodecState): ShipLoadout
     });
   });
   return loadout;
+}
+
+/**
+ * Empty the removable mounts the payload records as empty.
+ *
+ * Reconstruction stocks armour, the core internals, the cargo hatch and the planetary
+ * approach suite from the hull defaults when its source names none, because a journal
+ * `Loadout` cannot say whether a missing entry is a decision or a gap. A codec value can:
+ * every mount the hull has carries its own occupancy bit, so an empty removable mount is a
+ * Commander's decision and has to survive the link (FR-019). The mounts a build cannot fly
+ * without are stocked either way, and the package refuses to empty them, so they are left
+ * as reconstruction made them.
+ */
+function emptyTheMountsThePayloadLeavesEmpty(
+  loadout: ShipLoadout,
+  slots: readonly string[],
+  moduleIndexes: readonly (number | null)[],
+): void {
+  const removable = new Set(
+    loadout
+      .slots()
+      .filter((slot) => slot.removable)
+      .map((slot) => slot.key.toLowerCase()),
+  );
+  slots.forEach((slot, slotIndex) => {
+    if (moduleIndexes[slotIndex] !== null) return;
+    if (!removable.has(slot.toLowerCase())) return;
+    if (loadout.fittedModuleAt(slot) === null) return;
+    loadout.removeModule(slot);
+  });
 }
 
 function isPristineState(

@@ -543,7 +543,7 @@ numbers, and generation refuses a table that exceeds one.
 | Dimension                           | Table 1 | Budgeted for | Encoded width at that size   |
 | ----------------------------------- | ------: | -----------: | ---------------------------- |
 | Hulls                               |      48 |          128 | 8-bit representation tag     |
-| Modules                             |   1,200 |        2,048 | 11-bit global fallback index |
+| Modules                             |   1,195 |        2,048 | 11-bit global fallback index |
 | Blueprints                          |     110 |          256 | 8-bit global fallback index  |
 | Experimental effects                |      86 |          256 | 8-bit global fallback index  |
 | Outfittable mounts on one hull      |      38 |           48 | 48-bit bitmap, 6-bit indexes |
@@ -610,7 +610,7 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.2.6`. Table 1 was overwritten in
+The current application dependency is exactly pinned to Almanac `0.2.7`. Table 1 was overwritten in
 place on 2026-08-22, while it is still pre-release and no link has been published against it, so
 that a module's pre-engineered variants contribute their blueprints to its candidate set — see
 "Where neither form fits" above. It was overwritten again on 2026-08-26, under the same rule, so
@@ -626,10 +626,23 @@ with the experimental effect the shop bakes in, so their `PRE_ENGINEERED_VARIANT
 `experimental` index where they carried `null`. No row is added, removed or reordered, so every
 variant index an existing link would name is unchanged. The effect beside those ten rows is encoded
 against a default rather than written out, so a link minted against the earlier table that names
-one of them reads differently. Running `pnpm run codec:tables` reproduces table 1 at content hash
-`cbabae30fb1057a19c54e84d6b0c0bb309fa0071547a9fbf1e24a4c1148b4586`. The package also reconstructs
-every omitted required mount with the hull's default module. That changes the canonical minimal
-loadout and the current encoder output for it without changing the table's identity.
+one of them reads differently. The package also reconstructs every omitted required mount with the
+hull's default module. That changes the canonical minimal loadout and the current encoder output
+for it without changing the table's identity.
+
+The fifth overwrite, on 2026-08-31, is the first to move an index. Outfitting sells no size-8 frame
+shift drive outside the SCO line, so the package withdrew the five plain `Int_Hyperdrive_Size8_*`
+records and `MODULES` holds 1,195 symbols where it held 1,200. The five sat at indices 205 to 209,
+and every symbol above them moves down by five; `POWERED_MODULES`, `MODULE_SETS`,
+`FIXED_MODULES_BY_SHIP`, `DEFAULT_MODULES_BY_SHIP`, `PRE_ENGINEERED_VARIANTS` and the three
+per-module set columns carry the new indices. No hull loses an article: the size-8 hulls are stocked and fitted with the overcharge
+drives, so the symbol behind every default and every fixed mount is the one it was. A link minted
+against the earlier table that names a module above index 209 therefore decodes to a different
+article, which is what makes this an overwrite rather than an edit. Running `pnpm run codec:tables`
+reproduces table 1 at content hash
+`a1e2fc867f47e281344ea442b1845dd15e6f622e3b37ec86150e4b252eb504bc`. The package also stocks the
+planetary approach suite from the hull defaults when a source names none, which moves the canonical
+minimal loadout again without touching the table's identity.
 
 Every future Almanac upgrade must reproduce the committed table and pass the frozen literal-link
 reconstruction corpus. Protocol fixtures must not be regenerated merely to make an upgrade pass.

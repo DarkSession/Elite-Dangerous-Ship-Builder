@@ -14,6 +14,7 @@ import {
   FORBIDDEN_CALLS,
   PACKAGE_CALLS,
   WITHDRAWN_AGGREGATES,
+  WITHDRAWN_FROM_THIS_FEATURE,
   almanacImports,
   check,
   combinedFigures,
@@ -22,6 +23,7 @@ import {
   packageCalls,
   scan,
   withdrawnReads,
+  locallyWithdrawnReads,
 } from './policy/mobility-jump-ownership.mjs';
 
 /** Just what each sited match found, for an assertion that does not need lines. */
@@ -146,6 +148,26 @@ describe('mobility and jump ownership policy', () => {
     it('accepts the word where it is not a reading', () => {
       assert.deepEqual(withdrawnReads("this.messages.message('drives.thrusters.fuel.tank');"), []);
       assert.deepEqual(withdrawnReads('FuelCapacity: { Main: 7, Reserve: 8 },'), []);
+    });
+
+    it('leaves the cargo capacity to the feature that draws it', () => {
+      // The status rail states one as feature 003's cell, so the
+      // application-wide rule must not reach it.
+      assert.deepEqual(withdrawnReads('const value = loadout.cargoCapacity;'), []);
+    });
+  });
+
+  describe('locally withdrawn-aggregate rule', () => {
+    it('rejects the cargo capacity inside this feature’s own files', () => {
+      for (const aggregate of WITHDRAWN_FROM_THIS_FEATURE) {
+        assert.deepEqual(hits(locallyWithdrawnReads(`const value = loadout.${aggregate};`)), [
+          aggregate,
+        ]);
+      }
+    });
+
+    it('accepts the word where it is not a reading', () => {
+      assert.deepEqual(locallyWithdrawnReads('CargoCapacity: 32,'), []);
     });
   });
 

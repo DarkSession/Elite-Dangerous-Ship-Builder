@@ -27,6 +27,7 @@ import { SlotCard, type SlotCardIntent } from '../../../../ui/outfitting/slot-ca
 import { SlotGroup, type SlotGroupView } from '../../../../ui/outfitting/slot-group';
 import { BuildStatus } from '../build-status/build-status';
 import { CostMaterials } from '../cost-materials/cost-materials';
+import { CapacitySummary } from '../capacity-summary/capacity-summary';
 import { DefenceSummary } from '../defence-summary/defence-summary';
 import { DrivesSummary } from '../drives-summary/drives-summary';
 import { PowerBadge } from '../power-badge/power-badge';
@@ -101,6 +102,7 @@ const HISTORY_REDO_MARK = '\u21b7';
   imports: [
     NgTemplateOutlet,
     BuildStatus,
+    CapacitySummary,
     CostMaterials,
     DefenceSummary,
     OffenceSummary,
@@ -275,6 +277,17 @@ export class OutfittingWorkspace {
   readonly statusModeOpen = computed(
     () => this.statusIsGuest() && this.#anatomyMode() === STATUS_MODE,
   );
+
+  /**
+   * Whether the rail is on screen: its own column, or its open guest segment.
+   *
+   * The rail is written once and placed twice, and below wide width it is in
+   * the document whether or not its segment is open — the stylesheet is what
+   * withholds a closed one. Its cell band is built from this instead, because a
+   * band built into a closed rail is a second live copy of every cell beside
+   * the strip that is drawing them (003/FR-024).
+   */
+  readonly statusRailDrawn = computed(() => !this.statusIsGuest() || this.statusModeOpen());
 
   readonly regionHeadingId = relationId('outfitting-region');
   readonly statusRailHeadingId = relationId('status-rail');

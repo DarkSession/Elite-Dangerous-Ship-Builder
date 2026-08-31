@@ -1,0 +1,10 @@
+// The `CARGO` and `PASSENGERS` cells of the status rail.
+//
+// The cells themselves are the shared metric group's, which already draws the
+// canvas's tracked label over a mono figure. The grid they sit in belongs to the
+// rail, because the canvas draws one grid for every cell and this feature owns
+// only two of them — so this component generates no box at all and its two cells
+// fall straight into it.
+:host {
+  display: contents;
+}

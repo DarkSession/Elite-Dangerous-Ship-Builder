@@ -177,7 +177,7 @@ test.describe('hull catalogue', () => {
     await page.goto('/ships');
     await visibleHulls(page).first().hover();
 
-    for (const hull of ['Anaconda', 'Python', 'SideWinder']) {
+    for (const hull of ['Anaconda', 'Python', 'Sidewinder']) {
       await page.goto(`/ships/${hull}`);
       await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible();
       await expect(page).toHaveURL(new RegExp(`/ships/${hull}$`));
@@ -187,13 +187,19 @@ test.describe('hull catalogue', () => {
     // pointer where there is one, and the press does it where there is not.
     await page.goto('/ships');
     const row = visibleHulls(page).nth(3);
-    const symbol = await row.getAttribute('data-hull-symbol');
     // The row's own control, which is what a Commander reaches for at either
     // width: the anchored element carries the symbol, the control inside it
     // carries the action.
     const control = row.getByRole('button').first();
     await (hoverable ? control.hover() : control.click());
-    await expect(page).toHaveURL(new RegExp(`/ships/${symbol}$`));
+
+    // The address is the hull's name with an underscore for each space, and the
+    // row carries the package symbol, so the two are the same string only where
+    // the package spells them alike (001/FR-005). What the address has to say is
+    // which hull opened, and the heading beside it is that hull.
+    await expect(page).toHaveURL(/\/ships\/[^/]+$/);
+    const opened = (new URL(page.url()).pathname.split('/').at(-1) ?? '').replace(/_/g, ' ');
+    await expect(page.getByRole('heading', { level: 2, name: opened })).toBeVisible();
   });
 
   test('restores constraints, order and place after a trip to hull detail', async ({ page }) => {

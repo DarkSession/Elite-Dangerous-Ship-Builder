@@ -6,6 +6,7 @@ import {
   declaredOrigin,
   documentHead,
   documentTitle,
+  hullAddressSegment,
   hullCard,
   interpolate,
   publishedAddresses,
@@ -49,19 +50,28 @@ describe('published addresses', () => {
         `${ORIGIN}/ships`,
         `${ORIGIN}/build`,
         `${ORIGIN}/builds`,
-        // Sorted by symbol rather than left in the package's order, so a pin
-        // move that reorders the catalogue does not rewrite the whole sitemap
-        // and hide the one hull it actually added.
+        // Addressed by the hull's name with an underscore for each space, and
+        // sorted by that address rather than left in the package's order: a pin
+        // move that reorders the catalogue then does not rewrite the whole
+        // sitemap and hide the one hull it actually added (001/FR-005).
         `${ORIGIN}/${HULL_PARENT}/Anaconda`,
-        `${ORIGIN}/${HULL_PARENT}/Empire_Trader`,
+        `${ORIGIN}/${HULL_PARENT}/Imperial_Clipper`,
       ],
     );
+  });
+
+  it('spells a name with a space as one address segment', () => {
+    assert.equal(hullAddressSegment('Type-11 Prospector'), 'Type-11_Prospector');
+    assert.equal(hullAddressSegment('Anaconda'), 'Anaconda');
+    assert.equal(hullAddressSegment('Fer-de-Lance'), 'Fer-de-Lance');
   });
 
   it('gives a hull its own illustration as its card, and everything else the mark', () => {
     const addresses = publishedAddresses({ origin: ORIGIN, ships: SHIPS });
 
     assert.equal(addresses[0].image, SITE_CARD);
+    // The illustration is still filed under the symbol: the address names the
+    // hull and the identity does not change with it.
     assert.equal(addresses.at(-1).image, hullCard('Empire_Trader'));
   });
 

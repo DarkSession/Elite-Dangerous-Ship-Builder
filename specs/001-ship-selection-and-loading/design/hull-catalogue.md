@@ -9,7 +9,7 @@
 - `CollectionToolbar` as the reference draws it and no further: a localized search field carrying its words in the placeholder rather than in a drawn label, and the size choices as an abutted segmented strip led by `ALL`. The strip is exclusive — `ALL` or one pad class, never two at once — so it is a radio group, not a set of checkboxes. Ordering is the wide manifest's own column headers, and canvas 1b's sort chips in the compact composition.
 - Wide `ResponsiveCatalogueView`: canvas 1a's manifest — a leading marker column, then ship, manufacturer, the size code, the mount code and the price in Mcr, the last two hard against the trailing edge as the reference sets them. Column headers are named bidirectional sort buttons; the column in force takes the reference's amber and its `▲`/`▼` caret, which is decoration beside `aria-sort`. The current row is marked by the amber lozenge, the 3px marker on its leading edge, the wash and the amber hull name, and by `aria-current`; it carries no drawn label.
 - Narrow `ResponsiveCatalogueView`: canvas 1b's stacked records — the size code on the leading edge, the hull name over one `manufacturer · mounts` line, the price and `Mcr` on the trailing edge — preceded by the horizontally scrolling sort chips.
-- When `/ships/:symbol` is active at wide widths, the manifest shares the page with the [hull-detail inspector](./hull-detail.md). `/ships` itself requires no implicit first selection.
+- When `/ships/:hull` is active at wide widths, the manifest shares the page with the [hull-detail inspector](./hull-detail.md). `/ships` itself requires no implicit first selection.
 - One centred sentence for no matches, on the manifest's own ground. No notice above the list: the reference draws none, and a cell with no value already says "Unavailable" in place.
 
 ### Narrowing is the search and the size strip, and nothing else
@@ -105,7 +105,7 @@ That name is `Ship Builder`. The canvas writes `SHIPYARD`, and this is the secon
 
 ## Interaction and session behavior
 
-The screen writes `CatalogueSessionState` to the tab catalogue store and optional versioned `sessionStorage` cache. It writes no active build, local build record, query parameter or fragment. Opening detail records the selected symbol/offset as the result anchor and navigates to `/ships/:symbol`; wide layout keeps the manifest visible while narrow layout presents detail as a full-screen layer. Browser/back and the detail back action restore from the same state.
+The screen writes `CatalogueSessionState` to the tab catalogue store and optional versioned `sessionStorage` cache. It writes no active build, local build record, query parameter or fragment. Opening detail records the selected symbol/offset as the result anchor and navigates to the hull's own address under `/ships`; wide layout keeps the manifest visible while narrow layout presents detail as a full-screen layer. Browser/back and the detail back action restore from the same state.
 
 Search uses the actual localized strings/formatters shown in the current manifest/cards, one word at a time. The size strip is the one structured facet, and it names its selected segment. The wide manifest uses real table semantics rather than a grid of generic elements; the narrow list preserves the same fact relationships without visually forcing table columns.
 

@@ -68,8 +68,9 @@ measure, not the set of mounts that carry a module.
 
 ## The status rail cell
 
-The rail's six metric cells are `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED` and `MASS`. Feature 007
-contributes `DPS` and nothing else; features 006 and 008 own the rest and are not anticipated here.
+The rail's cell band carries `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED`, `MASS`, `CARGO` and
+`PASSENGERS`. Feature 007 contributes `DPS` and nothing else; features 006, 008 and 003 own the rest
+and are not anticipated here.
 
 The cell carries `weaponMetrics().total.sustainedDamagePerSecond` — a label and a bare figure, with
 no unit, no second figure and no condition, because that is what the canvas draws. Unavailable

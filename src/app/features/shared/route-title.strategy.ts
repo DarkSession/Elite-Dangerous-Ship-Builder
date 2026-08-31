@@ -4,7 +4,6 @@ import {
   type ActivatedRouteSnapshot,
   type RouterStateSnapshot,
 } from '@angular/router';
-import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
 import { interpolationVariables } from '../../i18n/catalogue-loader';
 import { LocaleStore } from '../../i18n/locale.store';
 import {
@@ -13,6 +12,7 @@ import {
   type MessageKey,
   type MessageParams,
 } from '../../i18n/locale-registry';
+import { hullForAddressSegment } from '../../domain/catalogue/hull-address';
 import { hullArtworkPath } from '../../platform/assets/hull-artwork-path';
 
 /**
@@ -126,20 +126,20 @@ function nearestKey(
  * `<meta>`, and 011/FR-027 names the document head as the one surface where it
  * is not required.
  *
- * Where the symbol resolves to no hull, this is `null` and the address
+ * Where the segment resolves to no hull, this is `null` and the address
  * publishes the catalogue's identity. The screen behind it says the same thing
- * in its own way, with the unknown-symbol notice.
+ * in its own way, with the unknown-hull notice.
  */
 function resolveHull(root: ActivatedRouteSnapshot): { symbol: string; name: string } | null {
   for (let route: ActivatedRouteSnapshot | null = root; route; route = route.firstChild) {
-    const symbol: unknown = route.params['symbol'];
-    if (typeof symbol !== 'string' || symbol.length === 0) {
+    const segment: unknown = route.params['hull'];
+    if (typeof segment !== 'string' || segment.length === 0) {
       continue;
     }
     // The package's own record, so the symbol that reaches the illustration
-    // path is the package's spelling of it rather than the URL's: the lookup
+    // path is the package's spelling of it rather than the URL's: the address
     // matches case-insensitively and the artwork directories do not.
-    const ship = getShipBySymbol(symbol);
+    const ship = hullForAddressSegment(segment);
     if (ship != null) {
       return { symbol: ship.symbol, name: ship.name };
     }

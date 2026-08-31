@@ -635,7 +635,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
-    surfaceId: 'ships/:symbol',
+    surfaceId: 'ships/:hull',
     requirements: ['001/FR-004', '001/FR-005', '001/FR-006', '001/FR-022'],
     journey: 'product/hull-detail',
     axe: true,
@@ -648,7 +648,11 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'every restricted group carries one of the restriction names the application owns, and totals only the mounts it states',
       'a hull that restricts nothing it states draws no restricted rule and no empty group',
       'a size chip’s notation is read out as the mounts it stands for, not as the notation',
-      'an unknown symbol is a named error with no facts, no build and no creation action',
+      'the address carries the hull’s name with an underscore for each space, and no hull symbol',
+      'a hull opened from the catalogue lands on that address, and reloading it opens the same hull',
+      'an address published as a hull symbol opens the same hull and is replaced by the name form',
+      'an address cased differently from the canonical one opens the hull and is replaced by it',
+      'an address no hull is named or symbolled is a named error with no facts, no build and no creation action',
       'a missing illustration is explained as temporary and disables nothing',
     ],
     manualRecord: 'screen-reader',
@@ -656,7 +660,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   {
     // 001/FR-009 moved off this surface on 2026-08-25: it carries no dialog any
     // more, because a build being replaced has a record of its own.
-    surfaceId: 'ships/:symbol/create-stock-build',
+    surfaceId: 'ships/:hull/create-stock-build',
     requirements: ['001/FR-007'],
     journey: 'product/hull-detail',
     axe: true,
@@ -902,6 +906,21 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a package-defaulted fixed mount raises nothing and creates no provenance region',
     ],
     manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'build/capacity-cells',
+    requirements: ['003/FR-023', '003/FR-024', '003/SC-007'],
+    journey: 'ship-status/capacity',
+    axe: true,
+    assertions: [
+      'the rail states a cargo capacity and a passenger capacity, each as one cell of its own band',
+      'both figures are the package’s own, for the build in memory, and follow an edit that changes either',
+      'a build with no rack and no cabin draws both cells at zero rather than dropping them',
+      'the cells are the last two of the rail’s band, after the six the other features own',
+      'the band is drawn wherever the rail is, so the compact STATUS segment carries every cell the column does',
+      'the compact key-figures strip stands down while STATUS is open, so no figure is on one screen twice',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'build/merc-coin-row',
@@ -1703,8 +1722,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'drives/rail',
     axe: true,
     assertions: [
-      'the JUMP, SPEED and MASS cells close the canvas’s six-cell rail grid, in the canvas’s order',
-      'the six cells are one grid two columns wide, so DPS and JUMP share the row the canvas puts them on',
+      'the JUMP, SPEED and MASS cells follow DPS in the rail’s cell grid, in the canvas’s order',
+      'the cells are one grid two columns wide, so DPS and JUMP share the row the canvas puts them on',
       'the amber ground reaches exactly as far as the cells do, ruling them off through its gaps and nowhere else',
       'each cell carries the figure the DRIVES cards carry, at the same load and the same precision',
       'each figure is named with its own unit, and the cells hold no control',

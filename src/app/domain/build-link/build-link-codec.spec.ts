@@ -329,7 +329,7 @@ describe('build-link codec', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.5SHJb2soVSh3gubx2!B');
+    expect(encodeBuildLinkFragment(source)).toBe('b.5SJLJs0jc4X:G7cvxRr');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -764,13 +764,13 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently on 2026-08-29 so that the ten Merc-Coin articles the Almanac
-    // records with a baked experimental effect carry it here too. Once released, a changed hash
-    // belongs under the next table number.
+    // unpublished, most recently on 2026-08-31 so that the five plain size-8 frame shift drives
+    // the Almanac withdrew leave the catalogue here too. Once released, a changed hash belongs
+    // under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('cbabae30fb1057a19c54e84d6b0c0bb309fa0071547a9fbf1e24a4c1148b4586');
+    expect(contentHash).toBe('a1e2fc867f47e281344ea442b1845dd15e6f622e3b37ec86150e4b252eb504bc');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -894,9 +894,9 @@ describe('build-link codec', () => {
 
   it('keeps the frozen literal special-build link stable in the decode direction', () => {
     // Freeze before release; once table 1 ships, never regenerate this fixture to make a build pass.
-    // Re-frozen 2026-08-22 with table 1 itself, when a pre-engineered module's own blueprint joined
-    // its ordinary set and every record over one shifted by the discriminator bit that gained.
-    const preEngineered = decodeBuildLinkFragment('b.5SHJb2soVSh3gubx2!B');
+    // Re-frozen 2026-08-31 with table 1 itself, when the five plain size-8 frame shift drives left
+    // the catalogue and every module index over theirs moved down by five.
+    const preEngineered = decodeBuildLinkFragment('b.5SJLJs0jc4X:G7cvxRr');
 
     expect(preEngineered.shipSymbol).toBe('Krait_MkII');
     expect(preEngineered.shipName).toBeNull();
@@ -978,7 +978,7 @@ describe('build-link codec', () => {
     expectCodecError(() => decodeBuildLinkFragment('b1.AAAA'), 'unsupportedEnvelope');
   });
 
-  it('reconstructs every omitted fixed mount with the package default', () => {
+  it('reconstructs every omitted stocked mount with the package default', () => {
     const source = ShipLoadout.fromLoadout({ Ship: 'SideWinder', Modules: [] });
 
     const fixedSlots = source
@@ -987,9 +987,25 @@ describe('build-link codec', () => {
     expect(fixedSlots).toHaveLength(8);
     expect(fixedSlots.every(({ module }) => module !== null)).toBe(true);
     expect(source.fittedModuleAt('CargoHatch')).not.toBeNull();
-    expect(source.importOutcomes).toHaveLength(9);
+    // The eight required mounts, the cargo hatch and the planetary approach suite: the ten the
+    // package stocks from the hull defaults when its source names none.
+    expect(source.importOutcomes).toHaveLength(10);
     expect(source.importOutcomes.every(({ action }) => action === 'defaulted')).toBe(true);
-    expect(encodeBuildLinkFragment(source)).toBe('b.1S..A@YX6Cjy!R');
+    expect(source.fittedModuleAt('PlanetaryApproachSuite')).not.toBeNull();
+    expect(encodeBuildLinkFragment(source)).toBe('b.1S..A@YMcJZp8M');
+  });
+
+  it('keeps a removable mount empty across a link when the payload records it empty', () => {
+    // Reconstruction stocks the approach suite when its source names none, because a journal
+    // event cannot tell a decision from a gap. A codec value gives every mount its own
+    // occupancy bit, so removing the suite is a decision the link has to carry (FR-019).
+    const source = ShipLoadout.default('SideWinder');
+    source.removeModule('PlanetaryApproachSuite');
+
+    const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
+
+    expect(decoded.fittedModuleAt('PlanetaryApproachSuite')).toBeNull();
+    expect(minimalState(decoded)).toEqual(minimalState(source));
   });
 
   it('refuses a slot the pinned table cannot spell', () => {

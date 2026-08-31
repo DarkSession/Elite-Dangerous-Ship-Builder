@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { ArtworkCoordinator } from '../../application/catalogue/artwork.coordinator';
 import { HullDetailFacade } from '../../application/catalogue/hull-detail.facade';
+import { hullAddressSegment, hullForAddressSegment } from '../../domain/catalogue/hull-address';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
@@ -84,8 +85,15 @@ export class HullDetailPage {
   readonly #restorer = inject(CatalogueAnchorRestorer);
   readonly #chrome = inject(ScreenChrome);
 
-  /** The hull symbol, bound from the route's own parameter. */
-  readonly symbol = input.required<string>();
+  /**
+   * The address segment naming the hull, bound from the route's own parameter.
+   *
+   * The hull's name made URL-ready, or the hull's package symbol: an address
+   * published before the name form existed still opens the hull it named
+   * (001/FR-005). Neither is the identity — `#detail` is handed the package's
+   * own symbol below.
+   */
+  readonly hull = input.required<string>();
 
   readonly backLabel = this.#messages.messageSignal('hullDetail.back');
   readonly specificationsHeading = this.#messages.messageSignal('hullDetail.specifications');
@@ -204,12 +212,37 @@ export class HullDetailPage {
     // The route parameter is the only input; everything else follows from it.
     // Leaving the route clears the selection, which is what tells the catalogue
     // the detail has closed — however it closed.
+    //
+    // The segment is resolved to the package's own record before anything reads
+    // it, so the symbol that reaches the facade and the anchor restorer is the
+    // package's spelling rather than the URL's — the address matches without
+    // regard to case and the artwork directories do not. A segment no hull
+    // answers to is passed through as it arrived, because the notice the screen
+    // then draws is about what was asked for.
     effect((onCleanup) => {
-      const symbol = this.symbol();
+      const ship = hullForAddressSegment(this.hull());
+      const symbol = ship?.symbol ?? this.hull();
       this.#detail.setSymbol(symbol);
       this.#restorer.setSelected(symbol);
       this.#creationError.set(null);
       onCleanup(() => this.#restorer.setSelected(null));
+    });
+
+    // One hull, one address. A hull reached by its symbol, or by an address
+    // cased differently from the canonical one, is replaced in history with the
+    // address the map lists and the deployment publishes — replaced rather than
+    // pushed, because the Commander arrived at the hull rather than at two of
+    // them (001/FR-005).
+    effect(() => {
+      const ship = hullForAddressSegment(this.hull());
+      if (ship === null) {
+        return;
+      }
+      const canonical = hullAddressSegment(ship.name);
+      if (this.hull() === canonical) {
+        return;
+      }
+      void this.#router.navigate(['/ships', canonical], { replaceUrl: true });
     });
 
     // One assertive announcement per new blocking condition, and none for the

@@ -331,6 +331,57 @@ test.describe('the BUILD STATUS block', () => {
     // T074).
   });
 
+  test('states what the build carries, in the rail’s own cell band', async ({ page }) => {
+    await openStockBuild(page);
+
+    const band = rail(page).locator('.outfitting__status-cells');
+    await expect(band).toHaveCount(1);
+
+    // Two cells, closing the band after the six the other features own
+    // (003/FR-023). The figures are the package's, so what is asserted is that
+    // each is a whole number beside its own label rather than a value written
+    // out here.
+    const cells = band.locator('edsb-capacity-summary .metric__number');
+    await expect(cells).toHaveCount(2);
+    await expect(band).toContainText(englishMessages['capacity.rail.cargo']);
+    await expect(band).toContainText(englishMessages['capacity.rail.passengers']);
+    for (const value of await cells.allInnerTexts()) {
+      expect(value.trim()).toMatch(/^[\d,.\u202f\u00a0]+$/);
+    }
+
+    // Both always answer, so neither cell is ever the unavailable mark: a stock
+    // Anaconda carries no cabin, and nought is the package's answer rather than
+    // a substitute for one.
+    await expect(band.locator('edsb-capacity-summary')).not.toContainText(
+      englishMessages['unavailable.value'],
+    );
+  });
+
+  test('draws the cell band wherever the rail is, and the figures once', async ({ page }) => {
+    await openStockBuild(page);
+
+    // The band goes wherever the rail goes (003/FR-024). Where the rail is the
+    // strip's guest segment the workspace's own strip of key readings stands
+    // down while it is open, so no figure is on one screen twice.
+    await expect(rail(page).locator('.outfitting__status-cells')).toHaveCount(1);
+    await expect(page.locator('edsb-defence-summary')).toHaveCount(1);
+    await expect(page.locator('edsb-drives-summary')).toHaveCount(1);
+
+    const compact =
+      (await page.locator('.outfitting').first().getAttribute('data-composition')) !== 'wide';
+    await expect(page.locator('.outfitting__key-figures')).toHaveCount(0);
+
+    if (compact) {
+      // Closing the segment hands the readings back to the strip, still once.
+      await page
+        .locator('.anatomy__modes')
+        .getByRole('button', { name: /^mounts$/i })
+        .click();
+      await expect(page.locator('.outfitting__key-figures')).toHaveCount(1);
+      await expect(page.locator('edsb-defence-summary')).toHaveCount(1);
+    }
+  });
+
   test('reads with no violation, and without widening the document', async ({ page }, testInfo) => {
     await seed(page, [seedInvalidRecord('a', ['NoSuchSlotA', 'NoSuchSlotB'])]);
     await openSeededBuild(page, 'a');

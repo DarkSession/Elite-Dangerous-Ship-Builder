@@ -84,10 +84,17 @@ test.describe('what the head says this page is', () => {
 
   test('names the hull an open address is about', async ({ page }) => {
     await page.goto(`${PRODUCT_URL}/ships`);
+    // The manifest row carries the package symbol, which is what the artwork
+    // directories are keyed by. The address is the hull's name (001/FR-005), so
+    // the symbol is read off the row rather than out of the address bar.
+    const symbol =
+      (await page.locator('[data-hull-symbol]:visible').first().getAttribute('data-hull-symbol')) ??
+      '';
     await openFirstHullFromManifest(page);
     await expect(page).toHaveURL(/\/ships\/[^/]+$/);
 
-    const symbol = new URL(page.url()).pathname.split('/').at(-1) ?? '';
+    const address = new URL(page.url()).pathname.split('/').at(-1) ?? '';
+    expect(symbol.length).toBeGreaterThan(0);
 
     // The hull's own name and the hull's own picture. Forty-eight addresses
     // that describe themselves identically are one address as far as a search
@@ -106,7 +113,11 @@ test.describe('what the head says this page is', () => {
     await head(page, 'head meta[property="og:image"]', 'content').toBe(
       `${SITE_ORIGIN}/assets/ships/${symbol}/illustration.png`,
     );
-    await canonical(page).toBe(`${SITE_ORIGIN}/ships/${symbol}`);
+    await canonical(page).toBe(`${SITE_ORIGIN}/ships/${address}`);
+    // The address is the hull's name with an underscore for each space, so it
+    // is the title's own words and never the symbol unless the two are spelled
+    // alike.
+    expect(address).toBe(hull.replace(/ /g, '_'));
   });
 
   test('falls back to the screen it sits inside where the hull is not one', async ({ page }) => {

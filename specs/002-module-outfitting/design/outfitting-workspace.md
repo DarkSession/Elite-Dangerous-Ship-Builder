@@ -522,10 +522,17 @@ tracks are `repeat(auto-fit, minmax(3.25rem, 1fr))`, so the six stay on one row 
 become three on two rows where they do not.
 
 Canvas 1d draws the same six readings twice: once in the strip above the category tabs and again
-inside the `STATUS` panel's cell band. **The application draws them once**, in the strip, and the rail
-omits its cell band at this width. Both are on screen together whenever `STATUS` is open, and a
-reader meeting the same six figures twice on one screen has no way to tell which copy is the reading
-— the strip is the one that is always there, so it is the one that is kept.
+inside the `STATUS` panel's cell band. **The application draws them once**, and which of the two
+carries them depends on what is open: the rail draws its own band whenever it is on screen, and the
+strip stands down for as long as `STATUS` is open. A reader meeting the same figures twice on one
+screen has no way to tell which copy is the reading, and the panel a Commander opened to read the
+build's status is the copy they asked for. With `STATUS` closed the rail is not drawn at all and the
+strip is the only copy, which is what it is for: a glance at the figures while the mounts are being
+worked (`specs/003-ship-statistics/spec.md`, FR-024).
+
+The strip carries canvas 1d's six readings. The rail's band carries those six and feature 003's
+`CARGO` and `PASSENGERS` beside them (003/FR-023), because the rail is the whole status surface and
+the strip is a glance at part of it.
 
 ### The bands run to the glass
 

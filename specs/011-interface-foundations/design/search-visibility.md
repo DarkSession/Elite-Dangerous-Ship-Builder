@@ -13,7 +13,7 @@ The application is a client-side Angular bundle behind a service worker, publish
 at `https://sb.edct.dev/` and served from `public/` plus the build output. Nothing is rendered on a
 server. That single fact decides most of what follows.
 
-Four addresses exist (`app.routes.ts`): `/ships`, `/ships/:symbol`, `/build` and `/builds`. `/`
+Four addresses exist (`app.routes.ts`): `/ships`, `/ships/:hull`, `/build` and `/builds`. `/`
 redirects to `/ships`, and anything unmatched redirects there too. Every one of them is served the
 same `index.html`, so before 2026-08-27 every address a crawler fetched carried:
 
@@ -198,20 +198,28 @@ serve the first. The seventh is a README that told every visitor the application
 `SHIPS` and writes one `<loc>` per hull beside the three top-level routes: 51 addresses where there
 were 3.
 
+**A hull's address is its name, not its symbol. Ruled 2026-08-31 (Commander request; 001/FR-005.)**
+`/ships/LakonMiner` said nothing to the Commander reading the address bar and nothing to a search
+result quoting it; `/ships/Type-11_Prospector` names the ship. The segment is the package name with
+each space replaced by an underscore, matched without regard to case, and the symbol is still
+accepted so an address published before the rule opens the hull it named — the screen then replaces
+it in history with the canonical one, which is the address the map lists, the deployment publishes
+and the canonical link declares.
+
 Nothing in the deployment's design had to change for those addresses to answer. It already published
 one document per advertised address, so the hulls became documents the moment the map named them.
 That was the first pass's design and it held. The production journey's server did have to change: it
 had never resolved a published document, because none existed locally until the publisher moved into
 `pnpm run build` (see the note on `ships.html` below).
 
-Each address now says which hull it is. `/ships/:symbol` declares its own title and description
+Each address now says which hull it is. `/ships/:hull` declares its own title and description
 keys, both interpolating `{{hull}}`, and `RouteTitleStrategy` supplies the name from the package.
 The first pass had this route inherit the catalogue's description deliberately, because an open hull
 is the catalogue with one hull selected. That reading is right for a screen and wrong for an address:
 48 addresses describing themselves identically are one address as far as ranking is concerned, which
 is the defect the top-level routes were given their own descriptions to fix.
 
-Where a symbol resolves to no hull, the route publishes the catalogue's identity instead. Both
+Where a segment resolves to no hull, the route publishes the catalogue's identity instead. Both
 patterns interpolate the hull, so publishing them unfilled would put a sentence with a hole in it
 into a search result. The rule is general rather than special-cased: the strategy passes over any key
 whose variables it cannot fill, and takes the nearest ancestor's.

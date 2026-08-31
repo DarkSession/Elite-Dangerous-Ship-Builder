@@ -15,6 +15,15 @@
  * being remembered, and no hull symbol or hull name is written down here
  * (constitution II, and constitution VI for the name).
  *
+ * **A hull is addressed by its name, made URL-ready.** `hullAddressSegment`
+ * below spells it, and `src/app/domain/catalogue/hull-address.ts` spells the
+ * same rule for the running application. That is a second statement of one
+ * fact, and it is deliberate for the reason the interpolation and title copies
+ * below exist: this is `.mjs` and cannot import the TypeScript that defines it.
+ * `hullAddressParity` in `src/app/domain/catalogue/hull-address.spec.ts` holds
+ * the two to the same answer for every hull the package carries, so the copy
+ * cannot drift in silence (001/FR-005).
+ *
  * **The message keys are stated here as well as in `app.routes.ts`.** That is a
  * second statement of one fact, and it is deliberate: the alternative is a
  * script that parses TypeScript, which stops working the first time the file is
@@ -29,7 +38,17 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 export const HULL_PARENT = 'ships';
 
 /** The route path of the hull screen, as the route table declares it. */
-export const HULL_ROUTE = `${HULL_PARENT}/:symbol`;
+export const HULL_ROUTE = `${HULL_PARENT}/:hull`;
+
+/**
+ * The address segment one hull answers to: its name with each space underscored.
+ *
+ * The package's names carry only letters, digits, spaces and hyphens, so every
+ * one of them spells an address without being escaped.
+ */
+export function hullAddressSegment(name) {
+  return name.replace(/ /g, '_');
+}
 
 /** The card a link preview shows for anything that is not one hull. */
 export const SITE_CARD = 'assets/link-card.png';
@@ -108,7 +127,7 @@ function namesTheApplication(page, application) {
 /**
  * Every published address, in the order the sitemap lists them.
  *
- * Hulls are sorted by symbol rather than left in the package's own order, so a
+ * Hulls are sorted by address rather than left in the package's own order, so a
  * pin move that reorders the catalogue does not rewrite the whole file and hide
  * the one hull it actually added.
  */
@@ -122,12 +141,22 @@ export function publishedAddresses({ origin, ships = SHIPS } = {}) {
     // committed file that CI compares exactly, and ICU collation varies with
     // how Node was built — a small-icu runner would reorder the map and fail
     // the comparison with a message about the package.
-    .sort((one, other) => (one.symbol < other.symbol ? -1 : one.symbol > other.symbol ? 1 : 0))
+    //
+    // Sorted by the address rather than by the symbol, so the map reads in the
+    // order it is written in and a hull added by a pin move lands beside the
+    // ones it is named like.
+    .sort((one, other) => {
+      const first = hullAddressSegment(one.name);
+      const second = hullAddressSegment(other.name);
+      return first < second ? -1 : first > second ? 1 : 0;
+    })
     .map((ship) => ({
-      path: `${HULL_PARENT}/${ship.symbol}`,
+      path: `${HULL_PARENT}/${hullAddressSegment(ship.name)}`,
       route: HULL_ROUTE,
       ...HULL_KEYS,
       params: { hull: ship.name },
+      // The illustration is still filed under the symbol: the address changed
+      // and the identity did not (001/FR-001, FR-005).
       image: hullCard(ship.symbol),
     }));
 

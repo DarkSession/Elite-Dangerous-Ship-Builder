@@ -1,6 +1,6 @@
 # Hull Detail Screen
 
-**Route**: `/ships/:symbol`  
+**Route**: `/ships/:hull`  
 **Requirements**: FR-001, FR-003, FR-004, FR-005, FR-006, FR-007, FR-022
 
 ## Composition
@@ -195,7 +195,7 @@ from a record `/builds` lists, so creating a stock hull takes nothing from them.
 
 ## Responsive and accessibility notes
 
-- The exact same `/ships/:symbol` state appears as a wide inspector or narrow full-screen layer; browser history and symbol identity do not depend on the breakpoint.
+- The exact same `/ships/:hull` state appears as a wide inspector or narrow full-screen layer; browser history and hull identity do not depend on the breakpoint.
 - Facts reflow from inspector groups to one narrow column without changing heading or definition order.
 - Hardness, crew, mass lock and armour are drawn bare, as the reference draws them, rather than being given an invented unit; every figure that has a unit names it.
 - Canonical package text is marked untranslated when appropriate.

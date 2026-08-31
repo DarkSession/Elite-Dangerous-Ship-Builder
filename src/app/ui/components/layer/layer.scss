@@ -110,13 +110,19 @@
   overflow-y: auto;
 }
 
-// A sheet fills the screen from the top and grows down to a bound.
+// A sheet starts near the top of the screen and grows down to a bound.
 //
-// Anchored at the top, so a layer starts where the screen starts and takes
-// exactly the room its content needs. Risen from the block end and sized by its
-// content instead, a short layer puts a short screen's worth of scrim above
-// itself: `Import build` began 449px down an 844px phone, over a ship list that
-// had nothing to do with importing (Commander request 2026-08-30).
+// Anchored at the block start, so a layer starts where the screen starts and
+// takes exactly the room its content needs. Risen from the block end and sized
+// by its content instead, a short layer puts a short screen's worth of scrim
+// above itself: `Import build` began 449px down an 844px phone, over a ship
+// list that had nothing to do with importing (Commander request 2026-08-30).
+//
+// It is inset from that edge rather than flush against it, so the screen behind
+// it shows above as well as below and the title bar is not cut into by the
+// status bar of the phone drawing it (Commander request 2026-08-31). The inset
+// is taken out of the bound rather than added to it, so the sheet still gives
+// up the same strip of screen overall.
 //
 // The bound is the reference's 88%: enough of the screen behind it stays visible
 // to say what the layer is over, and no more. `svh` rather than `vh` because a
@@ -125,15 +131,12 @@
 @mixin sheet-presentation {
   inline-size: 100%;
   max-inline-size: 100%;
-  margin-block-start: 0;
+  margin-block-start: var(--edsb-space-sheet-inset);
   margin-block-end: auto;
   margin-inline: auto;
-  max-block-size: 88svh;
+  max-block-size: calc(88svh - var(--edsb-space-sheet-inset));
   overflow-y: auto;
   border-radius: var(--edsb-shape-layer);
-  // The edge the sheet shares with the edge of the screen is not drawn, and a
-  // sheet that starts at the top shares its leading one.
-  border-block-start: 0;
 }
 
 // A full-height layer owns the viewport. Used where content, expansion or a

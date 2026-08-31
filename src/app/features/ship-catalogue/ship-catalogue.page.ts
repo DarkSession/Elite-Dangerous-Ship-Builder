@@ -17,6 +17,7 @@ import {
 } from '../../ui/components/catalogue-view/responsive-catalogue-view';
 import type { HullSummary } from '../../ui/components/hull-summary-card/hull-summary-card';
 import type { CatalogueSortField } from '../../domain/catalogue/catalogue-sort';
+import { hullAddressForSymbol } from '../../domain/catalogue/hull-address';
 import type { HullSize } from '../../domain/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
@@ -218,7 +219,7 @@ export class ShipCataloguePage {
   /** Remembers where the Commander was, then opens the hull. */
   openHull(symbol: string): void {
     this.#catalogue.rememberPosition(symbol, this.#restorer.offsetOf(symbol));
-    void this.#router.navigate(['/ships', symbol]);
+    void this.#router.navigate(['/ships', this.#addressOf(symbol)]);
   }
 
   /**
@@ -235,7 +236,19 @@ export class ShipCataloguePage {
       return;
     }
     this.#catalogue.rememberPosition(symbol, this.#restorer.offsetOf(symbol));
-    void this.#router.navigate(['/ships', symbol], { replaceUrl: true });
+    void this.#router.navigate(['/ships', this.#addressOf(symbol)], { replaceUrl: true });
+  }
+
+  /**
+   * The address one hull answers to, from the symbol the manifest carries.
+   *
+   * The rows are keyed by the package symbol, which is the identity, and the
+   * address is the hull's name made URL-ready (001/FR-005). A symbol the package
+   * does not carry cannot happen here — the rows come from the package — and if
+   * it did, it addresses the screen that says so.
+   */
+  #addressOf(symbol: string): string {
+    return hullAddressForSymbol(symbol) ?? symbol;
   }
 
   /**

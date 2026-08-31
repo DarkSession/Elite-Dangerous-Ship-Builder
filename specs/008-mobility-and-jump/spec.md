@@ -111,6 +111,14 @@ inline notes below record each correction and why.
   > `buildMass(load)` answer the whole legend comes from. The requirement stands as written for the
   > day a canvas draws one of the three again.
   >
+  > **A screen draws `cargoCapacity` again. Ruled 2026-08-31 (Commander request).** The status rail states it,
+  > as feature 003's own cell (`specs/003-ship-statistics/spec.md`, FR-023). Nothing about this card
+  > changes — it still draws no cargo capacity and still reads none — but the rule that followed from
+  > this narrowing was written over the whole application rather than over this card, and a figure
+  > another feature draws cannot be one no file may read. So `mobility-jump-ownership` withholds
+  > `unladenMass` and `fuelCapacity` alone, and this feature's own files are where the reading of
+  > `cargoCapacity` would still be wrong.
+  >
   > **Corrected against the installed package.** This requirement previously named
   > `unladenMassResult`, `fuelCapacityResult` and `cargoCapacityResult`. Those getters do not exist
   > in `@elite-dangerous-almanac/core` and their absence is deliberate: the package documents

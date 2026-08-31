@@ -10,9 +10,11 @@
 
 ## Scope
 
-This capability presents the active build's structural status, as canvases 1c and 1d draw it: the
-`BUILD STATUS` heading opening the workspace's status rail, and the Almanac's validation issues
-beneath it.
+This capability presents the active build's structural status: the `BUILD STATUS` heading opening
+the workspace's status rail and the Almanac's validation issues beneath it, both as canvases 1c and
+1d draw them, and beside them what the build carries in cargo and in passenger berths. Neither
+canvas draws a capacity, and the two cells that state one are a ruled addition to both
+([design/reference-review.md](./design/reference-review.md), "Added beyond the canvas").
 
 Feature 004's import-completion notice is drawn under that same heading, beneath the issues, since
 2026-08-26 (Commander request). It is not this capability's to own — the wording, the dismissal and
@@ -35,7 +37,14 @@ composes none of them and passes no conditions to any of them.
 3. A build the package reports nothing about draws nothing, so no readiness claim is made.
 4. A diagnostic the package cannot translate reads in its canonical language, disclosed as such.
 
-### Story 2 — Read a build's status across revisions (P2)
+### Story 2 — Read what the build carries (P2)
+
+1. The rail states the build's cargo capacity and its passenger capacity, each from the package.
+2. Fitting a rack or a cabin changes the figure it changed; removing one changes it back.
+3. A build with no rack and no cabin states zero of each rather than dropping either reading.
+4. Every composition that draws the rail draws both, and neither figure is on one screen twice.
+
+### Story 3 — Read a build's status across revisions (P2)
 
 1. A committed edit re-renders the issues for the build now in memory.
 2. A resolved issue disappears; a newly raised one appears in its package position.
@@ -70,6 +79,33 @@ composes none of them and passes no conditions to any of them.
   valid build. The original requirement withheld the line entirely; a Commander read the silence as
   a block that had failed to load rather than as an all-clear, and asked for the confirmation
   (2026-08-27).
+- **FR-023**: The rail MUST state the build's cargo capacity and its passenger capacity, each as one
+  cell of the rail's own cell band, read from `ShipLoadout.cargoCapacity` and
+  `ShipLoadout.passengerCapacity` and formatted for the active locale. Both are facts the build
+  already carries and both always answer, so each MUST draw its figure whatever that figure is: a
+  build with no rack and no cabin carries none of either, and zero is the package's answer rather
+  than a substitute for one. The application MUST NOT recompute, re-sum or reconcile either
+  locally, and MUST NOT derive a figure from the pair.
+
+  > **A build states what it carries. Ruled 2026-08-31 (Commander request).** Neither capacity is
+  > drawn on either canvas: feature 008 ruled `cargoCapacity` off its own `DRIVES` card, and
+  > passenger capacity is a package figure only from Almanac 0.2.7, which publishes
+  > `passengerCapacity` beside it. The rail is where a Commander reads what a build _is_, so both
+  > belong in its cell band beside the results the other features own. 008's ruling stands — its
+  > card draws neither — and the application-wide rule that followed from it withholds
+  > `unladenMass` and `fuelCapacity`.
+
+- **FR-024**: The rail's cell band MUST be drawn wherever the rail itself is drawn, at every
+  composition, and a Commander MUST meet each of the rail's figures once on any one screen.
+
+  > **The band goes wherever the rail goes. Ruled 2026-08-31 (Commander request).** Below the wide
+  > composition the rail omitted its cell band, on the reading that the workspace's always-present
+  > strip of key readings was the one copy of them. That left the status surface a Commander opens
+  > to read the build's status as the one place the shield, armour and the rest were not. Which of
+  > the two stands down so the second half of this requirement holds is the workspace's arrangement
+  > rather than this capability's, and is recorded with it
+  > (`specs/002-module-outfitting/design/outfitting-workspace.md`, "The compact key figures").
+
 - **FR-022**: Issue severity MUST be expressed as text beside its issue and MUST NOT depend on
   colour alone. The text is not drawn, because neither canvas draws a severity word; it is read
   aloud beside the sentence, and it is what carries the severity. The canvas's four tones — error,
@@ -104,12 +140,16 @@ policy checker no longer requires coverage-ledger evidence for it.
 
 ## Almanac Coverage
 
-`ShipLoadout.validation()` and `getLoadoutIssueMessage` provide every value, state and sentence this
-feature presents. The application consolidates nothing and owns no game calculation or verdict.
+`ShipLoadout.validation()`, `getLoadoutIssueMessage`, `ShipLoadout.cargoCapacity` and
+`ShipLoadout.passengerCapacity` provide every value, state and sentence this feature presents. The
+application consolidates nothing and owns no game calculation or verdict.
 
 ## Success Criteria
 
 - **SC-001**: Structural status and every validation issue match the Almanac result.
+- **SC-007**: The cargo and passenger figures match `ShipLoadout.cargoCapacity` and
+  `ShipLoadout.passengerCapacity` for the build in memory, at every composition the rail is drawn
+  in.
 
 Withdrawn or reassigned with their requirements: `SC-002` and `SC-004` (to 005–009, with the results
 they govern), `SC-003` (to 005–008; reading a field on a build in memory has no measurable budget),

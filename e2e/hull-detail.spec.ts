@@ -103,7 +103,7 @@ async function openHullInApp(page: Page, name: string): Promise<void> {
   await expect(page).toHaveURL(/\/ships$/);
   await page.getByRole('searchbox', { name: 'Search ships or manufacturers' }).fill(name);
   await openHullFromManifest(page, name);
-  await expect(page).toHaveURL(new RegExp(`/ships/\\w+$`));
+  await expect(page).toHaveURL(new RegExp(`/ships/[\\w-]+$`));
   await expect(detail(page)).toBeVisible();
 }
 
@@ -249,7 +249,7 @@ test.describe('hull detail', () => {
     // Twenty-nine of the 48 hulls restrict the planetary-approach mount and
     // nothing else, and that mount is left out, so the group is absent rather
     // than empty. The Sidewinder is one of them (001/FR-022).
-    await page.goto('/ships/SideWinder');
+    await page.goto('/ships/Sidewinder');
     await expect(page.getByRole('heading', { level: 2, name: 'Sidewinder' })).toBeVisible();
 
     const optional = detail(page).locator('[data-slot-group="optional"]');
@@ -343,7 +343,34 @@ test.describe('hull detail', () => {
     await expect(page).toHaveURL(/\/ships\/Anaconda$/);
   });
 
-  test('says nothing was created when the symbol is not a hull', async ({ page }) => {
+  test('addresses a hull by its name, and keeps a symbol address working', async ({ page }) => {
+    // The address is the package name with an underscore for each space, and it
+    // is the one the address bar carries. A hull symbol is still accepted, so an
+    // address published before the rule opens the hull it named — and is
+    // replaced by the canonical one rather than standing beside it as a second
+    // address for one hull (001/FR-005).
+    await page.goto('/ships/Type-11_Prospector');
+    await expect(page.getByRole('heading', { level: 2, name: 'Type-11 Prospector' })).toBeVisible();
+    await expect(page).toHaveURL(/\/ships\/Type-11_Prospector$/);
+
+    await page.goto('/ships/LakonMiner');
+    await expect(page.getByRole('heading', { level: 2, name: 'Type-11 Prospector' })).toBeVisible();
+    await expect(page).toHaveURL(/\/ships\/Type-11_Prospector$/);
+
+    await page.goto('/ships/type-11_prospector');
+    await expect(page.getByRole('heading', { level: 2, name: 'Type-11 Prospector' })).toBeVisible();
+    await expect(page).toHaveURL(/\/ships\/Type-11_Prospector$/);
+
+    // Replaced, not pushed: the Commander arrived at one hull, so back leaves
+    // the shipyard rather than stepping through the addresses it answered to.
+    await page.goto('/ships');
+    await page.goto('/ships/LakonMiner');
+    await expect(page).toHaveURL(/\/ships\/Type-11_Prospector$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/ships$/);
+  });
+
+  test('says nothing was created when the address is not a hull', async ({ page }) => {
     await page.goto('/ships/Nonexistent_Hull');
 
     await expect(page.getByRole('heading', { name: 'No such hull' })).toBeVisible();

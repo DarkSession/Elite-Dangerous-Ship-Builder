@@ -83,6 +83,21 @@ this feature's dependency on features 005–009, because it no longer composes t
       unit coverage, all ten Playwright projects and all axe scans pass with no skipped, focused or
       quarantined test (depends on T008, T009)
 
+- [x] T011 State what the build carries. Add `projectCapacity` in
+      `src/app/domain/build-capacity/build-capacity.ts`, reading `cargoCapacity` and
+      `passengerCapacity` off the build, and draw the two cells as `edsb-capacity-summary` in
+      `src/app/features/build-workspace/outfitting/capacity-summary/`, flowing into the rail's own
+      grid the way features 006 to 008 do. Message keys in both shipped locales, unit tests beside
+      both files, and the rail journey in `e2e/ship-status.spec.ts` (FR-023, SC-007)
+- [x] T012 Draw the rail's cell band wherever the rail is drawn, and stand the workspace's compact
+      strip of key readings down while the rail is open, in
+      `src/app/features/build-workspace/outfitting/outfitting-workspace/`. Register
+      `build/capacity-cells` in `e2e/coverage-ledger.ts` beside the journey that exercises it
+      (FR-024)
+- [x] T013 Narrow feature 008's withdrawn-aggregate rule to `unladenMass` and `fuelCapacity` in
+      `scripts/policy/mobility-jump-ownership.mjs`, and fence `cargoCapacity` inside that feature's
+      own files instead, so a figure this rail draws is not one no file may read (FR-023)
+
 ---
 
 ## Retired tasks

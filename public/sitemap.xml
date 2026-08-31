@@ -32,37 +32,46 @@
     <loc>https://sb.edct.dev/ships/Adder</loc>
   </url>
   <url>
+    <loc>https://sb.edct.dev/ships/Alliance_Challenger</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Alliance_Chieftain</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Alliance_Crusader</loc>
+  </url>
+  <url>
     <loc>https://sb.edct.dev/ships/Anaconda</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Asp</loc>
+    <loc>https://sb.edct.dev/ships/Asp_Explorer</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Asp_Scout</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/BelugaLiner</loc>
+    <loc>https://sb.edct.dev/ships/Beluga_Liner</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/CobraMkIII</loc>
+    <loc>https://sb.edct.dev/ships/Caspian_Explorer</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/CobraMkIV</loc>
+    <loc>https://sb.edct.dev/ships/Cobra_Mk_III</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/CobraMkV</loc>
+    <loc>https://sb.edct.dev/ships/Cobra_Mk_IV</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Cobra_Mk_V</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Corsair</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Cutter</loc>
+    <loc>https://sb.edct.dev/ships/Diamondback_Explorer</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/DiamondBack</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/DiamondBackXL</loc>
+    <loc>https://sb.edct.dev/ships/Diamondback_Scout</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Dolphin</loc>
@@ -71,46 +80,49 @@
     <loc>https://sb.edct.dev/ships/Eagle</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Empire_Courier</loc>
+    <loc>https://sb.edct.dev/ships/Federal_Assault_Ship</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Empire_Eagle</loc>
+    <loc>https://sb.edct.dev/ships/Federal_Corvette</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Empire_Trader</loc>
+    <loc>https://sb.edct.dev/ships/Federal_Dropship</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Explorer_NX</loc>
+    <loc>https://sb.edct.dev/ships/Federal_Gunship</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Federation_Corvette</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/Federation_Dropship</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/Federation_Dropship_MkII</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/Federation_Gunship</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/FerDeLance</loc>
+    <loc>https://sb.edct.dev/ships/Fer-de-Lance</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Hauler</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Independant_Trader</loc>
+    <loc>https://sb.edct.dev/ships/Imperial_Clipper</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Krait_Light</loc>
+    <loc>https://sb.edct.dev/ships/Imperial_Courier</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Krait_MkII</loc>
+    <loc>https://sb.edct.dev/ships/Imperial_Cutter</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/LakonMiner</loc>
+    <loc>https://sb.edct.dev/ships/Imperial_Eagle</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Keelback</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Kestrel_Mk_II</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Krait_Mk_II</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Krait_Phantom</loc>
+  </url>
+  <url>
+    <loc>https://sb.edct.dev/ships/Lynx_Highliner</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Mamba</loc>
@@ -119,55 +131,43 @@
     <loc>https://sb.edct.dev/ships/Mandalay</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/MediumTransport01</loc>
-  </url>
-  <url>
     <loc>https://sb.edct.dev/ships/Orca</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/PantherMkII</loc>
+    <loc>https://sb.edct.dev/ships/Panther_Clipper_Mk_II</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Python</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Python_NX</loc>
+    <loc>https://sb.edct.dev/ships/Python_Mk_II</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/SideWinder</loc>
+    <loc>https://sb.edct.dev/ships/Sidewinder</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/SmallCombat01_NX</loc>
+    <loc>https://sb.edct.dev/ships/Type-10_Defender</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Type6</loc>
+    <loc>https://sb.edct.dev/ships/Type-11_Prospector</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Type7</loc>
+    <loc>https://sb.edct.dev/ships/Type-6_Transporter</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Type8</loc>
+    <loc>https://sb.edct.dev/ships/Type-7_Transporter</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Type9</loc>
+    <loc>https://sb.edct.dev/ships/Type-8_Transporter</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/Type9_Military</loc>
+    <loc>https://sb.edct.dev/ships/Type-9_Heavy</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/TypeX</loc>
+    <loc>https://sb.edct.dev/ships/Viper_Mk_III</loc>
   </url>
   <url>
-    <loc>https://sb.edct.dev/ships/TypeX_2</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/TypeX_3</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/Viper</loc>
-  </url>
-  <url>
-    <loc>https://sb.edct.dev/ships/Viper_MkIV</loc>
+    <loc>https://sb.edct.dev/ships/Viper_Mk_IV</loc>
   </url>
   <url>
     <loc>https://sb.edct.dev/ships/Vulture</loc>
