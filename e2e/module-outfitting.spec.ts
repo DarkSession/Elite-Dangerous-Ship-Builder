@@ -342,6 +342,25 @@ test.describe('the slot ledger', () => {
     test.use({ locale: 'de-DE' });
 
     /**
+     * What the package calls the approach suite in the language under test.
+     *
+     * Asked of the installed Almanac rather than written down: the catalogue
+     * names every module in each of its six languages, and a release that
+     * renames one renames this expectation with it rather than leaving a stale
+     * literal behind (constitution II). Imported dynamically because the
+     * package is ESM-only and its `exports` map has no CommonJS entry for the
+     * leaf subpath.
+     */
+    async function suiteName(): Promise<string> {
+      const catalogue = await import('@elite-dangerous-almanac/core/i18n/modules');
+      const name = catalogue.getModuleName('Int_PlanetApproachSuite_Advanced', 'de');
+      if (name === null) {
+        throw new Error('The package names no approach suite in German.');
+      }
+      return name;
+    }
+
+    /**
      * A row cuts a long name short; it never loses one.
      *
      * The rule the ledger keeps is stated as a choice rather than as an
@@ -357,12 +376,9 @@ test.describe('the slot ledger', () => {
      * rule that cuts, so a lapse would exempt the sweep from noticing itself.
      */
     async function expectTheWholeNameIsReachable(page: Page): Promise<void> {
+      const name = await suiteName();
       const row = await revealMount(page, 'PlanetaryApproachSuite');
-      await expectLedgerCarries(
-        page,
-        'PlanetaryApproachSuite',
-        'Advanced Planetary Approach Suite',
-      );
+      await expectLedgerCarries(page, 'PlanetaryApproachSuite', name);
 
       const mark = row.locator('.identity__more');
       const drawnWhole = await row
@@ -379,7 +395,7 @@ test.describe('the slot ledger', () => {
       }
 
       await expect(mark).toHaveCount(1);
-      await expect(mark.locator('.tooltip__tip')).toHaveText(/Advanced Planetary Approach Suite/i);
+      await expect(mark.locator('.tooltip__tip')).toHaveText(name);
       // A thumb, which is the input a painted ellipsis has no answer for.
       await mark.click();
       const bubble = mark.locator('.tooltip__tip--shown');
@@ -403,10 +419,9 @@ test.describe('the slot ledger', () => {
 
     test('never loses a module name the row is too narrow to draw', async ({ page }) => {
       // The stock Anaconda's own longest name, and the one the accessibility
-      // sweep once reported cut: the Almanac publishes no German for this
-      // suite, so the row draws the English one. It fits at every profile now
-      // that nothing stands beside it — see the block comment above for what
-      // that costs and where the other branch is proved.
+      // sweep once reported cut. It fits at every profile now that nothing
+      // stands beside it — see the block comment above for what that costs and
+      // where the other branch is proved.
       await openStockBuild(page, 'Anaconda', germanMessages['hullDetail.create']);
       await expectTheWholeNameIsReachable(page);
     });
