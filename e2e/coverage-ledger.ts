@@ -418,11 +418,31 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'each addressable route publishes its own description rather than the product tagline',
       'the canonical address and both card blocks name the route that is on screen',
       'the canonical names the production site rather than wherever the document is served from',
-      'an open hull inherits the description of the screen it sits inside',
+      'an address about one hull names that hull in its title and description, and shows the hull',
+      'an address for a symbol the package does not carry publishes the catalogue’s identity',
       'no build payload reaches the canonical address, because a build lives in the fragment',
       'the description and the declared locale are in the language the page is rendered in',
-      'the document served before the bundle runs carries the title, description, canonical, card and structured data, with the English wording the catalogue declares',
+      'the document served before the bundle runs carries the title, description, canonical, card and structured data, with the English wording the catalogue declares, and asks to be indexed',
       'the crawl policy, the map and the manifest are served, permit indexing and name the same site',
+      'the map names one address per hull, and the manifest carries the icon sizes installation needs',
+    ],
+    manualRecord: null,
+  },
+  {
+    // The half a running application cannot answer for. Every assertion here is
+    // about a file the build wrote and a status code a crawler would get, which
+    // is why it needs the production output rather than the dev server: a head
+    // can be perfect in the browser while every address answers 404 with the
+    // site's own title on it.
+    surfaceId: 'shell/published-addresses',
+    requirements: ['011/FR-027', '011/SC-008'],
+    journey: 'product/search-published',
+    axe: false,
+    assertions: [
+      'every address the map advertises answers 200, with no redirect and not from the 404 page',
+      'each published document carries its own canonical address, title and description in bundled English',
+      'a hull address names the hull and carries the hull’s own illustration as its card, described by the title',
+      'the page that catches every other address keeps the application’s own identity',
     ],
     manualRecord: null,
   },

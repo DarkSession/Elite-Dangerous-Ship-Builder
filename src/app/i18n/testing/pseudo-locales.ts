@@ -1,4 +1,5 @@
 import { DocumentAdapter } from '../../platform/browser/document.adapter';
+import { LINK_CARD, absoluteAsset } from '../../platform/browser/site-address';
 import { InjectionToken, Injectable, type Provider, computed, effect, inject } from '@angular/core';
 import { LocaleStore } from '../locale.store';
 import { type MessageCatalogue, type MessageKey } from '../locale-registry';
@@ -307,6 +308,8 @@ export class PseudoLocaleStore extends LocaleStore {
         title: this.catalogue()['app.document-title.default'],
         description: this.catalogue()['app.description'],
         canonical: this.canonical(),
+        image: absoluteAsset(LINK_CARD),
+        imageAlt: this.catalogue()['app.document-title.default'],
       });
     });
   }

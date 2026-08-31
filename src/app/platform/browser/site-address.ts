@@ -49,3 +49,25 @@ export function canonicalAddress(path: string): string {
 
   return `${SITE_ORIGIN}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
 }
+
+/**
+ * The card a link preview shows for every address that is not one hull.
+ *
+ * Relative, like every other path this application asks for, because a preview
+ * is served from a sub-path. The tags that carry it are absolute, which is what
+ * {@link absoluteAsset} is for: a consumer of an Open Graph card fetches the
+ * address it is given from wherever it happens to be, so a relative one is no
+ * address at all.
+ */
+export const LINK_CARD = 'assets/link-card.png';
+
+/**
+ * One of this application's own assets, as an address a card consumer can fetch.
+ *
+ * Built from {@link SITE_ORIGIN} for the reason the canonical is: a preview and
+ * a development server both name the production file, which is the one that
+ * exists for anybody outside this repository.
+ */
+export function absoluteAsset(path: string): string {
+  return `${SITE_ORIGIN}/${path.replace(/^\/+/, '')}`;
+}

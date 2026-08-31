@@ -185,22 +185,41 @@ offered and therefore carries no way to hold the page.
 
 - **FR-027**: Every addressable screen MUST publish, as part of the same commit that publishes the
   root language, direction and document title, a description of itself and the canonical address of
-  its route, both resolved in the committed locale. The application MUST additionally ship, as
-  same-origin static files, a crawl policy that permits indexing, a sitemap naming every addressable
-  route the application can enumerate without restating package data, a web app manifest, and machine-readable structured data describing the application. The
-  document served before the application starts MUST carry the complete set in bundled English, so a
-  reader that executes no script is not served a document that says nothing. A canonical address
+  its route, both resolved in the committed locale. A screen whose subject is one hull MUST name
+  that hull in both, from the package's own name for it rather than from a table kept here; where
+  the subject cannot be resolved from the package, the address MUST publish the nearest enclosing
+  identity rather than a sentence with an unfilled variable in it. The
+  application MUST additionally ship, as same-origin static files, a crawl policy that permits
+  indexing, a sitemap naming every address the application serves — one per hull included,
+  enumerated from the installed package rather than written down by hand — a web app manifest
+  carrying an icon at 192 and at 512 square plus a maskable one, an image for a link preview, and
+  machine-readable structured data describing the application. The document served before the
+  application starts MUST carry the complete set for the address it is served at, in bundled
+  English, so a reader that executes no script is neither served a document that says nothing nor
+  served the application's own title in place of the page's. A canonical address
   MUST name the production site rather than wherever the document happens to be served from, and
   MUST NOT carry a build: the payload lives in the fragment (001/FR-015), and a canonical per build
-  is a canonical per nothing. Every file that repeats the production address or the route list MUST
+  is a canonical per nothing. A deployment that is not the production site MUST ask not to be
+  indexed. Every file that repeats the production address or the route list MUST
   be reconciled by the policy checker rather than by hand.
 
+  The head is the one place where canonical package text carries no untranslated disclosure. Every
+  value in it — the document's title, its description, and the card title, description and image
+  alternative that restate them — is a bare string with no element structure to hang a `lang`
+  boundary or an associated control on, and a disclosure written into the sentence would be read
+  out as part of the page's name in every search result and every link preview. A hull name is a
+  proper noun the game does not translate
+  (`contracts/localization-and-formatting.md`), the sentence around it is in the committed locale,
+  and the document's own `lang` states which that is. This exception is the head and nothing else:
+  the same name on the screen behind it still follows the presenter order in full.
+
   _Recorded 2026-08-27 (Commander request: "analyse the application and propose ways to optimize for
-  search engines")._ The analysis, its three named omissions — no card image, no hull pages in the
-  sitemap, no installable icon, each with the asset or build step it waits on — and what was
-  deliberately not done are in `design/search-visibility.md`. Prerendering is out of scope by the
-  owner's decision: this requirement is what a client-side application can state about itself
-  without one.
+  search engines")._ The analysis, and what was deliberately not done, are in
+  `design/search-visibility.md`. Prerendering is out of scope by the owner's decision: this
+  requirement is what a client-side application can state about itself without one.
+
+  _Amended 2026-08-30 (Commander request: "provide suggestions to improve its discoverability and
+  SEO")._ The second analysis, what it closed and what it left, is in the same design record.
 
 ### Verification
 
@@ -246,7 +265,13 @@ translations.
   own named control. No cache-clearing reload appears anywhere in either journey.
 
 - **SC-008**: Each addressable screen is served its own title, its own description and its own
-  canonical address, in the committed language, with no build payload in the address; the document
-  served before the application starts carries that route's own canonical address and the
-  application's bundled English title and description; and the crawl policy, the sitemap, the
-  manifest and the structured data agree with the route table and with one another.
+  canonical address, in the committed language, with no build payload in the address; a screen whose
+  subject is one hull names that hull in its title and in its description; the document served
+  before the application starts carries that address's own canonical address, title and description
+  in bundled English; every hull has an address the sitemap names and the deployment answers without
+  a redirect; an address whose subject the package does not carry publishes the enclosing screen's
+  identity rather than an unfilled sentence; a link preview carries an image, and on a hull address
+  that image is the hull's own, rendered;
+  the manifest carries an icon at 192 and at 512 square plus a maskable one; a deployment that is
+  not the production site asks not to be indexed; and the crawl policy, the sitemap, the manifest
+  and the structured data agree with the route table and with one another.

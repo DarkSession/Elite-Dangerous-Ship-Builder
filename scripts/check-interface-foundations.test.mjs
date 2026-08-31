@@ -10,7 +10,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rules } from './check-interface-foundations.mjs';
+import { rules, SEARCH_METADATA_FILES } from './check-interface-foundations.mjs';
 
 const ruleIds = (found) => found.map((violation) => violation.rule);
 
@@ -1039,15 +1039,19 @@ describe('search metadata', () => {
   const INDEX_WITHOUT_JSON_LD = [
     '<meta name="description" content="What this is." />',
     '<meta name="theme-color" content="#0b0b0c" />',
-    '<meta name="twitter:card" content="summary" />',
+    '<meta name="robots" content="index,follow,max-image-preview:large" />',
+    '<meta name="twitter:card" content="summary_large_image" />',
     '<meta name="twitter:title" content="Ship Builder" />',
     '<meta name="twitter:description" content="What this is." />',
+    '<meta name="twitter:image" content="https://sb.edct.dev/assets/link-card.png" />',
     '<meta property="og:type" content="website" />',
     '<meta property="og:site_name" content="Ship Builder" />',
     '<meta property="og:title" content="Ship Builder" />',
     '<meta property="og:description" content="What this is." />',
     '<meta property="og:url" content="https://sb.edct.dev/" />',
     '<meta property="og:locale" content="en" />',
+    '<meta property="og:image" content="https://sb.edct.dev/assets/link-card.png" />',
+    '<meta property="og:image:alt" content="Ship Builder" />',
     '<link rel="canonical" href="https://sb.edct.dev/" />',
     '<link rel="manifest" href="manifest.webmanifest" />',
   ].join('\n');
@@ -1075,17 +1079,90 @@ describe('search metadata', () => {
     display: 'standalone',
     background_color: '#0b0b0c',
     theme_color: '#0b0b0c',
-    icons: [{ src: 'favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+    icons: [
+      { src: 'favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+      { src: 'assets/icons/app-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: 'assets/icons/app-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      {
+        src: 'assets/icons/app-icon-maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
   });
+
+  // What `scripts/search/published-addresses.mjs` hands the rule: the addresses
+  // the deployment writes documents for, each with the keys that name it.
+  const PUBLISHED = [
+    {
+      path: 'ships',
+      route: 'ships',
+      address: 'https://sb.edct.dev/ships',
+      titleKey: 'catalogue.title',
+      descriptionKey: 'catalogue.description',
+      image: 'assets/link-card.png',
+    },
+    {
+      path: 'build',
+      route: 'build',
+      address: 'https://sb.edct.dev/build',
+      titleKey: 'workspace.title',
+      descriptionKey: 'workspace.description',
+      image: 'assets/link-card.png',
+    },
+  ];
+
+  // What the rule finds under `public/`. Everything the manifest, the index and
+  // the published addresses name has to be here, or the rule fails by name.
+  const ASSETS = [
+    'favicon.ico',
+    'assets/icons/app-icon-192.png',
+    'assets/icons/app-icon-512.png',
+    'assets/icons/app-icon-maskable-512.png',
+    'assets/icons/apple-touch-icon.png',
+    'assets/link-card.png',
+  ];
+
+  // The one line of the workflow this rule reads: the expression that turns a
+  // preview deployment's robots tag into `noindex`.
+  const PREVIEW = `      - name: Ask search engines to leave the preview alone
+        run: |
+          sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
+`;
+
+  // The route table as the rule pairs it: one triple per addressable route.
+  const ROUTE_TABLE = [
+    { path: '' },
+    { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
+    { path: ':symbol', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
+    { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
+    { path: 'builds', titleKey: 'library.title', descriptionKey: 'library.description' },
+    { path: '**' },
+  ];
+
+  const MESSAGE_KEYS = [
+    'catalogue.title',
+    'catalogue.description',
+    'workspace.title',
+    'workspace.description',
+    'hullDetail.title',
+    'hullDetail.description',
+  ];
 
   const complete = (overrides = {}) => ({
     origin: ORIGIN,
+    published: PUBLISHED,
+    messages: MESSAGE_KEYS,
+    routeTable: ROUTE_TABLE,
     index: INDEX,
     robots: ROBOTS,
     sitemap: SITEMAP,
     manifest: MANIFEST,
     domain: 'sb.edct.dev\n',
     tokens: TOKENS,
+    assets: ASSETS,
+    preview: PREVIEW,
     locales: ['en', 'de'],
     routes: ['', 'ships', ':symbol', 'build', '**'],
     ...overrides,
@@ -1249,7 +1326,7 @@ describe('search metadata', () => {
     assert.match(found[0].message, /Sitemap/);
   });
 
-  it('rejects an addressable route the sitemap does not list', () => {
+  it('rejects an addressable route no published address names', () => {
     const found = rules.searchMetadataViolations(
       complete({ routes: ['', 'ships', ':symbol', 'build', 'builds', '**'] }),
     );
@@ -1300,7 +1377,7 @@ describe('search metadata', () => {
     const rooted = { ...JSON.parse(MANIFEST), icons: [{ src: '/favicon.ico' }] };
     const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(rooted) }));
 
-    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+    assert.ok(found.some((violation) => /icons\[0\]\.src/.test(violation.message)));
   });
   it('rejects an absolute path even when it names the declared origin', () => {
     // The one that slips past everything else: `https://sb.edct.dev/` is the
@@ -1324,7 +1401,7 @@ describe('search metadata', () => {
       complete({ manifest: JSON.stringify(pinnedIcon) }),
     );
 
-    assert.match(found.at(-1).message, /icons\[0\]\.src/);
+    assert.ok(found.some((violation) => /icons\[0\]\.src/.test(violation.message)));
   });
 
   it('accepts a protocol-relative path nowhere either', () => {
@@ -1483,5 +1560,258 @@ describe('search metadata', () => {
     );
 
     assert.match(found[0].message, /"id"/);
+  });
+
+  // A published hull address, with the sitemap entry that goes with it.
+  const HULL = {
+    path: 'ships/Anaconda',
+    route: 'ships/:symbol',
+    address: 'https://sb.edct.dev/ships/Anaconda',
+    titleKey: 'hullDetail.title',
+    descriptionKey: 'hullDetail.description',
+    image: 'assets/ships/Anaconda/illustration.png',
+  };
+  const withHull = (overrides = {}) =>
+    complete({
+      published: [...PUBLISHED, HULL],
+      sitemap: SITEMAP.replace('</urlset>', `<url><loc>${HULL.address}</loc></url></urlset>`),
+      assets: [...ASSETS, HULL.image],
+      ...overrides,
+    });
+
+  /**
+   * The rules that make a link, an install prompt or a preview deployment work.
+   *
+   * Each one is checked by making it fail, because a rule that has only ever
+   * been run against a passing fixture is a rule nobody has seen work.
+   */
+  const withIcons = (icons) =>
+    JSON.stringify({ ...JSON.parse(MANIFEST), icons: [...JSON.parse(MANIFEST).icons, ...icons] });
+  const withoutIcon = (matches) =>
+    JSON.stringify({
+      ...JSON.parse(MANIFEST),
+      icons: JSON.parse(MANIFEST).icons.filter((icon) => !matches(icon)),
+    });
+
+  for (const size of ['192x192', '512x512']) {
+    it(`rejects a manifest with no icon at ${size}, which offers no installation`, () => {
+      const found = rules.searchMetadataViolations(
+        complete({ manifest: withoutIcon((icon) => icon.sizes === size) }),
+      );
+
+      assert.ok(found.some((violation) => violation.message.includes(size)));
+    });
+  }
+
+  it('rejects a manifest with no maskable icon, so a round platform crops the mark', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ manifest: withoutIcon((icon) => icon.purpose === 'maskable') }),
+    );
+
+    assert.ok(found.some((violation) => /maskable/.test(violation.message)));
+  });
+
+  it('rejects an icon no file answers, which installs without one', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        manifest: withIcons([{ src: 'assets/icons/never-rendered.png', sizes: '96x96' }]),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /never-rendered\.png/.test(violation.message)));
+  });
+
+  it('rejects a card no file answers, which unfurls as a broken image', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('link-card.png', 'no-such-card.png') }),
+    );
+
+    assert.ok(found.some((violation) => /no-such-card\.png/.test(violation.message)));
+  });
+
+  it('rejects a hull whose illustration nobody rendered', () => {
+    // The card of a published address, which no file in the repository names:
+    // a package pin move that adds a hull adds one of these and nothing else
+    // would notice.
+    const found = rules.searchMetadataViolations(withHull({ assets: ASSETS }));
+
+    assert.ok(found.some((violation) => /Anaconda\/illustration\.png/.test(violation.message)));
+  });
+
+  it('rejects a relative card, which a chat client fetches from its own machine', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          'content="https://sb.edct.dev/assets/link-card.png" />\n<meta property="og:image:alt"',
+          'content="assets/link-card.png" />\n<meta property="og:image:alt"',
+        ),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /must be absolute/.test(violation.message)));
+  });
+
+  it('rejects a document that asks not to be indexed, which belongs to a preview', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ index: INDEX.replace('index,follow,max-image-preview:large', 'noindex') }),
+    );
+
+    assert.ok(found.some((violation) => /not to be indexed/.test(violation.message)));
+  });
+
+  it('rejects a robots tag the preview step cannot rewrite', () => {
+    // Reformatting the tag satisfies every other rule here and silently turns
+    // the preview's rewrite into a no-op.
+    const found = rules.searchMetadataViolations(
+      complete({
+        index: INDEX.replace(
+          '<meta name="robots" content="index,follow,max-image-preview:large" />',
+          "<meta\n  name='robots'\n  content='index,follow,max-image-preview:large'\n/>",
+        ),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /is not one line of/.test(violation.message)));
+  });
+
+  it('rejects a preview step whose expression is not the one this tag needs', () => {
+    // The same no-op from the other side: the tag is fine and the workflow
+    // matches something else.
+    const found = rules.searchMetadataViolations(
+      complete({ preview: PREVIEW.replace('content="[^"]*"', 'content="[^\']*"') }),
+    );
+
+    assert.ok(found.some((violation) => /No step rewrites the robots tag/.test(violation.message)));
+  });
+
+  it('rejects a preview step that rewrites the tag to something other than noindex', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ preview: PREVIEW.replace('content="noindex"', 'content="index"') }),
+    );
+
+    assert.ok(found.some((violation) => /does not say noindex/.test(violation.message)));
+  });
+
+  it('rejects a published address the route table declares no route for', () => {
+    const found = rules.searchMetadataViolations(
+      withHull({ routes: ['', 'ships', 'build', '**'] }),
+    );
+
+    assert.ok(found.some((violation) => /:symbol/.test(violation.message)));
+  });
+
+  it('rejects a published address naming a message this build does not carry', () => {
+    const found = rules.searchMetadataViolations(
+      complete({ messages: MESSAGE_KEYS.filter((key) => key !== 'catalogue.description') }),
+    );
+
+    assert.ok(found.some((violation) => /catalogue\.description/.test(violation.message)));
+  });
+
+  it('rejects an address whose keys are not the ones its own route declares', () => {
+    // Two routes with their keys exchanged declare every key somewhere, so a
+    // rule comparing the two key *sets* passes while the published document
+    // names one screen and the application names another a moment later.
+    const swapped = ROUTE_TABLE.map((route) =>
+      route.path === 'build'
+        ? { ...route, titleKey: 'library.title', descriptionKey: 'library.description' }
+        : route,
+    );
+    const found = rules.searchMetadataViolations(complete({ routeTable: swapped }));
+
+    assert.ok(
+      found.some((violation) => /"\/build" publishes "workspace\.title"/.test(violation.message)),
+    );
+    assert.ok(
+      found.some((violation) =>
+        /"\/build" publishes "workspace\.description"/.test(violation.message),
+      ),
+    );
+  });
+
+  it('rejects a route that declares no description for an address that publishes one', () => {
+    const found = rules.searchMetadataViolations(
+      complete({
+        routeTable: ROUTE_TABLE.map((route) =>
+          route.path === 'ships' ? { path: 'ships', titleKey: 'catalogue.title' } : route,
+        ),
+      }),
+    );
+
+    assert.ok(found.some((violation) => /declares "none"/.test(violation.message)));
+  });
+
+  it('skips the message-key rules when the catalogue could not be read', () => {
+    // The guard the fixtures need. That a real failure to read it is reported
+    // rather than passed through this guard is `searchMetadataSources`' job,
+    // and is asserted below.
+    const found = rules.searchMetadataViolations(complete({ messages: undefined }));
+
+    assert.deepEqual(found, []);
+  });
+
+  it('rejects a workflow with no step to leave a preview out of an index', () => {
+    const found = rules.searchMetadataViolations(complete({ preview: 'jobs:\n  build:\n' }));
+
+    assert.ok(found.some((violation) => /No step rewrites the robots tag/.test(violation.message)));
+  });
+
+  /**
+   * What the rule is handed, rather than what it does with it.
+   *
+   * Five rules above are guarded by "if this input arrived", which the fixtures
+   * need. What must not happen is a real failure arriving as the same absence:
+   * five gates would retire at once and say nothing.
+   */
+  const ORIGIN_SOURCE = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
+
+  it('hands over the addresses and the keys when both can be read', () => {
+    const sources = rules.searchMetadataSources(ORIGIN_SOURCE, '{ "app.name": "Ship Builder" }');
+
+    assert.deepEqual(sources.violations, []);
+    assert.ok(sources.published.length > 40);
+    assert.deepEqual(sources.messages, ['app.name']);
+  });
+
+  it('reports an origin it cannot read against the file that declares it', () => {
+    const sources = rules.searchMetadataSources('export const NOTHING = 1;', '{}');
+
+    assert.equal(sources.published, undefined);
+    assert.equal(sources.violations[0].file, SEARCH_METADATA_FILES.origin);
+    assert.match(sources.violations[0].message, /could not be read/);
+  });
+
+  it('reports a catalogue that does not parse rather than checking no key at all', () => {
+    const sources = rules.searchMetadataSources(ORIGIN_SOURCE, '{ not json');
+
+    assert.equal(sources.messages, undefined);
+    assert.ok(
+      sources.violations.some((violation) =>
+        /Bundled English does not parse/.test(violation.message),
+      ),
+    );
+  });
+
+  /** The route table, read as the pairs the rule compares rather than as keys. */
+  it('reads a route’s title and description as that route’s, not as the table’s', () => {
+    const source = `
+      { path: '', redirectTo: 'ships' },
+      {
+        path: 'ships',
+        title: 'catalogue.title',
+        data: { description: 'catalogue.description' },
+        children: [
+          { path: ':symbol', title: 'hullDetail.title', data: { description: 'hullDetail.description' } },
+        ],
+      },
+      { path: '**', redirectTo: 'ships' },
+    `;
+
+    assert.deepEqual(rules.routeTableTriples(source), [
+      { path: '', titleKey: undefined, descriptionKey: undefined },
+      { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
+      { path: ':symbol', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
+      { path: '**', titleKey: undefined, descriptionKey: undefined },
+    ]);
   });
 });

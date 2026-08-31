@@ -2,7 +2,7 @@
 
 A browser-based ship loadout planner for Elite Dangerous: pick a hull, fit and
 engineer modules, read the resulting build metrics, and export the build as
-SLEF.
+SLEF. It runs at **[sb.edct.dev](https://sb.edct.dev/)**.
 
 The application is **client-side only**. There is no backend and no account:
 builds live in your browser (`localStorage`) or in a URL, and nothing is ever
@@ -18,8 +18,15 @@ Desktop, tablet and mobile are all first-class targets.
 
 ## Status
 
-Project scaffolding and specifications. The Angular application is currently a
-blank shell; feature work follows the specs in [`specs/`](./specs).
+In use. Twelve capabilities are specified and built — the hull catalogue and hull
+pages, module outfitting and engineering, ship statistics, SLEF import and
+export, power and heat, the defence, offence and mobility profiles, cost and
+materials, hull anatomy, the interface foundations the whole application is
+composed from, and Help · About. Each one's spec is in [`specs/`](./specs), and
+each is the record of what the capability owes a Commander.
+
+The application is installable, works offline after first load, and reads in
+English and German.
 
 ## Requirements
 

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { DocumentAdapter, type RootDocumentState } from './document.adapter';
-import { SITE_ORIGIN } from './site-address';
+import { LINK_CARD, SITE_ORIGIN, absoluteAsset } from './site-address';
 
 /** A complete commit, so a test can vary the one field it is about. */
 function state(overrides: Partial<RootDocumentState> = {}): RootDocumentState {
@@ -10,6 +10,8 @@ function state(overrides: Partial<RootDocumentState> = {}): RootDocumentState {
     title: 'Saved builds · Elite Dangerous Ship Builder',
     description: 'Plan Elite Dangerous loadouts.',
     canonical: `${SITE_ORIGIN}/ships`,
+    image: absoluteAsset(LINK_CARD),
+    imageAlt: 'Saved builds · Elite Dangerous Ship Builder',
     ...overrides,
   };
 }
@@ -112,5 +114,35 @@ describe('DocumentAdapter', () => {
     adapter.commitRootState(state({ description: '' }));
 
     expect(content('meta[name="description"]')).toBe('What this page is.');
+  });
+
+  it('shows the picture this page is about in both card blocks, and says what it is', () => {
+    // A hull address carries the hull's own illustration rather than the
+    // application's mark, and the alternative text is the page's own title, so
+    // the picture is described in the language the document is in.
+    const illustration = `${SITE_ORIGIN}/assets/ships/Anaconda/illustration.png`;
+    adapter.commitRootState(
+      state({
+        title: 'Anaconda · Elite Dangerous Ship Builder',
+        image: illustration,
+        imageAlt: 'Anaconda · Elite Dangerous Ship Builder',
+      }),
+    );
+
+    expect(content('meta[property="og:image"]')).toBe(illustration);
+    expect(content('meta[name="twitter:image"]')).toBe(illustration);
+    expect(content('meta[property="og:image:alt"]')).toBe(
+      'Anaconda · Elite Dangerous Ship Builder',
+    );
+  });
+
+  it('rewrites the picture rather than leaving the previous page’s standing', () => {
+    adapter.commitRootState(
+      state({ image: `${SITE_ORIGIN}/assets/ships/Anaconda/illustration.png` }),
+    );
+    adapter.commitRootState(state({ image: absoluteAsset(LINK_CARD) }));
+
+    expect(document.head.querySelectorAll('meta[property="og:image"]')).toHaveLength(1);
+    expect(content('meta[property="og:image"]')).toBe(absoluteAsset(LINK_CARD));
   });
 });

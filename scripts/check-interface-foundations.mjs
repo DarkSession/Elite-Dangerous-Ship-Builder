@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { TmplAstText, TmplAstTextAttribute, parseTemplate } from '@angular/compiler';
 import ts from 'typescript';
 import scssSyntax from 'postcss-scss';
+import { declaredOrigin, publishedAddresses, readSitemap } from './search/published-addresses.mjs';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -884,11 +885,93 @@ export async function runChecks({ scope = SCOPE } = {}) {
 }
 
 /**
+ * The two inputs the search-metadata rule derives rather than reads.
+ *
+ * Both can fail, and a failure here has to be a violation rather than a missing
+ * one: five of the rules below are guarded by "if this input arrived", which is
+ * there for the unit fixtures. Letting a real failure through that guard would
+ * retire the sitemap reconciliation, the route-table check, the two message-key
+ * checks and the hull-card check all at once, in silence. A rule that passes
+ * because there was nothing to inspect is not a gate.
+ *
+ * Separated from the reading so it can be run without a filesystem, which is
+ * the only way the silence above can be tested for.
+ */
+export function searchMetadataSources(originSource, englishText) {
+  const violations = [];
+  const fail = (file, message) =>
+    violations.push({ file, line: 0, rule: 'search-metadata', message });
+
+  // The origin and the addresses fail separately, because they fail in
+  // different files: an undeclared origin is `site-address.ts`, and naming the
+  // address module for it would send the reader to an innocent one.
+  let published;
+  try {
+    const origin = declaredOrigin(originSource);
+    try {
+      published = publishedAddresses({ origin });
+    } catch (failure) {
+      fail(
+        SEARCH_METADATA_FILES.addresses,
+        `The published addresses could not be built, so nothing was reconciled against them: ${failure.message}`,
+      );
+    }
+  } catch (failure) {
+    fail(
+      SEARCH_METADATA_FILES.origin,
+      `The production origin could not be read, so no address was built from it: ${failure.message}`,
+    );
+  }
+
+  let messages;
+  try {
+    messages = Object.keys(JSON.parse(englishText));
+  } catch (failure) {
+    fail(
+      'src/app/i18n/locales/en.json',
+      `Bundled English does not parse, so no published message key was checked: ${failure.message}`,
+    );
+  }
+
+  return { published, messages, violations };
+}
+
+/**
+ * The route table as the rule compares it: one triple per addressable route.
+ *
+ * Paired rather than flattened. Two routes whose keys were exchanged declare
+ * every key somewhere, so a check that the two key *sets* match passes while
+ * the published document names one screen and the application names another.
+ *
+ * Read with a pattern rather than with the TypeScript parser because the shape
+ * is the route table's own and does not vary: a `path`, then the `title` and
+ * `data.description` that belong to it. A route missing either is a triple with
+ * `undefined` in it, which is what the rule reports.
+ */
+export function routeTableTriples(source) {
+  const starts = [...source.matchAll(/path:\s*'([^']*)'/g)];
+  return starts.map((start, index) => {
+    // Everything between this `path` and the next one belongs to this route.
+    const segment = source.slice(
+      start.index,
+      index + 1 < starts.length ? starts[index + 1].index : source.length,
+    );
+    return {
+      path: start[1],
+      titleKey: /title:\s*'([^']*)'/.exec(segment)?.[1],
+      descriptionKey: /description:\s*'([^']*)'/.exec(segment)?.[1],
+    };
+  });
+}
+
+/**
  * IO wrapper: reads every file the search-metadata rule compares.
  *
- * Nine of them — the seven in `SEARCH_METADATA_FILES` plus the route table and
- * the locale registry. The rule does not require its inputs, so a caller that
- * reads fewer loses the checks that need them without being told.
+ * The nine in `SEARCH_METADATA_FILES`, plus the route table, the locale
+ * registry, bundled English and everything `public/` serves. The rule does not
+ * require its inputs, so what is derived rather than read goes through
+ * `searchMetadataSources`, which reports a failure instead of returning
+ * nothing.
  */
 async function checkSearchMetadata() {
   const read = async (path) => {
@@ -897,20 +980,33 @@ async function checkSearchMetadata() {
   };
 
   const routesSource = await read('src/app/app.routes.ts');
+  const originSource = await read(SEARCH_METADATA_FILES.origin);
+  const english = await read('src/app/i18n/locales/en.json');
+
+  const sources = searchMetadataSources(originSource, english);
+  violations.push(...sources.violations);
+  const { published, messages } = sources;
 
   violations.push(
     ...searchMetadataViolations({
-      origin: await read(SEARCH_METADATA_FILES.origin),
+      origin: originSource,
       index: await read(SEARCH_METADATA_FILES.index),
       robots: await read(SEARCH_METADATA_FILES.robots),
       sitemap: await read(SEARCH_METADATA_FILES.sitemap),
       manifest: await read(SEARCH_METADATA_FILES.manifest),
       domain: await read(SEARCH_METADATA_FILES.domain),
       tokens: await read(SEARCH_METADATA_FILES.tokens),
+      preview: await read(SEARCH_METADATA_FILES.preview),
       routes: [...routesSource.matchAll(/path:\s*'([^']*)'/g)].map((match) => match[1]),
+      routeTable: routeTableTriples(routesSource),
       locales: [
         ...(await read('src/app/i18n/locale-registry.ts')).matchAll(/^\s{4}tag: '([^']+)',$/gm),
       ].map((match) => match[1]),
+      published,
+      messages,
+      assets: (await walk('public', ['.png', '.ico', '.svg', '.webmanifest', '.txt', '.xml'])).map(
+        (file) => relative(resolve(ROOT, 'public'), file).split('\\').join('/'),
+      ),
     }),
   );
 }
@@ -1393,12 +1489,35 @@ export const SEARCH_METADATA_FILES = {
   domain: 'public/CNAME',
   /** The one file permitted to declare the colour the application is drawn on. */
   tokens: 'src/styles/tokens/_primitives.scss',
+  /**
+   * The one place that turns the route table and the package's hulls into
+   * addresses.
+   *
+   * The sitemap, the deployment's published documents and this checker all read
+   * it, so a disagreement between the three is impossible by construction and
+   * what is left to reconcile is this module against the route table.
+   */
+  addresses: 'scripts/search/published-addresses.mjs',
+  /**
+   * The file that rewrites the robots tag for a preview deployment.
+   *
+   * Read here because it is the only thing that carries out "a deployment that
+   * is not the production site asks not to be indexed" (011/FR-027), and its
+   * `sed` matches one exact spelling of the tag. Reformatting the tag in
+   * `index.html` would leave the expression matching nothing, and the failure
+   * would surface on a preview publish rather than in `pnpm run check`.
+   */
+  preview: '.github/workflows/ci.yml',
 };
 
 /** Head tags `index.html` must carry for a crawler that runs no script. */
 const REQUIRED_HEAD_TAGS = [
   { attribute: 'name', key: 'description' },
   { attribute: 'name', key: 'theme-color' },
+  { attribute: 'name', key: 'robots' },
+  { attribute: 'name', key: 'twitter:image' },
+  { attribute: 'property', key: 'og:image' },
+  { attribute: 'property', key: 'og:image:alt' },
   { attribute: 'name', key: 'twitter:card' },
   { attribute: 'name', key: 'twitter:title' },
   { attribute: 'name', key: 'twitter:description' },
@@ -1430,6 +1549,16 @@ const REQUIRED_MANIFEST_MEMBERS = [
   'icons',
 ];
 
+/**
+ * Icon sizes a browser wants before it offers installation.
+ *
+ * 192 and 512 are what a browser looks for, and one of them has to be
+ * `maskable` or a platform that crops to a circle crops the mark. Stated as
+ * sizes rather than as "some icons", because `icons: []` satisfies "the member
+ * is declared" and offers installation nowhere.
+ */
+const REQUIRED_ICON_SIZES = ['192x192', '512x512'];
+
 /** Routes that are redirects or wildcards, and so are not addresses to list. */
 const UNLISTABLE_ROUTES = new Set(['', '**']);
 
@@ -1446,41 +1575,6 @@ function headContent(document, attribute, key) {
     'i',
   ).exec(document);
   return tag?.[3] ?? null;
-}
-
-/**
- * A document with its XML comments removed, so nothing inside one is read.
- *
- * The body is "anything but `--`" rather than a lazy `[\s\S]*?`, so that this
- * matches character for character what the deployment's `sed` can express
- * (`.github/workflows/ci.yml`, "Serve client-side routes as real addresses").
- * XML forbids `--` inside a comment, and neither reader validates the file, so
- * a malformed one has to fail the same way in both: the lazy form would strip
- * it here and publish a route from inside it there. This form strips neither.
- *
- * One pass therefore leaves some documents holding a comment delimiter still —
- * a nested `<!<!-- -->--` reassembles one — so this is deliberately not a
- * sanitiser and nothing may treat it as one. The caller checks what is left
- * over and fails on it by name; the deployment does the same, in the same
- * words.
- */
-function withoutXmlComments(document) {
-  // Written as "keep what is between the comments" rather than as a replace,
-  // because a replace of a multi-character delimiter reads as a sanitiser and
-  // this is not one — the leftovers are what the callers act on. Same regexp,
-  // same single left-to-right pass over non-overlapping matches, so the result
-  // is identical to the replace form and to the deployment's `sed`; the
-  // difference is only in what the code claims to be.
-  const kept = [];
-  let cut = 0;
-
-  for (const comment of document.matchAll(/<!--(?:[^-]|-[^-])*-->/g)) {
-    kept.push(document.slice(cut, comment.index));
-    cut = comment.index + comment[0].length;
-  }
-  kept.push(document.slice(cut));
-
-  return kept.join('');
 }
 
 /**
@@ -1524,13 +1618,19 @@ function linkHref(document, rel) {
  * fifth copy of it, and an `id` a sixth.
  *
  * `input` is `{ origin, index, robots, sitemap, manifest, domain, tokens,
- * routes, locales }`. Each is the text of its file except `routes`, the paths
- * parsed out of the route table, and `locales`, the tags this build ships;
- * `origin` is `site-address.ts`, `domain` is `public/CNAME` and `tokens` is the
- * primitives stylesheet the theme colour is read from. Every one of them is
- * read, and a caller that omits one loses the checks that need it. An empty
- * input is itself a violation: a rule that passes when there is nothing to
- * inspect is not a gate.
+ * preview, routes, routeTable, locales, published, messages, assets }`. Each of
+ * the first eight is the text of its file — `origin` is `site-address.ts`,
+ * `domain` is `public/CNAME`, `tokens` is the primitives stylesheet the theme
+ * colour is read from, and `preview` is the workflow that rewrites a preview's
+ * robots tag. `routes` is the paths parsed out of the route table and
+ * `routeTable` the same table as `(path, titleKey, descriptionKey)` triples;
+ * `locales` is the tags this build ships; `published` is the address set from
+ * `scripts/search/published-addresses.mjs`; `messages` is the keys bundled
+ * English carries; `assets` is what `public/` serves. Every one of them is
+ * read, and a caller that omits one loses the checks that need it — which is
+ * why `checkSearchMetadata` reports a failure to read one rather than passing
+ * `undefined` and going quiet. An empty input is itself a violation: a rule
+ * that passes when there is nothing to inspect is not a gate.
  */
 export function searchMetadataViolations(input) {
   const found = [];
@@ -1699,49 +1799,113 @@ export function searchMetadataViolations(input) {
 
   // `sitemap.xml`: exactly the addressable routes, no more and no fewer.
   //
-  // Comments are cut first, because the deployment cuts them: this file is also
-  // the route list `.github/workflows/ci.yml` publishes from, and a `<loc>` the
-  // two read differently is a route that passes here and never gets a file.
-  const body = withoutXmlComments(input.sitemap ?? '');
-
-  // Nothing that opens or closes a comment may survive the cut. One pass
-  // cannot: `<!<!-- -->--` leaves `<!--` behind, and a `--` inside a comment
-  // leaves the whole thing, so a `<loc>` nobody meant to publish can end up
-  // inside what the next reader takes for live markup. Neither this nor the
-  // deployment's `sed` makes a second pass — a second pass would strip more
-  // here than there, which is the drift they are written to avoid — so what
-  // is left over is checked instead of cut, and a file that leaves anything
-  // over fails by name.
-  //
-  // `--!>` is named alongside `-->` because it ends a comment in HTML and ends
-  // nothing in XML. A sitemap holding one is malformed either way, and this is
-  // a refusal rather than a cut, so covering both can only turn a file nobody
-  // can read from an accepted one into a named failure.
-  if (/<!--|--!?>/.test(body)) {
+  // Read through `readSitemap`, which is the same function
+  // `scripts/publish-static-routes.mjs` publishes from. That is the point of it
+  // being a function rather than a rule spelled here and a `sed` spelled there:
+  // a `<loc>` the two read differently is an address that passes this gate and
+  // never gets a file, or a file published from inside a comment.
+  const { addresses, defect } = readSitemap(input.sitemap ?? '');
+  if (defect !== null) {
     fail(
       SEARCH_METADATA_FILES.sitemap,
-      'A comment here is nested or contains "--", so the file does not say what it appears to. ' +
-        'Neither this check nor the deployment can read it; write plain comments.',
+      `${defect} Neither this check nor the publisher can read it; write plain comments.`,
     );
   }
 
-  const listed = new Set(
-    [...body.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((match) => match[1]),
-  );
-  const addressable = (input.routes ?? []).filter(
-    (route) => !UNLISTABLE_ROUTES.has(route) && !route.includes(':'),
-  );
-  for (const route of addressable) {
-    if (!listed.has(`${origin}/${route}`)) {
-      fail(SEARCH_METADATA_FILES.sitemap, `Route "/${route}" is addressable but is not listed.`);
+  const listed = new Set(addresses);
+
+  // The map is generated from `published`, so the two agree unless the file was
+  // edited by hand or the generator was not re-run after a package pin move.
+  // Both are worth a named failure: an address the deployment does not publish
+  // is a 404 in a sitemap, and a hull the map does not list is a page nothing
+  // will ever find.
+  const published = input.published;
+  if (published !== undefined) {
+    for (const entry of published) {
+      if (!listed.has(entry.address)) {
+        fail(
+          SEARCH_METADATA_FILES.sitemap,
+          `"/${entry.path}" is an address this application publishes but is not listed. Run \`pnpm run search:sitemap\`.`,
+        );
+      }
+    }
+    for (const address of listed) {
+      if (!published.some((entry) => entry.address === address)) {
+        fail(
+          SEARCH_METADATA_FILES.sitemap,
+          `"${address}" is listed but is not an address this application publishes.`,
+        );
+      }
     }
   }
-  for (const address of listed) {
-    if (!addressable.some((route) => `${origin}/${route}` === address)) {
-      fail(
-        SEARCH_METADATA_FILES.sitemap,
-        `"${address}" is listed but is not a route this application serves.`,
-      );
+
+  // The map against the route table. This is the pair that can drift silently:
+  // the module states the message keys a second time, deliberately, because the
+  // alternative is a script that parses TypeScript and stops working the first
+  // time the file is formatted differently.
+  if (published !== undefined && input.routes !== undefined) {
+    const declared = new Set(input.routes);
+    for (const route of input.routes.filter(
+      (route) => !UNLISTABLE_ROUTES.has(route) && !route.includes(':'),
+    )) {
+      if (!published.some((entry) => entry.route === route)) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `Route "/${route}" is addressable but no published address names it.`,
+        );
+      }
+    }
+    for (const entry of published) {
+      const leaf = entry.route.split('/').at(-1) ?? '';
+      if (!declared.has(leaf)) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"${entry.route}" is published but the route table declares no "${leaf}".`,
+        );
+      }
+    }
+  }
+
+  // Every key the map names has to exist, and has to be the key the route
+  // declares. A key that resolves to nothing publishes a blank description; a
+  // key the route table does not carry publishes one sentence to a crawler and
+  // a different one to a Commander a moment later.
+  if (published !== undefined && input.messages !== undefined) {
+    const carried = new Set(input.messages);
+    for (const key of new Set(
+      published.flatMap((entry) => [entry.titleKey, entry.descriptionKey]),
+    )) {
+      if (!carried.has(key)) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"${key}" is published but this build carries no such message.`,
+        );
+      }
+    }
+  }
+  // Route by route, not key by key. Two addresses whose keys were exchanged
+  // between them declare every key somewhere, so a check that both sets match
+  // passes while the published document names one screen and the application
+  // names another a moment later.
+  if (published !== undefined && input.routeTable !== undefined) {
+    const declared = new Map(input.routeTable.map((route) => [route.path, route]));
+    for (const entry of published) {
+      const leaf = entry.route.split('/').at(-1) ?? '';
+      const route = declared.get(leaf);
+      if (route === undefined) {
+        continue; // Already failed above, by name, as a route the table lacks.
+      }
+      for (const [what, published_, table] of [
+        ['title', entry.titleKey, route.titleKey],
+        ['description', entry.descriptionKey, route.descriptionKey],
+      ]) {
+        if (published_ !== table) {
+          fail(
+            SEARCH_METADATA_FILES.addresses,
+            `"/${entry.path}" publishes "${published_}" as its ${what}, but the route table declares "${table ?? 'none'}". A crawler and a Commander would be told different things.`,
+          );
+        }
+      }
     }
   }
 
@@ -1829,6 +1993,138 @@ export function searchMetadataViolations(input) {
           SEARCH_METADATA_FILES.manifest,
           `"${member}" is "${value}". A root-absolute path breaks every preview deployment; make it relative.`,
         );
+      }
+    }
+
+    // Installability, stated as the sizes rather than as "some icons". An
+    // `icons` member that is present and useless satisfies every rule above and
+    // offers installation on no platform.
+    const icons = Array.isArray(manifest.icons) ? manifest.icons : [];
+    for (const size of REQUIRED_ICON_SIZES) {
+      if (!icons.some((icon) => typeof icon?.sizes === 'string' && icon.sizes.includes(size))) {
+        fail(
+          SEARCH_METADATA_FILES.manifest,
+          `No icon is declared at ${size}, so a browser will not offer to install this.`,
+        );
+      }
+    }
+    if (!icons.some((icon) => `${icon?.purpose ?? ''}`.split(/\s+/).includes('maskable'))) {
+      fail(
+        SEARCH_METADATA_FILES.manifest,
+        'No icon is declared "maskable", so a platform that crops to a circle crops the mark.',
+      );
+    }
+  }
+
+  // Every picture these files name has to be a file that exists. A manifest
+  // naming an icon nobody rendered installs without one, and a card address
+  // that 404s unfurls as a broken image — both of which look, in the
+  // repository, exactly like the working version.
+  if (input.assets !== undefined) {
+    const present = new Set(input.assets);
+    const named = [
+      ...(Array.isArray(manifest?.icons) ? manifest.icons : [])
+        .map((icon) => ({ file: SEARCH_METADATA_FILES.manifest, path: icon?.src }))
+        .filter((entry) => typeof entry.path === 'string'),
+      ...['og:image', 'twitter:image']
+        .map((key) => ({
+          file: SEARCH_METADATA_FILES.index,
+          path: headContent(index, key.startsWith('og:') ? 'property' : 'name', key)?.replace(
+            `${origin}/`,
+            '',
+          ),
+        }))
+        .filter((entry) => typeof entry.path === 'string' && entry.path.length > 0),
+      ...(linkHref(index, 'apple-touch-icon') === null
+        ? []
+        : [{ file: SEARCH_METADATA_FILES.index, path: linkHref(index, 'apple-touch-icon') }]),
+    ];
+    for (const entry of named) {
+      if (!present.has(entry.path)) {
+        fail(
+          entry.file,
+          `"${entry.path}" is named but no such file is served. Run \`pnpm run brand:assets\`.`,
+        );
+      }
+    }
+
+    // The forty-eight hull cards, which no file in this repository names: they
+    // are derived per hull from the installed package, so a pin move that adds
+    // a hull adds an address, a document and an `og:image` pointing at artwork
+    // nobody has rendered. Every other rule here would stay green while that
+    // hull's link unfurled as a broken image.
+    for (const entry of published ?? []) {
+      if (!present.has(entry.image)) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"/${entry.path}" shows "${entry.image}" but no such file is served. Run \`node scripts/convert-ship-artwork.mjs\`.`,
+        );
+      }
+    }
+  }
+
+  // The card is fetched by a chat client from its own machine, so a relative
+  // address is no address at all.
+  for (const key of ['og:image', 'twitter:image']) {
+    const declared = headContent(index, key.startsWith('og:') ? 'property' : 'name', key);
+    if (declared !== null && !declared.startsWith(`${origin}/`)) {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        `${key} is "${declared}"; a card address is fetched from elsewhere, so it must be absolute under ${origin}.`,
+      );
+    }
+  }
+
+  // The production document asks to be indexed. Only the preview deployment
+  // rewrites this tag, and it rewrites the built copy rather than this file.
+  const robotsTag = headContent(index, 'name', 'robots');
+  if (robotsTag !== null && /\bnoindex\b/i.test(robotsTag)) {
+    fail(
+      SEARCH_METADATA_FILES.index,
+      'The document asks not to be indexed. That belongs to a preview deployment, not to the site.',
+    );
+  }
+
+  // ...and the preview's rewrite can still find it. A tag spelled across two
+  // lines, or in single quotes, satisfies every rule above while leaving the
+  // `sed` matching nothing — and a preview that quietly asks to be indexed
+  // competes with the site it is a preview of, which is the one failure nobody
+  // is looking at a build log for.
+  //
+  // The two are compared as strings, in the one direction that compiles
+  // nothing: the expression the workflow would need is *derived from the tag
+  // this file actually carries*, and the workflow is searched for it. Reading
+  // it the other way — compiling the workflow's expression and running it over
+  // this file — would build a regular expression out of file contents, which is
+  // a catastrophic-backtracking pattern away from a check that never returns.
+  if (input.preview !== undefined && index.length > 0) {
+    const tag = /<meta name="robots" content="([^"]*)"/.exec(index);
+    if (tag === null || tag[1].length === 0) {
+      fail(
+        SEARCH_METADATA_FILES.index,
+        'The robots tag is not one line of `<meta name="robots" content="…">` with a value in it, ' +
+          'so the preview step cannot rewrite it and a preview would keep asking to be indexed.',
+      );
+    } else {
+      // The tag with its value widened to the class the `sed` matches: exactly
+      // the left-hand side of the expression the workflow has to carry.
+      const search = tag[0].replace(tag[1], '[^"]*');
+      const rewrite = `sed -E -i 's|${search}|`;
+      const at = input.preview.indexOf(rewrite);
+      if (at === -1) {
+        fail(
+          SEARCH_METADATA_FILES.preview,
+          `No step rewrites the robots tag as this file spells it. It needs \`${rewrite}…|' index.html\`; ` +
+            '`-E` is named so the expression means one thing rather than two.',
+        );
+      } else {
+        const replacement = input.preview.slice(at + rewrite.length).split('|')[0];
+        if (!/\bnoindex\b/.test(replacement)) {
+          fail(
+            SEARCH_METADATA_FILES.preview,
+            `The preview step rewrites the robots tag to "${replacement}", which does not say noindex.`,
+          );
+        }
       }
     }
   }
@@ -1996,6 +2292,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the separator are language-neutral.',
     'hullDetail.bar.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
+    'hullDetail.title':
+      'The variable alone. A hull address is titled with the hull, and the hull name is the package’s in every language because the game does not translate one (constitution VI, and game-text.presenter.ts, shipCatalogueText).',
     'hullDetail.slots.run.multiplier':
       'A composition pattern; both the variable and the multiplication sign are language-neutral. The words the chip stands for are hullDetail.slots.run.one and .many, which are translated.',
     'drives.fsd.optimal-mass.detail':
@@ -2382,6 +2680,8 @@ export const rules = {
   ledgerReconciliationViolations,
   productionOutputViolations,
   searchMetadataViolations,
+  searchMetadataSources,
+  routeTableTriples,
   copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,

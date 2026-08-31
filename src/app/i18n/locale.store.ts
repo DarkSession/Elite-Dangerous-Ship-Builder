@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { DocumentAdapter } from '../platform/browser/document.adapter';
 import { NavigatorAdapter } from '../platform/browser/navigator.adapter';
-import { canonicalAddress } from '../platform/browser/site-address';
+import { LINK_CARD, absoluteAsset, canonicalAddress } from '../platform/browser/site-address';
 import { CatalogueLoader } from './catalogue-loader';
 import { resolveDocumentTitle } from './document-title';
 import {
@@ -13,9 +13,11 @@ import {
   type LocaleSnapshot,
   type MessageCatalogue,
   type MessageKey,
+  type MessageParams,
   type ShippedLocale,
   fallbackLocale,
   findShippedLocale,
+  interpolate,
   resolveShippedLocale,
 } from './locale-registry';
 
@@ -70,6 +72,12 @@ export class LocaleStore {
 
   /** The route's own path, which becomes its canonical address. */
   readonly #path = signal('/');
+
+  /** What the route's title and description patterns interpolate. */
+  readonly #params = signal<MessageParams>({});
+
+  /** The route's own card, or the application's where it declares none. */
+  readonly #image = signal<string>(LINK_CARD);
 
   /** The current committed locale state. Always complete, always usable. */
   readonly snapshot = this.#snapshot.asReadonly();
@@ -191,6 +199,8 @@ export class LocaleStore {
     this.#titleKey.set(route.titleKey);
     this.#descriptionKey.set(route.descriptionKey);
     this.#path.set(route.path);
+    this.#params.set(route.params ?? {});
+    this.#image.set(route.image ?? LINK_CARD);
     this.#publish(this.#snapshot());
   }
 
@@ -207,6 +217,8 @@ export class LocaleStore {
       titleKey: this.#titleKey(),
       descriptionKey: this.#descriptionKey(),
       path: this.#path(),
+      params: this.#params(),
+      image: this.#image(),
     };
   }
 
@@ -286,6 +298,8 @@ export class LocaleStore {
       title: this.#title(snapshot.catalogue),
       description: this.#pageDescription(snapshot.catalogue),
       canonical: this.canonical(),
+      image: absoluteAsset(this.#image()),
+      imageAlt: this.#title(snapshot.catalogue),
     });
   }
 
@@ -296,7 +310,7 @@ export class LocaleStore {
   /** The route's page name, resolved in the catalogue being published. */
   #pageName(catalogue: MessageCatalogue): string | null {
     const key = this.#titleKey();
-    return key === null ? null : catalogue[key];
+    return key === null ? null : interpolate(catalogue[key], this.#params());
   }
 
   /**
@@ -307,7 +321,7 @@ export class LocaleStore {
    * to say is read by a search engine as exactly that.
    */
   #pageDescription(catalogue: MessageCatalogue): string {
-    return catalogue[this.#descriptionKey() ?? 'app.description'];
+    return interpolate(catalogue[this.#descriptionKey() ?? 'app.description'], this.#params());
   }
 }
 
@@ -330,6 +344,22 @@ export interface RouteIdentity {
   readonly descriptionKey: MessageKey | null;
   /** The router's own URL for this route, query and fragment included or not. */
   readonly path: string;
+  /**
+   * What the two patterns interpolate, where the route's subject has a name.
+   *
+   * One route has one: a hull address names its hull, and the name is the
+   * package's (constitution VI). Absent everywhere else, because a screen whose
+   * name is the same on every visit needs no parameter to say so.
+   */
+  readonly params?: MessageParams;
+  /**
+   * The picture a link preview shows, as a path relative to the deployment base.
+   *
+   * Absent means the application's own card, which is what every address but a
+   * hull's shows. A hull shows its own illustration, which is already served and
+   * is a truer picture of that page than the mark is.
+   */
+  readonly image?: string;
 }
 
 /**
