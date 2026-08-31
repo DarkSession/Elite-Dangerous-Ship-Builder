@@ -95,6 +95,12 @@ export class HullDetailPage {
    */
   readonly hull = input.required<string>();
 
+  /**
+   * The package's own record for the address, or `null` for one no hull answers
+   * to. Both effects below read it, and the screen never resolves it twice.
+   */
+  readonly #ship = computed(() => hullForAddressSegment(this.hull()));
+
   readonly backLabel = this.#messages.messageSignal('hullDetail.back');
   readonly specificationsHeading = this.#messages.messageSignal('hullDetail.specifications');
   readonly createLabel = this.#messages.messageSignal('hullDetail.create');
@@ -220,8 +226,7 @@ export class HullDetailPage {
     // answers to is passed through as it arrived, because the notice the screen
     // then draws is about what was asked for.
     effect((onCleanup) => {
-      const ship = hullForAddressSegment(this.hull());
-      const symbol = ship?.symbol ?? this.hull();
+      const symbol = this.#ship()?.symbol ?? this.hull();
       this.#detail.setSymbol(symbol);
       this.#restorer.setSelected(symbol);
       this.#creationError.set(null);
@@ -234,7 +239,7 @@ export class HullDetailPage {
     // pushed, because the Commander arrived at the hull rather than at two of
     // them (001/FR-005).
     effect(() => {
-      const ship = hullForAddressSegment(this.hull());
+      const ship = this.#ship();
       if (ship === null) {
         return;
       }

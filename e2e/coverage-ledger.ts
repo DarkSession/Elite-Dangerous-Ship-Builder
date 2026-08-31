@@ -1917,7 +1917,7 @@ export const helpRouteCoverage: readonly HelpRouteRow[] = [
   },
   {
     id: 'hull-detail',
-    surface: 'Hull detail /ships/:symbol',
+    surface: 'Hull detail /ships/:hull',
     owner: '001',
     frameEntry: 'visible',
     requirements: ['012/FR-001', '012/FR-002', '012/FR-011'],
