@@ -66,7 +66,7 @@ The 2026-08-26 canvas revision settles three things about it, and they hold at e
 
   The bar shows the return group wherever a screen is opened over another one, which is every width
   below the wide composition rather than the compact band alone (2026-08-30). The step is the
-  shell's: a route hands the bar its return group for as long as its screen is up, at every width,
+  shell's: a route hands the bar its return group whenever its screen is drawn, at every width,
   and the frame reveals the group below the wide composition. That is the same width at which such a
   screen becomes a full-height layer, because the group and the layer are the same decision — so the
   two never disagree, and no route can ask for a way back the shell would draw beside the screen it

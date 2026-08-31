@@ -172,7 +172,7 @@ Compare the implementation with `.design/Ship Builder.dc.html` canvases 1a–1d 
 
 1. At wide widths, verify the shipyard manifest/detail rail (whose track is held whether or not a hull is open), the centered saved-build route modal with its title bar, search-and-count header, column headers and committing footer, and the workspace command bar and save/share dialogs, all preserve the reference hierarchy.
 2. Below the manifest rail's own width — every width under 1024, the 768–1023 band included — verify stacked hull records, full-screen detail/library layers, workspace overflow actions and sheet dialogs preserve every action and route. At 900 the hull detail is the full-screen layer with the command bar's return group over it, not a panel under the manifest.
-3. Verify the hull detail's `HARDPOINTS` heading carries the total of its four class counts against its trailing edge, as every other section heading carries its own count, and carries none where the package publishes no layout for the hull.
+3. Verify the hull detail's `HARDPOINTS` heading carries the total of its four class counts against its trailing edge, as every other section heading carries its own count, and that the whole group is left out where the package publishes no hardpoint array for the hull.
 4. Confirm all mandatory adaptations: complete FR-004 facts, working/error/storage states, semantic controls, 44 px targets, package SVGs/data, localized formatting, same-origin fonts/assets and canonical `/build#b.…` links.
 5. Monitor runtime requests and inspect the built asset tree.
 

@@ -157,9 +157,9 @@ export class HullDetailPage {
   /**
    * How many hardpoints there are, for the trailing edge of their rule.
    *
-   * `null` where the package publishes no hardpoint layout for the hull: the
-   * chips are then empty too, and a total over no chips would be a `0` that
-   * states a count rather than the absence of one.
+   * `null` where the package publishes no `Ship.hardpoints` array for the hull:
+   * the chips are then empty too, so the group is left out entirely, and a
+   * total over no chips would be a `0` stating a count rather than an absence.
    */
   readonly mountsTotal = computed<string | null>(() => {
     const view = this.view();

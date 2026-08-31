@@ -67,9 +67,9 @@ this capability's placement — the anatomy sits in the centre track, which is w
 block `16px 20px 6px` around the header row and `10px 20px 14px` around the plates; canvas 1d pads
 its header row `12px 14px 8px` and runs the mode strip full-bleed under it. The narrow figure is the
 base and the roomy one is stated with the two-plate arrangement, under the same pair of conditions
-the second plate opens under. Read the other way round, a one-plate block stood 8px further in than every other
-band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not line up with
-a mount name in the ledger below it — which is the misalignment reported that day.
+the second plate opens under. Read the other way round, a one-plate block stood 8px further in than
+every other band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not
+line up with a mount name in the ledger below it — which is the misalignment reported that day.
 
 Selecting a mount selects its ledger row, which is what canvas 1d's bench then opens on. At 400%
 zoom and long or RTL text every group stacks, and no part of the document scrolls sideways — the

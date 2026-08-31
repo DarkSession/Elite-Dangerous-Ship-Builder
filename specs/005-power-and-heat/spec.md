@@ -117,10 +117,9 @@ conditions here, because the design draws them inside this capability and nowher
 - **FR-014**: At compact width, **where and only where** the package reports a band unpowered with
   the hardpoints deployed, the strip of key readings MUST close with a badge stating the share of
   plant output the build's lit demand takes, over one line naming each such band by its priority
-  group. Both figures
-  MUST be read from `BuildMetrics.powerBudget()`, the same result FR-013's rail reads, and MUST NOT
-  be a second reading of it: the badge is the rail's `POWER` line at the width the rail is a segment
-  a Commander has to open.
+  group. Both figures MUST be read from `BuildMetrics.powerBudget()`, the same result FR-013's rail
+  reads, and MUST NOT be a second reading of it: the badge is the rail's `POWER` line at the width
+  the rail is a segment a Commander has to open.
 
   The share is the lit demand over **plant output**, not over the whole demand: the reference sets
   `95%` against a build whose lit draw is `29.64 MW` of a `31.20 MW` plant and whose whole demand is
