@@ -12,7 +12,7 @@ available without an active build.
 Canvases 1c and 1d draw the capability in one order, and it is stable across all layouts:
 
 1. the localized `HULL ANATOMY` heading;
-2. the labelled schematic regions — both sides where the page composes more than one region and the
+2. the labelled schematic regions — both sides where the workspace composes more than one region and the
    block has room in both axes, one side and its `TOP`/`BOTTOM` selector otherwise; and
 3. the mount state legend.
 
@@ -27,16 +27,19 @@ Visual columns never reorder this reading sequence.
 
 Canvas 1c's `grid-template-columns: 1fr 1fr`: top and bottom render as two fluid labelled plates
 sharing one selected state and one legend, and the side selector is not drawn because both sides are
-already shown. Drawn where the window composes more than one region, the block has the inline size
-for two plates, and the window is not a short one — all three, for the reason "Intermediate tablet"
-gives below. The complete ledger
+already shown. Drawn where the workspace around this block composes more than one region, the block
+has the inline size for two plates, and the window is not a short one — all three, for the reason
+"Intermediate tablet" gives below. The complete ledger
 remains beside the capability according to the feature 002 workspace definition.
 
 ### Intermediate tablet
 
-Available space chooses paired or single-side presentation, not a named device breakpoint: a
-container query for the room this block was given, and two media queries for what the window alone
-knows. Expanded text moves all three, because each is stated in rem. Nothing required disappears in
+Available space chooses paired or single-side presentation, not a named device breakpoint: two
+container queries — the room this block was given, and the arrangement it was given that room inside
+— and one media query for the only thing no container knows, the window's height. Expanded text
+moves the two container questions, because a container query's `rem` is the reader's current text
+size; the height step is stated in rem too and cannot move, because a media query's `rem` is the
+browser's initial size by definition (`ui/short-viewport.ts`). Nothing required disappears in
 either orientation: the side selector reaches whichever plate is not drawn, and the complete ledger
 reaches every mount on both.
 
@@ -48,7 +51,7 @@ window less than one plate tall. A 1440px desktop, where canvas 1c's arrangement
 pair inside a 742px centre column — narrower than the phone's whole block. So no width separates
 them, and width is not the measure that can. What the phone lacks is height.
 
-**And the window has room for more than one region, ruled 2026-08-31 (Commander request).** Those
+**And the workspace has room for more than one region, ruled 2026-08-31 (Commander request).** Those
 two conditions still admitted a case neither of them is about. A 744px window in portrait is not
 short, and the compact composition hands this block the whole screen — 744px of container, two
 pixels more than the 742px centre column a 1440px desktop draws its pair inside. So the block drew
@@ -56,18 +59,27 @@ both sides of the hull in the middle of a single-flow screen.
 
 The container's inline size answers how much room this block was given. It cannot answer what it was
 given that room _inside_, and on this region the two have opposite answers two pixels apart: 742px is
-one column of a three-region page, and 744px is a single-flow window entire. Only the window knows
-which, so the window is asked — at the step the application already composes more than one region
-at (`_responsive.scss`, `$mode-wide-min`). Below that step there is one flow, and a pair of plates
-in a single flow is two half-size drawings where the screen has room for one readable one.
+one column of a three-region page, and 744px is a single-flow window entire.
 
-The pair is therefore drawn where all three hold: the **window composes more than one region**, the
-**container has the inline size for two plates**, and the **window is not a short one**. Each asks
-about a different thing — what kind of page this block is on, how much room it was given inside it,
-and whether the screen has the height to read a pair at all — and dropping any one of them puts two
-plates somewhere one belongs. Below any of them the block is canvas 1d's: one labelled side and the
-`TOP`/`BOTTOM` selector. No single-flow window draws both sides of a hull, in either orientation, at
-any height.
+What is asked instead is the workspace's own container, at the seam this workspace already stops
+being one flow at (`_responsive.scss`, `$outfitting-regions-min`, `layout.outfitting-regions`). One
+declaration, asked from both sides of it: the workspace lays its regions out at that step, and a
+region inside it asks whether it is one of several or the whole flow. They cannot disagree, because
+there is nothing to keep in step.
+
+Not the page, and the difference is not cosmetic. A page media query cannot see a Commander who has
+doubled their text — `rem` in a media query is the browser's initial size — so at 200% text a 1440px
+window reads as wide to one while this workspace has already folded to a single flow. Asked that
+way, both plates were drawn into that flow from 1320 to 1500px. A container query's `rem` is the
+root's current size, so the seam moves with the reader.
+
+The pair is therefore drawn where all three hold: the **workspace composes more than one region**,
+the **container has the inline size for two plates**, and the **window is not a short one**. Each
+asks about a different thing — what arrangement this block is a part of, how much room it was given
+inside it, and whether the screen has the height to read a pair at all — and dropping any one of
+them puts two plates somewhere one belongs. Below any of them the block is canvas 1d's: one labelled
+side and the `TOP`/`BOTTOM` selector. No single flow draws both sides of a hull, in either
+orientation, at any height or any text size.
 
 ### Narrow, mobile and zoomed
 

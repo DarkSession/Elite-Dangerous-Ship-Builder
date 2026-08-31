@@ -16,8 +16,16 @@ import { DestroyRef, inject, signal, type Signal } from '@angular/core';
  * two are reconciled by `scripts/check-interface-foundations.mjs` rather than by
  * this comment promising they agree.
  *
- * In rem, like the stylesheets' own step, so a window zoomed down to a single
- * region is treated as the single region it is.
+ * In rem because the stylesheets state it that way, and the point of restating
+ * it is that it is the same figure. It is not the reader's rem: `rem` inside a
+ * media query is the browser's initial text size by definition and does not move
+ * when a Commander enlarges theirs (`ui/short-viewport.ts`). That is what makes
+ * the two agree — the rail this answer is about is drawn by a media query at the
+ * same step, so both are the same fixed width at every text size, and browser
+ * zoom moves both together because zoom changes the window's own CSS width. A
+ * question about an *arrangement* that folds with the reader's text cannot be
+ * asked this way; the plate pair's is asked of a container instead
+ * (`_responsive.scss`, `$outfitting-regions-min`).
  */
 const WIDE_MODE_MIN_REM = 64;
 

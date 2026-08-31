@@ -131,7 +131,7 @@
 // Stated in rem, so it moves with the reader's text size: at 200% text the same
 // pixel width no longer holds the same content, and the composition steps down
 // rather than overflowing.
-@container outfitting (min-width: 47rem) {
+@include layout.outfitting-regions {
   .outfitting {
     display: grid;
     // Canvas 1c's `392px 1fr …`: the ledger is a fixed rail and the bench takes

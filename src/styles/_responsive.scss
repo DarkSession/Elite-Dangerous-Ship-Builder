@@ -180,6 +180,28 @@ $viewport-short-max: 30rem;
   }
 }
 
+// Where the outfitting workspace stops being one flow: canvas 1c's ledger beside
+// its bench. It is the ledger's and the bench's own content minimums added up
+// rather than a rounded figure, so the region and anything asking about it change
+// arrangement at the same width (`ui/outfitting/composition.ts`, `MINIMUMS`).
+$outfitting-regions-min: 47rem;
+
+// That seam, asked of the workspace's own container. Declared once and asked
+// from both sides of it: the workspace lays its regions out, and a region inside
+// it asks whether it is one of several or the whole flow.
+//
+// A container query rather than a page media query, and the difference is not
+// cosmetic. `rem` inside a media query is the browser's *initial* text size by
+// definition, so a page-level step cannot see a Commander who has doubled
+// theirs: at 200% text a 1440px window is still "wide" to a media query while
+// this workspace has already folded to one flow (`short-viewport.ts`,
+// `stackableMinimum`).
+@mixin outfitting-regions {
+  @container outfitting (min-width: #{$outfitting-regions-min}) {
+    @content;
+  }
+}
+
 // The bench wide enough for canvas 1c's three columns. Declared once and asked
 // from both sides of the seam: the workspace lays the two panels out, and the
 // chooser's step ② draws its chevron only where step ③ is actually beside it.

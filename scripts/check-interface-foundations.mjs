@@ -80,6 +80,28 @@ export const SCOPE = {
   specs: 'specs',
   /** Interface suites that may never be skipped, focused or quarantined. */
   testGlobs: ['e2e', 'src/app/ui', 'src/app/i18n', 'src/app/platform'],
+  /**
+   * Composition steps stated twice, and the two statements to reconcile.
+   *
+   * Where a behaviour turns on a composition rather than an arrangement, the
+   * step has to be stated in TypeScript as well, because behaviour is not
+   * decided in a stylesheet. That is a second copy of a figure the stylesheets
+   * own, and a second copy that drifts is a manifest reading a hull into a rail
+   * that is not drawn (`src/app/ui/wide-composition.ts`).
+   *
+   * So the two are reconciled by the `composition-step` rule rather than by a
+   * comment promising they agree.
+   */
+  duplicatedSteps: [
+    {
+      scss: { file: 'src/styles/_responsive.scss', name: '$mode-wide-min' },
+      ts: { file: 'src/app/ui/wide-composition.ts', name: 'WIDE_MODE_MIN_REM' },
+    },
+    {
+      scss: { file: 'src/styles/_responsive.scss', name: '$viewport-short-max' },
+      ts: { file: 'src/app/ui/short-viewport.ts', name: 'STACKABLE_MINIMUM_REM' },
+    },
+  ],
 };
 
 /**
@@ -713,55 +735,85 @@ async function checkPreviewCoverage() {
 // ---------------------------------------------------------------------------
 
 /**
- * Where a behaviour turns on a composition rather than an arrangement, the step
- * has to be stated in TypeScript as well, because behaviour is not decided in a
- * stylesheet. That is a second copy of a figure the stylesheets own, and a
- * second copy that drifts is a manifest reading a hull into a rail that is not
- * drawn (`src/app/ui/wide-composition.ts`).
+ * Reconciles one duplicated step: the stylesheets' declaration against the
+ * TypeScript restatement of it.
  *
- * So the two are reconciled here rather than by a comment promising they agree.
+ * Both sources are passed in, so the comparison is a function of two strings and
+ * a pair rather than of the file system. `null` for either source is the file
+ * being absent, which is itself a violation: a rule that quietly passes when
+ * half of what it reconciles has been moved or renamed reconciles nothing.
  */
-const DUPLICATED_STEPS = [
-  {
-    scss: { file: 'src/styles/_responsive.scss', name: '$mode-wide-min' },
-    ts: { file: 'src/app/ui/wide-composition.ts', name: 'WIDE_MODE_MIN_REM' },
-  },
-  {
-    scss: { file: 'src/styles/_responsive.scss', name: '$viewport-short-max' },
-    ts: { file: 'src/app/ui/short-viewport.ts', name: 'STACKABLE_MINIMUM_REM' },
-  },
-];
+function duplicatedStepViolations(pair, scssSource, tsSource) {
+  const { scss, ts } = pair;
+  const found = [];
+  if (scssSource === null) {
+    found.push({
+      file: scss.file,
+      line: 1,
+      rule: 'composition-step',
+      message: `${scss.file} is missing, so ${ts.name} has nothing to be reconciled against.`,
+    });
+  }
+  if (tsSource === null) {
+    found.push({
+      file: ts.file,
+      line: 1,
+      rule: 'composition-step',
+      message: `${ts.file} is missing, so ${scss.name} has nothing to be reconciled against.`,
+    });
+  }
+  if (found.length > 0) {
+    return found;
+  }
 
-async function checkDuplicatedSteps() {
-  for (const { scss, ts } of DUPLICATED_STEPS) {
-    const scssPath = resolve(ROOT, scss.file);
-    const tsPath = resolve(ROOT, ts.file);
-    if (!existsSync(scssPath) || !existsSync(tsPath)) {
-      continue;
-    }
+  const declared = new RegExp(`\\${scss.name}\\s*:\\s*(\\d*\\.?\\d+)rem`).exec(scssSource);
+  const restated = new RegExp(`${ts.name}\\s*=\\s*(\\d*\\.?\\d+)\\b`).exec(tsSource);
 
-    const scssSource = await readFile(scssPath, 'utf8');
-    const tsSource = await readFile(tsPath, 'utf8');
-    const declared = new RegExp(`\\${scss.name}\\s*:\\s*(\\d*\\.?\\d+)rem`).exec(scssSource);
-    const restated = new RegExp(`${ts.name}\\s*=\\s*(\\d*\\.?\\d+)\\b`).exec(tsSource);
-
-    if (declared === null) {
-      report(scssPath, 1, 'composition-step', `${scss.name} is not declared in rem here.`);
-      continue;
-    }
-    if (restated === null) {
-      report(tsPath, 1, 'composition-step', `${ts.name} is not declared as a number here.`);
-      continue;
-    }
-    if (Number(declared[1]) !== Number(restated[1])) {
-      report(
-        tsPath,
-        lineOf(tsSource, restated.index),
-        'composition-step',
-        `${ts.name} is ${restated[1]}rem where ${scss.name} is ${declared[1]}rem. ` +
+  if (declared === null) {
+    return [
+      {
+        file: scss.file,
+        line: 1,
+        rule: 'composition-step',
+        message: `${scss.name} is not declared in rem here.`,
+      },
+    ];
+  }
+  if (restated === null) {
+    return [
+      {
+        file: ts.file,
+        line: 1,
+        rule: 'composition-step',
+        message: `${ts.name} is not declared as a number here.`,
+      },
+    ];
+  }
+  if (Number(declared[1]) !== Number(restated[1])) {
+    return [
+      {
+        file: ts.file,
+        line: lineOf(tsSource, restated.index),
+        rule: 'composition-step',
+        message:
+          `${ts.name} is ${restated[1]}rem where ${scss.name} is ${declared[1]}rem. ` +
           'A behaviour keyed to a composition has to turn at the width the stylesheets draw it at.',
-      );
-    }
+      },
+    ];
+  }
+  return [];
+}
+
+/** IO wrapper. */
+async function checkDuplicatedSteps() {
+  for (const pair of SCOPE.duplicatedSteps) {
+    const read = async (file) => {
+      const path = resolve(ROOT, file);
+      return existsSync(path) ? await readFile(path, 'utf8') : null;
+    };
+    violations.push(
+      ...duplicatedStepViolations(pair, await read(pair.scss.file), await read(pair.ts.file)),
+    );
   }
 }
 
@@ -2746,6 +2798,7 @@ export const rules = {
   stylesheetViolations,
   previewCoverageViolations,
   testDisciplineViolations,
+  duplicatedStepViolations,
   ledgerCoverageViolations,
   declaredRequirementIds,
   registeredRequirementIds,

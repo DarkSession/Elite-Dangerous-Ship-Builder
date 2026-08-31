@@ -1112,7 +1112,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'only a package annotation resolving to a hardpoint or utility slot becomes a mount',
       'no coordinate is measured: no getBBox, no getScreenCTM and no stored geometry',
       'every drawn mount resolves to the exact package slot key on every hull',
-      'the pair is drawn only where the page composes more than one region, the container has the room for two plates and the window is not short; missing any one of the three draws one side and its selector',
+      'the pair is drawn only where the workspace composes more than one region, the container has the room for two plates and the window is not short; missing any one of the three draws one side and its selector, doubled text included',
     ],
     manualRecord: 'screen-reader',
   },

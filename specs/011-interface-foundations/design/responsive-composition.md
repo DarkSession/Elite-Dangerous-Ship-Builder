@@ -19,23 +19,28 @@ because what decides it is the bar's own content rather than the page's
 Container queries govern reusable component composition. Page-level media queries govern shell and
 route regions. Both use named tokens; the reference canvas widths are not copied as breakpoints.
 
-A component may ask the window for what its container cannot report, and there are two such things.
+A component may ask the window for what no container can report, and there is one such thing: the
+viewport's **height**. A container query measures the box, and a box's inline size does not say
+whether the window it is in is a short one — a landscape phone and a bounded desktop column present
+the same width. The container query states the inline condition — how much room _this_ block was
+given — and a media query nested inside it states the height. The composition still belongs to the
+component; the window is never asked something a box could have answered (feature 010's plate pair,
+`specs/010-hull-anatomy/design/hull-anatomy.md`, "Intermediate tablet").
 
-The first is the viewport's **height**. A container query measures the box, and a box's inline size
-does not say whether the window it is in is a short one — a landscape phone and a bounded desktop
-column present the same width.
+**Whether the block is one region of several or the whole flow** is such a thing, and the box that
+answers it is not this component's own. Its own inline size does not say: on a region that is one
+column of a multi-region page at some widths and the whole of a single flow at others, the two
+answers cross — feature 010's anatomy is given 742px as the centre column of a 1440px page and 744px
+by a single-flow window entire, so its own width cannot tell the arrangement it is in from the one it
+is not. The **enclosing region's** container answers it, at the seam that region already stops being
+one flow at: one declaration asked from both sides of it, so the region and the block inside it
+change arrangement together (`_responsive.scss`, `$outfitting-regions-min`).
 
-The second is **whether the window has room for more than one region**. A box's inline size does not
-say that either, and on a region that is one column of a multi-region page at some widths and the
-whole of a single flow at others, the two answers cross: feature 010's anatomy is given 742px as the
-centre column of a 1440px page and 744px by a single-flow window entire, so the container cannot tell
-the page it is on from the page it is not. Only the window knows that, and it is asked at the step
-the application already composes more than one region at (`_responsive.scss`, `$mode-wide-min`).
-
-In both cases the container query states the inline condition — how much room _this_ block was given
-— and a media query nested inside it states what the window alone knows. The composition still
-belongs to the component; the window is never asked something the box could have answered (feature
-010's plate pair, `specs/010-hull-anatomy/design/hull-anatomy.md`, "Intermediate tablet").
+Not the page, and the difference is not cosmetic. `rem` in a media query is the browser's initial
+text size by definition, so a page-level step cannot see a Commander who has doubled theirs: at 200%
+text a 1440px window is still wide to a media query while the workspace inside it has already folded
+to one flow. `rem` in a container query is the root's current size and moves with the reader
+(`ui/short-viewport.ts`, `stackableMinimum`).
 
 Where **behaviour** rather than arrangement turns on a composition, the route region asks the
 question in TypeScript and passes the answer to the components inside it. The shipyard's manifest
