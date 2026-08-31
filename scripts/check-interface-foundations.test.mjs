@@ -1135,7 +1135,7 @@ describe('search metadata', () => {
   const ROUTE_TABLE = [
     { path: '' },
     { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
-    { path: ':symbol', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
+    { path: ':hull', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
     { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
     { path: 'builds', titleKey: 'library.title', descriptionKey: 'library.description' },
     { path: '**' },
@@ -1164,7 +1164,7 @@ describe('search metadata', () => {
     assets: ASSETS,
     preview: PREVIEW,
     locales: ['en', 'de'],
-    routes: ['', 'ships', ':symbol', 'build', '**'],
+    routes: ['', 'ships', ':hull', 'build', '**'],
     ...overrides,
   });
 
@@ -1328,7 +1328,7 @@ describe('search metadata', () => {
 
   it('rejects an addressable route no published address names', () => {
     const found = rules.searchMetadataViolations(
-      complete({ routes: ['', 'ships', ':symbol', 'build', 'builds', '**'] }),
+      complete({ routes: ['', 'ships', ':hull', 'build', 'builds', '**'] }),
     );
 
     assert.deepEqual(ruleIds(found), ['search-metadata']);
@@ -1565,7 +1565,7 @@ describe('search metadata', () => {
   // A published hull address, with the sitemap entry that goes with it.
   const HULL = {
     path: 'ships/Anaconda',
-    route: 'ships/:symbol',
+    route: 'ships/:hull',
     address: 'https://sb.edct.dev/ships/Anaconda',
     titleKey: 'hullDetail.title',
     descriptionKey: 'hullDetail.description',
@@ -1697,7 +1697,7 @@ describe('search metadata', () => {
       withHull({ routes: ['', 'ships', 'build', '**'] }),
     );
 
-    assert.ok(found.some((violation) => /:symbol/.test(violation.message)));
+    assert.ok(found.some((violation) => /:hull/.test(violation.message)));
   });
 
   it('rejects a published address naming a message this build does not carry', () => {
@@ -1801,7 +1801,7 @@ describe('search metadata', () => {
         title: 'catalogue.title',
         data: { description: 'catalogue.description' },
         children: [
-          { path: ':symbol', title: 'hullDetail.title', data: { description: 'hullDetail.description' } },
+          { path: ':hull', title: 'hullDetail.title', data: { description: 'hullDetail.description' } },
         ],
       },
       { path: '**', redirectTo: 'ships' },
@@ -1810,7 +1810,7 @@ describe('search metadata', () => {
     assert.deepEqual(rules.routeTableTriples(source), [
       { path: '', titleKey: undefined, descriptionKey: undefined },
       { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
-      { path: ':symbol', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
+      { path: ':hull', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
       { path: '**', titleKey: undefined, descriptionKey: undefined },
     ]);
   });

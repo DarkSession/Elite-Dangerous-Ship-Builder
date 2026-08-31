@@ -19,7 +19,7 @@ import {
  * are keyed by. This is the address alone.
  */
 
-/** The one character an address is spelled differently from a name. */
+/** The one character that differs between a hull's name and its address. */
 const SPACE = / /g;
 
 /** The same substitution, read back. No package name carries an underscore. */

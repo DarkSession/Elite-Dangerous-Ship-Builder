@@ -58,6 +58,19 @@ describe('hullAddressSegment', () => {
       expect(collision === undefined || collision === ship.symbol).toBe(true);
     }
   });
+
+  it('never lets one hull’s symbol read as another hull’s name', () => {
+    // The other direction, and the one a lookup takes first: a symbol is read
+    // back through the same substitution, so a symbol whose underscores expand
+    // to another hull's name would open that hull from a legacy address and say
+    // nothing about it.
+    const names = new Map(SHIPS.map((ship) => [ship.name.toLowerCase(), ship.symbol]));
+
+    for (const ship of SHIPS) {
+      const collision = names.get(ship.symbol.replace(/_/g, ' ').toLowerCase());
+      expect(collision === undefined || collision === ship.symbol).toBe(true);
+    }
+  });
 });
 
 describe('hullForAddressSegment', () => {

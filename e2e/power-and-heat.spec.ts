@@ -901,7 +901,7 @@ test.describe('the rail’s pip control', () => {
     await openPower(page);
     await revealStatusRail(page);
 
-    // Canvas 1c draws this block and the six metric cells under it inside one
+    // Canvas 1c draws this block and the metric cells under it inside one
     // padded block, which the workspace owns. So the figures start where the
     // cells start: an inset of this block's own would be a second one inside
     // that padding, and the reading would stand further in than the cells it
