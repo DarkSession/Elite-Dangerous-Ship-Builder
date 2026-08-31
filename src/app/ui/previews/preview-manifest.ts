@@ -1656,6 +1656,9 @@ registerPreview({
         caption: 'Hulls in the Almanac',
         columns: CATALOGUE_COLUMNS,
         hulls: [ANACONDA, { ...ANACONDA, symbol: 'Adder', selected: true }, UNAVAILABLE_HULL],
+        // The rail's own composition, which is the one the wide table is drawn
+        // in: the screen answers this, and the manifest is named for the answer.
+        restsToRead: true,
       },
       [
         'the wide composition is a real table with scoped column and row headers',
@@ -1674,6 +1677,7 @@ registerPreview({
         columns: CATALOGUE_COLUMNS,
         hulls: [],
         emptyLabel: 'No hull matches these filters.',
+        restsToRead: true,
       },
       ['says why there is nothing to show rather than rendering an empty frame'],
     ),

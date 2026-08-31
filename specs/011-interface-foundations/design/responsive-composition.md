@@ -19,13 +19,33 @@ because what decides it is the bar's own content rather than the page's
 Container queries govern reusable component composition. Page-level media queries govern shell and
 route regions. Both use named tokens; the reference canvas widths are not copied as breakpoints.
 
-A component may ask the window for the one thing its container cannot report: the viewport's height.
-A container query measures the box, and a box's inline size does not say whether the window it is in
-is a short one — a landscape phone and a bounded desktop column present the same width. Where an
-arrangement needs both axes, the container query states the inline condition and a `short-viewport`
-media query states the other, nested inside it. The composition still belongs to the component; the
-window is only asked what it alone knows (feature 010's plate pair,
-`specs/010-hull-anatomy/design/hull-anatomy.md`, "Intermediate tablet").
+A component may ask the window for what its container cannot report, and there are two such things.
+
+The first is the viewport's **height**. A container query measures the box, and a box's inline size
+does not say whether the window it is in is a short one — a landscape phone and a bounded desktop
+column present the same width.
+
+The second is **whether the window has room for more than one region**. A box's inline size does not
+say that either, and on a region that is one column of a multi-region page at some widths and the
+whole of a single flow at others, the two answers cross: feature 010's anatomy is given 742px as the
+centre column of a 1440px page and 744px by a single-flow window entire, so the container cannot tell
+the page it is on from the page it is not. Only the window knows that, and it is asked at the step
+the application already composes more than one region at (`_responsive.scss`, `$mode-wide-min`).
+
+In both cases the container query states the inline condition — how much room _this_ block was given
+— and a media query nested inside it states what the window alone knows. The composition still
+belongs to the component; the window is never asked something the box could have answered (feature
+010's plate pair, `specs/010-hull-anatomy/design/hull-anatomy.md`, "Intermediate tablet").
+
+Where **behaviour** rather than arrangement turns on a composition, the route region asks the
+question in TypeScript and passes the answer to the components inside it. The shipyard's manifest
+reads a hull on a rested pointer only where the inspector rail that reading appears in is drawn — and
+the manifest cannot see a rail beside itself, nor tell the two apart by its own width, since it is
+the wider box at the width the rail exists. So the screen that draws the rail answers it, composed
+with the device's own `(hover: hover)` as one query, and the manifest takes it as an input
+(`specs/001-ship-selection-and-loading/design/hull-catalogue.md`, "Resting reads a hull only where
+the rail is drawn"). Behaviour keyed to a composition is stated at the same step the stylesheets use,
+never at a second threshold of its own.
 
 ## Shipyard-pattern derivation
 
@@ -35,7 +55,9 @@ window is only asked what it alone knows (feature 010's plate pair,
   orientations: a manifest of 48 records is several screenfuls, and a detail stacked under them is a
   screen the reader has to scroll the whole list to reach (ruled 2026-08-30,
   `specs/001-ship-selection-and-loading/design/hull-detail.md`, "Every width below the rail's is the
-  sheet's").
+  sheet's"). The drill-in takes the compact composition's behaviour with it: the press opens a hull
+  and the sheet's own action builds it, because there is no rail for a rested pointer to read into,
+  and the sheet is drawn as a bounded column rather than at the width of the window.
 - Compact/zoom: semantic stacked records, named sort/filter controls and full-height detail/library
   layers. Internal horizontal controls may scroll only when labelled and when every choice remains
   discoverable; the page never scrolls horizontally.

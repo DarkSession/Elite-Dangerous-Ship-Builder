@@ -6,7 +6,7 @@
 ## Composition
 
 - Two compositions, and the rail's own width decides between them. **At the rail** — at and above that width — canvas 1a's inspector rail beside the manifest. **Below the rail's width**, canvas 1b's full-screen detail sheet, which takes the screen and replaces the shipyard's command bar with one of its own (see [the sheet's own bar](#the-sheets-own-bar)). Neither carries a page heading of its own: the bar names the screen (see [hull-catalogue, "Screen chrome and the command bar"](./hull-catalogue.md#screen-chrome-and-the-command-bar)).
-- `HullArtwork` on the hatched plate, loaded from the same-origin package asset path with reserved area and temporary-unavailable text.
+- `HullArtwork` on the hatched plate, loaded from the same-origin package asset path with reserved area and temporary-unavailable text. Wherever the sheet is drawn the plate is bounded with the rest of the sheet's column rather than growing to the window (see [the sheet is a column](#the-sheet-is-a-column-not-a-screenful-2026-08-31-commander-request)).
 - The hull's name in tracked condensed amber, over one monospace identity line reading `MANUFACTURER · <PAD> LANDING PAD`. The pad class is named as a pad class — `LARGE LANDING PAD`, not a bare `LARGE` — through `hullDetail.landing-pad`. Both facts keep their labels in the markup; only the eye sees the compressed line. Wherever the sheet is drawn the same two facts are the bar's title and the line under it instead, and the body's block is not drawn — the canvas puts them in the bar and draws them once.
 - A ruled two-column `FactList` of the eight figures the reference's metric grid carries: speed, boost, shield, armour, hull mass, hardness, crew and mass lock, each with its localized unit where the reference draws one.
 - The mount classes the hull carries, under a section rule carrying how many hardpoints there are in total on its trailing edge, as `<count> <CLASS>` chips with the classes it has none of left out. The total is the sum of the four class counts, which come from the package's own `Ship.hardpoints` array rather than from the slot layout the three groups below are read from. It is drawn exactly as those groups draw theirs — one rule shape, one place a total goes (canvas 1a `sy-hp-total`). Adding up a package array is not a claim of ours; where the package publishes no hardpoint array for the hull there are no counts to add and no chips to draw, so the group is left out entirely rather than standing as a rule over nothing.
@@ -136,10 +136,35 @@ this screen. Canvas 1a's rail does not draw it; canvas 1b's sheet pins it to the
 the stock-hull action. It is not drawn here at either width, because the bar carrying it is on
 screen at both — a second control for the same destination, a centimetre below the first.
 
-The withdrawal at wide width follows the press rather than the width. A manifest row builds only
+The withdrawal follows the press as well as the width, and needs both. A manifest row builds only
 where the device can hover — a row that both reads a hull and builds it needs a pointer that can
 rest without pressing — so on a wide touch screen, which neither canvas draws, the rail keeps the
-action rather than leaving that device with no way to build at all.
+action rather than leaving that device with no way to build at all. And a row reads a hull only
+where the rail is drawn, because below that width there is no rail for the reading to appear in
+(`hull-catalogue.md`, "Resting reads a hull only where the rail is drawn"). The two conditions are
+asked together, in the manifest and in this screen's stylesheet alike, so the action is withdrawn
+exactly where the row carries it and nowhere else.
+
+### The sheet is a column, not a screenful (2026-08-31, Commander request)
+
+The sheet took whatever width the screen gave it, and the artwork plate is `100%` of that at a fluid
+3:2. That ratio is this application's own: canvas 1b draws the plate at a fixed `height: 180px`, and
+a fluid frame is what reserves the illustration's area before it arrives at a width the canvas never
+drew. Unbounded, it grew the plate with the window while the window's height did not — 362 x 241 at
+390px, 716 x 477 at 744px, 856 x 571 at 900px, and 979 x 653 at 1023px, the last width before the
+rail: 73% of a 900px-tall window spent on the illustration before a single figure is read. The rail
+draws the same plate at 303 x 202, 22% of the same screen.
+
+The sheet is therefore bounded to canvas 1b's own content column — 362px, its `12px 14px 14px`
+padding inside the 390px artboard — and centred in anything wider, at every width it is drawn. That
+column rather than a synthesized one, because the canvases draw no artboard between this sheet and
+canvas 1a's rail: below the rail's width this screen is the composition canvas 1b states, so it is
+drawn at the width canvas 1b draws it. The plate is then 362 x 241 wherever the sheet is — 21% of a
+1133px-tall window, 27% of a 900px one, against the 22% the rail draws it at — and the figures under
+it read as a column rather than as a row of facts spread a window wide.
+
+Nothing changes at the compact width the canvas states: a 390px screen's own content column is the
+bound, so the sheet there is what it always was.
 
 ### The sheet's own bar
 

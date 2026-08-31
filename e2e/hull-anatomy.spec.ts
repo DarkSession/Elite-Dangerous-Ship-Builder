@@ -632,21 +632,22 @@ test.describe('the conditions that break layouts', () => {
     await expectNoPlateScrolling(page);
   });
 
-  test('draws one plate on a window too short for the pair, however wide it is', async ({
-    page,
-  }) => {
-    // The pair needs room in both axes (Commander request 2026-08-30). Inline
-    // size alone cannot separate canvas 1c's block from canvas 1d's: a landscape
-    // phone is 844px across and less than one plate tall, while the desktop the
-    // pair belongs on draws it inside a 742px centre column — narrower than the
-    // phone's whole block (`design/hull-anatomy.md`, "Intermediate tablet").
+  test('draws the pair only where all three of its conditions hold', async ({ page }) => {
+    // The pair needs the wide composition, the inline size for two plates, and a
+    // window that is not short (Commander requests 2026-08-30 and 2026-08-31).
+    // No one of them separates canvas 1c's block from canvas 1d's: a landscape
+    // phone is 844px across and less than one plate tall; a 744px portrait
+    // window is tall and hands this block 744px of container, two pixels more
+    // than the 742px centre column the desktop the pair belongs on draws it
+    // inside (`design/hull-anatomy.md`, "Intermediate tablet").
     //
     // Asserted at whatever this profile is, in both directions, so a regression
-    // to a width-only rule fails here rather than passing quietly.
+    // to any two of the three fails here rather than passing quietly.
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();
 
     const room = await page.locator('edsb-hull-anatomy').evaluate((host: HTMLElement) => ({
+      composingWide: window.matchMedia('(min-width: 64rem)').matches,
       wideEnough: host.getBoundingClientRect().width >= 41 * 16,
       tallEnough: window.matchMedia('(min-height: 30.0625rem)').matches,
     }));
@@ -660,17 +661,45 @@ test.describe('the conditions that break layouts', () => {
       .evaluateAll((plates) => plates.filter((plate) => plate.getClientRects().length > 0).length);
     const selector = page.locator('edsb-hull-anatomy .anatomy__sides');
 
-    if (room.wideEnough && room.tallEnough) {
+    if (room.composingWide && room.wideEnough && room.tallEnough) {
       // Both sides are drawn, so there is nothing for the selector to choose.
       expect(drawn).toBe(2);
       await expect(selector).toBeHidden();
       return;
     }
 
-    // Either axis short of the pair is canvas 1d's block: one labelled side, and
+    // Any one of the three missing is canvas 1d's block: one labelled side, and
     // the selector that reaches the other.
     expect(drawn).toBe(1);
     await expect(selector).toBeVisible();
+  });
+
+  test('draws one plate on a tall window the compact composition owns', async ({ page }) => {
+    // The case the third condition exists for, stated at its own size rather
+    // than left to whichever profile happens to run this. A 744px portrait
+    // window is not short and is wider than the 742px centre column the pair is
+    // drawn in on a 1440px desktop, so the two conditions that came first both
+    // held and the block drew both sides of the hull in the middle of canvas
+    // 1d's single flow (Commander request 2026-08-31).
+    await page.setViewportSize({ width: 744, height: 1133 });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    // The container is wide enough and the window is tall enough: the reason
+    // this draws one plate is the composition, and nothing else.
+    const room = await page.locator('edsb-hull-anatomy').evaluate((host: HTMLElement) => ({
+      wideEnough: host.getBoundingClientRect().width >= 41 * 16,
+      tallEnough: window.matchMedia('(min-height: 30.0625rem)').matches,
+      composingWide: window.matchMedia('(min-width: 64rem)').matches,
+    }));
+    expect(room).toEqual({ wideEnough: true, tallEnough: true, composingWide: false });
+
+    const drawn = await page
+      .locator('edsb-hull-anatomy .anatomy__plate')
+      .evaluateAll((plates) => plates.filter((plate) => plate.getClientRects().length > 0).length);
+    expect(drawn).toBe(1);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expectNoDocumentOverflow(page);
   });
 
   test('mirrors the layout without mirroring the hull or renaming a mount', async ({ page }) => {

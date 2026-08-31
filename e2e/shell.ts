@@ -203,8 +203,21 @@ export function manifestBuildControl(page: Page): Locator {
     .first();
 }
 
+/**
+ * Whether resting a pointer on a manifest row reads the hull it names.
+ *
+ * The application's own question, asked the application's way: the device has
+ * to be able to rest a pointer somewhere, and the rail that reading appears in
+ * has to be drawn. Below the rail's width a rest reads nothing at every device,
+ * so a journey that hovered there would wait on a navigation that never comes
+ * (`responsive-catalogue-view.ts`, `restingMatch`).
+ */
+export function restsToRead(page: Page): Promise<boolean> {
+  return page.evaluate(() => matchMedia('(hover: hover) and (min-width: 64rem)').matches);
+}
+
 async function reachHull(page: Page, row: Locator): Promise<void> {
-  if (await page.evaluate(() => matchMedia('(hover: hover)').matches)) {
+  if (await restsToRead(page)) {
     await row.hover();
   } else {
     await row.click();

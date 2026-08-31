@@ -14,8 +14,20 @@
 
 // Below the rail's own width the same route is the whole screen. The address,
 // the state and the history entry do not change with the breakpoint.
+//
+// The screen, not the screen's width: the sheet is a column of canvas 1b's own
+// content width, centred in whatever it is opened on. Its artwork plate is
+// `100%` of the sheet at a fluid 3:2 — the canvas fixes that plate's height and
+// this application does not — so an unbounded sheet grew the illustration with
+// the window while the window's height stayed where it was: 73% of a 900px
+// window at the last width before the rail, against the 22% the rail itself
+// draws the same plate at (Commander request 2026-08-31; hull-detail design,
+// "The sheet is a column, not a screenful"). Nothing moves at the compact width
+// the canvas states, whose own column is the bound.
 @include layout.below-wide {
   .detail {
+    max-inline-size: var(--edsb-layout-sheet-column);
+    margin-inline: auto;
     padding-block: var(--edsb-space-inline-loose);
   }
 }
@@ -190,16 +202,21 @@
 // already offers on this screen; it is not drawn twice.
 //
 // Canvas 1a's rail ends at the hull price and offers no action at all, because
-// there a manifest row's own press is the build (`ResponsiveCatalogueView`). It
-// is the press and not the width that decides: a manifest row builds only where
-// the device can hover, since a row that both reads a hull and builds it needs a
-// pointer that can rest without pressing. So the action is withdrawn exactly
-// where something else carries it, and a wide touch screen — which the canvases
-// do not draw — keeps it.
+// there a manifest row's own press is the build (`ResponsiveCatalogueView`).
 //
-// The width is the rail's own, which is the only threshold this screen has:
-// the rail composition starts at `wide-up` (`ship-catalogue.page.scss`), and
-// every width below it draws canvas 1b's sheet, which keeps the action.
+// Two conditions, and the withdrawal needs both. A manifest row builds only
+// where the device can hover, since a row that both reads a hull and builds it
+// needs a pointer that can rest without pressing — so a wide touch screen,
+// which the canvases do not draw, keeps the action. And a row reads a hull only
+// where the rail is drawn, because below that width there is no rail for the
+// reading to appear in: at 900px a rested pointer threw the sheet up over the
+// manifest it was crossing (Commander request 2026-08-31).
+//
+// The width is the rail's own, which is the only threshold this screen has: the
+// rail composition starts at `wide-up` (`ship-catalogue.page.scss`), and every
+// width below it draws canvas 1b's sheet, which keeps the action. The manifest
+// asks the same pair as one question, so the row and this screen cannot
+// disagree about which of them carries the transaction.
 @include layout.wide-up {
   @media (hover: hover) {
     .detail__create-action {

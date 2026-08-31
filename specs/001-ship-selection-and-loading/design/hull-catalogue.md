@@ -71,17 +71,44 @@ Three things about a manifest row, at both compositions:
   cell in it belongs to the same hull. The name stays a real button, which is what gives the row a
   named control and what a keyboard reaches; its press bubbles to the row and is answered once, so
   there is one action and not two. The compact record is the same: the press is on the card.
-- **The second press on a touch screen builds.** With no hover, the first press opens the hull —
-  nothing else can, because a touch screen has no resting state. Pressing the row that is already
-  open used to repeat that navigation, so the row a Commander was looking at did nothing when they
-  pressed it again. It builds now, which is the same second step a pointer takes by resting and then
-  pressing. The action's own words follow: a row that will open says so, and the open row says it
-  will build.
+- **The second press builds, where there is a row left to press.** Where a rested pointer opens the
+  hull, the press after it flies it. On a touch screen at the rail's width there is no resting
+  state, so the first press opens the hull beside the manifest and the second flies it — the same
+  two steps, and until 2026-08-28 that second press repeated the navigation the row had already made
+  and nothing happened. Below the rail's width the sheet takes the screen and the manifest is not
+  drawn at all, so there is no open row to press again: the press opens the hull and the sheet's own
+  action builds it (`hull-detail.md`, "Every width below the rail's is the sheet's"). The action's
+  own words follow wherever the row is on screen: a row that will open says so, and the open row
+  says it will build.
 - **The caret keeps its place on every header.** It is drawn on all six and inked on the one the
   list is ordered by. Drawn only when sorted, it pulled the two right-ranged headings a caret's
   width along the first time they were pressed — a heading moving under the pointer that asked for
   it. Hidden and not absent, so the box is the same box in both states; and it is the ascending
   glyph that holds the place, because the two are the same width.
+
+### Resting reads a hull only where the rail is drawn (2026-08-31, Commander request)
+
+The manifest asked the device one question — can it hover — and read a hull on every rest that
+answered yes. Below the rail's own width there is no rail for the reading to appear in: the hull
+detail is canvas 1b's sheet over the whole screen. So a pointer crossing the manifest at 900px opened
+that sheet over the list it was crossing, one hull after another, with no press behind any of it, and
+the manifest it covered was the thing being read.
+
+Resting is therefore the rail's own behaviour, and its two halves are asked as one question: can this
+device rest a pointer somewhere, **and** is the rail drawn. Below that width the manifest takes the
+same path a touch screen takes — the press opens the hull, and the sheet's own action builds it —
+which is the composition the sheet is already drawing everything else in. The row's words follow the
+same answer, so a row never announces a build the next press will not make.
+
+The screen that draws the rail is what answers it, and the manifest takes the answer as an input. A
+manifest cannot see a rail beside itself, and it cannot tell the two compositions apart by its own
+width either: it is the _wider_ box at the width the rail exists, because the page it is on is wider
+still (feature 011, `design/responsive-composition.md`).
+
+The other decision this governs was already keyed to the same width on the far side of the screen:
+canvas 1a's rail draws no stock-hull action _because_ the row's press is the build there, and canvas
+1b's sheet keeps it (`hull-detail.md`, "The wide rail has no action"). One question, asked once, is
+what keeps the row and the sheet from disagreeing about which of them carries the transaction.
 
 ### Screen chrome and the command bar
 

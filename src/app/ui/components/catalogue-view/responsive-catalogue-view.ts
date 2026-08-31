@@ -74,17 +74,21 @@ export class ResponsiveCatalogueView {
   readonly hullBuilt = output<string>();
 
   /**
-   * Whether this device can hover at all.
+   * Whether resting a pointer on a row reads the hull it names.
    *
-   * The manifest reads a hull on hover and builds one on click, which needs a
-   * pointer that can rest somewhere without pressing. A touch screen has none:
-   * there the row keeps opening the detail, where the build action already
-   * lives as its own control. So the row's action, its accessible name and the
-   * hover handler all follow this one answer rather than disagreeing about
-   * which device is in front of them (constitution III, "touch as well as
-   * pointer").
+   * Answered by the screen rather than asked here, because it is two questions
+   * and neither is this box's. The **device** has to be able to rest a pointer
+   * without pressing, and the **rail** the reading appears in has to be drawn —
+   * and a component composing from the box it was given cannot see a rail
+   * beside it (`observeRestingReads`, `design/hull-catalogue.md`, "Resting reads
+   * a hull only where the rail is drawn").
+   *
+   * One input rather than two, so the row's press, its hover and its own words
+   * cannot answer differently. Where it is false the manifest takes the path a
+   * touch screen takes: the press opens the hull, and the sheet's own action
+   * builds it.
    */
-  readonly #hoverable = signal(hoverMatch()?.matches ?? false);
+  readonly restsToRead = input.required<boolean>();
 
   /**
    * Whether the pointer has actually moved since this list appeared.
@@ -148,22 +152,14 @@ export class ResponsiveCatalogueView {
       view.addEventListener('pointermove', moved, { passive: true });
       destroyRef.onDestroy(() => view.removeEventListener('pointermove', moved));
     }
-
-    const query = hoverMatch();
-    if (query === null) {
-      return;
-    }
-    const follow = (): void => this.#hoverable.set(query.matches);
-    query.addEventListener('change', follow);
-    destroyRef.onDestroy(() => query.removeEventListener('change', follow));
   }
 
   /**
-   * Resting on a row reads the hull, where resting is a thing the device does
-   * and where the Commander put the pointer there themselves.
+   * Resting on a row reads the hull, where resting is a thing that reads
+   * anything at all and where the Commander put the pointer there themselves.
    */
   preview(hull: HullSummary): void {
-    if (!this.#hoverable()) {
+    if (!this.restsToRead()) {
       return;
     }
     if (this.#pointerMoved()) {
@@ -174,25 +170,25 @@ export class ResponsiveCatalogueView {
   }
 
   /**
-   * Pressing a row flies it.
+   * Pressing a row flies it, where resting has already read it.
    *
-   * Without hover the first press opens the hull instead, because nothing else
-   * can: a touch screen has no resting state, so the press is the only way into
-   * the detail. Pressing the row that is *already* open is then the decision to
-   * fly it — the same second step a pointer makes by resting and then pressing.
-   * Until 2026-08-28 that second press repeated the navigation the row had
-   * already made and nothing happened (Commander request).
+   * Where resting reads nothing the first press opens the hull instead, because
+   * nothing else can. Pressing the row that is *already* open is then the
+   * decision to fly it — the same second step a pointer makes by resting and
+   * then pressing. Until 2026-08-28 that second press repeated the navigation
+   * the row had already made and nothing happened (Commander request).
    *
-   * The device answers this question, and the press itself overrules it. A
-   * laptop with a touch screen matches `(hover: hover)` and a finger on it has
-   * still never rested anywhere, so on that device a tap would take the first
-   * branch and build a hull the Commander has not read — from anywhere on the
-   * row, since the whole row presses. A press made by touch therefore takes the
-   * touch path whatever the device says it can do: it opens the hull, and the
-   * press after it builds, which is the same two steps and the safer one first.
+   * The environment answers this question, and the press itself overrules it. A
+   * laptop with a touch screen at the rail's width matches the query and a
+   * finger on it has still never rested anywhere, so on that device a tap would
+   * take the first branch and build a hull the Commander has not read — from
+   * anywhere on the row, since the whole row presses. A press made by touch
+   * therefore takes the touch path whatever the environment says: it opens the
+   * hull, and the press after it builds, which is the same two steps and the
+   * safer one first.
    */
   activate(hull: HullSummary, press?: Event): void {
-    if (hull.selected || (this.#hoverable() && !byTouch(press))) {
+    if (hull.selected || (this.restsToRead() && !byTouch(press))) {
       this.hullBuilt.emit(hull.symbol);
       return;
     }
@@ -242,28 +238,19 @@ export class ResponsiveCatalogueView {
    * control announces as something a Commander can do rather than as a noun —
    * and so one locator finds the same action in both compositions.
    *
-   * Which action that is follows the device, and on a touch screen the row:
-   * where the row can be hovered, the hover shows the hull and the press builds
-   * it; where it cannot, the press opens the detail until the row is the open
-   * one, and then it builds. The words say whichever of the two the next press
-   * will do, so the control is never named for an action it no longer takes.
+   * Which action that is follows the same answer the press does, and where
+   * resting reads nothing, the row: where a rest can read the hull, it does and
+   * the press builds; where it cannot, the press opens the detail until the row
+   * is the open one, and then it builds. The words say whichever of the two the
+   * next press will do, so the control is never named for an action it no
+   * longer takes.
    */
   openActionLabel(hull: HullSummary): string {
-    const builds = this.#hoverable() || hull.selected;
+    const builds = this.restsToRead() || hull.selected;
     return this.#messages.message(builds ? 'catalogue.build-hull' : 'catalogue.open-hull', {
       hull: hull.name.text ?? hull.symbol,
     });
   }
-}
-
-/**
- * The one question this component asks the environment.
- *
- * Guarded because the renderer used for tests and prerendering has no
- * `matchMedia`, and a manifest that throws there renders nothing at all.
- */
-function hoverMatch(): MediaQueryList | null {
-  return typeof matchMedia === 'function' ? matchMedia('(hover: hover)') : null;
 }
 
 /**

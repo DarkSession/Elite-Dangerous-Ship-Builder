@@ -27,15 +27,18 @@ Visual columns never reorder this reading sequence.
 
 Canvas 1c's `grid-template-columns: 1fr 1fr`: top and bottom render as two fluid labelled plates
 sharing one selected state and one legend, and the side selector is not drawn because both sides are
-already shown. Drawn where the block has the inline size for two plates and the window is not a
-short one — both conditions, for the reason "Intermediate tablet" gives below. The complete ledger
+already shown. Drawn where the window composes more than one region, the block has the inline size
+for two plates, and the window is not a short one — all three, for the reason "Intermediate tablet"
+gives below. The complete ledger
 remains beside the capability according to the feature 002 workspace definition.
 
 ### Intermediate tablet
 
-Container queries choose paired or single-side presentation from available inline size and expanded
-text, not a named device breakpoint. Nothing required disappears in either orientation: the side
-selector reaches whichever plate is not drawn, and the complete ledger reaches every mount on both.
+Available space chooses paired or single-side presentation, not a named device breakpoint: a
+container query for the room this block was given, and two media queries for what the window alone
+knows. Expanded text moves all three, because each is stated in rem. Nothing required disappears in
+either orientation: the side selector reaches whichever plate is not drawn, and the complete ledger
+reaches every mount on both.
 
 **The pair needs room in both axes, ruled 2026-08-30 (Commander request).** Inline size alone chose
 between the two arrangements, and inline size alone cannot tell canvas 1c's block apart from canvas
@@ -45,10 +48,26 @@ window less than one plate tall. A 1440px desktop, where canvas 1c's arrangement
 pair inside a 742px centre column — narrower than the phone's whole block. So no width separates
 them, and width is not the measure that can. What the phone lacks is height.
 
-The pair is therefore drawn where the container has the inline size for two plates **and** the
-window is not a short one — the same short-viewport step the shell already releases its sticky bar
-at. Below either, the block is canvas 1d's: one labelled side and the `TOP`/`BOTTOM` selector. No
-phone draws both sides of a hull in either orientation.
+**And the window has room for more than one region, ruled 2026-08-31 (Commander request).** Those
+two conditions still admitted a case neither of them is about. A 744px window in portrait is not
+short, and the compact composition hands this block the whole screen — 744px of container, two
+pixels more than the 742px centre column a 1440px desktop draws its pair inside. So the block drew
+both sides of the hull in the middle of a single-flow screen.
+
+The container's inline size answers how much room this block was given. It cannot answer what it was
+given that room _inside_, and on this region the two have opposite answers two pixels apart: 742px is
+one column of a three-region page, and 744px is a single-flow window entire. Only the window knows
+which, so the window is asked — at the step the application already composes more than one region
+at (`_responsive.scss`, `$mode-wide-min`). Below that step there is one flow, and a pair of plates
+in a single flow is two half-size drawings where the screen has room for one readable one.
+
+The pair is therefore drawn where all three hold: the **window composes more than one region**, the
+**container has the inline size for two plates**, and the **window is not a short one**. Each asks
+about a different thing — what kind of page this block is on, how much room it was given inside it,
+and whether the screen has the height to read a pair at all — and dropping any one of them puts two
+plates somewhere one belongs. Below any of them the block is canvas 1d's: one labelled side and the
+`TOP`/`BOTTOM` selector. No single-flow window draws both sides of a hull, in either orientation, at
+any height.
 
 ### Narrow, mobile and zoomed
 
@@ -66,8 +85,8 @@ this capability's placement — the anatomy sits in the centre track, which is w
 **The block's inset belongs to its arrangement, not to a width (2026-08-26).** Canvas 1c pads the
 block `16px 20px 6px` around the header row and `10px 20px 14px` around the plates; canvas 1d pads
 its header row `12px 14px 8px` and runs the mode strip full-bleed under it. The narrow figure is the
-base and the roomy one is stated with the two-plate arrangement, under the same pair of conditions
-the second plate opens under. Read the other way round, a one-plate block stood 8px further in than
+base and the roomy one is stated with the two-plate arrangement, under the same three conditions the
+second plate opens under. Read the other way round, a one-plate block stood 8px further in than
 every other band the narrow screen stacks it among, and a reading inside `POWER & THERMALS` did not
 line up with a mount name in the ledger below it — which is the misalignment reported that day.
 

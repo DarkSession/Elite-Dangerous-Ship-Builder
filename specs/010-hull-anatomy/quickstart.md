@@ -153,16 +153,22 @@ Run the primary journey and axe scan in Chromium and Firefox at:
 - 390×844 mobile portrait; and
 - 844×390 mobile landscape.
 
+Check 744×1133 as well. It is not a matrix profile, and it is the one width at which the plate pair's
+three conditions disagree: tall enough and wide enough, on a single-flow page (`design/hull-anatomy.md`,
+"Intermediate tablet"). The automated suite asserts it at that size for the same reason.
+
 Repeat meaningful states with 200% text, actual 400% browser zoom, reduced motion, long expanded
 text and RTL direction.
 
 Expected:
 
-- paired views appear only where the block has the inline size for two plates **and** the window is
-  not a short one; constrained layouts use one labelled side selector;
+- paired views appear only where the window is in the wide composition, **and** the block has the
+  inline size for two plates, **and** the window is not a short one; constrained layouts use one
+  labelled side selector;
 - 844×390 mobile landscape draws **one** plate and its `TOP`/`BOTTOM` selector, not the pair: it has
-  the inline size and not the height, which is the case the pair's second condition exists for
-  (`design/hull-anatomy.md`, "Intermediate tablet");
+  the inline size and not the height. 744×1133 portrait draws one for the third reason: it has both,
+  and is the compact composition — canvas 1d's own single flow, where a pair does not belong at any
+  size (`design/hull-anatomy.md`, "Intermediate tablet");
 - no document horizontal overflow occurs; only bounded schematic regions may pan;
 - every geometry target is a named button at the canvas's own mark size, operable from the keyboard
   one mount at a time and raised above the marks it overlaps while it is being worked with — which

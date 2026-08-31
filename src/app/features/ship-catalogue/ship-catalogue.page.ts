@@ -22,6 +22,7 @@ import type { HullSize } from '../../domain/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
+import { observeRestingReads } from '../../ui/wide-composition';
 
 /** Every column the manifest shows, and the fact each one orders by. */
 const COLUMNS: readonly { field: CatalogueSortField; labelKey: string; numeric?: boolean }[] = [
@@ -66,6 +67,17 @@ export class ShipCataloguePage {
   readonly #restorer = inject(CatalogueAnchorRestorer);
   readonly #chrome = inject(ScreenChrome);
   readonly #creator = inject(StockBuildCreator);
+
+  /**
+   * Whether a rested pointer on a manifest row reads the hull beside it.
+   *
+   * This screen's own question, because this screen is what draws the rail the
+   * reading appears in: the manifest cannot see a rail beside itself, and the
+   * device that can rest a pointer is only half of the answer
+   * (`observeRestingReads`; `design/hull-catalogue.md`, "Resting reads a hull
+   * only where the rail is drawn").
+   */
+  readonly restsToRead = observeRestingReads();
 
   readonly emptyDescription = this.#messages.messageSignal('catalogue.empty.description');
   readonly caption = this.#messages.messageSignal('catalogue.table.caption');

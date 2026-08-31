@@ -118,48 +118,60 @@
 // doubled text steps down to one plate for the same reason a phone does
 // (responsive composition, "Declared content minimums").
 //
-// The window's height is asked as well as the container's width, because width
-// alone cannot tell canvas 1c's block from canvas 1d's. A landscape phone is
-// 844px across and 390px tall, and it drew both plates; a 1440px desktop, where
-// canvas 1c's arrangement belongs, draws its pair inside a 742px centre column.
-// So there is no width that separates them, and what the phone lacks is height
-// (Commander request 2026-08-30; `design/hull-anatomy.md`, "Intermediate
-// tablet").
+// The window is asked twice as well, because the container's width cannot tell
+// canvas 1c's block from canvas 1d's on its own.
+//
+// It lacks the height: a landscape phone is 844px across and 390px tall, and it
+// drew both plates (Commander request 2026-08-30).
+//
+// And it lacks the page: a 744px portrait window is not short, and a
+// single-flow screen hands this block all of it — 744px of container, two
+// pixels more than the 742px centre column a 1440px desktop draws its pair
+// inside. So it drew both sides in the middle of a single flow (Commander
+// request 2026-08-31). The container's width says how much room this block was
+// given; it cannot say what it was given that room inside, and only the window
+// knows that.
+//
+// Three conditions, each about a different thing: what kind of page this is,
+// how much room this block has on it, and whether the screen has the height to
+// read a pair at all (`design/hull-anatomy.md`, "Intermediate tablet").
 //
 // Both plates are drawn here, so there is nothing for the selector to choose
 // and it goes with them.
 @container anatomy (min-width: 41rem) {
-  @include layout.not-short-viewport {
-    // Canvas 1c's own inset, which belongs to this arrangement rather than to a
-    // width: a block wide enough for two plates is the one the roomy canvas draws.
-    .anatomy {
-      padding-inline: var(--edsb-space-region);
-    }
+  @include layout.wide-up {
+    @include layout.not-short-viewport {
+      // Canvas 1c's own inset, which belongs to this arrangement rather than to a
+      // width: a block wide enough for two plates is the one the roomy canvas draws.
+      .anatomy {
+        padding-inline: var(--edsb-space-region);
+      }
 
-    // Canvas 1c's two tracks, each bounded and centred in whatever it is given
-    // beyond that. A plate's height follows its width, so tracks that took every
-    // pixel of a 2560px column drew a block taller than half the screen for two
-    // drawings that were already finished at 1560 (Commander request 2026-08-26).
-    // The bound is the canvas's own width plus two fifths, which is a second
-    // Commander request against the first (2026-08-27;
-    // `--edsb-measure-anatomy-plate`).
-    .anatomy__plates {
-      grid-template-columns: repeat(2, minmax(0, var(--edsb-layout-anatomy-plate)));
-      justify-content: center;
-    }
+      // Canvas 1c's two tracks, each bounded and centred in whatever it is given
+      // beyond that. A plate's height follows its width, so tracks that took every
+      // pixel of a 2560px column drew a block taller than half the screen for two
+      // drawings that were already finished at 1560 (Commander request 2026-08-26).
+      // The bound is the canvas's own width plus two fifths, which is a second
+      // Commander request against the first (2026-08-27;
+      // `--edsb-measure-anatomy-plate`).
+      .anatomy__plates {
+        grid-template-columns: repeat(2, minmax(0, var(--edsb-layout-anatomy-plate)));
+        justify-content: center;
+      }
 
-    // Canvas 1c's strip: beside the rule rather than under it, and sized by its
-    // own five labels rather than by the block.
-    .anatomy__modes {
-      inline-size: auto;
-    }
+      // Canvas 1c's strip: beside the rule rather than under it, and sized by its
+      // own five labels rather than by the block.
+      .anatomy__modes {
+        inline-size: auto;
+      }
 
-    .anatomy__sides {
-      display: none;
-    }
+      .anatomy__sides {
+        display: none;
+      }
 
-    .anatomy__plate--hidden {
-      display: block;
+      .anatomy__plate--hidden {
+        display: block;
+      }
     }
   }
 }
