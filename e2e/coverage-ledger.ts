@@ -1038,6 +1038,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'a mount with no chooser keeps the whole bench and no numbered step',
       'every grade cell names its grade, and a cell past the choice is unfilled and dimmed',
       'the effect menu the application draws passes an accessibility scan with its list open, every option at the target baseline',
+      'the effect menu keeps the option it is on inside the box its list scrolls in',
     ],
     manualRecord: 'screen-reader',
   },

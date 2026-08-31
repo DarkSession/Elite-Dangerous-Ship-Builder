@@ -338,10 +338,19 @@ What a drawn menu gives up, and why only this one gives it up:
 - **The list is drawn over the card rather than inside it.** In flow, thirteen two-line options
   would push `MODULE DETAILS` a screenful down every time the menu opened. It is bounded and
   scrolls inside itself instead, so the panel beneath it does not move.
-- **Pressing the trigger again shuts it, and so does a press outside it.** There is no third way in
-  and no state left behind: the menu holds no selection of its own, because choosing an option is
-  the edit. A menu left open while the editor changes shape comes back shut, since the list is
-  drawn in this shape alone.
+- **The list follows the option it is on.** Bounded means most of the menu is below the fold, so the
+  list moves its own box by the least that brings that option inside it — on every step of a walk,
+  and on opening, where the option it opens on is the applied one. Naming an option a Commander
+  cannot see is a reading that moves while the screen does not. Its own box rather than
+  `scrollIntoView`, which walks every scrollable ancestor and would take the panel this menu is
+  drawn over off screen to reveal a row inside it.
+- **Three ways out, and each leaves nothing behind.** Pressing the trigger again shuts the menu, a
+  press outside it shuts it, and the focus leaving the control shuts it — `Tab` from the list
+  belongs to the page, so the focus goes on and a list that stayed would stand over the attribute
+  table behind it. Focus leaving the document altogether is not one of them: another window is not a
+  Commander moving on from the menu. Nothing is left behind by any of them, because the menu holds
+  no selection of its own — choosing an option is the edit. A menu left open while the editor
+  changes shape comes back shut, since the list is drawn in this shape alone.
 
 The card list inside the layer is unchanged. It already gives each option two lines, which is what
 this brings to the menu.

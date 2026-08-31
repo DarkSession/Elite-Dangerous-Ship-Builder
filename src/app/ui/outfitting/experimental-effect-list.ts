@@ -201,8 +201,6 @@ export class ExperimentalEffectList {
     effect(() => {
       this.list()?.nativeElement.focus();
     });
-
-    this.#followActiveOption();
   }
 
   /**
@@ -222,28 +220,27 @@ export class ExperimentalEffectList {
    * a list that re-centres on every arrow press moves the rows either side of
    * the one being read, and a Commander walking a menu is reading those too.
    */
-  readonly #followActiveOption = () =>
-    afterRenderEffect(() => {
-      const list = this.list()?.nativeElement;
-      const active = list?.querySelector<HTMLElement>(`#${CSS.escape(this.activeOptionId())}`);
-      if (!list || !active) {
-        return;
-      }
+  readonly #followActiveOption = afterRenderEffect(() => {
+    const list = this.list()?.nativeElement;
+    const active = list?.querySelector<HTMLElement>(`#${CSS.escape(this.activeOptionId())}`);
+    if (!list || !active) {
+      return;
+    }
 
-      // `clientTop` is the scroller's own block-start border, which stands
-      // between the box a rect measures from and the padding box `clientHeight`
-      // describes.
-      const listBox = list.getBoundingClientRect();
-      const optionBox = active.getBoundingClientRect();
-      const above = optionBox.top - listBox.top - list.clientTop;
-      const below = above + optionBox.height - list.clientHeight;
+    // `clientTop` is the scroller's own block-start border, which stands
+    // between the box a rect measures from and the padding box `clientHeight`
+    // describes.
+    const listBox = list.getBoundingClientRect();
+    const optionBox = active.getBoundingClientRect();
+    const above = optionBox.top - listBox.top - list.clientTop;
+    const below = above + optionBox.height - list.clientHeight;
 
-      if (above < 0) {
-        list.scrollTop += above;
-      } else if (below > 0) {
-        list.scrollTop += below;
-      }
-    });
+    if (above < 0) {
+      list.scrollTop += above;
+    } else if (below > 0) {
+      list.scrollTop += below;
+    }
+  });
 
   toggle(): void {
     const opening = !this.#open();
