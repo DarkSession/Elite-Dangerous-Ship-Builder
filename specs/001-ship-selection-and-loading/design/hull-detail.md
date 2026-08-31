@@ -14,7 +14,7 @@
 - `RESTRICTED SLOTS` on its own rule, in the hot tone, where the hull has any: the count of restricted mounts on the trailing edge, and under it one entry per restriction — the restriction's name over its sizes as chips. Drawn only where the hull has a restriction besides the planetary-approach mount, which is left out; nineteen of the 48 hulls the installed package publishes do.
 - One `HULL PRICE` row: the ready-to-fly cost, on a rule of its own.
 - Primary `ActionButton` requesting stock-build creation, below the wide composition only, present only when `getDefaultLoadout(symbol)` succeeds (see [the wide rail has no action](#the-wide-rail-has-no-action)).
-- `InlineNotice`/`ErrorSummary` for default unavailability or unknown symbol.
+- `InlineNotice`/`ErrorSummary` for default unavailability, or for an address no hull answers to.
 
 ### The inspector is the reference composition
 
@@ -200,7 +200,7 @@ from a record `/builds` lists, so creating a stock hull takes nothing from them.
 - Hardness, crew, mass lock and armour are drawn bare, as the reference draws them, rather than being given an invented unit; every figure that has a unit names it.
 - Canonical package text is marked untranslated when appropriate.
 - The canvas's hard-coded mock values are visual references only; every displayed value is read from the active package record. Runtime art is the package `illustration.svg` rasterised to PNG by `scripts/convert-ship-artwork.mjs` and served from this application's origin, matching the reference's own `assets/ships/*.png`.
-- Component previews cover populated, missing-fact, artwork-loading/error and unknown-symbol states.
+- Component previews cover populated, missing-fact, artwork-loading/error and unknown-hull states.
 
 ## Reference composition
 

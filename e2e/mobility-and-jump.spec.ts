@@ -886,21 +886,22 @@ test.describe('the status rail', () => {
     );
   });
 
-  test('the six cells are one grid, not three blocks stacked', async ({ page }) => {
+  test('the rail’s cells are one grid, not a block per feature stacked', async ({ page }) => {
     await openDrives(page);
 
     // Canvas 1c draws `SHIELD`, `ARMOUR`, `DPS`, `JUMP`, `SPEED` and `MASS` as
     // one band of cells, two across, ruled off each other only by the amber
-    // ground showing through one-pixel gaps. Three features own two, one and
-    // three of them, and drawn as three grids the six would rule off in threes
-    // — `DPS` could never share a row with `JUMP`.
+    // ground showing through one-pixel gaps, and feature 003's `CARGO` and
+    // `PASSENGERS` take the next row of the same band. Four features own them
+    // between them, and drawn as a grid apiece they would rule off in groups —
+    // `DPS` could never share a row with `JUMP`.
     //
-    // That band is canvas 1c's, and it is drawn where the rail is that canvas's
-    // third column. Everywhere else the rail is the strip's `STATUS` segment and
-    // the same six are stated above the category strip instead, with no cell
-    // band at all — so what the claim becomes at those widths is that the six
-    // are still stated, exactly once (`design/outfitting-workspace.md`, "The
-    // compact key figures").
+    // That band is the rail's, and it goes wherever the rail goes. This journey
+    // has the `DRIVES` segment open rather than `STATUS`, so where the rail is
+    // not canvas 1c's third column it is not drawn at all, and the workspace's
+    // own strip of key readings states the six above the category strip instead
+    // — exactly once (`design/outfitting-workspace.md`, "The compact key
+    // figures").
     if (!(await statusRailIsColumn(page))) {
       await expect(page.locator('.outfitting__key-figures .metric')).toHaveCount(6);
       await expect(page.locator('.outfitting__status-cells')).toHaveCount(0);
@@ -908,7 +909,7 @@ test.describe('the status rail', () => {
     }
 
     const cells = page.locator('.outfitting__status-cells .metric');
-    await expect(cells).toHaveCount(6);
+    await expect(cells).toHaveCount(8);
 
     const boxes = await cells.evaluateAll((nodes) =>
       nodes.map((node) => {
@@ -923,12 +924,14 @@ test.describe('the status rail', () => {
       }),
     );
 
-    // Three rows of two, in the canvas's order — so the row boundary falls
-    // between `ARMOUR` and `DPS`, not between the features that own them.
+    // Four rows of two, in the canvas's order — so a row boundary falls between
+    // `ARMOUR` and `DPS`, and between `MASS` and `CARGO`, rather than between
+    // the features that own them.
     const rows = [...new Set(boxes.map((box) => box.top))].sort((a, b) => a - b);
-    expect(rows).toHaveLength(3);
+    expect(rows).toHaveLength(4);
     expect(boxes[2].top).toBe(boxes[3].top);
     expect(boxes[4].top).toBe(boxes[5].top);
+    expect(boxes[6].top).toBe(boxes[7].top);
 
     // Two columns, the same two on every row, and the gap between them is the
     // hairline the canvas rules with rather than a gutter.
@@ -938,7 +941,7 @@ test.describe('the status rail', () => {
 
     // The amber ground reaches exactly as far as the cells do. It is what rules
     // them off each other through the one-pixel gaps, and it is nothing else —
-    // a band of it around the six would be a box the canvas draws around
+    // a band of it around the cells would be a box the canvas draws around
     // nothing, which is what a ground painted across the block's own inset
     // looks like.
     const grid = page.locator('.outfitting__status-cells');

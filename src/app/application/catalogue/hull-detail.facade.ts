@@ -131,9 +131,9 @@ const RESTRICTION_NAMES: Partial<Record<OptionalRestriction, MessageKey>> = {
 /**
  * Everything the hull-detail screen renders.
  *
- * An unknown symbol is a first-class state rather than an error thrown at the
- * router: the screen has something honest to say about it, and says so without
- * guessing a hull or offering to create one (FR-005).
+ * An address no hull answers to is a first-class state rather than an error
+ * thrown at the router: the screen has something honest to say about it, and
+ * says so without guessing a hull or offering to create one (FR-005).
  */
 @Injectable({ providedIn: 'root' })
 export class HullDetailFacade {
