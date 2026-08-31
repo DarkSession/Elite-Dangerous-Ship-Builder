@@ -125,6 +125,19 @@ function seedOverloadedRecord(id: string) {
 }
 
 /**
+ * The fit the record below carries: one rack and two cabins.
+ *
+ * Stated once and read twice — the record is seeded from it and the expected
+ * figures are asked of the package for it — so the build under test and the
+ * build the expectation is taken from cannot drift apart.
+ */
+const LADEN_FIT = [
+  ['Slot01_Size7', 'Int_CargoRack_Size7_Class1'],
+  ['Slot02_Size6', 'Int_PassengerCabin_Size6_Class1'],
+  ['Slot03_Size6', 'Int_PassengerCabin_Size6_Class2'],
+] as const;
+
+/**
  * A stored build carrying both a hold and berths, so the two capacity cells
  * cannot be read the same way round or the wrong way round.
  *
@@ -133,12 +146,6 @@ function seedOverloadedRecord(id: string) {
  * figures the rail states rather than the fitting that produced them.
  */
 function seedLadenRecord(id: string) {
-  const fitted = [
-    ['Slot01_Size7', 'Int_CargoRack_Size7_Class1'],
-    ['Slot02_Size6', 'Int_PassengerCabin_Size6_Class1'],
-    ['Slot03_Size6', 'Int_PassengerCabin_Size6_Class2'],
-  ] as const;
-
   return {
     key: `edsb:record:${id}`,
     value: JSON.stringify({
@@ -159,7 +166,7 @@ function seedLadenRecord(id: string) {
         shipSymbol: HULL,
         shipName: null,
         shipIdent: null,
-        modules: fitted.map(([slot, symbol]) => ({
+        modules: LADEN_FIT.map(([slot, symbol]) => ({
           slot,
           symbol,
           enabled: null,
@@ -452,18 +459,13 @@ test.describe('the BUILD STATUS block', () => {
   });
 
   test('reads a hold and berths off the same build, each into its own cell', async ({ page }) => {
-    const fitted = [
-      ['Slot01_Size7', 'Int_CargoRack_Size7_Class1'],
-      ['Slot02_Size6', 'Int_PassengerCabin_Size6_Class1'],
-      ['Slot03_Size6', 'Int_PassengerCabin_Size6_Class2'],
-    ] as const;
     await seed(page, [seedLadenRecord('laden')]);
     await openSeededBuild(page, 'laden');
 
     // A build carrying both, so the two figures differ and neither is nought:
     // a pair drawn the wrong way round is caught here, where the stock hull's
     // empty berth count could not catch it.
-    const carried = await recordCapacity(fitted);
+    const carried = await recordCapacity(LADEN_FIT);
     expect(carried.cargo).not.toBe(carried.passengers);
     expect(carried.passengers).toBeGreaterThan(0);
 

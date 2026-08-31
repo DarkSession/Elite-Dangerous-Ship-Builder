@@ -638,9 +638,8 @@ and every symbol above them moves down by five; `POWERED_MODULES`, `MODULE_SETS`
 per-module set columns carry the new indices. No hull loses an article: the size-8 hulls are stocked
 and fitted with the overcharge drives, so the symbol behind every default and every fixed mount is
 the one it was. A link minted against the earlier table that names a module above index 209
-therefore decodes to a different article, which is what makes this an overwrite rather than an
-edit. Running `pnpm run codec:tables`
-reproduces table 1 at content hash
+therefore decodes to a different article, which is what makes this an overwrite rather than an edit.
+Running `pnpm run codec:tables` reproduces table 1 at content hash
 `a1e2fc867f47e281344ea442b1845dd15e6f622e3b37ec86150e4b252eb504bc`. The package also stocks the
 planetary approach suite from the hull defaults when a source names none, which moves the canonical
 minimal loadout again without touching the table's identity.

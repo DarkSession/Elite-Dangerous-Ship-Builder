@@ -40,6 +40,11 @@ into it through `MetricGroup`'s `flow` input (`display: contents`). **Ownership 
 feature still builds its own cells, and the `defence-ownership` and `offence-ownership` policy
 scripts still fence them. A feature adding a cell adds it to its own summary, never to the workspace.
 
+The grid carries the amber ground and nothing else — no inset. The canvas's ground is exactly the
+extent of the cells: it shows through the one-pixel gaps and nowhere else, so a ground carried by a
+padded element would be painted across that padding too and draw the cells inside an amber band
+the canvas does not draw.
+
 ## The band goes wherever the rail goes
 
 The rail is one surface at every width, so its cell band is drawn at every width (FR-024). Where the
@@ -47,11 +52,6 @@ rail is a column it is always on screen and so is the band. Where the rail is th
 `STATUS` segment, both appear when a Commander opens that segment — and the compact key-figures
 strip stands down for as long as it is open, so the same figures are never on one screen twice
 (`specs/002-module-outfitting/design/outfitting-workspace.md`, "The compact key figures").
-
-The grid carries the amber ground and nothing else — no inset. The canvas's ground is exactly the
-extent of the cells: it shows through the one-pixel gaps and nowhere else, so a ground carried by a
-padded element would be painted across that padding too and draw the cells inside an amber band
-the canvas does not draw.
 
 ## Items 3 to 5 are one block
 

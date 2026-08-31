@@ -615,7 +615,7 @@ the artboard's own percentages.
 
 This block carries **no inset of its own**. Canvas 1c draws it and the six metric cells under it
 inside one padded block closed by one amber rule, so the workspace owns that block
-(`.outfitting__status-band`) because three other features draw into it too, and this block sits in it
+(`.outfitting__status-band`) because four other features draw into it too, and this block sits in it
 with no padding — two insets stacked would stand these figures a block's padding further in than the
 cells they head (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5 are one block").
 
