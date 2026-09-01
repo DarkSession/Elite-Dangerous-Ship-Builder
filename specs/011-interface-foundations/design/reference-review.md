@@ -32,23 +32,24 @@ canvas 3c's tool bar outright.
 
 ## Required departures
 
-| Prototype evidence                                                         | Production treatment                                                                                         | Requirement/constraint     |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------- |
-| Fixed 1320/2020/390 canvases; no tablet/landscape/zoom                     | Content-driven wide/medium/compact layouts plus synthesized tablet and short-landscape rules                 | FR-011, FR-014             |
-| Hundreds of inline color/type/spacing/border/motion values                 | One primitive source and one contrast-audited semantic dark token set                                        | FR-001–003                 |
-| Small muted alpha text and meaningful faint borders below AA pairs         | Documented token pair contrast; enlarge/reweight/recolor without losing hierarchy                            | FR-012                     |
-| Google Fonts preconnect/stylesheet and remote `edassets.org` material SVGs | Same-origin licensed font subsets and package/local assets; text/unavailable state when an asset is absent   | Constitution I, FR-019     |
-| 268 clickable `div`s, no buttons/labels and almost no role/ARIA state      | Native/shared controls, visible/matching names, associated labels/errors and correct state                   | FR-006–009                 |
-| Hover/title-only tips and auto-clearing feedback                           | Persistent text or explicit touch/pointer disclosure; visible feedback plus bounded live events              | FR-006, FR-009–010         |
-| 14–40px interactive nodes/actions                                          | 44 CSS-pixel design target/hit area while preserving compact visible geometry                                | FR-012                     |
-| Amber/green/red, border position, bars and node shapes as sole status      | Visible/programmatically associated state, value, unit, condition and equivalent data                        | FR-007, FR-010             |
-| Hard-coded English, `en-US` formatting and no root language/direction      | Message facade, named active-locale formatters, `lang`/`dir`, logical CSS and bidi isolation                 | FR-014, FR-016–020         |
-| Mobile omissions and unnamed action/help controls                          | Every action remains available; the mark is drawn and the name is carried as text inside the control         | FR-006–007, FR-011         |
-| No loading previews and incomplete error/disabled coverage                 | Manifested populated/default, empty, loading, error and disabled states plus relevant unavailable/incomplete | FR-004, FR-024             |
-| Mock game facts, share URLs and behaviors                                  | Capability specs and Almanac package data/contracts remain authoritative                                     | Constitution II, IV and IX |
-| Canvas 3c’s tool grid, `⌘K` palette, drag-to-pin and account plate         | None of the four is built: three are more than one tool needs, and there are no accounts                     | Constitution I             |
-| Canvas 3c’s insignia on the tool bar, over the command bar’s own           | One mark, on the command bar, where it is already the way home; the tool bar carries tabs alone              | FR-007, FR-010             |
-| Canvas 3c’s 50px tabs in `--ink-48`                                        | 44px press baseline on a bar with a floor rather than a height; a resting tab in `--edsb-text-faint`         | FR-011, FR-012             |
+| Prototype evidence                                                              | Production treatment                                                                                                             | Requirement/constraint     |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Fixed 1320/2020/390 canvases; no tablet/landscape/zoom                          | Content-driven wide/medium/compact layouts plus synthesized tablet and short-landscape rules                                     | FR-011, FR-014             |
+| Hundreds of inline color/type/spacing/border/motion values                      | One primitive source and one contrast-audited semantic dark token set                                                            | FR-001–003                 |
+| Small muted alpha text and meaningful faint borders below AA pairs              | Documented token pair contrast; enlarge/reweight/recolor without losing hierarchy                                                | FR-012                     |
+| Google Fonts preconnect/stylesheet and remote `edassets.org` material SVGs      | Same-origin licensed font subsets and package/local assets; text/unavailable state when an asset is absent                       | Constitution I, FR-019     |
+| 268 clickable `div`s, no buttons/labels and almost no role/ARIA state           | Native/shared controls, visible/matching names, associated labels/errors and correct state                                       | FR-006–009                 |
+| Hover/title-only tips and auto-clearing feedback                                | Persistent text or explicit touch/pointer disclosure; visible feedback plus bounded live events                                  | FR-006, FR-009–010         |
+| 14–40px interactive nodes/actions                                               | 44 CSS-pixel design target/hit area while preserving compact visible geometry                                                    | FR-012                     |
+| Amber/green/red, border position, bars and node shapes as sole status           | Visible/programmatically associated state, value, unit, condition and equivalent data                                            | FR-007, FR-010             |
+| Hard-coded English, `en-US` formatting and no root language/direction           | Message facade, named active-locale formatters, `lang`/`dir`, logical CSS and bidi isolation                                     | FR-014, FR-016–020         |
+| Mobile omissions and unnamed action/help controls                               | Every action remains available; the mark is drawn and the name is carried as text inside the control                             | FR-006–007, FR-011         |
+| No loading previews and incomplete error/disabled coverage                      | Manifested populated/default, empty, loading, error and disabled states plus relevant unavailable/incomplete                     | FR-004, FR-024             |
+| Mock game facts, share URLs and behaviors                                       | Capability specs and Almanac package data/contracts remain authoritative                                                         | Constitution II, IV and IX |
+| Canvas 3c’s tool grid, `⌘K` palette, drag-to-pin and account plate              | None of the four is built: three are more than one tool needs, and there are no accounts                                         | Constitution I             |
+| Canvas 3c’s insignia on the tool bar, over the command bar’s own                | One mark, on the command bar, where it is already the way home; the tool bar carries tabs alone                                  | FR-007, FR-010             |
+| Canvas 3c’s 50px tabs in `--ink-48`                                             | 44px press baseline on a bar with a floor rather than a height; a resting tab in `--edsb-text-faint`                             | FR-011, FR-012             |
+| The canvases’ Help · About block naming the work “Elite Dangerous Ship Builder” | The Frontier media-usage notice names NavBeacon, which is the work; a canvas is a rendered source and is not edited to follow it | `LICENSE`                  |
 
 ## Specific prototype conflicts
 

@@ -136,10 +136,10 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/semantics',
     axe: true,
     assertions: [
-      'every product route names the tool it belongs to, at all five layout profiles',
+      'every address the ship tool owns names that tool, at all five layout profiles',
       'the tool region is a navigation landmark named apart from the primary navigation',
       'the current tool is a word carrying aria-current rather than a link to the open screen',
-      'the tools named are exactly the ones the registry carries, and each other one opens its own address',
+      'the region names exactly the tools the registry carries and nothing else',
     ],
     manualRecord: 'screen-reader',
   },

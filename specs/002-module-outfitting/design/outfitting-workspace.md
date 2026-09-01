@@ -256,8 +256,8 @@ rail is the canvas's third track — below that step it is a band under the benc
 height to grow into, and a list that filled it there would run the whole shopping list down the
 screen (Commander request 2026-08-26; `specs/009-cost-and-materials/spec.md`, FR-007a).
 
-**What that height is, is measured, not declared.** `--edsb-layout-bar-height` is the one height the
-bar is drawn at — what it comes to at every width where it does not wrap. At any width where it does
+**What that height is, is measured, not declared.** `--edsb-layout-bar-height` is what the banner —
+the tool bar and the command bar under it — comes to at every width where neither wraps. At any width where it does
 wrap it is taller, by however many rows a longer language, a narrower window or a larger text size
 cost it. Subtracting the declared figure left the columns past the foot of the screen by the
 difference, and freezing the ledger at it put the category strip _behind_ the bar at tablet width —

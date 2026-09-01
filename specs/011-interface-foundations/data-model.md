@@ -72,7 +72,7 @@ candidate(non-en) -> fail -> commit bundled-English fallback snapshot
 
 The prior snapshot may stay visible during a secondary-locale load. No new root `lang` or translated
 label appears until the whole candidate commits. The language is read from the browser on every
-start and stored nowhere; domain/ships/build revision and URL are not effects of a locale transition.
+start and stored nowhere; domain/build revision and URL are not effects of a locale transition.
 
 ## Formatter Request
 

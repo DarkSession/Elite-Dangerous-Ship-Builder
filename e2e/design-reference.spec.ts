@@ -67,6 +67,34 @@ test.describe('the reference visual language', () => {
     expect(await style(bar, 'border-bottom-color')).toBe(AMBER);
   });
 
+  test('carries the current tool on the command bar, closed by the canvas underline', async ({
+    page,
+  }) => {
+    // Canvas 3c: the tool a Commander is in takes the command bar's own
+    // `--panel-4` ground and a `2px solid var(--amber)` underline, and the tab
+    // is the height of the bar so that underline sits on the bar's own edge.
+    // A tab short of the bar leaves a strip of the menu ground under its fill
+    // and floats the underline above the command bar it is meant to meet
+    // (`canvas-extraction.md`, "Tool bar").
+    const tools = page.locator('.frame__tools');
+    const current = page.locator('.frame__tool--current');
+
+    expect(await style(current, 'background-color')).toBe(PANEL_4);
+    expect(await style(current, 'color')).toBe(AMBER_3);
+    expect(await style(current, 'border-bottom-width')).toBe('2px');
+    expect(await style(current, 'border-bottom-color')).toBe(AMBER);
+
+    const met = await tools.evaluate(
+      (bar, tab: HTMLElement) => {
+        const hairline = parseFloat(getComputedStyle(bar).borderBlockEndWidth);
+        return bar.getBoundingClientRect().bottom - hairline - tab.getBoundingClientRect().bottom;
+      },
+      await current.elementHandle(),
+    );
+
+    expect(Math.abs(met)).toBeLessThanOrEqual(1);
+  });
+
   test('opens the command bar with the amber wedge insignia', async ({ page }) => {
     // The resynced canvases replaced the plain amber block that opened the bar
     // with the wedge the app icon is cut from (canvas 3b): a clipped outline

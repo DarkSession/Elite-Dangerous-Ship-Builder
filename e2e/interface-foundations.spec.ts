@@ -102,10 +102,15 @@ test.describe('product semantics', () => {
         .replace(/\s+/g, ' ')
         .trim();
 
-    expect(await named()).toBe('Ship');
+    // Every address the ship tool owns: the shipyard the `beforeEach` opened,
+    // a hull's own page, the outfitting bench and the library.
+    for (const route of ['/ships/Anaconda', '/build', '/builds']) {
+      expect(await named()).toBe('Ship');
 
-    await page.goto('/builds');
-    await expect(page.getByRole('main')).toBeVisible();
+      await page.goto(route);
+      await expect(page.getByRole('main')).toBeVisible();
+    }
+
     expect(await named()).toBe('Ship');
   });
 

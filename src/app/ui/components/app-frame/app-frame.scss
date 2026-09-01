@@ -49,6 +49,14 @@
 
   align-items: stretch;
   list-style: none;
+
+  // The row between the list and its tabs. A `list-item` box stops the stretch
+  // there, and the tab inside it falls back to the press baseline — which
+  // leaves the current tab's underline floating above the bar's edge and a
+  // strip of the menu ground under its fill.
+  > li {
+    display: flex;
+  }
 }
 
 // One tab. The canvas draws `0 15px` on condensed uppercase tracked mono-ish

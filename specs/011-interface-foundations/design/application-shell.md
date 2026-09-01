@@ -9,15 +9,15 @@ tool bar of `.design/Tool Navigation.dc.html`, canvas 3c.
 
 ## Semantic composition
 
-1. a tool navigation region, named in localized text, naming every tool the application serves and
-   marking the open route's own tool as current;
-2. banner/header containing localized product identity — the insignia and the release mark;
-3. route context group containing visible localized screen/build identity supplied by the route;
-4. primary navigation when the route set provides it;
-5. contextual and global utility actions, including a visible Language entry;
-6. one route-owned `main`, one visible `h1` and ordered capability headings;
-7. visible route/global status and error content in ordinary reading order;
-8. hidden assertive and polite announcement outlets.
+1. banner/header containing localized product identity — the insignia and the release mark — opening
+   with a tool navigation region, named in localized text, that names every tool the application
+   serves and marks the open route's own tool as current;
+2. route context group containing visible localized screen/build identity supplied by the route;
+3. primary navigation when the route set provides it;
+4. contextual and global utility actions, including a visible Language entry;
+5. one route-owned `main`, one visible `h1` and ordered capability headings;
+6. visible route/global status and error content in ordinary reading order;
+7. hidden assertive and polite announcement outlets.
 
 The shell never synthesizes a duplicate route heading. Route context is immutable presentation input;
 the shell emits action/navigation/language intent and does not reach into a build store.
@@ -27,7 +27,8 @@ the shell emits action/navigation/language intent and does not reach into a buil
 The application is built to carry more than one tool, so the shell says which tool a Commander is
 in. Canvas 3c of `.design/Tool Navigation.dc.html` draws that as a bar over the command bar, with a
 tab for each tool; the command bar keeps everything it already carries and the amber rule that
-closes it. It is the first region in the document, because it is the first region on the screen.
+closes it. It is the banner's first region, because it is the first band on the screen — the two
+bars are one sticky region, so what the chrome below them clears is the pair.
 
 **It is a navigation landmark with a name of its own.** The bar already carries a `navigation`
 landmark labelled `shell.navigation.label`, and two landmarks of one role with one name are two
@@ -45,6 +46,13 @@ untrue.
 the tools it plans to serve. `Tool Navigation.dc.html` names eight and `docs/navbeacon-migration.md`
 names two; what is built is the ship tool, so that is what the bar carries. A tab that opens nothing
 is a control for a thing that does not exist.
+
+**A registry of one still draws the bar.** With a single tool served, the region names that tool and
+offers no other, so a reader reaching the landmark is told which tool the screen belongs to and
+finds nothing to follow. That is the state the product ships in, and it is the bar working: the
+same thing it tells everyone else, and it gains links as the registry does without the shell
+changing shape. What it must not be is a landmark with nothing in it at all, which is why a surface
+carrying no tools — the component preview catalogue is one — leaves the region out of the document.
 
 **The current tool is named, not offered.** The tab for the tool a Commander is already in is text
 rather than a link, for the reason the insignia is a bare mark on the shipyard and the primary

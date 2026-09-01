@@ -10,7 +10,7 @@
 ## What is actually being crawled
 
 The application is a client-side Angular bundle behind a service worker, published to GitHub Pages
-at `https://navbeacon.app/` and served from `public/` plus the build output. Nothing is rendered on a
+at `https://sb.edct.dev/` and served from `public/` plus the build output. Nothing is rendered on a
 server. That single fact decides most of what follows.
 
 Four addresses exist (`app.routes.ts`): `/ships`, `/ships/:hull`, `/build` and `/builds`. `/`
@@ -65,7 +65,7 @@ deliberate and it is the one decision here worth arguing with:
 - A canonical built from `location.origin` would make every pull-request preview canonical to
   itself, which is precisely the duplicate a canonical exists to collapse.
 - Building it from a constant means a preview, a `ng serve` and the production site all say
-  `https://navbeacon.app/<route>`. On the two that are not production that statement is a lie about
+  `https://sb.edct.dev/<route>`. On the two that are not production that statement is a lie about
   where the document is, and it is the useful lie: it points at the page that should rank.
 
 The build payload lives in the URL fragment (001/FR-015), and a fragment never reaches a server and
@@ -97,10 +97,11 @@ would keep working and only the crawl would stop.
 ### 5. The application was not installable _(fixed)_
 
 `public/manifest.webmanifest` declares the name, the short name, the description, the dark theme
-colours taken from the token layer, and `display: standalone`. Both names are `NavBeacon` (owner's
-ruling, 2026-08-27): `Ship Builder` is what a _tool_ is called, not what the application is called,
-and an installed icon captioned with the tool name would be the one place the two are confused.
-Nothing else in the head names the application in the short form either. Its `start_url`, `scope` and icon paths are relative, for the
+colours taken from the token layer, and `display: standalone`. Both names are
+`Elite Dangerous Ship Builder` (owner's ruling, 2026-08-27): `Ship Builder` is what the first
+_screen_ is called, not what the application is called, and an installed icon captioned with the
+screen name would be the one place the two are confused. Nothing else in the head names the
+application in the short form either. Its `start_url`, `scope` and icon paths are relative, for the
 same reason the locale catalogues' paths are: a preview is served from a sub-path, and a leading
 slash would look at the host root.
 
@@ -286,6 +287,21 @@ is 900x600 where a card is 1200x630, so a consumer crops or letterboxes it. That
 
 `twitter:card` becomes `summary_large_image`, which the first pass could not use because there was
 nothing to show.
+
+### The site is published from navbeacon.app
+
+Every address the first pass reads as `https://sb.edct.dev/` is `https://navbeacon.app/`. The
+canonical constant, the social cards, the two JSON-LD blocks, `CNAME`, `robots.txt` and the sitemap
+all state it, and `check-interface-foundations.mjs` reconciles the five against each other, so the
+site cannot half-move. Everything the first pass decided about _why_ a canonical is a constant is
+unchanged; only the constant is.
+
+### Both manifest names are the product's
+
+`public/manifest.webmanifest` declares `NavBeacon` as the name and the short name. The 2026-08-27
+ruling above holds and is what decides it: an installed icon is captioned with the application's
+name, and `Ship Builder` is the tool. The application is named apart from the tool, so the short
+name is the product's name rather than an abbreviation of a longer one.
 
 ### A preview no longer asks to be indexed
 

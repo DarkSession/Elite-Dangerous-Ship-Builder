@@ -62,6 +62,13 @@ behaviour — names the tool, which is what those strings mean under NavBeacon.
 Help content is generated: run `pnpm run help:artifacts` after touching any help string,
 and `pnpm run help:artifacts:check` gates it.
 
+The `package.json` name is also the SLEF producer identity: every export writes
+`appName: navbeacon` where it wrote `appName: elite-dangerous-ship-builder`
+(`src/app/platform/build/application-metadata.ts`, `specs/004-slef/contracts/slef-export.md`).
+The identifier is stable in the sense the contract means — it does not vary with the reader's
+language or the build — and it moves with the product name, once. A consumer keying on the old
+string sees a new producer, which is the accepted cost of the product having one name.
+
 Renaming the repository to match is optional. GitHub redirects the old URLs and Pages
 follows the rename, so it costs a remote update and nothing else.
 
