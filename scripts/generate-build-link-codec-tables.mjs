@@ -149,14 +149,11 @@ const experimentalIndex = new Map(
  * choice of module. Only the built-in cargo hatch offers no choice at all.
  */
 const isEncodableSlot = ({ kind }) => kind !== 'cargoHatch';
+const encodableSlotsByShip = Object.fromEntries(
+  ships.map((ship) => [ship, ShipLoadout.empty(ship).slots().filter(isEncodableSlot)]),
+);
 const slotsByShip = Object.fromEntries(
-  ships.map((ship) => [
-    ship,
-    ShipLoadout.empty(ship)
-      .slots()
-      .filter(isEncodableSlot)
-      .map(({ key }) => key),
-  ]),
+  ships.map((ship) => [ship, encodableSlotsByShip[ship].map(({ key }) => key)]),
 );
 for (const ship of ships) assertUniqueIdentities(slotsByShip[ship], `${ship} slot table`);
 const indexOf = (index, identity, kind) => {
@@ -224,6 +221,197 @@ const internSets = () => {
   };
 };
 
+/**
+ * How a candidate set is ordered, and why the order is worth pinning.
+ *
+ * A contextual index is priced by `CONTEXT_INDEX_DECAY`, which makes an early position in a
+ * candidate set much cheaper than a late one. That only pays if the sets are ordered by how
+ * likely a Commander is to fit the article, so the tables below put the popular choice first.
+ *
+ * They are a hand-estimated prior, and they are a prior over the package's own records: the sort
+ * reads the size, class, mount and family the package publishes for each module, and ranks those
+ * values. This repository does not keep game data of its own, and none of this is
+ * game data — a wrong guess costs a link a few characters and nothing else, because the order is
+ * table data that every decoder of that table reads back identically.
+ *
+ * The ranks below hold for the slot kinds a set belongs to. Core mounts take one family each, so
+ * their order comes from the class rank alone, except that the overcharge drives outrank the
+ * plain ones because outfitting no longer sells a size-8 drive outside that line.
+ */
+const MODULE_FAMILY_ORDER_BY_SLOT_KIND = {
+  optional: [
+    'shieldGenerators',
+    'hullReinforcements',
+    'cargoRacks',
+    'fuelScoops',
+    'shieldCellBanks',
+    'fsdBoosters',
+    'moduleReinforcements',
+    'fsdInterdictors',
+    'collectorLimpets',
+    'fuelTransferLimpets',
+    'prospectingLimpets',
+    'hatchBreakerLimpets',
+    'repairLimpets',
+    'researchLimpets',
+    'decontaminationLimpets',
+    'reconLimpets',
+    'miningMultiLimpetControllers',
+    'multiLimpetControllers',
+    'vesselHangars',
+    'planetaryVehicleHangars',
+    'surfaceScanners',
+    'dockingComputers',
+    'flightAssists',
+    'refineries',
+    'fuelTanks',
+    'passengerCabins',
+  ],
+  hardpoint: [
+    'multiCannons',
+    'beamLasers',
+    'pulseLasers',
+    'burstLasers',
+    'railGuns',
+    'plasmaAccelerators',
+    'fragmentCannons',
+    'cannons',
+    'missiles',
+    'mines',
+    'torpedoes',
+  ],
+  utility: ['shieldBoosters', 'chaffLaunchers', 'heatsinkLaunchers', 'pointDefence'],
+};
+/** Rating letters in the order a fitted module usually carries them. */
+const MODULE_RATING_ORDER = ['A', 'D', 'B', 'C', 'E'];
+const MODULE_MOUNT_ORDER = ['Gimballed', 'Fixed', 'Turreted'];
+const rankIn = (order, value) => {
+  const rank = order.indexOf(value);
+  return rank === -1 ? order.length : rank;
+};
+const moduleFamilyRank = (slot, record) => {
+  if (slot.kind === 'core') return record.supercruiseOvercharge === true ? 0 : 1;
+  const order = MODULE_FAMILY_ORDER_BY_SLOT_KIND[slot.kind];
+  return order === undefined ? 0 : rankIn(order, record.familyId);
+};
+const moduleSortKey = (slot, record) => {
+  if (!record) return [2, 0, 0, 0, 0];
+  const size = typeof record.class === 'number' ? record.class : 0;
+  return [
+    size === slot.size ? 0 : 1,
+    -size,
+    moduleFamilyRank(slot, record),
+    rankIn(MODULE_RATING_ORDER, record.rating),
+    rankIn(MODULE_MOUNT_ORDER, record.mount),
+  ];
+};
+/** Sort by the ranks `rankOf` returns, most significant first; ties keep catalogue order. */
+const orderCandidates = (candidates, rankOf) =>
+  candidates
+    .map((value, position) => ({ value, position }))
+    .sort((left, right) => {
+      const leftRank = rankOf(left.value);
+      const rightRank = rankOf(right.value);
+      for (const [position, rank] of leftRank.entries()) {
+        if (rank !== rightRank[position]) return rank - rightRank[position];
+      }
+      return left.position - right.position;
+    })
+    .map(({ value }) => value);
+const orderModuleCandidates = (candidates, slot) =>
+  orderCandidates(candidates, (module) =>
+    moduleSortKey(slot, moduleStatsBySymbol.get(modules[module].toLowerCase())),
+  );
+
+/**
+ * Blueprints in the order a Commander usually picks them, most popular first, so the pinned
+ * decay prices the common roll cheaply. A blueprint this list does not name keeps its catalogue
+ * position after the ones it does.
+ */
+const BLUEPRINT_ORDER = [
+  'Weapon_Overcharged',
+  'Weapon_Efficient',
+  'Weapon_LongRange',
+  'Weapon_ShortRange',
+  'Weapon_Focused',
+  'Weapon_Sturdy',
+  'Weapon_RapidFire',
+  'Weapon_HighCapacity',
+  'Weapon_LightWeight',
+  'Weapon_DoubleShot',
+  'ShieldGenerator_Thermic',
+  'ShieldGenerator_Reinforced',
+  'ShieldGenerator_Kinetic',
+  'ShieldGenerator_Optimised',
+  'ShieldBooster_HeavyDuty',
+  'ShieldBooster_Resistive',
+  'ShieldBooster_Thermic',
+  'ShieldBooster_Kinetic',
+  'ShieldBooster_Explosive',
+  'Engine_Dirty',
+  'Engine_Tuned',
+  'Engine_Reinforced',
+  'FSD_LongRange',
+  'FSD_Shielded',
+  'FSD_FastBoot',
+  'PowerPlant_Armoured',
+  'PowerPlant_Boosted',
+  'PowerPlant_Stealth',
+  'PowerDistributor_HighFrequency',
+  'PowerDistributor_PriorityEngines',
+  'PowerDistributor_PriorityWeapons',
+  'PowerDistributor_PrioritySystems',
+  'PowerDistributor_Shielded',
+  'PowerDistributor_HighCapacity',
+  'PowerDistributor_Balanced',
+  'Sensor_LightWeight',
+  'Sensor_LongRange',
+  'Sensor_WideAngle',
+  'Sensor_Expanded',
+  'Sensor_FastScan',
+  'LifeSupport_LightWeight',
+  'LifeSupport_Reinforced',
+  'LifeSupport_Shielded',
+  'Armour_HeavyDuty',
+  'Armour_Kinetic',
+  'Armour_Thermic',
+  'Armour_Explosive',
+  'Armour_Advanced',
+  'HullReinforcement_HeavyDuty',
+  'HullReinforcement_Kinetic',
+  'HullReinforcement_Thermic',
+  'HullReinforcement_Explosive',
+  'HullReinforcement_Advanced',
+  'ModuleReinforcement_HeavyDuty',
+  'ShieldCellBank_Specialised',
+  'ShieldCellBank_Rapid',
+  'FSDinterdictor_LongRange',
+  'FSDinterdictor_Expanded',
+  'FuelScoop_Efficiency',
+  'FuelScoop_Shielded',
+  'DetailedSurfaceScanner_LongRange',
+  'Misc_Shielded',
+  'Misc_LightWeight',
+  'Misc_Reinforced',
+  'Misc_ChaffCapacity',
+  'Misc_HeatSinkCapacity',
+  'Misc_PointDefenseCapacity',
+  'CollectionLimpet_LightWeight',
+  'CollectionLimpet_Reinforced',
+  'CollectionLimpet_Shielded',
+  'FuelTransferLimpet_LightWeight',
+  'FuelTransferLimpet_Reinforced',
+  'FuelTransferLimpet_Shielded',
+  'HatchBreakerLimpet_LightWeight',
+  'HatchBreakerLimpet_Reinforced',
+  'HatchBreakerLimpet_Shielded',
+  'ProspectingLimpet_LightWeight',
+  'ProspectingLimpet_Reinforced',
+  'ProspectingLimpet_Shielded',
+];
+const orderBlueprintCandidates = (candidates) =>
+  orderCandidates(candidates, (blueprint) => [rankIn(BLUEPRINT_ORDER, blueprints[blueprint])]);
+
 const moduleSets = internSets();
 const moduleSetByShip = {};
 const defaultModulesByShip = {};
@@ -231,16 +419,16 @@ for (const ship of ships) {
   const empty = ShipLoadout.empty(ship);
   const stock = stockLoadouts[ship];
   const slots = slotsByShip[ship];
-  moduleSetByShip[ship] = slots.map((slot) => {
+  moduleSetByShip[ship] = encodableSlotsByShip[ship].map((slot) => {
     let candidates = [];
     try {
       candidates = empty
-        .modulesForSlot(slot)
+        .modulesForSlot(slot.key)
         .map(({ symbol }) => indexOf(moduleIndex, symbol, 'module'));
     } catch {
       // Immutable built-ins have no editor candidate list; global fallback remains available.
     }
-    return moduleSets.intern(candidates);
+    return moduleSets.intern(orderModuleCandidates(candidates, slot));
   });
   defaultModulesByShip[ship] = slots.map((slot) => {
     const module = stock.fittedModuleAt(slot);
@@ -267,17 +455,26 @@ const preEngineeredSetByModule = modules.map((symbol) =>
  * at all and the link simply vanished.
  */
 const blueprintSetByModule = modules.map((symbol, moduleIndex) =>
-  blueprintSets.intern([
-    ...new Set([
-      ...getBlueprintsForModule(symbol).map((fdname) =>
-        indexOf(blueprintIndex, fdname, 'engineering blueprint'),
-      ),
-      ...preEngineeredSetByModule[moduleIndex].map(
-        (variant) => preEngineeredVariants[variant].blueprint,
-      ),
+  blueprintSets.intern(
+    orderBlueprintCandidates([
+      ...new Set([
+        ...getBlueprintsForModule(symbol).map((fdname) =>
+          indexOf(blueprintIndex, fdname, 'engineering blueprint'),
+        ),
+        ...preEngineeredSetByModule[moduleIndex].map(
+          (variant) => preEngineeredVariants[variant].blueprint,
+        ),
+      ]),
     ]),
-  ]),
+  ),
 );
+/**
+ * Experimental effects keep their catalogue order. The package publishes a name, a modifier
+ * block and a description for each one and nothing that separates a popular effect from a rare
+ * one, so any ranking here would be game knowledge this repository invented rather than a prior
+ * over the package's records. `CONTEXT_INDEX_FLOOR` is what keeps the pinned decay from taxing
+ * an unordered set: it bounds how much a late position can cost against uniform coding.
+ */
 const experimentalSetByModule = modules.map((symbol) =>
   experimentalSets.intern(
     getExperimentalsForModule(symbol).map((fdname) =>
@@ -372,24 +569,32 @@ const payload = {
  * Pinned symbol models, mirrored against the codec's own validation bounds. The weights are
  * hand-estimated priors for real builds — grades are usually maximal, engineered modules
  * usually carry an experimental effect, identities almost always resolve contextually,
- * explicit enabled states are usually on, names read like English while idents read like
- * callsigns — validated against the reference corpus in `build-link-codec-models.spec.ts`.
- * Back-reference streams adapt at increment 8, which the corpus measurements saturate at; the
- * static candidate-set decay stays uniform because catalogue-ordered sets carry no popularity
- * signal. Like every other pinned array, these numbers are frozen once the table is published:
- * better-measured weights belong to the next table version.
+ * explicit enabled states are usually on, a changed slot is usually filled rather than emptied,
+ * an engineering record on a mount that already has one usually repeats it, names read like
+ * English while idents read like callsigns — validated against the reference corpus in
+ * `build-link-codec-models.spec.ts`. Back-reference streams adapt at increment 8, the largest
+ * increment the corpus does not pay for. The candidate-set decay pays because the sets above are
+ * ordered by a popularity prior, and its floor bounds what a late position costs when that
+ * prior is wrong. Like every other pinned array, these numbers are frozen once the table is
+ * published: better-measured weights belong to the next table version.
  */
 const MAX_MODEL_WEIGHT_TOTAL = 2 ** 24;
 const MAX_CONTEXT_INDEX_DECAY_DENOMINATOR = 64;
+const CONTEXT_INDEX_FIRST_WEIGHT = 2 ** 16;
 const MAX_CONTEXT_ADAPTATION_INCREMENT = 2 ** 16;
 const COMPACT_STRING_ALPHABET_LENGTH = 64;
 const PINNED_SYMBOL_MODELS = {
   GRADE_IS_MAX: [1, 7],
   EXPERIMENTAL_PRESENT: [1, 3],
   CONTEXT_HIT: [1, 31],
+  ENGINEERING_REFERENCE: [1, 3],
+  IDENTITY_REPEATED: [7, 1],
+  IDENTITY_IS_DEFAULT: [3, 1],
+  BASELINE_SLOT_PRESENT: [1, 7],
   POWER_ON: [2, 1, 5],
   POWER_PRIORITY: [4, 4, 8, 5, 3, 2],
-  CONTEXT_INDEX_DECAY: [1, 1],
+  CONTEXT_INDEX_DECAY: [3, 4],
+  CONTEXT_INDEX_FLOOR: 2_048,
   CONTEXT_ADAPTATION: 8,
   NAME_CHARACTERS: [
     // A-Z
@@ -428,10 +633,20 @@ const assertModelWeights = (weights, expectedLength, kind) => {
     throw new Error(`${kind} weights exceed the model weight-total cap.`);
   }
 };
+// A model a table leaves out prices its symbol uniformly, so only a key that is present is
+// checked. The codec validates the same way.
+const assertOptionalModelWeights = (weights, expectedLength, kind) => {
+  if (weights === undefined) return;
+  assertModelWeights(weights, expectedLength, kind);
+};
 const assertSymbolModels = (models) => {
   assertModelWeights(models.GRADE_IS_MAX, 2, 'GRADE_IS_MAX');
   assertModelWeights(models.EXPERIMENTAL_PRESENT, 2, 'EXPERIMENTAL_PRESENT');
   assertModelWeights(models.CONTEXT_HIT, 2, 'CONTEXT_HIT');
+  assertOptionalModelWeights(models.ENGINEERING_REFERENCE, 2, 'ENGINEERING_REFERENCE');
+  assertOptionalModelWeights(models.IDENTITY_REPEATED, 2, 'IDENTITY_REPEATED');
+  assertOptionalModelWeights(models.IDENTITY_IS_DEFAULT, 2, 'IDENTITY_IS_DEFAULT');
+  assertOptionalModelWeights(models.BASELINE_SLOT_PRESENT, 2, 'BASELINE_SLOT_PRESENT');
   assertModelWeights(models.POWER_ON, 3, 'POWER_ON');
   assertModelWeights(models.POWER_PRIORITY, 6, 'POWER_PRIORITY');
   assertModelWeights(models.NAME_CHARACTERS, COMPACT_STRING_ALPHABET_LENGTH, 'NAME_CHARACTERS');
@@ -446,6 +661,14 @@ const assertSymbolModels = (models) => {
     decayDenominator > MAX_CONTEXT_INDEX_DECAY_DENOMINATOR
   ) {
     throw new Error('CONTEXT_INDEX_DECAY must be a valid [numerator, denominator] pair.');
+  }
+  if (
+    models.CONTEXT_INDEX_FLOOR !== undefined &&
+    (!Number.isSafeInteger(models.CONTEXT_INDEX_FLOOR) ||
+      models.CONTEXT_INDEX_FLOOR < 1 ||
+      models.CONTEXT_INDEX_FLOOR > CONTEXT_INDEX_FIRST_WEIGHT)
+  ) {
+    throw new Error('CONTEXT_INDEX_FLOOR must be a weight the decay can reach.');
   }
   if (
     !Number.isSafeInteger(models.CONTEXT_ADAPTATION) ||

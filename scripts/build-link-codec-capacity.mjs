@@ -157,6 +157,9 @@ export function worstCaseBodyBits(dimensions, maxStringUnits) {
     experimental;
   const preEngineered =
     contextualIndexBits(dimensions.PRE_ENGINEERED_CANDIDATE_SET) + 1 + experimental;
+  // The leading bit is the record's back-reference flag, and it over-counts twice over: a record
+  // whose module has no dictionary yet carries no flag at all, and a record that does refer back
+  // costs an index into one module's records rather than the whole literal priced here.
   const engineering = 1 + Math.max(ordinary, preEngineered);
   const label = varUintBits(2 * maxStringUnits) + 8 * maxStringUnits;
 

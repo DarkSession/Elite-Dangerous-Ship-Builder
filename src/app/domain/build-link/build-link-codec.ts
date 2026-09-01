@@ -20,7 +20,9 @@ export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
  * symbol's arithmetic interval is its weight's share of the list's total, so a table that pins
  * these weights makes skewed values cheaper than uniform coding while remaining canonical: both
  * renderers read the same frozen numbers. Bit packing ignores models entirely, which keeps every
- * adaptive cost decision and every packed body identical with or without them.
+ * adaptive cost decision and every packed body identical with or without them. An optional entry
+ * a table leaves out prices its symbol uniformly, so a table pinning fewer models is still a
+ * table this codec reads.
  */
 export interface BuildLinkSymbolModels {
   /** Weights for an ordinary record's grade: [below maximum, maximum]. */
@@ -29,22 +31,42 @@ export interface BuildLinkSymbolModels {
   readonly EXPERIMENTAL_PRESENT: readonly number[];
   /** Weights for an identity's contextual-set membership: [global fallback, in context]. */
   readonly CONTEXT_HIT: readonly number[];
+  /** Weights for an engineering record's back-reference flag: [written out, a reference]. */
+  readonly ENGINEERING_REFERENCE?: readonly number[];
+  /**
+   * Weights for a module-sequence repeat flag: [a new identity, an earlier distinct one]. The
+   * "same as previous" flag beside it carries no model at all: how often a loadout repeats the
+   * article in the mount before it is a property of the build rather than of builds, so a
+   * static prior loses on one reference or the other, and a per-run adaptive context on a
+   * two-valued flag is misled by its own first few symbols (both measured).
+   */
+  readonly IDENTITY_REPEATED?: readonly number[];
+  /** Weights for an absolute-layout identity's default flag: [chosen, the slot's default]. */
+  readonly IDENTITY_IS_DEFAULT?: readonly number[];
+  /** Weights for a baseline-layout changed slot: [emptied, filled]. */
+  readonly BASELINE_SLOT_PRESENT?: readonly number[];
   /** Weights for an explicit enabled state: [absent, off, on]. */
   readonly POWER_ON: readonly number[];
   /** Weights for an explicit priority: [absent, 0, 1, 2, 3, 4]. */
   readonly POWER_PRIORITY: readonly number[];
   /**
    * Geometric decay [numerator, denominator] over contextual-set positions; equal terms mean
-   * uniform, which is what the shipped table pins: its candidate sets are catalogue-ordered, so
-   * a table with usage data behind it would pin per-set popularity orderings or weights
-   * instead. It is independent of `CONTEXT_ADAPTATION`, which models the back-reference
-   * streams rather than candidate sets.
+   * uniform. A table orders each candidate set by how likely its entries are to be chosen, and
+   * this decay is what turns that order into cheaper early positions. It is independent of
+   * `CONTEXT_ADAPTATION`, which models the back-reference streams rather than candidate sets.
    */
   readonly CONTEXT_INDEX_DECAY: readonly number[];
   /**
+   * Smallest weight the decay may fall to, which caps how much more a late position costs than
+   * an early one. A steep decay without a floor prices the tail of a 464-candidate set far above
+   * uniform coding, and a popularity order is a prior rather than a certainty. A table that
+   * omits the key floors at one, which is where an unbounded geometric run ends anyway.
+   */
+  readonly CONTEXT_INDEX_FLOOR?: number;
+  /**
    * Adaptive-context increment; zero disables adaptation. When positive, back-reference indexes
-   * — engineering-record references and repeated-module dictionary indexes — are coded against a
-   * per-run frequency context seeded uniformly and bumped by this amount after each coded
+   * — per-module engineering references and repeated-module dictionary indexes — are coded
+   * against a per-run frequency context seeded uniformly and bumped by this amount after each coded
    * symbol, so a target referenced repeatedly in one build gets cheaper each time. Adaptation is
    * deliberately confined to reference streams: the grammar's back-referencing already dedupes
    * repeats out of the candidate-set literal streams, so adapting those penalises every new
@@ -102,8 +124,8 @@ export interface BuildLinkCodec {
 /**
  * A bounded symbol's model: pinned cumulative frequencies, or an adaptive per-run context keyed
  * by the identity of `adaptOver`. Only back-reference dictionaries key adaptive contexts — the
- * module repeat dictionary and the engineering reference stream — never candidate-set literals,
- * whose repeats the grammar already dedupes into those dictionaries.
+ * module repeat dictionary and each fitted module's engineering dictionary — never candidate-set
+ * literals, whose repeats the grammar already dedupes into those dictionaries.
  */
 type BoundedSymbolModel = readonly number[] | AdaptiveSymbolModel;
 type AdaptiveSymbolModel = { readonly adaptOver: readonly number[] };
@@ -117,6 +139,10 @@ interface SymbolModels {
   readonly gradeIsMax: readonly number[];
   readonly experimentalPresent: readonly number[];
   readonly contextHit: readonly number[];
+  readonly engineeringReference: readonly number[] | undefined;
+  readonly identityRepeated: readonly number[] | undefined;
+  readonly identityIsDefault: readonly number[] | undefined;
+  readonly baselineSlotPresent: readonly number[] | undefined;
   readonly powerOn: readonly number[];
   readonly powerPriority: readonly number[];
   readonly nameCharacters: readonly number[];
@@ -716,7 +742,7 @@ function writeModuleIdentities(
     const entries: ModuleIdentityEntry[] = [];
     for (const slotIndex of changed) {
       const moduleIndex = modules[slotIndex];
-      writer.writeBoolean(moduleIndex !== null);
+      writer.writeBoolean(moduleIndex !== null, codec.models?.baselineSlotPresent);
       if (moduleIndex !== null) {
         entries.push({
           moduleIndex,
@@ -753,7 +779,7 @@ function readModuleIdentities(
   if (useBaseline) {
     modules = [...defaults];
     const changed = readIndexSet(reader, slots.length);
-    const present = changed.map(() => reader.readBoolean());
+    const present = changed.map(() => reader.readBoolean(codec.models?.baselineSlotPresent));
     const presentSlots = changed.filter((_slotIndex, index) => present[index]);
     const identities = readModuleIdentitySequence(
       codec,
@@ -857,11 +883,12 @@ function writeModuleIdentitySequence(
   let previous: number | undefined;
   entries.forEach((entry, index) => {
     if (index > 0) {
+      // The "same as previous" flag stays unmodelled deliberately; see `IDENTITY_REPEATED`.
       const sameAsPrevious = entry.moduleIndex === previous;
       writer.writeBoolean(sameAsPrevious);
       if (sameAsPrevious) return;
       const repeated = distinct.includes(entry.moduleIndex);
-      writer.writeBoolean(repeated);
+      writer.writeBoolean(repeated, codec.models?.identityRepeated);
       if (repeated) {
         writeIndexInSet(codec.models?.adaptiveModel(distinct), writer, entry.moduleIndex, distinct);
         previous = entry.moduleIndex;
@@ -888,7 +915,7 @@ function readModuleIdentitySequence(
     let moduleIndex: number;
     if (useReferences && index > 0 && reader.readBoolean()) {
       moduleIndex = previous!;
-    } else if (useReferences && index > 0 && reader.readBoolean()) {
+    } else if (useReferences && index > 0 && reader.readBoolean(codec.models?.identityRepeated)) {
       moduleIndex = readIndexFromSet(
         codec,
         reader,
@@ -991,7 +1018,7 @@ function writeModuleIdentity(
   defaultIndex: number | null,
 ): void {
   if (defaultIndex !== null) {
-    writer.writeBoolean(moduleIndex === defaultIndex);
+    writer.writeBoolean(moduleIndex === defaultIndex, codec.models?.identityIsDefault);
     if (moduleIndex === defaultIndex) return;
   }
   writeContextualIndex(codec.models, writer, moduleIndex, context, codec.tables.MODULES.length);
@@ -1003,7 +1030,8 @@ function readModuleIdentity(
   context: readonly number[],
   defaultIndex: number | null,
 ): number {
-  if (defaultIndex !== null && reader.readBoolean()) return defaultIndex;
+  if (defaultIndex !== null && reader.readBoolean(codec.models?.identityIsDefault))
+    return defaultIndex;
   const moduleIndex = readContextualIndex(codec, reader, context, codec.tables.MODULES.length);
   if (!codec.tables.MODULES[moduleIndex]) throw unknownTableIndex(codec, 'module', moduleIndex);
   return moduleIndex;
@@ -1338,39 +1366,32 @@ function writeEngineeringStates(
     (cost, record) => cost + engineeringRecordBitCost(codec, record),
     0,
   );
-  const referenceWidth = bitsRequired(records.length);
-  const referenceCost = records.reduce(
-    (cost, record, index) =>
+  const referenceCost = records.reduce((cost, record, index) => {
+    const { dictionarySize, reference } = references[index]!;
+    return (
       cost +
-      1 +
-      (references[index] === null ? engineeringRecordBitCost(codec, record) : referenceWidth),
-    0,
-  );
+      (dictionarySize === 0 ? 0 : 1) +
+      (reference === null
+        ? engineeringRecordBitCost(codec, record)
+        : contextualIndexBits(dictionarySize))
+    );
+  }, 0);
   const useReferences = records.length > 1 && referenceCost < plainCost;
   if (records.length > 1) writer.writeBoolean(useReferences);
 
-  const referenceModel = referenceAdaptationModel(codec);
   for (const [index, { moduleIndex, engineering }] of records.entries()) {
-    if (useReferences) {
-      const reference = references[index];
-      writer.writeBoolean(reference !== null);
+    const { dictionary, dictionarySize, reference } = references[index]!;
+    if (useReferences && dictionarySize > 0) {
+      writer.writeBoolean(reference !== null, codec.models?.engineeringReference);
       if (reference !== null) {
-        writer.writeBounded(reference, records.length, referenceModel);
+        if (dictionarySize > 1) {
+          writer.writeBounded(reference, dictionarySize, codec.models?.adaptiveModel(dictionary));
+        }
         continue;
       }
     }
     writeEngineering(codec, writer, moduleIndex, engineering);
   }
-}
-
-/**
- * Repeated engineering back-references target the same few records, so they share one adaptive
- * context per state group. Counts are already scoped to a single pass because every render and
- * every arithmetic read owns a fresh `AdaptiveContexts`; the fresh key array only keeps this
- * stream's context distinct from the module repeat dictionary's within that pass.
- */
-function referenceAdaptationModel(codec: CodecContext): BoundedSymbolModel | undefined {
-  return codec.models?.adaptiveModel([]);
 }
 
 function readEngineeringStates(
@@ -1388,42 +1409,45 @@ function readEngineeringStates(
     ? eligible
     : readIndexSet(reader, eligible.length).map((index) => eligible[index]!);
   const useReferences = engineered.length > 1 && reader.readBoolean();
-  const decodedRecords: CodecEngineeringState[] = [];
-  const firstRecordByKey = new Map<string, number>();
-  const referenceModel = referenceAdaptationModel(codec);
+  const dictionaries = new EngineeringDictionaries();
   for (const [recordIndex, occupiedIndex] of engineered.entries()) {
     const moduleIndex = moduleIndexes[occupiedSlots[occupiedIndex]!]!;
-    if (useReferences && reader.readBoolean()) {
-      const reference = reader.readBounded(engineered.length, referenceModel);
-      const referenced = decodedRecords[reference];
-      if (
-        referenced === undefined ||
-        referenced.kind !== 'ordinary' ||
-        firstRecordByKey.get(engineeringStateKey(referenced)) !== reference
-      ) {
+    const dictionary = dictionaries.forModule(moduleIndex);
+    const dictionarySize = dictionary.entries.length;
+    if (
+      useReferences &&
+      dictionarySize > 0 &&
+      reader.readBoolean(codec.models?.engineeringReference)
+    ) {
+      const reference =
+        dictionarySize === 1
+          ? 0
+          : reader.readBounded(dictionarySize, codec.models?.adaptiveModel(dictionary.entries));
+      const referenced = dictionary.states[reference];
+      if (referenced === undefined) {
         throw new BuildLinkCodecError(
           'invalidPayload',
           'An engineering back-reference is invalid.',
         );
       }
       states[occupiedIndex] = referenced;
-      decodedRecords.push(referenced);
       continue;
     }
 
     const engineering = readEngineering(codec, reader, moduleIndex);
     if (useReferences && engineering.kind === 'ordinary') {
       const key = engineeringStateKey(engineering);
-      if (firstRecordByKey.has(key)) {
+      if (dictionary.keys.includes(key)) {
         throw new BuildLinkCodecError(
           'invalidPayload',
           'A repeated engineering record is not canonical.',
         );
       }
-      firstRecordByKey.set(key, recordIndex);
+      dictionary.keys.push(key);
+      dictionary.entries.push(recordIndex);
+      dictionary.states.push(engineering);
     }
     states[occupiedIndex] = engineering;
-    decodedRecords.push(engineering);
   }
   return states;
 }
@@ -1437,15 +1461,66 @@ type EngineeringRecord = {
   readonly engineering: CodecEngineeringState;
 };
 
-function engineeringReferences(records: readonly EngineeringRecord[]): Array<number | null> {
-  const firstRecordByKey = new Map<string, number>();
-  return records.map(({ engineering }, index) => {
-    if (engineering.kind !== 'ordinary') return null;
+/**
+ * The distinct ordinary records already written for one fitted module, in the order they first
+ * appeared. Keying the dictionary on the module rather than the whole build is what makes a
+ * reference cheap: a mount repeats its own roll — eight identical shield boosters, a rack of one
+ * weapon — far more often than two different modules happen to carry the same record, and an
+ * index into one module's short list costs a fraction of an index into every record in the
+ * build. Each module also owns its adaptive context for free, because the context is keyed by
+ * the identity of the dictionary array.
+ */
+type EngineeringDictionary = {
+  /** Record index of each entry; its array identity keys the module's adaptive context. */
+  readonly entries: number[];
+  readonly keys: string[];
+  readonly states: CodecEngineeringState[];
+};
+
+class EngineeringDictionaries {
+  private readonly byModule = new Map<number, EngineeringDictionary>();
+
+  forModule(moduleIndex: number): EngineeringDictionary {
+    let dictionary = this.byModule.get(moduleIndex);
+    if (dictionary === undefined) {
+      dictionary = { entries: [], keys: [], states: [] };
+      this.byModule.set(moduleIndex, dictionary);
+    }
+    return dictionary;
+  }
+}
+
+type EngineeringReference = {
+  /** The module's dictionary array, whose identity keys its adaptive context. */
+  readonly dictionary: readonly number[];
+  /** How many entries that dictionary holds when this record is written. */
+  readonly dictionarySize: number;
+  /** Position of this record in the dictionary, or null when it is written out in full. */
+  readonly reference: number | null;
+};
+
+function engineeringReferences(records: readonly EngineeringRecord[]): EngineeringReference[] {
+  const dictionaries = new EngineeringDictionaries();
+  return records.map(({ moduleIndex, engineering }, index) => {
+    const dictionary = dictionaries.forModule(moduleIndex);
+    const dictionarySize = dictionary.entries.length;
+    // A pre-engineered record carries an identity rather than a state, so it never joins a
+    // dictionary and never refers back to one.
+    if (engineering.kind !== 'ordinary') {
+      return { dictionary: dictionary.entries, dictionarySize, reference: null };
+    }
     const key = engineeringStateKey(engineering);
-    const previous = firstRecordByKey.get(key);
-    if (previous !== undefined) return previous;
-    firstRecordByKey.set(key, index);
-    return null;
+    const reference = dictionary.keys.indexOf(key);
+    if (reference === -1) {
+      dictionary.keys.push(key);
+      dictionary.entries.push(index);
+      dictionary.states.push(engineering);
+    }
+    return {
+      dictionary: dictionary.entries,
+      dictionarySize,
+      reference: reference === -1 ? null : reference,
+    };
   });
 }
 
@@ -2214,14 +2289,14 @@ type EncodedSymbol = {
 };
 
 interface CodecWriter {
-  writeBoolean(value: boolean, cumulative?: readonly number[]): void;
+  writeBoolean(value: boolean, model?: BoundedSymbolModel): void;
   writeBits(value: number, width: number): void;
   writeBounded(value: number, valueCount: number, model?: BoundedSymbolModel): void;
   writeString(value: string, characters?: readonly number[]): void;
 }
 
 interface CodecReader {
-  readBoolean(cumulative?: readonly number[]): boolean;
+  readBoolean(model?: BoundedSymbolModel): boolean;
   readBits(width: number): number;
   readBounded(valueCount: number, model?: BoundedSymbolModel): number;
   readString(characters?: readonly number[]): string;
@@ -2235,8 +2310,8 @@ class SymbolWriter implements CodecWriter {
     return this.bitLength;
   }
 
-  writeBoolean(value: boolean, cumulative?: readonly number[]): void {
-    this.writeSymbol(value ? 1 : 0, 2, cumulative);
+  writeBoolean(value: boolean, model?: BoundedSymbolModel): void {
+    this.writeSymbol(value ? 1 : 0, 2, model);
   }
 
   writeBits(value: number, width: number): void {
@@ -2438,8 +2513,8 @@ abstract class SymbolReader implements CodecReader {
   abstract readBits(width: number): number;
   abstract readBounded(valueCount: number, model?: BoundedSymbolModel): number;
 
-  readBoolean(cumulative?: readonly number[]): boolean {
-    return this.readBounded(2, cumulative) === 1;
+  readBoolean(model?: BoundedSymbolModel): boolean {
+    return this.readBounded(2, model) === 1;
   }
 
   readString(characters?: readonly number[]): string {
@@ -2566,6 +2641,11 @@ function createSymbolModels(models: BuildLinkSymbolModels | undefined): SymbolMo
     if (total > MAX_MODEL_WEIGHT_TOTAL) throw invalidModels();
     return cumulative;
   };
+  const optionalCumulativeFrom = (
+    weights: readonly number[] | undefined,
+    expectedLength: number,
+  ): readonly number[] | undefined =>
+    weights === undefined ? undefined : cumulativeFrom(weights, expectedLength);
   const decay = models.CONTEXT_INDEX_DECAY;
   if (!Array.isArray(decay) || decay.length !== 2) throw invalidModels();
   const decayNumerator = decay[0]!;
@@ -2577,6 +2657,10 @@ function createSymbolModels(models: BuildLinkSymbolModels | undefined): SymbolMo
     decayDenominator < decayNumerator ||
     decayDenominator > MAX_CONTEXT_INDEX_DECAY_DENOMINATOR
   ) {
+    throw invalidModels();
+  }
+  const floor = models.CONTEXT_INDEX_FLOOR ?? 1;
+  if (!Number.isSafeInteger(floor) || floor < 1 || floor > CONTEXT_INDEX_FIRST_WEIGHT) {
     throw invalidModels();
   }
   const adaptationIncrement = models.CONTEXT_ADAPTATION;
@@ -2598,10 +2682,10 @@ function createSymbolModels(models: BuildLinkSymbolModels | undefined): SymbolMo
       for (let index = 0; index < valueCount; index += 1) {
         total += weight;
         built.push(total);
-        weight = Math.max(1, Math.floor((weight * decayNumerator) / decayDenominator));
+        weight = Math.max(floor, Math.floor((weight * decayNumerator) / decayDenominator));
       }
-      // The geometric head is bounded by the decay constants, but the unit-weight tail grows
-      // with the candidate set, so the pinned-model cap is enforced here as well.
+      // The geometric head is bounded by the decay constants, but the floored tail grows with
+      // the candidate set, so the pinned-model cap is enforced here as well.
       if (total > MAX_MODEL_WEIGHT_TOTAL) throw invalidModels();
       cumulative = built;
       contextCumulativeBySize.set(valueCount, cumulative);
@@ -2612,6 +2696,10 @@ function createSymbolModels(models: BuildLinkSymbolModels | undefined): SymbolMo
     gradeIsMax: cumulativeFrom(models.GRADE_IS_MAX, 2),
     experimentalPresent: cumulativeFrom(models.EXPERIMENTAL_PRESENT, 2),
     contextHit: cumulativeFrom(models.CONTEXT_HIT, 2),
+    engineeringReference: optionalCumulativeFrom(models.ENGINEERING_REFERENCE, 2),
+    identityRepeated: optionalCumulativeFrom(models.IDENTITY_REPEATED, 2),
+    identityIsDefault: optionalCumulativeFrom(models.IDENTITY_IS_DEFAULT, 2),
+    baselineSlotPresent: optionalCumulativeFrom(models.BASELINE_SLOT_PRESENT, 2),
     powerOn: cumulativeFrom(models.POWER_ON, 3),
     powerPriority: cumulativeFrom(models.POWER_PRIORITY, 6),
     nameCharacters: cumulativeFrom(models.NAME_CHARACTERS, COMPACT_STRING_ALPHABET.length),

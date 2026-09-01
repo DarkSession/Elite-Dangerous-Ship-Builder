@@ -10,14 +10,12 @@ import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture
  * Table 1 carries the symbol models the generator pins alongside its catalogue. The boolean and
  * power skews are defensible priors for real builds (grades are usually maximal, engineered
  * modules usually carry an experimental effect, identities are almost always contextual,
- * explicit enabled states are usually `on`). Names get English-like character weights while
- * idents get callsign-like ones (uppercase, digits, dash). Back-reference indexes use per-run
- * adaptive contexts, so a record or module referenced repeatedly within one build gets cheaper
- * as the stream progresses; candidate-set literals stay static because the grammar's own
- * back-referencing leaves them repetition-poor. The static context-index decay is pinned
- * uniform: the candidate sets are catalogue-ordered, which carries no popularity signal
- * (measured decays help one reference build and hurt another), so a table with usage data
- * behind it would pin popularity-ordered sets or per-set weights instead of one decay.
+ * explicit enabled states are usually `on`, a changed mount is usually filled rather than
+ * emptied). Names get English-like character weights while idents get callsign-like ones
+ * (uppercase, digits, dash). Back-reference indexes use per-run adaptive contexts;
+ * candidate-set literals stay static because the grammar's own back-referencing leaves them
+ * repetition-poor. The context-index decay pays because the table orders every candidate set by
+ * a popularity prior, and its floor bounds what a late position costs when that prior is wrong.
  */
 const shippedModels: BuildLinkSymbolModels = codecTable1.MODELS;
 const modelledCodec = createBuildLinkCodec(1, codecTable1);
@@ -63,8 +61,8 @@ describe('build-link codec pinned symbol models', () => {
     expect(fragments).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.Fe22sXs1VYx8!NVMtCk!psrGUkIV-ECpUjGE0xXgXOFkqJ25PNA@tSqnpD8XpmV70,ONRNW',
-      'b.6lNEFSYnYR0i,rdWhJz8H7mFTPR@@DRYR3SD6cWNd1A4!PTC4.,JMc/y1Uhh9M_uk5yKmUPRDlI/iyfgDRolLhJF/v!4SUos',
+      'b.8oUeO4wu5ZrfCrStkM0I4It5CEAZ6QNzeH2I!qVp_-B/u3xUxp/:5vZn-uve.T',
+      'b.26da!i-2iAMHR6!JYWjLXeH:ll2xmztchA8e91yfvAecy.0k,wpaS39Od-qe_AWys@MUQrpRGJVEQa',
       'b.7yvr6:PyEpDGgEs9aI:gxA@uHybdm4IM',
     ]);
   });
@@ -81,8 +79,8 @@ describe('build-link codec pinned symbol models', () => {
     expect(rows).toEqual([
       { label: 'empty Sidewinder', baselineLength: 16, modelledLength: 16 },
       { label: 'stock Krait Mk II', baselineLength: 10, modelledLength: 10 },
-      { label: 'engineered Anaconda', baselineLength: 85, modelledLength: 73 },
-      { label: 'supplied engineered Corvette', baselineLength: 110, modelledLength: 98 },
+      { label: 'engineered Anaconda', baselineLength: 73, modelledLength: 64 },
+      { label: 'supplied engineered Corvette', baselineLength: 102, modelledLength: 80 },
       { label: 'named stock Krait Mk II', baselineLength: 38, modelledLength: 34 },
     ]);
 
@@ -133,40 +131,50 @@ describe('build-link codec pinned symbol models', () => {
     expect(decoded.shipIdent).toBe('TST-42');
   });
 
-  it('round-trips canonically under a non-uniform context-index decay', () => {
+  it('round-trips canonically under other decay and floor pairs', () => {
     // The decay models candidate-set positions and composes with the reference-stream
-    // adaptation; both are active here.
-    const decayCodec = createBuildLinkCodec(1, {
-      ...codecTable1,
-      MODELS: { ...shippedModels, CONTEXT_INDEX_DECAY: [63, 64] },
-    });
+    // adaptation; both are active here. A table that pins no floor falls back to a weight of
+    // one, which is where an unbounded geometric run ends anyway.
     const source = makeFullyEngineeredAnaconda();
+    for (const models of [
+      { ...shippedModels, CONTEXT_INDEX_DECAY: [63, 64], CONTEXT_INDEX_FLOOR: undefined },
+      { ...shippedModels, CONTEXT_INDEX_DECAY: [1, 2], CONTEXT_INDEX_FLOOR: 1_024 },
+    ]) {
+      const decayCodec = createBuildLinkCodec(1, { ...codecTable1, MODELS: models });
 
-    const fragment = decayCodec.encodeBuildLinkFragment(source);
-    const decoded = decayCodec.decodeBuildLinkFragment(fragment);
+      const fragment = decayCodec.encodeBuildLinkFragment(source);
+      const decoded = decayCodec.decodeBuildLinkFragment(fragment);
 
-    expect(minimalState(decoded)).toEqual(minimalState(source));
-    expect(decayCodec.encodeBuildLinkFragment(decoded)).toBe(fragment);
+      expect(minimalState(decoded)).toEqual(minimalState(source));
+      expect(decayCodec.encodeBuildLinkFragment(decoded)).toBe(fragment);
+    }
   });
 
-  it('adaptation cheapens repetition-heavy builds beyond the static priors', () => {
-    // The Anaconda reference repeats a handful of engineering records across many mounts, so its
-    // back-reference stream is where adaptation pays. The Corvette's references are diverse and
-    // must not regress; the corpus test above holds it at the static-prior length.
-    const staticCodec = createBuildLinkCodec(1, {
-      ...codecTable1,
-      MODELS: { ...shippedModels, CONTEXT_ADAPTATION: 0 },
-    });
-    const anaconda = makeFullyEngineeredAnaconda();
+  it('pins the largest adaptation increment the reference corpus does not pay for', () => {
+    // Per-module engineering dictionaries hold the repetition the reference streams used to
+    // carry, so the pinned increment leaves every reference link exactly where switching
+    // adaptation off leaves it. A larger increment does cost: each new reference target pays
+    // for the counts its predecessors built up, which the diverse Corvette feels first.
+    const withIncrement = (increment: number) =>
+      createBuildLinkCodec(1, {
+        ...codecTable1,
+        MODELS: { ...shippedModels, CONTEXT_ADAPTATION: increment },
+      });
+    const lengths = (codec: ReturnType<typeof createBuildLinkCodec>) =>
+      referenceCorpus().map(({ source }) => codec.encodeBuildLinkFragment(source).length);
+    const corvette = referenceCorpus().find(
+      ({ label }) => label === 'supplied engineered Corvette',
+    )!.source;
 
-    const adaptiveFragment = modelledCodec.encodeBuildLinkFragment(anaconda);
-
-    expect(adaptiveFragment.length).toBeLessThan(
-      staticCodec.encodeBuildLinkFragment(anaconda).length,
+    expect(lengths(modelledCodec)).toEqual(lengths(withIncrement(0)));
+    expect(withIncrement(1_024).encodeBuildLinkFragment(corvette).length).toBeGreaterThan(
+      modelledCodec.encodeBuildLinkFragment(corvette).length,
     );
-    const decoded = modelledCodec.decodeBuildLinkFragment(adaptiveFragment);
-    expect(minimalState(decoded)).toEqual(minimalState(anaconda));
-    expect(modelledCodec.encodeBuildLinkFragment(decoded)).toBe(adaptiveFragment);
+
+    const fragment = modelledCodec.encodeBuildLinkFragment(corvette);
+    const decoded = modelledCodec.decodeBuildLinkFragment(fragment);
+    expect(minimalState(decoded)).toEqual(minimalState(corvette, true));
+    expect(modelledCodec.encodeBuildLinkFragment(decoded)).toBe(fragment);
   });
 
   it('shrinks a callsign ident under the ident character model', () => {
@@ -202,6 +210,21 @@ describe('build-link codec pinned symbol models', () => {
       expectedError,
     );
     expect(withModels({ ...shippedModels, POWER_ON: [1, 1] })).toThrowError(expectedError);
+    expect(withModels({ ...shippedModels, ENGINEERING_REFERENCE: [0, 1] })).toThrowError(
+      expectedError,
+    );
+    expect(withModels({ ...shippedModels, IDENTITY_REPEATED: [1] })).toThrowError(expectedError);
+    expect(withModels({ ...shippedModels, IDENTITY_IS_DEFAULT: [1, 1.5] })).toThrowError(
+      expectedError,
+    );
+    expect(withModels({ ...shippedModels, BASELINE_SLOT_PRESENT: [2 ** 24, 1] })).toThrowError(
+      expectedError,
+    );
+    expect(withModels({ ...shippedModels, CONTEXT_INDEX_FLOOR: 0 })).toThrowError(expectedError);
+    expect(withModels({ ...shippedModels, CONTEXT_INDEX_FLOOR: 1.5 })).toThrowError(expectedError);
+    expect(withModels({ ...shippedModels, CONTEXT_INDEX_FLOOR: 2 ** 17 })).toThrowError(
+      expectedError,
+    );
     expect(withModels({ ...shippedModels, CONTEXT_INDEX_DECAY: [2, 1] })).toThrowError(
       expectedError,
     );
