@@ -285,7 +285,7 @@ nothing happened: the reported case of a module that cannot be fitted to a secon
 It is the mount, not the row, that has to be checked, because a binding that reads the same on both
 mounts is a binding Angular never writes.
 
-**The row already in the mount is the checked row.** Opening a fitted mount already opened the right
+**The row already in the mount is the checked row until a Commander picks another.** Opening a fitted mount already opened the right
 family and already scrolled the right row to the middle of the scroller. What it did not do was say
 which row was chosen: every control in the group reported unchecked, and what is fitted was carried
 by that row's own ground alone. A radio group's checked option is the option currently in force, and
@@ -295,6 +295,35 @@ What is drawn and what is committed stay two different things. The mark is what 
 _pick_ is a decision a Commander made, and it is what canvas 1d's `FIT MODULE` commits. Folded
 together, that control would arm itself on a mount nobody had touched, and pressing it would spend a
 press re-fitting the module already there.
+
+## The fitted row and the row in hand are two different marks
+
+**Ruled 2026-08-31 (Commander request).** The amber row — the wash from the
+leading edge, the 3px marker that opens it and the amber ink — says _this is the
+row in hand_. At canvas 1c's width that is the same row as the module in the
+mount, because choosing a row there is the fit, and drawing the two alike was
+right for as long as only that width existed.
+
+Canvas 1d's screen is where they come apart. A pick there is not a fit until
+`FIT MODULE` commits it, so from the press until the commit there are two rows
+the manifest has something to say about: the one the mount holds and the one the
+Commander has taken. Marked alike, the screen carries three identical amber rows
+— the `FITTED HERE` copy at the top, the fitted row down inside its family, and
+the row just pressed — and none of them says which is which.
+
+So the amber row is the checked row and only the checked row. What the mount
+already holds is marked as _fitted_ instead: the leading marker without the wash
+and without the amber ink, which is the same distinction the anatomy legend
+draws between `SELECTED` and `FITTED`. It is never carried by that mark alone —
+the row states `fitted` in its own text for a reader, the `FITTED HERE` rule
+names the block at the top of the screen, and the checked row is `checked` on its
+own control.
+
+At rest the two are one row again: nothing has been picked, so the manifest's
+checked row is the module in the mount and it is amber, exactly as it is at
+canvas 1c's width. The `FITTED HERE` copy carries no control, so it is never the
+checked row and never amber — it is a statement of what is in the mount under a
+rule that says so.
 
 ## The cost cell carries two prices, and they do not add up
 
@@ -414,13 +443,16 @@ columns took, the revision cut them to three, and at 44rem exactly the desktop
 profile came out one CSS pixel above the threshold, which is a coin toss between
 two manifests rather than a threshold.
 
-The two are genuinely different questions. At 1200px the workspace is already in
-its three-column composition while the bench it leaves in the middle is nowhere
-near wide enough for a rail beside a pane, so the chooser is still drawing
-cards. Of the five layout profiles the suite runs, the desktop and
-mobile-landscape ones draw the rail and the other three draw the accordion —
-which is the rule working, not a device list: mobile landscape is 844px of
-width, and the chooser takes the whole of it as a layer.
+The two are genuinely different questions, and the workspace's own answer is
+made with this one in view: the third region is drawn only where the bench keeps
+this threshold after it (`responsive-composition.md`, "The third region is taken
+from what is left over"). So above 66.75rem of workspace — 1068 CSS pixels at the
+default text size — the chooser always draws the rail, beside the ledger while
+the workspace is two panes and inside canvas 1c's centre column once it is three.
+It is a rem step rather than a window width, so a Commander reading at 200% text
+meets it at twice the pixels. Of the five layout profiles the suite runs, tablet
+portrait and mobile portrait draw the accordion; mobile landscape draws the rail
+at 844px, because the chooser takes the whole of that width as a layer.
 
 **Both scrollers keep their rows' own height.** A bounded flex column gives its
 items' height up before it scrolls, and the rail is exactly that. Reading the
@@ -478,9 +510,8 @@ worth stating as a trade rather than dressing up as a second bar.
 page the standard way. An absolutely positioned box resolves against the nearest _positioned_
 ancestor, so in a scroller that is not one the box's containing block is whatever is positioned above
 the bench — the bench's own clipping never reaches it, and four hundred of them run the document down
-past the screen with nothing visible on it. Measured at 1112x834: a workspace whose three columns each
-end at the foot of the window, inside a document 1623 px tall that scrolled 789 px through blank
-ground. The ledger's rail already states this rule in its own stylesheet; the manifest's scroller and
+past the screen with nothing visible on it. Measured at 1112x834: a workspace whose columns each end
+at the foot of the window, inside a document 1623 px tall that scrolled 789 px through blank ground. The ledger's rail already states this rule in its own stylesheet; the manifest's scroller and
 the engineering editor's now state it too.
 
 Two dozen pixels of that document survive it, and are not this: at that viewport the middle column
@@ -568,9 +599,11 @@ the rows are not drawn, and the Commander narrows the term or opens the family t
 SC-008 are amended to this rather than the rule being bent around them: a family holding a match is
 never absent at either size, which is the part that mattered.
 
-**Scoped to the compact composition on 2026-08-25.** The wide manifest is a rail with one pane and
-cannot paint hundreds of cards at any match count, so the twenty-five-choice rule is the compact
-composition's and the measurement above is the measurement that matters for it.
+**Scoped to the accordion on 2026-08-25.** The rail manifest is one pane and cannot paint hundreds
+of cards at any match count, so the twenty-five-choice rule belongs to the accordion and the
+measurement above is the measurement that matters for it. It is the manifest and not the composition
+that decides, because the two do not line up: the chooser measures its own box, and a landscape phone
+gives the compact composition's layer the whole of 844px and draws the rail in it.
 
 Measured with that rule, `m mu mul mult multi` settles at **50.4, 56.8, 33.0, 33.6, 33.5 ms** —
 three consecutive runs at 59 ms worst or better, against a 100 ms budget. **SC-002 is met at the
@@ -676,9 +709,11 @@ line and made a third line the canvas does not have.
 - Full-screen layer inspired by canvas 1d with associated title/slot description and back/cancel.
 - Sticky or persistent labeled search and textual result count.
 - Choices become semantic cards preserving family order and every label, beneath **the accordion
-  canvas 1d still draws**. Since the 2026-08-25 revision the wide composition's family control is a
-  rail rather than a disclosure, so the two are no longer the same control: this is the composition
-  that keeps the caret, the open/closed state and the screenful rule.
+  canvas 1d still draws**, wherever the layer is narrow enough to select it — a portrait phone is,
+  and a landscape one gives the layer 844px and draws the rail instead. Since the 2026-08-25 revision
+  the family control above the aligned manifest is a rail rather than a disclosure, so the two are no
+  longer the same control: the accordion is what keeps the caret, the open/closed state and the
+  screenful rule.
 - The DPS, mass and power figures the wide manifest no longer draws survive here, on canvas 1d's own
   code line under the module name — which that canvas did not change.
 - Canvas 1d's `FITTED HERE` block stands above the family list, showing the module currently in the

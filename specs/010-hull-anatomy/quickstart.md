@@ -153,12 +153,11 @@ Run the primary journey and axe scan in Chromium and Firefox at:
 - 390×844 mobile portrait; and
 - 844×390 mobile landscape.
 
-Check 744×1133 as well. It is not a matrix profile, and it sits in the band where the plate pair's
-three conditions disagree — roughly 656 to 767 CSS pixels wide on a window that is not short: wide
-enough and tall enough, inside a workspace that is a single flow (`design/hull-anatomy.md`,
-"Intermediate tablet"). The automated suite asserts one width in that band for the same reason, and
-asserts the same disagreement at 200% text, where the band moves with the reader past the widest
-window the matrix runs.
+Check 744×1133 as well. It is not a matrix profile, and it is the window that once drew the pair into
+the middle of a single flow: not short, and two pixels wider than the centre column a 1440px desktop
+draws its plates inside (`design/hull-anatomy.md`, "Intermediate tablet"). It now fails the pair's
+room condition and its arrangement condition together, and the automated suite asserts both halves so
+that the screen keeps drawing one plate whichever of the two is changed.
 
 Repeat meaningful states with 200% text, actual 400% browser zoom, reduced motion, long expanded
 text and RTL direction.
@@ -166,14 +165,14 @@ text and RTL direction.
 Expected:
 
 - paired views appear only where the workspace is composing more than one region, **and** the block
-  has the inline size for two plates, **and** the window is not a short one; constrained layouts use
-  one labelled side selector;
-- 844×390 mobile landscape draws **one** plate and its `TOP`/`BOTTOM` selector, not the pair: it has
-  the inline size and not the height. 744×1133 portrait draws one for the third reason: it has both,
-  and the workspace around it is a single flow — canvas 1d's own arrangement, where a pair does not
-  belong at any size. 1440×900 at 200% text draws one for that same third reason, because the seam is
-  a container query and moves with the reader's text where a page breakpoint would not
-  (`design/hull-anatomy.md`, "Intermediate tablet");
+  has the inline size for two plates at the width one plate is drawn at, **and** the window is not a
+  short one; every other layout uses one labelled side selector;
+- every profile in the matrix draws **one** plate and its `TOP`/`BOTTOM` selector. The room the pair
+  asks for is 74.075rem of block, which the widest of them does not reach: at 1440×900 the block is
+  742px. 744×1133 portrait draws one for the same reason and for the arrangement around it as well,
+  and 1440×900 at 200% text draws one because the step is a container query in `rem` and moves with
+  the reader's text where a page breakpoint would not (`design/hull-anatomy.md`, "Intermediate
+  tablet");
 - no document horizontal overflow occurs; only bounded schematic regions may pan;
 - every geometry target is a named button at the canvas's own mark size, operable from the keyboard
   one mount at a time and raised above the marks it overlaps while it is being worked with — which

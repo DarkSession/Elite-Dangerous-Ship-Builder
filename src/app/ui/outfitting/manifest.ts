@@ -1,5 +1,5 @@
 import { DestroyRef, ElementRef, inject, signal, type Signal } from '@angular/core';
-import { BENCH_CONTENT_MINIMUM_REM } from './composition';
+import { RAIL_MINIMUM_REM } from './composition';
 
 /**
  * Which of canvas 1c's and 1d's two manifests the chooser is drawing.
@@ -10,29 +10,6 @@ import { BENCH_CONTENT_MINIMUM_REM } from './composition';
  * number of them open.
  */
 export type CandidateManifest = 'rail' | 'accordion';
-
-/** Canvas 1c's `264px` rail and the `14px` between it and the pane. */
-const FAMILY_RAIL_REM = 16.5;
-const FAMILY_GAP_REM = 0.875;
-
-/**
- * The width at which the rail and its pane replace the cards.
- *
- * Derived rather than measured off the drawing, and derived from a figure that
- * already exists: the pane is a candidate row, so it may not be narrowed below
- * the content minimum a candidate row already declares, and the rail is canvas
- * 1c's own 264px beside it with the canvas's 14px between them. The rail is
- * drawn as a share of the column between two bounds rather than at that one
- * number, so at this threshold it is the narrower of them and the pane has more
- * than the sum promises (`candidate-list.scss`).
- *
- * **Lowered from a flat 44rem on 2026-08-25.** That figure was the width seven
- * columns needed, and the revision cut the manifest to three — so the old
- * threshold left the desktop profile one CSS pixel above it, which is not a
- * threshold at all but a coin toss between two manifests. Nothing about the
- * cards changed; what changed is that the aligned manifest now fits in less.
- */
-const RAIL_MINIMUM_REM = BENCH_CONTENT_MINIMUM_REM + FAMILY_RAIL_REM + FAMILY_GAP_REM;
 
 /**
  * Watches the chooser's own inline size and reports which manifest fits.

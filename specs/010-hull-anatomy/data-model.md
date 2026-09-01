@@ -176,20 +176,20 @@ interface MarkPlacement {
 Where one mount's numbered square is drawn, in the plate frame's own units. `anchor` is the
 occurrence's own centre turned with the hull and centred in the frame — the position the package
 published, and the position the plate is still stating. `mark` is where the square goes: the anchor,
-unless it would touch another square, in which case every mount it is crowded with is spread onto a
-ring around the middle of those mounts, `displaced` is true for all of them, and the plate draws a
-line from each mark back to its own anchor. Each member keeps its own side of the crowd, so no two
-lines cross.
+unless it would cover another square, in which case the two push apart along the axis that takes the
+least movement to clear and each is drawn back towards its own mount, until the arrangement stops
+changing. `displaced` is true for a mark that ends off its own anchor, and the plate draws a line
+from it back to that anchor.
 
 Every coordinate is the package's own or arithmetic over it; nothing about where a mount _is_ comes
 from the rendered document (FR-003). What is measured is how wide the plate drew one of its own
 marks, because a mark's size has an absolute floor and its share of the plate is therefore not
-constant. Two distances come from that measurement and they are deliberately different: how close two
-marks may be before they count as crowded, and how far a crowd is then spread — the second larger,
-because a mark's own square hides half a mark's width of its line. The first is a ceiling rather than
-a promise: asking for more room than a plate has produces a _tighter_ arrangement, so the search
-retreats until it finds the one that separated its marks best (FR-012; design/hull-anatomy.md, "Marks
-that would touch").
+constant. Two fractions come from that measurement: the mark's own share of the frame, which keeps a
+square inside the plate and off a mount that is not its own, and the separation — that share plus a
+quarter for air — below which two squares read as one shape with a seam down it. Neither is a promise
+the plate can always keep: where a pile has more points in it than room, the marks end as far apart as
+the plate holds them and none is moved clear of the rest to buy room for the others (FR-012;
+design/hull-anatomy.md, "Marks that would touch").
 
 ## AnatomyProjection
 

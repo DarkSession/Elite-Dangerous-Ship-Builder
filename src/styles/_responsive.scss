@@ -47,7 +47,7 @@ $container-medium-min: 24rem;
 $container-wide-min: 40rem;
 
 // The width the editor's own container needs before the chooser it belongs to
-// draws its rail rather than its accordion. It is `manifest.ts`'s
+// draws its rail rather than its accordion. It is `composition.ts`'s
 // `RAIL_MINIMUM_REM`, asked of the editor because the two boxes are the same
 // width wherever the bench is one column: the chooser is above the editor, both
 // take the bench's full width, and the editor cannot see the chooser's own
@@ -58,7 +58,7 @@ $rail-manifest-min: 39.875rem;
 // The width the outfitting bench's own column needs before the engineering
 // editor is drawn beside the chooser rather than under it: the chooser's rail
 // minimum above, canvas 1c's 14px gap and its 396px editor track, and then the
-// bench's own 18px inset and hairline on both edges. Below it the editor keeps
+// bench's own inset (`$bench-inset`, below). Below it the editor keeps
 // both its cards and takes the chooser's full width
 // (`specs/002-module-outfitting/design/outfitting-workspace.md`, "The bench is
 // two columns where it has room for three").
@@ -206,6 +206,39 @@ $outfitting-regions-min: 47rem;
 // (`ui/short-viewport.ts`, `stackableMinimum`).
 @mixin outfitting-regions {
   @container outfitting (min-width: #{$outfitting-regions-min}) {
+    @content;
+  }
+}
+
+// The fitting panel's own inset: canvas 1c's 18px and a hairline on each edge.
+// The one figure that separates what the bench's *box* measures from what its
+// content has to fit, which is why `$bench-columns-min` above is built from it
+// too.
+$bench-inset: 2.375rem;
+
+// Where the workspace takes canvas 1c's third region, and the bench it may take
+// it out of.
+//
+// The right rail is a fixed 306px track, and the track it takes those pixels
+// from is the bench's. Measured against a candidate row alone the three regions
+// fit from 66.125rem, and across the whole band up to this step the bench they
+// leave never reaches the width the chooser's own rail-and-pane manifest needs —
+// so the third column would be bought by folding the middle one back to one row,
+// and the chooser would draw canvas 1d's stacked cards inside canvas 1c's
+// workspace.
+//
+// So the bench's share is `$rail-manifest-min` on its content plus its own
+// inset, and the step is that between the two fixed rails. Added up here rather
+// than written out, and asked from every side of it, because the three answers
+// have to be one: `observeComposition` decides whether the bench is inline or a
+// layer, this grid draws the tracks, and the rail's own block bounds itself
+// against the same step (`ui/outfitting/composition.ts`,
+// `BENCH_WIDE_MINIMUM_REM`).
+$outfitting-bench-wide-min: $rail-manifest-min + $bench-inset;
+$outfitting-wide-min: 24.5rem + $outfitting-bench-wide-min + 19.125rem;
+
+@mixin outfitting-wide {
+  @container outfitting (min-width: #{$outfitting-wide-min}) {
     @content;
   }
 }

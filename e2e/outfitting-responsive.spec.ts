@@ -6,6 +6,7 @@ import {
   chooserOffered,
   editorOffered,
   isCompactWorkspace,
+  manifestOf,
   statusRailIsColumn,
   openChooser,
   openChooserRows,
@@ -27,8 +28,17 @@ import { buildStockHull } from './shell';
  * "Reference and selection rule").
  */
 
-/** The declared content minimums, in rem, as the observer holds them. */
-const MINIMUMS = { ledger: 20, bench: 22.5, rail: 17.5 } as const;
+/**
+ * The declared content minimums, in rem, as the observer holds them.
+ *
+ * `bench` is what a candidate row needs, which is what two panes are selected
+ * on. `benchWide` is what the bench has to *keep* before a third region may be
+ * taken out of it — the chooser's own rail-and-pane manifest plus the fitting
+ * panel's inset — because the right rail is a fixed track cut out of the bench's
+ * width (responsive composition, "The third region is taken from what is left
+ * over").
+ */
+const MINIMUMS = { ledger: 24.5, bench: 22.5, benchWide: 42.25, rail: 19.125 } as const;
 
 /** The height below which nothing stacks, as the stylesheets define it. */
 const SHORT_VIEWPORT_REM = 30;
@@ -52,7 +62,7 @@ async function expectedComposition(page: Page): Promise<'wide' | 'two-pane' | 'c
   if (measured.height / measured.rem <= SHORT_VIEWPORT_REM) {
     return 'compact';
   }
-  if (rems >= MINIMUMS.ledger + MINIMUMS.bench + MINIMUMS.rail) {
+  if (rems >= MINIMUMS.ledger + MINIMUMS.benchWide + MINIMUMS.rail) {
     return 'wide';
   }
   return rems >= MINIMUMS.ledger + MINIMUMS.bench ? 'two-pane' : 'compact';
@@ -115,6 +125,96 @@ test.describe('the composition this width has room for', () => {
     // measuring the region rather than the window (FR-011).
     await expect(composition(page)).toHaveAttribute('data-composition', 'compact');
     await expectNoDocumentOverflow(page);
+  });
+
+  test('never loses the aligned manifest to the third region', async ({ page }) => {
+    // The reported case (Commander request 2026-08-31): the chooser drew canvas
+    // 1d's stacked cards inside canvas 1c's workspace, because the right rail
+    // is a fixed 306px track cut out of the bench's width and a wide
+    // composition selected on the bench's own floor folds the middle column to
+    // one candidate row to pay for it. The bench now keeps what the aligned
+    // manifest needs, and the third region waits for the width that leaves it.
+    //
+    // Stated at explicit widths across the step, because the step falls between
+    // two profiles: canvas 1c's three regions begin at 1374px, over the 1112px
+    // tablet in landscape and under the 1440px desktop, so neither profile
+    // stands either side of it.
+    await page.setViewportSize({ width: 1200, height: 950 });
+    await openStockBuild(page);
+    await openChooser(page);
+
+    // Below the step: two panes, and the whole of what is left over is the
+    // bench's, so the family rail is drawn beside the variant pane.
+    await expect(composition(page)).toHaveAttribute('data-composition', 'two-pane');
+    expect(await manifestOf(page)).toBe('rail');
+    await expectNoDocumentOverflow(page);
+
+    // Above it: canvas 1c's three tracks, and the bench still draws the rail.
+    // Crossing the step may not cost the manifest — that is the whole of what
+    // the step is for.
+    await page.setViewportSize({ width: 1500, height: 950 });
+    await expect(composition(page)).toHaveAttribute('data-composition', 'wide');
+    expect(await manifestOf(page)).toBe('rail');
+    expect(await statusRailIsColumn(page)).toBe(true);
+    await expect(page.locator('.outfitting__status-rail')).toBeVisible();
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('draws the chooser rail wherever the region has the width for it', async ({ page }) => {
+    // Asserted at whatever this profile is, in both directions, and against the
+    // **region's** own width rather than the chooser's: what the chooser
+    // measures is what the workspace left it, so comparing the chooser's box to
+    // the chooser's own threshold asks the observer whether it agrees with
+    // itself. The claim is about the composition above it.
+    //
+    // A tablet in landscape is the screen the report was made from: 1112px is
+    // over the 1068px step, so the whole of what is left beside the ledger is
+    // the bench's, and that holds the family rail beside the variant pane with
+    // the editor under them — steps ① and ② side by side, and ③ below
+    // (Commander request 2026-08-31).
+    await openStockBuild(page);
+    await openChooser(page);
+
+    const region = await composition(page).evaluate((node) => node.getBoundingClientRect().width);
+    const rem = await page.evaluate(
+      () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16,
+    );
+
+    // 24.5rem of ledger and the 42.25rem the bench keeps: below the step the
+    // region is a single flow and the layer is what the chooser measures, so
+    // only the rail half is claimed of the region's width.
+    if (region / rem >= 66.75) {
+      expect(await manifestOf(page)).toBe('rail');
+    }
+
+    // And the chooser's own answer agrees with the box it was actually given,
+    // which is what makes the step above a statement about the composition
+    // rather than about the observer.
+    const bench = await page
+      .locator('edsb-candidate-list')
+      .first()
+      .evaluate((node) => node.getBoundingClientRect().width);
+    expect(await manifestOf(page)).toBe(bench / rem >= 39.875 ? 'rail' : 'accordion');
+  });
+
+  test('takes the third region at the pixel the bench stops holding its manifest', async ({
+    page,
+  }) => {
+    // The step has a pixel of margin in it: at 1374px the bench box is 676px and
+    // the chooser measures 639px against the 638px it needs. A change to the
+    // fitting panel's 18px inset or its hairlines closes that margin and puts
+    // the stacked cards back inside canvas 1c's workspace, which is the reported
+    // defect. Both sides of the pixel are asserted so that closing it fails
+    // here.
+    await page.setViewportSize({ width: 1373, height: 950 });
+    await openStockBuild(page);
+    await openChooser(page);
+    await expect(composition(page)).toHaveAttribute('data-composition', 'two-pane');
+    expect(await manifestOf(page)).toBe('rail');
+
+    await page.setViewportSize({ width: 1374, height: 950 });
+    await expect(composition(page)).toHaveAttribute('data-composition', 'wide');
+    expect(await manifestOf(page)).toBe('rail');
   });
 
   test('runs every frozen column from under the command bar to the foot of the screen', async ({

@@ -31,16 +31,13 @@ draws them and the withdrawn surfaces are recorded in
 Three things the reference did not answer, decided by what the built screen does on real hulls and
 real hardware.
 
-- Q: What happens where the package draws mounts so close together that their marks touch? → A: All
-  of them move, together, onto a ring around the mounts they belong to, and each draws a line back to
-  the point the package published. The anchors never move and every step is arithmetic over the
-  package's own coordinates. Two measured distances decide it, and they are not the same one: how
-  close is too close, and how far to move once they are — the second is larger, because a mark's own
-  square hides half a mark's width of its line and a move nobody can see explains nothing. Both are
-  measured rather than assumed, since a mark's size has an absolute floor and its share of the plate
-  grows as the plate narrows or the text enlarges. **FR-012 is amended rather than clarified**: the
-  requirement as written put a mount's control at the published position, and this moves it. The
-  front-on-hover rule stays for the crowds no ring can be fitted around.
+- Q: What happens where the package draws mounts so close together that their marks touch? → A: The
+  marks that would cover each other step apart, and each draws a line back to the point the package
+  published. The anchors never move and every step is arithmetic over the package's own coordinates.
+  How close is too close is measured rather than assumed, since a mark's size has an absolute floor
+  and its share of the plate grows as the plate narrows or the text enlarges. **FR-012 is amended
+  rather than clarified**: the requirement as written put a mount's control at the published
+  position, and this moves it. The front-on-hover rule is unchanged.
 - Q: Should a selected utility mount take the accent fill a selected hardpoint takes? → A: No. The
   fill says _selected_ and the hue says _which kind_, so a selected utility is filled in the
   informational hue the legend's `UTILITY` entry draws. Selection remains carried by `aria-pressed`
@@ -54,6 +51,19 @@ real hardware.
   automated test guards it: the suites assert the fix's shape and
   [e2e/manual/webkit-filter.protocol.md](../../e2e/manual/webkit-filter.protocol.md) covers the rest.
   Recorded in [design/hull-anatomy.md](./design/hull-anatomy.md), "Schematic regions".
+
+### Session 2026-08-31 — how far a mark may step
+
+- Q: A mark stepped a quarter of the hull away from its mount, and its line ran between two other
+  numbers on the way; two mirrored mounts were drawn two different ways. What should a mark do
+  instead? → A: Move as little as the plate allows, and only where it must. Marks that would cover
+  each other push apart until each one is clear, and a mark nothing is touching does not move at all.
+  Nothing picks a destination, only the shorter of the two axes out of an overlap, so mounts the
+  hull mirrors get marks the plate mirrors and no line is long enough to run across a number that is
+  not its own. **FR-012 is amended again**:
+  the ring it required moved every mark of a crowd the same distance, which is what carried a mark
+  across the hull, and it required that distance to be large enough to show a line outside the mark —
+  a rule that spends a mount's real position to explain a move nobody needed explained.
 
 ## User Scenarios
 
@@ -110,21 +120,26 @@ real hardware.
   identified as temporarily unavailable.
 - **FR-011**: Artwork provenance and applicable media terms MUST be reachable from the application's
   help capability. Hull anatomy MUST NOT publish a provenance control of its own.
-- **FR-012** _(amended 2026-08-25; the original required a mount to be operable "at the position the
-  package published", which the displacement below contradicts — this is a change of requirement,
-  not a clarification of one)_: Each interactive hardpoint and utility mount MUST be a separately
-  operable named control anchored to the position the package published, and MUST NOT be enlarged by
-  moving that geometry. A mark MAY be drawn away from its anchor to keep it clear of another mark,
-  provided the anchor is unchanged, a leader joins the mark to its anchor, the displacement is
-  computed only from coordinates the package published and the application's own measurement of how
-  large it drew the mark, and the result is deterministic for a given hull and plate size. Where two
-  or more marks are too close, **every one of them MUST be moved**, by the same distance, around the
-  mounts they belong to: leaving one in place makes the arrangement depend on package drawing order
-  and gives that one mark no leader, which claims a precision none of them has. The distance marks
-  are moved MUST be enough for a leader to be visible outside the mark it leads to, which is a larger
-  distance than the one that decides whether they were too close at all; because a mark's drawn width
-  does not scale with the plate at every size, both MUST be measured rather than assumed
-  (design/hull-anatomy.md, "Marks that would touch").
+- **FR-012** _(amended; the original required a mount to be operable "at the position the package
+  published", which the displacement below contradicts — this is a change of requirement, not a
+  clarification of one)_: Each interactive hardpoint and utility mount MUST be a separately operable
+  named control anchored to the position the package published, and MUST NOT be enlarged by moving
+  that geometry. Where two marks would cover each other the plate MUST draw them apart, as far as the
+  plate allows and no further; where no arrangement separates them all they MUST be left near their
+  own mounts rather than one being moved clear of the rest, and the complete slot list remains the
+  equivalent. A mark MAY be drawn away from its anchor to keep it clear of another mark or of another
+  mount's published position, provided the anchor is unchanged, a leader joins the mark to its anchor
+  and is drawn wherever the mark does not cover it, the displacement is computed only from
+  coordinates the package published and the application's own measurement of how large it drew the
+  mark, and the result is deterministic for a given hull and plate size. A mark MUST NOT be drawn
+  further from its anchor than the separation between it and the marks it would otherwise cover, and
+  a mark that covers neither another mark nor another mount's published position, and that the plate
+  can draw whole where the package put it, MUST NOT be moved at all. A mark whose square would
+  otherwise hang off the plate MUST be drawn just inside it, which is a mount the package published
+  within half a mark of the hull's own nose or tail. Where the package draws two mounts as mirror images of each other, the plate MUST draw their
+  marks as mirror images too. Because a mark's drawn width does not scale with the plate at every
+  size, how close is too close MUST be measured rather than assumed (design/hull-anatomy.md, "Marks
+  that would touch").
   The marks are drawn at the canvas's own size, below the project's 44-pixel baseline: the size
   criterion is met through SC 2.5.8's Equivalent exception, by feature 002's complete ledger offering
   every one of the same mounts at the full baseline on the same screen, whether or not the artwork

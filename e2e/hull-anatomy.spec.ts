@@ -81,12 +81,12 @@ async function plateRoom(page: Page): Promise<{
 }> {
   return page.locator('edsb-hull-anatomy').evaluate((host: HTMLElement) => ({
     composition: host.closest('.outfitting')?.getAttribute('data-composition') ?? null,
-    // The root's size now, not 16: `@container anatomy (min-width: 41rem)`
+    // The root's size now, not 16: `@container anatomy (min-width: 74.075rem)`
     // resolves its `rem` against the root's computed font size, so the step the
     // block is actually held to moves with the reader's text.
     wideEnough:
       host.getBoundingClientRect().width >=
-      41 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+      74.075 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
   }));
 }
 
@@ -724,26 +724,96 @@ test.describe('the conditions that break layouts', () => {
   });
 
   test('draws one plate on a tall window the compact composition owns', async ({ page }) => {
-    // The case the arrangement condition exists for, stated at its own size
+    // The case the arrangement condition was ruled on, stated at its own size
     // rather than left to whichever profile happens to run this. A 744px
     // portrait window is not short and is wider than the 742px centre column the
-    // pair is drawn in on a 1440px desktop, so the room condition held and the
-    // block drew both sides of the hull in the middle of canvas 1d's single flow
-    // (Commander request 2026-08-31).
+    // pair is drawn in on a 1440px desktop, and the block drew both sides of the
+    // hull in the middle of canvas 1d's single flow (Commander request
+    // 2026-08-31).
+    //
+    // It is refused twice over: the pair asks for two whole plates rather than
+    // two of any size, and that step is above the seam the arrangement condition
+    // asks at (`design/hull-anatomy.md`, "And the workspace has to compose more
+    // than one region"). Both halves are asserted, because the reported screen
+    // has to keep drawing one plate whichever of the two is changed.
     await page.setViewportSize({ width: 744, height: 1133 });
     await openStockBuild(page);
     await expect(mounts(page).first()).toBeVisible();
 
-    // The block has the room, and the window has the height — this one is not
-    // short. The reason it draws one plate is the arrangement around it, and
-    // nothing else.
+    // The window has the height — this one is not short — and neither the room
+    // nor the arrangement admits a pair.
     const room = await plateRoom(page);
-    expect(room).toEqual({ wideEnough: true, composition: 'compact' });
+    expect(room).toEqual({ wideEnough: false, composition: 'compact' });
     expect(await page.evaluate(() => matchMedia('(min-height: 30.0625rem)').matches)).toBe(true);
 
     expect(await drawnPlates(page)).toBe(1);
     await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
     await expectNoDocumentOverflow(page);
+  });
+
+  test('draws one plate at the width a pair would be smaller than it', async ({ page }) => {
+    // The reported case (Commander request 2026-08-31). A 1440px desktop is
+    // canvas 1c's own window and the arrangement the pair belongs to, and the
+    // block it hands this region is 742px — two plates of 344px, against the
+    // 566px bound one plate is drawn at. A threshold there makes a wider window
+    // draw a smaller hull, so it is the plate's own bound doubled instead and
+    // this window keeps the larger single drawing.
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const room = await plateRoom(page);
+    expect(room.composition).not.toBe('compact');
+    expect(room.wideEnough).toBe(false);
+
+    expect(await drawnPlates(page)).toBe(1);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+
+    // And the one plate it draws is bounded rather than stretched across the
+    // column, which is the same bound a plate of the pair is held to.
+    const plate = page.locator('edsb-hull-anatomy .anatomy__plate:not(.anatomy__plate--hidden)');
+    const bound = await page.evaluate(
+      () => 35.35 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+    );
+    const drawnWidth = (await plate.boundingBox())?.width ?? 0;
+    expect(drawnWidth).toBeLessThanOrEqual(bound + 1);
+    expect(drawnWidth).toBeGreaterThan(bound / 2);
+  });
+
+  test('draws the pair at the width two whole plates fit across', async ({ page }) => {
+    // The other side of the same step, and the only place the suite reaches it.
+    // The pair needs 74.075rem of block, which in the wide composition is about
+    // 1884px of window — over the widest profile the matrix runs — so without
+    // this case nothing exercises canvas 1c's two tracks, the strip beside the
+    // rule, or the side selector standing down.
+    await page.setViewportSize({ width: 1920, height: 1040 });
+    await openStockBuild(page);
+    await expect(mounts(page).first()).toBeVisible();
+
+    const room = await plateRoom(page);
+    expect(room.composition).not.toBe('compact');
+    expect(room.wideEnough).toBe(true);
+
+    // Both sides drawn, so there is nothing for the selector to choose.
+    expect(await drawnPlates(page)).toBe(2);
+    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeHidden();
+
+    // Neither plate is smaller for the other's arrival: both are at the same
+    // bound one plate is drawn at, which is the whole of what the step is for.
+    const bound = await page.evaluate(
+      () => 35.35 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+    );
+    const widths = await page
+      .locator('edsb-hull-anatomy .anatomy__plate')
+      .evaluateAll((plates) => plates.map((plate) => plate.getBoundingClientRect().width));
+    expect(widths).toHaveLength(2);
+    for (const width of widths) {
+      expect(width).toBeLessThanOrEqual(bound + 1);
+      expect(width).toBeGreaterThan(bound - 1);
+    }
+
+    await expectNoDocumentOverflow(page);
+    await expectNoPlateScrolling(page);
   });
 
   test('mirrors the layout without mirroring the hull or renaming a mount', async ({ page }) => {

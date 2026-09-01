@@ -30,9 +30,11 @@ component; the window is never asked something a box could have answered (featur
 **Whether the block is one region of several or the whole flow** is such a thing, and the box that
 answers it is not this component's own. Its own inline size does not say: on a region that is one
 column of a multi-region page at some widths and the whole of a single flow at others, the two
-answers cross — feature 010's anatomy is given 742px as the centre column of a 1440px page and 744px
-by a single-flow window entire, so its own width cannot tell the arrangement it is in from the one it
-is not. The **enclosing region's** container answers it, at the seam that region already stops being
+answers cross. Feature 010's anatomy is the worked case — it is given 742px as the centre column of a
+1440px page and 744px by a single-flow window entire, so its own width cannot tell the arrangement it
+is in from the one it is not. Its plate pair asks for more room than either of those, so the crossing
+does not decide that block's arrangement on its own; the crossing is a property of the region rather
+than of what happens to be inside it, and the condition stands for whatever asks next. The **enclosing region's** container answers it, at the seam that region already stops being
 one flow at: one declaration asked from every side of it, so the region and the blocks inside it
 change arrangement together (`_responsive.scss`, `$outfitting-regions-min`).
 
@@ -48,8 +50,9 @@ and cannot follow a `font-size` set on the root element. `rem` in a container qu
 **computed** size, and follows both. So a page-level step is sound only where what it is reconciled
 against is another page-level step — feature 001's inspector rail, where the same query decides the
 arrangement and the behaviour (`ui/wide-composition.ts`) — and unsound wherever an arrangement has to
-fold with the root. Asked of the page, feature 010's plate pair was drawn into a single flow from
-1320 to 1500px at a doubled root size (`ui/short-viewport.ts`, `stackableMinimum`).
+fold with the root. Asked of the page, feature 010's plate pair was drawn into a single flow at a doubled root size,
+across a band of window widths its own container would have ruled out (`ui/short-viewport.ts`,
+`stackableMinimum`).
 
 This is the one place that difference is set out. Everywhere it decides something, the code points
 here rather than restating it.

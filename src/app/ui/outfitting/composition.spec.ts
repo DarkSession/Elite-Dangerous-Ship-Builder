@@ -80,14 +80,30 @@ describe('outfitting composition', () => {
     expect(fixture.componentInstance.composition()).toBe('two-pane');
   });
 
-  it('uses the wide composition once the rail fits as well', () => {
+  it('uses the wide composition once the rail fits without folding the bench', () => {
     withRootFontSize(16);
-    // 20 + 22.5 + 17.5 rem is 960px at a 16px root.
-    withWidth(1200);
+    // 24.5 + 42.25 + 19.125rem is 1374px at a 16px root: the two fixed rails,
+    // and between them what the bench has to keep rather than what one
+    // candidate row needs.
+    withWidth(1400);
 
     const fixture = renderComponent(CompositionHost);
 
     expect(fixture.componentInstance.composition()).toBe('wide');
+  });
+
+  it('keeps two panes where a third region would be paid for out of the bench', () => {
+    // The three tracks fit from 1058px measured against the bench's own floor,
+    // and across the band up to 1374px the bench they leave never reaches the
+    // 676px the chooser's aligned manifest needs. A third column bought by
+    // folding the middle one back to one candidate row is not a third column
+    // worth having (Commander request 2026-08-31).
+    withRootFontSize(16);
+    withWidth(1200);
+
+    const fixture = renderComponent(CompositionHost);
+
+    expect(fixture.componentInstance.composition()).toBe('two-pane');
   });
 
   it('falls back to compact when the reader has doubled their text size', () => {

@@ -84,12 +84,21 @@
 // `aspect-ratio` frame does. That is what keeps the region honest in a bounded
 // column: the anatomy asks for the height its ships need and no more, and
 // everything left over is the bench's.
+//
+// One track, bounded and centred in whatever the block has beyond it. A plate's
+// height is its width over the one ratio it may have, so a track that took every
+// pixel of a wide column drew a drawing taller than half the screen that was
+// already finished far narrower (`design/hull-anatomy.md`, "A plate has a width
+// it does not grow past"). The bound is the same whether a plate stands alone or
+// beside another, which is what keeps a second plate from shrinking the first.
 .anatomy__plates {
   display: grid;
   flex: none;
   align-items: start;
+  justify-content: center;
   gap: var(--edsb-space-inline);
   min-inline-size: 0;
+  grid-template-columns: minmax(0, var(--edsb-layout-anatomy-plate));
 }
 
 // Canvas 1d puts the selector over the plate, in its top corner. Here it is a
@@ -113,10 +122,16 @@
 }
 
 // Canvas 1c's `grid-template-columns: 1fr 1fr`, at the width two plates can
-// actually hold: a plate below 20rem draws a hull too small to aim at, and two
-// of them plus the gap between is what this threshold is. Stated in rem, so
-// doubled text steps down to one plate for the same reason a phone does
-// (responsive composition, "Declared content minimums").
+// actually hold — which is the width two *whole* plates hold, not two plates
+// squeezed. The threshold is the plate's own bound doubled, with the gap between
+// the two and the pair's own inset: `2 × 35.35rem + 0.625rem + 2 × 1.375rem`.
+//
+// A lower step buys the second plate by shrinking the first, which is the
+// opposite of what a wider window is for: at a 1440px desktop the block is 742px
+// and a pair is 344px a plate, against the 566px bound one plate is drawn at
+// (Commander request 2026-08-31). Stated in rem, so doubled text steps down to
+// one plate for the same reason a phone does (responsive composition, "Declared
+// content minimums").
 //
 // The window is asked twice as well, because the container's width cannot tell
 // canvas 1c's block from canvas 1d's on its own.
@@ -142,7 +157,7 @@
 //
 // Both plates are drawn here, so there is nothing for the selector to choose
 // and it goes with them.
-@container anatomy (min-width: 41rem) {
+@container anatomy (min-width: 74.075rem) {
   @include layout.outfitting-regions {
     @include layout.not-short-viewport {
       // Canvas 1c's own inset, which belongs to this arrangement rather than to a
@@ -151,16 +166,12 @@
         padding-inline: var(--edsb-space-region);
       }
 
-      // Canvas 1c's two tracks, each bounded and centred in whatever it is given
-      // beyond that. A plate's height follows its width, so tracks that took every
-      // pixel of a 2560px column drew a block taller than half the screen for two
-      // drawings that were already finished at 1560 (Commander request 2026-08-26).
-      // The bound is the canvas's own width plus two fifths, which is a second
-      // Commander request against the first (2026-08-27;
-      // `--edsb-measure-anatomy-plate`).
+      // Canvas 1c's second track, at the same bound the first one already has —
+      // the block is only given this arrangement where two whole plates fit
+      // across it, so the second one arrives beside a plate that does not
+      // change size to admit it.
       .anatomy__plates {
         grid-template-columns: repeat(2, minmax(0, var(--edsb-layout-anatomy-plate)));
-        justify-content: center;
       }
 
       // Canvas 1c's strip: beside the rule rather than under it, and sized by its

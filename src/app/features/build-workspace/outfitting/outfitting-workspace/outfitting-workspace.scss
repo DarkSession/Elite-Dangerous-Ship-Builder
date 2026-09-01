@@ -378,13 +378,12 @@
   // be about. So it is removed rather than narrowed.
 }
 
-// The canvas's full `392px 1fr 306px`. Its own threshold, because the three
-// tracks need 24.5 + 22.5 + 19.125rem before they will sit side by side. It is
-// those three added up rather than a rounded figure, so the region and this
-// grid change arrangement at the same width (`composition.ts`, `MINIMUMS`).
-// Below this the rail has no column and is the strip's `STATUS` segment
-// instead, which is what canvas 1d does with it.
-@container outfitting (min-width: 66.125rem) {
+// The canvas's full `392px 1fr 306px`, at the one step the workspace takes a
+// third region at: the two fixed rails, and between them what the bench has to
+// keep rather than what one candidate row needs (`_responsive.scss`,
+// `$outfitting-wide-min`). Below it the rail has no column and is the strip's
+// `STATUS` segment instead, which is what canvas 1d does with it.
+@include layout.outfitting-wide {
   .outfitting {
     grid-template-columns:
       var(--edsb-layout-ledger-rail)

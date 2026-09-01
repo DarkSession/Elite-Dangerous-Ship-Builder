@@ -28,8 +28,8 @@ Visual columns never reorder this reading sequence.
 Canvas 1c's `grid-template-columns: 1fr 1fr`: top and bottom render as two fluid labelled plates
 sharing one selected state and one legend, and the side selector is not drawn because both sides are
 already shown. Drawn where the workspace around this block composes more than one region, the block
-has the inline size for two plates, and the window is not a short one — all three, for the reason
-"Intermediate tablet" gives below. The complete ledger
+has the inline size for two plates at the width one plate is drawn at, and the window is not a short
+one — all three, for the reason "Intermediate tablet" gives below. The complete ledger
 remains beside the capability according to the feature 002 workspace definition.
 
 ### Intermediate tablet
@@ -41,42 +41,48 @@ on the root element moves the two container questions and not the height one, fo
 `responsive-composition.md` gives. Nothing required disappears in either orientation: the side selector reaches whichever plate is not drawn, and the complete ledger
 reaches every mount on both.
 
-**The pair needs room in both axes, ruled 2026-08-30 (Commander request).** Inline size alone chose
-between the two arrangements, and inline size alone cannot tell canvas 1c's block apart from canvas
-1d's. A landscape phone is 844px across and 390px tall: wide enough for the pair by the inline
-measure, and the one screen the pair should never be on. Two plates there are 395px each, on a
-window less than one plate tall. A 1440px desktop, where canvas 1c's arrangement belongs, draws its
-pair inside a 742px centre column — narrower than the phone's whole block. So no width separates
-them, and width is not the measure that can. What the phone lacks is height.
+**The room the pair asks for is two plates at the width one plate is drawn at.** A plate is bounded
+and centred, below, and that bound does not change when a second plate joins it — so the second plate
+arrives beside a first one that is already the size it will stay. Below the step the block draws one
+plate at the bound; above it, two. The step is 74.075rem of block, which is 1185 CSS pixels at the
+default text size and twice that at doubled text, and in the wide composition it is reached at about
+1883px of window. No shipped test profile is that wide, so the pair is an arrangement for a large
+desktop and nothing narrower (Commander request 2026-08-31).
 
-**And the workspace has room for more than one region, ruled 2026-08-31 (Commander request).** Those
-two conditions still admitted a case neither of them is about. A 744px window in portrait is not
-short, and the compact composition hands this block the whole screen — 744px of container, two
-pixels more than the 742px centre column a 1440px desktop draws its pair inside. So the block drew
-both sides of the hull in the middle of a single-flow screen.
+**The pair also needs the height, ruled 2026-08-30 (Commander request).** Inline size alone chose
+between the two arrangements once, and inline size alone cannot tell a wide screen from a shallow
+one. A window with 1185px of block and 480px of height would draw two plates taller than the window
+holding them, which is the one screen a pair should never be on. So the height is asked as well, as a
+media query, because it is the only part of this decision no container knows.
 
-The container's inline size answers how much room this block was given. It cannot answer what it was
-given that room _inside_, and on this region the two have opposite answers two pixels apart: 742px is
-one column of a three-region page, and 744px is a single-flow window entire.
+**And the workspace has to compose more than one region, ruled 2026-08-31 (Commander request).** The
+container's inline size answers how much room this block was given. It cannot answer what it was
+given that room _inside_, and the two once had opposite answers two pixels apart: 742px was one
+column of a three-region page and 744px a single-flow window entire, so a portrait tablet drew both
+sides of the hull in the middle of a single flow.
 
-What is asked instead is the workspace's own container, at the seam this workspace already stops
-being one flow at (`_responsive.scss`, `$outfitting-regions-min`, `layout.outfitting-regions`). One
+What is asked is the workspace's own container, at the seam this workspace already stops being one
+flow at (`_responsive.scss`, `$outfitting-regions-min`, `layout.outfitting-regions`). One
 declaration, asked from every side of it: the workspace lays its regions out at that step, and the
 regions inside it ask whether they are one of several or the whole flow. They cannot disagree,
-because there is nothing to keep in step.
+because there is nothing to keep in step. Not the page — the seam has to move with a root
+`font-size` and a page media query's `rem` does not, which `responsive-composition.md` sets out once
+for every region that has this choice to make.
 
-Not the page, and the difference is not cosmetic: asked of the page, both plates were drawn into a
-single flow from 1320 to 1500px with the text doubled. The seam has to move with a root `font-size`
-and a page media query's `rem` does not, which `responsive-composition.md` sets out once for every
-region that has this choice to make.
+This condition cannot fire on its own. The room step above sits over the 47rem seam it asks at, so a
+block with room for two whole plates is by arithmetic a block inside a workspace of more than one
+region, and the 744px window is refused for its room before this is consulted. It is kept because it
+is not the same statement: the room step is the plate's bound doubled and moves whenever that bound
+moves, while this one says what arrangement the pair belongs to, and a bound halved one day would
+reopen exactly the case it was ruled on.
 
 The pair is therefore drawn where all three hold: the **workspace composes more than one region**,
-the **container has the inline size for two plates**, and the **window is not a short one**. Each
-asks about a different thing — what arrangement this block is a part of, how much room it was given
-inside it, and whether the screen has the height to read a pair at all — and dropping any one of
-them puts two plates somewhere one belongs. Below any of them the block is canvas 1d's: one labelled
-side and the `TOP`/`BOTTOM` selector. No single flow draws both sides of a hull, in either
-orientation, at any height or any text size.
+the **container has the inline size for two plates at the width one plate is drawn at**, and the
+**window is not a short one**. Each asks about a different thing — what arrangement this block is a
+part of, how much room it was given inside it, and whether the screen has the height to read a pair
+at all. Below any of them the block is canvas 1d's: one labelled side and the `TOP`/`BOTTOM`
+selector. No single flow draws both sides of a hull, in either orientation, at any height or any text
+size.
 
 ### Narrow, mobile and zoomed
 
@@ -137,33 +143,30 @@ plate holds its whole document at its own ratio at every width.
   draws the same whole hull smaller, and there is no pan, no zoom, no drag matrix, no coordinate read
   off the DOM and no stored pan model — which is how both canvases draw the plates, and it is why
   FR-012 says nothing pans rather than making panning accessible.
-- **The plate has a width it does not grow past. Ruled 2026-08-26 (Commander request).** A plate's
-  height is its width over that ratio, and the ratio is the one thing here that cannot move — the
-  drawing's own `viewBox` is built to it, so a plate of any other shape would drift its marks off the
-  hull. Tracks that took every pixel they were given therefore grew the whole block with the window:
-  282px tall on canvas 1c's own 1560, 355px at 1920, 485px at 2560, which is more than half of a
-  wide screen given to two drawings that were already finished at the first of those. The two tracks
-  are now bounded at `--edsb-layout-anatomy-plate` and centred in whatever the column has beyond it.
-  The measure was canvas 1c's own: its 862px centre column, less the block's inset and the gap
-  between the plates, halved. Nothing moves at the width the canvas was drawn at, and past it the
-  anatomy stops taking room the ledger and the bench can use.
+- **A plate has a width it does not grow past, and it is the same width alone or paired (Commander
+  requests).** A plate's height is its width over that ratio, and the ratio is the one thing here that
+  cannot move — the drawing's own `viewBox` is built to it, so a plate of any other shape would drift
+  its marks off the hull. A track that took every pixel it was given therefore grew the whole block
+  with the window: the block stands 282px tall on canvas 1c's own 1560, 355px at 1920 and 485px at
+  2560 — a plate of 164, 237 and 367 with the header and legend around it — which is more than half
+  of a wide screen given to drawings that were already finished at the first of those. Every plate is
+  bounded at `--edsb-layout-anatomy-plate` and centred in whatever the block has beyond it.
 
-  **Raised by two fifths, 2026-08-27 (Commander request).** The bound did its job too hard: two
-  hulls held to the canvas's own width on a 2560 screen are a schematic a Commander has to lean into,
-  and the block that was too large at every width was then too small at the ones that have room. The
-  measure is that same number plus 40% — 566px a plate against 404 — which still stops the runaway
-  while giving the drawing the room the screen actually has. The ratio, the marks and the threshold
-  at which the second plate appears are all untouched: this moves one number.
+  The measure is canvas 1c's own — its 862px centre column, less the block's inset and the gap
+  between the plates, halved — plus two fifths, which is 566px a plate against the canvas's 404. The
+  canvas's own figure alone held two hulls on a 2560 screen to a schematic a Commander has to lean
+  into.
 
-  The two paragraphs measure different things, and both are right. A plate's width is the centre
-  column less the two rails (`24.5rem` and `19.125rem`), less the block's own `22px` inset either
-  side and the `10px` between the plates, halved: 404px at 1560, 584px at 1920, 904px at 2560 — the
-  first of which is this token's own value, which is how the derivation is checked. The heights
-  above are the **block's**, plate plus the header and legend around it: 164 + 118 = 282 at 1560,
-  237 + 118 = 355 at 1920, 367 + 118 = 485 at 2560. The two bounds therefore bite at different
-  widths: the old 404px from 1560 up, the new 565.6px from about 1884 up. At 1440 — the width the
-  end-to-end desktop project runs at — the column hands each plate 344px and neither bound is
-  reached, so nothing moves there at all.
+  **The second plate is drawn where a second plate fits at that width, and not before.** A threshold
+  of 41rem of block leaves 18.8rem a plate once the pair's inset and the gap come off — under the
+  20rem below which a hull is too small to aim at, which is what it was meant to be. And from there
+  up to about 1185px of block the pair is two drawings _smaller than the one drawing it replaces_: at
+  the 1440px desktop the block is 742px and a pair is 344px a plate, where one plate is drawn at the
+  566px bound. Crossing such a threshold makes the hull shrink, which is the opposite of what a wider
+  window is for (Commander request 2026-08-31). So the threshold is the bound doubled, with the gap
+  between the plates and the pair's own inset: `2 × 35.35rem + 0.625rem + 2 × 1.375rem`, or
+  74.075rem. Below it the block draws one plate at the bound; above it, two, and neither is smaller
+  than the one it joined.
 
 - **The package SVG is never fetched.** It is ninety kilobytes of sub-pixel path data, and what a
   plate needs out of it is the drawing's box, the rectangle it draws in and the middle of every
@@ -444,9 +447,9 @@ mark to the front — which the plate does, and which "Divergence from FR-012" r
 pointer half of the problem and none of the reading half: whichever mark is behind is still a sliver
 with half a digit on it.
 
-**What is drawn instead.** A mark that would touch a mark already placed steps aside, and a hairline
-runs from it back to the point the package published. Three rules keep that from becoming invented
-geometry:
+**What is drawn instead.** A mark that would cover a mark beside it steps aside far enough to clear
+it, and a hairline runs from it back to the point the package published. Three rules keep that from
+becoming invented geometry:
 
 - **The anchor never moves.** What is displaced is the _mark_ — the canvas's own square, this
   application's drawing over the package's — and the far end of the leader is the middle of the
@@ -465,7 +468,9 @@ geometry:
   a thing that exists. Below about 255 pixels of plate, or at 200% text, it believed marks were
   further apart than they were drawn and separated nothing at all — at 320-pixel reflow and doubled
   text, which are both requirements. So the plate now measures its frame and one mark through
-  `ElementSizeAdapter` and passes the real fraction in. Those are CSS facts about this application's
+  `ElementSizeAdapter` and passes two fractions built from them: the mark's own share of the frame,
+  which is what keeps a square inside the plate and off a mount that is not its own, and that share
+  plus a quarter, which is the separation. Those are CSS facts about this application's
   own boxes, not facts about the hull: no mount position is read through them, and the anchors are
   still the package's own coordinates. The cost is that one hull is no longer one arrangement — a
   plate that crosses a size threshold re-settles its marks — and that is the trade, because marks
@@ -473,133 +478,85 @@ geometry:
   that move when the window does. The floating-point tolerance in the module is separate and smaller:
   a candidate placed at exactly one separation must not then read as being under it.
 
-**Every mount in a crowd moves, and each moves the same distance.** Mounts whose marks would touch
-are gathered into one group — transitively, because a chain of three each too close to the next is
-one problem and not two — and the whole group is spread onto a ring around the middle of those
-mounts. Each member keeps its own side of the crowd, so a mount on the left stays on the left and no
-two leaders cross.
+**Marks push apart; they are not sent anywhere.** The whole placement is one rule. Every mark starts
+on its own mount. Any two closer than one **separation** — the distance below which two squares of
+the drawn mark size overlap, measured on the wider of the two axes between them, which is a mark's
+own width plus a quarter for air — push each other apart along the axis that takes the least movement
+to clear, each giving way by half; every mark is then drawn back towards its own mount by a fraction
+of whatever it has been pushed. That runs for a fixed number of rounds, by which point the
+arrangement has stopped changing, and what is left is the nearest arrangement to the hull's own that
+no longer covers a number with a number.
 
-The alternative, and the first thing built, was to pin the first mount and push the others off it.
-That is worse in two ways. It makes the answer depend on the order the package happened to draw the
-mounts in, which is not a fact about the ship. And it leaves the pinned mount as the only member of
-the crowd with no leader — which reads as though that one mount were exactly where its mark is and
-its neighbours had been guessed at, when all of them are equally approximate. A ring says what is
-true: these mounts are too close together to draw apart, so here they all are, each tied back to its
-own point.
+Where the two axes are equally short the rule takes the first of them, and where a pair sits on one
+point it takes the first direction on that axis. Both are arbitrary and both are arithmetic on the
+inputs, which is what the case needs: the package draws no two mounts on one point, and a plate
+handed them anyway has to answer something.
 
-**A ring is turned to where its own mounts point if it possibly can be, and to where there is room
-if it cannot.** The turn that lines the ring up with the mounts — each member on its own side of the
-crowd — is where a crowd sits when nothing is around it, and it is the arrangement a reader expects:
-the mark for a mount on the left goes left, the mark for one above goes up. It is asked for first,
-at every radius on the ladder, and taken as soon as one will hold it.
+Four properties come out of that rule rather than being asked for on top of it, and they are why it
+is the rule.
 
-That the aligned turn has to be asked for _across the whole ladder_ is the correction of
-2026-08-26. Searching turn-by-turn at one radius and growing only when none fits looks equivalent
-and is not: a crowd in the middle of a hull is blocked in the aligned direction by the very mounts
-it sits between, while a turn a quarter-circle away is free, so the search settles at the first
-radius on a turn that points nowhere in particular — and because room outranks closeness to the
-aligned turn, the radius that _would_ clear the obstruction is never asked for.
+**A mark moves as little as the plate allows.** There is nowhere for a mark to be sent, so there is
+no distance to choose and no destination to prefer — only the shorter way out of an overlap. The
+furthest any mark travels on any shipped plate, at any width from 280 to 900 pixels, is one and a
+fifth of its own width, and one and a half with the text doubled.
 
-The Corsair's top plate is the case. Its `LargeHardpoint1` sits on the centreline just ahead of two
-mirrored pairs, and the aligned ring sends that mark forward along the hull's own axis, which is
-where the eye looks for it. That ring is refused at the first fitting radius, because at that radius
-the mark lands between the two hardpoints ahead of it; one more rung of growth clears them. Before
-the correction the crowd settled a quarter-circle off — node 1's mark went down, node 4's went up
-and across the hull, node 5's went right — and _which_ quarter-circle was decided by a room
-difference of under two thousandths of a frame unit, an artefact of the package's own rounding of
-two mirrored mounts. A re-export could have flipped it. Now node 1 goes forward, node 4 up and node
-5 down, and nothing about that rests on a rounding error.
+A mark touching nothing does not move at all. Two things can make a mark touch something: another
+mark, and another mount's published point, which the paragraph below explains.
 
-Where no radius will hold the aligned turn, sixteen turns of the ring are tried and the one that
-leaves the most room wins — room measured for the leaders as well as the marks, because a mark can
-land in clear air and still have been reached by a line drawn across two of its neighbours. The
-slots are still handed out in the members' own angular order whatever the turn, which keeps a crowd's
-marks in the same cyclic order as its mounts — **but that is not enough on its own to stop two of its
-leaders crossing**, and believing it was is what let the Corsair's nodes 4 and 5 make an X at any
-plate wider than about four hundred pixels. Cyclic order holds the crossing off only while the ring
-sits where the mounts point; turn a pair far enough and the two swap sides, each mark ending up
-across the crowd from its own mount. So a candidate ring is refused outright if any two of its own
-leaders cross, and a ring that would cross a line already on the plate is ranked below one that
-would not — before room is even compared, because a line through a line is a defect a reader sees
-first.
+**Mounts the hull mirrors get marks the plate mirrors.** Pushes are symmetric and are all applied at
+once, so a pair of mounts the package draws as mirror images of each other stays a mirror image
+through every round of the settling. Nothing is placed before anything else and nothing is placed
+_against_ what was placed already. That is the whole of what the Mandalay needs: it draws two mounts
+above its centreline and their twins below, and a rule that answered one pair against mounts that had
+not moved yet put one pair in the middle of the wing and left the other on its mounts (Commander
+request 2026-08-31).
 
-That question is asked twice. A crowd placed first cannot see the marks of crowds not yet placed, so
-it can choose a side that a later one then fills, or run a leader across a mount that is about to
-move; a second pass re-asks with the whole plate visible. It is what the Corsair needed, and it is
-also what raised the shipped package's shortest visible leader from under a pixel to ten.
+**No leader runs across a number that is not its own.** A line can only be as long as its mark
+travelled, and its mark travels only as far as it takes to stop covering its neighbour — so a leader
+long enough to reach a third mark cannot arise. The Corsair's top plate is the case that showed it:
+its foremost large hardpoint sits on the centreline between two mirrored pairs, and a rule that sent
+that mark forward along the hull's own axis left it a quarter of a ship from its mount with its
+leader threaded between node 2 and node 3 (Commander request 2026-08-31). Here the same mount does
+not move at all — it is pushed equally by the mounts above and below it, the two of them step apart
+instead, and all three squares sit on the mounts they belong to.
 
-**The ladder is climbed in small rungs, because the ladder is what decides whether the aligned turn
-is reachable at all.** This is the correction of 2026-08-26, and it is the second half of the
-Corsair's story above. Every rung is a multiple of a floor computed from the separation the plate
-asked for, and that separation moves with the plate's own width — so a coarse ladder tries a
-_different set of radii_ at every width. The rung that clears the two hardpoints blocking node 1's
-aligned turn exists at one plate width and is stepped straight over at the next, and where it is
-stepped over the room-scored search takes the arrangement instead and turns the ring wherever the
-plate has space. The two answers are a quarter of the ship apart. Measured on the Corsair's top
-plate before the correction, node 1's mark crossed the hull between 180 and 185 CSS pixels of plate,
-crossed back at 190, and again at 245, 250 and 255 — the drawing reshuffling itself while a
-Commander resized their window _(Commander request 2026-08-26)_. Twenty rungs of about a twelfth
-reach the same distance eight rungs of a quarter did, and the aligned answer is reachable at every
-width instead of at some of them. Eight more rings of a dozen marks is nothing to compute.
+**One hull at one plate size is one arrangement.** The settling is arithmetic over the anchors, the
+frame and the two measured fractions, in a fixed number of rounds and a fixed order, so the same
+inputs give the same marks every time. It also holds still as a window is dragged: over the same
+eleven widths, no mark in the shipped package changes which side of its mount it sits on as the plate
+is resized, and five do with the text doubled. That steadiness is what a Commander asked for on
+2026-08-26, and it comes out of the rule rather than being tuned in.
 
-**Between arrangements that separate their marks equally well, the one that moved them less wins.**
-The search tries the requested separation and then retreats from it, and used to keep whichever
-attempt separated its marks best by the barest margin. That made the choice a knife edge for the
-same reason: a hundredth of a frame unit decided it, and the attempts differ in the _turn_ their
-rings take as well as in their radius. So a spread now has to be two per cent roomier to win on
-room, and spreads inside that band are settled by total travel. Both halves move smoothly with the
-plate's width, which is what stops a small change in the request choosing a wholly different
-picture — and of two equally legible arrangements, the truer one is the one that stayed nearer the
-mounts it is a drawing of.
+**What the settling guarantees, and what it does not.** Measured over every shipped plate at eleven
+widths from 280 to 900 pixels: no mark leaves its frame, no two leaders cross, and no leader longer
+than a mark passes under another mark. Two pairs of marks in the whole set still overlap, both of
+them the same pair on the Beluga Liner's underside at the two narrowest widths measured: they stand
+0.85 and 0.998 of a mark apart where a mark is what they need, so one square takes a fifteenth of the
+other at 280 pixels and grazes it at 340.
 
-A ring must also clear every published mount position that is _not_ in the crowd, **and the ring
-grows until it can**. Without the first half a mark can come to rest exactly where a different mount
-is, so a reader sees a numbered square sitting on mount B carrying mount A's number while A's leader
-runs off elsewhere — the precise failure the leader exists to prevent, committed by the thing meant
-to prevent it. It happened on two plates before the rule existed. Without the second half the rule
-does its job and costs the crowd its direction: the Corsair's node 1 was turned aside by exactly
-this clearance, when growing the ring one rung would have carried it past the obstruction on the
-turn it wanted. Inside a crowd the question does not arise the same way: the mounts are
-piled together by definition and the marks are arranged around them, which is what each member's own
-leader is there to tell apart.
+With the text doubled, on plates from 228 pixels up — where eight twenty-eight-pixel marks share a
+two-hundred-and-twenty-eight-pixel plate and no arrangement can separate them all — fifty-four pairs
+cover part of each other and the worst of them stands two fifths of a mark apart. The rule degrades by leaving
+marks close together rather than by moving one somewhere it does not belong, which is the way round
+it should degrade: the complete ledger is the equivalent that does not degrade at all.
 
-**Two numbers, and they are deliberately not the same one.** _Whether_ two marks need help is a
-question about whether they are touching — a quarter of a mark's width of air, below which two
-squares read as one shape with a seam down it. _How far_ to spread them once they do is a question
-about whether the leader explaining it can be read, and the answer is larger: a mark's own square
-covers half a mark's width of its leader, so a mark that shifts less than that draws nothing at all,
-and the ring is therefore pushed out past the furthest mount in the crowd and then a further mark and
-a quarter beyond it. Answering both with one number was the first attempt, and it did both jobs
-badly — it spread pairs that had eleven pixels of air between them by four pixels each, inventing a
-problem on one plate while explaining nothing on another. Held apart, the shipped package's shortest
-leader is ten and a half pixels of visible line, and no plate moves a mark that was not crowded.
+**A short leader is not a defect.** A mark's own square hides half a mark's width of its line, so a
+mark that steps aside by less than that draws no visible line — and it does not need one, because the
+square it drew still stands on the mount it belongs to. The line becomes visible exactly as the mark
+stops covering its own mount, which is exactly when a reader needs telling where it came from. A rule
+that instead pushed every crowded mark far enough clear for its leader to show would buy the line by
+making the move the line has to explain.
 
-Where a plate has no room for the roomier answer, the smaller one is taken rather than nothing: a
-crowd that would otherwise stay stacked is spread by whatever separates its marks, even if its
-leaders are then too short to read. That order matters and was got wrong once — refusing to move a
-crowd whose leaders could not be legible kept the overlap this exists to remove, for the sake of a
-line nobody could have seen anyway. It shows up at doubled text on a phone, where the Anaconda's
-underside is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate. Only when
-even that will not fit does a crowd keep its mounts' own positions, and the front-on-hover rule
-answers the overlap.
-
-Measured across the shipped plates at plate widths from two hundred to seven hundred and
-twenty pixels: no mark ends outside its frame, and no pair of marks is left covering more than half
-of the other, at any of those widths or at doubled text on a phone. **Re-measured after the
-aligned-first correction of 2026-08-26**, over every shipped plate at six widths from two hundred
-and eighty to a thousand pixels: the same number of marks is displaced as before it, no leader
-crosses another, no mark leaves its frame, and the tightest pair on any plate is where it was. The
-correction changes which way a crowd faces, not how much it has to move. From three hundred pixels of
-plate upward — every width the two-column and single-plate arrangements actually give — **no two
-leaders cross**, and the shortest visible leader runs from ten to sixteen pixels. Below about two
-hundred and fifty pixels the separation-only fallback takes over: a handful of leaders cross there
-and some are shorter than the marks they leave, which is the honest floor of a plate that small.
-Thirteen leaders graze the edge of another mark at the two-column width, all on plates carrying nine
-or ten mounts where every direction out of a crowd is already somebody's.
+**Nothing is placed on top of a mount that is showing.** A square standing where a different mount
+is, carrying that mount's neighbour's number, is the misreading the leader exists to prevent. A mark
+that has not moved _is_ its mount's published position, so keeping every mark a separation from every
+other mark is most of the rule already; a mark is also pushed off any other mount's published point
+it would otherwise cover, at half the strength of the pushes between marks, so the separation between
+squares is what has the last word in a pile that cannot satisfy both.
 
 **What the leader is not.** It carries no _mount state_: kind, fitted, engineering and side are all
-words in the button's own name, selection is `aria-pressed` and the ledger row, and the line is one amber
-whatever the mount is. It is `aria-hidden` for that reason, not because it means
+words in the button's own name, selection is `aria-pressed` and the ledger row, and the line is one
+amber whatever the mount is. It is `aria-hidden` for that reason, not because it means
 nothing — it plainly means something, which is _this mark belongs to that point_. What makes it
 decoration is that the point was never information a Commander had to have. It is also not a
 convergence line, a range or any other assertion about the ship — it is one segment between a mark
@@ -609,21 +566,20 @@ and the anchor that mark belongs to.
 
 **Full separation is not achievable at every size.** At 200% text on a phone the Anaconda's underside
 is eight twenty-eight-pixel marks on a two-hundred-and-twenty-eight-pixel plate, and no arrangement
-that keeps a mark anywhere near its own mount separates them all. What the search guarantees there is
-weaker and still worth having: no mark loses more than half of itself, so every number can be read
-and every square's own edge found. The complete ledger is the equivalent that does not degrade.
+that keeps a mark anywhere near its own mount separates them all. What the settling guarantees there
+is weaker and still worth having: the marks end as far apart as the plate can hold them, and no mark
+is thrown clear of the pile to buy room for the rest.
 
-**A leader can still graze another mark.** Thirteen of them do, on the four densest plates in the
-package — nine or ten mounts each, where every direction out of a crowd is already somebody else's.
-The turn search picks the roomiest arrangement available rather than a clear one, because on those
-plates there is no clear one. What it has removed is the case that reads as a mistake: a line running
-the length of the hull across two other numbers. What is left clips a corner.
+**A short leader can still touch the corner of a neighbouring square.** In a pile every mark ends
+about one separation from the next, so the stub of line a mark leaves outside its own square is
+drawn in ground its neighbour is close to. What that costs is a line meeting a corner, and what it
+buys is the case a reader reads as a mistake: no line long enough to be followed runs across a
+number that is not its own.
 
 **A leader's far end is a bare point.** The line is trimmed to its own mark's edge — the part inside
-an opaque square is not on screen, and half a mark's width of every leader is inside the mark it
-leads to, so trimming is what makes the drawn segment all visible. The other end carries nothing: the
-mount's published position is the package's own annotation, under the interface's filter. In a dense
-crowd the members' anchors sit close together in the middle of the ring, so which line ends on which
+an opaque square is not on screen — so what is drawn is all visible. The other end carries nothing:
+the mount's published position is the package's own annotation, under the interface's filter. In a
+dense pile the anchors sit close together under the marks around them, so which line ends on which
 mount is read from the line rather than from anything drawn at its end.
 
 **A mark's position is a sighted-only cue**, which is not new and not load-bearing: a mount's
