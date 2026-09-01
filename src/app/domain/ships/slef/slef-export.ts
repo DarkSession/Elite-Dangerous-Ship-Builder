@@ -7,7 +7,7 @@ import {
   type SlefExportArtifact,
   type SlefExportHeader,
 } from './slef-export.models';
-import type { ApplicationMetadata } from '../../platform/build/application-metadata';
+import type { ApplicationMetadata } from '../../../platform/build/application-metadata';
 
 /**
  * The serialization options, frozen.

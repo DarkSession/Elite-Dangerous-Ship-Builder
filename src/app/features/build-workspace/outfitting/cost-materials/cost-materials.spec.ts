@@ -6,8 +6,11 @@ import { ActiveBuildStore } from '../../../../application/active-build/active-bu
 import {
   cargoRackBuild,
   mercenaryCargoRack,
-} from '../../../../domain/cost-materials/cost-materials.fixtures';
-import { defaultBuild, FIXTURE_SLOTS } from '../../../../domain/outfitting/outfitting.fixtures';
+} from '../../../../domain/ships/cost-materials/cost-materials.fixtures';
+import {
+  defaultBuild,
+  FIXTURE_SLOTS,
+} from '../../../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { CostMaterials } from './cost-materials';

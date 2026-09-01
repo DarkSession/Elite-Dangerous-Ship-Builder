@@ -32,7 +32,7 @@ add an application exception.
 ## Commands
 
 ```bash
-pnpm exec ng test --include='src/app/domain/cost-materials/**/*.spec.ts'
+pnpm exec ng test --include='src/app/domain/ships/cost-materials/**/*.spec.ts'
 pnpm exec playwright test e2e/cost-and-materials.spec.ts
 pnpm run check
 ```
@@ -153,7 +153,7 @@ screen.
 
 A **SLEF export legitimately carries `HullValue`, `ModulesValue` and `Rebuy`** — they are fields of
 the format, and feature 004 writes the package's current catalogue retail into them
-(`src/app/domain/slef/slef-export-pricing.spec.ts`). Do not assert their absence. What must be absent
+(`src/app/domain/ships/slef/slef-export-pricing.spec.ts`). Do not assert their absence. What must be absent
 is what this feature owns: no material, no consolidated list and no Merc Coin figure.
 
 ## Scenario 7: responsive and accessibility matrix

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import type { PartialEngineeringFailure } from '../../domain/build/build-ingress-result';
+import type { PartialEngineeringFailure } from '../../domain/ships/build/build-ingress-result';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { OutfittingNotice, type NoticeLine } from './outfitting-notice';

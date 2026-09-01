@@ -385,7 +385,9 @@
   // until that first reading. It stays in the token layer because the
   // decision — *a region clears the bar* — is declared once, here; what the
   // frame supplies is the measurement, which no query can ask for.
-  --edsb-layout-bar-height: var(--edsb-measure-bar-height);
+  --edsb-layout-bar-height: calc(
+    var(--edsb-measure-bar-height) + var(--edsb-measure-tool-bar-height)
+  );
 
   // The bar's own floor, which is not the same job and must not be the same
   // token. What a region clears is republished from the bar that was drawn; if
@@ -396,6 +398,11 @@
   // the same number because the bar is drawn at one height on every screen
   // (`011/design/canvas-extraction.md`, "One bar height, on every screen").
   --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
+
+  // The tool bar's own floor, beside it. The two are declared apart because
+  // they are two bars: the command bar is sized to the tallest identity it
+  // carries, and the tool bar to the canvas's own 50px.
+  --edsb-layout-tool-bar-floor: var(--edsb-measure-tool-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller
   // clips the seam instead of showing the row behind through it.

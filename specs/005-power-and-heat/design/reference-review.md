@@ -205,7 +205,7 @@ Every bar is now drawn: the priority band bars, the module draw bars, the heat s
 their hatch beyond the threshold, the pip blocks, and the rail bar. Each is decoration on top of a
 figure printed beside it, so a reader who cannot see a fill loses nothing.
 
-The division is done in `src/app/domain/power-heat` and nowhere else, which the ownership policy
+The division is done in `src/app/domain/ships/power-heat` and nowhere else, which the ownership policy
 enforces.
 
 ### The plates leave the region

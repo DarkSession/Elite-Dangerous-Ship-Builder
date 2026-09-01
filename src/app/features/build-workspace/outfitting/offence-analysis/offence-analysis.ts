@@ -1,7 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, viewChild } from '@angular/core';
 import type { FittedWeaponMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
-import type { Convergence } from '../../../../domain/offence/convergence';
+import type { Convergence } from '../../../../domain/ships/offence/convergence';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { engineeringSummary } from '../../../../application/outfitting/engineering-summary';
 import { hardpointCoverage } from '../../../../application/outfitting/hardpoint-coverage.adapter';
@@ -13,7 +13,7 @@ import {
   type ConventionalDamageType,
   type Endurance,
   type Offence,
-} from '../../../../domain/offence/offence';
+} from '../../../../domain/ships/offence/offence';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../../../i18n/game-text.presenter';
 import type { MessageKey } from '../../../../i18n/locale-registry';
@@ -135,7 +135,7 @@ const PIP_DIGITS = 1;
  * the stacked one for the same reason a phone does.
  *
  * Every figure here is a package answer selected by
- * `src/app/domain/offence/offence.ts`, which is also where the canvas's shares,
+ * `src/app/domain/ships/offence/offence.ts`, which is also where the canvas's shares,
  * range bands and gunsight geometry are worked out — one place, from the
  * package's own `damageFalloff` and `projectGunsight`. This component formats
  * and names those answers and does no arithmetic of its own.

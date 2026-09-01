@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import type { BuildSnapshotV1 } from '../../domain/build/build-snapshot';
-import type { LocalRecordV1, RecordValidation } from '../../domain/build/stored-build';
+import type { BuildSnapshotV1 } from '../../domain/ships/build/build-snapshot';
+import type { LocalRecordV1, RecordValidation } from '../../domain/ships/build/stored-build';
 import { LocksUnavailableError, WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';

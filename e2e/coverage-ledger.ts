@@ -124,9 +124,22 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/semantics',
     axe: true,
     assertions: [
-      'exactly one banner, one main and at most one primary navigation',
+      'exactly one banner, one main, and no two navigation landmarks carrying the same name',
       'exactly one visible h1, owned by the route rather than synthesized by the shell',
       'heading levels descend without skipping',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'shell/tool-navigation',
+    requirements: ['011/FR-028', '011/SC-009'],
+    journey: 'product/semantics',
+    axe: true,
+    assertions: [
+      'every product route names the tool it belongs to, at all five layout profiles',
+      'the tool region is a navigation landmark named apart from the primary navigation',
+      'the current tool is a word carrying aria-current rather than a link to the open screen',
+      'the tools named are exactly the ones the registry carries, and each other one opens its own address',
     ],
     manualRecord: 'screen-reader',
   },

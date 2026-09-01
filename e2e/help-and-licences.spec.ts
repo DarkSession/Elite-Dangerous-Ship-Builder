@@ -334,7 +334,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
 /**
  * The two partial-roll payloads feature 002 already tests the package against.
  *
- * Transcribed from `src/app/domain/outfitting/outfitting.fixtures.ts`, where
+ * Transcribed from `src/app/domain/ships/outfitting/outfitting.fixtures.ts`, where
  * both are documented with the package behaviour they provoke: dirty drives at
  * grade 5 are a recipe the package identifies, so their partial roll is
  * completed and reported; that same recipe named against a frame shift drive is

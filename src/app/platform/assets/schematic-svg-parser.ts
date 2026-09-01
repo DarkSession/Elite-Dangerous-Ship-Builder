@@ -1,4 +1,4 @@
-import type { SchematicExtent, SchematicSide } from '../../domain/anatomy/anatomy-model';
+import type { SchematicExtent, SchematicSide } from '../../domain/ships/anatomy/anatomy-model';
 
 /**
  * The two `data-feature` words that must name a slot. Everything else may not.
@@ -8,7 +8,7 @@ import type { SchematicExtent, SchematicSide } from '../../domain/anatomy/anatom
  * a value import would need a module specifier Node can resolve and a type
  * import costs nothing. The two words are the package's, and the model's
  * mapping is checked against the same files by
- * `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts`.
+ * `src/app/domain/ships/anatomy/almanac-anatomy-contract.spec.ts`.
  */
 const MOUNT_FEATURES: ReadonlySet<string> = new Set(['hardpoint', 'utility_mount']);
 
@@ -65,7 +65,7 @@ export interface SchematicSource {
  * browser fetches goes through it: `scripts/extract-schematic-mounts.mts` runs
  * it over the installed package and writes out the few hundred bytes of mount
  * geometry a plate actually needs, and the whole-catalogue audit in
- * `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts` runs it over every
+ * `src/app/domain/ships/anatomy/almanac-anatomy-contract.spec.ts` runs it over every
  * hull the package ships. It stays here, beside the model it validates against,
  * because that audit is the reason it exists.
  *

@@ -8,7 +8,7 @@ test.describe('application shell', () => {
   test('boots and renders the app root', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveTitle(/Elite Dangerous Ship Builder/i);
+    await expect(page).toHaveTitle(/NavBeacon/i);
     await expect(page.locator('app-root')).toBeAttached();
   });
 

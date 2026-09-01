@@ -1,8 +1,8 @@
-# Elite Dangerous Ship Builder
+# NavBeacon
 
-A browser-based ship loadout planner for Elite Dangerous: pick a hull, fit and
-engineer modules, read the resulting build metrics, and export the build as
-SLEF. It runs at **[sb.edct.dev](https://sb.edct.dev/)**.
+Browser-based tools for Elite Dangerous. Ship Builder is the first of them: pick
+a hull, fit and engineer modules, read the resulting build metrics, and export
+the build as SLEF. It runs at **[navbeacon.app](https://navbeacon.app/)**.
 
 The application is **client-side only**. There is no backend and no account:
 builds live in your browser (`localStorage`) or in a URL, and nothing is ever
@@ -131,7 +131,7 @@ E2E_CHROMIUM_PATH=/path/to/chromium E2E_FIREFOX_PATH=/path/to/firefox pnpm run e
 ## Deployment
 
 The application is published to GitHub Pages at
-**[sb.edct.dev](https://sb.edct.dev/)** by
+**[navbeacon.app](https://navbeacon.app/)** by
 the final job in [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). A
 deployment is only the static output of `pnpm run build`: there is no host-side
 build step and nothing runs on the server.
@@ -178,7 +178,7 @@ Two details make the deployment behave on Pages:
 
 The repository has to be set up once for this to work: **Settings → Pages →
 Build and deployment → Source** set to **GitHub Actions**, and a DNS `CNAME`
-record for `sb.edct.dev` pointing at `darksession.github.io`. Enable **Enforce
+record for `navbeacon.app` pointing at `darksession.github.io`. Enable **Enforce
 HTTPS** once GitHub has issued the certificate.
 
 ### Pull request previews
@@ -191,7 +191,7 @@ is replaced on every push and removed when the pull request closes.
 Previews are published to
 **[Elite-Dangerous-Ship-Builder-Preview](https://github.com/DarkSession/Elite-Dangerous-Ship-Builder-Preview)**,
 not to this repository, because this repository's Pages site _is_ the production
-site: `public/CNAME` points it at `sb.edct.dev`, and a repository serves exactly
+site: `public/CNAME` points it at `navbeacon.app`, and a repository serves exactly
 one Pages site. A preview published from here would land on the production
 domain. The preview repository has no custom domain, so its previews reach the
 account's default Pages host instead:
@@ -335,11 +335,10 @@ reach the application through
 and are used under Frontier's
 [media-usage rules](https://forums.frontier.co.uk/threads/elite-dangerous-media-usage-rules.510879/):
 
-> Elite Dangerous Ship Builder was created using assets and imagery from Elite
-> Dangerous, with the permission of Frontier Developments plc, for
-> non-commercial purposes. It is not endorsed by nor reflects the views or
-> opinions of Frontier Developments and no employee of Frontier Developments was
-> involved in the making of it.
+> NavBeacon was created using assets and imagery from Elite Dangerous, with the
+> permission of Frontier Developments plc, for non-commercial purposes. It is not
+> endorsed by nor reflects the views or opinions of Frontier Developments and no
+> employee of Frontier Developments was involved in the making of it.
 
 Those terms are carried here, not granted here. A distribution or use that retains
 the covered game data or imagery must comply with them, including the non-commercial

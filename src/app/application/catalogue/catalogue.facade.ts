@@ -2,17 +2,17 @@ import { Injectable, computed, inject } from '@angular/core';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
-import { filterCatalogue } from '../../domain/catalogue/catalogue-query';
+import { filterCatalogue } from '../../domain/ships/catalogue/catalogue-query';
 import {
   sortCatalogue,
   type CatalogueSort,
   type CatalogueSortField,
-} from '../../domain/catalogue/catalogue-sort';
+} from '../../domain/ships/catalogue/catalogue-sort';
 import {
   hullCatalogue,
   type HullCatalogueEntry,
   type HullSize,
-} from '../../domain/catalogue/hull-catalogue';
+} from '../../domain/ships/catalogue/hull-catalogue';
 import { CatalogueSessionStore } from './catalogue-session.store';
 
 /** One hull as the catalogue screen renders it: text, already localized. */

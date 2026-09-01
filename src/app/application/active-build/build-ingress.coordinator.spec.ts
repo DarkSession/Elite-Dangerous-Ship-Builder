@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
-import { baselineFingerprint } from '../../domain/build/build-fingerprint';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
+import { baselineFingerprint } from '../../domain/ships/build/build-fingerprint';
 import { ActiveBuildStore } from './active-build.store';
 import type { BuildCandidate } from './active-build.models';
 import { BuildIngressCoordinator, type CandidateOutcome } from './build-ingress.coordinator';

@@ -14,7 +14,7 @@ import { PowerConditionsStore } from '../../../../application/power-heat/power-c
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
-import type { StandardLoad } from '../../../../domain/mobility-jump/mobility-jump';
+import type { StandardLoad } from '../../../../domain/ships/mobility-jump/mobility-jump';
 import { DrivesMass } from './drives-mass';
 
 /**

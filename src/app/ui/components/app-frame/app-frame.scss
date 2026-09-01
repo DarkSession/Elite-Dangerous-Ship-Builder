@@ -16,17 +16,95 @@
   min-block-size: 100vh;
 }
 
+// The banner is the two bars canvas 3c stacks: the tools over the screen's own
+// command bar. It is the sticky region and the measured one, so what a region
+// below clears is the pair rather than the lower of the two.
 .frame__banner {
-  @include layout.command-bar;
-
+  display: flex;
+  flex-direction: column;
   position: sticky;
   inset-block-start: 0;
   z-index: 2;
+  background-color: var(--edsb-surface-bar);
+}
+
+// Canvas 3c's tool bar: the menu ground, closed by a hairline in the region
+// wash rather than by the command rule the bar under it carries.
+.frame__tools {
+  display: flex;
+  // Stretched rather than centred, so a tab is the height of the bar and the
+  // canvas's underline sits on the bar's own edge (canvas 3c).
+  align-items: stretch;
+  padding-inline: var(--edsb-space-region);
+  background-color: var(--edsb-surface-menu);
+  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  // A floor, like the command bar's own, and for the same reason: a doubled
+  // text size or a long language makes a tab taller than the drawing, and a bar
+  // that could not grow would cut its own controls off (011/FR-011).
+  min-block-size: var(--edsb-layout-tool-bar-floor);
+}
+
+.frame__tools-list {
+  @include layout.wrapping-row(var(--edsb-space-3xs));
+
+  align-items: stretch;
+  list-style: none;
+}
+
+// One tab. The canvas draws `0 15px` on condensed uppercase tracked mono-ish
+// caps; the press baseline is this feature's 44px rather than the canvas's own
+// bar height (011/FR-012).
+.frame__tool {
+  @include layout.target-baseline;
+
+  display: flex;
+  align-items: center;
+  padding-inline: var(--edsb-space-inline-loose);
+  // `--ink-48` is what the canvas sets and it measures 4.08:1 on this ground,
+  // under the AA floor for text this size. The audited floor the token layer
+  // offers is taken instead (`design/canvas-extraction.md`, "Tool bar").
+  color: var(--edsb-text-faint);
+  font-family: var(--edsb-font-heading);
+  font-size: var(--edsb-text-size-label);
+  font-weight: var(--edsb-text-weight-heading);
+  line-height: var(--edsb-text-leading-flat);
+  letter-spacing: var(--edsb-text-tracking-heading);
+  text-transform: uppercase;
+  text-decoration: none;
+  // Declared on every tab and coloured on the current one, so a tab's text sits
+  // on the same line whichever tool a Commander is in.
+  border-block-end: var(--edsb-border-width-thick) solid transparent;
+
+  &:focus-visible {
+    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
+    outline-offset: calc(var(--edsb-focus-ring-width) * -1);
+  }
+}
+
+// The tool a Commander is in: the command bar's own ground carried up, the
+// accent ink, and the canvas's underline. It is a word rather than a link, so
+// none of this is a hover or a press state.
+.frame__tool--current {
+  background-color: var(--edsb-surface-bar);
+  color: var(--edsb-text-accent-strong);
+  border-block-end-color: var(--edsb-border-accent);
+}
+
+@media (hover: hover) {
+  a.frame__tool:hover {
+    color: var(--edsb-text-accent);
+  }
+}
+
+// The command bar itself, inside the region above.
+.frame__bar {
+  @include layout.command-bar;
+
   flex-wrap: wrap;
   padding-block: var(--edsb-space-control-block);
   // The bar's own floor: the one height it is drawn at on every screen. What
-  // the regions below clear is `--edsb-layout-bar-height`, which is this bar as
-  // it was actually drawn — a separate token on purpose, because a bar sized
+  // the regions below clear is `--edsb-layout-bar-height`, which is the banner
+  // as it was actually drawn — a separate token on purpose, because a bar sized
   // from its own measurement could never shrink again (token layer,
   // `--edsb-layout-bar-floor`).
   min-block-size: var(--edsb-layout-bar-floor);
@@ -282,7 +360,7 @@
 }
 
 @include layout.compact {
-  .frame__banner {
+  .frame__bar {
     // The bar is folded at every width this applies to, so it draws the
     // identity and the one named trigger and nothing else. They sit at the top
     // of the bar rather than centred on it, so that a wrapped identity — a long
@@ -290,6 +368,16 @@
     // trigger stays where a thumb last found it.
     align-items: flex-start;
     padding-inline: var(--edsb-space-inline-loose);
+  }
+
+  // The tool bar takes the same compact inset as the bar under it, so the two
+  // line up on one gutter (canvas 1b/1d's `0 14px`).
+  .frame__tools {
+    padding-inline: var(--edsb-space-inline-loose);
+  }
+
+  .frame__tool {
+    padding-inline: var(--edsb-space-inline);
   }
 
   .frame__title {

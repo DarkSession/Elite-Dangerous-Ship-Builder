@@ -12,31 +12,31 @@ import { sitemapDocument } from './generate-sitemap.mjs';
  * published address quietly carrying the site's root as its identity.
  */
 
-const ORIGIN = 'https://sb.edct.dev';
+const ORIGIN = 'https://navbeacon.app';
 
 const INDEX = [
   '<!doctype html>',
   '<html lang="en"><head>',
-  '<title>Elite Dangerous Ship Builder</title>',
+  '<title>NavBeacon</title>',
   `<link rel="canonical" href="${ORIGIN}/" />`,
   '<meta name="description" content="What this is." />',
   '<meta name="twitter:description" content="What this is." />',
-  '<meta name="twitter:title" content="Elite Dangerous Ship Builder" />',
+  '<meta name="twitter:title" content="NavBeacon" />',
   `<meta name="twitter:image" content="${ORIGIN}/assets/link-card.png" />`,
   '<meta property="og:description" content="What this is." />',
-  '<meta property="og:title" content="Elite Dangerous Ship Builder" />',
+  '<meta property="og:title" content="NavBeacon" />',
   `<meta property="og:url" content="${ORIGIN}/" />`,
   `<meta property="og:image" content="${ORIGIN}/assets/link-card.png" />`,
-  '<meta property="og:image:alt" content="Elite Dangerous Ship Builder" />',
+  '<meta property="og:image:alt" content="NavBeacon" />',
   '</head><body></body></html>',
 ].join('\n');
 
 const HEAD = {
-  title: 'Anaconda · Elite Dangerous Ship Builder',
+  title: 'Anaconda · NavBeacon',
   description: 'Anaconda: every figure and the slot layout.',
   canonical: `${ORIGIN}/ships/Anaconda`,
   image: `${ORIGIN}/assets/ships/Anaconda/illustration.png`,
-  imageAlt: 'Anaconda · Elite Dangerous Ship Builder',
+  imageAlt: 'Anaconda · NavBeacon',
 };
 
 describe('reading the map', () => {
@@ -99,7 +99,7 @@ describe('the document an address answers with', () => {
   it('carries its own canonical, title, description and card', () => {
     const document = documentFor(INDEX, HEAD);
 
-    assert.match(document, /<title>Anaconda · Elite Dangerous Ship Builder<\/title>/);
+    assert.match(document, /<title>Anaconda · NavBeacon<\/title>/);
     assert.match(document, new RegExp(`rel="canonical" href="${ORIGIN}/ships/Anaconda"`));
     assert.match(document, new RegExp(`property="og:url" content="${ORIGIN}/ships/Anaconda"`));
     assert.match(document, /name="description" content="Anaconda: every figure/);

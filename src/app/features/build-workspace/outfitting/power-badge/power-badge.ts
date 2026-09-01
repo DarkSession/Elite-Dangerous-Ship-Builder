@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
-import { projectPowerHeat, type PowerAndHeat } from '../../../../domain/power-heat/power-heat';
+import {
+  projectPowerHeat,
+  type PowerAndHeat,
+} from '../../../../domain/ships/power-heat/power-heat';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 

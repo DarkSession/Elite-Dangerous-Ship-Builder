@@ -2,22 +2,88 @@
 
 ## Purpose
 
-Provide the stable product identity, landmarks, route context/actions, language entry and feedback
-outlets around every capability without owning build/domain state. The shell adapts the title/action
-bars repeated across canvases 1a–1d.
+Provide the stable product identity, the tool a screen belongs to, landmarks, route
+context/actions, language entry and feedback outlets around every capability without owning
+build/domain state. The shell adapts the title/action bars repeated across canvases 1a–1d and the
+tool bar of `.design/Tool Navigation.dc.html`, canvas 3c.
 
 ## Semantic composition
 
-1. banner/header containing localized product identity — the insignia and the release mark;
-2. route context group containing visible localized screen/build identity supplied by the route;
-3. primary navigation when the route set provides it;
-4. contextual and global utility actions, including a visible Language entry;
-5. one route-owned `main`, one visible `h1` and ordered capability headings;
-6. visible route/global status and error content in ordinary reading order;
-7. hidden assertive and polite announcement outlets.
+1. a tool navigation region, named in localized text, naming every tool the application serves and
+   marking the open route's own tool as current;
+2. banner/header containing localized product identity — the insignia and the release mark;
+3. route context group containing visible localized screen/build identity supplied by the route;
+4. primary navigation when the route set provides it;
+5. contextual and global utility actions, including a visible Language entry;
+6. one route-owned `main`, one visible `h1` and ordered capability headings;
+7. visible route/global status and error content in ordinary reading order;
+8. hidden assertive and polite announcement outlets.
 
 The shell never synthesizes a duplicate route heading. Route context is immutable presentation input;
 the shell emits action/navigation/language intent and does not reach into a build store.
+
+## The tool bar
+
+The application is built to carry more than one tool, so the shell says which tool a Commander is
+in. Canvas 3c of `.design/Tool Navigation.dc.html` draws that as a bar over the command bar, with a
+tab for each tool; the command bar keeps everything it already carries and the amber rule that
+closes it. It is the first region in the document, because it is the first region on the screen.
+
+**It is a navigation landmark with a name of its own.** The bar already carries a `navigation`
+landmark labelled `shell.navigation.label`, and two landmarks of one role with one name are two
+landmarks a reader cannot tell apart. The tool region takes `shell.tools.label`, which ships in
+every catalogue in the same change as the code that reads it (FR-019).
+
+**One registry.** The canvas's own note is the rule — "tabs and grid run off one tool registry, so a
+new tool appears in both at once" — so the tools are a data array and everything that names them
+reads it. A tool entry carries a localised name for the bar, the address the tool opens at, and the
+routes it owns. The routes are what decides which tool is current: a Commander outfitting a hull at
+`/build` is still in the ship tool, and a tab that stopped being current there would state something
+untrue.
+
+**A tool with no address is not offered.** The registry holds the tools the application serves, not
+the tools it plans to serve. `Tool Navigation.dc.html` names eight and `docs/navbeacon-migration.md`
+names two; what is built is the ship tool, so that is what the bar carries. A tab that opens nothing
+is a control for a thing that does not exist.
+
+**The current tool is named, not offered.** The tab for the tool a Commander is already in is text
+rather than a link, for the reason the insignia is a bare mark on the shipyard and the primary
+navigation drops the entry for the open screen: a link to the screen someone is reading is not a way
+anywhere. It would also be the second control in the same chrome opening `/ships`, which is the
+duplicate the leading-edge ruling below removes. The current tool carries `aria-current`, so the
+state is exposed in the accessibility tree as well as in the amber fill and underline the canvas
+draws (FR-010).
+
+**The tab carries the canvas's short name.** Canvas 3c gives each tool both a full name and a tab
+label, and draws the tab label: `SHIP`, not `SHIP BUILDER`. The registry carries the short one,
+because the command bar under it is already titled `Ship Builder` on the shipyard and one bar
+restating the other says nothing new. The tab's visible text is its accessible name, as every
+control in this system is (FR-007).
+
+**One composition at every width.** The canvas draws the 1180px case and nothing else: its script
+guards a `#nv-rail` and a `#nv-drawer` that no artboard defines, and the Equipment Builder's own
+390px artboard has no tool switcher at all. So there is no compact drawing to follow, and the rule
+is that there is nothing to switch on: the same tabs at every width, at compact type and spacing,
+each holding the 44px press baseline. This holds while the registry is small. A rail, a drawer or a
+grid is a composition to be drawn before it is built (owner's ruling, and the open item in
+`docs/navbeacon-migration.md`).
+
+That also makes the tool bar the one region the command bar's fold does not reach. "The fold is
+total" below is a rule about the command bar's own controls; the tools are on a bar of their own and
+stay on it at every width.
+
+**What the canvas draws and the product does not.** The `ALL TOOLS` grid, the `⌘K` palette and
+drag-to-pin are more than one tool needs and are not built. The avatar plate at the bar's trailing
+edge is not built either, and not deferred: the application has no accounts (constitution I), so
+there is nobody for it to name.
+
+**The insignia stays on the command bar.** Canvas 3c puts the mark on the leading edge of the tool
+bar, where every other canvas puts it on the leading edge of the bar it draws. Here the mark is
+already the way home — a real link to the shipyard, named by the screen it reaches — and the tool
+bar's leading edge is where the ship tab lands. Moving the mark up would put two controls that open
+`/ships` beside each other, which the leading-edge ruling below already refuses. So the mark keeps
+the command bar, the tool bar carries tabs alone, and the divergence is recorded here rather than
+resolved silently.
 
 ## The bar's leading edge
 
@@ -193,6 +259,7 @@ the saved build or an export.
 | Locale candidate loading         | Current complete snapshot remains; nothing partial is shown                                                                        |
 | Locale load/validation fallback  | Complete English snapshot plus one bounded fallback notice/retry intent                                                            |
 | Route loading/empty/ready        | Route owns its state inside `main`; shell landmarks/actions remain stable                                                          |
+| Open route's tool                | The tool that owns the open route is named as current and is not a link; every other registered tool is one                        |
 | Route blocking error             | Visible named error and one assertive event; unaffected shell navigation remains usable                                            |
 | Newer version published          | Modal overlay stating the restart with nothing to press and no event beside it; the page restarts under it after one second        |
 | Restarted on the newer version   | Modal notice naming the version now running, dismissed by its own control, and not drawn again in that session                     |

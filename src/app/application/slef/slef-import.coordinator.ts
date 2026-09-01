@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
-import { importSlef } from '../../domain/slef/slef-import';
-import type { SlefImportCandidate } from '../../domain/slef/slef-import.models';
+import { importSlef } from '../../domain/ships/slef/slef-import';
+import type { SlefImportCandidate } from '../../domain/ships/slef/slef-import.models';
 import type { CandidateOutcome } from '../active-build/build-ingress.coordinator';
 import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import { SlefStore } from './slef.store';

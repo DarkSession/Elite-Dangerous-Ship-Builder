@@ -234,7 +234,7 @@ import {
   FIXTURE_SLOTS,
   defaultBuild,
   packageText,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { AcquisitionBadge } from '../outfitting/acquisition-badge';
 import { AttributeComparison } from '../outfitting/attribute-comparison';
 import { BlueprintChoiceList } from '../outfitting/blueprint-choice-list';
@@ -1220,6 +1220,7 @@ registerPreview({
       'default',
       {
         routeContext: 'Anaconda explorer',
+        tools: [{ id: 'ship', label: 'Ship', href: '/ships', current: true }],
         navigation: [
           { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
           { id: 'builds', label: 'Saved builds', href: '/builds' },
@@ -1240,6 +1241,8 @@ registerPreview({
         'exposes banner, navigation and main landmarks',
         'every action keeps a text name — the Help mark carries its own as text inside the button',
         'the current navigation entry exposes aria-current',
+        'the tool region is a second navigation landmark with a name of its own',
+        'the tool a Commander is in is a word carrying aria-current, never a link to the open screen',
         'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity', 'nested-relationships'],
@@ -1250,7 +1253,7 @@ registerPreview({
     state(
       'empty',
       {},
-      ['renders the landmarks with no route context, navigation or actions'],
+      ['renders the landmarks with no route context, tools, navigation or actions'],
       ['normal'],
       true,
     ),

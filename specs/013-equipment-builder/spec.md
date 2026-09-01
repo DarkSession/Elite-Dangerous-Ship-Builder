@@ -292,7 +292,9 @@ reopens the same loadout and the readable summary names every fitted item.
   accepts a locale; `Suit.name`, `PersonalWeapon.name` and `PersonalModification.name` are
   each documented as the English display name; and there is no `i18n/suits`,
   `i18n/weapons` or `i18n/equipment-modifications` leaf where the ship side has
-  `i18n/ships`, `i18n/modules` and `i18n/slots`. FR-025 and constitution VI cannot be met
+  `i18n/modules`, `i18n/slots` and `i18n/materials`. Hull and manufacturer names have
+  no leaf either, but that is because the game does not translate them; suit, weapon
+  and modification names it does. FR-025 and constitution VI cannot be met
   as the library stands, and constitution II forbids closing the gap here. **This must be
   raised against Elite-Dangerous-Almanac and released before implementation begins.**
 

@@ -1,10 +1,11 @@
 # Canvas Extraction
 
 **Source**: `.design/Ship Builder.dc.html`, canvases 1a (wide shipyard), 1b (compact
-shipyard), 1c (wide outfitting chrome) and 1d (compact outfitting chrome).
+shipyard), 1c (wide outfitting chrome) and 1d (compact outfitting chrome); and
+`.design/Tool Navigation.dc.html`, canvas 3c (the tool bar over a tool's own command bar).
 
-This file is the measured record of the reference canvas. Every value below was read
-out of the canvas itself, not inferred from it. Features 001 and 011 build from this
+This file is the measured record of the reference canvases. Every value below was read
+out of a canvas itself, not inferred from it. Features 001 and 011 build from this
 table; [reference-review.md](./reference-review.md) records where the product must
 diverge and why, and [token-evidence.md](./token-evidence.md) records the contrast
 audit of the result.
@@ -167,6 +168,32 @@ minimum beat the declared size, the wedge and the underbar were cut into a
 44 × 44 box, and the insignia was drawn half as large again on every screen
 that offers the way home as on the shipyard that does not (Commander request
 2026-08-28).
+
+### Tool bar
+
+Canvas 3c draws it above the command bar: `height: 50px`, `background: var(--panel-menu)`,
+`border-bottom: 1px solid var(--amber-a18)`, on the same `0 20px` inline inset the bar below it
+takes. A tab is `0 15px` of inline padding on condensed 700 uppercase tracked `0.18em` at `11px`,
+in `--ink-48`; the current tab takes `--amber-3` ink, the command bar's own `--panel-4` ground and
+a `2px solid var(--amber)` underline. The tabs are separated by `2px`.
+
+Two values are departures, both of the kind
+[reference-review.md](./reference-review.md) already rules.
+
+`--ink-48` composites to `4.08:1` on `--panel-menu`, under the `4.5:1` AA floor for text at this
+size. The product draws a resting tab in `--edsb-text-faint` (`ink-a55`, `4.94:1` on the same
+ground), which is the audited floor the token layer offers and the same substitution the muted-text
+row of "Required departures" records (011/FR-012). The current tab keeps `--amber-3`, which measures
+`10.03:1` on `--panel-4`.
+
+The tabs are held to the 44px press baseline rather than to the canvas's 50px, and the bar carries a
+floor rather than a fixed height, for the reason the command bar does: a doubled text size and a
+long language both make a tab taller than the drawing, and a bar that could not grow would cut its
+own controls off (011/FR-011, FR-012).
+
+The canvas puts an `ALL TOOLS` control beside the tabs, and a `⌘K` hint and an avatar plate on the
+trailing edge. None of the three is built (`design/application-shell.md`, "The tool bar"), so the
+product's tool bar carries tabs and nothing else.
 
 ### One bar height, on every screen
 

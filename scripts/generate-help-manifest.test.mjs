@@ -38,7 +38,7 @@ async function fixtureRepo({ version = '1.4.0', license } = {}) {
 
   await writeFile(
     join(root, 'package.json'),
-    `${JSON.stringify({ name: 'elite-dangerous-ship-builder', version }, null, 2)}\n`,
+    `${JSON.stringify({ name: 'navbeacon', version }, null, 2)}\n`,
     'utf8',
   );
   await writeFile(
@@ -188,7 +188,7 @@ describe('the help manifest generator', () => {
       const { manifest } = await run(root);
       const text = manifest.disclaimer.exactText;
 
-      assert.ok(text.startsWith('Elite Dangerous Ship Builder was created using assets'));
+      assert.ok(text.startsWith('NavBeacon was created using assets'));
       assert.ok(text.endsWith('was involved in the making of it.'));
       assert.equal(text.includes('\n    '), false);
       assert.equal(text.startsWith(' '), false);

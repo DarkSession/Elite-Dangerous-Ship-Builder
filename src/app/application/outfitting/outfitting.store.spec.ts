@@ -2,8 +2,8 @@ import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics'
 import { TestBed } from '@angular/core/testing';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
-import { captureCheckpoint } from '../../domain/build/modeled-build-checkpoint';
-import { FIXTURE_SLOTS, defaultBuild } from '../../domain/outfitting/outfitting.fixtures';
+import { captureCheckpoint } from '../../domain/ships/build/modeled-build-checkpoint';
+import { FIXTURE_SLOTS, defaultBuild } from '../../domain/ships/outfitting/outfitting.fixtures';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';
 import type { BuildCandidate } from '../active-build/active-build.models';

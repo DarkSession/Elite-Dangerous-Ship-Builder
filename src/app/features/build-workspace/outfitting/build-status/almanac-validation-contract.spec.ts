@@ -1,7 +1,7 @@
 import { getLoadoutIssueMessage } from '@elite-dangerous-almanac/core/i18n/diagnostics';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { LoadoutEvent } from '@elite-dangerous-almanac/core/ships/slef';
-import { FIXTURE_HULL } from '../../../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL } from '../../../../domain/ships/outfitting/outfitting.fixtures';
 
 /**
  * The package contract the `BUILD STATUS` block reads.

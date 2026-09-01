@@ -8,7 +8,7 @@ import {
   DEFENCE_FIXTURE_HULL,
   disabledGeneratorBuild,
   fullyFittedBuild,
-} from '../../../../domain/defence/defence.fixtures';
+} from '../../../../domain/ships/defence/defence.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { DefenceSummary } from './defence-summary';

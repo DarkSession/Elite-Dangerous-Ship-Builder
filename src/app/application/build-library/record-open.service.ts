@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { normalizeReconstructedBuild } from '../../domain/build/build-ingress-normalizer';
-import { reconstructFromSnapshot } from '../../domain/build/build-snapshot.reconstructor';
-import { baselineFingerprint } from '../../domain/build/build-fingerprint';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
+import { normalizeReconstructedBuild } from '../../domain/ships/build/build-ingress-normalizer';
+import { reconstructFromSnapshot } from '../../domain/ships/build/build-snapshot.reconstructor';
+import { baselineFingerprint } from '../../domain/ships/build/build-fingerprint';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { RecordMigrationService } from '../../platform/storage/record-migration.service';
 import { ActiveBuildStore } from '../active-build/active-build.store';

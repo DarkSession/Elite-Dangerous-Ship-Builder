@@ -11,8 +11,8 @@ const manifest = (overrides: Partial<HelpManifestV1> = {}): HelpManifestV1 =>
       documentId: 'frontierDisclaimer',
       source: 'LICENSE',
       language: 'en',
-      exactText: 'Ship Builder was created using assets and imagery from Elite Dangerous.',
-      byteLength: 70,
+      exactText: 'NavBeacon was created using assets and imagery from Elite Dangerous.',
+      byteLength: 68,
       sha256: DIGEST,
     },
     destinations: {

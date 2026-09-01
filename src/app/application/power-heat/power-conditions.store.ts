@@ -5,7 +5,7 @@ import {
   type DistributorPipAllocation,
   type HardpointState,
   type PowerConditions,
-} from '../../domain/power-heat/power-heat';
+} from '../../domain/ships/power-heat/power-heat';
 
 /** The fewest pips a bank can hold, and the most, as the artboard draws them. */
 export const MIN_PIPS = 0;

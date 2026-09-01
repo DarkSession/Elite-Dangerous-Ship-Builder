@@ -1,7 +1,7 @@
 # Agent guide
 
-Elite Dangerous Ship Builder — a client-side-only Angular application for
-planning ship loadouts.
+NavBeacon — a client-side-only Angular application carrying tools for Elite
+Dangerous. Ship Builder, which plans ship loadouts, is the first of them.
 
 ## Read first
 
@@ -121,7 +121,7 @@ planning ship loadouts.
 - **A pull request is published as a preview**, built a second time with a
   sub-path `<base href>` and pushed to the separate
   `Elite-Dangerous-Ship-Builder-Preview` repository, because this repository's
-  own Pages site is production (`public/CNAME` → `sb.edct.dev`). It follows that
+  own Pages site is production (`public/CNAME` → `navbeacon.app`). It follows that
   **nothing the application asks for at runtime may be a root-absolute path**: a
   leading `/` looks past the deployment base and misses the file, which is
   invisible at the root of a domain and fatal one directory down. `fetch` paths

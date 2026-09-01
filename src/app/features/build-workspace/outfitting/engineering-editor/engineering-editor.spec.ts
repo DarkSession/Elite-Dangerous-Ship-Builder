@@ -12,7 +12,7 @@ import {
   defaultBuild,
   fixedRewardBuild,
   lockedArticleBuild,
-} from '../../../../domain/outfitting/outfitting.fixtures';
+} from '../../../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { NO_BLUEPRINT_CHOICE } from '../../../../ui/outfitting/blueprint-choice-list';

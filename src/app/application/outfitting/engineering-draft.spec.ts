@@ -8,8 +8,8 @@ import {
   fixedRewardBuild,
   mercenaryVariant,
   packageText,
-} from '../../domain/outfitting/outfitting.fixtures';
-import { WEAPON_FIGURES, weaponFigures } from '../../domain/offence/weapon-figures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
+import { WEAPON_FIGURES, weaponFigures } from '../../domain/ships/offence/weapon-figures';
 import {
   HIGHER_IS_BETTER,
   NO_BLUEPRINT,

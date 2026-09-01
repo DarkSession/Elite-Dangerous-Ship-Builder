@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { getDefaultLoadout } from '@elite-dangerous-almanac/core/ships/default-loadouts';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
-import { emptyFixedMounts } from '../../domain/build/fixed-mounts';
+import { emptyFixedMounts } from '../../domain/ships/build/fixed-mounts';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import {
   BuildIngressCoordinator,

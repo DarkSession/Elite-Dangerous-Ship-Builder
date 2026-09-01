@@ -1,5 +1,5 @@
 import { Injectable, Injector, effect, inject, signal } from '@angular/core';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';

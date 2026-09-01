@@ -10,7 +10,7 @@ import {
   FIXTURE_SLOTS,
   defaultBuild,
   packageText,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import {
   accessibleName,
   describedText,

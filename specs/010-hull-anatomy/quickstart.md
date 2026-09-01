@@ -42,7 +42,7 @@ pnpm run e2e:offline                # includes e2e/schematic-offline.spec.ts
 pnpm run check
 ```
 
-The installed-package audit is `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts` rather than
+The installed-package audit is `src/app/domain/ships/anatomy/almanac-anatomy-contract.spec.ts` rather than
 a script of its own: it runs the same parser the application runs over every file the package ships,
 so the audit and the product cannot disagree about what a valid document is. The generated-output
 half is the `copied-schematics` rule in `scripts/check-interface-foundations.mjs`, which reads the

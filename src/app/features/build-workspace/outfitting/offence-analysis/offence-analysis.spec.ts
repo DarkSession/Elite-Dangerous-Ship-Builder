@@ -18,8 +18,8 @@ import {
   partlyDisabledBuild,
   populatedBuild,
   zeroCapacityBuild,
-} from '../../../../domain/offence/offence.fixtures';
-import { TARGET_RANGE } from '../../../../domain/offence/convergence';
+} from '../../../../domain/ships/offence/offence.fixtures';
+import { TARGET_RANGE } from '../../../../domain/ships/offence/convergence';
 import englishMessages from '../../../../i18n/locales/en.json';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';

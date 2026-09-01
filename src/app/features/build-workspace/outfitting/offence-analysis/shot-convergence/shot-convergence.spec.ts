@@ -1,6 +1,9 @@
 import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
 import { TestBed } from '@angular/core/testing';
-import { projectConvergence, type Convergence } from '../../../../../domain/offence/convergence';
+import {
+  projectConvergence,
+  type Convergence,
+} from '../../../../../domain/ships/offence/convergence';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import {
   everyStateBuild,
@@ -8,7 +11,7 @@ import {
   OFFENCE_DEFAULT_SLOTS,
   OFFENCE_FIXTURE_HULL,
   populatedBuild,
-} from '../../../../../domain/offence/offence.fixtures';
+} from '../../../../../domain/ships/offence/offence.fixtures';
 import { provideLocalization } from '../../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../../i18n/testing/localization-harness';
 import { ShotConvergence } from './shot-convergence';

@@ -16,7 +16,7 @@ import { resolve } from 'node:path';
 import { ARITHMETIC, ROOT, filesUnder, runPolicy, runRules, scan } from './common.mjs';
 
 /** The one place that may ask the package about shields, banks or armour. */
-export const PROJECTION = 'src/app/domain/defence';
+export const PROJECTION = 'src/app/domain/ships/defence';
 
 /** Feature 006's own source. The import rule applies inside these. */
 export const OWNED = [
@@ -233,7 +233,7 @@ const RULES = [
           continue;
         }
         const source = await readFile(resolve(ROOT, name), 'utf8');
-        if (!isOwned(name) && !source.includes('domain/defence')) {
+        if (!isOwned(name) && !source.includes('domain/ships/defence')) {
           continue;
         }
         for (const { line } of scan(

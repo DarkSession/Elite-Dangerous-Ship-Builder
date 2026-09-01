@@ -78,7 +78,7 @@ becomes an extract: extraction fails, naming the hull and side. It refuses a fil
   would be written without that mount.
 
 Three further conditions are about the _hull_, not the file, so no parser can see them. They are
-checked by `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts` over every catalogued hull and
+checked by `src/app/domain/ships/anatomy/almanac-anatomy-contract.spec.ts` over every catalogued hull and
 both sides, and fail `pnpm run test`: a matching asset directory and both schematics for every hull;
 no journal key absent from the exact hull slot catalogue or resolving to the wrong kind, and none
 repeated on one side; and no package hardpoint or utility omitted across both sides.

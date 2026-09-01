@@ -81,6 +81,16 @@ offered and therefore carries no way to hold the page.
   loading, error and disabled state at desktop, tablet and mobile widths.
 - **FR-005**: A missing reusable pattern MUST be added to the design system before a capability uses it.
 
+### Tool Navigation
+
+- **FR-028**: The application MUST state which tool the open route belongs to, and MUST offer every
+  tool it serves. The tools MUST come from one registry, so a tool cannot be offered in one place
+  and be missing from another. A tool the application serves no address for MUST NOT be offered.
+  The tool the open route belongs to MUST be identified in localised text and by an exposed state,
+  never by colour or position alone, and MUST be identified rather than offered: nothing names it
+  as a way to the screen a Commander is already reading. Every other tool MUST be reachable at
+  every supported width.
+
 ### Accessible and Responsive Operation
 
 - **FR-006**: Every capability MUST work by pointer and touch without hover or multi-pointer gestures.
@@ -275,3 +285,9 @@ translations.
   the manifest carries an icon at 192 and at 512 square plus a maskable one; a deployment that is
   not the production site asks not to be indexed; and the crawl policy, the sitemap, the manifest
   and the structured data agree with the route table and with one another.
+
+- **SC-009**: Every product route names the tool it belongs to and exposes that tool as the current
+  one, in Chromium and Firefox across all five layout profiles, covering the three viewport classes
+  in both orientations. The tools named are exactly the ones the registry carries; every tool but
+  the current one opens the address it declares; and the current one carries no control leading to
+  the route in view.

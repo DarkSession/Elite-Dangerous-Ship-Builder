@@ -1,7 +1,7 @@
 {
-  "name": "Elite Dangerous Ship Builder",
-  "short_name": "Elite Dangerous Ship Builder",
-  "description": "Ship Builder is an Elite Dangerous outfitting bench. Pick a hull, outfit it, read the numbers, and share a build as a link.",
+  "name": "NavBeacon",
+  "short_name": "NavBeacon",
+  "description": "NavBeacon is a set of Elite Dangerous tools. Ship Builder is its outfitting bench: pick a hull, outfit it, read the numbers, and share a build as a link.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -2,7 +2,7 @@
 
 ## Source and canvas inventory
 
-The rendered source is `.design/Ship Builder.dc.html`:
+The rendered sources are `.design/Ship Builder.dc.html` and `.design/Tool Navigation.dc.html`:
 
 | Canvas | Reference content                                                                | Foundation evidence                                                                                     |
 | ------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
@@ -10,9 +10,11 @@ The rendered source is `.design/Ship Builder.dc.html`:
 | 1b     | 390×844 Shipyard cards, full-screen hull/saved-build flows and sheets            | Compact title/actions, card collection, sort strip, drill-in, sheet/full-height adaptation              |
 | 1c     | 2020px Outfitting ledger, anatomy/work area, status rail, fitting/editor/dialogs | Three-region workspace, tabs, metrics/status, visual-to-ledger correlation, contextual action hierarchy |
 | 1d     | 390×844 Outfitting modes, ledger, module/engineer drill-ins and action sheets    | Compact overflow, mode/category tabs, sticky actions, full-screen editors, sheets                       |
+| 3c     | 1180px tool bar over a tool’s own command bar, tool grid and command palette     | Tool registry, tool bar, current-tool state                                                             |
 
 The canvases define product appearance and hierarchy. Shipyard and Outfitting remain routes/screens
-owned by their capability features; feature 011 owns the system those screens compose.
+owned by their capability features; feature 011 owns the system those screens compose, and owns
+canvas 3c's tool bar outright.
 
 ## Adopted visual and composition decisions
 
@@ -44,6 +46,9 @@ owned by their capability features; feature 011 owns the system those screens co
 | Mobile omissions and unnamed action/help controls                          | Every action remains available; the mark is drawn and the name is carried as text inside the control         | FR-006–007, FR-011         |
 | No loading previews and incomplete error/disabled coverage                 | Manifested populated/default, empty, loading, error and disabled states plus relevant unavailable/incomplete | FR-004, FR-024             |
 | Mock game facts, share URLs and behaviors                                  | Capability specs and Almanac package data/contracts remain authoritative                                     | Constitution II, IV and IX |
+| Canvas 3c’s tool grid, `⌘K` palette, drag-to-pin and account plate         | None of the four is built: three are more than one tool needs, and there are no accounts                     | Constitution I             |
+| Canvas 3c’s insignia on the tool bar, over the command bar’s own           | One mark, on the command bar, where it is already the way home; the tool bar carries tabs alone              | FR-007, FR-010             |
+| Canvas 3c’s 50px tabs in `--ink-48`                                        | 44px press baseline on a bar with a floor rather than a height; a resting tab in `--edsb-text-faint`         | FR-011, FR-012             |
 
 ## Specific prototype conflicts
 

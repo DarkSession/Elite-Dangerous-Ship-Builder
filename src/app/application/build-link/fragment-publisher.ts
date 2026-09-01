@@ -1,6 +1,6 @@
 import { Injectable, Injector, effect, inject, untracked } from '@angular/core';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { encodeBuildLinkFragment } from '../../domain/build-link/build-link-codec-loader';
+import { encodeBuildLinkFragment } from '../../domain/ships/build-link/build-link-codec-loader';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import type { LinkFailureCode } from '../active-build/active-build.models';
 import { ActiveBuildStore } from '../active-build/active-build.store';

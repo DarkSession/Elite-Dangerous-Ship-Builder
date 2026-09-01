@@ -28,14 +28,14 @@ Verified 2026-08-21 against the working tree at commit `7100dc1d`.
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/build` route                 | `src/app/app.routes.ts`, `src/app/features/build-workspace/build-workspace.page.ts`                                                                      |
 | One `ActiveBuildState`         | `src/app/application/active-build/active-build.models.ts`, `active-build.store.ts`                                                                       |
-| Canonical `BuildSnapshotV1`    | `src/app/domain/build/build-snapshot.ts`                                                                                                                 |
-| Capture                        | `src/app/domain/build/build-snapshot.serializer.ts` (`toBuildSnapshotV1`)                                                                                |
-| Package reconstruction         | `src/app/domain/build/build-snapshot.reconstructor.ts` (`reconstructFromSnapshot`)                                                                       |
+| Canonical `BuildSnapshotV1`    | `src/app/domain/ships/build/build-snapshot.ts`                                                                                                           |
+| Capture                        | `src/app/domain/ships/build/build-snapshot.serializer.ts` (`toBuildSnapshotV1`)                                                                          |
+| Package reconstruction         | `src/app/domain/ships/build/build-snapshot.reconstructor.ts` (`reconstructFromSnapshot`)                                                                 |
 | Atomic swap                    | `ActiveBuildStore.commit`, driven only by `application/active-build/replacement-coordinator.ts`                                                          |
 | Replacement notification       | `ReplacementCoordinator.setConfirmer` / `ReplacementQuestion`                                                                                            |
 | Autosave observer              | `src/app/application/build-library/autosave.service.ts`                                                                                                  |
 | Fragment observer              | `src/app/application/build-link/fragment-publisher.ts`                                                                                                   |
-| Fixed-mount invariant          | `src/app/domain/build/fixed-mounts.ts` — a check, never a repair                                                                                         |
+| Fixed-mount invariant          | `src/app/domain/ships/build/fixed-mounts.ts` — a check, never a repair                                                                                   |
 | Quality-completion notice slot | `QualityCompletionNotice` in `active-build.models.ts`; feature 001 declared the shape, feature 002's ingress normalizer is the first thing that fills it |
 
 ## What feature 002 adds, and what it must not
@@ -54,4 +54,4 @@ local fitting, variant, engineering or cost rule. Every one of those is checked 
 `@elite-dangerous-almanac/core` is pinned at `0.1.5` in `package.json` (raised from 0.1.4 on
 2026-08-22 for the per-grade Merc Coin figure, upstream #337). Feature 002 adds no
 dependency. The acceptance characterization of that installed version lives in
-`src/app/domain/outfitting/almanac-acceptance.spec.ts`.
+`src/app/domain/ships/outfitting/almanac-acceptance.spec.ts`.

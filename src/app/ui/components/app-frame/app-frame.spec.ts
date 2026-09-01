@@ -101,6 +101,61 @@ describe('AppFrame', () => {
     expect(bar.querySelectorAll('.frame__beta')).toHaveLength(1);
   });
 
+  it('names the tool a Commander is in, and does not offer it as a way anywhere', () => {
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('tools', [
+      { id: 'ship', label: 'Ship', href: '/ships', current: true },
+      { id: 'foot', label: 'On foot', href: '/equipment', current: false },
+    ]);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const region = element.querySelector('.frame__tools');
+
+    // A landmark of its own name: the bar below already carries one called
+    // "Primary navigation".
+    expect(region?.getAttribute('aria-label')).toBe('Tools');
+
+    const current = element.querySelector('.frame__tool--current');
+    expect(current?.tagName).toBe('SPAN');
+    expect(current?.textContent?.trim()).toBe('Ship');
+    // The state is in the tree, not only in the amber the stylesheet draws.
+    expect(current?.getAttribute('aria-current')).toBe('true');
+
+    const others = [...element.querySelectorAll('a.frame__tool')];
+    expect(others).toHaveLength(1);
+    expect(others[0].getAttribute('href')).toBe('/equipment');
+    expect(others[0].textContent?.trim()).toBe('On foot');
+  });
+
+  it('leaves the tool region out of the document where there are no tools', () => {
+    // The component preview catalogue composes the frame with none. A
+    // navigation landmark with nothing in it is a landmark a reader lands on
+    // and leaves again.
+    const element = render(null);
+
+    expect(element.querySelector('.frame__tools')).toBeNull();
+  });
+
+  it('emits a tool as an intent rather than navigating itself', () => {
+    const fixture = TestBed.createComponent(AppFrame);
+    fixture.componentRef.setInput('tools', [
+      { id: 'foot', label: 'On foot', href: '/equipment', current: false },
+    ]);
+    fixture.detectChanges();
+
+    let followed: string | null = null;
+    fixture.componentInstance.toolSelected.subscribe(({ entry }) => {
+      followed = entry.href;
+    });
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('a.frame__tool')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(followed).toBe('/equipment');
+  });
+
   it('emits the way back as an intent rather than navigating itself', () => {
     const fixture = TestBed.createComponent(AppFrame);
     fixture.componentRef.setInput('back', HULL_SHEET);

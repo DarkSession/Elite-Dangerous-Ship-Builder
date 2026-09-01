@@ -12,7 +12,7 @@ import {
   type MessageKey,
   type MessageParams,
 } from '../../i18n/locale-registry';
-import { hullForAddressSegment } from '../../domain/catalogue/hull-address';
+import { hullForAddressSegment } from '../../domain/ships/catalogue/hull-address';
 import { hullArtworkPath } from '../../platform/assets/hull-artwork-path';
 
 /**

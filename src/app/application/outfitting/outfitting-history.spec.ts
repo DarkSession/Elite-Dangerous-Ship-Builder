@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { captureCheckpoint } from '../../domain/build/modeled-build-checkpoint';
-import { HISTORY_CAPACITY } from '../../domain/outfitting/session-edit-history';
+import { captureCheckpoint } from '../../domain/ships/build/modeled-build-checkpoint';
+import { HISTORY_CAPACITY } from '../../domain/ships/outfitting/session-edit-history';
 import {
   FIXTURE_SLOTS,
   defaultBuild,
   fixedRewardBuild,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import type { BuildCandidate } from '../active-build/active-build.models';

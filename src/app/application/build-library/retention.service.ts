@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import type { LocalRecordV1 } from '../../domain/build/stored-build';
+import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';

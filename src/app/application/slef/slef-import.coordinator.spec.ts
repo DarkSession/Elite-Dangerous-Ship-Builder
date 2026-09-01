@@ -7,7 +7,7 @@ import {
   SUPPORTED_PARTIAL_QUALITY,
   SUPPORTED_PARTIAL_SOURCE_QUALITY,
   UNSUPPORTED_PARTIAL_QUALITY,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { ActiveBuildStore } from '../active-build/active-build.store';

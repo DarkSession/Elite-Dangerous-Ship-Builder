@@ -16,13 +16,13 @@ import type {
   MountOccurrence,
   SchematicSide,
   SideAssetState,
-} from '../../domain/anatomy/anatomy-model';
+} from '../../domain/ships/anatomy/anatomy-model';
 import {
   MARK_SEPARATION,
   placeMarks,
   type MarkPlacement,
   type PlatePoint,
-} from '../../domain/anatomy/mount-declutter';
+} from '../../domain/ships/anatomy/mount-declutter';
 import { hullSchematicImagePath } from '../../platform/assets/hull-artwork-path';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { ElementSizeAdapter, type ElementSize } from '../../platform/browser/element-size.adapter';

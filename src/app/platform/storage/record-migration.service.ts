@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { reconstructFromSnapshot } from '../../domain/build/build-snapshot.reconstructor';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
-import type { LocalRecordV1 } from '../../domain/build/stored-build';
+import { reconstructFromSnapshot } from '../../domain/ships/build/build-snapshot.reconstructor';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
+import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
 import { LocalRecordRepository } from './local-record.repository';
 
 /** What happened when a record was opened. */

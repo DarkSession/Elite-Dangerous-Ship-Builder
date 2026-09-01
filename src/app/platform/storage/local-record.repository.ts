@@ -1,7 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { decodeAndMigrate } from '../../domain/build/record-migrations';
-import { serializeLocalRecord, type RecordDraft } from '../../domain/build/stored-build.serializer';
-import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
+import { decodeAndMigrate } from '../../domain/ships/build/record-migrations';
+import {
+  serializeLocalRecord,
+  type RecordDraft,
+} from '../../domain/ships/build/stored-build.serializer';
+import type { LocalRecordV1, StoredRecordEntry } from '../../domain/ships/build/stored-build';
 import { EDSB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
 import { LOCAL_STORAGE_PORT, type StorageFailureCode } from './web-storage.port';
 

@@ -88,6 +88,9 @@ export class App {
   /** Where the bar's insignia goes: the shipyard, from every screen but itself. */
   readonly home = computed(() => this.#navigation.home(this.#path()));
 
+  /** The tools the shell names, with the open route's own marked as current. */
+  readonly tools = computed(() => this.#navigation.tools(this.#path()));
+
   /**
    * What the command bar shows: the screen's own name, and the one count that
    * belongs to it. The name is the same string the document title uses, so the

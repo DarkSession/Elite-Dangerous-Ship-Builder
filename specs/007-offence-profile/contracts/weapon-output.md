@@ -19,7 +19,7 @@ package's own returned fields.
 
 ## One article's figures
 
-`weaponMetrics()` is asked in `src/app/domain/offence` and nowhere else, so a damage figure on any
+`weaponMetrics()` is asked in `src/app/domain/ships/offence` and nowhere else, so a damage figure on any
 screen has one place it can have come from. That rule holds for a second, smaller question the
 outfitting workspace asks: what one weapon article does per second, stock and modified, in feature
 002's engineering editor. `weaponFigures()` answers it — the package's data-free `weaponMetrics()`

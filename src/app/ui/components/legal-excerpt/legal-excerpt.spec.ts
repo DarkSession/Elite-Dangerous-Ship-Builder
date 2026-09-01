@@ -3,8 +3,8 @@ import { LegalExcerpt } from './legal-excerpt';
 
 /** A two-line excerpt with the punctuation a real notice carries. */
 const TEXT = [
-  'Elite Dangerous Ship Builder was created using assets and imagery from',
-  'Elite Dangerous, with the permission of Frontier Developments plc.',
+  'NavBeacon was created using assets and imagery from Elite Dangerous, with',
+  'the permission of Frontier Developments plc.',
 ].join('\n');
 
 const INPUTS = { text: TEXT, language: 'en' };

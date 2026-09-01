@@ -171,7 +171,7 @@ const projects = [...matrixProjects, timingProject];
 const developmentServers = isCI
   ? [
       {
-        command: `pnpm exec ng build --configuration=development && node scripts/serve-production.mjs dist/elite-dangerous-ship-builder/browser ${PRODUCT_DEV_PORT}`,
+        command: `pnpm exec ng build --configuration=development && node scripts/serve-production.mjs dist/navbeacon/browser ${PRODUCT_DEV_PORT}`,
         url: `http://localhost:${PRODUCT_DEV_PORT}`,
         reuseExistingServer: false,
         timeout: 300_000,
@@ -263,7 +263,7 @@ export default defineConfig({
           // `pnpm run build` rather than `pnpm exec ng build`: the build is
           // what writes one document per published address, and a run served
           // without them tests a deployment nobody ships.
-          command: `pnpm run build && node scripts/serve-production.mjs dist/elite-dangerous-ship-builder/browser ${PRODUCTION_PORT}`,
+          command: `pnpm run build && node scripts/serve-production.mjs dist/navbeacon/browser ${PRODUCTION_PORT}`,
           url: `http://localhost:${PRODUCTION_PORT}`,
           reuseExistingServer: !isCI,
           timeout: 300_000,

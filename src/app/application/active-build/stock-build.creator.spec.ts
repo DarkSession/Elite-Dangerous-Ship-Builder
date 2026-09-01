@@ -3,7 +3,7 @@ import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { ActiveBuildStore } from './active-build.store';
 import { BuildIngressCoordinator } from './build-ingress.coordinator';
 import { StockBuildCreator } from './stock-build.creator';

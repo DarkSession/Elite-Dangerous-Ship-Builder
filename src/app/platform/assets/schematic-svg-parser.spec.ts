@@ -5,7 +5,7 @@ import { parseSchematic } from './schematic-svg-parser';
  *
  * The acceptance half — that every file the package actually ships parses — is
  * asserted over the whole installed catalogue in
- * `src/app/domain/anatomy/almanac-anatomy-contract.spec.ts`. This file is the
+ * `src/app/domain/ships/anatomy/almanac-anatomy-contract.spec.ts`. This file is the
  * other half: the things a compromised or simply wrong file could contain, each
  * of which has to end the parse rather than be quietly dropped.
  */

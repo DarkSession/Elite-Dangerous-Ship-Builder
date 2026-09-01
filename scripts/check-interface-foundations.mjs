@@ -72,7 +72,7 @@ export const SCOPE = {
    */
   conformanceSpecs: ['specs'],
   /** The emitted production output, inspected as shipped. */
-  productionOutput: 'dist/elite-dangerous-ship-builder/browser',
+  productionOutput: 'dist/navbeacon/browser',
   /** Where the build is configured to place the copied hull schematics. */
   extractedSchematics: 'public/assets/ships',
   previewManifest: 'src/app/ui/previews/preview-manifest.ts',

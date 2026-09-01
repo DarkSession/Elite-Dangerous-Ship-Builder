@@ -1,4 +1,4 @@
-# Dev container image for the Elite Dangerous Ship Builder.
+# Dev container image for NavBeacon.
 # Extends the standard TypeScript + Node base with Bubblewrap, which
 # Claude Code uses to sandbox command execution.
 FROM mcr.microsoft.com/devcontainers/typescript-node:24-bookworm

@@ -5,13 +5,13 @@ import {
   type SlefImportFailure,
   type SlefImportStatus,
   type SlefRequestToken,
-} from '../../domain/slef/slef-import.models';
+} from '../../domain/ships/slef/slef-import.models';
 import type {
   DeliveryAction,
   DeliveryCapability,
   DeliveryOutcome,
   SlefExportArtifact,
-} from '../../domain/slef/slef-export.models';
+} from '../../domain/ships/slef/slef-export.models';
 
 /** How an attempt ended when it changed nothing. `null` while none has. */
 export type SlefImportEnding = 'cancelled' | 'superseded' | null;

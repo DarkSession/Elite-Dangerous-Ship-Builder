@@ -6,7 +6,7 @@ import {
   FIXTURE_SLOTS,
   defaultBuild,
   fixedRewardBuild,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { BuildCandidate } from '../active-build/active-build.models';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';

@@ -4,7 +4,7 @@ import { App, HELP_ACTION } from './app';
 import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { SlefStore } from './application/slef/slef.store';
-import { FIXTURE_HULL } from './domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL } from './domain/ships/outfitting/outfitting.fixtures';
 import {
   ApplicationUpdateAdapter,
   type VersionEvent,

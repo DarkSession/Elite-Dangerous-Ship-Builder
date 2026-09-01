@@ -11,7 +11,7 @@ import {
   everyStateBuild,
   noWeaponsBuild,
   populatedBuild,
-} from '../../../../domain/offence/offence.fixtures';
+} from '../../../../domain/ships/offence/offence.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { OffenceSummary } from './offence-summary';

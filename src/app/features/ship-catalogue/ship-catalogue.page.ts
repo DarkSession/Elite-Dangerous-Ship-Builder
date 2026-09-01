@@ -16,9 +16,9 @@ import {
   type CatalogueColumn,
 } from '../../ui/components/catalogue-view/responsive-catalogue-view';
 import type { HullSummary } from '../../ui/components/hull-summary-card/hull-summary-card';
-import type { CatalogueSortField } from '../../domain/catalogue/catalogue-sort';
-import { hullAddressForSymbol } from '../../domain/catalogue/hull-address';
-import type { HullSize } from '../../domain/catalogue/hull-catalogue';
+import type { CatalogueSortField } from '../../domain/ships/catalogue/catalogue-sort';
+import { hullAddressForSymbol } from '../../domain/ships/catalogue/hull-address';
+import type { HullSize } from '../../domain/ships/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';

@@ -69,6 +69,46 @@ test.describe('product semantics', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'product-shell' });
   });
 
+  test('names the tool the open screen belongs to, and does not offer it', async ({ page }) => {
+    // The shell says which tool a Commander is in, at every width, and the tool
+    // they are already in is a word rather than a link to the screen in front
+    // of them (011/FR-028, SC-009).
+    const tools = page.getByRole('navigation', { name: 'Tools' });
+    await expect(tools).toHaveCount(1);
+    await expect(tools).toBeVisible();
+
+    const current = tools.locator('[aria-current]');
+    await expect(current).toHaveCount(1);
+    await expect(current).toHaveText('Ship');
+    await expect(current).not.toHaveRole('link');
+
+    // Exactly the registry: one tool today, and no tab for one the application
+    // serves no address for.
+    await expect(tools.getByRole('listitem')).toHaveCount(1);
+    await expect(tools.getByRole('link')).toHaveCount(0);
+  });
+
+  test('keeps naming the same tool on the screens that tool owns', async ({ page }) => {
+    // `textContent`, not `innerText`: the tab is drawn uppercase by the canvas,
+    // and what is asserted here is the word the shell names the tool with, not
+    // the casing a stylesheet renders it in.
+    const named = async (): Promise<string> =>
+      (
+        (await page
+          .getByRole('navigation', { name: 'Tools' })
+          .locator('[aria-current]')
+          .textContent()) ?? ''
+      )
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    expect(await named()).toBe('Ship');
+
+    await page.goto('/builds');
+    await expect(page.getByRole('main')).toBeVisible();
+    expect(await named()).toBe('Ship');
+  });
+
   test('exposes a named status region in ordinary reading order', async ({ page }) => {
     // Visible feedback is ordinary semantic content, not a live region: a
     // Commander must be able to find and re-read it, not only hear it once.

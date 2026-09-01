@@ -48,7 +48,7 @@ and the package's infinite utilisation on a plant of zero never has to be worded
 
 Three readings the canvas draws are not package fields, and
 `scripts/policy/power-heat-ownership.mjs` permits them only inside
-`src/app/domain/power-heat`:
+`src/app/domain/ships/power-heat`:
 
 | Reading           | Rule                                                                 |
 | ----------------- | -------------------------------------------------------------------- |

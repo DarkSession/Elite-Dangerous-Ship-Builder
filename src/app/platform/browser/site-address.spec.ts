@@ -2,8 +2,8 @@ import { SITE_ORIGIN, canonicalAddress } from './site-address';
 
 describe('canonical address', () => {
   it('names the production site rather than wherever the document is served from', () => {
-    expect(canonicalAddress('/ships')).toBe('https://sb.edct.dev/ships');
-    expect(SITE_ORIGIN).toBe('https://sb.edct.dev');
+    expect(canonicalAddress('/ships')).toBe('https://navbeacon.app/ships');
+    expect(SITE_ORIGIN).toBe('https://navbeacon.app');
   });
 
   it('resolves the root and the empty path to one address, not two', () => {

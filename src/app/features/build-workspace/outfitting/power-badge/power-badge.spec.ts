@@ -6,7 +6,7 @@ import {
   noPlantOutputBuild,
   shedBandBuild,
   withinBudgetBuild,
-} from '../../../../domain/power-heat/power-heat.fixtures';
+} from '../../../../domain/ships/power-heat/power-heat.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { PowerBadge } from './power-badge';

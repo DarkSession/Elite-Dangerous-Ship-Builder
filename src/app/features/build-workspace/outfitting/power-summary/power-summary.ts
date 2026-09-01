@@ -9,7 +9,7 @@ import {
   projectPowerHeat,
   type CapacitorKind,
   type PowerAndHeat,
-} from '../../../../domain/power-heat/power-heat';
+} from '../../../../domain/ships/power-heat/power-heat';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';

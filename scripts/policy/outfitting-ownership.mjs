@@ -20,7 +20,7 @@ import { ROOT, runPolicy, runRules } from './common.mjs';
 /** Feature 002's own source. Every rule below applies inside these. */
 export const OWNED = [
   'src/app/application/outfitting',
-  'src/app/domain/outfitting',
+  'src/app/domain/ships/outfitting',
   'src/app/ui/outfitting',
   'src/app/features/build-workspace/outfitting',
 ];
@@ -34,9 +34,9 @@ export const OWNED = [
  * serialize perfectly well.
  */
 export const SEALED = [
-  'src/app/domain/build/build-snapshot.serializer.ts',
-  'src/app/domain/build/stored-build.serializer.ts',
-  'src/app/domain/build-link',
+  'src/app/domain/ships/build/build-snapshot.serializer.ts',
+  'src/app/domain/ships/build/stored-build.serializer.ts',
+  'src/app/domain/ships/build-link',
   'src/app/platform',
 ];
 

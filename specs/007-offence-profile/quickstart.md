@@ -15,7 +15,7 @@ either a package equality or a thing a canvas draws.
 ## Package and contract audit
 
 ```bash
-pnpm exec ng test --no-coverage --include 'src/app/domain/offence/**/*.spec.ts'
+pnpm exec ng test --no-coverage --include 'src/app/domain/ships/offence/**/*.spec.ts'
 ```
 
 The Angular unit-test builder, not `vitest` directly: the package's localization
@@ -54,7 +54,7 @@ pnpm run test
 
 - the Almanac is imported outside this capability's allowed leaf subpaths;
 - `weaponMetrics(`, `weaponsCapacitorMetrics(`, `damageFalloff(`, `projectGunsight(` or
-  `getShipGunsight(` appears outside `src/app/domain/offence`;
+  `getShipGunsight(` appears outside `src/app/domain/ships/offence`;
 - a package figure is arithmetically combined anywhere the projection is read;
 - `Infinity` or `Number.POSITIVE_INFINITY` is named on a surface rather than left to the
   projection's own endurance states.

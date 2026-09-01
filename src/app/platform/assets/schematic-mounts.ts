@@ -2,7 +2,7 @@ import type {
   SchematicAnnotation,
   SchematicDocument,
   SchematicSide,
-} from '../../domain/anatomy/anatomy-model';
+} from '../../domain/ships/anatomy/anatomy-model';
 
 /**
  * Reads one hull's mount extract, or refuses it.

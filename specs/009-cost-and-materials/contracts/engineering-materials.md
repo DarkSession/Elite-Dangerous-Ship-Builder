@@ -7,7 +7,7 @@ Binding ruling: [../design/reference-review.md](../design/reference-review.md), 
 This feature reads the package's consolidated `buildCost().materials` result. It calls feature 002's
 accepted framework-agnostic boundary only for the blueprint count:
 
-- `engineeringCost(selection)` from `src/app/domain/outfitting/engineering-cost.ts`, which owns
+- `engineeringCost(selection)` from `src/app/domain/ships/outfitting/engineering-cost.ts`, which owns
   `getBlueprintCost`, `getExperimentalEffectCost` and the fixed / Mercenary-purchase classification;
 - `materialRarity(symbol)` from the same module, which owns `getMaterialBySymbol`;
 - `getMaterialName` through feature 011's game-text presenter, for row names.

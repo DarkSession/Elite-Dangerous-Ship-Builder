@@ -1,6 +1,6 @@
 # Security policy
 
-Elite Dangerous Ship Builder is a static, client-side application. It has no backend, no accounts
+NavBeacon is a static, client-side application. It has no backend, no accounts
 and no telemetry, and it makes no request to any origin other than the one it is served from. A
 build lives in the browser — in memory, in `localStorage` — or in a URL, and nothing is uploaded.
 
@@ -10,7 +10,7 @@ a payload, or loads the site.
 
 ## Supported versions
 
-The site at [sb.edct.dev](https://sb.edct.dev/) is the supported version. It is built from `main`
+The site at [navbeacon.app](https://navbeacon.app/) is the supported version. It is built from `main`
 and republished by CI on every merge, so there is one live version at a time and no maintained
 branch behind it.
 

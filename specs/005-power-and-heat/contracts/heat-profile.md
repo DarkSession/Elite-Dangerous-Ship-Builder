@@ -92,7 +92,7 @@ The canvases also draw a sixth bar, `Shield cell bank`. The package publishes fi
 scenarios and states outright that this is not one of them: a bank's heat is per
 _activation_, and the package's own remedy is to divide it by the bank's spin-up,
 add it to the build's thermal load and run it for the spin-up's duration with
-`heatLevelAtTime`. That is done once, in `src/app/domain/power-heat`, which is the
+`heatLevelAtTime`. That is done once, in `src/app/domain/ships/power-heat`, which is the
 only module `scripts/policy/power-heat-ownership.mjs` permits to combine package
 figures. With no bank fitted the bar is absent, not zero.
 

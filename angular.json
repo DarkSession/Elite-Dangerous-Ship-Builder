@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "elite-dangerous-ship-builder": {
+    "navbeacon": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -72,10 +72,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "elite-dangerous-ship-builder:build:production"
+              "buildTarget": "navbeacon:build:production"
             },
             "development": {
-              "buildTarget": "elite-dangerous-ship-builder:build:development"
+              "buildTarget": "navbeacon:build:development"
             }
           },
           "defaultConfiguration": "development"

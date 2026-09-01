@@ -11,7 +11,10 @@ import { Router } from '@angular/router';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { ArtworkCoordinator } from '../../application/catalogue/artwork.coordinator';
 import { HullDetailFacade } from '../../application/catalogue/hull-detail.facade';
-import { hullAddressSegment, hullForAddressSegment } from '../../domain/catalogue/hull-address';
+import {
+  hullAddressSegment,
+  hullForAddressSegment,
+} from '../../domain/ships/catalogue/hull-address';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
@@ -22,7 +25,7 @@ import { HullArtwork } from '../../ui/components/hull-artwork/hull-artwork';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ScreenChrome } from '../shared/screen-chrome';
-import { hardpointTotal } from '../../domain/catalogue/hull-catalogue';
+import { hardpointTotal } from '../../domain/ships/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from '../ship-catalogue/catalogue-anchor.restorer';
 import { HullDetailUnknownHull } from './hull-detail-unknown-hull';
 

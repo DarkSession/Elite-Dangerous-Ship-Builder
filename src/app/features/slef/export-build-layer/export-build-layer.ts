@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import type { DeliveryAction } from '../../../domain/slef/slef-export.models';
+import type { DeliveryAction } from '../../../domain/ships/slef/slef-export.models';
 import type { SlefExportView } from '../../../application/slef/slef.presenter';
 import { ActionButton } from '../../../ui/components/action/action-button';
 import { StatusNotice } from '../../../ui/components/status/status-notice';

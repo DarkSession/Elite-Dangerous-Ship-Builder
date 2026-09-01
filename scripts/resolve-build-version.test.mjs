@@ -34,7 +34,7 @@ const scriptPath = fileURLToPath(new URL('./resolve-build-version.mjs', import.m
 const manifest = (version, marker = 'ship-builder') =>
   [
     '{',
-    '  "name": "elite-dangerous-ship-builder",',
+    '  "name": "navbeacon",',
     `  "version": "${version}",`,
     '  "private": true,',
     '  "license": "MIT",',

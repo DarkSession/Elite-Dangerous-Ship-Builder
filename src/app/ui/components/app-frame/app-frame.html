@@ -1,4 +1,8 @@
 <!--
+  Two bars, one sticky region. Canvas 3c draws the tools over the screen's own
+  command bar, and the region below the pair clears what the pair came to, so
+  they are measured together (`sticky-banner.ts`).
+
   The reference's command bar carries the screen's own name on the leading
   edge, the one count that belongs to it beside that, and the screen's actions
   on the trailing edge (canvas 1a/1b/1c). It carries no product name, so the
@@ -11,161 +15,198 @@
   [attr.aria-label]="bannerLabel()"
 >
   <!--
-    The bar canvas 1b gives a screen opened over another one: the way back, the
-    layer's own name, and the line under it. Drawn beside the ordinary identity
-    and hidden at every width but compact, so one of the two is on screen and in
-    the accessibility tree at a time.
+    The tool bar. Named as a landmark of its own, because the bar below already
+    carries one called "Primary navigation" and two navigation regions with one
+    name are two a reader cannot tell apart.
+
+    The tool a Commander is already in is a word, not a link: the same rule that
+    leaves the insignia a bare mark on the shipyard and drops the open screen
+    from the primary navigation. `aria-current` carries the state, so the amber
+    fill and the underline are never the only thing saying which tool this is
+    (011/FR-028, FR-010).
   -->
-  @if (back(); as layer) {
-    <div class="frame__return">
-      <a
-        class="frame__return-back"
-        [href]="layer.back.href"
-        (click)="navigationSelected.emit({ entry: layer.back, event: $event })"
-      >
-        <span aria-hidden="true">&#8592;</span>
-        <span class="visually-hidden">{{ layer.back.label }}</span>
-      </a>
-      @if (layer.title; as name) {
-        <div class="frame__return-identity">
-          <h1 class="frame__title">{{ name }}</h1>
-          @if (layer.detail; as line) {
-            <p class="frame__return-detail">{{ line }}</p>
-          }
-        </div>
-      }
-    </div>
-  }
-
-  <div class="frame__identity">
-    <!--
-      The insignia. A link where the screen has somewhere for it to go, which is
-      where canvas 1c puts the trip the `SHIPYARD` chip used to carry; the mark
-      itself stays hidden from assistive technology and the link is named by the
-      screen it reaches, so the mark is never announced as a picture of nothing.
-
-      The mark is its own element inside the link rather than the link itself.
-      The link is held to the press baseline, the mark is the size the canvas
-      draws it, and one box cannot be both: a mark cut into the link's own
-      layers grows with the target, and the insignia is then a different size on
-      a screen that offers the way home than on one that does not (011/FR-012).
-    -->
-    @if (home(); as destination) {
-      <a
-        class="frame__flag-home"
-        [href]="destination.href"
-        (click)="navigationSelected.emit({ entry: destination, event: $event })"
-      >
-        <span class="frame__flag" aria-hidden="true"></span>
-        <span class="visually-hidden">{{ destination.label }}</span>
-      </a>
-    } @else {
-      <span class="frame__flag" aria-hidden="true"></span>
-    }
-
-    <!--
-      The release mark: a solid amber chip with the bar's own ground as its ink.
-
-      It stands on whichever side of the identity says what it is about. Canvas
-      1a draws `SHIPYARD BETA · 48 SHIPS`, which reads as a beta shipyard;
-      canvases 1c and 1d put it ahead of the build's name, because a chip after
-      an editable name reads as part of the name and the build is not what is in
-      beta. So it follows a plain title and leads an identity block — and leads
-      where the bar carries neither, since there is then nothing for it to
-      follow.
-    -->
-    @if (!betaFollowsTitle()) {
-      <span class="frame__beta">{{ betaLabel() }}</span>
-    }
-    <!--
-      The bar's title, or the screen's own identity where it publishes one.
-      Canvas 1c and 1d both put the build's name where every other screen's
-      name goes, so the two are alternatives rather than a title with a second
-      identity beside it (FR-019).
-    -->
-    @if (identity(); as screenIdentity) {
-      <edsb-ship-identity-fields
-        class="frame__screen-identity"
-        [name]="screenIdentity.name"
-        [fallbackName]="screenIdentity.fallbackName ?? routeContext() ?? ''"
-        [detail]="screenIdentity.detail"
-        [ident]="screenIdentity.ident"
-        [editing]="screenIdentity.editing"
-        (opened)="identityOpened.emit($event)"
-        (closed)="identityClosed.emit()"
-        (committed)="identityCommitted.emit($event)"
-      />
-    } @else if (routeContext(); as context) {
-      <h1 class="frame__title">{{ context }}</h1>
-    }
-    @if (betaFollowsTitle()) {
-      <span class="frame__beta">{{ betaLabel() }}</span>
-    }
-    @if (routeCount(); as count) {
-      <span class="frame__count">{{ count }}</span>
-    }
-  </div>
-
-  @if (navigation().length > 0) {
-    <nav class="frame__navigation" [attr.aria-label]="navigationLabel()">
-      <ul class="frame__navigation-list">
-        @for (entry of navigation(); track entry.id) {
+  @if (tools().length > 0) {
+    <nav class="frame__tools" [attr.aria-label]="toolsLabel()">
+      <ul class="frame__tools-list">
+        @for (tool of tools(); track tool.id) {
           <li>
-            <a
-              class="frame__navigation-link"
-              [href]="entry.href"
-              [attr.aria-current]="entry.current ? 'page' : null"
-              (click)="navigationSelected.emit({ entry, event: $event })"
-            >
-              {{ entry.label }}
-            </a>
+            @if (tool.current) {
+              <span class="frame__tool frame__tool--current" aria-current="true">
+                {{ tool.label }}
+              </span>
+            } @else {
+              <a
+                class="frame__tool"
+                [href]="tool.href"
+                (click)="toolSelected.emit({ entry: tool, event: $event })"
+              >
+                {{ tool.label }}
+              </a>
+            }
           </li>
         }
       </ul>
     </nav>
   }
 
-  @if (actions().length > 0 || navigation().length > 0) {
+  <div class="frame__bar">
     <!--
-      The same actions in two compositions, one rendered at a time. The wide row
-      keeps every action on the banner; the folded layer moves them behind one
-      named trigger. The layer is hidden by default and `layout.bar-folded`
-      reverses that while hiding the row, so exactly one composition is ever in
-      layout and in the accessibility tree, and no action is announced twice or
-      reachable while invisible.
+      The bar canvas 1b gives a screen opened over another one: the way back, the
+      layer's own name, and the line under it. Drawn beside the ordinary identity
+      and hidden at every width but compact, so one of the two is on screen and in
+      the accessibility tree at a time.
     -->
-    <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">
-      @for (action of actions(); track action.id) {
-        @if (action.startsGroup) {
-          <span class="frame__actions-divider" aria-hidden="true"></span>
+    @if (back(); as layer) {
+      <div class="frame__return">
+        <a
+          class="frame__return-back"
+          [href]="layer.back.href"
+          (click)="navigationSelected.emit({ entry: layer.back, event: $event })"
+        >
+          <span aria-hidden="true">&#8592;</span>
+          <span class="visually-hidden">{{ layer.back.label }}</span>
+        </a>
+        @if (layer.title; as name) {
+          <div class="frame__return-identity">
+            <h1 class="frame__title">{{ name }}</h1>
+            @if (layer.detail; as line) {
+              <p class="frame__return-detail">{{ line }}</p>
+            }
+          </div>
         }
-        <edsb-action-button
-          [label]="action.label"
-          [symbol]="action.symbol ?? null"
-          [mark]="action.mark ?? null"
-          [markPosition]="action.markPosition ?? 'leading'"
-          [emphasis]="action.emphasis ?? 'secondary'"
-          [disabled]="action.disabled ?? false"
-          [description]="action.description ?? null"
-          (activated)="selectAction(action)"
+      </div>
+    }
+
+    <div class="frame__identity">
+      <!--
+        The insignia. A link where the screen has somewhere for it to go, which is
+        where canvas 1c puts the trip the `SHIPYARD` chip used to carry; the mark
+        itself stays hidden from assistive technology and the link is named by the
+        screen it reaches, so the mark is never announced as a picture of nothing.
+
+        The mark is its own element inside the link rather than the link itself.
+        The link is held to the press baseline, the mark is the size the canvas
+        draws it, and one box cannot be both: a mark cut into the link's own
+        layers grows with the target, and the insignia is then a different size on
+        a screen that offers the way home than on one that does not (011/FR-012).
+      -->
+      @if (home(); as destination) {
+        <a
+          class="frame__flag-home"
+          [href]="destination.href"
+          (click)="navigationSelected.emit({ entry: destination, event: $event })"
+        >
+          <span class="frame__flag" aria-hidden="true"></span>
+          <span class="visually-hidden">{{ destination.label }}</span>
+        </a>
+      } @else {
+        <span class="frame__flag" aria-hidden="true"></span>
+      }
+
+      <!--
+        The release mark: a solid amber chip with the bar's own ground as its ink.
+
+        It stands on whichever side of the identity says what it is about. Canvas
+        1a draws `SHIPYARD BETA · 48 SHIPS`, which reads as a beta shipyard;
+        canvases 1c and 1d put it ahead of the build's name, because a chip after
+        an editable name reads as part of the name and the build is not what is in
+        beta. So it follows a plain title and leads an identity block — and leads
+        where the bar carries neither, since there is then nothing for it to
+        follow.
+      -->
+      @if (!betaFollowsTitle()) {
+        <span class="frame__beta">{{ betaLabel() }}</span>
+      }
+      <!--
+        The bar's title, or the screen's own identity where it publishes one.
+        Canvas 1c and 1d both put the build's name where every other screen's
+        name goes, so the two are alternatives rather than a title with a second
+        identity beside it (FR-019).
+      -->
+      @if (identity(); as screenIdentity) {
+        <edsb-ship-identity-fields
+          class="frame__screen-identity"
+          [name]="screenIdentity.name"
+          [fallbackName]="screenIdentity.fallbackName ?? routeContext() ?? ''"
+          [detail]="screenIdentity.detail"
+          [ident]="screenIdentity.ident"
+          [editing]="screenIdentity.editing"
+          (opened)="identityOpened.emit($event)"
+          (closed)="identityClosed.emit()"
+          (committed)="identityCommitted.emit($event)"
         />
+      } @else if (routeContext(); as context) {
+        <h1 class="frame__title">{{ context }}</h1>
+      }
+      @if (betaFollowsTitle()) {
+        <span class="frame__beta">{{ betaLabel() }}</span>
+      }
+      @if (routeCount(); as count) {
+        <span class="frame__count">{{ count }}</span>
       }
     </div>
 
-    <edsb-action-layer
-      class="frame__action-layer"
-      [actions]="actions()"
-      [links]="navigation()"
-      [linksLabel]="navigationLabel()"
-      [label]="actionsLabel()"
-      [openLabel]="actionsOpenLabel()"
-      [closeLabel]="actionsCloseLabel()"
-      [expanded]="actionsOpen()"
-      (toggled)="setActionsOpen($event)"
-      (actionSelected)="selectActionById($event)"
-      (linkSelected)="navigationSelected.emit($event)"
-    />
-  }
+    @if (navigation().length > 0) {
+      <nav class="frame__navigation" [attr.aria-label]="navigationLabel()">
+        <ul class="frame__navigation-list">
+          @for (entry of navigation(); track entry.id) {
+            <li>
+              <a
+                class="frame__navigation-link"
+                [href]="entry.href"
+                [attr.aria-current]="entry.current ? 'page' : null"
+                (click)="navigationSelected.emit({ entry, event: $event })"
+              >
+                {{ entry.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+
+    @if (actions().length > 0 || navigation().length > 0) {
+      <!--
+        The same actions in two compositions, one rendered at a time. The wide row
+        keeps every action on the banner; the folded layer moves them behind one
+        named trigger. The layer is hidden by default and `layout.bar-folded`
+        reverses that while hiding the row, so exactly one composition is ever in
+        layout and in the accessibility tree, and no action is announced twice or
+        reachable while invisible.
+      -->
+      <div class="frame__actions" role="group" [attr.aria-label]="actionsLabel()">
+        @for (action of actions(); track action.id) {
+          @if (action.startsGroup) {
+            <span class="frame__actions-divider" aria-hidden="true"></span>
+          }
+          <edsb-action-button
+            [label]="action.label"
+            [symbol]="action.symbol ?? null"
+            [mark]="action.mark ?? null"
+            [markPosition]="action.markPosition ?? 'leading'"
+            [emphasis]="action.emphasis ?? 'secondary'"
+            [disabled]="action.disabled ?? false"
+            [description]="action.description ?? null"
+            (activated)="selectAction(action)"
+          />
+        }
+      </div>
+
+      <edsb-action-layer
+        class="frame__action-layer"
+        [actions]="actions()"
+        [links]="navigation()"
+        [linksLabel]="navigationLabel()"
+        [label]="actionsLabel()"
+        [openLabel]="actionsOpenLabel()"
+        [closeLabel]="actionsCloseLabel()"
+        [expanded]="actionsOpen()"
+        (toggled)="setActionsOpen($event)"
+        (actionSelected)="selectActionById($event)"
+        (linkSelected)="navigationSelected.emit($event)"
+      />
+    }
+  </div>
 </header>
 
 <!--

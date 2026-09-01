@@ -34,7 +34,7 @@ const HULL = 'Anaconda';
  * The mount the package sells two ways, one of them for Merc Coin.
  *
  * The same fixture the unit suite uses, reached the way a Commander reaches it:
- * through the chooser (`src/app/domain/cost-materials/cost-materials.fixtures.ts`).
+ * through the chooser (`src/app/domain/ships/cost-materials/cost-materials.fixtures.ts`).
  * Several Merc-Coin articles fit this mount at different prices, so the row is
  * pinned to a cargo rack — the package sells both sizes of it for the same
  * figure, which is why either may be the one the chooser lists first.
@@ -626,7 +626,7 @@ test.describe('the privacy boundary', () => {
 
     // What SLEF *does* carry is `HullValue`, `ModulesValue` and `Rebuy`: they
     // are fields of the format, written by feature 004 from the same package
-    // call this block reads (`src/app/domain/slef/slef-export-pricing.spec.ts`).
+    // call this block reads (`src/app/domain/ships/slef/slef-export-pricing.spec.ts`).
     // Their presence is the format, not a figure this feature persisted.
     expect(payload).toContain('Rebuy');
   });

@@ -7,8 +7,11 @@ import type {
   SchematicDocument,
   SchematicSide,
   SideAssetState,
-} from '../../../../domain/anatomy/anatomy-model';
-import { FIXTURE_SLOTS, defaultBuild } from '../../../../domain/outfitting/outfitting.fixtures';
+} from '../../../../domain/ships/anatomy/anatomy-model';
+import {
+  FIXTURE_SLOTS,
+  defaultBuild,
+} from '../../../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { AlmanacSchematicLoader } from '../../../../platform/assets/almanac-schematic-loader';

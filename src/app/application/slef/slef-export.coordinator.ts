@@ -1,8 +1,11 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { FragmentPublisher } from '../build-link/fragment-publisher';
-import { generateSlefExportArtifact } from '../../domain/slef/slef-export';
-import type { ActiveExportSnapshot, CanonicalLink } from '../../domain/slef/slef-export.models';
+import { generateSlefExportArtifact } from '../../domain/ships/slef/slef-export';
+import type {
+  ActiveExportSnapshot,
+  CanonicalLink,
+} from '../../domain/ships/slef/slef-export.models';
 import { APPLICATION_METADATA } from '../../platform/build/application-metadata';
 import { SlefStore } from './slef.store';
 

@@ -5,7 +5,7 @@ import germanCatalogue from '../../../../i18n/locales/de.json';
 import englishCatalogue from '../../../../i18n/locales/en.json';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
-import { FIXTURE_HULL } from '../../../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL } from '../../../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import type { MessageCatalogue } from '../../../../i18n/locale-registry';
 import { LocaleStore } from '../../../../i18n/locale.store';

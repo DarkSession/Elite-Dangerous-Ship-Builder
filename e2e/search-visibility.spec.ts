@@ -42,7 +42,9 @@ test.describe('what the head says this page is', () => {
     await expect(page.getByRole('main')).toBeVisible();
     await description(page).toBe(englishMessages['catalogue.description']);
 
-    await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
+    await expect
+      .poll(() => page.title())
+      .toBe(`${englishMessages['catalogue.title']} · ${englishMessages['app.name']}`);
 
     await page.goto(`${PRODUCT_URL}/builds`);
     await expect(page.getByRole('main')).toBeVisible();
@@ -129,7 +131,9 @@ test.describe('what the head says this page is', () => {
     await expect(page.getByRole('main')).toBeVisible();
 
     await description(page).toBe(englishMessages['catalogue.description']);
-    await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
+    await expect
+      .poll(() => page.title())
+      .toBe(`${englishMessages['catalogue.title']} · ${englishMessages['app.name']}`);
     await canonical(page).toBe(`${SITE_ORIGIN}/ships/Not_A_Hull`);
   });
 

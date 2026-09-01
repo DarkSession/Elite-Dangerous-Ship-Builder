@@ -141,7 +141,7 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         uses: actions/upload-pages-artifact@v5
         with:
-          path: dist/elite-dangerous-ship-builder/browser
+          path: dist/navbeacon/browser
           # Keep one known-good artifact available to the manual recovery
           # workflow without rebuilding or executing repository code there.
           # v5 declares this input directly; 90 days is this repository's
@@ -322,7 +322,7 @@ jobs:
     env:
       # Previews are published to a repository of their own, because this one's
       # Pages site is the production site: `public/CNAME` points it at
-      # sb.edct.dev, and a repository serves exactly one Pages site. Anything
+      # navbeacon.app, and a repository serves exactly one Pages site. Anything
       # published from here would land on the production domain, so previews go
       # somewhere with no custom domain and reach the default Pages host
       # instead. The path half of the base URL is the only place the preview
@@ -435,7 +435,7 @@ jobs:
       # against the site it is a preview of.
       - name: Ask search engines to leave the preview alone
         if: ${{ steps.token.outputs.available == 'true' }}
-        working-directory: dist/elite-dangerous-ship-builder/browser
+        working-directory: dist/navbeacon/browser
         run: |
           sed -E -i 's|<meta name="robots" content="[^"]*"|<meta name="robots" content="noindex"|' index.html
           if ! grep -q '<meta name="robots" content="noindex"' index.html; then
@@ -445,16 +445,16 @@ jobs:
 
       - name: Serve client-side routes from the 404 page
         if: ${{ steps.token.outputs.available == 'true' }}
-        run: cp dist/elite-dangerous-ship-builder/browser/index.html dist/elite-dangerous-ship-builder/browser/404.html
+        run: cp dist/navbeacon/browser/index.html dist/navbeacon/browser/404.html
 
       # `public/CNAME` is copied into every build by the asset glob, and it
       # names the production domain. It is inert in a subdirectory — Pages reads
       # a CNAME only at the root of the published branch — but a file claiming
-      # sb.edct.dev has no business in a preview, and shipping one a directory
+      # navbeacon.app has no business in a preview, and shipping one a directory
       # move away from taking effect is not a risk worth keeping.
       - name: Drop the production domain from the preview
         if: ${{ steps.token.outputs.available == 'true' }}
-        run: rm -f dist/elite-dangerous-ship-builder/browser/CNAME
+        run: rm -f dist/navbeacon/browser/CNAME
 
       # A publication is many minutes behind the event that started it, and a
       # pull request can be merged or closed in that time. `preview-cleanup.yml`
@@ -486,7 +486,7 @@ jobs:
         if: ${{ steps.token.outputs.available == 'true' && steps.pr-state.outputs.open == 'true' }}
         uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
         with:
-          source-dir: dist/elite-dangerous-ship-builder/browser
+          source-dir: dist/navbeacon/browser
           deploy-repository: ${{ env.PREVIEW_REPOSITORY }}
           pages-base-url: ${{ env.PREVIEW_PAGES_BASE_URL }}
           umbrella-dir: ${{ env.PREVIEW_UMBRELLA_DIR }}

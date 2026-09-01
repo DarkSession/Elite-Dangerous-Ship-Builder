@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import type { NavigationEntry } from '../../ui/components/app-frame/app-frame';
+import type { NavigationEntry, ToolEntry } from '../../ui/components/app-frame/app-frame';
+import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
 
 /** The routes the shell offers from every screen. */
@@ -8,6 +9,51 @@ export const NAVIGATION_ROUTES = {
   build: '/build',
   library: '/builds',
 } as const;
+
+/** One tool this application carries, as the shell reads it. */
+interface ToolRecord {
+  readonly id: string;
+  /**
+   * The short name the bar draws.
+   *
+   * Canvas 3c gives each tool a full name and a tab label and draws the label —
+   * `SHIP`, not `SHIP BUILDER`. The short one is what is kept: the command bar
+   * under it already carries the screen's own name, and a bar restating the bar
+   * below it says nothing new.
+   */
+  readonly labelKey: MessageKey;
+  /** The address the tool opens at. */
+  readonly href: string;
+  /**
+   * The route prefixes the tool owns.
+   *
+   * What decides which tool is current, rather than the address it opens at: a
+   * Commander outfitting a hull at `/build` is still in the ship tool, and a
+   * bar that stopped naming it there would state something untrue.
+   */
+  readonly routes: readonly string[];
+}
+
+/**
+ * The tools this application carries.
+ *
+ * One array, read by everything that names a tool — the canvas's own rule for
+ * the shell it draws: "tabs and grid run off one tool registry, so a new tool
+ * appears in both at once" (`.design/Tool Navigation.dc.html`, canvas 3c).
+ *
+ * It holds the tools the application *serves*, not the ones it plans to. The
+ * canvas names eight and `docs/navbeacon-migration.md` names two; what answers
+ * an address is the ship builder, so that is what is here. A tab that opens
+ * nothing is a control for a thing that does not exist (011/FR-028).
+ */
+const TOOLS: readonly ToolRecord[] = [
+  {
+    id: 'ship',
+    labelKey: 'tools.ship',
+    href: NAVIGATION_ROUTES.catalogue,
+    routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.build, NAVIGATION_ROUTES.library],
+  },
+];
 
 /**
  * The application's primary navigation, in one place.
@@ -65,5 +111,25 @@ export class AppNavigation {
       href: NAVIGATION_ROUTES.catalogue,
       current: false,
     };
+  }
+
+  /**
+   * The tools the application carries, with the open route's own marked.
+   *
+   * The current tool is named rather than offered: `current` is what the frame
+   * draws as text instead of a link, for the reason `home` is `null` on the
+   * shipyard and `entries` drops the open screen. A link to the screen a
+   * Commander is reading is not a way anywhere, and here it would be the second
+   * control in one chrome opening the same address (011/FR-028).
+   */
+  tools(currentPath: string): readonly ToolEntry[] {
+    return TOOLS.map((tool) => ({
+      id: tool.id,
+      label: this.#messages.message(tool.labelKey),
+      href: tool.href,
+      current: tool.routes.some(
+        (route) => currentPath === route || currentPath.startsWith(`${route}/`),
+      ),
+    }));
   }
 }

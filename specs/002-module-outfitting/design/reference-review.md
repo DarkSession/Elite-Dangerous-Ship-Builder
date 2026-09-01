@@ -434,7 +434,7 @@ and is **feature 010's** to resolve. Feature 002 composes whatever that feature 
 no legend of its own, so nothing here depends on the ruling.
 
 The built asset tree carries no value from the reference canvas. Checked against
-`dist/elite-dangerous-ship-builder` after a production build:
+`dist/navbeacon` after a production build:
 
 | Looked for                                              | Found                                                        |
 | ------------------------------------------------------- | ------------------------------------------------------------ |

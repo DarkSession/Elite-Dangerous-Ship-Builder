@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import {
   FIXTURE_IDS,
   MALFORMED_RECORD,
   NAMED_RECORD_V1,
   UNSUPPORTED_NEWER_RECORD,
-} from '../../domain/build/fixtures/records';
-import type { RecordDraft } from '../../domain/build/stored-build.serializer';
+} from '../../domain/ships/build/fixtures/records';
+import type { RecordDraft } from '../../domain/ships/build/stored-build.serializer';
 import { LocalRecordRepository } from './local-record.repository';
 import { MemoryStorage, provideMemoryStorage, quotaError } from './storage.spec-helpers';
 import { recordKey } from './storage-keys';
