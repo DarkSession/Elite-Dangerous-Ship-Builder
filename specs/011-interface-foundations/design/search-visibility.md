@@ -371,12 +371,14 @@ whether any of the above is ever read. The README correction in this pass is the
 half which lives here: the repository page is the strongest link the project controls, and it told
 every visitor the application did not exist yet.
 
+---
+
 # The move to navbeacon.app
 
 > **Asked for on 2026-09-01.** `docs/navbeacon-migration.md` moves the site to a domain of its own
-> and names the product NavBeacon. Neither is a discoverability item, and neither passes above
-> changes its reasoning. Both change what the head, the manifest and the sitemap say, so what they
-> say is recorded here.
+> and names the product NavBeacon. Neither is a discoverability item, and neither changes what the
+> two passes above decided. Both change what the head, the manifest and the sitemap say, so what
+> they say is recorded here.
 
 ## The site is published from navbeacon.app
 
