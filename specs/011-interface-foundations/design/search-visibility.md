@@ -288,21 +288,6 @@ is 900x600 where a card is 1200x630, so a consumer crops or letterboxes it. That
 `twitter:card` becomes `summary_large_image`, which the first pass could not use because there was
 nothing to show.
 
-### The site is published from navbeacon.app
-
-Every address the first pass reads as `https://sb.edct.dev/` is `https://navbeacon.app/`. The
-canonical constant, the social cards, the two JSON-LD blocks, `CNAME`, `robots.txt` and the sitemap
-all state it, and `check-interface-foundations.mjs` reconciles the five against each other, so the
-site cannot half-move. Everything the first pass decided about _why_ a canonical is a constant is
-unchanged; only the constant is.
-
-### Both manifest names are the product's
-
-`public/manifest.webmanifest` declares `NavBeacon` as the name and the short name. The 2026-08-27
-ruling above holds and is what decides it: an installed icon is captioned with the application's
-name, and `Ship Builder` is the tool. The application is named apart from the tool, so the short
-name is the product's name rather than an abbreviation of a longer one.
-
 ### A preview no longer asks to be indexed
 
 `index.html` carries `<meta name="robots" content="index,follow,max-image-preview:large">`, and the
@@ -385,3 +370,25 @@ forums, the EDCD Discord, the subreddits — is the half of this that is not cod
 whether any of the above is ever read. The README correction in this pass is the one piece of that
 half which lives here: the repository page is the strongest link the project controls, and it told
 every visitor the application did not exist yet.
+
+# The move to navbeacon.app
+
+> **Asked for on 2026-09-01.** `docs/navbeacon-migration.md` moves the site to a domain of its own
+> and names the product NavBeacon. Neither is a discoverability item, and neither passes above
+> changes its reasoning. Both change what the head, the manifest and the sitemap say, so what they
+> say is recorded here.
+
+## The site is published from navbeacon.app
+
+Every address the first pass reads as `https://sb.edct.dev/` is `https://navbeacon.app/`. The
+canonical constant, the social cards, the two JSON-LD blocks, `CNAME`, `robots.txt` and the sitemap
+all state it, and `check-interface-foundations.mjs` reconciles the five against each other, so the
+site cannot half-move. Everything the first pass decided about _why_ a canonical is a constant is
+unchanged; only the constant is.
+
+## Both manifest names are the product's
+
+`public/manifest.webmanifest` declares `NavBeacon` as the name and the short name. The 2026-08-27
+ruling in the first pass holds and is what decides it: an installed icon is captioned with the
+application's name, and `Ship Builder` is the tool. The application is named apart from the tool, so
+the short name is the product's name rather than an abbreviation of a longer one.

@@ -193,8 +193,7 @@ export class AppFrame {
    * The tools the application carries, in the order the bar draws them.
    *
    * One of them is the whole registry today, and the bar then names that tool
-   * and offers no other — which is what the bar is for, and what it says to
-   * everyone else.
+   * and offers no other.
    *
    * Empty on a surface that carries no tools at all — the component preview
    * catalogue is one — and the region is then not in the document, so no reader

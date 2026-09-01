@@ -38,8 +38,8 @@ export interface BannerMeasurement {
  *
  * And while it does keep its place, what it leaves below is what every sticky
  * region under it has to clear. The declared `--edsb-layout-bar-height` is the
- * one height each of the banner's two bars is drawn at, which is what they come
- * to at every width where neither wraps — but a command bar that has wrapped is
+ * banner's two bars' own heights added together, which is what they come to at
+ * every width where neither wraps — but a command bar that has wrapped is
  * taller, by however many rows a longer language, a narrower window or a larger
  * text size cost it.
  * A region offsetting by the declared figure there freezes itself *behind* the

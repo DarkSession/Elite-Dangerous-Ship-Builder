@@ -76,7 +76,6 @@ test.describe('the reference visual language', () => {
     // A tab short of the bar leaves a strip of the menu ground under its fill
     // and floats the underline above the command bar it is meant to meet
     // (`canvas-extraction.md`, "Tool bar").
-    const tools = page.locator('.frame__tools');
     const current = page.locator('.frame__tool--current');
 
     expect(await style(current, 'background-color')).toBe(PANEL_4);
@@ -84,13 +83,14 @@ test.describe('the reference visual language', () => {
     expect(await style(current, 'border-bottom-width')).toBe('2px');
     expect(await style(current, 'border-bottom-color')).toBe(AMBER);
 
-    const met = await tools.evaluate(
-      (bar, tab: HTMLElement) => {
-        const hairline = parseFloat(getComputedStyle(bar).borderBlockEndWidth);
-        return bar.getBoundingClientRect().bottom - hairline - tab.getBoundingClientRect().bottom;
-      },
-      await current.elementHandle(),
-    );
+    // The gap between the tab's underline and the bar's own inner edge, read in
+    // one evaluation so both boxes describe the same moment.
+    const met = await page.evaluate(() => {
+      const bar = document.querySelector('.frame__tools') as HTMLElement;
+      const tab = bar.querySelector('.frame__tool--current') as HTMLElement;
+      const hairline = parseFloat(getComputedStyle(bar).borderBlockEndWidth);
+      return bar.getBoundingClientRect().bottom - hairline - tab.getBoundingClientRect().bottom;
+    });
 
     expect(Math.abs(met)).toBeLessThanOrEqual(1);
   });

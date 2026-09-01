@@ -378,10 +378,10 @@
   // What a region has to clear to sit below the sticky banner — the tool bar
   // and the command bar under it, which are one sticky region.
   //
-  // The declared figure is the one height each of the two is drawn at, which is
-  // what they come to at every width where neither wraps. It is a floor rather
-  // than the banner's height: any width where the command bar wraps draws more
-  // rows than one. So the frame republishes this token on its own host from the
+  // The declared figure is the two bars' own heights added together — what they
+  // come to at every width where neither wraps. It is a floor rather than the
+  // banner's height: any width where the command bar wraps draws more rows than
+  // one. So the frame republishes this token on its own host from the
   // banner it actually rendered (`sticky-banner.ts`), and the value here is
   // what stands until that first reading. It stays in the token layer because
   // the decision — *a region clears the banner* — is declared once, here; what

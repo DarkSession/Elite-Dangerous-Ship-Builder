@@ -49,10 +49,9 @@ is a control for a thing that does not exist.
 
 **A registry of one still draws the bar.** With a single tool served, the region names that tool and
 offers no other, so a reader reaching the landmark is told which tool the screen belongs to and
-finds nothing to follow. That is the state the product ships in, and it is the bar working: the
-same thing it tells everyone else, and it gains links as the registry does without the shell
-changing shape. What it must not be is a landmark with nothing in it at all, which is why a surface
-carrying no tools — the component preview catalogue is one — leaves the region out of the document.
+finds nothing to follow. That is the state the product ships in. What it must not be is a landmark
+with nothing in it at all, which is why a surface carrying no tools — the component preview
+catalogue is one — leaves the region out of the document.
 
 **The current tool is named, not offered.** The tab for the tool a Commander is already in is text
 rather than a link, for the reason the insignia is a bare mark on the shipyard and the primary
