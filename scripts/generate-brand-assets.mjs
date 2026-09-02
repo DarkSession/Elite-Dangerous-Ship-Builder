@@ -46,6 +46,40 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
  */
 export const MARK_SOURCE = '.design/assets/nav-beacon-mark.svg';
 
+/**
+ * The mark the command bar carries, copied rather than rendered.
+ *
+ * The bar draws the mark as a drawing rather than as a picture of one, so this
+ * is the one asset here that leaves `.design` as itself. It is copied by this
+ * script all the same: a file hand-carried out of the design directory stops
+ * being the design's drawing the first time the canvas is re-cut, and nothing
+ * would say so.
+ *
+ * The `-header` variant, whose domes are filled with `--ednb-palette-panel-4` —
+ * the plate the bar is painted on. The plain variant fills them with the page
+ * ground, which is what every rendering above is drawn on.
+ */
+export const BAR_MARK = {
+  source: '.design/assets/nav-beacon-mark-header.svg',
+  file: 'public/assets/icons/nav-beacon-mark-header.svg',
+};
+
+/**
+ * The drawing without its provenance manifest.
+ *
+ * The design tool writes a C2PA manifest into every SVG it exports, and it is
+ * an order of magnitude larger than the drawing: 7.7 kB of base64 around 878
+ * bytes of beacon. The application prefetches this file into every offline
+ * install, so what ships is the drawing. The manifest is not discarded — the
+ * exported file keeps it, under `.design`, which is where the record of what
+ * the design tool produced belongs.
+ */
+export function drawingOnly(svg) {
+  return svg
+    .replace(/<metadata>[\s\S]*?<\/metadata>\s*/g, '')
+    .replace(/\s+xmlns:c2pa="[^"]*"/g, '');
+}
+
 /** The one file permitted to state the colour the application is drawn on. */
 export const TOKENS = 'src/styles/tokens/_primitives.scss';
 
@@ -213,6 +247,10 @@ export function packIcon(entries) {
 
 async function main() {
   const rendered = await render();
+  rendered.set(
+    BAR_MARK.file,
+    Buffer.from(drawingOnly(await readFile(join(ROOT, BAR_MARK.source), 'utf8')), 'utf8'),
+  );
 
   for (const [file, bytes] of rendered) {
     const path = join(ROOT, file);

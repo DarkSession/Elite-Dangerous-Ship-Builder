@@ -272,16 +272,15 @@
 // The way back to the shipyard: a link around the mark, never the mark itself.
 //
 // The mark is 26 x 26 — the size the canvas draws it, and under this feature's
-// 44-pixel press baseline. A control that
-// stands on its own is held to the baseline, so the target is the box around the
-// mark rather than the mark: the drawing is unchanged and the press is the size
-// it should be (011/FR-012, reported 2026-08-26).
+// 44-pixel press baseline. A control that stands on its own is held to the
+// baseline, so the target is the box around the mark rather than the mark: the
+// drawing keeps its size and the press is the size it should be (011/FR-012).
 //
-// The box around it, because a minimum on the mark's own box is not a box
-// around anything. `min-inline-size` beats the declared `inline-size`, the
-// the insignia was drawn 44 x 39 wherever it was a link and 26 x 26 wherever it
-// was not — the same mark at two sizes, changing as a Commander moved from the
-// shipyard to a build (Commander request 2026-08-28).
+// The box around it, because a minimum on the mark's own box is not a box around
+// anything: `min-inline-size` beats the declared `inline-size`, and the mark
+// would be drawn 44 x 44 wherever it is a link and 26 x 26 wherever it is not —
+// the same mark at two sizes, changing as a Commander moves from the shipyard to
+// a build (Commander request 2026-08-28).
 .frame__flag-home {
   @include layout.target-baseline;
 
@@ -487,8 +486,8 @@
     align-items: flex-start;
   }
 
-  // The tool deck takes the same compact insets as the deck under it, so the
-  // two line up on one gutter (canvas 4d).
+  // A tab's own inline padding at the compact width (canvas 4d). The deck's
+  // insets are the `deck-insets` include above; this is what is inside a tab.
   .frame__tool {
     padding-inline: var(--ednb-space-inline);
   }

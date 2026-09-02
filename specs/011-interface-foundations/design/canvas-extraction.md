@@ -141,8 +141,7 @@ from the per-screen files.
 `height: 56px` wide / `52px` compact, `background: var(--panel-4)`,
 `border-bottom: 2px solid var(--amber)`. Leading edge carries the beacon mark
 (`26px` square on the wide shipyard, `21` to `24px` elsewhere, drawn from
-`.design/assets/nav-beacon-mark-header.svg` — the same file the app icon is
-rendered from, canvas 6d), then the screen title in condensed 700
+`.design/assets/nav-beacon-mark-header.svg`, canvas 6d), then the screen title in condensed 700
 uppercase tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in
 `--ink-45`. Trailing edge carries actions.
 
@@ -152,19 +151,20 @@ reproduce it would be a responsive rule nobody could see, and the mark is a mark
 rather than a measured element of the layout. This is the second recorded
 deviation from the canvases, after the type ramp.
 
-**The mark is a file, not a shape (canvas 6d, replacing 3b, 2026-09-02).** The
-amber wedge over a lighter underbar was cut out of the flag's own two layers with
-a `clip-path`. The approved mark is a beacon — domed cap, lit amber core, domed
-base, four antennas on 90° spacing, the whole rotated 10° counter-clockwise — and
-no clip path states that. It is `<img>` rather than a background so that the
-drawing has its own box: the insignia is also the way home, and a control that
-stands on its own is held to the 44px press baseline, which is paid by a box
-around the mark (011/FR-012).
+**The mark is a file, not a shape (canvas 6d).** The mark is a beacon — domed
+cap, lit amber core, domed base, four antennas on 90° spacing, the whole rotated
+10° counter-clockwise — and no clip path states that. It is drawn as `<img>`
+rather than as a background so that the drawing has a box of its own: the
+insignia is also the way home, and a control that stands on its own is held to
+the 44px press baseline, which is paid by a box around the mark (011/FR-012).
 
-Of the three variants the design ships, the product uses `-header`, whose domes
-are filled `#161615`. That is `--ednb-palette-panel-4`, the plate the bar is
-painted on, so the bar's colour and this asset move together; `-light` is drawn
-for a bone ground and `-mono` for a single ink, and neither is used here.
+Canvas 6d ships one geometry in four fills, and two of them are in use. The bar
+takes `-header`, whose domes are `#161615` — `--ednb-palette-panel-4`, the plate
+the bar is painted on, so the bar's colour and that asset move together. The
+plain `nav-beacon-mark.svg` fills its domes with the page ground and is what
+`scripts/generate-brand-assets.mjs` renders every icon, the favicon and the link
+card from, because a rendering is drawn on that ground. `-light` is for a bone
+ground and `-mono` for a single ink; neither is used here.
 
 The press baseline is paid by a box **around** the mark, never by the mark
 itself. Where the insignia is the way home it is a mark inside a link: the link
@@ -186,9 +186,9 @@ is `0 12px` of inline padding on condensed 700 uppercase tracked `0.16em` at `10
 `--ink-48`; the current tab takes `--amber-3` ink, an `--amber-a14` wash and a
 `2px solid var(--amber)` underline. The tabs are separated by `2px`.
 
-Canvas 4d draws the same two decks at 390px: a `34px` tool deck over a `40px` command deck, the
-mark at `16px` with the decks starting `10px` past it, and the tool's actions behind one `⋯`
-control. The product folds its actions at that width already, so what 4d settles is the compact
+Canvas 4d draws the same two decks at 390px: a `34px` tool deck over a `40px` command deck, a
+`21px` mark inset `16px` from the plate edge with the decks starting at `48px` — `11px` past it —
+and the tool's actions behind one `⋯` control. The product folds its actions at that width already, so what 4d settles is the compact
 gutter pair and that the tool deck is drawn at every width.
 
 **The insignia stands on the plate, not on either deck.** Canvas 4c puts one mark on the leading

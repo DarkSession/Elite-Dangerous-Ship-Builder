@@ -146,7 +146,7 @@ record rather than an omission:
 - A separate Angular application per tool
 - A `301` from `sb.edct.dev`, and the second Pages site it would need
 - A saved-build handoff page, a bulk export format, or a cross-origin `postMessage` bridge
-- Renaming the `edsb:` storage prefix, the `edsb-` selectors or the `--ednb-*` custom properties
+- Renaming the `edsb:` storage prefix or the `edsb-` selectors
 - The `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin, at one tool
 - An account plate on the tool bar, which the canvas draws and constitution I refuses
 - The Market Finder and Thargoid War Tracker from the canvas — both need a network

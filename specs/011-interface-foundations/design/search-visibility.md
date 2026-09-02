@@ -274,8 +274,8 @@ and the script is how the files are reproduced rather than a step the build depe
 
 The mark it renders has been in `.design` since 2026-08-22. The first pass's "there is no logo to
 make one from" was already untrue when it was written; it is corrected here rather than quietly
-worked around. Canvas 6d replaced that mark with the beacon on 2026-09-02, and every asset here is
-a rendering of the new drawing — the wedge is gone from the product, including from the tab icon.
+worked around. The mark it renders is the beacon canvas 6d approves, and every asset here — the tab
+icon included — is a rendering of that one drawing.
 
 **The card carries no words.** A 1200x630 image with `SHIP BUILDER` in it is display text this
 application owns, in one language, in a file no translation can reach (constitution VI). The card is

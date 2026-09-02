@@ -633,6 +633,22 @@ function stylesheetViolations(file, source) {
       });
       return;
     }
+    // Every token this application draws from is `--ednb-`. A reference to any
+    // other namespace resolves to nothing and paints nothing, in silence: CSS
+    // drops the declaration and no build, test or browser says why the rule
+    // stopped applying. That is what a mistyped or stale prefix looks like, and
+    // the product has carried two prefixes in its life.
+    for (const [, referenced] of declaration.value.matchAll(/var\(\s*(--[\w-]+)/g)) {
+      if (!referenced.startsWith('--ednb-')) {
+        found.push({
+          file: relative(ROOT, file),
+          line,
+          rule: 'foreign-token-namespace',
+          message: `"${declaration.prop}" reads "${referenced}", which is not a token this application declares.`,
+        });
+      }
+    }
+
     if (!GOVERNED_PROPERTIES.has(property)) {
       return;
     }

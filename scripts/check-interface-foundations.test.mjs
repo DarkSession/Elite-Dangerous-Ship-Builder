@@ -170,6 +170,36 @@ describe('governed visual literals', () => {
     assert.deepEqual(found, []);
   });
 
+  it('refuses a token from a namespace this application does not declare', () => {
+    // The product has carried two prefixes in its life, and a stale one paints
+    // nothing in silence: CSS drops the declaration, and no build or browser
+    // says why the rule stopped applying.
+    for (const source of [
+      '.a { color: var(--edsb-text-primary); }',
+      '.a { padding: calc(var(--ednb-space-lg) + var(--edsb-space-sm)); }',
+      '.a { display: grid; grid-template-columns: var(--edsb-layout-rail) 1fr; }',
+    ]) {
+      assert.deepEqual(
+        ruleIds(rules.stylesheetViolations('c.scss', source)).filter(
+          (rule) => rule === 'foreign-token-namespace',
+        ),
+        ['foreign-token-namespace'],
+        source,
+      );
+    }
+  });
+
+  it('reads the canvas\u2019s own token names in comments as prose', () => {
+    // Records quote the design's names — `var(--amber-a14)`, `var(--panel)` —
+    // and a comment is not a declaration.
+    const found = rules.stylesheetViolations(
+      'c.scss',
+      '// The canvas draws `1px solid var(--amber-a2)` over `var(--panel)`.\n.a { color: var(--ednb-text-primary); }',
+    );
+
+    assert.deepEqual(found, []);
+  });
+
   it('accepts a token calculation', () => {
     for (const source of [
       '.a { padding: calc(var(--ednb-space-lg) * 2); }',
