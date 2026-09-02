@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BuildLinkCodecError } from '../../domain/ships/build-link/build-link-codec-error';
+import { BuildLinkCodecError } from '../../domain/build-link/build-link-codec-error';
 import { MessageService } from '../../i18n/message.service';
 import type { MessageKey } from '../../i18n/locale-registry';
 import type { LinkFailureCode } from '../active-build/active-build.models';

@@ -73,7 +73,7 @@ describe('build-link codec pinned symbol models', () => {
       const modelledLength = modelledCodec.encodeBuildLinkFragment(source).length;
       return { label, baselineLength, modelledLength };
     });
-    // Both columns are pinned because `docs/build-link-codec.md` publishes them as the models'
+    // Both columns are pinned because `docs/ship-link-codec.md` publishes them as the models'
     // measured effect. A runner shows no console output for a passing spec, so a printed table
     // would let either column drift unnoticed; an assertion cannot.
     expect(rows).toEqual([

@@ -1,0 +1,181 @@
+# Equipment-link codec
+
+## Purpose
+
+The equipment-link codec serialises one planned on-foot Commander — a suit, its grade, its
+modifications and what is on its weapon mounts — into a URL fragment. It is the equipment
+builder's counterpart to the [ship-link codec](./ship-link-codec.md), and a codec of its own
+rather than a mode of that one.
+
+It is separate for one reason: a fragment claims itself by its prefix. `b.` says a ship builder
+minted the value and `e.` says an equipment builder did, so neither decoder is ever offered the
+other's link and neither has to guess. What the two share is everything below the format — the
+Base70 alphabet, the CRC-32 envelope and the bit packer — which lives in
+`src/app/domain/build-link/` and is described under [Shared floor](#shared-floor) below.
+
+The codec carries only what a Commander chose. Shield strength, resistances, firepower, material
+requirements and upgrade costs are `@elite-dangerous-almanac/core`'s answers about that choice
+(constitution II), recomputed on the way back in and never carried in the link.
+
+## Representation layers
+
+```text
+#e.<encoded payload>
+    │
+    └─ Base70 digits with a Base62-only terminal digit
+       └─ payload bytes: [table version + bit-packed loadout] [CRC-32, little-endian]
+          └─ identities resolved through equipment-link-table-1.json
+             └─ read back through @elite-dangerous-almanac/core
+```
+
+The `#` belongs to the URL and is not part of the codec value. The encoder produces
+`e.<encoded payload>`; the decoder also accepts a leading `#`.
+
+## Binary body
+
+The body is bit-packed, little-endian within each byte, with no alignment between fields. It is
+not arithmetically coded. A fully engineered hull is hundreds of choices and needs the ship
+codec's adaptive model to stay inside its budget; a loadout is a suit, at most three weapons and
+their modification slots, and packs into a handful of bytes without one.
+
+Fields are written in this order, with widths derived from the table at module load:
+
+| Field                 | Width  | Meaning                                                          |
+| --------------------- | ------ | ---------------------------------------------------------------- |
+| table version         | 10     | Which table decodes the rest. Table `1` is the only one minted.  |
+| suit                  | 2      | Index into `SUITS`.                                              |
+| suit grade            | 3      | A grade the suit publishes, stated rather than indexed.          |
+| suit modification × 4 | 4 each | `0` for an empty slot, otherwise `SUIT_MODIFICATIONS` index + 1. |
+| mount × _n_           | —      | One per mount the suit offers, in the suit's own order.          |
+
+The suit's mount count is not written: it is what `SUIT_MOUNTS` says for the suit just read. Each
+mount is:
+
+| Field                   | Width  | Meaning                                                     |
+| ----------------------- | ------ | ----------------------------------------------------------- |
+| weapon                  | 4      | `0` for an empty mount, otherwise `WEAPONS` index + 1.      |
+| weapon grade            | 3      | Present only when a weapon is fitted.                       |
+| weapon modification × 4 | 5 each | Present only when a weapon is fitted. `0` is an empty slot. |
+
+The whole of the format is that. The Flight Suit with nothing on it is 35 bits and encodes as
+`e.8CdK,__hPmL` — 13 characters. The largest loadout the catalogue can state — the Dominator at
+grade 5, all three mounts filled at grade 5, every modification slot held — is 112 bits and
+encodes in 25 characters, against a 500-character bound. The bound is what the application will
+attempt to read at all; it is not a budget this format was drawn against, and there is no
+capacity script for it because nothing here approaches it.
+
+### Modification slots are addressed, not listed
+
+Every one of an item's four modification slots is written, held or not. Which slot a modification
+is in is part of what the loadout says: the slots a grade unlocks are its first ones, so an item
+at grade 3 holds what is in slots 1 and 2 and has locked whatever is in 3 and 4 (013/US2). A list
+that closed up around a cleared slot would move a modification from a locked slot into an
+unlocked one, and the loadout a link restored would not be the loadout it was made from.
+
+It is also what leaves the format one spelling per loadout: there is no second way to say which
+slot is empty, so no canonical-ordering rule is needed to keep alternate encodings out.
+
+## The table
+
+`src/app/domain/equipment/loadout-link/equipment-link-table-1.json` is generated from the
+installed package by `scripts/generate-equipment-link-codec-tables.mjs` (`pnpm run
+codec:tables:equipment`). Every identity in a link is a position in it, so the table — not the
+release that happens to be installed — is what a published link means.
+
+It holds the identities:
+
+- `SUITS` — `Suit.family`, the identity a suit keeps at every grade
+- `WEAPONS` — `PersonalWeapon.symbol`
+- `SUIT_MODIFICATIONS`, `WEAPON_MODIFICATIONS` — the recipe keys, split by `target`
+
+and what the codec needs to refuse a loadout that cannot exist:
+
+- `SUIT_GRADES`, `WEAPON_GRADES` — the grades each item publishes
+- `SUIT_MOUNTS` — `[primary, secondary]` counts per suit
+- `WEAPON_MOUNTS` — which kind of mount each weapon fits
+- `MODIFICATION_SLOTS` — the most slots any grade unlocks
+- `WEAPON_MODIFICATION_SETS` — which recipes each weapon can take
+
+`WEAPON_MODIFICATION_SETS` earns its place. Greater Range, Headshot Damage and Improved Hip Fire
+Accuracy are three recipes each, one per damage technology, and a weapon takes exactly one of the
+three. The pairing is the library's: the generator asks
+`resolvePersonalModificationForWeapon` and pins the answer. Without it the codec would refuse a
+rifle on a sidearm mount and then happily carry `weapon_range_kinetic` on a plasma rifle.
+
+Reading any of this from the package at decode time would make an old link's meaning depend on
+the release installed, which is the thing a pinned table exists to prevent.
+
+### Versioning
+
+The table is pinned by content hash, and the ship codec's rule applies unchanged: a changed hash
+is a new encoding and belongs under the next table number, with the old file kept for the links
+already published. `--overwrite` replaces table 1 in place and is sound only while no link has
+been published against it, which is true up to the equipment builder's first release. The unit
+suite pins the hash and recomputes it, so neither a regenerated table nor a hand-edited one
+passes quietly.
+
+Unlike the ship codec, the table is imported statically rather than lazily: it is a few kilobytes
+and there is one of them. When a second table is minted, the loader pattern in
+`build-link-codec-loader.ts` is the one to copy.
+
+## Refusals
+
+Every refusal is a `BuildLinkCodecError` carrying a code and, where there is one, the mount it is
+about. Encode and decode refuse the same things for the same reasons, so a fragment this
+application produced is one it accepts:
+
+| Code                      | Raised for                                                                  |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `unsupportedEnvelope`     | A fragment that is not `e.`-prefixed — a ship link, or an unrelated anchor. |
+| `invalidEncoding`         | A body that is not Base70, or is empty.                                     |
+| `integrityCheckFailed`    | A body whose CRC-32 does not match.                                         |
+| `unsupportedTableVersion` | A table number this build cannot read.                                      |
+| `unknownIdentity`         | A suit, weapon or recipe this release does not publish.                     |
+| `invalidPayload`          | A loadout the game cannot hold, and a truncated or over-long body.          |
+
+The line between the last two is which question failed. A recipe the catalogue does not hold at
+all is an unknown identity; a recipe it holds for other weapons is a payload the item cannot
+hold — the same refusal as a rifle on a sidearm mount, an unpublished grade, one recipe fitted
+twice, or a mount count that is not the suit's.
+
+### Naming the mount
+
+A refusal names `suit`, `primary1`, `primary2` or `secondary1`. Those are identities, not text.
+The package publishes mount counts and no key for a mount, so unlike the ship side there is no
+game slot key to use — the one place this format departs from constitution II, recorded in
+`specs/013-equipment-builder/spec.md` under Dependencies. When the package publishes keys they
+replace this order.
+
+Because they are identities, whatever renders a refusal names the mount in the Commander's
+language first, the way `src/app/ui/outfitting/slot-naming.ts` names a ship's mounts.
+Interpolating `primary1` into a notice would ship an untranslated string (constitution VI).
+
+## Shared floor
+
+`src/app/domain/build-link/` holds what both codecs stand on, and neither owns:
+
+- `build-link-radix.ts` — the Base70 alphabet with its Base62-only terminal digit
+- `build-link-bits.ts` — `RawBitWriter` and `RawBitReader`
+- `build-link-envelope.ts` — the CRC-32 envelope, prefix dispatch and length bound, parameterised
+  by a `LinkEnvelope`
+- `build-link-codec-error.ts` — the error type and its codes
+
+A codec supplies its prefix and its bound and gets envelope handling that is identical on both
+sides by construction. It is the reason the equipment codec is roughly 300 lines: the parts that
+are hard to get right were already written and already tested.
+
+## What is deliberately not in the format
+
+- **Anything the library can answer.** Stats, resistances, firepower, material requirements and
+  costs are recomputed from the identities.
+- **Suit tools.** The Energylink, Arc Cutter and Profile Analyser are absent upstream, so there is
+  nothing to name. They join the format with a mount field of their own when the package
+  publishes them, under a new table version.
+- **A loadout name.** The ship codec carries optional labels; a loadout has none to carry yet.
+- **Engineering quality.** As on the ship side, a grade is complete or it is not reached.
+
+## Status
+
+The codec is written and tested; nothing imports it yet. The equipment builder is specified in
+`specs/013-equipment-builder/` and not built, so table 1 is still under its overwrite rule and
+the format can still move. The first published link ends that.

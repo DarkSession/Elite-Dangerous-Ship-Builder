@@ -307,6 +307,21 @@ reopens the same loadout and the readable summary names every fitted item.
   `PersonalWeapon.scopeMagnification`.
   A figure a modified loadout states is that call's answer, never arithmetic performed here.
 
+- **A suit's weapon mounts have no published key.** `Suit.primarySlots` and
+  `Suit.secondarySlots` are counts, and nothing under `equipment/` names a mount the way
+  `ships/` names a slot. Constitution II asks for the game's own slot keys and never a
+  positional index, so a loadout that has to say _which_ mount a weapon is on cannot
+  satisfy it as the library stands. Until the library publishes keys, a mount is named by
+  the suit's own order — primary mounts, then secondary — and that order is written down
+  wherever it is relied on. A gap to raise, not a blocker.
+
+  Those names (`primary1`, `secondary1`, `suit`) are identities and not text: FR-021 has
+  the bench name the mount a refusal is about, and it MUST name it in the Commander's
+  language, the way `src/app/ui/outfitting/slot-naming.ts` names a ship's mounts.
+  Interpolating the identity into the notice would ship an untranslated string
+  (constitution VI). Nothing renders one yet — the codec has no consumer — so this is a
+  requirement on the bench when it is built, not an outstanding defect.
+
 - **Suit tools are absent upstream** — the Energylink, Arc Cutter and Profile Analyser the
   `SUIT TOOLS` region of artboard `1a` draws. A gap to raise, not a blocker: the region
   is withdrawn and the rest of the feature stands without it.

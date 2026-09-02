@@ -1,4 +1,4 @@
-import { BuildLinkCodecError } from './build-link-codec-error';
+import { BuildLinkCodecError } from '../../build-link/build-link-codec-error';
 
 const STATE_BITS = 64n;
 const FULL_RANGE = 1n << STATE_BITS;

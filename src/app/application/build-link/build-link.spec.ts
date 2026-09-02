@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { normalizeIncomingBuild } from '../../domain/ships/build/build-ingress-normalizer';
-import { BuildLinkCodecError } from '../../domain/ships/build-link/build-link-codec-error';
+import { BuildLinkCodecError } from '../../domain/build-link/build-link-codec-error';
 import { encodeBuildLinkFragment } from '../../domain/ships/build-link/build-link-codec-loader';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';

@@ -121,6 +121,10 @@ pinned release, the three leaves answer for every key in all six stored locales,
 weapon-name lookup and that is not a gap: a handheld weapon's name is a product name the
 game leaves in English, so `PersonalWeapon.name` is the name in all six.
 
+Its link codec is written ahead of the bench and specified in
+[equipment-link-codec.md](./equipment-link-codec.md): a codec of its own behind the `e.` prefix,
+standing on the same Base70 radix, CRC-32 envelope and bit packer as the ship link.
+
 The suit tools — Energylink, Arc Cutter, Profile Analyser — are absent upstream. That is
 a gap to raise, not a blocker: spec 013 withdraws the region rather than filling it
 locally.

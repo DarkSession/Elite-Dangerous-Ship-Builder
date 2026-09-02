@@ -16,7 +16,7 @@ import {
   BUILD_LINK_FINAL_ALPHABET,
   decodeBuildLinkPayload,
   encodeBuildLinkPayload,
-} from './build-link-radix';
+} from '../../build-link/build-link-radix';
 import codecTable1Json from './codec-table-1.json';
 import realisticEngineeredCorvette from './realistic-engineered-corvette.fixture.json';
 import { makeFullyEngineeredAnaconda, minimalState } from './build-link-codec.spec-helpers';

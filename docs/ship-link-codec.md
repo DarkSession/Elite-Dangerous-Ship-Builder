@@ -1,10 +1,14 @@
-# Build-link codec
+# Ship-link codec
 
 ## Purpose
 
-The build-link codec serialises the smallest non-derivable representation of a ship loadout into a
+The ship-link codec serialises the smallest non-derivable representation of a ship loadout into a
 URL fragment. It is an application-owned interchange format for sharing builds; it is not a second
 implementation of SLEF.
+
+It is one of two link codecs. The equipment builder publishes its own, `e.`-prefixed and specified
+in [equipment-link-codec.md](./equipment-link-codec.md); the two share the Base70 radix, the CRC-32
+envelope and the bit packer in `src/app/domain/build-link/`, and nothing above them.
 
 SLEF import, build reconstruction, calculated statistics, and SLEF export remain the responsibility
 of `@elite-dangerous-almanac/core`. The codec carries only the state needed to reconstruct the same

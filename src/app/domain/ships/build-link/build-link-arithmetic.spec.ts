@@ -1,5 +1,5 @@
 import { ArithmeticDecoder, ArithmeticEncoder } from './build-link-arithmetic';
-import { BuildLinkCodecError } from './build-link-codec-error';
+import { BuildLinkCodecError } from '../../build-link/build-link-codec-error';
 
 describe('build-link arithmetic coding', () => {
   it('pins deterministic mixed-radix and large-rank vectors', () => {
