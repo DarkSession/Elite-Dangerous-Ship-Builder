@@ -201,7 +201,7 @@ describe('governed visual literals', () => {
 
   it('holds the token sources to the namespace and nothing else', () => {
     // Literals and custom-property declarations are what a token source is
-    // for. A stale prefix is not, and these two files hold the densest `var()`
+    // for. A stale prefix is not, and these files hold the densest `var()`
     // references in the repository.
     const scope = { tokenSources: ['src/styles/tokens/_semantic.scss'] };
     const found = rules.stylesheetViolations(
