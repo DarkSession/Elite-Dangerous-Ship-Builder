@@ -63,10 +63,10 @@ describe('build-link codec', () => {
 
   it('compacts common ASCII metadata without changing Unicode fallback semantics', () => {
     const cases = [
-      { name: 'Astraea', ident: 'TST-42', length: 29 },
+      { name: 'Astraea', ident: 'TST-42', length: 30 },
       { name: 'Astraea 星', ident: 'TST-42', length: 38 },
       { name: '星', ident: null, length: 21 },
-      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 43 },
+      { name: 'THE WANDERING STAR 42', ident: 'AB-123', length: 44 },
     ];
     for (const { name, ident, length } of cases) {
       const source = ShipLoadout.fromLoadout({
@@ -299,9 +299,9 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.6lNEFSYnYR0i,rdWhJz8H7mFTPR@@DRYR3SD6cWNd1A4!PTC4.,JMc/y1Uhh9M_uk5yKmUPRDlI/iyfgDRolLhJF/v!4SUos',
+      'b.26da!i-2iAMHR6!JYWjLXeH:ll2xmztchA8e91yfvAecy.0k,wpaS39Od-qe_AWys@MUQrpRGJVEQa',
     );
-    expect(`https://ships.example/#${fragment}`).toHaveLength(121);
+    expect(`https://ships.example/#${fragment}`).toHaveLength(103);
   });
 
   it('preserves package-identified pre-engineered variants and their effective stats', () => {
@@ -329,7 +329,7 @@ describe('build-link codec', () => {
     });
 
     const decoded = decodeBuildLinkFragment(encodeBuildLinkFragment(source));
-    expect(encodeBuildLinkFragment(source)).toBe('b.5SJLJs0jc4X:G7cvxRr');
+    expect(encodeBuildLinkFragment(source)).toBe('b.5SJLJs0jX!Cg!H@ZISp');
     const sourceModule = source.fittedModuleAt('LargeHardpoint1')!;
     const decodedModule = decoded.fittedModuleAt('LargeHardpoint1')!;
 
@@ -695,6 +695,91 @@ describe('build-link codec', () => {
     }
   });
 
+  it('refers a repeated engineering record back to its own module', () => {
+    // Three mounts of one module, two rolls, and the third mount repeats the first. The
+    // dictionary the third refers into belongs to the module, so its index covers two records
+    // rather than every record in the build.
+    const repeated = shieldBoosterKrait([
+      'ShieldBooster_Resistive',
+      'ShieldBooster_HeavyDuty',
+      'ShieldBooster_Resistive',
+      'ShieldBooster_HeavyDuty',
+    ]);
+    const distinct = shieldBoosterKrait([
+      'ShieldBooster_Resistive',
+      'ShieldBooster_HeavyDuty',
+      'ShieldBooster_Thermic',
+      'ShieldBooster_Kinetic',
+    ]);
+
+    const fragment = encodeBuildLinkFragment(repeated);
+    const decoded = decodeBuildLinkFragment(fragment);
+
+    expect(minimalState(decoded)).toEqual(minimalState(repeated));
+    expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+    expect(decoded.fittedModuleAt('TinyHardpoint3')?.engineering).toEqual(
+      decoded.fittedModuleAt('TinyHardpoint1')?.engineering,
+    );
+    expect(fragment.length).toBeLessThan(encodeBuildLinkFragment(distinct).length);
+  });
+
+  it('writes a pre-engineered record in full on a module that already has ordinary records', () => {
+    // A pre-engineered record carries an identity rather than a state, so it never joins a
+    // module's dictionary and never refers into one, however many ordinary records precede it.
+    const variant = PRE_ENGINEERED_MODULES.find(
+      ({ symbol, acquisition }) =>
+        symbol.toLowerCase() === 'hpt_multicannon_fixed_medium' && acquisition === 'communityGoal',
+    )!;
+    const source = ShipLoadout.default('Krait_MkII');
+    for (const slot of ['LargeHardpoint1', 'LargeHardpoint2', 'LargeHardpoint3']) {
+      const candidate = source
+        .modulesForSlot(slot)
+        .find((module) => module.symbol.toLowerCase() === 'hpt_multicannon_fixed_medium')!;
+      source.setModule(slot, candidate);
+    }
+    source.applyBlueprint('LargeHardpoint1', 'Weapon_Efficient', { grade: 5, quality: 1 });
+    source.applyBlueprint('LargeHardpoint2', 'Weapon_Efficient', { grade: 5, quality: 1 });
+    source.setPreEngineeredVariant('LargeHardpoint3', variant);
+
+    const fragment = encodeBuildLinkFragment(source);
+    const decoded = decodeBuildLinkFragment(fragment);
+
+    expect(minimalState(decoded)).toEqual(minimalState(source));
+    expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
+    expect(decoded.fittedModuleAt('LargeHardpoint3')?.preEngineeredVariant).toEqual(variant);
+    expect(decoded.fittedModuleAt('LargeHardpoint2')?.engineering?.BlueprintName).toBe(
+      'Weapon_Efficient',
+    );
+  });
+
+  it('rejects a repeated engineering literal and an out-of-range dictionary index', () => {
+    // The messages matter here: a hand-built body is non-canonical in other ways too, and the
+    // canonical-form check would reject it whatever the records said. Naming the error proves
+    // the reader refused the record rather than the body around it.
+    const repeatedLiteral = expectCodecError(
+      () =>
+        decodeBuildLinkFragment(
+          craftedShieldBoosterEngineering([{ blueprint: 0 }, { blueprint: 0 }]),
+        ),
+      'invalidPayload',
+    );
+    expect(repeatedLiteral.message).toBe('A repeated engineering record is not canonical.');
+
+    const outOfRange = expectCodecError(
+      () =>
+        decodeBuildLinkFragment(
+          craftedShieldBoosterEngineering([
+            { blueprint: 0 },
+            { blueprint: 1 },
+            { blueprint: 2 },
+            { reference: 3 },
+          ]),
+        ),
+      'invalidPayload',
+    );
+    expect(outOfRange.message).toBe('A bounded integer is invalid.');
+  });
+
   it('round-trips festive modules as package-owned pre-engineered variants', async () => {
     const cases = PRE_ENGINEERED_MODULES.filter(({ blueprintSymbol }) =>
       blueprintSymbol.startsWith('Decorative_'),
@@ -711,7 +796,7 @@ describe('build-link codec', () => {
 
       expect(readPayloadBits(fragment, 0, 10)).toBe(1);
       if (variant.blueprintSymbol === 'Decorative_Green') {
-        expect(fragment).toBe('b.5S25TzaeHpHX!Om2.:Z');
+        expect(fragment).toBe('b.5S25TzaeLjTwhwDXHrX');
       }
       expect(`https://ships.example/#${fragment}`.length).toBeLessThanOrEqual(500);
       expect(minimalState(decoded)).toEqual(minimalState(source));
@@ -764,13 +849,13 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently on 2026-08-31 so that the five plain size-8 frame shift drives
-    // the Almanac withdrew leave the catalogue here too. Once released, a changed hash belongs
-    // under the next table number.
+    // unpublished, most recently on 2026-09-01 so that its candidate sets carry a popularity
+    // order and its `MODELS` block prices the structural booleans. Once released, a changed hash
+    // belongs under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('a1e2fc867f47e281344ea442b1845dd15e6f622e3b37ec86150e4b252eb504bc');
+    expect(contentHash).toBe('6280af035fe6292f6e55ee11060b30f27b71773b68c18ae47b56a93c758fa5db');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -894,9 +979,8 @@ describe('build-link codec', () => {
 
   it('keeps the frozen literal special-build link stable in the decode direction', () => {
     // Freeze before release; once table 1 ships, never regenerate this fixture to make a build pass.
-    // Re-frozen 2026-08-31 with table 1 itself, when the five plain size-8 frame shift drives left
-    // the catalogue and every module index over theirs moved down by five.
-    const preEngineered = decodeBuildLinkFragment('b.5SJLJs0jc4X:G7cvxRr');
+    // Re-frozen 2026-09-01 with table 1 itself, when its candidate sets took a popularity order.
+    const preEngineered = decodeBuildLinkFragment('b.5SJLJs0jX!Cg!H@ZISp');
 
     expect(preEngineered.shipSymbol).toBe('Krait_MkII');
     expect(preEngineered.shipName).toBeNull();
@@ -938,9 +1022,9 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.Fe22sXs1VYx8!NVMtCk!psrGUkIV-ECpUjGE0xXgXOFkqJ25PNA@tSqnpD8XpmV70,ONRNW',
+      'b.8oUeO4wu5ZrfCrStkM0I4It5CEAZ6QNzeH2I!qVp_-B/u3xUxp/:5vZn-uve.T',
     ]);
-    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 96]);
+    expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 87]);
 
     expect(emptyLink.length).toBeLessThan(100);
     expect(typicalLink.length).toBeLessThan(300);
@@ -1424,6 +1508,100 @@ function mercenaryBuild(
       },
     ],
   });
+}
+
+const SHIELD_BOOSTER = 'Hpt_ShieldBooster_Size0_Class5';
+
+/** A stock Krait Mk II whose utility mounts carry one shield booster per named blueprint. */
+function shieldBoosterKrait(blueprints: readonly string[]): ShipLoadout {
+  const source = ShipLoadout.default('Krait_MkII');
+  blueprints.forEach((blueprint, index) => {
+    const slot = `TinyHardpoint${index + 1}`;
+    const candidate = source
+      .modulesForSlot(slot)
+      .find((module) => module.symbol.toLowerCase() === SHIELD_BOOSTER.toLowerCase())!;
+    source.setModule(slot, candidate);
+    source.applyBlueprint(slot, blueprint, { grade: 5, quality: 1 });
+  });
+  return source;
+}
+
+/**
+ * A hand-built packed body for the same shield-booster Krait, with its engineering records
+ * written one at a time.
+ *
+ * The encoder never spells a repeated literal or an index its dictionary does not hold, so the
+ * only way to present the reader with one is to write the body here. Everything ahead of the
+ * records is deliberately plain — the stock loadout with four changed utility mounts and no
+ * power state — and every index set is written as a bitmap, which the reader accepts; the
+ * canonical-form check that would refuse the bitmap runs after the records are read.
+ */
+function craftedShieldBoosterEngineering(
+  records: readonly { readonly blueprint?: number; readonly reference?: number }[],
+): string {
+  const ship = 'Krait_MkII';
+  const slots = codecTable1.SLOTS_BY_SHIP[ship];
+  const defaults = codecTable1.DEFAULT_MODULES_BY_SHIP[ship] as readonly (number | null)[];
+  const booster = codecTable1.MODULES.findIndex(
+    (symbol) => symbol.toLowerCase() === SHIELD_BOOSTER.toLowerCase(),
+  );
+  const changed = slots
+    .map((slot, index) => ({ slot, index }))
+    .filter(({ slot }) => slot.startsWith('TinyHardpoint'))
+    .slice(0, records.length)
+    .map(({ index }) => index);
+  const modules = defaults.map((module, index) => (changed.includes(index) ? booster : module));
+  const occupied = modules.flatMap((module, index) => (module === null ? [] : [index]));
+  const engineerable = (module: number): boolean =>
+    codecTable1.BLUEPRINT_SETS[codecTable1.BLUEPRINT_SET_BY_MODULE[module]!]!.length > 0 ||
+    (codecTable1.PRE_ENGINEERED_SET_BY_MODULE[module] ?? []).length > 0;
+  const eligible = occupied.flatMap((slotIndex, position) =>
+    engineerable(modules[slotIndex]!) ? [position] : [],
+  );
+  const engineered = changed.map((slotIndex) => eligible.indexOf(occupied.indexOf(slotIndex)));
+  const candidates = codecTable1.MODULE_SETS[codecTable1.MODULE_SET_BY_SHIP[ship][changed[0]!]!]!;
+  const blueprintSet = codecTable1.BLUEPRINT_SETS[codecTable1.BLUEPRINT_SET_BY_MODULE[booster]!]!;
+
+  const bits: number[] = [];
+  writeTestBits(bits, 1, 10);
+  writeTestBits(bits, codecTable1.SHIPS.indexOf(ship), testBitsRequired(codecTable1.SHIPS.length));
+  writeTestBits(bits, 0, 1); // ship name absent
+  writeTestBits(bits, 0, 1); // ship ident absent
+  writeTestBits(bits, 0, 1); // not the pristine stock loadout
+  writeTestBits(bits, 1, 1); // baseline-relative layout
+  writeTestBitmap(bits, slots.length, changed);
+  for (const _slotIndex of changed) writeTestBits(bits, 1, 1); // every changed mount is filled
+  writeTestBits(bits, 1, 1); // the identity sequence uses back-references
+  writeTestBits(bits, 1, 1); // the booster is in its mount's candidate set
+  writeTestBits(bits, candidates.indexOf(booster), testBitsRequired(candidates.length));
+  for (const _slotIndex of changed.slice(1)) writeTestBits(bits, 1, 1); // same as the previous
+  writeTestBits(bits, 0, 1); // no power overrides
+  writeTestBits(bits, 1, 1); // engineering present
+  writeTestBits(bits, 0, 1); // not every eligible module
+  writeTestBitmap(bits, eligible.length, engineered);
+  writeTestBits(bits, 1, 1); // engineering records use back-references
+
+  let dictionary = 0;
+  for (const [index, { blueprint, reference }] of records.entries()) {
+    if (index > 0) writeTestBits(bits, reference === undefined ? 0 : 1, 1);
+    if (reference !== undefined) {
+      if (dictionary > 1) writeTestBits(bits, reference, testBitsRequired(dictionary));
+      continue;
+    }
+    writeTestBits(bits, 1, 1); // the blueprint is in the module's own set
+    writeTestBits(bits, blueprint!, testBitsRequired(blueprintSet.length));
+    writeTestBits(bits, 1, 1); // the maximum grade
+    writeTestBits(bits, 0, 1); // no experimental effect
+    dictionary += 1;
+  }
+  return encodeTestBits(bits);
+}
+
+function writeTestBitmap(bits: number[], valueCount: number, indexes: readonly number[]): void {
+  writeTestBits(bits, 0, 2); // bitmap mode
+  for (let index = 0; index < valueCount; index += 1) {
+    writeTestBits(bits, indexes.includes(index) ? 1 : 0, 1);
+  }
 }
 
 function decodePayload(fragment: string): Uint8Array {

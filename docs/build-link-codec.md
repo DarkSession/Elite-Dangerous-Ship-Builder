@@ -240,9 +240,11 @@ baseline.
 
 Module identity is constrained by hull and slot. A default identity has a one-bit shortcut. Other
 identities use the pinned slot-specific candidate set when possible; a fixed-width global table
-index is a fallback only when the identity is absent from that context. A contextual candidate set
-containing one module consumes no index bits. The decoder rejects a global identity that could have
-used the contextual form.
+index is a fallback only when the identity is absent from that context. Each candidate set is
+ordered by how likely its entries are to be fitted, which costs no bits of its own — the order is
+table data — and makes an early position cheaper under `CONTEXT_INDEX_DECAY`. A contextual
+candidate set containing one module consumes no index bits. The decoder rejects a global identity
+that could have used the contextual form.
 
 Sequences of two or more identities also compare direct encoding with backward references. The
 first identity is literal. Later values can identify the immediately previous value or an earlier
@@ -286,10 +288,24 @@ Engineering presence is measured only across fitted modules which have an ordina
 pre-engineered variant in the pinned tables. One bit distinguishes all eligible modules from an
 explicit index set.
 
-For multiple engineered modules, ordinary engineering records may refer backward to an identical
-ordinary record already emitted. The direct and reference forms are costed in full, and reference
-mode is used only when smaller. Fixed pre-engineered records do not participate in this record
-dictionary because their identities carry different reconstruction semantics.
+For multiple engineered modules, an ordinary engineering record may refer backward to an identical
+ordinary record already written **for the same fitted module**. Each module owns its dictionary: the
+distinct ordinary records already written for it, in first-appearance order. A single mode flag
+covers the whole group, the direct and reference forms are costed in full, and reference mode is
+used only when smaller.
+
+Keying the dictionary on the module rather than on the build is what makes a reference cheap. A
+mount repeats its own roll — eight identical shield boosters, a rack of one weapon — far more often
+than two different modules happen to carry the same record, so an index into one module's short list
+is a fraction of an index into every record in the build. Where a module's dictionary is empty no
+flag is written at all, because a literal is the only thing that can follow; where it holds one
+entry the flag alone identifies the record and no index follows. A literal that restates a record
+already in its module's dictionary is rejected as non-canonical, and an index the dictionary does
+not hold is refused by the bounded symbol itself.
+
+Fixed pre-engineered records do not participate in these dictionaries because their identities carry
+different reconstruction semantics: such a record is always written out, with the flag reading
+false where the module's dictionary is not empty.
 
 An ordinary record contains:
 
@@ -397,17 +413,31 @@ exactly as before. Three design constraints keep the mechanism safe:
 
 ### Modelled symbols
 
-| Model                  | Symbol                                                          |
-| ---------------------- | --------------------------------------------------------------- |
-| `GRADE_IS_MAX`         | The ordinary record's maximum-grade boolean                     |
-| `EXPERIMENTAL_PRESENT` | The ordinary record's experimental-effect presence boolean      |
-| `CONTEXT_HIT`          | Contextual-set membership of module/blueprint/effect identities |
-| `POWER_ON`             | Explicit enabled states (absent / off / on)                     |
-| `POWER_PRIORITY`       | Explicit priorities (absent / 0–4)                              |
-| `CONTEXT_INDEX_DECAY`  | Geometric prior over contextual-set positions                   |
-| `CONTEXT_ADAPTATION`   | Per-run adaptive contexts over back-reference indexes           |
-| `NAME_CHARACTERS`      | Per-character weights for the ship name (English-like)          |
-| `IDENT_CHARACTERS`     | Per-character weights for the ship ident (callsign-like)        |
+| Model                   | Symbol                                                          |
+| ----------------------- | --------------------------------------------------------------- |
+| `GRADE_IS_MAX`          | The ordinary record's maximum-grade boolean                     |
+| `EXPERIMENTAL_PRESENT`  | The ordinary record's experimental-effect presence boolean      |
+| `CONTEXT_HIT`           | Contextual-set membership of module/blueprint/effect identities |
+| `ENGINEERING_REFERENCE` | The engineering record's back-reference flag                    |
+| `IDENTITY_REPEATED`     | The module sequence's "an earlier distinct identity" flag       |
+| `IDENTITY_IS_DEFAULT`   | The absolute layout's "matches the slot default" flag           |
+| `BASELINE_SLOT_PRESENT` | The baseline layout's per-changed-slot occupancy flag           |
+| `POWER_ON`              | Explicit enabled states (absent / off / on)                     |
+| `POWER_PRIORITY`        | Explicit priorities (absent / 0–4)                              |
+| `CONTEXT_INDEX_DECAY`   | Geometric prior over contextual-set positions                   |
+| `CONTEXT_INDEX_FLOOR`   | Smallest weight that decay may reach                            |
+| `CONTEXT_ADAPTATION`    | Per-run adaptive contexts over back-reference indexes           |
+| `NAME_CHARACTERS`       | Per-character weights for the ship name (English-like)          |
+| `IDENT_CHARACTERS`      | Per-character weights for the ship ident (callsign-like)        |
+
+Every model from `ENGINEERING_REFERENCE` to `BASELINE_SLOT_PRESENT`, and `CONTEXT_INDEX_FLOOR`
+beside them, is optional: a table that omits one prices that symbol uniformly, and a floor a table
+omits is one. The four structural flags are modelled and the module sequence's "same as previous"
+flag deliberately is not — how often a loadout repeats the article in the mount before it is a
+property of the build rather than of builds, so a static prior loses on one reference or the other
+(the Corvette repeats on 9 of its 36 mounts, the Anaconda on 18 of its 25), and a per-run adaptive
+context on a two-valued flag is misled by its own first few symbols. Both alternatives were
+measured, and uniform coding matched or beat each of them on both references.
 
 The weight lists are integers; a symbol's interval is its weight's share of the list total. The
 coder's 64-bit state keeps floor-division exact for totals far above the enforced weight-total
@@ -430,27 +460,37 @@ on both sides.
 Two measured findings shaped the design:
 
 - **Candidate-set literals must not adapt.** A draft that adapted every contextual-set index made
-  the reference Corvette grow from 97 to 102 characters: the grammar's back-referencing already
-  dedupes repeats out of the literal streams, so what remains is repetition-poor, and each new
-  distinct value paid for the counts accumulated by earlier ones. The insight generalises:
-  adaptive models fight explicit dictionary coding unless they are confined to the streams where
-  repetition survives — the reference indexes themselves.
-- **A small increment saturates the win.** With adaptation confined to reference streams, an
-  increment of 8 already captures the full Anaconda saving (65 characters) while leaving the
-  diverse-reference Corvette exactly at its static-prior length (97); increments of 32, 128, and
-  1,024 progressively hand the Corvette's gain back (98, 99, 102) by penalising each new
-  reference target. The table pins 8.
+  the reference Corvette grow by five characters: the grammar's back-referencing already dedupes
+  repeats out of the literal streams, so what remains is repetition-poor, and each new distinct
+  value paid for the counts accumulated by earlier ones. The insight generalises: adaptive models
+  fight explicit dictionary coding unless they are confined to the streams where repetition
+  survives — the reference indexes themselves.
+- **The increment must stay small.** Per-module engineering dictionaries hold the repetition the
+  reference streams used to carry, so at increment 8 every reference link is exactly the length
+  switching adaptation off gives it, while increments of 32 and above cost the diverse-reference
+  Corvette a character by penalising each new reference target. The table pins 8: the largest
+  increment the corpus does not pay for, and the one that still prices a build whose repeated
+  modules or repeated records fill a dictionary the corpus does not.
 
 ### What the pinned models deliberately leave open
 
-- **Identity weights are uniform.** The candidate sets are catalogue-ordered, so
-  `CONTEXT_INDEX_DECAY` has no popularity signal to exploit, and measurement confirms it: a 63/64
-  decay leaves the Anaconda at 71 but costs the Corvette two characters, and a 7/8 decay gains the
-  Anaconda two more while pushing the Corvette past its arithmetic rendering entirely. The table
-  therefore pins the decay uniform. A future table with usage data behind it would pin
-  popularity-ordered candidate sets (free — ordering is already table data) or explicit per-set
-  weights, which is where most of the remaining win lives; that requires a usage corpus and is
-  table-generation work, not codec work.
+- **Identity weights are a hand-ranked order, not a measured one.** The module and blueprint
+  candidate sets are ordered by how likely a Commander is to fit the article — a slot-sized module
+  before an undersized one, a popular family before a rare one, rating A before E, and the popular
+  blueprint of an engineering domain first — and `CONTEXT_INDEX_DECAY` prices that order. The
+  ranking is a prior over the package's own records: the generator reads the size, class, mount and
+  family the package publishes and ranks those values, so nothing here is game data this repository
+  keeps. Where the prior is wrong a link pays for it, which the reference Anaconda shows: it fills
+  large mounts with deliberately undersized modules, and the order costs it three characters while
+  the Corvette gains six. `CONTEXT_INDEX_FLOOR` is what bounds that cost: at the pinned 3/4 decay
+  the last of the 464 candidates in the largest module set costs 18.0 bits with no floor, against
+  8.9 for uniform coding, and 9.2 with the pinned floor of 2,048 — while the first candidate still
+  costs 4.2. Explicit per-set weights, or an order measured against a usage corpus rather than
+  estimated, remain table-generation work.
+- **Experimental-effect sets keep catalogue order.** The package publishes a name, a modifier block
+  and a description for each effect and nothing that separates a popular one from a rare one, so
+  ranking them would mean inventing game knowledge rather than reading the package's records. The
+  decay's floor is what keeps the pinned decay from taxing an unordered set.
 - **Weights are hand-estimated.** The pinned skews are defensible priors validated against the
   reference corpus, not corpus-derived measurements. Better-measured weights belong under the next
   table number, like any other table change.
@@ -470,16 +510,16 @@ character for character across all 48 hulls.
 | ---------------------------- | -------------: | ----------: | -----: |
 | Minimal Sidewinder           |             16 |          16 |      — |
 | Stock Krait Mk II            |             10 |          10 |      — |
-| Engineered Anaconda          |             76 |          65 | −14.5% |
-| Supplied engineered Corvette |            108 |          97 | −10.2% |
+| Engineered Anaconda          |             73 |          64 | −12.3% |
+| Supplied engineered Corvette |            102 |          80 | −21.6% |
 | Named stock Krait Mk II      |             38 |          34 | −10.5% |
 
 The win concentrates exactly where links are longest — dense engineered builds — while minimal and
-stock links keep their packed rendering unchanged. The static priors carry the Corvette (whose
-engineering is diverse), adaptation carries the Anaconda (whose few records repeat across many
-mounts), and the split character models carry the labels: a single English model saved the named
-build one character because the callsign-style ident paid for rare letters and digits;
-ident-specific weights recover the rest.
+stock links keep their packed rendering unchanged. The popularity-ordered candidate sets and their
+decay carry the Corvette, whose engineering and outfitting are both diverse; the structural flag
+weights carry both engineered references; and the split character models carry the labels: a single
+English model saved the named build one character because the callsign-style ident paid for rare
+letters and digits; ident-specific weights recover the rest.
 
 ## Reconstruction and validation
 
@@ -532,9 +572,9 @@ limit: 1,023 snapshots, one of them spent.
 What growth actually costs is link length, and links are bounded. Five hundred characters, two of
 them `b.`, hold 381 payload bytes: a 377-byte body plus its four-byte CRC-32, or 3,016 bits. The
 reference builds use a fraction of it — under the pinned symbol models the engineered Anaconda
-body is 408 bits and the supplied Corvette 560, about 15 bits for each of the Corvette's 37
-represented outfittable modules. Without models the same two links run 85 and 110 characters
-against the models' 73 and 98.
+body is 352 bits and the supplied Corvette 448, about 12 bits for each of the Corvette's 37
+represented outfittable modules. Without models the same two links run 73 and 102 characters
+against the models' 64 and 80.
 
 The table below is the growth this format promises to absorb. `CODEC_TABLE_CAPACITY` in
 [`scripts/build-link-codec-capacity.mjs`](../scripts/build-link-codec-capacity.mjs) holds these
@@ -562,7 +602,7 @@ properties of the writer keep so blunt a bound sound: each adaptive structure is
 whichever mode costs least, so pricing one arbitrary mode can only over-count, and the canonical
 body is the shorter of the packed and arithmetic renderings, so the packed cost bounds both. Real
 builds sit far below either figure — the supplied Corvette carrying a 32-byte name and a 32-byte
-ident encodes to 195 of the 500 characters.
+ident encodes to 166 of the 500 characters.
 
 Pricing capacity rather than the current table is what makes the budget honest, and it is the
 constraint that sets both the mount and label limits. Mounts are much the most expensive dimension
@@ -639,10 +679,17 @@ per-module set columns carry the new indices. No hull loses an article: the size
 and fitted with the overcharge drives, so the symbol behind every default and every fixed mount is
 the one it was. A link minted against the earlier table that names a module above index 209
 therefore decodes to a different article, which is what makes this an overwrite rather than an edit.
-Running `pnpm run codec:tables` reproduces table 1 at content hash
-`a1e2fc867f47e281344ea442b1845dd15e6f622e3b37ec86150e4b252eb504bc`. The package also stocks the
-planetary approach suite from the hull defaults when a source names none, which moves the canonical
-minimal loadout again without touching the table's identity.
+The package also stocks the planetary approach suite from the hull defaults when a source names
+none, which moves the canonical minimal loadout again without touching the table's identity.
+
+The sixth overwrite, on 2026-09-01, is the first to change how a table is priced rather than what it
+holds. Every module and blueprint candidate set is now ordered by the popularity prior described
+under "What the pinned models deliberately leave open", so the position an identity takes in its set
+has moved, and the `MODELS` block pins weights for four structural booleans and a floor for the
+context-index decay. No symbol leaves any table and no global index moves; a link minted against the
+earlier table still names the same articles, but it names them at the wrong positions, which is what
+makes this an overwrite rather than an edit. Running `pnpm run codec:tables` reproduces table 1 at
+content hash `6280af035fe6292f6e55ee11060b30f27b71773b68c18ae47b56a93c758fa5db`.
 
 Every future Almanac upgrade must reproduce the committed table and pass the frozen literal-link
 reconstruction corpus. Protocol fixtures must not be regenerated merely to make an upgrade pass.
@@ -659,22 +706,20 @@ path for the affected table version.
 ## Reference corpus
 
 The frozen corpus currently produces these encoded data lengths. Each value and length includes
-the `b.` protocol prefix. Packed spellings are untouched by the symbol models; the two engineered
-references, whose canonical body is arithmetic, were re-pinned when the models landed under the
-pre-release regeneration rule. The festive Krait was re-pinned again on 2026-08-22, at the same
-length, when pre-engineered variants' blueprints joined their modules' candidate sets. Both
-engineered references were re-pinned once more on 2026-08-26, longer by eight and one character,
-when the modules whose draw the Almanac does not publish began carrying their power state. They were
-re-pinned again on 2026-08-27, at the same lengths, when the grant-only articles left the candidate
-sets:
+the `b.` protocol prefix. Packed spellings are untouched by the symbol models, so the minimal and
+stock references have held their exact text throughout; every engineered reference, whose canonical
+body is arithmetic, has been re-pinned under the pre-release regeneration rule at each in-place
+overwrite. The most recent, on 2026-09-01, re-pinned all three when the candidate sets took their
+popularity order — the festive Krait at the same length, the Anaconda nine characters shorter and
+the Corvette eighteen:
 
-| Reference build               | Base70 encoded data                                                                                  | Data length |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------- | ----------: |
-| Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                                   |          16 |
-| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                                         |          10 |
-| Festive flak Krait            | `b.5S25TzaeHpHX!Om2.:Z`                                                                              |          21 |
-| Full engineered Anaconda*     | `b.Fe22sXs1VYx8!NVMtCk!psrGUkIV-ECpUjGE0xXgXOFkqJ25PNA@tSqnpD8XpmV70,ONRNW`                          |          73 |
-| Supplied engineered Corvette† | `b.6lNEFSYnYR0i,rdWhJz8H7mFTPR@@DRYR3SD6cWNd1A4!PTC4.,JMc/y1Uhh9M_uk5yKmUPRDlI/iyfgDRolLhJF/v!4SUos` |          98 |
+| Reference build               | Base70 encoded data                                                                | Data length |
+| ----------------------------- | ---------------------------------------------------------------------------------- | ----------: |
+| Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                 |          16 |
+| Stock Krait Mk II             | `b.vz,jdQ_4`                                                                       |          10 |
+| Festive flak Krait            | `b.5S25TzaeLjTwhwDXHrX`                                                            |          21 |
+| Full engineered Anaconda*     | `b.8oUeO4wu5ZrfCrStkM0I4It5CEAZ6QNzeH2I!qVp_-B/u3xUxp/:5vZn-uve.T`                 |          64 |
+| Supplied engineered Corvette† | `b.26da!i-2iAMHR6!JYWjLXeH:ll2xmztchA8e91yfvAecy.0k,wpaS39Od-qe_AWys@MUQrpRGJVEQa` |          80 |
 
 \* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
 the fixed cargo hatch has an explicit power state. Cargo racks remain stock because Almanac 0.1.4
@@ -689,14 +734,14 @@ The every-hull baseline corpus covers minimal and stock configurations for all 4
 Its longest minimal value is 18 characters (the Anaconda). The festive literal covers an otherwise
 unengineered Krait Mk II whose medium hardpoint carries a
 package-owned green flak-launcher variant. The sanitised real engineered Federal Corvette produces
-97 characters of encoded data, 108 without the symbol models. Its source capture records a partial
+80 characters of encoded data, 102 without the symbol models. Its source capture records a partial
 quality on one small hardpoint even though its modifier values match the completed grade-5 roll.
 The codec deliberately normalises that field to quality `1`; the fixture is not treated as an
 independent oracle for effective-stat reconstruction.
 
 Compact minimal JSON plus raw DEFLATE is unsuitable for this data model. The same engineered
 Anaconda produced about 1,167 characters of encoded data; the current specialised codec produces
-65 under the pinned symbol models, including its `b.` prefix.
+64 under the pinned symbol models, including its `b.` prefix.
 
 ## Complete reference build definitions
 
@@ -826,27 +871,27 @@ Fixed cargo-hatch power: on, priority `2`.
 | TinyHardpoint6         | hpt_shieldbooster_size0_class5           |      on |        2 | ShieldBooster_Kinetic G5 Q1 + special_shieldbooster_chunky           |
 | TinyHardpoint7         | hpt_shieldbooster_size0_class5           |      on |        2 | ShieldBooster_HeavyDuty G5 Q1 + special_shieldbooster_chunky         |
 | TinyHardpoint8         | hpt_shieldbooster_size0_class5           |      on |        0 | ShieldBooster_HeavyDuty G5 Q1 + special_shieldbooster_chunky         |
-| Armour                 | federation_corvette_armour_grade3        |       — |        — | Armour_HeavyDuty G5 Q1 + special_armour_chunky                       |
-| PowerPlant             | int_powerplant_size8_class5              |       — |        — | PowerPlant_Boosted G5 Q1 + special_powerplant_cooled                 |
+| Armour                 | federation_corvette_armour_grade3        |      on |        1 | Armour_HeavyDuty G5 Q1 + special_armour_chunky                       |
+| PowerPlant             | int_powerplant_size8_class5              |      on |        1 | PowerPlant_Boosted G5 Q1 + special_powerplant_cooled                 |
 | MainEngines            | int_engine_size7_class5                  |      on |        0 | Engine_Dirty G5 Q1 + special_engine_overloaded                       |
 | FrameShiftDrive        | int_hyperdrive_overcharge_size6_class3   |      on |        0 | FSD_LongRange G5 Q1 + special_fsd_heavy                              |
 | LifeSupport            | int_lifesupport_size5_class2             |      on |        1 | Misc_LightWeight G5 Q1                                               |
 | PowerDistributor       | int_powerdistributor_size8_class5        |      on |        1 | PowerDistributor_HighFrequency G5 Q1 + special_powerdistributor_fast |
 | Radar                  | int_sensors_size8_class5                 |      on |        1 | Sensor_LongRange G5 Q1                                               |
-| FuelTank               | int_fueltank_size5_class3                |       — |        — | —                                                                    |
+| FuelTank               | int_fueltank_size5_class3                |      on |        1 | —                                                                    |
 | Slot01_Size7           | int_shieldgenerator_size7_class3_fast    |      on |        1 | ShieldGenerator_Thermic G5 Q1 + special_shield_regenerative          |
 | Slot02_Size7           | int_shieldcellbank_size7_class5          |      on |        3 | ShieldCellBank_Specialised G4 Q1 + special_shieldcell_oversized      |
 | Slot03_Size7           | int_shieldcellbank_size7_class5          |      on |        3 | ShieldCellBank_Specialised G4 Q1 + special_shieldcell_oversized      |
 | Slot04_Size6           | int_fuelscoop_size6_class5               |      on |        4 | —                                                                    |
 | Slot05_Size6           | int_fighterbay_size6_class1              |      on |        3 | —                                                                    |
-| Slot06_Size5           | int_cargorack_size5_class1               |       — |        — | —                                                                    |
+| Slot06_Size5           | int_cargorack_size5_class1               |      on |        1 | —                                                                    |
 | Slot07_Size5           | int_guardianfsdbooster_size5             |      on |        3 | —                                                                    |
 | Slot08_Size4           | int_fsdinterdictor_size4_class2          |      on |        4 | FSDinterdictor_Expanded G5 Q1                                        |
-| Slot09_Size4           | int_fueltank_size4_class3                |       — |        — | —                                                                    |
+| Slot09_Size4           | int_fueltank_size4_class3                |      on |        1 | —                                                                    |
 | Slot10_Size3           | int_dronecontrol_collection_size3_class5 |      on |        3 | Misc_LightWeight G5 Q1                                               |
 | Slot11_Size1           | int_dockingcomputer_advanced             |      on |        4 | —                                                                    |
-| Military01             | int_hullreinforcement_size5_class2       |       — |        — | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
-| Military02             | int_hullreinforcement_size5_class2       |       — |        — | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
+| Military01             | int_hullreinforcement_size5_class2       |      on |        1 | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
+| Military02             | int_hullreinforcement_size5_class2       |      on |        1 | HullReinforcement_HeavyDuty G5 Q1 + special_hullreinforcement_chunky |
 | PlanetaryApproachSuite | int_planetapproachsuite_advanced         |       — |        — | —                                                                    |
 
 Fixed cargo-hatch power: on, priority `4`.
@@ -878,7 +923,7 @@ diagnostics. Those responsibilities belong to the sharing feature which consumes
 FR-021's other half is among them: SLEF has to be used when a build cannot meet the limit, and
 making that offer belongs to the sharing feature rather than the codec, which can only refuse. The
 same feature owns whatever its deployed origin costs on top of a codec value — 23 characters on the
-`https://ships.example/#` origin the tests use, against which the largest reference build spends 97
+`https://ships.example/#` origin the tests use, against which the largest reference build spends 80
 of its 500.
 
 Almanac 0.1.4 models festive modules as fixed pre-engineered variants and exposes journal-shaped
