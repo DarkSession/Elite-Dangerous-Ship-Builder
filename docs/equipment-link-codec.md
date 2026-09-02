@@ -75,6 +75,10 @@ unlocked one, and the loadout a link restored would not be the loadout it was ma
 It is also what leaves the format one spelling per loadout: there is no second way to say which
 slot is empty, so no canonical-ordering rule is needed to keep alternate encodings out.
 
+Every item writes all four fields, whatever its own grades unlock, because the field count has to
+be readable before the item's slot count is known. A modification in a slot the item never
+unlocks is refused rather than encoded — see `SUIT_SLOTS` below.
+
 ## The table
 
 `src/app/domain/equipment/loadout-link/equipment-link-table-1.json` is generated from the
@@ -93,14 +97,20 @@ and what the codec needs to refuse a loadout that cannot exist:
 - `SUIT_GRADES`, `WEAPON_GRADES` — the grades each item publishes
 - `SUIT_MOUNTS` — `[primary, secondary]` counts per suit
 - `WEAPON_MOUNTS` — which kind of mount each weapon fits
-- `MODIFICATION_SLOTS` — the most slots any grade unlocks
+- `MODIFICATION_SLOTS` — the most slots any grade of any item unlocks, which is how many
+  modification fields every item writes
+- `SUIT_SLOTS`, `WEAPON_SLOTS` — how many slots each item's own grades ever unlock
 - `WEAPON_MODIFICATION_SETS` — which recipes each weapon can take
 
 `WEAPON_MODIFICATION_SETS` earns its place. Greater Range, Headshot Damage and Improved Hip Fire
 Accuracy are three recipes each, one per damage technology, and a weapon takes exactly one of the
-three. The pairing is the library's: the generator asks
-`resolvePersonalModificationForWeapon` and pins the answer. Without it the codec would refuse a
-rifle on a sidearm mount and then happily carry `weapon_range_kinetic` on a plasma rifle.
+three. The pairing is the library's: the generator asks `resolvePersonalModificationForWeapon` and
+pins the answer. Without it a link could carry `weapon_range_kinetic` on a plasma rifle and this
+codec would have no way to know.
+
+`SUIT_SLOTS` and `WEAPON_SLOTS` earn theirs the same way. Every item reaches four slots except the
+Flight Suit, whose one grade unlocks none, so without them a modified Flight Suit — a Commander
+the game cannot produce — would encode and decode happily.
 
 Reading any of this from the package at decode time would make an old link's meaning depend on
 the release installed, which is the thing a pinned table exists to prevent.
@@ -127,16 +137,33 @@ application produced is one it accepts:
 | Code                      | Raised for                                                                  |
 | ------------------------- | --------------------------------------------------------------------------- |
 | `unsupportedEnvelope`     | A fragment that is not `e.`-prefixed — a ship link, or an unrelated anchor. |
-| `invalidEncoding`         | A body that is not Base70, or is empty.                                     |
+| `invalidEncoding`         | A value that is empty, longer than the bound, or not Base70.                |
 | `integrityCheckFailed`    | A body whose CRC-32 does not match.                                         |
 | `unsupportedTableVersion` | A table number this build cannot read.                                      |
 | `unknownIdentity`         | A suit, weapon or recipe this release does not publish.                     |
-| `invalidPayload`          | A loadout the game cannot hold, and a truncated or over-long body.          |
+| `invalidPayload`          | A loadout the game cannot hold, and a body of the wrong length.             |
 
 The line between the last two is which question failed. A recipe the catalogue does not hold at
 all is an unknown identity; a recipe it holds for other weapons is a payload the item cannot
 hold — the same refusal as a rifle on a sidearm mount, an unpublished grade, one recipe fitted
-twice, or a mount count that is not the suit's.
+twice, a modification in a slot the item never unlocks, or a mount count that is not the suit's.
+
+The ship codec draws that line elsewhere: an identity that is absent from its contextual set is
+`unknownIdentity` there, whichever reason it is absent for. The equipment codec splits the two
+because `link.error.unknownIdentity` tells a Commander the link "names a hull or module that is
+not available here", which is untrue of a recipe this release publishes and the bench can show.
+The two are worth reconciling when the equipment bench is built and both strings are on screen;
+until then, neither codec is wrong about its own links.
+
+### Length is checked twice, and the reader is the second check
+
+The envelope bounds the value's length; the reader bounds the body. The ship codec re-serialises
+what it decoded and compares bytes, so it detects a body that says more or less than the format
+does as a side effect. This codec does not re-serialise, so `RawBitReader`'s truncation check and
+`done` are its only defence against a body with a spare byte, ones in the last byte's spare bits,
+or a field that runs off the end. All three are refused, and all three are tested — without them
+one loadout would have several spellings, and a short body would decode as zeros into a loadout
+nobody made.
 
 ### Naming the mount
 
@@ -156,12 +183,13 @@ Interpolating `primary1` into a notice would ship an untranslated string (consti
 
 - `build-link-radix.ts` — the Base70 alphabet with its Base62-only terminal digit
 - `build-link-bits.ts` — `RawBitWriter` and `RawBitReader`
-- `build-link-envelope.ts` — the CRC-32 envelope, prefix dispatch and length bound, parameterised
+- `build-link-envelope.ts` — the CRC-32 envelope, the prefix check and the length bound,
+  parameterised
   by a `LinkEnvelope`
 - `build-link-codec-error.ts` — the error type and its codes
 
 A codec supplies its prefix and its bound and gets envelope handling that is identical on both
-sides by construction. It is the reason the equipment codec is roughly 300 lines: the parts that
+sides by construction. It is the reason the equipment codec is a little over 300 lines: the parts that
 are hard to get right were already written and already tested.
 
 ## What is deliberately not in the format

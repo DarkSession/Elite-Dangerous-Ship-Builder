@@ -136,6 +136,17 @@ const flightSuit = (
   mount: readonly Field[] = [WEAPON(0)],
 ): readonly Field[] => [TABLE_VERSION, SUIT(3), GRADE(grade), ...slots, ...mount];
 
+/** The Dominator at index 1: four modification slots at grade 5, and three empty mounts. */
+const tacticalSuit = (slots: readonly Field[]): readonly Field[] => [
+  TABLE_VERSION,
+  SUIT(1),
+  GRADE(5),
+  ...slots,
+  WEAPON(0),
+  WEAPON(0),
+  WEAPON(0),
+];
+
 /** A weapon on a mount: its index, its grade and all four of its slots. */
 const fitted = (weapon: number, grade: number, ...slots: number[]): readonly Field[] => [
   WEAPON(weapon),
@@ -229,12 +240,23 @@ describe('equipment link codec', () => {
     );
   });
 
-  it('refuses more modifications than an item has slots for', () => {
+  it('refuses a loadout that names a different number of slots than an item has', () => {
+    // A fifth entry, empty, so that what refuses it is the count and not what is
+    // in it: an encoder that wrote the extra field would produce a fragment its
+    // own decoder reads as trailing data.
     expectRefusal(
       () =>
         encodeEquipmentLinkFragment({
           ...DOMINATOR,
-          suitModifications: [...DOMINATOR.suitModifications, 'suit_improvedradar'],
+          suitModifications: [...DOMINATOR.suitModifications, null],
+        }),
+      'invalidPayload',
+    );
+    expectRefusal(
+      () =>
+        encodeEquipmentLinkFragment({
+          ...DOMINATOR,
+          suitModifications: DOMINATOR.suitModifications.slice(1),
         }),
       'invalidPayload',
     );
@@ -322,15 +344,42 @@ describe('equipment link codec', () => {
     expect(decodeEquipmentLinkFragment(encodeEquipmentLinkFragment(holed))).toEqual(holed);
   });
 
+  it('refuses a modification in a slot the item never unlocks', () => {
+    // The Flight Suit has one grade and it unlocks no modification slot at all,
+    // so a modified Flight Suit is not a Commander the game can produce. This is
+    // not the locked slot of the test above: that slot opens at a higher grade,
+    // and this one never opens.
+    const modified: EquipmentLoadout = {
+      ...FLIGHT_SUIT,
+      suitModifications: ['suit_nightvision', null, null, null],
+    };
+
+    expect(expectRefusal(() => encodeEquipmentLinkFragment(modified), 'invalidPayload').slot).toBe(
+      'suit',
+    );
+    expect(
+      expectRefusal(
+        () => decodeEquipmentLinkFragment(craft(flightSuit(1, fill(SUIT_MODIFICATION, [12])))),
+        'invalidPayload',
+      ).slot,
+    ).toBe('suit');
+  });
+
   it('refuses an item holding one modification twice', () => {
     expectRefusal(
       () =>
         encodeEquipmentLinkFragment({
-          ...FLIGHT_SUIT,
+          ...DOMINATOR,
           suitModifications: ['suit_nightvision', 'suit_nightvision', null, null],
         }),
       'invalidPayload',
     );
+    expect(
+      expectRefusal(
+        () => decodeEquipmentLinkFragment(craft(tacticalSuit(fill(SUIT_MODIFICATION, [1, 1])))),
+        'invalidPayload',
+      ).slot,
+    ).toBe('suit');
   });
 
   it('refuses a weapon modification the weapon does not take', () => {
@@ -390,13 +439,6 @@ describe('equipment link codec', () => {
         'unknownIdentity',
       ).slot,
     ).toBe('suit');
-    // The same recipe in two of the suit's slots.
-    expect(
-      expectRefusal(
-        () => decodeEquipmentLinkFragment(craft(flightSuit(1, fill(SUIT_MODIFICATION, [1, 1])))),
-        'invalidPayload',
-      ).slot,
-    ).toBe('suit');
     // A weapon index past the end of the catalogue.
     expect(
       expectRefusal(
@@ -442,6 +484,25 @@ describe('equipment link codec', () => {
     ).toBeNull();
   });
 
+  it('refuses a body that is not exactly as long as the format it states', () => {
+    // The bit reader is shared with the ship codec, which catches these by
+    // re-serialising what it decoded and comparing bytes. This codec does not
+    // re-serialise, so the reader's own bounds are the whole of its defence and
+    // they are checked here: one loadout has one spelling, and a body that runs
+    // short is refused rather than read as zeros.
+    const whole = flightSuit();
+
+    // A whole spare byte after the last field.
+    expectRefusal(() => decodeEquipmentLinkFragment(craft([...whole, [0, 8]])), 'invalidPayload');
+    // Ones stuffed into the five bits the last byte has spare.
+    expectRefusal(() => decodeEquipmentLinkFragment(craft([...whole, [31, 5]])), 'invalidPayload');
+    // A body that stops in the middle of the suit's modification slots.
+    expectRefusal(
+      () => decodeEquipmentLinkFragment(craft([TABLE_VERSION, SUIT(3), GRADE(1)])),
+      'invalidPayload',
+    );
+  });
+
   it('describes the catalogue the package publishes', () => {
     // The table is generated, so this is the check that it still describes the
     // installed release rather than one it was generated from long ago. Every
@@ -454,14 +515,19 @@ describe('equipment link codec', () => {
       Object.keys(item.grades)
         .map((grade) => Number(grade))
         .sort((left, right) => left - right);
+    const unlockedSlots = (item: {
+      grades: Record<string, { modificationSlots: number }>;
+    }): number => Math.max(...Object.values(item.grades).map((grade) => grade.modificationSlots));
 
     expect(table.SUITS).toEqual(suits.map((suit) => suit.family));
     expect(table.SUIT_GRADES).toEqual(suits.map(grades));
+    expect(table.SUIT_SLOTS).toEqual(suits.map(unlockedSlots));
     expect(table.SUIT_MOUNTS).toEqual(
       suits.map((suit) => [suit.primarySlots, suit.secondarySlots]),
     );
     expect(table.WEAPONS).toEqual(weapons.map((weapon) => weapon.symbol));
     expect(table.WEAPON_GRADES).toEqual(weapons.map(grades));
+    expect(table.WEAPON_SLOTS).toEqual(weapons.map(unlockedSlots));
     expect(table.WEAPON_MOUNTS).toEqual(weapons.map((weapon) => weapon.slot));
 
     const recipesFor = (target: string): string[] =>
@@ -503,7 +569,7 @@ describe('equipment link codec', () => {
 
     expect($generated.tableVersion).toBe(1);
     expect($generated.contentHash).toBe(
-      'c323ae726b722f89feea29c5caabe73fbe9c398fe1a19d0bb1c4e1189501f773',
+      'aed3c5ef82ed3af7a81066bcb6f41ec785431892c930a3944178d217cc31276a',
     );
     expect(await canonicalHash(payload)).toBe($generated.contentHash);
   });

@@ -76,6 +76,7 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
     table.SUIT_MODIFICATIONS.map((_, index) => index),
     SUIT_MODIFICATION_BITS,
     table.SUIT_MODIFICATIONS,
+    table.SUIT_SLOTS[suitIndex]!,
     SUIT_MOUNT,
   );
 
@@ -96,16 +97,15 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
 
     const weaponIndex = table.WEAPONS.indexOf(fitted.symbol);
     if (weaponIndex < 0) {
-      throw unknownIdentity(`No handheld weapon is named ${fitted.symbol}.`, mount);
+      throw unknownIdentity(`No handheld weapon is named ${fitted.symbol}.`, mount.name);
     }
-    const kind = mountKind(mount);
-    if (table.WEAPON_MOUNTS[weaponIndex] !== kind) {
-      throw invalidPayload(`${fitted.symbol} does not fit a ${kind} mount.`, mount);
+    if (table.WEAPON_MOUNTS[weaponIndex] !== mount.kind) {
+      throw invalidPayload(`${fitted.symbol} does not fit a ${mount.kind} mount.`, mount.name);
     }
 
     writer.writeBits(weaponIndex + 1, WEAPON_BITS);
     writer.writeBits(
-      publishedGrade(fitted.grade, table.WEAPON_GRADES[weaponIndex]!, mount),
+      publishedGrade(fitted.grade, table.WEAPON_GRADES[weaponIndex]!, mount.name),
       GRADE_BITS,
     );
     writeModifications(
@@ -114,7 +114,8 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
       table.WEAPON_MODIFICATION_SETS[weaponIndex]!,
       WEAPON_MODIFICATION_BITS,
       table.WEAPON_MODIFICATIONS,
-      mount,
+      table.WEAPON_SLOTS[weaponIndex]!,
+      mount.name,
     );
   }
 
@@ -148,6 +149,7 @@ export function decodeEquipmentLinkFragment(fragment: string): EquipmentLoadout 
     table.SUIT_MODIFICATIONS.map((_, index) => index),
     SUIT_MODIFICATION_BITS,
     table.SUIT_MODIFICATIONS,
+    table.SUIT_SLOTS[suitIndex]!,
     SUIT_MOUNT,
   );
 
@@ -159,48 +161,54 @@ export function decodeEquipmentLinkFragment(fragment: string): EquipmentLoadout 
   return { suitFamily, suitGrade, suitModifications, weapons };
 }
 
-function readWeapon(reader: RawBitReader, mount: string): FittedPersonalWeapon | null {
+function readWeapon(reader: RawBitReader, mount: Mount): FittedPersonalWeapon | null {
   const value = reader.readBits(WEAPON_BITS);
   if (value === 0) return null;
 
   const weaponIndex = value - 1;
   const symbol = table.WEAPONS[weaponIndex];
   if (symbol === undefined) {
-    throw unknownIdentity('The link names a handheld weapon that is not available here.', mount);
+    throw unknownIdentity(
+      'The link names a handheld weapon that is not available here.',
+      mount.name,
+    );
   }
-  const kind = mountKind(mount);
-  if (table.WEAPON_MOUNTS[weaponIndex] !== kind) {
-    throw invalidPayload(`${symbol} does not fit a ${kind} mount.`, mount);
+  if (table.WEAPON_MOUNTS[weaponIndex] !== mount.kind) {
+    throw invalidPayload(`${symbol} does not fit a ${mount.kind} mount.`, mount.name);
   }
   return {
     symbol,
-    grade: readGrade(reader, table.WEAPON_GRADES[weaponIndex]!, mount),
+    grade: readGrade(reader, table.WEAPON_GRADES[weaponIndex]!, mount.name),
     modifications: readModifications(
       reader,
       table.WEAPON_MODIFICATION_SETS[weaponIndex]!,
       WEAPON_MODIFICATION_BITS,
       table.WEAPON_MODIFICATIONS,
-      mount,
+      table.WEAPON_SLOTS[weaponIndex]!,
+      mount.name,
     ),
   };
 }
 
 /**
- * The suit's mounts, in the order a loadout lists them, named rather than
- * numbered so a refusal can say which one it is about
- * (`EquipmentLoadout.weapons` for the gap this stands in for).
+ * The suit's mounts, in the order a loadout lists them: the kind of weapon each
+ * takes, as `PersonalWeapon.slot` names it, and the name a refusal calls it by.
+ *
+ * Named rather than numbered because a refusal has to say which mount it is
+ * about (`EquipmentLoadout.weapons` for the gap this stands in for).
  */
-function mountNames(suitIndex: number): readonly string[] {
+function mountNames(suitIndex: number): readonly Mount[] {
   const [primary, secondary] = table.SUIT_MOUNTS[suitIndex]!;
-  return [
-    ...Array.from({ length: primary! }, (_, position) => `primary${position + 1}`),
-    ...Array.from({ length: secondary! }, (_, position) => `secondary${position + 1}`),
-  ];
+  const of = (kind: string, count: number): Mount[] =>
+    Array.from({ length: count }, (_, position) => ({ kind, name: `${kind}${position + 1}` }));
+  return [...of('primary', primary!), ...of('secondary', secondary!)];
 }
 
-/** Which kind of weapon a mount takes, as `PersonalWeapon.slot` names it. */
-function mountKind(mount: string): string {
-  return mount.startsWith('primary') ? 'primary' : 'secondary';
+interface Mount {
+  /** `PersonalWeapon.slot`: which kind of weapon this mount takes. */
+  readonly kind: string;
+  /** What a refusal calls this mount. */
+  readonly name: string;
 }
 
 /** A grade the item publishes, refused where it does not publish it. */
@@ -237,6 +245,7 @@ function writeModifications(
   available: readonly number[],
   width: number,
   recipes: readonly string[],
+  unlocked: number,
   mount: string,
 ): void {
   if (slots.length !== MODIFICATION_SLOTS) {
@@ -246,7 +255,7 @@ function writeModifications(
     );
   }
 
-  for (const symbol of slots) {
+  for (const [slot, symbol] of slots.entries()) {
     if (symbol === null) {
       writer.writeBits(0, width);
       continue;
@@ -258,6 +267,7 @@ function writeModifications(
     if (!available.includes(index)) {
       throw invalidPayload(`This item does not take ${symbol}.`, mount);
     }
+    refuseLockedSlot(slot, unlocked, mount);
     writer.writeBits(index + 1, width);
   }
   refuseRepeats(slots, mount);
@@ -268,9 +278,10 @@ function readModifications(
   available: readonly number[],
   width: number,
   recipes: readonly string[],
+  unlocked: number,
   mount: string,
 ): ModificationSlots {
-  const slots = Array.from({ length: MODIFICATION_SLOTS }, () => {
+  const slots = Array.from({ length: MODIFICATION_SLOTS }, (_, slot) => {
     const value = reader.readBits(width);
     if (value === 0) return null;
     const index = value - 1;
@@ -281,10 +292,25 @@ function readModifications(
     if (!available.includes(index)) {
       throw invalidPayload('The link fits a modification this item does not take.', mount);
     }
+    refuseLockedSlot(slot, unlocked, mount);
     return symbol;
   });
   refuseRepeats(slots, mount);
   return slots;
+}
+
+/**
+ * A modification in a slot no grade of this item unlocks.
+ *
+ * Every item reaches four slots except the Flight Suit, whose only grade unlocks
+ * none, so this is the whole of what it refuses today. A slot a *lower* grade
+ * has locked still holds what was fitted to it (`ModificationSlots`); this is
+ * the slot that never opens at all.
+ */
+function refuseLockedSlot(slot: number, unlocked: number, mount: string): void {
+  if (slot >= unlocked) {
+    throw invalidPayload(`This item never unlocks modification slot ${slot + 1}.`, mount);
+  }
 }
 
 /** One recipe is fitted once. Two slots holding it is not a loadout the game can hold. */

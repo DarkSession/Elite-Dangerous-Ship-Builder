@@ -42,6 +42,16 @@ const grades = (item) =>
     .map((grade) => Number(grade))
     .sort((left, right) => left - right);
 
+/**
+ * The most modification slots an item ever unlocks, over all its grades.
+ *
+ * Per item because the Flight Suit's only grade unlocks none: a modification on
+ * it is a loadout the game cannot hold, and without this the codec has nothing
+ * to refuse it by.
+ */
+const slotsFor = (item) =>
+  Math.max(...Object.values(item.grades).map((grade) => grade.modificationSlots));
+
 const modificationSlots = Math.max(
   ...[...suits, ...weapons].flatMap((item) =>
     Object.values(item.grades).map((grade) => grade.modificationSlots),
@@ -72,10 +82,12 @@ const weaponModificationSets = weapons.map((weapon) =>
 const payload = {
   SUITS: suits.map((suit) => suit.family),
   SUIT_GRADES: suits.map(grades),
+  SUIT_SLOTS: suits.map(slotsFor),
   // `[primary, secondary]`, which is the order a loadout lists its mounts in.
   SUIT_MOUNTS: suits.map((suit) => [suit.primarySlots, suit.secondarySlots]),
   WEAPONS: weapons.map((weapon) => weapon.symbol),
   WEAPON_GRADES: weapons.map(grades),
+  WEAPON_SLOTS: weapons.map(slotsFor),
   WEAPON_MOUNTS: weapons.map((weapon) => weapon.slot),
   SUIT_MODIFICATIONS: modifications
     .filter(([, recipe]) => recipe.target === 'suit')
