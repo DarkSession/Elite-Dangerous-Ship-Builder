@@ -12,7 +12,7 @@ import {
   type DefenceRole,
   type DefenceRoleGroup,
   type ModuleIdentity,
-} from '../../../../domain/defence/defence';
+} from '../../../../domain/ships/defence/defence';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../../../i18n/game-text.presenter';
 import type { MessageKey } from '../../../../i18n/locale-registry';
@@ -221,7 +221,7 @@ const RESISTANCE_CEILING = 1;
  * arrangement appears is decided in CSS from the space the region is given, so
  * a 400% zoom picks the stacked one for the same reason a phone does.
  *
- * Every figure is a package answer selected by `src/app/domain/defence/defence.ts`.
+ * Every figure is a package answer selected by `src/app/domain/ships/defence/defence.ts`.
  * This component formats and names them and does no arithmetic of its own,
  * which is why each source row carries the package's aggregate for a whole role
  * rather than a share worked out per module: the Almanac publishes no such

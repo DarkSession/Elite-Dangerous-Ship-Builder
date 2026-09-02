@@ -3,7 +3,7 @@ import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { inspectSlef } from '@elite-dangerous-almanac/core/ships/slef';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { FragmentPublisher } from '../build-link/fragment-publisher';
-import { FIXTURE_HULL, FIXTURE_SLOTS } from '../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL, FIXTURE_SLOTS } from '../../domain/ships/outfitting/outfitting.fixtures';
 import { SlefExportCoordinator } from './slef-export.coordinator';
 import { SlefStore } from './slef.store';
 

@@ -5,11 +5,11 @@ import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
-import { FIXTURE_HULL, FIXTURE_SLOTS } from '../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL, FIXTURE_SLOTS } from '../../domain/ships/outfitting/outfitting.fixtures';
 import {
   SLEF_IMPORT_LIMIT_BYTES,
   type SlefPackageDiagnostic,
-} from '../../domain/slef/slef-import.models';
+} from '../../domain/ships/slef/slef-import.models';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { DownloadAdapter } from '../../platform/browser/download.adapter';
 import { NavigatorAdapter } from '../../platform/browser/navigator.adapter';

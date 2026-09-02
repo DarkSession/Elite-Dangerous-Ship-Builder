@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { NO_FILTERS, type CatalogueFilters } from '../../domain/catalogue/catalogue-query';
-import { DEFAULT_SORT, type CatalogueSort } from '../../domain/catalogue/catalogue-sort';
+import { NO_FILTERS, type CatalogueFilters } from '../../domain/ships/catalogue/catalogue-query';
+import { DEFAULT_SORT, type CatalogueSort } from '../../domain/ships/catalogue/catalogue-sort';
 import { SESSION_STORAGE_PORT } from '../../platform/storage/web-storage.port';
 
 /** Where the Commander was in the list, so returning puts them back there. */

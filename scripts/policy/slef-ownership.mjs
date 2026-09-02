@@ -29,7 +29,7 @@ const SKIP = ['.spec.', '/testing/'];
 
 /** Feature 004's own source. Every rule below applies inside these. */
 export const OWNED = [
-  'src/app/domain/slef',
+  'src/app/domain/ships/slef',
   'src/app/application/slef',
   'src/app/features/slef',
   'src/app/platform/build',
@@ -47,7 +47,7 @@ export const OWNED_SURFACES = ['src/app/features/slef'];
  * read either has to hold both (plan, "Delivery Prerequisites").
  */
 export const UPSTREAM = [
-  'src/app/domain/build',
+  'src/app/domain/ships/build',
   'src/app/application/active-build',
   'src/app/application/build-link',
   'src/app/features/build-workspace',

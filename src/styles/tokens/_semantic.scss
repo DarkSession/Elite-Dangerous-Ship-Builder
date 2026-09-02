@@ -27,7 +27,7 @@
 // shifted up so its lowest rung is 0.55, and the rungs above it keep their
 // order, so the hierarchy the canvas draws survives at readable weights.
 
-// Everything measured down from the command bar.
+// Everything measured down from the banner.
 //
 // A custom property substitutes its own `var()`s where it is *declared*, not
 // where it is read, so a figure derived from `--edsb-layout-bar-height` has to
@@ -375,27 +375,36 @@
   --edsb-layout-ledger-rail: var(--edsb-measure-ledger-rail);
   --edsb-layout-status-rail: var(--edsb-measure-status-rail);
 
-  // What a region has to clear to sit below the sticky command bar.
+  // What a region has to clear to sit below the sticky banner — the tool bar
+  // and the command bar under it, which are one sticky region.
   //
-  // The declared figure is the one height the bar is drawn at, which is what it
-  // comes to at every width where it does not wrap. It is a floor rather than
-  // the bar's height: any width where the bar wraps draws more rows than one.
-  // So the frame republishes this token on its own host from the bar it
-  // actually rendered (`sticky-banner.ts`), and the value here is what stands
-  // until that first reading. It stays in the token layer because the
-  // decision — *a region clears the bar* — is declared once, here; what the
-  // frame supplies is the measurement, which no query can ask for.
-  --edsb-layout-bar-height: var(--edsb-measure-bar-height);
+  // The declared figure is the two bars' own heights added together — what they
+  // come to at every width where neither wraps. It is a floor rather than the
+  // banner's height: any width where the command bar wraps draws more rows than
+  // one. So the frame republishes this token on its own host from the
+  // banner it actually rendered (`sticky-banner.ts`), and the value here is
+  // what stands until that first reading. It stays in the token layer because
+  // the decision — *a region clears the banner* — is declared once, here; what
+  // the frame supplies is the measurement, which no query can ask for.
+  --edsb-layout-bar-height: calc(
+    var(--edsb-measure-bar-height) + var(--edsb-measure-tool-bar-height)
+  );
 
-  // The bar's own floor, which is not the same job and must not be the same
-  // token. What a region clears is republished from the bar that was drawn; if
-  // the bar sized itself from that reading it would never be able to shrink —
-  // a window widened until a wrapped bar unwraps would hold the wrapped height
-  // as its own minimum, and nothing would ever measure it again. The floor is
-  // the declared figure, always, and only the clearance moves. The two carry
-  // the same number because the bar is drawn at one height on every screen
+  // The command bar's own floor, which is not the same job and must not be the
+  // same token. What a region clears is republished from the banner that was
+  // drawn; if the bar sized itself from that reading it would never be able to
+  // shrink — a window widened until a wrapped bar unwraps would hold the
+  // wrapped height as its own minimum, and nothing would ever measure it again.
+  // The floor is the declared figure, always, and only the clearance moves. It
+  // is the command bar alone, because that is the box it sizes, and the bar is
+  // drawn at one height on every screen
   // (`011/design/canvas-extraction.md`, "One bar height, on every screen").
   --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
+
+  // The tool bar's own floor, beside it. The two are declared apart because
+  // they are two bars: the command bar is sized to the tallest identity it
+  // carries, and the tool bar to the canvas's own 50px.
+  --edsb-layout-tool-bar-floor: var(--edsb-measure-tool-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller
   // clips the seam instead of showing the row behind through it.

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { SHIPS, getShipSlots } from '@elite-dangerous-almanac/core/ships/ships';
 import { enumerateSlots } from '@elite-dangerous-almanac/core/ships/slots';
-import { parseSchematic } from '../../platform/assets/schematic-svg-parser';
+import { parseSchematic } from '../../../platform/assets/schematic-svg-parser';
 import { MOUNT_FEATURE_OF, SCHEMATIC_SIDES } from './anatomy-model';
 
 /**

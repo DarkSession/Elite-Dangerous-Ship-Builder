@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import type { CapacitorKind } from '../../../../domain/power-heat/power-heat';
+import type { CapacitorKind } from '../../../../domain/ships/power-heat/power-heat';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { UnavailableValue } from '../../../../ui/components/unavailable-value/unavailable-value';
 

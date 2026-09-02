@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { LibraryPresence } from './library-presence';
-import { deriveBuildTitle } from '../../domain/build/build-title';
-import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
+import { deriveBuildTitle } from '../../domain/ships/build/build-title';
+import type { LocalRecordV1, StoredRecordEntry } from '../../domain/ships/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';

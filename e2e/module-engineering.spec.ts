@@ -1004,7 +1004,7 @@ test.describe('the bench’s three columns', () => {
         };
       });
 
-    await page.setViewportSize({ width: 2020, height: 1012 });
+    await page.setViewportSize({ width: 2020, height: 1062 });
     await expect(async () => {
       const shortest = await bench();
       expect(shortest.clipped).toBeLessThanOrEqual(1);
@@ -1023,7 +1023,7 @@ test.describe('the bench’s three columns', () => {
     // arrangement the record forbids (`design/engineering-editor.md`, "Nothing
     // here scrolls"). The chooser's pane is not part of that question — its
     // height is its own declared bound, and it holds at every width.
-    await page.setViewportSize({ width: 2020, height: 960 });
+    await page.setViewportSize({ width: 2020, height: 1010 });
     await expect(async () => {
       const released = await bench();
       expect(released.clipped).toBeLessThanOrEqual(1);

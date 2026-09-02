@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { ActiveBuildStore } from '../../../../application/active-build/active-build.store';
 import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
-import { projectDefence, type Defence } from '../../../../domain/defence/defence';
+import { projectDefence, type Defence } from '../../../../domain/ships/defence/defence';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import type { Metric } from '../../../../ui/components/metric-group/metric-group';

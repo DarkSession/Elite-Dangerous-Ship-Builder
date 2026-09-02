@@ -357,7 +357,7 @@ describe('LocaleStore document title', () => {
     );
   });
 
-  it('says the product name once for the screen that is named after it', () => {
+  it('names the tool beside the product on the screen the root redirects to', () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 
@@ -365,7 +365,9 @@ describe('LocaleStore document title', () => {
 
     // `/` redirects here and the sitemap ranks it highest, so this is the
     // title in the search result that matters most.
-    expect(document.commits.at(-1)?.title).toBe(BUNDLED_ENGLISH['app.document-title.default']);
+    expect(document.commits.at(-1)?.title).toBe(
+      `${BUNDLED_ENGLISH['catalogue.title']} · ${BUNDLED_ENGLISH['app.name']}`,
+    );
   });
 
   it('leaves the product name standing for a route that names no page', () => {

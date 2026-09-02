@@ -3,4 +3,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sb.edct.dev/sitemap.xml
+Sitemap: https://navbeacon.app/sitemap.xml

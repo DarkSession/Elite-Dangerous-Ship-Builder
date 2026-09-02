@@ -204,7 +204,7 @@ export function envelopeBodyBytes(maxLinkCharacters) {
 export async function readCodecConstants() {
   const read = async (file, name) => {
     const source = await readFile(
-      new URL(`../src/app/domain/build-link/${file}`, import.meta.url),
+      new URL(`../src/app/domain/ships/build-link/${file}`, import.meta.url),
       'utf8',
     );
     const match = new RegExp(`const ${name} = ([\\d_]+)`).exec(source);
@@ -270,7 +270,9 @@ const isMain =
  */
 if (isMain) {
   const table = JSON.parse(
-    await readFile(new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url)),
+    await readFile(
+      new URL('../src/app/domain/ships/build-link/codec-table-1.json', import.meta.url),
+    ),
   );
   const constants = await readCodecConstants();
 

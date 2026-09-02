@@ -1,0 +1,305 @@
+# Feature Specification: Equipment Builder
+
+**Feature Branch**: `013-equipment-builder`
+
+**Created**: 2026-09-01
+
+**Status**: Draft — blocked upstream, see Dependencies
+
+**Input**: User description: "Eqipment builder, see .design"
+
+An on-foot outfitting bench beside the ship one: pick a suit, set its grade, fit
+handheld weapons, apply modifications, and read what the resulting Commander is
+worth. Drawn in `.design/Equipment Builder.dc.html` at 1640px (artboard `1a`) and
+390px (artboard `1b`).
+
+## User Scenarios & Testing _(mandatory)_
+
+### User Story 1 - Assemble a loadout and read what it is worth (Priority: P1)
+
+A Commander opens the bench, chooses one of the personal suits, sets the grade it
+is upgraded to, and fills its weapon slots from the handheld weapons the suit can
+carry. As each choice is made, the shield strength, regeneration, damage
+resistances and firepower of the assembled Commander update beside the loadout.
+
+**Why this priority**: this is the bench. Without it there is nothing to modify,
+nothing to cost and nothing to save. It is also the whole of the value for a
+Commander comparing two suits before spending at Pioneer Supplies.
+
+**Independent Test**: choose each suit in turn at each available grade, fit a
+weapon in every slot the suit offers, and confirm the stated shield, resistance
+and firepower figures change with each choice and match the equipment library.
+
+**Acceptance Scenarios**:
+
+1. **Given** an empty bench, **When** a Commander selects a suit, **Then** the suit's
+   weapon slots are offered according to that suit's primary and secondary counts, and
+   the Commander stats state that suit's figures at the selected grade.
+2. **Given** a suit at grade 3, **When** the Commander raises it to grade 5, **Then** the
+   shield strength, regeneration and each damage resistance restate at grade 5.
+3. **Given** a suit offering two primary slots, **When** the Commander switches to a suit
+   offering one, **Then** the slot that no longer exists is shown as unavailable rather
+   than silently dropping the weapon that was in it.
+4. **Given** the Flight Suit, **When** it is selected, **Then** no grade above 1 is
+   offered, because it cannot be upgraded.
+5. **Given** a fitted weapon, **When** the Commander selects it, **Then** its class, make,
+   damage type, fire mode, rate of fire, magazine, reserve, range and per-grade damage
+   are stated.
+
+---
+
+### User Story 2 - Fit modifications and see what they cost (Priority: P2)
+
+A Commander applies engineering modifications to the suit and to each weapon,
+within the slots the item's grade has unlocked, and reads the micro-resources the
+whole loadout would require and which engineers grant each modification.
+
+**Why this priority**: modifications are what distinguishes a planned loadout from
+a shopping trip, and the material requirement is the reason to plan one before
+going to a settlement. It depends on US1 having something to modify.
+
+**Independent Test**: fit modifications across a suit and three weapons, and confirm
+the material requirement is the sum of every fitted modification and changes as
+modifications are added and removed.
+
+**Acceptance Scenarios**:
+
+1. **Given** an item at grade 5, **When** the Commander opens its modification slots,
+   **Then** four slots are open; at grade 3, two are open and the remaining two are
+   shown as locked rather than hidden.
+2. **Given** a modification fitted in the fourth slot of a grade 5 item, **When** the
+   grade is lowered to 3, **Then** the modification is retained but shown as held by a
+   locked slot, and it is not counted in the material requirement.
+3. **Given** a loadout with modifications fitted, **When** the material requirement is
+   read, **Then** it lists each micro-resource and the total quantity across every
+   fitted modification.
+4. **Given** a weapon modification whose requirement differs by the weapon's damage
+   type, **When** it is fitted to a kinetic weapon and to a plasma weapon, **Then** the
+   stated materials are those of the weapon it is fitted to.
+5. **Given** any fitted modification, **When** the Commander reads it, **Then** the
+   engineers who grant it are named.
+
+---
+
+### User Story 3 - Keep a loadout and come back to it (Priority: P3)
+
+A Commander names a loadout, saves it, and later reopens it from the list of saved
+loadouts, or discards one they no longer want.
+
+**Why this priority**: a bench a Commander cannot return to is a scratchpad. It is
+below US2 only because a loadout that cannot yet be modified is not worth keeping.
+
+**Independent Test**: save several named loadouts, reload the application, and
+confirm every saved loadout reopens with the suit, grade, weapons, grades and
+modifications it was saved with.
+
+**Acceptance Scenarios**:
+
+1. **Given** an edited loadout, **When** the Commander saves it under a name, **Then** it
+   appears in the saved list identified by that name, its suit and its modification count.
+2. **Given** a saved loadout, **When** the Commander opens it, **Then** every choice is
+   restored exactly as saved.
+3. **Given** a saved loadout, **When** the Commander saves the open loadout under the same
+   name, **Then** they are asked whether to overwrite it or keep both copies.
+4. **Given** a stored loadout this version cannot rebuild, **When** it is opened, **Then**
+   the Commander is told it could not be opened and the stored loadout is left intact.
+
+---
+
+### User Story 4 - Hand a loadout to someone else (Priority: P4)
+
+A Commander exports the open loadout as a link, as a structured payload, or as a
+readable summary to paste into a forum or Discord post.
+
+**Why this priority**: sharing is what makes a planned loadout useful to anybody
+but its author, but every earlier story stands on its own without it.
+
+**Independent Test**: export a loadout by each offered means, and confirm the link
+reopens the same loadout and the readable summary names every fitted item.
+
+**Acceptance Scenarios**:
+
+1. **Given** an open loadout, **When** the Commander copies its link and opens it,
+   **Then** the same suit, grades, weapons and modifications are restored.
+2. **Given** an open loadout, **When** the Commander exports a readable summary, **Then**
+   it names the suit, its grade, each weapon with its grade, and each fitted modification.
+3. **Given** a link that names equipment this version does not recognise, **When** it is
+   opened, **Then** the Commander is told what could not be resolved and nothing already
+   open is replaced by a partial loadout.
+
+---
+
+### Edge Cases
+
+- A suit is changed to one with fewer primary slots while weapons occupy them: the
+  weapons in slots the new suit does not have are held rather than discarded, and are
+  restored if the Commander changes back.
+- A grade is lowered below a slot holding a modification: the modification is held, is
+  excluded from the material requirement, and returns when the grade is raised.
+- The Flight Suit is selected: its maximum grade is 1, so it unlocks no modification
+  slots at all and the modification region states that rather than showing four locked
+  slots without explanation.
+- The same modification is offered for two different slots of one item: it can be fitted
+  once per item, and the second offer states why it is unavailable.
+- A weapon is fitted to a secondary slot that is only offered for secondary weapons: the
+  choices offered are those the slot accepts, never the whole catalogue.
+- Every browser store is unavailable or full: saving fails with a statement of what
+  happened, and the open loadout is not lost.
+
+## Requirements _(mandatory)_
+
+### Functional Requirements
+
+**The bench**
+
+- **FR-001**: The application MUST offer every personal suit the equipment library
+  publishes, identified by the library's own name and symbol.
+- **FR-002**: The application MUST offer the grades each suit supports, and MUST NOT
+  offer a grade the library does not publish for that suit.
+- **FR-003**: The application MUST offer weapon slots according to the selected suit's
+  primary and secondary slot counts, and MUST offer in each slot only the weapons that
+  slot accepts.
+- **FR-004**: The application MUST offer every handheld weapon the library publishes,
+  with its make, class, damage type and fire mode.
+- **FR-005**: The application MUST state, for the selected item, the attributes the
+  library holds for it at the selected grade — for a suit its shield strength,
+  regeneration and each damage resistance; for a weapon its damage, rate of fire,
+  sustained damage, headshot damage, magazine, reserve and range.
+- **FR-006**: The application MUST state the assembled Commander's shield strength,
+  regeneration, damage resistances and firepower, and MUST restate them whenever a
+  choice changes them.
+- **FR-007**: A weapon or suit slot that the current suit does not offer MUST be shown
+  as unavailable, and its contents MUST be retained rather than discarded.
+
+**Modifications**
+
+- **FR-008**: The application MUST offer the modification slots the item's grade has
+  unlocked, and MUST show the remaining slots as locked rather than hiding them.
+- **FR-009**: The application MUST offer only the modifications the library publishes
+  for that kind of item, and MUST NOT offer one twice on the same item.
+- **FR-010**: The application MUST name the engineers the library records as granting
+  each modification.
+- **FR-011**: A modification held by a slot that is currently locked MUST be retained,
+  MUST be excluded from the material requirement, and MUST return to effect when the
+  grade that unlocks its slot is restored.
+- **FR-012**: Users MUST be able to clear a modification slot.
+
+**Materials**
+
+- **FR-013**: The application MUST state the micro-resources the fitted modifications
+  require, as a total across the whole loadout, taken from the library.
+- **FR-014**: The material requirement MUST cover one application of each fitted
+  modification, and MUST NOT include the cost of raising an item's grade.
+- **FR-015**: Where a modification's requirement differs by the weapon's damage type,
+  the stated requirement MUST be the one for the weapon it is fitted to.
+
+**Keeping and sharing**
+
+- **FR-016**: Users MUST be able to name the open loadout, save it, reopen a saved
+  loadout and delete one.
+- **FR-017**: Saving under the name of an existing loadout MUST ask whether to replace
+  it or keep both.
+- **FR-018**: Saved loadouts MUST survive closing and reopening the application, and
+  MUST live only in the Commander's own browser.
+- **FR-019**: A stored loadout this version cannot rebuild MUST be reported as
+  unopenable and MUST be left in store exactly as it was.
+- **FR-020**: Users MUST be able to export the open loadout as a link that restores it,
+  as a structured payload, and as a readable summary.
+- **FR-021**: An import or link that names equipment the application cannot resolve MUST
+  say what could not be resolved and MUST NOT replace the open loadout with a partial one.
+- **FR-022**: Users MUST be able to undo and redo their outfitting choices.
+
+**Everywhere**
+
+- **FR-023**: Every screen MUST be fully usable on desktop, tablet and mobile, by touch
+  as well as pointer, in portrait and landscape, with no horizontal page scrolling.
+- **FR-024**: Every string the application owns MUST go through the localisation layer,
+  and every number and quantity MUST be formatted for the active locale.
+- **FR-025**: Equipment names and modification names MUST be asked of the equipment
+  library in the active locale, never translated or held here.
+- **FR-026**: Every capability MUST remain usable offline after first load.
+- **FR-027**: The bench MUST be reachable at its own address, and that address MUST
+  restore the bench directly rather than by way of another screen.
+
+### Key Entities
+
+- **Loadout**: one planned on-foot Commander — a suit at a grade with its modifications,
+  a weapon at a grade with its modifications in each slot the suit offers, and a name
+  once the Commander has given it one.
+- **Suit**: a personal suit as the library publishes it — its family, name, the number
+  of primary and secondary weapon slots it offers, and the shield, regeneration and
+  resistance figures for each grade it supports.
+- **Personal weapon**: a handheld weapon as the library publishes it — its make, class,
+  the slot kind it occupies, damage type, fire mode, rate of fire, magazine, reserve,
+  range and per-grade damage.
+- **Modification**: one engineering modification the library publishes for suits or for
+  weapons, the engineers who grant it, and the micro-resources one application requires.
+- **Material requirement**: the micro-resources a whole loadout's fitted modifications
+  require, totalled by resource.
+
+## Success Criteria _(mandatory)_
+
+### Measurable Outcomes
+
+- **SC-001**: A Commander can assemble a complete loadout — suit, grade, every weapon
+  slot filled, and modifications in every unlocked slot — in under three minutes.
+- **SC-002**: Every figure the bench states matches the equipment library for the same
+  suit, weapon, grade and modifications, in every combination the library publishes.
+- **SC-003**: A Commander can tell, without leaving the bench, which micro-resources and
+  how many of each a planned loadout will cost.
+- **SC-004**: Every screen passes an automated accessibility check against WCAG 2.0, 2.1
+  and 2.2 A and AA with no disabled rules, at desktop, tablet and mobile sizes in both
+  supported engines, excepting only the criteria the constitution names.
+- **SC-005**: A shared link restores exactly the loadout it was made from, in 100% of
+  loadouts the application can build.
+- **SC-006**: Every screen remains fully usable with no network connection after first load.
+- **SC-007**: A Commander switching between two suits can compare their protection at the
+  same grade without losing the weapons or modifications they had already chosen.
+
+## Assumptions
+
+- **The bench is a tool inside the shared shell, not an application of its own.** Artboard
+  `1a` draws its own topbar, its own `SAVED LOADOUTS` list, its own `EXPORT` dialog and its
+  own `HELP · ABOUT` with a separate application version. `Tool Navigation.dc.html` draws
+  one shell over both builders and asks for a ruling rather than making one. This spec
+  assumes the shell: the duplicated chrome is withdrawn and the bench supplies only what is
+  particular to on-foot outfitting. Recorded as a design collision to be written into this
+  feature's design notes.
+- **Saved loadouts share one library with ship builds.** `Tool Navigation.dc.html` draws a
+  single saved list holding both, distinguished by the tool that made them.
+- **Suit tools are out of scope.** Artboard `1a` draws a `SUIT TOOLS` region holding the
+  Energylink, Arc Cutter and Profile Analyser. The equipment library publishes no data for
+  them at all, and constitution II forbids hand-maintaining a parallel copy, so the region
+  is withdrawn rather than filled locally. It returns if the library gains them.
+- **Grade upgrade costs are out of scope**, as the design's own FAQ states: the material
+  requirement covers applying modifications, not raising a grade.
+- **Modification quality is not modelled**, consistent with the ship builder's treatment of
+  blueprint grades: a fitted modification is a completed one.
+- **The compact layout follows artboard `1b`** — a loadout ledger, a stats view and a
+  materials view, with item and modification screens reached by drilling in.
+
+## Dependencies
+
+- **`@elite-dangerous-almanac/core` publishes the equipment catalogue and its calculations.**
+  Version 0.2.5 ships `equipment/suits`, `equipment/weapons`, `equipment/modifications`,
+  `equipment/engineering`, `equipment/upgrade-costs`, `equipment/modification-costs` and
+  `equipment/modification-journal`. Material totalling
+  (`sumPersonalEngineeringIngredients`) and per-damage-type modification resolution
+  (`resolvePersonalModificationForWeapon`) are the library's, and MUST NOT be
+  reimplemented here.
+
+- **BLOCKING — the equipment catalogue is not localisable.** Nothing under `equipment/`
+  accepts a locale; `Suit.name`, `PersonalWeapon.name` and `PersonalModification.name` are
+  each documented as the English display name; and there is no `i18n/suits`,
+  `i18n/weapons` or `i18n/equipment-modifications` leaf where the ship side has
+  `i18n/modules`, `i18n/slots` and `i18n/materials`. Hull and manufacturer names have
+  no leaf either, but that is because the game does not translate them; suit, weapon
+  and modification names it does. FR-025 and constitution VI cannot be met
+  as the library stands, and constitution II forbids closing the gap here. **This must be
+  raised against Elite-Dangerous-Almanac and released before implementation begins.**
+
+- **Suit tools are absent upstream**, as above. A gap to raise, not a blocker: the region
+  is withdrawn and the rest of the feature stands without it.
+
+- **The shared tool shell** (phase 3 of `docs/navbeacon-migration.md`) is expected to exist
+  before this feature, since this spec assumes rather than builds it.

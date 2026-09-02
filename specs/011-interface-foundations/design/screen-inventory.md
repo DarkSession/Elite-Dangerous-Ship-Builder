@@ -6,11 +6,11 @@ component preview application, which never appears in product navigation or prod
 
 ## Feature-owned surfaces
 
-| Surface                           | Wide/medium presentation                                                                                                            | Compact/zoom presentation                                                            | Primary states                                                                           |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Embedded application shell        | Product/route identity and feedback; navigation and actions on the bar only where the widest shipped language draws them on one row | Identity plus the named action layer, holding every action and screen the bar offers | bootstrap, route loading/ready/empty/error, locale ready/loading/fallback                |
-| Global feedback/announcement host | Visible route/global messages plus hidden assertive/polite outlets                                                                  | Same semantic order and event policy                                                 | initial, new/stale/replayed blocking/nonblocking events                                  |
-| Component preview application     | Manifest selection and bounded component fixture                                                                                    | Same fixture under compact project viewport                                          | every declared state plus expanded, RTL, reduced motion, localized/canonical/unavailable |
+| Surface                           | Wide/medium presentation                                                                                                                      | Compact/zoom presentation                                                                     | Primary states                                                                                |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Embedded application shell        | Tool bar, product/route identity and feedback; navigation and actions on the bar only where the widest shipped language draws them on one row | Tool bar, identity and the named action layer, holding every action and screen the bar offers | bootstrap, route loading/ready/empty/error, locale ready/loading/fallback, open screen's tool |
+| Global feedback/announcement host | Visible route/global messages plus hidden assertive/polite outlets                                                                            | Same semantic order and event policy                                                          | initial, new/stale/replayed blocking/nonblocking events                                       |
+| Component preview application     | Manifest selection and bounded component fixture                                                                                              | Same fixture under compact project viewport                                                   | every declared state plus expanded, RTL, reduced motion, localized/canonical/unavailable      |
 
 ## Reference-canvas consumption
 
@@ -20,6 +20,7 @@ component preview application, which never appears in product navigation or prod
 | 1b     | Compact Shipyard/detail/library   | compact shell/menu, cards, scrollable sort choices, full-height drill-in, sheet                                 |
 | 1c     | Outfitting/anatomy/status/editor  | workspace regions, tabs, ledger/table/list, metric/status/unavailable, visualization equivalence, dialog        |
 | 1d     | Compact Outfitting/editor/actions | compact mode/category controls, sticky action region, full-height editor, sheet/action layer                    |
+| 3c     | None — the shell owns it          | tool bar and tool registry, current-tool state                                                                  |
 
 The product screen inventories in features 001–010/012 own their domain states and requirement
 mapping. They register/preview shared extensions through this feature's contracts.
@@ -53,13 +54,15 @@ mapping. They register/preview shared extensions through this feature's contract
 | FR-023      | Versioned NVDA/Firefox, TalkBack/Chromium, materially different tablet and actual-zoom protocol/results                                                 |
 | FR-024      | Fixture-tested Angular/TypeScript/PostCSS policy plus UI-export/preview-ledger reconciliation                                                           |
 | FR-027      | Route-owned title/description/canonical in the one document commit, static head, crawl policy, sitemap, manifest and JSON-LD, reconciled by policy gate |
+| FR-028      | One tool registry read by the shell; tool bar naming every served tool, with the open route's tool exposed as current at every width                    |
 
 ## Cross-feature ownership
 
-- Feature 011 owns shell semantics, locale startup and formatters, package-text disclosure,
-  global announcements, base tokens/components, responsive/adaptive contracts, preview
-  infrastructure, strict compiler flags, service-worker locale boundary and the common browser/
-  accessibility gate.
+- Feature 011 owns shell semantics, the tool registry and the bar that draws it, locale startup and
+  formatters, package-text disclosure, global announcements, base tokens/components,
+  responsive/adaptive contracts, preview infrastructure, strict compiler flags, service-worker
+  locale boundary and the common browser/accessibility gate. A capability that is a tool of its own
+  adds its entry to the registry; it does not draw a bar.
 - Each capability owns its route content, domain projection, states, journeys and domain-specific
   UI extensions. Every extension enters `src/app/ui/` and this preview/verification system before use.
 - Feature 001 supplies Shipyard/build routes and extends the service-worker asset rules for hull art;

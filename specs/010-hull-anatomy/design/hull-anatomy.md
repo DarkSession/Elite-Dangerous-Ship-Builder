@@ -456,7 +456,7 @@ becoming invented geometry:
   package's own annotation. The mount's real position stays on the plate; it stops being _underneath_
   the mark and starts being _pointed at_ by it.
 - **Nothing is measured.** The step is arithmetic over the coordinates the package published and the
-  plate's own frame, in `src/app/domain/anatomy/mount-declutter.ts` — the same kind of arithmetic
+  plate's own frame, in `src/app/domain/ships/anatomy/mount-declutter.ts` — the same kind of arithmetic
   that turns the hull and centres it in the frame. There is no `getBBox`, no `getScreenCTM` and no
   read off anything rendered (FR-003).
 - **The plate measures how big its own marks came out, and nothing else.** This is the part that was
@@ -667,7 +667,7 @@ Feature 010 adds one presentation component to the outfitting set feature 002 es
 `src/app/ui/outfitting/`: the schematic plate, which renders one validated document, its mount
 occurrences, the leaders to any mark that stepped aside, and its side-local status. It works out each
 mount's anchor itself — the same arithmetic that turns the hull — and hands those anchors to
-`src/app/domain/anatomy/mount-declutter.ts`, which decides which marks step aside: a pure function
+`src/app/domain/ships/anatomy/mount-declutter.ts`, which decides which marks step aside: a pure function
 over published coordinates, testable without rendering anything (constitution III). The one thing it
 needs a browser for, how wide its own frame and its own marks came out, comes through
 `ElementSizeAdapter` in the platform layer. The side selector reuses feature 011's `edsb-tab-group` in

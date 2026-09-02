@@ -12,7 +12,7 @@ import {
   OMITTED_FIXED_MOUNTS,
   defaultBuild,
   fixedRewardVariant,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { hardpointCoverage } from './hardpoint-coverage.adapter';
 import { slotCapabilities } from './slot-capabilities';
 import { slotViews, type SlotTextResolver } from './slot-view';

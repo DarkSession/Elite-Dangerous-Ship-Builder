@@ -20,7 +20,7 @@ import { ROOT, filesUnder, lines, runPolicy, runRules } from './common.mjs';
 
 /** Feature 010's own source. Every rule below applies inside these. */
 export const OWNED = [
-  'src/app/domain/anatomy',
+  'src/app/domain/ships/anatomy',
   'src/app/application/anatomy',
   'src/app/platform/assets',
   'src/app/features/build-workspace/outfitting/hull-anatomy',

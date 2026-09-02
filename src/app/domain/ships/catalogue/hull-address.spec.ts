@@ -2,7 +2,7 @@ import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
 import {
   hullAddressSegment as publishedSegment,
   publishedAddresses,
-} from '../../../../scripts/search/published-addresses.mjs';
+} from '../../../../../scripts/search/published-addresses.mjs';
 import { hullAddressForSymbol, hullAddressSegment, hullForAddressSegment } from './hull-address';
 
 /**

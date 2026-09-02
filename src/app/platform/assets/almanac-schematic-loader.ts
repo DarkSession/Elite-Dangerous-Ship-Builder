@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import type { SchematicSide, SideAssetState } from '../../domain/anatomy/anatomy-model';
+import type { SchematicSide, SideAssetState } from '../../domain/ships/anatomy/anatomy-model';
 import { hullSchematicPath } from './hull-artwork-path';
 import { parseSchematicMounts } from './schematic-mounts';
 

@@ -14,7 +14,7 @@ import {
   noGeneratorBuild,
   readyBuild,
   unpoweredBanksBuild,
-} from '../../../../domain/defence/defence.fixtures';
+} from '../../../../domain/ships/defence/defence.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { DefenceAnalysis } from './defence-analysis';

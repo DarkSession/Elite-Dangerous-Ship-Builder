@@ -56,11 +56,43 @@ test.describe('the reference visual language', () => {
     // Canvas 1a/1b/1c: `background: var(--panel-4)`, `border-bottom: 2px solid
     // var(--amber)`. The rule is the single strongest mark in the reference and
     // is the same on all four canvases.
-    const banner = page.getByRole('banner');
+    //
+    // The command bar, not the banner: since canvas 3c the banner is the sticky
+    // region carrying the tool bar as well, and the rule closes the command bar
+    // inside it rather than the pair.
+    const bar = page.locator('.frame__bar');
 
-    expect(await style(banner, 'background-color')).toBe(PANEL_4);
-    expect(await style(banner, 'border-bottom-width')).toBe('2px');
-    expect(await style(banner, 'border-bottom-color')).toBe(AMBER);
+    expect(await style(bar, 'background-color')).toBe(PANEL_4);
+    expect(await style(bar, 'border-bottom-width')).toBe('2px');
+    expect(await style(bar, 'border-bottom-color')).toBe(AMBER);
+  });
+
+  test('carries the current tool on the command bar, closed by the canvas underline', async ({
+    page,
+  }) => {
+    // Canvas 3c: the tool a Commander is in takes the command bar's own
+    // `--panel-4` ground and a `2px solid var(--amber)` underline, and the tab
+    // is the height of the bar so that underline sits on the bar's own edge.
+    // A tab short of the bar leaves a strip of the menu ground under its fill
+    // and floats the underline above the command bar it is meant to meet
+    // (`canvas-extraction.md`, "Tool bar").
+    const current = page.locator('.frame__tool--current');
+
+    expect(await style(current, 'background-color')).toBe(PANEL_4);
+    expect(await style(current, 'color')).toBe(AMBER_3);
+    expect(await style(current, 'border-bottom-width')).toBe('2px');
+    expect(await style(current, 'border-bottom-color')).toBe(AMBER);
+
+    // The gap between the tab's underline and the bar's own inner edge, read in
+    // one evaluation so both boxes describe the same moment.
+    const met = await page.evaluate(() => {
+      const bar = document.querySelector('.frame__tools') as HTMLElement;
+      const tab = bar.querySelector('.frame__tool--current') as HTMLElement;
+      const hairline = parseFloat(getComputedStyle(bar).borderBlockEndWidth);
+      return bar.getBoundingClientRect().bottom - hairline - tab.getBoundingClientRect().bottom;
+    });
+
+    expect(Math.abs(met)).toBeLessThanOrEqual(1);
   });
 
   test('opens the command bar with the amber wedge insignia', async ({ page }) => {
@@ -165,9 +197,12 @@ test.describe('the reference visual language', () => {
     // wrap is still measured rather than assumed: at a doubled text size and
     // at 400% zoom the bar does wrap, and it has to, or its own controls would
     // be cut off (011/FR-011).
-    const banner = page.getByRole('banner');
+    // Measured on the command bar itself. The banner around it is the two-bar
+    // sticky region since canvas 3c, and the height this test is about is the
+    // one the command bar is drawn at.
+    const commandBar = page.locator('.frame__bar');
     const bar = async () =>
-      await banner.evaluate((node) => {
+      await commandBar.evaluate((node) => {
         const style = getComputedStyle(node);
         const box = node.getBoundingClientRect();
         const groups = [...node.children]

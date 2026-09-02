@@ -1,6 +1,6 @@
 # Code of conduct
 
-This project is a place to plan ship loadouts and to build the tool that does it. Everyone who
+This project is a place to plan ship loadouts and to build the tools that do it. Everyone who
 reads an issue, files one, reviews a change or writes code is covered by this document, and so is
 everyone who maintains the project.
 

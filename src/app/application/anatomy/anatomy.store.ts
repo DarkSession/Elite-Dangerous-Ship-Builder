@@ -3,8 +3,8 @@ import {
   SCHEMATIC_SIDES,
   type SchematicSide,
   type SideAssetState,
-} from '../../domain/anatomy/anatomy-model';
-import { projectAnatomy, type SideStates } from '../../domain/anatomy/anatomy-projector';
+} from '../../domain/ships/anatomy/anatomy-model';
+import { projectAnatomy, type SideStates } from '../../domain/ships/anatomy/anatomy-projector';
 import { AlmanacSchematicLoader } from '../../platform/assets/almanac-schematic-loader';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { ActiveBuildStore } from '../active-build/active-build.store';

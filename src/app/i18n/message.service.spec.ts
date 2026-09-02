@@ -17,7 +17,7 @@ describe('MessageService', () => {
   it('resolves an application message for the active locale', () => {
     const { messages } = setup();
 
-    expect(messages.message('app.name')).toBe('Elite Dangerous Ship Builder');
+    expect(messages.message('app.name')).toBe('NavBeacon');
     expect(messages.message('action.cancel')).toBe('Cancel');
   });
 

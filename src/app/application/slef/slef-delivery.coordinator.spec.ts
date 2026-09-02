@@ -4,7 +4,7 @@ import { ActiveBuildStore } from '../active-build/active-build.store';
 import { FragmentPublisher } from '../build-link/fragment-publisher';
 import { DownloadAdapter } from '../../platform/browser/download.adapter';
 import { NavigatorAdapter } from '../../platform/browser/navigator.adapter';
-import { FIXTURE_HULL } from '../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL } from '../../domain/ships/outfitting/outfitting.fixtures';
 import { SlefDeliveryCoordinator, detectDeliveryCapability } from './slef-delivery.coordinator';
 import { SlefExportCoordinator } from './slef-export.coordinator';
 import { SlefStore } from './slef.store';

@@ -3,7 +3,7 @@ import { ActiveBuildStore } from '../../../../application/active-build/active-bu
 import { hardpointCoverage } from '../../../../application/outfitting/hardpoint-coverage.adapter';
 import { OutfittingStore } from '../../../../application/outfitting/outfitting.store';
 import { PowerConditionsStore } from '../../../../application/power-heat/power-conditions.store';
-import { projectOffence, type Offence } from '../../../../domain/offence/offence';
+import { projectOffence, type Offence } from '../../../../domain/ships/offence/offence';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import type { Metric } from '../../../../ui/components/metric-group/metric-group';

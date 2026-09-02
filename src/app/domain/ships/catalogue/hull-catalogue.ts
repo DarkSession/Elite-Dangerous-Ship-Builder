@@ -6,7 +6,7 @@ import {
 } from '@elite-dangerous-almanac/core/ships/ships';
 import { getDefaultLoadout } from '@elite-dangerous-almanac/core/ships/default-loadouts';
 import { enumerateSlots, type BuildSlot } from '@elite-dangerous-almanac/core/ships/slots';
-import { hullArtworkPath } from '../../platform/assets/hull-artwork-path';
+import { hullArtworkPath } from '../../../platform/assets/hull-artwork-path';
 
 /** The three landing-pad classes a hull can require. */
 export type HullSize = 'small' | 'medium' | 'large';

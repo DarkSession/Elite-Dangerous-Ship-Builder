@@ -8,8 +8,8 @@ import type {
   NormalizationRefusal,
   SlefImportFailure,
   SlefPackageDiagnostic,
-} from '../../domain/slef/slef-import.models';
-import type { DeliveryAction, DeliveryOutcome } from '../../domain/slef/slef-export.models';
+} from '../../domain/ships/slef/slef-import.models';
+import type { DeliveryAction, DeliveryOutcome } from '../../domain/ships/slef/slef-export.models';
 import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { SlefDeliveryCoordinator } from './slef-delivery.coordinator';

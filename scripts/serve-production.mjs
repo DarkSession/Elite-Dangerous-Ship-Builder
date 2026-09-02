@@ -22,7 +22,7 @@ import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 
-const root = resolve(process.argv[2] ?? 'dist/elite-dangerous-ship-builder/browser');
+const root = resolve(process.argv[2] ?? 'dist/navbeacon/browser');
 const port = Number(process.argv[3] ?? 4400);
 
 const TYPES = new Map([

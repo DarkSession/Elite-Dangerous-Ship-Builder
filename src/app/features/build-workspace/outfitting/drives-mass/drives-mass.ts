@@ -5,7 +5,7 @@ import {
   projectMobilityAndJump,
   type MobilityAndJump,
   type StandardLoad,
-} from '../../../../domain/mobility-jump/mobility-jump';
+} from '../../../../domain/ships/mobility-jump/mobility-jump';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../../../i18n/game-text.presenter';
 import type { MessageKey } from '../../../../i18n/locale-registry';
@@ -163,7 +163,7 @@ interface CurveMarkView {
  * a 400% zoom picks the stacked one for the same reason a phone does.
  *
  * Every figure is a package answer selected by
- * `src/app/domain/mobility-jump/mobility-jump.ts`. Four of the canvas's
+ * `src/app/domain/ships/mobility-jump/mobility-jump.ts`. Four of the canvas's
  * readings — the headline loaded mass, the hull/modules/fuel decomposition, the
  * position on the thruster mass curve and the `SCO` badge — once had no result
  * in `@elite-dangerous-almanac/core` and were raised against the library rather

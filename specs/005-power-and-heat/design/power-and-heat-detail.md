@@ -123,7 +123,7 @@ translation size the column rather than be cut off by it. `DRAW BY MODULE` and t
 the same treatment, and the heat caption sits in the track's own column so its offset is a share of
 the track it names. The share is `cumulativeDraw / available`, a
 division the package does not publish, so it is worked out once in the projection and read from
-there — the ownership policy holds every such combination to `src/app/domain/power-heat`. A plant of
+there — the ownership policy holds every such combination to `src/app/domain/ships/power-heat`. A plant of
 zero has no share to state rather than an infinite one.
 
 `OFFLINE` replaces the percentage on a shed row, which is what the canvas puts there. It is the
@@ -529,7 +529,7 @@ is not a small percentage, and `PWR 0%` would be a figure standing in for one th
 share instead would warn about a build with one dark group and say nothing about a build with no
 power at all.
 
-The percentage is projected in `src/app/domain/power-heat/power-heat.ts` beside the rail's bar
+The percentage is projected in `src/app/domain/ships/power-heat/power-heat.ts` beside the rail's bar
 shares, not worked out at the badge: every division of two package figures in this application is
 done in that one file (FR-001, FR-002).
 

@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import type { LocalRecordV1, StoredRecordEntry } from '../../domain/build/stored-build';
+import type { LocalRecordV1, StoredRecordEntry } from '../../domain/ships/build/stored-build';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import type { StorageFailureCode } from '../../platform/storage/web-storage.port';
 import { RecordInvalidationService } from './record-invalidation.service';

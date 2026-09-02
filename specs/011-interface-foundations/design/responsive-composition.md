@@ -16,6 +16,11 @@ actions above the width the widest shipped language needs for them, one row and 
 because what decides it is the bar's own content rather than the page's
 (`_responsive.scss`, `$mode-bar-folded-max`).
 
+The tool bar above it is not in the table either, and for the opposite reason: it has one
+composition and no step at all. The tabs are drawn at every width, at compact type and spacing.
+There is no artboard for a compact tool bar, so there is nothing to compose towards, and the rule
+holds while the registry is small (`design/application-shell.md`, "The tool bar").
+
 Container queries govern reusable component composition. Page-level media queries govern shell and
 route regions. Both use named tokens; the reference canvas widths are not copied as breakpoints.
 

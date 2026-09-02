@@ -344,7 +344,7 @@ worked out once, in the projection:
    screen, and none of them is a new measurement: the share is what the canvas's
    legend draws as `· 67%`, and a bar is that same ratio drawn instead of
    written. Feature 006 established the form. All three are computed in
-   `src/app/domain/offence/offence.ts` and nowhere else, which is what "once, in
+   `src/app/domain/ships/offence/offence.ts` and nowhere else, which is what "once, in
    the projection" above means literally: a fill worked out in a component would
    be two package figures divided on a screen, and the ownership policy's
    one-line arithmetic scan cannot see that when the two are bound to a local

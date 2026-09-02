@@ -16,7 +16,7 @@ import { resolve } from 'node:path';
 import { ARITHMETIC, ROOT, filesUnder, runPolicy, runRules, scan } from './common.mjs';
 
 /** The one place that may ask the package about power, heat or the distributor. */
-export const PROJECTION = 'src/app/domain/power-heat';
+export const PROJECTION = 'src/app/domain/ships/power-heat';
 
 /** Feature 005's own source. The import rule applies inside these. */
 export const OWNED = [
@@ -219,7 +219,7 @@ const RULES = [
           continue;
         }
         const source = await readFile(resolve(ROOT, name), 'utf8');
-        if (!isOwned(name) && !source.includes('domain/power-heat')) {
+        if (!isOwned(name) && !source.includes('domain/ships/power-heat')) {
           continue;
         }
         for (const { line } of scan(

@@ -128,11 +128,26 @@ function normalize(value: string | null): string {
   return (value ?? '').replace(/\s+/g, ' ').trim();
 }
 
-/** Exactly one banner, one main and at most one primary navigation. */
+/**
+ * Exactly one banner, one main, and no two navigation landmarks alike.
+ *
+ * The shell carries two: the tools it offers and the screens the bar offers.
+ * More than one is allowed and more than one with the same name is not — a
+ * reader moving between landmarks by name cannot tell those apart (011/FR-008,
+ * FR-028).
+ */
 export async function expectLandmarks(page: Page): Promise<void> {
   await expect(page.getByRole('banner')).toHaveCount(1);
   await expect(page.getByRole('main')).toHaveCount(1);
-  expect(await page.getByRole('navigation').count()).toBeLessThanOrEqual(1);
+
+  const names = await page
+    .getByRole('navigation')
+    .evaluateAll((nodes) =>
+      nodes.map((node) => (node.getAttribute('aria-label') ?? '').replace(/\s+/g, ' ').trim()),
+    );
+
+  expect(names.filter((name) => name.length === 0)).toEqual([]);
+  expect(new Set(names).size).toBe(names.length);
 }
 
 /** Exactly one visible `h1`. */

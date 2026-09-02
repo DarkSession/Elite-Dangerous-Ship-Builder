@@ -8,13 +8,13 @@ import {
   captureCheckpoint,
   restoreCheckpoint,
   type ModeledBuildCheckpoint,
-} from '../../domain/build/modeled-build-checkpoint';
+} from '../../domain/ships/build/modeled-build-checkpoint';
 import {
   runEditTransaction,
   runSnapshotTransaction,
   type EditOperation,
   type TransactionOutcome,
-} from '../../domain/outfitting/build-edit-transaction';
+} from '../../domain/ships/outfitting/build-edit-transaction';
 import {
   emptyHistory,
   recordDecision,
@@ -24,7 +24,7 @@ import {
   undoSummary,
   type HistoryIntentSummary,
   type SessionEditHistory,
-} from '../../domain/outfitting/session-edit-history';
+} from '../../domain/ships/outfitting/session-edit-history';
 import type { MessageKey } from '../../i18n/locale-registry';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { BuildIngressCoordinator } from '../active-build/build-ingress.coordinator';

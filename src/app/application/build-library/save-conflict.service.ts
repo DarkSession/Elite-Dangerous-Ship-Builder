@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import type { LocalRecordV1 } from '../../domain/build/stored-build';
+import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import {
   NamedRecordService,

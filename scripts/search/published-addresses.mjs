@@ -16,11 +16,11 @@
  * (constitution II, and constitution VI for the name).
  *
  * **A hull is addressed by its name, made URL-ready.** `hullAddressSegment`
- * below spells it, and `src/app/domain/catalogue/hull-address.ts` spells the
+ * below spells it, and `src/app/domain/ships/catalogue/hull-address.ts` spells the
  * same rule for the running application. That is a second statement of one
  * fact, and it is deliberate for the reason the interpolation and title copies
  * below exist: this is `.mjs` and cannot import the TypeScript that defines it.
- * `hullAddressParity` in `src/app/domain/catalogue/hull-address.spec.ts` holds
+ * `hullAddressParity` in `src/app/domain/ships/catalogue/hull-address.spec.ts` holds
  * the two to the same answer for every hull the package carries, so the copy
  * cannot drift in silence (001/FR-005).
  *
@@ -111,17 +111,7 @@ export function documentTitle(catalogue, page) {
   if (page === null || page.trim().length === 0) {
     return application;
   }
-  if (namesTheApplication(page, catalogue['app.name'])) {
-    return application;
-  }
   return interpolate(catalogue['app.document-title'], { page, app: catalogue['app.name'] });
-}
-
-/** Whether the application name already says what this page is called. */
-function namesTheApplication(page, application) {
-  const name = page.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const edge = '[^\\p{L}\\p{N}]';
-  return new RegExp(`(^|${edge})${name}($|${edge})`, 'iu').test(application);
 }
 
 /**

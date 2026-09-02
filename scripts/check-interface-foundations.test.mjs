@@ -911,7 +911,7 @@ describe('production output', () => {
 
   it('accepts a canonical link, which declares an address rather than fetching one', () => {
     const found = rules.productionOutputViolations({
-      'dist/app/browser/index.html': '<link rel="canonical" href="https://sb.edct.dev/ships">',
+      'dist/app/browser/index.html': '<link rel="canonical" href="https://navbeacon.app/ships">',
     });
 
     assert.deepEqual(found, []);
@@ -920,7 +920,7 @@ describe('production output', () => {
   it('still rejects a stylesheet from another origin on the same document', () => {
     const found = rules.productionOutputViolations({
       'dist/app/browser/index.html':
-        '<link rel="canonical" href="https://sb.edct.dev/"><link rel="stylesheet" href="https://cdn.example.com/x.css">',
+        '<link rel="canonical" href="https://navbeacon.app/"><link rel="stylesheet" href="https://cdn.example.com/x.css">',
     });
 
     assert.deepEqual(ruleIds(found), ['production-output']);
@@ -1110,7 +1110,7 @@ describe('the excluded-criteria enumeration', () => {
 });
 
 describe('search metadata', () => {
-  const ORIGIN = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
+  const ORIGIN = "export const SITE_ORIGIN = 'https://navbeacon.app';";
 
   // Held apart so the "no JSON-LD" case can be built by leaving the block out
   // rather than by cutting it back out of a finished document. A regexp that
@@ -1124,36 +1124,36 @@ describe('search metadata', () => {
     '<meta name="twitter:card" content="summary_large_image" />',
     '<meta name="twitter:title" content="Ship Builder" />',
     '<meta name="twitter:description" content="What this is." />',
-    '<meta name="twitter:image" content="https://sb.edct.dev/assets/link-card.png" />',
+    '<meta name="twitter:image" content="https://navbeacon.app/assets/link-card.png" />',
     '<meta property="og:type" content="website" />',
     '<meta property="og:site_name" content="Ship Builder" />',
     '<meta property="og:title" content="Ship Builder" />',
     '<meta property="og:description" content="What this is." />',
-    '<meta property="og:url" content="https://sb.edct.dev/" />',
+    '<meta property="og:url" content="https://navbeacon.app/" />',
     '<meta property="og:locale" content="en" />',
-    '<meta property="og:image" content="https://sb.edct.dev/assets/link-card.png" />',
+    '<meta property="og:image" content="https://navbeacon.app/assets/link-card.png" />',
     '<meta property="og:image:alt" content="Ship Builder" />',
-    '<link rel="canonical" href="https://sb.edct.dev/" />',
+    '<link rel="canonical" href="https://navbeacon.app/" />',
     '<link rel="manifest" href="manifest.webmanifest" />',
   ].join('\n');
 
   const JSON_LD =
-    '<script type="application/ld+json">{"@context":"https://schema.org","url":"https://sb.edct.dev/","inLanguage":["en","de"]}</script>';
+    '<script type="application/ld+json">{"@context":"https://schema.org","url":"https://navbeacon.app/","inLanguage":["en","de"]}</script>';
 
   const INDEX = `${INDEX_WITHOUT_JSON_LD}\n${JSON_LD}`;
 
-  const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n';
+  const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://navbeacon.app/sitemap.xml\n';
 
   const SITEMAP = `<urlset>
-    <url><loc>https://sb.edct.dev/ships</loc></url>
-    <url><loc>https://sb.edct.dev/build</loc></url>
+    <url><loc>https://navbeacon.app/ships</loc></url>
+    <url><loc>https://navbeacon.app/build</loc></url>
   </urlset>`;
 
   const TOKENS = '  --edsb-palette-bg: #0b0b0c;\n';
 
   const MANIFEST = JSON.stringify({
-    name: 'Elite Dangerous Ship Builder',
-    short_name: 'Elite Dangerous Ship Builder',
+    name: 'NavBeacon',
+    short_name: 'NavBeacon',
     description: 'What this is.',
     start_url: './',
     scope: './',
@@ -1179,7 +1179,7 @@ describe('search metadata', () => {
     {
       path: 'ships',
       route: 'ships',
-      address: 'https://sb.edct.dev/ships',
+      address: 'https://navbeacon.app/ships',
       titleKey: 'catalogue.title',
       descriptionKey: 'catalogue.description',
       image: 'assets/link-card.png',
@@ -1187,7 +1187,7 @@ describe('search metadata', () => {
     {
       path: 'build',
       route: 'build',
-      address: 'https://sb.edct.dev/build',
+      address: 'https://navbeacon.app/build',
       titleKey: 'workspace.title',
       descriptionKey: 'workspace.description',
       image: 'assets/link-card.png',
@@ -1240,7 +1240,7 @@ describe('search metadata', () => {
     robots: ROBOTS,
     sitemap: SITEMAP,
     manifest: MANIFEST,
-    domain: 'sb.edct.dev\n',
+    domain: 'navbeacon.app\n',
     tokens: TOKENS,
     assets: ASSETS,
     preview: PREVIEW,
@@ -1259,16 +1259,16 @@ describe('search metadata', () => {
     // route that passes the gate and never gets a file.
     for (const commented of [
       `<urlset>
-        <!-- <loc>https://sb.edct.dev/ghost</loc> -->
-        <url><loc>https://sb.edct.dev/ships</loc></url>
-        <url><loc>https://sb.edct.dev/build</loc></url>
+        <!-- <loc>https://navbeacon.app/ghost</loc> -->
+        <url><loc>https://navbeacon.app/ships</loc></url>
+        <url><loc>https://navbeacon.app/build</loc></url>
       </urlset>`,
       `<urlset>
         <!--
-          <loc>https://sb.edct.dev/ghost</loc>
+          <loc>https://navbeacon.app/ghost</loc>
         -->
-        <url><loc>https://sb.edct.dev/ships</loc></url>
-        <url><loc>https://sb.edct.dev/build</loc></url>
+        <url><loc>https://navbeacon.app/ships</loc></url>
+        <url><loc>https://navbeacon.app/build</loc></url>
       </urlset>`,
     ]) {
       assert.deepEqual(rules.searchMetadataViolations(complete({ sitemap: commented })), []);
@@ -1282,9 +1282,9 @@ describe('search metadata', () => {
     // canonical of its own. Neither reader strips it, so a delimiter survives
     // the cut and the file is refused for what is actually wrong with it.
     const malformed = `<urlset>
-      <!-- old -- gone <loc>https://sb.edct.dev/ghost</loc> -->
-      <url><loc>https://sb.edct.dev/ships</loc></url>
-      <url><loc>https://sb.edct.dev/build</loc></url>
+      <!-- old -- gone <loc>https://navbeacon.app/ghost</loc> -->
+      <url><loc>https://navbeacon.app/ships</loc></url>
+      <url><loc>https://navbeacon.app/build</loc></url>
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: malformed }));
@@ -1297,9 +1297,9 @@ describe('search metadata', () => {
     // one means something different to whoever reads it next. Both readers
     // refuse it rather than guess which of the two the author meant.
     const html = `<urlset>
-      <!-- gone <loc>https://sb.edct.dev/ghost</loc> --!>
-      <url><loc>https://sb.edct.dev/ships</loc></url>
-      <url><loc>https://sb.edct.dev/build</loc></url>
+      <!-- gone <loc>https://navbeacon.app/ghost</loc> --!>
+      <url><loc>https://navbeacon.app/ships</loc></url>
+      <url><loc>https://navbeacon.app/build</loc></url>
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: html }));
@@ -1314,9 +1314,9 @@ describe('search metadata', () => {
     // the file as listing nothing, while the deployment's `sed` — also one
     // pass — would publish `/ghost`. The two must agree, so both refuse it.
     const nested = `<urlset>
-      <!<!-- -->-- <loc>https://sb.edct.dev/ghost</loc> -->
-      <url><loc>https://sb.edct.dev/ships</loc></url>
-      <url><loc>https://sb.edct.dev/build</loc></url>
+      <!<!-- -->-- <loc>https://navbeacon.app/ghost</loc> -->
+      <url><loc>https://navbeacon.app/ships</loc></url>
+      <url><loc>https://navbeacon.app/build</loc></url>
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: nested }));
@@ -1329,8 +1329,8 @@ describe('search metadata', () => {
     // it, and an addressable route that nothing lists is the drift this exists
     // to catch.
     const commented = `<urlset>
-      <url><loc>https://sb.edct.dev/ships</loc></url>
-      <!-- <url><loc>https://sb.edct.dev/build</loc></url> -->
+      <url><loc>https://navbeacon.app/ships</loc></url>
+      <!-- <url><loc>https://navbeacon.app/build</loc></url> -->
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: commented }));
@@ -1371,7 +1371,7 @@ describe('search metadata', () => {
 
   it('rejects a domain moved in one file and not the others', () => {
     const found = rules.searchMetadataViolations(
-      complete({ robots: ROBOTS.replace('sb.edct.dev', 'shipbuilder.example') }),
+      complete({ robots: ROBOTS.replace('navbeacon.app', 'shipbuilder.example') }),
     );
 
     assert.ok(found.length > 0);
@@ -1394,7 +1394,7 @@ describe('search metadata', () => {
   it('rejects a robots file that disallows the whole site', () => {
     const found = rules.searchMetadataViolations(
       complete({
-        robots: `User-agent: *\nDisallow: /\n\nSitemap: https://sb.edct.dev/sitemap.xml\n`,
+        robots: `User-agent: *\nDisallow: /\n\nSitemap: https://navbeacon.app/sitemap.xml\n`,
       }),
     );
 
@@ -1418,7 +1418,7 @@ describe('search metadata', () => {
 
   it('rejects a listed address that is not a route the application serves', () => {
     const found = rules.searchMetadataViolations(
-      complete({ sitemap: `${SITEMAP}<url><loc>https://sb.edct.dev/gone</loc></url>` }),
+      complete({ sitemap: `${SITEMAP}<url><loc>https://navbeacon.app/gone</loc></url>` }),
     );
 
     assert.match(found[0].message, /\/gone/);
@@ -1461,13 +1461,13 @@ describe('search metadata', () => {
     assert.ok(found.some((violation) => /icons\[0\]\.src/.test(violation.message)));
   });
   it('rejects an absolute path even when it names the declared origin', () => {
-    // The one that slips past everything else: `https://sb.edct.dev/` is the
+    // The one that slips past everything else: `https://navbeacon.app/` is the
     // declared origin, so the foreign-address sweep is content with it and the
     // root-absolute rule never sees a leading slash. It still pins a preview's
     // installed application to production, which is the whole reason these
     // three members are relative.
     for (const member of ['start_url', 'scope']) {
-      const pinned = { ...JSON.parse(MANIFEST), [member]: 'https://sb.edct.dev/' };
+      const pinned = { ...JSON.parse(MANIFEST), [member]: 'https://navbeacon.app/' };
       const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(pinned) }));
 
       assert.deepEqual(ruleIds(found), ['search-metadata'], member);
@@ -1476,7 +1476,7 @@ describe('search metadata', () => {
 
     const pinnedIcon = {
       ...JSON.parse(MANIFEST),
-      icons: [{ src: 'https://sb.edct.dev/favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
+      icons: [{ src: 'https://navbeacon.app/favicon.ico', sizes: '48x48', type: 'image/x-icon' }],
     };
     const found = rules.searchMetadataViolations(
       complete({ manifest: JSON.stringify(pinnedIcon) }),
@@ -1486,7 +1486,7 @@ describe('search metadata', () => {
   });
 
   it('accepts a protocol-relative path nowhere either', () => {
-    const pinned = { ...JSON.parse(MANIFEST), start_url: '//sb.edct.dev/' };
+    const pinned = { ...JSON.parse(MANIFEST), start_url: '//navbeacon.app/' };
     const found = rules.searchMetadataViolations(complete({ manifest: JSON.stringify(pinned) }));
 
     assert.match(found[0].message, /absolute address installs a preview/);
@@ -1519,7 +1519,7 @@ describe('search metadata', () => {
 
   it('rejects a relative canonical, which canonicalises a preview to itself', () => {
     const found = rules.searchMetadataViolations(
-      complete({ index: INDEX.replace('href="https://sb.edct.dev/"', 'href="/"') }),
+      complete({ index: INDEX.replace('href="https://navbeacon.app/"', 'href="/"') }),
     );
 
     assert.deepEqual(ruleIds(found), ['search-metadata']);
@@ -1575,7 +1575,10 @@ describe('search metadata', () => {
   it('rejects structured data naming an address that is not the site root', () => {
     const found = rules.searchMetadataViolations(
       complete({
-        index: INDEX.replace('"url":"https://sb.edct.dev/"', '"url":"https://sb.edct.dev/ships"'),
+        index: INDEX.replace(
+          '"url":"https://navbeacon.app/"',
+          '"url":"https://navbeacon.app/ships"',
+        ),
       }),
     );
 
@@ -1590,7 +1593,7 @@ describe('search metadata', () => {
 
   it('rejects an og:url that is not the canonical it restates', () => {
     const found = rules.searchMetadataViolations(
-      complete({ index: INDEX.replace('content="https://sb.edct.dev/" />', 'content="/" />') }),
+      complete({ index: INDEX.replace('content="https://navbeacon.app/" />', 'content="/" />') }),
     );
 
     assert.match(found[0].message, /og:url/);
@@ -1647,7 +1650,7 @@ describe('search metadata', () => {
   const HULL = {
     path: 'ships/Anaconda',
     route: 'ships/:hull',
-    address: 'https://sb.edct.dev/ships/Anaconda',
+    address: 'https://navbeacon.app/ships/Anaconda',
     titleKey: 'hullDetail.title',
     descriptionKey: 'hullDetail.description',
     image: 'assets/ships/Anaconda/illustration.png',
@@ -1723,7 +1726,7 @@ describe('search metadata', () => {
     const found = rules.searchMetadataViolations(
       complete({
         index: INDEX.replace(
-          'content="https://sb.edct.dev/assets/link-card.png" />\n<meta property="og:image:alt"',
+          'content="https://navbeacon.app/assets/link-card.png" />\n<meta property="og:image:alt"',
           'content="assets/link-card.png" />\n<meta property="og:image:alt"',
         ),
       }),
@@ -1844,7 +1847,7 @@ describe('search metadata', () => {
    * need. What must not happen is a real failure arriving as the same absence:
    * five gates would retire at once and say nothing.
    */
-  const ORIGIN_SOURCE = "export const SITE_ORIGIN = 'https://sb.edct.dev';";
+  const ORIGIN_SOURCE = "export const SITE_ORIGIN = 'https://navbeacon.app';";
 
   it('hands over the addresses and the keys when both can be read', () => {
     const sources = rules.searchMetadataSources(ORIGIN_SOURCE, '{ "app.name": "Ship Builder" }');

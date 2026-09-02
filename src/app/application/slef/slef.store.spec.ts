@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { SlefStore, utf8ByteLength } from './slef.store';
-import { SLEF_IMPORT_LIMIT_BYTES } from '../../domain/slef/slef-import.models';
+import { SLEF_IMPORT_LIMIT_BYTES } from '../../domain/ships/slef/slef-import.models';
 import {
   SLEF_EXPORT_FILENAME,
   SLEF_EXPORT_MIME_TYPE,
   type SlefExportArtifact,
-} from '../../domain/slef/slef-export.models';
+} from '../../domain/ships/slef/slef-export.models';
 
 function artifact(revision: number): SlefExportArtifact {
   return {

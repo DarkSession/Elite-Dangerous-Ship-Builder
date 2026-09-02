@@ -388,6 +388,11 @@
   // would cut its own controls off (011/FR-011).
   --edsb-measure-bar-height: 4.625rem;
 
+  // The tool bar over it. Canvas 3c draws 50px, which holds a tab at this
+  // feature's 44px press baseline with the bar's own rule outside the box. It
+  // is a floor for the reason the figure above is one.
+  --edsb-measure-tool-bar-height: 3.125rem;
+
   // What a sticky bar has to overhang the edge it is frozen against by so
   // nothing prints above it. The edge is placed at a fractional device pixel
   // while the browser snaps the bar to a whole one, and the two can miss each

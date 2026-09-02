@@ -8,8 +8,8 @@ import {
 import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
-import { presentGameText } from '../../i18n/game-text.presenter';
-import type { ModuleTextResolver } from '../../application/outfitting/fitted-module-view';
+import { presentGameText } from '../../../i18n/game-text.presenter';
+import type { ModuleTextResolver } from '../../../application/outfitting/fitted-module-view';
 
 /**
  * The shared outfitting fixtures.

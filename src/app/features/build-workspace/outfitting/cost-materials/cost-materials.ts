@@ -3,7 +3,7 @@ import { ActiveBuildStore } from '../../../../application/active-build/active-bu
 import {
   projectCostAndMaterials,
   type CostAndMaterials,
-} from '../../../../domain/cost-materials/cost-materials';
+} from '../../../../domain/ships/cost-materials/cost-materials';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import type { MessageKey } from '../../../../i18n/locale-registry';

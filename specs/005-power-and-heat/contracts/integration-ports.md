@@ -18,7 +18,7 @@ this feature exports, exactly as feature 009's rail block reads its own.
 ## What is exported
 
 ```ts
-// src/app/domain/power-heat/power-heat.ts
+// src/app/domain/ships/power-heat/power-heat.ts
 export function projectPowerHeat(loadout: ShipLoadout, conditions: PowerConditions): PowerAndHeat;
 
 export interface PowerConditions {
@@ -71,7 +71,7 @@ a consequence of the withdrawn shared-context design and is not built.
   whose `poweredDeployed` and `poweredRetracted` differ reads its own verdict in each state.
 - No consumer of the export calls `powerBudget`, `distributorMetricsResult` or `heatMetricsResult`,
   and only
-  `src/app/domain/power-heat` combines package figures arithmetically, which
+  `src/app/domain/ships/power-heat` combines package figures arithmetically, which
   `scripts/policy/power-heat-ownership.mjs` enforces by path. The standalone `distributorMetrics`
   and `heatMetrics` calculators the same leaves export are refused everywhere, the projection
   included.

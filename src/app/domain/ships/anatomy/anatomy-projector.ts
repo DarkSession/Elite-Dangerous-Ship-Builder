@@ -1,4 +1,4 @@
-import type { SlotView } from '../../application/outfitting/slot-view';
+import type { SlotView } from '../../../application/outfitting/slot-view';
 import {
   MOUNT_FEATURE_OF,
   SCHEMATIC_SIDES,

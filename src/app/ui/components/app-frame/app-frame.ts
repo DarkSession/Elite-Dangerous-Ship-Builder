@@ -33,6 +33,17 @@ export interface NavigationEntry {
   readonly current?: boolean;
 }
 
+/**
+ * One tool the application carries.
+ *
+ * The same shape as a navigation entry, and read differently: `current` means
+ * the open route belongs to this tool, and the frame then names it rather than
+ * offering it. It is a separate type because the two lists mean different
+ * things — which screen, and which tool — and one of them will grow fields the
+ * other has no use for.
+ */
+export type ToolEntry = NavigationEntry;
+
 /** One shell action. Always has a text name — never an icon alone. */
 export interface ShellAction {
   readonly id: string;
@@ -179,6 +190,18 @@ export class AppFrame {
   readonly navigation = input<readonly NavigationEntry[]>([]);
 
   /**
+   * The tools the application carries, in the order the bar draws them.
+   *
+   * One of them is the whole registry today, and the bar then names that tool
+   * and offers no other.
+   *
+   * Empty on a surface that carries no tools at all — the component preview
+   * catalogue is one — and the region is then not in the document, so no reader
+   * meets a navigation landmark with nothing in it (011/FR-028).
+   */
+  readonly tools = input<readonly ToolEntry[]>([]);
+
+  /**
    * Where the bar's own insignia goes, when it goes anywhere.
    *
    * Every canvas puts the mark on the leading edge of the bar, and the
@@ -223,8 +246,15 @@ export class AppFrame {
    */
   readonly navigationSelected = output<{ entry: NavigationEntry; event: MouseEvent }>();
 
+  /**
+   * A tool was chosen. Only ever one the Commander is not already in: the
+   * current tool is drawn as text and has nothing to activate.
+   */
+  readonly toolSelected = output<{ entry: ToolEntry; event: MouseEvent }>();
+
   readonly bannerLabel = this.#messages.messageSignal('shell.banner.label');
   readonly navigationLabel = this.#messages.messageSignal('shell.navigation.label');
+  readonly toolsLabel = this.#messages.messageSignal('shell.tools.label');
   readonly actionsLabel = this.#messages.messageSignal('shell.actions.label');
   readonly statusLabel = this.#messages.messageSignal('shell.status.label');
   readonly betaLabel = this.#messages.messageSignal('shell.beta');

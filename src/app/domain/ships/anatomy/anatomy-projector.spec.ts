@@ -1,4 +1,4 @@
-import type { SlotView } from '../../application/outfitting/slot-view';
+import type { SlotView } from '../../../application/outfitting/slot-view';
 import type { SchematicDocument, SchematicSide, SideAssetState } from './anatomy-model';
 import { projectAnatomy, type SideStates } from './anatomy-projector';
 

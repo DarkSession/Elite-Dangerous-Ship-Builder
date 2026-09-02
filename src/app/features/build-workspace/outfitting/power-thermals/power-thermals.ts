@@ -10,7 +10,7 @@ import {
   type HeatLevelValue,
   type ModuleDrawRow,
   type PowerAndHeat,
-} from '../../../../domain/power-heat/power-heat';
+} from '../../../../domain/ships/power-heat/power-heat';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../../../i18n/game-text.presenter';
 import type { MessageKey } from '../../../../i18n/locale-registry';
@@ -178,7 +178,7 @@ function clamp(share: number): number {
  * given, so a 400% zoom picks the stacked one for the same reason a phone does.
  *
  * Every figure here is a package answer selected by
- * `src/app/domain/power-heat/power-heat.ts`. This component formats and names
+ * `src/app/domain/ships/power-heat/power-heat.ts`. This component formats and names
  * them and does no arithmetic of its own — which is why the canvas's powered
  * and unpowered draw split, its cumulative percentages and its 79%/21% bar are
  * not on the screen: the package publishes no such fields, and a figure this

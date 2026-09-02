@@ -5,7 +5,7 @@ import type {
   DeliveryCapability,
   DeliveryOutcome,
   SlefExportArtifact,
-} from '../../domain/slef/slef-export.models';
+} from '../../domain/ships/slef/slef-export.models';
 import { SlefExportCoordinator } from './slef-export.coordinator';
 import { SlefStore } from './slef.store';
 

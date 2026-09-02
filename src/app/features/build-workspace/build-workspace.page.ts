@@ -8,8 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { deriveBuildTitle } from '../../domain/build/build-title';
-import type { LocalRecordV1 } from '../../domain/build/stored-build';
+import { deriveBuildTitle } from '../../domain/ships/build/build-title';
+import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
 import { FragmentPublisher } from '../../application/build-link/fragment-publisher';

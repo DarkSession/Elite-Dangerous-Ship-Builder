@@ -5,7 +5,7 @@ import {
   defaultBuild,
   packageText,
   routeDistinctVariants,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { candidateMembership, isFittedChoice, resolveChoice } from './candidate-membership';
 
 /**

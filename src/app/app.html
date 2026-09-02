@@ -2,6 +2,7 @@
   [routeContext]="pageName()"
   [routeCount]="pageCount()"
   [navigation]="navigation()"
+  [tools]="tools()"
   [home]="home()"
   [actions]="actions()"
   [status]="updateStatus()"
@@ -12,6 +13,7 @@
   (identityClosed)="chrome.closeIdentity()"
   (identityCommitted)="chrome.commitIdentity($event)"
   (navigationSelected)="navigateFromShell($event)"
+  (toolSelected)="navigateFromShell($event)"
 >
   <router-outlet />
 </edsb-app-frame>

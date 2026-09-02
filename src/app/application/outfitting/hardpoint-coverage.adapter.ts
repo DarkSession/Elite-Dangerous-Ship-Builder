@@ -1,4 +1,4 @@
-import type { HardpointCoverage } from '../../domain/outfitting/hardpoint-coverage';
+import type { HardpointCoverage } from '../../domain/ships/outfitting/hardpoint-coverage';
 import type { SlotView } from './slot-view';
 
 /**

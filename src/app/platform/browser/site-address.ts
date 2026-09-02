@@ -25,7 +25,7 @@
  * in `src/index.html` keeps this origin's root and the English description on
  * every route, deliberately. It describes the application, not the page.
  */
-export const SITE_ORIGIN = 'https://sb.edct.dev';
+export const SITE_ORIGIN = 'https://navbeacon.app';
 
 /**
  * The canonical address of a route.

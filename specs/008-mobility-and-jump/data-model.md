@@ -22,7 +22,7 @@ DRIVE`; the five stacked components and the per-module mass list described below
 >    [spec.md](./spec.md).
 >
 > Where this document and those disagree, those decide. There is no snapshot, store, aggregate-result or
-> module-mass model: the shape actually built is `src/app/domain/mobility-jump/mobility-jump.ts`.
+> module-mass model: the shape actually built is `src/app/domain/ships/mobility-jump/mobility-jump.ts`.
 
 Feature 008 owns immutable projections only. The active build, build revision, viewing conditions,
 condition revision, selection and persistence remain in their owning features. Package result and

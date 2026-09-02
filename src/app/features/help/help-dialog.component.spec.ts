@@ -12,8 +12,8 @@ import { HELP_TOPIC_IDS } from '../../domain/help/help-topic';
 
 /** Two lines with the punctuation a real notice carries. */
 const EXCERPT = [
-  'Elite Dangerous Ship Builder was created using assets and imagery from',
-  'Elite Dangerous, with the permission of Frontier Developments plc.',
+  'NavBeacon was created using assets and imagery from Elite Dangerous, with',
+  'the permission of Frontier Developments plc.',
 ].join('\n');
 
 const LICENCE = {

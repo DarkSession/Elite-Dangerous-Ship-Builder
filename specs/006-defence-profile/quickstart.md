@@ -29,7 +29,7 @@ power-band inference, aggregate apportionment, private game text or new persiste
 ## 2. Run focused tests
 
 ```bash
-pnpm exec ng test --no-coverage --include 'src/app/domain/defence/**/*.spec.ts'
+pnpm exec ng test --no-coverage --include 'src/app/domain/ships/defence/**/*.spec.ts'
 pnpm exec ng test --no-coverage --include 'src/app/features/build-workspace/outfitting/defence-*/**/*.spec.ts'
 pnpm exec playwright test e2e/defence.spec.ts
 ```

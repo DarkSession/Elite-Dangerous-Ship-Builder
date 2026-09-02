@@ -22,7 +22,7 @@ import {
  * ever see the other.
  */
 
-const ORIGIN = 'https://sb.edct.dev';
+const ORIGIN = 'https://navbeacon.app';
 
 /** Two hulls is enough to prove the shape and the ordering. */
 const SHIPS = [
@@ -31,9 +31,9 @@ const SHIPS = [
 ];
 
 const CATALOGUE = {
-  'app.name': 'Elite Dangerous Ship Builder',
+  'app.name': 'NavBeacon',
   'app.document-title': '{{page}} · {{app}}',
-  'app.document-title.default': 'Elite Dangerous Ship Builder',
+  'app.document-title.default': 'NavBeacon',
   'catalogue.title': 'Ship Builder',
   'catalogue.description': 'Browse every hull.',
   'hullDetail.title': '{{hull}}',
@@ -80,7 +80,7 @@ describe('published addresses', () => {
   });
 
   it('reads the origin out of the file that declares it, and refuses a file that does not', () => {
-    assert.equal(declaredOrigin("export const SITE_ORIGIN = 'https://sb.edct.dev';"), ORIGIN);
+    assert.equal(declaredOrigin("export const SITE_ORIGIN = 'https://navbeacon.app';"), ORIGIN);
     assert.throws(() => declaredOrigin('export const NOTHING = 1;'), /SITE_ORIGIN/);
   });
 });
@@ -94,7 +94,7 @@ describe('what a published document says', () => {
   it('names the hull in the title and in the description', () => {
     const head = documentHead(hull(), CATALOGUE, ORIGIN);
 
-    assert.equal(head.title, 'Anaconda · Elite Dangerous Ship Builder');
+    assert.equal(head.title, 'Anaconda · NavBeacon');
     assert.equal(head.description, 'Anaconda: every figure and the slot layout.');
   });
 
@@ -106,13 +106,13 @@ describe('what a published document says', () => {
     assert.equal(head.canonical, `${ORIGIN}/${HULL_PARENT}/Anaconda`);
   });
 
-  it('publishes the application name alone where the page is named after it', () => {
-    // The catalogue screen is called `Ship Builder`, which the application name
-    // already contains. Composing it would publish the product name twice on
-    // the address `/` redirects to.
+  it('names the screen beside the product on the address the root redirects to', () => {
+    // The catalogue screen is the ship builder and the product is NavBeacon, so
+    // the address `/` redirects to says which screen it is rather than repeating
+    // the product name.
     const catalogue = publishedAddresses({ origin: ORIGIN, ships: SHIPS })[0];
 
-    assert.equal(documentHead(catalogue, CATALOGUE, ORIGIN).title, 'Elite Dangerous Ship Builder');
+    assert.equal(documentHead(catalogue, CATALOGUE, ORIGIN).title, 'Ship Builder · NavBeacon');
   });
 
   it('leaves a placeholder with no value as nothing rather than as its own name', () => {
@@ -120,7 +120,7 @@ describe('what a published document says', () => {
   });
 
   it('falls back to the application title where the page has no name', () => {
-    assert.equal(documentTitle(CATALOGUE, null), 'Elite Dangerous Ship Builder');
-    assert.equal(documentTitle(CATALOGUE, '   '), 'Elite Dangerous Ship Builder');
+    assert.equal(documentTitle(CATALOGUE, null), 'NavBeacon');
+    assert.equal(documentTitle(CATALOGUE, '   '), 'NavBeacon');
   });
 });

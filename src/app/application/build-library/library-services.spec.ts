@@ -7,7 +7,7 @@ import {
   UNKNOWN_HULL_RECORD,
   UNSUPPORTED_NEWER_RECORD,
   WORKING_RECORD_V1,
-} from '../../domain/build/fixtures/records';
+} from '../../domain/ships/build/fixtures/records';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channel.adapter';

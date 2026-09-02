@@ -10,7 +10,7 @@ Feature 001 owns the committed `ShipLoadout`. Feature 002 holds no second copy o
 the one on screen.
 
 Every Commander decision runs the same round trip, in
-[`build-edit-transaction.ts`](../src/app/domain/outfitting/build-edit-transaction.ts):
+[`build-edit-transaction.ts`](../src/app/domain/ships/outfitting/build-edit-transaction.ts):
 
 1. capture the current build as a modelled snapshot;
 2. rebuild a **detached** candidate from that snapshot, through the package;
@@ -30,7 +30,7 @@ a priority to the value it already has is a package call that succeeds and chang
 ## Ingress: what a build must survive to become the active one
 
 Anything arriving from outside — a stored record, a decoded link, later an imported capture — passes
-through [`build-ingress-normalizer.ts`](../src/app/domain/build/build-ingress-normalizer.ts) before
+through [`build-ingress-normalizer.ts`](../src/app/domain/ships/build/build-ingress-normalizer.ts) before
 it can replace the build on screen. It answers in exactly two ways:
 
 - **normalized**: every partial engineering roll the package could complete was completed to
@@ -44,7 +44,7 @@ build, which is why a refusal leaves the session's history intact: nothing repla
 
 ## Session history
 
-The tape is [`session-edit-history.ts`](../src/app/domain/outfitting/session-edit-history.ts): a
+The tape is [`session-edit-history.ts`](../src/app/domain/ships/outfitting/session-edit-history.ts): a
 plain value with `past`, `future` and a capacity of exactly 100, holding modelled checkpoints and an
 unformatted summary key with scalar parameters.
 

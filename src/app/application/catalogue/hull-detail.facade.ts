@@ -4,13 +4,16 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { GameTextPresenter, type GameTextPresentation } from '../../i18n/game-text.presenter';
 import type { MessageKey } from '../../i18n/locale-registry';
 import { MessageService } from '../../i18n/message.service';
-import { hullCapacity, type HullCapacity } from '../../domain/catalogue/hull-capacity';
-import { hullCatalogueEntry, type HullCatalogueEntry } from '../../domain/catalogue/hull-catalogue';
+import { hullCapacity, type HullCapacity } from '../../domain/ships/catalogue/hull-capacity';
+import {
+  hullCatalogueEntry,
+  type HullCatalogueEntry,
+} from '../../domain/ships/catalogue/hull-catalogue';
 import {
   hullDetailFacts,
   type HullFact,
   type HullFactGroup,
-} from '../../domain/catalogue/hull-facts';
+} from '../../domain/ships/catalogue/hull-facts';
 import { ArtworkCoordinator } from './artwork.coordinator';
 
 /** One fact, formatted and labelled for the active locale. */

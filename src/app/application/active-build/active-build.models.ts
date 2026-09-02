@@ -1,6 +1,6 @@
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import type { IngressNotice } from '../../domain/build/build-ingress-result';
-import type { BuildLinkCodecErrorCode } from '../../domain/build-link/build-link-codec-error';
+import type { IngressNotice } from '../../domain/ships/build/build-ingress-result';
+import type { BuildLinkCodecErrorCode } from '../../domain/ships/build-link/build-link-codec-error';
 
 /**
  * Where the active build came from, as a workflow fact.

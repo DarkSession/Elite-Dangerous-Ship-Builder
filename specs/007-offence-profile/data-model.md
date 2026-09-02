@@ -1,8 +1,8 @@
 # Data Model: Offence Profile
 
 One pure projection, no store, no persisted field. Everything below lives in
-`src/app/domain/offence/offence.ts` — with the gunsight geometry in its own
-`src/app/domain/offence/convergence.ts` — and is a function of `(loadout, coverage, weaponsPips)`.
+`src/app/domain/ships/offence/offence.ts` — with the gunsight geometry in its own
+`src/app/domain/ships/offence/convergence.ts` — and is a function of `(loadout, coverage, weaponsPips)`.
 
 ## Projection
 

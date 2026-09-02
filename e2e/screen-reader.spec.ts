@@ -42,12 +42,29 @@ test.describe('accessibility tree', () => {
     // in the `⋮` menu, so which composition is drawn depends on the width. The
     // landmark is in the banner either way; at compact it is inside the menu,
     // which is where the reference puts them.
-    if ((await page.getByRole('navigation').count()) === 0) {
-      await openActionLayer(page);
-    }
+    //
+    // Found by what it holds rather than by its name. The banner carries a
+    // second navigation landmark since canvas 3c — the tool bar — and this file
+    // deliberately pins no catalogue text, so the one being asked about here is
+    // the one offering screens to open.
+    const screens = page
+      .getByRole('banner')
+      .getByRole('navigation')
+      .filter({ has: page.getByRole('link') });
 
-    await expect(page.getByRole('banner').getByRole('navigation')).toHaveCount(1);
-    await expect(page.getByRole('banner').getByRole('navigation')).toHaveAccessibleName(/.+/);
+    // Asked and answered as one unit. Which composition is drawn is settled by
+    // the shell's own stylesheet, which Angular inserts as the component first
+    // renders — so for a frame at a folded width the wide row is in the document
+    // and the question answers itself wrongly. Retried, the reading that counts
+    // is the one that is still true a moment later.
+    await expect(async () => {
+      if ((await screens.count()) === 0) {
+        await openActionLayer(page);
+      }
+      await expect(screens).toHaveCount(1, { timeout: 2_000 });
+      await expect(screens).toBeVisible({ timeout: 2_000 });
+      await expect(screens).toHaveAccessibleName(/.+/, { timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
   });
 
   test('names the announcement outlets rather than leaving them anonymous', async ({ page }) => {

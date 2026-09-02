@@ -4,7 +4,7 @@ import {
   defaultBuild,
   fixedRewardBuild,
   fixedRewardVariant,
-} from '../../domain/outfitting/outfitting.fixtures';
+} from '../../domain/ships/outfitting/outfitting.fixtures';
 import { MESSAGE_KEYS } from '../../i18n/locale-registry';
 import {
   acquisitionLabels,

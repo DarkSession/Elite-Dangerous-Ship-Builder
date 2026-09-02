@@ -4,7 +4,7 @@ import { PowerConditionsStore } from '../../../../application/power-heat/power-c
 import {
   projectMobilityAndJump,
   type MobilityAndJump,
-} from '../../../../domain/mobility-jump/mobility-jump';
+} from '../../../../domain/ships/mobility-jump/mobility-jump';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import type { Metric } from '../../../../ui/components/metric-group/metric-group';

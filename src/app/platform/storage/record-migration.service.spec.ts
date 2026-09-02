@@ -5,7 +5,7 @@ import {
   NAMED_RECORD_V1,
   UNKNOWN_HULL_RECORD,
   UNSUPPORTED_NEWER_RECORD,
-} from '../../domain/build/fixtures/records';
+} from '../../domain/ships/build/fixtures/records';
 import { RecordMigrationService } from './record-migration.service';
 import { MemoryStorage, provideMemoryStorage, quotaError } from './storage.spec-helpers';
 import { recordKey } from './storage-keys';

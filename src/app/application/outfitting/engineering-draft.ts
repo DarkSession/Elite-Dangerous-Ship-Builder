@@ -6,13 +6,16 @@ import type {
   AvailableBlueprint,
   ShipLoadout,
 } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { captureCheckpoint, restoreCheckpoint } from '../../domain/build/modeled-build-checkpoint';
-import { WEAPON_FIGURES, weaponFigures } from '../../domain/offence/weapon-figures';
-import type { EditOperation } from '../../domain/outfitting/build-edit-transaction';
+import {
+  captureCheckpoint,
+  restoreCheckpoint,
+} from '../../domain/ships/build/modeled-build-checkpoint';
+import { WEAPON_FIGURES, weaponFigures } from '../../domain/ships/offence/weapon-figures';
+import type { EditOperation } from '../../domain/ships/outfitting/build-edit-transaction';
 import {
   engineeringCost,
   type EngineeringCostView,
-} from '../../domain/outfitting/engineering-cost';
+} from '../../domain/ships/outfitting/engineering-cost';
 import type { BuildEditIntent } from './build-edit-intent';
 import { engineeringView, type EngineeringView } from './engineering-view';
 import {

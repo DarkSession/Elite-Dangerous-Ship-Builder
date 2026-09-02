@@ -1,26 +1,19 @@
 <!--
-Sync Impact Report (9.0.0)
-- Version change: 8.0.0 -> 9.0.0 (MAJOR)
-- Modified principles: V. Works on Desktop, Tablet and Mobile — the 2.2.1 Timing Adjustable
-  exclusion now names two mechanisms rather than one: the application-update restart, and the notice
-  the restarted session draws, which takes itself down.
-- Rationale: the owner's decision of 2026-08-28 is that the notice saying the update was applied
-  goes by itself after a few seconds rather than standing in front of the build until it is pressed.
-  It keeps its own named control, so nothing has to be waited out; what the clock takes is the
-  reading time of a Commander who does not press it, which meets none of 2.2.1's conditions. The
-  8.0.0 wording made the restart the application's only time limit and required an amendment rather
-  than a reading for any second one — this is that amendment.
-- Invalidated-spec review: feature 011 FR-025 and SC-007 name both mechanisms; the count of excluded
-  criteria is unchanged at eight, so `scripts/check-interface-foundations.mjs` and every conformance
-  statement stand as they are.
+Sync Impact Report (9.0.1)
+- Version change: 9.0.0 -> 9.0.1 (PATCH)
+- Modified principles: none. The product is named NavBeacon, and this document says so.
+- Rationale: the application is the first of several tools under one name and one origin
+  (`docs/navbeacon-migration.md`). Ship Builder is the tool that plans ship loadouts; NavBeacon is
+  the product that carries it. No obligation changes, so the bump is a patch.
+- Invalidated-spec review: none. No principle, exclusion or count moves.
 - Follow-up TODOs: none.
 -->
 
-# Elite Dangerous Ship Builder Constitution
+# NavBeacon Constitution
 
-The Elite Dangerous Ship Builder is a browser application for planning ship
-loadouts: pick a hull, fit and engineer modules, read the resulting build
-metrics, and hand the build to other tools as SLEF.
+NavBeacon is a browser application carrying tools for Elite Dangerous. Ship Builder
+is the first of them: pick a hull, fit and engineer modules, read the resulting
+build metrics, and hand the build to other tools as SLEF.
 
 ## Core Principles
 
@@ -73,12 +66,12 @@ SLEF parsing/serialisation MUST be taken from that package.
 
 **Defects and gaps in the library are fixed in the library.** When the package
 returns a wrong value, is missing a datum or calculation, or has an awkward API,
-the ship builder does not paper over it:
+NavBeacon does not paper over it:
 
 - The problem MUST be called out and raised against
   [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac),
   with a minimal reproduction.
-- The fix MUST land in the library, and the ship builder MUST then consume the
+- The fix MUST land in the library, and NavBeacon MUST then consume the
   released version. Correcting, patching, clamping, re-deriving or
   special-casing a library result inside this application is prohibited —
   including "just this once" adjustments buried in a component or a formatter.
@@ -377,7 +370,7 @@ requirements without prescribing implementation.
   (principle VI) and composition from the design system (principle VII) are
   behavioural requirements, not design choices, and are in scope from the start.
 - A defect traced to `@elite-dangerous-almanac/core` is raised and fixed
-  upstream (principle II). The ship builder tracks the released fix; it does not
+  upstream (principle II). NavBeacon tracks the released fix; it does not
   route around it.
 
 ## Governance
@@ -396,4 +389,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 9.0.0 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-08-28
+**Version**: 9.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-09-01

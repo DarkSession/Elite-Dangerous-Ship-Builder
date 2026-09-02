@@ -161,7 +161,7 @@ restore. Feature 004 owns no storage key.
 
 | Layer                             | Path                                             |
 | --------------------------------- | ------------------------------------------------ |
-| Format-facing domain              | `src/app/domain/slef/`                           |
+| Format-facing domain              | `src/app/domain/ships/slef/`                     |
 | Store, coordinators and presenter | `src/app/application/slef/`                      |
 | The two surfaces                  | `src/app/features/slef/`                         |
 | Producer identity                 | `src/app/platform/build/application-metadata.ts` |

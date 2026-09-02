@@ -43,7 +43,7 @@ import {
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 /** Where `ng build` leaves the application. */
-export const DEFAULT_OUTPUT = 'dist/elite-dangerous-ship-builder/browser';
+export const DEFAULT_OUTPUT = 'dist/navbeacon/browser';
 
 /** The file that declares where this application is published. */
 const ORIGIN_SOURCE = 'src/app/platform/browser/site-address.ts';

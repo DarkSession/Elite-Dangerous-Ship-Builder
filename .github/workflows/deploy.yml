@@ -1,4 +1,4 @@
-# Publishes the production build to GitHub Pages at https://sb.edct.dev/.
+# Publishes the production build to GitHub Pages at https://navbeacon.app/.
 #
 # The application is client-side only, so a deployment is nothing more than the
 # static output of `pnpm run build` handed to Pages. Nothing is built on the

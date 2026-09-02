@@ -21,7 +21,7 @@ import {
 
 const TABLE_VERSION = 1;
 const defaultOutputPath = fileURLToPath(
-  new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url),
+  new URL('../src/app/domain/ships/build-link/codec-table-1.json', import.meta.url),
 );
 const outputPath = process.env.CODEC_TABLE_OUTPUT_PATH ?? defaultOutputPath;
 const almanacPackageUrl = new URL(

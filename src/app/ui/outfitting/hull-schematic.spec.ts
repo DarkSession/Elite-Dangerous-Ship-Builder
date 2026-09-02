@@ -2,7 +2,7 @@ import type {
   MountOccurrence,
   SchematicDocument,
   SideAssetState,
-} from '../../domain/anatomy/anatomy-model';
+} from '../../domain/ships/anatomy/anatomy-model';
 import {
   accessibleName,
   element,

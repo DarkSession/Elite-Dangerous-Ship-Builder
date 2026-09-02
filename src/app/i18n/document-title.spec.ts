@@ -1,5 +1,5 @@
 import { documentHead, publishedAddresses } from '../../../scripts/search/published-addresses.mjs';
-import { hullForAddressSegment } from '../domain/catalogue/hull-address';
+import { hullForAddressSegment } from '../domain/ships/catalogue/hull-address';
 import { hullArtworkPath } from '../platform/assets/hull-artwork-path';
 import { LINK_CARD, SITE_ORIGIN } from '../platform/browser/site-address';
 import { resolveDocumentTitle } from './document-title';
@@ -24,8 +24,8 @@ describe('resolveDocumentTitle', () => {
   });
 
   it('treats a blank page name as no page at all', () => {
-    // A caller that has nothing to say must not be able to publish `· Elite
-    // Dangerous Ship Builder` with an empty half.
+    // A caller that has nothing to say must not be able to publish `· NavBeacon`
+    // with an empty half.
     expect(resolveDocumentTitle(catalogue(), '   ')).toBe(
       BUNDLED_ENGLISH['app.document-title.default'],
     );
@@ -37,49 +37,23 @@ describe('resolveDocumentTitle', () => {
     );
   });
 
-  it('says the product name once where the page is named after the product', () => {
-    // `Ship Builder · Elite Dangerous Ship Builder` is the product name twice,
-    // on the address `/` redirects to and the sitemap ranks highest.
-    expect(resolveDocumentTitle(catalogue(), 'Ship Builder')).toBe(
-      BUNDLED_ENGLISH['app.document-title.default'],
+  it('names the tool beside the product on the screen the root redirects to', () => {
+    // The product is NavBeacon and the screen is the ship builder, so the one
+    // address `/` redirects to says which screen it is rather than repeating
+    // the product name.
+    expect(resolveDocumentTitle(catalogue(), BUNDLED_ENGLISH['catalogue.title'])).toBe(
+      `${BUNDLED_ENGLISH['catalogue.title']} · ${BUNDLED_ENGLISH['app.name']}`,
     );
   });
 
-  it('keeps a page whose name only sits inside a word of the application name', () => {
-    // `Build` is inside `Builder`. On substrings the workspace would lose the
-    // one word that says which screen it is, which is the whole point of a
-    // per-route title.
-    expect(resolveDocumentTitle(catalogue(), 'Build')).toBe(
-      `Build · ${BUNDLED_ENGLISH['app.name']}`,
-    );
-  });
-
-  it('reads a word boundary the ASCII one gets wrong', () => {
-    // The case that separates `[^\p{L}\p{N}]` from `\b`, which is defined on
-    // the ASCII word characters: `\b` sees an edge between `u` and `ü`, so it
-    // reads `übersicht` as a whole word of `Bauübersicht` and would publish the
-    // application name alone for a page that shares no word with it.
-    const german = catalogue({ 'app.name': 'Elite Dangerous Bauübersicht' });
-
-    expect(resolveDocumentTitle(german, 'übersicht')).toBe(
-      'übersicht · Elite Dangerous Bauübersicht',
-    );
-
-    // And the real word still collapses, in the same catalogue.
-    expect(resolveDocumentTitle(german, 'Bauübersicht')).toBe(
-      BUNDLED_ENGLISH['app.document-title.default'],
-    );
-  });
-
-  it('collapses in the other shipped locale too, on that catalogue as shipped', () => {
+  it('composes every screen of the other shipped locale on that catalogue as shipped', () => {
     // The real German catalogue rather than an override of the English one:
-    // `app.name` is a product name and is not translated, so the collapse has
-    // to fire there as well — and it would be easy to ship a translated name
-    // that quietly stopped it.
+    // `app.name` is a product name and is not translated, so a screen that is
+    // titled in German still stands beside the same product name.
     const german = germanCatalogue as unknown as MessageCatalogue;
 
     expect(resolveDocumentTitle(german, german['catalogue.title'])).toBe(
-      german['app.document-title.default'],
+      `${german['catalogue.title']} · ${german['app.name']}`,
     );
     expect(resolveDocumentTitle(german, german['library.title'])).toBe(
       `${german['library.title']} · ${german['app.name']}`,

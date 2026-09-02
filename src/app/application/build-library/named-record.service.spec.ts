@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';

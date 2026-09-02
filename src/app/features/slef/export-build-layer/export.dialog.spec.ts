@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
-import { FIXTURE_HULL } from '../../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_HULL } from '../../../domain/ships/outfitting/outfitting.fixtures';
 import { provideLocalization } from '../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../i18n/testing/localization-harness';
 import { DocumentAdapter } from '../../../platform/browser/document.adapter';

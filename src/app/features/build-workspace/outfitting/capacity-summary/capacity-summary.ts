@@ -3,7 +3,7 @@ import { ActiveBuildStore } from '../../../../application/active-build/active-bu
 import {
   projectCapacity,
   type BuildCapacity,
-} from '../../../../domain/build-capacity/build-capacity';
+} from '../../../../domain/ships/build-capacity/build-capacity';
 import { Formatters } from '../../../../i18n/formatters/formatters';
 import { MessageService } from '../../../../i18n/message.service';
 import type { Metric } from '../../../../ui/components/metric-group/metric-group';

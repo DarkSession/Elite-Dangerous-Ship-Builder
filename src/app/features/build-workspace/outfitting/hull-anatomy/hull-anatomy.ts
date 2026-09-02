@@ -16,7 +16,7 @@ import {
   SCHEMATIC_SIDES,
   type SchematicSide,
   type SideAssetState,
-} from '../../../../domain/anatomy/anatomy-model';
+} from '../../../../domain/ships/anatomy/anatomy-model';
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { MessageService } from '../../../../i18n/message.service';
 import { relationId } from '../../../../ui/a11y/text-equivalence';

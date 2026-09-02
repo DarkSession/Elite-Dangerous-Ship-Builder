@@ -17,7 +17,7 @@ import { resolve } from 'node:path';
 import { ARITHMETIC, ROOT, filesUnder, runPolicy, runRules, scan } from './common.mjs';
 
 /** The one place that may ask the package about jump, mobility or mass. */
-export const PROJECTION = 'src/app/domain/mobility-jump';
+export const PROJECTION = 'src/app/domain/ships/mobility-jump';
 
 /** Feature 008's own source. The import rule applies inside these. */
 export const OWNED = [
@@ -421,7 +421,7 @@ const RULES = [
     async run(violations) {
       for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
-        if (!isOwned(name) && !source.includes('domain/mobility-jump')) {
+        if (!isOwned(name) && !source.includes('domain/ships/mobility-jump')) {
           continue;
         }
         for (const { line } of combinedFigures(source)) {
@@ -440,7 +440,7 @@ const RULES = [
     async run(violations) {
       for (const name of await filesUnder(SCOPE, ['.ts', '.html'])) {
         const source = await readFile(resolve(ROOT, name), 'utf8');
-        if (!isOwned(name) && !source.includes('domain/mobility-jump')) {
+        if (!isOwned(name) && !source.includes('domain/ships/mobility-jump')) {
           continue;
         }
         for (const { line } of inferredOvercharge(source)) {

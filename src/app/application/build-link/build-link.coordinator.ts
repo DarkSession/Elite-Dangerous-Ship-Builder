@@ -1,10 +1,10 @@
 import { Injectable, Injector, effect, inject, signal } from '@angular/core';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { getShipBySymbol } from '@elite-dangerous-almanac/core/ships/ships';
-import type { BuildSnapshotV1 } from '../../domain/build/build-snapshot';
-import { toBuildSnapshotV1 } from '../../domain/build/build-snapshot.serializer';
-import { emptyFixedMounts } from '../../domain/build/fixed-mounts';
-import { decodeBuildLinkFragment } from '../../domain/build-link/build-link-codec-loader';
+import type { BuildSnapshotV1 } from '../../domain/ships/build/build-snapshot';
+import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
+import { emptyFixedMounts } from '../../domain/ships/build/fixed-mounts';
+import { decodeBuildLinkFragment } from '../../domain/ships/build-link/build-link-codec-loader';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { HistoryLocationAdapter } from '../../platform/browser/history-location.adapter';
 import { ActiveBuildStore } from '../active-build/active-build.store';
@@ -14,7 +14,7 @@ import {
   type CommitResult,
 } from '../active-build/build-ingress.coordinator';
 import { recognizeBuildLinkFragment } from './fragment-recognizer';
-import { normalizeReconstructedBuild } from '../../domain/build/build-ingress-normalizer';
+import { normalizeReconstructedBuild } from '../../domain/ships/build/build-ingress-normalizer';
 import { LinkErrorMapper, type LinkFailure } from './link-error.mapper';
 
 /** Why a decode was thrown away rather than reported. */

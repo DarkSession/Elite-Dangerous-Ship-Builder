@@ -3,10 +3,10 @@ import type {
   SchematicDocument,
   SchematicSide,
   SideAssetState,
-} from '../../domain/anatomy/anatomy-model';
+} from '../../domain/ships/anatomy/anatomy-model';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
-import { FIXTURE_SLOTS, defaultBuild } from '../../domain/outfitting/outfitting.fixtures';
+import { FIXTURE_SLOTS, defaultBuild } from '../../domain/ships/outfitting/outfitting.fixtures';
 import { AlmanacSchematicLoader } from '../../platform/assets/almanac-schematic-loader';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import type { BuildCandidate } from '../active-build/active-build.models';

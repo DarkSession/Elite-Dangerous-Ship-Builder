@@ -17,7 +17,7 @@ import { resolve } from 'node:path';
 import { ARITHMETIC, ROOT, filesUnder, runPolicy, runRules, scan } from './common.mjs';
 
 /** The one place that may ask the package about weapons or the capacitor. */
-export const PROJECTION = 'src/app/domain/offence';
+export const PROJECTION = 'src/app/domain/ships/offence';
 
 /** Feature 007's own source. The import rule applies inside these. */
 export const OWNED = [
@@ -218,7 +218,7 @@ const RULES = [
           continue;
         }
         const source = await readFile(resolve(ROOT, name), 'utf8');
-        if (!isOwned(name) && !source.includes('domain/offence')) {
+        if (!isOwned(name) && !source.includes('domain/ships/offence')) {
           continue;
         }
         for (const { line } of combinedFigures(source)) {

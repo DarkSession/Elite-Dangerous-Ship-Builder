@@ -5,7 +5,7 @@ import {
   TARGET_RANGE,
   type Convergence,
   type ConvergenceView,
-} from '../../../../../domain/offence/convergence';
+} from '../../../../../domain/ships/offence/convergence';
 import { Formatters } from '../../../../../i18n/formatters/formatters';
 import { GameTextPresenter } from '../../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../../i18n/message.service';
@@ -83,7 +83,7 @@ const HALF_PLATE_PERCENT = 50;
  * component because it is its own block — the plate, its marks and the range
  * share nothing with the two blocks above but the panel ground they sit on.
  *
- * The geometry arrives already projected: `src/app/domain/offence/convergence.ts`
+ * The geometry arrives already projected: `src/app/domain/ships/offence/convergence.ts`
  * is the only place that asks the package where a hull's hardpoints are and
  * where they point at a distance. This component places those answers on a
  * plate, names them and does no arithmetic of its own.

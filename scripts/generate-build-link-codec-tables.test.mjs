@@ -22,7 +22,7 @@ const generatorPath = fileURLToPath(
   new URL('./generate-build-link-codec-tables.mjs', import.meta.url),
 );
 const committedTablePath = fileURLToPath(
-  new URL('../src/app/domain/build-link/codec-table-1.json', import.meta.url),
+  new URL('../src/app/domain/ships/build-link/codec-table-1.json', import.meta.url),
 );
 
 test('refuses to overwrite a table whose payload does not match its declared hash', async (t) => {
