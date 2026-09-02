@@ -75,9 +75,12 @@ unlocked one, and the loadout a link restored would not be the loadout it was ma
 It is also what leaves the format one spelling per loadout: there is no second way to say which
 slot is empty, so no canonical-ordering rule is needed to keep alternate encodings out.
 
-Every item writes all four fields, whatever its own grades unlock, because the field count has to
-be readable before the item's slot count is known. A modification in a slot the item never
-unlocks is refused rather than encoded — see `SUIT_SLOTS` below.
+Every item writes all four fields, whatever its own grades unlock. The count could follow the
+item — the table names its slot count, and the mount count already works that way — but it cannot
+follow the grade, because a lowered grade locks a slot without emptying it. One format-wide
+constant is the cheaper of the two, and it costs only the Flight Suit sixteen bits it never uses.
+A modification in a slot the item never unlocks is refused rather than encoded, so the spare
+fields cannot say anything: see `SUIT_SLOTS` below.
 
 ## The table
 
@@ -108,9 +111,10 @@ three. The pairing is the library's: the generator asks `resolvePersonalModifica
 pins the answer. Without it a link could carry `weapon_range_kinetic` on a plasma rifle and this
 codec would have no way to know.
 
-`SUIT_SLOTS` and `WEAPON_SLOTS` earn theirs the same way. Every item reaches four slots except the
-Flight Suit, whose one grade unlocks none, so without them a modified Flight Suit — a Commander
-the game cannot produce — would encode and decode happily.
+`SUIT_SLOTS` earns its place for one item. Every suit and every weapon reaches four slots except
+the Flight Suit, whose one grade unlocks none, so without it a modified Flight Suit — a Commander
+the game cannot produce — would encode and decode happily. `WEAPON_SLOTS` is eleven fours and
+refuses nothing today; it is there because the next weapon the game ships need not be.
 
 Reading any of this from the package at decode time would make an old link's meaning depend on
 the release installed, which is the thing a pinned table exists to prevent.
@@ -142,6 +146,10 @@ application produced is one it accepts:
 | `unsupportedTableVersion` | A table number this build cannot read.                                      |
 | `unknownIdentity`         | A suit, weapon or recipe this release does not publish.                     |
 | `invalidPayload`          | A loadout the game cannot hold, and a body of the wrong length.             |
+
+The one place the two directions differ is a value longer than the bound, which the decoder
+refuses as `invalidEncoding` and the encoder as `invalidPayload`. Nothing reaches it: the largest
+loadout the catalogue can state is 25 characters against a bound of 500.
 
 The line between the last two is which question failed. A recipe the catalogue does not hold at
 all is an unknown identity; a recipe it holds for other weapons is a payload the item cannot
@@ -184,13 +192,12 @@ Interpolating `primary1` into a notice would ship an untranslated string (consti
 - `build-link-radix.ts` — the Base70 alphabet with its Base62-only terminal digit
 - `build-link-bits.ts` — `RawBitWriter` and `RawBitReader`
 - `build-link-envelope.ts` — the CRC-32 envelope, the prefix check and the length bound,
-  parameterised
-  by a `LinkEnvelope`
+  parameterised by a `LinkEnvelope`
 - `build-link-codec-error.ts` — the error type and its codes
 
 A codec supplies its prefix and its bound and gets envelope handling that is identical on both
-sides by construction. It is the reason the equipment codec is a little over 300 lines: the parts that
-are hard to get right were already written and already tested.
+sides by construction. It is the reason the equipment codec is a little over 300 lines: the parts
+that are hard to get right were already written and already tested.
 
 ## What is deliberately not in the format
 

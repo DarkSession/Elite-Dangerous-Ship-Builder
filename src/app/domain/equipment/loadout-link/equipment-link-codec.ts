@@ -80,7 +80,7 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
     SUIT_MOUNT,
   );
 
-  const mounts = mountNames(suitIndex);
+  const mounts = mountsOf(suitIndex);
   if (loadout.weapons.length !== mounts.length) {
     throw invalidPayload(
       `The suit offers ${mounts.length} mounts and the loadout names ${loadout.weapons.length}.`,
@@ -153,7 +153,7 @@ export function decodeEquipmentLinkFragment(fragment: string): EquipmentLoadout 
     SUIT_MOUNT,
   );
 
-  const weapons = mountNames(suitIndex).map((mount) => readWeapon(reader, mount));
+  const weapons = mountsOf(suitIndex).map((mount) => readWeapon(reader, mount));
 
   if (!reader.done) {
     throw invalidPayload('The equipment-link payload carries trailing data.', null);
@@ -197,7 +197,7 @@ function readWeapon(reader: RawBitReader, mount: Mount): FittedPersonalWeapon | 
  * Named rather than numbered because a refusal has to say which mount it is
  * about (`EquipmentLoadout.weapons` for the gap this stands in for).
  */
-function mountNames(suitIndex: number): readonly Mount[] {
+function mountsOf(suitIndex: number): readonly Mount[] {
   const [primary, secondary] = table.SUIT_MOUNTS[suitIndex]!;
   const of = (kind: string, count: number): Mount[] =>
     Array.from({ length: count }, (_, position) => ({ kind, name: `${kind}${position + 1}` }));

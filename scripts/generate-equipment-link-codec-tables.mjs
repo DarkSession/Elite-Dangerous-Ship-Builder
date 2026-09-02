@@ -10,8 +10,8 @@
  *
  * The table also carries what the codec has to know to refuse a loadout that
  * cannot exist: which grades a suit and a weapon publish, how many mounts of
- * each kind a suit offers, which kind a weapon fits, and the most modification
- * slots any grade unlocks. Reading those from the package at decode time would
+ * each kind a suit offers, which kind a weapon fits, how many modification slots
+ * each item ever unlocks, and the most any item unlocks. Reading those from the package at decode time would
  * make an old link's meaning depend on the release that happened to be
  * installed.
  *
@@ -52,11 +52,7 @@ const grades = (item) =>
 const slotsFor = (item) =>
   Math.max(...Object.values(item.grades).map((grade) => grade.modificationSlots));
 
-const modificationSlots = Math.max(
-  ...[...suits, ...weapons].flatMap((item) =>
-    Object.values(item.grades).map((grade) => grade.modificationSlots),
-  ),
-);
+const modificationSlots = Math.max(...[...suits, ...weapons].map(slotsFor));
 
 const weaponModifications = modifications
   .filter(([, recipe]) => recipe.target === 'weapon')
