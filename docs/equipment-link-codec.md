@@ -76,8 +76,9 @@ It is also what leaves the format one spelling per loadout: there is no second w
 slot is empty, so no canonical-ordering rule is needed to keep alternate encodings out.
 
 Every item writes all four fields, whatever its own grades unlock. The count could follow the
-item — the table names its slot count, and the mount count already works that way — but it cannot
-follow the grade, because a lowered grade locks a slot without emptying it. One format-wide
+item — the table names its slot count, and the mount count already works that way — but it
+cannot follow the grade, because a lowered grade locks a slot without emptying it. One
+format-wide
 constant is the cheaper of the two, and it costs only the Flight Suit sixteen bits it never uses.
 A modification in a slot the item never unlocks is refused rather than encoded, so the spare
 fields cannot say anything: see `SUIT_SLOTS` below.

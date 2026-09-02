@@ -11,9 +11,9 @@
  * The table also carries what the codec has to know to refuse a loadout that
  * cannot exist: which grades a suit and a weapon publish, how many mounts of
  * each kind a suit offers, which kind a weapon fits, how many modification slots
- * each item ever unlocks, and the most any item unlocks. Reading those from the package at decode time would
- * make an old link's meaning depend on the release that happened to be
- * installed.
+ * each item ever unlocks, and the most any item unlocks. Reading those from the
+ * package at decode time would make an old link's meaning depend on the release
+ * that happened to be installed.
  *
  * Like the ship builder's table, a changed content hash is a new encoding and
  * belongs under the next table version. `--overwrite` replaces this one in
