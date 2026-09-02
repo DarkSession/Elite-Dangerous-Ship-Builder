@@ -22,9 +22,9 @@
     that clears the one mark.
 
     A link where the screen has somewhere for it to go, which is where canvas
-    1c puts the trip the `SHIPYARD` chip used to carry; the mark itself stays
-    hidden from assistive technology and the link is named by the screen it
-    reaches, so the mark is never announced as a picture of nothing.
+    1c puts the trip the `SHIPYARD` chip used to carry; the mark carries no
+    alternative text and the link is named by the screen it reaches, so the mark
+    is never announced as a picture of nothing.
 
     The mark is its own element inside the link rather than the link itself.
     The link is held to the press baseline, the mark is the size the canvas
@@ -38,11 +38,11 @@
       [href]="destination.href"
       (click)="navigationSelected.emit({ entry: destination, event: $event })"
     >
-      <span class="frame__flag" aria-hidden="true"></span>
+      <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
       <span class="visually-hidden">{{ destination.label }}</span>
     </a>
   } @else {
-    <span class="frame__flag" aria-hidden="true"></span>
+    <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
   }
 
   <!--

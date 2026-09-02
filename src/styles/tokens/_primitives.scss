@@ -63,7 +63,6 @@
   --ednb-palette-amber-a35: rgb(255 140 26 / 0.35);
   --ednb-palette-amber-a40: rgb(255 140 26 / 0.4);
   --ednb-palette-amber-a45: rgb(255 140 26 / 0.45);
-  --ednb-palette-amber-a50: rgb(255 140 26 / 0.5);
   --ednb-palette-amber-a55: rgb(255 140 26 / 0.55);
   --ednb-palette-amber-a60: rgb(255 140 26 / 0.6);
   --ednb-palette-amber-a70: rgb(255 140 26 / 0.7);
@@ -569,12 +568,11 @@
   --ednb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
   --ednb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 
-  // The insignia the command bar carries (canvas 3b, and the bar of every
-  // screen artboard). The canvas draws it in a 368x330 box at 26x23 on three
-  // artboards and 28x25 on the fourth; the smaller is taken, because the bar it
-  // sits on is the same height on all four.
-  --ednb-measure-insignia-width: 1.625rem;
-  --ednb-measure-insignia-height: 1.4375rem;
+  // The insignia the command bar carries. Square since canvas 6d replaced the
+  // wedge with the beacon mark, and one size: the canvases draw it at 26 on the
+  // wide shipyard and 21 to 24 elsewhere, and the largest is taken, because the
+  // bar it sits on is the same height on all of them.
+  --ednb-measure-insignia-size: 1.625rem;
 
   // Both canvases draw five material rows against a footer that counts
   // eighteen types, so the list they draw is a bounded box rather than the

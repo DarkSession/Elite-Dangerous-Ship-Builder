@@ -88,8 +88,6 @@
   --ednb-surface-accent-hatch: var(--ednb-palette-amber-a55);
   --ednb-surface-hatched: var(--ednb-palette-bg);
 
-  // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
-  --ednb-surface-accent-underbar: var(--ednb-palette-amber-a50);
   --ednb-surface-danger-quiet: var(--ednb-palette-hot-a16);
   --ednb-surface-danger-solid: var(--ednb-palette-hot);
 
@@ -478,8 +476,7 @@
   --ednb-layout-convergence-block: var(--ednb-measure-convergence-block);
   --ednb-layout-shot-dot: var(--ednb-measure-shot-dot);
   --ednb-layout-node-mark-icon: var(--ednb-measure-node-mark-icon);
-  --ednb-layout-insignia-width: var(--ednb-measure-insignia-width);
-  --ednb-layout-insignia-height: var(--ednb-measure-insignia-height);
+  --ednb-layout-insignia-size: var(--ednb-measure-insignia-size);
   --ednb-layout-material-list: var(--ednb-measure-material-list);
   --ednb-layout-fitting-panel: var(--ednb-measure-fitting-panel);
   --ednb-layout-editor-panel: var(--ednb-measure-editor-panel);

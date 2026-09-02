@@ -43,7 +43,7 @@
 // inside a `0 20px` plate). The line between the decks is inset to match, so
 // the two cannot drift apart at a width where only one of them was changed.
 @mixin deck-insets($gutter, $gap) {
-  $indent: calc(#{$gutter} + var(--ednb-layout-insignia-width) + #{$gap});
+  $indent: calc(#{$gutter} + var(--ednb-layout-insignia-size) + #{$gap});
 
   .frame__tools,
   .frame__bar {
@@ -271,16 +271,15 @@
 
 // The way back to the shipyard: a link around the mark, never the mark itself.
 //
-// The mark is 26 x 23 — the size the canvas draws it, and under the 24-pixel
-// floor on one axis, let alone this feature's 44-pixel baseline. A control that
+// The mark is 26 x 26 — the size the canvas draws it, and under this feature's
+// 44-pixel press baseline. A control that
 // stands on its own is held to the baseline, so the target is the box around the
 // mark rather than the mark: the drawing is unchanged and the press is the size
 // it should be (011/FR-012, reported 2026-08-26).
 //
 // The box around it, because a minimum on the mark's own box is not a box
 // around anything. `min-inline-size` beats the declared `inline-size`, the
-// wedge and its underbar are cut into that box's own layers at full width, and
-// the insignia was drawn 44 x 39 wherever it was a link and 26 x 23 wherever it
+// the insignia was drawn 44 x 39 wherever it was a link and 26 x 26 wherever it
 // was not — the same mark at two sizes, changing as a Commander moved from the
 // shipyard to a build (Commander request 2026-08-28).
 .frame__flag-home {
@@ -299,7 +298,7 @@
   // lands on the plate's own inset and the target overhangs it evenly. The
   // decks are indented past the mark rather than past the press box, which is
   // the same relationship the canvas draws.
-  margin-inline-start: calc((var(--ednb-target-size) - var(--ednb-layout-insignia-width)) / -2);
+  margin-inline-start: calc((var(--ednb-target-size) - var(--ednb-layout-insignia-size)) / -2);
   cursor: pointer;
 
   &:focus-visible {
@@ -500,7 +499,7 @@
   }
 }
 
-// Canvas 1d's folded bar is a single row: the wedge, the identity, and one `⋮`
+// Canvas 1d’s folded bar is a single row: the mark, the identity, and one `⋮`
 // control holding everything else. The screens the bar offers are in that menu
 // with the actions, so the chip row that stood under the bar is not drawn — it
 // was the wide bar folded, not the folded bar itself (canvas 1d).

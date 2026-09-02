@@ -2,7 +2,7 @@
 // Renders the application's own marks: the icons a browser wants before it
 // offers installation, and the image a link preview shows.
 //
-// One source drawing — `.design/assets/icons/app-icon-512.png` — and one ground
+// One source drawing — `.design/assets/nav-beacon-mark.svg` — and one ground
 // colour, read from the token layer rather than typed in again, because the
 // policy checker holds `theme-color`, the manifest and the tokens to the same
 // value and an asset drawn on a different black would be the one place the
@@ -37,8 +37,14 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
-/** The drawing every asset here is a rendering of. */
-export const MARK_SOURCE = '.design/assets/icons/app-icon-512.png';
+/**
+ * The drawing every asset here is a rendering of.
+ *
+ * The plain variant rather than `-header` or `-light`: its domes are filled
+ * with `--ednb-palette-bg`, which is the ground every asset here is drawn on,
+ * so the mark meets it without a seam (canvas 6d, "APPROVED MARK").
+ */
+export const MARK_SOURCE = '.design/assets/nav-beacon-mark.svg';
 
 /** The one file permitted to state the colour the application is drawn on. */
 export const TOKENS = 'src/styles/tokens/_primitives.scss';
@@ -64,6 +70,19 @@ export const ASSETS = [
   { file: 'public/assets/icons/apple-touch-icon.png', width: 180, height: 180, inset: 0.8 },
   { file: 'public/assets/link-card.png', width: 1200, height: 630, inset: 0.42 },
 ];
+
+/**
+ * The sizes packed into `public/favicon.ico`, largest first.
+ *
+ * An `.ico` rather than the `.svg` a modern browser would prefer, because the
+ * manifest declares this file at `48x48` and the head links it as the one icon
+ * every browser understands. The sizes are the three a browser picks between: a
+ * tab, a bookmark bar and a shortcut. The mark fills more of these than it does
+ * of an application icon — there is no launcher padding to leave at 16 pixels.
+ */
+export const ICO_SIZES = [48, 32, 16];
+export const ICO_FILE = 'public/favicon.ico';
+export const ICO_INSET = 0.92;
 
 /**
  * The ground, taken from the token that draws it.
@@ -120,7 +139,8 @@ async function render() {
   if (!existsSync(markPath)) {
     throw new Error(`${MARK_SOURCE} is missing; there is no mark to render.`);
   }
-  const mark = `data:image/png;base64,${(await readFile(markPath)).toString('base64')}`;
+  const type = MARK_SOURCE.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+  const mark = `data:${type};base64,${(await readFile(markPath)).toString('base64')}`;
 
   // The same escape hatch the end-to-end suite has, for the same reason: an
   // environment whose preinstalled browser is not the build Playwright pins is
@@ -130,7 +150,12 @@ async function render() {
   const browser = await chromium.launch(executablePath ? { executablePath } : {});
   try {
     const rendered = new Map();
-    for (const asset of ASSETS) {
+    const icon = [];
+    const wanted = [
+      ...ASSETS,
+      ...ICO_SIZES.map((size) => ({ width: size, height: size, inset: ICO_INSET })),
+    ];
+    for (const asset of wanted) {
       const page = await browser.newPage({
         viewport: { width: asset.width, height: asset.height },
         deviceScaleFactor: 1,
@@ -142,13 +167,48 @@ async function render() {
       await page
         .locator('img')
         .evaluate((image) => (image instanceof HTMLImageElement ? image.decode() : null));
-      rendered.set(asset.file, await page.screenshot({ type: 'png' }));
+      const bytes = await page.screenshot({ type: 'png' });
+      if (asset.file === undefined) icon.push({ size: asset.width, bytes });
+      else rendered.set(asset.file, bytes);
       await page.close();
     }
+    rendered.set(ICO_FILE, packIcon(icon));
     return rendered;
   } finally {
     await browser.close();
   }
+}
+
+/**
+ * The `.ico` container: a six-byte header, one sixteen-byte entry per size, and
+ * the PNG renderings themselves.
+ *
+ * PNG payloads rather than the format's own bitmaps — every browser that is
+ * offered this application reads them, and a 48-pixel bitmap with its own
+ * palette and mask is a second encoder to get wrong. A size of 256 would be
+ * written as `0`; nothing here is that large.
+ */
+export function packIcon(entries) {
+  const header = Buffer.alloc(6 + entries.length * 16);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(entries.length, 4);
+
+  let offset = header.length;
+  entries.forEach(({ size, bytes }, index) => {
+    const at = 6 + index * 16;
+    header.writeUInt8(size === 256 ? 0 : size, at);
+    header.writeUInt8(size === 256 ? 0 : size, at + 1);
+    header.writeUInt8(0, at + 2);
+    header.writeUInt8(0, at + 3);
+    header.writeUInt16LE(1, at + 4);
+    header.writeUInt16LE(32, at + 6);
+    header.writeUInt32LE(bytes.length, at + 8);
+    header.writeUInt32LE(offset, at + 12);
+    offset += bytes.length;
+  });
+
+  return Buffer.concat([header, ...entries.map(({ bytes }) => bytes)]);
 }
 
 async function main() {

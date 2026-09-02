@@ -139,34 +139,40 @@ from the per-screen files.
 ### Command bar
 
 `height: 56px` wide / `52px` compact, `background: var(--panel-4)`,
-`border-bottom: 2px solid var(--amber)`. Leading edge carries the amber wedge
-insignia (`26 × 24px` wide, `22 × 20px` compact, cut by
-`clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%)` — the same shape the app icon
-is drawn from, canvas 3b), then the screen title in condensed 700
+`border-bottom: 2px solid var(--amber)`. Leading edge carries the beacon mark
+(`26px` square on the wide shipyard, `21` to `24px` elsewhere, drawn from
+`.design/assets/nav-beacon-mark-header.svg` — the same file the app icon is
+rendered from, canvas 6d), then the screen title in condensed 700
 uppercase tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in
 `--ink-45`. Trailing edge carries actions.
 
-The product draws the insignia at one size, `26 × 23px`, rather than the two the
-canvases measure. The canvas's own difference between them is four pixels on
-each axis; a breakpoint to reproduce it would be a responsive rule nobody could
-see, and the wedge is a mark rather than a measured element of the layout. This
-is the second recorded deviation from the canvases, after the type ramp.
+The product draws the insignia at one size, `26px` square, rather than the three
+the canvases measure. The canvases' own spread is five pixels; a breakpoint to
+reproduce it would be a responsive rule nobody could see, and the mark is a mark
+rather than a measured element of the layout. This is the second recorded
+deviation from the canvases, after the type ramp.
 
-The mark is drawn in the flag's own two layers rather than on its box: the wedge
-is an outline — the canvas's chevron, then the same chevron inset, which the
-non-zero fill rule cuts away — over the lighter bar canvas 3b closes it with. It
-has to be layered rather than painted on the element because the insignia is
-also the way home, and a control that stands on its own is held to the 44px
-press baseline: an amber ground on that box would draw a 44px amber square
-behind a 26px mark (011/FR-012, corrected 2026-08-26).
+**The mark is a file, not a shape (canvas 6d, replacing 3b, 2026-09-02).** The
+amber wedge over a lighter underbar was cut out of the flag's own two layers with
+a `clip-path`. The approved mark is a beacon — domed cap, lit amber core, domed
+base, four antennas on 90° spacing, the whole rotated 10° counter-clockwise — and
+no clip path states that. It is `<img>` rather than a background so that the
+drawing has its own box: the insignia is also the way home, and a control that
+stands on its own is held to the 44px press baseline, which is paid by a box
+around the mark (011/FR-012).
+
+Of the three variants the design ships, the product uses `-header`, whose domes
+are filled `#161615`. That is `--ednb-palette-panel-4`, the plate the bar is
+painted on, so the bar's colour and this asset move together; `-light` is drawn
+for a bone ground and `-mono` for a single ink, and neither is used here.
 
 The press baseline is paid by a box **around** the mark, never by the mark
 itself. Where the insignia is the way home it is a mark inside a link: the link
-takes the 44px target, the mark keeps its own `26 × 23px`, and the negative
+takes the 44px target, the mark keeps its own `26px` square, and the negative
 inline margin takes the extra width back out of the bar so the press does not
 open a gap beside the insignia. Held on the mark's own box instead, the target
-minimum beat the declared size, the wedge and the underbar were cut into a
-44 × 44 box, and the insignia was drawn half as large again on every screen
+minimum beat the declared size, the mark was drawn into a 44 × 44 box, and the
+insignia was drawn half as large again on every screen
 that offers the way home as on the shipyard that does not (Commander request
 2026-08-28).
 

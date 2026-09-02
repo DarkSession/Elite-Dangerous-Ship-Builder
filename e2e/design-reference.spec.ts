@@ -129,9 +129,10 @@ test.describe('the reference visual language', () => {
 
   test('centres the insignia across both decks of the bar', async ({ page }) => {
     // Canvas 4c puts one mark on the leading edge of the plate, centred on the
-    // pair, with both decks indented past it. The shipyard draws the mark as a
-    // bare span; either way it is the banner's own child rather than a part of
-    // one deck (`application-shell.md`, "The tool bar").
+    // pair, with both decks indented past it. The shipyard draws the mark bare
+    // and every other screen wraps it in the way home; either way it is the
+    // banner's own child rather than a part of one deck
+    // (`application-shell.md`, "The tool bar").
     const placed = await page.evaluate(() => {
       const banner = document.querySelector('.frame__banner') as HTMLElement;
       const mark = banner.querySelector(':scope > .frame__flag, :scope > .frame__flag-home');
@@ -203,39 +204,33 @@ test.describe('the reference visual language', () => {
     expect(Math.abs(met)).toBeLessThanOrEqual(1);
   });
 
-  test('opens the command bar with the amber wedge insignia', async ({ page }) => {
-    // The resynced canvases replaced the plain amber block that opened the bar
-    // with the wedge the app icon is cut from (canvas 3b): a clipped outline
-    // closed by a lighter bar. Both are cut into the flag's own layers rather
-    // than painted on its box, because an amber ground on the box would draw
-    // an amber rectangle behind the mark rather than the mark
-    // (`canvas-extraction.md`, "Command bar").
-    const flag = page.locator('.frame__flag');
-
-    const mark = await flag.evaluate((element) => {
-      const wedge = getComputedStyle(element, '::before');
-      const underbar = getComputedStyle(element, '::after');
-      const box = getComputedStyle(element);
+  test('opens the command bar with the beacon mark', async ({ page }) => {
+    // Canvas 6d replaced the wedge with the beacon — domed cap, lit core, domed
+    // base, four antennas — and ships it as a file rather than a shape CSS can
+    // cut. So what is checked is that the drawing the design approved is the
+    // drawing that arrives: the right file, actually decoded, square, and the
+    // size the token declares.
+    const mark = await page.locator('.frame__flag').evaluate((element) => {
+      const image = element as HTMLImageElement;
+      const box = element.getBoundingClientRect();
       return {
-        wedge: wedge.backgroundColor,
-        clip: wedge.clipPath,
-        underbar: underbar.backgroundColor,
-        width: parseFloat(box.inlineSize),
-        height: parseFloat(box.blockSize),
+        tag: element.tagName,
+        source: image.getAttribute('src'),
+        // Zero on a file that 404ed or failed to parse, where a box with a
+        // background would still measure the size the token asks for.
+        decoded: image.naturalWidth,
+        // The drawing's own proportions, which are square and stay square.
+        drawn: image.naturalWidth === image.naturalHeight,
+        width: box.width,
+        height: box.height,
       };
     });
 
-    expect(mark.wedge).toBe(AMBER);
-    // The mark is the clip, not the box. A wedge that lost its `clip-path`
-    // would still be an amber rectangle of the right size and would pass every
-    // other assertion here.
-    expect(mark.clip).toMatch(/^polygon\(/);
-    // The bar the canvas closes the mark with, in a wash of the same amber.
-    expect(mark.underbar).toMatch(/^rgba\(255, 140, 26/);
-
-    // `26 x 23`: the size canvas 3b draws the mark, near enough square.
-    expect(mark.width).toBeGreaterThan(0);
-    expect(Math.abs(mark.width - mark.height)).toBeLessThanOrEqual(4);
+    expect(mark.tag).toBe('IMG');
+    expect(mark.source).toBe('assets/icons/nav-beacon-mark-header.svg');
+    expect(mark.decoded).toBeGreaterThan(0);
+    expect(mark.drawn).toBe(true);
+    expect(mark.width).toBe(mark.height);
   });
 
   test('draws the insignia at one size whether or not it is the way home', async ({ page }) => {
@@ -263,8 +258,8 @@ test.describe('the reference visual language', () => {
         return {
           width: box.width,
           height: box.height,
-          declaredWidth: declared('--ednb-layout-insignia-width'),
-          declaredHeight: declared('--ednb-layout-insignia-height'),
+          declaredWidth: declared('--ednb-layout-insignia-size'),
+          declaredHeight: declared('--ednb-layout-insignia-size'),
         };
       });
 

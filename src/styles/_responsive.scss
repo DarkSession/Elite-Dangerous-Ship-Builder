@@ -401,55 +401,24 @@ $bench-bounded-min-height: 66rem;
   border-block-end: $rule solid $colour;
 }
 
-// The amber insignia on the leading edge of a command bar.
+// The insignia on the leading edge of a command bar.
 //
-// Canvas 3b re-drew it on 2026-08-26: a **thin-line** wedge — the same outer
-// chevron with an inner one cut out of it — closed by a bar underneath. The
-// solid four-point wedge this used to draw is still the mark, but only below
-// 48px, where the cut-out would close up; the bar is dropped at that size too.
-// The command bar draws it at 26x23, which is well above that floor.
+// The mark is `.design/assets/nav-beacon-mark-header.svg`, shipped as the file
+// the design draws it from rather than cut out of CSS: it is a beacon — domed
+// cap, lit core, domed base, four antennas, rotated 10 degrees — and a
+// clip-path cannot state that (canvas 6d, "APPROVED MARK").
 //
-// Both halves are drawn from the accent wash rather than from an image, so the
-// mark follows the one theme and costs no asset request. The proportions are
-// percentages of the box, so the whole insignia scales as one thing.
+// The `-header` variant is the one whose domes are filled with the plate the
+// bar is painted on, `--ednb-palette-panel-4`. That is the same figure the
+// token layer holds, so a change to the bar's colour is a change to this file
+// as well; the other variants are drawn for a page ground and for a single ink.
+//
+// Square, and one size wherever it appears. The box is the drawing's own, so
+// the press target around it is a box of its own (`app-frame.scss`).
 @mixin command-flag {
-  position: relative;
   flex: none;
-  inline-size: var(--ednb-layout-insignia-width);
-  block-size: var(--ednb-layout-insignia-height);
-
-  // The wedge. Ten points: the outer chevron, then back to the apex and around
-  // an inner one, which the non-zero fill rule cuts away to leave the outline.
-  &::before {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    inset-block-start: 0;
-    block-size: 88%;
-    background-color: var(--ednb-surface-accent-solid);
-    clip-path: polygon(
-      50% 0,
-      100% 100%,
-      50% 74%,
-      0 100%,
-      50% 0,
-      50% 18%,
-      18% 82%,
-      50% 58%,
-      82% 82%,
-      50% 18%
-    );
-  }
-
-  // The bar the canvas closes the mark with, in a lighter wash than the wedge.
-  &::after {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    inset-block-end: 0;
-    block-size: var(--ednb-border-width-thick);
-    background-color: var(--ednb-surface-accent-underbar);
-  }
+  inline-size: var(--ednb-layout-insignia-size);
+  block-size: var(--ednb-layout-insignia-size);
 }
 
 // A screen or dialog title: condensed, uppercase, widely tracked, amber.
