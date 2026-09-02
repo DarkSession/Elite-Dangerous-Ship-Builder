@@ -220,12 +220,18 @@ product's tool deck carries tabs and nothing else.
 
 ### One bar height, on every screen
 
-The bar is drawn at `4.625rem`, which is the tallest identity it carries — the
-workspace's build name over its hull and ID plate, 52px — inside the bar's own
-20px of block padding and the 2px amber rule that closes it, all of which the
-border box counts. Sized to the single row of controls every other screen comes to, it
-stood 66px on the shipyard and 74px on a build, and the whole page under it
-moved as a Commander opened one.
+The bar is drawn at `4.125rem`, which is the tallest identity it carries — the
+workspace's build name over its hull and ID plate, 52px of 24px rows — inside the
+bar's own 12px of block padding and the 2px amber rule that closes it, all of
+which the border box counts. Sized to the single row of controls every other
+screen comes to, it would stand shorter on the shipyard than on a build, and the
+whole page under it would move as a Commander opened one.
+
+The padding is the dense control figure rather than the loose one. Canvas 1a
+draws 56px and canvas 1c 54px, both around a 40px block; taking the loose 10px
+put 20px of air around a drawing that is 14px taller than the canvas's, and the
+deck stood 74px — a bar that reads as having lost its contents (Commander
+request 2026-09-02). With the tool deck over it the plate is 110px.
 
 That is half of it. The other half is that the bar's own controls have to fit
 on a row, or the bar wraps and is taller whatever its floor says. The

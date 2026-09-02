@@ -264,14 +264,14 @@ $outfitting-wide-min: 24.5rem + $outfitting-bench-wide-min + 19.125rem;
 // three columns").
 //
 // The figure is what the bench cannot fold, measured at the largest hull: the
-// banner (118: the tool deck's 44 over the command deck's 74), the hull plates
+// banner (110: the tool deck's 44 over the command deck's 66), the hull plates
 // (348), the region gap (22) and the bench at its shortest (568: the step
 // strip's own 56px head offset, the editor column's 474 — its bar, the reserved
 // engineering card and the table's floor — and the bench's 36px inset with its
-// two hairlines). That is 1056, measured at the largest hull with nothing
+// two hairlines). That is 1048, measured at the largest hull with nothing
 // engineered, and it is this figure exactly: a window 4px under it spends the
 // bench's bottom inset on the shortfall.
-$bench-bounded-min-height: 66rem;
+$bench-bounded-min-height: 65.5rem;
 
 // The bench actually bounded: three columns *and* a window tall enough to hold
 // what they cannot fold. Everything that scrolls inside the bench is asked this

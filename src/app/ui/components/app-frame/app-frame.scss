@@ -56,13 +56,22 @@
 
   // With the mark hidden the decks have nothing to clear, so both take the
   // plate's own inset and the line starts there too.
-  :host(.frame--returning) .frame__tools,
-  :host(.frame--returning) .frame__bar {
-    padding-inline-start: #{$gutter};
-  }
+  //
+  // At the width the sheet is drawn at, and only there. `frame--returning` says
+  // the screen has a way back, which is true at every width; what hides the mark
+  // is the sheet's own composition, which is drawn below the wide breakpoint
+  // alone. Keyed on the class without the width, the wide inspector took the
+  // gutter back while the mark was still standing in it, and the mark was drawn
+  // over the tab and the screen's own name.
+  @include layout.below-wide {
+    :host(.frame--returning) .frame__tools,
+    :host(.frame--returning) .frame__bar {
+      padding-inline-start: #{$gutter};
+    }
 
-  :host(.frame--returning) .frame__tools + .frame__bar::before {
-    inset-inline-start: #{$gutter};
+    :host(.frame--returning) .frame__tools + .frame__bar::before {
+      inset-inline-start: #{$gutter};
+    }
   }
 }
 
@@ -174,7 +183,10 @@
   @include layout.command-bar;
 
   flex-wrap: wrap;
-  padding-block: var(--ednb-space-control-block);
+  // The dense padding, not the loose one a control row takes: this deck already
+  // stands a two-line identity tall, and the loose figure put 20px of air around
+  // it (canvas 1a/1c draw 6px around a 40px block).
+  padding-block: var(--ednb-space-control-block-dense);
   // The bar's own floor: the one height it is drawn at on every screen. What
   // the regions below clear is `--ednb-layout-bar-height`, which is the banner
   // as it was actually drawn — a separate token on purpose, because a bar sized

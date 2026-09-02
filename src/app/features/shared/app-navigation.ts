@@ -14,13 +14,12 @@ export const NAVIGATION_ROUTES = {
 interface ToolRecord {
   readonly id: string;
   /**
-   * The short name the bar draws.
+   * The name the bar draws in the tool's tab.
    *
-   * Canvas 4c draws the tool's full name in the tab. The short one is what is
-   * kept, and it is a departure the design record carries: the deck under the
-   * tabs is on the same plate and already names the screen, and a plate that
-   * says `SHIP BUILDER` twice on one line says it once
-   * (`011/design/reference-review.md`).
+   * The tool's full name, as canvas 4c draws it. A short form was tried, on the
+   * reasoning that the deck below already names the screen; a tab that says
+   * `Ship` where the product's tool is `Ship Builder` names a different thing
+   * (Commander request 2026-09-02).
    */
   readonly labelKey: MessageKey;
   /** The address the tool opens at. */

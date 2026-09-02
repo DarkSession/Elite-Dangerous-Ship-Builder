@@ -2449,6 +2449,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'catalogue.title':
       'The product name. The screen the application opens on is named after the product, ruled 2026-08-27, and a product renamed in one language is a different product.',
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
+    'tools.ship':
+      'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',

@@ -368,15 +368,19 @@
 
   // The command bar, and the one height it is drawn at on every screen.
   //
-  // The canvas draws 56px around 30px chips; the extra is the target floor,
-  // which is a rule about the product rather than a measurement taken off the
-  // drawing. The figure is the tallest identity the bar carries — the
-  // workspace's two-line block of a build name over its hull and ID plate —
-  // inside the bar's own block padding and the amber rule that closes it, which
-  // the border box counts. Sized to the single row of controls every other
-  // screen comes to instead, the bar stood 66px on the shipyard and 74px on a
-  // build, and the whole page under it moved as a Commander opened one
-  // (Commander request 2026-08-28).
+  // Canvas 1a draws 56px and canvas 1c 54px, both around 30px chips; ours holds
+  // 44px controls and a type ramp lifted a quarter, so it cannot be either. The
+  // figure is the tallest identity the bar carries — the workspace's two-line
+  // block of a build name over its hull and ID plate, 52px of 24px rows — inside
+  // the bar's own block padding and the amber rule that closes it, which the
+  // border box counts. Nothing else: the deck took the loose control padding
+  // once and stood 74px, which is 20px of air around a 54px drawing and reads as
+  // a bar that has lost its contents (Commander request 2026-09-02).
+  //
+  // Sized to the single row of controls every other screen comes to instead, the
+  // bar would stand shorter on the shipyard than on a build, and the whole page
+  // under it would move as a Commander opened one (Commander request
+  // 2026-08-28).
   //
   // The bar's own controls have to fit on a row for that to hold, which is what
   // `$mode-bar-folded-max` is for: below the width the widest shipped language
@@ -385,7 +389,7 @@
   // It stays a floor rather than a fixed height. At a doubled text size and at
   // 400% zoom the bar still wraps and still grows, because a bar that could not
   // would cut its own controls off (011/FR-011).
-  --ednb-measure-bar-height: 4.625rem;
+  --ednb-measure-bar-height: 4.125rem;
 
   // The tool deck over it. Canvas 4c draws 30px and canvas 4d 34px, and neither
   // holds a tab at this feature's 44px press baseline, so the deck is the

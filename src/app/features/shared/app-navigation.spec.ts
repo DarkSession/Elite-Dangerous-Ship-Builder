@@ -16,7 +16,9 @@ describe('AppNavigation tools', () => {
     const tools = navigation().tools(NAVIGATION_ROUTES.catalogue);
 
     expect(tools.map((tool) => tool.href)).toEqual([NAVIGATION_ROUTES.catalogue]);
-    expect(tools[0].label).toBe('Ship');
+    // The tool's full name, as canvas 4c draws it in the tab. The product's tool
+    // is Ship Builder; `Ship` names something else.
+    expect(tools[0].label).toBe('Ship Builder');
   });
 
   it('names the same tool on every route that tool owns', () => {
