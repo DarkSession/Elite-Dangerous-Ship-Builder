@@ -158,23 +158,23 @@ rather than as a background so that the drawing has a box of its own: the
 insignia is also the way home, and a control that stands on its own is held to
 the 44px press baseline, which is paid by a box around the mark (011/FR-012).
 
-Canvas 6d ships one geometry in four fills, and two of them are in use. The bar
-takes `-header`, whose domes are `#161615` — `--ednb-palette-panel-4`, the plate
-the bar is painted on, so the bar's colour and that asset move together. The
-plain `nav-beacon-mark.svg` fills its domes with the page ground and is what
-`scripts/generate-brand-assets.mjs` renders every icon, the favicon and the link
-card from, because a rendering is drawn on that ground. `-light` is for a bone
-ground and `-mono` for a single ink; neither is used here.
+One geometry in four fills, of which two are in use. Canvas 6d draws and names
+the plain `nav-beacon-mark.svg` — `-light` for a bone ground, `-mono` for a
+single ink — and `scripts/generate-brand-assets.mjs` renders every icon, the
+favicon and the link card from it, because those are drawn on the page ground
+its domes are filled with. The bar takes `-header`, which is what canvases 1c,
+1d, 4c, 4d and the equipment artboards draw in their own headers: its domes are
+`#161615`, which is `--ednb-palette-panel-4`, the plate the bar is painted on, so
+the bar's colour and that asset move together.
 
 The press baseline is paid by a box **around** the mark, never by the mark
 itself. Where the insignia is the way home it is a mark inside a link: the link
 takes the 44px target, the mark keeps its own `26px` square, and the negative
 inline margin takes the extra width back out of the bar so the press does not
 open a gap beside the insignia. Held on the mark's own box instead, the target
-minimum beat the declared size, the mark was drawn into a 44 × 44 box, and the
-insignia was drawn half as large again on every screen
-that offers the way home as on the shipyard that does not (Commander request
-2026-08-28).
+minimum would beat the declared size, the mark would be drawn into a 44 × 44 box,
+and the insignia would be half as large again on every screen that offers the way
+home as on the shipyard that does not (Commander request 2026-08-28).
 
 ### Tool bar
 

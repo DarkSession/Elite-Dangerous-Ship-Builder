@@ -18,15 +18,22 @@ import { BAR_MARK, ICO_SIZES, drawingOnly, packIcon } from './generate-brand-ass
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-/** A payload that is not a real PNG, because the container never reads one. */
-const payload = (size) => Buffer.alloc(size, 7);
+/**
+ * A payload that is not a real PNG, because the container never reads one.
+ *
+ * Filled with its own size rather than a constant, so that one entry's bytes
+ * cannot be mistaken for another's: against identical filler, an offset that
+ * lands anywhere inside the concatenated payloads reads back as correct, and
+ * every misaligned stride passes.
+ */
+const payload = (size, length) => Buffer.alloc(length, size);
 
 describe('packIcon', () => {
   it('addresses every entry at the offset and length its payload actually has', () => {
     const entries = [
-      { size: 48, bytes: payload(300) },
-      { size: 32, bytes: payload(120) },
-      { size: 16, bytes: payload(64) },
+      { size: 48, bytes: payload(48, 300) },
+      { size: 32, bytes: payload(32, 120) },
+      { size: 16, bytes: payload(16, 64) },
     ];
 
     const ico = packIcon(entries);
@@ -40,6 +47,8 @@ describe('packIcon', () => {
       const at = 6 + index * 16;
       assert.equal(ico.readUInt8(at), size, 'width');
       assert.equal(ico.readUInt8(at + 1), size, 'height');
+      assert.equal(ico.readUInt8(at + 2), 0, 'a PNG payload states no palette');
+      assert.equal(ico.readUInt8(at + 3), 0, 'reserved');
       assert.equal(ico.readUInt16LE(at + 4), 1, 'one colour plane');
       assert.equal(ico.readUInt16LE(at + 6), 32, 'bits per pixel');
 
@@ -51,7 +60,7 @@ describe('packIcon', () => {
   });
 
   it('writes a 256-pixel entry as the zero the format reserves for it', () => {
-    const ico = packIcon([{ size: 256, bytes: payload(8) }]);
+    const ico = packIcon([{ size: 256, bytes: payload(1, 8) }]);
 
     assert.equal(ico.readUInt8(6), 0);
     assert.equal(ico.readUInt8(7), 0);

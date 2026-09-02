@@ -272,10 +272,8 @@ one, an `apple-touch-icon`, a 1200x630 card, and `favicon.ico` packed from rende
 16 pixels. The output is committed, so the build stays hermetic
 and the script is how the files are reproduced rather than a step the build depends on.
 
-The mark it renders has been in `.design` since 2026-08-22. The first pass's "there is no logo to
-make one from" was already untrue when it was written; it is corrected here rather than quietly
-worked around. The mark it renders is the beacon canvas 6d approves, and every asset here — the tab
-icon included — is a rendering of that one drawing.
+The mark it renders is the beacon canvas 6d approves, and every asset here — the tab icon
+included — is a rendering of that one drawing.
 
 **The card carries no words.** A 1200x630 image with `SHIP BUILDER` in it is display text this
 application owns, in one language, in a file no translation can reach (constitution VI). The card is

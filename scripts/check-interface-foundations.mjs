@@ -621,6 +621,26 @@ function stylesheetViolations(file, source) {
     const property = declaration.prop.toLowerCase();
     const line = declaration.source?.start?.line ?? 0;
 
+    // Every token this application draws from is `--ednb-`. A reference to any
+    // other namespace resolves to nothing and paints nothing, in silence: CSS
+    // drops the declaration and no build, test or browser says why the rule
+    // stopped applying. That is what a mistyped or stale prefix looks like, and
+    // the product has carried two prefixes in its life.
+    //
+    // Before the custom-property check below, and not after it: a token is
+    // most often defined in terms of other tokens, so the values this has to
+    // read are mostly the ones that check would return on.
+    for (const [, referenced] of declaration.value.matchAll(/var\(\s*(--[\w-]+)/g)) {
+      if (!referenced.startsWith('--ednb-')) {
+        found.push({
+          file: relative(ROOT, file),
+          line,
+          rule: 'foreign-token-namespace',
+          message: `"${declaration.prop}" reads "${referenced}", which is not a token this application declares.`,
+        });
+      }
+    }
+
     // Declaring a custom property outside the token sources is itself the
     // violation the property check would otherwise miss: it creates a second
     // place where a visual decision lives.
@@ -632,21 +652,6 @@ function stylesheetViolations(file, source) {
         message: `Custom property "${declaration.prop}" is declared outside the token sources.`,
       });
       return;
-    }
-    // Every token this application draws from is `--ednb-`. A reference to any
-    // other namespace resolves to nothing and paints nothing, in silence: CSS
-    // drops the declaration and no build, test or browser says why the rule
-    // stopped applying. That is what a mistyped or stale prefix looks like, and
-    // the product has carried two prefixes in its life.
-    for (const [, referenced] of declaration.value.matchAll(/var\(\s*(--[\w-]+)/g)) {
-      if (!referenced.startsWith('--ednb-')) {
-        found.push({
-          file: relative(ROOT, file),
-          line,
-          rule: 'foreign-token-namespace',
-          message: `"${declaration.prop}" reads "${referenced}", which is not a token this application declares.`,
-        });
-      }
     }
 
     if (!GOVERNED_PROPERTIES.has(property)) {
@@ -665,13 +670,23 @@ function stylesheetViolations(file, source) {
   return found;
 }
 
-/** IO wrapper. Token sources are the one place governed literals belong. */
+/**
+ * IO wrapper. Token sources are the one place governed literals belong.
+ *
+ * They are not exempt from the namespace rule, and they are where it matters
+ * most: a token is usually defined in terms of another one, so these files hold
+ * the densest `var()` references in the repository and are what a rename edits
+ * most heavily. A stale prefix here silently empties every token defined from
+ * it.
+ */
 async function checkStylesheet(file) {
   const relativePath = relative(ROOT, file).split('\\').join('/');
-  if (SCOPE.tokenSources.includes(relativePath)) {
-    return;
-  }
-  violations.push(...stylesheetViolations(file, await readFile(file, 'utf8')));
+  const found = stylesheetViolations(file, await readFile(file, 'utf8'));
+  violations.push(
+    ...(SCOPE.tokenSources.includes(relativePath)
+      ? found.filter((violation) => violation.rule === 'foreign-token-namespace')
+      : found),
+  );
 }
 
 // ---------------------------------------------------------------------------

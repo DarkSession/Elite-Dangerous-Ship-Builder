@@ -76,7 +76,7 @@ export const BAR_MARK = {
  */
 export function drawingOnly(svg) {
   return svg
-    .replace(/<metadata>[\s\S]*?<\/metadata>\s*/g, '')
+    .replace(/<metadata\b[^>]*>[\s\S]*?<\/metadata>\s*/g, '')
     .replace(/\s+xmlns:c2pa="[^"]*"/g, '');
 }
 
@@ -109,8 +109,8 @@ export const ASSETS = [
  * The sizes packed into `public/favicon.ico`, largest first.
  *
  * An `.ico` rather than the `.svg` a modern browser would prefer, because the
- * manifest declares this file at `48x48` and the head links it as the one icon
- * every browser understands. The sizes are the three a browser picks between: a
+ * head links this file as the one icon every browser understands, and the
+ * manifest declares it at each of these sizes. The sizes are the three a browser picks between: a
  * tab, a bookmark bar and a shortcut. The mark fills more of these than it does
  * of an application icon — there is no launcher padding to leave at 16 pixels.
  */
