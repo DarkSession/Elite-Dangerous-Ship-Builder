@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-01
 
-**Status**: Draft — blocked upstream, see Dependencies
+**Status**: Draft — ready to plan, see Dependencies
 
 **Input**: User description: "Eqipment builder, see .design"
 
@@ -281,25 +281,51 @@ reopens the same loadout and the readable summary names every fitted item.
 ## Dependencies
 
 - **`@elite-dangerous-almanac/core` publishes the equipment catalogue and its calculations.**
-  Version 0.2.5 ships `equipment/suits`, `equipment/weapons`, `equipment/modifications`,
+  The `equipment/` namespace holds `equipment/suits`, `equipment/weapons`, `equipment/modifications`,
   `equipment/engineering`, `equipment/upgrade-costs`, `equipment/modification-costs` and
   `equipment/modification-journal`. Material totalling
   (`sumPersonalEngineeringIngredients`) and per-damage-type modification resolution
   (`resolvePersonalModificationForWeapon`) are the library's, and MUST NOT be
   reimplemented here.
 
-- **BLOCKING — the equipment catalogue is not localisable.** Nothing under `equipment/`
-  accepts a locale; `Suit.name`, `PersonalWeapon.name` and `PersonalModification.name` are
-  each documented as the English display name; and there is no `i18n/suits`,
-  `i18n/weapons` or `i18n/equipment-modifications` leaf where the ship side has
-  `i18n/modules`, `i18n/slots` and `i18n/materials`. Hull and manufacturer names have
-  no leaf either, but that is because the game does not translate them; suit, weapon
-  and modification names it does. FR-025 and constitution VI cannot be met
-  as the library stands, and constitution II forbids closing the gap here. **This must be
-  raised against Elite-Dangerous-Almanac and released before implementation begins.**
+- **The equipment catalogue is localisable.** `i18n/suits` (`getSuitName`,
+  `getSuitDescription`), `i18n/personal-weapons` (`getPersonalWeaponDescription`) and
+  `i18n/personal-modifications` (`getPersonalModificationName`,
+  `getPersonalModificationDescription`) are what FR-025 asks for. Probed on the installed
+  package, the three leaves answer for every key — 4 suit families, 11 weapons and 31
+  modifications — in all six stored locales, with no miss.
 
-- **Suit tools are absent upstream**, as above. A gap to raise, not a blocker: the region
+  There is no weapon-name lookup, and the library states that is not a gap: a handheld
+  weapon's name is a product name — "Karma P-15", "TK Aphelion" — that the game leaves in
+  English in every locale, so `PersonalWeapon.name` is the name in all six. FR-025 is met
+  for a weapon by asking the catalogue and being told the name does not vary.
+
+- **Modification magnitudes and the stats they move come from the library.**
+  `PersonalModification.modifiers` and `applyPersonalModifiers` in `equipment/engineering`
+  carry them, beside the suit-wide component stats (health, mass, battery, oxygen, backpack
+  capacities, audible range, line-of-sight analysis) on `Suit` and
+  `PersonalWeapon.scopeMagnification`.
+  A figure a modified loadout states is that call's answer, never arithmetic performed here.
+
+- **A suit's weapon mounts have no published key.** `Suit.primarySlots` and
+  `Suit.secondarySlots` are counts, and nothing under `equipment/` names a mount the way
+  `ships/` names a slot. Constitution II asks for the game's own slot keys and never a
+  positional index, so a loadout that has to say _which_ mount a weapon is on cannot
+  satisfy it as the library stands. Until the library publishes keys, a mount is named by
+  the suit's own order — primary mounts, then secondary — and that order is written down
+  wherever it is relied on. A gap to raise, not a blocker.
+
+  Those names (`primary1`, `secondary1`, `suit`) are identities and not text: FR-021 has
+  the bench name the mount a refusal is about, and it MUST name it in the Commander's
+  language, the way `src/app/ui/outfitting/slot-naming.ts` names a ship's mounts.
+  Interpolating the identity into the notice would ship an untranslated string
+  (constitution VI). Nothing renders one yet — the codec has no consumer — so this is a
+  requirement on the bench when it is built, not an outstanding defect.
+
+- **Suit tools are absent upstream** — the Energylink, Arc Cutter and Profile Analyser the
+  `SUIT TOOLS` region of artboard `1a` draws. A gap to raise, not a blocker: the region
   is withdrawn and the rest of the feature stands without it.
 
-- **The shared tool shell** (phase 3 of `docs/navbeacon-migration.md`) is expected to exist
-  before this feature, since this spec assumes rather than builds it.
+- **The shared tool shell** exists: `src/app/ui/components/app-frame` draws canvas 4c's bar
+  from the tool registry in `src/app/features/shared/app-navigation.ts`, and this feature
+  joins that registry as one entry rather than building chrome of its own.

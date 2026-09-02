@@ -265,15 +265,15 @@ and rewritten with another.
 
 ### The application is installable, and a link carries a picture
 
-`scripts/generate-brand-assets.mjs` renders the icon set and the card from
-`.design/assets/icons/app-icon-512.png`, in Chromium, as `convert-ship-artwork.mjs` rasterises the
+`scripts/generate-brand-assets.mjs` renders the icon set, the favicon and the card from
+`.design/assets/nav-beacon-mark.svg`, in Chromium, as `convert-ship-artwork.mjs` rasterises the
 hulls. It writes the 192 and 512 icons a browser wants before it offers installation, a maskable
-one, an `apple-touch-icon` and a 1200x630 card. The output is committed, so the build stays hermetic
+one, an `apple-touch-icon`, a 1200x630 card, and `favicon.ico` packed from renderings at 48, 32 and
+16 pixels. The output is committed, so the build stays hermetic
 and the script is how the files are reproduced rather than a step the build depends on.
 
-The mark it renders has been in `.design` since 2026-08-22. The first pass's "there is no logo to
-make one from" was already untrue when it was written; it is corrected here rather than quietly
-worked around.
+The mark it renders is the beacon canvas 6d approves, and every asset here — the tab icon
+included — is a rendering of that one drawing.
 
 **The card carries no words.** A 1200x630 image with `SHIP BUILDER` in it is display text this
 application owns, in one language, in a file no translation can reach (constitution VI). The card is
@@ -319,7 +319,7 @@ does not want anyway. The rewrite is therefore a step in `ci.yml`, beside the st
   the sitemap does not know. `changefreq` and `priority` go in the same pass: Google has ignored both
   for years, and a file that states things nobody reads invites belief in them.
 - **The token ground is baked into committed rasters.** Every other statement of
-  `--edsb-palette-bg` is reconciled by the checker; a PNG is not, and cannot be. What holds it is the
+  `--ednb-palette-bg` is reconciled by the checker; a PNG is not, and cannot be. What holds it is the
   generator: it reads the token rather than carrying a copy of the colour, so a token change is
   carried into the assets by `pnpm run brand:assets` and the change is visible in the diff. A token
   change without that command leaves the mark on the old ground, and nothing will say so.

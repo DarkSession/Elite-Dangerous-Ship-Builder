@@ -5,13 +5,14 @@
 Provide the stable product identity, the tool a screen belongs to, landmarks, route
 context/actions, language entry and feedback outlets around every capability without owning
 build/domain state. The shell adapts the title/action bars repeated across canvases 1a–1d and the
-tool bar of `.design/Tool Navigation.dc.html`, canvas 3c.
+tool bar of `.design/Tool Navigation.dc.html`, canvases 4c and 4d.
 
 ## Semantic composition
 
-1. banner/header containing localized product identity — the insignia and the release mark — opening
-   with a tool navigation region, named in localized text, that names every tool the application
-   serves and marks the open route's own tool as current;
+1. banner/header opening with the localized product identity — the insignia, which is the way home
+   wherever there is one — over a tool navigation region, named in localized text, that names every
+   tool the application serves and marks the open route's own tool as current; the release mark
+   stands with the screen identity on the deck below;
 2. route context group containing visible localized screen/build identity supplied by the route;
 3. primary navigation when the route set provides it;
 4. contextual and global utility actions, including a visible Language entry;
@@ -25,10 +26,11 @@ the shell emits action/navigation/language intent and does not reach into a buil
 ## The tool bar
 
 The application is built to carry more than one tool, so the shell says which tool a Commander is
-in. Canvas 3c of `.design/Tool Navigation.dc.html` draws that as a bar over the command bar, with a
-tab for each tool; the command bar keeps everything it already carries and the amber rule that
-closes it. It is the banner's first region, because it is the first band on the screen — the two
-bars are one sticky region, so what the chrome below them clears is the pair.
+in. Canvas 4c of `.design/Tool Navigation.dc.html` draws that as one bar with two decks: a tab for
+each tool on the upper deck, and the screen's own identity and actions on the lower one, on a
+single plate closed by the amber rule. It is the banner's first region, because it is the first
+band on the screen — the two decks are one sticky region, so what the chrome below them clears is
+the pair.
 
 **It is a navigation landmark with a name of its own.** The bar already carries a `navigation`
 landmark labelled `shell.navigation.label`, and two landmarks of one role with one name are two
@@ -61,36 +63,36 @@ duplicate the leading-edge ruling below removes. The current tool carries `aria-
 state is exposed in the accessibility tree as well as in the amber fill and underline the canvas
 draws (FR-010).
 
-**The tab carries the canvas's short name.** Canvas 3c gives each tool both a full name and a tab
-label, and draws the tab label: `SHIP`, not `SHIP BUILDER`. The registry carries the short one,
-because the command bar under it is already titled `Ship Builder` on the shipyard and one bar
-restating the other says nothing new. The tab's visible text is its accessible name, as every
+**The tab carries a short name, where the canvas draws the full one.** Canvas 4c gives each tool
+both a full name and a short tab label and draws the full name. The registry carries the short one:
+the decks are one plate, the deck under the tabs is already titled `Ship Builder` on the shipyard,
+and a plate naming the tool twice on one line names it once. It is a departure, and
+[reference-review.md](./reference-review.md) records it as one. The tab's visible text is its accessible name, as every
 control in this system is (FR-007).
 
-**One composition at every width.** The canvas draws the 1180px case and nothing else: its script
-guards a `#nv-rail` and a `#nv-drawer` that no artboard defines, and the Equipment Builder's own
-390px artboard has no tool switcher at all. So there is no compact drawing to follow, and the rule
-is that there is nothing to switch on: the same tabs at every width, at compact type and spacing,
-each holding the 44px press baseline. This holds while the registry is small. A rail, a drawer or a
-grid is a composition to be drawn before it is built (owner's ruling, and the open item in
-`docs/navbeacon-migration.md`).
+**One composition at every width.** Canvas 4d draws the compact case as the same two decks the
+1180px case draws, with the tabs on the upper one, so there is nothing to switch on: the same tabs
+at every width, at compact type and spacing, each holding the 44px press baseline. Neither canvas
+lets the strip grow: 4d scrolls it sideways and 4c clips it behind a `⋯` control. The product wraps
+it instead, which reflows rather than hiding a tool behind a strip a Commander has to drag or a
+control that is not built, and with the registry at one tool none of the three is drawn. A rail, a drawer or a grid is a composition to be drawn
+before it is built (owner's ruling, and the open item in `docs/navbeacon-migration.md`).
 
-That also makes the tool bar the one region the command bar's fold does not reach. "The fold is
-total" below is a rule about the command bar's own controls; the tools are on a bar of their own and
-stay on it at every width.
+That also makes the tool deck the one region the command bar's fold does not reach. "The fold is
+total" below is a rule about the command deck's own controls; the tools are on a deck of their own
+and stay on it at every width, which is what canvas 4d draws.
 
 **What the canvas draws and the product does not.** The `ALL TOOLS` grid, the `⌘K` palette and
 drag-to-pin are more than one tool needs and are not built. The avatar plate at the bar's trailing
 edge is not built either, and not deferred: the application has no accounts (constitution I), so
 there is nobody for it to name.
 
-**The insignia stays on the command bar.** Canvas 3c puts the mark on the leading edge of the tool
-bar, where every other canvas puts it on the leading edge of the bar it draws. Here the mark is
-already the way home — a real link to the shipyard, named by the screen it reaches — and the tool
-bar's leading edge is where the ship tab lands. Moving the mark up would put two controls that open
-`/ships` beside each other, which the leading-edge ruling below already refuses. So the mark keeps
-the command bar, the tool bar carries tabs alone, and the divergence is recorded here rather than
-resolved silently.
+**The insignia stands beside both decks.** Canvas 4c puts one mark on the leading edge of the plate,
+centred across the pair, and indents both decks past it. That is the shell's own leading edge rather
+than either deck's, so the mark is the banner's child: the tabs and the screen identity line up on
+one indent under it, and the divider between the decks starts on that indent rather than running
+under the mark. There is still one mark and one control that opens `/ships`, which is what the
+leading-edge ruling below asks for.
 
 ## The bar's leading edge
 

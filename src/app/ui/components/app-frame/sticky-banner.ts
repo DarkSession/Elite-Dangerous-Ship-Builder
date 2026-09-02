@@ -37,8 +37,8 @@ export interface BannerMeasurement {
  * cannot have.
  *
  * And while it does keep its place, what it leaves below is what every sticky
- * region under it has to clear. The declared `--edsb-layout-bar-height` is the
- * banner's two bars' own heights added together, which is what they come to at
+ * region under it has to clear. The declared `--ednb-layout-bar-height` is the
+ * banner's two decks' own heights added together, which is what they come to at
  * every width where neither wraps — but a command bar that has wrapped is
  * taller, by however many rows a longer language, a narrower window or a larger
  * text size cost it.

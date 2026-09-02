@@ -19,10 +19,10 @@
 }
 
 .comparison__column {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 
   text-align: start;
-  padding-block-end: var(--edsb-space-stack-tight);
+  padding-block-end: var(--ednb-space-stack-tight);
 }
 
 .comparison__column--figure {
@@ -33,7 +33,7 @@
 // quiet ink: `ATTRIBUTES` is what the card is showing, and `STOCK` and
 // `MODIFIED` are labels on the numbers under them.
 .comparison__column:not(.comparison__column--figure) {
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
 }
 
 // The canvas writes the whole row in one mono face — the name and both figures
@@ -41,40 +41,40 @@
 // different type from them (canvas 1c `eng-right`).
 .comparison__attribute {
   text-align: start;
-  font-family: var(--edsb-font-metric);
+  font-family: var(--ednb-font-metric);
   font-weight: inherit;
-  color: var(--edsb-text-secondary);
-  font-size: var(--edsb-text-size-compact);
-  padding-block: var(--edsb-space-stack-tight);
+  color: var(--ednb-text-secondary);
+  font-size: var(--ednb-text-size-compact);
+  padding-block: var(--ednb-space-stack-tight);
 }
 
 .comparison__value {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-subtle));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-subtle));
 
   text-align: end;
-  padding-block: var(--edsb-space-stack-tight);
-  padding-inline-start: var(--edsb-space-inline);
+  padding-block: var(--ednb-space-stack-tight);
+  padding-inline-start: var(--ednb-space-inline);
   white-space: nowrap;
 }
 
 // The candidate column is the one the Commander is deciding about, so it reads
 // as the brighter of the two.
 .comparison__value--modified {
-  color: var(--edsb-text-numeric);
+  color: var(--ednb-text-numeric);
 }
 
 // The canvas's own two: what the recipe improved and what it cost. Never the
 // only carrier — the ▲/▼ beside the figure and the word behind it say it too.
 .comparison__value--modified[data-direction='better'] {
-  color: var(--edsb-text-success);
+  color: var(--ednb-text-success);
 }
 
 .comparison__value--modified[data-direction='worse'] {
-  color: var(--edsb-text-danger);
+  color: var(--ednb-text-danger);
 }
 
 .comparison__marker {
-  margin-inline-start: var(--edsb-space-hair);
+  margin-inline-start: var(--ednb-space-hair);
 }
 
 .visually-hidden {

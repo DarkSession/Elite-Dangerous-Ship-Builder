@@ -95,7 +95,7 @@ accepted requirement rather than to nothing.
   help control was added anywhere; what changed is that every entry in that layer, this one included,
   can be pressed.
 - **A second exception, 2026-08-25**, and it is a policy fix rather than a change of behaviour:
-  `main`'s own fix for the sticky command bar (`3f9b574`) zeroes `--edsb-layout-bar-height` for a
+  `main`'s own fix for the sticky command bar (`3f9b574`) zeroes `--ednb-layout-bar-height` for a
   released frame, and it declared that token inside `app-frame.scss`. The constitution has tokens
   defined once and only in the token layer, and `check-interface-foundations.mjs` enforces it as
   `token-outside-source`; the rule turned `pnpm run policy` red the moment this branch rebased onto

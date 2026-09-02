@@ -6,22 +6,22 @@
 
 .disclosure__trigger {
   @include layout.target-baseline;
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   inline-size: 100%;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-inset);
-  color: var(--edsb-text-primary);
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-body);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-control-inline);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  border-radius: var(--ednb-shape-control);
+  background-color: var(--ednb-surface-inset);
+  color: var(--ednb-text-primary);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-body);
   text-align: start;
   cursor: pointer;
   transition:
-    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 }
 
 .disclosure__label {
@@ -29,19 +29,19 @@
 }
 
 .disclosure__state {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-count));
 }
 
 .disclosure__content {
-  padding-block: var(--edsb-space-stack);
-  padding-inline: var(--edsb-space-control-inline);
+  padding-block: var(--ednb-space-stack);
+  padding-inline: var(--ednb-space-control-inline);
 }
 
 .disclosure__trigger[aria-expanded='true'] {
-  border-color: var(--edsb-border-accent);
+  border-color: var(--ednb-border-accent);
 }
 
 .disclosure__trigger:disabled {
-  color: var(--edsb-text-disabled);
+  color: var(--ednb-text-disabled);
   cursor: not-allowed;
 }

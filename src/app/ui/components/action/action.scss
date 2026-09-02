@@ -9,14 +9,14 @@
 .action {
   @include layout.control-base;
 
-  padding-block: var(--edsb-space-control-block);
-  background-color: var(--edsb-surface-control-quiet);
-  border-color: var(--edsb-border-control-quiet);
-  color: var(--edsb-text-accent);
+  padding-block: var(--ednb-space-control-block);
+  background-color: var(--ednb-surface-control-quiet);
+  border-color: var(--ednb-border-control-quiet);
+  color: var(--ednb-text-accent);
   text-decoration: none;
   transition:
-    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 }
 
 // A commitment the reference draws full-bleed on its own row rather than sized
@@ -40,9 +40,9 @@
 
 :host([row]) .action {
   inline-size: 100%;
-  min-block-size: var(--edsb-layout-menu-row);
+  min-block-size: var(--ednb-layout-menu-row);
   justify-content: flex-start;
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-inline: var(--ednb-space-inline-loose);
   border-color: transparent;
   background-color: transparent;
 }
@@ -51,8 +51,8 @@
 // changes with what the screen offers, and the row that matters is the one the
 // action itself says matters.
 :host([row]) .action--primary {
-  background-color: var(--edsb-surface-accent-selected);
-  color: var(--edsb-text-accent-strong);
+  background-color: var(--ednb-surface-accent-selected);
+  color: var(--ednb-text-accent-strong);
 }
 
 .action__label {
@@ -65,7 +65,7 @@
 // instead of being inherited from text that is no longer drawn (constitution
 // V, AA target size).
 .action--symbol {
-  min-inline-size: var(--edsb-target-size);
+  min-inline-size: var(--ednb-target-size);
 }
 
 .action--primary {
@@ -87,16 +87,16 @@
 .action--link {
   border-color: transparent;
   background-color: transparent;
-  color: var(--edsb-text-accent);
-  font-family: var(--edsb-font-body);
-  letter-spacing: var(--edsb-text-tracking-body);
+  color: var(--ednb-text-accent);
+  font-family: var(--ednb-font-body);
+  letter-spacing: var(--ednb-text-tracking-body);
   text-transform: none;
   // Underlined, so the link is not identified by colour alone.
   text-decoration: underline;
 }
 
 .action__external {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-count));
 
   text-transform: none;
 }
@@ -105,26 +105,26 @@
 // touch device has no hover at all (FR-006).
 @media (hover: hover) {
   .action:hover:not(:disabled) {
-    background-color: var(--edsb-surface-accent-selected);
+    background-color: var(--ednb-surface-accent-selected);
   }
 
   .action--primary:hover:not(:disabled) {
-    background-color: var(--edsb-text-accent-strong);
+    background-color: var(--ednb-text-accent-strong);
   }
 }
 
 .action:disabled,
 .action[aria-disabled='true'] {
-  color: var(--edsb-text-disabled);
+  color: var(--ednb-text-disabled);
   background-color: transparent;
-  border-color: var(--edsb-border-quiet);
+  border-color: var(--ednb-border-quiet);
   cursor: not-allowed;
 }
 
 .action[aria-pressed='true'] {
-  border-color: var(--edsb-border-accent);
-  background-color: var(--edsb-surface-accent-selected);
-  color: var(--edsb-text-accent-strong);
+  border-color: var(--ednb-border-accent);
+  background-color: var(--ednb-surface-accent-selected);
+  color: var(--ednb-text-accent-strong);
 }
 
 .visually-hidden {
@@ -135,6 +135,6 @@
 // pair. Monospace, because the marks the canvas uses are drawn from its own
 // mono face and a proportional one gives them the wrong weight beside a word.
 .action__mark {
-  font-family: var(--edsb-font-metric);
-  line-height: var(--edsb-text-leading-flat);
+  font-family: var(--ednb-font-metric);
+  line-height: var(--ednb-text-leading-flat);
 }

@@ -12,7 +12,7 @@ export const CODEC_SYMBOL_BITS = 31;
  * generated with, and the binary layout keeps working until a bounded symbol would need more
  * than 31 bits — around 2^31 entries everywhere. What a larger table does change is the size
  * of every link, and links are bounded by the 500-character envelope. These limits are the
- * table sizes the string budget in `docs/build-link-codec.md` is sized against, so exceeding
+ * table sizes the string budget in `docs/ship-link-codec.md` is sized against, so exceeding
  * one is a deliberate re-budgeting decision rather than a routine regeneration: raise the
  * limit, re-check the budget, and mint the next table version.
  */
@@ -80,7 +80,7 @@ export function assertTableWithinCapacity(table) {
       .join(
         '\n',
       )}\nWidths derive from the table, so this is a link-size decision, not a codec failure:\n` +
-      `re-check the budget in docs/build-link-codec.md — including MAX_STRING_UNITS — raise the\n` +
+      `re-check the budget in docs/ship-link-codec.md — including MAX_STRING_UNITS — raise the\n` +
       `limit deliberately, and mint the next table version.`,
   );
 }

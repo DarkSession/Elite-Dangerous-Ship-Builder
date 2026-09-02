@@ -153,7 +153,7 @@ partly off the leading edge of the viewport, so its entries — FR-001's only ro
 — could not be pressed. Two separate causes, both now fixed in feature 011's own component and both
 about the panel rather than about help:
 
-1. `min-inline-size: var(--edsb-layout-menu-min)` is `12.25rem`, which at a doubled text size is 392
+1. `min-inline-size: var(--ednb-layout-menu-min)` is `12.25rem`, which at a doubled text size is 392
    pixels on a 390-pixel screen. A minimum wins over a maximum in CSS, so the panel's own viewport
    bound was silently overridden and the panel came out wider than the screen. The minimum is now
    bounded by the same expression the maximum uses.

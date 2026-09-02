@@ -18,26 +18,26 @@
   @include layout.target-baseline;
 
   inline-size: 100%;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-control-inline);
   @include layout.field-surface;
 
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-body);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-body);
   transition:
-    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 }
 
 .field__control[aria-invalid='true'] {
-  border-color: var(--edsb-border-danger);
+  border-color: var(--ednb-border-danger);
   // The border is a supplement. The error text below carries the meaning.
-  border-width: var(--edsb-border-width-thick);
+  border-width: var(--ednb-border-width-thick);
 }
 
 .field__control:disabled {
-  color: var(--edsb-text-disabled);
-  border-color: var(--edsb-border-quiet);
+  color: var(--ednb-text-disabled);
+  border-color: var(--ednb-border-quiet);
 }
 
 // The reference's own menu control: the field's ground and hairline, its text
@@ -57,23 +57,23 @@
 
 .field__control--select {
   appearance: none;
-  padding-inline-end: calc(var(--edsb-space-control-inline) * 2 + 1ch);
+  padding-inline-end: calc(var(--ednb-space-control-inline) * 2 + 1ch);
 }
 
 .field__caret {
   position: absolute;
-  inset-inline-end: var(--edsb-space-control-inline);
+  inset-inline-end: var(--ednb-space-control-inline);
   inset-block-start: 50%;
   translate: 0 -50%;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-caption);
-  line-height: var(--edsb-text-leading-flat);
-  color: var(--edsb-text-muted);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-caption);
+  line-height: var(--ednb-text-leading-flat);
+  color: var(--ednb-text-muted);
   pointer-events: none;
 }
 
 .field__control--select:disabled + .field__caret {
-  color: var(--edsb-text-disabled);
+  color: var(--ednb-text-disabled);
 }
 
 // The platform's own clear mark on a search field, removed.
@@ -90,11 +90,11 @@
 }
 
 .field__control option {
-  background-color: var(--edsb-surface-panel);
-  color: var(--edsb-text-primary);
+  background-color: var(--ednb-surface-panel);
+  color: var(--ednb-text-primary);
 }
 
 textarea.field__control {
-  min-block-size: calc(var(--edsb-target-size) * 2);
+  min-block-size: calc(var(--ednb-target-size) * 2);
   resize: vertical;
 }

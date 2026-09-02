@@ -11,7 +11,7 @@
 }
 
 .diagnostics {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -19,27 +19,27 @@
 }
 
 .diagnostics__item {
-  padding: var(--edsb-space-control-block) var(--edsb-space-control-inline);
-  background-color: var(--edsb-surface-inset);
-  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
+  padding: var(--ednb-space-control-block) var(--ednb-space-control-inline);
+  background-color: var(--ednb-surface-inset);
+  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-danger);
 }
 
 .diagnostics__fields {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-stack-tight) var(--ednb-space-inline-tight);
   margin: 0;
 }
 
 .diagnostics__term {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 }
 
 .diagnostics__value {
   margin: 0;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-compact);
-  color: var(--edsb-text-primary);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-primary);
   // A long path owns its own overflow rather than widening the layer.
   overflow-wrap: anywhere;
   unicode-bidi: isolate;
@@ -47,14 +47,14 @@
 
 .diagnostics__reason {
   margin: 0;
-  font-size: var(--edsb-text-size-compact);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-primary);
+  font-size: var(--ednb-text-size-compact);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-primary);
   overflow-wrap: anywhere;
 }
 
 .diagnostics__disclosure {
-  margin-block-start: var(--edsb-space-stack-tight);
-  font-size: var(--edsb-text-size-compact);
-  color: var(--edsb-text-subtle);
+  margin-block-start: var(--ednb-space-stack-tight);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-subtle);
 }

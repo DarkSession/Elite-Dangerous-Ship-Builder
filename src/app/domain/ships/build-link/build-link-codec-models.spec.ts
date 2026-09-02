@@ -61,8 +61,8 @@ describe('build-link codec pinned symbol models', () => {
     expect(fragments).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.8oUeO4wu5ZrfCrStkM0I4It5CEAZ6QNzeH2I!qVp_-B/u3xUxp/:5vZn-uve.T',
-      'b.26da!i-2iAMHR6!JYWjLXeH:ll2xmztchA8e91yfvAecy.0k,wpaS39Od-qe_AWys@MUQrpRGJVEQa',
+      'b.8oUeO4wu5ZrfCrTfzWgzw4R5x,/c-XJsc!MqzvUN.tw7Y:YwviztiNydqXRqom',
+      'b.26da!i-2iAMHR6!JZmTxbE77Oyj3V5R-f,ZnbT!fa_:86xIg:BUBnp6QoP26u6hI3sH,GUQdzesv1z',
       'b.7yvr6:PyEpDGgEs9aI:gxA@uHybdm4IM',
     ]);
   });
@@ -73,7 +73,7 @@ describe('build-link codec pinned symbol models', () => {
       const modelledLength = modelledCodec.encodeBuildLinkFragment(source).length;
       return { label, baselineLength, modelledLength };
     });
-    // Both columns are pinned because `docs/build-link-codec.md` publishes them as the models'
+    // Both columns are pinned because `docs/ship-link-codec.md` publishes them as the models'
     // measured effect. A runner shows no console output for a passing spec, so a printed table
     // would let either column drift unnoticed; an assertion cannot.
     expect(rows).toEqual([

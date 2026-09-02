@@ -331,14 +331,14 @@ said and the requirement is what changed.
       package published, at a separation measured from how wide the plate drew its own marks — the placement itself as a pure function over published coordinates in
       `src/app/domain/anatomy/mount-declutter.ts` with its unit suite beside it, the anchors, marks
       and leaders assembled in `src/app/ui/outfitting/hull-schematic.ts`, the hairline drawn in an
-      overlay in `hull-schematic.html` and painted from `--edsb-border-node-leader` in
+      overlay in `hull-schematic.html` and painted from `--ednb-border-node-leader` in
       `hull-schematic.scss`, `data-displaced` exposed for the end-to-end assertion, and the crowded
       pair added to the plate's `default` preview in `src/app/ui/previews/preview-manifest.ts`.
       FR-012 is amended and the overlap edge case restated in `spec.md`, the placement is written
       down in `data-model.md`, and `design/hull-anatomy.md` gains "Marks that would touch".
 - [x] T077 Fill a selected utility mount in the informational hue rather than the accent one — the
       `[data-kind='utility'][aria-pressed='true']` treatment in `hull-schematic.scss` over the new
-      `--edsb-surface-info-solid` and `--edsb-text-on-info` in `src/styles/tokens/_semantic.scss`,
+      `--ednb-surface-info-solid` and `--ednb-text-on-info` in `src/styles/tokens/_semantic.scss`,
       with the reasoning in `design/hull-anatomy.md`, "Legend and visual language": the fill says
       _selected_ and the hue says _which kind_.
 - [x] T078 Remove the engine-dependent case behind the iPadOS report of blue hulls — the schematic
@@ -378,7 +378,7 @@ said and the requirement is what changed.
       crowded (a quarter of a mark's width of air) from the distance a crowd is _spread_ by (past the
       furthest mount, plus a mark and a quarter), trim each line to its own mark's edge in
       `hull-schematic.ts` since the square hides everything inside it, and draw it at a rule's width
-      in `--edsb-border-node-leader` at 0.7 rather than a hairline at 0.4. One number for both jobs
+      in `--ednb-border-node-leader` at 0.7 rather than a hairline at 0.4. One number for both jobs
       did both badly: it spread pairs with eleven pixels of air between them by four pixels each. The
       shipped package's shortest visible leader is now ten and a half pixels, and no plate moves a
       mark that was not crowded.
@@ -420,7 +420,7 @@ said and the requirement is what changed.
 
 One number, at the Commander's request, after living with what Phase 6 and the 2026-08-26 bound left.
 
-- [x] T089 Raise `--edsb-measure-anatomy-plate` from `25.25rem` to `35.35rem` — the same measure plus
+- [x] T089 Raise `--ednb-measure-anatomy-plate` from `25.25rem` to `35.35rem` — the same measure plus
       two fifths. The 2026-08-26 bound stopped two plates growing with the window and stopped them
       too short: at 1920 and above the column has room the drawing was refusing. Nothing else moves —
       not the `720/292` ratio, not the marks placed over it, not the 41rem threshold at which the

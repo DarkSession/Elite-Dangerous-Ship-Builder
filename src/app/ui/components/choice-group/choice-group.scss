@@ -8,15 +8,15 @@
 }
 
 .choice-group__legend {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 
   padding: 0;
 }
 
 .choice-group__options {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  margin-block-start: var(--edsb-space-stack-tight);
+  margin-block-start: var(--ednb-space-stack-tight);
 }
 
 // A legend that is not drawn leaves no gap above the options either. It wears
@@ -29,7 +29,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: stretch;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
 }
 
 .choice__input {
@@ -37,25 +37,25 @@
   // the label beside it, which fills the full target height — clicking a label
   // activates its control, so the two together are the real target.
   align-self: center;
-  inline-size: var(--edsb-space-lg);
-  block-size: var(--edsb-space-lg);
-  accent-color: var(--edsb-surface-accent-solid);
+  inline-size: var(--ednb-space-lg);
+  block-size: var(--ednb-space-lg);
+  accent-color: var(--ednb-surface-accent-solid);
 }
 
 .choice__label {
   display: flex;
   align-items: center;
-  min-block-size: var(--edsb-target-size);
-  font-size: var(--edsb-text-size-body);
-  color: var(--edsb-text-primary);
+  min-block-size: var(--ednb-target-size);
+  font-size: var(--ednb-text-size-body);
+  color: var(--ednb-text-primary);
   cursor: pointer;
 }
 
 .choice__description {
   grid-column: 2;
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
 }
 
 // The segmented arrangement.
@@ -70,9 +70,9 @@
   // strip that inherits it is a stack of full-width bars.
   flex-direction: row;
   flex-wrap: wrap;
-  gap: var(--edsb-space-rule);
-  background-color: var(--edsb-rule-grid);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+  gap: var(--ednb-space-rule);
+  background-color: var(--ednb-rule-grid);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-rule-grid);
 
   // Each choice is its own positioned segment, and the native input is the
   // segment: transparent, full size, on top. The label supplies the appearance
@@ -101,31 +101,31 @@
   }
 
   .choice__label {
-    @include layout.control-base(var(--edsb-text-tracking-heading));
+    @include layout.control-base(var(--ednb-text-tracking-heading));
 
     flex: 1 1 auto;
     min-inline-size: 0;
-    padding-inline: var(--edsb-space-inline-loose);
-    background-color: var(--edsb-surface-control-quiet);
-    color: var(--edsb-text-subtle);
+    padding-inline: var(--ednb-space-inline-loose);
+    background-color: var(--ednb-surface-control-quiet);
+    color: var(--ednb-text-subtle);
   }
 
   .choice__input:checked + .choice__label {
-    background-color: var(--edsb-surface-accent-solid);
-    color: var(--edsb-text-on-accent);
-    font-weight: var(--edsb-text-weight-heading);
+    background-color: var(--ednb-surface-accent-solid);
+    color: var(--ednb-text-on-accent);
+    font-weight: var(--ednb-text-weight-heading);
   }
 
   // The input is visually hidden, so its own focus ring is invisible. The
   // label wears it instead — focus must be visible wherever the platform
   // moves it.
   .choice__input:focus-visible + .choice__label {
-    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-    outline-offset: calc(-1 * var(--edsb-focus-ring-width));
+    outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+    outline-offset: calc(-1 * var(--ednb-focus-ring-width));
   }
 
   .choice__input:disabled + .choice__label {
-    color: var(--edsb-text-disabled);
+    color: var(--ednb-text-disabled);
     cursor: not-allowed;
   }
 }
@@ -146,7 +146,7 @@
 // checked state, so what a reader is told does not change with the arrangement
 // or with the width.
 .choice-group__options[data-cards] {
-  @include layout.stack(var(--edsb-space-inline-tight));
+  @include layout.stack(var(--ednb-space-inline-tight));
 
   // The plate is the control's own box: the input covers it, transparent and
   // full size, so the target a pointer aims at is the thing being operated
@@ -155,12 +155,12 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: var(--edsb-space-stack-tight);
-    min-block-size: var(--edsb-target-size);
-    padding-block: var(--edsb-space-control-block);
-    padding-inline: var(--edsb-space-lg);
-    background-color: var(--edsb-surface-panel-raised);
-    border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    gap: var(--ednb-space-stack-tight);
+    min-block-size: var(--ednb-target-size);
+    padding-block: var(--ednb-space-control-block);
+    padding-inline: var(--ednb-space-lg);
+    background-color: var(--ednb-surface-panel-raised);
+    border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
   }
 
   // Selection follows the input's own checked state rather than a class
@@ -173,13 +173,13 @@
   // system does not do (AGENTS.md; canvas 1c draws the save dialog's chosen card
   // with a filled marker for the same reason).
   .choice:has(.choice__input:checked) {
-    background-color: var(--edsb-surface-accent-selected);
-    border-color: var(--edsb-border-control);
+    background-color: var(--ednb-surface-accent-selected);
+    border-color: var(--ednb-border-control);
   }
 
   .choice:has(.choice__input:focus-visible) {
-    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-    outline-offset: var(--edsb-focus-ring-offset);
+    outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+    outline-offset: var(--ednb-focus-ring-offset);
   }
 
   .choice__input {
@@ -202,7 +202,7 @@
   // the label, so the adjacent-sibling form would reach the label on one
   // arrangement and nothing at all on the other.
   .choice__input:disabled ~ .choice__label {
-    color: var(--edsb-text-disabled);
+    color: var(--ednb-text-disabled);
     cursor: not-allowed;
   }
 
@@ -247,23 +247,23 @@
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
-    inline-size: var(--edsb-border-width-marker);
-    background-color: var(--edsb-marker-selected);
+    inline-size: var(--ednb-border-width-marker);
+    background-color: var(--ednb-marker-selected);
   }
 
   .choice__label {
-    font-family: var(--edsb-font-heading);
-    font-size: var(--edsb-text-size-compact);
-    font-weight: var(--edsb-text-weight-control);
-    line-height: var(--edsb-text-leading-control);
-    letter-spacing: var(--edsb-text-tracking-heading);
+    font-family: var(--ednb-font-heading);
+    font-size: var(--ednb-text-size-compact);
+    font-weight: var(--ednb-text-weight-control);
+    line-height: var(--ednb-text-leading-control);
+    letter-spacing: var(--ednb-text-tracking-heading);
     text-transform: uppercase;
-    color: var(--edsb-text-secondary);
+    color: var(--ednb-text-secondary);
   }
 
   .choice__input:checked + .choice__label {
-    font-weight: var(--edsb-text-weight-heading);
-    color: var(--edsb-text-accent-strong);
+    font-weight: var(--ednb-text-weight-heading);
+    color: var(--ednb-text-accent-strong);
   }
 }
 
@@ -283,7 +283,7 @@
 .choice-group__options[data-layout='marked-cards'] {
   .choice {
     display: grid;
-    column-gap: var(--edsb-space-inline);
+    column-gap: var(--ednb-space-inline);
     align-items: start;
   }
 
@@ -293,42 +293,42 @@
   // do at one size only.
   .choice__marker {
     grid-row: 1 / span 2;
-    inline-size: var(--edsb-space-lg);
-    block-size: var(--edsb-space-lg);
-    margin-block-start: calc((1em * var(--edsb-text-leading-body) - var(--edsb-space-lg)) / 2);
-    border: var(--edsb-border-width-hairline) solid var(--edsb-border-strong);
+    inline-size: var(--ednb-space-lg);
+    block-size: var(--ednb-space-lg);
+    margin-block-start: calc((1em * var(--ednb-text-leading-body) - var(--ednb-space-lg)) / 2);
+    border: var(--ednb-border-width-hairline) solid var(--ednb-border-strong);
   }
 
   // Filled, not merely tinted. The fill is what survives a monochrome rendering
   // and is why the state is not carried by colour alone (AGENTS.md).
   .choice__input:checked ~ .choice__marker {
-    background-color: var(--edsb-marker-selected);
-    border-color: var(--edsb-marker-selected);
+    background-color: var(--ednb-marker-selected);
+    border-color: var(--ednb-marker-selected);
   }
 
   .choice__input:disabled ~ .choice__marker {
-    border-color: var(--edsb-text-disabled);
+    border-color: var(--ednb-text-disabled);
   }
 
   // A sentence, not a heading. The canvas sets a save mode in body type where
   // it sets the format list beside it tracked and uppercase, because a mode is
   // read as words and a format is read as a name.
   .choice__label {
-    font-weight: var(--edsb-text-weight-emphasis);
-    line-height: var(--edsb-text-leading-body);
-    color: var(--edsb-text-secondary);
+    font-weight: var(--ednb-text-weight-emphasis);
+    line-height: var(--ednb-text-leading-body);
+    color: var(--ednb-text-secondary);
   }
 
   .choice__input:checked ~ .choice__label {
-    color: var(--edsb-text-accent-strong);
+    color: var(--ednb-text-accent-strong);
   }
 
   // The outcome is set in the metric face: it is a fact about the stored
   // build — when it was last saved, what survives — rather than prose.
   .choice__description {
-    font-family: var(--edsb-font-metric);
-    font-size: var(--edsb-text-size-caption);
-    font-weight: var(--edsb-text-weight-body);
+    font-family: var(--ednb-font-metric);
+    font-size: var(--ednb-text-size-caption);
+    font-weight: var(--ednb-text-weight-body);
   }
 }
 
@@ -341,7 +341,7 @@
 
     flex-direction: row;
     flex-wrap: nowrap;
-    gap: var(--edsb-space-inline-tight);
+    gap: var(--ednb-space-inline-tight);
 
     .choice {
       flex: none;
@@ -375,22 +375,22 @@
     // 12px: it is a control, and one control's inline padding is not a place
     // this system keeps a second scale.
     .choice__label {
-      @include layout.control-base(var(--edsb-text-tracking-label));
+      @include layout.control-base(var(--ednb-text-tracking-label));
 
-      background-color: var(--edsb-surface-control-quiet);
-      color: var(--edsb-text-subtle);
+      background-color: var(--ednb-surface-control-quiet);
+      color: var(--ednb-text-subtle);
       white-space: nowrap;
     }
 
     .choice__input:checked + .choice__label {
-      background-color: var(--edsb-surface-accent-solid);
-      color: var(--edsb-text-on-accent);
-      font-weight: var(--edsb-text-weight-heading);
+      background-color: var(--ednb-surface-accent-solid);
+      color: var(--ednb-text-on-accent);
+      font-weight: var(--ednb-text-weight-heading);
     }
 
     .choice__input:focus-visible + .choice__label {
-      outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-      outline-offset: calc(-1 * var(--edsb-focus-ring-width));
+      outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+      outline-offset: calc(-1 * var(--ednb-focus-ring-width));
     }
 
     // The chip carries the format's name and nothing else, as it is drawn. The

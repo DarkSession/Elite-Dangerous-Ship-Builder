@@ -112,4 +112,4 @@ Nothing in these blocks depends on colour alone: the Merc Coin row is named as w
 Compose the shared section, description-list, micro-label, `edsb-game-text` and `edsb-material-grade`
 primitives, and feature 011's active-locale collator for the name tie-break. Nothing here needs a new
 shared primitive, and no screen-local colours, sizes, spacing, radii, elevation or motion are added:
-the four rules use `--edsb-border-region` and the insets use the existing space roles.
+the four rules use `--ednb-border-region` and the insets use the existing space roles.

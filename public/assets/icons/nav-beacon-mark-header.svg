@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="132" height="132" viewBox="-6 -6 132 132" fill="none"><g transform="rotate(-10 60 60)">
+    <g stroke="#ff8c1a" stroke-width="4.5" stroke-linecap="round">
+      <line x1="81.2" y1="28.3" x2="95" y2="15.3"></line>
+      <line x1="81.2" y1="87.7" x2="95" y2="100.7"></line>
+      <line x1="38.8" y1="87.7" x2="25" y2="100.7"></line>
+      <line x1="38.8" y1="28.3" x2="25" y2="15.3"></line>
+    </g>
+    <path d="M30,70 A30,10 0 0 0 90,70 A30,30 0 0 1 30,70 Z" fill="#161615" stroke="#e8ded1" stroke-width="4.5" stroke-linejoin="round"></path>
+    <path d="M30,46 A30,10 0 0 0 90,46 L90,70 A30,10 0 0 1 30,70 Z" fill="#ff8c1a"></path>
+    <path d="M30,46 A30,30 0 0 1 90,46 A30,10 0 0 1 30,46 Z" fill="#161615" stroke="#e8ded1" stroke-width="4.5" stroke-linejoin="round"></path>
+  </g>
+</svg>

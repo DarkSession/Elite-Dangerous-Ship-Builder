@@ -13,7 +13,7 @@
 }
 
 .defence {
-  @include layout.stack(var(--edsb-space-region));
+  @include layout.stack(var(--ednb-space-region));
 
   min-inline-size: 0;
 }
@@ -37,7 +37,7 @@
     // fill, and holding a real build to it would leave a card ruled off around
     // empty ground.
     align-items: stretch;
-    gap: var(--edsb-space-region);
+    gap: var(--ednb-space-region);
   }
 }
 
@@ -45,25 +45,25 @@
 // same padding the canvas gives it: `1px solid var(--amber-a2)` over
 // `var(--panel)` at `16px 18px`.
 .card {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
-  padding-block: var(--edsb-space-2xl);
-  padding-inline: var(--edsb-space-panel);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block: var(--ednb-space-2xl);
+  padding-inline: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The canvas's header row: the card's name against the article it is reading.
 .card__head {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: baseline;
   justify-content: space-between;
 }
 
 .card__heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
 }
@@ -72,7 +72,7 @@
 // as the canvas writes `BI-WEAVE 7C`; it wraps rather than truncating, because a
 // long module name at rail width has nowhere else to go.
 .card__identity {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
   @include layout.micro-label;
 
   margin: 0;
@@ -83,14 +83,14 @@
 
 // The headline pool: the figure at display size with its unit set against it.
 .card__pool {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   margin: 0;
   align-items: baseline;
 }
 
 .card__pool-value {
-  @include layout.metric-value(var(--edsb-text-size-display));
+  @include layout.metric-value(var(--ednb-text-size-display));
 }
 
 .card__pool-unit {
@@ -101,11 +101,11 @@
 // the canvas tells the two cards apart before a single label is read. It is
 // decoration over labelled figures: every card is headed in words as well.
 .card--shield .card__pool-value {
-  color: var(--edsb-text-info);
+  color: var(--ednb-text-info);
 }
 
 .card--armour .card__pool-value {
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
 }
 
 // The canvas's hairline between the blocks of a card. A rule across the whole
@@ -115,8 +115,8 @@
 .card__rule {
   margin: 0;
   border: 0;
-  block-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-rule-section);
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
 }
 
 .card__facts {
@@ -147,8 +147,8 @@
 // (Commander request 2026-08-28).
 .damage th,
 .damage td {
-  padding-block: var(--edsb-space-2xs);
-  padding-inline: var(--edsb-space-inline-tight);
+  padding-block: var(--ednb-space-2xs);
+  padding-inline: var(--ednb-space-inline-tight);
   text-align: start;
   vertical-align: middle;
 }
@@ -161,8 +161,8 @@
 // the pool that resistance leaves, in that order across one line.
 .damage__type {
   min-inline-size: 0;
-  color: var(--edsb-text-muted);
-  font-weight: var(--edsb-text-weight-body);
+  color: var(--ednb-text-muted);
+  font-weight: var(--ednb-text-weight-body);
   overflow-wrap: break-word;
 }
 
@@ -183,14 +183,14 @@
 // rather than trusting the arithmetic.
 .damage th.damage__cell--numeric,
 .damage td.damage__cell--numeric {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   // The cell is the containing block for the word a weakness carries. That word
   // is positioned out of sight, and an absolute box whose containing block sits
   // outside the scroller escapes the scroller's clip: on a table wide enough to
   // scroll, a 1px span nobody can see was widening the document.
   position: relative;
-  min-inline-size: var(--edsb-layout-defence-resist);
+  min-inline-size: var(--ednb-layout-defence-resist);
   text-align: end;
   white-space: nowrap;
 }
@@ -198,7 +198,7 @@
 // The fifth column's heading is two lines rather than one, as the canvas sets
 // it: the unit, and the allocation it was read at under it.
 .damage th.damage__cell--at-pips {
-  line-height: var(--edsb-text-leading-heading);
+  line-height: var(--ednb-text-leading-heading);
 }
 
 // The condition under the unit, smaller than it: it says which reading the
@@ -207,7 +207,7 @@
 // four words down a column an inch wide.
 .damage__at-pips {
   display: block;
-  font-size: var(--edsb-text-size-micro);
+  font-size: var(--ednb-text-size-micro);
 }
 
 // The bar's own column takes whatever the three columns of text leave it: the
@@ -221,8 +221,8 @@
 .damage__track {
   position: relative;
   display: block;
-  block-size: var(--edsb-layout-power-bar);
-  background-color: var(--edsb-surface-inset);
+  block-size: var(--ednb-layout-power-bar);
+  background-color: var(--ednb-surface-inset);
 }
 
 // Where the scale crosses zero, marked only on a table that reaches below it.
@@ -233,9 +233,9 @@
   // Standing a little proud of the track at both ends, as the canvas draws it:
   // a tick flush inside the ground reads as a sliver of fill rather than as the
   // mark the fills are measured from.
-  inset-block: calc(var(--edsb-space-3xs) * -1);
-  inline-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-border-strong);
+  inset-block: calc(var(--ednb-space-3xs) * -1);
+  inline-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-border-strong);
 }
 
 // Drawn from where its own reading starts rather than from the leading edge, so
@@ -243,11 +243,11 @@
 .damage__fill {
   position: absolute;
   inset-block: 0;
-  background-color: var(--edsb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 .card--shield .damage__fill {
-  background-color: var(--edsb-surface-shield);
+  background-color: var(--ednb-surface-shield);
 }
 
 // A resistance below zero. The canvas hatches its length and reddens its
@@ -257,7 +257,7 @@
 .damage__row--weak {
   .damage__fill {
     background-color: transparent;
-    background-image: var(--edsb-surface-overheat);
+    background-image: var(--ednb-surface-overheat);
   }
 
   // The element is named here for the same reason it is named on the rule that
@@ -268,7 +268,7 @@
   // and the alignment together for that reason.
   th.damage__cell--numeric,
   td.damage__cell--numeric {
-    color: var(--edsb-text-danger);
+    color: var(--ednb-text-danger);
   }
 }
 
@@ -284,7 +284,7 @@
 .scale {
   position: relative;
   display: block;
-  block-size: var(--edsb-text-size-micro);
+  block-size: var(--ednb-text-size-micro);
   min-inline-size: 0;
 }
 
@@ -319,11 +319,11 @@
 .reserve {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
-      var(--edsb-layout-defence-value),
+      var(--ednb-layout-defence-value),
       auto
     );
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack);
+  column-gap: var(--ednb-space-inline);
+  row-gap: var(--ednb-space-stack);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -344,7 +344,7 @@
 // happened to be the same width would still not put those two figures in the
 // same place.
 .reserve {
-  row-gap: var(--edsb-space-stack-tight);
+  row-gap: var(--ednb-space-stack-tight);
 }
 
 .reserve__banks {
@@ -352,14 +352,14 @@
 }
 
 .source__name {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
   overflow-wrap: break-word;
 }
 
 .source__role {
-  @include layout.micro-label(var(--edsb-text-secondary), var(--edsb-text-tracking-name));
+  @include layout.micro-label(var(--ednb-text-secondary), var(--ednb-text-tracking-name));
 
   text-transform: none;
 }
@@ -371,8 +371,8 @@
 
 .source__track {
   display: block;
-  block-size: var(--edsb-layout-power-bar);
-  background-color: var(--edsb-surface-inset);
+  block-size: var(--ednb-layout-power-bar);
+  background-color: var(--ednb-surface-inset);
 }
 
 // Nothing at all where there is no scale to draw against: an empty track reads
@@ -384,15 +384,15 @@
 .source__fill {
   display: block;
   block-size: 100%;
-  background-color: var(--edsb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 .card--shield .source__fill {
-  background-color: var(--edsb-surface-shield);
+  background-color: var(--ednb-surface-shield);
 }
 
 .source__value {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   text-align: end;
   white-space: nowrap;
@@ -403,7 +403,7 @@
 // state.
 .source--off .source__fill {
   background-color: transparent;
-  background-image: var(--edsb-surface-overheat);
+  background-image: var(--ednb-surface-overheat);
 }
 
 // ---------------------------------------------------------------------------
@@ -412,7 +412,7 @@
 // Every reason the package gave, in the order it gave them. Prose voice, not
 // the mono numeric voice of the figures these stand in for.
 .issues {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -420,11 +420,11 @@
 }
 
 .issue {
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-inline-loose);
-  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
-  background-color: var(--edsb-surface-danger-quiet);
-  color: var(--edsb-text-danger);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-inline-loose);
+  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-danger);
+  background-color: var(--ednb-surface-danger-quiet);
+  color: var(--ednb-text-danger);
   overflow-wrap: break-word;
   text-wrap: pretty;
 }

@@ -44,8 +44,8 @@ draws none — and its name stays in the accessibility tree for anyone reading t
 The SLEF payload is a field of twelve rows and a share link is one line, so choosing between them
 moved the panel — and on a centred layer it moved under the hand that had just pressed the format
 beside it. The region carries a floor that the payload panel already stands at —
-`--edsb-layout-export-content` where the formats sit above the payload, and
-`--edsb-layout-export-content-wide` where they sit beside it, because the payload's actions take a
+`--ednb-layout-export-content` where the formats sit above the payload, and
+`--ednb-layout-export-content-wide` where they sit beside it, because the payload's actions take a
 second line at the narrower composition and one line at the wider. A floor and not a cap: a refusal,
 a stale notice or an invalid-build sentence is a state of this panel and still grows it, and a
 translated description that takes a second line grows it too. Canvas 1c answers the same problem the same way — its own caption above the payload is

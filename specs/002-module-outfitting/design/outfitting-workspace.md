@@ -119,7 +119,7 @@ grid row, `392px 1fr 306px` over a `min-height: 880px`, whose three columns stre
 ledger's `border-right` and the status rail's `border-left` reach the foot of the screen whatever
 either column holds. The build did not. The status rail was sized by its content, so on a build with
 little to report its seam stopped less than half the way down while the ledger's ran on; and both
-columns subtracted `2 x --edsb-space-region` from the viewport, which was the page inset the
+columns subtracted `2 x --ednb-space-region` from the viewport, which was the page inset the
 application frame carried until wave 9 removed it, leaving the pair 36px short of the foot with
 nothing to clear. Both are now the full height the bar leaves, and the status rail takes a definite
 height rather than a cap so its seam is drawn whether or not the rail has that much to say
@@ -256,7 +256,7 @@ rail is the canvas's third track — below that step it is a band under the benc
 height to grow into, and a list that filled it there would run the whole shopping list down the
 screen (Commander request 2026-08-26; `specs/009-cost-and-materials/spec.md`, FR-007a).
 
-**What that height is, is measured, not declared.** `--edsb-layout-bar-height` is what the banner —
+**What that height is, is measured, not declared.** `--ednb-layout-bar-height` is what the banner —
 the tool bar and the command bar under it — comes to at every width where neither wraps. At any width where it does
 wrap it is taller, by however many rows a longer language, a narrower window or a larger text size
 cost it. Subtracting the declared figure left the columns past the foot of the screen by the
@@ -628,7 +628,7 @@ under `CORE` on a phone finds it there on a desktop.
 
 Four of this feature's lists answer a pointer resting on a row: the ledger's mounts, the fitting
 rail's categories, the module rows beside it, and the experimental effect's options. Each takes the
-quiet accent wash — `--edsb-surface-accent-quiet`, a step under the ground a chosen row carries —
+quiet accent wash — `--ednb-surface-accent-quiet`, a step under the ground a chosen row carries —
 inside a `(hover: hover)` query, so a row a Commander is pointing at is
 never mistaken for the one they chose and a touch device is given nothing it cannot use.
 

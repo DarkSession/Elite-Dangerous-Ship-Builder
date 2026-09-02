@@ -2,7 +2,7 @@ import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 
 /**
  * The fully outfitted and engineered Anaconda reference build described in
- * `docs/build-link-codec.md`. Shared by the codec and model specs so the pinned reference and
+ * `docs/ship-link-codec.md`. Shared by the codec and model specs so the pinned reference and
  * every measurement derived from it stay a single definition.
  */
 export function makeFullyEngineeredAnaconda(): ShipLoadout {

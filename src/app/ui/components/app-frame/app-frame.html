@@ -1,7 +1,8 @@
 <!--
-  Two bars, one sticky region. Canvas 3c draws the tools over the screen's own
-  command bar, and the region below the pair clears what the pair came to, so
-  they are measured together (`sticky-banner.ts`).
+  One bar, two decks, one sticky region. Canvas 4c stacks the tool tabs over
+  the screen's own command bar on a single plate, and the region below the pair
+  clears what the pair came to, so they are measured together
+  (`sticky-banner.ts`).
 
   The reference's command bar carries the screen's own name on the leading
   edge, the one count that belongs to it beside that, and the screen's actions
@@ -14,6 +15,36 @@
   [class.frame__banner--released]="bannerReleased()"
   [attr.aria-label]="bannerLabel()"
 >
+  <!--
+    The insignia. It stands on the leading edge of the bar as a whole and is
+    centred across both decks, which is why it is here rather than inside
+    either one: canvas 4c holds the tabs and the identity to a single indent
+    that clears the one mark.
+
+    A link where the screen has somewhere for it to go, which is where canvas
+    1c puts the trip the `SHIPYARD` chip used to carry; the mark carries no
+    alternative text and the link is named by the screen it reaches, so the mark
+    is never announced as a picture of nothing.
+
+    The mark is its own element inside the link rather than the link itself.
+    The link is held to the press baseline, the mark is the size the canvas
+    draws it, and one box cannot be both: a mark cut into the link's own layers
+    grows with the target, and the insignia is then a different size on a
+    screen that offers the way home than on one that does not (011/FR-012).
+  -->
+  @if (home(); as destination) {
+    <a
+      class="frame__flag-home"
+      [href]="destination.href"
+      (click)="navigationSelected.emit({ entry: destination, event: $event })"
+    >
+      <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
+      <span class="visually-hidden">{{ destination.label }}</span>
+    </a>
+  } @else {
+    <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
+  }
+
   <!--
     The tool bar. Named as a landmark of its own, because the bar below already
     carries one called "Primary navigation" and two navigation regions with one
@@ -78,31 +109,6 @@
     }
 
     <div class="frame__identity">
-      <!--
-        The insignia. A link where the screen has somewhere for it to go, which is
-        where canvas 1c puts the trip the `SHIPYARD` chip used to carry; the mark
-        itself stays hidden from assistive technology and the link is named by the
-        screen it reaches, so the mark is never announced as a picture of nothing.
-
-        The mark is its own element inside the link rather than the link itself.
-        The link is held to the press baseline, the mark is the size the canvas
-        draws it, and one box cannot be both: a mark cut into the link's own
-        layers grows with the target, and the insignia is then a different size on
-        a screen that offers the way home than on one that does not (011/FR-012).
-      -->
-      @if (home(); as destination) {
-        <a
-          class="frame__flag-home"
-          [href]="destination.href"
-          (click)="navigationSelected.emit({ entry: destination, event: $event })"
-        >
-          <span class="frame__flag" aria-hidden="true"></span>
-          <span class="visually-hidden">{{ destination.label }}</span>
-        </a>
-      } @else {
-        <span class="frame__flag" aria-hidden="true"></span>
-      }
-
       <!--
         The release mark: a solid amber chip with the bar's own ground as its ink.
 

@@ -21,8 +21,8 @@
   // format name pushes the list past the width it is drawn at and takes the
   // room from the payload beside it.
   min-inline-size: 0;
-  padding-block: var(--edsb-space-panel) 0;
-  padding-inline: var(--edsb-space-panel);
+  padding-block: var(--ednb-space-panel) 0;
+  padding-inline: var(--ednb-space-panel);
 }
 
 .export-dialog__content {
@@ -31,9 +31,9 @@
   // line, so choosing between them moved the layer under the hand that chose
   // (Commander request 2026-08-28). A floor and not a cap: a refusal or a stale
   // notice is a state of the panel and still grows it.
-  min-block-size: var(--edsb-layout-export-content);
-  padding-block: var(--edsb-space-stack) var(--edsb-space-panel);
-  padding-inline: var(--edsb-space-panel);
+  min-block-size: var(--ednb-layout-export-content);
+  padding-block: var(--ednb-space-stack) var(--ednb-space-panel);
+  padding-inline: var(--ednb-space-panel);
 }
 
 @include layout.medium-up {
@@ -47,20 +47,20 @@
     // the other bound, and at the declared text size it is the wider of the two,
     // so the drawn width is what a Commander sees until the text is scaled.
     grid-template-columns:
-      minmax(0, min(var(--edsb-layout-layer-aside), 35%))
+      minmax(0, min(var(--ednb-layout-layer-aside), 35%))
       minmax(0, 1fr);
   }
 
   .export-dialog__modes {
-    padding: var(--edsb-space-lg);
-    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+    padding: var(--ednb-space-lg);
+    border-inline-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-grid);
   }
 
   .export-dialog__content {
     // The payload panel is shorter where the two regions stand side by side:
     // its actions have the room to stay on one line. The floor is that panel,
     // measured at this composition.
-    min-block-size: var(--edsb-layout-export-content-wide);
-    padding: var(--edsb-space-panel);
+    min-block-size: var(--ednb-layout-export-content-wide);
+    padding: var(--ednb-space-panel);
   }
 }

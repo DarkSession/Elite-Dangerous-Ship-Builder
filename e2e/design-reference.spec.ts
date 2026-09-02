@@ -57,77 +57,187 @@ test.describe('the reference visual language', () => {
     // var(--amber)`. The rule is the single strongest mark in the reference and
     // is the same on all four canvases.
     //
-    // The command bar, not the banner: since canvas 3c the banner is the sticky
-    // region carrying the tool bar as well, and the rule closes the command bar
-    // inside it rather than the pair.
+    // The command bar, not the banner: the banner is the one plate and carries
+    // the tool deck as well, and the rule closes the plate at the foot of the
+    // command deck rather than around the pair.
     const bar = page.locator('.frame__bar');
 
     expect(await style(bar, 'background-color')).toBe(PANEL_4);
     expect(await style(bar, 'border-bottom-width')).toBe('2px');
     expect(await style(bar, 'border-bottom-color')).toBe(AMBER);
+
+    // And it closes the whole plate. The rule is the strongest mark in the
+    // reference and the canvas runs it edge to edge, outside the inset the
+    // decks are drawn on; a deck that began after the insignia would stop it
+    // short of the leading edge with the mark sitting over the gap.
+    const spans = await page.evaluate(() => {
+      const banner = (
+        document.querySelector('.frame__banner') as HTMLElement
+      ).getBoundingClientRect();
+      const deck = (document.querySelector('.frame__bar') as HTMLElement).getBoundingClientRect();
+      return { start: deck.left - banner.left, end: banner.right - deck.right };
+    });
+
+    expect(spans).toEqual({ start: 0, end: 0 });
   });
 
-  test('carries the current tool on the command bar, closed by the canvas underline', async ({
+  test("draws the tool deck on the command bar's own plate", async ({ page }) => {
+    // Canvas 4c draws one bar: the tabs and the identity are two decks of a
+    // single `--panel-4` plate, divided by a hairline that runs the length of
+    // what the decks hold (`canvas-extraction.md`, "Tool bar").
+    const plate = await page.evaluate(() => {
+      const deck = document.querySelector('.frame__tools') as HTMLElement;
+      const bar = document.querySelector('.frame__bar') as HTMLElement;
+      const deckStyle = getComputedStyle(deck);
+      const divider = getComputedStyle(bar, '::before');
+      const deckBox = deck.getBoundingClientRect();
+      const barBox = bar.getBoundingClientRect();
+      const indent = parseFloat(getComputedStyle(bar).paddingInlineStart);
+      const trailing = parseFloat(getComputedStyle(bar).paddingInlineEnd);
+      return {
+        // Transparent, so what shows through is the banner's own plate.
+        deckGround: deckStyle.backgroundColor,
+        bannerGround: getComputedStyle(deck.parentElement as HTMLElement).backgroundColor,
+        deckRule: parseFloat(deckStyle.borderBlockEndWidth),
+        // The divider is placed on the lower deck rather than added to its box,
+        // so the deck is the height it is drawn at.
+        dividerHeight: parseFloat(divider.blockSize),
+        dividerColour: divider.backgroundColor,
+        // It sits where the decks meet, and runs from the indent the mark is
+        // cleared by to the plate's trailing inset.
+        dividerTop: parseFloat(divider.insetBlockStart),
+        dividerStart: parseFloat(divider.insetInlineStart),
+        dividerEnd: parseFloat(divider.insetInlineEnd),
+        indent,
+        trailing,
+        // The decks share one indent and one plate.
+        deckStart: deckBox.left,
+        barStart: barBox.left,
+      };
+    });
+
+    expect(plate.deckGround).toBe('rgba(0, 0, 0, 0)');
+    expect(plate.bannerGround).toBe(PANEL_4);
+    expect(plate.deckRule).toBe(0);
+    expect(plate.dividerHeight).toBe(1);
+    expect(plate.dividerColour).toMatch(/rgba\(255, 140, 26/);
+    expect(plate.dividerTop).toBe(0);
+    expect(plate.dividerStart).toBe(plate.indent);
+    expect(plate.dividerEnd).toBe(plate.trailing);
+    expect(plate.deckStart).toBe(plate.barStart);
+  });
+
+  test('centres the insignia across both decks of the bar', async ({ page }) => {
+    // Canvas 4c puts one mark on the leading edge of the plate, centred on the
+    // pair, with both decks indented past it. The shipyard draws the mark bare
+    // and every other screen wraps it in the way home; either way it is the
+    // banner's own child rather than a part of one deck
+    // (`application-shell.md`, "The tool bar").
+    const placed = await page.evaluate(() => {
+      const banner = document.querySelector('.frame__banner') as HTMLElement;
+      const mark = banner.querySelector(':scope > .frame__flag, :scope > .frame__flag-home');
+      if (!mark) {
+        return null;
+      }
+      const box = mark.getBoundingClientRect();
+      const tools = document.querySelector('.frame__tools') as HTMLElement;
+      const deck = tools.getBoundingClientRect();
+      const bar = (document.querySelector('.frame__bar') as HTMLElement).getBoundingClientRect();
+      return {
+        // Centred on the pair, not on either deck.
+        offset: (box.top + box.bottom) / 2 - (deck.top + bar.bottom) / 2,
+        // And what the deck holds starts after it, which is the indent the
+        // canvas draws rather than the deck's own box edge.
+        clear: deck.left + parseFloat(getComputedStyle(tools).paddingInlineStart) - box.right,
+      };
+    });
+
+    expect(placed).not.toBeNull();
+    expect(Math.abs(placed?.offset ?? Infinity)).toBeLessThanOrEqual(1);
+    expect(placed?.clear ?? 0).toBeGreaterThan(0);
+  });
+
+  test('leaves the whole of the way home pressable', async ({ page }) => {
+    // The mark stands over the decks rather than beside them, and the press box
+    // around it overhangs into the plate's gutter. A deck painted over that
+    // overhang would leave the link a 35px target while its own box still
+    // measured 44 — which is what every other target assertion here reads
+    // (`application-shell.md`, "The bar's leading edge"; 011/FR-012).
+    await page.goto('/ships/Anaconda');
+    await buildStockHull(page, 'Build');
+    await expect(page.locator('[data-slot-key]').first()).toBeVisible();
+
+    // Back to the top first. What is asserted here is what the decks paint over
+    // the press box, and on a short viewport the banner is released and scrolls
+    // away with the page (011/FR-011) — so reaching the bench leaves the bar
+    // above the viewport, where every sample point hits nothing at all and the
+    // reading says "covered" for a reason that is not painting.
+    await page.evaluate(() => window.scrollTo(0, 0));
+
+    const covered = await page.locator('.frame__flag-home').evaluate((link) => {
+      const box = link.getBoundingClientRect();
+      const points = [0.02, 0.5, 0.98].flatMap((x) =>
+        [0.02, 0.5, 0.98].map((y) => [box.left + box.width * x, box.top + box.height * y]),
+      );
+      return points.filter(([x, y]) => !link.contains(document.elementFromPoint(x!, y!))).length;
+    });
+
+    expect(covered).toBe(0);
+  });
+
+  test('carries the current tool in the accent wash, closed by the canvas underline', async ({
     page,
   }) => {
-    // Canvas 3c: the tool a Commander is in takes the command bar's own
-    // `--panel-4` ground and a `2px solid var(--amber)` underline, and the tab
-    // is the height of the bar so that underline sits on the bar's own edge.
-    // A tab short of the bar leaves a strip of the menu ground under its fill
-    // and floats the underline above the command bar it is meant to meet
+    // Canvas 4c: the tool a Commander is in takes an `--amber-a14` wash and a
+    // `2px solid var(--amber)` underline, and the tab is the height of the deck
+    // so that underline sits on the deck's own edge. A tab short of the deck
+    // floats the underline above the divider it is meant to meet
     // (`canvas-extraction.md`, "Tool bar").
     const current = page.locator('.frame__tool--current');
 
-    expect(await style(current, 'background-color')).toBe(PANEL_4);
+    expect(await style(current, 'background-color')).toMatch(/^rgba\(255, 140, 26/);
     expect(await style(current, 'color')).toBe(AMBER_3);
     expect(await style(current, 'border-bottom-width')).toBe('2px');
     expect(await style(current, 'border-bottom-color')).toBe(AMBER);
 
-    // The gap between the tab's underline and the bar's own inner edge, read in
-    // one evaluation so both boxes describe the same moment.
+    // The gap between the tab's underline and the deck's own edge, read in one
+    // evaluation so both boxes describe the same moment.
     const met = await page.evaluate(() => {
-      const bar = document.querySelector('.frame__tools') as HTMLElement;
-      const tab = bar.querySelector('.frame__tool--current') as HTMLElement;
-      const hairline = parseFloat(getComputedStyle(bar).borderBlockEndWidth);
-      return bar.getBoundingClientRect().bottom - hairline - tab.getBoundingClientRect().bottom;
+      const deck = document.querySelector('.frame__tools') as HTMLElement;
+      const tab = deck.querySelector('.frame__tool--current') as HTMLElement;
+      return deck.getBoundingClientRect().bottom - tab.getBoundingClientRect().bottom;
     });
 
     expect(Math.abs(met)).toBeLessThanOrEqual(1);
   });
 
-  test('opens the command bar with the amber wedge insignia', async ({ page }) => {
-    // The resynced canvases replaced the plain amber block that opened the bar
-    // with the wedge the app icon is cut from (canvas 3b): a clipped outline
-    // closed by a lighter bar. Both are cut into the flag's own layers rather
-    // than painted on its box, because an amber ground on the box would draw
-    // an amber rectangle behind the mark rather than the mark
-    // (`canvas-extraction.md`, "Command bar").
-    const flag = page.locator('.frame__flag');
-
-    const mark = await flag.evaluate((element) => {
-      const wedge = getComputedStyle(element, '::before');
-      const underbar = getComputedStyle(element, '::after');
-      const box = getComputedStyle(element);
+  test('opens the command bar with the beacon mark', async ({ page }) => {
+    // Canvas 6d replaced the wedge with the beacon — domed cap, lit core, domed
+    // base, four antennas — and ships it as a file rather than a shape CSS can
+    // cut. So what is checked is that the drawing the design approved is the
+    // drawing that arrives: the right file, actually decoded, square, and the
+    // size the token declares.
+    const mark = await page.locator('.frame__flag').evaluate((element) => {
+      const image = element as HTMLImageElement;
+      const box = element.getBoundingClientRect();
       return {
-        wedge: wedge.backgroundColor,
-        clip: wedge.clipPath,
-        underbar: underbar.backgroundColor,
-        width: parseFloat(box.inlineSize),
-        height: parseFloat(box.blockSize),
+        tag: element.tagName,
+        source: image.getAttribute('src'),
+        // Zero on a file that 404ed or failed to parse, where a box with a
+        // background would still measure the size the token asks for.
+        decoded: image.naturalWidth,
+        // The drawing's own proportions, which are square and stay square.
+        drawn: image.naturalWidth === image.naturalHeight,
+        width: box.width,
+        height: box.height,
       };
     });
 
-    expect(mark.wedge).toBe(AMBER);
-    // The mark is the clip, not the box. A wedge that lost its `clip-path`
-    // would still be an amber rectangle of the right size and would pass every
-    // other assertion here.
-    expect(mark.clip).toMatch(/^polygon\(/);
-    // The bar the canvas closes the mark with, in a wash of the same amber.
-    expect(mark.underbar).toMatch(/^rgba\(255, 140, 26/);
-
-    // `26 x 23`: the size canvas 3b draws the mark, near enough square.
-    expect(mark.width).toBeGreaterThan(0);
-    expect(Math.abs(mark.width - mark.height)).toBeLessThanOrEqual(4);
+    expect(mark.tag).toBe('IMG');
+    expect(mark.source).toBe('assets/icons/nav-beacon-mark-header.svg');
+    expect(mark.decoded).toBeGreaterThan(0);
+    expect(mark.drawn).toBe(true);
+    expect(mark.width).toBe(mark.height);
   });
 
   test('draws the insignia at one size whether or not it is the way home', async ({ page }) => {
@@ -155,8 +265,8 @@ test.describe('the reference visual language', () => {
         return {
           width: box.width,
           height: box.height,
-          declaredWidth: declared('--edsb-layout-insignia-width'),
-          declaredHeight: declared('--edsb-layout-insignia-height'),
+          declaredWidth: declared('--ednb-layout-insignia-size'),
+          declaredHeight: declared('--ednb-layout-insignia-size'),
         };
       });
 
@@ -197,9 +307,9 @@ test.describe('the reference visual language', () => {
     // wrap is still measured rather than assumed: at a doubled text size and
     // at 400% zoom the bar does wrap, and it has to, or its own controls would
     // be cut off (011/FR-011).
-    // Measured on the command bar itself. The banner around it is the two-bar
-    // sticky region since canvas 3c, and the height this test is about is the
-    // one the command bar is drawn at.
+    // Measured on the command bar itself. The banner around it is the two-deck
+    // sticky region, and the height this test is about is the one the command
+    // deck is drawn at.
     const commandBar = page.locator('.frame__bar');
     const bar = async () =>
       await commandBar.evaluate((node) => {

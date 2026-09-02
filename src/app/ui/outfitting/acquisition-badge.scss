@@ -8,7 +8,7 @@
 }
 
 .acquisition {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   margin: 0;
   padding: 0;
@@ -16,7 +16,7 @@
 }
 
 .acquisition__item {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }
 
 // The canvas's route icon, beside the module's name at the size it draws it.
@@ -24,8 +24,8 @@
 // how the article is earned already says the chip's whole sentence.
 .acquisition__route {
   flex: none;
-  inline-size: var(--edsb-layout-icon-size);
-  block-size: var(--edsb-layout-icon-size);
+  inline-size: var(--ednb-layout-icon-size);
+  block-size: var(--ednb-layout-icon-size);
   object-fit: contain;
 }
 
@@ -33,21 +33,21 @@
 // The reference's Tech Broker mark is unpainted line art. The canvas's own
 // filter is what makes it read on this ground; see the token.
 .acquisition__route--broker {
-  filter: var(--edsb-filter-route-broker);
+  filter: var(--ednb-filter-route-broker);
 }
 
 .acquisition__coin {
   flex: none;
-  inline-size: var(--edsb-layout-icon-size);
-  block-size: var(--edsb-layout-icon-size);
+  inline-size: var(--ednb-layout-icon-size);
+  block-size: var(--ednb-layout-icon-size);
   object-fit: contain;
 }
 
 .acquisition__explanation {
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 

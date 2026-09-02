@@ -8,11 +8,11 @@
 }
 
 .fact {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 .fact__label {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 // A package figure is a technical value: it keeps its own direction inside a
@@ -22,7 +22,7 @@
 // manifest row's numbers stood taller than the module name beside them, which
 // is what put the whole table out of proportion (wave 8).
 .fact__value {
-  @include layout.metric-value(var(--edsb-text-size-compact));
+  @include layout.metric-value(var(--ednb-text-size-compact));
 
   unicode-bidi: isolate;
 }
@@ -33,5 +33,5 @@
 // it came out as `CR`: a column heading that had slipped down into the row
 // (wave 9).
 .fact__unit {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-faint));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-faint));
 }

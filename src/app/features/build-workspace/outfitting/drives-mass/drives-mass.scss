@@ -12,7 +12,7 @@
 }
 
 .drives {
-  @include layout.stack(var(--edsb-space-region));
+  @include layout.stack(var(--ednb-space-region));
 
   min-inline-size: 0;
 }
@@ -32,27 +32,27 @@
     // its pair a `min-height` its own sample build happens to fill; holding a
     // real build to it would rule a card off around empty ground.
     align-items: stretch;
-    gap: var(--edsb-space-region);
+    gap: var(--ednb-space-region);
   }
 }
 
 // Each of the canvas's cards is a bounded plate on the panel ground, with the
 // same border and padding it gives the power dashboard's blocks.
 .drives__card {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
-  padding-block: var(--edsb-space-2xl);
-  padding-inline: var(--edsb-space-panel);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block: var(--ednb-space-2xl);
+  padding-inline: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The canvas's identity line: the card's rule at one end, the fitted module's
 // class and blueprint at the other, on one line. It wraps rather than
 // compressing, because German sets `FRAME SHIFT DRIVE` as one unbreakable word.
 .drives__card-header {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: baseline;
   justify-content: space-between;
@@ -61,8 +61,8 @@
 // The `SCO` badge rides inside this rule, on its line, so the heading is a row
 // rather than a block.
 .drives__card-heading {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
   align-items: center;
@@ -74,18 +74,18 @@
 // rating and blueprint of the module every reading in the card comes from, set
 // quietly at the far end of the rule it qualifies.
 .drives__source {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   margin: 0;
   min-inline-size: 0;
 }
 
 .drives__rating {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
 }
 
 .drives__state {
-  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-danger), var(--ednb-text-tracking-heading));
 }
 
 // The canvas's hairline between two blocks of a card, in the same amber the
@@ -93,12 +93,12 @@
 // such: it separates blocks a reader already reaches by list and by heading.
 .drives__rule {
   display: block;
-  block-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-rule-grid);
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-grid);
 }
 
 .drives__section-heading {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 
   margin: 0;
   // German compounds these headings into single words longer than the stacked
@@ -112,11 +112,11 @@
 // the words behind them are in the markup beside it rather than carried by the
 // styling.
 .drives__sco {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
-  padding-block: var(--edsb-space-3xs);
-  padding-inline: var(--edsb-space-2xs);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+  padding-block: var(--ednb-space-3xs);
+  padding-inline: var(--ednb-space-2xs);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control);
   text-decoration: none;
 }
 
@@ -132,29 +132,29 @@
 // MASS`, the mass in the largest and warmest type on either card and the two
 // qualifiers set quietly beside it.
 .drives__headline {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   margin: 0;
   align-items: baseline;
 }
 
 .drives__headline-mass {
-  @include layout.metric-value(var(--edsb-text-size-display), var(--edsb-text-accent-strong));
+  @include layout.metric-value(var(--ednb-text-size-display), var(--ednb-text-accent-strong));
 }
 
 .drives__headline-load {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 }
 
 // Where this build sits on the thruster curve, beside the load it belongs to.
 .drives__curve-position {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 }
 
 // The bar and the two marks under it are one block: the marks are the scale the
 // bar is drawn on, so they move with it.
 .drives__mass-chart {
-  @include layout.stack(var(--edsb-space-2xs));
+  @include layout.stack(var(--ednb-space-2xs));
 }
 
 // The canvas's mass bar: one 26px band carrying the build's three parts laid end
@@ -165,9 +165,9 @@
 .drives__mass-bar {
   position: relative;
   display: flex;
-  gap: var(--edsb-border-width-hairline);
-  block-size: var(--edsb-layout-mass-bar);
-  background-color: var(--edsb-surface-inset);
+  gap: var(--ednb-border-width-hairline);
+  block-size: var(--ednb-layout-mass-bar);
+  background-color: var(--ednb-surface-inset);
   overflow: hidden;
 }
 
@@ -185,9 +185,9 @@
   position: absolute;
   inset-block: 0;
   display: block;
-  inline-size: var(--edsb-border-width-marker);
-  margin-inline-start: calc(var(--edsb-border-width-marker) * -1);
-  background-color: var(--edsb-text-numeric);
+  inline-size: var(--ednb-border-width-marker);
+  margin-inline-start: calc(var(--ednb-border-width-marker) * -1);
+  background-color: var(--ednb-text-numeric);
 }
 
 // The canvas's `OPTIMAL 1,260 t` and `MAX 1,890 t`, each under the position it
@@ -213,14 +213,14 @@
 .drives__mass-marks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .drives__mass-mark {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   min-inline-size: 0;
   // `Optimal` is one word in both languages, but the mass beside it is not, and
@@ -230,7 +230,7 @@
 
 .drives__mass-mark-label,
 .drives__mass-mark-value {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 }
 
 .drives__mass-mark-value {
@@ -273,7 +273,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
   align-items: center;
-  gap: var(--edsb-space-2xs) var(--edsb-space-inline);
+  gap: var(--ednb-space-2xs) var(--ednb-space-inline);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -284,7 +284,7 @@
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
   align-items: center;
-  gap: var(--edsb-space-2xs) var(--edsb-space-inline);
+  gap: var(--ednb-space-2xs) var(--ednb-space-inline);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -305,40 +305,40 @@
 .drives__legend-swatch,
 .drives__mass-part {
   &[data-tone='strong'] {
-    background-color: var(--edsb-surface-legend-strong);
+    background-color: var(--ednb-surface-legend-strong);
   }
 
   &[data-tone='dim'] {
-    background-color: var(--edsb-surface-legend-dim);
+    background-color: var(--ednb-surface-legend-dim);
   }
 
   &[data-tone='deep'] {
-    background-color: var(--edsb-surface-legend-deep);
+    background-color: var(--ednb-surface-legend-deep);
   }
 }
 
 .drives__legend-swatch {
   display: block;
-  inline-size: var(--edsb-layout-mass-swatch);
-  block-size: var(--edsb-layout-mass-swatch);
+  inline-size: var(--ednb-layout-mass-swatch);
+  block-size: var(--ednb-layout-mass-swatch);
 }
 
 // The canvas runs its qualifier in beside the name rather than under it, so the
 // two are one line of the row and the figure at the end stays level with them.
 .drives__legend-label {
-  color: var(--edsb-text-primary);
+  color: var(--ednb-text-primary);
   overflow-wrap: anywhere;
 }
 
 .drives__legend-detail {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
 
-  margin-inline-start: var(--edsb-space-inline-tight);
+  margin-inline-start: var(--ednb-space-inline-tight);
 }
 
 .drives__envelope-label,
 .drives__range-label {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-code));
 
   // `Höchstgeschwindigkeit` is one word and the label column is sized to its
   // content, so a word wider than the column takes the bar and the value with
@@ -351,7 +351,7 @@
 .drives__legend-value,
 .drives__envelope-value,
 .drives__range-value {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   text-align: end;
 }
@@ -361,9 +361,9 @@
 .drives__envelope-track,
 .drives__range-track {
   display: block;
-  block-size: var(--edsb-space-xs);
+  block-size: var(--ednb-space-xs);
   min-inline-size: 0;
-  background-color: var(--edsb-surface-inset);
+  background-color: var(--ednb-surface-inset);
 }
 
 .drives__envelope-fill,
@@ -371,17 +371,17 @@
   display: block;
   block-size: 100%;
   max-inline-size: 100%;
-  background-color: var(--edsb-text-accent);
+  background-color: var(--ednb-text-accent);
 }
 
 // The package's own reasons a mobility reading is unavailable, in its order.
 .drives__issues {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
   list-style: none;
-  color: var(--edsb-text-muted);
+  color: var(--ednb-text-muted);
 }
 
 // The canvas's headline trio, drawn by the shared metric group. It brings its

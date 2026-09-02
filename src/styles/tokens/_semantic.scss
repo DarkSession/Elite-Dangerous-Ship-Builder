@@ -30,14 +30,14 @@
 // Everything measured down from the banner.
 //
 // A custom property substitutes its own `var()`s where it is *declared*, not
-// where it is read, so a figure derived from `--edsb-layout-bar-height` has to
+// where it is read, so a figure derived from `--ednb-layout-bar-height` has to
 // be redeclared everywhere that height is. The frame republishes the height on
 // its own host from the bar it rendered; this is written once and included at
 // both, so the derivation stays one decision wherever it lands.
 @mixin bar-derived {
-  --edsb-layout-manifest-offset: calc(
-    var(--edsb-layout-bar-height) + var(--edsb-target-size) + 2 * var(--edsb-space-panel) + 2 *
-      var(--edsb-border-width-hairline)
+  --ednb-layout-manifest-offset: calc(
+    var(--ednb-layout-bar-height) + var(--ednb-target-size) + 2 * var(--ednb-space-panel) + 2 *
+      var(--ednb-border-width-hairline)
   );
 }
 
@@ -46,37 +46,37 @@
   // Surfaces
   // ---------------------------------------------------------------------------
 
-  --edsb-surface-root: var(--edsb-palette-bg);
-  --edsb-surface-sunken: var(--edsb-palette-bg-deep);
-  --edsb-surface-panel: var(--edsb-palette-panel);
-  --edsb-surface-panel-raised: var(--edsb-palette-panel-2);
-  --edsb-surface-inset: var(--edsb-palette-panel-3);
-  --edsb-surface-menu: var(--edsb-palette-panel-menu);
-  --edsb-surface-layer: var(--edsb-palette-panel);
-  --edsb-surface-scrim: var(--edsb-palette-scrim);
+  --ednb-surface-root: var(--ednb-palette-bg);
+  --ednb-surface-sunken: var(--ednb-palette-bg-deep);
+  --ednb-surface-panel: var(--ednb-palette-panel);
+  --ednb-surface-panel-raised: var(--ednb-palette-panel-2);
+  --ednb-surface-inset: var(--ednb-palette-panel-3);
+  --ednb-surface-menu: var(--ednb-palette-panel-menu);
+  --ednb-surface-layer: var(--ednb-palette-panel);
+  --ednb-surface-scrim: var(--ednb-palette-scrim);
 
   // The bar that carries a screen title or a dialog title.
-  --edsb-surface-bar: var(--edsb-palette-panel-4);
+  --ednb-surface-bar: var(--ednb-palette-panel-4);
 
   // The footer that carries a dialog's committing actions.
-  --edsb-surface-footer: var(--edsb-palette-panel-2);
+  --ednb-surface-footer: var(--ednb-palette-panel-2);
 
   // The inspector rail beside a manifest.
-  --edsb-surface-rail: var(--edsb-palette-panel-rail);
+  --ednb-surface-rail: var(--ednb-palette-panel-rail);
 
   // A row in a manifest or a record list.
-  --edsb-surface-row: var(--edsb-palette-panel);
+  --ednb-surface-row: var(--ednb-palette-panel);
 
   // An input's own fill: darker than the panel it sits on, as in the canvas.
-  --edsb-surface-field: var(--edsb-palette-bg);
+  --ednb-surface-field: var(--ednb-palette-bg);
 
   // A raised control that is not the primary action.
-  --edsb-surface-control: var(--edsb-palette-panel-6);
-  --edsb-surface-control-quiet: var(--edsb-palette-panel-3);
+  --ednb-surface-control: var(--ednb-palette-panel-6);
+  --ednb-surface-control-quiet: var(--ednb-palette-panel-3);
 
-  --edsb-surface-accent-quiet: var(--edsb-palette-amber-a10);
-  --edsb-surface-accent-selected: var(--edsb-palette-amber-a14);
-  --edsb-surface-accent-solid: var(--edsb-palette-amber);
+  --ednb-surface-accent-quiet: var(--ednb-palette-amber-a10);
+  --ednb-surface-accent-selected: var(--ednb-palette-amber-a14);
+  --ednb-surface-accent-solid: var(--ednb-palette-amber);
 
   // The hatch over a choice the package offers but this recipe does not reach,
   // and the ground it is drawn on. Both are chosen together, because the cell
@@ -85,52 +85,50 @@
   // ordinary ink 4.62:1 on the hatch and 14.80:1 on the cell between the
   // strokes. The mark clears the non-text floor and the number clears the text
   // one, which is the pair no other ground manages.
-  --edsb-surface-accent-hatch: var(--edsb-palette-amber-a55);
-  --edsb-surface-hatched: var(--edsb-palette-bg);
+  --ednb-surface-accent-hatch: var(--ednb-palette-amber-a55);
+  --ednb-surface-hatched: var(--ednb-palette-bg);
 
-  // The wash the insignia's underbar is drawn in (canvas 3b, `rgba(255,140,26,.5)`).
-  --edsb-surface-accent-underbar: var(--edsb-palette-amber-a50);
-  --edsb-surface-danger-quiet: var(--edsb-palette-hot-a16);
-  --edsb-surface-danger-solid: var(--edsb-palette-hot);
+  --ednb-surface-danger-quiet: var(--ednb-palette-hot-a16);
+  --ednb-surface-danger-solid: var(--ednb-palette-hot);
 
   // The ground under a block that says a thing is right, the counterpart of the
   // danger wash above. Canvas 1c draws all four status tones on a ground of
   // their own marker's hue.
-  --edsb-surface-success-quiet: var(--edsb-palette-good-a08);
+  --ednb-surface-success-quiet: var(--ednb-palette-good-a08);
 
   // Canvas 1c gives each capacitor bank its own colour on the pip display, the
   // same three the game does.
-  --edsb-surface-bank-systems: var(--edsb-palette-cool);
-  --edsb-surface-bank-engines: var(--edsb-palette-good-2);
-  --edsb-surface-bank-weapons: var(--edsb-palette-amber);
+  --ednb-surface-bank-systems: var(--ednb-palette-cool);
+  --ednb-surface-bank-engines: var(--ednb-palette-good-2);
+  --ednb-surface-bank-weapons: var(--ednb-palette-amber);
   // Canvas 1c draws every legend swatch, and the three parts of the mass bar
   // above one of them, in three depths of the same amber, so what one bar is
   // made of reads as one quantity rather than three unrelated ones. Which row is
   // which is carried by the row's own name as well: colour names nothing on its
   // own.
-  --edsb-surface-legend-strong: var(--edsb-palette-amber);
-  --edsb-surface-legend-dim: var(--edsb-palette-amber-dim);
-  --edsb-surface-legend-deep: var(--edsb-palette-amber-deep);
+  --ednb-surface-legend-strong: var(--ednb-palette-amber);
+  --ednb-surface-legend-dim: var(--ednb-palette-amber-dim);
+  --ednb-surface-legend-deep: var(--ednb-palette-amber-deep);
   // Canvas 1c draws every shield figure and every shield source bar in the cool
   // ink, against the amber the hull's own figures take: the two defence cards
   // are told apart by what they are made of before a single label is read.
-  --edsb-surface-shield: var(--edsb-palette-cool);
+  --ednb-surface-shield: var(--ednb-palette-cool);
   // What a heat bar is drawn in past the module-damage threshold.
-  --edsb-surface-overheat: var(--edsb-texture-overheat);
-  --edsb-surface-info-quiet: var(--edsb-palette-cool-a10);
+  --ednb-surface-overheat: var(--ednb-texture-overheat);
+  --ednb-surface-info-quiet: var(--ednb-palette-cool-a10);
   // The filled counterpart, for a selected control whose kind is the cool one:
   // the anatomy plate's utility mounts, which say *selected* with the same
   // solid fill a hardpoint takes and keep their own hue while they say it.
-  --edsb-surface-info-solid: var(--edsb-palette-cool);
+  --ednb-surface-info-solid: var(--ednb-palette-cool);
 
   // The wash that runs from the leading edge of a selected row.
-  --edsb-surface-row-selected: var(--edsb-texture-selected);
+  --ednb-surface-row-selected: var(--ednb-texture-selected);
 
   // The bar a collapsible module family sits on, in the wide manifest.
-  --edsb-surface-family: var(--edsb-texture-family);
+  --ednb-surface-family: var(--ednb-texture-family);
 
   // The hatched plate behind hull artwork.
-  --edsb-surface-plate: var(--edsb-texture-plate);
+  --ednb-surface-plate: var(--ednb-texture-plate);
 
   // Damage types, where a bar splits one total across them. Canvas 1c draws
   // kinetic in the amber it draws every hull figure in and thermal in the hot
@@ -139,11 +137,11 @@
   // explosive on the healthy green, absolute on the cool ink, unclassified on
   // the faintest amber the scale holds. Every segment states its own amount and
   // share in the legend beside it — the colour separates, it does not report.
-  --edsb-surface-damage-kinetic: var(--edsb-palette-amber);
-  --edsb-surface-damage-thermal: var(--edsb-palette-hot);
-  --edsb-surface-damage-explosive: var(--edsb-palette-good-2);
-  --edsb-surface-damage-absolute: var(--edsb-palette-cool);
-  --edsb-surface-damage-unclassified: var(--edsb-palette-amber-a40);
+  --ednb-surface-damage-kinetic: var(--ednb-palette-amber);
+  --ednb-surface-damage-thermal: var(--ednb-palette-hot);
+  --ednb-surface-damage-explosive: var(--ednb-palette-good-2);
+  --ednb-surface-damage-absolute: var(--ednb-palette-cool);
+  --ednb-surface-damage-unclassified: var(--ednb-palette-amber-a40);
 
   // The gunsight's three inks: a mount with a weapon on it, a mount with none,
   // and the mount the workspace has selected.
@@ -169,89 +167,89 @@
   //
   // The word is in each mark's own sentence beside the plate; these only tell
   // three dots apart at a glance.
-  --edsb-surface-mount-armed: var(--edsb-palette-amber);
-  --edsb-surface-mount-empty: var(--edsb-palette-amber-deep);
-  --edsb-surface-mount-selected: var(--edsb-palette-cool);
+  --ednb-surface-mount-armed: var(--ednb-palette-amber);
+  --ednb-surface-mount-empty: var(--ednb-palette-amber-deep);
+  --ednb-surface-mount-selected: var(--ednb-palette-cool);
 
   // ---------------------------------------------------------------------------
   // Text — every role at or above 4.5:1 on all nine grounds
   // ---------------------------------------------------------------------------
 
-  --edsb-text-primary: var(--edsb-palette-ink); //        12.67:1 min
-  --edsb-text-secondary: var(--edsb-palette-ink-a80); //   8.53:1 min
-  --edsb-text-muted: var(--edsb-palette-ink-a70); //       6.84:1 min
-  --edsb-text-subtle: var(--edsb-palette-ink-a62); //      5.66:1 min
+  --ednb-text-primary: var(--ednb-palette-ink); //        12.67:1 min
+  --ednb-text-secondary: var(--ednb-palette-ink-a80); //   8.53:1 min
+  --ednb-text-muted: var(--ednb-palette-ink-a70); //       6.84:1 min
+  --ednb-text-subtle: var(--ednb-palette-ink-a62); //      5.66:1 min
 
   // The floor. This is where the canvas's 0.32–0.50 label washes land: it is the
   // dimmest ink that is still readable text rather than decoration.
-  --edsb-text-faint: var(--edsb-palette-ink-a55); //       4.74:1 min
+  --ednb-text-faint: var(--ednb-palette-ink-a55); //       4.74:1 min
 
-  --edsb-text-accent: var(--edsb-palette-amber-2); //      8.62:1 min
-  --edsb-text-accent-strong: var(--edsb-palette-amber-3); // 9.33:1 min
-  --edsb-text-on-accent: var(--edsb-palette-bg-deep); //   8.50:1 on amber
-  --edsb-text-on-info: var(--edsb-palette-bg-deep); //    10.92:1 on cool
-  --edsb-text-merc: var(--edsb-palette-merc); //           4.67:1 min
-  --edsb-text-danger: var(--edsb-palette-hot); //          5.95:1 min
-  --edsb-text-danger-quiet: var(--edsb-palette-hot-2); //  8.19:1 min
-  --edsb-text-success: var(--edsb-palette-good); //        9.78:1 min
-  --edsb-text-info: var(--edsb-palette-cool); //           9.29:1 min
+  --ednb-text-accent: var(--ednb-palette-amber-2); //      8.62:1 min
+  --ednb-text-accent-strong: var(--ednb-palette-amber-3); // 9.33:1 min
+  --ednb-text-on-accent: var(--ednb-palette-bg-deep); //   8.50:1 on amber
+  --ednb-text-on-info: var(--ednb-palette-bg-deep); //    10.92:1 on cool
+  --ednb-text-merc: var(--ednb-palette-merc); //           4.67:1 min
+  --ednb-text-danger: var(--ednb-palette-hot); //          5.95:1 min
+  --ednb-text-danger-quiet: var(--ednb-palette-hot-2); //  8.19:1 min
+  --ednb-text-success: var(--ednb-palette-good); //        9.78:1 min
+  --ednb-text-info: var(--ednb-palette-cool); //           9.29:1 min
 
   // Disabled text keeps the AA floor: a control that is unusable must still be
   // readable, and its state is carried in text and programmatic state, never by
   // this colour alone.
-  --edsb-text-disabled: var(--edsb-palette-ink-a55);
+  --ednb-text-disabled: var(--ednb-palette-ink-a55);
 
-  --edsb-text-numeric: var(--edsb-palette-ink-2); //      11.40:1 min
+  --ednb-text-numeric: var(--ednb-palette-ink-2); //      11.40:1 min
 
   // ---------------------------------------------------------------------------
   // Boundaries and indicators
   // ---------------------------------------------------------------------------
 
   // Meaningful roles, at or above 3:1.
-  --edsb-border-strong: var(--edsb-palette-ink-a45); //    3.63:1 min
-  --edsb-border-default: var(--edsb-palette-ink-a42); //   3.33:1 min
-  --edsb-border-accent: var(--edsb-palette-amber); //      7.23:1 min
-  --edsb-border-danger: var(--edsb-palette-hot);
-  --edsb-border-success: var(--edsb-palette-good);
-  --edsb-border-info: var(--edsb-palette-cool);
+  --ednb-border-strong: var(--ednb-palette-ink-a45); //    3.63:1 min
+  --ednb-border-default: var(--ednb-palette-ink-a42); //   3.33:1 min
+  --ednb-border-accent: var(--ednb-palette-amber); //      7.23:1 min
+  --ednb-border-danger: var(--ednb-palette-hot);
+  --ednb-border-success: var(--ednb-palette-good);
+  --ednb-border-info: var(--ednb-palette-cool);
 
   // The canvas draws a control's edge in amber at 0.22–0.45. Those are hairlines
   // the eye follows, not the thing that identifies the control — the fill does
   // that — so they are decorative here and are never a control's only boundary.
-  --edsb-border-decorative: var(--edsb-palette-hair);
-  --edsb-border-decorative-strong: var(--edsb-palette-ink-a18);
-  --edsb-border-field: var(--edsb-palette-amber-a22);
-  --edsb-border-control: var(--edsb-palette-amber-a40);
-  --edsb-border-control-quiet: var(--edsb-palette-amber-a35);
-  --edsb-border-region: var(--edsb-palette-amber-a18);
-  --edsb-border-dialog: var(--edsb-palette-amber-a45);
-  --edsb-border-quiet: var(--edsb-palette-ink-a18);
+  --ednb-border-decorative: var(--ednb-palette-hair);
+  --ednb-border-decorative-strong: var(--ednb-palette-ink-a18);
+  --ednb-border-field: var(--ednb-palette-amber-a22);
+  --ednb-border-control: var(--ednb-palette-amber-a40);
+  --ednb-border-control-quiet: var(--ednb-palette-amber-a35);
+  --ednb-border-region: var(--ednb-palette-amber-a18);
+  --ednb-border-dialog: var(--ednb-palette-amber-a45);
+  --ednb-border-quiet: var(--ednb-palette-ink-a18);
   // The line from a mount to the mark that stepped aside from it, where the hull
   // draws two mounts closer together than a mark is wide. It has to be followed
   // across a lit technical drawing over a hatched plate, and at 0.4 it could
   // not be: the segment is a few pixels long once the mark's own square has
   // covered its end, and a quiet hairline that short reads as part of the
   // artwork. Strong enough to be a line somebody drew on purpose.
-  --edsb-border-node-leader: var(--edsb-palette-amber-a70);
-  --edsb-border-danger-quiet: var(--edsb-palette-hot-a40);
+  --ednb-border-node-leader: var(--ednb-palette-amber-a70);
+  --ednb-border-danger-quiet: var(--ednb-palette-hot-a40);
 
   // The one-pixel ground a grid's gaps expose as rules.
-  --edsb-rule-grid: var(--edsb-palette-amber-a14);
-  --edsb-rule-section: var(--edsb-palette-amber-a14);
+  --ednb-rule-grid: var(--ednb-palette-amber-a14);
+  --ednb-rule-section: var(--ednb-palette-amber-a14);
   // The rule over a restricted slot group, which canvas 1a draws in the hot
   // wash rather than the amber one.
-  --edsb-rule-danger: var(--edsb-palette-hot-a22);
-  --edsb-rule-panel: var(--edsb-palette-amber-a20);
-  --edsb-rule-menu: var(--edsb-palette-amber-a16);
+  --ednb-rule-danger: var(--ednb-palette-hot-a22);
+  --ednb-rule-panel: var(--ednb-palette-amber-a20);
+  --ednb-rule-menu: var(--ednb-palette-amber-a16);
 
   // The amber rule under the application command bar, and the marker on the
   // leading edge of a selected row.
-  --edsb-rule-command: var(--edsb-palette-amber);
-  --edsb-marker-selected: var(--edsb-palette-amber);
+  --ednb-rule-command: var(--ednb-palette-amber);
+  --ednb-marker-selected: var(--ednb-palette-amber);
 
-  --edsb-focus-ring: var(--edsb-palette-amber-2);
-  --edsb-focus-ring-width: var(--edsb-border-width-rule);
-  --edsb-focus-ring-offset: var(--edsb-space-3xs);
+  --ednb-focus-ring: var(--ednb-palette-amber-2);
+  --ednb-focus-ring-width: var(--ednb-border-width-rule);
+  --ednb-focus-ring-offset: var(--ednb-space-3xs);
 
   // ---------------------------------------------------------------------------
   // Type roles
@@ -259,74 +257,74 @@
 
   // Condensed carries every heading and control label; mono carries every number
   // and micro-label; Barlow carries prose. Nothing else in the canvas.
-  --edsb-font-body: var(--edsb-family-sans);
-  --edsb-font-heading: var(--edsb-family-condensed);
-  --edsb-font-metric: var(--edsb-family-mono);
+  --ednb-font-body: var(--ednb-family-sans);
+  --ednb-font-heading: var(--ednb-family-condensed);
+  --ednb-font-metric: var(--ednb-family-mono);
 
-  --edsb-text-size-micro: var(--edsb-type-size-micro);
-  --edsb-text-size-caption: var(--edsb-type-size-2xs);
-  --edsb-text-size-label: var(--edsb-type-size-2xs);
+  --ednb-text-size-micro: var(--ednb-type-size-micro);
+  --ednb-text-size-caption: var(--ednb-type-size-2xs);
+  --ednb-text-size-label: var(--ednb-type-size-2xs);
   // The one size on the plate that is not on the type scale: the node mark's
   // number is sized against the hull it is drawn on, not against the interface.
-  --edsb-text-size-node-mark: var(--edsb-measure-node-mark-text);
-  --edsb-text-size-compact: var(--edsb-type-size-xs);
-  --edsb-text-size-body: var(--edsb-type-size-sm);
-  --edsb-text-size-lead: var(--edsb-type-size-md);
-  --edsb-text-size-metric: var(--edsb-type-size-lg);
-  --edsb-text-size-heading-sm: var(--edsb-type-size-lg);
-  --edsb-text-size-heading-md: var(--edsb-type-size-xl);
-  --edsb-text-size-heading-lg: var(--edsb-type-size-2xl);
-  --edsb-text-size-display: var(--edsb-type-size-3xl);
+  --ednb-text-size-node-mark: var(--ednb-measure-node-mark-text);
+  --ednb-text-size-compact: var(--ednb-type-size-xs);
+  --ednb-text-size-body: var(--ednb-type-size-sm);
+  --ednb-text-size-lead: var(--ednb-type-size-md);
+  --ednb-text-size-metric: var(--ednb-type-size-lg);
+  --ednb-text-size-heading-sm: var(--ednb-type-size-lg);
+  --ednb-text-size-heading-md: var(--ednb-type-size-xl);
+  --ednb-text-size-heading-lg: var(--ednb-type-size-2xl);
+  --ednb-text-size-display: var(--ednb-type-size-3xl);
 
-  --edsb-text-leading-flat: var(--edsb-type-leading-flat);
-  --edsb-text-leading-heading: var(--edsb-type-leading-tight);
-  --edsb-text-leading-control: var(--edsb-type-leading-snug);
-  --edsb-text-leading-body: var(--edsb-type-leading-body);
-  --edsb-text-leading-prose: var(--edsb-type-leading-prose);
+  --ednb-text-leading-flat: var(--ednb-type-leading-flat);
+  --ednb-text-leading-heading: var(--ednb-type-leading-tight);
+  --ednb-text-leading-control: var(--ednb-type-leading-snug);
+  --ednb-text-leading-body: var(--ednb-type-leading-body);
+  --ednb-text-leading-prose: var(--ednb-type-leading-prose);
 
-  --edsb-text-weight-prose: var(--edsb-type-weight-light);
-  --edsb-text-weight-body: var(--edsb-type-weight-regular);
-  --edsb-text-weight-emphasis: var(--edsb-type-weight-medium);
-  --edsb-text-weight-control: var(--edsb-type-weight-semibold);
-  --edsb-text-weight-heading: var(--edsb-type-weight-bold);
+  --ednb-text-weight-prose: var(--ednb-type-weight-light);
+  --ednb-text-weight-body: var(--ednb-type-weight-regular);
+  --ednb-text-weight-emphasis: var(--ednb-type-weight-medium);
+  --ednb-text-weight-control: var(--ednb-type-weight-semibold);
+  --ednb-text-weight-heading: var(--ednb-type-weight-bold);
 
   // The tracking ladder, by the job each rung does in the canvas.
-  --edsb-text-tracking-body: var(--edsb-type-tracking-none);
-  --edsb-text-tracking-prose-label: var(--edsb-type-tracking-xs);
-  --edsb-text-tracking-meta: var(--edsb-type-tracking-sm);
-  --edsb-text-tracking-name: var(--edsb-type-tracking-md);
-  --edsb-text-tracking-title: var(--edsb-type-tracking-lg);
-  --edsb-text-tracking-count: var(--edsb-type-tracking-xl);
-  --edsb-text-tracking-code: var(--edsb-type-tracking-2xl);
-  --edsb-text-tracking-label: var(--edsb-type-tracking-3xl);
-  --edsb-text-tracking-heading: var(--edsb-type-tracking-4xl);
-  --edsb-text-tracking-control: var(--edsb-type-tracking-5xl);
-  --edsb-text-tracking-dialog: var(--edsb-type-tracking-6xl);
-  --edsb-text-tracking-product: var(--edsb-type-tracking-7xl);
+  --ednb-text-tracking-body: var(--ednb-type-tracking-none);
+  --ednb-text-tracking-prose-label: var(--ednb-type-tracking-xs);
+  --ednb-text-tracking-meta: var(--ednb-type-tracking-sm);
+  --ednb-text-tracking-name: var(--ednb-type-tracking-md);
+  --ednb-text-tracking-title: var(--ednb-type-tracking-lg);
+  --ednb-text-tracking-count: var(--ednb-type-tracking-xl);
+  --ednb-text-tracking-code: var(--ednb-type-tracking-2xl);
+  --ednb-text-tracking-label: var(--ednb-type-tracking-3xl);
+  --ednb-text-tracking-heading: var(--ednb-type-tracking-4xl);
+  --ednb-text-tracking-control: var(--ednb-type-tracking-5xl);
+  --ednb-text-tracking-dialog: var(--ednb-type-tracking-6xl);
+  --ednb-text-tracking-product: var(--ednb-type-tracking-7xl);
 
   // ---------------------------------------------------------------------------
   // Space roles
   // ---------------------------------------------------------------------------
 
-  --edsb-space-rule: var(--edsb-space-hair);
-  --edsb-space-inline-tight: var(--edsb-space-xs);
-  --edsb-space-inline: var(--edsb-space-md);
-  --edsb-space-inline-loose: var(--edsb-space-xl);
-  --edsb-space-stack-tight: var(--edsb-space-2xs);
-  --edsb-space-stack: var(--edsb-space-lg);
-  --edsb-space-stack-loose: var(--edsb-space-2xl);
-  --edsb-space-control-inline: var(--edsb-space-lg);
-  --edsb-space-control-block: var(--edsb-space-md);
+  --ednb-space-rule: var(--ednb-space-hair);
+  --ednb-space-inline-tight: var(--ednb-space-xs);
+  --ednb-space-inline: var(--ednb-space-md);
+  --ednb-space-inline-loose: var(--ednb-space-xl);
+  --ednb-space-stack-tight: var(--ednb-space-2xs);
+  --ednb-space-stack: var(--ednb-space-lg);
+  --ednb-space-stack-loose: var(--ednb-space-2xl);
+  --ednb-space-control-inline: var(--ednb-space-lg);
+  --ednb-space-control-block: var(--ednb-space-md);
 
   // The block padding of a control the canvas draws dense: 7px around canvas
   // 1c's segmented strip against the 10px it gives a field. Six is the step
   // below on this scale, and a segment lands on SC 2.5.8's 24-pixel floor from
   // there rather than above it.
-  --edsb-space-control-block-dense: var(--edsb-space-xs);
-  --edsb-space-row: var(--edsb-space-lg);
-  --edsb-space-panel: var(--edsb-space-3xl);
-  --edsb-space-region: var(--edsb-space-4xl);
-  --edsb-space-section: var(--edsb-space-5xl);
+  --ednb-space-control-block-dense: var(--ednb-space-xs);
+  --ednb-space-row: var(--ednb-space-lg);
+  --ednb-space-panel: var(--ednb-space-3xl);
+  --ednb-space-region: var(--ednb-space-4xl);
+  --ednb-space-section: var(--ednb-space-5xl);
 
   // The strip of screen a sheet leaves above itself.
   //
@@ -335,50 +333,50 @@
   // layer over anything (Commander request 2026-08-31). The inset comes out of
   // the sheet's own 88% bound rather than being added to it, so the scrim below
   // it is unchanged.
-  --edsb-space-sheet-inset: var(--edsb-space-4xl);
+  --ednb-space-sheet-inset: var(--ednb-space-4xl);
 
   // ---------------------------------------------------------------------------
   // Shape, elevation, motion and target roles
   // ---------------------------------------------------------------------------
 
   // Every product surface in the reference is square.
-  --edsb-shape-control: var(--edsb-radius-square);
-  --edsb-shape-panel: var(--edsb-radius-square);
-  --edsb-shape-layer: var(--edsb-radius-square);
-  --edsb-shape-badge: var(--edsb-radius-square);
+  --ednb-shape-control: var(--ednb-radius-square);
+  --ednb-shape-panel: var(--ednb-radius-square);
+  --ednb-shape-layer: var(--ednb-radius-square);
+  --ednb-shape-badge: var(--ednb-radius-square);
 
-  --edsb-border-width-hairline: var(--edsb-border-width-thin);
-  --edsb-border-width-thick: var(--edsb-border-width-rule);
+  --ednb-border-width-hairline: var(--ednb-border-width-thin);
+  --ednb-border-width-thick: var(--ednb-border-width-rule);
 
-  --edsb-elevation-panel: var(--edsb-elevation-flat);
-  --edsb-elevation-menu: var(--edsb-elevation-overlay);
-  --edsb-elevation-dialog: var(--edsb-elevation-overlay);
-  --edsb-elevation-current: var(--edsb-elevation-underline);
+  --ednb-elevation-panel: var(--ednb-elevation-flat);
+  --ednb-elevation-menu: var(--ednb-elevation-overlay);
+  --ednb-elevation-dialog: var(--ednb-elevation-overlay);
+  --ednb-elevation-current: var(--ednb-elevation-underline);
 
-  --edsb-motion-duration-state: var(--edsb-duration-fast);
-  --edsb-motion-duration-layer: var(--edsb-duration-base);
-  --edsb-motion-easing: var(--edsb-easing-standard);
-  --edsb-motion-easing-enter: var(--edsb-easing-decelerate);
-  --edsb-motion-easing-exit: var(--edsb-easing-accelerate);
+  --ednb-motion-duration-state: var(--ednb-duration-fast);
+  --ednb-motion-duration-layer: var(--ednb-duration-base);
+  --ednb-motion-easing: var(--ednb-easing-standard);
+  --ednb-motion-easing-enter: var(--ednb-easing-decelerate);
+  --ednb-motion-easing-exit: var(--ednb-easing-accelerate);
 
-  --edsb-target-size: var(--edsb-target-min);
-  --edsb-target-size-dense: var(--edsb-target-min-compact);
-  --edsb-target-size-floor: var(--edsb-target-min-floor);
+  --ednb-target-size: var(--ednb-target-min);
+  --ednb-target-size-dense: var(--ednb-target-min-compact);
+  --ednb-target-size-floor: var(--ednb-target-min-floor);
 
-  --edsb-artwork-filter: var(--edsb-filter-artwork);
-  --edsb-schematic-filter: var(--edsb-filter-schematic);
+  --ednb-artwork-filter: var(--ednb-filter-artwork);
+  --ednb-schematic-filter: var(--ednb-filter-schematic);
 
-  --edsb-layout-content-max: var(--edsb-measure-content-max);
-  --edsb-layout-prose-max: var(--edsb-measure-prose-max);
-  --edsb-layout-rail-min: var(--edsb-measure-rail-min);
-  --edsb-layout-sheet-column: var(--edsb-measure-sheet-column);
-  --edsb-layout-ledger-rail: var(--edsb-measure-ledger-rail);
-  --edsb-layout-status-rail: var(--edsb-measure-status-rail);
+  --ednb-layout-content-max: var(--ednb-measure-content-max);
+  --ednb-layout-prose-max: var(--ednb-measure-prose-max);
+  --ednb-layout-rail-min: var(--ednb-measure-rail-min);
+  --ednb-layout-sheet-column: var(--ednb-measure-sheet-column);
+  --ednb-layout-ledger-rail: var(--ednb-measure-ledger-rail);
+  --ednb-layout-status-rail: var(--ednb-measure-status-rail);
 
-  // What a region has to clear to sit below the sticky banner — the tool bar
-  // and the command bar under it, which are one sticky region.
+  // What a region has to clear to sit below the sticky banner — the tool deck
+  // and the command deck under it, which are one bar and one sticky region.
   //
-  // The declared figure is the two bars' own heights added together — what they
+  // The declared figure is the two decks' own heights added together — what they
   // come to at every width where neither wraps. It is a floor rather than the
   // banner's height: any width where the command bar wraps draws more rows than
   // one. So the frame republishes this token on its own host from the
@@ -386,8 +384,8 @@
   // what stands until that first reading. It stays in the token layer because
   // the decision — *a region clears the banner* — is declared once, here; what
   // the frame supplies is the measurement, which no query can ask for.
-  --edsb-layout-bar-height: calc(
-    var(--edsb-measure-bar-height) + var(--edsb-measure-tool-bar-height)
+  --ednb-layout-bar-height: calc(
+    var(--ednb-measure-bar-height) + var(--ednb-measure-tool-bar-height)
   );
 
   // The command bar's own floor, which is not the same job and must not be the
@@ -399,16 +397,17 @@
   // is the command bar alone, because that is the box it sizes, and the bar is
   // drawn at one height on every screen
   // (`011/design/canvas-extraction.md`, "One bar height, on every screen").
-  --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
+  --ednb-layout-bar-floor: var(--ednb-measure-bar-height);
 
-  // The tool bar's own floor, beside it. The two are declared apart because
-  // they are two bars: the command bar is sized to the tallest identity it
-  // carries, and the tool bar to the canvas's own 50px.
-  --edsb-layout-tool-bar-floor: var(--edsb-measure-tool-bar-height);
+  // The tool deck's own floor, beside it. The two are declared apart because
+  // they are sized by different things: the command deck by the tallest
+  // identity it carries, and the tool deck by the press baseline a tab is held
+  // to, which is taller than the 30px canvas 4c draws it at.
+  --ednb-layout-tool-bar-floor: var(--ednb-measure-tool-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller
   // clips the seam instead of showing the row behind through it.
-  --edsb-layout-sticky-overhang: var(--edsb-measure-sticky-overhang);
+  --ednb-layout-sticky-overhang: var(--ednb-measure-sticky-overhang);
 
   // What a manifest's frozen column headers have to clear: the command bar,
   // then one target-height row of toolbar controls inside the hairline the
@@ -427,73 +426,72 @@
   // own width to the family rail before the name sees any of it, so there is
   // no surplus left to run away with (module-replacement design, "The
   // manifest's own columns").
-  --edsb-layout-candidate-columns: minmax(0, 2.6fr) var(--edsb-measure-candidate-class)
-    var(--edsb-measure-candidate-cost);
+  --ednb-layout-candidate-columns: minmax(0, 2.6fr) var(--ednb-measure-candidate-class)
+    var(--ednb-measure-candidate-cost);
   // The saved-build row's tracks, and the column headings that stand over them.
   // One declaration because the two have to agree exactly or the headings name
   // the wrong columns; canvas 1a's own `1fr 150px 84px`, once the `Mcr` column
   // it draws between them is taken out (feature 001 build-library design).
-  --edsb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
-  --edsb-layout-family-rail: min(
-    var(--edsb-measure-family-rail-share),
-    var(--edsb-measure-family-rail)
+  --ednb-layout-record-columns: minmax(0, 1fr) minmax(0, 9.5rem) minmax(0, 5.5rem);
+  --ednb-layout-family-rail: min(
+    var(--ednb-measure-family-rail-share),
+    var(--ednb-measure-family-rail)
   );
-  --edsb-layout-family-rail-max: min(
-    var(--edsb-measure-family-rail-max),
-    var(--edsb-measure-family-rail-share)
+  --ednb-layout-family-rail-max: min(
+    var(--ednb-measure-family-rail-max),
+    var(--ednb-measure-family-rail-share)
   );
-  --edsb-layout-family-gap: var(--edsb-measure-family-gap);
-  --edsb-layout-manifest-pane: var(--edsb-measure-manifest-pane);
-  --edsb-layout-candidate-row: var(--edsb-measure-candidate-row);
-  --edsb-layout-candidate-row-compact: var(--edsb-measure-candidate-row-compact);
-  --edsb-layout-candidate-code: var(--edsb-measure-candidate-code);
-  --edsb-layout-grade-cell: var(--edsb-measure-grade-cell);
-  --edsb-layout-engineering-choices: var(--edsb-measure-engineering-choices);
-  --edsb-layout-engineering-details: var(--edsb-measure-engineering-details);
-  --edsb-layout-engineering-column: var(--edsb-measure-engineering-column);
-  --edsb-layout-export-content: var(--edsb-measure-export-content);
-  --edsb-layout-export-content-wide: var(--edsb-measure-export-content-wide);
-  --edsb-layout-grade-step: var(--edsb-measure-grade-step);
-  --edsb-layout-defence-resist: var(--edsb-measure-defence-resist);
-  --edsb-layout-defence-value: var(--edsb-measure-defence-value);
+  --ednb-layout-family-gap: var(--ednb-measure-family-gap);
+  --ednb-layout-manifest-pane: var(--ednb-measure-manifest-pane);
+  --ednb-layout-candidate-row: var(--ednb-measure-candidate-row);
+  --ednb-layout-candidate-row-compact: var(--ednb-measure-candidate-row-compact);
+  --ednb-layout-candidate-code: var(--ednb-measure-candidate-code);
+  --ednb-layout-grade-cell: var(--ednb-measure-grade-cell);
+  --ednb-layout-engineering-choices: var(--ednb-measure-engineering-choices);
+  --ednb-layout-engineering-details: var(--ednb-measure-engineering-details);
+  --ednb-layout-engineering-column: var(--ednb-measure-engineering-column);
+  --ednb-layout-export-content: var(--ednb-measure-export-content);
+  --ednb-layout-export-content-wide: var(--ednb-measure-export-content-wide);
+  --ednb-layout-grade-step: var(--ednb-measure-grade-step);
+  --ednb-layout-defence-resist: var(--ednb-measure-defence-resist);
+  --ednb-layout-defence-value: var(--ednb-measure-defence-value);
 
-  --edsb-layout-mount-box: var(--edsb-measure-mount-box);
-  --edsb-layout-node-box: var(--edsb-measure-node-box);
-  --edsb-layout-plate-ratio: var(--edsb-measure-plate-ratio);
-  --edsb-layout-anatomy-plate: var(--edsb-measure-anatomy-plate);
-  --edsb-layout-node-mark: var(--edsb-measure-node-mark);
-  --edsb-layout-band-name: var(--edsb-measure-band-name);
-  --edsb-layout-power-bar: var(--edsb-measure-power-bar);
-  --edsb-layout-mass-bar: var(--edsb-measure-mass-bar);
-  --edsb-layout-mass-swatch: var(--edsb-measure-mass-swatch);
-  --edsb-layout-damage-bar: var(--edsb-measure-damage-bar);
-  --edsb-layout-range-track: var(--edsb-measure-range-track);
-  --edsb-layout-offence-bar: var(--edsb-measure-offence-bar);
-  --edsb-layout-offence-label: var(--edsb-measure-offence-label);
-  --edsb-layout-offence-value: var(--edsb-measure-offence-value);
-  --edsb-layout-weapon-figure: var(--edsb-measure-weapon-figure);
-  --edsb-layout-weapon-module: var(--edsb-measure-weapon-module);
-  --edsb-layout-gunsight-plate: var(--edsb-measure-gunsight-plate);
-  --edsb-layout-convergence-block: var(--edsb-measure-convergence-block);
-  --edsb-layout-shot-dot: var(--edsb-measure-shot-dot);
-  --edsb-layout-node-mark-icon: var(--edsb-measure-node-mark-icon);
-  --edsb-layout-insignia-width: var(--edsb-measure-insignia-width);
-  --edsb-layout-insignia-height: var(--edsb-measure-insignia-height);
-  --edsb-layout-material-list: var(--edsb-measure-material-list);
-  --edsb-layout-fitting-panel: var(--edsb-measure-fitting-panel);
-  --edsb-layout-editor-panel: var(--edsb-measure-editor-panel);
-  --edsb-layout-key-figure: var(--edsb-measure-key-figure);
-  --edsb-layout-icon-size: var(--edsb-measure-icon);
-  --edsb-layout-step-number: var(--edsb-measure-step-number);
-  --edsb-layout-menu-row: var(--edsb-measure-menu-row);
-  --edsb-layout-menu-min: var(--edsb-measure-menu-min);
-  --edsb-layout-menu-max: var(--edsb-measure-menu-max);
-  --edsb-layout-menu-drop: var(--edsb-measure-menu-drop);
-  --edsb-layout-layer-max: var(--edsb-measure-layer-md);
-  --edsb-layout-layer-narrow: var(--edsb-measure-layer-sm);
-  --edsb-layout-layer-wide: var(--edsb-measure-layer-lg);
-  --edsb-layout-layer-widest: var(--edsb-measure-layer-xl);
-  --edsb-layout-layer-aside: var(--edsb-measure-layer-aside);
+  --ednb-layout-mount-box: var(--ednb-measure-mount-box);
+  --ednb-layout-node-box: var(--ednb-measure-node-box);
+  --ednb-layout-plate-ratio: var(--ednb-measure-plate-ratio);
+  --ednb-layout-anatomy-plate: var(--ednb-measure-anatomy-plate);
+  --ednb-layout-node-mark: var(--ednb-measure-node-mark);
+  --ednb-layout-band-name: var(--ednb-measure-band-name);
+  --ednb-layout-power-bar: var(--ednb-measure-power-bar);
+  --ednb-layout-mass-bar: var(--ednb-measure-mass-bar);
+  --ednb-layout-mass-swatch: var(--ednb-measure-mass-swatch);
+  --ednb-layout-damage-bar: var(--ednb-measure-damage-bar);
+  --ednb-layout-range-track: var(--ednb-measure-range-track);
+  --ednb-layout-offence-bar: var(--ednb-measure-offence-bar);
+  --ednb-layout-offence-label: var(--ednb-measure-offence-label);
+  --ednb-layout-offence-value: var(--ednb-measure-offence-value);
+  --ednb-layout-weapon-figure: var(--ednb-measure-weapon-figure);
+  --ednb-layout-weapon-module: var(--ednb-measure-weapon-module);
+  --ednb-layout-gunsight-plate: var(--ednb-measure-gunsight-plate);
+  --ednb-layout-convergence-block: var(--ednb-measure-convergence-block);
+  --ednb-layout-shot-dot: var(--ednb-measure-shot-dot);
+  --ednb-layout-node-mark-icon: var(--ednb-measure-node-mark-icon);
+  --ednb-layout-insignia-size: var(--ednb-measure-insignia-size);
+  --ednb-layout-material-list: var(--ednb-measure-material-list);
+  --ednb-layout-fitting-panel: var(--ednb-measure-fitting-panel);
+  --ednb-layout-editor-panel: var(--ednb-measure-editor-panel);
+  --ednb-layout-key-figure: var(--ednb-measure-key-figure);
+  --ednb-layout-icon-size: var(--ednb-measure-icon);
+  --ednb-layout-step-number: var(--ednb-measure-step-number);
+  --ednb-layout-menu-row: var(--ednb-measure-menu-row);
+  --ednb-layout-menu-min: var(--ednb-measure-menu-min);
+  --ednb-layout-menu-max: var(--ednb-measure-menu-max);
+  --ednb-layout-menu-drop: var(--ednb-measure-menu-drop);
+  --ednb-layout-layer-max: var(--ednb-measure-layer-md);
+  --ednb-layout-layer-narrow: var(--ednb-measure-layer-sm);
+  --ednb-layout-layer-wide: var(--ednb-measure-layer-lg);
+  --ednb-layout-layer-widest: var(--ednb-measure-layer-xl);
+  --ednb-layout-layer-aside: var(--ednb-measure-layer-aside);
 }
 
 // The bar the frame actually rendered, republished on its own host from the
@@ -525,5 +523,5 @@ edsb-app-frame {
 // nothing this rule does, because an inline value outranks a rule and the two
 // may not disagree.
 edsb-app-frame.frame--released {
-  --edsb-layout-bar-height: 0px;
+  --ednb-layout-bar-height: 0px;
 }

@@ -10,13 +10,13 @@
 }
 
 .identity-fields {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
 }
 
 .identity-fields__line {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   align-items: center;
   min-inline-size: 0;
@@ -24,17 +24,17 @@
 
 .identity-fields__name {
   margin: 0;
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
-  font-weight: var(--edsb-text-weight-heading);
-  letter-spacing: var(--edsb-text-tracking-heading);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-heading-md);
+  font-weight: var(--ednb-text-weight-heading);
+  letter-spacing: var(--ednb-text-tracking-heading);
   text-transform: uppercase;
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
   overflow-wrap: anywhere;
 }
 
 .identity-fields__detail {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 // The title is the control. The canvas gives it a text cursor and a dashed
@@ -45,11 +45,11 @@
 
   display: inline-flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
-  padding-inline: var(--edsb-space-inline-tight);
-  border: var(--edsb-border-width-hairline) solid transparent;
+  gap: var(--ednb-space-inline-tight);
+  padding-inline: var(--ednb-space-inline-tight);
+  border: var(--ednb-border-width-hairline) solid transparent;
   background: none;
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
   cursor: text;
   text-align: start;
 }
@@ -57,24 +57,24 @@
 .identity-fields__open--name {
   // The canvas hangs the title on the bar's own leading edge, so the control's
   // padding is taken back rather than indenting it.
-  margin-inline-start: calc(-1 * var(--edsb-space-inline-tight));
+  margin-inline-start: calc(-1 * var(--ednb-space-inline-tight));
   border-block-end-style: dashed;
-  border-block-end-color: var(--edsb-border-control-quiet);
+  border-block-end-color: var(--ednb-border-control-quiet);
 }
 
 .identity-fields__ident {
-  border-color: var(--edsb-border-control-quiet);
-  color: var(--edsb-text-subtle);
-  font-family: var(--edsb-font-metric);
+  border-color: var(--ednb-border-control-quiet);
+  color: var(--ednb-text-subtle);
+  font-family: var(--ednb-font-metric);
   // The canvas's 9.5px identity line, which is this scale's `micro` step.
-  font-size: var(--edsb-text-size-micro);
-  letter-spacing: var(--edsb-text-tracking-label);
+  font-size: var(--ednb-text-size-micro);
+  letter-spacing: var(--ednb-text-tracking-label);
 }
 
 .identity-fields__pencil-mark {
   display: inline-block;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
   // The canvas mirrors the glyph, which is what makes it read as a pencil
   // rather than as a check mark.
   transform: scaleX(-1);
@@ -94,26 +94,26 @@
 
   flex: 1 1 12ch;
   min-inline-size: 0;
-  padding-inline: var(--edsb-space-inline-tight);
+  padding-inline: var(--ednb-space-inline-tight);
   background: none;
   border: 0;
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-accent);
-  color: var(--edsb-text-accent-strong);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-accent);
+  color: var(--ednb-text-accent-strong);
 }
 
 .identity-fields__input--name {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
-  font-weight: var(--edsb-text-weight-heading);
-  letter-spacing: var(--edsb-text-tracking-heading);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-heading-md);
+  font-weight: var(--ednb-text-weight-heading);
+  letter-spacing: var(--ednb-text-tracking-heading);
   text-transform: uppercase;
 }
 
 .identity-fields__input--ident {
   flex: 0 1 10ch;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
-  letter-spacing: var(--edsb-text-tracking-label);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  letter-spacing: var(--ednb-text-tracking-label);
   text-transform: uppercase;
 }
 

@@ -389,7 +389,7 @@ Commander's terms, and carries no application-owned taxonomy.
 - [x] T135 [US3] Split "nothing has been engineered here yet" from "the package refuses this selection" in `previewOf`, so an unengineered article lists its attributes with no modified column instead of reporting that no values resolve, in `src/app/application/outfitting/engineering-draft.ts` (depends on T133)
 - [x] T136 [US3] Draw the second column only when there is something to compare against, through a `comparing` input on `src/app/ui/outfitting/attribute-comparison.ts` (depends on T135)
 - [x] T137 [US3] Move the attribute table to canvas 1c's `eng-right` and rename the panel heading to `DETAILS AND ENGINEERING`, in `src/app/features/build-workspace/outfitting/engineering-editor/` (depends on T136)
-- [x] T138 [P] [US2] Vendor the canvas's Tech Broker mark to `public/assets/icons/tech-broker.svg` and draw it for the `techBroker` route, with the canvas's own recolouring filter as `--edsb-filter-route-broker`
+- [x] T138 [P] [US2] Vendor the canvas's Tech Broker mark to `public/assets/icons/tech-broker.svg` and draw it for the `techBroker` route, with the canvas's own recolouring filter as `--ednb-filter-route-broker`
 - [x] T139 [US3] Give each half of the panel its own scroller in the wide composition, so the attribute table cannot carry the recipe controls off the surface, in `src/app/features/build-workspace/outfitting/engineering-editor/engineering-editor.scss` (depends on T137)
 - [x] T140 [US3] Drop a published `bootTime` of zero from the comparison — the one suppressed figure, filtered where a field the article does not carry is filtered — in `src/app/application/outfitting/engineering-draft.ts` (depends on T133)
 - [x] T141 [US3] Withdraw the panel's own materials list: neither canvas draws one inside `eng-grid`, and feature 009's rail block is the application's only statement of material requirements. Delete `edsb-material-cost-list` and its dead message keys, keep `sortMaterialLines` for the rail as `src/app/ui/outfitting/material-lines.ts`, and drop `materialParts` from the editor (depends on T137)
@@ -625,13 +625,13 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       say. `module-replacement.scss` and `engineering-editor.scss` follow the bench's bound, which is
       written the same way on purpose (workspace design, "the two seams run the whole way down";
       Commander request 2026-08-25)
-- [x] T157 Republish `--edsb-layout-bar-height` from the bar the frame actually rendered. The
+- [x] T157 Republish `--ednb-layout-bar-height` from the bar the frame actually rendered. The
       declared token is one row of controls at the target baseline; this screen's identity block is
       two 24px targets, and a wrapped bar is taller again, so the declared figure stood the columns
       past the foot of the screen and froze the category strip behind the bar at tablet width.
       `observeBannerRelease` becomes `observeBanner` and publishes the measured height beside the
       release; the frame states it on its own host, and the token layer derives
-      `--edsb-layout-manifest-offset` again there since a custom property substitutes where it is
+      `--ednb-layout-manifest-offset` again there since a custom property substitutes where it is
       declared (`sticky-banner.ts`, `app-frame.ts`, `styles/tokens/_semantic.scss`)
 - [x] T158 Sweep the stacked Drives & Mass state from the top of the page. Resizing a tablet-sized
       project down to a phone keeps the offset the tablet layout was scrolled to, and the command
@@ -653,7 +653,7 @@ columns" and "What exclusive selection does to FR-021, FR-022 and FR-023".
       that used to lead becomes a tie-break above rating, stock-before-variant and the package's
       ordinals, so the order stays total (`candidate-query.ts`; spec FR-005, SC-006;
       `contracts/module-catalogue.md`, "Families and order")
-- [x] T161 Raise the fitting panel's floor from five rows to eight — `--edsb-measure-fitting-panel`
+- [x] T161 Raise the fitting panel's floor from five rows to eight — `--ednb-measure-fitting-panel`
       18rem to 26rem — and drop the guard that measured it against the editor's floor, which the
       release in T162 leaves nothing to guard. The floor is bounded by what the command bar leaves of
       the screen so it can never exceed the window (`styles/tokens/_primitives.scss`,

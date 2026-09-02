@@ -5,7 +5,7 @@
 }
 
 .choice__list {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   list-style: none;
   padding: 0;
@@ -15,16 +15,16 @@
 // The reference offers a dialog's choices as bordered cards, the recommended
 // one filled with an amber wash (canvas 1c, "SAVE BUILD").
 .choice__item {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding: var(--edsb-space-control-block) var(--edsb-space-control-inline);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-panel-raised);
+  padding: var(--ednb-space-control-block) var(--ednb-space-control-inline);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-rule-grid);
+  border-radius: var(--ednb-shape-control);
+  background-color: var(--ednb-surface-panel-raised);
 }
 
 .choice__outcome {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-count));
 
   text-transform: none;
   overflow-wrap: break-word;

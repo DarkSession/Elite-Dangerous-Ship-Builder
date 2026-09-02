@@ -6,12 +6,12 @@
   display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 }
 
 .game-text__label {
-  font-size: var(--edsb-text-size-compact);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-subtle);
 }
 
 .game-text__value {
@@ -26,11 +26,11 @@
 }
 
 .game-text__disclosure {
-  font-size: var(--edsb-text-size-compact);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-subtle);
 }
 
 .game-text__unavailable {
-  color: var(--edsb-text-subtle);
-  font-size: var(--edsb-text-size-compact);
+  color: var(--ednb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
 }

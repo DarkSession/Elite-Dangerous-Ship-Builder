@@ -621,6 +621,26 @@ function stylesheetViolations(file, source) {
     const property = declaration.prop.toLowerCase();
     const line = declaration.source?.start?.line ?? 0;
 
+    // Every token this application draws from is `--ednb-`. A reference to any
+    // other namespace resolves to nothing and paints nothing, in silence: CSS
+    // drops the declaration and no build, test or browser says why the rule
+    // stopped applying. That is what a mistyped or stale prefix looks like, and
+    // the product has carried two prefixes in its life.
+    //
+    // Before the custom-property check below, and not after it: a token is
+    // most often defined in terms of other tokens, so the values this has to
+    // read are mostly the ones that check would return on.
+    for (const [, referenced] of declaration.value.matchAll(/var\(\s*(--[\w-]+)/g)) {
+      if (!referenced.startsWith('--ednb-')) {
+        found.push({
+          file: relative(ROOT, file),
+          line,
+          rule: 'foreign-token-namespace',
+          message: `"${declaration.prop}" reads "${referenced}", which is not a token this application declares.`,
+        });
+      }
+    }
+
     // Declaring a custom property outside the token sources is itself the
     // violation the property check would otherwise miss: it creates a second
     // place where a visual decision lives.
@@ -633,6 +653,7 @@ function stylesheetViolations(file, source) {
       });
       return;
     }
+
     if (!GOVERNED_PROPERTIES.has(property)) {
       return;
     }
@@ -649,13 +670,29 @@ function stylesheetViolations(file, source) {
   return found;
 }
 
-/** IO wrapper. Token sources are the one place governed literals belong. */
+/**
+ * IO wrapper. Token sources are the one place governed literals belong.
+ *
+ * They are not exempt from the namespace rule, and they are where it matters
+ * most: a token is usually defined in terms of another one, so these files hold
+ * the densest `var()` references in the repository and are what a rename edits
+ * most heavily. A stale prefix here silently empties every token defined from
+ * it.
+ */
+export function governedStylesheetViolations(relativePath, found, scope = SCOPE) {
+  return scope.tokenSources.includes(relativePath)
+    ? found.filter((violation) => violation.rule === 'foreign-token-namespace')
+    : found;
+}
+
 async function checkStylesheet(file) {
   const relativePath = relative(ROOT, file).split('\\').join('/');
-  if (SCOPE.tokenSources.includes(relativePath)) {
-    return;
-  }
-  violations.push(...stylesheetViolations(file, await readFile(file, 'utf8')));
+  violations.push(
+    ...governedStylesheetViolations(
+      relativePath,
+      stylesheetViolations(file, await readFile(file, 'utf8')),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -2023,11 +2060,11 @@ export function searchMetadataViolations(input) {
   // the head that tells a browser what to paint before the styles land, and in
   // the manifest that colours an installed window. `src/index.html` is outside
   // the template scan, so nothing else would notice them diverging.
-  const ground = /--edsb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(input.tokens ?? '');
+  const ground = /--ednb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(input.tokens ?? '');
   if (ground === null) {
     fail(
       SEARCH_METADATA_FILES.tokens,
-      'No --edsb-palette-bg is declared to take a theme colour from.',
+      'No --ednb-palette-bg is declared to take a theme colour from.',
     );
   } else {
     const declared = headContent(index, 'name', 'theme-color');
@@ -2412,6 +2449,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'catalogue.title':
       'The product name. The screen the application opens on is named after the product, ruled 2026-08-27, and a product renamed in one language is a different product.',
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
+    'tools.ship':
+      'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',
@@ -2796,6 +2835,7 @@ export const rules = {
   copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,
+  governedStylesheetViolations,
   previewCoverageViolations,
   testDisciplineViolations,
   duplicatedStepViolations,

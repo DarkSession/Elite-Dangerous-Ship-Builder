@@ -41,7 +41,7 @@ The table caption and the size legend are not drawn; they stay in the markup as 
 
 With 48 hulls the manifest is several screenfuls, so the command bar, the toolbar and the column headers stay put while the rows scroll under them, and the inspector rail stays with the hull it describes.
 
-The offsets are exact by construction rather than measured at runtime. The command bar is drawn at one height on every screen (`--edsb-layout-bar-floor`) under a tool bar of its own, and the two are cleared together as `--edsb-layout-bar-height`; the toolbar below them is one row of controls at the target baseline inside the region's block padding and the size strip's hairline, and the manifest header clears both through `--edsb-layout-manifest-offset`. A short viewport releases the bar (FR-011), and every region below releases with it.
+The offsets are exact by construction rather than measured at runtime. The command bar is drawn at one height on every screen (`--ednb-layout-bar-floor`) under a tool bar of its own, and the two are cleared together as `--ednb-layout-bar-height`; the toolbar below them is one row of controls at the target baseline inside the region's block padding and the size strip's hairline, and the manifest header clears both through `--ednb-layout-manifest-offset`. A short viewport releases the bar (FR-011), and every region below releases with it.
 
 The manifest's own row gap is drawn above its header row as well as between its rows, which rested the header two pixels below where it freezes: a hairline of ground under the toolbar at rest, and a two-pixel hop the first time a Commander scrolled. The table starts one gap early so its resting position and its frozen position are the same place.
 

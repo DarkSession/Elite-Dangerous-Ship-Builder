@@ -5,11 +5,11 @@
 // Every value is a token; nothing here is a measurement taken off the mock's
 // fixed 620-pixel box.
 .help-dialog {
-  @include layout.stack(var(--edsb-space-stack-loose));
+  @include layout.stack(var(--ednb-space-stack-loose));
 }
 
 .help-dialog__section {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 // The hairline the reference rules between sections. It is drawn as the border
@@ -17,20 +17,20 @@
 // a decorative node in the reading order is something a reader has to step over
 // to reach the next heading.
 .help-dialog__section + .help-dialog__section {
-  padding-block-start: var(--edsb-space-stack-loose);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-panel);
+  padding-block-start: var(--ednb-space-stack-loose);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-panel);
 }
 
 .help-dialog__heading {
-  @include layout.micro-label(var(--edsb-text-accent));
+  @include layout.micro-label(var(--ednb-text-accent));
 }
 
 .help-dialog__purpose,
 .help-dialog__maintainer,
 .help-dialog__source {
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 
@@ -39,18 +39,18 @@
 // the dialog for, and who builds it and where the source is are the facts after
 // it.
 .help-dialog__purpose {
-  color: var(--edsb-text-muted);
+  color: var(--ednb-text-muted);
 }
 
 // The questions are parted more loosely from each other than a question is
 // from its own answer, so the pair reads as one unit rather than as two lines
 // in a list — the reference's own 11px-between-pairs, 4px-within rhythm.
 .help-dialog__topics {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 .help-dialog__topic {
-  @include layout.stack(var(--edsb-space-2xs));
+  @include layout.stack(var(--ednb-space-2xs));
 }
 
 // A question, set as a question. The reference draws it in body type, in
@@ -59,20 +59,20 @@
 // because it heads its answer, so this is where the shared condensed uppercase
 // heading face is put back to prose (canvas 1a/1c, "Help · About").
 .help-dialog__question {
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-body);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-body);
-  line-height: var(--edsb-text-leading-heading);
-  color: var(--edsb-text-primary);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-body);
+  font-weight: var(--ednb-text-weight-control);
+  letter-spacing: var(--ednb-text-tracking-body);
+  line-height: var(--ednb-text-leading-heading);
+  color: var(--ednb-text-primary);
   text-transform: none;
   text-wrap: pretty;
 }
 
 .help-dialog__answer {
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 
@@ -81,7 +81,7 @@
 // about five separate things, and a reader moving through it by item is
 // reading it the way it was written.
 .help-dialog__licence-index {
-  @include layout.stack(var(--edsb-space-hair));
+  @include layout.stack(var(--ednb-space-hair));
 
   margin: 0;
   padding: 0;
@@ -89,12 +89,12 @@
 }
 
 .help-dialog__licence-line {
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
-  font-weight: var(--edsb-text-weight-body);
-  line-height: var(--edsb-text-leading-body);
-  letter-spacing: var(--edsb-text-tracking-meta);
-  color: var(--edsb-text-muted);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  font-weight: var(--ednb-text-weight-body);
+  line-height: var(--ednb-text-leading-body);
+  letter-spacing: var(--ednb-text-tracking-meta);
+  color: var(--ednb-text-muted);
   text-transform: uppercase;
   overflow-wrap: break-word;
 }

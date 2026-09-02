@@ -442,7 +442,7 @@ export class Tooltip {
     const page = this.#document.documentElement;
     const anchor = trigger.getBoundingClientRect();
     const styles = getComputedStyle(bubble);
-    const inset = pixels(styles.getPropertyValue('--edsb-space-region'), page);
+    const inset = pixels(styles.getPropertyValue('--ednb-space-region'), page);
     const width = bubble.offsetWidth;
     const height = bubble.offsetHeight;
 

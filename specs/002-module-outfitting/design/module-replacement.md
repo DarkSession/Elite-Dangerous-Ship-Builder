@@ -114,7 +114,7 @@ of 872 — its own 264 and 594 tracks with the 14px between them — which is th
 192px at the narrowest bench that draws three columns, 263px at the canvas's own width, and 320px at 2560.
 
 **The declared height is a cap, and a column is better than a cap. Amended 2026-08-30 (Commander
-request).** `--edsb-layout-manifest-pane` is what the rail and the pane are held to while nothing
+request).** `--ednb-layout-manifest-pane` is what the rail and the pane are held to while nothing
 above them says how tall the list may be: unbounded, a list of four hundred rows is four hundred rows
 tall and the page is that much longer. Where the bench is bounded the cap is lifted and the column
 decides — the two scrollers share the row under the step bars, which is everything the column has
@@ -493,7 +493,7 @@ assistive technology — then landed flush against the top of the window, which 
 behind the bar: measured at 1112x834, a family control at 0-44px under a bar
 reaching 74px, with the bar answering the press meant for the control.
 
-Both carry `scroll-margin-block-start: var(--edsb-layout-bar-height)`, which is
+Both carry `scroll-margin-block-start: var(--ednb-layout-bar-height)`, which is
 the reservation `.frame__main` already makes for an in-page link, made here for
 the two things in this list that get scrolled to.
 

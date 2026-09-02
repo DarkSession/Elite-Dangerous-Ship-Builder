@@ -1,11 +1,11 @@
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildLinkCodec, BuildLinkCodecTables } from './build-link-codec';
-import { BuildLinkCodecError } from './build-link-codec-error';
+import { BuildLinkCodecError } from '../../build-link/build-link-codec-error';
 import { decodeBuildLinkBody } from './build-link-payload';
 import type { VerifiedBuildLinkBody } from './build-link-payload';
 
-export { BuildLinkCodecError } from './build-link-codec-error';
-export type { BuildLinkCodecErrorCode } from './build-link-codec-error';
+export { BuildLinkCodecError } from '../../build-link/build-link-codec-error';
+export type { BuildLinkCodecErrorCode } from '../../build-link/build-link-codec-error';
 
 const CURRENT_TABLE_VERSION = 1;
 const CODECS_BY_TABLE_VERSION = new Map<number, Promise<BuildLinkCodec>>();

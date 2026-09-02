@@ -2,7 +2,8 @@
 
 **Source**: `.design/Ship Builder.dc.html`, canvases 1a (wide shipyard), 1b (compact
 shipyard), 1c (wide outfitting chrome) and 1d (compact outfitting chrome); and
-`.design/Tool Navigation.dc.html`, canvas 3c (the tool bar over a tool's own command bar).
+`.design/Tool Navigation.dc.html`, canvases 4c and 4d (the tool tabs and a tool's own
+command bar as two decks of one plate, wide and compact).
 
 This file is the measured record of the reference canvases. Every value below was read
 out of a canvas itself, not inferred from it. Features 001 and 011 build from this
@@ -25,7 +26,7 @@ design genuinely sets uppercase tracked mono labels at 8–9.5 px.
 ## Colour
 
 All 55 `:root` custom properties are adopted verbatim, names and values unchanged
-apart from the `--edsb-palette-` prefix. They are the only part of the canvas that is
+apart from the `--ednb-palette-` prefix. They are the only part of the canvas that is
 already a token layer.
 
 | Family     | Steps                                                                                                                                                                                          |
@@ -66,15 +67,15 @@ Nothing is scaled on the way in.
 
 | Canvas px           | Token                    | rem       | Used for                                                  |
 | ------------------- | ------------------------ | --------- | --------------------------------------------------------- |
-| 7.5, 8, 8.5, 9, 9.5 | `--edsb-type-size-micro` | 0.5625rem | Mono micro-labels: `SPEED m/s`, `Mcr`, `6 BUILDS`, carets |
-| 10                  | `--edsb-type-size-2xs`   | 0.625rem  | Button labels, segment labels, column headers             |
-| 10.5, 11            | `--edsb-type-size-xs`    | 0.6875rem | Row secondary text, notes, mono values in dense rows      |
-| 12                  | `--edsb-type-size-sm`    | 0.75rem   | Body prose, manufacturer, table numerics                  |
-| 13                  | `--edsb-type-size-md`    | 0.8125rem | Dialog titles, name field input, ledger module names      |
-| 14, 15              | `--edsb-type-size-lg`    | 0.875rem  | Compact row hull names, metric values                     |
-| 16                  | `--edsb-type-size-xl`    | 1rem      | Wide manifest hull names, workspace build name            |
-| 18                  | `--edsb-type-size-2xl`   | 1.125rem  | Command-bar title, hull price                             |
-| 22                  | `--edsb-type-size-3xl`   | 1.375rem  | Inspector hull name                                       |
+| 7.5, 8, 8.5, 9, 9.5 | `--ednb-type-size-micro` | 0.5625rem | Mono micro-labels: `SPEED m/s`, `Mcr`, `6 BUILDS`, carets |
+| 10                  | `--ednb-type-size-2xs`   | 0.625rem  | Button labels, segment labels, column headers             |
+| 10.5, 11            | `--ednb-type-size-xs`    | 0.6875rem | Row secondary text, notes, mono values in dense rows      |
+| 12                  | `--ednb-type-size-sm`    | 0.75rem   | Body prose, manufacturer, table numerics                  |
+| 13                  | `--ednb-type-size-md`    | 0.8125rem | Dialog titles, name field input, ledger module names      |
+| 14, 15              | `--ednb-type-size-lg`    | 0.875rem  | Compact row hull names, metric values                     |
+| 16                  | `--ednb-type-size-xl`    | 1rem      | Wide manifest hull names, workspace build name            |
+| 18                  | `--ednb-type-size-2xl`   | 1.125rem  | Command-bar title, hull price                             |
+| 22                  | `--ednb-type-size-3xl`   | 1.375rem  | Inspector hull name                                       |
 
 Weights: 300 prose, 400 mono default, 500 mono label / Barlow emphasis, 600 condensed
 secondary control, 700 condensed heading and primary control.
@@ -88,17 +89,17 @@ The tracking ladder is the design's identity and is adopted at the exact values.
 
 | Token                      | em   | Canvas use                                     |
 | -------------------------- | ---- | ---------------------------------------------- |
-| `--edsb-type-tracking-xs`  | 0.04 | Mono licence block                             |
-| `--edsb-type-tracking-sm`  | 0.06 | Mono search placeholder, row secondary         |
-| `--edsb-type-tracking-md`  | 0.07 | Condensed hull name in a row                   |
-| `--edsb-type-tracking-lg`  | 0.09 | Condensed record title                         |
-| `--edsb-type-tracking-xl`  | 0.10 | Mono counts, chevrons, undo/redo               |
-| `--edsb-type-tracking-2xl` | 0.12 | Mono size codes, unit suffixes                 |
-| `--edsb-type-tracking-3xl` | 0.14 | Mono field labels, metric labels               |
-| `--edsb-type-tracking-4xl` | 0.16 | Column headers, segment labels, workspace name |
-| `--edsb-type-tracking-5xl` | 0.18 | Button labels                                  |
-| `--edsb-type-tracking-6xl` | 0.22 | Dialog titles, primary hull action             |
-| `--edsb-type-tracking-7xl` | 0.26 | Command-bar product title                      |
+| `--ednb-type-tracking-xs`  | 0.04 | Mono licence block                             |
+| `--ednb-type-tracking-sm`  | 0.06 | Mono search placeholder, row secondary         |
+| `--ednb-type-tracking-md`  | 0.07 | Condensed hull name in a row                   |
+| `--ednb-type-tracking-lg`  | 0.09 | Condensed record title                         |
+| `--ednb-type-tracking-xl`  | 0.10 | Mono counts, chevrons, undo/redo               |
+| `--ednb-type-tracking-2xl` | 0.12 | Mono size codes, unit suffixes                 |
+| `--ednb-type-tracking-3xl` | 0.14 | Mono field labels, metric labels               |
+| `--ednb-type-tracking-4xl` | 0.16 | Column headers, segment labels, workspace name |
+| `--ednb-type-tracking-5xl` | 0.18 | Button labels                                  |
+| `--ednb-type-tracking-6xl` | 0.22 | Dialog titles, primary hull action             |
+| `--ednb-type-tracking-7xl` | 0.26 | Command-bar product title                      |
 
 ## Spacing
 
@@ -107,18 +108,18 @@ scale rather than reproduced per site.
 
 | Token               | rem       | px  | Canvas sites                                          |
 | ------------------- | --------- | --- | ----------------------------------------------------- |
-| `--edsb-space-hair` | 0.0625rem | 1   | Grid gaps that render as hairlines over an amber wash |
-| `--edsb-space-3xs`  | 0.125rem  | 2   | Row gap in the wide manifest, badge padding           |
-| `--edsb-space-2xs`  | 0.25rem   | 4   | Label-to-value gap                                    |
-| `--edsb-space-xs`   | 0.375rem  | 6   | Chip gap, hardpoint pill internals                    |
-| `--edsb-space-sm`   | 0.5rem    | 8   | Button row gap, stack gap                             |
-| `--edsb-space-md`   | 0.625rem  | 10  | Toolbar gap, row gap                                  |
-| `--edsb-space-lg`   | 0.75rem   | 12  | Row padding, metric cell padding                      |
-| `--edsb-space-xl`   | 0.875rem  | 14  | Compact screen inset, rail gap                        |
-| `--edsb-space-2xl`  | 1rem      | 16  | Dialog body gap, wide row padding                     |
-| `--edsb-space-3xl`  | 1.125rem  | 18  | Dialog padding, rail padding                          |
-| `--edsb-space-4xl`  | 1.375rem  | 22  | Wide screen inset                                     |
-| `--edsb-space-5xl`  | 2.125rem  | 34  | Empty-state padding                                   |
+| `--ednb-space-hair` | 0.0625rem | 1   | Grid gaps that render as hairlines over an amber wash |
+| `--ednb-space-3xs`  | 0.125rem  | 2   | Row gap in the wide manifest, badge padding           |
+| `--ednb-space-2xs`  | 0.25rem   | 4   | Label-to-value gap                                    |
+| `--ednb-space-xs`   | 0.375rem  | 6   | Chip gap, hardpoint pill internals                    |
+| `--ednb-space-sm`   | 0.5rem    | 8   | Button row gap, stack gap                             |
+| `--ednb-space-md`   | 0.625rem  | 10  | Toolbar gap, row gap                                  |
+| `--ednb-space-lg`   | 0.75rem   | 12  | Row padding, metric cell padding                      |
+| `--ednb-space-xl`   | 0.875rem  | 14  | Compact screen inset, rail gap                        |
+| `--ednb-space-2xl`  | 1rem      | 16  | Dialog body gap, wide row padding                     |
+| `--ednb-space-3xl`  | 1.125rem  | 18  | Dialog padding, rail padding                          |
+| `--ednb-space-4xl`  | 1.375rem  | 22  | Wide screen inset                                     |
+| `--ednb-space-5xl`  | 2.125rem  | 34  | Empty-state padding                                   |
 
 ## Geometry
 
@@ -138,71 +139,99 @@ from the per-screen files.
 ### Command bar
 
 `height: 56px` wide / `52px` compact, `background: var(--panel-4)`,
-`border-bottom: 2px solid var(--amber)`. Leading edge carries the amber wedge
-insignia (`26 × 24px` wide, `22 × 20px` compact, cut by
-`clip-path: polygon(50% 0, 100% 100%, 50% 74%, 0 100%)` — the same shape the app icon
-is drawn from, canvas 3b), then the screen title in condensed 700
-uppercase tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in
-`--ink-45`. Trailing edge carries actions.
+`border-bottom: 2px solid var(--amber)`. Leading edge carries the beacon mark
+(`26px` square on the wide shipyard, `21` to `24px` elsewhere, drawn from
+`.design/assets/nav-beacon-mark-header.svg`), then the screen title in condensed 700 uppercase
+tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in `--ink-45`.
+Trailing edge carries actions.
 
-The product draws the insignia at one size, `26 × 23px`, rather than the two the
-canvases measure. The canvas's own difference between them is four pixels on
-each axis; a breakpoint to reproduce it would be a responsive rule nobody could
-see, and the wedge is a mark rather than a measured element of the layout. This
-is the second recorded deviation from the canvases, after the type ramp.
+The product draws the insignia at one size, `26px` square, rather than the three
+the canvases measure. The canvases' own spread is five pixels; a breakpoint to
+reproduce it would be a responsive rule nobody could see, and the mark is a mark
+rather than a measured element of the layout. This is the second recorded
+deviation from the canvases, after the type ramp.
 
-The mark is drawn in the flag's own two layers rather than on its box: the wedge
-is an outline — the canvas's chevron, then the same chevron inset, which the
-non-zero fill rule cuts away — over the lighter bar canvas 3b closes it with. It
-has to be layered rather than painted on the element because the insignia is
-also the way home, and a control that stands on its own is held to the 44px
-press baseline: an amber ground on that box would draw a 44px amber square
-behind a 26px mark (011/FR-012, corrected 2026-08-26).
+**The mark is a file, not a shape (canvas 6d).** The mark is a beacon — domed
+cap, lit amber core, domed base, four antennas on 90° spacing, the whole rotated
+10° counter-clockwise — and no clip path states that. It is drawn as `<img>`
+rather than as a background so that the drawing has a box of its own: the
+insignia is also the way home, and a control that stands on its own is held to
+the 44px press baseline, which is paid by a box around the mark (011/FR-012).
+
+One geometry in four fills, of which two are in use. Canvas 6d draws and names
+the plain `nav-beacon-mark.svg`, with `-light` for a bone ground and `-mono` for
+a single ink; `scripts/generate-brand-assets.mjs` renders every icon, the favicon
+and the link card from the plain one, because those are drawn on the page ground
+its domes are filled with. The bar takes `-header`, which is what every product
+artboard draws in its own header — 1a, 1b, 1c, 1d, 4c, 4d and both equipment
+artboards. Its domes are `#161615`, which is `--ednb-palette-panel-4`, the plate
+the bar is painted on, so the bar's colour and that asset move together.
 
 The press baseline is paid by a box **around** the mark, never by the mark
 itself. Where the insignia is the way home it is a mark inside a link: the link
-takes the 44px target, the mark keeps its own `26 × 23px`, and the negative
+takes the 44px target, the mark keeps its own `26px` square, and the negative
 inline margin takes the extra width back out of the bar so the press does not
 open a gap beside the insignia. Held on the mark's own box instead, the target
-minimum beat the declared size, the wedge and the underbar were cut into a
-44 × 44 box, and the insignia was drawn half as large again on every screen
-that offers the way home as on the shipyard that does not (Commander request
-2026-08-28).
+minimum would beat the declared size, the mark would be drawn into a 44 × 44 box,
+and the insignia would be half as large again on every screen that offers the way
+home as on the shipyard that does not (Commander request 2026-08-28).
 
 ### Tool bar
 
-Canvas 3c draws it above the command bar: `height: 50px`, `background: var(--panel-menu)`,
-`border-bottom: 1px solid var(--amber-a18)`, on the same `0 20px` inline inset the bar below it
-takes. A tab is `0 15px` of inline padding on condensed 700 uppercase tracked `0.18em` at `11px`,
-in `--ink-48`; the current tab takes `--amber-3` ink, the command bar's own `--panel-4` ground and
-a `2px solid var(--amber)` underline. The tabs are separated by `2px`.
+Canvas 4c draws one bar with two decks rather than two bars. The plate is
+`background: var(--panel-4)` closed by the command rule, on a `0 20px` inline inset; the tool deck
+is `height: 30px` and the command deck `height: 40px`, and between them runs a `1px` line in
+`--amber-a12` that starts where the decks start rather than under the insignia beside them. A tab
+is `0 12px` of inline padding on condensed 700 uppercase tracked `0.16em` at `10.5px`, in
+`--ink-48`; the current tab takes `--amber-3` ink, an `--amber-a14` wash and a
+`2px solid var(--amber)` underline. The tabs are separated by `2px`.
+
+Canvas 4d draws the same two decks at 390px: a `34px` tool deck over a `40px` command deck, a
+`21px` mark inset `16px` from the plate edge with the decks starting at `48px` — `11px` past it —
+and the tool's actions behind one `⋯` control. The product folds its actions at that width already, so what 4d settles is the compact
+gutter pair and that the tool deck is drawn at every width.
+
+**The insignia stands on the plate, not on either deck.** Canvas 4c puts one mark on the leading
+edge of the bar as a whole, centred across both decks, and indents the decks past it — `42px`
+inside the plate's own inset at 1180px, `48px` at 390px. So the mark is the banner's own child, and
+the tabs and the screen identity line up on one indent under it.
+
+The divider is drawn in `--ednb-rule-section` (`--amber-a14`), which is the step this system
+already draws a section rule at; the canvas's `--amber-a12` has no semantic name here, and adding
+one for two hundredths of an alpha would be a token for a value that never varies.
 
 Two values are departures, both of the kind
 [reference-review.md](./reference-review.md) already rules.
 
-`--ink-48` composites to `4.08:1` on `--panel-menu`, under the `4.5:1` AA floor for text at this
-size. The product draws a resting tab in `--edsb-text-faint` (`ink-a55`, `4.94:1` on the same
+`--ink-48` composites to `4.02:1` on `--panel-4`, under the `4.5:1` AA floor for text at this
+size. The product draws a resting tab in `--ednb-text-faint` (`ink-a55`, `4.89:1` on the same
 ground), which is the audited floor the token layer offers and the same substitution the muted-text
 row of "Required departures" records (011/FR-012). The current tab keeps `--amber-3`, which measures
-`10.03:1` on `--panel-4`.
+`7.99:1` on the `--amber-a14` wash over that ground.
 
-The tabs are held to the 44px press baseline rather than to the canvas's 50px, and the bar carries a
-floor rather than a fixed height, for the reason the command bar does: a doubled text size and a
+The tabs are held to the 44px press baseline rather than to the canvas's 30px, and the deck carries
+a floor rather than a fixed height, for the reason the command bar does: a doubled text size and a
 long language both make a tab taller than the drawing, and a bar that could not grow would cut its
 own controls off (011/FR-011, FR-012).
 
 The canvas puts an `ALL TOOLS` control beside the tabs, and a `⌘K` hint and an avatar plate on the
 trailing edge. None of the three is built (`design/application-shell.md`, "The tool bar"), so the
-product's tool bar carries tabs and nothing else.
+product's tool deck carries tabs and nothing else.
 
 ### One bar height, on every screen
 
-The bar is drawn at `4.625rem`, which is the tallest identity it carries — the
-workspace's build name over its hull and ID plate, 52px — inside the bar's own
-20px of block padding and the 2px amber rule that closes it, all of which the
-border box counts. Sized to the single row of controls every other screen comes to, it
-stood 66px on the shipyard and 74px on a build, and the whole page under it
-moved as a Commander opened one.
+The bar is drawn at `4.125rem`, which is the tallest identity it carries — the
+workspace's build name over its hull and ID plate, 52px of 24px rows — inside the
+bar's own 12px of block padding and the 2px amber rule that closes it, all of
+which the border box counts. Sized to the single row of controls every other
+screen comes to, it would stand shorter on the shipyard than on a build, and the
+whole page under it would move as a Commander opened one.
+
+The padding is the dense control figure rather than the loose one. Canvas 1a
+draws 56px and canvas 1c 54px, both around a 40px block; taking the loose 10px
+put 20px of air around a drawing that is 14px taller than the canvas's, and the
+deck stood 74px — a bar that reads as having lost its contents (Commander
+request 2026-09-02). With the tool deck over it the plate is 110px.
 
 That is half of it. The other half is that the bar's own controls have to fit
 on a row, or the bar wraps and is taller whatever its floor says. The
@@ -233,7 +262,7 @@ needs and stops at the bound.
 **A sheet is inset from the top of the screen. Ruled 2026-08-31 (Commander request), narrowing the
 ruling above.** Flush against that edge the sheet began at pixel zero: its title bar met the top of
 the screen, a phone's own status bar cut into it, and nothing said the sheet was a layer over the
-screen behind it. The inset is `--edsb-space-sheet-inset`, one step of the space scale at 22px, and
+screen behind it. The inset is `--ednb-space-sheet-inset`, one step of the space scale at 22px, and
 it is taken out of the 88% bound rather than added to it, so a sheet gives up the same strip of
 screen overall and the scrim below it is unchanged. A sheet therefore draws its hairline on all four
 edges, where an anchored one left its block-start edge undrawn. A short viewport still promotes the
@@ -316,14 +345,14 @@ is, nothing shifts when the choice moves, and the marker still says what tint al
 not.
 
 The alphas and inks resolve to the nearest named role rather than to steps of their own.
-The plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
-the chosen plate's takes `--edsb-border-control` (`amber-a40`) against the drawn `amber-a5`,
-the column's rule takes `--edsb-rule-grid` (`amber-a14`) against the drawn `amber-a16`, and
-the unchosen title takes `--edsb-text-secondary` (ink 0.80) against the drawn solid
+The plate's edge takes `--ednb-border-region` (`amber-a18`) against the drawn `amber-a14`,
+the chosen plate's takes `--ednb-border-control` (`amber-a40`) against the drawn `amber-a5`,
+the column's rule takes `--ednb-rule-grid` (`amber-a14`) against the drawn `amber-a16`, and
+the unchosen title takes `--ednb-text-secondary` (ink 0.80) against the drawn solid
 `--ink-2`. Four more amber hairlines and a fifth ink would be a second scale rather than a
 finer one.
 
-The fifth is not a rounding. The description takes `--edsb-text-subtle` (ink 0.62) against
+The fifth is not a rounding. The description takes `--ednb-text-subtle` (ink 0.62) against
 the drawn `--ink-48`, which sits inside the 0.32–0.50 band this system rejects for anything
 that is text rather than decoration — the same lift the type floor is, made for the same
 reason.

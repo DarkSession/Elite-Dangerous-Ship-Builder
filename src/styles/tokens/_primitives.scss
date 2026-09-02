@@ -25,105 +25,104 @@
   // ---------------------------------------------------------------------------
 
   // Ground
-  --edsb-palette-bg: #0b0b0c;
-  --edsb-palette-bg-deep: #0a0a0b;
+  --ednb-palette-bg: #0b0b0c;
+  --ednb-palette-bg-deep: #0a0a0b;
 
   // Panels, darkest to lightest
-  --edsb-palette-panel: #101010;
-  --edsb-palette-panel-0: #111111;
-  --edsb-palette-panel-menu: #121211;
-  --edsb-palette-panel-1: #131313;
-  --edsb-palette-panel-2: #141414;
-  --edsb-palette-panel-3: #151514;
-  --edsb-palette-panel-3b: #151515;
-  --edsb-palette-panel-4: #161615;
-  --edsb-palette-panel-5: #1c1c1a;
-  --edsb-palette-panel-6: #1e1d1b;
+  --ednb-palette-panel: #101010;
+  --ednb-palette-panel-0: #111111;
+  --ednb-palette-panel-menu: #121211;
+  --ednb-palette-panel-1: #131313;
+  --ednb-palette-panel-2: #141414;
+  --ednb-palette-panel-3: #151514;
+  --ednb-palette-panel-3b: #151515;
+  --ednb-palette-panel-4: #161615;
+  --ednb-palette-panel-5: #1c1c1a;
+  --ednb-palette-panel-6: #1e1d1b;
 
   // The rail ground, a literal in canvas 1a rather than a named property.
-  --edsb-palette-panel-rail: #0f0f0f;
+  --ednb-palette-panel-rail: #0f0f0f;
 
   // Warm amber emphasis
-  --edsb-palette-amber: #ff8c1a;
-  --edsb-palette-amber-2: #ffa54d;
-  --edsb-palette-amber-3: #ffb060;
-  --edsb-palette-amber-dim: #c7893a;
-  --edsb-palette-amber-deep: #8a6a3a;
+  --ednb-palette-amber: #ff8c1a;
+  --ednb-palette-amber-2: #ffa54d;
+  --ednb-palette-amber-3: #ffb060;
+  --ednb-palette-amber-dim: #c7893a;
+  --ednb-palette-amber-deep: #8a6a3a;
 
   // Amber washes. Fills and boundaries only — none reaches a text contrast floor.
-  --edsb-palette-amber-a10: rgb(255 140 26 / 0.1);
-  --edsb-palette-amber-a12: rgb(255 140 26 / 0.12);
-  --edsb-palette-amber-a14: rgb(255 140 26 / 0.14);
-  --edsb-palette-amber-a16: rgb(255 140 26 / 0.16);
-  --edsb-palette-amber-a18: rgb(255 140 26 / 0.18);
-  --edsb-palette-amber-a20: rgb(255 140 26 / 0.2);
-  --edsb-palette-amber-a22: rgb(255 140 26 / 0.22);
-  --edsb-palette-amber-a25: rgb(255 140 26 / 0.25);
-  --edsb-palette-amber-a30: rgb(255 140 26 / 0.3);
-  --edsb-palette-amber-a35: rgb(255 140 26 / 0.35);
-  --edsb-palette-amber-a40: rgb(255 140 26 / 0.4);
-  --edsb-palette-amber-a45: rgb(255 140 26 / 0.45);
-  --edsb-palette-amber-a50: rgb(255 140 26 / 0.5);
-  --edsb-palette-amber-a55: rgb(255 140 26 / 0.55);
-  --edsb-palette-amber-a60: rgb(255 140 26 / 0.6);
-  --edsb-palette-amber-a70: rgb(255 140 26 / 0.7);
+  --ednb-palette-amber-a10: rgb(255 140 26 / 0.1);
+  --ednb-palette-amber-a12: rgb(255 140 26 / 0.12);
+  --ednb-palette-amber-a14: rgb(255 140 26 / 0.14);
+  --ednb-palette-amber-a16: rgb(255 140 26 / 0.16);
+  --ednb-palette-amber-a18: rgb(255 140 26 / 0.18);
+  --ednb-palette-amber-a20: rgb(255 140 26 / 0.2);
+  --ednb-palette-amber-a22: rgb(255 140 26 / 0.22);
+  --ednb-palette-amber-a25: rgb(255 140 26 / 0.25);
+  --ednb-palette-amber-a30: rgb(255 140 26 / 0.3);
+  --ednb-palette-amber-a35: rgb(255 140 26 / 0.35);
+  --ednb-palette-amber-a40: rgb(255 140 26 / 0.4);
+  --ednb-palette-amber-a45: rgb(255 140 26 / 0.45);
+  --ednb-palette-amber-a55: rgb(255 140 26 / 0.55);
+  --ednb-palette-amber-a60: rgb(255 140 26 / 0.6);
+  --ednb-palette-amber-a70: rgb(255 140 26 / 0.7);
 
   // Warm off-white ink
-  --edsb-palette-ink: #e8ded1;
-  --edsb-palette-ink-2: #ddd3c6;
+  --ednb-palette-ink: #e8ded1;
+  --ednb-palette-ink-2: #ddd3c6;
 
   // Ink washes. The step name is the alpha percentage. Which of these clear a
   // text or a non-text contrast floor is audited in `_semantic.scss`.
-  --edsb-palette-ink-a18: rgb(232 222 209 / 0.18);
-  --edsb-palette-ink-a30: rgb(232 222 209 / 0.3);
-  --edsb-palette-ink-a32: rgb(232 222 209 / 0.32);
-  --edsb-palette-ink-a36: rgb(232 222 209 / 0.36);
-  --edsb-palette-ink-a38: rgb(232 222 209 / 0.38);
-  --edsb-palette-ink-a42: rgb(232 222 209 / 0.42);
-  --edsb-palette-ink-a45: rgb(232 222 209 / 0.45);
-  --edsb-palette-ink-a48: rgb(232 222 209 / 0.48);
-  --edsb-palette-ink-a50: rgb(232 222 209 / 0.5);
-  --edsb-palette-ink-a55: rgb(232 222 209 / 0.55);
-  --edsb-palette-ink-a62: rgb(232 222 209 / 0.62);
-  --edsb-palette-ink-a66: rgb(232 222 209 / 0.66);
-  --edsb-palette-ink-a70: rgb(232 222 209 / 0.7);
-  --edsb-palette-ink-a75: rgb(232 222 209 / 0.75);
-  --edsb-palette-ink-a80: rgb(232 222 209 / 0.8);
+  --ednb-palette-ink-a18: rgb(232 222 209 / 0.18);
+  --ednb-palette-ink-a30: rgb(232 222 209 / 0.3);
+  --ednb-palette-ink-a32: rgb(232 222 209 / 0.32);
+  --ednb-palette-ink-a36: rgb(232 222 209 / 0.36);
+  --ednb-palette-ink-a38: rgb(232 222 209 / 0.38);
+  --ednb-palette-ink-a42: rgb(232 222 209 / 0.42);
+  --ednb-palette-ink-a45: rgb(232 222 209 / 0.45);
+  --ednb-palette-ink-a48: rgb(232 222 209 / 0.48);
+  --ednb-palette-ink-a50: rgb(232 222 209 / 0.5);
+  --ednb-palette-ink-a55: rgb(232 222 209 / 0.55);
+  --ednb-palette-ink-a62: rgb(232 222 209 / 0.62);
+  --ednb-palette-ink-a66: rgb(232 222 209 / 0.66);
+  --ednb-palette-ink-a70: rgb(232 222 209 / 0.7);
+  --ednb-palette-ink-a75: rgb(232 222 209 / 0.75);
+  --ednb-palette-ink-a80: rgb(232 222 209 / 0.8);
 
   // Status hues
-  --edsb-palette-hot: #ff6b3d;
-  --edsb-palette-hot-2: #ff9b78;
-  --edsb-palette-good: #8fd94a;
-  --edsb-palette-good-2: #7fc46b;
-  --edsb-palette-cool: #5fd0e0;
+  --ednb-palette-hot: #ff6b3d;
+  --ednb-palette-hot-2: #ff9b78;
+  --ednb-palette-good: #8fd94a;
+  --ednb-palette-good-2: #7fc46b;
+  --ednb-palette-cool: #5fd0e0;
 
   // Merc Coin's own pink. The canvas writes it `#f2003c`, which measures 3.88:1
   // against the lightest of the nine grounds — under the 4.5:1 a figure has to
   // clear. This is that same hue lifted to 4.67:1 rather than a different
   // colour: the HSL hue is the canvas's to five decimal places, and only the
   // lightness moves (canvas 1c; see the ink-wash note in `_semantic.scss`).
-  --edsb-palette-merc: #fe3063;
+  --ednb-palette-merc: #fe3063;
 
   // The wash behind the canvas's `REWARD ONLY` chip: the same cool at .10.
-  --edsb-palette-cool-a10: rgb(95 208 224 / 0.1);
+  --ednb-palette-cool-a10: rgb(95 208 224 / 0.1);
 
   // Status washes. Canvas literals: the issue badge and the destructive border.
-  --edsb-palette-hot-a16: rgb(255 107 61 / 0.16);
-  --edsb-palette-hot-a22: rgb(255 107 61 / 0.22);
-  --edsb-palette-hot-a40: rgb(255 107 61 / 0.4);
+  --ednb-palette-hot-a16: rgb(255 107 61 / 0.16);
+  --ednb-palette-hot-a22: rgb(255 107 61 / 0.22);
+  --ednb-palette-hot-a40: rgb(255 107 61 / 0.4);
 
   // The ground under the canvas's green status block, `rgb(143 217 74 / .08)` —
   // the same good the marker beside it is drawn in.
-  --edsb-palette-good-a08: rgb(143 217 74 / 0.08);
+  --ednb-palette-good-a08: rgb(143 217 74 / 0.08);
 
   // Hairline. Decorative separation only — far below any contrast floor, so it
   // may never be the sole carrier of a boundary that means something.
-  --edsb-palette-hair: rgb(255 255 255 / 0.04);
+  --ednb-palette-hair: rgb(255 255 255 / 0.04);
 
   // Scrim and shadow, canvas literals rather than named properties.
-  --edsb-palette-scrim: rgb(6 6 7 / 0.78);
-  --edsb-palette-scrim-strong: rgb(6 6 7 / 0.8);
-  --edsb-palette-shadow: rgb(0 0 0 / 0.6);
+  --ednb-palette-scrim: rgb(6 6 7 / 0.78);
+  --ednb-palette-scrim-strong: rgb(6 6 7 / 0.8);
+  --ednb-palette-shadow: rgb(0 0 0 / 0.6);
 
   // ---------------------------------------------------------------------------
   // Typography
@@ -132,10 +131,10 @@
   // Three families, each with one job. Faces are declared in `_fonts.scss`; every
   // stack ends in a generic family so a missing subset never leaves text
   // unrendered.
-  --edsb-family-sans: 'Barlow', 'Segoe UI', 'Helvetica Neue', arial, sans-serif;
-  --edsb-family-condensed:
+  --ednb-family-sans: 'Barlow', 'Segoe UI', 'Helvetica Neue', arial, sans-serif;
+  --ednb-family-condensed:
     'Barlow Condensed', 'Barlow', 'Roboto Condensed', 'Arial Narrow', sans-serif;
-  --edsb-family-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  --ednb-family-mono: 'JetBrains Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
 
   // The canvas ramp, at the canvas's own sizes.
   //
@@ -148,69 +147,69 @@
   //
   // `micro` is the smallest step the system offers; nothing smaller exists to be
   // reached for.
-  --edsb-type-size-micro: 0.5625rem; //  canvas 7.5–9.5
-  --edsb-type-size-2xs: 0.625rem; //     canvas 10
-  --edsb-type-size-xs: 0.6875rem; //     canvas 10.5–11
-  --edsb-type-size-sm: 0.75rem; //       canvas 12
-  --edsb-type-size-md: 0.8125rem; //     canvas 13
-  --edsb-type-size-lg: 0.875rem; //      canvas 14–15
-  --edsb-type-size-xl: 1rem; //          canvas 16
-  --edsb-type-size-2xl: 1.125rem; //     canvas 18
-  --edsb-type-size-3xl: 1.375rem; //     canvas 22
+  --ednb-type-size-micro: 0.5625rem; //  canvas 7.5–9.5
+  --ednb-type-size-2xs: 0.625rem; //     canvas 10
+  --ednb-type-size-xs: 0.6875rem; //     canvas 10.5–11
+  --ednb-type-size-sm: 0.75rem; //       canvas 12
+  --ednb-type-size-md: 0.8125rem; //     canvas 13
+  --ednb-type-size-lg: 0.875rem; //      canvas 14–15
+  --ednb-type-size-xl: 1rem; //          canvas 16
+  --ednb-type-size-2xl: 1.125rem; //     canvas 18
+  --ednb-type-size-3xl: 1.375rem; //     canvas 22
 
   // The canvas sets `line-height: 1` on every tracked single-line label and
   // number. `flat` is that; it is only ever correct on a line that cannot wrap.
-  --edsb-type-leading-flat: 1;
-  --edsb-type-leading-tight: 1.05;
-  --edsb-type-leading-snug: 1.3;
-  --edsb-type-leading-normal: 1.4;
-  --edsb-type-leading-body: 1.5;
-  --edsb-type-leading-prose: 1.6;
+  --ednb-type-leading-flat: 1;
+  --ednb-type-leading-tight: 1.05;
+  --ednb-type-leading-snug: 1.3;
+  --ednb-type-leading-normal: 1.4;
+  --ednb-type-leading-body: 1.5;
+  --ednb-type-leading-prose: 1.6;
 
-  --edsb-type-weight-light: 300;
-  --edsb-type-weight-regular: 400;
-  --edsb-type-weight-medium: 500;
-  --edsb-type-weight-semibold: 600;
-  --edsb-type-weight-bold: 700;
+  --ednb-type-weight-light: 300;
+  --ednb-type-weight-regular: 400;
+  --ednb-type-weight-medium: 500;
+  --ednb-type-weight-semibold: 600;
+  --ednb-type-weight-bold: 700;
 
   // The tracking ladder. This is the reference's strongest visual signal and is
   // adopted at the canvas values exactly — the lift applied to size is not
   // applied here, because tracking is already relative to the em.
-  --edsb-type-tracking-none: 0em;
-  --edsb-type-tracking-xs: 0.04em;
-  --edsb-type-tracking-sm: 0.06em;
-  --edsb-type-tracking-md: 0.07em;
-  --edsb-type-tracking-lg: 0.09em;
-  --edsb-type-tracking-xl: 0.1em;
-  --edsb-type-tracking-2xl: 0.12em;
-  --edsb-type-tracking-3xl: 0.14em;
-  --edsb-type-tracking-4xl: 0.16em;
-  --edsb-type-tracking-5xl: 0.18em;
-  --edsb-type-tracking-6xl: 0.22em;
-  --edsb-type-tracking-7xl: 0.26em;
+  --ednb-type-tracking-none: 0em;
+  --ednb-type-tracking-xs: 0.04em;
+  --ednb-type-tracking-sm: 0.06em;
+  --ednb-type-tracking-md: 0.07em;
+  --ednb-type-tracking-lg: 0.09em;
+  --ednb-type-tracking-xl: 0.1em;
+  --ednb-type-tracking-2xl: 0.12em;
+  --ednb-type-tracking-3xl: 0.14em;
+  --ednb-type-tracking-4xl: 0.16em;
+  --ednb-type-tracking-5xl: 0.18em;
+  --ednb-type-tracking-6xl: 0.22em;
+  --ednb-type-tracking-7xl: 0.26em;
 
   // ---------------------------------------------------------------------------
   // Spacing
   // ---------------------------------------------------------------------------
 
-  --edsb-space-none: 0;
+  --ednb-space-none: 0;
 
   // A one-pixel gap over an amber wash is how the canvas draws the rules inside
   // a metric grid and a segmented control. It is a rule, so it does not scale
   // with text.
-  --edsb-space-hair: 0.0625rem;
+  --ednb-space-hair: 0.0625rem;
 
-  --edsb-space-3xs: 0.125rem; //  2
-  --edsb-space-2xs: 0.25rem; //   4
-  --edsb-space-xs: 0.375rem; //   6
-  --edsb-space-sm: 0.5rem; //     8
-  --edsb-space-md: 0.625rem; //  10
-  --edsb-space-lg: 0.75rem; //   12
-  --edsb-space-xl: 0.875rem; //  14
-  --edsb-space-2xl: 1rem; //     16
-  --edsb-space-3xl: 1.125rem; // 18
-  --edsb-space-4xl: 1.375rem; // 22
-  --edsb-space-5xl: 2.125rem; // 34
+  --ednb-space-3xs: 0.125rem; //  2
+  --ednb-space-2xs: 0.25rem; //   4
+  --ednb-space-xs: 0.375rem; //   6
+  --ednb-space-sm: 0.5rem; //     8
+  --ednb-space-md: 0.625rem; //  10
+  --ednb-space-lg: 0.75rem; //   12
+  --ednb-space-xl: 0.875rem; //  14
+  --ednb-space-2xl: 1rem; //     16
+  --ednb-space-3xl: 1.125rem; // 18
+  --ednb-space-4xl: 1.375rem; // 22
+  --ednb-space-5xl: 2.125rem; // 34
 
   // ---------------------------------------------------------------------------
   // Geometry
@@ -218,56 +217,56 @@
 
   // There is not one `border-radius` on a product surface anywhere in the four
   // canvases. The scale is one step, and it is zero.
-  --edsb-radius-square: 0;
+  --ednb-radius-square: 0;
 
-  --edsb-border-width-thin: 1px;
-  --edsb-border-width-rule: 2px;
-  --edsb-border-width-marker: 3px;
+  --ednb-border-width-thin: 1px;
+  --ednb-border-width-rule: 2px;
+  --ednb-border-width-marker: 3px;
 
   // ---------------------------------------------------------------------------
   // Elevation — one canvas value, used by every overlay in the file
   // ---------------------------------------------------------------------------
 
-  --edsb-elevation-flat: none;
-  --edsb-elevation-overlay: 0 1.5rem 3.75rem var(--edsb-palette-shadow);
+  --ednb-elevation-flat: none;
+  --ednb-elevation-overlay: 0 1.5rem 3.75rem var(--ednb-palette-shadow);
 
   // The rule the canvas draws under the tab or entry that is currently open. An
   // inset shadow rather than a border, so the entry keeps its box geometry and
   // nothing shifts when the current one changes.
-  --edsb-elevation-underline: inset 0 calc(-1 * var(--edsb-border-width-rule)) 0
-    var(--edsb-palette-amber);
+  --ednb-elevation-underline: inset 0 calc(-1 * var(--ednb-border-width-rule)) 0
+    var(--ednb-palette-amber);
 
   // ---------------------------------------------------------------------------
   // Surface textures
   // ---------------------------------------------------------------------------
 
   // The hatched plate the canvas puts behind hull artwork.
-  --edsb-texture-plate: repeating-linear-gradient(
+  --ednb-texture-plate: repeating-linear-gradient(
     135deg,
     #161616 0 0.375rem,
-    var(--edsb-palette-panel-0) 0.375rem 0.75rem
+    var(--ednb-palette-panel-0) 0.375rem 0.75rem
   );
 
   // Canvas 1c's overheat hatch: the part of a heat bar past the damage
   // threshold, and the key that names it. A hatch rather than a second flat
   // fill, because the difference between the two halves of a bar cannot be
   // carried by colour alone.
-  --edsb-texture-overheat: repeating-linear-gradient(
+  --ednb-texture-overheat: repeating-linear-gradient(
     135deg,
-    var(--edsb-palette-hot) 0 0.25rem,
-    var(--edsb-palette-hot-a40) 0.25rem 0.5rem
+    var(--ednb-palette-hot) 0 0.25rem,
+    var(--ednb-palette-hot-a40) 0.25rem 0.5rem
   );
 
   // The wash that marks a selected row, run from the leading edge.
-  --edsb-texture-selected: linear-gradient(90deg, var(--edsb-palette-amber-a16), transparent);
+  --ednb-texture-selected: linear-gradient(90deg, var(--ednb-palette-amber-a16), transparent);
 
   // Canvas 1c's family bar: raised at the leading edge and falling back to the
   // manifest's own ground, which is what separates a family from its rows
   // without a rule drawn between them.
-  --edsb-texture-family: linear-gradient(
+  --ednb-texture-family: linear-gradient(
     90deg,
-    var(--edsb-palette-panel-6),
-    var(--edsb-palette-panel-2)
+    var(--ednb-palette-panel-6),
+    var(--ednb-palette-panel-2)
   );
 
   // The canvas's own recolouring of the Tech Broker mark, which arrives from
@@ -275,10 +274,10 @@
   // invisible on this ground. Copied from canvas 1c's own `filter` on that
   // image rather than baked into the file, because the file is the reference's
   // artwork and this is the reference's treatment of it.
-  --edsb-filter-route-broker: brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(350deg);
+  --ednb-filter-route-broker: brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(350deg);
 
   // What makes neutral package line art read as amber instrumentation.
-  --edsb-filter-artwork: grayscale(1) sepia(1) hue-rotate(-18deg) saturate(1.6) brightness(0.95)
+  --ednb-filter-artwork: grayscale(1) sepia(1) hue-rotate(-18deg) saturate(1.6) brightness(0.95)
     contrast(1.05);
 
   // The same amber, over a drawing whose own ink is nearly black.
@@ -293,7 +292,7 @@
   // whole knob: raise it and the plate greys up, lower it and the structure
   // sinks back into the ground. The illustrations keep the filter above — they
   // are full-colour renders and have no black to lift.
-  --edsb-filter-schematic: grayscale(1) brightness(1.5) contrast(0.5) sepia(1) hue-rotate(-18deg)
+  --ednb-filter-schematic: grayscale(1) brightness(1.5) contrast(0.5) sepia(1) hue-rotate(-18deg)
     saturate(1.6);
 
   // ---------------------------------------------------------------------------
@@ -305,15 +304,15 @@
   // never fires `animationend`, so a component that waits for it would hang
   // exactly for the readers who asked for less motion. Short enough that no
   // movement is perceived.
-  --edsb-duration-instant: 0.01ms;
+  --ednb-duration-instant: 0.01ms;
 
-  --edsb-duration-fast: 120ms;
-  --edsb-duration-base: 200ms;
-  --edsb-duration-slow: 320ms;
+  --ednb-duration-fast: 120ms;
+  --ednb-duration-base: 200ms;
+  --ednb-duration-slow: 320ms;
 
-  --edsb-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-  --edsb-easing-decelerate: cubic-bezier(0, 0, 0, 1);
-  --edsb-easing-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --ednb-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ednb-easing-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ednb-easing-accelerate: cubic-bezier(0.3, 0, 1, 1);
 
   // ---------------------------------------------------------------------------
   // Target size — the 44 CSS-pixel design baseline. The canvas already meets it
@@ -321,24 +320,24 @@
   // artboard does not, and the wide values are lifted to this floor.
   // ---------------------------------------------------------------------------
 
-  --edsb-target-min: 2.75rem;
-  --edsb-target-min-compact: 2.25rem;
+  --ednb-target-min: 2.75rem;
+  --ednb-target-min-compact: 2.25rem;
   // The floor a pointer target may not go under (WCAG 2.2 AA, Target Size
   // (Minimum)). For the dense inline chips the canvas draws at 20px, which is
   // under it — this is as close as one of those can be drawn and still be
   // reachable.
-  --edsb-target-min-floor: 1.5rem;
+  --ednb-target-min-floor: 1.5rem;
 
   // ---------------------------------------------------------------------------
   // Layout measures. The canvas's own 1320px artboard width is not one of these:
   // it is the size of a drawing, not a rule about the product.
   // ---------------------------------------------------------------------------
 
-  --edsb-measure-content-max: 90rem;
-  --edsb-measure-prose-max: 68ch;
+  --ednb-measure-content-max: 90rem;
+  --ednb-measure-prose-max: 68ch;
 
   // The inspector rail, 340px in canvas 1a.
-  --edsb-measure-rail-min: 21.25rem;
+  --ednb-measure-rail-min: 21.25rem;
 
   // The hull sheet's column: canvas 1b's own content width, 362px.
   //
@@ -355,29 +354,33 @@
   // at 900px and 979 x 653 at 1023px — 73% of a 900px-tall window spent before a
   // figure is read, against the 22% the rail draws the same plate at (Commander
   // request 2026-08-31).
-  --edsb-measure-sheet-column: 22.625rem;
+  --ednb-measure-sheet-column: 22.625rem;
 
   // The slot ledger's rail, 392px in canvas 1c: the fixed leading track of its
   // `392px 1fr 306px` workspace grid. Stated in rem so it grows with the
   // reader's text rather than pinching the ledger's own rows at 200%.
-  --edsb-measure-ledger-rail: 24.5rem;
+  --ednb-measure-ledger-rail: 24.5rem;
 
   // The status rail, 306px in canvas 1c: the trailing track of the same
   // `392px 1fr 306px` grid, where the cost and material blocks sit. In rem for
   // the same reason as the ledger's.
-  --edsb-measure-status-rail: 19.125rem;
+  --ednb-measure-status-rail: 19.125rem;
 
   // The command bar, and the one height it is drawn at on every screen.
   //
-  // The canvas draws 56px around 30px chips; the extra is the target floor,
-  // which is a rule about the product rather than a measurement taken off the
-  // drawing. The figure is the tallest identity the bar carries — the
-  // workspace's two-line block of a build name over its hull and ID plate —
-  // inside the bar's own block padding and the amber rule that closes it, which
-  // the border box counts. Sized to the single row of controls every other
-  // screen comes to instead, the bar stood 66px on the shipyard and 74px on a
-  // build, and the whole page under it moved as a Commander opened one
-  // (Commander request 2026-08-28).
+  // Canvas 1a draws 56px and canvas 1c 54px, both around 30px chips; ours holds
+  // 44px controls and a type ramp lifted a quarter, so it cannot be either. The
+  // figure is the tallest identity the bar carries — the workspace's two-line
+  // block of a build name over its hull and ID plate, 52px of 24px rows — inside
+  // the bar's own block padding and the amber rule that closes it, which the
+  // border box counts. Nothing else: the deck took the loose control padding
+  // once and stood 74px, which is 20px of air around a 54px drawing and reads as
+  // a bar that has lost its contents (Commander request 2026-09-02).
+  //
+  // Sized to the single row of controls every other screen comes to instead, the
+  // bar would stand shorter on the shipyard than on a build, and the whole page
+  // under it would move as a Commander opened one (Commander request
+  // 2026-08-28).
   //
   // The bar's own controls have to fit on a row for that to hold, which is what
   // `$mode-bar-folded-max` is for: below the width the widest shipped language
@@ -386,12 +389,13 @@
   // It stays a floor rather than a fixed height. At a doubled text size and at
   // 400% zoom the bar still wraps and still grows, because a bar that could not
   // would cut its own controls off (011/FR-011).
-  --edsb-measure-bar-height: 4.625rem;
+  --ednb-measure-bar-height: 4.125rem;
 
-  // The tool bar over it. Canvas 3c draws 50px, which holds a tab at this
-  // feature's 44px press baseline with the bar's own rule outside the box. It
-  // is a floor for the reason the figure above is one.
-  --edsb-measure-tool-bar-height: 3.125rem;
+  // The tool deck over it. Canvas 4c draws 30px and canvas 4d 34px, and neither
+  // holds a tab at this feature's 44px press baseline, so the deck is the
+  // baseline itself: the divider it is closed by belongs to the deck below and
+  // is outside this box. It is a floor for the reason the figure above is one.
+  --ednb-measure-tool-bar-height: 2.75rem;
 
   // What a sticky bar has to overhang the edge it is frozen against by so
   // nothing prints above it. The edge is placed at a fractional device pixel
@@ -406,16 +410,16 @@
   // would resolve to 4px at the 200% text the constitution requires — the value
   // measured as *broken*, because a bar overhanging that far clears its own
   // family early.
-  --edsb-measure-sticky-overhang: 2px;
+  --ednb-measure-sticky-overhang: 2px;
 
   // The ledger row's two boxes: canvas 1c's 26px size square and 20px node
   // badge, canvas 1d's 30px size square at touch scale.
-  --edsb-measure-mount-box: 1.75rem;
-  --edsb-measure-node-box: 1.375rem;
+  --ednb-measure-mount-box: 1.75rem;
+  --ednb-measure-node-box: 1.375rem;
 
   // Canvas 1c's anatomy plate, `aspect-ratio: 720/292`. One shape for every
   // hull, so the region reserves its height before a schematic is fetched.
-  --edsb-measure-plate-ratio: 720 / 292;
+  --ednb-measure-plate-ratio: 720 / 292;
 
   // How wide one anatomy plate is allowed to get.
   //
@@ -438,7 +442,7 @@
   // the drawing the room the screen actually has. The derivation is in
   // `specs/010-hull-anatomy/design/hull-anatomy.md`, and it reproduces this
   // token's own pre-raise 404px at the 1560 the canvas was drawn at.
-  --edsb-measure-anatomy-plate: 35.35rem;
+  --ednb-measure-anatomy-plate: 35.35rem;
 
   // The same node badge, set on the hull instead of in a ledger row. Canvas 1c
   // draws it `clamp(14px, 3.06cqw, 22px)` square with the number at
@@ -448,7 +452,7 @@
   // middle term is container-relative by the canvas's own choice — the mark has
   // to keep its size against the hull, which is the one thing on the plate that
   // is not on the type scale.
-  --edsb-measure-node-mark: clamp(0.875rem, 3.06cqw, 1.375rem);
+  --ednb-measure-node-mark: clamp(0.875rem, 3.06cqw, 1.375rem);
 
   // Canvas 1c's power panel: `min-height: 328px`, and the 16px bars its
   // priority groups, module draws and heat scenarios are all drawn with.
@@ -458,8 +462,8 @@
   // is `Group n` — and stated as a floor rather than a width, so a translation
   // longer than either still fits and the two only stop agreeing where one of
   // them outgrows it.
-  --edsb-measure-band-name: 4.5rem;
-  --edsb-measure-power-bar: 0.5625rem; // 9
+  --ednb-measure-band-name: 4.5rem;
+  --ednb-measure-power-bar: 0.5625rem; // 9
 
   // Canvas 1c's drives panel: the mass bar is a 26px band, taller than any
   // other bar on the screen because it is one bar carrying three parts rather
@@ -467,8 +471,8 @@
   // square. The speed and range rows beside it take the 11px the offence
   // panel's label-bar-figure rows do, which is the height the same canvas draws
   // them at.
-  --edsb-measure-mass-bar: 1.625rem; // 26
-  --edsb-measure-mass-swatch: 0.625rem; // 10
+  --ednb-measure-mass-bar: 1.625rem; // 26
+  --ednb-measure-mass-swatch: 0.625rem; // 10
 
   // The room `MAX 1,890 t` needs at the end of that bar's mark row, and the
   // narrowest the `OPTIMAL 1,260 t` beside it may be squeezed to.
@@ -501,12 +505,12 @@
   // canvas's English one and a column that clips its own head reads as a
   // different figure. What the canvas is actually fixing is that the tracks
   // agree down the block, and subgrid is what holds that.
-  --edsb-measure-damage-bar: 1.375rem;
+  --ednb-measure-damage-bar: 1.375rem;
   // The range field's own band, at the same 22px canvas 1c draws it. Its own
   // measure rather than the damage bar's: `edsb-range-field` is a design-system
   // control every screen may compose, and a change to one screen's damage bar
   // must not resize it.
-  --edsb-measure-range-track: 1.375rem;
+  --ednb-measure-range-track: 1.375rem;
 
   // The six label-bar-figure tracks the offence panel draws — four range bands
   // and the two capacitor rows that share a scale — are 11px on the canvas, not
@@ -514,17 +518,17 @@
   // `CAPACITY` and `FULL FIRE` share a scale with nothing beside them and keep
   // their figure without a bar (`design/canvas-contract.md`, review note 6). Its own measure so that
   // the two panels stay the sizes their own canvases draw them.
-  --edsb-measure-offence-bar: 0.6875rem; // 11
-  --edsb-measure-offence-label: 6.5rem;
-  --edsb-measure-offence-value: 3.875rem;
-  --edsb-measure-weapon-figure: 2.5rem;
+  --ednb-measure-offence-bar: 0.6875rem; // 11
+  --ednb-measure-offence-label: 6.5rem;
+  --ednb-measure-offence-value: 3.875rem;
+  --ednb-measure-weapon-figure: 2.5rem;
 
   // The floor under the weapon table's module column: 155px, which is two lines
   // of a weapon's cell — `Huge Multi-Cannon` over `4A GIMBALLED · OVERCHARGED
   // G5` — wrapping at words rather than inside them. Measured in Chromium at the
   // widths this block is actually given, and held to by
   // `e2e/offence-profile.spec.ts` in both languages.
-  --edsb-measure-weapon-module: 9.6875rem;
+  --ednb-measure-weapon-module: 9.6875rem;
 
   // Canvas 1c's gunsight plate, as its 2026-08-25 revision draws it: a `172px`
   // box square in pixels, with a 7px dot where each shot lands.
@@ -553,8 +557,8 @@
   // mark is placed as a fraction of the plate rather than in pixels, so it is
   // the same diagram at every size it has been drawn at
   // (`design/canvas-contract.md`, review notes 18 and 21).
-  --edsb-measure-gunsight-plate: 14rem;
-  --edsb-measure-shot-dot: 0.4375rem;
+  --ednb-measure-gunsight-plate: 14rem;
+  --ednb-measure-shot-dot: 0.4375rem;
 
   // How wide the `SHOT CONVERGENCE` block itself is allowed to get.
   //
@@ -564,22 +568,21 @@
   // over half the panel's width rather than in one running its whole 862px.
   // The application gave it the full row and drew the canvas's plate marooned
   // in the middle of it (Commander request 2026-08-27).
-  --edsb-measure-convergence-block: 31.75rem;
-  --edsb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
-  --edsb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
+  --ednb-measure-convergence-block: 31.75rem;
+  --ednb-measure-node-mark-text: clamp(0.4375rem, 1.39cqw, 0.625rem);
+  --ednb-measure-node-mark-icon: clamp(0.5625rem, 1.8cqw, 0.8125rem);
 
-  // The insignia the command bar carries (canvas 3b, and the bar of every
-  // screen artboard). The canvas draws it in a 368x330 box at 26x23 on three
-  // artboards and 28x25 on the fourth; the smaller is taken, because the bar it
-  // sits on is the same height on all four.
-  --edsb-measure-insignia-width: 1.625rem;
-  --edsb-measure-insignia-height: 1.4375rem;
+  // The insignia the command bar carries: the beacon mark of canvas 6d, which
+  // is square. One size, where the canvases draw it at 26 on the wide shipyard
+  // and 21 to 24 elsewhere; the largest is taken, because the bar it sits on is
+  // the same height on all of them.
+  --ednb-measure-insignia-size: 1.625rem;
 
   // Both canvases draw five material rows against a footer that counts
   // eighteen types, so the list they draw is a bounded box rather than the
   // whole shopping list. Held in `rem` so the box grows with the Commander's
   // text size instead of trapping more rows in the same pixels at 200%.
-  --edsb-measure-material-list: 11.5rem;
+  --ednb-measure-material-list: 11.5rem;
 
   // How short each of the bench's two panels may get before it stops being one.
   //
@@ -609,12 +612,12 @@
   // past; six is another tenth off, which is the same request made twice and
   // answered the same way — in whole rows, because a manifest that ends
   // halfway down a row is a list with a lid on it rather than a shorter list.
-  --edsb-measure-fitting-panel: 20.75rem;
+  --ednb-measure-fitting-panel: 20.75rem;
   // The editor's is the smaller figure because it is the one that can be read a
   // line at a time: a recipe, the grade under it and the first comparisons. It
   // is now only a floor — nothing measures a share against it — and it is what
   // keeps an article with nothing to engineer a panel rather than a strip.
-  --edsb-measure-editor-panel: 10rem;
+  --ednb-measure-editor-panel: 10rem;
 
   // One of canvas 1d's six key readings, at the narrowest it may be drawn.
   //
@@ -624,22 +627,22 @@
   // invented for it. Held in `rem` so a Commander reading at 200% gets three
   // cells on two rows instead of six cells with their figures hanging over the
   // glass.
-  --edsb-measure-key-figure: 3.25rem;
+  --ednb-measure-key-figure: 3.25rem;
 
   // The two icons the canvas draws inline in a row — the engineered mark and
   // the Merc Coin — at 14 to 16px depending on the artboard.
-  --edsb-measure-icon: 0.9375rem;
+  --ednb-measure-icon: 0.9375rem;
   // The step strip's numbered square, which the canvas draws at 16px. Its own
   // measure rather than the icon's: it is a numbered chip, and the two were the
   // same size only by coincidence (`design/module-replacement.md`, "The three
   // steps, numbered").
-  --edsb-measure-step-number: 1rem; // 16
+  --ednb-measure-step-number: 1rem; // 16
   // The canvas's manifest row: 13px of name between 11px of padding, plus the
   // 2px that separates one row from the next.
-  --edsb-measure-candidate-row: 2.625rem;
+  --ednb-measure-candidate-row: 2.625rem;
   // Canvas 1d's `min-height: 60px`, which is the same row at the width that
   // draws it one under the other rather than in aligned columns.
-  --edsb-measure-candidate-row-compact: 3.75rem; // 60
+  --ednb-measure-candidate-row-compact: 3.75rem; // 60
 
   // Canvas 1c's manifest: `grid-template-columns: 264px minmax(360px, 1fr)
   // 396px; column-gap: 14px` for the family rail, the variant pane and the
@@ -648,7 +651,7 @@
   // canvas's own pixels; the name takes what is left, as its `fr` says, because
   // there is nothing left over for it to run away with once the rail has its
   // 264px.
-  --edsb-measure-family-rail: 16.5rem;
+  --ednb-measure-family-rail: 16.5rem;
   // How wide that rail is allowed to get where the column has room to spare.
   //
   // The share is taken against the chooser's own column rather than the bench,
@@ -666,9 +669,9 @@
   // (Commander request 2026-08-26). The bound is where a family name stops
   // needing the width, and past it the rows beside it are the better home for
   // the pixels.
-  --edsb-measure-family-rail-max: 20rem;
-  --edsb-measure-family-rail-share: 30%;
-  --edsb-measure-family-gap: 0.875rem;
+  --ednb-measure-family-rail-max: 20rem;
+  --ednb-measure-family-rail-share: 30%;
+  --ednb-measure-family-gap: 0.875rem;
   // What the rail and the pane are bounded at: two rows short of the figure the
   // fitting panel's own floor above is measured from. The panel and the pane are
   // the same list at two widths, so a row comes off both of them or neither
@@ -680,16 +683,16 @@
   // anatomy and the status rail, and what stands beside the list does not
   // answer it (`design/module-replacement.md`, "The canvas's own bound is not
   // adopted").
-  --edsb-measure-manifest-pane: 24.125rem;
+  --ednb-measure-manifest-pane: 24.125rem;
   // Canvas 1d's `width: 28px` gutter for the class code, which is what lines
   // `4A` up down a list of rows that each carry their own grid.
-  --edsb-measure-candidate-code: 1.75rem; // 28
-  --edsb-measure-candidate-class: 3.5rem;
-  --edsb-measure-candidate-cost: 6.5rem;
+  --ednb-measure-candidate-code: 1.75rem; // 28
+  --ednb-measure-candidate-class: 3.5rem;
+  --ednb-measure-candidate-cost: 6.5rem;
   // Canvas 1c's third bench column: the attribute table's three columns, and the
   // recipe and effect menus under it. A fixed track, as the canvas draws it —
   // the pane beside it is what takes the width a wider window has.
-  --edsb-measure-engineering-column: 24.75rem;
+  --ednb-measure-engineering-column: 24.75rem;
   // The three controls the engineering card holds — the recipe, the grade under
   // it and the experimental effect under that — measured together with the two
   // gaps between them at the base text size: 183px.
@@ -703,7 +706,7 @@
   //
   // A floor, never a cap: a translation that wraps a recipe name, or a doubled
   // text size, simply passes it.
-  --edsb-measure-engineering-choices: 11.4375rem; // 183
+  --ednb-measure-engineering-choices: 11.4375rem; // 183
 
   // How short the attribute table may get before it stops being a reading. It is
   // the half of the editor that takes whatever the column has spare, so it is
@@ -719,21 +722,21 @@
   // is drawn at. Below the bound the bench asks the page for its height and the
   // table is as tall as the article (`_responsive.scss`,
   // `$bench-bounded-min-height`).
-  --edsb-measure-engineering-details: 8rem; // 128
+  --ednb-measure-engineering-details: 8rem; // 128
 
   // The canvas's 28px grade bar, at 28px (wave 9: the lift is gone).
-  --edsb-measure-grade-cell: 1.75rem;
+  --ednb-measure-grade-cell: 1.75rem;
   // Canvas 1d draws the same five cells at `height: 38px`, and it has to: its
   // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
   // wants a button around it rather than a band.
-  --edsb-measure-grade-step: 2.375rem; // 38
+  --ednb-measure-grade-step: 2.375rem; // 38
 
   // Canvas 1c's defence rows: the 46px resistance column and the 56px value
   // column every figure in the two cards is right-aligned inside. They are
   // minimums rather than fixed widths here, and they are what holds a short
   // figure off the end of the bar it is read against.
-  --edsb-measure-defence-resist: 2.875rem; // 46
-  --edsb-measure-defence-value: 3.5rem; //    56
+  --ednb-measure-defence-resist: 2.875rem; // 46
+  --ednb-measure-defence-value: 3.5rem; //    56
 
   // The height the export layer's content column holds whichever format is
   // chosen: the SLEF payload's twelve rows, its metadata line and its actions.
@@ -746,33 +749,33 @@
   // side have the room to avoid. Each is the payload panel measured at the
   // composition it belongs to, and each is a floor — a refusal, a stale notice
   // or a translation that wraps still grows the panel past it.
-  --edsb-measure-export-content: 23.5rem; //      376
-  --edsb-measure-export-content-wide: 21.375rem; // 342
+  --ednb-measure-export-content: 23.5rem; //      376
+  --ednb-measure-export-content-wide: 21.375rem; // 342
 
   // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
-  --edsb-measure-menu-row: 2.875rem;
-  --edsb-measure-menu-min: 12.25rem;
-  --edsb-measure-menu-max: 20rem;
+  --ednb-measure-menu-row: 2.875rem;
+  --ednb-measure-menu-min: 12.25rem;
+  --ednb-measure-menu-max: 20rem;
 
   // How tall a menu drawn over the page may get before it scrolls inside
   // itself. Around six two-line options, which is enough to read a list as a
   // list and short enough to leave the card it opens over still visible.
-  --edsb-measure-menu-drop: 21rem;
+  --ednb-measure-menu-drop: 21rem;
 
   // Dialog widths, from the canvas: 540 save, 560 import, 620 help, 760 export
   // and 860 saved builds. Four named steps: one region of prose and a field
   // takes the second, the layer that stands two regions side by side takes the
   // third, and the library — a whole list under its own column headers — takes
   // the widest.
-  --edsb-measure-layer-sm: 33.75rem;
-  --edsb-measure-layer-md: 38.75rem;
-  --edsb-measure-layer-lg: 47.5rem;
-  --edsb-measure-layer-xl: 53.75rem;
+  --ednb-measure-layer-sm: 33.75rem;
+  --ednb-measure-layer-md: 38.75rem;
+  --ednb-measure-layer-lg: 47.5rem;
+  --ednb-measure-layer-xl: 53.75rem;
 
   // The list down the leading edge of a two-region layer: 236px in canvas 1c's
   // export dialog, where the formats stand beside the payload rather than above
   // it. Narrower than the folded action menu, because it holds a tracked title
   // over a short description and nothing else.
-  --edsb-measure-layer-aside: 14.75rem;
+  --ednb-measure-layer-aside: 14.75rem;
 }

@@ -480,7 +480,7 @@ had no mark. It has one. The file is taken once at authoring time and served fro
 marks and the Merc Coin: Constitution I forbids reaching another origin at runtime, not shipping the
 reference's own artwork. It arrives as unpainted black line art, so the canvas's own
 `filter: brightness(0) invert(1) sepia(1) saturate(6) hue-rotate(350deg)` comes with it, as
-`--edsb-filter-route-broker`, rather than a colour of ours being baked into the file.
+`--ednb-filter-route-broker`, rather than a colour of ours being baked into the file.
 
 `eventReward` remains the one route with no mark anywhere in the reference, and still draws none.
 

@@ -1,8 +1,9 @@
-import { BuildLinkCodecError } from './build-link-codec-error';
-import { decodeBuildLinkPayload, encodeBuildLinkPayload } from './build-link-radix';
+import type { LinkEnvelope, VerifiedLinkBody } from '../../build-link/build-link-envelope';
+import { decodeLinkBody, encodeLinkBody } from '../../build-link/build-link-envelope';
 
-const FRAGMENT_PREFIX = 'b.';
 /**
+ * The ship builder's own envelope.
+ *
  * The bound FR-021 states: a complete codec value, `b.` included, leaving 498 encoded digits.
  *
  * The requirement is stated over the codec value rather than the URL carrying it, because the
@@ -11,66 +12,17 @@ const FRAGMENT_PREFIX = 'b.';
  * notice, not something the codec could have enforced.
  */
 const MAX_LINK_CHARACTERS = 500;
-const CRC_LENGTH = 4;
-
-declare const verifiedBuildLinkBody: unique symbol;
+const BUILD_LINK_ENVELOPE: LinkEnvelope = { prefix: 'b.', maxCharacters: MAX_LINK_CHARACTERS };
 
 /** A codec body whose Base70 envelope and CRC-32 have already been verified. */
-export type VerifiedBuildLinkBody = Uint8Array & {
-  readonly [verifiedBuildLinkBody]: true;
-};
+export type VerifiedBuildLinkBody = VerifiedLinkBody;
 
 /** Add the permanent envelope and integrity check to a codec body. */
 export function encodeBuildLinkBody(body: Uint8Array): string {
-  const payload = new Uint8Array(body.length + CRC_LENGTH);
-  payload.set(body);
-  new DataView(payload.buffer).setUint32(body.length, crc32(body), true);
-  const fragment = `${FRAGMENT_PREFIX}${encodeBuildLinkPayload(payload)}`;
-  if (fragment.length > MAX_LINK_CHARACTERS) {
-    throw new BuildLinkCodecError('invalidPayload', 'The encoded build exceeds the link limit.');
-  }
-  return fragment;
+  return encodeLinkBody(body, BUILD_LINK_ENVELOPE);
 }
 
 /** Decode and verify the generic envelope before selecting a codec table. */
 export function decodeBuildLinkBody(fragment: string): VerifiedBuildLinkBody {
-  const value = fragment.startsWith('#') ? fragment.slice(1) : fragment;
-  if (!value.startsWith(FRAGMENT_PREFIX)) {
-    throw new BuildLinkCodecError(
-      'unsupportedEnvelope',
-      'The build-link envelope is not supported.',
-    );
-  }
-
-  const encoded = value.slice(FRAGMENT_PREFIX.length);
-  if (encoded.length === 0 || value.length > MAX_LINK_CHARACTERS) {
-    throw new BuildLinkCodecError('invalidEncoding', 'The encoded build has an invalid length.');
-  }
-
-  const payload = decodeBuildLinkPayload(encoded);
-  if (payload.length <= CRC_LENGTH) {
-    throw new BuildLinkCodecError('invalidPayload', 'The build-link payload is truncated.');
-  }
-
-  const body = payload.subarray(0, payload.length - CRC_LENGTH);
-  const expectedCrc = new DataView(
-    payload.buffer,
-    payload.byteOffset + body.length,
-    CRC_LENGTH,
-  ).getUint32(0, true);
-  if (crc32(body) !== expectedCrc) {
-    throw new BuildLinkCodecError('integrityCheckFailed', 'The build-link integrity check failed.');
-  }
-  return body as VerifiedBuildLinkBody;
-}
-
-function crc32(bytes: Uint8Array): number {
-  let crc = 0xffff_ffff;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let bit = 0; bit < 8; bit += 1) {
-      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb8_8320 : 0);
-    }
-  }
-  return (crc ^ 0xffff_ffff) >>> 0;
+  return decodeLinkBody(fragment, BUILD_LINK_ENVELOPE);
 }

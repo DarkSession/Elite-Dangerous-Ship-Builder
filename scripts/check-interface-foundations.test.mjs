@@ -165,17 +165,83 @@ describe('governed visual literals', () => {
   });
 
   it('accepts a token reference', () => {
-    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--edsb-text-primary); }');
+    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--ednb-text-primary); }');
+
+    assert.deepEqual(found, []);
+  });
+
+  it('refuses a token from a namespace this application does not declare', () => {
+    // The product has carried two prefixes in its life, and a stale one paints
+    // nothing in silence: CSS drops the declaration, and no build or browser
+    // says why the rule stopped applying.
+    for (const source of [
+      '.a { color: var(--edsb-text-primary); }',
+      '.a { padding: calc(var(--ednb-space-lg) + var(--edsb-space-sm)); }',
+      '.a { display: grid; grid-template-columns: var(--edsb-layout-rail) 1fr; }',
+    ]) {
+      assert.deepEqual(
+        ruleIds(rules.stylesheetViolations('c.scss', source)).filter(
+          (rule) => rule === 'foreign-token-namespace',
+        ),
+        ['foreign-token-namespace'],
+        source,
+      );
+    }
+  });
+
+  it('reads a foreign namespace inside a custom property, which is where a rename lands', () => {
+    // The namespace check runs before the rule that refuses a custom property
+    // outside the token sources, because that rule returns: behind it, no
+    // token defined in terms of another token would ever be read. A token
+    // source is exempt from the second rule and not from the first.
+    const found = rules.stylesheetViolations('c.scss', '.a { --local: var(--edsb-space-sm); }');
+
+    assert.deepEqual(ruleIds(found), ['foreign-token-namespace', 'token-outside-source']);
+  });
+
+  it('holds the token sources to the namespace and nothing else', () => {
+    // Literals and custom-property declarations are what a token source is
+    // for. A stale prefix is not, and these files hold the densest `var()`
+    // references in the repository.
+    const scope = { tokenSources: ['src/styles/tokens/_semantic.scss'] };
+    const found = rules.stylesheetViolations(
+      'c.scss',
+      ':root { --ednb-a: #ff8c1a; --ednb-b: var(--edsb-a); }',
+    );
+
+    assert.deepEqual(ruleIds(found), [
+      'token-outside-source',
+      'foreign-token-namespace',
+      'token-outside-source',
+    ]);
+    assert.deepEqual(
+      ruleIds(rules.governedStylesheetViolations('src/styles/tokens/_semantic.scss', found, scope)),
+      ['foreign-token-namespace'],
+    );
+    assert.deepEqual(
+      ruleIds(rules.governedStylesheetViolations('src/app/app.scss', found, scope)),
+      ruleIds(found),
+      'everywhere else keeps every violation it found',
+    );
+  });
+
+  it('reads the canvas\u2019s own token names in comments as prose', () => {
+    // Records quote the design's names — `var(--amber-a14)`, `var(--panel)` —
+    // and a comment is not a declaration.
+    const found = rules.stylesheetViolations(
+      'c.scss',
+      '// The canvas draws `1px solid var(--amber-a2)` over `var(--panel)`.\n.a { color: var(--ednb-text-primary); }',
+    );
 
     assert.deepEqual(found, []);
   });
 
   it('accepts a token calculation', () => {
     for (const source of [
-      '.a { padding: calc(var(--edsb-space-lg) * 2); }',
-      '.a { gap: min(var(--edsb-space-lg), var(--edsb-space-xl)); }',
-      '.a { padding-inline: var(--edsb-space-sm) var(--edsb-space-lg); }',
-      '.a { border: var(--edsb-border-width-thin) solid var(--edsb-border-default); }',
+      '.a { padding: calc(var(--ednb-space-lg) * 2); }',
+      '.a { gap: min(var(--ednb-space-lg), var(--ednb-space-xl)); }',
+      '.a { padding-inline: var(--ednb-space-sm) var(--ednb-space-lg); }',
+      '.a { border: var(--ednb-border-width-thin) solid var(--ednb-border-default); }',
     ]) {
       assert.deepEqual(rules.stylesheetViolations('c.scss', source), [], source);
     }
@@ -222,7 +288,7 @@ describe('governed visual literals', () => {
   });
 
   it('reports a stylesheet it genuinely cannot parse instead of passing it', () => {
-    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--edsb-text-primary);');
+    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--ednb-text-primary);');
 
     assert.deepEqual(ruleIds(found), ['unparseable-stylesheet']);
   });
@@ -230,7 +296,7 @@ describe('governed visual literals', () => {
   it('accepts a transition that names the property it animates', () => {
     const found = rules.stylesheetViolations(
       'c.scss',
-      '.a { transition: background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing); }',
+      '.a { transition: background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing); }',
     );
 
     assert.deepEqual(found, []);
@@ -239,7 +305,7 @@ describe('governed visual literals', () => {
   it('still rejects a hand-picked duration inside a transition shorthand', () => {
     const found = rules.stylesheetViolations(
       'c.scss',
-      '.a { transition: background-color 200ms var(--edsb-motion-easing); }',
+      '.a { transition: background-color 200ms var(--ednb-motion-easing); }',
     );
 
     assert.deepEqual(ruleIds(found), ['visual-literal']);
@@ -476,8 +542,8 @@ describe('coverage ledger reconciliation', () => {
 describe('value classification', () => {
   it('recognises tokenised values', () => {
     for (const value of [
-      'var(--edsb-text-primary)',
-      'calc(var(--edsb-space-lg) * 2)',
+      'var(--ednb-text-primary)',
+      'calc(var(--ednb-space-lg) * 2)',
       '0',
       'none',
       'inherit',
@@ -1149,7 +1215,7 @@ describe('search metadata', () => {
     <url><loc>https://navbeacon.app/build</loc></url>
   </urlset>`;
 
-  const TOKENS = '  --edsb-palette-bg: #0b0b0c;\n';
+  const TOKENS = '  --ednb-palette-bg: #0b0b0c;\n';
 
   const MANIFEST = JSON.stringify({
     name: 'NavBeacon',

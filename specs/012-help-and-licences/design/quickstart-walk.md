@@ -86,7 +86,7 @@ above the compact composition with its own scroller — and it is **withdrawn**.
 `3f9b574` landed on `main` with a better answer to the same defect, reached from the
 same diagnosis: the frame now measures the bar it actually rendered and releases it to `position:
 static` when what it leaves below is no longer a viewport anything can be stacked in, and zeroes
-`--edsb-layout-bar-height` so the chrome that offsets by the bar travels with it instead of freezing
+`--ednb-layout-bar-height` so the chrome that offsets by the bar travels with it instead of freezing
 over a gap. That is the shell's own rule enforced by measurement rather than approximated by a
 viewport share, and it is feature 011's to make. The interim commit was dropped on the rebase; two
 competing fixes for one defect would have left the bar clamped and scrolling even once released.
@@ -102,7 +102,7 @@ it as text — see
 control is a consequence of that decision rather than a fix for this one, which stands as made.
 
 What `main`'s fix did carry over the rebase was a policy violation: it declares
-`--edsb-layout-bar-height: 0px` inside `app-frame.scss`, and the constitution has design tokens
+`--ednb-layout-bar-height: 0px` inside `app-frame.scss`, and the constitution has design tokens
 defined once, in the token layer, with `check-interface-foundations.mjs` enforcing that as
 `token-outside-source`. `pnpm run policy` was green before the rebase and red after it, on a file
 this feature does not own. It was fixed here rather than left for `main`, because a red gate on this

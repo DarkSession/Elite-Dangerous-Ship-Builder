@@ -5,12 +5,12 @@
 }
 
 .slef-import {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 .slef-import__description {
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-secondary);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-secondary);
   text-wrap: pretty;
 }
 
@@ -19,20 +19,20 @@
  * field and the footer do not jump apart when a status arrives.
  */
 .slef-import__status {
-  @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-meta));
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-meta));
 
-  min-height: var(--edsb-text-size-body);
-  font-family: var(--edsb-font-metric);
+  min-height: var(--ednb-text-size-body);
+  font-family: var(--ednb-font-metric);
 }
 
 .slef-import__refusals {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding-inline-start: var(--edsb-space-lg);
+  padding-inline-start: var(--ednb-space-lg);
   overflow-wrap: anywhere;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-compact);
-  color: var(--edsb-text-secondary);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-secondary);
   list-style: disc;
 }
 
@@ -41,20 +41,20 @@
  * on the other, stacking rather than clipping when the room runs out.
  */
 .slef-import__footer {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: center;
   justify-content: space-between;
-  padding-block-start: var(--edsb-space-xs);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  padding-block-start: var(--ednb-space-xs);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
 }
 
 .slef-import__accepted {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-meta));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-meta));
 
-  font-family: var(--edsb-font-metric);
+  font-family: var(--ednb-font-metric);
 }
 
 .slef-import__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }

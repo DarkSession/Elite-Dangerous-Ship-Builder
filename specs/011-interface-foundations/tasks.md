@@ -517,7 +517,7 @@ Task: "Status, notice and error in src/app/ui/components/status/"
   keys; none of the three is a follow-up
 - Commit after each task or logical group; stop at a checkpoint to validate a story independently
 
-- [x] T149 Inset a sheet from the top of the screen. Add `--edsb-space-sheet-inset` to the token
+- [x] T149 Inset a sheet from the top of the screen. Add `--ednb-space-sheet-inset` to the token
       layer, take it out of the sheet's 88% bound in `src/app/ui/components/layer/layer.scss` so the
       scrim below is unchanged, and hold the layer to it in `e2e/responsive.spec.ts`. Flush against
       the edge, a sheet's title bar met the top of the screen with nothing above it and a phone's own

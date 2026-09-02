@@ -82,7 +82,7 @@
 // That trade is worth stating rather than dressing up as a second bar.
 .family,
 .candidate {
-  scroll-margin-block-start: var(--edsb-layout-bar-height);
+  scroll-margin-block-start: var(--ednb-layout-bar-height);
 }
 
 // Canvas 1d's `FITTED HERE` and `FAMILIES` rules: a tracked mono label on the
@@ -92,26 +92,26 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   margin: 0;
-  padding-block: var(--edsb-space-md) var(--edsb-space-xs);
-  padding-inline: var(--edsb-space-xl);
-  background-color: var(--edsb-surface-panel-raised);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  padding-block: var(--ednb-space-md) var(--ednb-space-xs);
+  padding-inline: var(--ednb-space-xl);
+  background-color: var(--ednb-surface-panel-raised);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
 }
 
 .candidates__rule-title {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 }
 
 // The canvas sets `FITTED HERE` in the accent and `FAMILIES` in the quiet ink,
 // which is what tells the pinned row apart from the list under it.
 .candidates__rule--fitted .candidates__rule-title {
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
 }
 
 .candidates__rule-count {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
 }
 
 // The canvas's family bar. It is a real control at every width — 44 CSS px of
@@ -121,20 +121,20 @@
 .family {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   inline-size: 100%;
-  min-block-size: var(--edsb-target-size);
+  min-block-size: var(--ednb-target-size);
   margin: 0;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-xl);
-  background-color: var(--edsb-surface-root);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-xl);
+  background-color: var(--ednb-surface-root);
   border: 0;
   // Canvas 1d leaves the family's own leading edge clear and marks the fitted
   // block with it instead; canvas 1c marks the bar. The reserved edge keeps the
   // family's text on the same line as the rows beneath it either way.
-  border-inline-start: var(--edsb-border-width-marker) solid transparent;
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
-  color: var(--edsb-text-primary);
+  border-inline-start: var(--ednb-border-width-marker) solid transparent;
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
+  color: var(--ednb-text-primary);
   text-align: start;
   cursor: pointer;
 }
@@ -146,29 +146,29 @@
 .family__name {
   flex: 1 1 auto;
   min-inline-size: 0;
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-heading-sm);
-  font-weight: var(--edsb-text-weight-emphasis);
-  line-height: var(--edsb-text-leading-heading);
-  color: var(--edsb-text-numeric);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-heading-sm);
+  font-weight: var(--ednb-text-weight-emphasis);
+  line-height: var(--ednb-text-leading-heading);
+  color: var(--ednb-text-numeric);
 }
 
 // The count of package records in the family, and nothing else: canvas 1d's
 // `6 VARIANTS · 15.1–28.4 DPS · 4.46 MW` line is withdrawn with its ranges,
 // which are aggregates the Almanac does not publish.
 .family__count {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
 
   flex: none;
 }
 
 .family__caret {
-  @include layout.metric-value(var(--edsb-text-size-caption), var(--edsb-text-accent));
+  @include layout.metric-value(var(--ednb-text-size-caption), var(--ednb-text-accent));
 
   flex: none;
   // The canvas's fixed caret column, so the glyph does not shift the count
   // beside it as it turns from `\203a` to `\25be`.
-  inline-size: var(--edsb-space-lg);
+  inline-size: var(--ednb-space-lg);
   text-align: center;
 }
 
@@ -183,10 +183,10 @@
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--edsb-space-stack-tight);
+  gap: var(--ednb-space-stack-tight);
   align-items: center;
-  min-block-size: var(--edsb-target-size);
-  padding: var(--edsb-space-row);
+  min-block-size: var(--ednb-target-size);
+  padding: var(--ednb-space-row);
   cursor: pointer;
 }
 
@@ -204,11 +204,11 @@
 // two apart, because both are drawn as the same row.
 @media (hover: hover) {
   .family:not([aria-pressed='true']):hover {
-    background-color: var(--edsb-surface-accent-quiet);
+    background-color: var(--ednb-surface-accent-quiet);
   }
 
   .candidate:has(.candidate__radio):not([data-selected='true']):hover {
-    background-color: var(--edsb-surface-accent-quiet);
+    background-color: var(--ednb-surface-accent-quiet);
   }
 }
 
@@ -216,8 +216,8 @@
   // The control stays in the accessibility tree and stays operable; the row's
   // own ground is what shows the state, exactly as both canvases draw it.
   position: absolute;
-  inline-size: var(--edsb-space-hair);
-  block-size: var(--edsb-space-hair);
+  inline-size: var(--ednb-space-hair);
+  block-size: var(--ednb-space-hair);
   opacity: 0;
 }
 
@@ -226,17 +226,17 @@
 .candidate__identity {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   min-inline-size: 0;
 }
 
 .candidate__name {
   min-inline-size: 0;
-  font-family: var(--edsb-font-body);
+  font-family: var(--ednb-font-body);
   // The canvas's 13px, which is this scale's `lead` step.
-  font-size: var(--edsb-text-size-lead);
-  font-weight: var(--edsb-text-weight-emphasis);
-  color: var(--edsb-text-primary);
+  font-size: var(--ednb-text-size-lead);
+  font-weight: var(--ednb-text-weight-emphasis);
+  color: var(--ednb-text-primary);
   overflow-wrap: break-word;
 }
 
@@ -262,11 +262,11 @@
 // mount opens in: there the checked treatment is the whole of the answer and the
 // row is amber, exactly as the canvas draws it.
 .candidate--fitted:not([data-selected='true']) {
-  border-inline-start-color: var(--edsb-marker-selected);
+  border-inline-start-color: var(--ednb-marker-selected);
 }
 
 [data-selected='true'] .candidate__name {
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
 }
 
 // `Multi-Cannon · Gimballed`: the canvas writes the mount into the name with a
@@ -276,7 +276,7 @@
 // name's 500 the two halves of a module's name read as two different things
 // (wave 9).
 .candidate__mount {
-  margin-inline-start: var(--edsb-space-stack-tight);
+  margin-inline-start: var(--ednb-space-stack-tight);
 }
 
 .candidate__badge {
@@ -293,15 +293,15 @@
 // own rung — not as a tracked uppercase label, which set it apart from the five
 // numbers it is read across (wave 9).
 .candidate__class {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-muted));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-muted));
 }
 
 [data-selected='true'] .candidate__class {
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
 }
 
 .candidate__facts {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 }
 
 // Canvas 1c's `COST` cell: the credit price, and under it the coin price where
@@ -309,7 +309,7 @@
 .candidate__cost {
   display: flex;
   flex-direction: column;
-  gap: var(--edsb-space-stack-tight);
+  gap: var(--ednb-space-stack-tight);
   min-inline-size: 0;
 }
 
@@ -321,9 +321,9 @@
 .candidate__cost ::ng-deep .fact,
 .candidate__merc {
   display: grid;
-  grid-template-columns: minmax(0, auto) var(--edsb-layout-icon-size);
+  grid-template-columns: minmax(0, auto) var(--ednb-layout-icon-size);
   align-items: center;
-  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-stack-tight) var(--ednb-space-inline-tight);
   justify-content: start;
 }
 
@@ -353,7 +353,7 @@
 // The canvas sets the coin figure a rung under the credit figure beside it, in
 // the Merc ink. The icon is decorative — the unit is read out in words.
 .candidate__merc-count {
-  @include layout.metric-value(var(--edsb-text-size-caption), var(--edsb-text-merc));
+  @include layout.metric-value(var(--ednb-text-size-caption), var(--ednb-text-merc));
 
   unicode-bidi: isolate;
 }
@@ -367,8 +367,8 @@
 
 .candidate__merc-icon {
   flex: none;
-  inline-size: var(--edsb-layout-icon-size);
-  block-size: var(--edsb-layout-icon-size);
+  inline-size: var(--ednb-layout-icon-size);
+  block-size: var(--ednb-layout-icon-size);
   object-fit: contain;
 }
 
@@ -410,9 +410,9 @@
   // its own grid: at `auto` every code is as wide as its own row's code, and the
   // column the canvas lines them up in stops being a column.
   .candidate {
-    grid-template-columns: var(--edsb-layout-candidate-code) minmax(0, 1fr) auto;
-    column-gap: var(--edsb-space-inline);
-    min-block-size: var(--edsb-layout-candidate-row-compact);
+    grid-template-columns: var(--ednb-layout-candidate-code) minmax(0, 1fr) auto;
+    column-gap: var(--ednb-space-inline);
+    min-block-size: var(--ednb-layout-candidate-row-compact);
   }
 
   // Each cell is placed on the row as well as in its column. The gutter is drawn
@@ -468,10 +468,10 @@
   .candidates__manifest {
     display: grid;
     grid-template-columns:
-      minmax(var(--edsb-layout-family-rail), var(--edsb-layout-family-rail-max))
+      minmax(var(--ednb-layout-family-rail), var(--ednb-layout-family-rail-max))
       minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
-    column-gap: var(--edsb-layout-family-gap);
+    column-gap: var(--ednb-layout-family-gap);
     min-block-size: 0;
     flex: 1;
   }
@@ -487,7 +487,7 @@
     position: relative;
     grid-column: 1;
     grid-row: 2;
-    max-block-size: var(--edsb-layout-manifest-pane);
+    max-block-size: var(--ednb-layout-manifest-pane);
     min-block-size: 0;
     overflow-y: auto;
     overscroll-behavior-block: contain;
@@ -511,11 +511,11 @@
     position: relative;
     grid-column: 2;
     grid-row: 2;
-    max-block-size: var(--edsb-layout-manifest-pane);
+    max-block-size: var(--ednb-layout-manifest-pane);
     min-block-size: 0;
     overflow-y: auto;
     overscroll-behavior-block: contain;
-    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+    border-inline-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
   }
 
   // A rail row is a name and a count and nothing else. No caret: there is
@@ -545,7 +545,7 @@
   // selection does.
   .family--rail[aria-pressed='false'] {
     background-image: none;
-    background-color: var(--edsb-surface-panel-raised);
+    background-color: var(--ednb-surface-panel-raised);
     border-inline-start-color: transparent;
   }
 }
@@ -564,12 +564,12 @@
     // space between them. A gap on top of them is what pushed the figures out
     // of the widths the canvas sets.
     gap: 0;
-    grid-template-columns: var(--edsb-layout-candidate-columns);
+    grid-template-columns: var(--ednb-layout-candidate-columns);
     align-items: center;
   }
 
   .candidates__column {
-    @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+    @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
   }
 
   .candidates__column--figure {
@@ -585,11 +585,11 @@
   // hairline it needed to survive being frozen go with it (wave 9's seam rules,
   // withdrawn with the composition that had the seam).
   .family {
-    padding-inline: var(--edsb-space-row);
-    background-color: var(--edsb-surface-root);
-    background-image: var(--edsb-surface-family);
-    border-inline-start-color: var(--edsb-marker-selected);
-    border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+    padding-inline: var(--ednb-space-row);
+    background-color: var(--ednb-surface-root);
+    background-image: var(--ednb-surface-family);
+    border-inline-start-color: var(--ednb-marker-selected);
+    border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
   }
 
   // The pointer wash, said again inside the rail's own block. The rule near the
@@ -600,30 +600,30 @@
   // (`design/outfitting-workspace.md`, "Pointer hover").
   @media (hover: hover) {
     .family--rail[aria-pressed='false']:hover {
-      background-color: var(--edsb-surface-accent-quiet);
+      background-color: var(--ednb-surface-accent-quiet);
     }
   }
 
   .family__name {
-    font-family: var(--edsb-font-heading);
-    font-size: var(--edsb-text-size-lead);
-    font-weight: var(--edsb-text-weight-heading);
-    letter-spacing: var(--edsb-text-tracking-control);
+    font-family: var(--ednb-font-heading);
+    font-size: var(--ednb-text-size-lead);
+    font-weight: var(--ednb-text-weight-heading);
+    letter-spacing: var(--ednb-text-tracking-control);
     text-transform: uppercase;
-    color: var(--edsb-text-accent-strong);
+    color: var(--ednb-text-accent-strong);
   }
 
   // The canvas's chip behind the count, which the compact composition draws as
   // a bare figure on the row's own ground.
   .family__count {
-    padding-block: var(--edsb-space-3xs);
-    padding-inline: var(--edsb-space-xs);
-    background-color: var(--edsb-surface-accent-quiet);
-    color: var(--edsb-text-subtle);
+    padding-block: var(--ednb-space-3xs);
+    padding-inline: var(--ednb-space-xs);
+    background-color: var(--ednb-surface-accent-quiet);
+    color: var(--ednb-text-subtle);
   }
 
   .candidate {
-    grid-template-columns: var(--edsb-layout-candidate-columns);
+    grid-template-columns: var(--ednb-layout-candidate-columns);
     // The same gap the header row sets — none — or the figures sit beside their
     // labels rather than under them.
     gap: 0;
@@ -644,9 +644,9 @@
     // immediately. The two rules that follow are unchanged, and for the same
     // reasons: a name too long for its column is cut rather than wrapped, and
     // the two-price rows declare nothing and are never skipped.
-    block-size: var(--edsb-layout-candidate-row);
+    block-size: var(--ednb-layout-candidate-row);
     content-visibility: auto;
-    contain-intrinsic-block-size: var(--edsb-layout-candidate-row);
+    contain-intrinsic-block-size: var(--ednb-layout-candidate-row);
   }
 
   // A name longer than its column is cut rather than wrapped: the canvas cuts
@@ -678,7 +678,7 @@
   // to prevent (wave 8).
   .candidate:has(.candidate__merc) {
     block-size: auto;
-    min-block-size: var(--edsb-layout-candidate-row);
+    min-block-size: var(--ednb-layout-candidate-row);
     content-visibility: visible;
   }
 }
@@ -693,7 +693,7 @@
 // panels that happen to be adjacent (`design/module-replacement.md`, "The three
 // steps, numbered").
 .edsb-step {
-  margin-block-end: var(--edsb-space-sm);
+  margin-block-end: var(--ednb-space-sm);
 }
 
 // Step ②'s bar is the column head as well, so its first cell is the step and
@@ -701,7 +701,7 @@
 .candidates__step-lead {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-sm);
+  gap: var(--ednb-space-sm);
   min-inline-size: 0;
 }
 

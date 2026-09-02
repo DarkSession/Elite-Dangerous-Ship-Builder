@@ -21,7 +21,7 @@
 }
 
 .power {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
 }
@@ -38,7 +38,7 @@
     // build happens to fill, and holding a real build to it would leave one
     // plate ruled off around empty ground.
     align-items: stretch;
-    gap: var(--edsb-space-region);
+    gap: var(--ednb-space-region);
   }
 }
 
@@ -55,25 +55,25 @@
 // the same border and the same padding: `1px solid var(--amber-a2)` over
 // `var(--panel)` at `16px 18px`.
 .power__block {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
-  padding-block: var(--edsb-space-2xl);
-  padding-inline: var(--edsb-space-panel);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block: var(--ednb-space-2xl);
+  padding-inline: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // Canvas 1c's labelled rule: a tracked mono label with the hairline running out
 // to the block's trailing edge, and the total set against it.
 .power__head {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   justify-content: space-between;
 }
 
 .power__heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
 }
@@ -83,7 +83,7 @@
 // figures above it.
 .power__note {
   margin: 0;
-  color: var(--edsb-text-muted);
+  color: var(--ednb-text-muted);
   text-wrap: pretty;
 }
 
@@ -99,7 +99,7 @@
 // that says what they are a share of. A phone spends no line on them and a
 // reader still has them.
 .power__note--inline {
-  color: var(--edsb-text-faint);
+  color: var(--ednb-text-faint);
 }
 
 @include layout.container-compact(power) {
@@ -134,8 +134,8 @@
 .modules__total {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack-tight);
+  column-gap: var(--ednb-space-inline);
+  row-gap: var(--ednb-space-stack-tight);
   margin: 0;
   padding: 0;
 }
@@ -158,8 +158,8 @@
 // The total is ruled off from the lines it adds up, which is the one thing that
 // makes it read as their sum rather than as another module.
 .modules__total {
-  padding-block-start: var(--edsb-space-stack-tight);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-grid);
+  padding-block-start: var(--ednb-space-stack-tight);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-grid);
 }
 
 .modules__total-label {
@@ -200,19 +200,19 @@
 .power__band-track {
   position: relative;
   display: block;
-  block-size: var(--edsb-layout-power-bar);
-  background-color: var(--edsb-surface-inset);
+  block-size: var(--ednb-layout-power-bar);
+  background-color: var(--ednb-surface-inset);
 }
 
 .module__fill {
   display: block;
   block-size: 100%;
-  background-color: var(--edsb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 .module__draw,
 .modules__total-draw {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   text-align: end;
 }
@@ -222,13 +222,13 @@
 // tell amber from red; the group is named on the line as well, because a state
 // carried by a pattern alone is a state carried by nothing a reader can name.
 .module--offline .module__group {
-  color: var(--edsb-text-danger);
+  color: var(--ednb-text-danger);
 }
 
 // Canvas 1c lays the heat block out as the bars beside their tiles, and stacks
 // the two at every width that cannot hold both.
 .heat {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 // The block measures itself rather than the panel around it. Half of a wide
@@ -259,8 +259,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
-    column-gap: var(--edsb-space-region);
-    row-gap: var(--edsb-space-stack);
+    column-gap: var(--ednb-space-region);
+    row-gap: var(--ednb-space-stack);
   }
 
   .heat__profile {
@@ -283,15 +283,15 @@
 .heat__profile {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack-tight);
+  column-gap: var(--ednb-space-inline);
+  row-gap: var(--ednb-space-stack-tight);
 }
 
 .heat__bars {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
-  row-gap: var(--edsb-space-stack-tight);
+  row-gap: var(--ednb-space-stack-tight);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -336,27 +336,27 @@
 
 .heat__within {
   inset-inline-start: 0;
-  background-color: var(--edsb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 // The part of the bar past the threshold. The canvas hatches it; the hatch is
 // what tells the two fills apart for a reader who cannot tell amber from red,
 // and the key beside them names both in words as well.
 .heat__over {
-  background-image: var(--edsb-surface-overheat);
+  background-image: var(--ednb-surface-overheat);
 }
 
 // The line the whole block is measured against, drawn through every bar.
 .heat__threshold {
   position: absolute;
-  inset-block: calc(var(--edsb-border-width-hairline) * -2);
+  inset-block: calc(var(--ednb-border-width-hairline) * -2);
   display: block;
-  inline-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-text-muted);
+  inline-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-text-muted);
 }
 
 .heat__level {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   text-align: end;
 }
@@ -366,11 +366,11 @@
 }
 
 .heat__bar--over .heat__level {
-  color: var(--edsb-text-danger);
+  color: var(--ednb-text-danger);
 }
 
 .heat__legend {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   margin: 0;
   padding: 0;
@@ -379,16 +379,16 @@
 
 .heat__key {
   @include layout.micro-label;
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   align-items: center;
 }
 
 .heat__swatch {
   display: block;
-  inline-size: var(--edsb-layout-power-bar);
-  block-size: var(--edsb-layout-power-bar);
-  background-color: var(--edsb-surface-accent-solid);
+  inline-size: var(--ednb-layout-power-bar);
+  block-size: var(--ednb-layout-power-bar);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 // The distributor and its pips are their own component
@@ -410,8 +410,8 @@
   display: grid;
   // The canvas's four: the group's name, its bar, its draw, its share.
   grid-template-columns: auto minmax(0, 1fr) auto auto;
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack-tight);
+  column-gap: var(--ednb-space-inline);
+  row-gap: var(--ednb-space-stack-tight);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -426,25 +426,25 @@
 
 // The column the mode strip above shares, so the strip's segments begin where
 // the bars begin — canvas 1d stands `H‑PTS` and `GRP n` in one 40px column for
-// exactly that reason (`--edsb-layout-band-name`; Commander request
+// exactly that reason (`--ednb-layout-band-name`; Commander request
 // 2026-08-26).
 .power__band-group {
-  @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-heading));
 
-  min-inline-size: var(--edsb-layout-band-name);
+  min-inline-size: var(--ednb-layout-band-name);
 }
 
 .power__band-draw,
 .power__band-share {
-  font: var(--edsb-font-metric);
-  color: var(--edsb-text-numeric);
+  font: var(--ednb-font-metric);
+  color: var(--ednb-text-numeric);
   text-align: end;
 }
 
 // The word the canvas prints in place of a shed group's percentage. It is the
 // reading, not a colour: a reader who cannot tell amber from grey gets it here.
 .power__band-state {
-  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-danger), var(--ednb-text-tracking-heading));
 
   text-align: end;
 }
@@ -464,20 +464,20 @@
 
 .power__band-preceding {
   inset-inline-start: 0;
-  background-color: var(--edsb-surface-accent-selected);
+  background-color: var(--ednb-surface-accent-selected);
 }
 
 .power__band-fill {
-  background-color: var(--edsb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 // Drawn just inside its own position rather than starting at it, so the mark
 // for a plant that covers the whole demand lands at the end of the track
 // instead of past it. The rail's bar draws its own the same way.
 .power__band-plant {
-  inline-size: var(--edsb-border-width-hairline);
-  margin-inline-start: calc(var(--edsb-border-width-hairline) * -1);
-  background-color: var(--edsb-text-numeric);
+  inline-size: var(--ednb-border-width-hairline);
+  margin-inline-start: calc(var(--ednb-border-width-hairline) * -1);
+  background-color: var(--ednb-text-numeric);
 }
 
 // Half of the plant's output, drawn broken so the two marks on a track cannot
@@ -488,16 +488,16 @@
   position: absolute;
   inset-block: 0;
   display: block;
-  inline-size: var(--edsb-border-width-hairline);
-  margin-inline-start: calc(var(--edsb-border-width-hairline) * -1);
+  inline-size: var(--ednb-border-width-hairline);
+  margin-inline-start: calc(var(--ednb-border-width-hairline) * -1);
   // The canvas's own rhythm, at the nearest steps the space scale carries: two
   // on and four off, where it draws two on and three off. A finer pattern than
   // this resolves to a solid grey hairline at a fractional device pixel ratio,
   // which is the one thing this mark must not look like.
   background-image: repeating-linear-gradient(
     to bottom,
-    var(--edsb-text-muted) 0 var(--edsb-space-3xs),
-    transparent var(--edsb-space-3xs) var(--edsb-space-xs)
+    var(--ednb-text-muted) 0 var(--ednb-space-3xs),
+    transparent var(--ednb-space-3xs) var(--ednb-space-xs)
   );
 }
 
@@ -516,7 +516,7 @@
   position: relative;
   display: block;
   grid-column: 2;
-  block-size: var(--edsb-text-size-micro);
+  block-size: var(--ednb-text-size-micro);
 }
 
 // A box of no width centring what it holds, so a name straddles its mark
@@ -548,5 +548,5 @@
 .power__band--offline .power__band-fill,
 .heat__swatch--over {
   background-color: transparent;
-  background-image: var(--edsb-surface-overheat);
+  background-image: var(--ednb-surface-overheat);
 }

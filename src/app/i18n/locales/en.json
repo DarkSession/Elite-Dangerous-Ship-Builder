@@ -266,7 +266,7 @@
   "link.error.reconstructionFailed": "This build link was read, but the build it describes could not be rebuilt.",
   "link.error.tooLong": "This build link is longer than any this application produces, so it was not read.",
   "link.error.unchanged": "Your current build is unchanged.",
-  "tools.ship": "Ship",
+  "tools.ship": "Ship Builder",
   "navigation.catalogue": "Ship Builder",
   "navigation.build": "Build",
   "navigation.library": "Open saved build",

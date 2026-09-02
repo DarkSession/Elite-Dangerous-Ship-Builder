@@ -3,55 +3,55 @@
 // product renders them.
 :host {
   display: block;
-  padding: var(--edsb-space-panel);
+  padding: var(--ednb-space-panel);
 }
 
 h1 {
-  margin-block-end: var(--edsb-space-region);
-  font-size: var(--edsb-text-size-heading-md);
+  margin-block-end: var(--ednb-space-region);
+  font-size: var(--ednb-text-size-heading-md);
 }
 
 section {
-  padding-block: var(--edsb-space-region);
-  border-block-start: var(--edsb-border-width-thin) solid var(--edsb-border-default);
+  padding-block: var(--ednb-space-region);
+  border-block-start: var(--ednb-border-width-thin) solid var(--ednb-border-default);
 }
 
 h2 {
-  margin-block-end: var(--edsb-space-stack);
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-label);
+  margin-block-end: var(--ednb-space-stack);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-label);
   text-transform: none;
-  letter-spacing: var(--edsb-text-tracking-body);
-  color: var(--edsb-text-muted);
+  letter-spacing: var(--ednb-text-tracking-body);
+  color: var(--ednb-text-muted);
 }
 
 .preview-cell__stage {
-  padding: var(--edsb-space-panel);
-  background-color: var(--edsb-surface-panel);
+  padding: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
 }
 
 .preview-cell__expectations {
-  margin-block-start: var(--edsb-space-stack);
+  margin-block-start: var(--ednb-space-stack);
   list-style: none;
-  font-size: var(--edsb-text-size-label);
-  color: var(--edsb-text-muted);
+  font-size: var(--ednb-text-size-label);
+  color: var(--ednb-text-muted);
 }
 
 // Catalogue navigation to the states that render on their own.
 nav ul {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--edsb-space-inline);
-  margin-block-end: var(--edsb-space-region);
+  gap: var(--ednb-space-inline);
+  margin-block-end: var(--ednb-space-region);
   list-style: none;
 }
 
 nav a {
   display: inline-flex;
   align-items: center;
-  min-block-size: var(--edsb-target-size);
-  padding-inline: var(--edsb-space-inline);
-  color: var(--edsb-text-accent);
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-label);
+  min-block-size: var(--ednb-target-size);
+  padding-inline: var(--ednb-space-inline);
+  color: var(--ednb-text-accent);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-label);
 }

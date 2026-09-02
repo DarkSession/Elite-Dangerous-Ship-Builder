@@ -207,7 +207,7 @@ export class ExperimentalEffectList {
   /**
    * Keeps the option the list is on inside the box it scrolls in.
    *
-   * The list is bounded at `--edsb-layout-menu-drop` and scrolls inside itself,
+   * The list is bounded at `--ednb-layout-menu-drop` and scrolls inside itself,
    * so an option the keyboard walks to — or the applied one the menu opens on —
    * is otherwise named by `aria-activedescendant` while sitting hundreds of
    * pixels below the fold. Nothing on screen would move.

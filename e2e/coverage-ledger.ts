@@ -249,7 +249,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'catalogue/reference-language',
     axe: false,
     assertions: [
-      'the command bar is the reference plate closed by the heavy amber rule and opened by the flag',
+      'the command bar is the reference plate closed by the heavy amber rule and opened by the beacon mark the design ships',
       'the insignia is the size the canvas draws it whether or not it is the way home, and the press around it is the target baseline',
       'the bar is one height on the shipyard and on a build, and its floor holds the tallest identity it carries',
       'headings are tracked uppercase condensed and numbers are monospace',

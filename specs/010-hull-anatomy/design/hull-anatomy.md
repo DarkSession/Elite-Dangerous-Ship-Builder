@@ -150,7 +150,7 @@ plate holds its whole document at its own ratio at every width.
   with the window: the block stands 282px tall on canvas 1c's own 1560, 355px at 1920 and 485px at
   2560 — a plate of 164, 237 and 367 with the header and legend around it — which is more than half
   of a wide screen given to drawings that were already finished at the first of those. Every plate is
-  bounded at `--edsb-layout-anatomy-plate` and centred in whatever the block has beyond it.
+  bounded at `--ednb-layout-anatomy-plate` and centred in whatever the block has beyond it.
 
   The measure is canvas 1c's own — its 862px centre column, less the block's inset and the gap
   between the plates, halved — plus two fifths, which is 566px a plate against the canvas's 404. The

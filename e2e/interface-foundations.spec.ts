@@ -79,7 +79,7 @@ test.describe('product semantics', () => {
 
     const current = tools.locator('[aria-current]');
     await expect(current).toHaveCount(1);
-    await expect(current).toHaveText('Ship');
+    await expect(current).toHaveText('Ship Builder');
     await expect(current).not.toHaveRole('link');
 
     // Exactly the registry: one tool today, and no tab for one the application
@@ -105,13 +105,13 @@ test.describe('product semantics', () => {
     // Every address the ship tool owns: the shipyard the `beforeEach` opened,
     // a hull's own page, the outfitting bench and the library.
     for (const route of ['/ships/Anaconda', '/build', '/builds']) {
-      expect(await named()).toBe('Ship');
+      expect(await named()).toBe('Ship Builder');
 
       await page.goto(route);
       await expect(page.getByRole('main')).toBeVisible();
     }
 
-    expect(await named()).toBe('Ship');
+    expect(await named()).toBe('Ship Builder');
   });
 
   test('exposes a named status region in ordinary reading order', async ({ page }) => {

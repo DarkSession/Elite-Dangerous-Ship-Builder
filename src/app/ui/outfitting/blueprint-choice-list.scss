@@ -8,7 +8,7 @@
 }
 
 .blueprints {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -16,10 +16,10 @@
 }
 
 .blueprints__legend {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   padding: 0;
-  margin-block-end: var(--edsb-space-stack-tight);
+  margin-block-end: var(--ednb-space-stack-tight);
 }
 
 // Canvas 1d draws every option in this card as a plate of its own: `min-height:
@@ -38,16 +38,16 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline);
-  padding: var(--edsb-space-row) var(--edsb-space-inline);
-  background-color: var(--edsb-surface-inset);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-row) var(--ednb-space-inline);
+  background-color: var(--ednb-surface-inset);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
   cursor: pointer;
 }
 
 .blueprint[data-selected='true'] {
-  background-color: var(--edsb-surface-accent-selected);
-  border-color: var(--edsb-border-accent);
+  background-color: var(--ednb-surface-accent-selected);
+  border-color: var(--ednb-border-accent);
 }
 
 // The wash and the amber edge are the echo, not the fact. A reader is told by
@@ -64,12 +64,12 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: var(--edsb-border-width-marker);
-  background-color: var(--edsb-marker-selected);
+  inline-size: var(--ednb-border-width-marker);
+  background-color: var(--ednb-marker-selected);
 }
 
 .blueprint[data-selected='true'] .blueprint__name {
-  font-weight: var(--edsb-text-weight-heading);
+  font-weight: var(--ednb-text-weight-heading);
 }
 
 // The canvas draws the no-blueprint row dashed, so it reads as the way out
@@ -84,30 +84,30 @@
 }
 
 .blueprint__identity {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
   flex: 1;
 }
 
 .blueprint__name {
-  color: var(--edsb-text-primary);
-  font-size: var(--edsb-text-size-body);
+  color: var(--ednb-text-primary);
+  font-size: var(--ednb-text-size-body);
 }
 
 .blueprint__note {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 .blueprint__consequence {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-caption);
+  color: var(--ednb-text-muted);
+  font-size: var(--ednb-text-size-caption);
 }
 
 // Ranged against the plate's trailing edge, at the end of the row the identity
 // block flexes across.
 .blueprint__applied {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-label));
 
   flex: none;
   margin-inline-start: auto;
@@ -117,8 +117,8 @@
 // read as the same thing said two ways.
 .blueprints__fixed {
   margin: 0;
-  color: var(--edsb-text-accent);
-  font-size: var(--edsb-text-size-body);
+  color: var(--ednb-text-accent);
+  font-size: var(--ednb-text-size-body);
 }
 
 // The canvas writes this control's value in its own amber, exactly as it writes
@@ -126,5 +126,5 @@
 // drawn in body ink would read as an ordinary field rather than as the amber
 // decision the canvas draws (canvas 1c `eng-bp-btn`).
 .blueprints__field ::ng-deep .field__control {
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
 }

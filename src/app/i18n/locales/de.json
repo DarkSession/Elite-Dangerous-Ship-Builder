@@ -266,7 +266,7 @@
   "link.error.reconstructionFailed": "Dieser Aufbau-Link ließ sich lesen, der beschriebene Aufbau konnte aber nicht wiederhergestellt werden.",
   "link.error.tooLong": "Dieser Aufbau-Link ist länger als jeder, den diese Anwendung erzeugt, und wurde daher nicht gelesen.",
   "link.error.unchanged": "Dein aktueller Aufbau ist unverändert.",
-  "tools.ship": "Schiff",
+  "tools.ship": "Ship Builder",
   "navigation.catalogue": "Ship Builder",
   "navigation.build": "Aufbau",
   "navigation.library": "Gespeicherten Build öffnen",

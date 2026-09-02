@@ -40,7 +40,7 @@
 // 2026-08-26 and 2026-08-27).
 @include layout.outfitting-regions {
   :host {
-    min-block-size: var(--edsb-layout-editor-panel);
+    min-block-size: var(--ednb-layout-editor-panel);
   }
 }
 
@@ -57,7 +57,7 @@
 }
 
 .engineering {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   // A containing block for the text drawn only for a reader, which is
   // positioned out of the page the standard way: without something positioned
@@ -73,7 +73,7 @@
 // Canvas 1d's own screen: a scrolling body inset `12px 14px`, holding bordered
 // plates one under the other, and a sticky pair of actions below it.
 .engineering--layer {
-  padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
+  padding: var(--ednb-space-row) var(--ednb-space-inline-loose);
 }
 
 // Canvas 1d draws three plates on the screen's ground — `BLUEPRINT` with the
@@ -88,30 +88,30 @@
 // nothing between them, so the bar read as part of the control above it rather
 // than as the grade that control was set to (Commander request 2026-08-26).
 .engineering__card {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
 }
 
 .engineering--layer .engineering__card {
-  padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding: var(--ednb-space-row) var(--ednb-space-inline-loose);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The grade is inside the recipe's plate, under the hairline canvas 1d rules
 // between them: it is the recipe's own grade, not a choice standing beside it.
 .engineering--layer .engineering__grade {
   display: block;
-  padding-block-start: var(--edsb-space-stack);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  padding-block-start: var(--ednb-space-stack);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
 }
 
 // Inline, canvas 1c draws the editor as the bench's third column: step ③'s bar
 // and two bordered cards under it. The panel itself carries no edge and no
 // ground — the cards do, and a box around two boxes is a frame around a frame.
 .engineering--panel {
-  gap: var(--edsb-space-sm);
+  gap: var(--ednb-space-sm);
 }
 
 // Step ③, the third bar of the chooser's own strip. The two are the same strip
@@ -121,7 +121,7 @@
 }
 
 .engineering__body {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   // A containing block for what is positioned out of the page inside it, and
   // not a scroller.
@@ -136,46 +136,46 @@
 .engineering:not(.engineering--layer) .engineering__result,
 .engineering:not(.engineering--layer) .engineering__choices {
   gap: 0;
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 .engineering__card-bar {
   display: flex;
   flex: none;
   align-items: center;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   // Canvas 1c's `11px 14px`.
-  padding: var(--edsb-space-row) var(--edsb-space-xl);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  padding: var(--ednb-space-row) var(--ednb-space-xl);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
 }
 
 // Canvas 1c's card heading: tracked mono in amber, at one end of the bar.
 .engineering__card-heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
-  font-size: var(--edsb-text-size-label);
+  font-size: var(--ednb-text-size-label);
 }
 
 .engineering__card-body {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
 }
 
 .engineering:not(.engineering--layer) .engineering__card-body {
-  padding: var(--edsb-space-xl);
+  padding: var(--ednb-space-xl);
 }
 
 .engineering__state {
   margin: 0;
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-compact);
+  color: var(--ednb-text-muted);
+  font-size: var(--ednb-text-size-compact);
 }
 
 .engineering__purchase {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-label));
 
   margin: 0;
 }
@@ -191,7 +191,7 @@
 // is something to put in it (Commander request 2026-08-30,
 // `design/engineering-editor.md`, "The third column").
 .engineering__panes {
-  @include layout.stack(var(--edsb-space-xl));
+  @include layout.stack(var(--ednb-space-xl));
 
   flex: 1;
   min-block-size: 0;
@@ -211,7 +211,7 @@
 
 .engineering__choices,
 .engineering__result {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   // A containing block for what each card positions out of the page, and
   // nothing else: neither card scrolls.
@@ -240,12 +240,12 @@
   .engineering__choices:has(edsb-blueprint-choice-list)
   .engineering__card-body {
   min-block-size: calc(
-    var(--edsb-layout-engineering-choices) + var(--edsb-space-xl) + var(--edsb-space-xl)
+    var(--ednb-layout-engineering-choices) + var(--ednb-space-xl) + var(--ednb-space-xl)
   );
 }
 
 .engineering__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   position: sticky;
   inset-block-end: 0;
@@ -253,10 +253,10 @@
   // The bar runs the width of canvas 1d's screen and carries its own inset, so
   // it takes back the body's — drawn inside it the plate stopped short of both
   // edges and read as a fourth card rather than as the screen's foot.
-  margin-inline: calc(var(--edsb-space-inline-loose) * -1);
-  padding: var(--edsb-space-row) var(--edsb-space-inline-loose);
-  background-color: var(--edsb-surface-panel-raised);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+  margin-inline: calc(var(--ednb-space-inline-loose) * -1);
+  padding: var(--ednb-space-row) var(--ednb-space-inline-loose);
+  background-color: var(--ednb-surface-panel-raised);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
 }
 
 .engineering__revert {

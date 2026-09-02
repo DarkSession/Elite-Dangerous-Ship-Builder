@@ -13,7 +13,7 @@
 }
 
 .statements {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -21,11 +21,11 @@
 }
 
 .statement {
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-inline-loose);
-  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-danger);
-  background-color: var(--edsb-surface-danger-quiet);
-  color: var(--edsb-text-danger);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-inline-loose);
+  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-danger);
+  background-color: var(--ednb-surface-danger-quiet);
+  color: var(--ednb-text-danger);
   overflow-wrap: break-word;
   text-wrap: pretty;
 }

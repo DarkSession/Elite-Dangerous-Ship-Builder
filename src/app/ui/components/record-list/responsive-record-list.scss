@@ -17,24 +17,24 @@
 // plate above one scrolling body.
 .records__columns {
   display: none;
-  gap: var(--edsb-space-inline);
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-row);
-  background-color: var(--edsb-surface-panel-raised);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  gap: var(--ednb-space-inline);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-row);
+  background-color: var(--ednb-surface-panel-raised);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }
 
 .records__columns span {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 .records__body {
   @include layout.bounded-scroller;
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 .records__group {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 // The library asks the layer for a flush body, so every region inside it
@@ -43,20 +43,20 @@
 // run to the panel's edge while the rows beside them stand a row-step in.
 .records__heading {
   @include layout.section-rule;
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-control));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-control));
 
   margin: 0;
-  padding-inline: var(--edsb-space-row);
+  padding-inline: var(--ednb-space-row);
 }
 
 .records__group edsb-status-notice {
   display: block;
-  padding-inline: var(--edsb-space-row);
+  padding-inline: var(--ednb-space-row);
 }
 
 .records__list {
   display: grid;
-  gap: var(--edsb-border-width-hairline);
+  gap: var(--ednb-border-width-hairline);
   grid-template-columns: 1fr;
   list-style: none;
   padding: 0;
@@ -73,8 +73,8 @@
   .records__columns {
     display: grid;
     // The same tracks the rows take, or the headings name the wrong columns.
-    grid-template-columns: var(--edsb-layout-record-columns);
-    padding-inline-start: calc(var(--edsb-space-row) + var(--edsb-border-width-marker));
+    grid-template-columns: var(--ednb-layout-record-columns);
+    padding-inline-start: calc(var(--ednb-space-row) + var(--ednb-border-width-marker));
   }
 
   // `EDITED` over the column it heads, which the canvas sets against the
@@ -87,10 +87,10 @@
 // One centred sentence on the body's own ground: no panel, and nothing else
 // removed, so widening the search needs no separate action.
 .records__no-match {
-  padding-block: var(--edsb-space-section);
-  padding-inline: var(--edsb-space-row);
+  padding-block: var(--ednb-space-section);
+  padding-inline: var(--ednb-space-row);
   margin: 0;
-  font-weight: var(--edsb-text-weight-prose);
+  font-weight: var(--ednb-text-weight-prose);
   text-align: center;
-  color: var(--edsb-text-subtle);
+  color: var(--ednb-text-subtle);
 }

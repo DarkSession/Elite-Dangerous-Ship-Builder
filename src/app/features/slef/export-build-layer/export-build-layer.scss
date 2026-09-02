@@ -10,12 +10,12 @@
  * hosts both modes, not to the SLEF mode alone.
  */
 .slef-export {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 .slef-export__link {
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 
@@ -25,18 +25,18 @@
  * sheet reflow instead of pushing the actions off the edge.
  */
 .slef-export__footer {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: center;
   justify-content: space-between;
 }
 
 .slef-export__meta {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-meta));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-meta));
 
-  font-family: var(--edsb-font-metric);
+  font-family: var(--ednb-font-metric);
 }
 
 .slef-export__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }

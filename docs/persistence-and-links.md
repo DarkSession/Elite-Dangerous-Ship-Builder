@@ -120,4 +120,6 @@ where the codec could name one, and offers the file export instead.
 The capacity behind the 500-character promise — the widest installed hull, every mount filled and
 engineered, both labels at their length limit — is asserted against the committed table by
 `scripts/build-link-codec-capacity.test.mjs`. The format itself is specified in
-[build-link-codec.md](./build-link-codec.md).
+[ship-link-codec.md](./ship-link-codec.md). The equipment builder's own link format, which shares
+that one's envelope and nothing above it, is specified in
+[equipment-link-codec.md](./equipment-link-codec.md).

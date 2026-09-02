@@ -12,7 +12,7 @@
 }
 
 .outfitting {
-  @include layout.stack(var(--edsb-space-stack-loose));
+  @include layout.stack(var(--ednb-space-stack-loose));
 }
 
 // A notice with nothing to say takes no room at all. Left as a box it still
@@ -24,11 +24,11 @@
 }
 
 .outfitting__empty {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
-  padding: var(--edsb-space-section);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding: var(--ednb-space-section);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 .outfitting__empty-title {
@@ -39,8 +39,8 @@
 
 .outfitting__empty-description {
   margin: 0;
-  max-inline-size: var(--edsb-layout-prose-max);
-  color: var(--edsb-text-subtle);
+  max-inline-size: var(--ednb-layout-prose-max);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 
@@ -50,7 +50,7 @@
 // weight, the amber ink and the canvas's own 2px inset underline — which is
 // what marks it, not a wash behind the label (wave 9).
 .outfitting__category {
-  @include layout.control-base(var(--edsb-text-tracking-count));
+  @include layout.control-base(var(--ednb-text-tracking-count));
 
   // Five segments share the ledger's rail, so the padding is the canvas's own
   // 5px rather than a standalone button's, and the label is kept on one line as
@@ -62,18 +62,18 @@
   // the target floor. The floor is a rule about the product rather than a
   // measurement off the drawing, and it wins: five 44px segments still share one
   // line at every width the strip is drawn at (wave 9).
-  min-inline-size: var(--edsb-target-size);
-  padding-inline: var(--edsb-space-2xs);
+  min-inline-size: var(--ednb-target-size);
+  padding-inline: var(--ednb-space-2xs);
   white-space: nowrap;
-  background-color: var(--edsb-surface-panel-raised);
-  color: var(--edsb-text-faint);
+  background-color: var(--ednb-surface-panel-raised);
+  color: var(--ednb-text-faint);
   border: 0;
 
   &[aria-pressed='true'] {
-    background-color: var(--edsb-surface-root);
-    color: var(--edsb-text-accent-strong);
-    font-weight: var(--edsb-text-weight-heading);
-    box-shadow: var(--edsb-elevation-underline);
+    background-color: var(--ednb-surface-root);
+    color: var(--ednb-text-accent-strong);
+    font-weight: var(--ednb-text-weight-heading);
+    box-shadow: var(--ednb-elevation-underline);
   }
 }
 
@@ -85,7 +85,7 @@
 // faint ink that reads on the resting ground does not read on the open one
 // (wave 9).
 .outfitting__category-count {
-  font-weight: var(--edsb-text-weight-body);
+  font-weight: var(--ednb-text-weight-body);
   color: currentcolor;
 }
 
@@ -96,10 +96,10 @@
   // last row. Thirty-nine rows of ledger is a screen and a half at compact
   // width, and the air between the groups and under the last of them is space a
   // Commander scrolls past rather than reads (Commander request 2026-08-28).
-  @include layout.stack(var(--edsb-space-lg));
+  @include layout.stack(var(--ednb-space-lg));
 
-  padding-block: var(--edsb-space-lg) var(--edsb-space-sm);
-  background-color: var(--edsb-surface-rail);
+  padding-block: var(--ednb-space-lg) var(--ednb-space-sm);
+  background-color: var(--ednb-surface-rail);
 }
 
 .outfitting__slot {
@@ -139,14 +139,14 @@
     // crowded while half the row stands empty beside a ledger that needed none
     // of it. The canvas's third track joins at its own threshold below, because
     // three fixed-ish tracks need half again as much room as two.
-    grid-template-columns: var(--edsb-layout-ledger-rail) minmax(22.5rem, 1fr);
+    grid-template-columns: var(--ednb-layout-ledger-rail) minmax(22.5rem, 1fr);
     // Canvas 1c's `392px 1fr 306px` has no gap in it: the rail and the bench
     // abut and the rail's own hairline is the seam between them. A column gap
     // put a stripe of the page ground down the middle of a screen the canvas
     // draws as one continuous surface (wave 8). The row gap stays — it is what
     // stands the notices above off the regions below them.
     column-gap: 0;
-    row-gap: var(--edsb-space-region);
+    row-gap: var(--ednb-space-region);
     // The columns reach the foot of the row, whichever of them is the tallest.
     //
     // `start` was invisible while every column carried a definite height — they
@@ -171,7 +171,7 @@
   // canvas draws it.
   .outfitting__ledger-region {
     position: sticky;
-    inset-block-start: var(--edsb-layout-bar-height);
+    inset-block-start: var(--ednb-layout-bar-height);
     display: flex;
     flex-direction: column;
     // Everything the command bar leaves, and nothing taken off it. Canvas 1c's
@@ -181,12 +181,12 @@
     // application frame carried until wave 9 removed it; with no inset left to
     // clear it only stood the two seams 36px short of the foot of the screen
     // (Commander request 2026-08-25).
-    block-size: calc(100svh - var(--edsb-layout-bar-height));
+    block-size: calc(100svh - var(--ednb-layout-bar-height));
     min-block-size: 0;
     // The seam between the two columns, drawn once and by the rail, as the
     // canvas draws it. The bench drops its own leading edge below so the two do
     // not stack into a two-pixel rule.
-    border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    border-inline-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
   }
 
   .outfitting__ledger {
@@ -215,13 +215,13 @@
   // exception is the one drawn.
   .outfitting__centre {
     position: sticky;
-    inset-block-start: var(--edsb-layout-bar-height);
+    inset-block-start: var(--ednb-layout-bar-height);
     // A definite height, not a cap. The bench below divides what is left after
     // the plates between its two panels from a zero basis, and a basis of zero
     // inside a box that is still sized by its content collapses the box and
     // both panels with it. The same height as the two rails beside it, for the
     // same reason: the canvas draws the three columns as one row.
-    block-size: calc(100svh - var(--edsb-layout-bar-height));
+    block-size: calc(100svh - var(--ednb-layout-bar-height));
   }
 
   // The plates ask for the height their hulls need; the bench takes the rest.
@@ -353,7 +353,7 @@
   @include layout.bench-columns-region {
     .outfitting--bench:not(.outfitting--dashboard) .outfitting__centre {
       position: sticky;
-      block-size: calc(100svh - var(--edsb-layout-bar-height));
+      block-size: calc(100svh - var(--ednb-layout-bar-height));
     }
 
     .outfitting--bench:not(.outfitting--dashboard) .outfitting__bench {
@@ -386,9 +386,9 @@
 @include layout.outfitting-wide {
   .outfitting {
     grid-template-columns:
-      var(--edsb-layout-ledger-rail)
+      var(--ednb-layout-ledger-rail)
       minmax(22.5rem, 1fr)
-      var(--edsb-layout-status-rail);
+      var(--ednb-layout-status-rail);
   }
 
   // The rail follows the bench rather than scrolling away from it, for the same
@@ -396,7 +396,7 @@
   .outfitting__status-rail {
     position: sticky;
     grid-column: auto;
-    inset-block-start: var(--edsb-layout-bar-height);
+    inset-block-start: var(--ednb-layout-bar-height);
     // A definite height rather than a cap, for the seam's sake. Sized by its
     // content this column stopped wherever the last block of the rail happened
     // to end — on a build with nothing to report, less than half the way down —
@@ -404,11 +404,11 @@
     // grid row and three columns stretched to it, so both seams reach the foot
     // of the screen whatever either column holds (Commander request
     // 2026-08-25).
-    block-size: calc(100svh - var(--edsb-layout-bar-height));
+    block-size: calc(100svh - var(--ednb-layout-bar-height));
     overflow-y: auto;
     // The seam on this side is drawn by the rail itself, matching the ledger's
     // on the other side of the bench.
-    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+    border-inline-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
     // A column of a fixed height whose last block may have the rest of it. The
     // material list is bounded at five rows by ruling G, which left the foot of
     // this track empty on any build the list could have filled (Commander
@@ -499,14 +499,14 @@
 // block below it. It carries its own inset, like its siblings, so the rule runs
 // the full width of the rail.
 .outfitting__status-head {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding: var(--edsb-space-panel);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding: var(--ednb-space-panel);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 .outfitting__status-heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
 }
@@ -521,10 +521,10 @@
 // The inset is here rather than on any of the four contributors: the canvas
 // insets the whole block once.
 .outfitting__status-band {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
-  padding: var(--edsb-space-panel);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding: var(--ednb-space-panel);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The rail's metric cells, as the one grid the canvas draws them in: a single
@@ -544,7 +544,7 @@
 }
 
 .outfitting__ledger-region {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
 }
@@ -562,21 +562,21 @@
   // five nowrap labels cannot share a line and the alternative is the document
   // scrolling sideways (FR-011). The segments wrap; a label never does.
   flex-wrap: wrap;
-  gap: var(--edsb-space-rule);
+  gap: var(--ednb-space-rule);
   margin: 0;
   padding: 0;
-  background-color: var(--edsb-rule-grid);
+  background-color: var(--ednb-rule-grid);
   border: 0;
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The bench's own look. How it arranges the two panels inside it is canvas 1c's
 // three-column question and is answered in one place for all of them
 // (`styles/_chrome.scss`).
 .outfitting__bench {
-  padding: var(--edsb-space-panel);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The canvas's middle column: the anatomy plates on the page ground, the bench
@@ -587,7 +587,7 @@
 .outfitting__centre {
   display: flex;
   flex-direction: column;
-  gap: var(--edsb-space-region);
+  gap: var(--ednb-space-region);
   min-inline-size: 0;
   min-block-size: 0;
 }
@@ -612,11 +612,11 @@
 }
 
 .outfitting__bench-title {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
   // The canvas's 11px panel head, which is this scale's `compact` step.
-  font-size: var(--edsb-text-size-compact);
+  font-size: var(--ednb-text-size-compact);
 }
 
 // Canvas 1d's sticky foot, and only canvas 1d's: at wider compositions the two
@@ -643,11 +643,11 @@
 // the follow-up rather than half-built here
 // (`design/outfitting-workspace.md`, "The foot is drawn, not pinned").
 .outfitting__bench-actions {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
-  padding: var(--edsb-space-inline-loose);
-  background-color: var(--edsb-surface-panel-raised);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding: var(--ednb-space-inline-loose);
+  background-color: var(--ednb-surface-panel-raised);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 .outfitting__action {
@@ -673,12 +673,12 @@
 // and the six readings take the rest, and so the badge wraps under them where
 // the strip cannot hold both.
 .outfitting__key-figures {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   align-items: stretch;
-  padding-block: var(--edsb-space-stack-tight);
-  padding-inline: var(--edsb-space-inline-loose);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block: var(--ednb-space-stack-tight);
+  padding-inline: var(--ednb-space-inline-loose);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // All six across, which is what canvas 1d draws — but as a track floor rather
@@ -695,9 +695,9 @@
 // 2026-08-30).
 .outfitting__key-figure-cells {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--edsb-layout-key-figure), 1fr));
-  gap: var(--edsb-space-inline-tight);
-  flex: 1 1 var(--edsb-layout-key-figure);
+  grid-template-columns: repeat(auto-fit, minmax(var(--ednb-layout-key-figure), 1fr));
+  gap: var(--ednb-space-inline-tight);
+  flex: 1 1 var(--ednb-layout-key-figure);
   min-inline-size: 0;
 }
 
@@ -753,7 +753,7 @@
   // decides the template's half of the arrangement decides the whole of it.
   display: flex;
   flex-direction: column;
-  gap: var(--edsb-space-region);
+  gap: var(--ednb-space-region);
 
   // The notices are a labelled rule over prose rather than a band, so they take
   // the inset back as their own padding and their text stands where the ledger's
@@ -837,7 +837,7 @@
   // and there a negative margin cancels nothing and instead pulls every band
   // 14px past the page on both sides, where `overflow-x: hidden` clips it.
   @include layout.compact {
-    margin-inline: calc(var(--edsb-space-inline-loose) * -1);
+    margin-inline: calc(var(--ednb-space-inline-loose) * -1);
 
     // Children again, and here it matters for what is drawn rather than for
     // tidiness: the rail's own notice sits inside a block with its own padding,
@@ -845,13 +845,13 @@
     // than the `BUILD STATUS` directly above them — which is the misalignment
     // this whole rule exists to remove.
     > .outfitting__feedback {
-      padding-inline: var(--edsb-space-inline-loose);
+      padding-inline: var(--ednb-space-inline-loose);
     }
 
     // The empty state is a bordered plate, so it takes the inset back as
     // margin: padding would inset its words and leave its border on the glass.
     > .outfitting__empty {
-      margin-inline: var(--edsb-space-inline-loose);
+      margin-inline: var(--ednb-space-inline-loose);
     }
   }
 }
