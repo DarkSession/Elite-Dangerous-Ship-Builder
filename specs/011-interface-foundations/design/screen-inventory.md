@@ -20,7 +20,7 @@ component preview application, which never appears in product navigation or prod
 | 1b     | Compact Shipyard/detail/library   | compact shell/menu, cards, scrollable sort choices, full-height drill-in, sheet                                 |
 | 1c     | Outfitting/anatomy/status/editor  | workspace regions, tabs, ledger/table/list, metric/status/unavailable, visualization equivalence, dialog        |
 | 1d     | Compact Outfitting/editor/actions | compact mode/category controls, sticky action region, full-height editor, sheet/action layer                    |
-| 3c     | None — the shell owns it          | tool bar and tool registry, current-tool state                                                                  |
+| 4c/4d  | None — the shell owns it          | tool bar and tool registry, current-tool state                                                                  |
 
 The product screen inventories in features 001–010/012 own their domain states and requirement
 mapping. They register/preview shared extensions through this feature's contracts.

@@ -375,10 +375,10 @@
   --edsb-layout-ledger-rail: var(--edsb-measure-ledger-rail);
   --edsb-layout-status-rail: var(--edsb-measure-status-rail);
 
-  // What a region has to clear to sit below the sticky banner — the tool bar
-  // and the command bar under it, which are one sticky region.
+  // What a region has to clear to sit below the sticky banner — the tool deck
+  // and the command deck under it, which are one bar and one sticky region.
   //
-  // The declared figure is the two bars' own heights added together — what they
+  // The declared figure is the two decks' own heights added together — what they
   // come to at every width where neither wraps. It is a floor rather than the
   // banner's height: any width where the command bar wraps draws more rows than
   // one. So the frame republishes this token on its own host from the
@@ -401,9 +401,10 @@
   // (`011/design/canvas-extraction.md`, "One bar height, on every screen").
   --edsb-layout-bar-floor: var(--edsb-measure-bar-height);
 
-  // The tool bar's own floor, beside it. The two are declared apart because
-  // they are two bars: the command bar is sized to the tallest identity it
-  // carries, and the tool bar to the canvas's own 50px.
+  // The tool deck's own floor, beside it. The two are declared apart because
+  // they are sized by different things: the command deck by the tallest
+  // identity it carries, and the tool deck by the press baseline a tab is held
+  // to, which is taller than the 30px canvas 4c draws it at.
   --edsb-layout-tool-bar-floor: var(--edsb-measure-tool-bar-height);
 
   // What a bar frozen to the top of a scroller is pulled up by, so the scroller

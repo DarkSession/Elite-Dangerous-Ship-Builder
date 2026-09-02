@@ -16,10 +16,11 @@ interface ToolRecord {
   /**
    * The short name the bar draws.
    *
-   * Canvas 3c gives each tool a full name and a tab label and draws the label —
-   * `SHIP`, not `SHIP BUILDER`. The short one is what is kept: the command bar
-   * under it already carries the screen's own name, and a bar restating the bar
-   * below it says nothing new.
+   * Canvas 4c draws the tool's full name in the tab. The short one is what is
+   * kept, and it is a departure the design record carries: the deck under the
+   * tabs is on the same plate and already names the screen, and a plate that
+   * says `SHIP BUILDER` twice on one line says it once
+   * (`011/design/reference-review.md`).
    */
   readonly labelKey: MessageKey;
   /** The address the tool opens at. */
@@ -37,9 +38,9 @@ interface ToolRecord {
 /**
  * The tools this application carries.
  *
- * One array, read by everything that names a tool — the canvas's own rule for
- * the shell it draws: "tabs and grid run off one tool registry, so a new tool
- * appears in both at once" (`.design/Tool Navigation.dc.html`, canvas 3c).
+ * One array, read by everything that names a tool. The canvas draws its tabs
+ * and its tool grid off a single registry, so a tool the application gains is a
+ * tool every chrome that names one gains at the same time.
  *
  * It holds the tools the application *serves*, not the ones it plans to. The
  * canvas names eight and `docs/navbeacon-migration.md` names two; what answers

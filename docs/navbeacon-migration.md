@@ -77,15 +77,16 @@ follows the rename, so it costs a remote update and nothing else.
 `edsb:` in `src/app/platform/storage/storage-keys.ts`, the `edsb-` component selectors
 and the `--edsb-*` CSS custom properties. All three are opaque internal strings that no
 user sees. Renaming them churns the persistence contract, the broadcast channel name,
-the Web Lock names and their specs for no visible gain.
+the Web Lock names and their specs for no visible gain, and the storage prefix would
+orphan every record a Commander has already saved.
 
 ## The tool shell
 
-The tools are a data array in `src/app/features/shared/app-navigation.ts`, and a bar of
-its own in `src/app/ui/components/app-frame` renders from it — the canvas's own rule,
-"tabs and grid run off one tool registry, so a new tool appears in both at once". It
-sits over the command bar, which keeps the insignia, the screen identity and the amber
-rule that closes it. `specs/011-interface-foundations/` is the record: FR-028 and
+The tools are a data array in `src/app/features/shared/app-navigation.ts`, and a deck of
+its own in `src/app/ui/components/app-frame` renders from it, the way the canvas runs its
+tabs and its tool grid off one registry. It is the upper deck of one bar: the command deck
+under it keeps the screen identity and the amber rule that closes the plate, and the
+insignia stands over both. `specs/011-interface-foundations/` is the record: FR-028 and
 SC-009 in `spec.md`, the composition in `design/application-shell.md`, the measured
 values and the departures in `design/canvas-extraction.md` and
 `design/reference-review.md`.
@@ -110,19 +111,18 @@ On-foot outfitting: suits, handheld weapons, grades and modifications, drawn in
 `.design/Equipment Builder.dc.html` at 1640px (`1a`) and 390px (`1b`), and specified in
 `specs/013-equipment-builder/`.
 
-**Blocked upstream.** `@elite-dangerous-almanac/core` ships the whole `equipment/`
-namespace — `suits`, `weapons`, `modifications`, `engineering`, `upgrade-costs`,
-`modification-costs`, `modification-journal` — but no localisation for any of it.
-`grep -ril locale dist/equipment/` returns nothing; `Suit.name`, `Weapon.name` and
-`Modification.name` are each documented as the English display name; and there is no
-`i18n/suits` or `i18n/weapons` leaf where the ship side has `i18n/modules`,
-`i18n/slots` and `i18n/materials`. Hull and manufacturer names have no leaf either,
-but that is because the game does not translate them; suit and weapon names it does.
+**The package carries the whole feature.** `@elite-dangerous-almanac/core` ships the
+`equipment/` namespace — `suits`, `weapons`, `modifications`, `engineering`,
+`upgrade-costs`, `modification-costs`, `modification-journal` — and its localisation:
+`i18n/suits`, `i18n/personal-weapons` and `i18n/personal-modifications`. Probed on the
+pinned release, the three leaves answer for every key in all six stored locales, so
+"nothing ships untranslatable" holds for the equipment catalogue. There is no
+weapon-name lookup and that is not a gap: a handheld weapon's name is a product name the
+game leaves in English, so `PersonalWeapon.name` is the name in all six.
 
-Game text belongs to the package and a private translation here is forbidden outright,
-so "nothing ships untranslatable" and the equipment catalogue cannot both hold. Under
-constitution II the feature waits on the release. **File this upstream before starting
-the work** — it is the long pole and it is independent of every decision above.
+The suit tools — Energylink, Arc Cutter, Profile Analyser — are absent upstream. That is
+a gap to raise, not a blocker: spec 013 withdraws the region rather than filling it
+locally.
 
 One design collision to rule on when the work opens: artboard `1a` draws the equipment
 builder as a standalone application, with its own app icon, its own `EXPORT` dialog, its
@@ -149,8 +149,7 @@ record rather than an omission:
 
 ## Open
 
-- **A compact artboard for tool navigation.** The canvas draws the 1180px case only: its
-  script guards a `#nv-rail` and a `#nv-drawer` that no artboard defines, and the
-  Equipment Builder's own mobile artboard has no tool switcher. The shell draws one
-  composition at every width instead, which holds while the registry is small. A rail, a
-  drawer or a grid is a composition to be drawn before it is built.
+- **A tool switcher for a large registry.** Canvas 4d draws the compact case as the same
+  two decks the wide case draws, so the shell draws one composition at every width. That
+  holds while the registry is small. A rail, a drawer or a grid is a composition to be
+  drawn before it is built.

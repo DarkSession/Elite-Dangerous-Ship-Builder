@@ -299,7 +299,7 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.26da!i-2iAMHR6!JYWjLXeH:ll2xmztchA8e91yfvAecy.0k,wpaS39Od-qe_AWys@MUQrpRGJVEQa',
+      'b.26da!i-2iAMHR6!JZmTxbE77Oyj3V5R-f,ZnbT!fa_:86xIg:BUBnp6QoP26u6hI3sH,GUQdzesv1z',
     );
     expect(`https://ships.example/#${fragment}`).toHaveLength(103);
   });
@@ -849,13 +849,14 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently on 2026-09-01 so that its candidate sets carry a popularity
-    // order and its `MODELS` block prices the structural booleans. Once released, a changed hash
-    // belongs under the next table number.
+    // unpublished, most recently on 2026-09-02 under Almanac 0.2.8, which stopped offering the
+    // hull's built-in Cargo Hatch to an optional internal mount and so dropped one article from
+    // every optional-internal candidate set. Once released, a changed hash belongs under the next
+    // table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('6280af035fe6292f6e55ee11060b30f27b71773b68c18ae47b56a93c758fa5db');
+    expect(contentHash).toBe('9f6e25b28b5da41b391779dbb8eed63570fbc6b50a6be7ee21fcbb65c7a997ce');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -1022,7 +1023,7 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.8oUeO4wu5ZrfCrStkM0I4It5CEAZ6QNzeH2I!qVp_-B/u3xUxp/:5vZn-uve.T',
+      'b.8oUeO4wu5ZrfCrTfzWgzw4R5x,/c-XJsc!MqzvUN.tw7Y:YwviztiNydqXRqom',
     ]);
     expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 87]);
 
@@ -1234,7 +1235,17 @@ describe('build-link codec', () => {
     for (let length = 0; length < body.length; length += 1) {
       const truncated = new Uint8Array(length + 4);
       truncated.set(body.subarray(0, length));
-      expectCodecError(() => decodeBuildLinkFragment(encodePayload(truncated)), 'invalidPayload');
+      // Either refusal is the same refusal, and both are honest. The truncation
+      // is re-checksummed, so nothing the codec can check says the body was cut:
+      // it is handed a well-formed payload, and reading it off the end either
+      // breaks the payload's own structure or names an index no candidate set
+      // holds. Which of the two a given length lands on is the table's widths,
+      // not the truncation. What this sweep is about is that every one of them
+      // is refused.
+      expectCodecError(
+        () => decodeBuildLinkFragment(encodePayload(truncated)),
+        ['invalidPayload', 'unknownIdentity'],
+      );
     }
     for (const suffix of [[0], [0xff], [0, 0], [0xff, 0x55]]) {
       const extended = new Uint8Array(body.length + suffix.length + 4);

@@ -106,6 +106,15 @@
               sans-serif;
             color: rgba(227, 219, 208, 0.45);
           }
+          html {
+            background: #121213;
+          }
+          x-dc,
+          #root,
+          #app,
+          body > div {
+            background: #121213;
+          }
         </style>
         <style>
           :root {
@@ -168,218 +177,447 @@
         </style>
       </helmet>
 
-      <section class="dv-turn" id="t3">
+      <section class="dv-turn" id="t4">
         <div class="dv-thd">
-          <a class="dv-tid" href="#t3">3</a
-          ><span class="dv-tname">TOOL NAVIGATION — PINNED TABS &amp; TOOL GRID</span>
+          <a class="dv-tid" href="#t4">4</a><span class="dv-tname">ONE TOOLBAR — MERGED NAV</span>
         </div>
         <div class="dv-opts">
-          <div class="dv-opt" id="3c">
+          <div class="dv-opt" id="4d">
             <div class="dv-olabel">
-              <a class="dv-oid" href="#3c">3c</a>Tool tabs — five pinned tools in the topbar, ALL
-              TOOLS opens the full grid (click it)
+              <a class="dv-oid" href="#4d">4d</a>Mobile — same two decks: tabs scroll on top,
+              identity below, actions pinned to the bottom
+            </div>
+            <div class="dv-card" style="width: 390px">
+              <div
+                style="
+                  width: 390px;
+                  height: 844px;
+                  background: var(--bg);
+                  color: var(--ink);
+                  position: relative;
+                  display: flex;
+                  flex-direction: column;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    position: relative;
+                    flex: none;
+                    background: var(--panel-4);
+                    border-bottom: 2px solid var(--amber);
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 16px;
+                      top: 0;
+                      bottom: 0;
+                      display: flex;
+                      align-items: center;
+                      z-index: 2;
+                    "
+                  >
+                    <div style="width: 22px; height: 20px; overflow: hidden">
+                      <div
+                        style="
+                          width: 368px;
+                          height: 330px;
+                          transform: scale(0.0597826);
+                          transform-origin: top left;
+                          position: relative;
+                        "
+                      >
+                        <div
+                          style="
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 368px;
+                            height: 290px;
+                            background: #ff8c1a;
+                            clip-path: polygon(
+                              50% 0,
+                              100% 100%,
+                              50% 74%,
+                              0 100%,
+                              50% 0,
+                              50% 18%,
+                              18% 82%,
+                              50% 58%,
+                              82% 82%,
+                              50% 18%
+                            );
+                          "
+                        ></div>
+                        <div
+                          style="
+                            position: absolute;
+                            left: 0;
+                            top: 314px;
+                            width: 368px;
+                            height: 16px;
+                            background: rgba(255, 140, 26, 0.5);
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: stretch;
+                      height: 34px;
+                      padding-left: 48px;
+                      padding-right: 14px;
+                    "
+                  >
+                    <div
+                      id="m-tabs"
+                      style="
+                        display: flex;
+                        align-items: stretch;
+                        gap: 2px;
+                        min-width: 0;
+                        flex: 1;
+                        overflow-x: auto;
+                        overflow-y: hidden;
+                        scrollbar-width: none;
+                      "
+                    ></div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      height: 40px;
+                      padding-left: 48px;
+                      padding-right: 16px;
+                      background: linear-gradient(
+                          to right,
+                          transparent 0,
+                          transparent 48px,
+                          var(--amber-a12) 48px,
+                          var(--amber-a12) 100%
+                        )
+                        top/100% 1px no-repeat;
+                    "
+                  >
+                    <div
+                      style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1"
+                    >
+                      <div style="display: flex; align-items: center; min-width: 0">
+                        <div
+                          id="m-title"
+                          style="
+                            font:
+                              700 13px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-3);
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                          "
+                        ></div>
+                      </div>
+                      <div
+                        id="m-crumb"
+                        style="
+                          font:
+                            400 8px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-45);
+                          letter-spacing: 0.08em;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        "
+                      ></div>
+                    </div>
+                    <div style="flex: none; position: relative; display: flex; align-items: center">
+                      <div
+                        id="m-actmore"
+                        title="Tool actions"
+                        style="
+                          width: 30px;
+                          height: 28px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          border: 1px solid var(--amber-a4);
+                          color: var(--amber-2);
+                          font:
+                            600 15px/1 'JetBrains Mono',
+                            monospace;
+                          cursor: pointer;
+                        "
+                      >
+                        ⋯
+                      </div>
+                      <div
+                        id="m-actmenu"
+                        style="
+                          display: none;
+                          position: absolute;
+                          top: 34px;
+                          right: 0;
+                          z-index: 60;
+                          width: 196px;
+                          background: var(--panel-menu);
+                          border: 1px solid var(--amber-a45);
+                          box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+                        "
+                      ></div>
+                    </div>
+                    <div
+                      style="
+                        width: 24px;
+                        height: 24px;
+                        flex: none;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: var(--amber-a14);
+                        font:
+                          700 7.5px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--amber-3);
+                      "
+                    >
+                      CH
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    flex: 1;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                    padding: 16px 16px 0;
+                  "
+                >
+                  <div
+                    id="m-stats"
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 1px;
+                      background: var(--amber-a12);
+                      padding: 1px;
+                    "
+                  ></div>
+                  <div style="display: flex; align-items: center; gap: 9px">
+                    <div
+                      id="m-lhd"
+                      style="
+                        font:
+                          500 8.5px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--amber-2);
+                        letter-spacing: 0.2em;
+                      "
+                    ></div>
+                    <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
+                  </div>
+                  <div
+                    id="m-rows"
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      gap: 1px;
+                      background: var(--amber-a12);
+                      padding: 1px;
+                    "
+                  ></div>
+                  <div style="display: flex; align-items: center; gap: 9px">
+                    <div
+                      id="m-rhd"
+                      style="
+                        font:
+                          500 8.5px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--amber-2);
+                        letter-spacing: 0.2em;
+                      "
+                    ></div>
+                    <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
+                  </div>
+                  <div
+                    id="m-side"
+                    style="display: flex; flex-direction: column; gap: 11px; padding-bottom: 12px"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dv-opt" id="4c">
+            <div class="dv-olabel">
+              <a class="dv-oid" href="#4c">4c</a>One bar, two decks — tool tabs on top, tool
+              identity and actions below
             </div>
             <div class="dv-card" style="width: 1180px">
               <div
                 style="
                   background: var(--bg);
                   color: var(--ink);
+                  min-height: 520px;
                   position: relative;
-                  min-height: 600px;
                 "
               >
                 <div
                   style="
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
+                    position: relative;
+                    background: var(--panel-4);
+                    border-bottom: 2px solid var(--amber);
                     padding: 0 20px;
-                    height: 50px;
-                    background: var(--panel-menu);
-                    border-bottom: 1px solid var(--amber-a18);
                   "
                 >
-                  <div style="width: 26px; height: 23px; overflow: hidden">
-                    <div
-                      style="
-                        width: 368px;
-                        height: 330px;
-                        transform: scale(0.0706522);
-                        transform-origin: top left;
-                        position: relative;
-                      "
-                    >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 20px;
+                      top: 0;
+                      bottom: 0;
+                      display: flex;
+                      align-items: center;
+                      z-index: 2;
+                    "
+                  >
+                    <div style="width: 26px; height: 23px; overflow: hidden">
                       <div
                         style="
-                          position: absolute;
-                          left: 0;
-                          top: 0;
                           width: 368px;
-                          height: 290px;
-                          background: #ff8c1a;
-                          clip-path: polygon(
-                            50% 0,
-                            100% 100%,
-                            50% 74%,
-                            0 100%,
-                            50% 0,
-                            50% 18%,
-                            18% 82%,
-                            50% 58%,
-                            82% 82%,
-                            50% 18%
-                          );
+                          height: 330px;
+                          transform: scale(0.0706522);
+                          transform-origin: top left;
+                          position: relative;
                         "
-                      ></div>
-                      <div
-                        style="
-                          position: absolute;
-                          left: 0;
-                          top: 314px;
-                          width: 368px;
-                          height: 16px;
-                          background: rgba(255, 140, 26, 0.5);
-                        "
-                      ></div>
+                      >
+                        <div
+                          style="
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 368px;
+                            height: 290px;
+                            background: #ff8c1a;
+                            clip-path: polygon(
+                              50% 0,
+                              100% 100%,
+                              50% 74%,
+                              0 100%,
+                              50% 0,
+                              50% 18%,
+                              18% 82%,
+                              50% 58%,
+                              82% 82%,
+                              50% 18%
+                            );
+                          "
+                        ></div>
+                        <div
+                          style="
+                            position: absolute;
+                            left: 0;
+                            top: 314px;
+                            width: 368px;
+                            height: 16px;
+                            background: rgba(255, 140, 26, 0.5);
+                          "
+                        ></div>
+                      </div>
                     </div>
                   </div>
                   <div
-                    id="nv-tabs"
-                    style="display: flex; align-items: stretch; gap: 2px; height: 100%"
-                  ></div>
-                  <div
-                    id="nv-grid-btn"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 8px;
-                      height: 30px;
-                      padding: 0 13px;
-                      border: 1px solid var(--amber-a3);
-                      font:
-                        600 10px/1 'Barlow Condensed',
-                        sans-serif;
-                      letter-spacing: 0.18em;
-                      color: var(--amber-2);
-                      cursor: pointer;
-                    "
-                    style-hover="border-color:var(--amber-a7)"
+                    style="display: flex; align-items: stretch; height: 30px; padding-left: 42px"
                   >
-                    ALL TOOLS<span
-                      style="
-                        font:
-                          400 8px 'JetBrains Mono',
-                          monospace;
-                      "
-                      >▾</span
-                    >
-                  </div>
-                  <div style="flex: 1"></div>
-                  <div
-                    style="
-                      font:
-                        400 9.5px/1 'JetBrains Mono',
-                        monospace;
-                      color: var(--ink-45);
-                      letter-spacing: 0.1em;
-                    "
-                  >
-                    ⌘K
-                  </div>
-                  <div
-                    style="
-                      width: 30px;
-                      height: 30px;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      background: var(--amber-a14);
-                      font:
-                        700 8.5px/1 'JetBrains Mono',
-                        monospace;
-                      color: var(--amber-3);
-                    "
-                  >
-                    CH
-                  </div>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 16px;
-                    padding: 0 20px;
-                    height: 54px;
-                    background: var(--panel-4);
-                    border-bottom: 2px solid var(--amber);
-                  "
-                >
-                  <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0">
                     <div
-                      id="nv-t2"
+                      id="v3-tabs"
+                      style="
+                        display: flex;
+                        align-items: stretch;
+                        gap: 2px;
+                        min-width: 0;
+                        flex: 0 1 auto;
+                        overflow: hidden;
+                      "
+                    ></div>
+                    <div id="v3-more" style="display: none"></div>
+                    <div id="v3-sub" style="display: none"></div>
+                    <div style="flex: 1; min-width: 12px"></div>
+                    <div style="display: flex; align-items: center; flex: none">
+                      <div
+                        style="
+                          width: 22px;
+                          height: 22px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          background: var(--amber-a14);
+                          font:
+                            700 7.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-3);
+                        "
+                      >
+                        CH
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 14px;
+                      height: 40px;
+                      padding-left: 42px;
+                      box-shadow: inset 42px 1px 0 -0px transparent;
+                      background: linear-gradient(
+                          to right,
+                          transparent 0,
+                          transparent 42px,
+                          var(--amber-a12) 42px,
+                          var(--amber-a12) 100%
+                        )
+                        top/100% 1px no-repeat;
+                    "
+                  >
+                    <div
+                      id="v3-title"
                       style="
                         font:
-                          700 16px/1 'Barlow Condensed',
+                          700 15px/1 'Barlow Condensed',
                           sans-serif;
                         letter-spacing: 0.18em;
                         color: var(--amber-3);
+                        flex: none;
                       "
-                    >
-                      EQUIPMENT BUILDER
-                    </div>
+                    ></div>
                     <div
-                      id="nv-c2"
+                      id="v3-crumb"
                       style="
                         font:
-                          400 9.5px/1 'JetBrains Mono',
+                          400 9px/1 'JetBrains Mono',
                           monospace;
-                        color: var(--ink-48);
+                        color: var(--ink-45);
                         letter-spacing: 0.1em;
+                        white-space: nowrap;
                       "
-                    >
-                      GROUNDPOUNDER · DOMINATOR SUIT G5
-                    </div>
-                  </div>
-                  <div id="nv-a2" style="display: flex; align-items: center; gap: 8px"></div>
-                </div>
-                <div
-                  id="nv-grid"
-                  style="
-                    display: none;
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: 104px;
-                    z-index: 30;
-                    background: var(--panel-menu);
-                    border-bottom: 1px solid var(--amber-a45);
-                    box-shadow: 0 22px 54px rgba(0, 0, 0, 0.6);
-                  "
-                >
-                  <div
-                    id="nv-grid-body"
-                    style="
-                      padding: 20px 22px;
-                      display: grid;
-                      grid-template-columns: repeat(3, 1fr);
-                      gap: 1px;
-                      background: var(--amber-a12);
-                    "
-                  ></div>
-                  <div
-                    style="
-                      padding: 0 22px 18px;
-                      font:
-                        400 10.5px/1.5 Barlow,
-                        sans-serif;
-                      color: var(--ink-42);
-                    "
-                  >
-                    Pinned tools show as tabs — drag any card onto the bar to pin it.
+                    ></div>
+                    <div style="flex: 1; min-width: 12px"></div>
+                    <div
+                      id="v3-act"
+                      style="display: flex; align-items: center; gap: 8px; flex: none"
+                    ></div>
                   </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 268px; min-height: 496px">
+                <div style="display: grid; grid-template-columns: 1fr 268px; min-height: 442px">
                   <div
                     style="
                       padding: 20px 22px;
@@ -390,7 +628,7 @@
                     "
                   >
                     <div
-                      id="nv-s2"
+                      id="v3-stats"
                       style="
                         display: grid;
                         grid-template-columns: repeat(4, 1fr);
@@ -401,7 +639,7 @@
                     ></div>
                     <div style="display: flex; align-items: center; gap: 9px">
                       <div
-                        id="nv-l2"
+                        id="v3-lhd"
                         style="
                           font:
                             500 9px/1 'JetBrains Mono',
@@ -409,13 +647,11 @@
                           color: var(--amber-2);
                           letter-spacing: 0.2em;
                         "
-                      >
-                        LOADOUT
-                      </div>
+                      ></div>
                       <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
                     </div>
                     <div
-                      id="nv-r2"
+                      id="v3-rows"
                       style="
                         display: flex;
                         flex-direction: column;
@@ -427,7 +663,7 @@
                   </div>
                   <div style="background: #0d0d0d; padding: 18px">
                     <div
-                      id="nv-rh2"
+                      id="v3-rhd"
                       style="
                         font:
                           700 12px/1 'Barlow Condensed',
@@ -435,11 +671,9 @@
                         letter-spacing: 0.22em;
                         color: var(--amber-3);
                       "
-                    >
-                      SUMMARY
-                    </div>
+                    ></div>
                     <div
-                      id="nv-sd2"
+                      id="v3-side"
                       style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px"
                     ></div>
                   </div>
@@ -449,8 +683,7 @@
           </div>
         </div>
         <p class="dv-next">
-          Tabs and grid run off one tool registry, so a new tool appears in both at once. Say the
-          word and I will fold the ship and equipment builders into this shell.
+          One bar, two decks: tool tabs on top, tool identity and actions below. Tabs are live.
         </p>
       </section>
     </x-dc>
@@ -458,13 +691,14 @@
       class Component extends DCLogic {
         wireNav() {
           const root = this.el || document;
-          const sec = root.querySelector('#t3');
+          const anchor = root.querySelector('#t4') || root.querySelector('#t3');
+          const sec = anchor && anchor.parentElement;
           if (!sec || sec.dataset.nvWired) return;
           sec.dataset.nvWired = '1';
           const $ = s => sec.querySelector(s), $$ = s => Array.from(sec.querySelectorAll(s));
 
           const TOOLS = [
-            { id:'ship', ab:'SH', n:'Ship Builder', grp:'OUTFITTING', tab:'SHIP', pin:1, k:'⌥1',
+            { id:'ship', ab:'SH', n:'Ship Builder', grp:'OUTFITTING', tab:'SHIP BUILDER', pin:1, k:'⌥1',
               d:'Hulls, module slots, power priorities and engineering.',
               crumb:'TITAN HUNTER · FEDERAL CORVETTE', sub:['SHIPYARD','OUTFITTING','ANATOMY','POWER','STATS'],
               act:['IMPORT','EXPORT','SAVE'], lhd:'MODULE SLOTS', rhd:'SHIP SUMMARY',
@@ -472,7 +706,7 @@
               rows:[['PP','6A Power Plant','GUARDIAN HYBRID · G5','31.2 MW'],['TH','5A Thrusters','DIRTY DRIVES · G5','278 m/s'],['FS','6A Frame Shift Drive','INCREASED RANGE · G5','18.4 ly'],['SG','7A Shield Generator','REINFORCED · G4','1,842 MJ'],['H1','4C Beam Laser','LONG RANGE · G5','62.4 dps']],
               side:[['SHIELD','1,842 MJ'],['ARMOUR','2,109'],['DPS','184.6'],['POWER DRAW','31.2 / 32.4 MW'],['REBUY','24.9 M CR']],
               carry:'The hull carries into the Route Planner as jump range and into the Materials Trader as an engineering shopping list.' },
-            { id:'foot', ab:'OF', n:'Equipment Builder', grp:'OUTFITTING', tab:'ON FOOT', pin:1, k:'⌥2',
+            { id:'foot', ab:'OF', n:'Equipment Builder', grp:'OUTFITTING', tab:'EQUIPMENT BUILDER', pin:1, k:'⌥2',
               d:'Suits, handheld weapons, grades and modifications.',
               crumb:'GROUNDPOUNDER · DOMINATOR SUIT G5', sub:['SUIT','WEAPONS','MODIFICATIONS','MATERIALS','STATS'],
               act:['OPEN BUILD','EXPORT','SAVE'], lhd:'LOADOUT', rhd:'COMMANDER STATS',
@@ -541,7 +775,7 @@
             ['Felicity Farseer','ENGINEER DIRECTORY','GRADE 5 UNLOCKED']
           ];
 
-          let cur = 'foot', drawer = false, grid = false;
+          let cur = 'foot', drawer = false, grid = false, more = false, menu = false, actmenu = false;
           const tool = () => TOOLS.find(t => t.id === cur);
 
           const railBtn = t => {
@@ -592,28 +826,54 @@
             $('#nv-carry').textContent = t.carry;
             }
 
-            $('#nv-tabs').innerHTML = TOOLS.filter(x => x.pin).map(x => {
+            // ---- turn 4: merged toolbar variants ----
+            const tabStrip = (all, big) => TOOLS.filter(x => all || x.pin).map(x => {
               const on = x.id === cur;
-              return '<div class="nv-rb" data-t="' + x.id + '" style="display:flex;align-items:center;padding:0 15px;cursor:pointer;background:' + (on ? 'var(--panel-4)' : 'transparent') + ';border-bottom:2px solid ' + (on ? 'var(--amber)' : 'transparent') + ';font:700 11px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;color:' + (on ? 'var(--amber-3)' : 'var(--ink-48)') + '">' + x.tab + '</div>';
+              return '<div class="nv-rb" data-t="' + x.id + '" style="display:flex;flex:none;align-items:center;padding:0 ' + (big ? 14 : 12) + 'px;cursor:pointer;background:' + (on ? 'var(--amber-a14)' : 'transparent') + ';border-bottom:2px solid ' + (on ? 'var(--amber)' : 'transparent') + ';font:700 ' + (big ? 12 : 10.5) + 'px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.16em;white-space:nowrap;color:' + (on ? 'var(--amber-3)' : 'var(--ink-48)') + '">' + (big && on && !all ? x.n.toUpperCase() : x.tab) + '</div>';
             }).join('');
-            $('#nv-grid').style.display = grid ? 'block' : 'none';
-            $('#nv-grid-body').innerHTML = TOOLS.map(x => {
-              const on = x.id === cur;
-              return '<div class="nv-rb" data-t="' + x.id + '" style="display:flex;flex-direction:column;gap:9px;padding:15px 16px;cursor:pointer;background:' + (on ? 'var(--panel-3)' : 'var(--panel-1)') + '">'
-                + '<div style="display:flex;align-items:center;gap:10px"><div style="width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid var(--amber-a25);font:700 8.5px/1 \'JetBrains Mono\',monospace;color:' + (on ? 'var(--amber-3)' : 'var(--ink-55)') + '">' + x.ab + '</div>'
-                + '<div style="font:700 15px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.14em;color:' + (on ? 'var(--amber-3)' : 'var(--ink-2)') + '">' + x.n.toUpperCase() + '</div>'
-                + '<div style="flex:1"></div>' + (x.pin ? '<div style="font:400 8px/1 \'JetBrains Mono\',monospace;color:var(--amber-a7);letter-spacing:.1em">PINNED</div>' : '') + '</div>'
-                + '<div style="font:300 11.5px/1.5 Barlow,sans-serif;color:var(--ink-5);text-wrap:pretty">' + x.d + '</div>'
-                + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:var(--ink-38);letter-spacing:.1em">' + x.grp + '</div></div>';
+            const subStrip = (t2, tight) => t2.sub.map((s, i) => {
+              const on = i === 1 || (t2.sub.length < 5 && i === 0);
+              return '<div style="display:flex;align-items:center;padding:0 ' + (tight ? 12 : 15) + 'px;white-space:nowrap;font:600 ' + (tight ? 9.5 : 10) + 'px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;color:' + (on ? 'var(--amber-3)' : 'var(--ink-45)') + ';border-bottom:2px solid ' + (on ? 'var(--amber)' : 'transparent') + '">' + s + '</div>';
             }).join('');
-            $('#nv-t2').textContent = t.n.toUpperCase();
-            $('#nv-c2').textContent = t.crumb;
-            $('#nv-a2').innerHTML = actBtns(t);
-            $('#nv-s2').innerHTML = statCells(t);
-            $('#nv-r2').innerHTML = rowList(t);
-            $('#nv-sd2').innerHTML = sideList(t);
-            $('#nv-l2').textContent = t.lhd;
-            $('#nv-rh2').textContent = t.rhd;
+            const fill = (p, body) => {
+              if (!$('#' + p + '-stats')) return;
+              $('#' + p + '-stats').innerHTML = statCells(t);
+              $('#' + p + '-rows').innerHTML = rowList(t);
+              $('#' + p + '-side').innerHTML = sideList(t);
+              $('#' + p + '-lhd').textContent = t.lhd;
+              $('#' + p + '-rhd').textContent = t.rhd;
+              $('#' + p + '-act').innerHTML = actBtns(t);
+            };
+            if ($('#m-tabs')) {
+              $('#m-tabs').innerHTML = TOOLS.filter(x => x.pin).map(x => {
+                const on = x.id === cur;
+                return '<div class="nv-rb" data-t="' + x.id + '" style="display:flex;flex:none;align-items:center;padding:0 10px;cursor:pointer;background:' + (on ? 'var(--amber-a14)' : 'transparent') + ';border-bottom:2px solid ' + (on ? 'var(--amber)' : 'transparent') + ';font:700 10px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.14em;white-space:nowrap;color:' + (on ? 'var(--amber-3)' : 'var(--ink-48)') + '">' + x.tab + '</div>';
+              }).join('');
+              $('#m-title').textContent = t.n.toUpperCase();
+              $('#m-crumb').textContent = t.crumb;
+              $('#m-lhd').textContent = t.lhd;
+              $('#m-rhd').textContent = t.rhd;
+              $('#m-stats').innerHTML = t.stats.slice(0, 4).map(s => '<div style="padding:11px 12px;background:#131313"><div style="font:500 7.5px/1 \'JetBrains Mono\',monospace;color:var(--ink-42);letter-spacing:.14em">' + s[0] + '</div>'
+                + '<div style="font:600 19px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.05em;color:' + (s[2] ? 'var(--amber-3)' : 'var(--ink)') + ';margin-top:8px">' + s[1] + '</div></div>').join('');
+              $('#m-rows').innerHTML = t.rows.slice(0, 4).map(r => '<div style="display:flex;align-items:center;gap:11px;padding:11px 12px;background:#131313">'
+                + '<div style="width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--amber-a1);font:700 8.5px/1 \'JetBrains Mono\',monospace;color:var(--ink-7)">' + r[0] + '</div>'
+                + '<div style="flex:1;min-width:0"><div style="font:500 12.5px/1.2 Barlow,sans-serif;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + r[1] + '</div>'
+                + '<div style="font:400 8px/1 \'JetBrains Mono\',monospace;color:var(--ink-45);margin-top:5px;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + r[2] + '</div></div>'
+                + '<div style="font:500 10.5px/1 \'JetBrains Mono\',monospace;color:var(--amber-3);flex:none">' + r[3] + '</div></div>').join('');
+              $('#m-side').innerHTML = t.side.slice(0, 3).map(r => '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px"><div style="font:400 10.5px/1.3 Barlow,sans-serif;color:var(--ink-55)">' + r[0] + '</div>'
+                + '<div style="font:500 11px/1 \'JetBrains Mono\',monospace;color:var(--amber-3)">' + r[1] + '</div></div>').join('');
+              $('#m-actmenu').style.display = actmenu ? 'block' : 'none';
+              $('#m-actmenu').innerHTML = t.act.slice().reverse().concat(['HELP']).map((a, i) => '<div style="display:flex;align-items:center;height:46px;padding:0 14px;cursor:pointer;background:' + (i === 0 ? 'var(--amber-a12)' : 'transparent') + ';font:700 12px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;color:' + (i === 0 ? 'var(--amber-3)' : 'var(--ink-2)') + ';border-bottom:1px solid var(--amber-a12)">' + a + '</div>').join('');
+            }
+            if ($('#v3-tabs')) {
+              $('#v3-tabs').innerHTML = tabStrip(more, false);
+              $('#v3-more').textContent = more ? '✕' : '⋯';
+              $('#v3-title').textContent = t.n.toUpperCase();
+              $('#v3-crumb').textContent = t.crumb;
+              $('#v3-sub').innerHTML = '';
+              fill('v3');
+            }
+
             if ($('#nv-q')) renderPalette();
           };
 
@@ -643,7 +903,11 @@
           if ($('#nv-q')) $('#nv-q').addEventListener('input', renderPalette);
           sec.addEventListener('click', e => {
             const b = e.target.closest('.nv-rb');
-            if (b) { cur = b.dataset.t; grid = false; render(); return; }
+            if (b) { cur = b.dataset.t; grid = false; menu = false; render(); return; }
+            if (e.target.closest('#v1-more') || e.target.closest('#v3-more')) { more = !more; render(); return; }
+            if (e.target.closest('#m-actmore')) { actmenu = !actmenu; render(); return; }
+            if (actmenu && !e.target.closest('#m-actmenu')) { actmenu = false; render(); }
+            if (menu && !e.target.closest('#v2-menu')) { menu = false; render(); }
             if (e.target.closest('#nv-drawer-btn')) { drawer = !drawer; render(); return; }
             if (e.target.closest('#nv-grid-btn')) { grid = !grid; render(); return; }
             if (grid && !e.target.closest('#nv-grid')) { grid = false; render(); }

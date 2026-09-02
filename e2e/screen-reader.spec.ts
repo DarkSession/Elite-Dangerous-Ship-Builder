@@ -44,7 +44,7 @@ test.describe('accessibility tree', () => {
     // which is where the reference puts them.
     //
     // Found by what it holds rather than by its name. The banner carries a
-    // second navigation landmark since canvas 3c — the tool bar — and this file
+    // second navigation landmark canvas 4c draws — the tool bar — and this file
     // deliberately pins no catalogue text, so the one being asked about here is
     // the one offering screens to open.
     const screens = page

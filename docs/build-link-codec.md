@@ -650,7 +650,7 @@ retained. A table committed before the hash existed is re-hashed the same way fo
 the rule has no bootstrap hole. `--overwrite` replaces a table in place and is sound only while no
 link has been published against it.
 
-The current application dependency is exactly pinned to Almanac `0.2.7`. Table 1 was overwritten in
+The current application dependency is exactly pinned to Almanac `0.2.8`. Table 1 was overwritten in
 place on 2026-08-22, while it is still pre-release and no link has been published against it, so
 that a module's pre-engineered variants contribute their blueprints to its candidate set — see
 "Where neither form fits" above. It was overwritten again on 2026-08-26, under the same rule, so
@@ -688,8 +688,19 @@ under "What the pinned models deliberately leave open", so the position an ident
 has moved, and the `MODELS` block pins weights for four structural booleans and a floor for the
 context-index decay. No symbol leaves any table and no global index moves; a link minted against the
 earlier table still names the same articles, but it names them at the wrong positions, which is what
-makes this an overwrite rather than an edit. Running `pnpm run codec:tables` reproduces table 1 at
-content hash `6280af035fe6292f6e55ee11060b30f27b71773b68c18ae47b56a93c758fa5db`.
+makes this an overwrite rather than an edit. That overwrite left table 1 at content hash
+`6280af035fe6292f6e55ee11060b30f27b71773b68c18ae47b56a93c758fa5db`.
+
+The seventh overwrite, on 2026-09-02, follows the package again. Almanac 0.2.8 files the hull's
+built-in Cargo Hatch under the `internal` category but no longer offers it to an optional internal
+mount, because the hull is built with one and the fixed `CargoHatch` mount is the only place it
+goes. So `ModularCargoBayDoor` leaves every optional-internal candidate set and each of those sets
+is one article shorter. No symbol leaves `MODULES` and no global index moves, so a link minted
+against the earlier table still names the same articles; it names them at the wrong positions in
+those sets, which is what makes this an overwrite rather than an edit. Running
+`pnpm run codec:tables` reproduces table 1 at content hash
+`9f6e25b28b5da41b391779dbb8eed63570fbc6b50a6be7ee21fcbb65c7a997ce`, at the same capacity — 272 of
+the 377 bytes a 500-character value carries.
 
 Every future Almanac upgrade must reproduce the committed table and pass the frozen literal-link
 reconstruction corpus. Protocol fixtures must not be regenerated merely to make an upgrade pass.
@@ -709,17 +720,18 @@ The frozen corpus currently produces these encoded data lengths. Each value and 
 the `b.` protocol prefix. Packed spellings are untouched by the symbol models, so the minimal and
 stock references have held their exact text throughout; every engineered reference, whose canonical
 body is arithmetic, has been re-pinned under the pre-release regeneration rule at each in-place
-overwrite. The most recent, on 2026-09-01, re-pinned all three when the candidate sets took their
-popularity order — the festive Krait at the same length, the Anaconda nine characters shorter and
-the Corvette eighteen:
+overwrite. The most recent, on 2026-09-02, re-pinned the Anaconda and the Corvette at their own
+lengths: Almanac 0.2.8 stopped offering the hull's built-in Cargo Hatch to an optional internal
+mount, which drops one article from every optional-internal candidate set and so respells the two
+references that fit one, neither of them shorter for it:
 
 | Reference build               | Base70 encoded data                                                                | Data length |
 | ----------------------------- | ---------------------------------------------------------------------------------- | ----------: |
 | Minimal Sidewinder            | `b.1S..A@YX6Cjy!R`                                                                 |          16 |
 | Stock Krait Mk II             | `b.vz,jdQ_4`                                                                       |          10 |
 | Festive flak Krait            | `b.5S25TzaeLjTwhwDXHrX`                                                            |          21 |
-| Full engineered Anaconda*     | `b.8oUeO4wu5ZrfCrStkM0I4It5CEAZ6QNzeH2I!qVp_-B/u3xUxp/:5vZn-uve.T`                 |          64 |
-| Supplied engineered Corvette† | `b.26da!i-2iAMHR6!JYWjLXeH:ll2xmztchA8e91yfvAecy.0k,wpaS39Od-qe_AWys@MUQrpRGJVEQa` |          80 |
+| Full engineered Anaconda*     | `b.8oUeO4wu5ZrfCrTfzWgzw4R5x,/c-XJsc!MqzvUN.tw7Y:YwviztiNydqXRqom`                 |          64 |
+| Supplied engineered Corvette† | `b.26da!i-2iAMHR6!JZmTxbE77Oyj3V5R-f,ZnbT!fa_:86xIg:BUBnp6QoP26u6hI3sH,GUQdzesv1z` |          80 |
 
 \* All 38 outfittable slots are occupied, every currently offered fixture blueprint is applied, and
 the fixed cargo hatch has an explicit power state. Cargo racks remain stock because Almanac 0.1.4
