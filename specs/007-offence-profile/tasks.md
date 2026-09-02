@@ -325,7 +325,7 @@ them were defects rather than differences of taste.
 - [x] T029l Add the offence measures to `src/styles/tokens/_primitives.scss` and `_semantic.scss` —
       the 22px damage bar, the 104px/62px bar-row floors, the weapon figure floor, the `16 / 6`
       gunsight box, and the 11px shot dot and 20px mount badge. The stacked bar had been drawn at
-      `--edsb-layout-bar-height`, which is the **66px command bar** and never this measure
+      `--ednb-layout-bar-height`, which is the **66px command bar** and never this measure
 - [x] T029m Set the headline on one line — `display: flex; align-items: baseline`, as the canvas
       sets it — instead of stacking the figure over the line that names it
 - [x] T029n Give the bar rows one grid per list with `subgrid` on each row, so the label, the track
@@ -375,7 +375,7 @@ T029r above belongs to this phase and is left where it was written.
       `visually-hidden` span. The row had carried the sentence itself, where the canvas sets a
       figure; the glyph is the figure and the sentence is what a screen reader gets, which is the
       pattern `defence.damage.unbounded` and `power.heat.does-not-settle` already set
-- [x] T029w Add `--edsb-measure-offence-bar` at 11px and draw the four range bands and the three
+- [x] T029w Add `--ednb-measure-offence-bar` at 11px and draw the four range bands and the three
       capacitor rows on it. They had been drawn on the 9px power-measure bar; the canvas sets all
       seven of those tracks at 11px
 - [x] T029x Move the capacitor's two fills into `projectCapacitor()` as `drawFill` and `rechargeFill`.
@@ -520,7 +520,7 @@ not draw.
       module names and RTL layout with no lost content or value association
 - [x] T036 [P] Assert touch and keyboard operation and shared target-size tokens for the target-range
       field and every mode segment, with no overlap, and that no weapon row carries a control —
-      the range field sizes its own control from `--edsb-target-size`, and the panel's one assertion
+      the range field sizes its own control from `--ednb-target-size`, and the panel's one assertion
       about a row is that it carries no control at all
 - [x] T037 [P] Add the locale sweep asserting owned strings come from messages and that damage rates,
       MJ, MJ/s, seconds, metres, milliradians, percentages, counts and ratings use active-locale
@@ -688,9 +688,9 @@ recorded as such before being built (`design/canvas-contract.md`, review notes 1
 - [x] T056 Spend the canvas's second ink on selection instead of on how a weapon aims. The plate had
       three things to separate — armed, empty, selected — where the canvas has one, and the cool ink
       was drawing `mount === 'GIMBALLED'`, which every mount's own sentence already names. The
-      fixed-against-aimed distinction is withdrawn from the drawing, `--edsb-surface-mount-fixed`
-      becomes `--edsb-surface-mount-armed`, `--edsb-surface-mount-aimed` is retired, and
-      `--edsb-surface-mount-selected` takes the cool ink with its ring. Whether a mount is armed
+      fixed-against-aimed distinction is withdrawn from the drawing, `--ednb-surface-mount-fixed`
+      becomes `--ednb-surface-mount-armed`, `--ednb-surface-mount-aimed` is retired, and
+      `--ednb-surface-mount-selected` takes the cool ink with its ring. Whether a mount is armed
       stays with the fill against the outline, so a selected empty hardpoint is still visibly empty
       (`spec.md` FR-011, FR-013).
       _`src/styles/tokens/_semantic.scss`, `shot-convergence.{ts,html,scss}` and its suite._
@@ -725,8 +725,8 @@ bound this document's own reading had missed (`design/canvas-contract.md`, revie
       carrying a numeral for every hardpoint was a page of digits over a diagram, and each of them
       was already the first thing that mount's sentence says. The three states become three fills of
       one shape: the empty mount's outline goes with the numerals and
-      `--edsb-surface-mount-empty` becomes the armed amber gone stale
-      (`--edsb-palette-amber-deep`, 3.62:1 against the worst stripe of the plate's hatch) rather
+      `--ednb-surface-mount-empty` becomes the armed amber gone stale
+      (`--ednb-palette-amber-deep`, 3.62:1 against the worst stripe of the plate's hatch) rather
       than a text ink, and the
       selection ink wins over it where a selected hardpoint is empty. Every fact stays in the
       mount's own sentence, unchanged (`spec.md` FR-011, FR-012, FR-013).
@@ -735,7 +735,7 @@ bound this document's own reading had missed (`design/canvas-contract.md`, revie
 - [x] T061 Stop the convergence block at the canvas's own `max-width: 508px`, at the leading edge of
       its row. The block was built across the full width beneath the pair, which stood a 172px plate
       in the middle of an 862px frame with the range field stretched out beside it. The bound is the
-      canvas's (@660195); `--edsb-measure-convergence-block` carries it.
+      canvas's (@660195); `--ednb-measure-convergence-block` carries it.
       _`src/styles/tokens/_{primitives,semantic}.scss`, `offence-analysis.scss`._
 - [x] T062 Re-run the feature's own e2e specs with the axe scan, and the checks the gate names.
       _The selection assertion was the one that had to be rebuilt rather than trimmed: it read the
@@ -798,7 +798,7 @@ All four are the drawing again; no figure moves (`design/canvas-contract.md`, re
       rather than edited where it was written. The block's inner width is 470px and not 472: the
       block is `border-box` and its two hairlines count, which makes the range column's share 224px
       exactly. Its flex basis becomes `13.5rem` so the arrangement is not one pixel of a hairline
-      away from wrapping. `--edsb-measure-anatomy-plate`'s two bounds bite at different widths — the
+      away from wrapping. `--ednb-measure-anatomy-plate`'s two bounds bite at different widths — the
       old from 1560, the new from about 1884 — and the design record says so. The plate's rendered
       block width is asserted against the row rather than unconditionally, and the selected-empty
       mark's fill, which rests on declaration order alone, is read off the rendered mark. Four more

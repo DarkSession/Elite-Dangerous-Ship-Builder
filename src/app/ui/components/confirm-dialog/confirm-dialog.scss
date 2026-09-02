@@ -5,9 +5,9 @@
 }
 
 .confirm__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   justify-content: flex-end;
-  padding-block-start: var(--edsb-space-control-block);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  padding-block-start: var(--ednb-space-control-block);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }

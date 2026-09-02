@@ -4,9 +4,9 @@
 // The payload mode the reference draws: monospaced, and isolated so a
 // right-to-left interface cannot reorder a JSON path or a URL inside it.
 .field__control--technical {
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-compact);
-  line-height: var(--edsb-text-leading-body);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-compact);
+  line-height: var(--ednb-text-leading-body);
   unicode-bidi: isolate;
   // The payload owns its own overflow. A long identity wraps or scrolls in
   // here rather than widening the layer or the document.
@@ -15,7 +15,7 @@
 }
 
 .field__control[readonly] {
-  background-color: var(--edsb-surface-sunken);
+  background-color: var(--ednb-surface-sunken);
 }
 
 // Read, but not drawn. For a field the surface around it already names in

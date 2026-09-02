@@ -17,7 +17,7 @@
   display: grid;
   min-block-size: 0;
   margin: 0;
-  padding: var(--edsb-space-panel);
+  padding: var(--ednb-space-panel);
 }
 
 // Canvas 1c's inner frame: `position: relative`, `aspect-ratio: 720/292`, and
@@ -33,7 +33,7 @@
   grid-area: 1 / 1;
   inline-size: 100%;
   min-inline-size: 0;
-  aspect-ratio: var(--edsb-layout-plate-ratio);
+  aspect-ratio: var(--ednb-layout-plate-ratio);
 }
 
 // A plain box around the drawing, and the element the schematic filter is on.
@@ -56,7 +56,7 @@
 .schematic__picture {
   position: absolute;
   inset: 0;
-  filter: var(--edsb-schematic-filter);
+  filter: var(--ednb-schematic-filter);
   pointer-events: none;
 }
 
@@ -95,15 +95,15 @@
 // that square's edge so what is left is all there is — and a one-pixel line
 // that short is not something a reader finds on a lit drawing.
 .schematic__leader {
-  stroke: var(--edsb-border-node-leader);
-  stroke-width: var(--edsb-border-width-rule);
+  stroke: var(--ednb-border-node-leader);
+  stroke-width: var(--ednb-border-width-rule);
   stroke-linecap: round;
 }
 
 // Written over the drawing in the corner, as the canvas writes it. It is the
 // plate's visible name and the figure's accessible name at once.
 .schematic__side {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   grid-area: 1 / 1;
   z-index: 1;
@@ -151,25 +151,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--edsb-layout-node-mark);
-  block-size: var(--edsb-layout-node-mark);
+  inline-size: var(--ednb-layout-node-mark);
+  block-size: var(--ednb-layout-node-mark);
   padding: 0;
   transform: translate(-50%, -50%);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-accent);
-  background-color: var(--edsb-surface-sunken);
-  color: var(--edsb-text-accent-strong);
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-node-mark);
-  font-weight: var(--edsb-text-weight-control);
-  line-height: var(--edsb-text-leading-flat);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-accent);
+  background-color: var(--ednb-surface-sunken);
+  color: var(--ednb-text-accent-strong);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-node-mark);
+  font-weight: var(--ednb-text-weight-control);
+  line-height: var(--ednb-text-leading-flat);
   cursor: pointer;
   transition:
-    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 
   &:focus-visible {
-    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-    outline-offset: var(--edsb-focus-ring-offset);
+    outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+    outline-offset: var(--ednb-focus-ring-offset);
   }
 
   // Marks that would touch step aside (see `mount-declutter.ts`), which clears
@@ -190,14 +190,14 @@
 // empty mount is an outline, and its number is quiet with it.
 .schematic__mount[data-fitted='false'] {
   border-style: dashed;
-  border-color: var(--edsb-border-quiet);
-  color: var(--edsb-text-muted);
+  border-color: var(--ednb-border-quiet);
+  color: var(--ednb-text-muted);
 }
 
 // Canvas `data-kind="util"`: the informational hue, for both fitted and empty.
 .schematic__mount[data-kind='utility'] {
-  border-color: var(--edsb-border-info);
-  color: var(--edsb-text-info);
+  border-color: var(--ednb-border-info);
+  color: var(--ednb-text-info);
 }
 
 // Canvas `data-kind="sel"`: solid accent. Selection is also `aria-pressed` and
@@ -211,15 +211,15 @@
 // legend gives an entry to.
 .schematic__mount[aria-pressed='true'] {
   border-style: solid;
-  border-color: var(--edsb-surface-accent-solid);
-  background-color: var(--edsb-surface-accent-solid);
-  color: var(--edsb-text-on-accent);
+  border-color: var(--ednb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
+  color: var(--ednb-text-on-accent);
 }
 
 .schematic__mount[data-kind='utility'][aria-pressed='true'] {
-  border-color: var(--edsb-surface-info-solid);
-  background-color: var(--edsb-surface-info-solid);
-  color: var(--edsb-text-on-info);
+  border-color: var(--ednb-surface-info-solid);
+  background-color: var(--ednb-surface-info-solid);
+  color: var(--ednb-text-on-info);
 }
 
 // The canvas hangs the engineering icon off the node's top corner, at its own
@@ -228,8 +228,8 @@
   position: absolute;
   inset-block-start: 50%;
   left: 50%;
-  inline-size: var(--edsb-layout-node-mark-icon);
-  block-size: var(--edsb-layout-node-mark-icon);
+  inline-size: var(--ednb-layout-node-mark-icon);
+  block-size: var(--ednb-layout-node-mark-icon);
   transform: translate(35%, -135%);
   pointer-events: none;
 }
@@ -251,7 +251,7 @@
 }
 
 .schematic__status {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   align-items: center;
   text-align: center;
@@ -259,8 +259,8 @@
 
 // The illustration's own mark and its own size, because it is the same wait.
 .schematic__loader {
-  inline-size: var(--edsb-target-size);
-  block-size: var(--edsb-target-size);
+  inline-size: var(--ednb-target-size);
+  block-size: var(--ednb-target-size);
 }
 
 .schematic__spoken {
@@ -269,10 +269,10 @@
 
 .schematic__status-text {
   margin: 0;
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-prose);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-prose);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 

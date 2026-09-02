@@ -8,7 +8,7 @@
 }
 
 .catalogue {
-  @include layout.region-pair(var(--edsb-layout-rail-min), var(--edsb-space-none));
+  @include layout.region-pair(var(--ednb-layout-rail-min), var(--ednb-space-none));
   // The shell draws no page frame, so a screen that wants a measure declares
   // its own (app frame, wave 9). At 2560px the manifest's five columns were
   // spread across the whole window with `SHIP` and `PRICE MCR` a monitor apart.
@@ -20,14 +20,14 @@
 // the search field started at the window edge and the price column's last
 // digit ended at it.
 .catalogue__manifest-region {
-  @include layout.stack(var(--edsb-space-panel));
+  @include layout.stack(var(--ednb-space-panel));
 
   min-inline-size: 0;
-  padding: var(--edsb-space-panel) var(--edsb-space-region);
+  padding: var(--ednb-space-panel) var(--ednb-space-region);
 }
 
 .catalogue__browse {
-  @include layout.stack(var(--edsb-space-panel));
+  @include layout.stack(var(--ednb-space-panel));
 }
 
 .catalogue__inspector {
@@ -46,18 +46,18 @@
 @include layout.medium-up {
   .catalogue__browse edsb-collection-toolbar {
     position: sticky;
-    inset-block-start: var(--edsb-layout-bar-height);
+    inset-block-start: var(--ednb-layout-bar-height);
     z-index: 2;
-    background-color: var(--edsb-surface-root);
+    background-color: var(--ednb-surface-root);
     // The shell's own block padding is above this, so the strip covers the rows
     // passing behind it rather than letting them show through the gap.
-    padding-block: var(--edsb-space-panel);
-    margin-block: calc(-1 * var(--edsb-space-panel));
+    padding-block: var(--ednb-space-panel);
+    margin-block: calc(-1 * var(--ednb-space-panel));
     // The strip and the column headers freeze against the same edge, and a
     // fractional device pixel ratio rounds the two boxes apart: a hairline of
     // row shows through the seam. The strip paints over the seam rather than
     // the arithmetic being tuned to a ratio nobody's screen has to have.
-    box-shadow: 0 var(--edsb-space-3xs) 0 var(--edsb-surface-root);
+    box-shadow: 0 var(--ednb-space-3xs) 0 var(--ednb-surface-root);
   }
 }
 
@@ -82,26 +82,26 @@
   // The region's own trailing inset already stands the manifest off the rail.
 
   .catalogue__inspector {
-    background-color: var(--edsb-surface-rail);
+    background-color: var(--ednb-surface-rail);
     // The rail is closed on two edges: the hairline against the manifest, and
     // one under it. Without the second, the rail's ground stops at whatever
     // height its contents reached and reads as content that was cut off rather
     // than as a panel that ended (canvas 1a).
-    border-inline-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-    border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-    padding: var(--edsb-space-panel);
+    border-inline-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+    border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+    padding: var(--ednb-space-panel);
     // The rail's ground runs from the command bar's rule down, as the canvas
     // draws it, and its resting position is therefore the position it freezes
     // in: it does not travel a block of padding on the first scroll.
-    margin-block-start: calc(-1 * var(--edsb-space-panel));
+    margin-block-start: calc(-1 * var(--ednb-space-panel));
 
     // The inspector stays with the hull it describes while the manifest
     // scrolls beside it, and scrolls inside itself when it is taller than the
     // space left under the command bar.
     position: sticky;
-    inset-block-start: var(--edsb-layout-bar-height);
+    inset-block-start: var(--ednb-layout-bar-height);
     align-self: start;
-    max-block-size: calc(100dvh - var(--edsb-layout-bar-height));
+    max-block-size: calc(100dvh - var(--ednb-layout-bar-height));
     overflow-y: auto;
   }
 }
@@ -141,7 +141,7 @@
 // inset here, and the compact one takes the frame's 14px and adds none.
 @include layout.medium-only {
   .catalogue__inspector {
-    padding-inline: var(--edsb-space-region);
+    padding-inline: var(--ednb-space-region);
   }
 }
 

@@ -9,7 +9,7 @@
 }
 
 .artwork {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
 }
@@ -27,7 +27,7 @@
   inline-size: 100%;
   block-size: 100%;
   object-fit: contain;
-  filter: var(--edsb-artwork-filter);
+  filter: var(--ednb-artwork-filter);
 }
 
 // Hidden rather than removed while the next illustration is on its way: the
@@ -49,8 +49,8 @@
 }
 
 .artwork__loader {
-  inline-size: var(--edsb-target-size);
-  block-size: var(--edsb-target-size);
+  inline-size: var(--ednb-target-size);
+  block-size: var(--ednb-target-size);
 }
 
 .artwork__spoken {
@@ -58,13 +58,13 @@
 }
 
 .artwork__status {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   align-items: center;
   text-align: center;
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-prose);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-prose);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }

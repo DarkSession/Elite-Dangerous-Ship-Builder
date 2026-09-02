@@ -87,7 +87,7 @@ and every block in this list has both. Two of the four rows above are departures
 
 - **The `incomplete` row is drawn in the system's info tone, and the canvas's fourth block is
   neutral ink** — a `rgba(232, 222, 209, 0.28)` marker over a `0.04` ground, against this
-  application's cool `--edsb-text-info`. The tone was chosen when the row was: an `incomplete` is a
+  application's cool `--ednb-text-info`. The tone was chosen when the row was: an `incomplete` is a
   statement about a build that is not finished, and the system has a role for that. The 2026-08-29
   revision added the ground under it and did not change the hue.
 - **The green block is not this feature's `valid` verdict.** Its sentence is

@@ -5,26 +5,26 @@
 }
 
 .share-link {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
-  padding: var(--edsb-space-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-panel);
+  padding: var(--ednb-space-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  border-radius: var(--ednb-shape-panel);
+  background-color: var(--ednb-surface-panel);
 }
 
 .share-link__title {
-  @include layout.display-title(var(--edsb-text-size-heading-sm));
+  @include layout.display-title(var(--ednb-text-size-heading-sm));
 }
 
 .share-link__slef-unavailable {
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 
 .share-link__value-label {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 }
 
 /*
@@ -37,16 +37,16 @@
   overflow-x: auto;
   @include layout.field-surface;
 
-  padding: var(--edsb-space-control-block) var(--edsb-space-control-inline);
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-compact);
-  line-height: var(--edsb-text-leading-prose);
+  padding: var(--ednb-space-control-block) var(--ednb-space-control-inline);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-compact);
+  line-height: var(--ednb-text-leading-prose);
   white-space: nowrap;
   user-select: all;
 }
 
 .share-link__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }
 
 // The copy's spoken answer. Per component, never global: this is the one

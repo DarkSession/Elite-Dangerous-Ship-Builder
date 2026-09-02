@@ -25,7 +25,7 @@ html {
   // Naming both halves is what turns that off, so the two properties go
   // together (wave 9).
   scrollbar-width: thin;
-  scrollbar-color: var(--edsb-border-strong) transparent;
+  scrollbar-color: var(--ednb-border-strong) transparent;
 }
 
 // One scrollbar at a time.
@@ -44,13 +44,13 @@ html:has(dialog[open]) {
 body {
   min-block-size: 100%;
   margin: 0;
-  background-color: var(--edsb-surface-root);
-  color: var(--edsb-text-primary);
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-body);
-  font-weight: var(--edsb-text-weight-body);
-  line-height: var(--edsb-text-leading-body);
-  letter-spacing: var(--edsb-text-tracking-body);
+  background-color: var(--ednb-surface-root);
+  color: var(--ednb-text-primary);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-body);
+  font-weight: var(--ednb-text-weight-body);
+  line-height: var(--ednb-text-leading-body);
+  letter-spacing: var(--ednb-text-tracking-body);
   // The page itself never scrolls horizontally (FR-011). Content that genuinely
   // needs two dimensions owns a labelled, bounded scroller of its own.
   overflow-x: hidden;
@@ -67,10 +67,10 @@ h4,
 h5,
 h6 {
   margin: 0;
-  font-family: var(--edsb-font-heading);
-  font-weight: var(--edsb-text-weight-heading);
-  line-height: var(--edsb-text-leading-heading);
-  letter-spacing: var(--edsb-text-tracking-heading);
+  font-family: var(--ednb-font-heading);
+  font-weight: var(--ednb-text-weight-heading);
+  line-height: var(--ednb-text-leading-heading);
+  letter-spacing: var(--ednb-text-tracking-heading);
   text-transform: uppercase;
   // Long unbroken translated headings and technical identities wrap instead of
   // forcing document overflow.
@@ -111,7 +111,7 @@ code,
 kbd,
 samp,
 pre {
-  font-family: var(--edsb-font-metric);
+  font-family: var(--ednb-font-metric);
   font-variant-numeric: tabular-nums;
 }
 
@@ -127,8 +127,8 @@ canvas {
 // constitutionally excluded from the conformance claim, but focus must still be
 // visible wherever the platform moves it.
 :focus-visible {
-  outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-  outline-offset: var(--edsb-focus-ring-offset);
+  outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+  outline-offset: var(--ednb-focus-ring-offset);
 }
 
 // Reduced motion.
@@ -141,9 +141,9 @@ canvas {
   *,
   *::before,
   *::after {
-    animation-duration: var(--edsb-duration-instant) !important;
+    animation-duration: var(--ednb-duration-instant) !important;
     animation-iteration-count: 1 !important;
-    transition-duration: var(--edsb-duration-instant) !important;
+    transition-duration: var(--ednb-duration-instant) !important;
     scroll-behavior: auto !important;
   }
 }

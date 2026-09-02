@@ -35,7 +35,7 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 2;
-  background-color: var(--edsb-surface-bar);
+  background-color: var(--ednb-surface-bar);
 }
 
 // What both decks hold clear on the leading edge for the mark: the plate's own
@@ -43,7 +43,7 @@
 // inside a `0 20px` plate). The line between the decks is inset to match, so
 // the two cannot drift apart at a width where only one of them was changed.
 @mixin deck-insets($gutter, $gap) {
-  $indent: calc(#{$gutter} + var(--edsb-layout-insignia-width) + #{$gap});
+  $indent: calc(#{$gutter} + var(--ednb-layout-insignia-width) + #{$gap});
 
   .frame__tools,
   .frame__bar {
@@ -76,11 +76,11 @@
   // A floor, like the command bar's own, and for the same reason: a doubled
   // text size or a long language makes a tab taller than the drawing, and a bar
   // that could not grow would cut its own controls off (011/FR-011).
-  min-block-size: var(--edsb-layout-tool-bar-floor);
+  min-block-size: var(--ednb-layout-tool-bar-floor);
 }
 
 .frame__tools-list {
-  @include layout.wrapping-row(var(--edsb-space-3xs));
+  @include layout.wrapping-row(var(--ednb-space-3xs));
 
   align-items: stretch;
   list-style: none;
@@ -102,25 +102,25 @@
 
   display: flex;
   align-items: center;
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-inline: var(--ednb-space-inline-loose);
   // `--ink-48` is what the canvas sets and it measures 4.02:1 on this ground,
   // under the AA floor for text this size. The audited floor the token layer
   // offers is taken instead (`design/canvas-extraction.md`, "Tool bar").
-  color: var(--edsb-text-faint);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-heading);
-  line-height: var(--edsb-text-leading-flat);
-  letter-spacing: var(--edsb-text-tracking-heading);
+  color: var(--ednb-text-faint);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-label);
+  font-weight: var(--ednb-text-weight-heading);
+  line-height: var(--ednb-text-leading-flat);
+  letter-spacing: var(--ednb-text-tracking-heading);
   text-transform: uppercase;
   text-decoration: none;
   // Declared on every tab and coloured on the current one, so a tab's text sits
   // on the same line whichever tool a Commander is in.
-  border-block-end: var(--edsb-border-width-thick) solid transparent;
+  border-block-end: var(--ednb-border-width-thick) solid transparent;
 
   &:focus-visible {
-    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-    outline-offset: calc(var(--edsb-focus-ring-width) * -1);
+    outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+    outline-offset: calc(var(--ednb-focus-ring-width) * -1);
   }
 }
 
@@ -131,9 +131,9 @@
 // A wash rather than the ground the plate already carries: one plate means a
 // fill of that ground would be no fill at all.
 .frame__tool--current {
-  background-color: var(--edsb-surface-accent-selected);
-  color: var(--edsb-text-accent-strong);
-  border-block-end-color: var(--edsb-border-accent);
+  background-color: var(--ednb-surface-accent-selected);
+  color: var(--ednb-text-accent-strong);
+  border-block-end-color: var(--ednb-border-accent);
 }
 
 // The line between the decks. It is drawn on the lower deck rather than under
@@ -157,14 +157,14 @@
     content: '';
     position: absolute;
     inset-block-start: 0;
-    block-size: var(--edsb-border-width-hairline);
-    background-color: var(--edsb-rule-section);
+    block-size: var(--ednb-border-width-hairline);
+    background-color: var(--ednb-rule-section);
   }
 }
 
 @media (hover: hover) {
   a.frame__tool:hover {
-    color: var(--edsb-text-accent);
+    color: var(--ednb-text-accent);
   }
 }
 
@@ -174,19 +174,19 @@
   @include layout.command-bar;
 
   flex-wrap: wrap;
-  padding-block: var(--edsb-space-control-block);
+  padding-block: var(--ednb-space-control-block);
   // The bar's own floor: the one height it is drawn at on every screen. What
-  // the regions below clear is `--edsb-layout-bar-height`, which is the banner
+  // the regions below clear is `--ednb-layout-bar-height`, which is the banner
   // as it was actually drawn — a separate token on purpose, because a bar sized
   // from its own measurement could never shrink again (token layer,
-  // `--edsb-layout-bar-floor`).
-  min-block-size: var(--edsb-layout-bar-floor);
+  // `--ednb-layout-bar-floor`).
+  min-block-size: var(--ednb-layout-bar-floor);
 }
 
 // Canvas 4c's wide insets. Declared after both decks, because the command deck
 // takes its padding from the shared command-bar mixin and the deck the mark
 // stands over is inset further than a bar that carries no mark.
-@include deck-insets(var(--edsb-space-region), var(--edsb-space-inline-loose));
+@include deck-insets(var(--ednb-space-region), var(--ednb-space-inline-loose));
 
 // A sticky banner is a fixed share of a short viewport, and at 400% zoom that
 // share is most of it. Below the short-viewport threshold it releases and
@@ -214,7 +214,7 @@
 // The chrome below releases with it, rather than freezing over a gap the bar is
 // no longer filling — the same pairing the short-viewport rules make in the
 // regions themselves (FR-011). That is done by zeroing
-// `--edsb-layout-bar-height` for the released frame, and a token takes its
+// `--ednb-layout-bar-height` for the released frame, and a token takes its
 // values in the token layer, so the rule lives beside the token's own
 // declaration in `styles/tokens/_semantic.scss` rather than here.
 
@@ -225,7 +225,7 @@
 // whatever the trailing edge holds — the navigation and the actions where the
 // bar is drawn wide, the one named trigger where it is folded — abuts there.
 .frame__identity {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   min-inline-size: 0;
   margin-inline-end: auto;
@@ -256,17 +256,17 @@
   // Half the band, less half of whatever box is being placed — the press box
   // where the mark is the way home, the mark itself where it is not. The box is
   // centred rather than stretched, or the mark would be as tall as the plate.
-  inset-block-start: calc(var(--edsb-layout-bar-floor) / 2);
+  inset-block-start: calc(var(--ednb-layout-bar-floor) / 2);
   translate: 0 -50%;
   // Over the decks, so the press box the link overhangs into the gutter is not
   // covered by the deck it overhangs.
   z-index: 1;
-  inset-inline-start: var(--edsb-space-region);
+  inset-inline-start: var(--ednb-space-region);
 }
 
 .frame__banner:has(.frame__tools) .frame__flag-home,
 .frame__banner:has(.frame__tools) > .frame__flag {
-  inset-block-start: calc((var(--edsb-layout-tool-bar-floor) + var(--edsb-layout-bar-floor)) / 2);
+  inset-block-start: calc((var(--ednb-layout-tool-bar-floor) + var(--ednb-layout-bar-floor)) / 2);
 }
 
 // The way back to the shipyard: a link around the mark, never the mark itself.
@@ -294,17 +294,17 @@
   // the mark and the name it carries for a reader, and neither is ever seen in
   // this colour — but an inherited `#0000EE` is still a colour this design
   // system did not choose, and it is measured as one (011/FR-009).
-  color: var(--edsb-text-primary);
+  color: var(--ednb-text-primary);
   // Pulled back by half of what the press is wider than the mark, so the mark
   // lands on the plate's own inset and the target overhangs it evenly. The
   // decks are indented past the mark rather than past the press box, which is
   // the same relationship the canvas draws.
-  margin-inline-start: calc((var(--edsb-target-size) - var(--edsb-layout-insignia-width)) / -2);
+  margin-inline-start: calc((var(--ednb-target-size) - var(--ednb-layout-insignia-width)) / -2);
   cursor: pointer;
 
   &:focus-visible {
-    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-    outline-offset: var(--edsb-space-3xs);
+    outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+    outline-offset: var(--ednb-space-3xs);
   }
 }
 
@@ -314,15 +314,15 @@
 // title and leads an editable one (`app-frame.ts`, `betaFollowsTitle`).
 .frame__beta {
   flex: none;
-  padding-block: var(--edsb-space-3xs);
-  padding-inline: var(--edsb-space-2xs);
-  background-color: var(--edsb-surface-accent-solid);
-  color: var(--edsb-text-on-accent);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-micro);
-  font-weight: var(--edsb-text-weight-heading);
-  line-height: var(--edsb-text-leading-flat);
-  letter-spacing: var(--edsb-text-tracking-product);
+  padding-block: var(--ednb-space-3xs);
+  padding-inline: var(--ednb-space-2xs);
+  background-color: var(--ednb-surface-accent-solid);
+  color: var(--ednb-text-on-accent);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-micro);
+  font-weight: var(--ednb-text-weight-heading);
+  line-height: var(--ednb-text-leading-flat);
+  letter-spacing: var(--ednb-text-tracking-product);
   text-transform: uppercase;
 }
 
@@ -345,7 +345,7 @@
 // screen a Commander could not name or leave (hull-detail design, "Composition").
 @include layout.below-wide {
   .frame__return {
-    @include layout.wrapping-row(var(--edsb-space-inline-tight));
+    @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
     min-inline-size: 0;
     margin-inline-end: auto;
@@ -369,39 +369,39 @@
     flex: none;
     align-items: center;
     justify-content: center;
-    inline-size: var(--edsb-target-size);
-    margin-inline-start: calc(var(--edsb-space-2xs) * -1);
-    font-family: var(--edsb-font-metric);
-    font-size: var(--edsb-text-size-metric);
-    color: var(--edsb-text-accent);
+    inline-size: var(--ednb-target-size);
+    margin-inline-start: calc(var(--ednb-space-2xs) * -1);
+    font-family: var(--ednb-font-metric);
+    font-size: var(--ednb-text-size-metric);
+    color: var(--ednb-text-accent);
     text-decoration: none;
 
     &:focus-visible {
-      outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-      outline-offset: var(--edsb-space-3xs);
+      outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+      outline-offset: var(--ednb-space-3xs);
     }
   }
 
   .frame__return-identity {
-    @include layout.stack(var(--edsb-space-3xs));
+    @include layout.stack(var(--ednb-space-3xs));
 
     min-inline-size: 0;
   }
 
   .frame__return-detail {
-    @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+    @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
   }
 }
 
 .frame__title {
   @include layout.display-title(
-    var(--edsb-text-size-heading-md),
-    var(--edsb-text-tracking-product)
+    var(--ednb-text-size-heading-md),
+    var(--ednb-text-tracking-product)
   );
 }
 
 .frame__count {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
 }
 
 // Canvas 1a draws the bar's trailing edge as `OPEN SAVED BUILD \u00b7 6`,
@@ -412,7 +412,7 @@
 // therefore leads, which is where the artboard that draws it puts it.
 
 .frame__navigation-list {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   list-style: none;
 }
@@ -421,11 +421,11 @@
 // amber hairline rather than setting them as bare text (canvas 1a
 // "OPEN SAVED BUILD · 6 / IMPORT / ?", canvas 1b "IMPORT / ?").
 .frame__navigation-link {
-  @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-base(var(--ednb-text-tracking-heading));
   @include layout.control-secondary;
 
   min-inline-size: 0;
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-inline: var(--ednb-space-inline-loose);
   text-decoration: none;
 }
 
@@ -442,24 +442,24 @@
 // reachable through it, because a touch device has no hover at all.
 @media (hover: hover) {
   .frame__navigation-link:hover {
-    background-color: var(--edsb-surface-accent-selected);
+    background-color: var(--ednb-surface-accent-selected);
   }
 
   .frame__navigation-link[aria-current='page']:hover {
-    background-color: var(--edsb-text-accent-strong);
+    background-color: var(--ednb-text-accent-strong);
   }
 }
 
 .frame__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }
 
 // Canvas 1c's hairline between the history pair and the committing actions.
 .frame__actions-divider {
   flex: none;
-  inline-size: var(--edsb-border-width-hairline);
-  block-size: var(--edsb-space-2xl);
-  background-color: var(--edsb-border-quiet);
+  inline-size: var(--ednb-border-width-hairline);
+  block-size: var(--ednb-space-2xl);
+  background-color: var(--ednb-border-quiet);
 }
 
 // One composition is rendered at a time. `display: none` is deliberate rather
@@ -474,10 +474,10 @@
   // decks start a tighter gap past it than the wide drawing leaves.
   .frame__flag-home,
   .frame__banner > .frame__flag {
-    inset-inline-start: var(--edsb-space-inline-loose);
+    inset-inline-start: var(--ednb-space-inline-loose);
   }
 
-  @include deck-insets(var(--edsb-space-inline-loose), var(--edsb-space-inline));
+  @include deck-insets(var(--ednb-space-inline-loose), var(--ednb-space-inline));
 
   .frame__bar {
     // The bar is folded at every width this applies to, so it draws the
@@ -491,12 +491,12 @@
   // The tool deck takes the same compact insets as the deck under it, so the
   // two line up on one gutter (canvas 4d).
   .frame__tool {
-    padding-inline: var(--edsb-space-inline);
+    padding-inline: var(--ednb-space-inline);
   }
 
   .frame__title {
-    font-size: var(--edsb-text-size-heading-sm);
-    letter-spacing: var(--edsb-text-tracking-dialog);
+    font-size: var(--ednb-text-size-heading-sm);
+    letter-spacing: var(--ednb-text-tracking-dialog);
   }
 }
 
@@ -532,8 +532,8 @@
 }
 
 .frame__status {
-  padding-block: var(--edsb-space-inline-loose);
-  padding-inline: var(--edsb-space-region);
+  padding-block: var(--ednb-space-inline-loose);
+  padding-inline: var(--ednb-space-region);
 }
 
 // No centred measure. Every canvas runs its regions to the edge of the artboard
@@ -562,7 +562,7 @@
 
   // Space reserved under the sticky banner so a target scrolled to by an
   // in-page link lands below it rather than behind it.
-  scroll-margin-block-start: var(--edsb-layout-bar-height);
+  scroll-margin-block-start: var(--ednb-layout-bar-height);
 
   // The compact canvases *do* draw a gutter, and the same one everywhere: 14px
   // each side, on the bar and on every band under it (canvas 1b's rows, search
@@ -575,6 +575,6 @@
   // stands, and this deliberately does not reinstate the 22px frame wave 9
   // removed.
   @include layout.compact {
-    padding-inline: var(--edsb-space-inline-loose);
+    padding-inline: var(--ednb-space-inline-loose);
   }
 }

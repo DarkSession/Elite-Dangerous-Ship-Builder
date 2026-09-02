@@ -19,7 +19,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: var(--edsb-space-region);
+  gap: var(--ednb-space-region);
   min-inline-size: 0;
 }
 
@@ -39,7 +39,7 @@
 // step of a spacing token away from wrapping again. It grows into the 224px it
 // is given either way, so the drawn layout is the same one.
 .convergence__readout {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   flex: 1 1 13.5rem;
   min-inline-size: 0;
@@ -65,7 +65,7 @@
 // the earlier `16 / 6` band went with the earlier mapping that levelled it
 // (`design/canvas-contract.md`, "3. SHOT CONVERGENCE").
 //
-// It is drawn at `--edsb-measure-gunsight-plate` — 224px, against the canvas's
+// It is drawn at `--ednb-measure-gunsight-plate` — 224px, against the canvas's
 // own 172 — and shrinks with the block rather than growing to fill it: a square
 // plate given a whole panel's width is a diagram several screens tall, and the
 // field of view it draws does not get wider for having more room.
@@ -77,28 +77,28 @@
 .plate {
   position: relative;
   flex: none;
-  inline-size: min(100%, var(--edsb-layout-gunsight-plate));
+  inline-size: min(100%, var(--ednb-layout-gunsight-plate));
   aspect-ratio: 1;
   overflow: hidden;
-  background: var(--edsb-surface-plate);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative-strong);
+  background: var(--ednb-surface-plate);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative-strong);
 }
 
 .plate__axis {
   position: absolute;
-  background-color: var(--edsb-border-decorative-strong);
+  background-color: var(--ednb-border-decorative-strong);
 }
 
 .plate__axis--vertical {
   inset-block: 0;
   left: 50%;
-  inline-size: var(--edsb-border-width-hairline);
+  inline-size: var(--ednb-border-width-hairline);
 }
 
 .plate__axis--horizontal {
   inset-inline: 0;
   top: 50%;
-  block-size: var(--edsb-border-width-hairline);
+  block-size: var(--ednb-border-width-hairline);
 }
 
 // The boresight the 2026-08-26 revision adds: where the hull itself points.
@@ -117,7 +117,7 @@
   translate: -50% -50%;
   inline-size: 11.6%;
   aspect-ratio: 1;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
   border-radius: 50%;
 }
 
@@ -134,7 +134,7 @@
   top: 50%;
   translate: -50% -50%;
   aspect-ratio: 1;
-  border: var(--edsb-border-width-hairline) dashed var(--edsb-border-decorative);
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-decorative);
   border-radius: 50%;
 }
 
@@ -152,11 +152,11 @@
   position: absolute;
   z-index: 2;
   translate: -50% -50%;
-  inline-size: var(--edsb-layout-shot-dot);
-  block-size: var(--edsb-layout-shot-dot);
-  background-color: var(--edsb-surface-mount-armed);
+  inline-size: var(--ednb-layout-shot-dot);
+  block-size: var(--ednb-layout-shot-dot);
+  background-color: var(--ednb-surface-mount-armed);
   border-radius: 50%;
-  box-shadow: 0 0 0 var(--edsb-border-width-thick) var(--edsb-surface-sunken);
+  box-shadow: 0 0 0 var(--ednb-border-width-thick) var(--ednb-surface-sunken);
 }
 
 // A hardpoint with nothing on it: the same dot, filled, in the stale amber of a
@@ -167,7 +167,7 @@
 // What it is is written out in the mark's own sentence either way.
 .plate__dot--empty {
   z-index: 1;
-  background-color: var(--edsb-surface-mount-empty);
+  background-color: var(--ednb-surface-mount-empty);
 }
 
 // The mount the workspace has selected: the plate's third ink, and nothing else.
@@ -184,7 +184,7 @@
 // the 2026-08-26 revision and has not come back.
 .plate__dot--selected {
   z-index: 3;
-  background-color: var(--edsb-surface-mount-selected);
+  background-color: var(--ednb-surface-mount-selected);
 }
 
 // The plate in words. Kept out of sight rather than out of the document: it is

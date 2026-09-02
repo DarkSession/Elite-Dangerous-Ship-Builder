@@ -781,7 +781,7 @@ describe('the wide manifest', () => {
   });
 
   /**
-   * The rail's own box, in the pixels `--edsb-layout-manifest-pane` declares.
+   * The rail's own box, in the pixels `--ednb-layout-manifest-pane` declares.
    *
    * Written down here because this environment has no layout to read it from,
    * and it is the one figure the rule below is about: eight 44px rows of the

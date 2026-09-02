@@ -342,7 +342,7 @@ package call: every figure is one the projection already returns.
 - [x] T075 [P] Extend `power-summary.spec.ts` for the rail control and assert the two surfaces move
       one condition — setting from the rail changes what the distributor table reads, and the reverse
 - [x] T076 [P] Assert the rail control's target size and touch operation at all five layout
-      profiles, on the same `--edsb-target-size` baseline the distributor cell holds
+      profiles, on the same `--ednb-target-size` baseline the distributor cell holds
 - [x] T077 Re-run the feature's e2e specs in all ten projects with the axe scan, then
       `pnpm run check`
 

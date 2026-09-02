@@ -18,60 +18,60 @@
 .table {
   inline-size: 100%;
   border-collapse: separate;
-  border-spacing: 0 var(--edsb-space-3xs);
+  border-spacing: 0 var(--ednb-space-3xs);
 }
 
 .table__caption {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-heading));
 
-  padding-block-end: var(--edsb-space-stack-tight);
+  padding-block-end: var(--ednb-space-stack-tight);
   text-align: start;
 }
 
 .table th,
 .table td {
-  padding-block: var(--edsb-space-row);
-  padding-inline: var(--edsb-space-row);
+  padding-block: var(--ednb-space-row);
+  padding-inline: var(--ednb-space-row);
   text-align: start;
   vertical-align: middle;
 }
 
 .table thead th {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-heading));
 
-  padding-block: var(--edsb-space-none) var(--edsb-space-sm);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block: var(--ednb-space-none) var(--ednb-space-sm);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
   white-space: nowrap;
 }
 
 .table tbody th,
 .table tbody td {
-  background-color: var(--edsb-surface-row);
+  background-color: var(--ednb-surface-row);
 }
 
 // The row's leading marker. Transparent until the row is the current one, so
 // every row keeps the same inline geometry and nothing shifts on selection.
 .table tbody tr > :first-child {
-  border-inline-start: var(--edsb-border-width-marker) solid transparent;
+  border-inline-start: var(--ednb-border-width-marker) solid transparent;
 }
 
 // The hull name: condensed, uppercase, tracked, as the reference sets it.
 .table tbody th[scope='row'] {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-heading-md);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-name);
-  line-height: var(--edsb-text-leading-heading);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-heading-md);
+  font-weight: var(--ednb-text-weight-control);
+  letter-spacing: var(--ednb-text-tracking-name);
+  line-height: var(--ednb-text-leading-heading);
   text-transform: uppercase;
-  color: var(--edsb-text-numeric);
+  color: var(--ednb-text-numeric);
   overflow-wrap: break-word;
 }
 
 .table__column-unit {
   display: block;
-  color: var(--edsb-text-faint);
-  font-size: var(--edsb-text-size-micro);
-  letter-spacing: var(--edsb-text-tracking-code);
+  color: var(--ednb-text-faint);
+  font-size: var(--ednb-text-size-micro);
+  letter-spacing: var(--ednb-text-tracking-code);
   text-transform: none;
 }
 
@@ -84,7 +84,7 @@
 // component should do rather than rely on the scoping attribute's arithmetic.
 .table th.table__cell--numeric,
 .table td.table__cell--numeric {
-  @include layout.metric-value(var(--edsb-text-size-body), var(--edsb-text-secondary));
+  @include layout.metric-value(var(--ednb-text-size-body), var(--ednb-text-secondary));
 
   // Logical property: the alignment follows the reading direction rather than
   // pinning numbers to the right in a right-to-left context.
@@ -95,7 +95,7 @@
 }
 
 .table thead th.table__cell--numeric {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-heading));
 
   text-align: end;
 }
@@ -104,7 +104,7 @@
 // on each cell — a per-cell gradient restarts at every column boundary and
 // leaves seams the reference does not have.
 .table tbody tr[aria-selected='true'] {
-  background-image: var(--edsb-surface-row-selected);
+  background-image: var(--ednb-surface-row-selected);
 }
 
 .table tbody tr[aria-selected='true'] > * {
@@ -112,26 +112,26 @@
 }
 
 .table tr[aria-selected='true'] > :first-child {
-  border-inline-start-color: var(--edsb-marker-selected);
+  border-inline-start-color: var(--ednb-marker-selected);
 }
 
 .table tr[aria-selected='true'] th[scope='row'] {
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
 }
 
 .table__state {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-count));
 
   display: block;
-  margin-block-start: var(--edsb-space-2xs);
+  margin-block-start: var(--ednb-space-2xs);
 }
 
 .table__empty {
-  padding-block: var(--edsb-space-section);
-  padding-inline: var(--edsb-space-panel);
-  font-weight: var(--edsb-text-weight-prose);
+  padding-block: var(--ednb-space-section);
+  padding-inline: var(--ednb-space-panel);
+  font-weight: var(--ednb-text-weight-prose);
   text-align: center;
-  color: var(--edsb-text-subtle);
+  color: var(--ednb-text-subtle);
 }
 
 // In a narrow container the table tightens its own gutters before it asks the
@@ -140,7 +140,7 @@
 @include layout.container-compact(table) {
   .table th,
   .table td {
-    padding-inline: var(--edsb-space-inline-tight);
+    padding-inline: var(--ednb-space-inline-tight);
   }
 
   .table thead th {

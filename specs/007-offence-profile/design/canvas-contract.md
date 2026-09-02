@@ -774,7 +774,7 @@ worked out once, in the projection:
     plate of nothing but dots that reads as another _kind_ of mark rather than
     as the absence of a weapon. All three states are one shape now, told apart
     by fill alone: the armed mount's amber, the same amber gone stale
-    (`--edsb-palette-amber-deep`, 3.62:1 against the worst stripe of the plate's
+    (`--ednb-palette-amber-deep`, 3.62:1 against the worst stripe of the plate's
     hatch and 3.96:1 against its halo's ground) for a mount with
     nothing on it, and the cool ink for the mount the workspace has open. The
     selection ink wins over the stale one where a selected hardpoint is empty,

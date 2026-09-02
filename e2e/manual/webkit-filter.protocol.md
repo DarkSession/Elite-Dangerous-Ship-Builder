@@ -28,7 +28,7 @@ the hull is actually amber on WebKit is what a person confirms here.
 ## When to run it
 
 - Before a release, if anything in this list changed since the last recorded run:
-  `--edsb-filter-schematic` or `--edsb-schematic-filter` in the token layer; the `.schematic__picture`
+  `--ednb-filter-schematic` or `--ednb-schematic-filter` in the token layer; the `.schematic__picture`
   or `.schematic__artwork` rules in `src/app/ui/outfitting/hull-schematic.scss`; or the element the
   filter is declared on in `src/app/ui/outfitting/hull-schematic.html`.
 - After an Almanac pin moves, if the schematics' own palette changed.

@@ -21,8 +21,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack-tight);
+  column-gap: var(--ednb-space-inline);
+  row-gap: var(--ednb-space-stack-tight);
 }
 
 .range__track,
@@ -32,7 +32,7 @@
 }
 
 .range__label {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 }
 
 // Canvas 1c's flat inset band, at the canvas's own 22px — the control's own
@@ -48,8 +48,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  block-size: var(--edsb-layout-range-track);
-  background-color: var(--edsb-surface-inset);
+  block-size: var(--ednb-layout-range-track);
+  background-color: var(--ednb-surface-inset);
 }
 
 .range__fill {
@@ -57,7 +57,7 @@
   inset-block: 0;
   inset-inline-start: 0;
   display: block;
-  background-color: var(--edsb-surface-accent-quiet);
+  background-color: var(--ednb-surface-accent-quiet);
 }
 
 // The control sits over its own fill, at the full target size so that the whole
@@ -77,7 +77,7 @@
   inline-size: 100%;
   // Centred on the band and taller than it, so the target height is the whole
   // of the control while the band keeps the canvas's weight.
-  margin-block: calc((var(--edsb-layout-range-track) - var(--edsb-target-size)) / 2);
+  margin-block: calc((var(--ednb-layout-range-track) - var(--ednb-target-size)) / 2);
   margin-inline: 0;
   appearance: none;
   background: none;
@@ -89,10 +89,10 @@
 // one it does not know drops the whole rule.
 @mixin knob {
   appearance: none;
-  inline-size: var(--edsb-border-width-thick);
+  inline-size: var(--ednb-border-width-thick);
   // The canvas stands its knob 3px proud of the band at each end.
-  block-size: calc(var(--edsb-layout-range-track) + 2 * var(--edsb-space-3xs));
-  background-color: var(--edsb-surface-accent-solid);
+  block-size: calc(var(--ednb-layout-range-track) + 2 * var(--ednb-space-3xs));
+  background-color: var(--ednb-surface-accent-solid);
   border: 0;
   border-radius: 0;
 }
@@ -118,15 +118,15 @@
 }
 
 .range__control:disabled::-webkit-slider-thumb {
-  background-color: var(--edsb-text-disabled);
+  background-color: var(--ednb-text-disabled);
 }
 
 .range__control:disabled::-moz-range-thumb {
-  background-color: var(--edsb-text-disabled);
+  background-color: var(--ednb-text-disabled);
 }
 
 .range__value {
-  @include layout.metric-value(var(--edsb-text-size-lead), var(--edsb-text-accent-strong));
+  @include layout.metric-value(var(--ednb-text-size-lead), var(--ednb-text-accent-strong));
 
   text-align: end;
 }
@@ -135,14 +135,14 @@
 .range__scale {
   display: flex;
   justify-content: space-between;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
-  letter-spacing: var(--edsb-text-tracking-meta);
-  color: var(--edsb-text-faint);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  letter-spacing: var(--ednb-text-tracking-meta);
+  color: var(--ednb-text-faint);
 }
 
 .range__description {
-  font-size: var(--edsb-text-size-compact);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-subtle);
 }

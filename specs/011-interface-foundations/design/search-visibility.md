@@ -319,7 +319,7 @@ does not want anyway. The rewrite is therefore a step in `ci.yml`, beside the st
   the sitemap does not know. `changefreq` and `priority` go in the same pass: Google has ignored both
   for years, and a file that states things nobody reads invites belief in them.
 - **The token ground is baked into committed rasters.** Every other statement of
-  `--edsb-palette-bg` is reconciled by the checker; a PNG is not, and cannot be. What holds it is the
+  `--ednb-palette-bg` is reconciled by the checker; a PNG is not, and cannot be. What holds it is the
   generator: it reads the token rather than carrying a copy of the colour, so a token change is
   carried into the assets by `pnpm run brand:assets` and the change is visible in the diff. A token
   change without that command leaves the mark on the old ground, and nothing will say so.

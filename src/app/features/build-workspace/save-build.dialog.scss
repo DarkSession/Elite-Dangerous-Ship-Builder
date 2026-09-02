@@ -5,7 +5,7 @@
 }
 
 .save {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 // The group is a block in the stack like the two fields above it; the cards'
@@ -19,16 +19,16 @@
 // The reference closes the dialog with a hairline, then a monospace message
 // line on the leading edge and the two commitments on the trailing one.
 .save__footer {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: center;
   justify-content: space-between;
-  padding-block-start: var(--edsb-space-control-block);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  padding-block-start: var(--ednb-space-control-block);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }
 
 .save__message {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-count));
 
   flex: 1 1 14rem;
   min-inline-size: 0;
@@ -43,11 +43,11 @@
 // not read past. The line keeps its size and its place; only its colour says
 // which kind of sentence it is, and the words say it too.
 .save__message--failure {
-  color: var(--edsb-text-danger-quiet);
+  color: var(--ednb-text-danger-quiet);
 }
 
 .save__actions {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   flex: 0 0 auto;
   justify-content: flex-end;

@@ -72,7 +72,7 @@ All four blocks are the same plate: `border: 1px solid var(--amber-a2)`,
   column as its `GRP n` labels so the strip begins exactly where the bars begin.
   The application draws the caption too — spelled out rather than abbreviated,
   because the strip needs a name a reader can hear — and now shares the column
-  with it, which is what makes the two line up (`--edsb-layout-band-name`;
+  with it, which is what makes the two line up (`--ednb-layout-band-name`;
   Commander request 2026-08-26).
 - Four rows, each `GRP n` then the bar then the draw in MW then the cumulative
   percentage. **Corrected 2026-08-26 (Commander request):** the draw was drawn

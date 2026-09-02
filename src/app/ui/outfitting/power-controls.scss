@@ -14,7 +14,7 @@
   align-items: stretch;
   inline-size: fit-content;
   max-inline-size: 100%;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control);
 }
 
 .power__switch {
@@ -25,8 +25,8 @@
   justify-content: center;
   flex: none;
   cursor: pointer;
-  padding-inline: var(--edsb-space-inline-tight);
-  border-inline-end: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
+  padding-inline: var(--ednb-space-inline-tight);
+  border-inline-end: var(--ednb-border-width-hairline) solid var(--ednb-border-control);
 }
 
 // The checkbox itself carries the state; the dot is what the canvas draws. It
@@ -37,14 +37,14 @@
 }
 
 .power__dot {
-  inline-size: var(--edsb-space-inline-tight);
-  block-size: var(--edsb-space-inline-tight);
+  inline-size: var(--ednb-space-inline-tight);
+  block-size: var(--ednb-space-inline-tight);
   border-radius: 50%;
   // Unpowered is the reference's `hot`; powered is its `good`.
-  background-color: var(--edsb-text-danger);
+  background-color: var(--ednb-text-danger);
 
   .power__toggle:checked + & {
-    background-color: var(--edsb-text-success);
+    background-color: var(--ednb-text-success);
   }
 }
 
@@ -53,7 +53,7 @@
 // select is — but it is drawn as the cell rather than as a form control, so the
 // ledger reads as the canvas's row of chips instead of a column of dropdowns.
 .power__priority {
-  @include layout.control-base(var(--edsb-text-tracking-count));
+  @include layout.control-base(var(--ednb-text-tracking-count));
 
   // No disclosure caret and no field chrome: every option is a single digit, so
   // the chip is the digit. Where the package reports no group at all the shared
@@ -64,15 +64,15 @@
   // The canvas's own dense cell, at the accessible floor rather than the
   // comfortable baseline: forty ledger rows of a 44px chip is a different
   // interface from the one the canvas draws (wave 4).
-  min-inline-size: var(--edsb-target-size-floor);
-  min-block-size: var(--edsb-target-size-floor);
-  padding-inline: var(--edsb-space-inline-tight);
-  font-size: var(--edsb-text-size-micro);
-  padding-inline: var(--edsb-space-inline-tight);
+  min-inline-size: var(--ednb-target-size-floor);
+  min-block-size: var(--ednb-target-size-floor);
+  padding-inline: var(--ednb-space-inline-tight);
+  font-size: var(--ednb-text-size-micro);
+  padding-inline: var(--ednb-space-inline-tight);
   border: 0;
-  background-color: var(--edsb-surface-accent-selected);
-  color: var(--edsb-text-accent);
-  font-family: var(--edsb-font-metric);
+  background-color: var(--ednb-surface-accent-selected);
+  color: var(--ednb-text-accent);
+  font-family: var(--ednb-font-metric);
   text-align: center;
 }
 

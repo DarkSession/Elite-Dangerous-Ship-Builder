@@ -219,7 +219,7 @@ test.describe('reading the build', () => {
     const ink = await page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
       const swatch = document.createElement('span');
-      swatch.style.color = root.getPropertyValue('--edsb-text-danger');
+      swatch.style.color = root.getPropertyValue('--ednb-text-danger');
       document.body.append(swatch);
       const resolved = getComputedStyle(swatch).color;
       swatch.remove();

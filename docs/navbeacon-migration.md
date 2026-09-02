@@ -74,11 +74,12 @@ follows the rename, so it costs a remote update and nothing else.
 
 ### What is deliberately not renamed
 
-`edsb:` in `src/app/platform/storage/storage-keys.ts`, the `edsb-` component selectors
-and the `--edsb-*` CSS custom properties. All three are opaque internal strings that no
-user sees. Renaming them churns the persistence contract, the broadcast channel name,
-the Web Lock names and their specs for no visible gain, and the storage prefix would
-orphan every record a Commander has already saved.
+`edsb:` in `src/app/platform/storage/storage-keys.ts` and the `edsb-` component
+selectors. Both are opaque internal strings that no user sees, and renaming the storage
+prefix would orphan every record a Commander has already saved as well as churning the
+persistence contract, the broadcast channel name, the Web Lock names and their specs.
+The design tokens carry the product's own initials, `--ednb-*`, because a token name is
+read by everyone who extends the system.
 
 ## The tool shell
 
@@ -141,7 +142,7 @@ record rather than an omission:
 - A separate Angular application per tool
 - A `301` from `sb.edct.dev`, and the second Pages site it would need
 - A saved-build handoff page, a bulk export format, or a cross-origin `postMessage` bridge
-- Renaming the `edsb:` storage prefix, the `edsb-` selectors or the `--edsb-*` custom properties
+- Renaming the `edsb:` storage prefix, the `edsb-` selectors or the `--ednb-*` custom properties
 - The `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin, at one tool
 - An account plate on the tool bar, which the canvas draws and constitution I refuses
 - The Market Finder and Thargoid War Tracker from the canvas — both need a network

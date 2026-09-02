@@ -263,8 +263,8 @@ test.describe('the reference visual language', () => {
         return {
           width: box.width,
           height: box.height,
-          declaredWidth: declared('--edsb-layout-insignia-width'),
-          declaredHeight: declared('--edsb-layout-insignia-height'),
+          declaredWidth: declared('--ednb-layout-insignia-width'),
+          declaredHeight: declared('--ednb-layout-insignia-height'),
         };
       });
 

@@ -48,8 +48,8 @@ canvas 4c's tool bar outright.
 | Mock game facts, share URLs and behaviors                                       | Capability specs and Almanac package data/contracts remain authoritative                                                                      | Constitution II, IV and IX |
 | Canvas 4c’s tool grid, `⌘K` palette, drag-to-pin and account plate              | None of the four is built: three are more than one tool needs, and there are no accounts                                                      | Constitution I             |
 | Canvas 4c’s tabs drawn with each tool’s full name                               | The registry’s short name: the deck under the tabs is the same plate and already names the screen                                             | FR-007                     |
-| Canvas 4c’s `--amber-a12` line between the decks                                | `--edsb-rule-section` (`--amber-a14`), the step this system already rules a section at; two hundredths of an alpha is not a token             | FR-009                     |
-| Canvas 4c’s 30px tabs in `--ink-48`                                             | 44px press baseline on a bar with a floor rather than a height; a resting tab in `--edsb-text-faint`                                          | FR-011, FR-012             |
+| Canvas 4c’s `--amber-a12` line between the decks                                | `--ednb-rule-section` (`--amber-a14`), the step this system already rules a section at; two hundredths of an alpha is not a token             | FR-009                     |
+| Canvas 4c’s 30px tabs in `--ink-48`                                             | 44px press baseline on a bar with a floor rather than a height; a resting tab in `--ednb-text-faint`                                          | FR-011, FR-012             |
 | The canvases’ Help · About block naming the work “Elite Dangerous Ship Builder” | The Frontier media-usage notice in `LICENSE` names NavBeacon, which is the work; a canvas is a rendered source and is not edited to follow it | Constitution VII           |
 
 ## Specific prototype conflicts

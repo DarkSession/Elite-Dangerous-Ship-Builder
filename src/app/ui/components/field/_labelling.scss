@@ -15,11 +15,11 @@
 }
 
 .field {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 .field__label {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 }
 
 .field__label--hidden,
@@ -28,14 +28,14 @@
 }
 
 .field__description {
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-subtle);
 }
 
 .field__error {
-  @include layout.micro-label(var(--edsb-text-danger), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-danger), var(--ednb-text-tracking-count));
 
   text-transform: none;
 }

@@ -6,7 +6,7 @@
 }
 
 .inline-link {
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
   // Underlined, so it is not identified by colour alone (constitution V).
   text-decoration: underline;
   // A long destination wraps with its sentence rather than pushing the page
@@ -16,6 +16,6 @@
 
 @media (hover: hover) {
   .inline-link:hover {
-    color: var(--edsb-text-accent-strong);
+    color: var(--ednb-text-accent-strong);
   }
 }

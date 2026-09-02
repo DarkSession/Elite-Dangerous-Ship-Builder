@@ -9,7 +9,7 @@
 }
 
 .detail {
-  @include layout.stack(var(--edsb-space-panel));
+  @include layout.stack(var(--ednb-space-panel));
 }
 
 // Below the rail's own width the same route is the whole screen. The address,
@@ -26,18 +26,18 @@
 // the canvas states, whose own column is the bound.
 @include layout.below-wide {
   .detail {
-    max-inline-size: var(--edsb-layout-sheet-column);
+    max-inline-size: var(--ednb-layout-sheet-column);
     margin-inline: auto;
-    padding-block: var(--edsb-space-inline-loose);
+    padding-block: var(--ednb-space-inline-loose);
   }
 }
 
 .detail__identity {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 .detail__name {
-  @include layout.display-title(var(--edsb-text-size-display), var(--edsb-text-tracking-title));
+  @include layout.display-title(var(--ednb-text-size-display), var(--ednb-text-tracking-title));
 }
 
 // The identity line: manufacturer and pad class as one tracked monospace run.
@@ -45,7 +45,7 @@
 .detail__blurb {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   margin: 0;
 }
 
@@ -70,11 +70,11 @@
 
 .detail__section {
   @include layout.section-rule;
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-label));
 }
 
 .detail__mount-list {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   list-style: none;
   padding: 0;
@@ -84,16 +84,16 @@
 // The mount chip: a count in amber beside a tracked class name, on an inset
 // plate behind an amber hairline (canvas 1a `#sy-hp`).
 .detail__mount {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
-  padding-block: var(--edsb-space-2xs);
-  padding-inline: var(--edsb-space-sm);
-  background-color: var(--edsb-surface-inset);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-field);
+  padding-block: var(--ednb-space-2xs);
+  padding-inline: var(--ednb-space-sm);
+  background-color: var(--ednb-surface-inset);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-field);
 }
 
 .detail__mount-count {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-accent-strong));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-accent-strong));
 }
 
 // A size chip's figure: the count of mounts, then the size they share. One row
@@ -102,7 +102,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 }
 
 // The multiplier in front of a size, at the canvas's own weighting: a step
@@ -110,12 +110,12 @@
 // figure a Commander is reading, so the two are not drawn alike (canvas 1a
 // `#sy-opt`).
 .detail__mount-multiplier {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
 }
 
 .detail__mount-label,
 .detail__blurb {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-code));
 }
 
 // The total the reference puts on the trailing edge of a group's rule. The rule
@@ -123,7 +123,7 @@
 // default order, so the total takes the order after it rather than a place in
 // the markup that would read before the rule.
 .detail__section-total {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-faint));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-faint));
 
   order: 1;
 }
@@ -137,11 +137,11 @@
 
 // One restriction: its name, then the sizes of the mounts it holds.
 .detail__restriction {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 .detail__restriction-name {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-code));
 
   margin: 0;
   min-inline-size: 0;
@@ -154,16 +154,16 @@
 // name under it carry the meaning in words.
 .detail__mounts--restricted {
   .detail__section {
-    color: var(--edsb-text-danger-quiet);
+    color: var(--ednb-text-danger-quiet);
   }
 
   .detail__section::after {
-    background-color: var(--edsb-rule-danger);
+    background-color: var(--ednb-rule-danger);
   }
 }
 
 .detail__mount--restricted {
-  border-color: var(--edsb-border-danger-quiet);
+  border-color: var(--ednb-border-danger-quiet);
 }
 
 // The one headline number on the rail, on a rule of its own.
@@ -172,29 +172,29 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
 }
 
 .detail__price-label {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 }
 
 .detail__price-value {
-  @include layout.metric-value(var(--edsb-text-size-heading-sm), var(--edsb-text-accent-strong));
+  @include layout.metric-value(var(--ednb-text-size-heading-sm), var(--ednb-text-accent-strong));
 }
 
 .detail__mounts {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 .detail__price,
 .detail__create {
-  padding-block-start: var(--edsb-space-lg);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-rule-section);
+  padding-block-start: var(--ednb-space-lg);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
 }
 
 .detail__create {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 // The commitment is drawn full-bleed on its own row (canvas 1b). The

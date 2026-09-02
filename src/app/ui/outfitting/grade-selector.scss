@@ -7,7 +7,7 @@
 }
 
 .grades {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -17,21 +17,21 @@
 .grades__legend {
   display: flex;
   justify-content: space-between;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   padding: 0;
   inline-size: 100%;
 }
 
 .grades__label {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 .grades__selected {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-label));
 }
 
 .grades__cells {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }
 
 .grade {
@@ -39,26 +39,26 @@
   // the pointer floor, so the floor is what the height has to clear — the
   // comfortable 44px baseline would make a bar of five nearly twice what the
   // canvas draws (wave 4).
-  min-block-size: var(--edsb-target-size-floor);
-  block-size: var(--edsb-layout-grade-cell);
+  min-block-size: var(--ednb-target-size-floor);
+  block-size: var(--ednb-layout-grade-cell);
 
-  flex: 1 1 var(--edsb-target-size);
+  flex: 1 1 var(--ednb-target-size);
   min-inline-size: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--edsb-surface-control-quiet);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
-  color: var(--edsb-text-accent);
+  background-color: var(--ednb-surface-control-quiet);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
+  color: var(--ednb-text-accent);
   cursor: pointer;
 
   // The canvas fills the bar up to the chosen grade rather than marking one
   // cell, so grade 5 reads as five. Fill is not the only carrier: the radio's
   // own checked state and the number beside the legend both say it too.
   &[data-filled='true'] {
-    background-color: var(--edsb-surface-accent-solid);
-    border-color: var(--edsb-border-accent);
-    color: var(--edsb-text-on-accent);
+    background-color: var(--ednb-surface-accent-solid);
+    border-color: var(--ednb-border-accent);
+    color: var(--ednb-text-on-accent);
   }
 }
 
@@ -87,19 +87,19 @@
 // the two states, and the strongest hatch a number can be read on there is
 // 2.51:1 (2026-08-30).
 .grade[data-unavailable='true'] {
-  background-color: var(--edsb-surface-hatched);
+  background-color: var(--ednb-surface-hatched);
   background-image: repeating-linear-gradient(
     135deg,
-    var(--edsb-surface-accent-hatch) 0 var(--edsb-space-stack-tight),
-    transparent var(--edsb-space-stack-tight) var(--edsb-space-inline-tight)
+    var(--ednb-surface-accent-hatch) 0 var(--ednb-space-stack-tight),
+    transparent var(--ednb-space-stack-tight) var(--ednb-space-inline-tight)
   );
-  border-color: var(--edsb-border-quiet);
+  border-color: var(--ednb-border-quiet);
 }
 
 // The ink the hatch was chosen for, at both artboards and whether or not the
 // cell would otherwise have been filled.
 .grade[data-unavailable='true'] .grade__number {
-  color: var(--edsb-text-primary);
+  color: var(--ednb-text-primary);
 }
 
 .grade__radio {
@@ -113,16 +113,16 @@
 // said. Dimmed to the faintest ink that still reads rather than to the canvas's
 // own wash, which measures 2.99:1 against the cell's ground.
 .grades:not(.grades--steps) .grade__number {
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
-  font-weight: var(--edsb-text-weight-emphasis);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  font-weight: var(--ednb-text-weight-emphasis);
   line-height: 1;
 }
 
 .grades:not(.grades--steps)
   .grade:not([data-filled='true']):not([data-unavailable='true'])
   .grade__number {
-  color: var(--edsb-text-faint);
+  color: var(--ednb-text-faint);
 }
 
 // Canvas 1d's control: `GRADE` beside five numbered buttons `flex: 1; height:
@@ -136,7 +136,7 @@
 // hiding the group's own name and drawing a second copy of it — announced twice
 // — or a wrapper the control does not need. The row it heads is the same row.
 .grades--steps .grade {
-  block-size: var(--edsb-layout-grade-step);
+  block-size: var(--ednb-layout-grade-step);
 }
 
 // The quiet wash is what a button that is *not* the chosen one carries. Stated
@@ -144,11 +144,11 @@
 // one is written later, so a plain `.grades--steps .grade` would take the amber
 // off the very cell the control exists to mark.
 .grades--steps .grade:not([data-filled='true']):not([data-unavailable='true']) {
-  background-color: var(--edsb-surface-accent-quiet);
+  background-color: var(--ednb-surface-accent-quiet);
 }
 
 .grades--steps .grade__number {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-control);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-control);
 }

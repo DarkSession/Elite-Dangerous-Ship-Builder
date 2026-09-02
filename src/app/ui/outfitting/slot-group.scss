@@ -8,28 +8,28 @@
 }
 
 .group__rule {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   flex-wrap: nowrap;
   // Canvas 1c's `0 16px 8px`: the rule is inset to the same edge its rows are,
   // and stands clear of the first of them.
-  padding-inline: var(--edsb-space-2xl);
-  padding-block-end: var(--edsb-space-sm);
+  padding-inline: var(--ednb-space-2xl);
+  padding-block-end: var(--ednb-space-sm);
 }
 
 .group__heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   flex: 0 1 auto;
   min-inline-size: 0;
   margin: 0;
   // The canvas's 9px group rule, which is this scale's `micro` step.
-  font-size: var(--edsb-text-size-micro);
+  font-size: var(--ednb-text-size-micro);
 }
 
 // The canvas's `SIZE · NODE NO.`, quieter than the heading and after it.
 .group__columns {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
 
   flex: 0 1 auto;
   min-inline-size: 0;
@@ -40,12 +40,12 @@
 .group__line {
   flex: 1 1 auto;
   min-inline-size: 0;
-  block-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-rule-section);
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
 }
 
 .group__count {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
 
   flex: none;
 }

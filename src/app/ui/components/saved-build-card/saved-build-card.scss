@@ -21,11 +21,11 @@
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--edsb-space-stack-tight) var(--edsb-space-inline);
+  gap: var(--ednb-space-stack-tight) var(--ednb-space-inline);
   inline-size: 100%;
-  min-block-size: var(--edsb-target-size);
-  padding-block: var(--edsb-space-row);
-  padding-inline: var(--edsb-space-row);
+  min-block-size: var(--ednb-target-size);
+  padding-block: var(--ednb-space-row);
+  padding-inline: var(--ednb-space-row);
   border-block-start: 0;
   border-inline-end: 0;
   text-align: start;
@@ -39,12 +39,12 @@
 // here, because the row is a button a Commander presses rather than an option
 // in a list — so the mark is drawn here under the same tokens.
 .record--chosen {
-  background-image: var(--edsb-surface-row-selected);
-  border-inline-start-color: var(--edsb-marker-selected);
+  background-image: var(--ednb-surface-row-selected);
+  border-inline-start-color: var(--ednb-marker-selected);
 }
 
 .record__identity {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
 }
@@ -52,41 +52,41 @@
 .record__title-row {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 }
 
 .record__title {
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-body);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-title);
-  line-height: var(--edsb-text-leading-heading);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-body);
+  font-weight: var(--ednb-text-weight-control);
+  letter-spacing: var(--ednb-text-tracking-title);
+  line-height: var(--ednb-text-leading-heading);
   text-transform: uppercase;
-  color: var(--edsb-text-numeric);
+  color: var(--ednb-text-numeric);
   overflow-wrap: anywhere;
 }
 
 // A title the application derived from the build rather than one a Commander
 // typed. Set apart rather than passed off as a name (FR-010).
 .record__title--derived {
-  font-weight: var(--edsb-text-weight-body);
-  color: var(--edsb-text-secondary);
+  font-weight: var(--ednb-text-weight-body);
+  color: var(--ednb-text-secondary);
 }
 
 // The reference's issue count: monospace on a translucent warm plate.
 .record__issues {
-  @include layout.metric-value(var(--edsb-text-size-micro), var(--edsb-text-danger-quiet));
+  @include layout.metric-value(var(--ednb-text-size-micro), var(--ednb-text-danger-quiet));
 
-  padding-inline: var(--edsb-space-inline-tight);
-  background-color: var(--edsb-surface-danger-quiet);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-danger-quiet);
-  border-radius: var(--edsb-shape-control);
+  padding-inline: var(--ednb-space-inline-tight);
+  background-color: var(--ednb-surface-danger-quiet);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-danger-quiet);
+  border-radius: var(--ednb-shape-control);
 }
 
 .record__note {
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
   overflow-wrap: anywhere;
 }
@@ -99,7 +99,7 @@
 
 .record__hull,
 .record__modified {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-secondary));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-secondary));
 
   min-inline-size: 0;
   overflow-wrap: anywhere;
@@ -127,7 +127,7 @@
 // (`../record-list/responsive-record-list.scss`).
 @container records (min-width: 34rem) {
   .record {
-    grid-template-columns: var(--edsb-layout-record-columns);
+    grid-template-columns: var(--ednb-layout-record-columns);
     align-items: baseline;
   }
 

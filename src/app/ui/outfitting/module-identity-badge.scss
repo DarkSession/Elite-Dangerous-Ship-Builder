@@ -8,7 +8,7 @@
 }
 
 .identity {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 // Canvas 1c's `display: flex; align-items: center; gap: 7px` around the name
@@ -16,7 +16,7 @@
 .identity__line {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   min-inline-size: 0;
 }
 
@@ -27,11 +27,11 @@
   // the same `500 13px Barlow` it sets a manifest row's in, untracked. The
   // condensed face and the tracking that came with it belong to the headings and
   // the control labels around it, not to the name itself (wave 8).
-  font-family: var(--edsb-font-body);
+  font-family: var(--ednb-font-body);
   // The canvas's 13px module name, which is this scale's `lead` step.
-  font-size: var(--edsb-text-size-lead);
-  font-weight: var(--edsb-text-weight-emphasis);
-  color: var(--edsb-text-primary);
+  font-size: var(--ednb-text-size-lead);
+  font-weight: var(--ednb-text-weight-emphasis);
+  color: var(--ednb-text-primary);
   overflow-wrap: break-word;
 }
 
@@ -40,10 +40,10 @@
 // it. It never gives way: the point of it is that the name gave way to it.
 .identity__more {
   flex: none;
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-lead);
-  font-weight: var(--edsb-text-weight-emphasis);
-  color: var(--edsb-text-primary);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-lead);
+  font-weight: var(--ednb-text-weight-emphasis);
+  color: var(--ednb-text-primary);
 }
 
 // The same identity where it is not the row's subject. Canvas 1c sets a ledger
@@ -52,12 +52,12 @@
 // line beneath is unaffected: the canvas draws it 9px on the one and 8px on the
 // other, and the `micro` step covers that whole 7.5–9.5 band already.
 .identity__name--compact {
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-body);
 }
 
 .identity__code-line {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
 
   display: block;
   // The canvas's own 9px/1 mono line. It reads left to right whatever the

@@ -200,7 +200,7 @@ and nothing under it. So choosing a recipe grows that card by the height of both
 below it moves under the hand that was reading it. Measured at 834x1112 before the answer below: the
 editor went from 499px to 623px and the document from 2692px to 3115px as a recipe was taken.
 
-The card carries a floor instead — `--edsb-layout-engineering-choices`, the three controls and the
+The card carries a floor instead — `--ednb-layout-engineering-choices`, the three controls and the
 two gaps between them at the base text size — so it is the height it will be before anything is
 chosen. Nothing is drawn that is not there: no empty grade bar over an unengineered module and no
 placeholder effect, because the canvas draws neither and neither does this. What is reserved is the

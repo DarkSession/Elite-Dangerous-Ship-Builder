@@ -9,65 +9,65 @@
 }
 
 .status {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-inline-loose);
-  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-default);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-panel-raised);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-inline-loose);
+  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-default);
+  border-radius: var(--ednb-shape-control);
+  background-color: var(--ednb-surface-panel-raised);
 }
 
 // The tone's name. Colour below is a supplement to these words, never a
 // substitute for them.
 .status__tone {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-count));
 }
 
 .status__message {
-  color: var(--edsb-text-primary);
+  color: var(--ednb-text-primary);
   overflow-wrap: break-word;
   text-wrap: pretty;
 }
 
 .status__detail {
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
 }
 
 .status--error {
-  border-inline-start-color: var(--edsb-border-danger);
-  background-color: var(--edsb-surface-danger-quiet);
+  border-inline-start-color: var(--ednb-border-danger);
+  background-color: var(--ednb-surface-danger-quiet);
 }
 
 .status--error .status__tone {
-  color: var(--edsb-text-danger);
+  color: var(--ednb-text-danger);
 }
 
 .status--success {
-  border-inline-start-color: var(--edsb-border-success);
+  border-inline-start-color: var(--ednb-border-success);
 }
 
 .status--success .status__tone {
-  color: var(--edsb-text-success);
+  color: var(--ednb-text-success);
 }
 
 .status--warning {
-  border-inline-start-color: var(--edsb-border-accent);
-  background-color: var(--edsb-surface-accent-quiet);
+  border-inline-start-color: var(--ednb-border-accent);
+  background-color: var(--ednb-surface-accent-quiet);
 }
 
 .status--warning .status__tone {
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
 }
 
 .status--info,
 .status--loading {
-  border-inline-start-color: var(--edsb-border-info);
+  border-inline-start-color: var(--ednb-border-info);
 }
 
 .status--info .status__tone,
 .status--loading .status__tone {
-  color: var(--edsb-text-info);
+  color: var(--ednb-text-info);
 }

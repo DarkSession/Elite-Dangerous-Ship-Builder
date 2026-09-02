@@ -10,9 +10,9 @@
 // be read is legal prose a reader does not finish.
 .legal-excerpt__body {
   margin: 0;
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-faint);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-faint);
 
   // No horizontal scroller and no preserved source wrapping: the notice is
   // carried exactly in the DOM and reflowed to the reader's measure, so a

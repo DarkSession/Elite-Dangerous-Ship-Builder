@@ -14,7 +14,7 @@
 }
 
 .offence {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
 }
@@ -39,7 +39,7 @@
     // happens to fill, and holding a real build to it would leave one plate
     // ruled off around empty ground.
     align-items: stretch;
-    gap: var(--edsb-space-region);
+    gap: var(--ednb-space-region);
   }
 
   // Canvas 1c puts `SHOT CONVERGENCE` on its own row beneath the pair, at
@@ -60,7 +60,7 @@
     // The explicit `100%` is what asks for the row's width; the bound is what
     // stops it there.
     inline-size: 100%;
-    max-inline-size: var(--edsb-layout-convergence-block);
+    max-inline-size: var(--ednb-layout-convergence-block);
   }
 }
 
@@ -68,25 +68,25 @@
 // same border and the same padding: `1px solid var(--amber-a2)` over
 // `var(--panel)` at `16px 18px`.
 .offence__block {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
-  padding-block: var(--edsb-space-2xl);
-  padding-inline: var(--edsb-space-panel);
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block: var(--ednb-space-2xl);
+  padding-inline: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // Canvas 1c's labelled rule: a tracked mono label with the block's own note set
 // against it at the trailing edge.
 .offence__head {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   justify-content: space-between;
 }
 
 .offence__heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
 }
@@ -101,7 +101,7 @@
 // of the figures above it.
 .offence__statement {
   margin: 0;
-  color: var(--edsb-text-muted);
+  color: var(--ednb-text-muted);
   text-wrap: pretty;
 }
 
@@ -111,18 +111,18 @@
 // overflowing, because the naming line is a sentence in the Commander's
 // language and German's is half again as long as English's.
 .headline {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: baseline;
   margin: 0;
 }
 
 .headline__value {
-  @include layout.metric-value(var(--edsb-text-size-display), var(--edsb-text-accent-strong));
+  @include layout.metric-value(var(--ednb-text-size-display), var(--ednb-text-accent-strong));
 }
 
 .headline__note {
-  @include layout.micro-label(var(--edsb-text-secondary));
+  @include layout.micro-label(var(--ednb-text-secondary));
 }
 
 // The canvas's hairline between the groups inside a block: a plain
@@ -130,9 +130,9 @@
 // *labelled* rule — a word with a hairline running off it — and on a bare `hr`
 // its flex box collapses to nothing, which is the full stop this drew before.
 .offence__rule {
-  block-size: var(--edsb-border-width-hairline);
+  block-size: var(--ednb-border-width-hairline);
   margin: 0;
-  background-color: var(--edsb-rule-section);
+  background-color: var(--ednb-rule-section);
   border: 0;
 }
 
@@ -148,7 +148,7 @@
 }
 
 .weapons__table {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
 }
@@ -165,14 +165,14 @@
 }
 
 .weapon {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
   margin: 0;
 }
 
 .weapon__figures {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   min-inline-size: 0;
 }
@@ -192,7 +192,7 @@
 }
 
 .weapons__list {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
   margin: 0;
   padding: 0;
@@ -258,7 +258,7 @@
 // 73.3px — `SPS FEUERSTOSS` wraps to `FEUERSTOSS` at 66.6px and `DAUERFEUER` is
 // the same 66.6px — against about 50px for `3,000 m`; in English every head is
 // shorter than its own figures. So 155px + 5 × 73.3px + five 10px gutters
-// ≈ 571px — the gutter being `--edsb-space-inline`, which resolves to
+// ≈ 571px — the gutter being `--ednb-space-inline`, which resolves to
 // 0.625rem — and the threshold is the next whole rem above that: 36rem, which
 // leaves each figure track about 74px.
 //
@@ -298,10 +298,10 @@
   .weapons__table {
     display: grid;
     grid-template-columns:
-      minmax(var(--edsb-layout-weapon-module), 2fr)
-      repeat(5, minmax(var(--edsb-layout-weapon-figure), 1fr));
-    column-gap: var(--edsb-space-inline);
-    row-gap: var(--edsb-space-stack-tight);
+      minmax(var(--ednb-layout-weapon-module), 2fr)
+      repeat(5, minmax(var(--ednb-layout-weapon-figure), 1fr));
+    column-gap: var(--ednb-space-inline);
+    row-gap: var(--ednb-space-stack-tight);
   }
 
   // A subgridded axis takes the parent's tracks but not its gutters — its own
@@ -316,7 +316,7 @@
     display: grid;
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
-    column-gap: var(--edsb-space-inline);
+    column-gap: var(--ednb-space-inline);
     min-inline-size: 0;
     margin: 0;
   }
@@ -327,7 +327,7 @@
   }
 
   .weapons__list {
-    row-gap: var(--edsb-space-stack);
+    row-gap: var(--ednb-space-stack);
   }
 
   // The five figure cells sit in the row's own grid so they line up under the
@@ -351,7 +351,7 @@
 // the state on its own in any case.
 
 .weapon__module {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   grid-column: 1;
   min-inline-size: 0;
@@ -373,13 +373,13 @@
 .weapon__state {
   @include layout.micro-label;
 
-  color: var(--edsb-text-muted);
+  color: var(--ednb-text-muted);
 }
 
 // Label above figure in the compact arrangement, and figure alone against the
 // trailing edge once the heads carry the label instead.
 .weapon__figure {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   display: flex;
   flex-direction: column;
@@ -403,16 +403,16 @@
 // segments so two adjacent colours never touch — which is what keeps the
 // division visible to a reader who cannot tell the two inks apart.
 .split {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 }
 
 .split__bar {
   display: flex;
-  gap: var(--edsb-border-width-hairline);
-  // Canvas 1c's 22px band. `--edsb-layout-bar-height` is what the banner comes
+  gap: var(--ednb-border-width-hairline);
+  // Canvas 1c's 22px band. `--ednb-layout-bar-height` is what the banner comes
   // to and was never this measure.
-  block-size: var(--edsb-layout-damage-bar);
-  background-color: var(--edsb-surface-inset);
+  block-size: var(--ednb-layout-damage-bar);
+  background-color: var(--ednb-surface-inset);
 }
 
 .split__segment {
@@ -422,29 +422,29 @@
 }
 
 .split__segment--kinetic {
-  background-color: var(--edsb-surface-damage-kinetic);
+  background-color: var(--ednb-surface-damage-kinetic);
 }
 
 .split__segment--thermal {
-  background-color: var(--edsb-surface-damage-thermal);
+  background-color: var(--ednb-surface-damage-thermal);
 }
 
 .split__segment--explosive {
-  background-color: var(--edsb-surface-damage-explosive);
+  background-color: var(--ednb-surface-damage-explosive);
 }
 
 .split__segment--absolute {
-  background-color: var(--edsb-surface-damage-absolute);
+  background-color: var(--ednb-surface-damage-absolute);
 }
 
 .split__segment--unclassified {
-  background-color: var(--edsb-surface-damage-unclassified);
+  background-color: var(--ednb-surface-damage-unclassified);
 }
 
 // The reading. Canvas 1c sets the two entries hard against the block's edges;
 // a build with more than two types wraps instead of shrinking them.
 .split__legend {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   justify-content: space-between;
   margin: 0;
@@ -453,14 +453,14 @@
 }
 
 .split__entry {
-  @include layout.micro-label(var(--edsb-text-secondary));
+  @include layout.micro-label(var(--ednb-text-secondary));
 }
 
 // ---------------------------------------------------------------------------
 // The canvas's label-bar-figure rows
 
 .bars {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
 }
@@ -485,11 +485,11 @@
   // and 124px — more than a phone gives the whole block, and a floor a
   // container cannot honour is a document that scrolls sideways.
   grid-template-columns:
-    minmax(min(var(--edsb-layout-offence-label), 40%), auto)
+    minmax(min(var(--ednb-layout-offence-label), 40%), auto)
     minmax(0, 1fr)
-    minmax(min(var(--edsb-layout-offence-value), 30%), auto);
-  column-gap: var(--edsb-space-inline);
-  row-gap: var(--edsb-space-stack-tight);
+    minmax(min(var(--ednb-layout-offence-value), 30%), auto);
+  column-gap: var(--ednb-space-inline);
+  row-gap: var(--ednb-space-stack-tight);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -504,7 +504,7 @@
 }
 
 .bar__label {
-  @include layout.micro-label(var(--edsb-text-secondary));
+  @include layout.micro-label(var(--ednb-text-secondary));
 
   min-inline-size: 0;
   overflow-wrap: break-word;
@@ -525,8 +525,8 @@
 
 .bar__track {
   display: block;
-  block-size: var(--edsb-layout-offence-bar);
-  background-color: var(--edsb-surface-inset);
+  block-size: var(--ednb-layout-offence-bar);
+  background-color: var(--ednb-surface-inset);
 }
 
 // Nothing at all where the row has no scale to be drawn against: an empty
@@ -538,11 +538,11 @@
 .bar__fill {
   display: block;
   block-size: 100%;
-  background-color: var(--edsb-surface-accent-solid);
+  background-color: var(--ednb-surface-accent-solid);
 }
 
 .bar__value {
-  @include layout.metric-value(var(--edsb-text-size-body));
+  @include layout.metric-value(var(--ednb-text-size-body));
 
   min-inline-size: 0;
   overflow-wrap: break-word;

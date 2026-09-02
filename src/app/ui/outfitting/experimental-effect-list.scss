@@ -6,7 +6,7 @@
 }
 
 .effects {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -14,10 +14,10 @@
 }
 
 .effects__legend {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   padding: 0;
-  margin-block-end: var(--edsb-space-stack-tight);
+  margin-block-end: var(--ednb-space-stack-tight);
 }
 
 // Canvas 1d draws every option in this card as a plate of its own: `min-height:
@@ -36,16 +36,16 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline);
-  padding: var(--edsb-space-row) var(--edsb-space-inline);
-  background-color: var(--edsb-surface-inset);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-quiet);
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-row) var(--ednb-space-inline);
+  background-color: var(--ednb-surface-inset);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
   cursor: pointer;
 }
 
 .effect[data-selected='true'] {
-  background-color: var(--edsb-surface-accent-selected);
-  border-color: var(--edsb-border-accent);
+  background-color: var(--ednb-surface-accent-selected);
+  border-color: var(--ednb-border-accent);
 }
 
 // The wash and the amber edge are the echo, not the fact. A reader is told by
@@ -62,12 +62,12 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: var(--edsb-border-width-marker);
-  background-color: var(--edsb-marker-selected);
+  inline-size: var(--ednb-border-width-marker);
+  background-color: var(--ednb-marker-selected);
 }
 
 .effect[data-selected='true'] .effect__name {
-  font-weight: var(--edsb-text-weight-heading);
+  font-weight: var(--ednb-text-weight-heading);
 }
 
 // A pointer resting on an effect washes the plate it is on, under the same rule
@@ -78,7 +78,7 @@
 // taking a quieter ground over them.
 @media (hover: hover) {
   .effect:not([data-selected='true']):hover {
-    background-color: var(--edsb-surface-accent-quiet);
+    background-color: var(--ednb-surface-accent-quiet);
   }
 }
 
@@ -94,28 +94,28 @@
 }
 
 .effect__identity {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
   flex: 1;
 }
 
 .effect__name {
-  color: var(--edsb-text-primary);
-  font-size: var(--edsb-text-size-body);
+  color: var(--ednb-text-primary);
+  font-size: var(--ednb-text-size-body);
 }
 
 .effect__description {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-caption);
+  color: var(--ednb-text-muted);
+  font-size: var(--ednb-text-size-caption);
 }
 
 .effect__note {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 .effect__applied {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-label));
 
   flex: none;
   margin-inline-start: auto;
@@ -128,13 +128,13 @@
 // The trigger and the list it opens. The list is positioned against this box,
 // so the box is the containing block for it.
 .menu {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   position: relative;
 }
 
 .menu__label {
-  @include layout.micro-label(var(--edsb-text-subtle));
+  @include layout.micro-label(var(--ednb-text-subtle));
 
   margin: 0;
 }
@@ -151,20 +151,20 @@
 
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   inline-size: 100%;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-control-inline);
-  border-color: var(--edsb-border-info);
-  color: var(--edsb-text-info);
-  font-family: var(--edsb-font-body);
-  font-size: var(--edsb-text-size-body);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-control-inline);
+  border-color: var(--ednb-border-info);
+  color: var(--ednb-text-info);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-body);
   text-align: start;
   cursor: pointer;
 
   &:focus-visible {
-    outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-    outline-offset: var(--edsb-space-3xs);
+    outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+    outline-offset: var(--ednb-space-3xs);
   }
 }
 
@@ -176,10 +176,10 @@
 
 .menu__caret {
   flex: none;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-caption);
-  line-height: var(--edsb-text-leading-flat);
-  color: var(--edsb-text-muted);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-caption);
+  line-height: var(--ednb-text-leading-flat);
+  color: var(--ednb-text-muted);
 }
 
 // Over the card rather than in it, so the attribute table under the card does
@@ -198,25 +198,25 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  max-block-size: var(--edsb-layout-menu-drop);
+  max-block-size: var(--ednb-layout-menu-drop);
   overflow-y: auto;
   overscroll-behavior-block: contain;
-  background-color: var(--edsb-surface-panel);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-info);
-  box-shadow: var(--edsb-elevation-menu);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-info);
+  box-shadow: var(--ednb-elevation-menu);
 }
 
 // One option: the effect's name, and the package's description under it a step
 // down and a wash quieter. The two steps are the card list's own, so the menu
 // and the cards read alike.
 .menu__option {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
   @include layout.target-baseline;
 
   position: relative;
   justify-content: center;
-  padding: var(--edsb-space-row) var(--edsb-space-inline);
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  padding: var(--ednb-space-row) var(--ednb-space-inline);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
   cursor: pointer;
 }
 
@@ -228,7 +228,7 @@
 // one: a wash, an edge and a marker inside the leading edge. A tint on its own
 // is a state carried by colour, which this design system does not do.
 .menu__option[aria-selected='true'] {
-  background-color: var(--edsb-surface-accent-selected);
+  background-color: var(--ednb-surface-accent-selected);
 }
 
 .menu__option[aria-selected='true']::before {
@@ -236,12 +236,12 @@
   position: absolute;
   inset-block: 0;
   inset-inline-start: 0;
-  inline-size: var(--edsb-border-width-marker);
-  background-color: var(--edsb-marker-selected);
+  inline-size: var(--ednb-border-width-marker);
+  background-color: var(--ednb-marker-selected);
 }
 
 .menu__option[aria-selected='true'] .menu__option-name {
-  font-weight: var(--edsb-text-weight-heading);
+  font-weight: var(--ednb-text-weight-heading);
 }
 
 // The same wash on the menu's own options, so the card list and the menu answer
@@ -249,7 +249,7 @@
 // is chosen, and it is marked with a ring, so it takes the wash like any other.
 @media (hover: hover) {
   .menu__option:not([aria-selected='true']):hover {
-    background-color: var(--edsb-surface-accent-quiet);
+    background-color: var(--ednb-surface-accent-quiet);
   }
 }
 
@@ -259,8 +259,8 @@
 // option so it does not move the row, because the focus is on the list itself
 // and this is the only thing that says which option the list is on.
 .menu__option--active {
-  outline: var(--edsb-focus-ring-width) solid var(--edsb-focus-ring);
-  outline-offset: calc(var(--edsb-focus-ring-width) * -1);
+  outline: var(--ednb-focus-ring-width) solid var(--ednb-focus-ring);
+  outline-offset: calc(var(--ednb-focus-ring-width) * -1);
 }
 
 // The way out, drawn dashed as the canvas draws it in the card list.
@@ -269,12 +269,12 @@
 }
 
 .menu__option-name {
-  color: var(--edsb-text-primary);
-  font-size: var(--edsb-text-size-body);
+  color: var(--ednb-text-primary);
+  font-size: var(--ednb-text-size-body);
 }
 
 .menu__option-description {
-  color: var(--edsb-text-muted);
-  font-size: var(--edsb-text-size-caption);
-  line-height: var(--edsb-text-leading-body);
+  color: var(--ednb-text-muted);
+  font-size: var(--ednb-text-size-caption);
+  line-height: var(--ednb-text-leading-body);
 }

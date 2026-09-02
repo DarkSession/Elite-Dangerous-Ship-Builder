@@ -10,7 +10,7 @@
   container-name: anatomy;
   min-inline-size: 0;
   min-block-size: 0;
-  background-color: var(--edsb-surface-root);
+  background-color: var(--ednb-surface-root);
 }
 
 // The block pads itself on all four sides, or the plates run to the column's own
@@ -25,11 +25,11 @@
 // in it lines up with the ledger's rather than standing 8px further in
 // (reported 2026-08-26).
 .anatomy {
-  @include layout.stack(var(--edsb-space-inline));
+  @include layout.stack(var(--ednb-space-inline));
 
   min-block-size: 0;
-  padding-block: var(--edsb-space-2xl) var(--edsb-space-xl);
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-block: var(--ednb-space-2xl) var(--ednb-space-xl);
+  padding-inline: var(--ednb-space-inline-loose);
 }
 
 // A guest segment's panel is drawn by the region that owns it, outside this
@@ -41,7 +41,7 @@
 // between its strip and its own four panels, which is what the segment opens
 // onto in every other mode.
 :host(.anatomy--guest) {
-  margin-block-end: calc(var(--edsb-space-inline) - var(--edsb-space-region));
+  margin-block-end: calc(var(--ednb-space-inline) - var(--ednb-space-region));
 }
 
 :host(.anatomy--guest) .anatomy {
@@ -51,7 +51,7 @@
 // The rule on one side, the mode strip on the other, wrapping rather than
 // squeezing when there is not room for both on one line.
 .anatomy__header {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   align-items: center;
   justify-content: space-between;
@@ -61,13 +61,13 @@
 // block of its own so the strip beside it stays aligned to the pair rather than
 // to whichever of the two lines happens to be taller.
 .anatomy__title {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
 }
 
 .anatomy__heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
 }
@@ -96,9 +96,9 @@
   flex: none;
   align-items: start;
   justify-content: center;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   min-inline-size: 0;
-  grid-template-columns: minmax(0, var(--edsb-layout-anatomy-plate));
+  grid-template-columns: minmax(0, var(--ednb-layout-anatomy-plate));
 }
 
 // Canvas 1d puts the selector over the plate, in its top corner. Here it is a
@@ -163,7 +163,7 @@
       // Canvas 1c's own inset, which belongs to this arrangement rather than to a
       // width: a block wide enough for two plates is the one the roomy canvas draws.
       .anatomy {
-        padding-inline: var(--edsb-space-region);
+        padding-inline: var(--ednb-space-region);
       }
 
       // Canvas 1c's second track, at the same bound the first one already has —
@@ -171,7 +171,7 @@
       // across it, so the second one arrives beside a plate that does not
       // change size to admit it.
       .anatomy__plates {
-        grid-template-columns: repeat(2, minmax(0, var(--edsb-layout-anatomy-plate)));
+        grid-template-columns: repeat(2, minmax(0, var(--ednb-layout-anatomy-plate)));
       }
 
       // Canvas 1c's strip: beside the rule rather than under it, and sized by its
@@ -196,7 +196,7 @@
 // ---------------------------------------------------------------------------
 
 .anatomy__legend {
-  @include layout.wrapping-row(var(--edsb-space-inline));
+  @include layout.wrapping-row(var(--ednb-space-inline));
 
   margin: 0;
   padding: 0;
@@ -204,35 +204,35 @@
 }
 
 .anatomy__legend-entry {
-  @include layout.micro-label(var(--edsb-text-muted), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-label));
 
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 }
 
 // The same four treatments the mounts carry, at the size the canvas draws its
 // swatches: the mount's own outline, and nothing inside it. The canvas fills
 // exactly one of the five — `SELECTED`, which is the one the mount fills too.
 .anatomy__legend-mark {
-  inline-size: var(--edsb-layout-node-box);
-  block-size: var(--edsb-layout-node-box);
+  inline-size: var(--ednb-layout-node-box);
+  block-size: var(--ednb-layout-node-box);
   flex: none;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-accent);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-accent);
 
   &[data-mark='selected'] {
-    border-color: var(--edsb-surface-accent-solid);
-    background-color: var(--edsb-surface-accent-solid);
+    border-color: var(--ednb-surface-accent-solid);
+    background-color: var(--ednb-surface-accent-solid);
   }
 
   &[data-mark='empty'] {
     border-style: dashed;
-    border-color: var(--edsb-border-quiet);
+    border-color: var(--ednb-border-quiet);
     background-color: transparent;
   }
 
   &[data-mark='utility'] {
-    border-color: var(--edsb-border-info);
+    border-color: var(--ednb-border-info);
   }
 }
 
@@ -241,8 +241,8 @@
 // ledger row draws beside an engineered module. A drawn square here explained a
 // mark that appears nowhere.
 .anatomy__legend-icon {
-  inline-size: var(--edsb-layout-icon-size);
-  block-size: var(--edsb-layout-icon-size);
+  inline-size: var(--ednb-layout-icon-size);
+  block-size: var(--ednb-layout-icon-size);
   flex: none;
   object-fit: contain;
 }

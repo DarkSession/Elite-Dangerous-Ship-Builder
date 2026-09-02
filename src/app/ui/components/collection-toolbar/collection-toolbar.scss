@@ -9,12 +9,12 @@
 // The reference draws no container here: the search sits on the screen's own
 // ground with its own border, and the size strip abuts it (canvas 1a/1b).
 .toolbar {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 }
 
 .toolbar__primary {
   display: grid;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
   grid-template-columns: 1fr;
   align-items: end;
 }
@@ -34,12 +34,12 @@
 
 @include layout.compact {
   .toolbar__sort {
-    @include layout.wrapping-row(var(--edsb-space-inline-tight));
+    @include layout.wrapping-row(var(--ednb-space-inline-tight));
   }
 }
 
 .toolbar__sort-label {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 }
 
 // One row that scrolls sideways rather than wrapping, as the reference draws
@@ -48,7 +48,7 @@
   display: flex;
   flex: 1 1 auto;
   min-inline-size: 0;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   overflow-x: auto;
   list-style: none;
   padding: 0;
@@ -62,13 +62,13 @@
 // The reference's sort chip: condensed, tracked, quiet until it is the order in
 // force, when it takes the amber fill (canvas 1b `.sm-sort`).
 .toolbar__sort-chip {
-  @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-base(var(--ednb-text-tracking-heading));
 
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-inline: var(--ednb-space-inline-loose);
   white-space: nowrap;
-  background-color: var(--edsb-surface-control-quiet);
+  background-color: var(--ednb-surface-control-quiet);
   border-color: transparent;
-  color: var(--edsb-text-secondary);
+  color: var(--ednb-text-secondary);
 }
 
 .toolbar__sort-chip[aria-pressed='true'] {
@@ -76,5 +76,5 @@
 }
 
 .toolbar__caret {
-  @include layout.metric-value(var(--edsb-text-size-micro), currentcolor);
+  @include layout.metric-value(var(--ednb-text-size-micro), currentcolor);
 }

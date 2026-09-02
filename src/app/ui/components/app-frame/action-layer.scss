@@ -17,20 +17,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-control);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-control);
-  color: var(--edsb-text-accent);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control);
+  border-radius: var(--ednb-shape-control);
+  background-color: var(--ednb-surface-control);
+  color: var(--ednb-text-accent);
   transition:
-    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    border-color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 }
 
 .action-layer__trigger-mark {
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-metric);
-  font-weight: var(--edsb-text-weight-control);
-  line-height: var(--edsb-text-leading-flat);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-metric);
+  font-weight: var(--ednb-text-weight-control);
+  line-height: var(--ednb-text-leading-flat);
 }
 
 .action-layer__trigger-label {
@@ -41,7 +41,7 @@
   @include layout.stack(0);
 
   position: absolute;
-  inset-block-start: calc(100% + var(--edsb-space-inline-tight));
+  inset-block-start: calc(100% + var(--ednb-space-inline-tight));
   inset-inline-end: 0;
   z-index: 3;
   inline-size: max-content;
@@ -54,8 +54,8 @@
   // in it can be pressed. Bounding the floor by the same expression the
   // ceiling uses makes the two agree instead of one quietly overriding the
   // other (012/FR-001, 011/FR-011).
-  min-inline-size: min(var(--edsb-layout-menu-min), 100vw - 2 * var(--edsb-space-region));
-  max-inline-size: min(100vw - 2 * var(--edsb-space-region), var(--edsb-layout-menu-max));
+  min-inline-size: min(var(--ednb-layout-menu-min), 100vw - 2 * var(--ednb-space-region));
+  max-inline-size: min(100vw - 2 * var(--ednb-space-region), var(--ednb-layout-menu-max));
   // Bounded by the viewport rather than by its own length, with its own
   // scroller.
   //
@@ -77,17 +77,17 @@
   max-block-size: 60dvh;
   overflow-y: auto;
   overscroll-behavior-block: contain;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-dialog);
-  border-radius: var(--edsb-shape-panel);
-  background-color: var(--edsb-surface-menu);
-  box-shadow: var(--edsb-elevation-menu);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-dialog);
+  border-radius: var(--ednb-shape-panel);
+  background-color: var(--ednb-surface-menu);
+  box-shadow: var(--ednb-elevation-menu);
 }
 
 // The canvas's hairline between one group of entries and the next.
 .action-layer__rule {
   flex: none;
-  block-size: var(--edsb-border-width-hairline);
-  background-color: var(--edsb-rule-menu);
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-menu);
 }
 
 // `hidden` must win over the stacking display above, or a closed layer keeps
@@ -106,24 +106,24 @@
 // A row that navigates is drawn exactly like a row that acts: canvas 1d sets
 // every entry of the menu the same way, whatever it does.
 .action-layer__link {
-  @include layout.control-base(var(--edsb-text-tracking-heading));
+  @include layout.control-base(var(--ednb-text-tracking-heading));
 
   display: flex;
   inline-size: 100%;
-  min-block-size: var(--edsb-layout-menu-row);
+  min-block-size: var(--ednb-layout-menu-row);
   justify-content: flex-start;
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-inline: var(--ednb-space-inline-loose);
   border-color: transparent;
   background-color: transparent;
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
   text-decoration: none;
 }
 
 // The screen a Commander is already on. Named as such by `aria-current` too —
 // the wash is not the only carrier.
 .action-layer__link[aria-current='page'] {
-  background-color: var(--edsb-surface-accent-selected);
-  color: var(--edsb-text-accent-strong);
+  background-color: var(--ednb-surface-accent-selected);
+  color: var(--ednb-text-accent-strong);
 }
 
 // The same hover the menu's buttons take. A link and a button in one menu
@@ -132,6 +132,6 @@
 // is only reachable through it, because a touch device has no hover at all.
 @media (hover: hover) {
   .action-layer__link:hover {
-    background-color: var(--edsb-surface-accent-selected);
+    background-color: var(--ednb-surface-accent-selected);
   }
 }

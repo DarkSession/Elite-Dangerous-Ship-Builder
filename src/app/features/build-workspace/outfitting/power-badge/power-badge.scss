@@ -31,19 +31,19 @@
 // there is then always something to warn about. The tone is never what says so
 // — the lines under the share name the groups in words.
 .badge {
-  @include layout.stack(var(--edsb-space-3xs));
+  @include layout.stack(var(--ednb-space-3xs));
 
   margin: 0;
-  padding-block: var(--edsb-space-2xs);
-  padding-inline: var(--edsb-space-sm);
-  background-color: var(--edsb-surface-danger-quiet);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-danger-quiet);
-  color: var(--edsb-text-danger-quiet);
+  padding-block: var(--ednb-space-2xs);
+  padding-inline: var(--ednb-space-sm);
+  background-color: var(--ednb-surface-danger-quiet);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-danger-quiet);
+  color: var(--ednb-text-danger-quiet);
   text-align: end;
 }
 
 .badge__reading {
-  @include layout.metric-value(var(--edsb-text-size-micro), currentcolor);
+  @include layout.metric-value(var(--ednb-text-size-micro), currentcolor);
 
   white-space: nowrap;
 }

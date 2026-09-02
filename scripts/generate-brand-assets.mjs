@@ -68,15 +68,15 @@ export const ASSETS = [
 /**
  * The ground, taken from the token that draws it.
  *
- * Read rather than declared: `--edsb-palette-bg` is what the application is
+ * Read rather than declared: `--ednb-palette-bg` is what the application is
  * painted on, what `theme-color` reports and what the manifest colours an
  * installed window with, and the checker already refuses those three drifting
  * apart. An asset rendered here joins that set.
  */
 export function groundColour(tokens) {
-  const declared = /--edsb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(tokens);
+  const declared = /--ednb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(tokens);
   if (declared === null) {
-    throw new Error(`${TOKENS} declares no --edsb-palette-bg to draw the marks on.`);
+    throw new Error(`${TOKENS} declares no --ednb-palette-bg to draw the marks on.`);
   }
   return declared[1];
 }

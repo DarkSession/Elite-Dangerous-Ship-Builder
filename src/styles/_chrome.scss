@@ -44,7 +44,7 @@
 .outfitting__bench {
   display: flex;
   flex-direction: column;
-  gap: var(--edsb-space-stack);
+  gap: var(--ednb-space-stack);
   min-inline-size: 0;
   min-block-size: 0;
 }
@@ -71,20 +71,20 @@
   // with the editor squeezed into 396px of it.
   .outfitting__bench:has(.replacement__toolbar) {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--edsb-layout-engineering-column);
+    grid-template-columns: minmax(0, 1fr) var(--ednb-layout-engineering-column);
     // Stretched, not started. Where the window is tall enough the bench is
     // bounded, and a column that stops at its content leaves the room it was
     // given empty at the foot instead of handing it to the list and the
     // attribute table inside it. Where it is not, the two columns are the same
     // height as each other, which is what the canvas draws either way.
     align-items: stretch;
-    column-gap: var(--edsb-space-xl);
+    column-gap: var(--ednb-space-xl);
   }
 
   .outfitting__bench-fitting {
     display: flex;
     flex-direction: column;
-    gap: var(--edsb-space-stack);
+    gap: var(--ednb-space-stack);
     min-inline-size: 0;
     min-block-size: 0;
   }
@@ -93,19 +93,19 @@
 // A bar over one column of the strip: the panel's raised ground behind a
 // hairline, opened by the same amber marker a selected row carries. The inset is
 // the row inset rather than the canvas's own 10px — every bar stands over rows
-// that carry `--edsb-space-row`, and a figure column that stops two pixels
+// that carry `--ednb-space-row`, and a figure column that stops two pixels
 // inboard of the figures under it is a column out of line. The marker is the row
 // marker's width for the same reason.
 .edsb-step {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-sm);
+  gap: var(--ednb-space-sm);
   margin: 0;
-  padding: var(--edsb-space-sm) var(--edsb-space-row);
-  background-color: var(--edsb-surface-panel-raised);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-marker-selected);
+  padding: var(--ednb-space-sm) var(--ednb-space-row);
+  background-color: var(--ednb-surface-panel-raised);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-marker-selected);
 }
 
 // Decoration, and sized to the digit rather than to a target: nothing here is
@@ -122,14 +122,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--edsb-layout-step-number);
-  block-size: var(--edsb-layout-step-number);
-  background-color: var(--edsb-surface-accent-solid);
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
-  font-weight: var(--edsb-text-weight-heading);
+  inline-size: var(--ednb-layout-step-number);
+  block-size: var(--ednb-layout-step-number);
+  background-color: var(--ednb-surface-accent-solid);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  font-weight: var(--ednb-text-weight-heading);
   line-height: 1;
-  color: var(--edsb-text-on-accent);
+  color: var(--ednb-text-on-accent);
 }
 
 // The chooser draws its two bars only in the rail manifest, so theirs need no
@@ -162,7 +162,7 @@
 }
 
 .edsb-step__name {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   min-inline-size: 0;
   overflow: hidden;
@@ -174,14 +174,14 @@
 // the next. Out of the flow, so it never takes width from the name.
 .edsb-step__chevron {
   position: absolute;
-  inset-inline-end: calc(var(--edsb-space-lg) * -1);
+  inset-inline-end: calc(var(--ednb-space-lg) * -1);
   inset-block-start: 50%;
   transform: translateY(-50%);
   z-index: 1;
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-caption);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-caption);
   line-height: 1;
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
 }
 
 // Step ③ starts on step ②'s line: the three bars are one strip, and a strip that
@@ -205,7 +205,7 @@
 // next opened.
 @include layout.bench-columns {
   .outfitting__bench:has(.replacement__toolbar) > edsb-engineering-editor {
-    margin-block-start: calc(var(--edsb-target-size) + var(--edsb-space-stack));
+    margin-block-start: calc(var(--ednb-target-size) + var(--ednb-space-stack));
   }
 }
 
@@ -283,7 +283,7 @@
     .engineering__card-body {
     position: relative;
     flex: 1;
-    min-block-size: var(--edsb-layout-engineering-details);
+    min-block-size: var(--ednb-layout-engineering-details);
     overflow-y: auto;
     overscroll-behavior-block: contain;
   }

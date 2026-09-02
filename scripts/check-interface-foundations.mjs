@@ -2023,11 +2023,11 @@ export function searchMetadataViolations(input) {
   // the head that tells a browser what to paint before the styles land, and in
   // the manifest that colours an installed window. `src/index.html` is outside
   // the template scan, so nothing else would notice them diverging.
-  const ground = /--edsb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(input.tokens ?? '');
+  const ground = /--ednb-palette-bg:\s*(#[0-9a-f]{3,8})\b/i.exec(input.tokens ?? '');
   if (ground === null) {
     fail(
       SEARCH_METADATA_FILES.tokens,
-      'No --edsb-palette-bg is declared to take a theme colour from.',
+      'No --ednb-palette-bg is declared to take a theme colour from.',
     );
   } else {
     const declared = headContent(index, 'name', 'theme-color');

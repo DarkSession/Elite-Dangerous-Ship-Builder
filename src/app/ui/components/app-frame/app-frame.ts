@@ -173,7 +173,7 @@ export interface ShellStatus {
   host: {
     '[class.frame--returning]': 'back() !== null',
     '[class.frame--released]': 'bannerReleased()',
-    '[style.--edsb-layout-bar-height]': 'barHeight()',
+    '[style.--ednb-layout-bar-height]': 'barHeight()',
   },
 })
 export class AppFrame {

@@ -37,8 +37,8 @@
   font: inherit;
   text-align: start;
   text-decoration: underline dotted;
-  text-decoration-color: var(--edsb-border-strong);
-  text-underline-offset: var(--edsb-space-hair);
+  text-decoration-color: var(--ednb-border-strong);
+  text-underline-offset: var(--ednb-space-hair);
   overflow-wrap: break-word;
   cursor: help;
 }
@@ -77,7 +77,7 @@
 .tooltip__tip--shown {
   position: absolute;
   z-index: 3;
-  inset-block-start: calc(100% + var(--edsb-space-inline-tight));
+  inset-block-start: calc(100% + var(--ednb-space-inline-tight));
   inset-inline-start: 0;
   inline-size: max-content;
   block-size: auto;
@@ -86,18 +86,18 @@
   // bubble hung off the leading edge of its trigger would then run off the
   // trailing edge of the screen — where the page would have to scroll
   // sideways to reach it, which it never does (011 FR-011).
-  max-inline-size: min(100vw - 2 * var(--edsb-space-region), var(--edsb-layout-menu-max));
+  max-inline-size: min(100vw - 2 * var(--ednb-space-region), var(--ednb-layout-menu-max));
   margin: 0;
-  padding-block: var(--edsb-space-2xs);
-  padding-inline: var(--edsb-space-xs);
+  padding-block: var(--ednb-space-2xs);
+  padding-inline: var(--ednb-space-xs);
   overflow: visible;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-rule-menu);
-  border-radius: var(--edsb-shape-control);
-  background-color: var(--edsb-surface-menu);
-  box-shadow: var(--edsb-elevation-menu);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-rule-menu);
+  border-radius: var(--ednb-shape-control);
+  background-color: var(--ednb-surface-menu);
+  box-shadow: var(--ednb-elevation-menu);
   clip-path: none;
-  color: var(--edsb-text-secondary);
-  font-size: var(--edsb-text-size-caption);
+  color: var(--ednb-text-secondary);
+  font-size: var(--ednb-text-size-caption);
   white-space: normal;
   text-wrap: pretty;
 }
@@ -119,14 +119,14 @@
 .tooltip__tip--shown.tooltip__tip--floating {
   position: fixed;
   inset: auto;
-  margin-block-start: var(--edsb-space-inline-tight);
+  margin-block-start: var(--ednb-space-inline-tight);
 }
 
 // No room under the trigger, so it is drawn over it: the element is placed at
 // the trigger's top edge and lifted by its own height, which is a height
 // nothing here has to know.
 .tooltip__tip--shown.tooltip__tip--above {
-  margin-block-start: calc(-1 * var(--edsb-space-inline-tight));
+  margin-block-start: calc(-1 * var(--ednb-space-inline-tight));
   translate: 0 -100%;
 }
 
@@ -142,8 +142,8 @@
   content: '';
   position: absolute;
   inset-block-end: 100%;
-  inset-inline: calc(-1 * var(--edsb-border-width-hairline));
-  block-size: calc(var(--edsb-space-inline-tight) + var(--edsb-border-width-hairline));
+  inset-inline: calc(-1 * var(--ednb-border-width-hairline));
+  block-size: calc(var(--ednb-space-inline-tight) + var(--ednb-border-width-hairline));
 }
 
 // Drawn over the trigger, the crossing is under the bubble rather than over it,

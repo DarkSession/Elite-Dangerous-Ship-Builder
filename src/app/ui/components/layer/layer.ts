@@ -38,7 +38,7 @@ export type LayerPresentation = 'adaptive' | 'dialog' | 'sheet' | 'full-height';
  *
  * Three members, not the ladder the tokens hold: a step nothing takes is a rule
  * shipped in every bundle that never matches. The narrow step exists as
- * `--edsb-layout-layer-narrow` for the surface that needs it to name it here.
+ * `--ednb-layout-layer-narrow` for the surface that needs it to name it here.
  *
  * It bounds the centred presentations only. A sheet and a full-height layer own
  * the width they are given, so the stylesheet pairs each step with the two

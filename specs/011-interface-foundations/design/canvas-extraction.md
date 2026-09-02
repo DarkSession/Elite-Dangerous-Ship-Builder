@@ -26,7 +26,7 @@ design genuinely sets uppercase tracked mono labels at 8–9.5 px.
 ## Colour
 
 All 55 `:root` custom properties are adopted verbatim, names and values unchanged
-apart from the `--edsb-palette-` prefix. They are the only part of the canvas that is
+apart from the `--ednb-palette-` prefix. They are the only part of the canvas that is
 already a token layer.
 
 | Family     | Steps                                                                                                                                                                                          |
@@ -67,15 +67,15 @@ Nothing is scaled on the way in.
 
 | Canvas px           | Token                    | rem       | Used for                                                  |
 | ------------------- | ------------------------ | --------- | --------------------------------------------------------- |
-| 7.5, 8, 8.5, 9, 9.5 | `--edsb-type-size-micro` | 0.5625rem | Mono micro-labels: `SPEED m/s`, `Mcr`, `6 BUILDS`, carets |
-| 10                  | `--edsb-type-size-2xs`   | 0.625rem  | Button labels, segment labels, column headers             |
-| 10.5, 11            | `--edsb-type-size-xs`    | 0.6875rem | Row secondary text, notes, mono values in dense rows      |
-| 12                  | `--edsb-type-size-sm`    | 0.75rem   | Body prose, manufacturer, table numerics                  |
-| 13                  | `--edsb-type-size-md`    | 0.8125rem | Dialog titles, name field input, ledger module names      |
-| 14, 15              | `--edsb-type-size-lg`    | 0.875rem  | Compact row hull names, metric values                     |
-| 16                  | `--edsb-type-size-xl`    | 1rem      | Wide manifest hull names, workspace build name            |
-| 18                  | `--edsb-type-size-2xl`   | 1.125rem  | Command-bar title, hull price                             |
-| 22                  | `--edsb-type-size-3xl`   | 1.375rem  | Inspector hull name                                       |
+| 7.5, 8, 8.5, 9, 9.5 | `--ednb-type-size-micro` | 0.5625rem | Mono micro-labels: `SPEED m/s`, `Mcr`, `6 BUILDS`, carets |
+| 10                  | `--ednb-type-size-2xs`   | 0.625rem  | Button labels, segment labels, column headers             |
+| 10.5, 11            | `--ednb-type-size-xs`    | 0.6875rem | Row secondary text, notes, mono values in dense rows      |
+| 12                  | `--ednb-type-size-sm`    | 0.75rem   | Body prose, manufacturer, table numerics                  |
+| 13                  | `--ednb-type-size-md`    | 0.8125rem | Dialog titles, name field input, ledger module names      |
+| 14, 15              | `--ednb-type-size-lg`    | 0.875rem  | Compact row hull names, metric values                     |
+| 16                  | `--ednb-type-size-xl`    | 1rem      | Wide manifest hull names, workspace build name            |
+| 18                  | `--ednb-type-size-2xl`   | 1.125rem  | Command-bar title, hull price                             |
+| 22                  | `--ednb-type-size-3xl`   | 1.375rem  | Inspector hull name                                       |
 
 Weights: 300 prose, 400 mono default, 500 mono label / Barlow emphasis, 600 condensed
 secondary control, 700 condensed heading and primary control.
@@ -89,17 +89,17 @@ The tracking ladder is the design's identity and is adopted at the exact values.
 
 | Token                      | em   | Canvas use                                     |
 | -------------------------- | ---- | ---------------------------------------------- |
-| `--edsb-type-tracking-xs`  | 0.04 | Mono licence block                             |
-| `--edsb-type-tracking-sm`  | 0.06 | Mono search placeholder, row secondary         |
-| `--edsb-type-tracking-md`  | 0.07 | Condensed hull name in a row                   |
-| `--edsb-type-tracking-lg`  | 0.09 | Condensed record title                         |
-| `--edsb-type-tracking-xl`  | 0.10 | Mono counts, chevrons, undo/redo               |
-| `--edsb-type-tracking-2xl` | 0.12 | Mono size codes, unit suffixes                 |
-| `--edsb-type-tracking-3xl` | 0.14 | Mono field labels, metric labels               |
-| `--edsb-type-tracking-4xl` | 0.16 | Column headers, segment labels, workspace name |
-| `--edsb-type-tracking-5xl` | 0.18 | Button labels                                  |
-| `--edsb-type-tracking-6xl` | 0.22 | Dialog titles, primary hull action             |
-| `--edsb-type-tracking-7xl` | 0.26 | Command-bar product title                      |
+| `--ednb-type-tracking-xs`  | 0.04 | Mono licence block                             |
+| `--ednb-type-tracking-sm`  | 0.06 | Mono search placeholder, row secondary         |
+| `--ednb-type-tracking-md`  | 0.07 | Condensed hull name in a row                   |
+| `--ednb-type-tracking-lg`  | 0.09 | Condensed record title                         |
+| `--ednb-type-tracking-xl`  | 0.10 | Mono counts, chevrons, undo/redo               |
+| `--ednb-type-tracking-2xl` | 0.12 | Mono size codes, unit suffixes                 |
+| `--ednb-type-tracking-3xl` | 0.14 | Mono field labels, metric labels               |
+| `--ednb-type-tracking-4xl` | 0.16 | Column headers, segment labels, workspace name |
+| `--ednb-type-tracking-5xl` | 0.18 | Button labels                                  |
+| `--ednb-type-tracking-6xl` | 0.22 | Dialog titles, primary hull action             |
+| `--ednb-type-tracking-7xl` | 0.26 | Command-bar product title                      |
 
 ## Spacing
 
@@ -108,18 +108,18 @@ scale rather than reproduced per site.
 
 | Token               | rem       | px  | Canvas sites                                          |
 | ------------------- | --------- | --- | ----------------------------------------------------- |
-| `--edsb-space-hair` | 0.0625rem | 1   | Grid gaps that render as hairlines over an amber wash |
-| `--edsb-space-3xs`  | 0.125rem  | 2   | Row gap in the wide manifest, badge padding           |
-| `--edsb-space-2xs`  | 0.25rem   | 4   | Label-to-value gap                                    |
-| `--edsb-space-xs`   | 0.375rem  | 6   | Chip gap, hardpoint pill internals                    |
-| `--edsb-space-sm`   | 0.5rem    | 8   | Button row gap, stack gap                             |
-| `--edsb-space-md`   | 0.625rem  | 10  | Toolbar gap, row gap                                  |
-| `--edsb-space-lg`   | 0.75rem   | 12  | Row padding, metric cell padding                      |
-| `--edsb-space-xl`   | 0.875rem  | 14  | Compact screen inset, rail gap                        |
-| `--edsb-space-2xl`  | 1rem      | 16  | Dialog body gap, wide row padding                     |
-| `--edsb-space-3xl`  | 1.125rem  | 18  | Dialog padding, rail padding                          |
-| `--edsb-space-4xl`  | 1.375rem  | 22  | Wide screen inset                                     |
-| `--edsb-space-5xl`  | 2.125rem  | 34  | Empty-state padding                                   |
+| `--ednb-space-hair` | 0.0625rem | 1   | Grid gaps that render as hairlines over an amber wash |
+| `--ednb-space-3xs`  | 0.125rem  | 2   | Row gap in the wide manifest, badge padding           |
+| `--ednb-space-2xs`  | 0.25rem   | 4   | Label-to-value gap                                    |
+| `--ednb-space-xs`   | 0.375rem  | 6   | Chip gap, hardpoint pill internals                    |
+| `--ednb-space-sm`   | 0.5rem    | 8   | Button row gap, stack gap                             |
+| `--ednb-space-md`   | 0.625rem  | 10  | Toolbar gap, row gap                                  |
+| `--ednb-space-lg`   | 0.75rem   | 12  | Row padding, metric cell padding                      |
+| `--ednb-space-xl`   | 0.875rem  | 14  | Compact screen inset, rail gap                        |
+| `--ednb-space-2xl`  | 1rem      | 16  | Dialog body gap, wide row padding                     |
+| `--ednb-space-3xl`  | 1.125rem  | 18  | Dialog padding, rail padding                          |
+| `--ednb-space-4xl`  | 1.375rem  | 22  | Wide screen inset                                     |
+| `--ednb-space-5xl`  | 2.125rem  | 34  | Empty-state padding                                   |
 
 ## Geometry
 
@@ -190,7 +190,7 @@ edge of the bar as a whole, centred across both decks, and indents the decks pas
 inside the plate's own inset at 1180px, `48px` at 390px. So the mark is the banner's own child, and
 the tabs and the screen identity line up on one indent under it.
 
-The divider is drawn in `--edsb-rule-section` (`--amber-a14`), which is the step this system
+The divider is drawn in `--ednb-rule-section` (`--amber-a14`), which is the step this system
 already draws a section rule at; the canvas's `--amber-a12` has no semantic name here, and adding
 one for two hundredths of an alpha would be a token for a value that never varies.
 
@@ -198,7 +198,7 @@ Two values are departures, both of the kind
 [reference-review.md](./reference-review.md) already rules.
 
 `--ink-48` composites to `4.02:1` on `--panel-4`, under the `4.5:1` AA floor for text at this
-size. The product draws a resting tab in `--edsb-text-faint` (`ink-a55`, `4.89:1` on the same
+size. The product draws a resting tab in `--ednb-text-faint` (`ink-a55`, `4.89:1` on the same
 ground), which is the audited floor the token layer offers and the same substitution the muted-text
 row of "Required departures" records (011/FR-012). The current tab keeps `--amber-3`, which measures
 `7.99:1` on the `--amber-a14` wash over that ground.
@@ -250,7 +250,7 @@ needs and stops at the bound.
 **A sheet is inset from the top of the screen. Ruled 2026-08-31 (Commander request), narrowing the
 ruling above.** Flush against that edge the sheet began at pixel zero: its title bar met the top of
 the screen, a phone's own status bar cut into it, and nothing said the sheet was a layer over the
-screen behind it. The inset is `--edsb-space-sheet-inset`, one step of the space scale at 22px, and
+screen behind it. The inset is `--ednb-space-sheet-inset`, one step of the space scale at 22px, and
 it is taken out of the 88% bound rather than added to it, so a sheet gives up the same strip of
 screen overall and the scrim below it is unchanged. A sheet therefore draws its hairline on all four
 edges, where an anchored one left its block-start edge undrawn. A short viewport still promotes the
@@ -333,14 +333,14 @@ is, nothing shifts when the choice moves, and the marker still says what tint al
 not.
 
 The alphas and inks resolve to the nearest named role rather than to steps of their own.
-The plate's edge takes `--edsb-border-region` (`amber-a18`) against the drawn `amber-a14`,
-the chosen plate's takes `--edsb-border-control` (`amber-a40`) against the drawn `amber-a5`,
-the column's rule takes `--edsb-rule-grid` (`amber-a14`) against the drawn `amber-a16`, and
-the unchosen title takes `--edsb-text-secondary` (ink 0.80) against the drawn solid
+The plate's edge takes `--ednb-border-region` (`amber-a18`) against the drawn `amber-a14`,
+the chosen plate's takes `--ednb-border-control` (`amber-a40`) against the drawn `amber-a5`,
+the column's rule takes `--ednb-rule-grid` (`amber-a14`) against the drawn `amber-a16`, and
+the unchosen title takes `--ednb-text-secondary` (ink 0.80) against the drawn solid
 `--ink-2`. Four more amber hairlines and a fifth ink would be a second scale rather than a
 finer one.
 
-The fifth is not a rounding. The description takes `--edsb-text-subtle` (ink 0.62) against
+The fifth is not a rounding. The description takes `--ednb-text-subtle` (ink 0.62) against
 the drawn `--ink-48`, which sits inside the 0.32–0.50 band this system rejects for anything
 that is text rather than decoration — the same lift the type floor is, made for the same
 reason.

@@ -165,17 +165,17 @@ describe('governed visual literals', () => {
   });
 
   it('accepts a token reference', () => {
-    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--edsb-text-primary); }');
+    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--ednb-text-primary); }');
 
     assert.deepEqual(found, []);
   });
 
   it('accepts a token calculation', () => {
     for (const source of [
-      '.a { padding: calc(var(--edsb-space-lg) * 2); }',
-      '.a { gap: min(var(--edsb-space-lg), var(--edsb-space-xl)); }',
-      '.a { padding-inline: var(--edsb-space-sm) var(--edsb-space-lg); }',
-      '.a { border: var(--edsb-border-width-thin) solid var(--edsb-border-default); }',
+      '.a { padding: calc(var(--ednb-space-lg) * 2); }',
+      '.a { gap: min(var(--ednb-space-lg), var(--ednb-space-xl)); }',
+      '.a { padding-inline: var(--ednb-space-sm) var(--ednb-space-lg); }',
+      '.a { border: var(--ednb-border-width-thin) solid var(--ednb-border-default); }',
     ]) {
       assert.deepEqual(rules.stylesheetViolations('c.scss', source), [], source);
     }
@@ -222,7 +222,7 @@ describe('governed visual literals', () => {
   });
 
   it('reports a stylesheet it genuinely cannot parse instead of passing it', () => {
-    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--edsb-text-primary);');
+    const found = rules.stylesheetViolations('c.scss', '.a { color: var(--ednb-text-primary);');
 
     assert.deepEqual(ruleIds(found), ['unparseable-stylesheet']);
   });
@@ -230,7 +230,7 @@ describe('governed visual literals', () => {
   it('accepts a transition that names the property it animates', () => {
     const found = rules.stylesheetViolations(
       'c.scss',
-      '.a { transition: background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing); }',
+      '.a { transition: background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing); }',
     );
 
     assert.deepEqual(found, []);
@@ -239,7 +239,7 @@ describe('governed visual literals', () => {
   it('still rejects a hand-picked duration inside a transition shorthand', () => {
     const found = rules.stylesheetViolations(
       'c.scss',
-      '.a { transition: background-color 200ms var(--edsb-motion-easing); }',
+      '.a { transition: background-color 200ms var(--ednb-motion-easing); }',
     );
 
     assert.deepEqual(ruleIds(found), ['visual-literal']);
@@ -476,8 +476,8 @@ describe('coverage ledger reconciliation', () => {
 describe('value classification', () => {
   it('recognises tokenised values', () => {
     for (const value of [
-      'var(--edsb-text-primary)',
-      'calc(var(--edsb-space-lg) * 2)',
+      'var(--ednb-text-primary)',
+      'calc(var(--ednb-space-lg) * 2)',
       '0',
       'none',
       'inherit',
@@ -1149,7 +1149,7 @@ describe('search metadata', () => {
     <url><loc>https://navbeacon.app/build</loc></url>
   </urlset>`;
 
-  const TOKENS = '  --edsb-palette-bg: #0b0b0c;\n';
+  const TOKENS = '  --ednb-palette-bg: #0b0b0c;\n';
 
   const MANIFEST = JSON.stringify({
     name: 'NavBeacon',

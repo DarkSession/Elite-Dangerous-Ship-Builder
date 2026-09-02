@@ -18,24 +18,24 @@
 // The blocks carry their own inset and sit flush against each other, so the
 // rule between them runs the full width of the rail as the canvas draws it.
 .block {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding: var(--edsb-space-panel);
+  padding: var(--ednb-space-panel);
 }
 
 .block + .block {
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 .block__head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 }
 
 .block__heading {
-  @include layout.micro-label(var(--edsb-text-accent), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   margin: 0;
 }
@@ -45,14 +45,14 @@
 // treatment it gives `REBUY 5%`, which is what makes them read as annotations
 // on the block rather than as more of its content.
 .block__note {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 
   margin: 0;
 }
 
 .cost,
 .rail-materials {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
 }
@@ -64,18 +64,18 @@
 .cost__row {
   display: flex;
   align-items: baseline;
-  gap: var(--edsb-space-inline-tight);
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-body);
-  line-height: var(--edsb-text-leading-control);
-  color: var(--edsb-text-muted);
+  gap: var(--ednb-space-inline-tight);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-body);
+  line-height: var(--ednb-text-leading-control);
+  color: var(--ednb-text-muted);
 }
 
 .rail-material {
   display: flex;
   align-items: baseline;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 }
 
 .cost__label {
@@ -93,16 +93,16 @@
 .rail-material__name {
   display: flex;
   align-items: baseline;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   flex: 1;
   min-inline-size: 0;
   margin: 0;
-  color: var(--edsb-text-primary);
-  font-size: var(--edsb-text-size-compact);
+  color: var(--ednb-text-primary);
+  font-size: var(--ednb-text-size-compact);
 }
 
 .rail-material__count {
-  @include layout.metric-value(var(--edsb-text-size-compact), var(--edsb-text-numeric));
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-numeric));
 
   flex: none;
   margin: 0;
@@ -125,33 +125,33 @@
 // the accent add emphasis to a distinction the text and the rule already make
 // rather than carrying it (WCAG 1.4.1).
 .cost__row--total {
-  padding-block-start: var(--edsb-space-stack);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
-  font-size: var(--edsb-text-size-lead);
-  font-weight: var(--edsb-text-weight-emphasis);
+  padding-block-start: var(--ednb-space-stack);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  font-size: var(--ednb-text-size-lead);
+  font-weight: var(--ednb-text-weight-emphasis);
   text-transform: uppercase;
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
 }
 
 // `REBUY 5%`: the canvas sets it smaller, fainter and tracked, sitting under
 // the total as an aside to it.
 .cost__row--quiet {
-  font-size: var(--edsb-text-size-micro);
-  letter-spacing: var(--edsb-text-tracking-label);
+  font-size: var(--ednb-text-size-micro);
+  letter-spacing: var(--ednb-text-tracking-label);
   text-transform: uppercase;
-  color: var(--edsb-text-faint);
+  color: var(--ednb-text-faint);
 }
 
 // The counts the canvas sets at opposite ends of its own ruled row.
 .block__footer {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 
   display: flex;
   justify-content: space-between;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
   margin: 0;
-  padding-block-start: var(--edsb-space-stack);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block-start: var(--ednb-space-stack);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The bounded material list (ruling G). Both canvases draw five rows against a
@@ -160,7 +160,7 @@
 // Commander reading at 200% gets a taller box rather than the same box holding
 // half as many rows.
 .materials-box {
-  max-block-size: var(--edsb-layout-material-list);
+  max-block-size: var(--ednb-layout-material-list);
   overflow-y: auto;
   overscroll-behavior-block: contain;
 }
@@ -206,7 +206,7 @@
   // back on the column and the column back past the foot of the screen.
   .materials-box {
     flex: 1 1 auto;
-    min-block-size: var(--edsb-layout-material-list);
+    min-block-size: var(--ednb-layout-material-list);
     max-block-size: none;
   }
 }
@@ -218,7 +218,7 @@
 @include layout.short-viewport {
   .materials-box {
     min-block-size: 0;
-    max-block-size: var(--edsb-layout-material-list);
+    max-block-size: var(--ednb-layout-material-list);
   }
 }
 
@@ -226,8 +226,8 @@
 // closes the cost rows, which are always present when the row is, so this rule
 // is unconditional where it used to depend on there being a list above it.
 .rail-material--ruled {
-  padding-block-start: var(--edsb-space-stack);
-  border-block-start: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  padding-block-start: var(--ednb-space-stack);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
 }
 
 // The canvas gives Merc Coin its own colour, because it is the one figure in
@@ -236,7 +236,7 @@
 .rail-material--merc-coin {
   .rail-material__name,
   .rail-material__count {
-    color: var(--edsb-text-merc);
+    color: var(--ednb-text-merc);
   }
 }
 

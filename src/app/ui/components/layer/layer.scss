@@ -9,19 +9,19 @@
 
 .layer {
   padding: 0;
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-dialog);
-  border-radius: var(--edsb-shape-layer);
-  background-color: var(--edsb-surface-layer);
-  color: var(--edsb-text-primary);
-  box-shadow: var(--edsb-elevation-dialog);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-dialog);
+  border-radius: var(--ednb-shape-layer);
+  background-color: var(--ednb-surface-layer);
+  color: var(--ednb-text-primary);
+  box-shadow: var(--ednb-elevation-dialog);
 }
 
 .layer::backdrop {
-  background-color: var(--edsb-surface-scrim);
+  background-color: var(--ednb-surface-scrim);
 }
 
 .layer__header {
-  @include layout.command-bar(var(--edsb-border-width-hairline), var(--edsb-rule-panel));
+  @include layout.command-bar(var(--ednb-border-width-hairline), var(--ednb-rule-panel));
 
   // Pinned over the body, not carried away by it. The reference draws every
   // panel dialog as a fixed title bar above a column that scrolls under it, and
@@ -33,19 +33,19 @@
   z-index: 1;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-panel);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-panel);
 }
 
 // The title and whatever names the subject under it, as one block in the bar.
 .layer__identity {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   min-inline-size: 0;
 }
 
 .layer__title {
-  @include layout.display-title(var(--edsb-text-size-heading-sm));
+  @include layout.display-title(var(--ednb-text-size-heading-sm));
 
   min-inline-size: 0;
 }
@@ -54,36 +54,36 @@
 // uppercase face rather than body type — the tracking is what puts a readable
 // gap either side of a space, which body type at this size does not.
 .layer__detail {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-heading));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-heading));
 
   margin: 0;
-  font-size: var(--edsb-text-size-compact);
+  font-size: var(--ednb-text-size-compact);
 }
 
 .layer__dismiss {
-  @include layout.control-base(var(--edsb-text-tracking-count));
+  @include layout.control-base(var(--ednb-text-tracking-count));
 
-  padding-inline: var(--edsb-space-inline-loose);
+  padding-inline: var(--ednb-space-inline-loose);
   background-color: transparent;
   border-color: transparent;
-  font-family: var(--edsb-font-metric);
-  font-weight: var(--edsb-text-weight-body);
-  color: var(--edsb-text-subtle);
+  font-family: var(--ednb-font-metric);
+  font-weight: var(--ednb-text-weight-body);
+  color: var(--ednb-text-subtle);
 }
 
 .layer__description {
-  padding-block-start: var(--edsb-space-panel);
-  padding-inline: var(--edsb-space-panel);
-  font-weight: var(--edsb-text-weight-prose);
-  line-height: var(--edsb-text-leading-body);
-  color: var(--edsb-text-subtle);
+  padding-block-start: var(--ednb-space-panel);
+  padding-inline: var(--ednb-space-panel);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-subtle);
   text-wrap: pretty;
 }
 
 .layer__body {
-  @include layout.stack(var(--edsb-space-stack));
+  @include layout.stack(var(--ednb-space-stack));
 
-  padding: var(--edsb-space-panel);
+  padding: var(--ednb-space-panel);
 }
 
 // A body whose content owns its own padding. What is inside then reaches the
@@ -101,7 +101,7 @@
 // document and the screen behind it still shows above and below
 // (`specs/011-interface-foundations/design/canvas-extraction.md`, "Panel
 // dialog").
-@mixin dialog-presentation($measure: var(--edsb-layout-layer-max)) {
+@mixin dialog-presentation($measure: var(--ednb-layout-layer-max)) {
   // `inline-size`, not `max-inline-size`: the platform's own modal rule is a
   // `max-width` that holds a dialog off the edges of the screen, and an author
   // maximum here would beat it for every layer in the application.
@@ -131,12 +131,12 @@
 @mixin sheet-presentation {
   inline-size: 100%;
   max-inline-size: 100%;
-  margin-block-start: var(--edsb-space-sheet-inset);
+  margin-block-start: var(--ednb-space-sheet-inset);
   margin-block-end: auto;
   margin-inline: auto;
-  max-block-size: calc(88svh - var(--edsb-space-sheet-inset));
+  max-block-size: calc(88svh - var(--ednb-space-sheet-inset));
   overflow-y: auto;
-  border-radius: var(--edsb-shape-layer);
+  border-radius: var(--ednb-shape-layer);
 }
 
 // A full-height layer owns the viewport. Used where content, expansion or a
@@ -149,7 +149,7 @@
   margin: 0;
   overflow-y: auto;
   border: 0;
-  border-radius: var(--edsb-shape-layer);
+  border-radius: var(--ednb-shape-layer);
 }
 
 .layer--dialog {
@@ -176,12 +176,12 @@
 // these blocks happen to appear in.
 .layer--dialog.layer--wide,
 .layer--adaptive.layer--wide {
-  @include dialog-presentation(var(--edsb-layout-layer-wide));
+  @include dialog-presentation(var(--ednb-layout-layer-wide));
 }
 
 .layer--dialog.layer--widest,
 .layer--adaptive.layer--widest {
-  @include dialog-presentation(var(--edsb-layout-layer-widest));
+  @include dialog-presentation(var(--ednb-layout-layer-widest));
 }
 
 @include layout.compact {

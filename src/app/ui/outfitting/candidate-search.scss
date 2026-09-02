@@ -11,7 +11,7 @@
 // Canvas 1c draws the hint inside the field's own box at its trailing edge, so
 // the row is the field and the field is the box the hint sits in.
 .search {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   position: relative;
   align-items: center;
@@ -27,10 +27,10 @@
 // its own line under the field it read as a sentence about the field rather
 // than as a key cap.
 .search__shortcut {
-  @include layout.micro-label(var(--edsb-text-faint), var(--edsb-text-tracking-label));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
 
   position: absolute;
-  inset-inline-end: var(--edsb-space-control-inline);
+  inset-inline-end: var(--ednb-space-control-inline);
   inset-block-start: 50%;
   transform: translateY(-50%);
   margin: 0;
@@ -45,7 +45,7 @@
 // only where the control is drawn, or the caret would jump a control's width
 // the moment the first character was typed.
 .search__field ::ng-deep .field__control {
-  padding-inline-end: var(--edsb-target-size);
+  padding-inline-end: var(--ednb-target-size);
 }
 
 // In the field, where the shortcut hint stands when there is nothing to clear.
@@ -61,23 +61,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: var(--edsb-target-size);
-  min-block-size: var(--edsb-target-size);
+  min-inline-size: var(--ednb-target-size);
+  min-block-size: var(--ednb-target-size);
   padding: 0;
   background: none;
   border: 0;
-  color: var(--edsb-text-faint);
+  color: var(--ednb-text-faint);
   cursor: pointer;
 }
 
 .search__clear:hover,
 .search__clear:focus-visible {
-  color: var(--edsb-text-accent);
+  color: var(--ednb-text-accent);
 }
 
 .search__clear-mark {
-  font-family: var(--edsb-font-mono);
-  font-size: var(--edsb-text-size-caption);
+  font-family: var(--ednb-font-mono);
+  font-size: var(--ednb-text-size-caption);
   line-height: 1;
 }
 

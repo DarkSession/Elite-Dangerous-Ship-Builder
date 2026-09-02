@@ -157,7 +157,7 @@ test.describe('engineering a module', () => {
   });
 
   test('keeps the option the effect menu is on inside the box it scrolls in', async ({ page }) => {
-    // The list is bounded at `--edsb-layout-menu-drop` and scrolls inside
+    // The list is bounded at `--ednb-layout-menu-drop` and scrolls inside
     // itself, so an option the keyboard walks to is otherwise named by
     // `aria-activedescendant` while sitting below the fold — the reading moves
     // and nothing on screen does. Only a real layout can show this, which is
@@ -957,7 +957,7 @@ test.describe('the bench’s three columns', () => {
       };
       const declared = document.createElement('div');
       declared.style.blockSize = getComputedStyle(document.documentElement)
-        .getPropertyValue('--edsb-layout-manifest-pane')
+        .getPropertyValue('--ednb-layout-manifest-pane')
         .trim();
       document.body.append(declared);
       const pane = declared.getBoundingClientRect().height;

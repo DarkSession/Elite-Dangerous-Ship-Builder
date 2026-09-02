@@ -17,7 +17,7 @@
 :host(.tab-group-host--labelled) {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline);
+  gap: var(--ednb-space-inline);
 
   .tab-group {
     flex: 1 1 auto;
@@ -39,7 +39,7 @@
 // mode strip lines up with the bars (Commander request 2026-08-26). The width
 // is the caller's, named through a layout token it and the rows both read.
 :host(.tab-group-host--ruled) .tab-group__label {
-  min-inline-size: var(--edsb-layout-band-name);
+  min-inline-size: var(--ednb-layout-band-name);
 }
 
 // One amber hairline showing between the segments, and nothing around them:
@@ -52,8 +52,8 @@
   @include layout.bounded-scroller;
 
   display: flex;
-  gap: var(--edsb-space-rule);
-  background-color: var(--edsb-rule-grid);
+  gap: var(--ednb-space-rule);
+  background-color: var(--ednb-rule-grid);
 }
 
 // Canvas 1c sets each segment to the width of its own label (`flex: none`) and
@@ -93,38 +93,38 @@
   align-items: center;
   justify-content: center;
   flex: 1 0 auto;
-  padding-block: var(--edsb-space-control-block-dense);
-  padding-inline: var(--edsb-space-control-inline);
+  padding-block: var(--ednb-space-control-block-dense);
+  padding-inline: var(--ednb-space-control-inline);
   border: 0;
-  background-color: var(--edsb-surface-control-quiet);
-  color: var(--edsb-text-subtle);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  letter-spacing: var(--edsb-text-tracking-heading);
-  line-height: var(--edsb-text-leading-flat);
+  background-color: var(--ednb-surface-control-quiet);
+  color: var(--ednb-text-subtle);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-label);
+  font-weight: var(--ednb-text-weight-control);
+  letter-spacing: var(--ednb-text-tracking-heading);
+  line-height: var(--ednb-text-leading-flat);
   text-align: center;
   text-transform: uppercase;
   cursor: pointer;
   transition:
-    background-color var(--edsb-motion-duration-state) var(--edsb-motion-easing),
-    color var(--edsb-motion-duration-state) var(--edsb-motion-easing);
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 }
 
 // The chosen segment is filled, not outlined: both canvases draw it as solid
 // amber carrying the ground colour as its text.
 .tab[aria-selected='true'],
 .tab[aria-pressed='true'] {
-  background-color: var(--edsb-surface-accent-solid);
-  color: var(--edsb-text-on-accent);
-  font-weight: var(--edsb-text-weight-heading);
+  background-color: var(--ednb-surface-accent-solid);
+  color: var(--ednb-text-on-accent);
+  font-weight: var(--ednb-text-weight-heading);
 }
 
 // The selected state's text equivalent. Small, but present — the fill above is
 // a supplement to it, never the only signal. It rides on the fill, so it takes
 // the fill's own ink.
 .tab__state {
-  @include layout.micro-label(var(--edsb-text-on-accent), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-on-accent), var(--ednb-text-tracking-count));
 
   text-transform: none;
 }
@@ -134,12 +134,12 @@
 // mode you are in" — which a control nobody can reach is not. The selected
 // state survives as `aria-pressed` and as the strip's own text equivalent.
 .tab:disabled {
-  background-color: var(--edsb-surface-control-quiet);
-  color: var(--edsb-text-disabled);
+  background-color: var(--ednb-surface-control-quiet);
+  color: var(--ednb-text-disabled);
   cursor: not-allowed;
 
   .tab__state {
-    color: var(--edsb-text-disabled);
+    color: var(--ednb-text-disabled);
   }
 }
 
@@ -161,6 +161,6 @@
 // drawn, and that is the width of the screen.
 @include layout.compact {
   .tab {
-    padding-inline: var(--edsb-space-inline-tight);
+    padding-inline: var(--ednb-space-inline-tight);
   }
 }

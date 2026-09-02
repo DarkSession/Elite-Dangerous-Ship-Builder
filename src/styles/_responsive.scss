@@ -304,7 +304,7 @@ $bench-bounded-min-height: 66rem;
 // scale (design-system contract).
 
 // A row that wraps before labels truncate or targets shrink.
-@mixin wrapping-row($gap: var(--edsb-space-inline)) {
+@mixin wrapping-row($gap: var(--ednb-space-inline)) {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -312,7 +312,7 @@ $bench-bounded-min-height: 66rem;
 }
 
 // A vertical rhythm of equal steps.
-@mixin stack($gap: var(--edsb-space-stack)) {
+@mixin stack($gap: var(--ednb-space-stack)) {
   display: flex;
   flex-direction: column;
   gap: $gap;
@@ -321,12 +321,12 @@ $bench-bounded-min-height: 66rem;
 // The centred content measure. Uses a named token, never a canvas width.
 @mixin content-measure {
   inline-size: 100%;
-  max-inline-size: var(--edsb-layout-content-max);
+  max-inline-size: var(--ednb-layout-content-max);
   margin-inline: auto;
 }
 
 // A region pair that collapses to one flow when the space cannot hold both.
-@mixin region-pair($rail: var(--edsb-layout-rail-min), $gap: var(--edsb-space-region)) {
+@mixin region-pair($rail: var(--ednb-layout-rail-min), $gap: var(--ednb-space-region)) {
   display: grid;
   gap: $gap;
   grid-template-columns: 1fr;
@@ -352,8 +352,8 @@ $bench-bounded-min-height: 66rem;
 
 // Every interactive target meets the 44 CSS-pixel design baseline.
 @mixin target-baseline {
-  min-block-size: var(--edsb-target-size);
-  min-inline-size: var(--edsb-target-size);
+  min-block-size: var(--ednb-target-size);
+  min-inline-size: var(--ednb-target-size);
 }
 
 // The accessible floor rather than the comfortable baseline, for the dense
@@ -361,8 +361,8 @@ $bench-bounded-min-height: 66rem;
 // forty rows of a 44px chip is a different interface. Only for a control the
 // canvas itself draws small, and never for one that stands alone.
 @mixin target-floor {
-  min-block-size: var(--edsb-target-size-floor);
-  min-inline-size: var(--edsb-target-size-floor);
+  min-block-size: var(--ednb-target-size-floor);
+  min-inline-size: var(--ednb-target-size-floor);
 }
 
 // Content hidden visually but present for assistive technology.
@@ -392,12 +392,12 @@ $bench-bounded-min-height: 66rem;
 // The bar at the top of a screen or a dialog: a darker plate closed by an amber
 // rule. `$rule` is the rule's weight — the application bar takes the heavy one,
 // a dialog title bar the hairline.
-@mixin command-bar($rule: var(--edsb-border-width-thick), $colour: var(--edsb-rule-command)) {
+@mixin command-bar($rule: var(--ednb-border-width-thick), $colour: var(--ednb-rule-command)) {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline);
-  padding-inline: var(--edsb-space-region);
-  background-color: var(--edsb-surface-bar);
+  gap: var(--ednb-space-inline);
+  padding-inline: var(--ednb-space-region);
+  background-color: var(--ednb-surface-bar);
   border-block-end: $rule solid $colour;
 }
 
@@ -415,8 +415,8 @@ $bench-bounded-min-height: 66rem;
 @mixin command-flag {
   position: relative;
   flex: none;
-  inline-size: var(--edsb-layout-insignia-width);
-  block-size: var(--edsb-layout-insignia-height);
+  inline-size: var(--ednb-layout-insignia-width);
+  block-size: var(--ednb-layout-insignia-height);
 
   // The wedge. Ten points: the outer chevron, then back to the apex and around
   // an inner one, which the non-zero fill rule cuts away to leave the outline.
@@ -426,7 +426,7 @@ $bench-bounded-min-height: 66rem;
     inset-inline: 0;
     inset-block-start: 0;
     block-size: 88%;
-    background-color: var(--edsb-surface-accent-solid);
+    background-color: var(--ednb-surface-accent-solid);
     clip-path: polygon(
       50% 0,
       100% 100%,
@@ -447,33 +447,33 @@ $bench-bounded-min-height: 66rem;
     position: absolute;
     inset-inline: 0;
     inset-block-end: 0;
-    block-size: var(--edsb-border-width-thick);
-    background-color: var(--edsb-surface-accent-underbar);
+    block-size: var(--ednb-border-width-thick);
+    background-color: var(--ednb-surface-accent-underbar);
   }
 }
 
 // A screen or dialog title: condensed, uppercase, widely tracked, amber.
 @mixin display-title(
-  $size: var(--edsb-text-size-heading-md),
-  $tracking: var(--edsb-text-tracking-dialog)
+  $size: var(--ednb-text-size-heading-md),
+  $tracking: var(--ednb-text-tracking-dialog)
 ) {
   margin: 0;
-  font-family: var(--edsb-font-heading);
+  font-family: var(--ednb-font-heading);
   font-size: $size;
-  font-weight: var(--edsb-text-weight-heading);
-  line-height: var(--edsb-text-leading-heading);
+  font-weight: var(--ednb-text-weight-heading);
+  line-height: var(--ednb-text-leading-heading);
   letter-spacing: $tracking;
   text-transform: uppercase;
-  color: var(--edsb-text-accent-strong);
+  color: var(--ednb-text-accent-strong);
   overflow-wrap: break-word;
 }
 
 // A monospace micro-label: the canvas's unit suffixes, counts and field labels.
-@mixin micro-label($colour: var(--edsb-text-faint), $tracking: var(--edsb-text-tracking-label)) {
-  font-family: var(--edsb-font-metric);
-  font-size: var(--edsb-text-size-micro);
-  font-weight: var(--edsb-text-weight-emphasis);
-  line-height: var(--edsb-text-leading-control);
+@mixin micro-label($colour: var(--ednb-text-faint), $tracking: var(--ednb-text-tracking-label)) {
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  font-weight: var(--ednb-text-weight-emphasis);
+  line-height: var(--ednb-text-leading-control);
   letter-spacing: $tracking;
   text-transform: uppercase;
   color: $colour;
@@ -481,30 +481,30 @@ $bench-bounded-min-height: 66rem;
 
 // A monospace value: numbers, identities, codes. Tabular so a changing digit
 // does not reflow its neighbours.
-@mixin metric-value($size: var(--edsb-text-size-metric), $colour: var(--edsb-text-numeric)) {
-  font-family: var(--edsb-font-metric);
+@mixin metric-value($size: var(--ednb-text-size-metric), $colour: var(--ednb-text-numeric)) {
+  font-family: var(--ednb-font-metric);
   font-size: $size;
-  font-weight: var(--edsb-text-weight-body);
+  font-weight: var(--ednb-text-weight-body);
   font-variant-numeric: tabular-nums;
-  line-height: var(--edsb-text-leading-control);
+  line-height: var(--ednb-text-leading-control);
   color: $colour;
 }
 
 // The shared skeleton of every button in the reference: condensed, uppercase,
 // tracked, square, and never below the target baseline.
-@mixin control-base($tracking: var(--edsb-text-tracking-control)) {
+@mixin control-base($tracking: var(--ednb-text-tracking-control)) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--edsb-space-inline-tight);
-  min-block-size: var(--edsb-target-size);
-  padding-inline: var(--edsb-space-region);
-  border: var(--edsb-border-width-hairline) solid transparent;
-  border-radius: var(--edsb-shape-control);
-  font-family: var(--edsb-font-heading);
-  font-size: var(--edsb-text-size-label);
-  font-weight: var(--edsb-text-weight-control);
-  line-height: var(--edsb-text-leading-control);
+  gap: var(--ednb-space-inline-tight);
+  min-block-size: var(--ednb-target-size);
+  padding-inline: var(--ednb-space-region);
+  border: var(--ednb-border-width-hairline) solid transparent;
+  border-radius: var(--ednb-shape-control);
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-label);
+  font-weight: var(--ednb-text-weight-control);
+  line-height: var(--ednb-text-leading-control);
   letter-spacing: $tracking;
   text-transform: uppercase;
   text-align: center;
@@ -512,28 +512,28 @@ $bench-bounded-min-height: 66rem;
 }
 
 @mixin control-primary {
-  background-color: var(--edsb-surface-accent-solid);
-  border-color: var(--edsb-surface-accent-solid);
-  color: var(--edsb-text-on-accent);
-  font-weight: var(--edsb-text-weight-heading);
+  background-color: var(--ednb-surface-accent-solid);
+  border-color: var(--ednb-surface-accent-solid);
+  color: var(--ednb-text-on-accent);
+  font-weight: var(--ednb-text-weight-heading);
 }
 
 @mixin control-secondary {
-  background-color: var(--edsb-surface-control);
-  border-color: var(--edsb-border-control);
-  color: var(--edsb-text-accent);
+  background-color: var(--ednb-surface-control);
+  border-color: var(--ednb-border-control);
+  color: var(--ednb-text-accent);
 }
 
 @mixin control-quiet {
   background-color: transparent;
-  border-color: var(--edsb-border-quiet);
-  color: var(--edsb-text-muted);
+  border-color: var(--ednb-border-quiet);
+  color: var(--ednb-text-muted);
 }
 
 @mixin control-danger {
   background-color: transparent;
-  border-color: var(--edsb-border-danger-quiet);
-  color: var(--edsb-text-danger-quiet);
+  border-color: var(--ednb-border-danger-quiet);
+  color: var(--ednb-text-danger-quiet);
 }
 
 // A group whose one-pixel gaps expose an amber ground as hairline rules. The
@@ -543,16 +543,16 @@ $bench-bounded-min-height: 66rem;
   @if $columns {
     grid-template-columns: $columns;
   }
-  gap: var(--edsb-space-rule);
-  background-color: var(--edsb-rule-grid);
+  gap: var(--ednb-space-rule);
+  background-color: var(--ednb-rule-grid);
 }
 
 // A field's edge: a darker fill inside a hairline, square.
 @mixin field-surface {
-  background-color: var(--edsb-surface-field);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-field);
-  border-radius: var(--edsb-shape-control);
-  color: var(--edsb-text-primary);
+  background-color: var(--ednb-surface-field);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-field);
+  border-radius: var(--ednb-shape-control);
+  color: var(--ednb-text-primary);
 }
 
 // A row in a manifest or a record list, with the leading marker the canvas uses
@@ -567,20 +567,20 @@ $bench-bounded-min-height: 66rem;
 // the chosen row only and states the other in words.
 @mixin selectable-row($current-marks: true) {
   position: relative;
-  background-color: var(--edsb-surface-row);
-  border-inline-start: var(--edsb-border-width-marker) solid transparent;
-  border-block-end: var(--edsb-border-width-hairline) solid var(--edsb-border-decorative);
+  background-color: var(--ednb-surface-row);
+  border-inline-start: var(--ednb-border-width-marker) solid transparent;
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
 
   @if $current-marks {
     &[aria-current],
     &[data-selected='true'] {
-      background-image: var(--edsb-surface-row-selected);
-      border-inline-start-color: var(--edsb-marker-selected);
+      background-image: var(--ednb-surface-row-selected);
+      border-inline-start-color: var(--ednb-marker-selected);
     }
   } @else {
     &[data-selected='true'] {
-      background-image: var(--edsb-surface-row-selected);
-      border-inline-start-color: var(--edsb-marker-selected);
+      background-image: var(--ednb-surface-row-selected);
+      border-inline-start-color: var(--ednb-marker-selected);
     }
   }
 }
@@ -590,20 +590,20 @@ $bench-bounded-min-height: 66rem;
 @mixin section-rule {
   display: flex;
   align-items: center;
-  gap: var(--edsb-space-inline-tight);
+  gap: var(--ednb-space-inline-tight);
 
   &::after {
     content: '';
     flex: 1;
-    block-size: var(--edsb-border-width-hairline);
-    background-color: var(--edsb-rule-section);
+    block-size: var(--ednb-border-width-hairline);
+    background-color: var(--ednb-rule-section);
   }
 }
 
 // The hatched plate the canvas puts behind hull artwork.
 @mixin artwork-plate {
   position: relative;
-  background-image: var(--edsb-surface-plate);
-  border: var(--edsb-border-width-hairline) solid var(--edsb-border-region);
+  background-image: var(--ednb-surface-plate);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
   overflow: hidden;
 }

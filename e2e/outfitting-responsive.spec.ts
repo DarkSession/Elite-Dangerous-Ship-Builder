@@ -259,7 +259,7 @@ test.describe('the composition this width has room for', () => {
         // drawn at, and at any width where the bar wraps it is taller again
         // (workspace design, "What that height is, is measured, not
         // declared").
-        cleared: parseFloat(getComputedStyle(frame).getPropertyValue('--edsb-layout-bar-height')),
+        cleared: parseFloat(getComputedStyle(frame).getPropertyValue('--ednb-layout-bar-height')),
         bar: document.querySelector('.frame__banner')!.getBoundingClientRect().height,
         released: frame.classList.contains('frame--released'),
       };

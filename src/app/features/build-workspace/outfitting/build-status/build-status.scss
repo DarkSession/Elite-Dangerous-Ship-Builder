@@ -16,7 +16,7 @@
 }
 
 .issues {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
   margin: 0;
   padding: 0;
@@ -34,13 +34,13 @@
 // has a role for exactly that. The departure is recorded in
 // `specs/003-ship-statistics/design/status-rail.md`, "The issue block".
 .issue {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding-block: var(--edsb-space-control-block);
-  padding-inline: var(--edsb-space-inline-loose);
-  border-inline-start: var(--edsb-border-width-marker) solid var(--edsb-border-info);
-  background-color: var(--edsb-surface-info-quiet);
-  color: var(--edsb-text-info);
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-inline-loose);
+  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-info);
+  background-color: var(--ednb-surface-info-quiet);
+  color: var(--ednb-text-info);
 }
 
 // The sentence, and the whole of what the block draws. A long canonical
@@ -55,9 +55,9 @@
 
 // The error tone: the hot marker over its own tinted ground.
 .issue--error {
-  border-inline-start-color: var(--edsb-border-danger);
-  background-color: var(--edsb-surface-danger-quiet);
-  color: var(--edsb-text-danger);
+  border-inline-start-color: var(--ednb-border-danger);
+  background-color: var(--ednb-surface-danger-quiet);
+  color: var(--ednb-text-danger);
 }
 
 // The warning tone: the accent marker over the quieter accent ground. A
@@ -65,9 +65,9 @@
 // load a pilot chooses, rather than the fit, crosses a limit — so it says less
 // than the error tone and more than the quiet one.
 .issue--warning {
-  border-inline-start-color: var(--edsb-border-accent);
-  background-color: var(--edsb-surface-accent-quiet);
-  color: var(--edsb-text-accent);
+  border-inline-start-color: var(--ednb-border-accent);
+  background-color: var(--ednb-surface-accent-quiet);
+  color: var(--ednb-text-accent);
 }
 
 // The quiet tone is the default above. Unreachable from a `ShipLoadout` at the
@@ -90,7 +90,7 @@
 // shape a success-toned block is drawn in.
 .issue--valid {
   margin: 0;
-  border-inline-start-color: var(--edsb-border-success);
-  background-color: var(--edsb-surface-success-quiet);
-  color: var(--edsb-text-success);
+  border-inline-start-color: var(--ednb-border-success);
+  background-color: var(--ednb-surface-success-quiet);
+  color: var(--ednb-text-success);
 }

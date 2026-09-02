@@ -14,11 +14,11 @@
 }
 
 .metric {
-  @include layout.stack(var(--edsb-space-stack-tight));
+  @include layout.stack(var(--ednb-space-stack-tight));
 
-  padding-block: var(--edsb-space-lg);
-  padding-inline: var(--edsb-space-lg);
-  background-color: var(--edsb-surface-inset);
+  padding-block: var(--ednb-space-lg);
+  padding-inline: var(--ednb-space-lg);
+  background-color: var(--ednb-surface-inset);
 }
 
 .metric__label {
@@ -26,7 +26,7 @@
 }
 
 .metric__value {
-  @include layout.wrapping-row(var(--edsb-space-inline-tight));
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
 
   margin-inline-start: 0;
 }
@@ -39,11 +39,11 @@
 }
 
 .metric__unit {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-code));
 }
 
 .metric__condition {
-  @include layout.micro-label(var(--edsb-text-subtle), var(--edsb-text-tracking-count));
+  @include layout.micro-label(var(--ednb-text-subtle), var(--ednb-text-tracking-count));
 
   text-transform: none;
 }
@@ -51,21 +51,21 @@
 // An unavailable value is stated, never rendered as a zero or a dash whose
 // meaning a reader has to guess (constitution IV).
 .metric__unavailable {
-  font-size: var(--edsb-text-size-compact);
+  font-size: var(--ednb-text-size-compact);
   font-style: normal;
-  color: var(--edsb-text-subtle);
+  color: var(--ednb-text-subtle);
 }
 
 .metric__description {
   margin-inline-start: 0;
-  font-size: var(--edsb-text-size-compact);
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
 }
 
 .metric-group__empty {
-  font-weight: var(--edsb-text-weight-prose);
-  color: var(--edsb-text-subtle);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
 }
 
 // Two cells across as soon as two fit, which in the reference is inside a
@@ -111,12 +111,12 @@
 }
 
 :host(.metric-group--tight) .metric {
-  padding-block: var(--edsb-space-row);
-  padding-inline: var(--edsb-space-inline-tight);
+  padding-block: var(--ednb-space-row);
+  padding-inline: var(--ednb-space-inline-tight);
 }
 
 :host(.metric-group--tight) .metric__number {
-  font-size: var(--edsb-text-size-compact);
+  font-size: var(--ednb-text-size-compact);
 }
 
 // Three cells in three columns leave no last row to widen into.
