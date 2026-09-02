@@ -189,6 +189,42 @@ describe('governed visual literals', () => {
     }
   });
 
+  it('reads a foreign namespace inside a custom property, which is where a rename lands', () => {
+    // The namespace check runs before the rule that refuses a custom property
+    // outside the token sources, because that rule returns: behind it, no
+    // token defined in terms of another token would ever be read. A token
+    // source is exempt from the second rule and not from the first.
+    const found = rules.stylesheetViolations('c.scss', '.a { --local: var(--edsb-space-sm); }');
+
+    assert.deepEqual(ruleIds(found), ['foreign-token-namespace', 'token-outside-source']);
+  });
+
+  it('holds the token sources to the namespace and nothing else', () => {
+    // Literals and custom-property declarations are what a token source is
+    // for. A stale prefix is not, and these two files hold the densest `var()`
+    // references in the repository.
+    const scope = { tokenSources: ['src/styles/tokens/_semantic.scss'] };
+    const found = rules.stylesheetViolations(
+      'c.scss',
+      ':root { --ednb-a: #ff8c1a; --ednb-b: var(--edsb-a); }',
+    );
+
+    assert.deepEqual(ruleIds(found), [
+      'token-outside-source',
+      'foreign-token-namespace',
+      'token-outside-source',
+    ]);
+    assert.deepEqual(
+      ruleIds(rules.governedStylesheetViolations('src/styles/tokens/_semantic.scss', found, scope)),
+      ['foreign-token-namespace'],
+    );
+    assert.deepEqual(
+      ruleIds(rules.governedStylesheetViolations('src/app/app.scss', found, scope)),
+      ruleIds(found),
+      'everywhere else keeps every violation it found',
+    );
+  });
+
   it('reads the canvas\u2019s own token names in comments as prose', () => {
     // Records quote the design's names — `var(--amber-a14)`, `var(--panel)` —
     // and a comment is not a declaration.

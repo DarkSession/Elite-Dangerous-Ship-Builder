@@ -110,9 +110,10 @@ export const ASSETS = [
  *
  * An `.ico` rather than the `.svg` a modern browser would prefer, because the
  * head links this file as the one icon every browser understands, and the
- * manifest declares it at each of these sizes. The sizes are the three a browser picks between: a
- * tab, a bookmark bar and a shortcut. The mark fills more of these than it does
- * of an application icon — there is no launcher padding to leave at 16 pixels.
+ * manifest declares it at each of these sizes. The sizes are the three a
+ * browser picks between: a tab, a bookmark bar and a shortcut. The mark fills
+ * more of these than it does of an application icon — there is no launcher
+ * padding to leave at 16 pixels.
  */
 export const ICO_SIZES = [48, 32, 16];
 export const ICO_FILE = 'public/favicon.ico';

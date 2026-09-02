@@ -141,9 +141,9 @@ from the per-screen files.
 `height: 56px` wide / `52px` compact, `background: var(--panel-4)`,
 `border-bottom: 2px solid var(--amber)`. Leading edge carries the beacon mark
 (`26px` square on the wide shipyard, `21` to `24px` elsewhere, drawn from
-`.design/assets/nav-beacon-mark-header.svg`, canvas 6d), then the screen title in condensed 700
-uppercase tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in
-`--ink-45`. Trailing edge carries actions.
+`.design/assets/nav-beacon-mark-header.svg`), then the screen title in condensed 700 uppercase
+tracked 0.26em (wide) / 0.22em (compact) in `--amber-3`, then a mono count in `--ink-45`.
+Trailing edge carries actions.
 
 The product draws the insignia at one size, `26px` square, rather than the three
 the canvases measure. The canvases' own spread is five pixels; a breakpoint to
@@ -159,13 +159,13 @@ insignia is also the way home, and a control that stands on its own is held to
 the 44px press baseline, which is paid by a box around the mark (011/FR-012).
 
 One geometry in four fills, of which two are in use. Canvas 6d draws and names
-the plain `nav-beacon-mark.svg` — `-light` for a bone ground, `-mono` for a
-single ink — and `scripts/generate-brand-assets.mjs` renders every icon, the
-favicon and the link card from it, because those are drawn on the page ground
-its domes are filled with. The bar takes `-header`, which is what canvases 1c,
-1d, 4c, 4d and the equipment artboards draw in their own headers: its domes are
-`#161615`, which is `--ednb-palette-panel-4`, the plate the bar is painted on, so
-the bar's colour and that asset move together.
+the plain `nav-beacon-mark.svg`, with `-light` for a bone ground and `-mono` for
+a single ink; `scripts/generate-brand-assets.mjs` renders every icon, the favicon
+and the link card from the plain one, because those are drawn on the page ground
+its domes are filled with. The bar takes `-header`, which is what every product
+artboard draws in its own header — 1a, 1b, 1c, 1d, 4c, 4d and both equipment
+artboards. Its domes are `#161615`, which is `--ednb-palette-panel-4`, the plate
+the bar is painted on, so the bar's colour and that asset move together.
 
 The press baseline is paid by a box **around** the mark, never by the mark
 itself. Where the insignia is the way home it is a mark inside a link: the link

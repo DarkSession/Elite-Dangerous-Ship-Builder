@@ -679,13 +679,19 @@ function stylesheetViolations(file, source) {
  * most heavily. A stale prefix here silently empties every token defined from
  * it.
  */
+export function governedStylesheetViolations(relativePath, found, scope = SCOPE) {
+  return scope.tokenSources.includes(relativePath)
+    ? found.filter((violation) => violation.rule === 'foreign-token-namespace')
+    : found;
+}
+
 async function checkStylesheet(file) {
   const relativePath = relative(ROOT, file).split('\\').join('/');
-  const found = stylesheetViolations(file, await readFile(file, 'utf8'));
   violations.push(
-    ...(SCOPE.tokenSources.includes(relativePath)
-      ? found.filter((violation) => violation.rule === 'foreign-token-namespace')
-      : found),
+    ...governedStylesheetViolations(
+      relativePath,
+      stylesheetViolations(file, await readFile(file, 'utf8')),
+    ),
   );
 }
 
@@ -2827,6 +2833,7 @@ export const rules = {
   copiedSchematicViolations,
   componentMetadataViolations,
   stylesheetViolations,
+  governedStylesheetViolations,
   previewCoverageViolations,
   testDisciplineViolations,
   duplicatedStepViolations,
