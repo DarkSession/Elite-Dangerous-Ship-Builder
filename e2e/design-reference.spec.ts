@@ -167,6 +167,13 @@ test.describe('the reference visual language', () => {
     await buildStockHull(page, 'Build');
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
+    // Back to the top first. What is asserted here is what the decks paint over
+    // the press box, and on a short viewport the banner is released and scrolls
+    // away with the page (011/FR-011) — so reaching the bench leaves the bar
+    // above the viewport, where every sample point hits nothing at all and the
+    // reading says "covered" for a reason that is not painting.
+    await page.evaluate(() => window.scrollTo(0, 0));
+
     const covered = await page.locator('.frame__flag-home').evaluate((link) => {
       const box = link.getBoundingClientRect();
       const points = [0.02, 0.5, 0.98].flatMap((x) =>
