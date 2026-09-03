@@ -1,0 +1,12 @@
+@use '../../../../styles/responsive' as layout;
+
+// The canvas's `CLEAR SLOT` line at the foot of the picker, over the same rule
+// that separates every other row in it.
+.chooser__clear {
+  @include layout.control-quiet;
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  margin-block-start: var(--ednb-space-rule);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+}

@@ -214,7 +214,7 @@ choice and match the equipment library.
       `src/app/features/equipment/suit-tools/suit-tools.html` and
       `src/app/features/equipment/commander-stats/commander-stats.html`, so held and locked read as
       text rather than as dimming
-- [X] T038 [US1] Run `e2e/equipment-builder.spec.ts` green across the ten projects and add the axe
+- [x] T038 [US1] Run `e2e/equipment-builder.spec.ts` green across the ten projects and add the axe
       sweep over the bench in `e2e/accessibility/` for the US1 surfaces — the sweep is
       `e2e/equipment-accessibility.spec.ts`, beside `e2e/outfitting-accessibility.spec.ts` and
       calling the same `sweepOutfittingState`, because `e2e/accessibility/` holds the helpers rather
@@ -234,30 +234,34 @@ removed.
 
 ### Tests for User Story 2
 
-- [ ] T039 [P] [US2] Write the US2 journey in `e2e/equipment-builder.spec.ts` — open slots, fit,
+- [x] T039 [P] [US2] Write the US2 journey in `e2e/equipment-builder.spec.ts` — open slots, fit,
       read the materials, remove, and watch the total move
-- [ ] T040 [P] [US2] Write the locked-slot case in `e2e/equipment-builder.spec.ts`: fit in slot 4 at
+- [x] T040 [P] [US2] Write the locked-slot case in `e2e/equipment-builder.spec.ts`: fit in slot 4 at
       grade 5, drop to grade 3, and confirm the modification is held, uncounted, and returns
 
 ### Implementation for User Story 2
 
-- [ ] T041 [US2] Draw the four modification slots with their open and locked states in
+- [x] T041 [US2] Draw the four modification slots with their open and locked states in
       `src/app/features/equipment/item-view/modification-slots.ts`, `.html`, `.scss` and
       `.spec.ts` — locked slots present, never hidden, keeping their contents (FR-008, FR-011)
-- [ ] T042 [US2] Offer only the recipes a slot accepts, once per item, in
+- [x] T042 [US2] Offer only the recipes a slot accepts, once per item, in
       `src/app/features/equipment/item-view/modification-chooser.ts`, `.html`, `.scss` and
       `.spec.ts`, with a clear-slot control in the chooser rather than on hover (FR-009, FR-012)
-- [ ] T043 [US2] Name the engineers who grant each modification in
+- [x] T043 [US2] Name the engineers who grant each modification in
       `src/app/features/equipment/item-view/modification-chooser.html` and `.spec.ts` (FR-010)
-- [ ] T044 [US2] State a recipe with no published magnitude as fitted with no numeric change — never
+- [x] T044 [US2] State a recipe with no published magnitude as fitted with no numeric change — never
       a zero — in `src/app/features/equipment/item-view/modification-slots.html` and `.spec.ts`
-- [ ] T045 [US2] Build the material requirements region in
+- [x] T045 [US2] Build the material requirements region in
       `src/app/features/equipment/material-requirements/material-requirements.ts`, `.html`, `.scss`
       and `.spec.ts`, composed from `src/app/ui/outfitting/material-lines`, with the
       `n TYPES · n UNITS` summary
-- [ ] T046 [P] [US2] Register the US2 regions and their states in
-      `src/app/ui/previews/preview-manifest.ts`
-- [ ] T047 [US2] Add the `MATERIALS` tab to the compact layout in
+- [x] T046 [P] [US2] Register the US2 regions and their states in
+      `src/app/ui/previews/preview-manifest.ts` — **narrowed as T033 was**, and for the same
+      reason: the three US2 surfaces are fed presenter view models carrying package figures. The row
+      shape all three choosers share is registered as `choice-list`, whose `disabled` state is a
+      recipe another slot holds, marked and refused; the regions themselves are swept as the bench
+      in `e2e/equipment-accessibility.spec.ts`
+- [x] T047 [US2] Add the `MATERIALS` tab to the compact layout in
       `src/app/features/equipment/equipment-bench.page.html` and `.spec.ts`
 - [ ] T048 [US2] Run the US2 journeys green across the ten projects and extend the axe sweep in
       `e2e/accessibility/` to the chooser and the materials region

@@ -1,7 +1,7 @@
 @if (tools().length > 0) {
   <section class="tools" [attr.aria-labelledby]="headingId">
     <div class="tools__rule">
-      <h3 class="tools__heading" [id]="headingId">{{ heading() }}</h3>
+      <h2 class="tools__heading" [id]="headingId">{{ heading() }}</h2>
       <span class="tools__line" aria-hidden="true"></span>
       <!-- The canvas writes a bare number at the rule's trailing edge. What it
            counts is spoken beside it rather than drawn, so the rule reads as

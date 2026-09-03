@@ -54,6 +54,7 @@
           [showBack]="composition() !== 'wide'"
           (gradeChosen)="setGrade($event)"
           (chooserOpened)="chooserOpen.set(true)"
+          (slotOpened)="slotOpen.set($event)"
           (closed)="closeItem()"
         />
       </section>
@@ -68,7 +69,29 @@
         >
           <edsb-commander-stats [stats]="presenter.stats()" />
         </section>
+
+        <!-- Canvas 1a puts the material requirements under the stats in the
+             same column; canvas 1b gives them a tab of their own. -->
+        @if (composition() === 'wide') {
+          <section
+            class="bench__region bench__region--materials"
+            [id]="materialsPanelId"
+            [attr.aria-label]="materialsLabel()"
+          >
+            <edsb-material-requirements [materials]="presenter.materials()" />
+          </section>
+        }
       </div>
+    }
+
+    @if (composition() !== 'wide' && tab() === 'materials') {
+      <section
+        class="bench__region bench__region--materials"
+        [id]="materialsPanelId"
+        [attr.aria-label]="materialsLabel()"
+      >
+        <edsb-material-requirements [materials]="presenter.materials()" />
+      </section>
     }
   }
 
@@ -78,5 +101,14 @@
     [title]="chooserTitle()"
     (chosen)="fit($event)"
     (dismissed)="chooserOpen.set(false)"
+  />
+
+  <edsb-modification-chooser
+    [open]="slotOpen() !== null"
+    [target]="store.selected()"
+    [slot]="slotOpen()"
+    (chosen)="fitModification($event)"
+    (cleared)="clearSlot()"
+    (dismissed)="slotOpen.set(null)"
   />
 </section>

@@ -168,6 +168,32 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'screen-reader',
   },
   {
+    surfaceId: 'equipment/modifications',
+    requirements: ['013/FR-008', '013/FR-009', '013/FR-010', '013/FR-011', '013/FR-012'],
+    journey: 'equipment/bench',
+    axe: true,
+    assertions: [
+      'four slots are drawn at every grade, locked ones present and stated',
+      'a recipe another slot holds is drawn, marked and refused',
+      'each recipe names the engineers who grant it',
+      'clearing a slot is a control in the chooser rather than one that appears on hover',
+      'a slot the grade no longer opens keeps what is in it and gives it back',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'equipment/materials',
+    requirements: ['013/FR-013', '013/FR-014', '013/FR-015'],
+    journey: 'equipment/bench',
+    axe: true,
+    assertions: [
+      'the list is the sum of every fitted, unlocked modification, commonest first',
+      'a held modification counts nothing',
+      'the block says what the total covers, and says when there is nothing to gather',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'shell/tool-navigation',
     requirements: ['011/FR-028', '011/SC-009'],
     journey: 'product/semantics',

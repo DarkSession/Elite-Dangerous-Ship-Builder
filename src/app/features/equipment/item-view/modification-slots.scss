@@ -1,0 +1,126 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's `MODIFICATION SLOTS` block: a ruled heading over a two-column
+// grid of cells, each a numbered square beside a name and a status line.
+:host {
+  display: block;
+}
+
+.slots {
+  @include layout.stack(var(--ednb-space-md));
+
+  padding-inline: var(--ednb-space-3xl);
+}
+
+.slots__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+}
+
+.slots__heading {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.slots__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+// Two columns where there is room for two, one where there is not. The cells
+// carry a name that must not be clipped, so the track has a floor rather than
+// an equal share of whatever the column happens to be.
+.slots__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--ednb-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slots__slot {
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline-tight);
+  padding: var(--ednb-space-sm) var(--ednb-space-md);
+  background-color: var(--ednb-surface-row);
+  // Dashed while the slot stands open and nothing is in it, as the canvas
+  // draws it: an outline for something a Commander may still put there.
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-control-quiet);
+  color: inherit;
+  text-align: start;
+}
+
+.slots__slot--filled {
+  background-color: var(--ednb-surface-panel-raised);
+  border-style: solid;
+}
+
+.slots__slot--locked {
+  background-color: transparent;
+  border-style: solid;
+  border-color: var(--ednb-border-decorative);
+  color: var(--ednb-text-faint);
+}
+
+.slots__number {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-count));
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--ednb-layout-step-number);
+  block-size: var(--ednb-layout-step-number);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control-quiet);
+}
+
+.slots__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.slots__name {
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-emphasis);
+  color: var(--ednb-text-primary);
+}
+
+.slots__name--empty {
+  font-weight: var(--ednb-text-weight-prose);
+  font-style: italic;
+  color: var(--ednb-text-subtle);
+}
+
+.slots__status {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+}
+
+.slots__mark {
+  flex: none;
+  inline-size: var(--ednb-text-size-micro);
+  color: var(--ednb-text-faint);
+  font-family: var(--ednb-font-mono);
+  font-size: var(--ednb-text-size-micro);
+  stroke-width: 1.1;
+}
+
+.slots__slot--locked,
+.slots__slot--locked .slots__name,
+.slots__slot--locked .slots__number {
+  color: var(--ednb-text-faint);
+}

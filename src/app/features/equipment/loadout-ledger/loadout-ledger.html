@@ -2,7 +2,7 @@
   @if (ledger().suit; as suit) {
     <section class="ledger__group" [attr.aria-labelledby]="suitHeadingId">
       <div class="ledger__rule">
-        <h3 class="ledger__heading" [id]="suitHeadingId">{{ suitLabel() }}</h3>
+        <h2 class="ledger__heading" [id]="suitHeadingId">{{ suitLabel() }}</h2>
         <span class="ledger__line" aria-hidden="true"></span>
         <span class="ledger__count" aria-hidden="true">1</span>
         <span class="visually-hidden">{{ suitCount() }}</span>
@@ -20,7 +20,7 @@
 
     <section class="ledger__group" [attr.aria-labelledby]="weaponsHeadingId">
       <div class="ledger__rule">
-        <h3 class="ledger__heading" [id]="weaponsHeadingId">{{ weaponsLabel() }}</h3>
+        <h2 class="ledger__heading" [id]="weaponsHeadingId">{{ weaponsLabel() }}</h2>
         <span class="ledger__line" aria-hidden="true"></span>
         <span class="ledger__count" aria-hidden="true">{{ ledger().weaponCount }}</span>
         <span class="visually-hidden">{{ weaponCount() }}</span>

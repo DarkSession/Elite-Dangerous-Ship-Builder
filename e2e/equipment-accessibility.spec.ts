@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { sweepOutfittingState } from './accessibility';
 
 /**
@@ -14,6 +14,11 @@ import { sweepOutfittingState } from './accessibility';
 
 const RIFLE_MOUNT = 'PrimaryWeapon1';
 
+/** The rows of whichever chooser is open: both draw the same row. */
+function choices(page: Page): Locator {
+  return page.locator('dialog[open] .choice');
+}
+
 async function chooseSuit(page: Page, name: string): Promise<void> {
   const empty = page.locator('.bench__empty-action');
   if ((await empty.count()) > 0) {
@@ -21,13 +26,18 @@ async function chooseSuit(page: Page, name: string): Promise<void> {
   } else {
     await page.locator('.item__swap').click();
   }
-  await page.locator('.choice', { hasText: name }).click();
+  await choices(page).filter({ hasText: name }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 }
 
-async function openRow(page: Page, target: string): Promise<void> {
-  const tab = page.getByRole('tab', { name: 'Loadout' });
+/** Selects a compact tab. The wide composition draws every region at once. */
+async function showTab(page: Page, label: string): Promise<void> {
+  const tab = page.getByRole('tab', { name: label });
   if ((await tab.count()) > 0) await tab.click();
+}
+
+async function openRow(page: Page, target: string): Promise<void> {
+  await showTab(page, 'Loadout');
   if ((await page.locator('.bench__region--loadout').count()) === 0) {
     await page.locator('.item__back').click();
   }
@@ -49,15 +59,34 @@ test.describe('every bench state', () => {
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, RIFLE_MOUNT);
     await page.locator('.item__swap').click();
-    await page.locator('.choice').first().click();
+    await choices(page).first().click();
 
     await sweepOutfittingState(page, testInfo, 'loadout');
 
     await openRow(page, RIFLE_MOUNT);
     await page.locator('.item__swap').click();
-    await expect(page.locator('.choices')).toBeVisible();
+    await expect(choices(page).first()).toBeVisible();
 
     await sweepOutfittingState(page, testInfo, 'weapon chooser');
+  });
+
+  test('a fitted modification, and the slot chooser that fitted it', async ({ page }, testInfo) => {
+    await page.goto('/equipment');
+    await expect(page.locator('.bench__empty-action')).toBeVisible();
+    await chooseSuit(page, 'Dominator Suit');
+    await openRow(page, 'suit');
+    await page.locator('.grade').last().click();
+
+    await openRow(page, 'suit');
+    await page.locator('.slots__slot[data-slot="0"]').click();
+    await expect(page.locator('.chooser__clear')).toBeVisible();
+
+    await sweepOutfittingState(page, testInfo, 'modification chooser');
+
+    await choices(page).first().click();
+    await showTab(page, 'Materials');
+
+    await sweepOutfittingState(page, testInfo, 'material requirements');
   });
 
   test('a mount the worn suit does not carry reads as held, in words', async ({
@@ -68,7 +97,7 @@ test.describe('every bench state', () => {
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, 'PrimaryWeapon2');
     await page.locator('.item__swap').click();
-    await page.locator('.choice').first().click();
+    await choices(page).first().click();
     await openRow(page, 'suit');
     await chooseSuit(page, 'Maverick Suit');
 

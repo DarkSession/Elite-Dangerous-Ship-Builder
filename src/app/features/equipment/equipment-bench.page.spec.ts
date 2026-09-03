@@ -57,7 +57,7 @@ describe('EquipmentBenchPage', () => {
     expect(bench.querySelectorAll('.bench__region').length).toBe(0);
   });
 
-  it('draws the ledger, the item view and the stats side by side where there is room', () => {
+  it('draws the ledger, the item view and the commander column where there is room', () => {
     const restore = declareWideBench();
     try {
       wear();
@@ -65,10 +65,12 @@ describe('EquipmentBenchPage', () => {
         region.getAttribute('aria-label'),
       );
 
+      // Canvas 1a's three columns, with the materials block under the stats.
       expect(named).toEqual([
         BUNDLED_ENGLISH['equipment.region.loadout'],
         BUNDLED_ENGLISH['equipment.region.item'],
         BUNDLED_ENGLISH['equipment.region.stats'],
+        BUNDLED_ENGLISH['equipment.region.materials'],
       ]);
     } finally {
       restore();
@@ -81,6 +83,20 @@ describe('EquipmentBenchPage', () => {
 
     expect(bench.querySelector('edsb-tab-group')).not.toBeNull();
     expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
+    expect(bench.querySelector('.bench__region--stats')).toBeNull();
+  });
+
+  it('gives the materials a tab of their own where the columns do not fit', () => {
+    wear();
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    const bench = fixture.nativeElement as HTMLElement;
+    expect(bench.querySelector('.bench__region--materials')).toBeNull();
+
+    fixture.componentInstance.showTab('materials');
+    fixture.detectChanges();
+
+    expect(bench.querySelector('.bench__region--materials')).not.toBeNull();
     expect(bench.querySelector('.bench__region--stats')).toBeNull();
   });
 

@@ -1,7 +1,7 @@
 @if (stats(); as stats) {
   <div class="stats">
     <section class="stats__block" [attr.aria-labelledby]="shieldsHeadingId">
-      <h3 class="stats__heading" [id]="shieldsHeadingId">{{ shieldsLabel() }}</h3>
+      <h2 class="stats__heading" [id]="shieldsHeadingId">{{ shieldsLabel() }}</h2>
 
       <edsb-metric-group [label]="shieldsLabel()" [metrics]="shieldFigures()" />
 
@@ -21,7 +21,7 @@
 
     @if (stats.firepower.length > 0) {
       <section class="stats__block" [attr.aria-labelledby]="firepowerHeadingId">
-        <h3 class="stats__heading" [id]="firepowerHeadingId">{{ firepowerLabel() }}</h3>
+        <h2 class="stats__heading" [id]="firepowerHeadingId">{{ firepowerLabel() }}</h2>
 
         <ul class="stats__firepower">
           @for (row of stats.firepower; track row.mount) {

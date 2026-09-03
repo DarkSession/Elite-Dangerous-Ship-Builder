@@ -1,0 +1,32 @@
+<section class="materials" [attr.aria-labelledby]="headingId">
+  <div class="materials__rule">
+    <h2 class="materials__heading" [id]="headingId">{{ heading() }}</h2>
+    @if (materials().summary; as summary) {
+      <p class="materials__summary">{{ summary }}</p>
+    }
+  </div>
+
+  @if (materials().lines.length > 0) {
+    <dl class="materials__list">
+      @for (line of materials().lines; track line.symbol) {
+        <div class="materials__row">
+          <dt class="materials__name">
+            <edsb-game-text
+              [text]="line.name.text"
+              [language]="line.name.language"
+              [translationState]="line.name.translationState"
+            />
+          </dt>
+          <dd class="materials__count" data-bidi-isolate>{{ line.count }}</dd>
+        </div>
+      }
+    </dl>
+  } @else {
+    <p class="materials__empty">{{ materials().emptyLabel }}</p>
+  }
+
+  <!-- The canvas's own footnote. What the total covers is not obvious from the
+       total, and a Commander gathering to it would otherwise find the count
+       short at the settlement. -->
+  <p class="materials__note">{{ note() }}</p>
+</section>

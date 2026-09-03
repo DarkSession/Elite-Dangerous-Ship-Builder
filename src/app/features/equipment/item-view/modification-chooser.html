@@ -1,0 +1,14 @@
+<edsb-layer
+  [open]="open()"
+  [title]="title()"
+  [dismissLabel]="closeLabel()"
+  presentation="adaptive"
+  (dismissed)="dismissed.emit()"
+>
+  <edsb-choice-list [choices]="choices()" [label]="title()" (chosen)="chosen.emit($event)" />
+
+  <!-- The canvas's `CLEAR SLOT`, at the foot of the picker: emptying a slot is
+       a choice made here, not a control that appears when a pointer is over
+       the slot (FR-012). -->
+  <button class="chooser__clear" type="button" (click)="cleared.emit()">{{ clearLabel() }}</button>
+</edsb-layer>

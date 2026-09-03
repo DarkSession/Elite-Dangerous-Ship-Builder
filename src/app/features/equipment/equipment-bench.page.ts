@@ -18,6 +18,8 @@ import { HISTORY_REDO_MARK, HISTORY_UNDO_MARK, ScreenChrome } from '../shared/sc
 import { CommanderStats } from './commander-stats/commander-stats';
 import { ItemView } from './item-view/item-view';
 import { LoadoutLedger } from './loadout-ledger/loadout-ledger';
+import { MaterialRequirements } from './material-requirements/material-requirements';
+import { ModificationChooser } from './item-view/modification-chooser';
 import { WeaponChooser } from './item-view/weapon-chooser';
 
 /** Which region the compact composition is showing. */
@@ -42,7 +44,15 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
  */
 @Component({
   selector: 'edsb-equipment-bench-page',
-  imports: [CommanderStats, ItemView, LoadoutLedger, TabGroup, WeaponChooser],
+  imports: [
+    CommanderStats,
+    ItemView,
+    LoadoutLedger,
+    MaterialRequirements,
+    ModificationChooser,
+    TabGroup,
+    WeaponChooser,
+  ],
   templateUrl: './equipment-bench.page.html',
   styleUrl: './equipment-bench.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,6 +70,7 @@ export class EquipmentBenchPage {
   readonly ledgerLabel = this.#messages.messageSignal('equipment.region.loadout');
   readonly itemLabel = this.#messages.messageSignal('equipment.region.item');
   readonly statsLabel = this.#messages.messageSignal('equipment.region.stats');
+  readonly materialsLabel = this.#messages.messageSignal('equipment.region.materials');
   readonly tabsLabel = this.#messages.messageSignal('equipment.tab.group');
   readonly emptyTitle = this.#messages.messageSignal('equipment.no-loadout.title');
   readonly emptyDescription = this.#messages.messageSignal('equipment.no-loadout.description');
@@ -68,6 +79,7 @@ export class EquipmentBenchPage {
 
   readonly loadoutPanelId = relationId('bench-loadout');
   readonly statsPanelId = relationId('bench-stats');
+  readonly materialsPanelId = relationId('bench-materials');
 
   readonly tab = signal<BenchTab>('loadout');
 
@@ -77,14 +89,10 @@ export class EquipmentBenchPage {
   /** Whether the chooser for the selected item is open. */
   readonly chooserOpen = signal(false);
 
-  /**
-   * Canvas 1b's tab strip.
-   *
-   * `LOADOUT` and `STATS` while US1 is what ships: a tab names a panel it can
-   * point at, and `MATERIALS` joins the strip together with the region it
-   * controls (US2) rather than standing here first as a tab pointing at
-   * nothing.
-   */
+  /** Which modification slot has its chooser open, or none. */
+  readonly slotOpen = signal<number | null>(null);
+
+  /** Canvas 1b's tab strip: one tab per region, each naming the panel it opens. */
   readonly tabs = computed<readonly TabItem[]>(() => [
     {
       id: 'loadout',
@@ -95,6 +103,11 @@ export class EquipmentBenchPage {
       id: 'stats',
       label: this.#messages.message('equipment.tab.stats'),
       panelId: this.statsPanelId,
+    },
+    {
+      id: 'materials',
+      label: this.#messages.message('equipment.tab.materials'),
+      panelId: this.materialsPanelId,
     },
   ]);
 
@@ -170,7 +183,26 @@ export class EquipmentBenchPage {
   open(target: EditTarget): void {
     this.store.select(target);
     this.chooserOpen.set(false);
+    this.slotOpen.set(null);
     this.drilledIn.set(true);
+  }
+
+  /** Fits what the modification chooser answered, into the slot it was opened for. */
+  fitModification(symbol: string): void {
+    const target = this.store.selected();
+    const slot = this.slotOpen();
+    if (target === null || slot === null) return;
+    this.store.dispatch({ kind: 'fitModification', target, slot, symbol });
+    this.slotOpen.set(null);
+  }
+
+  /** Empties the open slot, which is a choice made in the chooser (FR-012). */
+  clearSlot(): void {
+    const target = this.store.selected();
+    const slot = this.slotOpen();
+    if (target === null || slot === null) return;
+    this.store.dispatch({ kind: 'clearSlot', target, slot });
+    this.slotOpen.set(null);
   }
 
   /** Leaves the compact drill-in, back to the ledger it was opened from. */

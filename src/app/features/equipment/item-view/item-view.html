@@ -50,6 +50,14 @@
       {{ item.chooserTitle }}
     </button>
 
+    @if (item.slots; as slots) {
+      <edsb-modification-slots
+        [slots]="slots"
+        [heading]="item.slotsHeading"
+        (opened)="slotOpened.emit($event)"
+      />
+    }
+
     @if (item.noUpgradeNotice; as notice) {
       <!-- Four locked slots with nothing to explain them would say the suit
            could be upgraded and this bench would not let you. It says what is

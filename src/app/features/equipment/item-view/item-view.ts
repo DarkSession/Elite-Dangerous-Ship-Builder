@@ -5,6 +5,7 @@ import { relationId } from '../../../ui/a11y/text-equivalence';
 import { GameText } from '../../../ui/components/game-text/game-text';
 import { MetricGroup } from '../../../ui/components/metric-group/metric-group';
 import { GradeSelector } from '../../../ui/outfitting/grade-selector';
+import { ModificationSlots } from './modification-slots';
 
 /**
  * The selected item: what it is, what grade it is at, and what it is worth.
@@ -24,7 +25,7 @@ import { GradeSelector } from '../../../ui/outfitting/grade-selector';
  */
 @Component({
   selector: 'edsb-item-view',
-  imports: [GameText, GradeSelector, MetricGroup],
+  imports: [GameText, GradeSelector, MetricGroup, ModificationSlots],
   templateUrl: './item-view.html',
   styleUrl: './item-view.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +41,8 @@ export class ItemView {
 
   readonly gradeChosen = output<number>();
   readonly chooserOpened = output<void>();
+  /** Which of the item's four modification slots a Commander opened. */
+  readonly slotOpened = output<number>();
   readonly closed = output<void>();
 
   readonly headingId = relationId('item-heading');

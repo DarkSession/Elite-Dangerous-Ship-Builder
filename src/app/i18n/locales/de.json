@@ -932,6 +932,7 @@
   "equipment.stats.dps": "{{value}} dps",
   "equipment.materials.summary": "{{types}} Arten · {{units}} Einheiten",
   "equipment.materials.empty": "Keine Modifikationen eingebaut — nichts zu sammeln.",
+  "equipment.materials.note": "Deckt eine Anwendung jeder eingebauten Modifikation ab. Gradverbesserungen werden separat in einer Siedlung bezahlt.",
   "equipment.chooser.suit": "Anzug wechseln",
   "equipment.chooser.weapon.primary": "Primärwaffe wechseln",
   "equipment.chooser.weapon.secondary": "Sekundärwaffe wechseln",

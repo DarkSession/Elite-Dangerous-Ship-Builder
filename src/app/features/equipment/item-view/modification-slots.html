@@ -1,0 +1,59 @@
+<section class="slots" [attr.aria-labelledby]="headingId">
+  <div class="slots__rule">
+    <h3 class="slots__heading" [id]="headingId">{{ heading() }}</h3>
+    <span class="slots__line" aria-hidden="true"></span>
+  </div>
+
+  <ul class="slots__grid">
+    @for (slot of slots(); track slot.slot) {
+      <li>
+        <!--
+          The whole cell is the control, as the canvas draws it: nothing inside
+          it is another control, and its `aria-label` says the slot, what is in
+          it and what state it is in as one sentence — the parts read separately
+          are a bare number, a name and a code line.
+        -->
+        <button
+          class="slots__slot"
+          type="button"
+          [class.slots__slot--locked]="slot.locked"
+          [class.slots__slot--filled]="slot.name !== null"
+          [attr.data-slot]="slot.slot"
+          [attr.aria-disabled]="slot.locked ? 'true' : null"
+          [attr.aria-label]="slot.accessibleName"
+          (click)="open(slot)"
+        >
+          <span class="slots__number" aria-hidden="true">{{ slot.number }}</span>
+
+          <span class="slots__identity">
+            @if (slot.name) {
+              <edsb-game-text
+                class="slots__name"
+                [text]="slot.name.text"
+                [language]="slot.name.language"
+                [translationState]="slot.name.translationState"
+              />
+            } @else {
+              <span class="slots__name slots__name--empty">{{ slot.emptyLabel }}</span>
+            }
+            <span class="slots__status">{{ slot.status }}</span>
+          </span>
+
+          <!--
+            The canvas's padlock on a locked slot and its `+` on an empty open
+            one. Both are decoration: the status line beside them already says
+            which state the slot is in, in words.
+          -->
+          @if (slot.locked) {
+            <svg class="slots__mark" viewBox="0 0 11 13" aria-hidden="true" focusable="false">
+              <path d="M2.2 5.5V3.6a3.3 3.3 0 0 1 6.6 0v1.9" fill="none" stroke="currentColor" />
+              <rect x="0.8" y="5.5" width="9.4" height="6.8" fill="none" stroke="currentColor" />
+            </svg>
+          } @else if (slot.name === null) {
+            <span class="slots__mark" aria-hidden="true">+</span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+</section>

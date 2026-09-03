@@ -932,6 +932,7 @@
   "equipment.stats.dps": "{{value}} dps",
   "equipment.materials.summary": "{{types}} types · {{units}} units",
   "equipment.materials.empty": "No modifications fitted — nothing to gather.",
+  "equipment.materials.note": "Covers one application of each fitted modification. Grade upgrades are paid separately at a settlement.",
   "equipment.chooser.suit": "Swap suit",
   "equipment.chooser.weapon.primary": "Swap primary weapon",
   "equipment.chooser.weapon.secondary": "Swap secondary weapon",
