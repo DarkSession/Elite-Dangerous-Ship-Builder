@@ -92,7 +92,7 @@ model change breaks the codec's contract the moment it is made.
       `MOUNT_SLOTS` from `scripts/generate-equipment-link-codec-tables.mjs`, keeping `SUIT_MOUNTS`
       as the per-suit membership the decoder checks against
 - [x] T007 Regenerate `src/app/domain/equipment/loadout-link/equipment-link-table-1.json` with
-      `pnpm run codec:tables:equipment -- --overwrite` and re-pin its content hash in
+      `node scripts/generate-equipment-link-codec-tables.mjs --overwrite` followed by `pnpm run codec:tables:equipment` and re-pin its content hash in
       `src/app/domain/equipment/loadout-link/equipment-link-codec.spec.ts`
 - [x] T008 Write and read one mount field per `MOUNTS` entry in
       `src/app/domain/equipment/loadout-link/equipment-link-codec.ts`, checking each weapon against
@@ -263,7 +263,7 @@ removed.
       in `e2e/equipment-accessibility.spec.ts`
 - [x] T047 [US2] Add the `MATERIALS` tab to the compact layout in
       `src/app/features/equipment/equipment-bench.page.html` and `.spec.ts`
-- [X] T048 [US2] Run the US2 journeys green across the ten projects and extend the axe sweep in
+- [x] T048 [US2] Run the US2 journeys green across the ten projects and extend the axe sweep in
       `e2e/accessibility/` to the chooser and the materials region
 
 **Checkpoint**: US1 and US2 both work independently.
@@ -279,37 +279,37 @@ with the suit, grade, weapons, grades and modifications it was saved with.
 
 ### Tests for User Story 3
 
-- [X] T049 [P] [US3] Write the US3 journey in `e2e/equipment-library.spec.ts` — save, reload, open
+- [x] T049 [P] [US3] Write the US3 journey in `e2e/equipment-library.spec.ts` — save, reload, open
       from `/builds`, and delete
-- [X] T050 [P] [US3] Write the migration and refusal cases in
+- [x] T050 [P] [US3] Write the migration and refusal cases in
       `src/app/domain/records/local-record.spec.ts`: a version 1 record opens as a ship build, and a
       loadout this version cannot rebuild is reported unopenable and left byte-for-byte alone
 
 ### Implementation for User Story 3
 
-- [X] T051 [US3] Create the shared envelope in `src/app/domain/records/local-record.ts` and
+- [x] T051 [US3] Create the shared envelope in `src/app/domain/records/local-record.ts` and
       `.spec.ts` — version 2, the `tool` discriminator, and the fields both tools share
       ([contracts/loadout-persistence.md](./contracts/loadout-persistence.md))
-- [X] T052 [US3] Move the ship variant onto it in `src/app/domain/ships/build/stored-build.ts`,
+- [x] T052 [US3] Move the ship variant onto it in `src/app/domain/ships/build/stored-build.ts`,
       `stored-build.parser.ts`, `stored-build.serializer.ts` and their `.spec.ts` files, leaving
       behaviour unchanged
-- [X] T053 [US3] Migrate version 1 to version 2 on open — never on enumeration — in
+- [x] T053 [US3] Migrate version 1 to version 2 on open — never on enumeration — in
       `src/app/domain/ships/build/record-migrations.ts` and `record-migrations.spec.ts`, stamping
       `tool: 'ship'` where the field is absent
-- [X] T054 [US3] Create the equipment variant in
+- [x] T054 [US3] Create the equipment variant in
       `src/app/domain/equipment/loadout/stored-loadout.serializer.ts` and `.spec.ts`, built field by
       field so no stated figure or catalogue fact can reach storage
-- [X] T055 [US3] Read the discriminator when listing in
+- [x] T055 [US3] Read the discriminator when listing in
       `src/app/application/build-library/build-library.store.ts` and
       `src/app/application/build-library/record-open.service.ts`, so a row is summarised without
       reconstructing a loadout
-- [X] T056 [US3] Give a saved row its tool identity in
+- [x] T056 [US3] Give a saved row its tool identity in
       `src/app/ui/components/saved-build-card/` — a hull for one tool, a suit for the other — with
       its preview states in `src/app/ui/previews/preview-manifest.ts`
-- [X] T057 [US3] Wire naming, saving and the overwrite-or-keep-both question into
+- [x] T057 [US3] Wire naming, saving and the overwrite-or-keep-both question into
       `src/app/features/equipment/equipment-bench.page.ts` and `.spec.ts` through the existing
       `src/app/application/build-library/save-conflict.service.ts` (FR-016, FR-017)
-- [X] T058 [US3] Run `e2e/equipment-library.spec.ts` green across the ten projects
+- [x] T058 [US3] Run `e2e/equipment-library.spec.ts` green across the ten projects
 
 **Checkpoint**: loadouts persist beside builds in one library.
 
@@ -324,35 +324,35 @@ loadout and the readable summary names every fitted item.
 
 ### Tests for User Story 4
 
-- [X] T059 [P] [US4] Write the US4 journey in `e2e/equipment-link.spec.ts` — copy the link, open it,
+- [x] T059 [P] [US4] Write the US4 journey in `e2e/equipment-link.spec.ts` — copy the link, open it,
       and confirm the loadout is restored including its held content
-- [X] T060 [P] [US4] Write the refusal case in `e2e/equipment-link.spec.ts`: a link naming an
+- [x] T060 [P] [US4] Write the refusal case in `e2e/equipment-link.spec.ts`: a link naming an
       unresolvable recipe says what failed, names the mount in words, and leaves the open loadout
       untouched
 
 ### Implementation for User Story 4
 
-- [X] T061 [US4] Create `src/app/application/equipment/loadout-link.coordinator.ts` and `.spec.ts` —
+- [x] T061 [US4] Create `src/app/application/equipment/loadout-link.coordinator.ts` and `.spec.ts` —
       fragment in and out on feature 001's `src/app/application/build-link/fragment-publisher.ts`,
       refusing atomically before activation
-- [X] T062 [US4] Add the equipment payload allowlist to
+- [x] T062 [US4] Add the equipment payload allowlist to
       `src/app/application/build-link/link-payload.allowlist.ts` and its `.spec.ts`, so nothing but
       chosen identities can enter a fragment
-- [X] T063 [US4] Select refusal wording by the codec that refused in
+- [x] T063 [US4] Select refusal wording by the codec that refused in
       `src/app/application/build-link/link-error.mapper.ts` and `.spec.ts`, and add the
       equipment-worded `link.error.*` entries to `src/app/i18n/locales/en.json` and `de.json`
       ([contracts/equipment-loadout-link.md](./contracts/equipment-loadout-link.md))
-- [X] T064 [US4] Name the mount a refusal is about through `getPersonalMountName` in
+- [x] T064 [US4] Name the mount a refusal is about through `getPersonalMountName` in
       `src/app/features/equipment/equipment-bench.page.ts` and `.spec.ts` — `PrimaryWeapon1` never
       reaches a screen (FR-021)
-- [X] T065 [US4] Build the export layer in
+- [x] T065 [US4] Build the export layer in
       `src/app/features/equipment/export-loadout-layer/export-loadout.dialog.ts`, `.html`, `.scss`
       and `.spec.ts` — share link, loadout JSON and plain text, composed from
       `src/app/ui/components/share-link-panel`
-- [X] T066 [US4] Write the readable summary in
+- [x] T066 [US4] Write the readable summary in
       `src/app/application/equipment/loadout-summary.ts` and `.spec.ts` — the suit and its grade,
       each weapon with its grade, and each fitted modification, every name localised
-- [X] T067 [US4] Run `e2e/equipment-link.spec.ts` green across the ten projects and add the axe
+- [x] T067 [US4] Run `e2e/equipment-link.spec.ts` green across the ten projects and add the axe
       sweep for the export layer in `e2e/accessibility/`
 
 **Checkpoint**: all four stories work independently.
@@ -361,27 +361,27 @@ loadout and the readable summary names every fitted item.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T068 [P] Record envelope version 2 and the `tool` discriminator in
+- [x] T068 [P] Record envelope version 2 and the `tool` discriminator in
       `docs/persistence-and-links.md`
-- [ ] T069 [P] Update the Status section of `docs/equipment-link-codec.md` — the codec has a
+- [x] T069 [P] Update the Status section of `docs/equipment-link-codec.md` — the codec has a
       consumer, and table 1's overwrite rule ends at the first published link
-- [ ] T070 [P] Add `scripts/policy/equipment-ownership.mjs` and its `.test.mjs`, asserting that no
+- [x] T070 [P] Add `scripts/policy/equipment-ownership.mjs` and its `.test.mjs`, asserting that no
       file outside `src/app/domain/equipment/readings/` states an equipment figure, and register it
       in the `policy` script in `package.json`
-- [ ] T071 [P] Add the German strings for every `equipment.*` key to
+- [x] T071 [P] Add the German strings for every `equipment.*` key to
       `src/app/i18n/locales/de.json`
-- [ ] T072 Confirm no horizontal page scrolling at any supported viewport in
+- [x] T072 Confirm no horizontal page scrolling at any supported viewport in
       `e2e/reflow.spec.ts` and `e2e/responsive.spec.ts` for the bench
-- [ ] T073 Confirm the bench works offline after first load in `e2e/offline.spec.ts` and
+- [x] T073 Confirm the bench works offline after first load in `e2e/offline.spec.ts` and
       `e2e/offline-privacy.spec.ts`, and that it makes no outbound request (FR-026, SC-006)
-- [ ] T074 Add the bench's surfaces to `e2e/coverage-ledger.ts`
-- [ ] T075 [P] Confirm text expansion and RTL survive the bench layout in
+- [x] T074 Add the bench's surfaces to `e2e/coverage-ledger.ts`
+- [x] T075 [P] Confirm text expansion and RTL survive the bench layout in
       `e2e/expansion-rtl.spec.ts`
-- [ ] T076 [P] Confirm reduced motion is respected in `e2e/reduced-motion.spec.ts`
-- [ ] T077 Record the manual screen-reader protocol in
+- [x] T076 [P] Confirm reduced motion is respected in `e2e/reduced-motion.spec.ts`
+- [x] T077 Record the manual screen-reader protocol in
       `specs/013-equipment-builder/design/screen-reader-record.md`
-- [ ] T078 Walk every scenario in [quickstart.md](./quickstart.md) against a running build
-- [ ] T079 Run `pnpm run check` green — format, typecheck, build, unit coverage at the 80% floor,
+- [x] T078 Walk every scenario in [quickstart.md](./quickstart.md) against a running build
+- [x] T079 Run `pnpm run check` green — format, typecheck, build, unit coverage at the 80% floor,
       the policy scripts, and the full ten-project Playwright matrix
 
 ---

@@ -6,6 +6,8 @@ import {
   expectNoDocumentOverflow,
   expectTargetSizes,
 } from './accessibility/assertions';
+import { BENCH_WIDE_MINIMUM_REM } from '../src/app/ui/equipment/bench-composition';
+import { STACKABLE_MINIMUM_REM } from '../src/app/ui/short-viewport';
 import { reachShellAction } from './shell';
 
 /**
@@ -19,6 +21,73 @@ import { reachShellAction } from './shell';
  * Runs in all ten projects, so each assertion is made at five viewport and
  * orientation profiles in both engines.
  */
+/**
+ * The bench at every profile.
+ *
+ * The shell's own journey above opens on the catalogue. The bench is the second
+ * tool and lays itself out on its own container rather than on the window, so
+ * the same claim is made of it directly: no capability is dropped and nothing
+ * is cut off at any of the ten profiles (013/FR-025).
+ */
+test.describe('the equipment bench, responsively', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/equipment');
+    await expect(page.locator('.bench')).toBeVisible();
+    // A suit on the bench, so what is measured is the loaded arrangement rather
+    // than the gate.
+    await page.locator('.gate__suits .choice').first().click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+  });
+
+  test('never scrolls the document horizontally', async ({ page }) => {
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('keeps every datum readable rather than clipping it', async ({ page }) => {
+    expect(await clippedText(page), 'content is cut off with no way to reach it').toEqual([]);
+  });
+
+  test('meets the target baseline at every profile', async ({ page }) => {
+    await expectTargetSizes(page);
+  });
+
+  test('keeps the landmarks at every profile', async ({ page }) => {
+    await expectLandmarks(page);
+  });
+
+  test('takes the arrangement its own width has room for', async ({ page }) => {
+    // The one decision the stylesheets cannot make, pinned against the width it
+    // is made from rather than against a profile name, so it holds in all ten.
+    //
+    // Both halves are asserted because both have failed: the composition read
+    // `compact` at 1440px while its host was an inline box, which is one
+    // `ResizeObserver` reports nothing at all for; and the three-column rule was
+    // a container query written against the same element that declared the
+    // container, which an element never matches.
+    const seen = await page.evaluate(
+      ([wideMinimum, stackableMinimum]) => {
+        const bench = document.querySelector('.bench') as HTMLElement;
+        const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        return {
+          roomForWide:
+            bench.getBoundingClientRect().width / rem >= wideMinimum &&
+            !matchMedia(`(max-height: ${stackableMinimum}rem)`).matches,
+          composition: bench.dataset['composition'],
+          columns: getComputedStyle(bench).gridTemplateColumns.split(' ').length,
+          tabs: document.querySelectorAll('.bench__tabs').length,
+        };
+      },
+      [BENCH_WIDE_MINIMUM_REM, STACKABLE_MINIMUM_REM] as const,
+    );
+
+    expect(seen.composition).toBe(seen.roomForWide ? 'wide' : 'compact');
+    // Wide is canvas 1a's three tracks and no tab strip; compact is one track
+    // and the strip that names the region standing in it.
+    expect(seen.columns).toBe(seen.roomForWide ? 3 : 1);
+    expect(seen.tabs).toBe(seen.roomForWide ? 0 : 1);
+  });
+});
+
 test.describe('responsive availability', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');

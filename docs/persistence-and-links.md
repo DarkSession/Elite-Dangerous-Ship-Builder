@@ -71,24 +71,50 @@ whether the build can be edited, calculated, shared or exported.
 
 ## Supported record versions
 
-Stored records are a versioned envelope, `format: "edsb.local-record"`, with the modelled build
-inside as `format: "edsb.build"`.
+Stored records are a versioned envelope, `format: "edsb.local-record"`, carrying one tool's payload:
+a modelled build as `format: "edsb.build"`, or a loadout as `format: "edsb.loadout"`.
 
-| Version | Status                                           |
-| ------- | ------------------------------------------------ |
-| 1       | Current. Written by this release and read by it. |
+| Version | Status                                                                      |
+| ------- | --------------------------------------------------------------------------- |
+| 1       | Superseded. Read by this release and migrated on open; never written by it. |
+| 2       | Current. Written by this release and read by it.                            |
+
+Version 2 adds one field: `tool`, which is `"ship"` or `"equipment"` and says which payload the
+envelope carries.
+
+```text
+edsb.local-record v2
+├── tool: "ship"       → hullSymbol, validation, build
+└── tool: "equipment"  → suitFamily, loadout
+```
+
+Everything else is shared by both: `format`, `version`, `id`, `kind`, `revisionId`, `createdAt`,
+`modifiedAt`, `name`, `note` and `sourceNamed`. **One key space and no index**: both tools' records
+live under `edsb:record:<uuid>`, and the library lists them together, each row naming the tool that
+made it. A row's summary comes from the envelope alone — for a loadout, its name and its
+`suitFamily` — so listing never rebuilds a loadout and never asks the package anything.
+
+A version 1 record has no `tool` field, and **its absence means `"ship"`**: every record written
+before the bench existed is a ship's, whether or not it says so. It migrates to version 2 on open.
 
 There is no version 0. Version 1 is the first published version, and a record declaring a version
-this release does not know is **not guessed at**: it is listed in the library as a build this
+this release does not know is **not guessed at**: it is listed in the library as a record this
 version cannot open, with whatever metadata could be read without guessing, and left byte-for-byte
-alone.
+alone. So is a record whose payload this release can read but whose identities the installed
+`@elite-dangerous-almanac/core` no longer carries — an unknown hull, suit, weapon or recipe. Nothing
+partial is ever opened.
 
 Migration happens on open, never on enumeration, and replaces a record's own key only after decode,
 migration, package reconstruction and re-serialisation have all succeeded. If any step fails the
 original bytes stay authoritative.
 
-The envelope carries record metadata and the modelled build. It never carries calculated values,
-catalogue facts, prices, purchase provenance or browsing state.
+The envelope carries record metadata and one tool's payload. It never carries calculated values,
+catalogue facts, prices, purchase provenance or browsing state. That holds for both tools: a stored
+loadout is a suit family, a grade, what is on each catalogue mount and what is in each modification
+slot — every shield figure, damage figure and material requirement is asked of the package on open.
+
+A saved loadout carries **every** catalogue mount and **every** modification slot, held or locked or
+neither, so saving is never destructive of a choice a Commander made.
 
 ## Published link versions
 
@@ -120,6 +146,24 @@ where the codec could name one, and offers the file export instead.
 The capacity behind the 500-character promise — the widest installed hull, every mount filled and
 engineered, both labels at their length limit — is asserted against the committed table by
 `scripts/build-link-codec-capacity.test.mjs`. The format itself is specified in
-[ship-link-codec.md](./ship-link-codec.md). The equipment builder's own link format, which shares
-that one's envelope and nothing above it, is specified in
-[equipment-link-codec.md](./equipment-link-codec.md).
+[ship-link-codec.md](./ship-link-codec.md).
+
+## The loadout link
+
+A loadout link is `<origin><base>/equipment#e.<payload>`, under the same 500-character bound and the
+same rules about what a fragment is. **The prefix is what claims it**: `b.` is the ship tool's and
+`e.` is the bench's, so a link minted by one is never offered to the other's decoder, and a fragment
+belonging to neither is left uninterpreted.
+
+What it carries is the suit family and grade, what is on each of the catalogue's three mounts with
+its grade, and the four modification slots of each item. It carries the catalogue's whole mount set
+rather than the worn suit's, which is what makes a weapon on a mount the suit does not offer
+expressible: held content round-trips instead of being dropped. What it never carries is the record
+a loadout was opened from, which item the item view is showing, the undo tape, or any figure the
+package can answer — enumerated beside the ship tool's list in
+`src/app/application/build-link/link-payload.allowlist.ts`.
+
+A loadout that cannot cross that boundary is refused rather than simplified, and so is a link that
+arrives unreadable: the bench keeps what is on it, the reason is stated where the Commander is, and
+the mount involved is named in the library's own words rather than by its journal key. The format is
+specified in [equipment-link-codec.md](./equipment-link-codec.md).

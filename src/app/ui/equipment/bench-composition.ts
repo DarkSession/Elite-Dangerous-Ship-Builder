@@ -1,4 +1,11 @@
-import { DestroyRef, ElementRef, inject, signal, type Signal } from '@angular/core';
+import {
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  inject,
+  signal,
+  type Signal,
+} from '@angular/core';
 import { SHORT_VIEWPORT } from '../short-viewport';
 
 /**
@@ -75,8 +82,16 @@ export function observeBenchComposition(): Signal<BenchComposition> {
     }
   });
   observer.observe(host);
-  width = host.getBoundingClientRect().width;
-  measure();
+
+  // Measured as soon as the host is in the document rather than only when the
+  // observer first reports. The observer's first delivery is a frame away, and
+  // until then the signal holds its initial `compact` — so a wide bench renders
+  // its tab strip once and takes it away again, which is a control that exists
+  // for a frame and a layout that has to be re-arranged after being built.
+  afterNextRender(() => {
+    width = host.getBoundingClientRect().width;
+    measure();
+  });
 
   inject(DestroyRef).onDestroy(() => observer.disconnect());
 

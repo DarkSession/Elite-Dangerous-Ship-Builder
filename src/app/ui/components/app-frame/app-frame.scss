@@ -560,6 +560,15 @@
 .frame__main {
   flex: 1 1 auto;
 
+  // A column, so a screen that draws to the bottom of the shell can say so. In
+  // block layout a routed page is content-height and a percentage floor on it
+  // resolves against nothing, because the height this box has is one the shell
+  // stretched it to rather than one it was given. Every page that does not ask
+  // to grow is laid out exactly as it was: a column flex item keeps its content
+  // height and takes the full width, which is what it had.
+  display: flex;
+  flex-direction: column;
+
   // The page stacks inside itself. Every `z-index` a screen sets is about the
   // order of that screen's own parts — a mark over a hull plate, a fill over a
   // track, a tip over the row it belongs to — and none of them is a claim about

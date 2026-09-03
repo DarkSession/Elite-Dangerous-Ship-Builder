@@ -1,5 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
+import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
+import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 
 /**
  * The bench's states, held to the same floor as every other surface.
@@ -106,5 +109,104 @@ test.describe('every bench state', () => {
     await chooseSuit(page, 'Maverick Suit');
 
     await sweepOutfittingState(page, testInfo, 'held mount');
+  });
+});
+
+/** Opens the bench and waits for the gate, which is what it opens on. */
+async function openBench(page: Page): Promise<void> {
+  await page.goto('/equipment');
+  await expect(page.locator('.gate')).toBeVisible();
+}
+
+/**
+ * The figures the commander column states, whatever language it states them in.
+ *
+ * The compact composition puts them behind a tab, and that tab is named in the
+ * reading language — so the label is passed in rather than assumed.
+ */
+async function figures(page: Page, statsTab = 'Stats'): Promise<string[]> {
+  await showTab(page, statsTab);
+  const stated = page.locator('.bench__region--stats .metric__number');
+  // The shields block states two figures for a worn suit. Waited for rather
+  // than read straight away: an empty list would compare equal to another one.
+  await expect(stated).toHaveCount(2);
+  return stated.allTextContents();
+}
+
+/** The digits of a figure, with the locale's own grouping taken out. */
+const digits = (value: string): string => value.replace(/\D/g, '');
+
+test.describe('the conditions that break layouts', () => {
+  test('mirrors the bench without mirroring a figure', async ({ page }) => {
+    await openBench(page);
+    await chooseSuit(page, 'Dominator Suit');
+    const before = await figures(page);
+
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await settled(page);
+
+    expect(await figures(page)).toEqual(before);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('an expanded translation keeps every reading and moves no package digit', async ({
+    browser,
+    baseURL,
+    page,
+  }) => {
+    // The first suit the chooser offers, in both languages: the order is the
+    // package's, and the name it is drawn under is the package's too — which is
+    // the library's own translation where it has one (constitution VI).
+    const wearFirst = async (target: Page): Promise<void> => {
+      await target.locator('.gate__suits .choice').first().click();
+      await expect(target.locator('.gate')).toHaveCount(0);
+    };
+
+    await openBench(page);
+    await wearFirst(page);
+    const before = await figures(page);
+
+    const context = await browser.newContext({ baseURL, locale: 'de-DE' });
+    const german = await context.newPage();
+    await openBench(german);
+    await wearFirst(german);
+
+    const after = await figures(german, germanMessages['equipment.tab.stats']);
+    expect(after).toHaveLength(before.length);
+    // German groups and separates its decimals differently. The digits are the
+    // package's and do not move because the words around them did.
+    for (const [index, value] of after.entries()) {
+      expect(digits(value)).toBe(digits(before[index] ?? ''));
+    }
+
+    await expectNoDocumentOverflow(german);
+    await context.close();
+  });
+
+  test('loses no reading at a doubled text size', async ({ page }) => {
+    await withRootTextScale(page, DOUBLED_TEXT);
+    await openBench(page);
+    await chooseSuit(page, 'Dominator Suit');
+
+    // Doubled text takes the bench to its compact arrangement, where the
+    // figures stand behind their own tab: the reading survives the size, in
+    // whichever arrangement the room allows.
+    expect(await figures(page)).toHaveLength(2);
+    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(4);
+    await expectNoDocumentOverflow(page);
+  });
+
+  test('loses no reading with motion removed', async ({ page }) => {
+    // The requirement is not less animation: it is that no reading was ever
+    // only reachable through one. The resistance bars are the part a transition
+    // could have been carrying, so the figures beside them are what is read.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openBench(page);
+    await chooseSuit(page, 'Dominator Suit');
+
+    await showTab(page, 'Stats');
+    await expect(page.locator('.bench__region--stats .metric__number')).toHaveCount(2);
+    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(4);
+    await page.emulateMedia({ reducedMotion: null });
   });
 });

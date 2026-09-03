@@ -128,6 +128,20 @@ test.describe('400% browser zoom', () => {
     expect(await clippedText(page), 'content is truncated with no way to read it').toEqual([]);
   });
 
+  test('holds the whole bench in view, with the choice that fills it', async ({ page }) => {
+    // The bench is the one screen with three regions side by side, so 400% zoom
+    // is where its arrangement has to give way rather than scroll sideways
+    // (013/FR-025).
+    await page.goto('/equipment');
+    await expect(page.locator('.bench')).toBeVisible();
+    await page.locator('.gate__suits .choice').first().click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+
+    await expectNoDocumentOverflow(page);
+    await expectTargetSizes(page);
+    expect(await clippedText(page), 'the bench is truncated with no way to read it').toEqual([]);
+  });
+
   test('presents a layer at full height rather than as a clipped dialog', async ({ page }) => {
     // The product shell owns no layer yet, so the assertion runs against the
     // real component at its own isolated preview address rather than being

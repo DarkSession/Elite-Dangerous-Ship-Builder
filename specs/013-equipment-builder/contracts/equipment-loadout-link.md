@@ -52,7 +52,7 @@ format now expresses; a loadout the game could never produce is still refused.
 
 ## Table version
 
-Table 1 is **regenerated in place** with `pnpm run codec:tables:equipment -- --overwrite`, and its
+Table 1 is **regenerated in place** with `node scripts/generate-equipment-link-codec-tables.mjs --overwrite` followed by `pnpm run codec:tables:equipment`, and its
 pinned content hash in `equipment-link-codec.spec.ts` is updated in the same change. This is sound
 for exactly as long as no link has been published, which
 [`docs/equipment-link-codec.md`](../../../docs/equipment-link-codec.md) states is true until the

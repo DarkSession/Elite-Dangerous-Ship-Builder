@@ -18,8 +18,11 @@ The format change of [contracts/equipment-loadout-link.md](./contracts/equipment
 lands here first, because everything that saves or shares a loadout stands on it.
 
 ```bash
-pnpm run codec:tables:equipment -- --overwrite
-pnpm test -- --run equipment-link-codec
+# `pnpm run … -- --overwrite` appends the flag to the prettier call, not to the
+# generator; invoke the generator directly and let the script format after it.
+node scripts/generate-equipment-link-codec-tables.mjs --overwrite
+pnpm run codec:tables:equipment
+pnpm exec ng test --include "**/equipment-link-codec.spec.ts"
 ```
 
 Expected: the table gains `MOUNT_SLOTS`, the pinned content hash in the spec matches the
@@ -29,8 +32,11 @@ encodes and decodes unchanged. A rifle on `secondary1` is still refused.
 ## 2. Domain figures, exhaustively
 
 ```bash
-pnpm test -- --run equipment
+pnpm exec ng test --include "**/equipment/**/*.spec.ts"
 ```
+
+A narrow run reports the coverage floor as unmet, which is the gate's measurement over the whole
+suite rather than this one's. `pnpm run check` is what enforces it.
 
 Expected, per SC-002's off-screen half: every suit at every grade it publishes, every weapon at
 every grade it publishes, and every modification on every item it is offered for, each stated figure
@@ -55,7 +61,7 @@ Open `/equipment` directly — not by way of another screen (FR-027).
 | Switch to the Maverick                                  | `primary2` is unavailable, its weapon still named                                                                                                                            |
 | Switch back to the Dominator                            | the weapon is on `primary2` again, with its grade and modifications                                                                                                          |
 | Select the Flight Suit                                  | grade 1 only, no primary mount, and the modification region says it cannot be upgraded                                                                                       |
-| Read the item view                                      | damage, rate of fire, magazine, reserve, range, damage per shot, headshot damage, DPS and sustained DPS                                                                      |
+| Read the item view                                      | the eight figures the package publishes for a weapon: damage per shot, rate of fire, sustained DPS, headshot damage, magazine, reserve ammo, effective range and DPS         |
 | Read the ledger's `SUIT TOOLS` rows                     | the Maverick names the Arc Cutter, the Artemis the Genetic Sampler, both name the Energylink and Profile Analyser, the header count matches the rows, and none is selectable |
 
 ## 4. Keeping and sharing

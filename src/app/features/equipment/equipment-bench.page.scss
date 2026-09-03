@@ -2,12 +2,37 @@
 // the route rather than the window. `rem` inside a container query is the root's
 // computed size, so the seam follows a reader's text size as well as the
 // viewport (`_responsive.scss`, `outfitting-regions`).
+//
+// The container is the host and not `.bench` itself: an element never matches a
+// query against its own container, so the three-column rule below would never
+// apply. The host's `display` is load-bearing for the same reason from the
+// other side — `ResizeObserver` reports nothing at all for a non-replaced
+// inline box, so `observeBenchComposition()` would measure zero and hold the
+// compact composition at every width.
+:host {
+  // A column so the bench can be told to fill it. The canvas's grid carries a
+  // floor of its own — the three columns meet the bottom of the artboard rather
+  // than ending at the tallest of them — and `100%` on the grid alone resolves
+  // against nothing while every box above it is content-sized.
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  container-type: inline-size;
+  container-name: bench-page;
+  min-inline-size: 0;
+}
+
 .bench {
-  container: bench-page / inline-size;
   display: grid;
   gap: var(--ednb-space-rule);
   background: var(--ednb-border-decorative);
-  min-block-size: 100%;
+  flex: 1 1 auto;
+
+  // Canvas 1b: the strip is as tall as its labels and the region under it takes
+  // the rest. Named rather than left to the grid, which would otherwise share
+  // the room the bench fills equally between the two and stand the strip in the
+  // middle of a band of ground.
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 // Canvas 1a's `392px 1fr 320px`: the ledger, the item view, and the commander
@@ -17,6 +42,10 @@
     grid-template-columns:
       var(--ednb-layout-ledger-rail) minmax(0, 1fr)
       var(--ednb-layout-commander-rail);
+
+    // One row across the three columns: the strip belongs to the compact
+    // arrangement and is not drawn here.
+    grid-template-rows: minmax(0, 1fr);
   }
 }
 
@@ -29,6 +58,18 @@
 .bench__region {
   background: var(--ednb-surface-panel);
   min-inline-size: 0;
+}
+
+// The layers are not part of the arrangement. Each draws a `dialog`, which is
+// its own fixed box when open and nothing at all when closed — but a host left
+// as a grid item is still a row, and a grid told to fill the shell stretches
+// that empty row to half the space the regions were meant to have. The layer
+// primitive and the ship tool's own dialogs say the same of themselves; these
+// three are said here because one of them carries no stylesheet.
+edsb-weapon-chooser,
+edsb-modification-chooser,
+edsb-export-loadout-dialog {
+  display: contents;
 }
 
 // Compact draws one region at a time, so the strip and the region it names

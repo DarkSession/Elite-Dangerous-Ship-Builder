@@ -1,10 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { getSuitByFamily, getSuitGrade } from '@elite-dangerous-almanac/core/equipment/suits';
-import {
-  getPersonalWeaponBySymbol,
-  personalWeaponMetrics,
-} from '@elite-dangerous-almanac/core/equipment/weapons';
 import { getPersonalModification } from '@elite-dangerous-almanac/core/equipment/modifications';
+import { getPersonalWeaponBySymbol } from '@elite-dangerous-almanac/core/equipment/weapons';
+import { suitReadings } from '../../domain/equipment/readings/suit-readings';
+import { weaponReadings } from '../../domain/equipment/readings/weapon-readings';
 import { LoadoutPresenter } from './loadout.presenter';
 import { LoadoutStore } from './loadout.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
@@ -134,13 +132,17 @@ describe('LoadoutPresenter', () => {
     it('shows the suit with its grade ladder and the package’s figures', () => {
       dominator();
       const item = presenter.item()!;
-      const grade = getSuitGrade(getSuitByFamily('tacticalsuit')!, 5)!;
+      // Through the readings rather than through the package: whether those
+      // agree with the Almanac is `readings/almanac-acceptance.spec.ts`, and
+      // one call site for a figure is the rule the policy holds (constitution
+      // III).
+      const readings = suitReadings(store.loadout()!)!;
 
       expect(item.name.text).toBe('Dominator Suit');
       expect(item.grades).toEqual([1, 2, 3, 4, 5]);
       expect(item.grade).toBe(5);
       expect(item.attributes.find((attribute) => attribute.id === 'shieldStrength')?.value).toBe(
-        grade.shieldStrength.toFixed(1),
+        readings.shieldStrength.toFixed(1),
       );
       expect(item.attributes.map((attribute) => attribute.id)).toContain('kinetic');
     });
@@ -163,7 +165,11 @@ describe('LoadoutPresenter', () => {
       store.select('PrimaryWeapon1');
 
       const item = presenter.item()!;
-      const metrics = personalWeaponMetrics(getPersonalWeaponBySymbol(RIFLE)!, 5, [], {})!;
+      const metrics = weaponReadings(
+        'PrimaryWeapon1',
+        { symbol: RIFLE, grade: 5, modifications: [null, null, null, null] },
+        [],
+      )!.metrics;
       const value = (id: string) => item.attributes.find((attribute) => attribute.id === id)?.value;
 
       expect(value('sustainedDps')).toBe(metrics.sustainedDamagePerSecond.toFixed(1));
@@ -238,10 +244,10 @@ describe('LoadoutPresenter', () => {
     it('states the shields and every resistance with its sign', () => {
       dominator();
       const stats = presenter.stats()!;
-      const grade = getSuitGrade(getSuitByFamily('tacticalsuit')!, 5)!;
+      const readings = suitReadings(store.loadout()!)!;
 
-      expect(stats.shieldStrength).toBe(grade.shieldStrength.toFixed(1));
-      expect(stats.shieldRegeneration).toBe(grade.shieldRegeneration.toFixed(2));
+      expect(stats.shieldStrength).toBe(readings.shieldStrength.toFixed(1));
+      expect(stats.shieldRegeneration).toBe(readings.shieldRegeneration.toFixed(2));
       expect(stats.resistances.map((resistance) => resistance.key)).toEqual([
         'kinetic',
         'thermal',

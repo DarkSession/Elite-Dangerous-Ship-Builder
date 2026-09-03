@@ -135,6 +135,17 @@
 // own fieldset in any engine, so putting `GRADE` on the cells' line means either
 // hiding the group's own name and drawing a second copy of it — announced twice
 // — or a wrapper the control does not need. The row it heads is the same row.
+// One row on both artboards that draw steps: canvas 1d's five buttons across a
+// layer, and canvas 1a's five beside an item's name. The bar variant wraps
+// because it spans whatever width it is given; this one is often a group in a
+// shrink-to-fit box, and a wrapping row there resolves to its widest single
+// cell — one cell per line, and a header four times the height the canvas
+// draws. The cells still shrink, so a narrow layer keeps the row rather than
+// running past its edge.
+.grades--steps .grades__cells {
+  flex-wrap: nowrap;
+}
+
 .grades--steps .grade {
   block-size: var(--ednb-layout-grade-step);
 }

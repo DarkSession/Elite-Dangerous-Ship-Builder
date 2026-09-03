@@ -735,6 +735,14 @@
   // are numbered buttons rather than the bare bar canvas 1c fills, and a digit
   // wants a button around it rather than a band.
   --ednb-measure-grade-step: 2.375rem; // 38
+  // The equipment canvas draws the same five steps as a group beside an item's
+  // name rather than across a layer: `width: 44px` a cell with `gap: 6px`
+  // between them, so the group is 244px. It is declared rather than measured
+  // because the control cannot size to its own cells — it is a `fieldset`, and
+  // a fieldset's intrinsic width is its legend's, so `max-content` on the group
+  // resolves to the width of the word `GRADE` and the row folds to one cell a
+  // line (the tab strip beside it declares its own width for the same reason).
+  --ednb-measure-grade-ladder: 15.25rem; // 244
 
   // Canvas 1c's defence rows: the 46px resistance column and the 56px value
   // column every figure in the two cards is right-aligned inside. They are

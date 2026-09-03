@@ -49,8 +49,14 @@
   text-wrap: pretty;
 }
 
+// Canvas 1a's ladder: `GRADE` over one row of cells, at the trailing edge of
+// the header. The width is declared rather than left to the control, which
+// cannot size to its own cells — the group is a `fieldset`, whose intrinsic
+// width is its legend's, so an auto-width box collapses to the width of the
+// word `GRADE` and the row folds to one cell a line.
 .gate__grades {
   flex: none;
+  inline-size: var(--ednb-layout-grade-ladder);
 }
 
 .gate__choose,
