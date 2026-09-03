@@ -32,6 +32,22 @@ export interface ScreenAction {
 export const WORKSPACE_EXPORT_ACTION = 'workspace.export';
 
 /**
+ * The marks canvas 1c and the equipment canvas 1a set beside the history pair —
+ * `↶ UNDO` and `REDO ↷`.
+ *
+ * Two conventional typographic arrows, not icons: the word is drawn beside each
+ * one either way, so nothing about either control has to be learned from a
+ * shape. They are hidden from a reader, who has the words.
+ *
+ * Named here rather than in either screen that draws them, because both do: the
+ * ship workspace and the equipment bench publish the same two actions into the
+ * same bar. Each arrow points the way its action travels, which is why the redo
+ * mark follows its word rather than leading it.
+ */
+export const HISTORY_UNDO_MARK = '\u21b6';
+export const HISTORY_REDO_MARK = '\u21b7';
+
+/**
  * What the command bar shows for the screen that is open.
  *
  * The reference puts one number there and nowhere else — "48 SHIPS" on the

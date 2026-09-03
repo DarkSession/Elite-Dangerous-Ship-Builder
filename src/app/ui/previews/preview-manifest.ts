@@ -243,6 +243,8 @@ import { GradeSelector } from '../outfitting/grade-selector';
 import { IngressRefusalNotice } from '../outfitting/ingress-refusal-notice';
 import { PowerControls } from '../outfitting/power-controls';
 import { CandidateList } from '../outfitting/candidate-list';
+import { ChoiceList } from '../equipment/choice-list';
+import { ResistanceBar } from '../equipment/resistance-bar';
 import { CandidateSearch } from '../outfitting/candidate-search';
 import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
 import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
@@ -4503,5 +4505,149 @@ registerPreview({
       'A missing or mismatched artifact fails generation; it is never a state the modal renders.',
     ),
     notApplicable('disabled', 'Help is either open or closed; it has no disabled state.'),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 013 — the equipment bench
+//
+// Two components, both shared by every chooser and every reading on the bench.
+// The regions themselves — the ledger, the item view and the commander stats —
+// are not here: their inputs are presenter view models carrying package
+// figures, and a fixture for one would have to state a shield strength or a DPS
+// that no package call produced. That is the one thing a fixture may never be
+// (constitution II), so those four surfaces are swept as the bench itself in
+// `e2e/equipment-builder.spec.ts` instead.
+// ---------------------------------------------------------------------------
+
+registerPreview({
+  componentId: 'resistance-bar',
+  group: 'Equipment',
+  component: ResistanceBar,
+  contract: contract(
+    'resistance-bar',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'the signed percentage as text, so the bar carries none of the meaning',
+        'a resistance that is a weakness, by its sign rather than by its colour',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { label: 'Kinetic', value: '+35%', magnitude: 0.35, negative: false },
+      [
+        'the figure is text beside the bar, and the bar is hidden from the reader',
+        'the sign is on the number rather than in the direction the bar grows',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'german-format'],
+    ),
+    state('empty', { label: 'Explosive', value: '0%', magnitude: 0, negative: false }, [
+      'no resistance draws no bar and still states the figure',
+    ]),
+    state(
+      'disabled',
+      { label: 'Thermal', value: '-15%', magnitude: 0.15, negative: true },
+      ['a weakness reads as a negative figure, not as a differently coloured bar'],
+      ['normal', 'rtl', 'german-format'],
+    ),
+    notApplicable(
+      'loading',
+      'The figure arrives with the suit reading it belongs to; the bar is never drawn awaiting one.',
+    ),
+    notApplicable('error', 'A resistance the package does not publish is not rendered at all.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'choice-list',
+  group: 'Equipment',
+  component: ChoiceList,
+  contract: contract(
+    'choice-list',
+    {
+      role: 'list',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['selected', 'disabled'],
+      relationships: ['label'],
+      textEquivalents: [
+        'the fitted or worn row, as state rather than as a wash',
+        'a row another slot already holds, in words beside it (FR-009)',
+      ],
+    },
+    ['default', 'empty', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Swap primary weapon',
+        choices: [
+          {
+            id: 'a',
+            name: localized('Karma AR-50'),
+            meta: 'RIFLE · KINETIC · AUTOMATIC',
+            figure: 'G3',
+            current: true,
+            unavailable: false,
+            unavailableLabel: null,
+          },
+          {
+            id: 'b',
+            name: canonical('TK Aphelion'),
+            meta: 'RIFLE · THERMAL · AUTOMATIC',
+            figure: null,
+            current: false,
+            unavailable: false,
+            unavailableLabel: null,
+          },
+        ],
+      },
+      [
+        'the fitted row carries its state as well as its wash',
+        'a row with no figure draws none rather than a zero',
+        'package text with no translation is marked as the language it is in',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
+    ),
+    state('empty', { label: 'Swap primary weapon', choices: [] }, [
+      'nothing offered draws no rows, and no row-shaped placeholder',
+    ]),
+    state(
+      'disabled',
+      {
+        label: 'Fit a modification',
+        choices: [
+          {
+            id: 'c',
+            name: localized('Extra Ammo Capacity'),
+            meta: 'DOMINO GREEN',
+            figure: null,
+            current: false,
+            unavailable: true,
+            unavailableLabel: 'Already fitted',
+          },
+        ],
+      },
+      [
+        'a row already held elsewhere is still drawn, marked in words and refused',
+        'the refusal is on the row rather than in the absence of the row',
+      ],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    notApplicable(
+      'loading',
+      'Every chooser is built synchronously from the equipment library; there is no moment at which the list is open and empty of an answer.',
+    ),
+    notApplicable(
+      'error',
+      'A refusal belongs to the choice that was attempted, and the bench publishes it.',
+    ),
   ],
 });

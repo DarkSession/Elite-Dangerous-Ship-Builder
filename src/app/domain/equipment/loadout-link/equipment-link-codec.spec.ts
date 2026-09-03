@@ -12,11 +12,39 @@ import table from './equipment-link-table-1.json';
 
 const EMPTY_SLOTS = [null, null, null, null];
 
+const EMPTY_MOUNTS = [null, null, null];
+
 const FLIGHT_SUIT: EquipmentLoadout = {
   suitFamily: 'flightsuit',
   suitGrade: 1,
   suitModifications: [null, null, null, null],
-  weapons: [null],
+  weapons: EMPTY_MOUNTS,
+};
+
+/**
+ * The Maverick, which offers one primary mount, holding a weapon on the second.
+ *
+ * The case the format was amended for: `PrimaryWeapon2` is outside this suit's
+ * `mounts`, so the weapon on it is held. It is carried, it is refused by
+ * nothing, and it comes back on a suit that offers the mount (FR-007, FR-018a).
+ */
+const HOLDING: EquipmentLoadout = {
+  suitFamily: 'utilitysuit',
+  suitGrade: 4,
+  suitModifications: [null, null, null, null],
+  weapons: [
+    {
+      symbol: 'wpn_m_assaultrifle_plasma_fauto',
+      grade: 3,
+      modifications: EMPTY_SLOTS,
+    },
+    {
+      symbol: 'wpn_m_sniper_plasma_charged',
+      grade: 5,
+      modifications: ['weapon_range_plasma', null, null, null],
+    },
+    null,
+  ],
 };
 
 const DOMINATOR: EquipmentLoadout = {
@@ -124,7 +152,7 @@ type Field = readonly [value: number, width: number];
 
 /**
  * A whole flight-suit body: the suit at index 3, its four modification slots
- * and the one secondary mount it offers.
+ * and the catalogue's three mount fields.
  *
  * Whole rather than stopped at the field under test, because a body that runs
  * out is refused as a truncation — with the same code some of these guards
@@ -133,8 +161,18 @@ type Field = readonly [value: number, width: number];
 const flightSuit = (
   grade = 1,
   slots: readonly Field[] = fill(SUIT_MODIFICATION),
-  mount: readonly Field[] = [WEAPON(0)],
-): readonly Field[] => [TABLE_VERSION, SUIT(3), GRADE(grade), ...slots, ...mount];
+  secondary: readonly Field[] = [WEAPON(0)],
+): readonly Field[] => [
+  TABLE_VERSION,
+  SUIT(3),
+  GRADE(grade),
+  ...slots,
+  // Every loadout writes the catalogue's whole mount set, so the two primary
+  // mounts the Flight Suit does not offer are still fields in the payload.
+  WEAPON(0),
+  WEAPON(0),
+  ...secondary,
+];
 
 /** The Dominator at index 1: four modification slots at grade 5, and three empty mounts. */
 const tacticalSuit = (slots: readonly Field[]): readonly Field[] => [
@@ -169,8 +207,17 @@ describe('equipment link codec', () => {
     // both directions moved together, which is exactly what a changed table
     // does. Re-pin only under the overwrite rule the table's own generator
     // states, and never to make a build pass.
-    expect(encodeEquipmentLinkFragment(FLIGHT_SUIT)).toBe('e.8CdK,__hPmL');
+    expect(encodeEquipmentLinkFragment(FLIGHT_SUIT)).toBe('e.T._otnWnXKrn');
     expect(encodeEquipmentLinkFragment(DOMINATOR)).toBe('e.4f@yCeG44mGCq1hcPOnHxlG');
+    // Held content, pinned as an absolute encoding rather than as a round trip:
+    // the sniper on `PrimaryWeapon2` is a mount the Maverick does not offer, and
+    // this is the byte-for-byte proof that the payload carries it (FR-018a).
+    expect(encodeEquipmentLinkFragment(HOLDING)).toBe('e.GW0Gx@v12t0ULK6p:CuX');
+    // A modification in a slot a lowered grade has locked. The Dominator at
+    // grade 3 unlocks two slots and keeps what is in the other two (FR-011).
+    expect(encodeEquipmentLinkFragment({ ...DOMINATOR, suitGrade: 3 })).toBe(
+      'e.4J@6@/Xti903ez1c5CxVoM4',
+    );
   });
 
   it('keeps the largest loadout the format can state well inside the bound', () => {
@@ -197,7 +244,10 @@ describe('equipment link codec', () => {
     expect(decodeEquipmentLinkFragment(encodeEquipmentLinkFragment(lowered))).toEqual(lowered);
   });
 
-  it('names every mount the suit offers, and only those', () => {
+  it('names every mount the catalogue offers, whichever suit is worn', () => {
+    // One field per catalogue mount, not per mount the encoded suit offers.
+    // A loadout sized to the suit could not say a weapon is held, and the
+    // encoder refuses it rather than guessing which mount was left out.
     expectRefusal(
       () => encodeEquipmentLinkFragment({ ...DOMINATOR, weapons: DOMINATOR.weapons.slice(1) }),
       'invalidPayload',
@@ -206,6 +256,44 @@ describe('equipment link codec', () => {
       () => encodeEquipmentLinkFragment({ ...FLIGHT_SUIT, weapons: [null, null] }),
       'invalidPayload',
     );
+    expectRefusal(
+      () => encodeEquipmentLinkFragment({ ...FLIGHT_SUIT, weapons: [...EMPTY_MOUNTS, null] }),
+      'invalidPayload',
+    );
+  });
+
+  it('carries a weapon on a mount the worn suit does not offer', () => {
+    // The Maverick offers one primary mount. The sniper on `PrimaryWeapon2` is
+    // held: it is written, it is read back on the same mount with its grade and
+    // its modification, and nothing about the suit refuses it (FR-007,
+    // FR-018a, SC-005).
+    expect(decodeEquipmentLinkFragment(encodeEquipmentLinkFragment(HOLDING))).toEqual(HOLDING);
+  });
+
+  it('checks a held weapon against its mount rather than against the suit', () => {
+    // Holding is what the format expresses; a loadout the game could never
+    // produce is still refused. A rifle on the secondary mount is refused on the
+    // Flight Suit, which offers that mount, and equally on a mount no worn suit
+    // offers.
+    const rifle = {
+      symbol: 'wpn_m_assaultrifle_plasma_fauto',
+      grade: 1,
+      modifications: EMPTY_SLOTS,
+    };
+    const pistol = { symbol: 'wpn_s_pistol_kinetic_sauto', grade: 1, modifications: EMPTY_SLOTS };
+
+    expect(
+      expectRefusal(
+        () => encodeEquipmentLinkFragment({ ...FLIGHT_SUIT, weapons: [null, null, rifle] }),
+        'invalidPayload',
+      ).slot,
+    ).toBe('SecondaryWeapon');
+    expect(
+      expectRefusal(
+        () => encodeEquipmentLinkFragment({ ...FLIGHT_SUIT, weapons: [null, pistol, null] }),
+        'invalidPayload',
+      ).slot,
+    ).toBe('PrimaryWeapon2');
   });
 
   it('refuses a weapon on a mount it does not fit', () => {
@@ -214,6 +302,8 @@ describe('equipment link codec', () => {
     const misfitted: EquipmentLoadout = {
       ...FLIGHT_SUIT,
       weapons: [
+        null,
+        null,
         {
           symbol: 'wpn_m_assaultrifle_plasma_fauto',
           grade: 1,
@@ -234,7 +324,11 @@ describe('equipment link codec', () => {
       () =>
         encodeEquipmentLinkFragment({
           ...FLIGHT_SUIT,
-          weapons: [{ symbol: 'wpn_s_pistol_kinetic_sauto', grade: 9, modifications: EMPTY_SLOTS }],
+          weapons: [
+            null,
+            null,
+            { symbol: 'wpn_s_pistol_kinetic_sauto', grade: 9, modifications: EMPTY_SLOTS },
+          ],
         }),
       'invalidPayload',
     );
@@ -271,7 +365,11 @@ describe('equipment link codec', () => {
       () =>
         encodeEquipmentLinkFragment({
           ...FLIGHT_SUIT,
-          weapons: [{ symbol: 'wpn_s_pistol_thargoid', grade: 1, modifications: EMPTY_SLOTS }],
+          weapons: [
+            null,
+            null,
+            { symbol: 'wpn_s_pistol_thargoid', grade: 1, modifications: EMPTY_SLOTS },
+          ],
         }),
       'unknownIdentity',
     );
@@ -392,6 +490,8 @@ describe('equipment link codec', () => {
         encodeEquipmentLinkFragment({
           ...FLIGHT_SUIT,
           weapons: [
+            null,
+            null,
             {
               symbol: 'wpn_s_pistol_kinetic_sauto',
               grade: 1,
@@ -422,7 +522,7 @@ describe('equipment link codec', () => {
       'invalidPayload',
     );
 
-    expect(refusal.slot).toBe('primary2');
+    expect(refusal.slot).toBe('PrimaryWeapon2');
   });
 
   it('refuses a body that says something the catalogue cannot hold', () => {
@@ -445,21 +545,21 @@ describe('equipment link codec', () => {
         () => decodeEquipmentLinkFragment(craft(flightSuit(1, undefined, fitted(12, 1)))),
         'unknownIdentity',
       ).slot,
-    ).toBe('secondary1');
+    ).toBe('SecondaryWeapon');
     // A rifle on the mount that takes a sidearm: index 2 is a primary weapon.
     expect(
       expectRefusal(
         () => decodeEquipmentLinkFragment(craft(flightSuit(1, undefined, fitted(2, 1)))),
         'invalidPayload',
       ).slot,
-    ).toBe('secondary1');
+    ).toBe('SecondaryWeapon');
     // A recipe this release does not publish at all.
     expect(
       expectRefusal(
         () => decodeEquipmentLinkFragment(craft(flightSuit(1, undefined, fitted(1, 1, 18)))),
         'unknownIdentity',
       ).slot,
-    ).toBe('secondary1');
+    ).toBe('SecondaryWeapon');
     // A recipe the weapon does not take: value 5 is `weapon_range_plasma`, and
     // the weapon at index 0 is the kinetic pistol.
     expect(
@@ -467,14 +567,14 @@ describe('equipment link codec', () => {
         () => decodeEquipmentLinkFragment(craft(flightSuit(1, undefined, fitted(1, 1, 5)))),
         'invalidPayload',
       ).slot,
-    ).toBe('secondary1');
+    ).toBe('SecondaryWeapon');
     // A grade the weapon does not publish.
     expect(
       expectRefusal(
         () => decodeEquipmentLinkFragment(craft(flightSuit(1, undefined, fitted(1, 6)))),
         'invalidPayload',
       ).slot,
-    ).toBe('secondary1');
+    ).toBe('SecondaryWeapon');
     // A body that says everything the format asks for and then keeps going.
     expect(
       expectRefusal(
@@ -522,8 +622,17 @@ describe('equipment link codec', () => {
     expect(table.SUITS).toEqual(suits.map((suit) => suit.family));
     expect(table.SUIT_GRADES).toEqual(suits.map(grades));
     expect(table.SUIT_SLOTS).toEqual(suits.map(unlockedSlots));
+    // Frontier's own journal `SlotName`s, in the order the game lists them.
+    expect(table.MOUNTS).toEqual(['PrimaryWeapon1', 'PrimaryWeapon2', 'SecondaryWeapon']);
+    expect(table.MOUNT_SLOTS).toBe(table.MOUNTS.length);
+    expect(table.MOUNT_KINDS).toEqual(['primary', 'primary', 'secondary']);
+    // Every mount any suit carries is in the set, and every entry in the set is
+    // carried by some suit: a mount missing from it could not be encoded at all.
+    expect(new Set(suits.flatMap((suit) => suit.mounts.map((mount) => mount.key)))).toEqual(
+      new Set(table.MOUNTS),
+    );
     expect(table.SUIT_MOUNTS).toEqual(
-      suits.map((suit) => [suit.primarySlots, suit.secondarySlots]),
+      suits.map((suit) => suit.mounts.map((mount) => table.MOUNTS.indexOf(mount.key))),
     );
     expect(table.WEAPONS).toEqual(weapons.map((weapon) => weapon.symbol));
     expect(table.WEAPON_GRADES).toEqual(weapons.map(grades));
@@ -569,7 +678,7 @@ describe('equipment link codec', () => {
 
     expect($generated.tableVersion).toBe(1);
     expect($generated.contentHash).toBe(
-      'aed3c5ef82ed3af7a81066bcb6f41ec785431892c930a3944178d217cc31276a',
+      '7e7b425b9eb863ebdc7f0c5954c728166f9e1d2184f88ba0d6d6798faa8b616c',
     );
     expect(await canonicalHash(payload)).toBe($generated.contentHash);
   });

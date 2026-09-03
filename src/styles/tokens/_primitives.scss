@@ -366,6 +366,11 @@
   // the same reason as the ledger's.
   --ednb-measure-status-rail: 19.125rem;
 
+  // The commander rail, 320px in the equipment canvas 1a: the trailing track of
+  // its `392px 1fr 320px` grid, where the shields, firepower and material blocks
+  // sit. In rem for the same reason as the two rails above.
+  --ednb-measure-commander-rail: 20rem;
+
   // The command bar, and the one height it is drawn at on every screen.
   //
   // Canvas 1a draws 56px and canvas 1c 54px, both around 30px chips; ours holds
@@ -736,6 +741,10 @@
   // minimums rather than fixed widths here, and they are what holds a short
   // figure off the end of the bar it is read against.
   --ednb-measure-defence-resist: 2.875rem; // 46
+
+  // The resistance bar's track, 4px in the equipment canvas 1a: a hairline rule
+  // under the signed figure that states the same resistance in words.
+  --ednb-measure-resistance-bar: 0.25rem;
   --ednb-measure-defence-value: 3.5rem; //    56
 
   // The height the export layer's content column holds whichever format is

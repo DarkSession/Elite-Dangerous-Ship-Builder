@@ -9,11 +9,11 @@
  * copy of game data (constitution II).
  *
  * The table also carries what the codec has to know to refuse a loadout that
- * cannot exist: which grades a suit and a weapon publish, how many mounts of
- * each kind a suit offers, which kind a weapon fits, how many modification slots
- * each item ever unlocks, and the most any item unlocks. Reading those from the
- * package at decode time would make an old link's meaning depend on the release
- * that happened to be installed.
+ * cannot exist: which grades a suit and a weapon publish, every mount key the
+ * catalogue offers and the kind each one takes, which kind a weapon fits, how
+ * many modification slots each item ever unlocks, and the most any item unlocks.
+ * Reading those from the package at decode time would make an old link's meaning
+ * depend on the release that happened to be installed.
  *
  * Like the ship builder's table, a changed content hash is a new encoding and
  * belongs under the next table version. `--overwrite` replaces this one in
@@ -75,12 +75,47 @@ const weaponModificationSets = weapons.map((weapon) =>
   }),
 );
 
+/**
+ * Every mount key the catalogue offers, in the game's own order.
+ *
+ * A loadout writes one field per entry here rather than one per mount the
+ * encoded suit offers, so a weapon on a mount the selected suit has no room for
+ * is held content and round-trips (013/FR-018a). The keys are Frontier's own
+ * journal `SlotName`s, published on `Suit.mounts`.
+ *
+ * The order is merged from the suits' own lists rather than sorted, so it stays
+ * the order the game lists mounts in and this file invents no comparator for
+ * it: a key already seen fixes where the next new one goes.
+ */
+const mounts = [];
+for (const suit of suits) {
+  let at = 0;
+  for (const mount of suit.mounts) {
+    const seen = mounts.findIndex((known) => known.key === mount.key);
+    if (seen >= 0) {
+      at = seen + 1;
+      continue;
+    }
+    mounts.splice(at, 0, { key: mount.key, kind: mount.kind });
+    at += 1;
+  }
+}
+
 const payload = {
   SUITS: suits.map((suit) => suit.family),
   SUIT_GRADES: suits.map(grades),
   SUIT_SLOTS: suits.map(slotsFor),
-  // `[primary, secondary]`, which is the order a loadout lists its mounts in.
-  SUIT_MOUNTS: suits.map((suit) => [suit.primarySlots, suit.secondarySlots]),
+  // Which of `MOUNTS` each suit offers, by index. The codec checks a weapon
+  // against its mount rather than against this, because a weapon on a mount the
+  // suit does not offer is held rather than refused; it is the catalogue fact
+  // the table records at this version.
+  SUIT_MOUNTS: suits.map((suit) =>
+    suit.mounts.map((mount) => mounts.findIndex((known) => known.key === mount.key)),
+  ),
+  MOUNTS: mounts.map((mount) => mount.key),
+  // Which kind of weapon each mount takes, as `PersonalWeapon.slot` names it.
+  MOUNT_KINDS: mounts.map((mount) => mount.kind),
+  MOUNT_SLOTS: mounts.length,
   WEAPONS: weapons.map((weapon) => weapon.symbol),
   WEAPON_GRADES: weapons.map(grades),
   WEAPON_SLOTS: weapons.map(slotsFor),
@@ -134,7 +169,7 @@ await writeFile(
 );
 console.log(
   `Equipment codec table ${TABLE_VERSION} written: ${payload.SUITS.length} suits, ` +
-    `${payload.WEAPONS.length} weapons, ` +
+    `${payload.MOUNT_SLOTS} mounts, ${payload.WEAPONS.length} weapons, ` +
     `${payload.SUIT_MODIFICATIONS.length + payload.WEAPON_MODIFICATIONS.length} modifications ` +
     `(${contentHash.slice(0, 12)}…).`,
 );

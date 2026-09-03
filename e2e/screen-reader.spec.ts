@@ -44,13 +44,15 @@ test.describe('accessibility tree', () => {
     // which is where the reference puts them.
     //
     // Found by what it holds rather than by its name. The banner carries a
-    // second navigation landmark canvas 4c draws — the tool bar — and this file
-    // deliberately pins no catalogue text, so the one being asked about here is
-    // the one offering screens to open.
+    // second navigation landmark canvas 4c draws — the tool deck, which since
+    // the equipment bench opened carries a link of its own — and this file
+    // deliberately pins no catalogue text, so the deck is set aside by the
+    // class the canvas draws it with and what is left is the screens.
     const screens = page
       .getByRole('banner')
       .getByRole('navigation')
-      .filter({ has: page.getByRole('link') });
+      .filter({ has: page.getByRole('link') })
+      .and(page.locator(':not(.frame__tools)'));
 
     // Asked and answered as one unit. Which composition is drawn is settled by
     // the shell's own stylesheet, which Angular inserts as the component first

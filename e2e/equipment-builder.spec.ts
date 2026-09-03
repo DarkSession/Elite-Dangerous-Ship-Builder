@@ -1,0 +1,167 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+/**
+ * The on-foot outfitting bench.
+ *
+ * Feature 013's journeys: assembling a loadout and reading what it is worth
+ * (US1), and fitting modifications and reading what they cost (US2).
+ */
+
+test.describe('the bench has an address of its own', () => {
+  test('opens at /equipment without going through another screen', async ({ page }) => {
+    // Directly, not by clicking through the ship tool: an address a Commander
+    // can bookmark and return to (013/FR-027).
+    await page.goto('/equipment');
+
+    await expect(page.locator('main .bench')).toBeVisible();
+  });
+
+  test('names both tools in the shell, and marks the one that is open', async ({ page }) => {
+    await page.goto('/equipment');
+
+    const tools = page.locator('.frame__tools .frame__tool');
+    await expect(tools).toHaveText(['Ship Builder', 'Equipment Builder']);
+    await expect(page.locator('.frame__tool--current')).toHaveText('Equipment Builder');
+
+    await page.goto('/ships');
+    await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
+  });
+});
+
+/**
+ * Assembling a loadout and reading what it is worth (US1).
+ *
+ * Written to be true at every width. Wide is artboard `1a` — three columns at
+ * once — and compact is `1b`, where the item view replaces the ledger and the
+ * stats are a tab; the helpers below say which of the two is in front of them
+ * rather than pinning either.
+ */
+
+/** Opens the bench and waits for it: it always opens with nothing on it. */
+async function openBench(page: Page): Promise<void> {
+  await page.goto('/equipment');
+  await expect(page.locator('.bench__empty-action')).toBeVisible();
+}
+
+/** The suit chooser: from an empty bench, or from the suit's own item view. */
+async function chooseSuit(page: Page, name: string): Promise<void> {
+  const empty = page.locator('.bench__empty-action');
+  if ((await empty.count()) > 0) {
+    await empty.click();
+  } else {
+    await openRow(page, 'suit');
+    await page.locator('.item__swap').click();
+  }
+  await page.locator('.choice', { hasText: name }).click();
+  // The layer keeps its content in the document; what closes is the dialog.
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+}
+
+/** Opens one ledger row in the item view, at either composition. */
+async function openRow(page: Page, target: string): Promise<void> {
+  await showTab(page, 'Loadout');
+  if ((await page.locator('.bench__region--loadout').count()) === 0) {
+    await page.locator('.item__back').click();
+  }
+  await page.locator(`.ledger__row[data-target="${target}"]`).click();
+  await expect(page.locator('.item')).toBeVisible();
+}
+
+/** Selects a compact tab. The wide composition draws every region at once. */
+async function showTab(page: Page, label: string): Promise<void> {
+  const tab = page.getByRole('tab', { name: label });
+  if ((await tab.count()) > 0) {
+    await tab.click();
+  }
+}
+
+async function ledgerRow(page: Page, target: string): Promise<Locator> {
+  await showTab(page, 'Loadout');
+  if ((await page.locator('.bench__region--loadout').count()) === 0) {
+    await page.locator('.item__back').click();
+  }
+  return page.locator(`.ledger__row[data-target="${target}"]`);
+}
+
+test.describe('assembling a loadout', () => {
+  test.beforeEach(async ({ page }) => {
+    await openBench(page);
+  });
+
+  test('offers the mounts the chosen suit carries, and states its figures', async ({ page }) => {
+    await chooseSuit(page, 'Dominator Suit');
+
+    // The catalogue's three mounts, all of them offered by this suit.
+    await expect(await ledgerRow(page, 'PrimaryWeapon1')).toBeEnabled();
+    await expect(await ledgerRow(page, 'PrimaryWeapon2')).toBeEnabled();
+    await expect(await ledgerRow(page, 'SecondaryWeapon')).toBeEnabled();
+
+    await showTab(page, 'Stats');
+    await expect(page.locator('.bench__region--stats .metric')).toHaveCount(2);
+    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(4);
+  });
+
+  test('restates the shields when the suit’s grade is raised', async ({ page }) => {
+    await chooseSuit(page, 'Dominator Suit');
+    await openRow(page, 'suit');
+    await page.locator('.grade').first().click();
+
+    await showTab(page, 'Stats');
+    const strength = page.locator('.bench__region--stats .metric__number').first();
+    const atGradeOne = await strength.textContent();
+
+    await openRow(page, 'suit');
+    await page.locator('.grade').last().click();
+    await showTab(page, 'Stats');
+
+    await expect(strength).not.toHaveText(atGradeOne ?? '');
+  });
+
+  test('fits a weapon on a mount and counts it in the firepower', async ({ page }) => {
+    await chooseSuit(page, 'Dominator Suit');
+    await openRow(page, 'PrimaryWeapon1');
+    await page.locator('.item__swap').click();
+    const chosen = (await page.locator('.choice__name').first().textContent())?.trim() ?? '';
+    await page.locator('.choice').first().click();
+
+    await expect(await ledgerRow(page, 'PrimaryWeapon1')).toContainText(chosen);
+
+    await showTab(page, 'Stats');
+    const firepower = page.locator('.bench__region--stats .stats__row');
+    await expect(firepower).toHaveCount(1);
+    await expect(firepower).toContainText(chosen);
+  });
+
+  test('offers the Flight Suit one grade, and says it takes no modification', async ({ page }) => {
+    await chooseSuit(page, 'Flight Suit');
+    await openRow(page, 'suit');
+
+    await expect(page.locator('.grade')).toHaveCount(1);
+    await expect(page.locator('.item__notice')).toBeVisible();
+  });
+});
+
+test.describe('a mount the worn suit does not carry', () => {
+  test('keeps the weapon, and says the mount is held rather than dropping it', async ({ page }) => {
+    await openBench(page);
+    await chooseSuit(page, 'Dominator Suit');
+
+    // The Dominator's second primary, filled.
+    await openRow(page, 'PrimaryWeapon2');
+    await page.locator('.item__swap').click();
+    const held = (await page.locator('.choice__name').first().textContent())?.trim() ?? '';
+    await page.locator('.choice').first().click();
+
+    // The Maverick carries one primary. The second is not lost (FR-007).
+    await chooseSuit(page, 'Maverick Suit');
+    const row = await ledgerRow(page, 'PrimaryWeapon2');
+    await expect(row).toHaveAttribute('aria-disabled', 'true');
+    await expect(row).toContainText(held);
+
+    // And it comes back intact on a suit that carries the mount again.
+    await chooseSuit(page, 'Dominator Suit');
+    const returned = await ledgerRow(page, 'PrimaryWeapon2');
+    await expect(returned).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(returned).toContainText(held);
+  });
+});

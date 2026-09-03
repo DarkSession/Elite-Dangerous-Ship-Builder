@@ -8,6 +8,7 @@ export const NAVIGATION_ROUTES = {
   catalogue: '/ships',
   build: '/build',
   library: '/builds',
+  equipment: '/equipment',
 } as const;
 
 /** One tool this application carries, as the shell reads it. */
@@ -43,8 +44,13 @@ interface ToolRecord {
  *
  * It holds the tools the application *serves*, not the ones it plans to. The
  * canvas names eight and `docs/navbeacon-migration.md` names two; what answers
- * an address is the ship builder, so that is what is here. A tab that opens
- * nothing is a control for a thing that does not exist (011/FR-028).
+ * an address is the ship builder and the equipment builder, so that is what is
+ * here. A tab that opens nothing is a control for a thing that does not exist
+ * (011/FR-028).
+ *
+ * The saved-record library is the ship tool's, because that is where a
+ * Commander reaches it from the shipyard. It holds both tools' records
+ * (013/FR-016), and the row states which tool made it.
  */
 const TOOLS: readonly ToolRecord[] = [
   {
@@ -52,6 +58,12 @@ const TOOLS: readonly ToolRecord[] = [
     labelKey: 'tools.ship',
     href: NAVIGATION_ROUTES.catalogue,
     routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.build, NAVIGATION_ROUTES.library],
+  },
+  {
+    id: 'equipment',
+    labelKey: 'tools.equipment',
+    href: NAVIGATION_ROUTES.equipment,
+    routes: [NAVIGATION_ROUTES.equipment],
   },
 ];
 

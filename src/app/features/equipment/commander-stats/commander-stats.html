@@ -1,0 +1,42 @@
+@if (stats(); as stats) {
+  <div class="stats">
+    <section class="stats__block" [attr.aria-labelledby]="shieldsHeadingId">
+      <h3 class="stats__heading" [id]="shieldsHeadingId">{{ shieldsLabel() }}</h3>
+
+      <edsb-metric-group [label]="shieldsLabel()" [metrics]="shieldFigures()" />
+
+      <ul class="stats__resistances">
+        @for (resistance of stats.resistances; track resistance.key) {
+          <li>
+            <edsb-resistance-bar
+              [label]="resistance.label"
+              [value]="resistance.value"
+              [magnitude]="resistance.magnitude"
+              [negative]="resistance.negative"
+            />
+          </li>
+        }
+      </ul>
+    </section>
+
+    @if (stats.firepower.length > 0) {
+      <section class="stats__block" [attr.aria-labelledby]="firepowerHeadingId">
+        <h3 class="stats__heading" [id]="firepowerHeadingId">{{ firepowerLabel() }}</h3>
+
+        <ul class="stats__firepower">
+          @for (row of stats.firepower; track row.mount) {
+            <li class="stats__row">
+              <edsb-game-text
+                class="stats__weapon"
+                [text]="row.name.text"
+                [language]="row.name.language"
+                [translationState]="row.name.translationState"
+              />
+              <span class="stats__figure">{{ row.value }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+}

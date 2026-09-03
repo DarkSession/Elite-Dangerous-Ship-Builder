@@ -1,0 +1,161 @@
+import { Injectable, computed, signal } from '@angular/core';
+import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
+import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
+import {
+  clearSlot,
+  fitModification,
+  fitWeapon,
+  newLoadout,
+  selectSuit,
+  setSuitGrade,
+  setWeaponGrade,
+  type EditTarget,
+} from '../../domain/equipment/loadout/loadout-edit';
+import { mountAvailability } from '../../domain/equipment/loadout/loadout-mounts';
+import {
+  emptyLoadoutHistory,
+  recordLoadout,
+  redoLoadout,
+  undoLoadout,
+  type LoadoutHistory,
+} from './loadout-history';
+
+/** One outfitting choice a Commander made, as the bench dispatches it. */
+export type LoadoutEdit =
+  | { readonly kind: 'selectSuit'; readonly suitFamily: string }
+  | { readonly kind: 'setSuitGrade'; readonly grade: number }
+  | { readonly kind: 'fitWeapon'; readonly mount: PersonalMountKey; readonly symbol: string | null }
+  | { readonly kind: 'setWeaponGrade'; readonly mount: PersonalMountKey; readonly grade: number }
+  | {
+      readonly kind: 'fitModification';
+      readonly target: EditTarget;
+      readonly slot: number;
+      readonly symbol: string;
+    }
+  | { readonly kind: 'clearSlot'; readonly target: EditTarget; readonly slot: number };
+
+/**
+ * The bench's open loadout, what is selected, and the session's undo tape.
+ *
+ * The loadout is the only thing here that is ever saved or shared. The
+ * selection is workflow — which item the item view is showing — and is never
+ * serialized, encoded into a link or exported.
+ *
+ * Every choice goes through `domain/equipment/loadout/loadout-edit`, which
+ * returns the loadout unchanged when the choice would produce one the game
+ * cannot hold. An unchanged loadout spends no revision and no history frame, so
+ * undo never has a step that does nothing.
+ */
+@Injectable({ providedIn: 'root' })
+export class LoadoutStore {
+  readonly #loadout = signal<EquipmentLoadout | null>(null);
+  readonly #selected = signal<EditTarget | null>(null);
+  readonly #history = signal<LoadoutHistory>(emptyLoadoutHistory());
+  readonly #revision = signal(0);
+
+  /** The open loadout, or none while the bench is empty. */
+  readonly loadout = this.#loadout.asReadonly();
+  readonly hasLoadout = computed(() => this.#loadout() !== null);
+
+  /** Which item the item view is showing, or none. */
+  readonly selected = this.#selected.asReadonly();
+
+  /** Changes once per committed choice, and never for a refused one. */
+  readonly revision = this.#revision.asReadonly();
+
+  readonly canUndo = computed(() => this.#history().past.length > 0);
+  readonly canRedo = computed(() => this.#history().future.length > 0);
+
+  /** What each catalogue mount is to the open loadout, in mount order. */
+  readonly mounts = computed(() => {
+    const loadout = this.#loadout();
+    return loadout === null ? [] : mountAvailability(loadout);
+  });
+
+  /**
+   * Opens a loadout that came from somewhere else — a saved record, or a link.
+   *
+   * Not an edit: the tape starts empty, because the loadouts before it belonged
+   * to a different bench and undoing onto one would restore something the
+   * Commander never had here.
+   */
+  open(loadout: EquipmentLoadout | null): void {
+    this.#loadout.set(loadout);
+    this.#selected.set(loadout === null ? null : 'suit');
+    this.#history.set(emptyLoadoutHistory());
+    this.#revision.update((revision) => revision + 1);
+  }
+
+  /** Shows one item in the item view, or none. */
+  select(target: EditTarget | null): void {
+    this.#selected.set(target);
+  }
+
+  /**
+   * Applies one choice.
+   *
+   * Selecting a suit on an empty bench starts a loadout; every other choice
+   * needs one open. Answers whether anything changed, so a caller can leave a
+   * chooser open on a refusal rather than closing it on nothing.
+   */
+  dispatch(edit: LoadoutEdit): boolean {
+    const current = this.#loadout();
+    if (current === null) {
+      if (edit.kind !== 'selectSuit') return false;
+      const started = newLoadout(edit.suitFamily);
+      if (started === null) return false;
+      this.#loadout.set(started);
+      this.#selected.set('suit');
+      this.#revision.update((revision) => revision + 1);
+      return true;
+    }
+
+    const next = apply(current, edit);
+    if (next === current) return false;
+    this.#history.update((history) => recordLoadout(history, current));
+    this.#loadout.set(next);
+    this.#revision.update((revision) => revision + 1);
+    return true;
+  }
+
+  undo(): boolean {
+    return this.#move(undoLoadout);
+  }
+
+  redo(): boolean {
+    return this.#move(redoLoadout);
+  }
+
+  #move(
+    step: (
+      history: LoadoutHistory,
+      current: EquipmentLoadout,
+    ) => { readonly restore: EquipmentLoadout; readonly next: LoadoutHistory } | null,
+  ): boolean {
+    const current = this.#loadout();
+    if (current === null) return false;
+    const transition = step(this.#history(), current);
+    if (transition === null) return false;
+    this.#history.set(transition.next);
+    this.#loadout.set(transition.restore);
+    this.#revision.update((revision) => revision + 1);
+    return true;
+  }
+}
+
+function apply(loadout: EquipmentLoadout, edit: LoadoutEdit): EquipmentLoadout {
+  switch (edit.kind) {
+    case 'selectSuit':
+      return selectSuit(loadout, edit.suitFamily);
+    case 'setSuitGrade':
+      return setSuitGrade(loadout, edit.grade);
+    case 'fitWeapon':
+      return fitWeapon(loadout, edit.mount, edit.symbol);
+    case 'setWeaponGrade':
+      return setWeaponGrade(loadout, edit.mount, edit.grade);
+    case 'fitModification':
+      return fitModification(loadout, edit.target, edit.slot, edit.symbol);
+    case 'clearSlot':
+      return clearSlot(loadout, edit.target, edit.slot);
+  }
+}

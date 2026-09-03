@@ -44,18 +44,21 @@ export interface EquipmentLoadout {
   /** What each of the suit's modification slots holds. */
   readonly suitModifications: ModificationSlots;
   /**
-   * What is on each mount the suit offers, in the suit's own order: its primary
-   * mounts, then its secondary ones. `null` is a mount left empty.
+   * What is on each mount the **catalogue** offers, one entry per key in
+   * `PersonalMountKey` order — `PrimaryWeapon1`, `PrimaryWeapon2`,
+   * `SecondaryWeapon`. `null` is a mount left empty.
    *
-   * A mount is named by that order — `primary1`, `secondary1` — rather than by a
-   * key, and that is the one place this format departs from constitution II,
-   * which asks for the game's own slot keys and never a positional index. The
-   * package publishes counts, `Suit.primarySlots` and `Suit.secondarySlots`, and
-   * no key for a mount, so there is no key to use. Those names are identities:
-   * a refusal that names one is translated before a Commander reads it, the way
-   * `ui/outfitting/slot-naming.ts` names a ship's mounts. The gap is recorded in
-   * `specs/013-equipment-builder/spec.md` under Dependencies, and when the
-   * package publishes keys they replace this order.
+   * The catalogue's widest mount set rather than the selected suit's, so a
+   * weapon on a mount this suit has no room for is *held*: retained, excluded
+   * from every stated figure and from the material requirement, and back in
+   * effect the moment a suit offering that mount is selected again (FR-007,
+   * FR-018a). A list sized to the suit could not say that, and switching suits
+   * would silently throw a weapon away.
+   *
+   * A mount is addressed by the game's own journal `SlotName`, published on
+   * `Suit.mounts[].key`, like a ship's slots and never by a positional index
+   * (constitution II). A refusal that names one names it through
+   * `getPersonalMountName`, so `PrimaryWeapon1` never reaches a screen.
    */
   readonly weapons: readonly (FittedPersonalWeapon | null)[];
 }

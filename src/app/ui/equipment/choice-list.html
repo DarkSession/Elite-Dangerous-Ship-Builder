@@ -1,0 +1,36 @@
+<ul class="choices" [attr.aria-label]="label()">
+  @for (choice of choices(); track choice.id) {
+    <li>
+      <button
+        class="choice"
+        type="button"
+        [class.choice--current]="choice.current"
+        [class.choice--unavailable]="choice.unavailable"
+        [attr.data-choice]="choice.id"
+        [attr.aria-current]="choice.current ? 'true' : null"
+        [attr.aria-disabled]="choice.unavailable ? 'true' : null"
+        (click)="choose(choice)"
+      >
+        <span class="choice__identity">
+          <edsb-game-text
+            class="choice__name"
+            [text]="choice.name.text"
+            [language]="choice.name.language"
+            [translationState]="choice.name.translationState"
+          />
+          @if (choice.meta) {
+            <span class="choice__meta">{{ choice.meta }}</span>
+          }
+        </span>
+
+        <!-- Why the row cannot be chosen, in words. The dimming beside it is
+             not the carrier (constitution V). -->
+        @if (choice.unavailableLabel) {
+          <span class="choice__marker">{{ choice.unavailableLabel }}</span>
+        } @else if (choice.figure) {
+          <span class="choice__figure">{{ choice.figure }}</span>
+        }
+      </button>
+    </li>
+  }
+</ul>

@@ -1,17 +1,15 @@
 {
   "$generated": {
     "tableVersion": 1,
-    "contentHash": "aed3c5ef82ed3af7a81066bcb6f41ec785431892c930a3944178d217cc31276a"
+    "contentHash": "7e7b425b9eb863ebdc7f0c5954c728166f9e1d2184f88ba0d6d6798faa8b616c"
   },
   "SUITS": ["utilitysuit", "tacticalsuit", "explorationsuit", "flightsuit"],
   "SUIT_GRADES": [[1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1]],
   "SUIT_SLOTS": [4, 4, 4, 0],
-  "SUIT_MOUNTS": [
-    [1, 1],
-    [2, 1],
-    [1, 1],
-    [0, 1]
-  ],
+  "SUIT_MOUNTS": [[0, 2], [0, 1, 2], [0, 2], [2]],
+  "MOUNTS": ["PrimaryWeapon1", "PrimaryWeapon2", "SecondaryWeapon"],
+  "MOUNT_KINDS": ["primary", "primary", "secondary"],
+  "MOUNT_SLOTS": 3,
   "WEAPONS": [
     "wpn_s_pistol_kinetic_sauto",
     "wpn_m_assaultrifle_kinetic_fauto",

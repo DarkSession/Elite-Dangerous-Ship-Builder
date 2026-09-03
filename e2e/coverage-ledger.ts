@@ -131,6 +131,43 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'screen-reader',
   },
   {
+    surfaceId: 'equipment/bench-address',
+    requirements: ['013/FR-027', '011/FR-028'],
+    journey: 'equipment/bench',
+    axe: true,
+    assertions: [
+      'the bench answers /equipment directly, without going through another screen',
+      'the shell names both tools and marks the open one',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'equipment/loadout',
+    requirements: ['013/FR-001', '013/FR-002', '013/FR-003', '013/FR-005', '013/FR-022'],
+    journey: 'equipment/bench',
+    axe: true,
+    assertions: [
+      'a chosen suit offers the mounts it carries, and the stats state its figures',
+      'raising the suit’s grade restates the shields',
+      'a weapon fitted on a mount is named in the ledger and counted in the firepower',
+      'the Flight Suit offers one grade and says it takes no modification',
+      'undo and redo are published to the shell rather than drawn a second time',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'equipment/held-mount',
+    requirements: ['013/FR-007'],
+    journey: 'equipment/bench',
+    axe: true,
+    assertions: [
+      'a mount the worn suit does not carry is unavailable with its weapon still named',
+      'the weapon returns intact on a suit that carries the mount again',
+      'held is said in the row’s own sentence, not only by dimming',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
     surfaceId: 'shell/tool-navigation',
     requirements: ['011/FR-028', '011/SC-009'],
     journey: 'product/semantics',

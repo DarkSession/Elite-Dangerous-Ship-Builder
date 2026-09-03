@@ -1,6 +1,8 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { App, HELP_ACTION } from './app';
+import { routes } from './app.routes';
+import { EquipmentBenchPage } from './features/equipment/equipment-bench.page';
 import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { SlefStore } from './application/slef/slef.store';
@@ -509,5 +511,18 @@ describe('App and a newly published version', () => {
     // carries the summary instead, the way hull detail's unknown hull does.
     expect(announcements.assertive()).toBe(BUNDLED_ENGLISH['update.unusable.announcement']);
     expect(announcements.assertive()).not.toBe(BUNDLED_ENGLISH['update.unusable.notice']);
+  });
+});
+
+describe('routes', () => {
+  it('serves the equipment bench at its own address, lazily and named', async () => {
+    // Both tools answer an address of their own, so either can be opened,
+    // bookmarked and returned to without going through the other (013/FR-027).
+    // Lazy, so the ship tool's initial bundle does not carry the bench.
+    const bench = routes.find((route) => route.path === 'equipment');
+
+    expect(bench?.title).toBe('equipment.title');
+    expect(bench?.data?.['description']).toBe('equipment.description');
+    expect(await bench?.loadComponent?.()).toBe(EquipmentBenchPage);
   });
 });

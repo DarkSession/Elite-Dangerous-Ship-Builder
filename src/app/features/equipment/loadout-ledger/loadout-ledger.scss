@@ -1,0 +1,133 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's leading column: three ruled groups over one unbroken ground.
+:host {
+  display: block;
+}
+
+.ledger {
+  @include layout.stack(var(--ednb-space-section));
+
+  padding-block: var(--ednb-space-lg) var(--ednb-space-xl);
+}
+
+.ledger__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+  padding-inline: var(--ednb-space-2xl);
+  padding-block-end: var(--ednb-space-sm);
+}
+
+.ledger__heading {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.ledger__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+.ledger__count {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+
+  flex: none;
+}
+
+.ledger__rows {
+  @include layout.stack(0);
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The canvas's row: a 3px marker on the leading edge for the selected one, over
+// a wash that fades out across the row.
+.ledger__row {
+  @include layout.selectable-row;
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-md) var(--ednb-space-2xl);
+  text-align: start;
+}
+
+.ledger__row--held {
+  color: var(--ednb-text-muted);
+  cursor: default;
+}
+
+.ledger__badge {
+  @include layout.micro-label(var(--ednb-text-primary), var(--ednb-text-tracking-code));
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--ednb-layout-step-number);
+  block-size: var(--ednb-layout-step-number);
+  background: var(--ednb-surface-accent-quiet);
+  font-weight: var(--ednb-text-weight-emphasis);
+}
+
+.ledger__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.ledger__name {
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-primary);
+}
+
+.ledger__name--empty {
+  color: var(--ednb-text-muted);
+  font-style: italic;
+}
+
+.ledger__row--current .ledger__name {
+  color: var(--ednb-text-accent-strong);
+}
+
+.ledger__meta {
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-code));
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// The canvas's grade chip: the figure on an amber wash, in the mono face every
+// number on this screen is set in.
+.ledger__grade {
+  @include layout.micro-label(var(--ednb-text-accent-strong), var(--ednb-text-tracking-count));
+
+  flex: none;
+  padding: var(--ednb-space-3xs) var(--ednb-space-xs);
+  background: var(--ednb-surface-accent-quiet);
+  font-size: var(--ednb-text-size-micro);
+}
+
+.ledger__mods {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+
+  flex: none;
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

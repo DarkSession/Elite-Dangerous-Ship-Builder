@@ -13,7 +13,21 @@ import { getLoadoutEditErrorMessage } from '@elite-dangerous-almanac/core/i18n/d
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { SHIPS } from '@elite-dangerous-almanac/core/ships/ships';
-import { presentGameText, shipManufacturerLookup, shipNameLookup } from './game-text.presenter';
+import { getMicroResourceName } from '@elite-dangerous-almanac/core/i18n/micro-resources';
+import { getPersonalModificationName } from '@elite-dangerous-almanac/core/i18n/personal-modifications';
+import { getPersonalToolName } from '@elite-dangerous-almanac/core/i18n/personal-tools';
+import { getPersonalMountName, getSuitName } from '@elite-dangerous-almanac/core/i18n/suits';
+import { PERSONAL_MODIFICATIONS } from '@elite-dangerous-almanac/core/equipment/modifications';
+import { PERSONAL_TOOLS } from '@elite-dangerous-almanac/core/equipment/tools';
+import { PERSONAL_WEAPONS } from '@elite-dangerous-almanac/core/equipment/weapons';
+import { SUITS } from '@elite-dangerous-almanac/core/equipment/suits';
+import { getPersonalModificationCost } from '@elite-dangerous-almanac/core/equipment/modification-costs';
+import {
+  personalWeaponNameLookup,
+  presentGameText,
+  shipManufacturerLookup,
+  shipNameLookup,
+} from './game-text.presenter';
 import germanCatalogue from './locales/de.json';
 import { BUNDLED_ENGLISH } from './locale-registry';
 
@@ -189,5 +203,103 @@ describe('package text', () => {
     const disclosed = presentGameText(getBlueprintName, 'Engine_Dirty', UNTRANSLATED_LOCALE);
     expect(disclosed.text).toBe(getBlueprintName('Engine_Dirty', 'en'));
     expect(disclosed.disclosureKey).toBe('game-text.untranslated.description');
+  });
+});
+
+/**
+ * The equipment bench's nouns, on the same terms as the ship tool's.
+ *
+ * Suits, modifications, tools and micro resources are translated by the
+ * library; weapon names and mount names are not, and both present as canonical
+ * with their provenance stated rather than as gaps.
+ */
+describe('equipment package text', () => {
+  const GERMAN = 'de';
+
+  it('resolves every suit’s name in the locales the library carries', () => {
+    for (const suit of SUITS) {
+      const presented = presentGameText(getSuitName, suit.family, GERMAN);
+
+      expect(presented.translationState, suit.family).toBe('localized');
+      expect(presented.text, suit.family).toBe(getSuitName(suit.family, GERMAN));
+    }
+  });
+
+  it('resolves every modification and every tool name the same way', () => {
+    for (const symbol of Object.keys(PERSONAL_MODIFICATIONS)) {
+      expect(presentGameText(getPersonalModificationName, symbol, GERMAN).translationState).toBe(
+        'localized',
+      );
+    }
+    for (const tool of PERSONAL_TOOLS) {
+      expect(presentGameText(getPersonalToolName, tool.id, GERMAN).translationState).toBe(
+        'localized',
+      );
+    }
+  });
+
+  it('resolves every micro resource a modification costs', () => {
+    const symbols = new Set(
+      Object.keys(PERSONAL_MODIFICATIONS).flatMap((symbol) =>
+        (getPersonalModificationCost(symbol) ?? []).map((ingredient) => ingredient.symbol),
+      ),
+    );
+
+    expect(symbols.size).toBeGreaterThan(0);
+    for (const symbol of symbols) {
+      expect(presentGameText(getMicroResourceName, symbol, GERMAN).translationState, symbol).toBe(
+        'localized',
+      );
+    }
+  });
+
+  it('states a weapon’s name as canonical, because the game does not translate it', () => {
+    // A Manticore Oppressor is a product name and every locale spells it the
+    // same, so the catalogue answers for English and for no other locale.
+    for (const weapon of PERSONAL_WEAPONS) {
+      const presented = presentGameText(personalWeaponNameLookup, weapon.symbol, GERMAN);
+
+      expect(presented.text, weapon.symbol).toBe(weapon.name);
+      expect(presented.translationState, weapon.symbol).toBe('canonical');
+      expect(presented.disclosureKey).toBe('game-text.untranslated.description');
+    }
+    expect(
+      presentGameText(personalWeaponNameLookup, PERSONAL_WEAPONS[0]!.symbol, 'en').translationState,
+    ).toBe('localized');
+  });
+
+  it('states a mount’s name as canonical in this release, and never as a gap', () => {
+    // `getPersonalMountName` carries `en-GB` alone in Almanac 0.2.9
+    // (DarkSession/Elite-Dangerous-Almanac#26). It presents as canonical English
+    // with its provenance stated, and no check here asserts a translated mount
+    // name. It becomes localized on the release that carries the other five
+    // values, with no change in this application.
+    for (const suit of SUITS) {
+      for (const mount of suit.mounts) {
+        const presented = presentGameText(getPersonalMountName, mount, GERMAN);
+
+        expect(presented.text, mount.key).toBe(getPersonalMountName(mount, 'en'));
+        expect(presented.text, mount.key).not.toBeNull();
+        expect(presented.translationState, mount.key).toBe('canonical');
+        expect(presented.disclosureKey).toBe('game-text.untranslated.description');
+      }
+    }
+  });
+
+  it('keeps no private translation of an equipment noun', () => {
+    // Every equipment name a Commander reads comes from the library. A German
+    // catalogue entry naming a suit, a weapon or a modification would be game
+    // data owned outside the package (constitution II, FR-020).
+    const owned = Object.values(germanCatalogue as Record<string, string>);
+    const gameText = [
+      ...SUITS.map((suit) => suit.name),
+      ...PERSONAL_WEAPONS.map((weapon) => weapon.name),
+      ...PERSONAL_TOOLS.map((tool) => tool.name),
+      ...Object.values(PERSONAL_MODIFICATIONS).map((recipe) => recipe.name),
+    ];
+
+    for (const name of gameText) {
+      expect(owned, name).not.toContain(name);
+    }
   });
 });

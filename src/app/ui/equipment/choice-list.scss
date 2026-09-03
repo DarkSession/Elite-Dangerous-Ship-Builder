@@ -1,0 +1,70 @@
+@use '../../../styles/responsive' as layout;
+
+// Canvas 1a's swap and modification lists: rows of a name over a code line,
+// with one figure or one marker at the trailing edge.
+:host {
+  display: block;
+}
+
+.choices {
+  @include layout.stack(var(--ednb-space-rule));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  @include layout.selectable-row;
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-md) var(--ednb-space-lg);
+  background-color: var(--ednb-surface-inset);
+  text-align: start;
+}
+
+.choice--unavailable {
+  color: var(--ednb-text-muted);
+  cursor: default;
+}
+
+.choice__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.choice__name {
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-primary);
+}
+
+.choice--current .choice__name {
+  color: var(--ednb-text-accent-strong);
+}
+
+.choice__meta {
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-code));
+
+  text-wrap: pretty;
+}
+
+.choice__figure {
+  @include layout.micro-label(var(--ednb-text-accent-strong), var(--ednb-text-tracking-count));
+
+  flex: none;
+  font-size: var(--ednb-text-size-caption);
+  text-transform: none;
+}
+
+.choice__marker {
+  @include layout.micro-label(var(--ednb-text-danger-quiet), var(--ednb-text-tracking-label));
+
+  flex: none;
+}

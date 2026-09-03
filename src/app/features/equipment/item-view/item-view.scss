@@ -1,0 +1,86 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's middle column: a header row of identity and grade ladder over a
+// ruled grid of figures.
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.item {
+  @include layout.stack(var(--ednb-space-section));
+
+  padding-block: var(--ednb-space-xl);
+}
+
+.item__header {
+  @include layout.wrapping-row(var(--ednb-space-inline-loose));
+
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-inline: var(--ednb-space-3xl);
+  padding-block-end: var(--ednb-space-lg);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+}
+
+.item__back {
+  @include layout.control-quiet;
+  @include layout.target-baseline;
+
+  flex: none;
+}
+
+.item__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.item__name {
+  @include layout.display-title;
+
+  margin: 0;
+}
+
+.item__subtitle {
+  margin: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-muted);
+}
+
+.item__grades {
+  flex: none;
+}
+
+.item__attributes {
+  padding-inline: var(--ednb-space-3xl);
+}
+
+.item__swap {
+  @include layout.control-secondary;
+  @include layout.target-baseline;
+
+  margin-inline: var(--ednb-space-3xl);
+}
+
+.item__notice,
+.item__empty {
+  margin: 0;
+  padding-inline: var(--ednb-space-3xl);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
+  text-wrap: pretty;
+}
+
+.item__empty {
+  padding-block: var(--ednb-space-xl);
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

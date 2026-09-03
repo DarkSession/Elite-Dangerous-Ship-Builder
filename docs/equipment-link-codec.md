@@ -46,10 +46,13 @@ Fields are written in this order, with widths derived from the table at module l
 | suit                  | 2      | Index into `SUITS`.                                              |
 | suit grade            | 3      | A grade the suit publishes, stated rather than indexed.          |
 | suit modification × 4 | 4 each | `0` for an empty slot, otherwise `SUIT_MODIFICATIONS` index + 1. |
-| mount × _n_           | —      | One per mount the suit offers, in the suit's own order.          |
+| mount × 3             | —      | One per key in `MOUNTS`, whichever suit is worn.                 |
 
-The suit's mount count is not written: it is what `SUIT_MOUNTS` says for the suit just read. Each
-mount is:
+Every loadout writes the catalogue's whole mount set — `MOUNTS`, which is `MOUNT_SLOTS` entries
+long — rather than the mounts the encoded suit happens to offer. A weapon on a mount the suit has
+no room for is _held_: it is carried, it is stated by nothing, and it is back in effect the moment
+a suit offering that mount is worn again (013/FR-007, FR-018a). A payload sized to the suit could
+not say that. Each mount is:
 
 | Field                   | Width  | Meaning                                                     |
 | ----------------------- | ------ | ----------------------------------------------------------- |
@@ -57,10 +60,11 @@ mount is:
 | weapon grade            | 3      | Present only when a weapon is fitted.                       |
 | weapon modification × 4 | 5 each | Present only when a weapon is fitted. `0` is an empty slot. |
 
-The whole of the format is that. The Flight Suit with nothing on it is 35 bits and encodes as
-`e.8CdK,__hPmL` — 13 characters. The largest loadout the catalogue can state — the Dominator at
+The whole of the format is that. The Flight Suit with nothing on it is 43 bits and encodes as
+`e.T._otnWnXKrn` — 14 characters. The largest loadout the catalogue can state — the Dominator at
 grade 5, all three mounts filled at grade 5, every modification slot held — is 112 bits and
-encodes in 25 characters, against a 500-character bound. The bound is what the application will
+encodes in 25 characters, against a 500-character bound. A suit offering fewer than three mounts
+pays eight bits for the two empty mount fields, which is what buys held content. The bound is what the application will
 attempt to read at all; it is not a budget this format was drawn against, and there is no
 capacity script for it because nothing here approaches it.
 
@@ -80,6 +84,7 @@ item — the table names its slot count, and the mount count already works that 
 cannot follow the grade, because a lowered grade locks a slot without emptying it. One
 format-wide
 constant is the cheaper of the two, and it costs only the Flight Suit sixteen bits it never uses.
+The mount count works the same way and for the same reason: it is the catalogue's, not the suit's.
 A modification in a slot the item never unlocks is refused rather than encoded, so the spare
 fields cannot say anything: see `SUIT_SLOTS` below.
 
@@ -99,7 +104,10 @@ It holds the identities:
 and what the codec needs to refuse a loadout that cannot exist:
 
 - `SUIT_GRADES`, `WEAPON_GRADES` — the grades each item publishes
-- `SUIT_MOUNTS` — `[primary, secondary]` counts per suit
+- `MOUNTS` — every mount key the catalogue offers, in the game's own order, which is how many
+  mount fields every loadout writes; `MOUNT_SLOTS` is its length
+- `MOUNT_KINDS` — which kind of weapon each of those mounts takes
+- `SUIT_MOUNTS` — which of `MOUNTS` each suit offers, by index
 - `WEAPON_MOUNTS` — which kind of mount each weapon fits
 - `MODIFICATION_SLOTS` — the most slots any grade of any item unlocks, which is how many
   modification fields every item writes
@@ -111,6 +119,12 @@ Accuracy are three recipes each, one per damage technology, and a weapon takes e
 three. The pairing is the library's: the generator asks `resolvePersonalModificationForWeapon` and
 pins the answer. Without it a link could carry `weapon_range_kinetic` on a plasma rifle and this
 codec would have no way to know.
+
+`SUIT_MOUNTS` refuses nothing. A weapon on a mount the worn suit does not offer is held rather
+than refused, so what a mount field is checked against is `MOUNT_KINDS` — a rifle on
+`SecondaryWeapon` is still not a loadout the game can hold. It is in the table as the catalogue
+fact table 1 was minted against, so a release that moves a suit's mounts cannot change what an
+already-published link said the suit was.
 
 `SUIT_SLOTS` earns its place for one item. Every suit and every weapon reaches four slots except
 the Flight Suit, whose one grade unlocks none, so without it a modified Flight Suit — a Commander
@@ -155,7 +169,8 @@ loadout the catalogue can state is 25 characters against a bound of 500.
 The line between the last two is which question failed. A recipe the catalogue does not hold at
 all is an unknown identity; a recipe it holds for other weapons is a payload the item cannot
 hold — the same refusal as a rifle on a sidearm mount, an unpublished grade, one recipe fitted
-twice, a modification in a slot the item never unlocks, or a mount count that is not the suit's.
+twice, a modification in a slot the item never unlocks, or a loadout naming a number of mounts
+that is not the catalogue's.
 
 The ship codec draws that line elsewhere: an identity that is absent from its contextual set is
 `unknownIdentity` there, whichever reason it is absent for. The equipment codec splits the two
@@ -176,15 +191,16 @@ nobody made.
 
 ### Naming the mount
 
-A refusal names `suit`, `primary1`, `primary2` or `secondary1`. Those are identities, not text.
-The package publishes mount counts and no key for a mount, so unlike the ship side there is no
-game slot key to use — the one place this format departs from constitution II, recorded in
-`specs/013-equipment-builder/spec.md` under Dependencies. When the package publishes keys they
-replace this order.
+A refusal names `suit`, or one of `MOUNTS`: `PrimaryWeapon1`, `PrimaryWeapon2`,
+`SecondaryWeapon`. Those are Frontier's own journal `SlotName`s, published on `Suit.mounts[].key`,
+so a mount is addressed by the game's own key like a ship's slot and never by a positional index
+(constitution II).
 
-Because they are identities, whatever renders a refusal names the mount in the Commander's
-language first, the way `src/app/ui/outfitting/slot-naming.ts` names a ship's mounts.
-Interpolating `primary1` into a notice would ship an untranslated string (constitution VI).
+They are identities, not text. Whatever renders a refusal names the mount in the Commander's
+language first, through `getPersonalMountName` in `i18n/suits`, the way
+`src/app/ui/outfitting/slot-naming.ts` names a ship's mounts. Interpolating `PrimaryWeapon1` into
+a notice would ship an untranslated string (constitution VI, 013/FR-021). `suit` is this
+application's own message, because the refusal is about the suit rather than about a mount.
 
 ## Shared floor
 
@@ -204,14 +220,13 @@ that are hard to get right were already written and already tested.
 
 - **Anything the library can answer.** Stats, resistances, firepower, material requirements and
   costs are recomputed from the identities.
-- **Suit tools.** The Energylink, Arc Cutter and Profile Analyser are absent upstream, so there is
-  nothing to name. They join the format with a mount field of their own when the package
-  publishes them, under a new table version.
+- **Suit tools.** Every suit carries the tools its family carries and no choice is made about
+  them, so there is nothing for a link to say (013/FR-005a).
 - **A loadout name.** The ship codec carries optional labels; a loadout has none to carry yet.
 - **Engineering quality.** As on the ship side, a grade is complete or it is not reached.
 
 ## Status
 
-The codec is written and tested; nothing imports it yet. The equipment builder is specified in
-`specs/013-equipment-builder/` and not built, so table 1 is still under its overwrite rule and
-the format can still move. The first published link ends that.
+The codec has a consumer: the equipment builder at `/equipment` mints and reads `e.` fragments.
+Table 1's overwrite rule ends at the bench's first release — after it, a changed content hash is
+table 2 with this file kept for the links already out.

@@ -108,6 +108,11 @@ a verbatim copy produced at build time — edit this file, never the copy.
   Frontier notice below. Heat dissipation is the one entry the game never shows a player:
   it is community measurement of Frontier's game, described under Algorithms above, and
   carried here on the same terms as the rest.
+- **[EDCD/EDMarketConnector](https://github.com/EDCD/EDMarketConnector)** by the
+  **EDMarketConnector contributors**, **GPL-2.0** for its code — supplies the Frontier
+  journal `SlotName` keys that identify a suit's weapon mounts. What is taken are the
+  verbatim loadout events quoted in its `monitor.py` comments; no EDMarketConnector code
+  is incorporated. The values are game data — see the Frontier notice below.
 - **[EDDI](https://github.com/EDCD/EDDI)** by the **EDDI contributors**, **Apache 2.0**
   for its code — its module definitions and resource tables supply localized outfitting
   names. The names are factual Elite Dangerous game data; no EDDI code is incorporated.
@@ -161,10 +166,13 @@ a verbatim copy produced at build time — edit this file, never the copy.
   with its [announcement](https://x.com/EliteDangerous/status/1812792503776489745).
   Frontier's own **in-game localisation** supplies the outfitting category labels behind
   the module families and their German, Spanish, French, Brazilian Portuguese and Russian
-  display text, the engineering modification names in the six stored locales, and the
-  personal-equipment display text in `data/i18n/`: the suit names and descriptions, the
+  display text, the engineering modification names in the six stored locales, the market
+  commodity names in `data/i18n/commodity-names.jsonc`, and the personal-equipment
+  display text in `data/i18n/`: the suit names and descriptions, the suit tool names, the
   handheld-weapon descriptions, and the names and descriptions of the engineer-applied
-  suit and weapon modifications.
+  suit and weapon modifications. The game's own **commodity registry** supplies the
+  symbols and names of the mineral and chemical goods
+  `data/commodities/commodities.jsonc` holds beyond the FDevIDs snapshot.
   Values read directly from the running game are Frontier's too — see the notice below.
 - **A [community description](https://www.reddit.com/r/EliteDangerous/comments/1uk2zhp/plasma_laser_theorycrafting_following_new/)
   by u/Techno3020** — linked only as corroboration that the Operations Plasma conversion's

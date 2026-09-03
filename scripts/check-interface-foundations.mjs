@@ -2451,6 +2451,31 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
     'tools.ship':
       'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
+    'equipment.badge.PrimaryWeapon1':
+      'A two-character mount code on the row’s leading square. The letter is the mount kind’s initial, which German spells the same way (primär, sekundär).',
+    'equipment.badge.PrimaryWeapon2': 'The same mount code, for the second primary mount.',
+    'equipment.badge.SecondaryWeapon': 'The same mount code, for the secondary mount.',
+    'equipment.weapon.meta':
+      'A composition pattern; all three variables and the separator are language-neutral.',
+    'equipment.mount.selected':
+      'A composition pattern; both variables and the separator are language-neutral.',
+    'equipment.grade.short':
+      'The canvas’s own grade chip. G is the in-game abbreviation and German abbreviates Grad the same way.',
+    'equipment.grade.none': 'An em dash standing for a mount with no grade to state.',
+    'equipment.modifications.count':
+      'A composition pattern; both variables and the solidus are language-neutral.',
+    'equipment.attribute.dps': 'The in-game abbreviation for damage per second, not translated.',
+    'equipment.value.perSecond': 'The SI form for “per second”, identical in German.',
+    'equipment.value.mounts':
+      'A composition pattern; both variables and the plus sign are language-neutral.',
+    'equipment.damage.plasma': 'Plasma is the ordinary German word.',
+    'equipment.stats.regen':
+      'The canvas’s own abbreviation over the regeneration figure, with the SI form for “per second”; German abbreviates Regeneration the same way.',
+    'equipment.stats.dps': 'The same in-game abbreviation, in a composition pattern.',
+    'equipment.chooser.engineers':
+      'The variable alone. Engineers are people, and their names are the package’s in every language.',
+    'equipment.chooser.shieldPoints':
+      'SP is the in-game abbreviation for shield points and is not translated.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',

@@ -299,7 +299,7 @@ describe('build-link codec', () => {
     expect(minimalState(decoded)).toEqual(minimalState(source, true));
     expect(encodeBuildLinkFragment(decoded)).toBe(fragment);
     expect(fragment).toBe(
-      'b.26da!i-2iAMHR6!JZmTxbE77Oyj3V5R-f,ZnbT!fa_:86xIg:BUBnp6QoP26u6hI3sH,GUQdzesv1z',
+      'b.26da!i-2iAMHR6!JZRgv2A4OO8ezAd.KALtMaTu1R3sY,Lfi0zRNpDcH3ulwYrH!LT9kA@3_!oKDpG',
     );
     expect(`https://ships.example/#${fragment}`).toHaveLength(103);
   });
@@ -849,14 +849,13 @@ describe('build-link codec', () => {
 
   it('pins the reviewed pre-release table 1 content hash', async () => {
     // Table 1 was explicitly regenerated while the application and link format are still
-    // unpublished, most recently on 2026-09-02 under Almanac 0.2.8, which stopped offering the
-    // hull's built-in Cargo Hatch to an optional internal mount and so dropped one article from
-    // every optional-internal candidate set. Once released, a changed hash belongs under the next
-    // table number.
+    // unpublished, most recently on 2026-09-03 under Almanac 0.2.9, which added the nine large
+    // SRV hangar symbols at index 841 and so moved every module index above them. Once released,
+    // a changed hash belongs under the next table number.
     const { contentHash, tableVersion } = codecTable1.$generated;
     const { $generated: _omitted, ...payload } = codecTable1;
 
-    expect(contentHash).toBe('9f6e25b28b5da41b391779dbb8eed63570fbc6b50a6be7ee21fcbb65c7a997ce');
+    expect(contentHash).toBe('f9f977a6ebda651eb56cd082e8589ab32ce143458e0daa88b068df9f64247b68');
     expect(await canonicalHash(payload)).toBe(contentHash);
     expect(tableVersion).toBe(1);
   });
@@ -1023,7 +1022,7 @@ describe('build-link codec', () => {
     expect([emptyFragment, typicalFragment, largeFragment]).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.8oUeO4wu5ZrfCrTfzWgzw4R5x,/c-XJsc!MqzvUN.tw7Y:YwviztiNydqXRqom',
+      'b.8oUeO4wu5ZrfCrTfzkyEp9VJ1NAj-M4u5tBFFEp3.:aLg6tfRJSrwSAe4Dz6jB',
     ]);
     expect([emptyLink.length, typicalLink.length, largeLink.length]).toEqual([39, 33, 87]);
 

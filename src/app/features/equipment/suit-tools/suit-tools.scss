@@ -1,0 +1,77 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's `SUIT TOOLS` block: the same section rule the ledger's other
+// groups draw, over rows that are dimmed and carry a dashed badge.
+:host {
+  display: block;
+}
+
+.tools__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+  padding-inline: var(--ednb-space-2xl);
+  padding-block-end: var(--ednb-space-sm);
+}
+
+.tools__heading {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.tools__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+.tools__count {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+
+  flex: none;
+}
+
+.tools__rows {
+  @include layout.stack(0);
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tools__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-sm) var(--ednb-space-2xl);
+  color: var(--ednb-text-muted);
+}
+
+// The canvas's dashed square, which is what marks a tool apart from a mount:
+// a mount's badge is filled because something can go in it.
+.tools__badge {
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-code));
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--ednb-layout-step-number);
+  block-size: var(--ednb-layout-step-number);
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-accent);
+}
+
+.tools__name {
+  min-inline-size: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}

@@ -82,10 +82,11 @@ test.describe('product semantics', () => {
     await expect(current).toHaveText('Ship Builder');
     await expect(current).not.toHaveRole('link');
 
-    // Exactly the registry: one tool today, and no tab for one the application
-    // serves no address for.
-    await expect(tools.getByRole('listitem')).toHaveCount(1);
-    await expect(tools.getByRole('link')).toHaveCount(0);
+    // Exactly the registry: the two tools the application serves an address
+    // for, and no tab for one it does not. The tool that is not open is the
+    // link; the one that is open is the word above (013/FR-023).
+    await expect(tools.getByRole('listitem')).toHaveCount(2);
+    await expect(tools.getByRole('link')).toHaveText(['Equipment Builder']);
   });
 
   test('keeps naming the same tool on the screens that tool owns', async ({ page }) => {

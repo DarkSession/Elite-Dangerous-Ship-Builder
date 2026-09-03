@@ -16,7 +16,11 @@ import { NO_SLOT_CAPABILITIES } from '../../../../application/outfitting/outfitt
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
-import { ScreenChrome } from '../../../shared/screen-chrome';
+import {
+  HISTORY_REDO_MARK,
+  HISTORY_UNDO_MARK,
+  ScreenChrome,
+} from '../../../shared/screen-chrome';
 import type { IdentityCommit, IdentityField } from '../../../../ui/outfitting/ship-identity-fields';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { observeComposition } from '../../../../ui/outfitting/composition';
@@ -88,16 +92,6 @@ const WIDE_CATEGORIES = ['all', ...COMPACT_CATEGORIES] as const;
  * feature 001 and importing belongs to feature 004; this region says why it is
  * empty and stops there rather than offering an action it does not own (FR-001).
  */
-/**
- * The marks canvas 1c sets beside the history pair — `↶ UNDO` and `REDO ↷`.
- *
- * Two conventional typographic arrows, not icons: the word is drawn beside each
- * one either way, so nothing about either control has to be learned from a
- * shape. They are hidden from a reader, who has the words.
- */
-const HISTORY_UNDO_MARK = '\u21b6';
-const HISTORY_REDO_MARK = '\u21b7';
-
 @Component({
   selector: 'edsb-outfitting-workspace',
   imports: [

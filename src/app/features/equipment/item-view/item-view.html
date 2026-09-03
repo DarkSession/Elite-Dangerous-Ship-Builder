@@ -1,0 +1,64 @@
+@if (item(); as item) {
+  <article class="item" [attr.aria-labelledby]="headingId">
+    <header class="item__header">
+      @if (showBack()) {
+        <!-- Canvas 1b's `←`: the way back out of the drill-in, named in words
+             rather than by the glyph alone. -->
+        <button class="item__back" type="button" (click)="closed.emit()">
+          <span aria-hidden="true">←</span>
+          <span class="visually-hidden">{{ backLabel() }}</span>
+        </button>
+      }
+
+      <div class="item__identity">
+        <h2 class="item__name" [id]="headingId">
+          <edsb-game-text
+            [text]="item.name.text"
+            [language]="item.name.language"
+            [translationState]="item.name.translationState"
+          />
+        </h2>
+        <p class="item__subtitle">{{ item.subtitle }}</p>
+      </div>
+
+      <!-- The ship tool's own ladder, drawn as canvas 1a draws this one: the
+           chosen grade filled and the rest bare. An empty mount publishes no
+           grade, so it draws no ladder rather than an empty one. -->
+      @if (item.grades.length > 0) {
+        <edsb-grade-selector
+          class="item__grades"
+          [grades]="item.grades"
+          [selected]="item.grade"
+          [asSteps]="true"
+          (chosen)="gradeChosen.emit($event)"
+        />
+      }
+    </header>
+
+    <edsb-metric-group
+      class="item__attributes"
+      [label]="attributesLabel()"
+      [metrics]="item.attributes"
+    />
+
+    <!--
+      The item's own chooser: the suits, or the weapons this mount takes. It
+      opens over the item view rather than beside it, so a narrow column never
+      has to hold two lists (013 design/equipment-bench.md).
+    -->
+    <button class="item__swap" type="button" (click)="chooserOpened.emit()">
+      {{ item.chooserTitle }}
+    </button>
+
+    @if (item.noUpgradeNotice; as notice) {
+      <!-- Four locked slots with nothing to explain them would say the suit
+           could be upgraded and this bench would not let you. It says what is
+           true instead (spec Edge Cases). -->
+      <p class="item__notice">{{ notice }}</p>
+    }
+
+    <ng-content />
+  </article>
+} @else {
+  <p class="item__empty">{{ noSelectionLabel() }}</p>
+}

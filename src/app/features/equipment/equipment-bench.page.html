@@ -1,0 +1,82 @@
+<!--
+  Three columns wide, tabs compact. `data-composition` states which arrangement
+  the bench has room for, so a test can read the decision without measuring
+  pixels (responsive composition, "Verification matrix").
+-->
+<section class="bench" [attr.data-composition]="composition()">
+  @if (composition() !== 'wide' && store.hasLoadout()) {
+    <!--
+      Canvas 1b's tab strip. It is a size container of its own, so its width is
+      declared in the stylesheet rather than left to size to its labels.
+    -->
+    <edsb-tab-group
+      class="bench__tabs"
+      [label]="tabsLabel()"
+      [tabs]="tabs()"
+      [selectedId]="tab()"
+      (selected)="showTab($event)"
+    />
+  }
+
+  @if (!store.hasLoadout()) {
+    <div class="bench__empty">
+      <h2 class="bench__empty-title">{{ emptyTitle() }}</h2>
+      <p class="bench__empty-description">{{ emptyDescription() }}</p>
+      <button class="bench__empty-action" type="button" (click)="chooseFirstSuit()">
+        {{ emptyAction() }}
+      </button>
+    </div>
+  } @else {
+    @if (ledgerShown()) {
+      <section
+        class="bench__region bench__region--loadout"
+        [id]="loadoutPanelId"
+        [attr.aria-label]="ledgerLabel()"
+      >
+        <edsb-loadout-ledger
+          [ledger]="presenter.ledger()"
+          [selected]="store.selected()"
+          (opened)="open($event)"
+        />
+      </section>
+    }
+
+    @if (itemShown()) {
+      <!-- Compact, the item view stands where the ledger was, so it is what the
+           `LOADOUT` tab points at while a Commander is drilled into a row. -->
+      <section
+        class="bench__region bench__region--item"
+        [id]="ledgerShown() ? null : loadoutPanelId"
+        [attr.aria-label]="itemLabel()"
+      >
+        <edsb-item-view
+          [item]="presenter.item()"
+          [showBack]="composition() !== 'wide'"
+          (gradeChosen)="setGrade($event)"
+          (chooserOpened)="chooserOpen.set(true)"
+          (closed)="closeItem()"
+        />
+      </section>
+    }
+
+    @if (shows('stats')) {
+      <div class="bench__column">
+        <section
+          class="bench__region bench__region--stats"
+          [id]="statsPanelId"
+          [attr.aria-label]="statsLabel()"
+        >
+          <edsb-commander-stats [stats]="presenter.stats()" />
+        </section>
+      </div>
+    }
+  }
+
+  <edsb-weapon-chooser
+    [open]="chooserOpen()"
+    [target]="store.selected()"
+    [title]="chooserTitle()"
+    (chosen)="fit($event)"
+    (dismissed)="chooserOpen.set(false)"
+  />
+</section>

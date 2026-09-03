@@ -1,0 +1,9 @@
+<edsb-layer
+  [open]="open()"
+  [title]="title()"
+  [dismissLabel]="closeLabel()"
+  presentation="adaptive"
+  (dismissed)="dismissed.emit()"
+>
+  <edsb-choice-list [choices]="choices()" [label]="title()" (chosen)="chosen.emit($event)" />
+</edsb-layer>

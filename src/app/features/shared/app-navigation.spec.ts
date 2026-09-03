@@ -11,14 +11,17 @@ describe('AppNavigation tools', () => {
 
   it('offers only the tools this application serves an address for', () => {
     // The canvas names eight and the migration names two. What answers an
-    // address is the ship builder, and a tab that opens nothing is a control
-    // for a thing that does not exist (011/FR-028).
+    // address is the ship builder and the equipment builder, and a tab that
+    // opens nothing is a control for a thing that does not exist (011/FR-028).
     const tools = navigation().tools(NAVIGATION_ROUTES.catalogue);
 
-    expect(tools.map((tool) => tool.href)).toEqual([NAVIGATION_ROUTES.catalogue]);
-    // The tool's full name, as canvas 4c draws it in the tab. The product's tool
-    // is Ship Builder; `Ship` names something else.
-    expect(tools[0].label).toBe('Ship Builder');
+    expect(tools.map((tool) => tool.href)).toEqual([
+      NAVIGATION_ROUTES.catalogue,
+      NAVIGATION_ROUTES.equipment,
+    ]);
+    // Each tool's full name, as canvas 4c draws it in the tab. The product's
+    // tools are Ship Builder and Equipment Builder; `Ship` names something else.
+    expect(tools.map((tool) => tool.label)).toEqual(['Ship Builder', 'Equipment Builder']);
   });
 
   it('names the same tool on every route that tool owns', () => {
@@ -34,14 +37,33 @@ describe('AppNavigation tools', () => {
     }
   });
 
+  it('names the equipment builder on the bench, and the ship tool on neither', () => {
+    const tools = navigation().tools(NAVIGATION_ROUTES.equipment);
+
+    expect(tools.map((tool) => tool.current)).toEqual([false, true]);
+  });
+
   it('marks no tool current on a route no tool owns', () => {
-    expect(navigation().tools('/somewhere-else')[0].current).toBe(false);
+    expect(
+      navigation()
+        .tools('/somewhere-else')
+        .some((tool) => tool.current),
+    ).toBe(false);
   });
 
   it('does not treat a route that merely starts with the same letters as owned', () => {
     // `/shipsomething` is not under `/ships`. A plain prefix test would claim
     // it, and the bar would name a tool that does not serve the address.
-    expect(navigation().tools('/shipsomething')[0].current).toBe(false);
+    expect(
+      navigation()
+        .tools('/shipsomething')
+        .some((tool) => tool.current),
+    ).toBe(false);
+    expect(
+      navigation()
+        .tools('/equipmentsomething')
+        .some((tool) => tool.current),
+    ).toBe(false);
   });
 
   it('carries the same address the insignia does, so one registry answers both', () => {

@@ -1,0 +1,55 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's trailing column: blocks separated by a hairline, each opening
+// with a tracked micro label.
+:host {
+  display: block;
+}
+
+.stats {
+  @include layout.stack(0);
+}
+
+.stats__block {
+  @include layout.stack(var(--ednb-space-stack-loose));
+
+  padding: var(--ednb-space-lg) var(--ednb-space-2xl);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+}
+
+.stats__heading {
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-label));
+
+  margin: 0;
+}
+
+.stats__resistances,
+.stats__firepower {
+  @include layout.stack(var(--ednb-space-row));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stats__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ednb-space-inline);
+}
+
+.stats__weapon {
+  min-inline-size: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-caption);
+  color: var(--ednb-text-muted);
+}
+
+.stats__figure {
+  @include layout.micro-label(var(--ednb-text-numeric), var(--ednb-text-tracking-count));
+
+  flex: none;
+  font-size: var(--ednb-text-size-caption);
+  text-transform: none;
+}

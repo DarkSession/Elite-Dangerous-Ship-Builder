@@ -96,6 +96,12 @@
   // their own marker's hue.
   --ednb-surface-success-quiet: var(--ednb-palette-good-a08);
 
+  // The filled length of a resistance bar that reduces damage taken, in the
+  // green the equipment canvas 1a draws it. Its opposite is the danger solid
+  // already above, which is the same red the canvas uses for a resistance that
+  // increases damage.
+  --ednb-surface-success-solid: var(--ednb-palette-good);
+
   // Canvas 1c gives each capacitor bank its own colour on the pip display, the
   // same three the game does.
   --ednb-surface-bank-systems: var(--ednb-palette-cool);
@@ -372,6 +378,7 @@
   --ednb-layout-sheet-column: var(--ednb-measure-sheet-column);
   --ednb-layout-ledger-rail: var(--ednb-measure-ledger-rail);
   --ednb-layout-status-rail: var(--ednb-measure-status-rail);
+  --ednb-layout-commander-rail: var(--ednb-measure-commander-rail);
 
   // What a region has to clear to sit below the sticky banner — the tool deck
   // and the command deck under it, which are one bar and one sticky region.
@@ -454,6 +461,7 @@
   --ednb-layout-export-content-wide: var(--ednb-measure-export-content-wide);
   --ednb-layout-grade-step: var(--ednb-measure-grade-step);
   --ednb-layout-defence-resist: var(--ednb-measure-defence-resist);
+  --ednb-layout-resistance-bar: var(--ednb-measure-resistance-bar);
   --ednb-layout-defence-value: var(--ednb-measure-defence-value);
 
   --ednb-layout-mount-box: var(--ednb-measure-mount-box);
