@@ -7,18 +7,35 @@ import {
   signal,
 } from '@angular/core';
 import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
+import { BuildLibraryStore } from '../../application/build-library/build-library.store';
+import { NamedRecordService } from '../../application/build-library/named-record.service';
+import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
+import {
+  SaveConflictService,
+  type ConflictChoice,
+} from '../../application/build-library/save-conflict.service';
 import { LoadoutPresenter } from '../../application/equipment/loadout.presenter';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import type { EditTarget } from '../../domain/equipment/loadout/loadout-edit';
+import { Formatters } from '../../i18n/formatters/formatters';
+import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
+import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { relationId } from '../../ui/a11y/text-equivalence';
+import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { TabGroup, type TabItem } from '../../ui/components/tab-group/tab-group';
 import { observeBenchComposition } from '../../ui/equipment/bench-composition';
+import {
+  SaveBuildDialog,
+  type SaveRequest,
+  type SaveSource,
+} from '../build-workspace/save-build.dialog';
 import { HISTORY_REDO_MARK, HISTORY_UNDO_MARK, ScreenChrome } from '../shared/screen-chrome';
 import { CommanderStats } from './commander-stats/commander-stats';
 import { ItemView } from './item-view/item-view';
 import { LoadoutLedger } from './loadout-ledger/loadout-ledger';
 import { MaterialRequirements } from './material-requirements/material-requirements';
+import { SuitGate } from './suit-gate/suit-gate';
 import { ModificationChooser } from './item-view/modification-chooser';
 import { WeaponChooser } from './item-view/weapon-chooser';
 
@@ -31,9 +48,13 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
  * The second tool the shell carries. Wide, it is artboard `1a`: the loadout
  * ledger, the item view and the commander column side by side, with the
  * choosers opening over the item view. Compact, it is artboard `1b`: a tab per
- * region — `LOADOUT` and `STATS` here, with `MATERIALS` joining them in US2 —
- * with the item view as a drill-in from a ledger row and the choosers as sheets
- * over it.
+ * region — `LOADOUT`, `STATS` and `MATERIALS` — with the item view as a drill-in
+ * from a ledger row and the choosers as sheets over it.
+ *
+ * With nothing on the bench it is artboard `2a` and `2b`: the same regions,
+ * drawn and inert, with the suit gate standing in the detail column — the bench
+ * is never replaced by an empty state, because what it will hold is what the
+ * gate is asking about.
  *
  * Undo and redo are published into the shell's own bar, where the canvas draws
  * them and where the ship tool already puts the same pair (FR-022).
@@ -45,11 +66,14 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
 @Component({
   selector: 'edsb-equipment-bench-page',
   imports: [
+    ChoiceDialog,
     CommanderStats,
     ItemView,
     LoadoutLedger,
     MaterialRequirements,
     ModificationChooser,
+    SaveBuildDialog,
+    SuitGate,
     TabGroup,
     WeaponChooser,
   ],
@@ -60,6 +84,13 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
 export class EquipmentBenchPage {
   readonly #messages = inject(MessageService);
   readonly #chrome = inject(ScreenChrome);
+  readonly #clock = inject(ClockAdapter);
+  readonly #formatters = inject(Formatters);
+  readonly #gameText = inject(GameTextPresenter);
+  readonly #library = inject(BuildLibraryStore);
+  readonly #named = inject(NamedRecordService);
+  readonly #conflicts = inject(SaveConflictService);
+  readonly #invalidation = inject(RecordInvalidationService);
 
   readonly store = inject(LoadoutStore);
   readonly presenter = inject(LoadoutPresenter);
@@ -72,10 +103,10 @@ export class EquipmentBenchPage {
   readonly statsLabel = this.#messages.messageSignal('equipment.region.stats');
   readonly materialsLabel = this.#messages.messageSignal('equipment.region.materials');
   readonly tabsLabel = this.#messages.messageSignal('equipment.tab.group');
-  readonly emptyTitle = this.#messages.messageSignal('equipment.no-loadout.title');
-  readonly emptyDescription = this.#messages.messageSignal('equipment.no-loadout.description');
-  readonly emptyAction = this.#messages.messageSignal('equipment.no-loadout.action');
   readonly suitChooserTitle = this.#messages.messageSignal('equipment.chooser.suit');
+  readonly saveLabel = this.#messages.messageSignal('workspace.actions.save');
+  readonly conflictTitle = this.#messages.messageSignal('workspace.conflict.title');
+  readonly dismissLabel = this.#messages.messageSignal('action.close');
 
   readonly loadoutPanelId = relationId('bench-loadout');
   readonly statsPanelId = relationId('bench-stats');
@@ -121,8 +152,15 @@ export class EquipmentBenchPage {
     () => this.shows('loadout') && (this.composition() === 'wide' || !this.drilledIn()),
   );
 
+  /**
+   * Wide draws the detail column always; compact draws it in place of the ledger
+   * while a row is drilled into — and beneath the ledger while the bench is
+   * empty, where canvas 2b puts the gate under the rows it will fill in.
+   */
   readonly itemShown = computed(
-    () => this.composition() === 'wide' || (this.tab() === 'loadout' && this.drilledIn()),
+    () =>
+      this.composition() === 'wide' ||
+      (this.tab() === 'loadout' && (this.drilledIn() || !this.store.hasLoadout())),
   );
 
   constructor() {
@@ -151,11 +189,187 @@ export class EquipmentBenchPage {
                 },
                 perform: () => void this.store.redo(),
               },
+              {
+                action: {
+                  id: 'equipment.save',
+                  label: this.#messages.message('workspace.actions.save'),
+                },
+                perform: () => this.openSave(),
+              },
             ]
           : [],
       );
       onCleanup(() => this.#chrome.setActions([]));
     });
+  }
+
+  /** Whether the save layer is open, and whether a write is in flight. */
+  readonly #saveOpen = signal(false);
+  readonly saveOpen = this.#saveOpen.asReadonly();
+  readonly #saving = signal(false);
+  readonly saving = this.#saving.asReadonly();
+  readonly #saveFailure = signal<string | null>(null);
+  readonly saveFailure = this.#saveFailure.asReadonly();
+
+  /** The name currently typed into the layer, for the duplicate-name count. */
+  readonly #saveName = signal('');
+
+  /**
+   * The save this loadout was opened from, as the layer needs to state it.
+   *
+   * The ship tool's own save layer, unchanged: one library holds both tools'
+   * records, so naming, replacing and keeping both are one behaviour rather
+   * than two (013 contracts/loadout-persistence.md).
+   */
+  readonly saveSource = computed<SaveSource | null>(() => {
+    const source = this.store.source();
+    if (source === null) return null;
+    const record = this.#library.find(source.recordId);
+    if (record === null || record.name === null) return null;
+    return {
+      name: record.name,
+      lastSaved: this.#formatters.relativeTime(new Date(record.modifiedAt), this.#clock.now()),
+      replaceable: this.#conflicts.canOverwrite,
+    };
+  });
+
+  /**
+   * The name the layer starts from.
+   *
+   * A loadout carries no name of its own — no ship name, no ident — so the suit
+   * it is built on is what it is called until a Commander says otherwise, which
+   * is the rule the library already applies to an unnamed loadout row.
+   */
+  readonly saveInitialName = computed(() => {
+    const source = this.saveSource();
+    if (source !== null) return source.name;
+    const loadout = this.store.loadout();
+    return loadout === null ? '' : (this.#gameText.suitName(loadout.suitFamily).text ?? '');
+  });
+
+  readonly saveDuplicateCount = computed(() => this.#library.countByName(this.#saveName()));
+
+  /** The conflict another tab's write raised, and the answers to it. */
+  readonly conflict = this.#conflicts.conflict;
+
+  readonly conflictDescription = computed(() => {
+    const conflict = this.#conflicts.conflict();
+    return conflict === null
+      ? null
+      : this.#messages.message('workspace.conflict.description', {
+          name: conflict.observed.name ?? this.saveInitialName(),
+        });
+  });
+
+  readonly conflictChoices = computed<readonly DialogChoice[]>(() => {
+    const choices: DialogChoice[] = [];
+    if (this.#conflicts.canOverwrite) {
+      choices.push({
+        id: 'overwrite',
+        label: this.#messages.message('workspace.conflict.overwrite'),
+        outcome: this.#messages.message('workspace.conflict.overwrite.outcome'),
+      });
+    }
+    choices.push({
+      id: 'keep-both',
+      label: this.#messages.message('workspace.conflict.keep-both'),
+      outcome: this.#messages.message('workspace.conflict.keep-both.outcome'),
+    });
+    choices.push({
+      id: 'cancel',
+      label: this.#messages.message('workspace.conflict.cancel'),
+      outcome: this.#messages.message('workspace.conflict.cancel.outcome'),
+    });
+    return choices;
+  });
+
+  openSave(): void {
+    // Re-read before asking: the record being offered for replacement may have
+    // been renamed or removed in another tab since this page last looked.
+    this.#library.refresh();
+    this.#saveFailure.set(null);
+    this.#saveName.set(this.saveInitialName());
+    this.#saveOpen.set(true);
+  }
+
+  dismissSave(): void {
+    this.#saveOpen.set(false);
+  }
+
+  changeSaveName(name: string): void {
+    this.#saveName.set(name);
+  }
+
+  async requestSave({ name, note, overwrite }: SaveRequest): Promise<void> {
+    const loadout = this.store.loadout();
+    if (this.#saving() || loadout === null) return;
+
+    this.#saving.set(true);
+    const now = this.#clock.timestamp();
+    const source = this.store.source();
+    const payload = { tool: 'equipment', loadout } as const;
+
+    const result =
+      overwrite && source !== null
+        ? await this.#conflicts.save(
+            {
+              recordId: source.recordId,
+              expectedRevisionId: source.baseRevisionId,
+              name,
+              note,
+              payload,
+              now,
+            },
+            null,
+          )
+        : await this.#named.createNamed({ name, note, payload, now });
+
+    this.#saving.set(false);
+
+    // The layer closes on a save that happened and on a conflict that replaces
+    // it with a question. It stays open on a write that did nothing, carrying
+    // why: the bench looks the same whether a save landed or not.
+    if (result.kind === 'saved' || result.kind === 'conflict') {
+      this.#saveFailure.set(null);
+      this.#saveOpen.set(false);
+    } else {
+      this.#saveFailure.set(this.#saveFailureMessage(result.kind));
+    }
+
+    if (result.kind === 'saved') {
+      this.#adoptSavedRecord(result.record.id, result.record.revisionId);
+    }
+
+    this.#library.refresh();
+  }
+
+  async resolveConflict(choice: string): Promise<void> {
+    const result = await this.#conflicts.resolve(choice as ConflictChoice);
+
+    if (result?.kind === 'saved') {
+      this.#adoptSavedRecord(result.record.id, result.record.revisionId);
+    } else if (result !== null && result.kind !== 'conflict') {
+      this.#saveFailure.set(this.#saveFailureMessage(result.kind));
+      this.#saveName.set(this.saveInitialName());
+      this.#saveOpen.set(true);
+    }
+    this.#library.refresh();
+  }
+
+  dismissConflict(): void {
+    this.#conflicts.clear();
+  }
+
+  #saveFailureMessage(kind: 'failed' | 'locks-unavailable' | 'missing'): string {
+    return this.#messages.message(
+      kind === 'missing' ? 'workspace.save.failed.missing' : 'workspace.save.failed',
+    );
+  }
+
+  /** The loadout on the bench now belongs to the save that was just written. */
+  #adoptSavedRecord(recordId: string, revisionId: string): void {
+    this.store.named({ recordId, baseRevisionId: revisionId });
+    this.#invalidation.announceWrite(recordId, revisionId);
   }
 
   showTab(tab: string): void {
@@ -167,16 +381,9 @@ export class EquipmentBenchPage {
     () => this.presenter.item()?.chooserTitle ?? this.suitChooserTitle(),
   );
 
-  /**
-   * Starts a loadout from an empty bench.
-   *
-   * The bench opens with nothing on it, and weapons, grades and modifications
-   * all belong to a suit — so the one thing an empty bench offers is choosing
-   * one, through the same chooser `SWAP SUIT` opens.
-   */
-  chooseFirstSuit(): void {
-    this.store.select('suit');
-    this.chooserOpen.set(true);
+  /** The first suit, chosen from the gate rather than from a chooser layer. */
+  chooseFirstSuit(family: string): void {
+    this.store.dispatch({ kind: 'selectSuit', suitFamily: family });
   }
 
   /** Opens a ledger row in the item view, drilling in where there is no room. */
@@ -184,7 +391,9 @@ export class EquipmentBenchPage {
     this.store.select(target);
     this.chooserOpen.set(false);
     this.slotOpen.set(null);
-    this.drilledIn.set(true);
+    // An empty bench has no item view to drill into, and canvas 2b keeps the
+    // ledger and the gate on screen together.
+    this.drilledIn.set(this.store.hasLoadout());
   }
 
   /** Fits what the modification chooser answered, into the slot it was opened for. */

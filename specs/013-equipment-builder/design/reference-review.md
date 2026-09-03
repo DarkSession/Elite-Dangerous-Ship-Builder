@@ -3,6 +3,9 @@
 What is taken from `.design/Equipment Builder.dc.html`, what is withdrawn, and why. The canvas is
 the record: what it draws ships, and what it does not draw does not.
 
+The canvas has two turns. Turn 1 is artboards `1a` (1640px) and `1b` (390px): a bench with a suit
+already on it. Turn 2 is `2a` and `2b`, added on 2026-09-03: the same bench before a suit is chosen.
+
 ## Retained as drawn
 
 - Three regions wide — ledger, item view, stats — with materials under the stats column, and three
@@ -86,18 +89,51 @@ The canvas's colours, type sizes, letter-spacing and paddings are inline styles 
 matched through the design system's tokens, and no literal from the canvas enters a stylesheet
 (constitution VII).
 
-## States the canvas never draws
+## The empty bench, as turn 2 draws it
 
-Both artboards open on a bench with a suit already on it. Two states the running
-application has are therefore not on the canvas at all, and each is answered by
-the ship tool's own precedent rather than by invention.
+Turn 1 opened on a bench with a suit already on it, and the state the application actually opens in
+was answered here by the ship tool's no-build block. Turn 2 draws that state, and the canvas's
+answer replaces the borrowed one: **the bench is never replaced by an empty state**. Every region
+stays drawn — the suit row, all three mounts, the figures, the material block — and the detail
+column holds the one live choice there is.
+
+| Drawn on `2a` / `2b`                                     | What ships                                                                                                                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The ledger with a `+` suit row and three locked mounts   | As drawn. The mounts are the catalogue's three, each named and stated `LOCKED`; the counts are `0`, `—`, `—`.                                                      |
+| `NO SUIT FITTED` over the detail column                  | As drawn, with the step rule `STEP 1 · CHOOSE A SUIT` and the suits beneath it.                                                                                    |
+| The four suits as two-up cards                           | The same rows the suit chooser draws, laid out two to a line. One list component serves the chooser and the gate, so a suit reads the same in both places.         |
+| A dimmed grade ladder and four dashed modification slots | As drawn wide, `inert` and out of the accessibility tree: they are previews of controls, not controls. Canvas `2b` leaves both out, and so does the compact bench. |
+| `COMMANDER STATS` with a dash in every figure            | As drawn. Which figures a suit answers is itself information, and an absent block states none of it.                                                               |
+| `MATERIAL REQUIREMENTS · NONE` with its footnote         | As drawn.                                                                                                                                                          |
+
+Dimming is how the canvas separates the live choice from what is drawn around it. Here that is
+carried by words and by the accessibility tree — `LOCKED` on a mount, `EMPTY · REQUIRED FIRST` on
+the suit row, `inert` on the previews — because nothing essential may depend on a colour value
+(constitution V).
+
+### Withdrawn from turn 2, with the reason
+
+| Drawn on `2a` / `2b`                                            | Withdrawn because                                                                                                                                                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Each suit's type word — `TACTICAL`, `UTILITY`, `EXPLORATION`    | `Suit` publishes no type, as the table above already records for the ledger's code line                                                                                                          |
+| Each suit's description — "Combat frame. Two primaries, …"      | The package publishes no suit description. Four sentences of prose about what a suit is for would be written here and stated as the library's (constitution II)                                  |
+| `SUIT TOOLS` rows on an empty bench — Energylink, Arc Cutter, … | Carriage is a property of a suit. With none worn there is no published tool list, and the canvas's three rows are the subset its mock happened to draw. The heading and its `—` count still are. |
+| `IMPORT A JOURNAL EVENT`                                        | The bench has no such capability. Nothing in the spec imports a journal event, and a link to a screen that does not exist is not an arrangement                                                  |
+| The `SLOTS` caption over each card's mount line                 | The card is the chooser's row, and that row already carries the mount line as its code line. One row shape for both places is worth more than one word of caption                                |
+
+`OPEN A SAVED BUILD` ships as drawn, pointing at feature 001's record library — the one list that
+holds both tools' records, as the first table in this review rules.
+
+## The state neither turn draws
 
 | The state                  | What ships                                                                                                                                                                                                                                                             |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A bench with nothing on it | The ship tool's no-build block — a title, a description and, because choosing a suit is a thing this tool owns, one control that opens the suit chooser. The spec opens on this state (US1 scenario 1), so it needs a way out of it.                                   |
 | A mount with nothing on it | The item view states the mount and offers `CHOOSE A WEAPON`, with no grade ladder and no attribute grid: an empty mount publishes no figure, and the item view is the one place the chooser that fills it is opened. The canvas's mock has every mount already filled. |
 
-The compact tab strip carries `LOADOUT` and `STATS` while US1 is what ships.
-Canvas 1b draws a third, `MATERIALS`, and it joins the strip with the region it
-names (US2) — a tab pointing at a panel that does not exist is not the canvas's
-arrangement, it is a broken relationship.
+## The record library, which this tool now shares
+
+Feature 001's library was a list of ship builds and its second column was headed `Ship`. It now
+holds both tools' records, so that column carries a hull for one and a suit for the other. The
+column keeps its heading — it is the ship tool's own canvas, and no canvas draws a two-tool
+library — and each row names the tool that made it among its read-not-drawn facts, so a reader is
+never left to infer the tool from a name they may not recognise.

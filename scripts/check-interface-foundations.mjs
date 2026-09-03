@@ -2451,6 +2451,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
     'tools.ship':
       'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
+    'equipment.badge.empty':
+      'A `+` in the row’s leading square where a badge goes: a sign, not a word, and the same sign in every language.',
+    'equipment.count.none':
+      'An em dash where a count would be, on a rule that has nothing to count yet. A punctuation mark, not a word.',
     'equipment.badge.PrimaryWeapon1':
       'A two-character mount code on the row’s leading square. The letter is the mount kind’s initial, which German spells the same way (primär, sekundär).',
     'equipment.badge.PrimaryWeapon2': 'The same mount code, for the second primary mount.',

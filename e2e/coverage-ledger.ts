@@ -194,6 +194,31 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    surfaceId: 'equipment/gate',
+    requirements: ['013/FR-001'],
+    journey: 'equipment/bench',
+    axe: true,
+    assertions: [
+      'a bench with no suit on it is drawn whole, with the choice that fills it in the detail column',
+      'the ledger states every mount locked, and the figures a suit will answer as a dash',
+      'the previewed ladder and slots are out of the focus order and the accessibility tree',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'equipment/library',
+    requirements: ['013/FR-016', '013/FR-017', '013/FR-018', '013/FR-019'],
+    journey: 'equipment/library',
+    axe: false,
+    assertions: [
+      'a saved loadout reopens onto the bench with the suit and grade it was saved with',
+      'one library lists both tools’ records, each row naming the tool that made it',
+      'a second save under a taken name asks which version survives, and writes a separate record',
+      'a loadout this version cannot rebuild is refused, and its bytes are left alone',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'shell/tool-navigation',
     requirements: ['011/FR-028', '011/SC-009'],
     journey: 'product/semantics',

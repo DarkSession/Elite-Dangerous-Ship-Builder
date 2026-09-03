@@ -20,12 +20,13 @@ function choices(page: Page): Locator {
 }
 
 async function chooseSuit(page: Page, name: string): Promise<void> {
-  const empty = page.locator('.bench__empty-action');
-  if ((await empty.count()) > 0) {
-    await empty.click();
-  } else {
-    await page.locator('.item__swap').click();
+  const gate = page.locator('.gate__suits .choice');
+  if ((await gate.count()) > 0) {
+    await gate.filter({ hasText: name }).click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+    return;
   }
+  await page.locator('.item__swap').click();
   await choices(page).filter({ hasText: name }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 }
@@ -47,15 +48,18 @@ async function openRow(page: Page, target: string): Promise<void> {
 
 test.describe('every bench state', () => {
   test('a bench with nothing on it says so and stays sound', async ({ page }, testInfo) => {
+    // Canvas 2a's gate: the ledger, the figures and the slots are all drawn,
+    // and the previews among them are out of the reading order rather than
+    // dimmed into it.
     await page.goto('/equipment');
-    await expect(page.locator('.bench__empty-action')).toBeVisible();
+    await expect(page.locator('.gate')).toBeVisible();
 
     await sweepOutfittingState(page, testInfo, 'empty bench');
   });
 
   test('a loadout, and a chooser open over it', async ({ page }, testInfo) => {
     await page.goto('/equipment');
-    await expect(page.locator('.bench__empty-action')).toBeVisible();
+    await expect(page.locator('.gate')).toBeVisible();
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, RIFLE_MOUNT);
     await page.locator('.item__swap').click();
@@ -72,7 +76,7 @@ test.describe('every bench state', () => {
 
   test('a fitted modification, and the slot chooser that fitted it', async ({ page }, testInfo) => {
     await page.goto('/equipment');
-    await expect(page.locator('.bench__empty-action')).toBeVisible();
+    await expect(page.locator('.gate')).toBeVisible();
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, 'suit');
     await page.locator('.grade').last().click();
@@ -93,7 +97,7 @@ test.describe('every bench state', () => {
     page,
   }, testInfo) => {
     await page.goto('/equipment');
-    await expect(page.locator('.bench__empty-action')).toBeVisible();
+    await expect(page.locator('.gate')).toBeVisible();
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, 'PrimaryWeapon2');
     await page.locator('.item__swap').click();

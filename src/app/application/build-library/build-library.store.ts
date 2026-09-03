@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import type { LocalRecordV1, StoredRecordEntry } from '../../domain/ships/build/stored-build';
+import type { LocalRecord, StoredRecordEntry } from '../../domain/records/local-record';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import type { StorageFailureCode } from '../../platform/storage/web-storage.port';
 import { RecordInvalidationService } from './record-invalidation.service';
@@ -102,7 +102,7 @@ export class BuildLibraryStore {
   }
 
   /** One record by identity, if it is currently readable. */
-  find(recordId: string): LocalRecordV1 | null {
+  find(recordId: string): LocalRecord | null {
     const entry = this.#entries().find((candidate) =>
       candidate.available ? candidate.record.id === recordId : candidate.id === recordId,
     );

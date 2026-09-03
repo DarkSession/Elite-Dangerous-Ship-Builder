@@ -4,7 +4,7 @@
   pixels (responsive composition, "Verification matrix").
 -->
 <section class="bench" [attr.data-composition]="composition()">
-  @if (composition() !== 'wide' && store.hasLoadout()) {
+  @if (composition() !== 'wide') {
     <!--
       Canvas 1b's tab strip. It is a size container of its own, so its width is
       declared in the stylesheet rather than left to size to its labels.
@@ -18,37 +18,29 @@
     />
   }
 
-  @if (!store.hasLoadout()) {
-    <div class="bench__empty">
-      <h2 class="bench__empty-title">{{ emptyTitle() }}</h2>
-      <p class="bench__empty-description">{{ emptyDescription() }}</p>
-      <button class="bench__empty-action" type="button" (click)="chooseFirstSuit()">
-        {{ emptyAction() }}
-      </button>
-    </div>
-  } @else {
-    @if (ledgerShown()) {
-      <section
-        class="bench__region bench__region--loadout"
-        [id]="loadoutPanelId"
-        [attr.aria-label]="ledgerLabel()"
-      >
-        <edsb-loadout-ledger
-          [ledger]="presenter.ledger()"
-          [selected]="store.selected()"
-          (opened)="open($event)"
-        />
-      </section>
-    }
+  @if (ledgerShown()) {
+    <section
+      class="bench__region bench__region--loadout"
+      [id]="loadoutPanelId"
+      [attr.aria-label]="ledgerLabel()"
+    >
+      <edsb-loadout-ledger
+        [ledger]="presenter.ledger()"
+        [selected]="store.selected()"
+        (opened)="open($event)"
+      />
+    </section>
+  }
 
-    @if (itemShown()) {
-      <!-- Compact, the item view stands where the ledger was, so it is what the
-           `LOADOUT` tab points at while a Commander is drilled into a row. -->
-      <section
-        class="bench__region bench__region--item"
-        [id]="ledgerShown() ? null : loadoutPanelId"
-        [attr.aria-label]="itemLabel()"
-      >
+  @if (itemShown()) {
+    <!-- Compact, the item view stands where the ledger was, so it is what the
+         `LOADOUT` tab points at while a Commander is drilled into a row. -->
+    <section
+      class="bench__region bench__region--item"
+      [id]="ledgerShown() ? null : loadoutPanelId"
+      [attr.aria-label]="itemLabel()"
+    >
+      @if (store.hasLoadout()) {
         <edsb-item-view
           [item]="presenter.item()"
           [showBack]="composition() !== 'wide'"
@@ -57,42 +49,46 @@
           (slotOpened)="slotOpen.set($event)"
           (closed)="closeItem()"
         />
-      </section>
-    }
+      } @else {
+        <!-- Canvas 2a and 2b: the one live choice on an empty bench stands in
+             the column the item will occupy, not in place of the bench. -->
+        <edsb-suit-gate [compact]="composition() !== 'wide'" (chosen)="chooseFirstSuit($event)" />
+      }
+    </section>
+  }
 
-    @if (shows('stats')) {
-      <div class="bench__column">
-        <section
-          class="bench__region bench__region--stats"
-          [id]="statsPanelId"
-          [attr.aria-label]="statsLabel()"
-        >
-          <edsb-commander-stats [stats]="presenter.stats()" />
-        </section>
-
-        <!-- Canvas 1a puts the material requirements under the stats in the
-             same column; canvas 1b gives them a tab of their own. -->
-        @if (composition() === 'wide') {
-          <section
-            class="bench__region bench__region--materials"
-            [id]="materialsPanelId"
-            [attr.aria-label]="materialsLabel()"
-          >
-            <edsb-material-requirements [materials]="presenter.materials()" />
-          </section>
-        }
-      </div>
-    }
-
-    @if (composition() !== 'wide' && tab() === 'materials') {
+  @if (shows('stats')) {
+    <div class="bench__column">
       <section
-        class="bench__region bench__region--materials"
-        [id]="materialsPanelId"
-        [attr.aria-label]="materialsLabel()"
+        class="bench__region bench__region--stats"
+        [id]="statsPanelId"
+        [attr.aria-label]="statsLabel()"
       >
-        <edsb-material-requirements [materials]="presenter.materials()" />
+        <edsb-commander-stats [stats]="presenter.stats()" />
       </section>
-    }
+
+      <!-- Canvas 1a puts the material requirements under the stats in the
+           same column; canvas 1b gives them a tab of their own. -->
+      @if (composition() === 'wide') {
+        <section
+          class="bench__region bench__region--materials"
+          [id]="materialsPanelId"
+          [attr.aria-label]="materialsLabel()"
+        >
+          <edsb-material-requirements [materials]="presenter.materials()" />
+        </section>
+      }
+    </div>
+  }
+
+  @if (composition() !== 'wide' && tab() === 'materials') {
+    <section
+      class="bench__region bench__region--materials"
+      [id]="materialsPanelId"
+      [attr.aria-label]="materialsLabel()"
+    >
+      <edsb-material-requirements [materials]="presenter.materials()" />
+    </section>
   }
 
   <edsb-weapon-chooser
@@ -101,6 +97,36 @@
     [title]="chooserTitle()"
     (chosen)="fit($event)"
     (dismissed)="chooserOpen.set(false)"
+  />
+
+  <!--
+    Naming and saving, through the ship tool's own save layer: one library holds
+    both tools' records, so the question a duplicate name raises is asked once
+    and answered the same way (FR-016, FR-017).
+  -->
+  <edsb-save-build-dialog
+    [open]="saveOpen()"
+    [initialName]="saveInitialName()"
+    [source]="saveSource()"
+    [duplicateCount]="saveDuplicateCount()"
+    [failure]="saveFailure()"
+    [saving]="saving()"
+    (nameChanged)="changeSaveName($event)"
+    (saveRequested)="requestSave($event)"
+    (dismissed)="dismissSave()"
+  />
+
+  <!-- Another tab wrote the record after this bench opened it. Three answers,
+       each stating which versions survive, and no lock is held while the
+       question is on screen (FR-017). -->
+  <edsb-choice-dialog
+    [open]="conflict() !== null"
+    [title]="conflictTitle()"
+    [description]="conflictDescription()"
+    [choices]="conflictChoices()"
+    [dismissLabel]="dismissLabel()"
+    (chosen)="resolveConflict($event)"
+    (dismissed)="dismissConflict()"
   />
 
   <edsb-modification-chooser

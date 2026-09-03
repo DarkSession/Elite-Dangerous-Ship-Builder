@@ -27,7 +27,7 @@ describe('SuitTools', () => {
       name.textContent?.trim(),
     );
 
-    expect(named.length).toBe(presenter.ledger().toolCount);
+    expect(String(named.length)).toBe(presenter.ledger().toolCount);
     expect(named.every((name) => name !== '')).toBe(true);
   });
 

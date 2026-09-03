@@ -4,7 +4,7 @@
       <div class="ledger__rule">
         <h2 class="ledger__heading" [id]="suitHeadingId">{{ suitLabel() }}</h2>
         <span class="ledger__line" aria-hidden="true"></span>
-        <span class="ledger__count" aria-hidden="true">1</span>
+        <span class="ledger__count" aria-hidden="true">{{ ledger().suitCount }}</span>
         <span class="visually-hidden">{{ suitCount() }}</span>
       </div>
 

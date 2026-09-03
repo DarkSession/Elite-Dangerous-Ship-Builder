@@ -2041,7 +2041,8 @@ const NAMED_BUILD = {
   id: 'record-1',
   title: 'Anaconda explorer',
   named: true,
-  hull: ANACONDA_NAME,
+  subject: ANACONDA_NAME,
+  toolLabel: 'Ship Builder',
   modified: '2 weeks ago',
   modifiedExact: 'Edited 12 August 2026, 14:20',
   validation: { label: 'Complete', tone: 'success' },
@@ -2072,6 +2073,30 @@ const CURRENT_BUILD = {
   ...NAMED_BUILD,
   id: 'record-current',
   current: true,
+} as const;
+
+/**
+ * A loadout, in the same row as a build.
+ *
+ * One library holds both tools' records, so the column beside the title carries
+ * a hull for one and a suit for the other, and the row names which tool made it
+ * among its read-not-drawn facts. A loadout records no verdict of its own (013
+ * contracts/loadout-persistence.md).
+ */
+const LOADOUT_RECORD = {
+  ...NAMED_BUILD,
+  id: 'record-loadout',
+  title: 'Silent Entry',
+  subject: {
+    text: 'Maverick Suit',
+    language: 'en',
+    translationState: 'localized',
+    disclosureKey: null,
+  },
+  toolLabel: 'Equipment Builder',
+  validation: null,
+  issues: null,
+  note: null,
 } as const;
 
 /** A build whose recorded verdict counted issues against it. */
@@ -2108,6 +2133,7 @@ registerPreview({
         'choosing the row is one action that names the record it would act on',
         'the recorded verdict is words with a tone, never a coloured dot',
         'the row reads title, hull and edited-at in the order the headers name',
+        'the row names the tool that made it, read rather than drawn',
       ],
       ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
     ),
@@ -2169,6 +2195,7 @@ registerPreview({
           CURRENT_BUILD,
           WORKING_BUILD,
           NAMED_BUILD,
+          LOADOUT_RECORD,
           ISSUE_BUILD,
           { ...NAMED_BUILD, id: 'record-2', title: 'Krait combat' },
         ],
@@ -2179,6 +2206,7 @@ registerPreview({
         'the record the workspace holds is marked in words as well as in the wash',
         'an unnamed row states which save its edits are of, and how long it has left',
         'the edited column reads how long ago, and the instant itself stays in words',
+        'one list holds both tools\u2019 records, each row naming the tool that made it',
         'the narrow and wide compositions present the same records in the same order',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],

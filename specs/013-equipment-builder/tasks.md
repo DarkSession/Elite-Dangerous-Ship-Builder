@@ -263,7 +263,7 @@ removed.
       in `e2e/equipment-accessibility.spec.ts`
 - [x] T047 [US2] Add the `MATERIALS` tab to the compact layout in
       `src/app/features/equipment/equipment-bench.page.html` and `.spec.ts`
-- [ ] T048 [US2] Run the US2 journeys green across the ten projects and extend the axe sweep in
+- [X] T048 [US2] Run the US2 journeys green across the ten projects and extend the axe sweep in
       `e2e/accessibility/` to the chooser and the materials region
 
 **Checkpoint**: US1 and US2 both work independently.
@@ -279,37 +279,37 @@ with the suit, grade, weapons, grades and modifications it was saved with.
 
 ### Tests for User Story 3
 
-- [ ] T049 [P] [US3] Write the US3 journey in `e2e/equipment-library.spec.ts` — save, reload, open
+- [X] T049 [P] [US3] Write the US3 journey in `e2e/equipment-library.spec.ts` — save, reload, open
       from `/builds`, and delete
-- [ ] T050 [P] [US3] Write the migration and refusal cases in
+- [X] T050 [P] [US3] Write the migration and refusal cases in
       `src/app/domain/records/local-record.spec.ts`: a version 1 record opens as a ship build, and a
       loadout this version cannot rebuild is reported unopenable and left byte-for-byte alone
 
 ### Implementation for User Story 3
 
-- [ ] T051 [US3] Create the shared envelope in `src/app/domain/records/local-record.ts` and
+- [X] T051 [US3] Create the shared envelope in `src/app/domain/records/local-record.ts` and
       `.spec.ts` — version 2, the `tool` discriminator, and the fields both tools share
       ([contracts/loadout-persistence.md](./contracts/loadout-persistence.md))
-- [ ] T052 [US3] Move the ship variant onto it in `src/app/domain/ships/build/stored-build.ts`,
+- [X] T052 [US3] Move the ship variant onto it in `src/app/domain/ships/build/stored-build.ts`,
       `stored-build.parser.ts`, `stored-build.serializer.ts` and their `.spec.ts` files, leaving
       behaviour unchanged
-- [ ] T053 [US3] Migrate version 1 to version 2 on open — never on enumeration — in
+- [X] T053 [US3] Migrate version 1 to version 2 on open — never on enumeration — in
       `src/app/domain/ships/build/record-migrations.ts` and `record-migrations.spec.ts`, stamping
       `tool: 'ship'` where the field is absent
-- [ ] T054 [US3] Create the equipment variant in
+- [X] T054 [US3] Create the equipment variant in
       `src/app/domain/equipment/loadout/stored-loadout.serializer.ts` and `.spec.ts`, built field by
       field so no stated figure or catalogue fact can reach storage
-- [ ] T055 [US3] Read the discriminator when listing in
+- [X] T055 [US3] Read the discriminator when listing in
       `src/app/application/build-library/build-library.store.ts` and
       `src/app/application/build-library/record-open.service.ts`, so a row is summarised without
       reconstructing a loadout
-- [ ] T056 [US3] Give a saved row its tool identity in
+- [X] T056 [US3] Give a saved row its tool identity in
       `src/app/ui/components/saved-build-card/` — a hull for one tool, a suit for the other — with
       its preview states in `src/app/ui/previews/preview-manifest.ts`
-- [ ] T057 [US3] Wire naming, saving and the overwrite-or-keep-both question into
+- [X] T057 [US3] Wire naming, saving and the overwrite-or-keep-both question into
       `src/app/features/equipment/equipment-bench.page.ts` and `.spec.ts` through the existing
       `src/app/application/build-library/save-conflict.service.ts` (FR-016, FR-017)
-- [ ] T058 [US3] Run `e2e/equipment-library.spec.ts` green across the ten projects
+- [X] T058 [US3] Run `e2e/equipment-library.spec.ts` green across the ten projects
 
 **Checkpoint**: loadouts persist beside builds in one library.
 

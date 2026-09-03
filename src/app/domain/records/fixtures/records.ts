@@ -110,10 +110,111 @@ export const UNKNOWN_HULL_RECORD = `{
   "sourceNamed": null
 }`;
 
+/** A complete, readable version-2 ship record: the same build, with `tool`. */
+export const NAMED_RECORD_V2 = `{
+  "format": "edsb.local-record",
+  "version": 2,
+  "tool": "ship",
+  "id": "11111111-1111-4111-8111-111111111111",
+  "kind": "named",
+  "revisionId": "22222222-2222-4222-8222-222222222222",
+  "createdAt": "2026-01-02T03:04:05.000Z",
+  "modifiedAt": "2026-01-02T03:04:05.000Z",
+  "name": "Anaconda explorer",
+  "note": "Long-range fit.",
+  "hullSymbol": "Anaconda",
+  "validation": { "valid": true, "complete": true },
+  "build": {
+    "format": "edsb.build",
+    "version": 1,
+    "shipSymbol": "Anaconda",
+    "shipName": null,
+    "shipIdent": null,
+    "modules": [
+      {
+        "slot": "FrameShiftDrive",
+        "symbol": "Int_Hyperdrive_Size6_Class5",
+        "enabled": null,
+        "priority": null,
+        "preEngineered": null,
+        "engineering": null
+      }
+    ]
+  },
+  "sourceNamed": null
+}`;
+
+/**
+ * A version-2 loadout record.
+ *
+ * Held content on purpose: a Maverick is worn and the second primary holds a
+ * sniper, which is the state a saved loadout has to survive (FR-018a).
+ */
+export const LOADOUT_RECORD_V2 = `{
+  "format": "edsb.local-record",
+  "version": 2,
+  "tool": "equipment",
+  "id": "99999999-9999-4999-8999-999999999999",
+  "kind": "named",
+  "revisionId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "createdAt": "2026-01-02T03:04:05.000Z",
+  "modifiedAt": "2026-01-02T03:04:05.000Z",
+  "name": "Silent Entry",
+  "note": null,
+  "suitFamily": "utilitysuit",
+  "loadout": {
+    "format": "edsb.loadout",
+    "version": 1,
+    "suitFamily": "utilitysuit",
+    "suitGrade": 4,
+    "suitModifications": ["suit_increasedshieldregen", null, null, null],
+    "weapons": [
+      {
+        "symbol": "wpn_m_assaultrifle_plasma_fauto",
+        "grade": 3,
+        "modifications": [null, null, null, null]
+      },
+      {
+        "symbol": "wpn_m_sniper_plasma_charged",
+        "grade": 2,
+        "modifications": [null, null, null, null]
+      },
+      null
+    ]
+  },
+  "sourceNamed": null
+}`;
+
+/** A version-2 loadout naming a suit the installed package does not carry. */
+export const UNKNOWN_SUIT_RECORD = `{
+  "format": "edsb.local-record",
+  "version": 2,
+  "tool": "equipment",
+  "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  "kind": "named",
+  "revisionId": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  "createdAt": "2026-01-02T03:04:05.000Z",
+  "modifiedAt": "2026-01-02T03:04:05.000Z",
+  "name": "A suit that is not carried",
+  "note": null,
+  "suitFamily": "nonexistentsuit",
+  "loadout": {
+    "format": "edsb.loadout",
+    "version": 1,
+    "suitFamily": "nonexistentsuit",
+    "suitGrade": 1,
+    "suitModifications": [null, null, null, null],
+    "weapons": [null, null, null]
+  },
+  "sourceNamed": null
+}`;
+
 /** The identity each fixture is stored under. */
 export const FIXTURE_IDS = {
   named: '11111111-1111-4111-8111-111111111111',
   working: '33333333-3333-4333-8333-333333333333',
   unsupported: '55555555-5555-4555-8555-555555555555',
   unknownHull: '77777777-7777-4777-8777-777777777777',
+  loadout: '99999999-9999-4999-8999-999999999999',
+  unknownSuit: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
 } as const;

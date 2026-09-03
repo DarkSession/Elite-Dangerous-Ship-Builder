@@ -35,7 +35,7 @@ export const OWNED = [
  */
 export const SEALED = [
   'src/app/domain/ships/build/build-snapshot.serializer.ts',
-  'src/app/domain/ships/build/stored-build.serializer.ts',
+  'src/app/domain/records/local-record.serializer.ts',
   'src/app/domain/ships/build-link',
   'src/app/domain/build-link',
   'src/app/platform',

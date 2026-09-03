@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import { isShipRecord } from '../../domain/records/local-record';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
 import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
@@ -61,8 +62,7 @@ function request(overrides: Partial<NamedSaveRequest> = {}): NamedSaveRequest {
     expectedRevisionId: null,
     name: 'Anaconda explorer',
     note: null,
-    build: build(),
-    validation: { valid: true, complete: true },
+    payload: { tool: 'ship', build: build(), validation: { valid: true, complete: true } },
     now: NOW,
     ...overrides,
   };
@@ -78,8 +78,7 @@ function seedUnnamed(records: LocalRecordRepository, id: string, createdAt = NOW
     modifiedAt: createdAt,
     name: null,
     note: null,
-    validation: { valid: true, complete: true },
-    build: build(),
+    payload: { tool: 'ship', build: build(), validation: { valid: true, complete: true } },
     sourceNamed: null,
   });
 }
@@ -220,17 +219,19 @@ describe('NamedRecordService', () => {
     // build under a new name leaves the build and its recorded verdict alone.
     const { named, records } = setup();
     const created = await named.createNamed(
-      request({ validation: { valid: false, complete: false } }),
+      request({
+        payload: { tool: 'ship', build: build(), validation: { valid: false, complete: false } },
+      }),
     );
-    if (created.kind !== 'saved') {
-      throw new Error('expected a save');
+    if (created.kind !== 'saved' || !isShipRecord(created.record)) {
+      throw new Error('expected a saved ship record');
     }
+    const saved = created.record;
 
     const renamed = await named.overwriteNamed(
-      overwrite(created.record.id, created.record.revisionId, {
+      overwrite(saved.id, saved.revisionId, {
         name: 'A better name',
-        build: created.record.build,
-        validation: created.record.validation,
+        payload: { tool: 'ship', build: saved.build, validation: saved.validation },
         now: LATER,
       }),
     );
@@ -238,10 +239,11 @@ describe('NamedRecordService', () => {
     expect(renamed.kind).toBe('saved');
     // Read back out of storage rather than trusted from the result: what the
     // record now holds is the claim, not what the caller handed in.
-    const stored = records.open(created.record.id);
-    expect(stored.ok && stored.value?.record.name).toBe('A better name');
-    expect(stored.ok && stored.value?.record.build).toEqual(created.record.build);
-    expect(stored.ok && stored.value?.record.validation).toEqual({
+    const stored = records.open(saved.id);
+    const record = stored.ok ? stored.value?.record : null;
+    expect(record?.name).toBe('A better name');
+    expect(record && isShipRecord(record) && record.build).toEqual(saved.build);
+    expect(record && isShipRecord(record) && record.validation).toEqual({
       valid: false,
       complete: false,
     });

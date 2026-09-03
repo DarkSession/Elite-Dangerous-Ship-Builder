@@ -50,6 +50,14 @@ export class ChoiceList {
   /** What the list is, for a reader arriving at it. */
   readonly label = input.required<string>();
 
+  /**
+   * Draws the rows as canvas 2a's two-up cards instead of one stacked column.
+   *
+   * The same rows either way — a name over a code line with one figure — laid
+   * out in the arrangement the canvas the list stands on draws.
+   */
+  readonly asCards = input(false);
+
   readonly chosen = output<string>();
 
   choose(choice: EquipmentChoice): void {

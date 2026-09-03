@@ -11,10 +11,12 @@ describe('LoadoutStore', () => {
     TestBed.configureTestingModule({});
   });
 
-  it('starts empty, with nothing selected and nothing to undo', () => {
+  it('starts empty, pointing at the suit, with nothing to undo', () => {
     expect(store().loadout()).toBeNull();
     expect(store().hasLoadout()).toBe(false);
-    expect(store().selected()).toBeNull();
+    // Canvas 2a marks the suit row while it is still a choice: it is the row
+    // the gate beside it is asking about.
+    expect(store().selected()).toBe('suit');
     expect(store().canUndo()).toBe(false);
     expect(store().mounts()).toEqual([]);
   });
@@ -116,7 +118,7 @@ describe('LoadoutStore', () => {
     store().open(null);
 
     expect(store().loadout()).toBeNull();
-    expect(store().selected()).toBeNull();
+    expect(store().selected()).toBe('suit');
     expect(store().undo()).toBe(false);
   });
 

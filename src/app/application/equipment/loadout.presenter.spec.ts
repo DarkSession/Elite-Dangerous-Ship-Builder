@@ -28,17 +28,29 @@ describe('LoadoutPresenter', () => {
     store.dispatch({ kind: 'setSuitGrade', grade: 5 });
   };
 
-  it('states nothing while the bench is empty', () => {
-    expect(presenter.ledger()).toEqual({
-      suit: null,
-      weapons: [],
-      tools: [],
-      weaponCount: 0,
-      toolCount: 0,
-    });
+  it('draws the bench inert rather than empty while no suit is on it (canvas 2a)', () => {
+    // The gate keeps every region drawn: a Commander can see the mounts, the
+    // figures and the slots a suit will fill in. What is not drawn is a tool
+    // list, because carriage is a property of a suit and none is worn.
+    const ledger = presenter.ledger();
+
+    expect(ledger.suit?.emptyLabel).toBe('Choose a suit');
+    expect(ledger.weapons.map((row) => row.target)).toEqual([
+      'PrimaryWeapon1',
+      'PrimaryWeapon2',
+      'SecondaryWeapon',
+    ]);
+    expect(ledger.weapons.every((row) => row.held)).toBe(true);
+    expect(ledger.tools).toEqual([]);
+    expect([ledger.suitCount, ledger.weaponCount, ledger.toolCount]).toEqual(['0', '—', '—']);
+
+    // Nothing is selected, so there is no item; the figures a suit answers are
+    // named with the canvas's dash rather than left out.
     expect(presenter.item()).toBeNull();
-    expect(presenter.stats()).toBeNull();
+    expect(presenter.stats()?.shieldStrength).toBe('—');
+    expect(presenter.stats()?.firepower).toEqual([]);
     expect(presenter.materials().lines).toEqual([]);
+    expect(presenter.materials().summary).toBe('None');
   });
 
   describe('the ledger', () => {
@@ -109,7 +121,7 @@ describe('LoadoutPresenter', () => {
       dominator();
       const ledger = presenter.ledger();
 
-      expect(ledger.toolCount).toBe(ledger.tools.length);
+      expect(ledger.toolCount).toBe(String(ledger.tools.length));
       expect(ledger.tools.map((tool) => tool.name.text)).toContain('Energylink');
       for (const tool of ledger.tools) {
         expect(tool.accessibleName).toContain(tool.name.text!);

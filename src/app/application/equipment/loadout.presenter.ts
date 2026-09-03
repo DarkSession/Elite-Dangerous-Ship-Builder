@@ -1,7 +1,10 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { getSuitByFamily } from '@elite-dangerous-almanac/core/equipment/suits';
 import { getPersonalModification } from '@elite-dangerous-almanac/core/equipment/modifications';
-import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
+import type {
+  PersonalMount,
+  PersonalMountKey,
+} from '@elite-dangerous-almanac/core/equipment/suits';
 import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 import type { EditTarget } from '../../domain/equipment/loadout/loadout-edit';
 import { MODIFICATION_SLOT_COUNT } from '../../domain/equipment/loadout/loadout-edit';
@@ -55,13 +58,15 @@ export interface ToolRowView {
   readonly accessibleName: string;
 }
 
-/** The whole ledger, as both artboards draw it. */
+/** The whole ledger, as every artboard draws it. */
 export interface LedgerView {
   readonly suit: LedgerRowView | null;
   readonly weapons: readonly LedgerRowView[];
   readonly tools: readonly ToolRowView[];
-  readonly weaponCount: number;
-  readonly toolCount: number;
+  /** The bare figure at each rule's trailing edge — a count, or the canvas's dash. */
+  readonly suitCount: string;
+  readonly weaponCount: string;
+  readonly toolCount: string;
 }
 
 /** One of an item's four modification slots. */
@@ -183,16 +188,33 @@ export class LoadoutPresenter {
   /** The ledger: the suit, one row per catalogue mount, and the suit's tools. */
   readonly ledger = computed<LedgerView>(() => {
     const loadout = this.#store.loadout();
+    // Canvas 2a's gate: the ledger is drawn and inert rather than absent, so a
+    // Commander can see what choosing a suit will fill in. Every mount the
+    // catalogue offers is a locked row, and the counts are the canvas's dash
+    // rather than a zero for something that is not yet countable.
     if (loadout === null) {
-      return { suit: null, weapons: [], tools: [], weaponCount: 0, toolCount: 0 };
+      return {
+        suit: this.#emptySuitRow(),
+        weapons: CATALOGUE_MOUNTS.map((mount) => this.#lockedMountRow(mount)),
+        // Carriage is a property of a suit. With none worn the package
+        // publishes no tool list, so none is drawn (013
+        // design/reference-review.md).
+        tools: [],
+        suitCount: this.#formatters.integer(0),
+        weaponCount: this.#message('equipment.count.none'),
+        toolCount: this.#message('equipment.count.none'),
+      };
     }
     const tools = toolReadings(loadout.suitFamily).map((tool) => this.#toolRow(tool.id));
     return {
       suit: this.#suitRow(loadout),
       weapons: this.#mountRows(loadout),
       tools,
-      weaponCount: getSuitByFamily(loadout.suitFamily)?.mounts.length ?? 0,
-      toolCount: tools.length,
+      suitCount: this.#formatters.integer(1),
+      weaponCount: this.#formatters.integer(
+        getSuitByFamily(loadout.suitFamily)?.mounts.length ?? 0,
+      ),
+      toolCount: this.#formatters.integer(tools.length),
     };
   });
 
@@ -207,7 +229,23 @@ export class LoadoutPresenter {
   /** The commander stats, or nothing where no suit is worn. */
   readonly stats = computed<CommanderStatsView | null>(() => {
     const loadout = this.#store.loadout();
-    if (loadout === null) return null;
+    // The gate draws the region with the canvas's dash in every figure, so the
+    // reader can see which figures a suit answers rather than an empty panel.
+    if (loadout === null) {
+      const dash = this.#message('equipment.count.none');
+      return {
+        shieldStrength: dash,
+        shieldRegeneration: dash,
+        resistances: RESISTANCES.map(([, damage]) => ({
+          key: damage,
+          label: this.#message(`equipment.damage.${damage}`),
+          value: dash,
+          magnitude: 0,
+          negative: false,
+        })),
+        firepower: [],
+      };
+    }
     const suit = suitReadings(loadout);
     if (suit === null) return null;
 
@@ -258,14 +296,35 @@ export class LoadoutPresenter {
       })),
       summary:
         requirement.types === 0
-          ? null
+          ? // Canvas 2a writes `NONE` at the rule's trailing edge while the
+            // bench is empty, where a loaded bench with nothing fitted writes
+            // nothing there.
+            loadout === null
+            ? this.#message('equipment.materials.none')
+            : null
           : this.#messages.message('equipment.materials.summary', {
               types: this.#formatters.integer(requirement.types),
               units: this.#formatters.integer(requirement.units),
             }),
-      emptyLabel: this.#messages.message('equipment.materials.empty'),
+      emptyLabel: this.#message(
+        loadout === null ? 'equipment.materials.pending' : 'equipment.materials.empty',
+      ),
     };
   });
+
+  /**
+   * The ladder canvas 2a previews while the bench is empty.
+   *
+   * The longest ladder any suit publishes, rather than a drawn number of cells:
+   * a preview of a control states what the package offers, and the Flight Suit's
+   * one grade would understate it (013 design/reference-review.md).
+   */
+  gradeLadder(): readonly number[] {
+    return suitCandidates().reduce<readonly number[]>((longest, family) => {
+      const grades = publishedSuitGrades(family);
+      return grades.length > longest.length ? grades : longest;
+    }, []);
+  }
 
   /** The suits the suit chooser offers, each with the shield it would give. */
   suitChoices(): readonly SuitChoiceView[] {
@@ -341,6 +400,46 @@ export class LoadoutPresenter {
     return this.#messages.message('equipment.chooser.modification', {
       slot: this.#formatters.integer(slot + 1),
     });
+  }
+
+  /**
+   * The suit row of an empty bench: the one row that is a choice.
+   *
+   * Canvas 2a draws it selected, with a `+` where a badge goes and `SELECT →`
+   * at its trailing edge — the only live row on the gate, because every other
+   * row belongs to a suit that has not been chosen yet.
+   */
+  #emptySuitRow(): LedgerRowView {
+    const choose = this.#message('equipment.suit.choose');
+    const required = this.#message('equipment.suit.required');
+    return {
+      target: 'suit',
+      badge: this.#message('equipment.badge.empty'),
+      name: null,
+      emptyLabel: choose,
+      meta: required,
+      grade: null,
+      modifications: this.#message('equipment.suit.select'),
+      held: false,
+      accessibleName: `${choose} · ${required}`,
+    };
+  }
+
+  /** A mount with no suit to offer it: drawn, named, and locked. */
+  #lockedMountRow(mount: PersonalMount): LedgerRowView {
+    const mountName = this.#text.personalMountName(mount).text ?? mount.key;
+    const locked = this.#message('equipment.mount.locked');
+    return {
+      target: mount.key,
+      badge: this.#mountBadge(mount.key),
+      name: null,
+      emptyLabel: mountName,
+      meta: locked,
+      grade: null,
+      modifications: null,
+      held: true,
+      accessibleName: `${mountName} · ${locked}`,
+    };
   }
 
   #suitRow(loadout: EquipmentLoadout): LedgerRowView | null {

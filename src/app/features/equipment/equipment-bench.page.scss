@@ -1,5 +1,3 @@
-@use '../../../styles/responsive' as layout;
-
 // The bench's own container, so the arrangement follows the room the shell gave
 // the route rather than the window. `rem` inside a container query is the root's
 // computed size, so the seam follows a reader's text size as well as the
@@ -37,38 +35,4 @@
 // stand in one column over the same ground.
 .bench__tabs {
   background: var(--ednb-surface-panel);
-}
-
-// Neither artboard draws an empty bench — the mock always has a suit on it —
-// but the bench opens with nothing until a suit is chosen (spec US1 scenario 1,
-// 013 design/reference-review.md). It is the ship tool's own no-build block,
-// with the one control this tool does own: the suit chooser.
-.bench__empty {
-  @include layout.stack(var(--ednb-space-stack));
-
-  padding: var(--ednb-space-section);
-  background-color: var(--ednb-surface-panel);
-}
-
-.bench__empty-title {
-  @include layout.display-title;
-
-  margin: 0;
-}
-
-.bench__empty-description {
-  margin: 0;
-  max-inline-size: var(--ednb-layout-prose-max);
-  color: var(--ednb-text-subtle);
-  text-wrap: pretty;
-}
-
-.bench__empty-action {
-  @include layout.control-base(var(--ednb-text-tracking-count));
-
-  align-self: start;
-  padding: var(--ednb-space-sm) var(--ednb-space-lg);
-  background-color: var(--ednb-surface-accent-selected);
-  border: var(--ednb-border-width-hairline) solid var(--ednb-border-accent);
-  color: var(--ednb-text-accent);
 }

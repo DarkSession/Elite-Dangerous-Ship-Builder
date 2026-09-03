@@ -48,21 +48,27 @@ function choices(page: Page): Locator {
   return page.locator('dialog[open] .choice');
 }
 
-/** Opens the bench and waits for it: it always opens with nothing on it. */
+/** Opens the bench and waits for it: it always opens on the gate (canvas 2a). */
 async function openBench(page: Page): Promise<void> {
   await page.goto('/equipment');
-  await expect(page.locator('.bench__empty-action')).toBeVisible();
+  await expect(page.locator('.gate')).toBeVisible();
 }
 
-/** The suit chooser: from an empty bench, or from the suit's own item view. */
+/**
+ * Wears a suit: from the gate on an empty bench, or from the suit's own chooser.
+ *
+ * The gate's cards are the same rows the chooser draws, so the two paths differ
+ * only in where the list stands.
+ */
 async function chooseSuit(page: Page, name: string): Promise<void> {
-  const empty = page.locator('.bench__empty-action');
-  if ((await empty.count()) > 0) {
-    await empty.click();
-  } else {
-    await openRow(page, 'suit');
-    await page.locator('.item__swap').click();
+  const gate = page.locator('.gate__suits .choice');
+  if ((await gate.count()) > 0) {
+    await gate.filter({ hasText: name }).click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+    return;
   }
+  await openRow(page, 'suit');
+  await page.locator('.item__swap').click();
   await choices(page).filter({ hasText: name }).click();
   // The layer keeps its content in the document; what closes is the dialog.
   await expect(page.locator('dialog[open]')).toHaveCount(0);

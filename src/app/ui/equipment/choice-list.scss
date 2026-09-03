@@ -14,6 +14,15 @@
   list-style: none;
 }
 
+// Canvas 2a's suit cards: the same rows, two to a line where there is room for
+// two. The track has a floor rather than an equal share, so a suit's name and
+// its mount line are never squeezed into a column too narrow to hold them.
+.choices--cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--ednb-space-sm);
+}
+
 .choice {
   @include layout.selectable-row;
   @include layout.target-baseline;

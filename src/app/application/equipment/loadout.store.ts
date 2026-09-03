@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import type { RecordSource } from '../../domain/records/local-record';
 import type { PersonalMountKey } from '@elite-dangerous-almanac/core/equipment/suits';
 import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 import {
@@ -49,7 +50,11 @@ export type LoadoutEdit =
 @Injectable({ providedIn: 'root' })
 export class LoadoutStore {
   readonly #loadout = signal<EquipmentLoadout | null>(null);
-  readonly #selected = signal<EditTarget | null>(null);
+  // The bench opens pointing at the suit, whether one is worn or not: canvas 2a
+  // draws the suit row marked while it is still a choice, because it is the row
+  // the gate beside it is asking about.
+  readonly #selected = signal<EditTarget | null>('suit');
+  readonly #source = signal<RecordSource | null>(null);
   readonly #history = signal<LoadoutHistory>(emptyLoadoutHistory());
   readonly #revision = signal(0);
 
@@ -59,6 +64,15 @@ export class LoadoutStore {
 
   /** Which item the item view is showing, or none. */
   readonly selected = this.#selected.asReadonly();
+
+  /**
+   * The saved record this loadout came from, while it came from one.
+   *
+   * What makes "replace the loadout I opened" a question the save layer can
+   * ask. A loadout started here has no source, so that choice is not offered
+   * for it (013 contracts/loadout-persistence.md).
+   */
+  readonly source = this.#source.asReadonly();
 
   /** Changes once per committed choice, and never for a refused one. */
   readonly revision = this.#revision.asReadonly();
@@ -79,11 +93,17 @@ export class LoadoutStore {
    * to a different bench and undoing onto one would restore something the
    * Commander never had here.
    */
-  open(loadout: EquipmentLoadout | null): void {
+  open(loadout: EquipmentLoadout | null, source: RecordSource | null = null): void {
     this.#loadout.set(loadout);
-    this.#selected.set(loadout === null ? null : 'suit');
+    this.#source.set(loadout === null ? null : source);
+    this.#selected.set('suit');
     this.#history.set(emptyLoadoutHistory());
     this.#revision.update((revision) => revision + 1);
+  }
+
+  /** Records which save this loadout now belongs to, after one is written. */
+  named(source: RecordSource): void {
+    this.#source.set(source);
   }
 
   /** Shows one item in the item view, or none. */
@@ -105,6 +125,8 @@ export class LoadoutStore {
       const started = newLoadout(edit.suitFamily);
       if (started === null) return false;
       this.#loadout.set(started);
+      // Started here, so it belongs to no save until one is written.
+      this.#source.set(null);
       this.#selected.set('suit');
       this.#revision.update((revision) => revision + 1);
       return true;

@@ -56,7 +56,7 @@ export class LoadoutLedger {
 
   readonly weaponCount = computed(() =>
     this.#messages.message('equipment.ledger.weapons.count', {
-      count: this.ledger().weaponCount,
+      count: this.ledger().weapons.length,
     }),
   );
 

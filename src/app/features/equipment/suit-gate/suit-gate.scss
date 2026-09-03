@@ -1,0 +1,127 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 2a's middle column: the state of the bench in words, the chooser that
+// changes it, and previews of the controls a suit will bring.
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.gate {
+  @include layout.stack(var(--ednb-space-section));
+
+  padding-block: var(--ednb-space-xl);
+}
+
+.gate__header {
+  @include layout.wrapping-row(var(--ednb-space-inline-loose));
+
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-inline: var(--ednb-space-3xl);
+  padding-block-end: var(--ednb-space-lg);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+}
+
+.gate__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+// The canvas draws this in the display face at the item name's size, in the
+// muted ink of something that is not there yet rather than the amber of
+// something that is.
+.gate__title {
+  @include layout.display-title;
+
+  margin: 0;
+  color: var(--ednb-text-muted);
+}
+
+.gate__description {
+  margin: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
+  text-wrap: pretty;
+}
+
+.gate__grades {
+  flex: none;
+}
+
+.gate__choose,
+.gate__slots {
+  @include layout.stack(var(--ednb-space-md));
+
+  padding-inline: var(--ednb-space-3xl);
+}
+
+.gate__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+}
+
+.gate__step {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.gate__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+.gate__saved {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  margin: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+}
+
+.gate__prompt {
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
+}
+
+.gate__link {
+  @include layout.target-baseline;
+
+  display: inline-flex;
+  align-items: center;
+  color: var(--ednb-text-accent);
+}
+
+.gate__slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--ednb-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The canvas's dashed placeholder: a slot that exists but belongs to nothing.
+// Drawn like the slot cells it previews, in the faint ink of a control that is
+// not there yet — the words in it say `empty`, so the ink is not what carries
+// it (constitution V).
+.gate__slot {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+  @include layout.target-baseline;
+
+  display: flex;
+  align-items: center;
+  padding: var(--ednb-space-sm) var(--ednb-space-md);
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-control-quiet);
+}

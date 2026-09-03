@@ -16,11 +16,7 @@ import { NO_SLOT_CAPABILITIES } from '../../../../application/outfitting/outfitt
 import type { MessageKey } from '../../../../i18n/locale-registry';
 import { GameTextPresenter } from '../../../../i18n/game-text.presenter';
 import { MessageService } from '../../../../i18n/message.service';
-import {
-  HISTORY_REDO_MARK,
-  HISTORY_UNDO_MARK,
-  ScreenChrome,
-} from '../../../shared/screen-chrome';
+import { HISTORY_REDO_MARK, HISTORY_UNDO_MARK, ScreenChrome } from '../../../shared/screen-chrome';
 import type { IdentityCommit, IdentityField } from '../../../../ui/outfitting/ship-identity-fields';
 import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { observeComposition } from '../../../../ui/outfitting/composition';

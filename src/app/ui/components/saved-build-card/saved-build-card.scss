@@ -97,7 +97,7 @@
   @include layout.visually-hidden;
 }
 
-.record__hull,
+.record__subject,
 .record__modified {
   @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-secondary));
 

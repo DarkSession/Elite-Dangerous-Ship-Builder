@@ -31,8 +31,16 @@ describe('CommanderStats', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('draws nothing where there is no suit to state figures for', () => {
-    expect(render().querySelector('.stats')).toBeNull();
+  it('names the figures a suit will answer, with the canvas\u2019s dash for each', () => {
+    // Canvas 2a draws the block while the bench is empty: which figures a suit
+    // answers is itself the information, and an absent block states none of it.
+    const element = render();
+
+    expect(element.querySelectorAll('.metric').length).toBe(2);
+    expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(4);
+    expect(element.textContent).toContain('\u2014');
+    // No weapon is fitted, so the firepower block has nothing to list.
+    expect(element.querySelectorAll('.stats__firepower').length).toBe(0);
   });
 
   it('states shield strength, regeneration and the four resistances', () => {

@@ -1,6 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
+import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
+import { isEquipmentRecord } from '../../domain/records/local-record';
+import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
+import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
+import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { declareMeasurement, declareResizeObserver } from '../../ui/measurement.spec-helpers';
 import { BENCH_WIDE_MINIMUM_REM } from '../../ui/equipment/bench-composition';
@@ -24,15 +30,31 @@ function declareWideBench(): () => void {
   };
 }
 
+/** A lock that serializes without a browser: what is under test is the save. */
+class FakeLocks {
+  async request<T>(_name: string, operation: () => Promise<T>): Promise<T> {
+    return operation();
+  }
+}
+
 describe('EquipmentBenchPage', () => {
   let store: LoadoutStore;
+  let records: LocalRecordRepository;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EquipmentBenchPage],
-      providers: [provideLocalization()],
+      providers: [
+        provideLocalization(),
+        provideRouter([]),
+        // The bench saves into the one record library, so it reaches storage
+        // the moment it is created.
+        ...provideMemoryStorage(new MemoryStorage()),
+        { provide: WebLocksAdapter, useValue: new FakeLocks() },
+      ],
     }).compileComponents();
     store = TestBed.inject(LoadoutStore);
+    records = TestBed.inject(LocalRecordRepository);
   });
 
   const render = (): HTMLElement => {
@@ -45,16 +67,29 @@ describe('EquipmentBenchPage', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
   };
 
-  it('says nothing is on the bench, and offers the one thing an empty bench can do', () => {
-    // Neither artboard draws an empty bench, and the spec opens on one (US1
-    // scenario 1). The ship tool's own no-build block is what stands here, with
-    // the control this tool owns: the suit chooser.
+  it('keeps the bench drawn on an empty one, with the gate in the detail column', () => {
+    // Canvas 2b: the ledger is drawn and inert, and the gate stands under it in
+    // the `LOADOUT` tab rather than in place of the bench (US1 scenario 1).
     const bench = render();
 
-    expect(bench.querySelector('.bench__empty-title')?.textContent?.trim()).toBe(
-      BUNDLED_ENGLISH['equipment.no-loadout.title'],
+    expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
+    expect(bench.querySelector('edsb-suit-gate')).not.toBeNull();
+    expect(bench.querySelector('edsb-item-view')).toBeNull();
+    expect(bench.querySelector('.gate__title')?.textContent?.trim()).toBe(
+      BUNDLED_ENGLISH['equipment.gate.title'],
     );
-    expect(bench.querySelectorAll('.bench__region').length).toBe(0);
+  });
+
+  it('draws the gate where the item view goes once a suit is on the bench', () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    fixture.componentInstance.chooseFirstSuit('tacticalsuit');
+    fixture.detectChanges();
+
+    const bench = fixture.nativeElement as HTMLElement;
+    expect(bench.querySelector('edsb-suit-gate')).toBeNull();
+    expect(store.selected()).toBe('suit');
   });
 
   it('draws the ledger, the item view and the commander column where there is room', () => {
@@ -117,7 +152,7 @@ describe('EquipmentBenchPage', () => {
     expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
   });
 
-  it('publishes undo and redo to the shell rather than drawing its own pair (FR-022)', () => {
+  it('publishes undo, redo and save to the shell rather than drawing its own (FR-022)', () => {
     const chrome = TestBed.inject(ScreenChrome);
     wear();
     const fixture = TestBed.createComponent(EquipmentBenchPage);
@@ -126,12 +161,58 @@ describe('EquipmentBenchPage', () => {
     expect(chrome.actions().map((action) => action.id)).toEqual([
       'equipment.undo',
       'equipment.redo',
+      'equipment.save',
     ]);
     // Starting a loadout is not an edit — there is nothing behind it to undo.
-    expect(chrome.actions().map((action) => action.disabled)).toEqual([true, true]);
+    // Saving one is always available, which is why it states no disabled state.
+    expect(chrome.actions().map((action) => action.disabled)).toEqual([true, true, undefined]);
 
     fixture.destroy();
     expect(chrome.actions()).toEqual([]);
+  });
+
+  it('saves the open loadout into the one record library, and holds what it saved', async () => {
+    // The loadout is what is stored — identities only — and the bench now
+    // belongs to the save, so the layer can offer to replace it (FR-016).
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+
+    const listed = records.list();
+    const saved = listed.ok ? listed.value.filter((entry) => entry.available) : [];
+    expect(saved.length).toBe(1);
+    const record = saved[0]?.available === true ? saved[0].record : null;
+    expect(record?.name).toBe('Silent Entry');
+    expect(record !== null && isEquipmentRecord(record) && record.loadout.suitFamily).toBe(
+      'tacticalsuit',
+    );
+    expect(store.source()?.recordId).toBe(record?.id);
+  });
+
+  it('opens a saved loadout back onto the bench, exactly as it was saved', async () => {
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    store.dispatch({ kind: 'setSuitGrade', grade: 3 });
+    await fixture.componentInstance.requestSave({
+      name: 'Silent Entry',
+      note: null,
+      overwrite: false,
+    });
+    const recordId = store.source()!.recordId;
+
+    store.open(null);
+    expect(store.hasLoadout()).toBe(false);
+
+    expect(TestBed.inject(LoadoutOpenService).open(recordId).ok).toBe(true);
+    expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
+    expect(store.loadout()?.suitGrade).toBe(3);
   });
 
   it('synthesizes no heading of its own', () => {

@@ -1,23 +1,30 @@
-import { parseBuildSnapshotV1 } from './build-snapshot.parser';
+import {
+  parseStoredLoadout,
+  toStoredLoadout,
+} from '../equipment/loadout/stored-loadout.serializer';
+import { parseBuildSnapshotV1 } from '../ships/build/build-snapshot.parser';
 import {
   LOCAL_RECORD_FORMAT,
   LOCAL_RECORD_VERSION,
+  type LocalRecord,
   type LocalRecordKind,
-  type LocalRecordV1,
   type RecordSource,
+  type RecordTool,
   type RecordValidation,
   type UnavailableReason,
-} from './stored-build';
+} from './local-record';
 
 export type RecordParseResult =
-  | { readonly ok: true; readonly record: LocalRecordV1 }
+  | { readonly ok: true; readonly record: LocalRecord }
   | {
       readonly ok: false;
       readonly reason: UnavailableReason;
       /** What went wrong, for a diagnostic rather than for a Commander. */
       readonly detail: string;
       /** Metadata safe to show without guessing, when there is any. */
+      readonly tool: RecordTool | null;
       readonly hullSymbol: string | null;
+      readonly suitFamily: string | null;
       readonly name: string | null;
     };
 
@@ -33,6 +40,10 @@ export type RecordParseResult =
  * with the key it is stored under is not merely odd — it is the state a
  * half-finished rename or a hand edit leaves behind, and opening it would give
  * two keys the same identity.
+ *
+ * The envelope is read first and the payload second, which is what lets a
+ * record from either tool be listed honestly: the shared fields decide whether
+ * there is a record here at all, and `tool` decides what its payload has to be.
  */
 export function parseLocalRecord(value: unknown, expectedId: string): RecordParseResult {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -55,11 +66,18 @@ export function parseLocalRecord(value: unknown, expectedId: string): RecordPars
         ok: false,
         reason: 'unsupported-version',
         detail: `The record was written by version ${String(version)}.`,
+        tool: readTool(stored['tool']),
         hullSymbol: readString(stored['hullSymbol']),
+        suitFamily: readString(stored['suitFamily']),
         name: readString(stored['name']),
       };
     }
     return malformed('The record version is not a supported value.');
+  }
+
+  const tool = readTool(stored['tool']);
+  if (tool === null) {
+    return malformed('The record does not say which tool wrote it.');
   }
 
   const id = stored['id'];
@@ -92,14 +110,58 @@ export function parseLocalRecord(value: unknown, expectedId: string): RecordPars
     return malformed('The record name or note is neither text nor absent.');
   }
 
-  const validation = readValidation(stored['validation']);
-  if (validation === null) {
-    return malformed('The record carries no package validation result.');
-  }
-
   const sourceNamed = readSource(stored['sourceNamed']);
   if (sourceNamed === undefined) {
     return malformed('The record’s save provenance is malformed.');
+  }
+
+  const envelope = {
+    format: LOCAL_RECORD_FORMAT,
+    version: LOCAL_RECORD_VERSION,
+    id,
+    kind,
+    revisionId,
+    createdAt,
+    modifiedAt,
+    name: (name as string | null | undefined) ?? null,
+    note: (note as string | null | undefined) ?? null,
+    sourceNamed,
+  } as const;
+
+  if (tool === 'equipment') {
+    const payload = parseStoredLoadout(stored['loadout']);
+    if (!payload.ok) {
+      return payload.failure === 'unsupported-version'
+        ? {
+            ok: false,
+            reason: 'unsupported-version',
+            detail: payload.reason,
+            tool,
+            hullSymbol: null,
+            suitFamily: readString(stored['suitFamily']),
+            name: readString(name),
+          }
+        : malformed(payload.reason, tool);
+    }
+
+    const suitFamily = stored['suitFamily'];
+    if (typeof suitFamily !== 'string' || suitFamily !== payload.loadout.suitFamily) {
+      // The envelope's suit is what a listing shows without rebuilding the
+      // loadout. If it disagrees with the loadout, one of them is a lie.
+      return malformed('The record’s suit does not match the loadout it stores.', tool);
+    }
+
+    // Through the serializer's own allowlist on the way back in, so a payload
+    // that carried anything extra does not become part of the record.
+    return {
+      ok: true,
+      record: { ...envelope, tool, suitFamily, loadout: toStoredLoadout(payload.loadout) },
+    };
+  }
+
+  const validation = readValidation(stored['validation']);
+  if (validation === null) {
+    return malformed('The record carries no package validation result.', tool);
   }
 
   const snapshot = parseBuildSnapshotV1(stored['build']);
@@ -109,41 +171,45 @@ export function parseLocalRecord(value: unknown, expectedId: string): RecordPars
           ok: false,
           reason: 'unsupported-version',
           detail: snapshot.reason,
+          tool,
           hullSymbol: readString(stored['hullSymbol']),
+          suitFamily: null,
           name: readString(name),
         }
-      : malformed(snapshot.reason);
+      : malformed(snapshot.reason, tool);
   }
 
   const hullSymbol = stored['hullSymbol'];
   if (typeof hullSymbol !== 'string' || hullSymbol !== snapshot.snapshot.shipSymbol) {
     // The envelope's hull is what a listing shows without reconstructing the
     // build. If it disagrees with the build, one of them is a lie.
-    return malformed('The record’s hull does not match the build it stores.');
+    return malformed('The record’s hull does not match the build it stores.', tool);
   }
 
   return {
     ok: true,
-    record: {
-      format: LOCAL_RECORD_FORMAT,
-      version: LOCAL_RECORD_VERSION,
-      id,
-      kind,
-      revisionId,
-      createdAt,
-      modifiedAt,
-      name: (name as string | null | undefined) ?? null,
-      note: (note as string | null | undefined) ?? null,
-      hullSymbol,
-      validation,
-      build: snapshot.snapshot,
-      sourceNamed,
-    },
+    record: { ...envelope, tool, hullSymbol, validation, build: snapshot.snapshot },
   };
 }
 
-function malformed(detail: string): RecordParseResult {
-  return { ok: false, reason: 'malformed', detail, hullSymbol: null, name: null };
+function malformed(detail: string, tool: RecordTool | null = null): RecordParseResult {
+  return {
+    ok: false,
+    reason: 'malformed',
+    detail,
+    tool,
+    hullSymbol: null,
+    suitFamily: null,
+    name: null,
+  };
+}
+
+/** A version 1 record has no `tool` field, and its absence means `"ship"`. */
+function readTool(value: unknown): RecordTool | null {
+  if (value === undefined || value === null) {
+    return 'ship';
+  }
+  return value === 'ship' || value === 'equipment' ? value : null;
 }
 
 function isKind(value: unknown): value is LocalRecordKind {

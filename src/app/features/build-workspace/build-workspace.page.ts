@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { deriveBuildTitle } from '../../domain/ships/build/build-title';
-import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
+import { isShipRecord, type LocalRecord } from '../../domain/records/local-record';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
 import { FragmentPublisher } from '../../application/build-link/fragment-publisher';
@@ -208,7 +208,7 @@ export class BuildWorkspacePage {
    * and then never again, and the layer would go on offering to replace a save
    * under a name it no longer has.
    */
-  readonly #sourceRecord = computed<LocalRecordV1 | null>(() => {
+  readonly #sourceRecord = computed<LocalRecord | null>(() => {
     const source = this.#active.sourceNamed();
     return source === null ? null : this.#library.find(source.recordId);
   });
@@ -243,7 +243,7 @@ export class BuildWorkspacePage {
     return conflict === null
       ? null
       : this.#messages.message('workspace.conflict.description', {
-          name: conflict.observed.name ?? conflict.observed.hullSymbol,
+          name: conflict.observed.name ?? subjectOf(conflict.observed),
         });
   });
 
@@ -474,8 +474,7 @@ export class BuildWorkspacePage {
               expectedRevisionId: source.baseRevisionId,
               name,
               note,
-              build: snapshot,
-              validation,
+              payload: { tool: 'ship', build: snapshot, validation },
               now,
             },
             held,
@@ -485,15 +484,13 @@ export class BuildWorkspacePage {
               recordId: held,
               name,
               note,
-              build: snapshot,
-              validation,
+              payload: { tool: 'ship', build: snapshot, validation },
               now,
             })
           : await this.#named.createNamed({
               name,
               note,
-              build: snapshot,
-              validation,
+              payload: { tool: 'ship', build: snapshot, validation },
               now,
             });
 
@@ -585,4 +582,15 @@ export class BuildWorkspacePage {
       this.#invalidation.announceDelete(held);
     }
   }
+}
+
+/**
+ * What to call a record that has no name.
+ *
+ * The library holds both tools' records, so a conflict can in principle name
+ * either; the hull or the suit is the only other thing a record says about
+ * itself without being rebuilt.
+ */
+function subjectOf(record: LocalRecord): string {
+  return isShipRecord(record) ? record.hullSymbol : record.suitFamily;
 }
