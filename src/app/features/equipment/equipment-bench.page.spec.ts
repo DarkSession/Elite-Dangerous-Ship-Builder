@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import { provideLocalization } from '../../i18n/i18n.providers';
+import { LoadoutLinkCoordinator } from '../../application/equipment/loadout-link.coordinator';
 import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
 import { isEquipmentRecord } from '../../domain/records/local-record';
 import { WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
@@ -152,7 +153,7 @@ describe('EquipmentBenchPage', () => {
     expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
   });
 
-  it('publishes undo, redo and save to the shell rather than drawing its own (FR-022)', () => {
+  it('publishes its actions to the shell rather than drawing its own bar (FR-022)', () => {
     const chrome = TestBed.inject(ScreenChrome);
     wear();
     const fixture = TestBed.createComponent(EquipmentBenchPage);
@@ -161,11 +162,18 @@ describe('EquipmentBenchPage', () => {
     expect(chrome.actions().map((action) => action.id)).toEqual([
       'equipment.undo',
       'equipment.redo',
+      'equipment.export',
       'equipment.save',
     ]);
     // Starting a loadout is not an edit — there is nothing behind it to undo.
-    // Saving one is always available, which is why it states no disabled state.
-    expect(chrome.actions().map((action) => action.disabled)).toEqual([true, true, undefined]);
+    // Exporting and saving are always available, which is why neither states a
+    // disabled state.
+    expect(chrome.actions().map((action) => action.disabled)).toEqual([
+      true,
+      true,
+      undefined,
+      undefined,
+    ]);
 
     fixture.destroy();
     expect(chrome.actions()).toEqual([]);
@@ -213,6 +221,23 @@ describe('EquipmentBenchPage', () => {
     expect(TestBed.inject(LoadoutOpenService).open(recordId).ok).toBe(true);
     expect(store.loadout()?.suitFamily).toBe('tacticalsuit');
     expect(store.loadout()?.suitGrade).toBe(3);
+  });
+
+  it('says why a loadout link was refused, in the library’s words (FR-021)', () => {
+    const links = TestBed.inject(LoadoutLinkCoordinator);
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+    wear();
+    const before = store.loadout();
+
+    links.ingest('e.notaloadoutatall');
+    fixture.detectChanges();
+
+    const notice = (fixture.nativeElement as HTMLElement).querySelector('edsb-status-notice');
+    expect(notice?.textContent).toContain('could not be read');
+    // Never Frontier's journal key, and never the bench's own loadout.
+    expect(notice?.textContent).not.toContain('PrimaryWeapon');
+    expect(store.loadout()).toBe(before);
   });
 
   it('synthesizes no heading of its own', () => {

@@ -219,6 +219,19 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: null,
   },
   {
+    surfaceId: 'equipment/link',
+    requirements: ['013/FR-020', '013/FR-021', '013/FR-018a'],
+    journey: 'equipment/link',
+    axe: true,
+    assertions: [
+      'the address carries the loadout on the bench, published after every choice',
+      'opening that address restores the loadout, held content included',
+      'the export layer offers the object, the link and the readable summary',
+      'a link this version cannot read says so where the Commander is, naming no journal key',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'shell/tool-navigation',
     requirements: ['011/FR-028', '011/SC-009'],
     journey: 'product/semantics',

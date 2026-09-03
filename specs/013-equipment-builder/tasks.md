@@ -324,35 +324,35 @@ loadout and the readable summary names every fitted item.
 
 ### Tests for User Story 4
 
-- [ ] T059 [P] [US4] Write the US4 journey in `e2e/equipment-link.spec.ts` — copy the link, open it,
+- [X] T059 [P] [US4] Write the US4 journey in `e2e/equipment-link.spec.ts` — copy the link, open it,
       and confirm the loadout is restored including its held content
-- [ ] T060 [P] [US4] Write the refusal case in `e2e/equipment-link.spec.ts`: a link naming an
+- [X] T060 [P] [US4] Write the refusal case in `e2e/equipment-link.spec.ts`: a link naming an
       unresolvable recipe says what failed, names the mount in words, and leaves the open loadout
       untouched
 
 ### Implementation for User Story 4
 
-- [ ] T061 [US4] Create `src/app/application/equipment/loadout-link.coordinator.ts` and `.spec.ts` —
+- [X] T061 [US4] Create `src/app/application/equipment/loadout-link.coordinator.ts` and `.spec.ts` —
       fragment in and out on feature 001's `src/app/application/build-link/fragment-publisher.ts`,
       refusing atomically before activation
-- [ ] T062 [US4] Add the equipment payload allowlist to
+- [X] T062 [US4] Add the equipment payload allowlist to
       `src/app/application/build-link/link-payload.allowlist.ts` and its `.spec.ts`, so nothing but
       chosen identities can enter a fragment
-- [ ] T063 [US4] Select refusal wording by the codec that refused in
+- [X] T063 [US4] Select refusal wording by the codec that refused in
       `src/app/application/build-link/link-error.mapper.ts` and `.spec.ts`, and add the
       equipment-worded `link.error.*` entries to `src/app/i18n/locales/en.json` and `de.json`
       ([contracts/equipment-loadout-link.md](./contracts/equipment-loadout-link.md))
-- [ ] T064 [US4] Name the mount a refusal is about through `getPersonalMountName` in
+- [X] T064 [US4] Name the mount a refusal is about through `getPersonalMountName` in
       `src/app/features/equipment/equipment-bench.page.ts` and `.spec.ts` — `PrimaryWeapon1` never
       reaches a screen (FR-021)
-- [ ] T065 [US4] Build the export layer in
+- [X] T065 [US4] Build the export layer in
       `src/app/features/equipment/export-loadout-layer/export-loadout.dialog.ts`, `.html`, `.scss`
       and `.spec.ts` — share link, loadout JSON and plain text, composed from
       `src/app/ui/components/share-link-panel`
-- [ ] T066 [US4] Write the readable summary in
+- [X] T066 [US4] Write the readable summary in
       `src/app/application/equipment/loadout-summary.ts` and `.spec.ts` — the suit and its grade,
       each weapon with its grade, and each fitted modification, every name localised
-- [ ] T067 [US4] Run `e2e/equipment-link.spec.ts` green across the ten projects and add the axe
+- [X] T067 [US4] Run `e2e/equipment-link.spec.ts` green across the ten projects and add the axe
       sweep for the export layer in `e2e/accessibility/`
 
 **Checkpoint**: all four stories work independently.

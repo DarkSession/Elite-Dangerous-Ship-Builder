@@ -1,0 +1,57 @@
+<edsb-layer
+  [title]="title()"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  width="wide"
+  [flush]="true"
+  (dismissed)="dismissed.emit()"
+>
+  <!--
+    Canvas 1a: the format list on the leading edge, the chosen format's content
+    beside it, one amber hairline between them running the height of the panel.
+    The list carries no question above it, as it is drawn; the words stay for
+    anyone reading the group aloud.
+  -->
+  <div class="export-loadout">
+    <edsb-choice-group
+      class="export-loadout__formats"
+      layout="cards"
+      [legend]="formatLegend()"
+      [legendHidden]="true"
+      [choices]="formats()"
+      [selected]="selectedFormats()"
+      (changed)="selectFormat($event)"
+    />
+
+    <div class="export-loadout__content">
+      @if (share.format() === 'link') {
+        <edsb-share-link-panel
+          [state]="share.state()"
+          [url]="share.url()"
+          [refusal]="share.refusal()"
+          [feedback]="share.feedback()"
+          [shareAvailable]="share.shareAvailable"
+          (copyRequested)="share.copy()"
+          (shareRequested)="share.share()"
+          (retryRequested)="share.retry()"
+        />
+      } @else {
+        <edsb-textarea-field
+          class="export-loadout__payload"
+          [label]="fieldLabel()"
+          [value]="share.payload()"
+          [readonly]="true"
+          [technical]="true"
+          [rows]="14"
+        />
+
+        <!-- The canvas's own pair, in its own order: the file first, the
+             clipboard emphasised beside it. -->
+        <div class="export-loadout__actions">
+          <edsb-action-button [label]="downloadLabel()" (activated)="share.download()" />
+          <edsb-action-button [label]="copyLabel()" emphasis="primary" (activated)="share.copy()" />
+        </div>
+      }
+    </div>
+  </div>
+</edsb-layer>

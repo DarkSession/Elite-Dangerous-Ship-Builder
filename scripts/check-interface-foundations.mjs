@@ -2530,6 +2530,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: both parts are variables, and the colon is language-neutral.',
     'slef.diagnostic.code': '"Code" is the ordinary German word.',
     'slef.export.mode.label': '"Format" is the ordinary German word.',
+    'equipment.export.mode.label': 'The same word, on the bench\u2019s own export layer.',
     'slef.export.mode.slef': 'SLEF JSON is the interchange format\u2019s own name, not a phrase.',
     'outfitting.engineering.materials.merc-coin':
       'Merc Coins is the in-game currency name and is not translated.',

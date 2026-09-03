@@ -3,6 +3,12 @@
   the bench has room for, so a test can read the decision without measuring
   pixels (responsive composition, "Verification matrix").
 -->
+@if (linkFailure(); as failure) {
+  <!-- A link that arrived unreadable, said where the Commander is: they opened
+       an address and the bench did not change (FR-021). -->
+  <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
+}
+
 <section class="bench" [attr.data-composition]="composition()">
   @if (composition() !== 'wide') {
     <!--
@@ -98,6 +104,8 @@
     (chosen)="fit($event)"
     (dismissed)="chooserOpen.set(false)"
   />
+
+  <edsb-export-loadout-dialog [open]="exportOpen()" (dismissed)="exportOpen.set(false)" />
 
   <!--
     Naming and saving, through the ship tool's own save layer: one library holds

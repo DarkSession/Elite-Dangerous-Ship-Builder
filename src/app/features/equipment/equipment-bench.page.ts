@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -14,6 +15,8 @@ import {
   SaveConflictService,
   type ConflictChoice,
 } from '../../application/build-library/save-conflict.service';
+import { LinkErrorMapper } from '../../application/build-link/link-error.mapper';
+import { LoadoutLinkCoordinator } from '../../application/equipment/loadout-link.coordinator';
 import { LoadoutPresenter } from '../../application/equipment/loadout.presenter';
 import { LoadoutStore } from '../../application/equipment/loadout.store';
 import type { EditTarget } from '../../domain/equipment/loadout/loadout-edit';
@@ -23,6 +26,7 @@ import { MessageService } from '../../i18n/message.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { relationId } from '../../ui/a11y/text-equivalence';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
+import { StatusNotice } from '../../ui/components/status/status-notice';
 import { TabGroup, type TabItem } from '../../ui/components/tab-group/tab-group';
 import { observeBenchComposition } from '../../ui/equipment/bench-composition';
 import {
@@ -32,6 +36,7 @@ import {
 } from '../build-workspace/save-build.dialog';
 import { HISTORY_REDO_MARK, HISTORY_UNDO_MARK, ScreenChrome } from '../shared/screen-chrome';
 import { CommanderStats } from './commander-stats/commander-stats';
+import { ExportLoadoutDialog } from './export-loadout-layer/export-loadout.dialog';
 import { ItemView } from './item-view/item-view';
 import { LoadoutLedger } from './loadout-ledger/loadout-ledger';
 import { MaterialRequirements } from './material-requirements/material-requirements';
@@ -68,11 +73,13 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
   imports: [
     ChoiceDialog,
     CommanderStats,
+    ExportLoadoutDialog,
     ItemView,
     LoadoutLedger,
     MaterialRequirements,
     ModificationChooser,
     SaveBuildDialog,
+    StatusNotice,
     SuitGate,
     TabGroup,
     WeaponChooser,
@@ -91,6 +98,8 @@ export class EquipmentBenchPage {
   readonly #named = inject(NamedRecordService);
   readonly #conflicts = inject(SaveConflictService);
   readonly #invalidation = inject(RecordInvalidationService);
+  readonly #links = inject(LoadoutLinkCoordinator);
+  readonly #linkErrors = inject(LinkErrorMapper);
 
   readonly store = inject(LoadoutStore);
   readonly presenter = inject(LoadoutPresenter);
@@ -105,6 +114,7 @@ export class EquipmentBenchPage {
   readonly tabsLabel = this.#messages.messageSignal('equipment.tab.group');
   readonly suitChooserTitle = this.#messages.messageSignal('equipment.chooser.suit');
   readonly saveLabel = this.#messages.messageSignal('workspace.actions.save');
+  readonly exportLabel = this.#messages.messageSignal('equipment.action.export');
   readonly conflictTitle = this.#messages.messageSignal('workspace.conflict.title');
   readonly dismissLabel = this.#messages.messageSignal('action.close');
 
@@ -164,6 +174,17 @@ export class EquipmentBenchPage {
   );
 
   constructor() {
+    // Read the address before publishing to it: a Commander who arrived on a
+    // loadout link gets that loadout, and the bench then keeps the fragment
+    // showing whatever is actually on it (FR-020, 013
+    // contracts/equipment-loadout-link.md).
+    const stopListening = this.#links.listen();
+    const stopPublishing = this.#links.start();
+    inject(DestroyRef).onDestroy(() => {
+      stopPublishing();
+      stopListening();
+    });
+
     effect((onCleanup) => {
       this.#chrome.setActions(
         this.store.hasLoadout()
@@ -191,6 +212,13 @@ export class EquipmentBenchPage {
               },
               {
                 action: {
+                  id: 'equipment.export',
+                  label: this.#messages.message('equipment.action.export'),
+                },
+                perform: () => this.exportOpen.set(true),
+              },
+              {
+                action: {
                   id: 'equipment.save',
                   label: this.#messages.message('workspace.actions.save'),
                 },
@@ -202,6 +230,22 @@ export class EquipmentBenchPage {
       onCleanup(() => this.#chrome.setActions([]));
     });
   }
+
+  /**
+   * Why the last incoming loadout link was refused, in the Commander's language.
+   *
+   * On the bench rather than inside the export layer: a Commander who opened an
+   * address and got nothing is not going to go looking in a layer for the
+   * reason (FR-021). The mount is named in the library's words, never by its
+   * journal key.
+   */
+  readonly linkFailure = computed(() => {
+    const failure = this.#links.failure();
+    return failure === null ? null : this.#linkErrors.describe(failure, 'equipment');
+  });
+
+  /** Whether the export layer is open. */
+  readonly exportOpen = signal(false);
 
   /** Whether the save layer is open, and whether a write is in flight. */
   readonly #saveOpen = signal(false);

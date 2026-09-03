@@ -8,6 +8,16 @@
 export const BUILD_LINK_PREFIX = 'b.';
 
 /**
+ * The prefix that makes a fragment a loadout link.
+ *
+ * A second tool minting into the same fragment is exactly why the prefix
+ * exists: `e.` says which tool wrote a value, so a ship link is never offered
+ * to the bench's decoder or the other way round (013
+ * contracts/equipment-loadout-link.md).
+ */
+export const EQUIPMENT_LINK_PREFIX = 'e.';
+
+/**
  * The longest value this application will accept or publish.
  *
  * Counted including the prefix and excluding the `#`, origin and base path,
@@ -38,9 +48,18 @@ export type FragmentRecognition =
  * anyway, having changed it first.
  */
 export function recognizeBuildLinkFragment(raw: string): FragmentRecognition {
+  return recognize(raw, BUILD_LINK_PREFIX);
+}
+
+/** The same decision, for the fragment the bench mints and reads. */
+export function recognizeEquipmentLinkFragment(raw: string): FragmentRecognition {
+  return recognize(raw, EQUIPMENT_LINK_PREFIX);
+}
+
+function recognize(raw: string, prefix: string): FragmentRecognition {
   const value = raw.startsWith('#') ? raw.slice(1) : raw;
 
-  if (!value.startsWith(BUILD_LINK_PREFIX)) {
+  if (!value.startsWith(prefix)) {
     return { kind: 'unrelated' };
   }
   if (value.length > MAX_BUILD_LINK_LENGTH) {
