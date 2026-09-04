@@ -164,6 +164,12 @@
   --ednb-type-size-2xl: 1.125rem; //     canvas 18
   --ednb-type-size-3xl: 1.375rem; //     canvas 22
   --ednb-type-size-4xl: 1.625rem; //     canvas 26
+  // The start page's masthead, which is the largest thing the design set draws:
+  // `Home.dc.html` sets it at 46px on the 1440px artboard and 28px on the 390px
+  // one, and no other canvas asks for either. Same rule as every rung above —
+  // the canvas's own size, nothing scaled on the way in.
+  --ednb-type-size-5xl: 1.75rem; //      canvas 28
+  --ednb-type-size-6xl: 2.875rem; //     canvas 46
 
   // The canvas sets `line-height: 1` on every tracked single-line label and
   // number. `flat` is that; it is only ever correct on a line that cannot wrap.
@@ -370,6 +376,10 @@
   // ---------------------------------------------------------------------------
 
   --ednb-measure-content-max: 90rem;
+  // The narrower measure `Home.dc.html` sets on the start page's middle:
+  // `max-width: 1080px` on the 1440px artboard, against the 90rem a screen full
+  // of columns and figures is given.
+  --ednb-measure-content-narrow: 67.5rem;
   --ednb-measure-prose-max: 68ch;
 
   // The inspector rail, 340px in canvas 1a.

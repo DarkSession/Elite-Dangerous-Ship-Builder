@@ -34,6 +34,7 @@ const CATALOGUE = {
   'app.name': 'NavBeacon',
   'app.document-title': '{{page}} · {{app}}',
   'app.document-title.default': 'NavBeacon',
+  'app.description': 'NavBeacon is a set of Elite Dangerous tools.',
   'catalogue.title': 'Ship Builder',
   'catalogue.description': 'Browse every hull.',
   'hullDetail.title': '{{hull}}',
@@ -47,6 +48,9 @@ describe('published addresses', () => {
     assert.deepEqual(
       addresses.map((entry) => entry.address),
       [
+        // The product's own address, which used to be a redirect and so used to
+        // be absent from the map entirely.
+        `${ORIGIN}/`,
         `${ORIGIN}/ships`,
         `${ORIGIN}/build`,
         `${ORIGIN}/equipment`,
@@ -106,12 +110,16 @@ describe('what a published document says', () => {
     assert.equal(head.canonical, `${ORIGIN}/${HULL_PARENT}/Anaconda`);
   });
 
-  it('names the screen beside the product on the address the root redirects to', () => {
-    // The catalogue screen is the ship builder and the product is NavBeacon, so
-    // the address `/` redirects to says which screen it is rather than repeating
-    // the product name.
-    const catalogue = publishedAddresses({ origin: ORIGIN, ships: SHIPS })[0];
+  it('states the product once on the root address, and names the screen elsewhere', () => {
+    // The root is the start page now, and its own name is the product's name.
+    // `NavBeacon · NavBeacon` is not a title anyone would write.
+    const [root, catalogue] = publishedAddresses({ origin: ORIGIN, ships: SHIPS });
 
+    assert.equal(documentHead(root, CATALOGUE, ORIGIN).title, 'NavBeacon');
+    assert.equal(
+      documentHead(root, CATALOGUE, ORIGIN).description,
+      'NavBeacon is a set of Elite Dangerous tools.',
+    );
     assert.equal(documentHead(catalogue, CATALOGUE, ORIGIN).title, 'Ship Builder · NavBeacon');
   });
 

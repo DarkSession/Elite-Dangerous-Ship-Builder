@@ -5446,7 +5446,7 @@
           this._eq = { SUITS, W, SMODS, WMODS, MATN, COST, etOf, costOf };
 
           const st = {
-            suit:'dom', sg:5,
+            suit:'dom', sg:2,
             smods:['Damage Resistance','Extra Backpack Capacity','Faster Shield Regeneration','Increased Sprint Duration'],
             w:[{k:'opp',g:5,m:['Magazine Size','Stability','Higher Accuracy','Stowed Reloading']},
                {k:'aph',g:4,m:['Greater Range','Stability',null]},
@@ -5617,10 +5617,12 @@
           };
 
           const bar = (label, v) => {
-            const pct = Math.min(100, Math.abs(v) * 100), neg = v < 0;
+            const neg = v < 0, half = Math.min(50, Math.abs(v) * 50);
             return '<div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between"><div style="font:400 9px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.55);letter-spacing:.1em">' + label + '</div>'
-              + '<div style="font:500 9.5px/1 \'JetBrains Mono\',monospace;color:' + (neg ? '#ff9b78' : '#e8ded1') + '">' + (neg ? '' : '+') + Math.round(v * 100) + '%</div></div>'
-              + '<div style="height:4px;background:rgba(255,255,255,.06);position:relative"><div style="position:absolute;left:0;top:0;height:4px;width:' + pct + '%;background:' + (neg ? '#ff6b3d' : '#8fd94a') + '"></div></div></div>';
+              + '<div style="font:500 9.5px/1 \'JetBrains Mono\',monospace;color:' + (neg ? '#ff9b78' : '#e8ded1') + '">' + (neg ? '−' : '+') + Math.round(Math.abs(v) * 100) + '%</div></div>'
+              + '<div style="height:4px;background:rgba(255,255,255,.06);position:relative">'
+              + '<div style="position:absolute;left:50%;top:-1px;width:1px;height:6px;background:rgba(232,222,209,.28)"></div>'
+              + '<div style="position:absolute;top:0;height:4px;' + (neg ? 'right:50%' : 'left:50%') + ';width:' + half + '%;background:' + (neg ? '#ff6b3d' : '#8fd94a') + '"></div></div></div>';
           };
           const line = (l, v, c) => '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px"><div style="font:400 10px/1.3 Barlow,sans-serif;color:rgba(232,222,209,.55);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + l + '</div><div style="font:500 11px/1 \'JetBrains Mono\',monospace;color:' + (c || '#e8ded1') + '">' + v + '</div></div>';
 
@@ -5931,10 +5933,12 @@
 
           const cell = (l, v, hot) => '<div style="padding:11px 12px;background:#131313"><div style="font:500 8px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);letter-spacing:.14em">' + l + '</div><div style="font:600 20px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.05em;color:' + (hot ? '#ffb060' : '#e8ded1') + ';margin-top:9px">' + v + '</div></div>';
           const bar = (label, v) => {
-            const pct = Math.min(100, Math.abs(v) * 100), neg = v < 0;
+            const neg = v < 0, half = Math.min(50, Math.abs(v) * 50);
             return '<div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between"><div style="font:400 9px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.55);letter-spacing:.1em">' + label + '</div>'
-              + '<div style="font:500 9.5px/1 \'JetBrains Mono\',monospace;color:' + (neg ? '#ff9b78' : '#e8ded1') + '">' + (neg ? '' : '+') + Math.round(v * 100) + '%</div></div>'
-              + '<div style="height:4px;background:rgba(255,255,255,.06);position:relative"><div style="position:absolute;left:0;top:0;height:4px;width:' + pct + '%;background:' + (neg ? '#ff6b3d' : '#8fd94a') + '"></div></div></div>';
+              + '<div style="font:500 9.5px/1 \'JetBrains Mono\',monospace;color:' + (neg ? '#ff9b78' : '#e8ded1') + '">' + (neg ? '−' : '+') + Math.round(Math.abs(v) * 100) + '%</div></div>'
+              + '<div style="height:4px;background:rgba(255,255,255,.06);position:relative">'
+              + '<div style="position:absolute;left:50%;top:-1px;width:1px;height:6px;background:rgba(232,222,209,.28)"></div>'
+              + '<div style="position:absolute;top:0;height:4px;' + (neg ? 'right:50%' : 'left:50%') + ';width:' + half + '%;background:' + (neg ? '#ff6b3d' : '#8fd94a') + '"></div></div></div>';
           };
 
           const renderDetail = () => {

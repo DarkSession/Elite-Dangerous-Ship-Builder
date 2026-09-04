@@ -1,0 +1,16 @@
+<!--
+  One anchor, not a card containing one. The canvas makes the whole plate the
+  target, and a link inside a clickable box is two controls for one destination.
+
+  The mark is `aria-hidden`: the link already says where it goes, and an arrow
+  read aloud after the name says it twice (canvas 1b's `.hm-go`).
+-->
+<a class="tool-card" [href]="href()" (click)="opened.emit($event)">
+  <span class="tool-card__body">
+    <span class="tool-card__name">{{ name() }}</span>
+    <span class="tool-card__subjects">{{ subjects() }}</span>
+    <span class="tool-card__summary">{{ summary() }}</span>
+    <span class="tool-card__short">{{ short() }}</span>
+  </span>
+  <span class="tool-card__mark" aria-hidden="true">&#8594;</span>
+</a>

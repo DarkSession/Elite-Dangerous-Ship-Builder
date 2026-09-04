@@ -32,6 +32,37 @@ interface ToolRecord {
    * bar that stopped naming it there would state something untrue.
    */
   readonly routes: readonly string[];
+  /**
+   * The subjects the tool covers, as one already-joined string.
+   *
+   * `SHIPYARD · OUTFITTING · ANATOMY · POWER` on the canvas. A list would make
+   * the separator this application's decision in every language, and a language
+   * that punctuates a series differently would be handed a middle dot it does
+   * not use. One string per locale lets the translator write the series their
+   * language writes.
+   */
+  readonly subjectsKey: MessageKey;
+  /** What the tool does, as the wide artboard states it. */
+  readonly summaryKey: MessageKey;
+  /** The same tool in the one line the compact artboard has room for. */
+  readonly shortSummaryKey: MessageKey;
+}
+
+/**
+ * One tool as the start page offers it: already localized, ready to render.
+ *
+ * Both descriptions travel together. Which one a Commander reads is a
+ * composition question the stylesheet answers, so nothing here chooses — a
+ * width read in TypeScript would make the answer depend on when the card
+ * happened to render (`design/reference-review.md`).
+ */
+export interface ToolCard {
+  readonly id: string;
+  readonly name: string;
+  readonly href: string;
+  readonly subjects: string;
+  readonly summary: string;
+  readonly short: string;
 }
 
 /**
@@ -57,12 +88,18 @@ const TOOLS: readonly ToolRecord[] = [
     labelKey: 'tools.ship',
     href: NAVIGATION_ROUTES.catalogue,
     routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.build],
+    subjectsKey: 'tools.ship.subjects',
+    summaryKey: 'tools.ship.summary',
+    shortSummaryKey: 'tools.ship.short',
   },
   {
     id: 'equipment',
     labelKey: 'tools.equipment',
     href: NAVIGATION_ROUTES.equipment,
     routes: [NAVIGATION_ROUTES.equipment],
+    subjectsKey: 'tools.equipment.subjects',
+    summaryKey: 'tools.equipment.summary',
+    shortSummaryKey: 'tools.equipment.short',
   },
 ];
 
@@ -142,6 +179,30 @@ export class AppNavigation {
       label: this.#messages.message(tool.labelKey),
       href: tool.href,
       current: tool.routes.some((route) => address === route || address.startsWith(`${route}/`)),
+    }));
+  }
+
+  /**
+   * Every tool the application carries, with what it is for.
+   *
+   * A second reading rather than an argument to `tools`, because the two answer
+   * different questions. `tools` reports which tool is current and is asked on
+   * every navigation; this reports what the tools *are* and is asked by the one
+   * screen that offers a choice between them. There is no current tool there —
+   * a Commander at the entry point is in none of them — so nothing here carries
+   * a way to say one is.
+   *
+   * Same array, so a tool the application gains is a tool the bar and the entry
+   * point gain together.
+   */
+  catalogue(): readonly ToolCard[] {
+    return TOOLS.map((tool) => ({
+      id: tool.id,
+      name: this.#messages.message(tool.labelKey),
+      href: tool.href,
+      subjects: this.#messages.message(tool.subjectsKey),
+      summary: this.#messages.message(tool.summaryKey),
+      short: this.#messages.message(tool.shortSummaryKey),
     }));
   }
 }

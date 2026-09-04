@@ -1707,7 +1707,9 @@ const REQUIRED_MANIFEST_MEMBERS = [
 const REQUIRED_ICON_SIZES = ['192x192', '512x512'];
 
 /** Routes that are redirects or wildcards, and so are not addresses to list. */
-const UNLISTABLE_ROUTES = new Set(['', '**']);
+// The wildcard alone. `''` was here while it redirected into the ship tool;
+// it answers with the start page now, so it is an address like any other.
+const UNLISTABLE_ROUTES = new Set(['**']);
 
 /**
  * One `<meta>` element's content, whichever quote character delimits it.

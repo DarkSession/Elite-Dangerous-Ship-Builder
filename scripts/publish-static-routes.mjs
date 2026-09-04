@@ -154,12 +154,20 @@ export function documentFor(index, head) {
  *
  * An address below the root is a file below the root — `/ships/Anaconda`
  * becomes `ships/Anaconda.html` — because that is an address, not a directory
- * redirect.
+ * redirect. The root itself is `index.html`, which is the file that answers it.
  */
 export function fileFor(address, origin) {
   const route = address.startsWith(`${origin}/`) ? address.slice(origin.length + 1) : null;
-  if (route === null || route.length === 0) {
+  if (route === null) {
     throw new Error(`"${address}" is not an address under ${origin}.`);
+  }
+  // The root is served from `index.html` — there is no other file it could be,
+  // and a directory document would answer 301 to itself. It goes through the
+  // same head substitution as every other address rather than being skipped, so
+  // the committed file is held to the same message keys the running application
+  // resolves.
+  if (route.length === 0) {
+    return 'index.html';
   }
   if (route.endsWith('/')) {
     throw new Error(`"${route}" ends in a slash, so it names a directory rather than an address.`);

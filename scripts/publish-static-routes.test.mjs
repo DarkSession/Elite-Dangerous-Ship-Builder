@@ -88,10 +88,16 @@ describe('where a published address is written', () => {
     assert.equal(fileFor(`${ORIGIN}/ships`, ORIGIN), 'ships.html');
   });
 
+  it('writes the root as index.html, which is the file that answers it', () => {
+    // The root used to be refused here, because a redirect is not an address.
+    // It is the start page now, and `index.html` is the only file that answers
+    // it — a directory document would answer 301 to itself.
+    assert.equal(fileFor(`${ORIGIN}/`, ORIGIN), 'index.html');
+  });
+
   it('refuses an address that is not under the origin, and one that names a directory', () => {
     assert.throws(() => fileFor('https://example.test/ships', ORIGIN), /not an address under/);
     assert.throws(() => fileFor(`${ORIGIN}/ships/`, ORIGIN), /ends in a slash/);
-    assert.throws(() => fileFor(`${ORIGIN}/`, ORIGIN), /not an address under/);
   });
 });
 

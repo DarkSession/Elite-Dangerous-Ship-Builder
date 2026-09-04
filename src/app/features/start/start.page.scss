@@ -1,0 +1,120 @@
+@use '../../../styles/responsive' as layout;
+
+// The canvas's start page: a column that fills the shell, the selector in the
+// middle and the attribution band closing it at the foot (`Home.dc.html`,
+// artboards `1a` and `1b`).
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
+.start {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.start__content {
+  @include layout.stack(var(--ednb-space-section));
+  @include layout.content-measure;
+
+  flex: 1 1 auto;
+  // Narrower than the screens full of columns and figures: the canvas caps the
+  // start page's middle at 1080px, not at the 90rem a manifest is given.
+  max-inline-size: var(--ednb-layout-content-narrow);
+  padding: var(--ednb-space-section) var(--ednb-space-2xl);
+}
+
+.start__masthead {
+  @include layout.stack(var(--ednb-space-inline));
+}
+
+// The one heading that names the product rather than a screen, so it takes the
+// masthead step rather than the screen-title one. Condensed, uppercase and
+// widely tracked like every heading here; in the plain ink, not the amber the
+// canvas keeps for a tool's own name.
+.start__heading {
+  @include layout.display-title(
+    var(--ednb-text-size-masthead-compact),
+    var(--ednb-text-tracking-2xl)
+  );
+
+  color: var(--ednb-text-primary);
+}
+
+.start__tagline {
+  margin: 0;
+  font-size: var(--ednb-text-size-body);
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-body);
+  color: var(--ednb-text-faint);
+  text-wrap: pretty;
+}
+
+// One flow at compact widths, two columns where there is room. `auto-fit` with
+// a floor rather than a fixed count: the canvas draws two tools, and a third
+// should join the grid rather than require it to be rewritten.
+.start__tools {
+  display: grid;
+  gap: var(--ednb-space-inline);
+  // `minmax(0, …)` rather than the implicit `auto` floor: a track that refuses
+  // to go below its content's minimum is a page that scrolls sideways at 400%
+  // zoom, which principle V forbids at every viewport.
+  grid-template-columns: minmax(0, 1fr);
+}
+
+// The band at the foot, on the darkest panel ground and closed at the top by
+// the row hairline, as both artboards draw it.
+.start__legal {
+  flex: none;
+  padding: var(--ednb-space-panel) var(--ednb-space-2xl);
+  background-color: var(--ednb-surface-panel);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-row);
+  font-size: var(--ednb-text-size-micro);
+}
+
+@include layout.medium-up {
+  .start__content {
+    gap: var(--ednb-space-section);
+    // The wide artboard floats the block well below the bar — `74px 40px 40px`
+    // against the compact `26px 16px 0`. Two of the largest rhythm step rather
+    // than a figure of its own.
+    padding: calc(2 * var(--ednb-space-section)) var(--ednb-space-section) var(--ednb-space-section);
+  }
+
+  // The wide artboard centres the masthead and holds its line to a measure;
+  // the compact one runs both to the leading edge.
+  .start__masthead {
+    align-items: center;
+    text-align: center;
+  }
+
+  .start__heading {
+    font-size: var(--ednb-text-size-masthead);
+    letter-spacing: var(--ednb-text-tracking-3xl);
+  }
+
+  .start__tagline {
+    max-inline-size: var(--ednb-measure-prose-max);
+    font-size: var(--ednb-text-size-heading-sm);
+  }
+
+  .start__tools {
+    gap: var(--ednb-space-region);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ednb-layout-rail-min)), 1fr));
+  }
+
+  .start__legal {
+    display: flex;
+    justify-content: center;
+    padding-inline: var(--ednb-space-region);
+    font-size: var(--ednb-text-size-caption);
+    text-align: center;
+  }
+
+  .start__legal edsb-legal-excerpt {
+    max-inline-size: var(--ednb-measure-prose-max);
+  }
+}

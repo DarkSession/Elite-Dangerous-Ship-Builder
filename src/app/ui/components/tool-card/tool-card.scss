@@ -1,0 +1,107 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  // A grid item whose content cannot force the track wider than the column it
+  // was given. Without it the card's own padding and mark set a minimum the
+  // page cannot honour at 400% zoom, and the document scrolls sideways.
+  min-inline-size: 0;
+}
+
+// The canvas's `.hm-tool`: a panel on the raised ground, boxed by the region
+// hairline, square like everything else here. The compact artboard lays the
+// text and the mark in a row; the wide one stacks the text alone
+// (`Home.dc.html`, artboards `1a` and `1b`).
+.tool-card {
+  display: flex;
+  // The compact artboard centres the mark against the text it sits beside;
+  // the wide one has no mark and stretches the plates to a common height.
+  align-items: center;
+  gap: var(--ednb-space-inline);
+  block-size: 100%;
+  padding: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel-raised);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  color: inherit;
+  text-decoration: none;
+
+  // The canvas transitions ground and border under a pointer. Motion is a
+  // preference, so the transition is declared where the preference allows it
+  // and the colours change instantly where it does not.
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+      border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
+  }
+
+  &:hover {
+    background-color: var(--ednb-surface-panel-hover);
+    border-color: var(--ednb-border-cell-hover);
+  }
+}
+
+.tool-card__body {
+  @include layout.stack(var(--ednb-space-stack-tight));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+// Condensed, uppercase, widely tracked, amber — the display title the system
+// already spells, at the size the canvas sets for a tool's own name.
+.tool-card__name {
+  // The compact artboard sets the name at 17px, between the ramp's 16 and 18.
+  // The wide one sets it at 26px, which the ramp carries exactly.
+  @include layout.display-title(var(--ednb-text-size-heading-md), var(--ednb-text-tracking-4xl));
+}
+
+.tool-card__subjects {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-4xl));
+}
+
+.tool-card__summary,
+.tool-card__short {
+  font-weight: var(--ednb-text-weight-prose);
+  line-height: var(--ednb-text-leading-prose);
+  color: var(--ednb-text-subtle);
+  text-wrap: pretty;
+}
+
+// The compact composition: the short line, the mark beside it, no subjects.
+.tool-card__subjects,
+.tool-card__summary {
+  display: none;
+}
+
+@include layout.medium-up {
+  // The wide composition: the subjects and the fuller description, stacked,
+  // and no mark — the canvas draws the arrow only on the 390px artboard.
+  .tool-card {
+    align-items: stretch;
+    padding: var(--ednb-space-region);
+  }
+
+  .tool-card__body {
+    gap: var(--ednb-space-inline);
+  }
+
+  .tool-card__name {
+    font-size: var(--ednb-text-size-heading-item);
+  }
+
+  .tool-card__subjects,
+  .tool-card__summary {
+    display: block;
+  }
+
+  .tool-card__short,
+  .tool-card__mark {
+    display: none;
+  }
+}
+
+.tool-card__mark {
+  @include layout.metric-value(var(--ednb-text-size-lead), var(--ednb-text-accent));
+
+  flex: none;
+}

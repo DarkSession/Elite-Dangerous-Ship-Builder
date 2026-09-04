@@ -73,6 +73,13 @@ test.describe('product semantics', () => {
     // The shell says which tool a Commander is in, at every width, and the tool
     // they are already in is a word rather than a link to the screen in front
     // of them (011/FR-028, SC-009).
+    //
+    // Asked of a tool screen rather than of the entry point the `beforeEach`
+    // opens: a Commander at `/` is in no tool, and the bar marks none there
+    // (014/FR-010, asserted in `start-page.spec.ts`).
+    await page.goto('/ships');
+    await expect(page.getByRole('main')).toBeVisible();
+
     const tools = page.getByRole('navigation', { name: 'Tools' });
     await expect(tools).toHaveCount(1);
     await expect(tools).toBeVisible();
@@ -103,11 +110,13 @@ test.describe('product semantics', () => {
         .replace(/\s+/g, ' ')
         .trim();
 
-    // Every address the ship tool owns: the shipyard the `beforeEach` opened,
-    // a hull's own page and the outfitting bench. The saved builds were a fourth
-    // until they stopped being an address (2026-09-04); walking `/builds` now
-    // lands on the shipyard through the wildcard and re-asserts the first
-    // iteration.
+    // Every address the ship tool owns: the shipyard, a hull's own page and the
+    // outfitting bench. The shipyard is opened here rather than by the
+    // `beforeEach`, which lands on the entry point — where no tool is open and
+    // so none is marked (014/FR-010).
+    await page.goto('/ships');
+    await expect(page.getByRole('main')).toBeVisible();
+
     for (const route of ['/ships/Anaconda', '/build']) {
       expect(await named()).toBe('Ship Builder');
 

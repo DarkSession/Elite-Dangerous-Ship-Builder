@@ -20,6 +20,9 @@
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://navbeacon.app/</loc>
+  </url>
+  <url>
     <loc>https://navbeacon.app/ships</loc>
   </url>
   <url>

@@ -4,7 +4,12 @@
 
   It is served before Angular runs and is the only thing a crawler that executes
   no script ever sees, so every phrase in it is the English default for the
-  screen the application opens on. The locale store replaces the title, the
+  screen the application opens on — which is the start page, and used to be the
+  shipyard. The product's own description is unchanged by that: `app.description`
+  describes NavBeacon, not whichever screen it opens on. This file is also the
+  document the root address answers with:
+  `publish-static-routes.mjs` writes the root's own head into it through the same
+  substitution every other address goes through. The locale store replaces the title, the
   description, the canonical link and both card blocks on the first committed
   snapshot, in whichever language the browser asked for (011/FR-027). The policy
   checker holds the addresses here to `SITE_ORIGIN`, and holds this file, the
