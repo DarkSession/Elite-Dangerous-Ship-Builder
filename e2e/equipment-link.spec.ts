@@ -17,6 +17,16 @@ async function wearSuit(page: Page, name: string): Promise<void> {
 }
 
 async function openRow(page: Page, target: string): Promise<void> {
+  // The bench has to be drawn before its arrangement can be read. A page still
+  // booting has no region at all and `count()` answers 0 for every one of them,
+  // so an unguarded read takes "no ledger" to mean "drilled in" and waits out
+  // the test looking for a back control on a screen that is not there yet —
+  // which is how a fresh load of a shared link timed out at 60s on the compact
+  // projects (CI, 2026-09-04). The page's own host is what says it has booted:
+  // no region is drawn in every arrangement, and the compact bench draws one
+  // tab at a time.
+  await expect(page.locator('edsb-equipment-bench-page')).toBeAttached();
+
   const tab = page.getByRole('tab', { name: 'Loadout' });
   if ((await tab.count()) > 0) await tab.click();
   if ((await page.locator('.bench__region--loadout').count()) === 0) {
