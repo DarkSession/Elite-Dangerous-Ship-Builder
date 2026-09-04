@@ -410,8 +410,7 @@ export class BuildLibraryPage {
             );
             return;
           }
-          this.#presence.lowerForNavigation();
-          void this.#router.navigateByUrl(NAVIGATION_ROUTES.equipment, { replaceUrl: true });
+          void this.#leaveThrough(NAVIGATION_ROUTES.equipment);
           return;
         }
 
@@ -423,13 +422,7 @@ export class BuildLibraryPage {
           return;
         }
         if (result.kind === 'committed') {
-          // Leaving through the layer rather than closing it. The layer has no
-          // address of its own: raising it pushed a second entry at the screen
-          // behind, so the navigation replaces that entry rather than stacking
-          // on it — otherwise every visit to the library would leave one back
-          // press that does nothing.
-          this.#presence.lowerForNavigation();
-          void this.#router.navigateByUrl(NAVIGATION_ROUTES.build, { replaceUrl: true });
+          void this.#leaveThrough(NAVIGATION_ROUTES.build);
         }
         return;
       }
@@ -680,6 +673,25 @@ export class BuildLibraryPage {
 
   #hullName(symbol: string): string {
     return this.#gameText.shipName(symbol).text ?? symbol;
+  }
+
+  /**
+   * Leaves through the layer rather than closing it.
+   *
+   * The navigation runs first and the layer comes down when it lands. Closing
+   * first uncovers a screen that is still live under the Commander's pointer,
+   * and the shipyard writes its own address whenever a pointer rests on a hull
+   * row — exactly where the press that opened the record left it. Uncovered a
+   * frame early, that write lands after this navigation and strands the
+   * Commander on `/ships/<hull>` with the build never opened, which is what
+   * turned CI red on firefox (2026-09-04).
+   *
+   * The layer is `inert` while it stands, so nothing underneath can answer a
+   * pointer until the navigation it is waiting for has already happened.
+   */
+  async #leaveThrough(target: string): Promise<void> {
+    await this.#router.navigateByUrl(target);
+    this.#presence.lowerForNavigation();
   }
 }
 

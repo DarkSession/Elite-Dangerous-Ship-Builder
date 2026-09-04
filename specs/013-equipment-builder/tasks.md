@@ -471,6 +471,13 @@ returned findings. Everything below changed shipped behaviour.
       `SHIELDS` block each read their own rather than repeating one; Damage Resistance folds into
       the armour's four, which is where the package points it. Both codec tables were regenerated
       — the ship table came out byte-identical (`f9f977a6ebda…`) (FR-006 revised)
+- [x] T099 Navigate before lowering the library layer. Closing it first uncovers a screen that is
+      still live under the pointer the press left resting on it, and the shipyard writes its own
+      address whenever a pointer rests on a hull row — that write landed after the navigation and
+      stranded the Commander on `/ships/<hull>` with the build never opened. Only reachable since
+      the library became a layer over the shipyard rather than its own route, and only visible on
+      the static build CI serves, which is why a run against `ng serve` could not see it (CI
+      firefox shards 9 and 10, 2026-09-04)
 
 ---
 
