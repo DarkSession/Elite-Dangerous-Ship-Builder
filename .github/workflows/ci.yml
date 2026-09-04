@@ -23,8 +23,16 @@
 # Sixteen rather than ten because a shard is a slice of the *test count* and not
 # of the time: on ten, the equipment suite pushed the firefox-heavy shards to
 # 24 minutes against the quickest shard's 13, and the slowest was cancelled on
-# the 25-minute cap with the rest of the run green (2026-09-04). The cap is 30
+# the 25-minute cap with the rest of the run green (2026-09-04). The cap is 45
 # so an unbalanced slice has somewhere to go before it takes a run down.
+#
+# 45 rather than 30 because the cap has to cover the setup as well as the tests,
+# and the setup is the part this repository does not control. Shard 14 spent 23
+# minutes in `playwright install` on one run while its own tests took the usual
+# seven, and was cancelled on the cap with all fifteen others green (2026-09-04)
+# — a red run reporting nothing about the code that was pushed. The slowest
+# shard's tests take about 13 minutes, so 45 still catches a suite that has hung
+# rather than merely drawn a bad runner.
 #
 # The width is on the shard axis rather than the worker axis because a shard is
 # another runner with its own cores, and a fourth worker on a four-vCPU box only
@@ -171,7 +179,7 @@ jobs:
     name: End-to-end (shard ${{ matrix.shard }})
     needs: check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     strategy:
       # Every shard runs to completion. A failure in one is a failure of the
