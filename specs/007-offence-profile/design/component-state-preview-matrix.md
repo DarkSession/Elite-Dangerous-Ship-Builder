@@ -9,14 +9,14 @@ The preview manifest covers the shared primitives in `src/app/ui/`, and
 `src/app/ui/components` — that export list is the whole scope of the `missing-preview` rule. The two
 feature blocks this capability adds live under `src/app/features/build-workspace/outfitting/`, and
 are composed out of components that already carry their own preview states:
-`edsb-module-identity-badge`, which draws a weapon row's name and code line exactly as it draws a
-ledger row's, and `edsb-range-field`. The bars, the facts row and the gunsight plate are markup over
+`ednb-module-identity-badge`, which draws a weapon row's name and code line exactly as it draws a
+ledger row's, and `ednb-range-field`. The bars, the facts row and the gunsight plate are markup over
 tokens, not components at all — the panel composes no metric group, because canvas 1c draws none. `SHOT CONVERGENCE` is a feature component of its own —
-`edsb-shot-convergence`, under `offence-analysis/` — because the target range the plate is drawn at
+`ednb-shot-convergence`, under `offence-analysis/` — because the target range the plate is drawn at
 is state the two blocks beside it have no part in; it is not exported from the library, so no
 preview is owed for it either.
 
-One component _is_ added to the library: `edsb-range-field`, the native range control the convergence
+One component _is_ added to the library: `ednb-range-field`, the native range control the convergence
 block's target range needs and the system did not have. It is exported from `src/app/ui/components`,
 so the `missing-preview` rule does reach it, and it carries preview declarations for its default,
 empty and disabled states with recorded rationales for the two that cannot occur.
@@ -86,7 +86,7 @@ not a second catalogue.
 
 ## Verification
 
-The preview manifest and its policy gate reach `edsb-range-field` and nothing else here, for the
+The preview manifest and its policy gate reach `ednb-range-field` and nothing else here, for the
 reason recorded at the top of this document: neither feature block is exported from
 `src/app/ui/components`, so neither is something the `missing-preview` rule can ask about. What holds
 those states instead is the pair the note names — the component suites, which render every one of

@@ -144,9 +144,9 @@ test.describe('what the head says this page is', () => {
     await page.goto(`${PRODUCT_URL}/ships`);
     await openFirstHullFromManifest(page);
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build#./);
+    await expect(page).toHaveURL(/\/outfitting#./);
 
-    await canonical(page).toBe(`${SITE_ORIGIN}/build`);
+    await canonical(page).toBe(`${SITE_ORIGIN}/outfitting`);
   });
 
   test('is in the language the page is in', async ({ browser, baseURL }) => {
@@ -213,7 +213,7 @@ test.describe('what the head says this page is', () => {
     expect(robots).not.toMatch(/^\s*Disallow:\s*\/\s*$/m);
 
     const sitemap = await read('/sitemap.xml');
-    for (const route of ['/ships', '/build', '/equipment']) {
+    for (const route of ['/ships', '/outfitting', '/equipment']) {
       expect(sitemap).toContain(`<loc>${SITE_ORIGIN}${route}</loc>`);
     }
 

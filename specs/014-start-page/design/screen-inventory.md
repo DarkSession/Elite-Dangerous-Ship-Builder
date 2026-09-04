@@ -11,8 +11,8 @@ surrounds both tools, and this feature adds nothing to that shell.
 | Shell action row | shared shell         | every screen, unchanged           | open a saved record, import, help — carried over, none added     |
 | Product masthead | region of the page   | `/`                               | the heading and the line beneath it                              |
 | Tool selector    | region of the page   | `/`                               | one entry per tool the application carries                       |
-| Tool entry       | `edsb-tool-card`     | inside the selector, one per tool | name, subjects, both descriptions; the whole card opens the tool |
-| Attribution band | `edsb-legal-excerpt` | the foot of `/`                   | the Frontier notice, reproduced from the help manifest           |
+| Tool entry       | `ednb-tool-card`     | inside the selector, one per tool | name, subjects, both descriptions; the whole card opens the tool |
+| Attribution band | `ednb-legal-excerpt` | the foot of `/`                   | the Frontier notice, reproduced from the help manifest           |
 
 The attribution band is the only surface here that is not either shell or new: it is feature
 012's component and feature 012's text, placed by this screen.

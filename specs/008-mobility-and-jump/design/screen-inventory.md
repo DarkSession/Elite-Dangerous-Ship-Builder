@@ -1,6 +1,6 @@
 # Screen and Surface Inventory
 
-Feature 008 adds no route. Drives & Mass is one capability surface inside feature 001's `/build`
+Feature 008 adds no route. Drives & Mass is one capability surface inside feature 001's `/outfitting`
 workspace and the detail target for feature 003's mobility summaries. It may emit the existing shared
 exact-slot target; it owns no build mutation, condition control or persisted view state.
 
@@ -39,7 +39,7 @@ exact-slot target; it owns no build mutation, condition control or persisted vie
 
 ## Cross-feature ownership
 
-- Feature 001 owns the active build/revision and `/build` workspace.
+- Feature 001 owns the active build/revision and `/outfitting` workspace.
 - The shared ingress boundary supplies package-populated fixed mounts before calculations. Feature
   002 owns committed-edit revision changes and exact-slot reveal/edit behavior.
 - Feature 003 owns viewing-condition draft/Apply/Reset, read-only condition identity, generic status

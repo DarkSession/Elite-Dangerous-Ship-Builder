@@ -75,7 +75,7 @@ function bounded(field: IdentityField, value: string | null): string | null {
  * difference (constitution IV).
  */
 @Component({
-  selector: 'edsb-ship-identity-fields',
+  selector: 'ednb-ship-identity-fields',
   templateUrl: './ship-identity-fields.html',
   styleUrl: './ship-identity-fields.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

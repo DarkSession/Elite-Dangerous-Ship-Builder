@@ -1,4 +1,4 @@
-<edsb-layer
+<ednb-layer
   [title]="title()"
   [open]="open()"
   [dismissLabel]="dismissLabel()"
@@ -13,7 +13,7 @@
     anyone reading the group aloud.
   -->
   <div class="export-loadout">
-    <edsb-choice-group
+    <ednb-choice-group
       class="export-loadout__formats"
       layout="cards"
       [legend]="formatLegend()"
@@ -25,7 +25,7 @@
 
     <div class="export-loadout__content">
       @if (share.format() === 'link') {
-        <edsb-share-link-panel
+        <ednb-share-link-panel
           [state]="share.state()"
           [url]="share.url()"
           [refusal]="share.refusal()"
@@ -42,7 +42,7 @@
              layer was two heights: one for the two payload formats and a
              shorter one for the link, and choosing between them moved the panel
              under the hand that chose (Commander request 2026-09-04). -->
-        <edsb-textarea-field
+        <ednb-textarea-field
           class="export-loadout__payload"
           [label]="fieldLabel()"
           [value]="share.payload()"
@@ -59,10 +59,10 @@
             <p class="export-loadout__meta" data-bidi-isolate>{{ meta }}</p>
           }
 
-          <edsb-action-button [label]="downloadLabel()" (activated)="share.download()" />
-          <edsb-action-button [label]="copyLabel()" emphasis="primary" (activated)="share.copy()" />
+          <ednb-action-button [label]="downloadLabel()" (activated)="share.download()" />
+          <ednb-action-button [label]="copyLabel()" emphasis="primary" (activated)="share.copy()" />
         </div>
       }
     </div>
   </div>
-</edsb-layer>
+</ednb-layer>

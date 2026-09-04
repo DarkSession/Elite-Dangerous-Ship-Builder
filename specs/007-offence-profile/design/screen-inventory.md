@@ -1,7 +1,7 @@
 # Screen and Surface Inventory
 
 Feature 007 adds no route and no screen. It adds the `OFFENCE` mode of the hull anatomy region
-inside feature 001's `/build` workspace, and one cell to the outfitting status rail.
+inside feature 001's `/outfitting` workspace, and one cell to the outfitting status rail.
 [canvas-contract.md](./canvas-contract.md) is the template for both.
 
 | Surface                                        | Wide/tablet presentation                                                                                                                                                                                                                                                                                                                                    | Narrow/zoomed presentation                               | Requirements                   |

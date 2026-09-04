@@ -235,7 +235,7 @@ const RESISTANCE_CEILING = 1;
  * allocation being read.
  */
 @Component({
-  selector: 'edsb-defence-analysis',
+  selector: 'ednb-defence-analysis',
   imports: [GameText, MetricGroup, ModuleIdentityBadge, NgTemplateOutlet, UnavailableValue],
   templateUrl: './defence-analysis.html',
   styleUrl: './defence-analysis.scss',

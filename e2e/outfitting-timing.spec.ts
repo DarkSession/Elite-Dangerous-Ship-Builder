@@ -46,7 +46,7 @@ test.describe('candidate search timing', () => {
 
     await page.goto(`/ships/${LARGEST.hull}`);
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
 
     // The mobile viewport draws canvas 1d's ledger, which is one category at a
     // time: the largest list belongs to an optional internal, which is not the

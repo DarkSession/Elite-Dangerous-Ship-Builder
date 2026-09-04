@@ -70,7 +70,7 @@ interface RenderedRow {
  * front of a Commander instead of 478 cards (FR-020, decision 15).
  */
 @Component({
-  selector: 'edsb-candidate-list',
+  selector: 'ednb-candidate-list',
   imports: [AcquisitionBadge, GameText, NgTemplateOutlet, Tooltip, UnavailableFact],
   templateUrl: './candidate-list.html',
   styleUrl: './candidate-list.scss',

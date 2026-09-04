@@ -51,7 +51,7 @@ import { SaveBuildDialog, type SaveRequest, type SaveSource } from './save-build
  * one they are in (build-workspace design, "States").
  */
 @Component({
-  selector: 'edsb-build-workspace-page',
+  selector: 'ednb-build-workspace-page',
   imports: [
     ActionLink,
     ChoiceDialog,

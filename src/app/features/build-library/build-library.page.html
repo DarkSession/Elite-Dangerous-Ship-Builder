@@ -5,7 +5,7 @@
   1b `ssv-screen`). It stays a route, so it is addressable, in history, and
   closed by the browser's own back as well as by its own dismiss.
 -->
-<edsb-layer
+<ednb-layer
   [open]="true"
   [title]="listLabel()"
   [dismissLabel]="dismissLabel()"
@@ -16,11 +16,11 @@
 >
   <section class="library">
     @if (storageNotice(); as notice) {
-      <edsb-status-notice class="library__notice" tone="error" [message]="notice" />
+      <ednb-status-notice class="library__notice" tone="error" [message]="notice" />
     }
 
     @if (failure(); as reason) {
-      <edsb-status-notice class="library__notice" tone="error" [message]="reason" />
+      <ednb-status-notice class="library__notice" tone="error" [message]="reason" />
     }
 
     <!--
@@ -33,7 +33,7 @@
       types, so it cannot be the only name the field has.
     -->
     <div class="library__header">
-      <edsb-text-field
+      <ednb-text-field
         class="library__search"
         [label]="searchLabel()"
         [labelHidden]="true"
@@ -51,7 +51,7 @@
         <p>{{ emptyDescription() }}</p>
       </div>
     } @else {
-      <edsb-responsive-record-list
+      <ednb-responsive-record-list
         [label]="listLabel()"
         [columns]="columns()"
         [builds]="builds()"
@@ -64,7 +64,7 @@
     }
 
     @if (manageReason(); as reason) {
-      <edsb-record-manager
+      <ednb-record-manager
         class="library__manager"
         [records]="manageableRecords()"
         [selected]="selectedForDiscard()"
@@ -85,7 +85,7 @@
       <p class="library__footer-hint">{{ nothingChosen() }}</p>
     } @else {
       @for (action of chosenActions(); track action.id) {
-        <edsb-action-button
+        <ednb-action-button
           class="library__footer-action library__footer-action--{{ action.id }}"
           [label]="action.label"
           [emphasis]="action.emphasis"
@@ -94,9 +94,9 @@
       }
     }
   </div>
-</edsb-layer>
+</ednb-layer>
 
-<edsb-confirm-dialog
+<ednb-confirm-dialog
   [open]="pendingDelete() !== null"
   [title]="deleteTitle()"
   [description]="deleteDescription()"

@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * would be one figure stated twice (constitution V).
  */
 @Component({
-  selector: 'edsb-resistance-bar',
+  selector: 'ednb-resistance-bar',
   templateUrl: './resistance-bar.html',
   styleUrl: './resistance-bar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +33,12 @@ export class ResistanceBar {
   /** True where the resistance increases damage taken rather than reducing it. */
   readonly negative = input(false);
 
-  /** The bar's own width, clamped to the track it is drawn in. */
-  readonly width = computed(() => `${Math.min(100, Math.max(0, this.magnitude() * 100))}%`);
+  /**
+   * How far the bar runs from the midline, as a share of the whole track.
+   *
+   * Half scale, because the fill starts at the centre and has half the track to
+   * run in: a resistance at full magnitude reaches one end (013
+   * design/equipment-bench.md).
+   */
+  readonly width = computed(() => `${Math.min(50, Math.max(0, this.magnitude()) * 50)}%`);
 }

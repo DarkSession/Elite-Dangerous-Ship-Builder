@@ -194,7 +194,7 @@ describe('ResponsiveCatalogueView', () => {
       hulls: [hull(), hull({ symbol: 'Adder', name: localized('Adder') })],
     });
 
-    expect(element(fixture).querySelectorAll('edsb-hull-summary-card')).toHaveLength(2);
+    expect(element(fixture).querySelectorAll('ednb-hull-summary-card')).toHaveLength(2);
     expect(element(fixture).querySelectorAll('tbody tr')).toHaveLength(2);
   });
 

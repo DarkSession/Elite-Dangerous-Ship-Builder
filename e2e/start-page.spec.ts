@@ -85,7 +85,7 @@ test.describe('start page', () => {
   test('leaves every address that does resolve alone', async ({ page }) => {
     // The entry point is never interposed. A shared build opens its build
     // (014/FR-009).
-    for (const address of ['/ships', '/equipment', '/build']) {
+    for (const address of ['/ships', '/equipment', '/outfitting']) {
       await page.goto(address);
       await expect(page.getByRole('main')).toBeVisible();
       await expect(page).toHaveURL(new RegExp(`${address}$`));

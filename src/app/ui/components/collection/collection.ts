@@ -31,7 +31,7 @@ export interface CollectionItem {
  * background tint.
  */
 @Component({
-  selector: 'edsb-collection',
+  selector: 'ednb-collection',
   templateUrl: './collection.html',
   styleUrl: './collection.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -614,7 +614,7 @@ describe('PowerThermals', () => {
       const { element } = render(noPlantOutputBuild());
 
       const block = element.querySelector('.power__block--heat');
-      expect(block?.querySelector('edsb-unavailable-value')).not.toBeNull();
+      expect(block?.querySelector('ednb-unavailable-value')).not.toBeNull();
       expect(block?.querySelector('.heat')).toBeNull();
       // The rest of the dashboard is still readable.
       expect(element.querySelectorAll('.module').length).toBeGreaterThan(0);
@@ -688,8 +688,8 @@ describe('PowerThermals', () => {
 
       // The 2026-08-25 revision took the module's identity off this heading.
       // The block heads itself and says nothing about what is fitted.
-      expect(element.querySelector('edsb-distributor-block .block__note')).toBeNull();
-      expect(element.querySelector('edsb-distributor-block')?.textContent).not.toContain(
+      expect(element.querySelector('ednb-distributor-block .block__note')).toBeNull();
+      expect(element.querySelector('ednb-distributor-block')?.textContent).not.toContain(
         `${distributor?.effectiveStats?.class}${distributor?.effectiveStats?.rating}`,
       );
     });
@@ -698,7 +698,7 @@ describe('PowerThermals', () => {
       const { element } = render(withinBudgetBuild());
 
       expect(
-        element.querySelector('edsb-distributor-block .block__heading')?.textContent?.trim(),
+        element.querySelector('ednb-distributor-block .block__heading')?.textContent?.trim(),
       ).toBe('Power distributor and pips');
     });
 
@@ -765,8 +765,8 @@ describe('PowerThermals', () => {
     it('states one unavailable group when the package publishes no distributor', () => {
       const { element } = render(distributorOffBuild());
 
-      const block = element.querySelector('edsb-distributor-block');
-      expect(block?.querySelector('edsb-unavailable-value')).not.toBeNull();
+      const block = element.querySelector('ednb-distributor-block');
+      expect(block?.querySelector('ednb-unavailable-value')).not.toBeNull();
       expect(block?.querySelector('.distributor')).toBeNull();
       // No diagnosis of which of the four reasons it was: the package gives none.
       expect(element.querySelector('.power__block--heat .heat')).not.toBeNull();

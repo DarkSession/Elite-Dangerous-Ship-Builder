@@ -19,7 +19,7 @@
     -->
     <div class="start__tools">
       @for (tool of tools(); track tool.id) {
-        <edsb-tool-card
+        <ednb-tool-card
           [name]="tool.name"
           [href]="tool.href"
           [subjects]="tool.subjects"
@@ -37,6 +37,6 @@
     the end of the page rather than the end of the document.
   -->
   <footer class="start__legal">
-    <edsb-legal-excerpt [text]="disclaimer.exactText" [language]="disclaimer.language" />
+    <ednb-legal-excerpt [text]="disclaimer.exactText" [language]="disclaimer.language" />
   </footer>
 </div>

@@ -86,7 +86,7 @@ test.describe('the reference visual language', () => {
     // single `--panel-4` plate, divided by a hairline that runs the length of
     // what the decks hold (`canvas-extraction.md`, "Tool bar").
     const plate = await page.evaluate(() => {
-      const deck = document.querySelector('.frame__tools') as HTMLElement;
+      const deck = document.querySelector('.frame__deck') as HTMLElement;
       const bar = document.querySelector('.frame__bar') as HTMLElement;
       const deckStyle = getComputedStyle(deck);
       const divider = getComputedStyle(bar, '::before');
@@ -103,8 +103,8 @@ test.describe('the reference visual language', () => {
         // so the deck is the height it is drawn at.
         dividerHeight: parseFloat(divider.blockSize),
         dividerColour: divider.backgroundColor,
-        // It sits where the decks meet, and runs from the indent the mark is
-        // cleared by to the plate's trailing inset.
+        // It sits where the decks meet, and runs the plate's own inset to its
+        // trailing inset, which is where both decks start.
         dividerTop: parseFloat(divider.insetBlockStart),
         dividerStart: parseFloat(divider.insetInlineStart),
         dividerEnd: parseFloat(divider.insetInlineEnd),
@@ -127,39 +127,45 @@ test.describe('the reference visual language', () => {
     expect(plate.deckStart).toBe(plate.barStart);
   });
 
-  test('centres the insignia across both decks of the bar', async ({ page }) => {
-    // Canvas 4c puts one mark on the leading edge of the plate, centred on the
-    // pair, with both decks indented past it. The shipyard draws the mark bare
-    // and every other screen wraps it in the way home; either way it is the
-    // banner's own child rather than a part of one deck
+  test('leads the tool deck with the insignia', async ({ page }) => {
+    // Canvas 4c puts the mark in flow at the head of the upper deck with the
+    // tabs following it, and both decks then sit on the plate's own inset. The
+    // shipyard draws the mark bare and every other screen wraps it in the way
+    // home; either way it is the tool deck's first child
     // (`application-shell.md`, "The tool bar").
     const placed = await page.evaluate(() => {
-      const banner = document.querySelector('.frame__banner') as HTMLElement;
-      const mark = banner.querySelector(':scope > .frame__flag, :scope > .frame__flag-home');
+      const deck = document.querySelector('.frame__deck') as HTMLElement;
+      const mark = deck.querySelector(':scope > .frame__flag, :scope > .frame__flag-home');
       if (!mark) {
         return null;
       }
       const box = mark.getBoundingClientRect();
-      const tools = document.querySelector('.frame__tools') as HTMLElement;
-      const deck = tools.getBoundingClientRect();
-      const bar = (document.querySelector('.frame__bar') as HTMLElement).getBoundingClientRect();
+      const deckBox = deck.getBoundingClientRect();
+      const tabs = document.querySelector('.frame__tool') as HTMLElement;
+      const drawn = (mark.querySelector('.frame__flag') ?? mark).getBoundingClientRect();
       return {
-        // Centred on the pair, not on either deck.
-        offset: (box.top + box.bottom) / 2 - (deck.top + bar.bottom) / 2,
-        // And what the deck holds starts after it, which is the indent the
-        // canvas draws rather than the deck's own box edge.
-        clear: deck.left + parseFloat(getComputedStyle(tools).paddingInlineStart) - box.right,
+        // Centred on the deck it leads, and inside it.
+        offset: (box.top + box.bottom) / 2 - (deckBox.top + deckBox.bottom) / 2,
+        // The drawing lands on the plate's own inset, which is the line the
+        // page under it follows. Where it is the way home the press box around
+        // it overhangs into the gutter, so the box starts before that.
+        markInset: drawn.left - deckBox.left,
+        inset: parseFloat(getComputedStyle(deck).paddingInlineStart),
+        // And the tabs follow the drawing, at the gap the canvas leaves, rather
+        // than standing over it.
+        gap: tabs.getBoundingClientRect().left - drawn.right,
       };
     });
 
     expect(placed).not.toBeNull();
     expect(Math.abs(placed?.offset ?? Infinity)).toBeLessThanOrEqual(1);
-    expect(placed?.clear ?? 0).toBeGreaterThan(0);
+    expect(placed?.markInset ?? 0).toBeCloseTo(placed?.inset ?? -1, 0);
+    expect(placed?.gap ?? -1).toBeGreaterThan(0);
   });
 
   test('leaves the whole of the way home pressable', async ({ page }) => {
-    // The mark stands over the decks rather than beside them, and the press box
-    // around it overhangs into the plate's gutter. A deck painted over that
+    // The press box around the mark overhangs into the plate's gutter, so that
+    // the mark itself lands on the plate's inset. Anything painted over that
     // overhang would leave the link a 35px target while its own box still
     // measured 44 — which is what every other target assertion here reads
     // (`application-shell.md`, "The bar's leading edge"; 011/FR-012).
@@ -174,10 +180,15 @@ test.describe('the reference visual language', () => {
     // reading says "covered" for a reason that is not painting.
     await page.evaluate(() => window.scrollTo(0, 0));
 
+    // Sampled inside the box rather than on its own edges. The press box shares
+    // an edge with the deck it leads and with the command deck under it, and a
+    // hit test on a shared edge answers about the edge. What this is about is
+    // the area: a deck painted over the overhang takes a whole column of these
+    // points, not a boundary pixel.
     const covered = await page.locator('.frame__flag-home').evaluate((link) => {
       const box = link.getBoundingClientRect();
-      const points = [0.02, 0.5, 0.98].flatMap((x) =>
-        [0.02, 0.5, 0.98].map((y) => [box.left + box.width * x, box.top + box.height * y]),
+      const points = [0.1, 0.5, 0.9].flatMap((x) =>
+        [0.1, 0.5, 0.9].map((y) => [box.left + box.width * x, box.top + box.height * y]),
       );
       return points.filter(([x, y]) => !link.contains(document.elementFromPoint(x!, y!))).length;
     });
@@ -566,7 +577,7 @@ test.describe('the wide manifest', () => {
     // assertion is that nothing ends up behind anything else.
     await page.goto('/ships');
     const header = page.locator('thead th').first();
-    const toolbar = page.locator('edsb-collection-toolbar');
+    const toolbar = page.locator('ednb-collection-toolbar');
     await expect(header).toBeVisible();
     const resting = (await header.boundingBox())!;
 
@@ -676,7 +687,7 @@ test.describe('the saved-build surface', () => {
       .poll(
         () =>
           page.evaluate(
-            () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+            () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
           ),
         { timeout: 10_000 },
       )

@@ -49,7 +49,7 @@ const MASS_DIGITS = 0;
  * (constitution IV).
  */
 @Component({
-  selector: 'edsb-drives-summary',
+  selector: 'ednb-drives-summary',
   imports: [MetricGroup],
   templateUrl: './drives-summary.html',
   styleUrl: './drives-summary.scss',

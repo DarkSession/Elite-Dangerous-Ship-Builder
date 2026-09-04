@@ -5,6 +5,8 @@ the record: what it draws ships, and what it does not draw does not.
 
 The canvas has two turns. Turn 1 is artboards `1a` (1640px) and `1b` (390px): a bench with a suit
 already on it. Turn 2 is `2a` and `2b`, added on 2026-09-03: the same bench before a suit is chosen.
+A revision on 2026-09-04 anchors every attribute bar at its midline and drops the demo suit to
+grade 2, so the artboards show a ladder with room left in it.
 
 ## Retained as drawn
 
@@ -29,11 +31,30 @@ already on it. Turn 2 is `2a` and `2b`, added on 2026-09-03: the same bench befo
 | Its own topbar with mark and `BETA` | `Tool Navigation.dc.html` draws one shell over both builders, and the application already draws it               |
 | `SAVED LOADOUTS` dialog             | feature 001's record library is one list holding both tools' records; a second list would need a second index    |
 | `HELP · ABOUT` with `APP VERSION`   | feature 012 owns one modal and one pair of versions for the deployment; two would be two answers to one question |
-| Grade upgrade costs                 | the canvas's own FAQ says the material requirement covers applying modifications, not raising a grade            |
 | Hover-revealed `CLEAR SLOT`         | nothing essential may depend on hover (constitution V); it becomes a control in the chooser                      |
 
 The first three are the design collision the spec's Assumptions record. The canvas asked for a
 ruling rather than making one, and this is the ruling.
+
+## The material requirement states the whole cost, against the canvas's FAQ
+
+The canvas answers "Do material costs include upgrading?" with "No. Material requirements cover one
+application of each fitted modification. Grade upgrade costs are paid separately at a settlement."
+The Commander ruled otherwise on 2026-09-04, and the requirement covers both costs: one application
+of each fitted modification, and the climb to each item's selected grade — the suit's and every
+fitted weapon's, counted from grade 1.
+
+Raising a suit or a weapon consumes micro-resources, and a list that leaves them out tells a
+Commander to gather less than the loadout costs to reach. `equipment/upgrade-costs` publishes the
+recipes, keyed by the grade being reached, and `sumPersonalEngineeringIngredients` totals them
+beside the modification costs, so the arithmetic is the library's.
+
+It stays one list and one total, which is what both artboards draw. Two things follow from counting
+the climb. A graded loadout with nothing fitted on it has a list, so the empty state is the loadout
+that asks for nothing at all — grade 1 throughout — and it says there is nothing to gather rather
+than that no modification is fitted. And the footnote under the total states both costs. A held
+mount's weapon and a locked slot's modification count for nothing (FR-007, FR-011): a weapon on a
+mount the suit does not carry is not being raised either.
 
 ## Restored on 2026-09-03, when the library caught up
 
@@ -179,7 +200,7 @@ What is left, and why:
 | The canvas draws                                                                            | What ships, and why                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `opacity: 0.34` over the empty bench's locked ledger groups, and `0.28` over the gate title | Those rows are controls that say `Locked` in words and answer to a reader. At a third of their ink they measure under 2:1 on the panel ground, which is below the floor for text (SC 1.4.3). They ship at `--ednb-text-faint`, the faintest ink that still clears 4.5:1 — a real gap from the artboard, and the one constitution V does not allow closing. The two _previews_ are dimmed as the canvas dims them, because both are `inert` and out of the accessibility tree |
-| The live grade ladder on `--panel-2` inside an `--amber-a14` hairline, 32px tall            | The ladder is the ship tool's `edsb-grade-selector`, and `Tool Navigation.dc.html`'s canvas 1d draws the same control 38px tall on a quiet amber wash. Where two canvases disagree about a shared control the shell's is what ships, as the command-bar table above rules. Only the preview state, which no other tool draws, follows this canvas exactly                                                                                                                    |
+| The live grade ladder on `--panel-2` inside an `--amber-a14` hairline, 32px tall            | The ladder is the ship tool's `ednb-grade-selector`, and `Tool Navigation.dc.html`'s canvas 1d draws the same control 38px tall on a quiet amber wash. Where two canvases disagree about a shared control the shell's is what ships, as the command-bar table above rules. Only the preview state, which no other tool draws, follows this canvas exactly                                                                                                                    |
 | `SUSTAINED DPS`, `BURST DPS` and `RESERVE AMMO` against dashes in canvas 2a's `FIREPOWER`   | The fitted bench lists one row per mount, and the empty bench draws that same block with a dash on every row: which mounts a suit will carry is what the block is about on both artboards, and one row shape serves both. Burst DPS is not a figure the package publishes, so two of the three labels could not be answered once a weapon was on the bench anyway                                                                                                            |
 | Canvas 1b's compact rows rendering at 78–80px                                               | Shipped at that height, but read from the artboard's rendering rather than its literals: 1b states `min-height: 56–58px` over 11px of padding and omits the `box-sizing: border-box` its sibling artboard 2b sets on the same row, so what it states and what it draws are 22px apart. The rendering is what a Commander sees, so the rendering is what the measure matches                                                                                                  |
 

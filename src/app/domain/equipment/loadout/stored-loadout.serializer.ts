@@ -7,7 +7,7 @@ import { MODIFICATION_SLOT_COUNT } from './loadout-edit';
 import { CATALOGUE_MOUNTS } from './loadout-mounts';
 
 /** The discriminator a stored loadout payload carries. */
-export const STORED_LOADOUT_FORMAT = 'edsb.loadout';
+export const STORED_LOADOUT_FORMAT = 'ednb.loadout';
 
 /** The only published loadout-payload version. */
 export const STORED_LOADOUT_VERSION = 1;

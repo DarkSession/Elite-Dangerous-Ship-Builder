@@ -96,7 +96,7 @@
 // that carry `--ednb-space-row`, and a figure column that stops two pixels
 // inboard of the figures under it is a column out of line. The marker is the row
 // marker's width for the same reason.
-.edsb-step {
+.ednb-step {
   position: relative;
   display: flex;
   align-items: center;
@@ -117,7 +117,7 @@
 // its own container: stacked, the editor is exactly as wide as the chooser above
 // it; as the bench's third column it is narrower, and there the chooser has more
 // room than its rail minimum by construction.
-.edsb-step__number {
+.ednb-step__number {
   flex: none;
   display: flex;
   align-items: center;
@@ -134,18 +134,18 @@
 
 // The chooser draws its two bars only in the rail manifest, so theirs need no
 // question asked. The editor's does: it is drawn at every inline width.
-.engineering__step .edsb-step__number {
+.engineering__step .ednb-step__number {
   display: none;
 }
 
 @container engineering (min-width: #{layout.$rail-manifest-min}) {
-  .engineering__step .edsb-step__number {
+  .engineering__step .ednb-step__number {
     display: flex;
   }
 }
 
 @include layout.bench-columns {
-  .engineering__step .edsb-step__number {
+  .engineering__step .ednb-step__number {
     display: flex;
   }
 }
@@ -157,11 +157,11 @@
 // nothing keeps the chooser's toolbar and draws no manifest under it — so the
 // box the two steps are in is what is asked about, rather than the toolbar,
 // which outlives them both.
-.outfitting__bench:not(:has(.candidates__manifest)) .engineering__step .edsb-step__number {
+.outfitting__bench:not(:has(.candidates__manifest)) .engineering__step .ednb-step__number {
   display: none;
 }
 
-.edsb-step__name {
+.ednb-step__name {
   @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
 
   min-inline-size: 0;
@@ -172,7 +172,7 @@
 
 // The chevron hangs off the end of the bar, into the gap between this column and
 // the next. Out of the flow, so it never takes width from the name.
-.edsb-step__chevron {
+.ednb-step__chevron {
   position: absolute;
   inset-inline-end: calc(var(--ednb-space-lg) * -1);
   inset-block-start: 50%;
@@ -204,7 +204,7 @@
 // above its toolbar and the strip steps down by that sentence until the bench is
 // next opened.
 @include layout.bench-columns {
-  .outfitting__bench:has(.replacement__toolbar) > edsb-engineering-editor {
+  .outfitting__bench:has(.replacement__toolbar) > ednb-engineering-editor {
     margin-block-start: calc(var(--ednb-target-size) + var(--ednb-space-stack));
   }
 }

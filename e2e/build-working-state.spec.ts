@@ -29,7 +29,7 @@ import {
 async function createBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
 }
 
 /**
@@ -95,7 +95,7 @@ const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' 
 /** How many records this browser is holding, whatever their kind. */
 async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
   );
 }
 
@@ -112,14 +112,14 @@ async function expectRecords(page: Page, count: number): Promise<void> {
 
 /** The exact bytes one record is stored as, so "untouched" can be checked. */
 async function recordBytes(page: Page, id: string): Promise<string | null> {
-  return page.evaluate((key) => localStorage.getItem(key), `edsb:record:${id}`);
+  return page.evaluate((key) => localStorage.getItem(key), `ednb:record:${id}`);
 }
 
 /** The owned keys currently in this browser. */
 function storedKeys(page: Page) {
   return page.evaluate(() => ({
-    records: Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
-    tab: sessionStorage.getItem('edsb:tab'),
+    records: Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
+    tab: sessionStorage.getItem('ednb:tab'),
   }));
 }
 
@@ -149,11 +149,11 @@ test.describe('the tab’s working build', () => {
       session: Object.keys(sessionStorage),
     }));
 
-    expect(keys.local.every((key) => key.startsWith('edsb:record:'))).toBe(true);
-    expect(keys.session).toContain('edsb:tab');
+    expect(keys.local.every((key) => key.startsWith('ednb:record:'))).toBe(true);
+    expect(keys.session).toContain('ednb:tab');
     // Session state is this tab's browsing position and its own identity, and
     // nothing else claims a key here.
-    expect(keys.session.every((key) => ['edsb:catalogue', 'edsb:tab'].includes(key))).toBe(true);
+    expect(keys.session.every((key) => ['ednb:catalogue', 'ednb:tab'].includes(key))).toBe(true);
   });
 
   test('stores no calculated value, price or catalogue fact', async ({ page }) => {
@@ -162,7 +162,7 @@ test.describe('the tab’s working build', () => {
 
     const stored = await page.evaluate(() => {
       const key = Object.keys(localStorage).find((candidate) =>
-        candidate.startsWith('edsb:record:'),
+        candidate.startsWith('ednb:record:'),
       )!;
       return localStorage.getItem(key) ?? '';
     });
@@ -171,8 +171,8 @@ test.describe('the tab’s working build', () => {
       expect(stored, forbidden).not.toContain(forbidden);
     }
     // The modelled build, and the envelope around it. Nothing else.
-    expect(stored).toContain('"format":"edsb.local-record"');
-    expect(stored).toContain('"format":"edsb.build"');
+    expect(stored).toContain('"format":"ednb.local-record"');
+    expect(stored).toContain('"format":"ednb.build"');
   });
 
   test('gives two independent pages two working records', async ({ browser }) => {
@@ -186,7 +186,7 @@ test.describe('the tab’s working build', () => {
     await savedToBrowser(second);
 
     const records = await first.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
+      Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
     );
 
     // Neither page has overwritten the other's autosave.
@@ -205,10 +205,10 @@ test.describe('the tab’s working build', () => {
 
     // A duplicated tab inherits the session, and so believes it owns the same
     // working record until the claim is negotiated.
-    const tabState = await original.evaluate(() => sessionStorage.getItem('edsb:tab'));
+    const tabState = await original.evaluate(() => sessionStorage.getItem('ednb:tab'));
     const duplicate = await context.newPage();
-    await duplicate.goto('/build');
-    await duplicate.evaluate((state) => sessionStorage.setItem('edsb:tab', state!), tabState);
+    await duplicate.goto('/outfitting');
+    await duplicate.evaluate((state) => sessionStorage.setItem('ednb:tab', state!), tabState);
     await duplicate.reload();
     await expect(duplicate.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await reachShellLink(duplicate, 'Ship Builder');
@@ -217,7 +217,7 @@ test.describe('the tab’s working build', () => {
     await savedToBrowser(duplicate);
 
     const records = await original.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
+      Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
     );
     expect(records.length).toBeGreaterThan(1);
 
@@ -275,7 +275,7 @@ test.describe('the tab’s working build', () => {
     await page.addInitScript(() => {
       const original = Storage.prototype.setItem;
       Storage.prototype.setItem = function setItem(key: string, value: string) {
-        if (key.startsWith('edsb:record:')) {
+        if (key.startsWith('ednb:record:')) {
           throw new DOMException('exceeded', 'QuotaExceededError');
         }
         return original.call(this, key, value);
@@ -346,7 +346,7 @@ test.describe('the tab’s working build', () => {
       .locator('.library__footer')
       .getByRole('button', { name: 'Open in outfitting', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await renameShip(page, 'Vindicator');
 
     await reachShellAction(page, /^Save$/);
@@ -366,8 +366,8 @@ test.describe('the tab’s working build', () => {
 
     const id = await page.evaluate(() =>
       Object.keys(localStorage)
-        .filter((key) => key.startsWith('edsb:record:'))[0]!
-        .replace('edsb:record:', ''),
+        .filter((key) => key.startsWith('ednb:record:'))[0]!
+        .replace('ednb:record:', ''),
     );
     const saved = await recordBytes(page, id);
 
@@ -378,7 +378,7 @@ test.describe('the tab’s working build', () => {
       .locator('.library__footer')
       .getByRole('button', { name: 'Open in outfitting', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
 
     expect(await recordBytes(page, id)).toBe(saved);
     expect(await recordCount(page)).toBe(1);
@@ -396,8 +396,8 @@ test.describe('the tab’s working build', () => {
 
     const id = await page.evaluate(() =>
       Object.keys(localStorage)
-        .filter((key) => key.startsWith('edsb:record:'))[0]!
-        .replace('edsb:record:', ''),
+        .filter((key) => key.startsWith('ednb:record:'))[0]!
+        .replace('ednb:record:', ''),
     );
     const saved = await recordBytes(page, id);
 
@@ -406,7 +406,7 @@ test.describe('the tab’s working build', () => {
       .locator('.library__footer')
       .getByRole('button', { name: 'Open in outfitting', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await renameShip(page, 'Vindicator');
 
     // A second record now holds the edits, and the save is byte-identical.
@@ -428,7 +428,7 @@ test.describe('the tab’s working build', () => {
       .locator('.library__footer')
       .getByRole('button', { name: 'Open in outfitting', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await renameShip(page, 'Vindicator');
     await expectRecords(page, 2);
 

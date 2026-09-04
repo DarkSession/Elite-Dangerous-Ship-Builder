@@ -68,7 +68,7 @@ export type LayerWidth = 'default' | 'wide' | 'widest';
  * a Commander has to press.
  */
 @Component({
-  selector: 'edsb-layer',
+  selector: 'ednb-layer',
   templateUrl: './layer.html',
   styleUrl: './layer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

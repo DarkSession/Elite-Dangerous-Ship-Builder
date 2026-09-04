@@ -41,7 +41,7 @@ every catalogue in the same change as the code that reads it (FR-019).
 new tool appears in both at once" — so the tools are a data array and everything that names them
 reads it. A tool entry carries a localised name for the bar, the address the tool opens at, and the
 routes it owns. The routes are what decides which tool is current: a Commander outfitting a hull at
-`/build` is still in the ship tool, and a tab that stopped being current there would state something
+`/outfitting` is still in the ship tool, and a tab that stopped being current there would state something
 untrue.
 
 **A tool with no address is not offered.** The registry holds the tools the application serves, not
@@ -87,12 +87,25 @@ drag-to-pin are more than one tool needs and are not built. The avatar plate at 
 edge is not built either, and not deferred: the application has no accounts (constitution I), so
 there is nobody for it to name.
 
-**The insignia stands beside both decks.** Canvas 4c puts one mark on the leading edge of the plate,
-centred across the pair, and indents both decks past it. That is the shell's own leading edge rather
-than either deck's, so the mark is the banner's child: the tabs and the screen identity line up on
-one indent under it, and the divider between the decks starts on that indent rather than running
-under the mark. There is still one mark and one control that opens `/ships`, which is what the
-leading-edge ruling below asks for.
+**The insignia leads the tool deck.** Canvas 4c puts the mark at the head of the upper deck, in
+flow, with the tabs following it. So it is the tool deck's first child rather than a box placed over
+the plate, and every inset follows from that: the tool deck takes the plate's own inline inset, the
+mark is separated from the first tab by the gap the canvas leaves after it, and the command deck
+below takes the plate's inset too — it is clearing nothing. The divider between the decks starts
+where the decks start, on that same inset.
+
+The mark keeps the two sizes the leading-edge ruling below gives it: the drawing is `26px` square at
+every width, and the press box around it takes the 44px baseline. The deck already stands to that
+baseline for its tabs, so a mark in flow does not make the bar taller.
+
+The press box is wider than the mark, and it is the mark that has to land on the plate's inset:
+that is the line the compact page gutter follows down the screen. So the box is pulled back by half
+the difference, as the command bar's own mark was. The target then overhangs the gutter evenly, and
+the overhang past the mark's trailing edge is the gap the canvas draws after it. Where the compact
+sheet hides the mark the deck has one fewer item in it and needs no rule of its own.
+
+There is still one mark and one control that opens `/ships`, which is what the leading-edge ruling
+below asks for.
 
 ## The bar's leading edge
 

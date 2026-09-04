@@ -75,7 +75,7 @@ The stored envelope gains a discriminator, and the ship fields move under it.
 
 | Field                                                                        | Type                          | Note                                                  |
 | ---------------------------------------------------------------------------- | ----------------------------- | ----------------------------------------------------- |
-| `format`                                                                     | `"edsb.local-record"`         | unchanged                                             |
+| `format`                                                                     | `"ednb.local-record"`         | unchanged                                             |
 | `version`                                                                    | `2`                           | version 1 migrates on open, never on enumeration      |
 | `tool`                                                                       | `"ship" \| "equipment"`       | absent in a version 1 record, which means `"ship"`    |
 | `id`, `revisionId`, `createdAt`, `modifiedAt`, `name`, `note`, `sourceNamed` | as version 1                  | unchanged, and shared by both tools                   |

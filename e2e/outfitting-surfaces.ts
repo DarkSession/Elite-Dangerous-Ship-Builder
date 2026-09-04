@@ -238,7 +238,7 @@ export async function openChooser(
  * at exactly the widths that matter.
  */
 export async function manifestOf(page: Page): Promise<'rail' | 'accordion'> {
-  const drawn = await page.locator('edsb-candidate-list').first().getAttribute('data-manifest');
+  const drawn = await page.locator('ednb-candidate-list').first().getAttribute('data-manifest');
   return drawn === 'rail' ? 'rail' : 'accordion';
 }
 
@@ -478,7 +478,7 @@ export async function chooseRecipe(page: Page, name: string | RegExp): Promise<v
     await expect(row.locator('input[type="radio"]')).toBeChecked();
     return;
   }
-  await chooseFromSelect(page.locator('edsb-blueprint-choice-list select').first(), name);
+  await chooseFromSelect(page.locator('ednb-blueprint-choice-list select').first(), name);
 }
 
 /**
@@ -500,7 +500,7 @@ export async function chooseFirstRecipe(page: Page): Promise<void> {
     await expect(row.locator('input[type="radio"]')).toBeChecked();
     return;
   }
-  const select = page.locator('edsb-blueprint-choice-list select').first();
+  const select = page.locator('ednb-blueprint-choice-list select').first();
   const values = await select
     .locator('option')
     .evaluateAll((nodes) => nodes.map((node) => (node as HTMLOptionElement).value));
@@ -523,12 +523,12 @@ export async function chooseFirstRecipe(page: Page): Promise<void> {
  * page until the trigger is pressed.
  */
 async function openEffectMenu(page: Page): Promise<Locator> {
-  const trigger = page.locator('edsb-experimental-effect-list .menu__trigger').first();
+  const trigger = page.locator('ednb-experimental-effect-list .menu__trigger').first();
   await expect(trigger).toBeVisible();
   if ((await trigger.getAttribute('aria-expanded')) !== 'true') {
     await trigger.click();
   }
-  const list = page.locator('edsb-experimental-effect-list .menu__list').first();
+  const list = page.locator('ednb-experimental-effect-list .menu__list').first();
   await expect(list).toBeVisible();
   return list;
 }
@@ -565,7 +565,7 @@ export async function clearRecipe(page: Page): Promise<void> {
     await page.locator('.blueprint--none').click();
     return;
   }
-  await page.locator('edsb-blueprint-choice-list select').first().selectOption('none');
+  await page.locator('ednb-blueprint-choice-list select').first().selectOption('none');
 }
 
 /** Takes the no-effect option, however this width offers it. */
@@ -598,7 +598,7 @@ export async function chosenRecipe(page: Page): Promise<string | null> {
       ? null
       : ((await chosen.first().textContent())?.trim() ?? null);
   }
-  const select = page.locator('edsb-blueprint-choice-list select').first();
+  const select = page.locator('ednb-blueprint-choice-list select').first();
   const value = await select.inputValue();
   if (value === 'none' || value === '') {
     return null;
@@ -614,13 +614,13 @@ export async function chosenRecipe(page: Page): Promise<string | null> {
  */
 export function effectOptions(page: Page): Locator {
   return page.locator(
-    '.effect:not(.effect--none), edsb-experimental-effect-list .menu__option:not(.menu__option--none)',
+    '.effect:not(.effect--none), ednb-experimental-effect-list .menu__option:not(.menu__option--none)',
   );
 }
 
 /** True where the editor draws canvas 1c's menu rather than canvas 1d's cards. */
 export async function effectMenuIsDrawn(page: Page): Promise<boolean> {
-  return (await page.locator('edsb-experimental-effect-list .menu__trigger').count()) > 0;
+  return (await page.locator('ednb-experimental-effect-list .menu__trigger').count()) > 0;
 }
 
 /** Puts every offered effect on the page, whichever shape this width draws. */

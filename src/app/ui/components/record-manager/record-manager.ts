@@ -22,7 +22,7 @@ export interface ManageableRecord {
  * of a Commander's builds mattered least (FR-013).
  */
 @Component({
-  selector: 'edsb-record-manager',
+  selector: 'ednb-record-manager',
   imports: [ActionButton, ChoiceGroup],
   templateUrl: './record-manager.html',
   styleUrl: './record-manager.scss',

@@ -29,7 +29,7 @@ does not contain implementation code or hand-calculated game figures.
 - pnpm from `package.json#packageManager`
 - `@elite-dangerous-almanac/core` from the committed lockfile
 - TypeScript strict mode enabled in the shared configuration
-- feature 001 active build/revision and `/build` workspace
+- feature 001 active build/revision and `/outfitting` workspace
 - shared package-populated fixed-mount ingress, feature 002 revision advancement and exact-slot
   targeting
 - feature 003 stage-one viewing-condition/context/provider/target contracts

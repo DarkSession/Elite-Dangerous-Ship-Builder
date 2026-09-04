@@ -95,7 +95,7 @@ describe('the import layer', () => {
       },
     });
 
-    const list = query(fixture, 'edsb-diagnostic-list');
+    const list = query(fixture, 'ednb-diagnostic-list');
     expect(textOf(list)).toContain('entries[0].Ship');
     expect(textOf(list)).toContain('invalidLoadout');
   });
@@ -152,7 +152,7 @@ describe('the import layer', () => {
       },
     });
 
-    expect(element(fixture).querySelector('edsb-disclosure')).toBeNull();
+    expect(element(fixture).querySelector('ednb-disclosure')).toBeNull();
   });
 
   it('reads the payload field’s name without drawing it', () => {

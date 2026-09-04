@@ -68,7 +68,7 @@ export const SITE_CARD = 'assets/link-card.png';
 export const STATIC_ADDRESSES = [
   { path: '', titleKey: 'app.name', descriptionKey: 'app.description' },
   { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
-  { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
+  { path: 'outfitting', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
   { path: 'equipment', titleKey: 'equipment.title', descriptionKey: 'equipment.description' },
 ];
 

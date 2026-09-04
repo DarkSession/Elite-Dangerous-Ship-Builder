@@ -53,12 +53,12 @@ const CARGO_RACK = {
 async function openStockBuild(page: Page, messages = englishMessages): Promise<void> {
   await page.goto(`/ships/${HULL}`);
   await buildStockHull(page, messages['hullDetail.create']);
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   // Both blocks live in the status rail, which canvas 1d keeps behind its
   // `STATUS` segment rather than in the flow — so a compact run opens it, and a
   // wide one finds it already there.
   await revealStatusRail(page, exactly(messages['outfitting.status-rail.mode']));
-  await expect(page.locator('edsb-cost-materials .cost__row').first()).toBeVisible();
+  await expect(page.locator('ednb-cost-materials .cost__row').first()).toBeVisible();
 }
 
 function digits(text: string): number {
@@ -84,10 +84,10 @@ test.describe('the COST block', () => {
     await openStockBuild(page);
     const retail = await packageRetail();
 
-    const rows = page.locator('edsb-cost-materials .cost__row');
+    const rows = page.locator('ednb-cost-materials .cost__row');
     await expect(rows).toHaveCount(4);
 
-    const values = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
+    const values = await page.locator('ednb-cost-materials .cost__value').allInnerTexts();
     expect(digits(values[0]!)).toBe(retail.hull);
     expect(digits(values[1]!)).toBe(retail.modules);
     expect(digits(values[2]!)).toBe(retail.total);
@@ -97,7 +97,7 @@ test.describe('the COST block', () => {
   test('names every row, so no weight carries meaning alone', async ({ page }) => {
     await openStockBuild(page);
 
-    const labels = await page.locator('edsb-cost-materials .cost__label').allInnerTexts();
+    const labels = await page.locator('ednb-cost-materials .cost__label').allInnerTexts();
     expect(labels).toHaveLength(4);
     for (const label of labels) {
       expect(label.trim().length).toBeGreaterThan(0);
@@ -109,9 +109,9 @@ test.describe('the COST block', () => {
 
     // A description list, so a screen reader reads "Total, 361,352,360" rather
     // than two unrelated strings that happen to sit next to each other.
-    await expect(page.locator('edsb-cost-materials dl.cost')).toHaveCount(1);
-    await expect(page.locator('edsb-cost-materials .cost dt')).toHaveCount(4);
-    await expect(page.locator('edsb-cost-materials .cost dd')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials dl.cost')).toHaveCount(1);
+    await expect(page.locator('ednb-cost-materials .cost dt')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials .cost dd')).toHaveCount(4);
   });
 });
 
@@ -121,21 +121,21 @@ test.describe('the MATERIALS block', () => {
 
     // A stock build crafts nothing. No heading over an empty list, and no
     // fabricated zero rows.
-    await expect(page.locator('edsb-cost-materials .rail-materials')).toHaveCount(0);
+    await expect(page.locator('ednb-cost-materials .rail-materials')).toHaveCount(0);
   });
 
   test('lists every consolidated row once a recipe is applied', async ({ page }) => {
     await openStockBuild(page);
     await engineerTheDrive(page);
 
-    const rows = page.locator('edsb-cost-materials .rail-material');
+    const rows = page.locator('ednb-cost-materials .rail-material');
     await expect(rows.first()).toBeVisible();
 
     // Ruling E: the canvas draws five of eighteen, and the truncation did not
     // survive. Every row the package consolidated is on screen.
     const count = await rows.count();
     expect(count).toBeGreaterThan(0);
-    const footer = await page.locator('edsb-cost-materials .block__footer').innerText();
+    const footer = await page.locator('ednb-cost-materials .block__footer').innerText();
     expect(footer).toContain(String(count));
   });
 
@@ -147,7 +147,7 @@ test.describe('the MATERIALS block', () => {
     // panel's list (ruling G). The marker each row carries is the package's own
     // grade, so the drawn order can be read straight off them.
     const grades = await page
-      .locator('edsb-cost-materials .rail-material edsb-material-grade')
+      .locator('ednb-cost-materials .rail-material ednb-material-grade')
       .evaluateAll((nodes) => nodes.map((node) => Number(node.getAttribute('data-grade') ?? 0)));
 
     expect(grades.length).toBeGreaterThan(1);
@@ -159,8 +159,8 @@ test.describe('the MATERIALS block', () => {
     await engineerTheDrive(page);
 
     // Ruling D: three counts the canvas draws and the package does not return.
-    await expect(page.locator('edsb-cost-materials .block__note')).toHaveCount(1);
-    await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
+    await expect(page.locator('ednb-cost-materials .block__note')).toHaveCount(1);
+    await expect(page.locator('ednb-cost-materials .block__footer span')).toHaveCount(2);
   });
 
   test('rules the block the four times the canvas rules it', async ({ page }) => {
@@ -174,7 +174,7 @@ test.describe('the MATERIALS block', () => {
     // two above it.
     const ruled = await page
       .locator(
-        'edsb-cost-materials .cost__row--total, edsb-cost-materials .block + .block, edsb-cost-materials .block__footer',
+        'ednb-cost-materials .cost__row--total, ednb-cost-materials .block + .block, ednb-cost-materials .block__footer',
       )
       .evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).borderBlockStartWidth));
 
@@ -194,7 +194,7 @@ test.describe('what the canvas does not draw', () => {
     // canvas draws none of them, so there is nothing here to operate.
     await expect(
       page.locator(
-        'edsb-cost-materials button, edsb-cost-materials a, edsb-cost-materials [aria-expanded]',
+        'ednb-cost-materials button, ednb-cost-materials a, ednb-cost-materials [aria-expanded]',
       ),
     ).toHaveCount(0);
   });
@@ -205,7 +205,7 @@ test.describe('what the canvas does not draw', () => {
     // Canvas 1c puts the label and its figure in one JetBrains Mono face, and
     // steps `TOTAL` up from 11px to 13px in a heavier weight. The material
     // names below are Barlow prose, which is the contrast worth keeping.
-    const rows = await page.locator('edsb-cost-materials .cost__row').evaluateAll((nodes) =>
+    const rows = await page.locator('ednb-cost-materials .cost__row').evaluateAll((nodes) =>
       nodes.map((node) => {
         const label = node.querySelector('.cost__label');
         const style = getComputedStyle(label as Element);
@@ -225,7 +225,7 @@ test.describe('what the canvas does not draw', () => {
     await openStockBuild(page);
     await engineerTheDrive(page);
 
-    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toHaveCount(0);
+    await expect(page.locator('ednb-cost-materials .rail-material--merc-coin')).toHaveCount(0);
   });
 });
 
@@ -234,7 +234,7 @@ test.describe('the Merc Coin row', () => {
     await openStockBuild(page);
     await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
 
-    const row = page.locator('edsb-cost-materials .rail-material--merc-coin');
+    const row = page.locator('ednb-cost-materials .rail-material--merc-coin');
     await expect(row).toHaveCount(1);
 
     // The package's own build total, asked of the installed Almanac rather
@@ -246,7 +246,7 @@ test.describe('the Merc Coin row', () => {
     await openStockBuild(page);
     await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
     const one = digits(
-      await page.locator('edsb-cost-materials .rail-material--merc-coin').innerText(),
+      await page.locator('ednb-cost-materials .rail-material--merc-coin').innerText(),
     );
 
     await fitMercenaryCargoRack(page, CARGO_RACK.slots[1]);
@@ -256,9 +256,9 @@ test.describe('the Merc Coin row', () => {
     // article costs on its own — which is what tells a build total from a
     // per-article price (FR-005).
     const both = digits(
-      await page.locator('edsb-cost-materials .rail-material--merc-coin').innerText(),
+      await page.locator('ednb-cost-materials .rail-material--merc-coin').innerText(),
     );
-    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toHaveCount(1);
+    await expect(page.locator('ednb-cost-materials .rail-material--merc-coin')).toHaveCount(1);
     expect(both).toBe(one + (await mercPrice(CARGO_RACK.slots[1])));
     expect(both).toBeGreaterThan(one);
   });
@@ -271,13 +271,13 @@ test.describe('the Merc Coin row', () => {
     // Ruling C, re-decided 2026-08-26: the canvas draws this row inside COST,
     // ruled off under `REBUY 5%`, not at the foot of MATERIALS. A colour alone
     // would not say what it is, so the row carries its own label (WCAG 1.4.1).
-    const coin = page.locator('edsb-cost-materials .rail-material--merc-coin');
+    const coin = page.locator('ednb-cost-materials .rail-material--merc-coin');
     await expect(coin).toHaveCount(1);
     await expect(
-      page.locator('edsb-cost-materials .block').first().locator('.rail-material--merc-coin'),
+      page.locator('ednb-cost-materials .block').first().locator('.rail-material--merc-coin'),
     ).toHaveCount(1);
     await expect(
-      page.locator('edsb-cost-materials .materials-box .rail-material--merc-coin'),
+      page.locator('ednb-cost-materials .materials-box .rail-material--merc-coin'),
     ).toHaveCount(0);
     await expect(coin).toContainText(/\p{L}/u);
   });
@@ -289,7 +289,7 @@ test.describe('the Merc Coin row', () => {
     // Ruling G: the canvas draws five rows against a footer counting eighteen
     // types, so the list is a box with a scroll. Ruling E still holds — every
     // consolidated row is present, none is truncated away.
-    const list = page.locator('edsb-cost-materials .materials-box');
+    const list = page.locator('ednb-cost-materials .materials-box');
     await expect(list).toHaveCount(1);
     await expect(list).toHaveAttribute('tabindex', '0');
 
@@ -343,9 +343,9 @@ test.describe('the Merc Coin row', () => {
     // Merc Coins are neither a material type nor a unit of one. The two footer
     // counts are counted over the material rows only (FR-006).
     const materialRows = await page
-      .locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)')
+      .locator('ednb-cost-materials .rail-material:not(.rail-material--merc-coin)')
       .count();
-    const footer = await page.locator('edsb-cost-materials .block__footer span').allInnerTexts();
+    const footer = await page.locator('ednb-cost-materials .block__footer span').allInnerTexts();
 
     expect(digits(footer[0]!)).toBe(materialRows);
 
@@ -353,7 +353,7 @@ test.describe('the Merc Coin row', () => {
     // figure is the sum of the material rows' own counts and nothing else.
     const counts = await page
       .locator(
-        'edsb-cost-materials .rail-material:not(.rail-material--merc-coin) .rail-material__count',
+        'ednb-cost-materials .rail-material:not(.rail-material--merc-coin) .rail-material__count',
       )
       .allInnerTexts();
     expect(counts).toHaveLength(materialRows);
@@ -369,14 +369,14 @@ test.describe('the Merc Coin row', () => {
     // files. Every image in these blocks is served from here instead
     // (constitution I), and the rarity a row carries is the package's grade.
     const sources = await page
-      .locator('edsb-cost-materials img')
+      .locator('ednb-cost-materials img')
       .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('src') ?? ''));
     expect(sources.length).toBeGreaterThan(0);
     for (const source of sources) {
       expect(source).toMatch(/^assets\//);
     }
     await expect(
-      page.locator('edsb-cost-materials .rail-material edsb-material-grade').first(),
+      page.locator('ednb-cost-materials .rail-material ednb-material-grade').first(),
     ).toHaveAttribute('data-grade', /^[1-5]$/);
   });
 });
@@ -422,7 +422,7 @@ test.describe('language and formatting', () => {
     await engineerTheDrive(page);
 
     const owned = await page
-      .locator('edsb-cost-materials .block__heading, edsb-cost-materials .cost__label')
+      .locator('ednb-cost-materials .block__heading, ednb-cost-materials .cost__label')
       .allInnerTexts();
     expect(owned.length).toBeGreaterThan(0);
     for (const label of owned) {
@@ -441,7 +441,7 @@ test.describe('language and formatting', () => {
 
     await openStockBuild(page, germanMessages);
     const retail = await packageRetail();
-    const values = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
+    const values = await page.locator('ednb-cost-materials .cost__value').allInnerTexts();
 
     // German groups with dots. The digits are unchanged — formatting never
     // alters a package number.
@@ -466,9 +466,9 @@ test.describe('in German', () => {
     await openStockBuild(page, germanMessages);
     await engineerTheDrive(page, germanMessages);
 
-    const names = page.locator('edsb-cost-materials .rail-material__name edsb-game-text');
+    const names = page.locator('ednb-cost-materials .rail-material__name ednb-game-text');
     const rows = await page
-      .locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)')
+      .locator('ednb-cost-materials .rail-material:not(.rail-material--merc-coin)')
       .count();
     expect(rows).toBeGreaterThan(0);
     await expect(names).toHaveCount(rows);
@@ -539,7 +539,7 @@ test.describe('the privacy boundary', () => {
     await engineerTheDrive(page);
 
     const total = digits(
-      await page.locator('edsb-cost-materials .cost__row--total .cost__value').innerText(),
+      await page.locator('ednb-cost-materials .cost__row--total .cost__value').innerText(),
     );
     const stored = await page.evaluate(() => JSON.stringify(window.localStorage));
 
@@ -571,7 +571,7 @@ test.describe('the privacy boundary', () => {
     // The stock build's own link is published a moment after the workspace
     // opens, so it is waited for rather than read: `page.url()` at that instant
     // has no fragment at all.
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     const stock = new URL(page.url()).hash;
 
     await engineerTheDrive(page);
@@ -598,7 +598,7 @@ test.describe('the privacy boundary', () => {
     const materials = (
       await page
         .locator(
-          'edsb-cost-materials .rail-material:not(.rail-material--merc-coin) .game-text__value',
+          'ednb-cost-materials .rail-material:not(.rail-material--merc-coin) .game-text__value',
         )
         .allInnerTexts()
     ).map((name) => name.trim());
@@ -641,7 +641,7 @@ test.describe('the privacy boundary', () => {
  * nine digits, where a match is a leak rather than an accident.
  */
 async function ownFigures(page: Page): Promise<number[]> {
-  const values = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
+  const values = await page.locator('ednb-cost-materials .cost__value').allInnerTexts();
   return values.map(digits).filter((figure) => String(figure).length >= 5);
 }
 
@@ -665,7 +665,7 @@ const READINGS = [
   '.rail-material',
   '.block',
 ]
-  .map((part) => `edsb-cost-materials ${part}`)
+  .map((part) => `ednb-cost-materials ${part}`)
   .join(', ');
 
 /**
@@ -778,7 +778,7 @@ async function laidOut(page: Page): Promise<void> {
 async function rowEdges(page: Page): Promise<{ name: number; count: number }[]> {
   await laidOut(page);
 
-  return page.locator('edsb-cost-materials .rail-material').evaluateAll((rows) =>
+  return page.locator('ednb-cost-materials .rail-material').evaluateAll((rows) =>
     rows.flatMap((row) => {
       const name = row.querySelector('.rail-material__name');
       const count = row.querySelector('.rail-material__count');
@@ -803,7 +803,7 @@ async function rowEdges(page: Page): Promise<{ name: number; count: number }[]> 
  * words, which is what it claims to be about.
  */
 async function headingOrder(page: Page): Promise<string[]> {
-  return (await page.locator('edsb-cost-materials .block__heading').allInnerTexts()).map(
+  return (await page.locator('ednb-cost-materials .block__heading').allInnerTexts()).map(
     (heading) => heading.trim().toLowerCase(),
   );
 }
@@ -823,14 +823,14 @@ test.describe('reading at another text size and direction', () => {
     await openStockBuild(page);
     await engineerTheDrive(page);
 
-    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
-    await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
-    await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
+    await expect(page.locator('ednb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials .rail-material').first()).toBeVisible();
+    await expect(page.locator('ednb-cost-materials .block__footer span')).toHaveCount(2);
 
     expect(await overflowingReadings(page), 'a reading wider than its own box').toEqual([]);
     // The page-level check stays, because horizontal page scrolling is a whole-
     // document property that a rail full of long rows is a plausible cause of,
-    // and nothing else asserts it for `/build` at this text size. A clipping
+    // and nothing else asserts it for `/outfitting` at this text size. A clipping
     // scan does not: `clippedText` reads every element under `main`, and text
     // cut off in the ledger or the bench is not this feature's to fail on.
     await expectNoDocumentOverflow(page);
@@ -848,7 +848,7 @@ test.describe('reading at another text size and direction', () => {
     // catalogue holds a few longer ones still; this is the longest a build
     // reaches through the journey, not the longest that exists.
     const names = (
-      await page.locator('edsb-cost-materials .rail-material .game-text__value').allInnerTexts()
+      await page.locator('ednb-cost-materials .rail-material .game-text__value').allInnerTexts()
     ).map((name) => name.trim());
     expect(names.length).toBeGreaterThan(0);
     // A guard on the fixture rather than an assertion about the product: if the
@@ -881,7 +881,7 @@ test.describe('reading at another text size and direction', () => {
     // against a document that never turned around — and `DocumentAdapter`
     // considers itself the sole writer of this attribute, so a future commit
     // that reasserts it would silently make everything below vacuous.
-    await expect(page.locator('edsb-cost-materials .block').first()).toHaveCSS('direction', 'rtl');
+    await expect(page.locator('ednb-cost-materials .block').first()).toHaveCSS('direction', 'rtl');
 
     // Mirrored: every count that closed its row on the right now opens it on
     // the left. This is the half a DOM comparison cannot make — Playwright
@@ -896,8 +896,8 @@ test.describe('reading at another text size and direction', () => {
     // before the flip would be comparing it with itself. That the order is
     // `COST` then `MATERIALS` is asserted where it can fail, in "keeps both
     // blocks in canvas order at every width".
-    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
-    await expect(page.locator('edsb-cost-materials .block__footer span')).toHaveCount(2);
+    await expect(page.locator('ednb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials .block__footer span')).toHaveCount(2);
     // Scoped to these two blocks rather than to the document. The application
     // ships no right-to-left locale — feature 011's pseudo-locale sweep is what
     // covers the frame — so a document-wide assertion here would redden a
@@ -931,8 +931,8 @@ test.describe('at 400% browser zoom', () => {
         englishMessages['cost-materials.materials.heading'],
       ].map((heading) => heading.toLowerCase()),
     );
-    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
-    await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
+    await expect(page.locator('ednb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials .rail-material').first()).toBeVisible();
     expect(await overflowingReadings(page)).toEqual([]);
     // Page-level scrolling only, for the reason the doubled-text test gives:
     // a clipping scan reads the whole of `main`, and this feature owns two
@@ -963,7 +963,7 @@ test.describe('in German, at a doubled text size', () => {
 
     // The canvas uppercases two of the four rows, so the drawn text is compared
     // case-insensitively against the message the catalogue actually holds.
-    const drawn = (await page.locator('edsb-cost-materials .cost__label').allInnerTexts()).map(
+    const drawn = (await page.locator('ednb-cost-materials .cost__label').allInnerTexts()).map(
       (label) => label.trim().toLocaleLowerCase('de'),
     );
     expect(drawn).toEqual(
@@ -992,12 +992,12 @@ test.describe('in German, at a doubled text size', () => {
  */
 test.describe('the accessibility sweep, state by state', () => {
   test('with no build open, neither block is drawn', async ({ page }) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     // The route is lazy, so waiting for the shell's `main` alone would assert
     // the absence of a block against a screen that had not drawn yet — and
     // would go on passing if `shown()` ever started drawing one. Waited for by
     // the empty state the page draws in place of the workspace, since
-    // `edsb-outfitting-workspace` is exactly what is not rendered here.
+    // `ednb-outfitting-workspace` is exactly what is not rendered here.
     await expect(page.locator('.workspace__empty')).toBeVisible();
 
     // The state is asserted, not swept: `sweepOutfittingState` scans the whole
@@ -1005,7 +1005,7 @@ test.describe('the accessibility sweep, state by state', () => {
     // `e2e/outfitting-accessibility.spec.ts` ("an empty workspace says why it is
     // empty"). A second full scan of the same screen buys nothing and costs a
     // sweep in every project.
-    await expect(page.locator('edsb-cost-materials .block')).toHaveCount(0);
+    await expect(page.locator('ednb-cost-materials .block')).toHaveCount(0);
   });
 
   test('with a build that has crafted nothing, only the cost block is drawn', async ({ page }) => {
@@ -1013,8 +1013,8 @@ test.describe('the accessibility sweep, state by state', () => {
 
     // Swept already by `e2e/module-outfitting.spec.ts` ("is accessible in every
     // rendered ledger state"), which opens the same stock build.
-    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
-    await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
+    await expect(page.locator('ednb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials .rail-material')).toHaveCount(0);
   });
 
   test('with a Merc-Coin article bought', async ({ page }, testInfo) => {
@@ -1022,7 +1022,7 @@ test.describe('the accessibility sweep, state by state', () => {
     await engineerTheDrive(page);
     await fitMercenaryCargoRack(page, CARGO_RACK.slots[0]);
 
-    await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toHaveCount(1);
+    await expect(page.locator('ednb-cost-materials .rail-material--merc-coin')).toHaveCount(1);
     await sweepOutfittingState(page, testInfo, 'cost and materials, merc coin');
   });
 });
@@ -1055,7 +1055,7 @@ async function engineerTheDrive(page: Page, messages = englishMessages): Promise
     await chooseFirstRecipe(page);
   }
   await applyDraft(page, exactly(messages['outfitting.engineering.apply']));
-  await expect(page.locator('edsb-cost-materials .rail-material').first()).toBeVisible();
+  await expect(page.locator('ednb-cost-materials .rail-material').first()).toBeVisible();
 }
 
 /**
@@ -1107,7 +1107,7 @@ async function fitMercenaryCargoRack(page: Page, slot: string): Promise<void> {
   // *this* mount carries the article, and the rail is composed from the same
   // committed build in the same pass.
   await expect(page.locator(`[data-slot-key="${slot}"]`)).toContainText(/merc-coin/i);
-  await expect(page.locator('edsb-cost-materials .rail-material--merc-coin')).toBeVisible();
+  await expect(page.locator('ednb-cost-materials .rail-material--merc-coin')).toBeVisible();
 }
 
 /**

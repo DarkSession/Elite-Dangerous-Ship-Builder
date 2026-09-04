@@ -2,7 +2,7 @@
 
 ## Ownership
 
-- Feature 001 supplies one active `{ loadout, revision }` and the `/build` workspace.
+- Feature 001 supplies one active `{ loadout, revision }` and the `/outfitting` workspace.
 - Feature 002 supplies same-revision package hardpoint coverage, and owns the engineering summary a
   weapon row reuses.
 - Feature 005 owns the WEP allocation in `PowerConditionsStore`.

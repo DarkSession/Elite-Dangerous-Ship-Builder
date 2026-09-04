@@ -36,7 +36,7 @@ import { TextField } from '../components/text-field/text-field';
  * Mac keyboard plugged into a PC has both.
  */
 @Component({
-  selector: 'edsb-candidate-search',
+  selector: 'ednb-candidate-search',
   imports: [TextField],
   templateUrl: './candidate-search.html',
   styleUrl: './candidate-search.scss',

@@ -72,28 +72,34 @@ string sees a new producer, which is the accepted cost of the product having one
 Renaming the repository to match is optional. GitHub redirects the old URLs and Pages
 follows the rename, so it costs a remote update and nothing else.
 
-### What is deliberately not renamed
+### One prefix, everywhere
 
-`edsb:` in `src/app/platform/storage/storage-keys.ts` and the `edsb-` component
-selectors. Both are opaque internal strings that no user sees, and renaming the storage
-prefix would orphan every record a Commander has already saved as well as churning the
-persistence contract, the broadcast channel name, the Web Lock names and their specs.
-The design tokens carry the product's own initials, `--ednb-*`, because a token name is
-read by everyone who extends the system.
+Every token the product owns carries its own initials: the `--ednb-*` design tokens, the
+`ednb-` component selectors, the generated relation ids, the `ednb:` browser keys, the
+`ednb.persistence.v1` channel and the `ednb.build`, `ednb.loadout` and `ednb.local-record`
+formats.
+
+The browser keys and the formats are the ones that cost something. A record a Commander
+saved under the earlier prefix is not one of this application's keys, so it is never read
+and never migrated — the same rule that keeps the application off every other
+application's keys (`specs/001-ship-selection-and-loading/contracts/persistence.md`). The
+alternative was one product carrying two prefixes for the life of the key space, and the
+Commander ruled for the break.
 
 ## The tool shell
 
 The tools are a data array in `src/app/features/shared/app-navigation.ts`, and a deck of
 its own in `src/app/ui/components/app-frame` renders from it, the way the canvas runs its
-tabs and its tool grid off one registry. It is the upper deck of one bar: the command deck
-under it keeps the screen identity and the amber rule that closes the plate, and the
-insignia stands over both. `specs/011-interface-foundations/` is the record: FR-028 and
+tabs and its tool grid off one registry. It is the upper deck of one bar: the insignia leads it, the
+command deck under it keeps the screen identity and the amber rule that closes the plate,
+and both decks sit on the plate's own inset. `specs/011-interface-foundations/` is the record: FR-028 and
 SC-009 in `spec.md`, the composition in `design/application-shell.md`, the measured
 values and the departures in `design/canvas-extraction.md` and
 `design/reference-review.md`.
 
-The registry holds the tools the application serves, so today it holds Ship Builder
-alone. The equipment builder joins it as one entry when it is built.
+The registry holds the tools the application serves: the ship builder at `/ships` and
+`/outfitting`, and the equipment builder at `/equipment`. A tool the application gains is
+an entry here, and the tab deck and the start page's tool cards both read it.
 
 Not built: the `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin. A grid and a search
 palette are more than one tool needs; revisit at five. Drag-to-pin is pointer-only and
@@ -146,7 +152,7 @@ record rather than an omission:
 - A separate Angular application per tool
 - A `301` from `sb.edct.dev`, and the second Pages site it would need
 - A saved-build handoff page, a bulk export format, or a cross-origin `postMessage` bridge
-- Renaming the `edsb:` storage prefix or the `edsb-` selectors
+- Reading a key written under the earlier prefix, or migrating one
 - The `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin, at one tool
 - An account plate on the tool bar, which the canvas draws and constitution I refuses
 - The Market Finder and Thargoid War Tracker from the canvas — both need a network

@@ -53,7 +53,7 @@ export interface Choice {
  * way an on/off control should be.
  */
 @Component({
-  selector: 'edsb-choice-group',
+  selector: 'ednb-choice-group',
   templateUrl: './choice-group.html',
   styleUrl: './choice-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

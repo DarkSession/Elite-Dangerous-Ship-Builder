@@ -34,7 +34,7 @@ const SEVERITY_LABELS = {
  * Canvas 1c draws one of these blocks under `BUILD STATUS` at the head of its
  * 306 px rail; canvas 1d draws three at the head of its Status mode. Same DOM at
  * both widths — which composition the region gets is decided in CSS from the
- * space it is given, the arrangement `edsb-cost-materials` already established
+ * space it is given, the arrangement `ednb-cost-materials` already established
  * below it.
  *
  * Three collisions between the feature specification and these canvases were
@@ -67,7 +67,7 @@ const SEVERITY_LABELS = {
  * shared untranslated disclosure beside it (FR-005, FR-007).
  */
 @Component({
-  selector: 'edsb-build-status',
+  selector: 'ednb-build-status',
   imports: [GameText],
   templateUrl: './build-status.html',
   styleUrl: './build-status.scss',

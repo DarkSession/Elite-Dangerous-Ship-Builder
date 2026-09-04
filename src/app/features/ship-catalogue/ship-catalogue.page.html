@@ -7,7 +7,7 @@
       showing.
     -->
     <div class="catalogue__browse">
-      <edsb-collection-toolbar
+      <ednb-collection-toolbar
         [search]="search()"
         [sizeChoices]="sizeChoices()"
         [selectedSizes]="selectedSizes()"
@@ -18,7 +18,7 @@
         (sortFieldChanged)="changeSort($event)"
       />
 
-      <edsb-responsive-catalogue-view
+      <ednb-responsive-catalogue-view
         [caption]="caption()"
         [columns]="columns()"
         [hulls]="hulls()"
@@ -40,7 +40,7 @@
        the command bar scrolls inside it — and the rail holds no control at that
        width, because the manifest beside it is the build (FR-007). A scroll box
        nothing inside can be reached by is content a keyboard cannot get to, so
-       the box itself takes the stop, the same way `edsb-data-table` does
+       the box itself takes the stop, the same way `ednb-data-table` does
        (009 ruling F).
 
        Declared once rather than per composition, as `outfitting__status-rail`

@@ -141,7 +141,7 @@ const PIP_DIGITS = 1;
  * and names those answers and does no arithmetic of its own.
  */
 @Component({
-  selector: 'edsb-offence-analysis',
+  selector: 'ednb-offence-analysis',
   imports: [ModuleIdentityBadge, NgTemplateOutlet, ShotConvergence],
   templateUrl: './offence-analysis.html',
   styleUrl: './offence-analysis.scss',

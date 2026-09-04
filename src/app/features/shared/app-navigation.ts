@@ -6,7 +6,7 @@ import { MessageService } from '../../i18n/message.service';
 /** The routes the shell offers from every screen. */
 export const NAVIGATION_ROUTES = {
   catalogue: '/ships',
-  build: '/build',
+  outfitting: '/outfitting',
   equipment: '/equipment',
 } as const;
 
@@ -28,7 +28,7 @@ interface ToolRecord {
    * The route prefixes the tool owns.
    *
    * What decides which tool is current, rather than the address it opens at: a
-   * Commander outfitting a hull at `/build` is still in the ship tool, and a
+   * Commander outfitting a hull at `/outfitting` is still in the ship tool, and a
    * bar that stopped naming it there would state something untrue.
    */
   readonly routes: readonly string[];
@@ -87,7 +87,7 @@ const TOOLS: readonly ToolRecord[] = [
     id: 'ship',
     labelKey: 'tools.ship',
     href: NAVIGATION_ROUTES.catalogue,
-    routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.build],
+    routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.outfitting],
     subjectsKey: 'tools.ship.subjects',
     summaryKey: 'tools.ship.summary',
     shortSummaryKey: 'tools.ship.short',
@@ -130,7 +130,7 @@ export class AppNavigation {
    * Both readings below are asked about a route, and what they are handed is a
    * URL: `Router` reports `urlAfterRedirects`, which carries the query and the
    * fragment. Every shared build and every shared loadout arrives as one —
-   * `/build#s.…` and `/equipment#e.…` are how a link is opened — so a bar that
+   * `/outfitting#s.…` and `/equipment#e.…` are how a link is opened — so a bar that
    * matched the whole string named no tool at all on the one screen a Commander
    * most often lands on from outside (Commander request 2026-09-04).
    */

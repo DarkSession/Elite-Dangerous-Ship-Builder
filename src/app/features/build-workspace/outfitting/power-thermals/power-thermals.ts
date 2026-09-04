@@ -96,7 +96,7 @@ const SCENARIO_LABELS = {
  * What each scenario name is shorthand for, likewise written out.
  *
  * The canvas hangs these on a `data-tip`, and so does this — on the design
- * system's own `edsb-tooltip` rather than on a `title`, which opens by press as
+ * system's own `ednb-tooltip` rather than on a `title`, which opens by press as
  * well as by hover and carries the gloss on `aria-describedby` whether it is
  * drawn or not. Hover-only meaning would still be unreachable by touch
  * (011 FR-006); this is not hover-only.
@@ -191,7 +191,7 @@ function clamp(share: number): number {
  * scenario that never gets there. None is drawn as a number.
  */
 @Component({
-  selector: 'edsb-power-thermals',
+  selector: 'ednb-power-thermals',
   imports: [DistributorBlock, GameText, MetricGroup, TabGroup, Tooltip, UnavailableValue],
   templateUrl: './power-thermals.html',
   styleUrl: './power-thermals.scss',

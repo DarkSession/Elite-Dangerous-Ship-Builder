@@ -4,7 +4,7 @@ import { ResistanceBar } from './resistance-bar';
 
 @Component({
   imports: [ResistanceBar],
-  template: `<edsb-resistance-bar
+  template: `<ednb-resistance-bar
     [label]="label()"
     [value]="value()"
     [magnitude]="magnitude()"
@@ -44,16 +44,19 @@ describe('ResistanceBar', () => {
     expect(element.querySelector('.resistance__track')?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('draws the bar at the magnitude, clamped to the track', () => {
+  it('draws the bar at half the magnitude, because it fills from the midline', () => {
+    // The fill starts at the centre of the track and has half of it to run in,
+    // so a resistance at full magnitude reaches one end (013
+    // design/equipment-bench.md).
     const fixture = render();
     const fill = (): HTMLElement =>
       (fixture.nativeElement as HTMLElement).querySelector('.resistance__fill')!;
 
-    expect(fill().style.inlineSize).toBe('25%');
+    expect(fill().style.inlineSize).toBe('12.5%');
 
     fixture.componentInstance.magnitude.set(1.4);
     fixture.detectChanges();
-    expect(fill().style.inlineSize).toBe('100%');
+    expect(fill().style.inlineSize).toBe('50%');
 
     fixture.componentInstance.magnitude.set(-0.2);
     fixture.detectChanges();

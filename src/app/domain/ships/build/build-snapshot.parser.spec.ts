@@ -4,7 +4,7 @@ import { toBuildSnapshotV1 } from './build-snapshot.serializer';
 
 function stored(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    format: 'edsb.build',
+    format: 'ednb.build',
     version: 1,
     shipSymbol: 'Anaconda',
     shipName: null,
@@ -37,7 +37,7 @@ describe('build snapshot parser', () => {
   });
 
   it('refuses a value that is not an object', () => {
-    for (const value of [null, undefined, 42, 'edsb.build', []]) {
+    for (const value of [null, undefined, 42, 'ednb.build', []]) {
       expect(parseBuildSnapshotV1(value)).toMatchObject({ ok: false, failure: 'malformed' });
     }
   });

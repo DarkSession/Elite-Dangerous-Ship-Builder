@@ -87,7 +87,7 @@ Written after the implementation, so the record is what happened rather than wha
   history entry. The import layer is a 560px dialog on the desktop canvas and a bottom sheet on the
   compact ones; the export layer is a wider dialog with the format list down its leading edge, one
   amber hairline dividing it from the payload and running the full height of the panel. Both are the
-  shared `edsb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS, and whose
+  shared `ednb-layer`, whose `adaptive` presentation resolves the same three shapes in CSS, and whose
   width step and flush body are what let a two-region layer be wider than a one-region one and rule
   itself edge to edge.
 - **The import layer's own composition**: description, one monospaced editable field, one status line
@@ -136,7 +136,7 @@ Written after the implementation, so the record is what happened rather than wha
   Commander is looking at, and a payload's size in bytes is a fact about a transport rather than about
   a build. The line now says something only when something has happened.
 
-- **The refusal is said once, by the field.** `edsb-textarea-field` renders it and associates it, so a
+- **The refusal is said once, by the field.** `ednb-textarea-field` renders it and associates it, so a
   reader who lands on the payload hears why it was refused. A second copy beside it was written,
   measured against the canvas, and removed.
 - **Import lives in the shell, not in four screens.** The canvas draws `IMPORT` in the command bar of

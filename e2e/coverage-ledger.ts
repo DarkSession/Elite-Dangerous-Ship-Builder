@@ -149,6 +149,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'a chosen suit offers the mounts it carries, and the stats state its figures',
+      'every resistance bar fills from its midline, towards the edge its sign says',
       'raising the suit’s grade restates the shields',
       'a weapon fitted on a mount is named in the ledger and counted in the firepower',
       'the Flight Suit offers one grade and says it takes no modification',
@@ -188,8 +189,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'equipment/bench',
     axe: true,
     assertions: [
-      'the list is the sum of every fitted, unlocked modification, commonest first',
-      'a held modification counts nothing',
+      'the list is the climb to each selected grade and every fitted, unlocked modification',
+      'a held modification counts nothing, and neither does a held mount’s weapon',
       'the block says what the total covers, and says when there is nothing to gather',
     ],
     manualRecord: null,
@@ -2149,7 +2150,7 @@ export const helpRouteCoverage: readonly HelpRouteRow[] = [
   },
   {
     id: 'build-workspace',
-    surface: 'Build workspace /build, including no-build',
+    surface: 'Build workspace /outfitting, including no-build',
     owner: '001',
     frameEntry: 'visible',
     requirements: ['012/FR-001', '012/FR-011'],

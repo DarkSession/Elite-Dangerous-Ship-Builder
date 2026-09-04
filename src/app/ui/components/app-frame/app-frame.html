@@ -16,68 +16,76 @@
   [attr.aria-label]="bannerLabel()"
 >
   <!--
-    The insignia. It stands on the leading edge of the bar as a whole and is
-    centred across both decks, which is why it is here rather than inside
-    either one: canvas 4c holds the tabs and the identity to a single indent
-    that clears the one mark.
+    The upper deck: the insignia, then the tools. Canvas 4c draws the mark in
+    flow at the head of this deck with the tabs following it, so the deck holds
+    both and the command deck below it clears nothing.
 
-    A link where the screen has somewhere for it to go, which is where canvas
-    1c puts the trip the `SHIPYARD` chip used to carry; the mark carries no
-    alternative text and the link is named by the screen it reaches, so the mark
-    is never announced as a picture of nothing.
-
-    The mark is its own element inside the link rather than the link itself.
-    The link is held to the press baseline, the mark is the size the canvas
-    draws it, and one box cannot be both: a mark cut into the link's own layers
-    grows with the target, and the insignia is then a different size on a
-    screen that offers the way home than on one that does not (011/FR-012).
+    The mark is outside the tools landmark. The landmark names the tools, and a
+    way home announced inside it would be announced as one of them.
   -->
-  @if (home(); as destination) {
-    <a
-      class="frame__flag-home"
-      [href]="destination.href"
-      (click)="navigationSelected.emit({ entry: destination, event: $event })"
-    >
+  <div class="frame__deck">
+    <!--
+      The insignia, on the leading edge of the plate.
+
+      A link where the screen has somewhere for it to go, which is where canvas
+      1c puts the trip the `SHIPYARD` chip used to carry; the mark carries no
+      alternative text and the link is named by the screen it reaches, so the
+      mark is never announced as a picture of nothing.
+
+      The mark is its own element inside the link rather than the link itself.
+      The link is held to the press baseline, the mark is the size the canvas
+      draws it, and one box cannot be both: a mark cut into the link's own
+      layers grows with the target, and the insignia is then a different size on
+      a screen that offers the way home than on one that does not
+      (011/FR-012).
+    -->
+    @if (home(); as destination) {
+      <a
+        class="frame__flag-home"
+        [href]="destination.href"
+        (click)="navigationSelected.emit({ entry: destination, event: $event })"
+      >
+        <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
+        <span class="visually-hidden">{{ destination.label }}</span>
+      </a>
+    } @else {
       <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
-      <span class="visually-hidden">{{ destination.label }}</span>
-    </a>
-  } @else {
-    <img class="frame__flag" src="assets/icons/nav-beacon-mark-header.svg" alt="" />
-  }
+    }
 
-  <!--
-    The tool bar, and the shell's one navigation landmark: the saved builds were
-    the only entry the bar below ever offered, and they became an action when
-    they stopped being a place with an address (2026-09-04).
+    <!--
+      The tool bar, and the shell's one navigation landmark: the saved builds were
+      the only entry the bar below ever offered, and they became an action when
+      they stopped being a place with an address (2026-09-04).
 
-    The tool a Commander is already in is a word, not a link: the same rule that
-    leaves the insignia a bare mark on the shipyard. `aria-current` carries the
-    state, so the amber fill and the underline are never the only thing saying
-    which tool this is (011/FR-028, FR-010).
-  -->
-  @if (tools().length > 0) {
-    <nav class="frame__tools" [attr.aria-label]="toolsLabel()">
-      <ul class="frame__tools-list">
-        @for (tool of tools(); track tool.id) {
-          <li>
-            @if (tool.current) {
-              <span class="frame__tool frame__tool--current" aria-current="true">
-                {{ tool.label }}
-              </span>
-            } @else {
-              <a
-                class="frame__tool"
-                [href]="tool.href"
-                (click)="toolSelected.emit({ entry: tool, event: $event })"
-              >
-                {{ tool.label }}
-              </a>
-            }
-          </li>
-        }
-      </ul>
-    </nav>
-  }
+      The tool a Commander is already in is a word, not a link: the same rule that
+      leaves the insignia a bare mark on the shipyard. `aria-current` carries the
+      state, so the amber fill and the underline are never the only thing saying
+      which tool this is (011/FR-028, FR-010).
+    -->
+    @if (tools().length > 0) {
+      <nav class="frame__tools" [attr.aria-label]="toolsLabel()">
+        <ul class="frame__tools-list">
+          @for (tool of tools(); track tool.id) {
+            <li>
+              @if (tool.current) {
+                <span class="frame__tool frame__tool--current" aria-current="true">
+                  {{ tool.label }}
+                </span>
+              } @else {
+                <a
+                  class="frame__tool"
+                  [href]="tool.href"
+                  (click)="toolSelected.emit({ entry: tool, event: $event })"
+                >
+                  {{ tool.label }}
+                </a>
+              }
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+  </div>
 
   <div class="frame__bar">
     <!--
@@ -129,7 +137,7 @@
         identity beside it (FR-019).
       -->
       @if (identity(); as screenIdentity) {
-        <edsb-ship-identity-fields
+        <ednb-ship-identity-fields
           class="frame__screen-identity"
           [name]="screenIdentity.name"
           [fallbackName]="screenIdentity.fallbackName ?? routeContext() ?? ''"
@@ -167,7 +175,7 @@
           @if (action.startsGroup) {
             <span class="frame__actions-divider" aria-hidden="true"></span>
           }
-          <edsb-action-button
+          <ednb-action-button
             [label]="action.label"
             [symbol]="action.symbol ?? null"
             [mark]="action.mark ?? null"
@@ -180,7 +188,7 @@
         }
       </div>
 
-      <edsb-action-layer
+      <ednb-action-layer
         class="frame__action-layer"
         [actions]="actions()"
         [label]="actionsLabel()"
@@ -203,7 +211,7 @@
 @if (notices().length > 0) {
   <div class="frame__status" [attr.aria-label]="statusLabel()">
     @for (notice of notices(); track notice.message) {
-      <edsb-status-notice
+      <ednb-status-notice
         [tone]="notice.tone"
         [message]="notice.message"
         [detail]="notice.detail ?? null"
@@ -216,4 +224,4 @@
   <ng-content />
 </main>
 
-<edsb-announcement-outlet />
+<ednb-announcement-outlet />

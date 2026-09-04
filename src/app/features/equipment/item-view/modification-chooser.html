@@ -26,7 +26,7 @@
 } @else {
   <!-- Canvas 1b has no room beside the slots, so it takes the screen: a sheet
        with its own way back, which is what the layer draws compact. -->
-  <edsb-layer
+  <ednb-layer
     [open]="open()"
     [title]="title()"
     [dismissLabel]="closeLabel()"
@@ -35,11 +35,11 @@
   >
     <ng-container [ngTemplateOutlet]="rows" />
     <ng-container [ngTemplateOutlet]="clear" />
-  </edsb-layer>
+  </ednb-layer>
 }
 
 <ng-template #rows>
-  <edsb-choice-list
+  <ednb-choice-list
     class="chooser__choices"
     [choices]="choices()"
     [label]="title()"

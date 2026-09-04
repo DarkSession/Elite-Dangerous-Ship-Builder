@@ -75,9 +75,9 @@ describe('CatalogueSessionStore', () => {
 
     store.setFilters({ ...store.filters(), query: 'cutter' });
 
-    expect([...session.entries.keys()]).toEqual(['edsb:catalogue']);
+    expect([...session.entries.keys()]).toEqual(['ednb:catalogue']);
     // Not a build, not a record, not a URL.
-    expect([...session.entries.keys()].some((key) => key.startsWith('edsb:record:'))).toBe(false);
+    expect([...session.entries.keys()].some((key) => key.startsWith('ednb:record:'))).toBe(false);
   });
 
   it('forgets the remembered position when the list changes underneath it', () => {
@@ -109,14 +109,14 @@ describe('CatalogueSessionStore', () => {
 
   it('ignores a stored session written by another version', () => {
     const session = new FakeSession();
-    session.entries.set('edsb:catalogue', JSON.stringify({ version: 99, filters: {}, sort: {} }));
+    session.entries.set('ednb:catalogue', JSON.stringify({ version: 99, filters: {}, sort: {} }));
 
     expect(setup(session).store.filters().query).toBe('');
   });
 
   it('ignores a stored session that is not readable at all', () => {
     const session = new FakeSession();
-    session.entries.set('edsb:catalogue', 'not json');
+    session.entries.set('ednb:catalogue', 'not json');
 
     expect(setup(session).store.filters().query).toBe('');
   });
@@ -124,7 +124,7 @@ describe('CatalogueSessionStore', () => {
   it('ignores a stored session whose shape does not match', () => {
     const session = new FakeSession();
     session.entries.set(
-      'edsb:catalogue',
+      'ednb:catalogue',
       JSON.stringify({ version: 2, filters: { query: 7 }, sort: { field: 'name' } }),
     );
 

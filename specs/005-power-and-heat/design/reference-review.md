@@ -16,16 +16,16 @@ system override every sample number, label, interaction and CSS literal.
 
 ## Adopted direction
 
-| Reference idea                                         | Planned adaptation                                                                                                                    |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Power and Thermals is a peer build-analysis capability | Compose one `powerAndHeat` capability inside `/build`, reachable from feature 003's power summary and workspace capability selection. |
-| Selected hardpoint state precedes power analysis       | Reuse feature 003's shared condition group and present one selected package state, default deployed.                                  |
-| Capacity, priority bands and module draw are adjacent  | Keep this comparison with all five bands, exact package fields and one row per returned consumer.                                     |
-| Heat follows power, then distributor                   | Preserve that semantic/narrow order with the exact five heat scenarios and all three complete capacitors.                             |
-| Wide panels form a compact dashboard                   | Use fluid design-system regions where inline space supports them without changing semantic order.                                     |
-| Mobile analysis becomes stacked cards                  | Stack complete content at narrow widths, landscape phones, expanded text and 400% zoom.                                               |
-| Power warnings also appear in build status             | Supply feature 003's compact revision-stamped power projection; feature 003 owns its rail/capability placement.                       |
-| Power facts can augment hardpoint geometry             | Supply feature 010's exact-slot observation port; diagrams remain supplemental to complete text.                                      |
+| Reference idea                                         | Planned adaptation                                                                                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Power and Thermals is a peer build-analysis capability | Compose one `powerAndHeat` capability inside `/outfitting`, reachable from feature 003's power summary and workspace capability selection. |
+| Selected hardpoint state precedes power analysis       | Reuse feature 003's shared condition group and present one selected package state, default deployed.                                       |
+| Capacity, priority bands and module draw are adjacent  | Keep this comparison with all five bands, exact package fields and one row per returned consumer.                                          |
+| Heat follows power, then distributor                   | Preserve that semantic/narrow order with the exact five heat scenarios and all three complete capacitors.                                  |
+| Wide panels form a compact dashboard                   | Use fluid design-system regions where inline space supports them without changing semantic order.                                          |
+| Mobile analysis becomes stacked cards                  | Stack complete content at narrow widths, landscape phones, expanded text and 400% zoom.                                                    |
+| Power warnings also appear in build status             | Supply feature 003's compact revision-stamped power projection; feature 003 owns its rail/capability placement.                            |
+| Power facts can augment hardpoint geometry             | Supply feature 010's exact-slot observation port; diagrams remain supplemental to complete text.                                           |
 
 ## Required departures
 
@@ -72,7 +72,7 @@ system override every sample number, label, interaction and CSS literal.
 
 - Clickable `div` tabs/state choices, title-only meaning and tiny targets
   become shared semantic controls with visible matching names/states. The heat
-  scenarios' `data-tip` glosses became the design system's own `edsb-tooltip` on
+  scenarios' `data-tip` glosses became the design system's own `ednb-tooltip` on
   2026-08-27 — a real control that opens on hover, on focus and on a press, with
   the gloss related to its name by `aria-describedby` whether or not it is
   drawn. A `title` is none of those things, which is why none is built.

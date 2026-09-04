@@ -1213,7 +1213,7 @@ describe('search metadata', () => {
   const SITEMAP = `<urlset>
     <url><loc>https://navbeacon.app/</loc></url>
     <url><loc>https://navbeacon.app/ships</loc></url>
-    <url><loc>https://navbeacon.app/build</loc></url>
+    <url><loc>https://navbeacon.app/outfitting</loc></url>
   </urlset>`;
 
   const TOKENS = '  --ednb-palette-bg: #0b0b0c;\n';
@@ -1261,9 +1261,9 @@ describe('search metadata', () => {
       image: 'assets/link-card.png',
     },
     {
-      path: 'build',
-      route: 'build',
-      address: 'https://navbeacon.app/build',
+      path: 'outfitting',
+      route: 'outfitting',
+      address: 'https://navbeacon.app/outfitting',
       titleKey: 'workspace.title',
       descriptionKey: 'workspace.description',
       image: 'assets/link-card.png',
@@ -1293,7 +1293,7 @@ describe('search metadata', () => {
     { path: '', titleKey: 'app.name', descriptionKey: 'app.description' },
     { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
     { path: ':hull', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
-    { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
+    { path: 'outfitting', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
     { path: '**' },
   ];
 
@@ -1322,7 +1322,7 @@ describe('search metadata', () => {
     assets: ASSETS,
     preview: PREVIEW,
     locales: ['en', 'de'],
-    routes: ['', 'ships', ':hull', 'build', '**'],
+    routes: ['', 'ships', ':hull', 'outfitting', '**'],
     ...overrides,
   });
 
@@ -1339,7 +1339,7 @@ describe('search metadata', () => {
         <!-- <loc>https://navbeacon.app/ghost</loc> -->
         <url><loc>https://navbeacon.app/</loc></url>
         <url><loc>https://navbeacon.app/ships</loc></url>
-        <url><loc>https://navbeacon.app/build</loc></url>
+        <url><loc>https://navbeacon.app/outfitting</loc></url>
       </urlset>`,
       `<urlset>
         <!--
@@ -1347,7 +1347,7 @@ describe('search metadata', () => {
         -->
         <url><loc>https://navbeacon.app/</loc></url>
         <url><loc>https://navbeacon.app/ships</loc></url>
-        <url><loc>https://navbeacon.app/build</loc></url>
+        <url><loc>https://navbeacon.app/outfitting</loc></url>
       </urlset>`,
     ]) {
       assert.deepEqual(rules.searchMetadataViolations(complete({ sitemap: commented })), []);
@@ -1364,7 +1364,7 @@ describe('search metadata', () => {
       <!-- old -- gone <loc>https://navbeacon.app/ghost</loc> -->
       <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
-      <url><loc>https://navbeacon.app/build</loc></url>
+      <url><loc>https://navbeacon.app/outfitting</loc></url>
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: malformed }));
@@ -1380,7 +1380,7 @@ describe('search metadata', () => {
       <!-- gone <loc>https://navbeacon.app/ghost</loc> --!>
       <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
-      <url><loc>https://navbeacon.app/build</loc></url>
+      <url><loc>https://navbeacon.app/outfitting</loc></url>
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: html }));
@@ -1398,7 +1398,7 @@ describe('search metadata', () => {
       <!<!-- -->-- <loc>https://navbeacon.app/ghost</loc> -->
       <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
-      <url><loc>https://navbeacon.app/build</loc></url>
+      <url><loc>https://navbeacon.app/outfitting</loc></url>
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: nested }));
@@ -1413,13 +1413,13 @@ describe('search metadata', () => {
     const commented = `<urlset>
       <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
-      <!-- <url><loc>https://navbeacon.app/build</loc></url> -->
+      <!-- <url><loc>https://navbeacon.app/outfitting</loc></url> -->
     </urlset>`;
 
     const found = rules.searchMetadataViolations(complete({ sitemap: commented }));
 
     assert.deepEqual(ruleIds(found), ['search-metadata']);
-    assert.match(found[0].message, /\/build/);
+    assert.match(found[0].message, /\/outfitting/);
   });
 
   it('fails when nothing states where the application is published', () => {
@@ -1492,7 +1492,7 @@ describe('search metadata', () => {
 
   it('rejects an addressable route no published address names', () => {
     const found = rules.searchMetadataViolations(
-      complete({ routes: ['', 'ships', ':hull', 'build', 'builds', '**'] }),
+      complete({ routes: ['', 'ships', ':hull', 'outfitting', 'builds', '**'] }),
     );
 
     assert.deepEqual(ruleIds(found), ['search-metadata']);
@@ -1509,7 +1509,7 @@ describe('search metadata', () => {
 
   it('does not ask a redirect or a wildcard to be listed', () => {
     assert.deepEqual(
-      rules.searchMetadataViolations(complete({ routes: ['', 'ships', 'build', '**'] })),
+      rules.searchMetadataViolations(complete({ routes: ['', 'ships', 'outfitting', '**'] })),
       [],
     );
   });
@@ -1861,7 +1861,7 @@ describe('search metadata', () => {
 
   it('rejects a published address the route table declares no route for', () => {
     const found = rules.searchMetadataViolations(
-      withHull({ routes: ['', 'ships', 'build', '**'] }),
+      withHull({ routes: ['', 'ships', 'outfitting', '**'] }),
     );
 
     assert.ok(found.some((violation) => /:hull/.test(violation.message)));
@@ -1880,18 +1880,20 @@ describe('search metadata', () => {
     // rule comparing the two key *sets* passes while the published document
     // names one screen and the application names another a moment later.
     const swapped = ROUTE_TABLE.map((route) =>
-      route.path === 'build'
+      route.path === 'outfitting'
         ? { ...route, titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' }
         : route,
     );
     const found = rules.searchMetadataViolations(complete({ routeTable: swapped }));
 
     assert.ok(
-      found.some((violation) => /"\/build" publishes "workspace\.title"/.test(violation.message)),
+      found.some((violation) =>
+        /"\/outfitting" publishes "workspace\.title"/.test(violation.message),
+      ),
     );
     assert.ok(
       found.some((violation) =>
-        /"\/build" publishes "workspace\.description"/.test(violation.message),
+        /"\/outfitting" publishes "workspace\.description"/.test(violation.message),
       ),
     );
   });

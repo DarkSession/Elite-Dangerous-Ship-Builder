@@ -22,7 +22,7 @@
 > [tasks.md](./tasks.md#retired-tasks) retires them as withdrawn, not moved. The announcement state
 > went with ruling A, which withdrew the counts it announced. Feature 003 adds no domain type, no store and no port: `ShipLoadout.validation()`
 > is a call on the build feature 001 already holds in memory, and the one component reads it the way
-> `edsb-cost-materials` reads its own projection.
+> `ednb-cost-materials` reads its own projection.
 >
 > This file is retained as the record of what was ruled against, which is why it is left as it was
 > written. The live design outputs are [design/reference-review.md](./design/reference-review.md),

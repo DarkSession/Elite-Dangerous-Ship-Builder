@@ -36,7 +36,7 @@ export interface Metric {
  * pairing that lets a reader move term by term.
  */
 @Component({
-  selector: 'edsb-metric-group',
+  selector: 'ednb-metric-group',
   templateUrl: './metric-group.html',
   styleUrl: './metric-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

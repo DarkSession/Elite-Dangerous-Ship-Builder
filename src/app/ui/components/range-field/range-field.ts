@@ -13,7 +13,7 @@ import { createFieldRelations } from '../field/field-relations';
 /**
  * A labelled slider over a numeric range, with the value it is set to beside it.
  *
- * A native `<input type="range">`, for the reason `edsb-select-field` uses a
+ * A native `<input type="range">`, for the reason `ednb-select-field` uses a
  * native `<select>`: the platform's own slider is already operable by touch,
  * pointer and assistive technology, and already announces its value. A track
  * built from a `<div>` and pointer handlers — which is what canvas 1c draws —
@@ -27,7 +27,7 @@ import { createFieldRelations } from '../field/field-relations';
  * revision moved it.
  */
 @Component({
-  selector: 'edsb-range-field',
+  selector: 'ednb-range-field',
   templateUrl: './range-field.html',
   styleUrl: './range-field.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

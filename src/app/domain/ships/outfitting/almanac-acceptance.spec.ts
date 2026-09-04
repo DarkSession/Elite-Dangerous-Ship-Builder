@@ -89,7 +89,7 @@ describe('installed Almanac acceptance', () => {
 
     it('refuses a hull it does not carry', () => {
       const refusal = reconstructFromSnapshot({
-        format: 'edsb.build',
+        format: 'ednb.build',
         version: 1,
         shipSymbol: UNKNOWN_HULL_PAYLOAD.Ship,
         shipName: null,

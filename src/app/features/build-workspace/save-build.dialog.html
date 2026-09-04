@@ -1,4 +1,4 @@
-<edsb-layer
+<ednb-layer
   [open]="open()"
   [title]="title()"
   [dismissLabel]="dismissLabel()"
@@ -6,7 +6,7 @@
   (dismissed)="dismissed.emit()"
 >
   <div class="save">
-    <edsb-text-field
+    <ednb-text-field
       [label]="nameLabel()"
       [value]="name()"
       [required]="true"
@@ -18,7 +18,7 @@
       It never enters a build link or a SLEF export, and typing one is not an
       edit to the build (FR-011).
     -->
-    <edsb-textarea-field
+    <ednb-textarea-field
       [label]="noteLabel()"
       [value]="note()"
       [rows]="3"
@@ -40,7 +40,7 @@
       (WCAG 1.3.1).
     -->
     @if (modes().length > 0) {
-      <edsb-choice-group
+      <ednb-choice-group
         class="save__modes"
         [legend]="modeLegend()"
         [legendHidden]="true"
@@ -65,7 +65,7 @@
       </p>
 
       <div class="save__actions">
-        <edsb-action-button
+        <ednb-action-button
           [label]="cancelLabel()"
           emphasis="secondary"
           (activated)="dismissed.emit()"
@@ -76,7 +76,7 @@
           repeated on every focus of the button would say the same sentence
           twice.
         -->
-        <edsb-action-button
+        <ednb-action-button
           [label]="confirmLabel()"
           emphasis="primary"
           [disabled]="!canSave() || saving()"
@@ -85,4 +85,4 @@
       </div>
     </div>
   </div>
-</edsb-layer>
+</ednb-layer>

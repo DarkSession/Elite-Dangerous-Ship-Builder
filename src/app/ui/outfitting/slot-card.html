@@ -47,7 +47,7 @@
 
     <span class="slot__identity">
       @if (slot().module !== null) {
-        <edsb-module-identity-badge
+        <ednb-module-identity-badge
           [name]="slot().module!.displayName"
           [nameTip]="slot().module!.displayName.text"
           [symbol]="slot().module!.symbol"
@@ -65,8 +65,8 @@
             Commander reading their build back has no chooser open to find it
             in.
           -->
-          <edsb-acquisition-badge class="slot__acquisition" [labels]="slot().module!.labels" />
-        </edsb-module-identity-badge>
+          <ednb-acquisition-badge class="slot__acquisition" [labels]="slot().module!.labels" />
+        </ednb-module-identity-badge>
         <!--
           The canvas gives a fitted row two lines: the module's name and its
           code line. The mount's own kind, size and node are the size box, the
@@ -99,7 +99,7 @@
     "Interaction and semantics").
   -->
   @if (showsPower()) {
-    <edsb-power-controls
+    <ednb-power-controls
       class="slot__power"
       [slotLabel]="drawnLabel()"
       [moduleLabel]="moduleLabel()"

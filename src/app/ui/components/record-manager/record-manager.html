@@ -8,7 +8,7 @@
   <p class="manager__description">{{ description() }}</p>
 
   @if (records().length > 0) {
-    <edsb-choice-group
+    <ednb-choice-group
       [legend]="title()"
       [choices]="choices()"
       [selected]="selected()"
@@ -16,7 +16,7 @@
       (changed)="selectionChanged.emit($event)"
     />
 
-    <edsb-action-button
+    <ednb-action-button
       [label]="discardLabel()"
       emphasis="danger"
       [disabled]="!hasSelection()"

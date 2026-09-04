@@ -1,6 +1,6 @@
 # Engineering Editor Surface
 
-**Parent route**: `/build` application state  
+**Parent route**: `/outfitting` application state  
 **Requirements**: FR-002, FR-007, FR-012–FR-014
 
 ## Purpose
@@ -274,7 +274,7 @@ reason it was withdrawn on 2026-08-21: the Almanac publishes no description for 
 direction for what one moves, so those lines would be a private claim about game mechanics
 (`reference-review.md`, "Blueprint option descriptions"). The experimental effect descriptions beside
 them are package text and are drawn — **where the catalogue has one**. Where it has none the line is
-absent (Commander request 2026-08-26). `edsb-game-text` stands in for a missing string with `Name
+absent (Commander request 2026-08-26). `ednb-game-text` stands in for a missing string with `Name
 unavailable`, which is right for a name, because an article a reader cannot be told the name of is a
 fact worth stating; it is wrong for a description twice over, since it is not a name and the option
 is fully named on the line above it.
@@ -308,7 +308,7 @@ What a drawn menu gives up, and why only this one gives it up:
   the list. The trigger is named by that label and its own content together, so it reads as the
   choice it is and the effect it holds; either alone is half the answer. The `listbox` is named by
   the label, which is the only thing that names it once it is off the trigger.
-- **The trigger draws the name through `edsb-game-text`,** exactly as the options do. A name the
+- **The trigger draws the name through `ednb-game-text`,** exactly as the options do. A name the
   catalogue cannot translate is disclosed as untranslated and carries the language it is in, rather
   than being presented as a translation (FR-020, constitution VI). Nothing chosen reads as `None`,
   which is the application's own string. A symbol is never a display name, so an effect that is not
@@ -455,7 +455,7 @@ that `CLEAR ✕` created by existing at wide width only.
   - Where the package carries no catalogue record for the symbol, every `STOCK` cell states the
     absence. Nothing is copied across from `stats` to stand in for it.
 - Missing `stats`, missing modifiers or missing fields render unavailable — as a value, through
-  `edsb-unavailable-value`. The cell holds a figure, so it states the absence of a figure; the
+  `ednb-unavailable-value`. The cell holds a figure, so it states the absence of a figure; the
   game-text message for a lost _name_ belongs to a name.
 - **Every attribute the article carries, ruled 2026-08-23 (wave 10, Commander request).**
   `COMPARED_ATTRIBUTES` is every numeric field the Almanac publishes on a module, and the article's

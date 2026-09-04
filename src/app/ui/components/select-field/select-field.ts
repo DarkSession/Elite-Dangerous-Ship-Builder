@@ -25,7 +25,7 @@ export interface SelectOption {
  * reimplement all of that to be no better.
  */
 @Component({
-  selector: 'edsb-select-field',
+  selector: 'ednb-select-field',
   templateUrl: './select-field.html',
   styleUrl: './select-field.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

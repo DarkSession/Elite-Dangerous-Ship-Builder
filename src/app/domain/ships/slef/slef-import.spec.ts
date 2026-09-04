@@ -340,7 +340,7 @@ describe('source attribution', () => {
         header: {
           appName: 'EDSY',
           appVersion: '2.0',
-          appURL: 'https://elsewhere.test/build',
+          appURL: 'https://elsewhere.test/outfitting',
           appCustomProperties: { danger: 'javascript:alert(1)' },
         },
         data: { event: 'Loadout', Ship: FIXTURE_HULL, Modules: [] },

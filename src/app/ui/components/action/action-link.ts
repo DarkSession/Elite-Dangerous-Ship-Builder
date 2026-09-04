@@ -11,7 +11,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  * told before they leave the application, never after (constitution I).
  */
 @Component({
-  selector: 'edsb-action-link',
+  selector: 'ednb-action-link',
   templateUrl: './action-link.html',
   styleUrl: './action.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

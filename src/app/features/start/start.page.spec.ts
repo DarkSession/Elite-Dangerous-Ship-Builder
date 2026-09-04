@@ -34,7 +34,7 @@ describe('StartPage', () => {
     // No tool is open at the entry point, so nothing here may say one is
     // (FR-010).
     const root = render();
-    const links = root.querySelectorAll('edsb-tool-card a');
+    const links = root.querySelectorAll('ednb-tool-card a');
 
     expect([...links].map((link) => link.getAttribute('href'))).toEqual(['/ships', '/equipment']);
     expect(root.querySelectorAll('[aria-current]').length).toBe(0);

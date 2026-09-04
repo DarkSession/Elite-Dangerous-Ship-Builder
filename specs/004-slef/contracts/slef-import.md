@@ -31,7 +31,7 @@ do not parse, trim, measure, normalize, construct or commit.
     construction and quality handling complete.
 11. Give candidate/token to feature 001's replacement coordinator. The SLEF feature
     performs no direct active-state, persistence, URL, provenance or history mutation.
-12. On acceptance, feature 001 commits once as working provenance, navigates to `/build` when needed,
+12. On acceptance, feature 001 commits once as working provenance, navigates to `/outfitting` when needed,
     autosaves the tab working record and synchronizes its link; feature 002 resets history. Clear the
     draft only after commit. The completions travel on the candidate as feature 001's own
     `qualityNotices`; feature 004 publishes no report of its own.

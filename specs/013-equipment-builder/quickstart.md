@@ -55,12 +55,14 @@ Open `/equipment` directly — not by way of another screen (FR-027).
 
 | Do this                                                 | Expect                                                                                                                                                                       |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Select the Dominator, grade 5                           | two primary mounts and one secondary; four open modification slots                                                                                                           |
+| Select the Dominator, grade 1                           | one primary mount and one secondary; no open modification slot; the material requirement says there is nothing to gather                                                     |
+| Raise it to grade 5                                     | two primary mounts and one secondary; four open modification slots; the material requirement states the climb with nothing fitted                                            |
 | Fit a rifle on each primary, a sidearm on the secondary | each states its own grade ladder; the stats restate                                                                                                                          |
 | Lower a weapon to grade 3                               | slots 3 and 4 lock, keeping their modifications; the material requirement shrinks                                                                                            |
 | Switch to the Maverick                                  | `primary2` is unavailable, its weapon still named                                                                                                                            |
 | Switch back to the Dominator                            | the weapon is on `primary2` again, with its grade and modifications                                                                                                          |
 | Select the Flight Suit                                  | grade 1 only, no primary mount, and the modification region says it cannot be upgraded                                                                                       |
+| Read the suit's resistance bars                         | each bar has a tick at its centre; a positive resistance fills towards the trailing edge, a negative one towards the leading edge, and the figure carries its sign           |
 | Read the item view                                      | the eight figures the package publishes for a weapon: damage per shot, rate of fire, sustained DPS, headshot damage, magazine, reserve ammo, effective range and DPS         |
 | Read the ledger's `SUIT TOOLS` rows                     | the Maverick names the Arc Cutter, the Artemis the Genetic Sampler, both name the Energylink and Profile Analyser, the header count matches the rows, and none is selectable |
 

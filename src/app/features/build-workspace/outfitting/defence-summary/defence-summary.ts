@@ -31,7 +31,7 @@ const POOL_DIGITS = 0;
  * for every build, so its cell always carries a figure.
  */
 @Component({
-  selector: 'edsb-defence-summary',
+  selector: 'ednb-defence-summary',
   imports: [MetricGroup],
   templateUrl: './defence-summary.html',
   styleUrl: './defence-summary.scss',

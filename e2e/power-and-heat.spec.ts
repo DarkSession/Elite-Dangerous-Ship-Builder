@@ -38,10 +38,10 @@ async function openPower(page: Page, messages = englishMessages): Promise<void> 
   await buildStockHull(page, messages['hullDetail.create']);
 
   await page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: messages['anatomy.mode.power'] })
     .click();
-  await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
+  await expect(page.locator('ednb-power-thermals .power')).toBeVisible();
 }
 
 /**
@@ -71,8 +71,8 @@ function exactly(label: string): RegExp {
 
 /** Opens one segment of the anatomy strip, by the word it draws. */
 async function openMode(page: Page, label: string): Promise<void> {
-  await page.locator('edsb-hull-anatomy .anatomy__modes button').filter({ hasText: label }).click();
-  await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
+  await page.locator('ednb-hull-anatomy .anatomy__modes button').filter({ hasText: label }).click();
+  await expect(page.locator('ednb-power-thermals .power')).toBeVisible();
 }
 
 /** The cells of one table in the dashboard, row by row. */
@@ -149,7 +149,7 @@ async function retractHardpoints(page: Page): Promise<void> {
   await press(
     page,
     page
-      .locator('edsb-power-thermals .power__hardpoints button')
+      .locator('ednb-power-thermals .power__hardpoints button')
       .filter({ hasText: englishMessages['power.hardpoints.retracted'] }),
   );
 }
@@ -158,39 +158,39 @@ test.describe('opening the layer', () => {
   test('retitles the region and replaces the plates with the panel', async ({ page }) => {
     await openPower(page);
 
-    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+    await expect(page.locator('ednb-hull-anatomy .anatomy__heading')).toHaveText(
       englishMessages['power.heading'],
     );
     // A title and nothing under it, which is all the canvas's switching script
     // carries per mode.
-    await expect(page.locator('edsb-hull-anatomy .anatomy__title p')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__title p')).toHaveCount(0);
 
     // The plates go with the mode. The canvas's switching script hides the
     // plate container outside `mounts`, so the side selector and the legend
     // that belong to the plates leave with them and the panel has the region to
     // itself (design/canvas-contract.md).
-    await expect(page.locator('edsb-power-thermals')).toBeVisible();
-    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__legend')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .schematic__mount')).toHaveCount(0);
+    await expect(page.locator('ednb-power-thermals')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__plates')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__legend')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .schematic__mount')).toHaveCount(0);
   });
 
   test('leaves the mounts layer exactly as it was when the mode is closed', async ({ page }) => {
     await openPower(page);
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.mounts'] })
       .click();
 
-    await expect(page.locator('edsb-power-thermals')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+    await expect(page.locator('ednb-power-thermals')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__heading')).toHaveText(
       englishMessages['anatomy.heading'],
     );
     // The plates are back, drawing their node numbers and carrying no trace of
     // the mode that replaced them.
-    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toBeVisible();
-    await expect(page.locator('edsb-hull-anatomy .schematic__mount[data-power]')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__plates')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .schematic__mount[data-power]')).toHaveCount(0);
   });
 });
 
@@ -237,7 +237,7 @@ test.describe('reading the build', () => {
   test('lists the drawing modules against a total that they add up to', async ({ page }) => {
     await openPower(page);
 
-    const list = page.locator('edsb-power-thermals .module');
+    const list = page.locator('ednb-power-thermals .module');
     const drawn = await list.count();
     expect(drawn).toBeGreaterThan(0);
 
@@ -482,13 +482,13 @@ test.describe('the conditions', () => {
   test('draws the hardpoint caption and names the pair by it', async ({ page }) => {
     await openPower(page);
 
-    const caption = page.locator('edsb-power-thermals .power__hardpoints .tab-group__label');
+    const caption = page.locator('ednb-power-thermals .power__hardpoints .tab-group__label');
     await expect(caption).toBeVisible();
     expect(caps(await caption.innerText())).toBe(caps(englishMessages['power.hardpoints.label']));
 
     // Named *by* the caption rather than by a string only a screen reader gets,
     // so the visible name and the accessible name are one string.
-    const group = page.locator('edsb-power-thermals .power__hardpoints [role="group"]');
+    const group = page.locator('ednb-power-thermals .power__hardpoints [role="group"]');
     await expect(group).toHaveAttribute(
       'aria-labelledby',
       (await caption.getAttribute('id')) ?? '',
@@ -499,7 +499,7 @@ test.describe('the conditions', () => {
     await openPower(page);
     const bands = page.locator('.power__block--bands .power__band');
     const deployed = await bands.first().innerText();
-    const summary = page.locator('edsb-power-thermals .power__summary');
+    const summary = page.locator('ednb-power-thermals .power__summary');
 
     // The canvas's three tiles, and only those three: no headroom, no
     // utilisation and no verdict.
@@ -543,7 +543,7 @@ test.describe('the conditions', () => {
   test('offers no draft, no apply, no reset and no error text', async ({ page }) => {
     await openPower(page);
 
-    const panel = page.locator('edsb-power-thermals');
+    const panel = page.locator('ednb-power-thermals');
     await expect(panel).not.toContainText('Apply');
     await expect(panel).not.toContainText('Reset');
     await expect(panel.locator('.field__error')).toHaveCount(0);
@@ -556,7 +556,7 @@ test.describe('the conditions', () => {
     // value captured before then would make that arrival look like a change
     // this capability made. Only this test reads the URL, so only this test
     // waits for it.
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     const fragment = new URL(page.url()).hash;
 
     await retractHardpoints(page);
@@ -625,11 +625,11 @@ async function shedBuild(page: Page): Promise<void> {
     .selectOption({ value: '1' });
 
   await page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: englishMessages['anatomy.mode.power'] })
     .click();
-  await expect(page.locator('edsb-power-thermals .power')).toBeVisible();
-  await expect(page.locator('edsb-power-thermals .power__band--offline')).not.toHaveCount(0);
+  await expect(page.locator('ednb-power-thermals .power')).toBeVisible();
+  await expect(page.locator('ednb-power-thermals .power__band--offline')).not.toHaveCount(0);
 }
 
 test.describe('the status rail', () => {
@@ -638,7 +638,7 @@ test.describe('the status rail', () => {
   }) => {
     await openPower(page);
 
-    const line = page.locator('edsb-power-summary .rail-power');
+    const line = page.locator('ednb-power-summary .rail-power');
     let figures = '';
     // Read in the rail and compared in the dashboard, in that order: canvas 1d
     // draws one segment at a time, so the two readings are two visits there.
@@ -652,12 +652,12 @@ test.describe('the status rail', () => {
     expect(figures).toMatch(/MW/u);
 
     // The rail's draw is the same figure the dashboard's summary carries.
-    const summary = await page.locator('edsb-power-thermals .power__summary').innerText();
+    const summary = await page.locator('ednb-power-thermals .power__summary').innerText();
     expect(digits(summary)).toContain(digits(figures.split('of')[0]));
 
     // The canvas's `· 7.80 OFF` suffix stands exactly where there is a
     // remainder to state, which is where the dashboard draws a dark group.
-    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
+    const dark = await page.locator('ednb-power-thermals .power__band--offline').count();
     expect(caps(figures).includes('OFF')).toBe(dark > 0);
   });
 
@@ -665,7 +665,7 @@ test.describe('the status rail', () => {
     await openPower(page);
     await revealStatusRail(page);
 
-    const bar = page.locator('edsb-power-summary .rail-bar');
+    const bar = page.locator('ednb-power-summary .rail-bar');
     await expect(bar).toBeVisible();
     // The lengths carry no reading the line above does not, so the bar says in
     // words what it is showing rather than leaving it to the amber.
@@ -681,7 +681,7 @@ test.describe('the status rail', () => {
     for (const selector of ['.rail-power', '.rail-bar']) {
       await expect(
         page.locator(
-          `edsb-power-summary ${selector} button, edsb-power-summary ${selector} a, edsb-power-summary ${selector} input`,
+          `ednb-power-summary ${selector} button, ednb-power-summary ${selector} a, ednb-power-summary ${selector} input`,
         ),
       ).toHaveCount(0);
     }
@@ -694,12 +694,12 @@ test.describe('the status rail', () => {
     await shedBuild(page);
     await revealStatusRail(page);
 
-    const statements = page.locator('edsb-power-shed-statements .statement');
+    const statements = page.locator('ednb-power-shed-statements .statement');
     await expect(statements.first()).toBeVisible();
 
     await expect(
       page.locator(
-        'edsb-power-shed-statements button, edsb-power-shed-statements a, edsb-power-shed-statements input',
+        'ednb-power-shed-statements button, ednb-power-shed-statements a, ednb-power-shed-statements input',
       ),
     ).toHaveCount(0);
   });
@@ -711,7 +711,7 @@ test.describe('the status rail', () => {
 
     // The dashboard is what says a group is dark, and the sentence answers to
     // the same projection.
-    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
+    const dark = await page.locator('ednb-power-thermals .power__band--offline').count();
     expect(dark).toBeGreaterThan(0);
 
     await inTheRail(page, async () => {
@@ -722,7 +722,7 @@ test.describe('the status rail', () => {
       await expect(statements.first()).toBeVisible();
       // Not in this feature's own block as well: on the screen twice is one
       // sentence too many.
-      await expect(page.locator('edsb-power-summary .statement')).toHaveCount(0);
+      await expect(page.locator('ednb-power-summary .statement')).toHaveCount(0);
     });
   });
 });
@@ -736,13 +736,13 @@ test.describe('the compact strip’s power badge', () => {
     // Commander request 2026-08-30). The stock hull's plant covers it, so there
     // is nothing here to warn about at any width — canvas 1c never draws the
     // plate, and canvas 1d draws it only on a build that sheds.
-    await expect(page.locator('edsb-power-thermals .power__band--offline')).toHaveCount(0);
-    await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+    await expect(page.locator('ednb-power-thermals .power__band--offline')).toHaveCount(0);
+    await expect(page.locator('ednb-power-badge .badge')).toHaveCount(0);
 
     // And the share is not lost with it: the rail states the whole budget in
     // figures, on every build, one segment away.
     await revealStatusRail(page);
-    await expect(page.locator('edsb-power-summary .rail-power__figures')).toContainText(/\d/u);
+    await expect(page.locator('ednb-power-summary .rail-power__figures')).toContainText(/\d/u);
   });
 
   test('gives the six key figures the whole strip where no badge is drawn', async ({ page }) => {
@@ -796,11 +796,11 @@ test.describe('the compact strip’s power badge, on a build that sheds', () => 
       // Canvas 1c has no strip and no badge: the rail beside the workspace
       // states the draw, the remainder and the bar in full, and a plate
       // repeating one of those a track away would be the same reading twice.
-      await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+      await expect(page.locator('ednb-power-badge .badge')).toHaveCount(0);
       return;
     }
 
-    const badge = page.locator('edsb-power-badge .badge');
+    const badge = page.locator('ednb-power-badge .badge');
     await expect(badge).toBeVisible();
 
     // A reading, like every other cell in the strip.
@@ -808,8 +808,8 @@ test.describe('the compact strip’s power badge, on a build that sheds', () => 
 
     // The share, then one line per dark group the dashboard draws — never a
     // single line counting them, which the artboard never prints.
-    const dark = await page.locator('edsb-power-thermals .power__band--offline').count();
-    const spoken = await page.locator('edsb-power-badge .badge__words').allInnerTexts();
+    const dark = await page.locator('ednb-power-thermals .power__band--offline').count();
+    const spoken = await page.locator('ednb-power-badge .badge__words').allInnerTexts();
     expect(spoken.length).toBe(dark + 1);
   });
 
@@ -820,7 +820,7 @@ test.describe('the compact strip’s power badge, on a build that sheds', () => 
       return;
     }
 
-    const badge = page.locator('edsb-power-badge .badge');
+    const badge = page.locator('ednb-power-badge .badge');
     const share = Number(
       /(\d+(?:[.,]\d+)?)\s*%/u.exec(await badge.innerText())?.[1] ?? '',
     ).valueOf();
@@ -830,7 +830,7 @@ test.describe('the compact strip’s power badge, on a build that sheds', () => 
     // down here: what is asserted is the relation between them.
     let figures = '';
     await inTheRail(page, async () => {
-      figures = await page.locator('edsb-power-summary .rail-power__figures').innerText();
+      figures = await page.locator('ednb-power-summary .rail-power__figures').innerText();
     });
 
     // `{{draw}} of {{available}}`, then ` · {{off}} off` on a build that sheds.
@@ -876,7 +876,7 @@ test.describe('the compact strip’s power badge, on a build that sheds', () => 
       await shedBuild(page);
 
       if (await statusRailIsColumn(page)) {
-        await expect(page.locator('edsb-power-badge .badge')).toHaveCount(0);
+        await expect(page.locator('ednb-power-badge .badge')).toHaveCount(0);
         return;
       }
 
@@ -889,7 +889,7 @@ test.describe('the compact strip’s power badge, on a build that sheds', () => 
           };
           return {
             strip: box(strip),
-            badge: box(strip.querySelector('edsb-power-badge')!),
+            badge: box(strip.querySelector('ednb-power-badge')!),
             cells: [...strip.querySelectorAll('.metric')].map(box),
           };
         });
@@ -916,15 +916,15 @@ test.describe('the rail’s pip control', () => {
   test('draws the canvas’s three banks over four blocks each', async ({ page }) => {
     await openPower(page);
 
-    const sets = page.locator('edsb-power-summary .pipset');
+    const sets = page.locator('ednb-power-summary .pipset');
     await expect(sets).toHaveCount(3);
-    await expect(page.locator('edsb-power-summary .pips__step')).toHaveCount(12);
+    await expect(page.locator('ednb-power-summary .pips__step')).toHaveCount(12);
 
     // Each group is named with the allocation it stands at, which is the
     // reading for anyone who cannot see four rectangles.
     for (const bank of ['systems', 'engines', 'weapons']) {
       await expect(
-        page.locator(`edsb-power-summary .pipset[data-bank="${bank}"] .pips`),
+        page.locator(`ednb-power-summary .pipset[data-bank="${bank}"] .pips`),
       ).toHaveAttribute('aria-label', /\d/u);
     }
   });
@@ -938,7 +938,7 @@ test.describe('the rail’s pip control', () => {
     await inTheRail(page, () =>
       pressPip(
         page,
-        page.locator('edsb-power-summary .pipset').first().locator('.pips__step').nth(3),
+        page.locator('ednb-power-summary .pipset').first().locator('.pips__step').nth(3),
       ),
     );
 
@@ -992,7 +992,7 @@ test.describe('the rail’s pip control', () => {
 
   test('redraws from an allocation the distributor table set', async ({ page }) => {
     await openPower(page);
-    const rail = page.locator('edsb-power-summary .pipset').first().locator('.pips');
+    const rail = page.locator('ednb-power-summary .pipset').first().locator('.pips');
     const standing = await rail.getAttribute('aria-label');
 
     // The reverse direction. Both surfaces call the same action, so neither can
@@ -1007,17 +1007,17 @@ test.describe('the rail’s pip control', () => {
 
   test('is on screen in every anatomy mode, which is why it is here', async ({ page }) => {
     await openPower(page);
-    await expect(page.locator('edsb-power-summary .pipset')).toHaveCount(3);
+    await expect(page.locator('ednb-power-summary .pipset')).toHaveCount(3);
 
     // The distributor table is only in `POWER`; the rail is everywhere. Leaving
     // the mode must not take the control with it.
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.mounts'] })
       .click();
 
-    await expect(page.locator('edsb-power-thermals .power')).toHaveCount(0);
-    await expect(page.locator('edsb-power-summary .pipset')).toHaveCount(3);
+    await expect(page.locator('ednb-power-thermals .power')).toHaveCount(0);
+    await expect(page.locator('ednb-power-summary .pipset')).toHaveCount(3);
   });
 
   test('holds the target floor on every block, at this project’s layout', async ({ page }) => {
@@ -1027,7 +1027,7 @@ test.describe('the rail’s pip control', () => {
     // it found is undersized, which a selector matching nothing satisfies just
     // as well — so without this the sweep would go green on a rail that drew no
     // control at all.
-    await expect(page.locator('edsb-power-summary .pips__step')).toHaveCount(12);
+    await expect(page.locator('ednb-power-summary .pips__step')).toHaveCount(12);
 
     // Each project in the matrix is one of the five layout profiles, so this
     // measures the twelve blocks at all of them across the run. A pip block is
@@ -1035,14 +1035,14 @@ test.describe('the rail’s pip control', () => {
     // — so it is held to SC 2.5.8's 24-pixel floor rather than to the project's
     // stricter 44, which is what `DENSE_TARGETS` records. The distributor
     // cell's blocks hold the same size, and the sweep below measures those.
-    await expectTargetSizes(page, 'edsb-power-summary .pips__step');
-    await expectTargetSizes(page, 'edsb-power-thermals .pips__step');
+    await expectTargetSizes(page, 'ednb-power-summary .pips__step');
+    await expectTargetSizes(page, 'ednb-power-thermals .pips__step');
   });
 
   test('offers no draft, no running total and no half-pip block', async ({ page }) => {
     await openPower(page);
 
-    const block = page.locator('edsb-power-summary');
+    const block = page.locator('ednb-power-summary');
     await expect(block).not.toContainText('Apply');
     await expect(block).not.toContainText('Reset');
     // Four blocks a bank and no more: a fifth for none, or a half-pip block,
@@ -1060,7 +1060,7 @@ test.describe('the rail’s pip control', () => {
     // that padding, and the reading would stand further in than the cells it
     // heads (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 5
     // are one block").
-    const line = page.locator('edsb-power-summary .rail-power');
+    const line = page.locator('ednb-power-summary .rail-power');
     const cells = page.locator('.outfitting__status-cells .metric');
     await expect(line).toBeVisible();
 
@@ -1105,7 +1105,7 @@ test.describe('the conditions that break layouts', () => {
     // stylesheet than the panel's budget allowed — so the fourth block carries
     // that component's class rather than the panel's (`distributor-block`).
     const columns = await page
-      .locator('edsb-power-thermals .power__block, edsb-power-thermals edsb-distributor-block')
+      .locator('ednb-power-thermals .power__block, ednb-power-thermals ednb-distributor-block')
       .evaluateAll((blocks) =>
         blocks.map((block) => Math.round(block.getBoundingClientRect().left)),
       );

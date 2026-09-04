@@ -34,7 +34,7 @@
     open, not a reason they cannot have one, and a banner over the whole screen
     said otherwise every time an import succeeded.
   -->
-  <edsb-ingress-refusal-notice
+  <ednb-ingress-refusal-notice
     class="outfitting__feedback"
     [failures]="ingressFailures()"
     [revision]="revision()"
@@ -47,7 +47,7 @@
       <p class="outfitting__empty-description">{{ noBuildDescription() }}</p>
     </div>
   } @else {
-    <edsb-edit-refusal-notice
+    <ednb-edit-refusal-notice
       class="outfitting__feedback"
       [failure]="failure()"
       [revision]="revision()"
@@ -72,10 +72,10 @@
 
       <div class="outfitting__ledger" [attr.aria-label]="ledgerLabel()">
         @for (group of groups(); track group.kind) {
-          <edsb-slot-group [group]="group">
+          <ednb-slot-group [group]="group">
             @for (slot of group.slots; track slot.key) {
               <li class="outfitting__slot">
-                <edsb-slot-card
+                <ednb-slot-card
                   [slot]="slot"
                   [capabilities]="capabilitiesFor(slot)"
                   [selected]="selectedSlot()?.key === slot.key"
@@ -84,7 +84,7 @@
                 />
               </li>
             }
-          </edsb-slot-group>
+          </ednb-slot-group>
         }
       </div>
     </div>
@@ -96,7 +96,7 @@
       plates never need a detail block of their own (feature 010).
     -->
     <div class="outfitting__centre">
-      <edsb-hull-anatomy
+      <ednb-hull-anatomy
         [guestModes]="anatomyGuestModes()"
         (modeChanged)="showAnatomyMode($event)"
       />
@@ -162,7 +162,7 @@
             }
 
             @if (replacementShown()) {
-              <edsb-module-replacement
+              <ednb-module-replacement
                 [slot]="slot"
                 [asLayer]="benchIsLayer()"
                 [panelHeading]="benchTitle()"
@@ -172,7 +172,7 @@
           </div>
 
           @if (engineeringShown()) {
-            <edsb-engineering-editor
+            <ednb-engineering-editor
               [slot]="slot"
               [asLayer]="benchIsLayer()"
               (closed)="closeSurface()"
@@ -242,7 +242,7 @@
     its lower rows permanently off-screen — content lost, which is in scope
     whatever keyboard operation's status is. The scroll box prevents that, and
     no block inside holds a control (009 ruling F, 003 ruling A), so `tabindex`
-    is what the axe gate requires of it — the same pattern `edsb-data-table`
+    is what the axe gate requires of it — the same pattern `ednb-data-table`
     already uses.
 
     The region is named by the heading it draws rather than by an invisible
@@ -260,7 +260,7 @@
       <p class="outfitting__status-heading" [id]="statusRailHeadingId">
         {{ statusRailLabel() }}
       </p>
-      <edsb-build-status />
+      <ednb-build-status />
 
       <!--
         Feature 005's sentence about each priority group the plant cannot keep
@@ -270,7 +270,7 @@
         004's import-completion notice — both are what there is to say about the
         build that is now open (003 spec, "Scope"; 005/FR-013).
       -->
-      <edsb-power-shed-statements />
+      <ednb-power-shed-statements />
     </div>
 
     <!--
@@ -291,7 +291,7 @@
       rail").
     -->
     <div class="outfitting__status-band">
-      <edsb-power-summary />
+      <ednb-power-summary />
 
       <!--
         The metric cells under the `POWER` line, in the canvas's order:
@@ -327,15 +327,15 @@
       -->
       @if (statusRailDrawn()) {
         <div class="outfitting__status-cells">
-          <edsb-defence-summary />
-          <edsb-offence-summary />
-          <edsb-drives-summary />
-          <edsb-capacity-summary />
+          <ednb-defence-summary />
+          <ednb-offence-summary />
+          <ednb-drives-summary />
+          <ednb-capacity-summary />
         </div>
       }
     </div>
 
-    <edsb-cost-materials />
+    <ednb-cost-materials />
   </div>
 </ng-template>
 
@@ -359,10 +359,10 @@
   -->
   <div class="outfitting__key-figures" [attr.aria-label]="keyFiguresLabel()" role="group">
     <div class="outfitting__key-figure-cells">
-      <edsb-defence-summary />
-      <edsb-offence-summary />
-      <edsb-drives-summary />
+      <ednb-defence-summary />
+      <ednb-offence-summary />
+      <ednb-drives-summary />
     </div>
-    <edsb-power-badge />
+    <ednb-power-badge />
   </div>
 </ng-template>

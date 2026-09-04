@@ -39,10 +39,10 @@ async function openDrives(page: Page, messages = englishMessages): Promise<void>
   await buildStockHull(page, messages['hullDetail.create']);
 
   await page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: messages['anatomy.mode.drives'] })
     .click();
-  await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+  await expect(page.locator('ednb-drives-mass .drives')).toBeVisible();
 }
 
 /** Every digit in a string, so a locale's own grouping cannot change the value. */
@@ -114,7 +114,7 @@ test.describe('Drives & Mass', () => {
   test('the DRIVES mode opens the two cards canvas 1c draws', async ({ page }) => {
     await openDrives(page);
 
-    const cards = page.locator('edsb-drives-mass .drives__card');
+    const cards = page.locator('ednb-drives-mass .drives__card');
     await expect(cards).toHaveCount(2);
     await expect(cards.nth(0).locator('.drives__card-heading')).toHaveText(
       englishMessages['drives.thrusters.heading'],
@@ -139,18 +139,18 @@ test.describe('Drives & Mass', () => {
     // is every mount's slot and its spoken name rather than the markup: the
     // schematic mints fresh relation ids each time it is drawn, so identical
     // HTML would be the wrong bar to clear.
-    const plates = page.locator('edsb-hull-anatomy edsb-hull-schematic .schematic');
+    const plates = page.locator('ednb-hull-anatomy ednb-hull-schematic .schematic');
     await expect(plates).toHaveCount(2);
     await expect(plates.first()).toHaveAttribute('data-state', 'ready');
-    const mounts = page.locator('edsb-hull-anatomy .schematic__mount');
+    const mounts = page.locator('ednb-hull-anatomy .schematic__mount');
     const before = await mounts.evaluateAll((nodes) =>
       nodes.map((node) => `${node.getAttribute('data-slot')}/${node.getAttribute('aria-label')}`),
     );
     expect(before.length).toBeGreaterThan(0);
 
-    const modes = page.locator('edsb-hull-anatomy .anatomy__modes button');
+    const modes = page.locator('ednb-hull-anatomy .anatomy__modes button');
     await modes.filter({ hasText: englishMessages['anatomy.mode.drives'] }).click();
-    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await expect(page.locator('ednb-drives-mass .drives')).toBeVisible();
     await expect(plates).toHaveCount(0);
 
     await modes.filter({ hasText: englishMessages['anatomy.mode.mounts'] }).click();
@@ -168,11 +168,11 @@ test.describe('Drives & Mass', () => {
 
     // The canvas's `1,142` and the `91% OF OPTIMAL MASS` beside it. Both are
     // package answers now, so both carry a figure rather than an explanation.
-    await expect(page.locator('edsb-drives-mass .drives__headline-mass')).toHaveText(/\d/u);
-    await expect(page.locator('edsb-drives-mass .drives__curve-position')).toHaveText(/\d/u);
+    await expect(page.locator('ednb-drives-mass .drives__headline-mass')).toHaveText(/\d/u);
+    await expect(page.locator('ednb-drives-mass .drives__curve-position')).toHaveText(/\d/u);
     // A stock Anaconda's drive is not Overcharge-capable, and the canvas draws
     // a badge rather than a negation, so there is nothing to badge here.
-    await expect(page.locator('edsb-drives-mass .drives__sco')).toHaveCount(0);
+    await expect(page.locator('ednb-drives-mass .drives__sco')).toHaveCount(0);
   });
 
   test('an Overcharge drive badges SCO, and says the words behind it only once', async ({
@@ -183,7 +183,7 @@ test.describe('Drives & Mass', () => {
 
     // On the card's own rule, beside the words it qualifies — the canvas gives
     // it no line of its own.
-    const badge = page.locator('edsb-drives-mass .drives__card-heading:has(.drives__sco)');
+    const badge = page.locator('ednb-drives-mass .drives__card-heading:has(.drives__sco)');
     await expect(badge).toHaveCount(1);
     // The canvas draws three letters. The words behind the abbreviation are in
     // the markup for a reader who cannot see it and are spoken, never drawn —
@@ -213,7 +213,7 @@ test.describe('Drives & Mass', () => {
     // The split is one package answer, so no part is drawn as a silent zero
     // beside two that are measured.
     const values = await page
-      .locator('edsb-drives-mass .drives__card:first-child .drives__legend-value')
+      .locator('ednb-drives-mass .drives__card:first-child .drives__legend-value')
       .allTextContents();
     expect(values).toHaveLength(3);
     for (const value of values) {
@@ -221,7 +221,7 @@ test.describe('Drives & Mass', () => {
     }
 
     const widths = await page
-      .locator('edsb-drives-mass .drives__mass-part')
+      .locator('ednb-drives-mass .drives__mass-part')
       .evaluateAll((nodes) =>
         nodes.map((node) => (node as HTMLElement).getBoundingClientRect().width),
       );
@@ -242,7 +242,7 @@ test.describe('Drives & Mass', () => {
     // maximum. Read off the screen rather than off the view model, because
     // three parts that each started at zero would still have the widths the
     // unit suite checks.
-    const boxes = await page.locator('edsb-drives-mass .drives__mass-part').evaluateAll((nodes) =>
+    const boxes = await page.locator('ednb-drives-mass .drives__mass-part').evaluateAll((nodes) =>
       nodes.map((node) => {
         const box = (node as HTMLElement).getBoundingClientRect();
         return { start: box.left, end: box.right };
@@ -256,7 +256,7 @@ test.describe('Drives & Mass', () => {
       expect(boxes[index].start - boxes[index - 1].end).toBeLessThanOrEqual(2);
     }
 
-    const bar = await page.locator('edsb-drives-mass .drives__mass-bar').evaluate((node) => {
+    const bar = await page.locator('ednb-drives-mass .drives__mass-bar').evaluate((node) => {
       const box = (node as HTMLElement).getBoundingClientRect();
       return { start: box.left, end: box.right };
     });
@@ -265,13 +265,13 @@ test.describe('Drives & Mass', () => {
     expect(boxes[2].end).toBeLessThan(bar.end);
 
     const mark = await page
-      .locator('edsb-drives-mass .drives__mass-optimal')
+      .locator('ednb-drives-mass .drives__mass-optimal')
       .evaluate((node) => (node as HTMLElement).getBoundingClientRect().left);
     expect(mark).toBeGreaterThan(bar.start);
     expect(mark).toBeLessThanOrEqual(bar.end);
 
     // And both ends of that scale are written out under it.
-    const marks = await page.locator('edsb-drives-mass .drives__mass-mark-value').allTextContents();
+    const marks = await page.locator('ednb-drives-mass .drives__mass-mark-value').allTextContents();
     expect(marks).toHaveLength(2);
     for (const value of marks) {
       expect(value).toMatch(/\d/u);
@@ -282,7 +282,7 @@ test.describe('Drives & Mass', () => {
     await openDrives(page);
 
     const tracks = page.locator(
-      'edsb-drives-mass .drives__mass-bar, edsb-drives-mass .drives__envelope-track, edsb-drives-mass .drives__range-track',
+      'ednb-drives-mass .drives__mass-bar, ednb-drives-mass .drives__envelope-track, ednb-drives-mass .drives__range-track',
     );
     expect(await tracks.count()).toBeGreaterThan(0);
     for (const track of await tracks.all()) {
@@ -290,7 +290,7 @@ test.describe('Drives & Mass', () => {
     }
 
     // Each envelope row still says its own reading in text.
-    const values = await page.locator('edsb-drives-mass .drives__envelope-value').allTextContents();
+    const values = await page.locator('ednb-drives-mass .drives__envelope-value').allTextContents();
     expect(values).toHaveLength(5);
     for (const value of values) {
       expect(value).toMatch(/\d/u);
@@ -307,7 +307,7 @@ test.describe('Drives & Mass', () => {
     // borrowing figures from each other.
     await openDrives(page);
 
-    const rows = page.locator('edsb-drives-mass .drives__envelope-row');
+    const rows = page.locator('ednb-drives-mass .drives__envelope-row');
     // `allInnerTexts` does not retry, so the list is waited for first — the
     // same guard every other envelope assertion in this file opens with.
     await expect(rows).toHaveCount(5);
@@ -331,16 +331,16 @@ test.describe('Drives & Mass', () => {
     // step of the engines row moves the allocation the card is read at from two
     // pips to one.
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.power'] })
       .click();
-    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await expect(page.locator('ednb-power-thermals')).toBeVisible();
     await page.locator('.distributor tbody tr').nth(1).locator('.pips__step').first().click();
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.drives'] })
       .click();
-    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await expect(page.locator('ednb-drives-mass .drives')).toBeVisible();
     await settled(page);
 
     const after = await reading();
@@ -366,21 +366,21 @@ test.describe('Drives & Mass', () => {
     await switchThrustersOff(page);
 
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.drives'] })
       .click();
-    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await expect(page.locator('ednb-drives-mass .drives')).toBeVisible();
 
     // Off is not absent: the module is still fitted and still named, and the
     // card says which of the two states this is.
-    await expect(page.locator('edsb-drives-mass .drives__state')).toHaveText(
+    await expect(page.locator('ednb-drives-mass .drives__state')).toHaveText(
       englishMessages['drives.source.off'],
     );
 
     // No envelope, and — the point of FR-005 — no hull catalogue speed standing
     // in for the reading the package declined to give.
-    await expect(page.locator('edsb-drives-mass .drives__envelope')).toHaveCount(0);
-    const issues = page.locator('edsb-drives-mass .drives__issues li');
+    await expect(page.locator('ednb-drives-mass .drives__envelope')).toHaveCount(0);
+    const issues = page.locator('ednb-drives-mass .drives__issues li');
     expect(await issues.count()).toBeGreaterThan(0);
     for (const issue of await issues.all()) {
       expect((await issue.textContent())?.trim().length).toBeGreaterThan(0);
@@ -388,8 +388,8 @@ test.describe('Drives & Mass', () => {
 
     // The curve marks stay: what the switch took away is the build's mobility,
     // not the module's own stats. So does the drive card beside it.
-    await expect(page.locator('edsb-drives-mass .drives__mass-mark')).toHaveCount(2);
-    await expect(page.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
+    await expect(page.locator('ednb-drives-mass .drives__mass-mark')).toHaveCount(2);
+    await expect(page.locator('ednb-drives-mass .drives__range')).toHaveCount(3);
 
     // The unavailable state is a different DOM from the ready one — an
     // unavailable value and a named list of reasons where the envelope was — so
@@ -403,7 +403,7 @@ test.describe('Drives & Mass', () => {
     // The canvas's legend under the ranges — optimal mass, fuel per jump and the
     // whole tank. Three rows, because that is what the canvas draws; mass lock
     // is in the headline trio, where the canvas puts it.
-    const facts = page.locator('edsb-drives-mass .drives__card:last-child .drives__legend-row');
+    const facts = page.locator('ednb-drives-mass .drives__card:last-child .drives__legend-row');
     await expect(facts).toHaveCount(3);
 
     // Each row's name is the label's own text; the canvas's qualifier runs in
@@ -428,14 +428,14 @@ test.describe('Drives & Mass', () => {
     // over `SPEED ENVELOPE AT THIS MASS` — and two in the drive card, under the
     // headline trio and under `RANGE BY LOAD`. Without them the blocks run into
     // one another and a card reads as one long list.
-    const thrusters = page.locator('edsb-drives-mass .drives__card:first-child .drives__rule');
-    const drive = page.locator('edsb-drives-mass .drives__card:last-child .drives__rule');
+    const thrusters = page.locator('ednb-drives-mass .drives__card:first-child .drives__rule');
+    const drive = page.locator('ednb-drives-mass .drives__card:last-child .drives__rule');
     await expect(thrusters).toHaveCount(1);
     await expect(drive).toHaveCount(2);
 
     // Decoration: they separate blocks a reader already reaches by heading and
     // by list.
-    for (const rule of await page.locator('edsb-drives-mass .drives__rule').all()) {
+    for (const rule of await page.locator('ednb-drives-mass .drives__rule').all()) {
       await expect(rule).toHaveAttribute('aria-hidden', 'true');
       const height = await rule.evaluate(
         (node) => (node as HTMLElement).getBoundingClientRect().height,
@@ -451,7 +451,7 @@ test.describe('Drives & Mass', () => {
     // same run of text, with the figure at the end of the same row. Under it,
     // the qualifier would be a block of its own and the figure would float away
     // from the name it belongs to.
-    const row = page.locator('edsb-drives-mass .drives__legend-row').first();
+    const row = page.locator('ednb-drives-mass .drives__legend-row').first();
     const geometry = await row.evaluate((node) => {
       const label = node.querySelector('.drives__legend-label') as HTMLElement;
       const detail = node.querySelector('.drives__legend-detail') as HTMLElement;
@@ -527,7 +527,7 @@ test.describe('Drives & Mass', () => {
 
     // Canvas 1c heads the card `JUMP LADEN`, `JUMP UNLADEN`, `MASS LOCK` on one
     // hairline ground, above `RANGE BY LOAD`.
-    const cells = page.locator('edsb-drives-mass .drives__cells .metric');
+    const cells = page.locator('ednb-drives-mass .drives__cells .metric');
     await expect(cells).toHaveCount(3);
 
     const labels = await cells.locator('.metric__label').allTextContents();
@@ -542,7 +542,7 @@ test.describe('Drives & Mass', () => {
 
     // The two jumps are the ends of the list below them, so the card can never
     // head itself with a figure its own rows disagree with.
-    const ranges = await page.locator('edsb-drives-mass .drives__range-value').allTextContents();
+    const ranges = await page.locator('ednb-drives-mass .drives__range-value').allTextContents();
     const cellValues = await cells.locator('.metric__number').allTextContents();
     expect(cellValues[1]?.trim()).toBe(ranges[0]?.trim());
     expect(cellValues[0]?.trim()).toBe(ranges[2]?.trim());
@@ -554,9 +554,9 @@ test.describe('Drives & Mass', () => {
     // Three, not the canvas's four: its `CURRENT` row is a jump at some
     // arbitrary current fuel and cargo state, which this application has no
     // viewing condition to read one at.
-    const rows = page.locator('edsb-drives-mass .drives__range');
+    const rows = page.locator('ednb-drives-mass .drives__range');
     await expect(rows).toHaveCount(3);
-    await expect(page.locator('edsb-drives-mass .drives__range-label')).toHaveText([
+    await expect(page.locator('ednb-drives-mass .drives__range-label')).toHaveText([
       englishMessages['drives.load.maximum'],
       englishMessages['drives.load.unladen'],
       englishMessages['drives.load.laden'],
@@ -575,7 +575,7 @@ test.describe('Drives & Mass', () => {
     // Read the package's own three single-jump figures back off the page and
     // check they order the way the loads do. Nothing here writes one down.
     const values = await page
-      .locator('edsb-drives-mass .drives__range-value')
+      .locator('ednb-drives-mass .drives__range-value')
       .evaluateAll((cells) =>
         cells.map((cell) => Number.parseFloat((cell.textContent ?? '').replace(/[^\d.]/gu, ''))),
       );
@@ -591,7 +591,7 @@ test.describe('Drives & Mass', () => {
     await openDrives(page);
 
     const headings = await page
-      .locator('edsb-drives-mass .drives__section-heading')
+      .locator('ednb-drives-mass .drives__section-heading')
       .allTextContents();
     const expected = [englishMessages['drives.fsd.range-by-load']].map(caps);
 
@@ -602,7 +602,7 @@ test.describe('Drives & Mass', () => {
     // The speed envelope stopped being one of them on 2026-08-26 (Commander
     // request): the canvas draws the bars under the legend with no line over
     // them, and the words stayed as the list's own name rather than as ink.
-    await expect(page.locator('edsb-drives-mass .drives__envelope')).toHaveAttribute(
+    await expect(page.locator('ednb-drives-mass .drives__envelope')).toHaveAttribute(
       'aria-label',
       englishMessages['drives.thrusters.envelope'],
     );
@@ -613,7 +613,7 @@ test.describe('Drives & Mass', () => {
     // The mass block is not one of them either: neither canvas heads it, so its
     // name is the list's accessible name and never a line on the screen.
     await expect(
-      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend'),
+      page.locator('ednb-drives-mass .drives__card:first-child .drives__legend'),
     ).toHaveAttribute('aria-label', englishMessages['drives.thrusters.mass']);
     expect(headings.map((heading) => heading.trim())).not.toContain(
       englishMessages['drives.thrusters.mass'],
@@ -626,19 +626,19 @@ test.describe('Drives & Mass', () => {
     page,
   }) => {
     await openDrives(page);
-    const before = await page.locator('edsb-drives-mass .drives__envelope-value').allTextContents();
+    const before = await page.locator('ednb-drives-mass .drives__envelope-value').allTextContents();
 
     const context = await browser.newContext({ baseURL, locale: 'de-DE' });
     const german = await context.newPage();
     await openDrives(german, germanMessages);
 
-    await expect(german.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
-    await expect(german.locator('edsb-drives-mass .drives__envelope-row')).toHaveCount(5);
+    await expect(german.locator('ednb-drives-mass .drives__range')).toHaveCount(3);
+    await expect(german.locator('ednb-drives-mass .drives__envelope-row')).toHaveCount(5);
     await expect(
-      german.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+      german.locator('ednb-drives-mass .drives__card:first-child .drives__legend-value'),
     ).toHaveCount(3);
     const after = await german
-      .locator('edsb-drives-mass .drives__envelope-value')
+      .locator('ednb-drives-mass .drives__envelope-value')
       .allTextContents();
 
     expect(after).toHaveLength(before.length);
@@ -650,10 +650,10 @@ test.describe('Drives & Mass', () => {
     // The mass split is the package's too, so the German page states the same
     // digits under different words.
     const germanMass = await german
-      .locator('edsb-drives-mass .drives__card:first-child .drives__legend-value')
+      .locator('ednb-drives-mass .drives__card:first-child .drives__legend-value')
       .allTextContents();
     const englishMass = await page
-      .locator('edsb-drives-mass .drives__card:first-child .drives__legend-value')
+      .locator('ednb-drives-mass .drives__card:first-child .drives__legend-value')
       .allTextContents();
     for (const [index, value] of germanMass.entries()) {
       expect(digits(value)).toBe(digits(englishMass[index]));
@@ -665,13 +665,13 @@ test.describe('Drives & Mass', () => {
 
   test('mirrors the layout without mirroring a figure', async ({ page }) => {
     await openDrives(page);
-    const before = await page.locator('edsb-drives-mass .drives__envelope-value').allTextContents();
+    const before = await page.locator('ednb-drives-mass .drives__envelope-value').allTextContents();
 
     await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
     await settled(page);
 
     expect(
-      await page.locator('edsb-drives-mass .drives__envelope-value').allTextContents(),
+      await page.locator('ednb-drives-mass .drives__envelope-value').allTextContents(),
     ).toEqual(before);
     await expectNoDocumentOverflow(page);
   });
@@ -683,9 +683,9 @@ test.describe('Drives & Mass', () => {
     // The requirement is not less animation: it is that no reading was ever
     // only reachable through one. The bars are the part a transition could have
     // been carrying, so the figures beside them are what is read back.
-    await expect(page.locator('edsb-drives-mass .drives__envelope-value')).toHaveCount(5);
+    await expect(page.locator('ednb-drives-mass .drives__envelope-value')).toHaveCount(5);
     await expect(
-      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+      page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-value'),
     ).toHaveCount(3);
     await page.emulateMedia({ reducedMotion: null });
   });
@@ -699,10 +699,10 @@ test.describe('Drives & Mass', () => {
     await openDrives(page);
 
     await expect(
-      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-row'),
+      page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-row'),
     ).toHaveCount(3);
-    await expect(page.locator('edsb-drives-mass .drives__envelope-row')).toHaveCount(5);
-    await expect(page.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
+    await expect(page.locator('ednb-drives-mass .drives__envelope-row')).toHaveCount(5);
+    await expect(page.locator('ednb-drives-mass .drives__range')).toHaveCount(3);
     await expectNoDocumentOverflow(page);
   });
 
@@ -712,12 +712,12 @@ test.describe('Drives & Mass', () => {
     await openDrives(page);
     const wide = {
       mass: await page
-        .locator('edsb-drives-mass .drives__card:first-child .drives__legend-row')
+        .locator('ednb-drives-mass .drives__card:first-child .drives__legend-row')
         .count(),
-      envelope: await page.locator('edsb-drives-mass .drives__envelope-row').count(),
-      ranges: await page.locator('edsb-drives-mass .drives__range').count(),
+      envelope: await page.locator('ednb-drives-mass .drives__envelope-row').count(),
+      ranges: await page.locator('ednb-drives-mass .drives__range').count(),
       facts: await page
-        .locator('edsb-drives-mass .drives__card:last-child .drives__legend-row')
+        .locator('ednb-drives-mass .drives__card:last-child .drives__legend-row')
         .count(),
     };
 
@@ -725,14 +725,14 @@ test.describe('Drives & Mass', () => {
     await settled(page);
 
     expect(
-      await page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-row').count(),
+      await page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-row').count(),
     ).toBe(wide.mass);
-    expect(await page.locator('edsb-drives-mass .drives__envelope-row').count()).toBe(
+    expect(await page.locator('ednb-drives-mass .drives__envelope-row').count()).toBe(
       wide.envelope,
     );
-    expect(await page.locator('edsb-drives-mass .drives__range').count()).toBe(wide.ranges);
+    expect(await page.locator('ednb-drives-mass .drives__range').count()).toBe(wide.ranges);
     expect(
-      await page.locator('edsb-drives-mass .drives__card:last-child .drives__legend-row').count(),
+      await page.locator('ednb-drives-mass .drives__card:last-child .drives__legend-row').count(),
     ).toBe(wide.facts);
 
     await expectNoDocumentOverflow(page);
@@ -757,12 +757,12 @@ test.describe('Drives & Mass', () => {
     await openDrives(page);
 
     await expect(
-      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-row'),
+      page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-row'),
     ).toHaveCount(3);
-    await expect(page.locator('edsb-drives-mass .drives__envelope-row')).toHaveCount(5);
-    await expect(page.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
+    await expect(page.locator('ednb-drives-mass .drives__envelope-row')).toHaveCount(5);
+    await expect(page.locator('ednb-drives-mass .drives__range')).toHaveCount(3);
     await expect(
-      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+      page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-value'),
     ).toHaveCount(3);
     await expectNoDocumentOverflow(page);
   });
@@ -792,16 +792,16 @@ test.describe('Drives & Mass', () => {
       await withRootTextScale(page, DOUBLED_TEXT);
       await openDrives(page, germanMessages);
 
-      await expect(page.locator('edsb-drives-mass .drives__envelope-row')).toHaveCount(5);
+      await expect(page.locator('ednb-drives-mass .drives__envelope-row')).toHaveCount(5);
       await expect(
-        page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+        page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-value'),
       ).toHaveCount(3);
 
       // No label may reach into the figure beside it: an overrun paints on top
       // of the package's own number, which is the reading itself.
       const overruns = await page
         .locator(
-          'edsb-drives-mass .drives__envelope-row, edsb-drives-mass .drives__card:first-child .drives__legend-row',
+          'ednb-drives-mass .drives__envelope-row, ednb-drives-mass .drives__card:first-child .drives__legend-row',
         )
         .evaluateAll((rows) =>
           rows
@@ -831,7 +831,7 @@ test.describe('Drives & Mass', () => {
       await withRootTextScale(page, DOUBLED_TEXT);
       await openDrives(page, germanMessages);
 
-      const boxes = await page.locator('edsb-drives-mass .drives__mass-mark').evaluateAll((nodes) =>
+      const boxes = await page.locator('ednb-drives-mass .drives__mass-mark').evaluateAll((nodes) =>
         nodes.map((node) => {
           const box = (node as HTMLElement).getBoundingClientRect();
           return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
@@ -856,7 +856,7 @@ test.describe('the status rail', () => {
 
     // The three cells are composed from the design system's metric group, which
     // is what the canvas draws all six rail cells as.
-    const cells = page.locator('edsb-drives-summary .metric');
+    const cells = page.locator('ednb-drives-summary .metric');
     await expect(cells).toHaveCount(3);
     expect((await cells.locator('.metric__label').allTextContents()).map((l) => l.trim())).toEqual([
       englishMessages['drives.rail.jump'],
@@ -873,15 +873,15 @@ test.describe('the status rail', () => {
     // to agree without either being written down here. `JUMP` is the drive
     // card's laden cell, `SPEED` its top-speed row, `MASS` the thruster card's
     // headline.
-    const ladenCell = page.locator('edsb-drives-mass .drives__cells .metric').first();
+    const ladenCell = page.locator('ednb-drives-mass .drives__cells .metric').first();
     expect(digits(await ladenCell.locator('.metric__number').innerText())).toBe(railFigures[0]);
 
-    const topSpeed = page.locator('edsb-drives-mass .drives__envelope-row').first();
+    const topSpeed = page.locator('ednb-drives-mass .drives__envelope-row').first();
     expect(digits(await topSpeed.locator('.drives__envelope-value').innerText())).toBe(
       railFigures[1],
     );
 
-    expect(digits(await page.locator('edsb-drives-mass .drives__headline-mass').innerText())).toBe(
+    expect(digits(await page.locator('ednb-drives-mass .drives__headline-mass').innerText())).toBe(
       railFigures[2],
     );
   });
@@ -967,7 +967,7 @@ test.describe('the status rail', () => {
   test('names each figure with its unit, and holds no control', async ({ page }) => {
     await openDrives(page);
 
-    const units = await page.locator('edsb-drives-summary .metric__unit').allTextContents();
+    const units = await page.locator('ednb-drives-summary .metric__unit').allTextContents();
     expect(units.map((unit) => unit.trim())).toEqual([
       englishMessages['drives.rail.light-years'],
       englishMessages['drives.rail.metres-per-second'],
@@ -975,7 +975,7 @@ test.describe('the status rail', () => {
     ]);
 
     await expect(
-      page.locator('edsb-drives-summary button, edsb-drives-summary a, edsb-drives-summary input'),
+      page.locator('ednb-drives-summary button, ednb-drives-summary a, ednb-drives-summary input'),
     ).toHaveCount(0);
   });
 
@@ -985,7 +985,7 @@ test.describe('the status rail', () => {
 
     // The rail is not the panel: it reports the build, not what is on screen
     // beside it.
-    await expect(page.locator('edsb-drives-summary .metric')).toHaveCount(3);
-    await expect(page.locator('edsb-drives-mass')).toHaveCount(0);
+    await expect(page.locator('ednb-drives-summary .metric')).toHaveCount(3);
+    await expect(page.locator('ednb-drives-mass')).toHaveCount(0);
   });
 });

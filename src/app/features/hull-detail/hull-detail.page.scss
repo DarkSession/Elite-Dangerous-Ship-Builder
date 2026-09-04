@@ -225,7 +225,7 @@
 
     // With the action gone the block has nothing left but a notice, and an
     // empty one would still draw its rule and its row of space.
-    .detail__create:not(:has(edsb-status-notice)) {
+    .detail__create:not(:has(ednb-status-notice)) {
       display: none;
     }
   }

@@ -438,7 +438,7 @@ describe('DrivesMass', () => {
 
       // Exactly one cell grid on the pair: the drive card's headline trio. The
       // canvas draws its two legends as ruled rows, not as cells.
-      const groups = [...element.querySelectorAll('edsb-metric-group')].map((group) =>
+      const groups = [...element.querySelectorAll('ednb-metric-group')].map((group) =>
         [...group.classList].find((name) => name.startsWith('drives__')),
       );
       expect(groups).toEqual(['drives__cells']);
@@ -879,7 +879,7 @@ describe('DrivesMass', () => {
 
     // The module's own name is not repeated: each card's rule already says what
     // the card reads, and the class beside it says which one is fitted.
-    expect(element.querySelector('edsb-game-text')).toBeNull();
+    expect(element.querySelector('ednb-game-text')).toBeNull();
   });
 
   /** The same build with the largest Guardian booster the hull will take. */

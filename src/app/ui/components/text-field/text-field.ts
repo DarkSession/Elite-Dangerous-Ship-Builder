@@ -24,7 +24,7 @@ export type TextFieldKind = 'text' | 'search';
  * anyone who cannot see the colour.
  */
 @Component({
-  selector: 'edsb-text-field',
+  selector: 'ednb-text-field',
   templateUrl: './text-field.html',
   styleUrl: './text-field.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

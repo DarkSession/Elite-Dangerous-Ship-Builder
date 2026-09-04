@@ -87,7 +87,7 @@ function storedNamedRecord(id: string): string {
 /** One stored unnamed record, in the shape the repository writes. */
 function storedWorkingRecord(id: string): string {
   return JSON.stringify({
-    format: 'edsb.local-record',
+    format: 'ednb.local-record',
     version: 1,
     id,
     kind: 'working',
@@ -99,7 +99,7 @@ function storedWorkingRecord(id: string): string {
     hullSymbol: 'Anaconda',
     validation: { valid: true, complete: true },
     build: {
-      format: 'edsb.build',
+      format: 'ednb.build',
       version: 1,
       shipSymbol: 'Anaconda',
       shipName: null,
@@ -327,7 +327,7 @@ describe('AutosaveService', () => {
       store.setItem(
         recordKey(HELD),
         JSON.stringify({
-          format: 'edsb.local-record',
+          format: 'ednb.local-record',
           version: 1,
           id: HELD,
           kind: 'named',
@@ -339,7 +339,7 @@ describe('AutosaveService', () => {
           hullSymbol: 'Anaconda',
           validation: { valid: true, complete: true },
           build: {
-            format: 'edsb.build',
+            format: 'ednb.build',
             version: 1,
             shipSymbol: 'Anaconda',
             shipName: null,

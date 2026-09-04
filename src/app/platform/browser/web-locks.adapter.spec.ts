@@ -15,12 +15,12 @@ describe('WebLocksAdapter', () => {
   it('refuses to run a guarded operation when locking is unavailable', async () => {
     const port = adapter();
     if (port.available) {
-      const value = await port.request('edsb:record:a', async () => 'ran');
+      const value = await port.request('ednb:record:a', async () => 'ran');
       expect(value).toBe('ran');
       return;
     }
 
-    await expect(port.request('edsb:record:a', async () => 'ran')).rejects.toBeInstanceOf(
+    await expect(port.request('ednb:record:a', async () => 'ran')).rejects.toBeInstanceOf(
       LocksUnavailableError,
     );
   });

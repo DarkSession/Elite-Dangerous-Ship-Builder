@@ -15,7 +15,7 @@ import { UnavailableValue } from '../components/unavailable-value/unavailable-va
  * caller's job, not a presentation component's.
  */
 @Component({
-  selector: 'edsb-unavailable-fact',
+  selector: 'ednb-unavailable-fact',
   imports: [UnavailableValue],
   templateUrl: './unavailable-fact.html',
   styleUrl: './unavailable-fact.scss',

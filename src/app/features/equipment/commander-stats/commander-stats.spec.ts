@@ -40,7 +40,7 @@ describe('CommanderStats', () => {
 
     expect(element.querySelectorAll('.metric').length).toBe(2);
     // Four in each of the two blocks.
-    expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(8);
+    expect(element.querySelectorAll('.stats__resistances ednb-resistance-bar').length).toBe(8);
     expect(element.textContent).toContain('—');
     // Canvas 2a keeps `FIREPOWER` too, with a dash against each of the
     // catalogue's own mounts: a block that disappears says nothing about which
@@ -58,7 +58,7 @@ describe('CommanderStats', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
     const element = render();
 
-    expect(element.querySelectorAll('edsb-metric-group .metric').length).toBe(2);
+    expect(element.querySelectorAll('ednb-metric-group .metric').length).toBe(2);
 
     // Two blocks of four, as the canvas draws them: an `ARMOUR` group of bars
     // over a `SHIELDS` group that also carries the strength and the
@@ -67,10 +67,10 @@ describe('CommanderStats', () => {
       (block) => block.querySelector('.stats__resistances') !== null,
     );
     expect(blocks.length).toBe(2);
-    expect(blocks[0]?.querySelector('edsb-metric-group')).toBeNull();
-    expect(blocks[1]?.querySelector('edsb-metric-group')).not.toBeNull();
+    expect(blocks[0]?.querySelector('ednb-metric-group')).toBeNull();
+    expect(blocks[1]?.querySelector('ednb-metric-group')).not.toBeNull();
     for (const block of blocks) {
-      expect(block.querySelectorAll('edsb-resistance-bar').length).toBe(4);
+      expect(block.querySelectorAll('ednb-resistance-bar').length).toBe(4);
     }
     const values = blocks.map((block) =>
       [...block.querySelectorAll('.resistance__value')].map((cell) => cell.textContent?.trim()),

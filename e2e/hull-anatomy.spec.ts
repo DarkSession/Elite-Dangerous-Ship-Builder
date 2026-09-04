@@ -33,12 +33,12 @@ async function openStockBuild(
 ): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, messages['hullDetail.create']);
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
 }
 
 /** Every mount control the plates currently draw, on whichever sides are shown. */
 function mounts(page: Page) {
-  return page.locator('edsb-hull-anatomy .schematic__mount:visible');
+  return page.locator('ednb-hull-anatomy .schematic__mount:visible');
 }
 
 /** The text of the polite outlet, which is where a side change is announced. */
@@ -49,7 +49,7 @@ async function politeText(page: Page): Promise<string> {
 /** No plate scrolls: the whole document is in view, at the document's own ratio. */
 async function expectNoPlateScrolling(page: Page): Promise<void> {
   const overflowing = await page
-    .locator('edsb-hull-anatomy .schematic')
+    .locator('ednb-hull-anatomy .schematic')
     .evaluateAll(
       (nodes) =>
         nodes.filter(
@@ -79,7 +79,7 @@ async function plateRoom(page: Page): Promise<{
   composition: string | null;
   wideEnough: boolean;
 }> {
-  return page.locator('edsb-hull-anatomy').evaluate((host: HTMLElement) => ({
+  return page.locator('ednb-hull-anatomy').evaluate((host: HTMLElement) => ({
     composition: host.closest('.outfitting')?.getAttribute('data-composition') ?? null,
     // The root's size now, not 16: `@container anatomy (min-width: 74.075rem)`
     // resolves its `rem` against the root's computed font size, so the step the
@@ -100,7 +100,7 @@ async function plateRoom(page: Page): Promise<{
  */
 function drawnPlates(page: Page): Promise<number> {
   return page
-    .locator('edsb-hull-anatomy .anatomy__plate')
+    .locator('ednb-hull-anatomy .anatomy__plate')
     .evaluateAll((plates) => plates.filter((plate) => plate.getClientRects().length > 0).length);
 }
 
@@ -108,14 +108,14 @@ test.describe('the plates', () => {
   test('draw both package schematics from the hull own geometry', async ({ page }) => {
     await openStockBuild(page);
 
-    const plates = page.locator('edsb-hull-anatomy .schematic[data-state="ready"]');
+    const plates = page.locator('ednb-hull-anatomy .schematic[data-state="ready"]');
     await expect(plates.first()).toBeVisible();
 
     // Canvas 1c lays the hull on its side in a frame of the hull's own shape.
     // The package draws every hull nose-up, so the frame is wider than it is
     // tall and the drawing is turned once to match — one transform over the
     // package's own paths, which are written out unchanged.
-    const drawing = page.locator('edsb-hull-anatomy .schematic__drawing').first();
+    const drawing = page.locator('ednb-hull-anatomy .schematic__drawing').first();
     const viewBox = (await drawing.getAttribute('viewBox')) ?? '';
     const [, , width, height] = viewBox.split(' ').map(Number);
     expect(width / height).toBeCloseTo(720 / 292, 2);
@@ -129,7 +129,7 @@ test.describe('the plates', () => {
     // were made from one SVG at build time, which is why they line up.
     for (const side of ['top', 'bottom']) {
       await expect(
-        page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__artwork image`),
+        page.locator(`ednb-hull-anatomy .schematic[data-side="${side}"] .schematic__artwork image`),
       ).toHaveAttribute('href', `assets/ships/${HULL}/schematic-${side}.png`);
     }
   });
@@ -153,7 +153,7 @@ test.describe('the plates', () => {
     await expect(mounts(page).first()).toBeVisible();
 
     const utilities = page.locator(
-      'edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible',
+      'ednb-hull-anatomy .schematic__mount[data-kind="utility"]:visible',
     );
     expect(await utilities.count()).toBeGreaterThan(0);
     expect(await utilities.first().getAttribute('aria-label')).toContain('utility mount');
@@ -180,7 +180,7 @@ test.describe('the plates', () => {
     // strip, the side selector and a retry on a plate that did not arrive
     // (FR-011).
     const controls = page.locator(
-      'edsb-hull-anatomy a, edsb-hull-anatomy button, edsb-hull-anatomy [role="button"], edsb-hull-anatomy [role="link"]',
+      'ednb-hull-anatomy a, ednb-hull-anatomy button, ednb-hull-anatomy [role="button"], ednb-hull-anatomy [role="link"]',
     );
     const names = await controls.evaluateAll((nodes) =>
       nodes
@@ -193,13 +193,13 @@ test.describe('the plates', () => {
         /^(top|bottom|try again|mounts|power|drives|defence|offence|status)$/i.test(name),
       ),
     ).toBe(true);
-    expect(await page.locator('edsb-hull-anatomy a[href]').count()).toBe(0);
+    expect(await page.locator('ednb-hull-anatomy a[href]').count()).toBe(0);
   });
 
   test('draw the legend the reference draws, and only that', async ({ page }) => {
     await openStockBuild(page);
 
-    const entries = page.locator('edsb-hull-anatomy .anatomy__legend-entry');
+    const entries = page.locator('ednb-hull-anatomy .anatomy__legend-entry');
     await expect(entries).toHaveText([/Selected/i, /Fitted/i, /Empty/i, /Utility/i, /Engineered/i]);
   });
 });
@@ -214,7 +214,7 @@ test.describe('moving between geometry and the ledger', () => {
     await mount.click();
 
     await expect(mount).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator(`edsb-slot-card [data-slot-key="${key}"]`)).toHaveAttribute(
+    await expect(page.locator(`ednb-slot-card [data-slot-key="${key}"]`)).toHaveAttribute(
       'data-selected',
       'true',
     );
@@ -226,17 +226,17 @@ test.describe('moving between geometry and the ledger', () => {
     await expect(mounts(page).first()).toBeVisible();
 
     const key = await mounts(page).nth(1).getAttribute('data-slot');
-    await page.locator(`edsb-slot-card [data-slot-key="${key}"] .slot__select`).first().click();
+    await page.locator(`ednb-slot-card [data-slot-key="${key}"] .slot__select`).first().click();
 
     await expect(
-      page.locator(`edsb-hull-anatomy .schematic__mount[data-slot="${key}"]`).first(),
+      page.locator(`ednb-hull-anatomy .schematic__mount[data-slot="${key}"]`).first(),
     ).toHaveAttribute('aria-pressed', 'true');
   });
 
   test('a mount drawn on both sides stays one identity in the same state', async ({ page }) => {
     await openStockBuild(page, REPEATED.hull);
     const drawings = page.locator(
-      `edsb-hull-anatomy .schematic__mount[data-slot="${REPEATED.slot}"]`,
+      `ednb-hull-anatomy .schematic__mount[data-slot="${REPEATED.slot}"]`,
     );
     await expect(drawings).toHaveCount(2);
 
@@ -255,10 +255,10 @@ test.describe('moving between geometry and the ledger', () => {
     // At compact width the core mounts are a category the ledger is not opened
     // on, so the row is pressed into view before it is pressed.
     await revealMount(page, 'PowerPlant');
-    await page.locator('edsb-slot-card [data-slot-key="PowerPlant"] .slot__select').first().click();
+    await page.locator('ednb-slot-card [data-slot-key="PowerPlant"] .slot__select').first().click();
 
     await expect(
-      page.locator('edsb-hull-anatomy .schematic__mount[aria-pressed="true"]'),
+      page.locator('ednb-hull-anatomy .schematic__mount[aria-pressed="true"]'),
     ).toHaveCount(0);
   });
 
@@ -280,7 +280,7 @@ test.describe('moving between geometry and the ledger', () => {
 
     await mounts(page).first().click();
     await mounts(page).nth(1).click();
-    const sides = page.locator('edsb-hull-anatomy .anatomy__sides button');
+    const sides = page.locator('ednb-hull-anatomy .anatomy__sides button');
     if (await sides.first().isVisible()) {
       await sides.nth(1).click();
     }
@@ -302,11 +302,11 @@ test.describe('when a schematic does not arrive', () => {
     await openStockBuild(page);
 
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
     ).toHaveCount(1);
-    await expect(page.locator('edsb-slot-card').first()).toBeVisible();
+    await expect(page.locator('ednb-slot-card').first()).toBeVisible();
     // The peer side is unaffected.
-    await expect(page.locator('edsb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(1);
+    await expect(page.locator('ednb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(1);
   });
 
   test('states a document that is not this build own as a defect rather than drawing it', async ({
@@ -324,16 +324,16 @@ test.describe('when a schematic does not arrive', () => {
     await openStockBuild(page);
 
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"]'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="contractDefect"]'),
     ).toHaveCount(1);
-    await expect(page.locator('edsb-slot-card').first()).toBeVisible();
+    await expect(page.locator('ednb-slot-card').first()).toBeVisible();
   });
 
   test('asks again by itself when connectivity returns', async ({ page }) => {
     await page.route('**/assets/ships/**/schematic-*.json', (route) => route.abort());
     await openStockBuild(page);
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
     ).toHaveCount(2);
 
     await page.unroute('**/assets/ships/**/schematic-*.json');
@@ -341,7 +341,7 @@ test.describe('when a schematic does not arrive', () => {
     // press: a Commander who walks back into signal should not have to ask.
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
 
-    await expect(page.locator('edsb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(2);
+    await expect(page.locator('ednb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(2);
     await expect(mounts(page).first()).toBeVisible();
   });
 
@@ -354,7 +354,7 @@ test.describe('when a schematic does not arrive', () => {
     );
     await openStockBuild(page);
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"]'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="contractDefect"]'),
     ).toHaveCount(1);
 
     await page.unroute('**/assets/ships/**/schematic-top.json');
@@ -363,10 +363,10 @@ test.describe('when a schematic does not arrive', () => {
     // The file arrived and was wrong. Asking for it again returns the same
     // wrong file, so the plate keeps saying what it found, and offers no retry.
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"]'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="contractDefect"]'),
     ).toHaveCount(1);
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="contractDefect"] edsb-action-button'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="contractDefect"] ednb-action-button'),
     ).toHaveCount(0);
   });
 
@@ -374,7 +374,7 @@ test.describe('when a schematic does not arrive', () => {
     await page.route('**/assets/ships/**/schematic-*.json', (route) => route.abort());
     await openStockBuild(page);
 
-    await expect(page.locator('edsb-hull-anatomy .schematic__mount')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .schematic__mount')).toHaveCount(0);
     // Reachable, not on screen at once: at compact width the ledger draws one
     // category at a time, so what proves nothing went down with the plates is
     // every category's rows rather than this screenful's.
@@ -403,7 +403,7 @@ test.describe('targets and accessibility', () => {
 
     for (const key of keys) {
       const mount = page
-        .locator(`edsb-hull-anatomy .schematic__mount[data-slot="${key}"]:visible`)
+        .locator(`ednb-hull-anatomy .schematic__mount[data-slot="${key}"]:visible`)
         .first();
       await mount.focus();
       await expect(mount).toBeFocused();
@@ -441,7 +441,7 @@ test.describe('targets and accessibility', () => {
     // back to the point the package published — the mark moved, the mount did
     // not (design/hull-anatomy.md, "Marks that would touch").
     for (const side of ['top', 'bottom']) {
-      const plate = page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"]`);
+      const plate = page.locator(`ednb-hull-anatomy .schematic[data-side="${side}"]`);
       const displaced = await plate.locator('.schematic__mount[data-displaced="true"]').count();
       expect(await plate.locator('.schematic__leader').count()).toBe(displaced);
     }
@@ -450,7 +450,7 @@ test.describe('targets and accessibility', () => {
     // inside a large hardpoint's floor. Both plates are drawn at every width —
     // the compact arrangement hides one rather than dropping it — so this is
     // the same assertion in all ten projects.
-    const bottom = page.locator('edsb-hull-anatomy .schematic[data-side="bottom"]');
+    const bottom = page.locator('ednb-hull-anatomy .schematic[data-side="bottom"]');
     expect(
       await bottom.locator('.schematic__mount[data-displaced="true"]').count(),
     ).toBeGreaterThan(0);
@@ -478,7 +478,7 @@ test.describe('targets and accessibility', () => {
     // What it does buy is that no mark is *lost* — every square keeps more than
     // half of itself uncovered, so its number can be read and its own edge
     // found (design/hull-anatomy.md, "Marks that would touch").
-    const sides = page.locator('edsb-hull-anatomy .anatomy__sides button');
+    const sides = page.locator('ednb-hull-anatomy .anatomy__sides button');
     const selectable = await sides.first().isVisible();
 
     for (const [index, side] of ['top', 'bottom'].entries()) {
@@ -495,7 +495,7 @@ test.describe('targets and accessibility', () => {
         .poll(
           () =>
             page
-              .locator(`edsb-hull-anatomy .schematic[data-side="${side}"] .schematic__mount`)
+              .locator(`ednb-hull-anatomy .schematic[data-side="${side}"] .schematic__mount`)
               .evaluateAll((nodes) => {
                 const boxes = nodes
                   .map((node) => node.getBoundingClientRect())
@@ -556,19 +556,19 @@ test.describe('targets and accessibility', () => {
     // a regression that turned a selected utility green would pass an
     // inequality and fail this.
     const utility = await fillOf(
-      page.locator('edsb-hull-anatomy .schematic__mount[data-kind="utility"]:visible').first(),
+      page.locator('ednb-hull-anatomy .schematic__mount[data-kind="utility"]:visible').first(),
     );
     expect(utility[2]).toBeGreaterThan(utility[0]);
 
     const hardpoint = await fillOf(
-      page.locator('edsb-hull-anatomy .schematic__mount[data-kind="hardpoint"]:visible').first(),
+      page.locator('ednb-hull-anatomy .schematic__mount[data-kind="hardpoint"]:visible').first(),
     );
     expect(hardpoint[0]).toBeGreaterThan(hardpoint[2]);
 
     // And selection is still a fill, not only a hue: an unselected mount sits on
     // the plate's own sunken ground, which neither of these is.
     const unselected = await page
-      .locator('edsb-hull-anatomy .schematic__mount[aria-pressed="false"]:visible')
+      .locator('ednb-hull-anatomy .schematic__mount[aria-pressed="false"]:visible')
       .first()
       .evaluate((node) => getComputedStyle(node).backgroundColor);
     expect(unselected).not.toBe(`rgb(${utility.join(', ')})`);
@@ -673,7 +673,7 @@ test.describe('the conditions that break layouts', () => {
     const room = await plateRoom(page);
     expect(room.composition).toBe('compact');
     expect(await drawnPlates(page)).toBe(1);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toBeVisible();
   });
 
   test('reflows to one plate at 400% zoom rather than scrolling sideways', async ({ page }) => {
@@ -684,9 +684,9 @@ test.describe('the conditions that break layouts', () => {
     // One plate and the selector that chooses it — canvas 1d's arrangement,
     // reached by the space the region was given rather than by a device name.
     await expect(
-      page.locator('edsb-hull-anatomy .anatomy__plate:not(.anatomy__plate--hidden)'),
+      page.locator('ednb-hull-anatomy .anatomy__plate:not(.anatomy__plate--hidden)'),
     ).toHaveCount(1);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toBeVisible();
     await expectNoDocumentOverflow(page);
     await expectNoPlateScrolling(page);
   });
@@ -708,7 +708,7 @@ test.describe('the conditions that break layouts', () => {
 
     const room = await plateRoom(page);
     const drawn = await drawnPlates(page);
-    const selector = page.locator('edsb-hull-anatomy .anatomy__sides');
+    const selector = page.locator('ednb-hull-anatomy .anatomy__sides');
 
     if (room.composition !== 'compact' && room.wideEnough) {
       // Both sides are drawn, so there is nothing for the selector to choose.
@@ -747,7 +747,7 @@ test.describe('the conditions that break layouts', () => {
     expect(await page.evaluate(() => matchMedia('(min-height: 30.0625rem)').matches)).toBe(true);
 
     expect(await drawnPlates(page)).toBe(1);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toBeVisible();
     await expectNoDocumentOverflow(page);
   });
 
@@ -767,11 +767,11 @@ test.describe('the conditions that break layouts', () => {
     expect(room.wideEnough).toBe(false);
 
     expect(await drawnPlates(page)).toBe(1);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toBeVisible();
 
     // And the one plate it draws is bounded rather than stretched across the
     // column, which is the same bound a plate of the pair is held to.
-    const plate = page.locator('edsb-hull-anatomy .anatomy__plate:not(.anatomy__plate--hidden)');
+    const plate = page.locator('ednb-hull-anatomy .anatomy__plate:not(.anatomy__plate--hidden)');
     const bound = await page.evaluate(
       () => 35.35 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
     );
@@ -796,7 +796,7 @@ test.describe('the conditions that break layouts', () => {
 
     // Both sides drawn, so there is nothing for the selector to choose.
     expect(await drawnPlates(page)).toBe(2);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toBeHidden();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toBeHidden();
 
     // Neither plate is smaller for the other's arrival: both are at the same
     // bound one plate is drawn at, which is the whole of what the step is for.
@@ -804,7 +804,7 @@ test.describe('the conditions that break layouts', () => {
       () => 35.35 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
     );
     const widths = await page
-      .locator('edsb-hull-anatomy .anatomy__plate')
+      .locator('ednb-hull-anatomy .anatomy__plate')
       .evaluateAll((plates) => plates.map((plate) => plate.getBoundingClientRect().width));
     expect(widths).toHaveLength(2);
     for (const width of widths) {
@@ -834,7 +834,7 @@ test.describe('the conditions that break layouts', () => {
     // A mirrored hull would put the port hardpoints to starboard. The reading
     // direction flips; the drawing does not.
     const mirrored = await page
-      .locator('edsb-hull-anatomy .schematic__drawing')
+      .locator('ednb-hull-anatomy .schematic__drawing')
       .first()
       .evaluate((node) => {
         const transform = getComputedStyle(node).transform;
@@ -862,7 +862,7 @@ test.describe('the conditions that break layouts', () => {
     test('gives every mode the taps that land on it', async ({ page }) => {
       await withRootTextScale(page, DOUBLED_TEXT);
       await openStockBuild(page, HULL, germanMessages);
-      const strip = page.locator('edsb-hull-anatomy .anatomy__modes .tab-group');
+      const strip = page.locator('ednb-hull-anatomy .anatomy__modes .tab-group');
       await expect(strip).toBeVisible();
 
       // What a Commander's finger reaches at the middle of a segment. A segment
@@ -924,7 +924,7 @@ test.describe('what is said out loud', () => {
     await page.route('**/assets/ships/**/schematic-bottom.json', (route) => route.abort());
     await openStockBuild(page);
     await expect(
-      page.locator('edsb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
+      page.locator('ednb-hull-anatomy .schematic[data-state="temporarilyUnavailable"]'),
     ).toHaveCount(1);
 
     const failure = await politeText(page);
@@ -937,7 +937,7 @@ test.describe('what is said out loud', () => {
     // retry, because at a single-plate width the failed side is the one not on
     // screen — and recovery has to be announced there too.
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await expect(page.locator('edsb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(2);
+    await expect(page.locator('ednb-hull-anatomy .schematic[data-state="ready"]')).toHaveCount(2);
 
     const recovery = await politeText(page);
     expect(recovery).not.toBe(failure);
@@ -950,7 +950,7 @@ test.describe('what is said out loud', () => {
     await expect(mounts(page).first()).toBeVisible();
     expect((await politeText(page)).trim()).toBe('');
 
-    await page.locator('edsb-hull-anatomy .anatomy__sides button').nth(1).click();
+    await page.locator('ednb-hull-anatomy .anatomy__sides button').nth(1).click();
     await settled(page);
 
     // Choosing which side to look at changes nothing about the build and

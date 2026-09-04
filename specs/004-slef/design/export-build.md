@@ -94,7 +94,7 @@ related. Announcements are concise and revision-deduplicated; never announce ful
 validation state is textual, not color-only. Technical content is direction-isolated; app copy/counts
 use feature 011 and package text uses Almanac locale/canonical disclosure.
 
-The separate no-build `/build` host state is previewed alongside this surface; the layer itself is
+The separate no-build `/outfitting` host state is previewed alongside this surface; the layer itself is
 previewed from generating onward. Previews cover every ready/validation/link/revision state and all
 delivery outcomes at desktop/tablet/mobile widths plus expanded, RTL and reduced motion.
 Requirements: FR-001–FR-006, FR-013 and FR-014.

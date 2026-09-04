@@ -57,7 +57,7 @@ interface BadgeView {
  * and what a Commander would change is a mode away.
  */
 @Component({
-  selector: 'edsb-power-badge',
+  selector: 'ednb-power-badge',
   templateUrl: './power-badge.html',
   styleUrl: './power-badge.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

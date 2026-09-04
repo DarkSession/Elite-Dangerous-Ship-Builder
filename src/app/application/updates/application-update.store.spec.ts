@@ -5,7 +5,7 @@ import {
 } from '../../platform/browser/application-update.adapter';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
-import { EDSB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
+import { EDNB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import {
   ApplicationUpdateStore,
@@ -254,7 +254,7 @@ describe('ApplicationUpdateStore', () => {
 
     // Written before the reload, because after it there is no code here to
     // write anything.
-    expect(session.entries.get(EDSB_UPDATE_APPLIED_KEY)).toBe('1');
+    expect(session.entries.get(EDNB_UPDATE_APPLIED_KEY)).toBe('1');
     expect(updates.calls).toEqual(['activate', 'reload']);
   });
 
@@ -267,7 +267,7 @@ describe('ApplicationUpdateStore', () => {
 
     await store.apply();
 
-    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    expect(session.entries.has(EDNB_UPDATE_APPLIED_KEY)).toBe(false);
     expect(updates.calls).toEqual(['reload']);
   });
 
@@ -280,21 +280,21 @@ describe('ApplicationUpdateStore', () => {
 
     // Otherwise the next session is greeted with news of a restart that never
     // happened.
-    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    expect(session.entries.has(EDNB_UPDATE_APPLIED_KEY)).toBe(false);
     expect(store.applying()).toBe(false);
     expect(store.overlay()).toBe(false);
   });
 
   it('says the update was applied in the session that comes up after it', () => {
     const session = new MemoryStorage();
-    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+    session.entries.set(EDNB_UPDATE_APPLIED_KEY, '1');
 
     const { store } = setup({ session });
 
     expect(store.applied()).toBe(true);
     // Cleared as it is read, so a second navigation in the same tab does not
     // repeat it.
-    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    expect(session.entries.has(EDNB_UPDATE_APPLIED_KEY)).toBe(false);
 
     store.acknowledgeApplied();
     expect(store.applied()).toBe(false);
@@ -305,7 +305,7 @@ describe('ApplicationUpdateStore', () => {
     // a Commander came back to, and both facts on it can be read again — the
     // version is on Help · About, and the application is already running it.
     const session = new MemoryStorage();
-    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+    session.entries.set(EDNB_UPDATE_APPLIED_KEY, '1');
 
     const { store, updates } = setup({ session });
 
@@ -318,7 +318,7 @@ describe('ApplicationUpdateStore', () => {
 
   it('stops that clock when the notice is pressed, so nothing is left pending', () => {
     const session = new MemoryStorage();
-    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+    session.entries.set(EDNB_UPDATE_APPLIED_KEY, '1');
 
     const { store, updates } = setup({ session });
 
@@ -332,7 +332,7 @@ describe('ApplicationUpdateStore', () => {
     const { store, session, updates } = setup();
 
     expect(store.applied()).toBe(false);
-    expect(session.entries.has(EDSB_UPDATE_APPLIED_KEY)).toBe(false);
+    expect(session.entries.has(EDNB_UPDATE_APPLIED_KEY)).toBe(false);
     // And schedules nothing: a clock with no notice under it would take down
     // whatever layer happened to be open when it came round.
     expect(updates.grace).toBeNull();
@@ -342,7 +342,7 @@ describe('ApplicationUpdateStore', () => {
     // The development server registers none, and a restart that happened
     // before one was registered still happened.
     const session = new MemoryStorage();
-    session.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+    session.entries.set(EDNB_UPDATE_APPLIED_KEY, '1');
 
     const { store, updates } = setup({ available: false, session });
 

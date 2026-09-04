@@ -76,7 +76,7 @@ type SaveMode = 'overwrite' | 'new';
  * commit buttons that look alike (FR-009, ruled 2026-08-27).
  */
 @Component({
-  selector: 'edsb-save-build-dialog',
+  selector: 'ednb-save-build-dialog',
   imports: [ActionButton, ChoiceGroup, Layer, TextField, TextareaField],
   templateUrl: './save-build.dialog.html',
   styleUrl: './save-build.dialog.scss',

@@ -27,7 +27,7 @@ import type { HelpDialogViewModel } from '../../application/help/help.presenter'
  * meets one reading order either way.
  */
 @Component({
-  selector: 'edsb-help-dialog',
+  selector: 'ednb-help-dialog',
   imports: [InlineLink, Layer, LegalExcerpt, VersionFacts],
   templateUrl: './help-dialog.component.html',
   styleUrl: './help-dialog.component.scss',

@@ -27,7 +27,7 @@
         it names the pair, and it names them for a screen reader too, so the
         visible words and the announced words are the same words.
       -->
-      <edsb-tab-group
+      <ednb-tab-group
         class="power__hardpoints tab-group-host--ruled"
         [label]="hardpointsLabel()"
         [labelVisible]="true"
@@ -116,7 +116,7 @@
         width steps would put two on a line and `UNPOWERED` alone under them at
         the width a phone gives it (Commander request 2026-08-26).
       -->
-      <edsb-metric-group
+      <ednb-metric-group
         class="power__summary metric-group--tight"
         [label]="summaryLabel()"
         [metrics]="summaryMetrics()"
@@ -147,7 +147,7 @@
             <li class="module" [class.module--offline]="row.offline">
               <span class="module__name">
                 @if (row.name; as name) {
-                  <edsb-game-text
+                  <ednb-game-text
                     [text]="name.text"
                     [language]="name.language"
                     [translationState]="name.translationState"
@@ -221,7 +221,7 @@
                       related to the name by `aria-describedby`, so a reader who
                       is told the interface has it without asking.
                     -->
-                    <edsb-tooltip
+                    <ednb-tooltip
                       class="heat__description"
                       [dense]="true"
                       [label]="bar.label"
@@ -279,7 +279,7 @@
             }
           </ul>
 
-          <edsb-metric-group class="power__facts" [label]="heatCaption()" [metrics]="heatFacts()" />
+          <ednb-metric-group class="power__facts" [label]="heatCaption()" [metrics]="heatFacts()" />
         </div>
       } @else {
         <!--
@@ -287,11 +287,11 @@
           `null` and does not say which of the reasons it was, so neither does
           this. No hull figure and no catalogue figure stands in for it.
         -->
-        <edsb-unavailable-value [label]="heatUnavailableLabel()" />
+        <ednb-unavailable-value [label]="heatUnavailableLabel()" />
       }
     </section>
 
-    <edsb-distributor-block
+    <ednb-distributor-block
       [rows]="bankRows()"
       [columns]="distributorColumns()"
       [caption]="distributorCaption()"

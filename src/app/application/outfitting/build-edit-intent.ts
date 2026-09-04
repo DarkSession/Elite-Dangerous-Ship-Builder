@@ -10,7 +10,7 @@ import type { MessageKey } from '../../i18n/locale-registry';
  * Intents are data, not calls. A component emits one and is finished; whether
  * it happens, and what happens to the build if it does, belongs to the store
  * and the transaction beneath it (constitution III). That is what lets the same
- * slot card sit in a preview fixture and in `/build` without one of them
+ * slot card sit in a preview fixture and in `/outfitting` without one of them
  * editing something.
  *
  * A choice is named by its view key rather than by a package object, because a

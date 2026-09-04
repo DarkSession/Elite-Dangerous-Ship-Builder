@@ -22,7 +22,7 @@ export type HullArtworkState = 'loading' | 'available' | 'temporarily-unavailabl
  *     (FR-006).
  */
 @Component({
-  selector: 'edsb-hull-artwork',
+  selector: 'ednb-hull-artwork',
   imports: [ActionButton],
   templateUrl: './hull-artwork.html',
   styleUrl: './hull-artwork.scss',

@@ -35,7 +35,7 @@ import { ResistanceBar } from '../../../ui/equipment/resistance-bar';
  * one, so neither does this.
  */
 @Component({
-  selector: 'edsb-commander-stats',
+  selector: 'ednb-commander-stats',
   imports: [GameText, MetricGroup, ResistanceBar],
   templateUrl: './commander-stats.html',
   styleUrl: './commander-stats.scss',

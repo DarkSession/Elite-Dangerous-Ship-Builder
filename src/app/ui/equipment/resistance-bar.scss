@@ -33,16 +33,37 @@
 // The unfilled remainder is what says how far the bar could go, so it has to be
 // a ground somebody can see: the canvas lifts it 14 units off the column
 // (`rgba(255,255,255,.06)`), where the inset fill lifted it five.
+//
+// The track carries the tick that marks zero, standing a hairline past each edge
+// so it can be read where the fill beside it is short. A resistance runs either
+// way and both directions fill from that tick, which is what tells a −40% from a
+// +40% (013 design/equipment-bench.md).
 .resistance__track {
+  position: relative;
   block-size: var(--ednb-layout-resistance-bar);
   background: var(--ednb-surface-track);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset-block: calc(var(--ednb-border-width-hairline) * -1);
+    inset-inline-start: 50%;
+    inline-size: var(--ednb-border-width-hairline);
+    background-color: var(--ednb-border-midline);
+  }
 }
 
+// Anchored at the midline rather than at the leading edge, and over the tick:
+// the fill is what says which way the resistance goes.
 .resistance__fill {
-  block-size: 100%;
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 50%;
   background: var(--ednb-surface-success-solid);
 }
 
 .resistance__fill--negative {
+  inset-inline-start: auto;
+  inset-inline-end: 50%;
   background: var(--ednb-surface-danger-solid);
 }

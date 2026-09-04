@@ -19,7 +19,7 @@ export type StatusTone = 'info' | 'success' | 'warning' | 'error' | 'loading';
  * (feedback contract).
  */
 @Component({
-  selector: 'edsb-status-notice',
+  selector: 'ednb-status-notice',
   templateUrl: './status-notice.html',
   styleUrl: './status-notice.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -31,7 +31,7 @@ export interface ShareLinkRefusal {
  * horizontally is unusable at 400% zoom.
  */
 @Component({
-  selector: 'edsb-share-link-panel',
+  selector: 'ednb-share-link-panel',
   imports: [ActionButton, StatusNotice],
   templateUrl: './share-link-panel.html',
   styleUrl: './share-link-panel.scss',

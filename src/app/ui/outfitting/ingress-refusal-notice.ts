@@ -29,7 +29,7 @@ import { slotName } from './slot-naming';
  * previous build needs to know now, not when they next read the page.
  */
 @Component({
-  selector: 'edsb-ingress-refusal-notice',
+  selector: 'ednb-ingress-refusal-notice',
   imports: [OutfittingNotice],
   templateUrl: './ingress-refusal-notice.html',
   styleUrl: './ingress-refusal-notice.scss',

@@ -89,7 +89,7 @@ const HALF_PLATE_PERCENT = 50;
  * plate, names them and does no arithmetic of its own.
  */
 @Component({
-  selector: 'edsb-shot-convergence',
+  selector: 'ednb-shot-convergence',
   imports: [RangeField],
   templateUrl: './shot-convergence.html',
   styleUrl: './shot-convergence.scss',

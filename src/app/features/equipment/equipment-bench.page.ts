@@ -69,7 +69,7 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
  * package (constitution II and III).
  */
 @Component({
-  selector: 'edsb-equipment-bench-page',
+  selector: 'ednb-equipment-bench-page',
   imports: [
     ChoiceDialog,
     CommanderStats,

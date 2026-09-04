@@ -29,7 +29,7 @@ import { DiagnosticList } from '../../../ui/technical/diagnostic-list';
  * It renders one immutable localized view and emits intents.
  */
 @Component({
-  selector: 'edsb-slef-import-layer',
+  selector: 'ednb-slef-import-layer',
   imports: [ActionButton, Disclosure, DiagnosticList, TextareaField],
   templateUrl: './import-build-layer.html',
   styleUrl: './import-build-layer.scss',

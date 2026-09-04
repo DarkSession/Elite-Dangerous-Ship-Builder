@@ -4,8 +4,8 @@ import { Routes } from '@angular/router';
  * The application's routes.
  *
  * Five screens, each addressable by what it is about: the product's own address
- * by the product, hull detail by the hull's own name, the two benches by their
- * tools.
+ * by the product, hull detail by the hull's own name, the two benches by the
+ * work done at them — `/outfitting` a ship, `/equipment` a Commander.
  *
  * The saved builds are not among them. They are a layer over the screen a
  * Commander is on and nothing else — no address, no history entry of its own,
@@ -24,12 +24,11 @@ import { Routes } from '@angular/router';
  * hull answers to read as the catalogue rather than as a blank.
  *
  * No route carries build data in its path or query. The only build payload in
- * a URL is the `/build` fragment (FR-015).
+ * a URL is the `/outfitting` fragment (FR-015).
  */
 export const routes: Routes = [
   {
-    // The product's own address, which used to redirect into the ship tool. It
-    // is a screen now: a Commander who opens NavBeacon is shown what NavBeacon
+    // The product's own address. It is a screen: a Commander who opens NavBeacon is shown what NavBeacon
     // carries rather than dropped into one of its tools (`.design/Home.dc.html`).
     //
     // Being a screen rather than a redirect is also what makes Back work. A
@@ -83,7 +82,7 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'build',
+    path: 'outfitting',
     title: 'workspace.title',
     data: { description: 'workspace.description' },
     loadComponent: () =>

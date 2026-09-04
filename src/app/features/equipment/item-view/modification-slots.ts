@@ -24,7 +24,7 @@ import { GameText } from '../../../ui/components/game-text/game-text';
  * Cases).
  */
 @Component({
-  selector: 'edsb-modification-slots',
+  selector: 'ednb-modification-slots',
   imports: [GameText],
   templateUrl: './modification-slots.html',
   styleUrl: './modification-slots.scss',

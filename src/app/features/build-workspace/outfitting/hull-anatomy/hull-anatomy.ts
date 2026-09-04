@@ -67,7 +67,7 @@ export interface AnatomyGuestMode {
 }
 
 /**
- * The hull anatomy panel inside feature 001's `/build`.
+ * The hull anatomy panel inside feature 001's `/outfitting`.
  *
  * Canvases 1c and 1d draw it as four things in one order: the `HULL ANATOMY`
  * rule with the mode strip beside it, the labelled plates, and the legend. Wide
@@ -92,7 +92,7 @@ export interface AnatomyGuestMode {
  * lives").
  */
 @Component({
-  selector: 'edsb-hull-anatomy',
+  selector: 'ednb-hull-anatomy',
   imports: [DefenceAnalysis, DrivesMass, HullSchematic, OffenceAnalysis, PowerThermals, TabGroup],
   templateUrl: './hull-anatomy.html',
   styleUrl: './hull-anatomy.scss',

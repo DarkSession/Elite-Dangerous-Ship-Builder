@@ -39,7 +39,7 @@ describe('the import layer’s host', () => {
     stubNativeDialog();
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'build', children: [] }]),
+        provideRouter([{ path: 'outfitting', children: [] }]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
         { provide: DocumentAdapter, useValue: new SilentDocumentAdapter() },

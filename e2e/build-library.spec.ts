@@ -24,9 +24,9 @@ function seedRecord(
   overrides: Record<string, unknown> = {},
 ): { key: string; value: string } {
   return {
-    key: `edsb:record:${id}`,
+    key: `ednb:record:${id}`,
     value: JSON.stringify({
-      format: 'edsb.local-record',
+      format: 'ednb.local-record',
       version: 1,
       id,
       kind: 'named',
@@ -38,7 +38,7 @@ function seedRecord(
       hullSymbol: 'Anaconda',
       validation: { valid: true, complete: true },
       build: {
-        format: 'edsb.build',
+        format: 'ednb.build',
         version: 1,
         shipSymbol: 'Anaconda',
         shipName: null,
@@ -101,7 +101,7 @@ async function fillStorageNow(page: Page): Promise<void> {
 /** How many records this browser is holding, whatever their kind. */
 async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
   );
 }
 
@@ -184,7 +184,7 @@ async function saveActiveBuild(
 async function openWorkspaceWithBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   // The command bar titles an unnamed build by what the build calls itself,
   // which for a stock hull is the hull (FR-010, ruled 2026-08-25).
   await expect(page.getByRole('heading', { level: 1, name: new RegExp(hull, 'i') })).toBeVisible();
@@ -304,14 +304,14 @@ test.describe('the build library', () => {
     // and inert — and no address was taken either. The records are held on one
     // device, so an address for them resolves to a different list for every
     // Commander who opens it (Commander request 2026-09-04).
-    await expect(page).toHaveURL(/\/build#b\./);
-    await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(1);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
+    await expect(page.locator('ednb-outfitting-workspace')).toHaveCount(1);
 
     // And closing gives the screen back, fragment included — the build link the
     // workspace published on the entry the layer was opened over.
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     await expect(layer).toBeHidden();
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     await expect(page).toHaveTitle(/^Build/);
   });
 
@@ -327,7 +327,7 @@ test.describe('the build library', () => {
     await page.goBack();
 
     await expect(layer).toBeHidden();
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
   });
 
   test('is the same layer over the shipyard, where no build is open', async ({ page }) => {
@@ -339,7 +339,7 @@ test.describe('the build library', () => {
     await openLibrary(page);
 
     await expect(library(page)).toBeVisible();
-    await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(0);
+    await expect(page.locator('ednb-outfitting-workspace')).toHaveCount(0);
     await expect(page).toHaveURL(/\/ships$/);
   });
 
@@ -453,7 +453,7 @@ test.describe('the build library', () => {
       .poll(() =>
         page.evaluate(() =>
           Object.keys(localStorage)
-            .filter((key) => key.startsWith('edsb:record:'))
+            .filter((key) => key.startsWith('ednb:record:'))
             .map((key) => (JSON.parse(localStorage.getItem(key)!) as { note: string | null }).note),
         ),
       )
@@ -493,7 +493,7 @@ test.describe('the build library', () => {
 
     await page.getByRole('button', { name: 'Close', exact: true }).click();
 
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
   });
 
@@ -511,12 +511,12 @@ test.describe('the build library', () => {
 
     const names = await page.evaluate(() =>
       Object.keys(localStorage)
-        .filter((key) => key.startsWith('edsb:record:'))
+        .filter((key) => key.startsWith('ednb:record:'))
         .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name),
     );
     expect(names).toContain('Anaconda explorer');
     expect(names).toContain('Anaconda explorer copy');
-    expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).not.toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).not.toBeNull();
   });
 
   test('renames a saved build by saving it over the save it was opened from', async ({ page }) => {
@@ -531,7 +531,7 @@ test.describe('the build library', () => {
     await expect
       .poll(() =>
         page.evaluate(() => {
-          const raw = localStorage.getItem('edsb:record:a');
+          const raw = localStorage.getItem('ednb:record:a');
           return raw === null ? null : (JSON.parse(raw) as { name: string | null }).name;
         }),
       )
@@ -549,7 +549,7 @@ test.describe('the build library', () => {
     await expect(dialog.getByText(/cannot be undone/i)).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Keep this build' }).click();
-    expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).not.toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).not.toBeNull();
 
     await footerAction(page, 'Delete').click();
     await page
@@ -557,7 +557,7 @@ test.describe('the build library', () => {
       .getByRole('button', { name: 'Delete this build' })
       .click();
 
-    expect(await page.evaluate(() => localStorage.getItem('edsb:record:a'))).toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('ednb:record:a'))).toBeNull();
   });
 
   test('deletes only the record that was confirmed', async ({ page }) => {
@@ -572,9 +572,9 @@ test.describe('the build library', () => {
       .click();
 
     const stored = await page.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
+      Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
     );
-    expect(stored).toEqual(['edsb:record:b']);
+    expect(stored).toEqual(['ednb:record:b']);
   });
 
   test('opens a stored build into the workspace', async ({ page }) => {
@@ -595,7 +595,7 @@ test.describe('the build library', () => {
         name: 'Python trader',
         hullSymbol: 'Python',
         build: {
-          format: 'edsb.build',
+          format: 'ednb.build',
           version: 1,
           shipSymbol: 'Python',
           shipName: null,
@@ -675,16 +675,16 @@ test.describe('the build library', () => {
   }) => {
     await seed(page, [
       {
-        key: 'edsb:record:newer',
+        key: 'ednb:record:newer',
         value: JSON.stringify({
-          format: 'edsb.local-record',
+          format: 'ednb.local-record',
           version: 99,
           id: 'newer',
           name: 'From the future',
           hullSymbol: 'Anaconda',
         }),
       },
-      { key: 'edsb:record:broken', value: '{"format":"edsb.local-record","version":1,"id":' },
+      { key: 'ednb:record:broken', value: '{"format":"ednb.local-record","version":1,"id":' },
     ]);
     await openLibrary(page);
 
@@ -695,8 +695,8 @@ test.describe('the build library', () => {
     await expect(library(page).getByRole('button', { name: /Open/ })).toHaveCount(0);
 
     const stored = await page.evaluate(() => ({
-      newer: localStorage.getItem('edsb:record:newer'),
-      broken: localStorage.getItem('edsb:record:broken'),
+      newer: localStorage.getItem('ednb:record:newer'),
+      broken: localStorage.getItem('ednb:record:broken'),
     }));
     expect(stored.newer).not.toBeNull();
     expect(stored.broken).not.toBeNull();
@@ -719,7 +719,7 @@ test.describe('the build library', () => {
     await fillStorage(page);
     await openWorkspaceWithBuild(page);
 
-    await expect(page.locator('edsb-build-workspace-page')).toHaveAttribute(
+    await expect(page.locator('ednb-build-workspace-page')).toHaveAttribute(
       'data-persistence',
       'quota-full',
     );
@@ -799,7 +799,7 @@ test.describe('the build library', () => {
 
     const names = await first.evaluate(() =>
       Object.keys(localStorage)
-        .filter((key) => key.startsWith('edsb:record:'))
+        .filter((key) => key.startsWith('ednb:record:'))
         .map((key) => (JSON.parse(localStorage.getItem(key)!) as { name: string | null }).name)
         .filter((name): name is string => name !== null),
     );

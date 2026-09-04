@@ -52,7 +52,7 @@ async function openStockBuild(
   // Named from the catalogue this run is actually reading, because the German
   // context below reaches the same control through the German word for it.
   await buildStockHull(page, messages['hullDetail.create']);
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -411,7 +411,7 @@ test.describe('module families', () => {
     const spill = await page.locator('.candidates').evaluate((node) => ({
       fieldset: node.scrollHeight - node.clientHeight,
       list: (() => {
-        const host = node.closest('edsb-candidate-list') as HTMLElement;
+        const host = node.closest('ednb-candidate-list') as HTMLElement;
         return host.scrollHeight - host.clientHeight;
       })(),
     }));
@@ -636,7 +636,7 @@ test.describe('module families', () => {
     const published = Number(
       (
         await page
-          .locator('.replacement__count, edsb-candidate-search [role="status"]')
+          .locator('.replacement__count, ednb-candidate-search [role="status"]')
           .first()
           .innerText()
       ).replace(/\D+/gu, ''),

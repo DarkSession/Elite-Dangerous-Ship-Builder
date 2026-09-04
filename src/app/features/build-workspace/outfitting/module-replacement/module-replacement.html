@@ -37,7 +37,7 @@
         <p class="replacement__count">{{ countLabel() }}</p>
       }
 
-      <edsb-candidate-search
+      <ednb-candidate-search
         class="replacement__search"
         [query]="query()?.query ?? ''"
         [resultCount]="resultCount()"
@@ -88,7 +88,7 @@
     screen (module-replacement design, "Module families").
   -->
   @if (showList()) {
-    <edsb-candidate-list
+    <ednb-candidate-list
       class="replacement__list"
       [families]="families()"
       [searching]="canClear()"
@@ -132,7 +132,7 @@
 </ng-template>
 
 @if (asLayer()) {
-  <edsb-layer
+  <ednb-layer
     [title]="heading()"
     [open]="true"
     [dismissLabel]="closeLabel()"
@@ -142,7 +142,7 @@
     <div class="replacement replacement--layer">
       <ng-container [ngTemplateOutlet]="body" />
     </div>
-  </edsb-layer>
+  </ednb-layer>
 } @else {
   <!--
     Inline, the bench above already carries the mount's title, exactly as canvas

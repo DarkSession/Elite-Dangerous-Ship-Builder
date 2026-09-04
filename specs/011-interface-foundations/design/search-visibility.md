@@ -13,8 +13,9 @@ The application is a client-side Angular bundle behind a service worker, publish
 at `https://sb.edct.dev/` and served from `public/` plus the build output. Nothing is rendered on a
 server. That single fact decides most of what follows.
 
-Four addresses exist (`app.routes.ts`): `/ships`, `/ships/:hull`, `/build` and `/builds`. `/`
-redirects to `/ships`, and anything unmatched redirects there too. Every one of them is served the
+Five addresses exist (`app.routes.ts`): `/`, `/ships`, `/ships/:hull`, `/outfitting` and
+`/equipment`. Anything unmatched redirects to `/`. The saved records have no address of their own
+(feature 001 `contracts/routes-and-ui.md`). Every one of them is served the
 same `index.html`, so before 2026-08-27 every address a crawler fetched carried:
 
 - the same `<title>`, `Elite Dangerous Ship Builder`, with the route's own title written only after
@@ -70,7 +71,7 @@ deliberate and it is the one decision here worth arguing with:
 
 The build payload lives in the URL fragment (001/FR-015), and a fragment never reaches a server and
 never reaches the canonical. The path is taken from the router's own URL with query and fragment
-stripped, so a shared build link canonicalises to `/build`, not to a million distinct addresses.
+stripped, so a shared build link canonicalises to `/outfitting`, not to a million distinct addresses.
 
 ### 3. A link pasted anywhere unfurled as a bare URL _(fixed)_
 

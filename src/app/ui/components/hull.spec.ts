@@ -103,7 +103,7 @@ describe('HullArtwork', () => {
     let retries = 0;
     fixture.componentInstance.retryRequested.subscribe(() => (retries += 1));
 
-    query(fixture, 'edsb-action-button button').click();
+    query(fixture, 'ednb-action-button button').click();
 
     expect(retries).toBe(1);
   });

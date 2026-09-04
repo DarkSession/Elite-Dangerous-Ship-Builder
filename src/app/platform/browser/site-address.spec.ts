@@ -16,7 +16,7 @@ describe('canonical address', () => {
   });
 
   it('drops the fragment, because that is where a build lives', () => {
-    expect(canonicalAddress('/build#H4sIAAAA')).toBe(`${SITE_ORIGIN}/build`);
+    expect(canonicalAddress('/outfitting#H4sIAAAA')).toBe(`${SITE_ORIGIN}/outfitting`);
   });
 
   it('drops the query as well', () => {

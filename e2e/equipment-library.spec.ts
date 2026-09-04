@@ -62,7 +62,7 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
 /** How many records this browser is holding, whatever their tool. */
 async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
   );
 }
 
@@ -157,9 +157,9 @@ test.describe('a record this version cannot open', () => {
     // partial is opened and nothing is repaired (FR-019).
     await page.addInitScript(() => {
       localStorage.setItem(
-        'edsb:record:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        'ednb:record:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
         JSON.stringify({
-          format: 'edsb.local-record',
+          format: 'ednb.local-record',
           version: 2,
           tool: 'equipment',
           id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -171,7 +171,7 @@ test.describe('a record this version cannot open', () => {
           note: null,
           suitFamily: 'nonexistentsuit',
           loadout: {
-            format: 'edsb.loadout',
+            format: 'ednb.loadout',
             version: 1,
             suitFamily: 'nonexistentsuit',
             suitGrade: 1,

@@ -48,7 +48,7 @@ const manifest = (version, marker = 'ship-builder') =>
 
 /** An empty repository, with git configured enough to commit in it. */
 async function repository(t) {
-  const root = await mkdtemp(join(tmpdir(), 'edsb-build-version-'));
+  const root = await mkdtemp(join(tmpdir(), 'ednb-build-version-'));
   t.after(() => rm(root, { recursive: true, force: true }));
 
   const git = gitIn(root);

@@ -12,7 +12,7 @@
   <p class="blueprints__fixed" [attr.aria-labelledby]="fixedLabelId">
     @for (choice of choices(); track choice.fdname) {
       @if (choice.applied) {
-        <edsb-game-text
+        <ednb-game-text
           [text]="choice.name.text"
           [language]="choice.name.language"
           [translationState]="choice.name.translationState"
@@ -21,7 +21,7 @@
     }
   </p>
 } @else if (asDropdown()) {
-  <edsb-select-field
+  <ednb-select-field
     class="blueprints__field"
     [label]="legend()"
     [options]="options()"
@@ -66,7 +66,7 @@
           (change)="chosen.emit(choice.fdname)"
         />
         <span class="blueprint__identity">
-          <edsb-game-text
+          <ednb-game-text
             class="blueprint__name"
             [text]="choice.name.text"
             [language]="choice.name.language"

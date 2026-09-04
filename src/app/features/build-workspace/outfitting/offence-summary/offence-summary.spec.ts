@@ -31,7 +31,7 @@ function readsZero(text: string | null | undefined): boolean {
 /**
  * The rail's `DPS` cell.
  *
- * The cell is composed from `edsb-metric-group`, which is what the canvas draws
+ * The cell is composed from `ednb-metric-group`, which is what the canvas draws
  * all six rail cells as, so the assertions read that component's own markup.
  * The canvas gives this cell a label and a bare figure, so most of them are
  * about what is *not* there: no unit, no second figure, no condition, and no

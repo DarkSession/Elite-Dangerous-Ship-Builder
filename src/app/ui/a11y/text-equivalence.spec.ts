@@ -8,7 +8,7 @@ import {
 
 describe('relationId', () => {
   it('namespaces ids to the application', () => {
-    expect(relationId('error')).toMatch(/^edsb-error-\d+$/);
+    expect(relationId('error')).toMatch(/^ednb-error-\d+$/);
   });
 
   it('never repeats an id, so two instances cannot share a description', () => {

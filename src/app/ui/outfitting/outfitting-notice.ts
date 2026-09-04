@@ -34,7 +34,7 @@ export interface NoticeLine {
  * exactly the behaviour a polite region exists to avoid.
  */
 @Component({
-  selector: 'edsb-outfitting-notice',
+  selector: 'ednb-outfitting-notice',
   imports: [StatusNotice],
   templateUrl: './outfitting-notice.html',
   styleUrl: './outfitting-notice.scss',

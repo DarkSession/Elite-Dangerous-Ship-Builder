@@ -1,5 +1,5 @@
 import { DOCUMENT, Injectable, inject } from '@angular/core';
-import { EDSB_BROADCAST_CHANNEL } from '../storage/storage-keys';
+import { EDNB_BROADCAST_CHANNEL } from '../storage/storage-keys';
 
 /** What one page tells the others about its persistence state. */
 export type PersistenceBroadcast =
@@ -65,7 +65,7 @@ function createChannel(view: Window | null): BroadcastChannel | null {
     return null;
   }
   try {
-    return new constructor(EDSB_BROADCAST_CHANNEL);
+    return new constructor(EDNB_BROADCAST_CHANNEL);
   } catch {
     return null;
   }

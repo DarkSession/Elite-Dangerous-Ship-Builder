@@ -11,7 +11,7 @@ import type { EditFailure } from './build-edit-intent';
  * were while changing nothing about the build (data model, "OutfittingState").
  */
 
-/** Which feature 002 surface is currently showing inside `/build`. */
+/** Which feature 002 surface is currently showing inside `/outfitting`. */
 export type OutfittingSurface = 'workspace' | 'replacement' | 'engineering';
 
 /**

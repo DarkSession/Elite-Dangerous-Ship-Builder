@@ -18,7 +18,7 @@
     -->
     @if (!compact()) {
       <div class="gate__grades" [attr.inert]="true" aria-hidden="true">
-        <edsb-grade-selector
+        <ednb-grade-selector
           [grades]="gradePreview()"
           [selected]="null"
           [cellLabels]="gradeLabels()"
@@ -35,7 +35,7 @@
       <span class="gate__line" aria-hidden="true"></span>
     </div>
 
-    <edsb-choice-list
+    <ednb-choice-list
       class="gate__suits"
       [asPairs]="true"
       [choices]="choices()"

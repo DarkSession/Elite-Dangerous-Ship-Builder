@@ -26,7 +26,7 @@ import { MetricGroup } from '../../../../ui/components/metric-group/metric-group
  * control in the grid.
  */
 @Component({
-  selector: 'edsb-capacity-summary',
+  selector: 'ednb-capacity-summary',
   imports: [MetricGroup],
   templateUrl: './capacity-summary.html',
   styleUrl: './capacity-summary.scss',

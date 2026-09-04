@@ -85,7 +85,7 @@ function seedUnnamed(records: LocalRecordRepository, id: string, createdAt = NOW
 
 /** Every record key this browser is holding, so "nothing left behind" is checkable. */
 function recordIds(storage: MemoryStorage): string[] {
-  return [...storage.entries.keys()].filter((key) => key.startsWith('edsb:record:')).sort();
+  return [...storage.entries.keys()].filter((key) => key.startsWith('ednb:record:')).sort();
 }
 
 /** The same request, narrowed to the record it is replacing. */
@@ -190,7 +190,7 @@ describe('NamedRecordService', () => {
 
     await named.overwriteNamed(overwrite(created.record.id, created.record.revisionId));
 
-    expect(locks.held).toEqual([`edsb:record:${created.record.id}`]);
+    expect(locks.held).toEqual([`ednb:record:${created.record.id}`]);
   });
 
   it('refuses an in-place replacement when locking is unavailable', async () => {
@@ -282,7 +282,7 @@ describe('NamedRecordService', () => {
     // Named just now, but not created just now: the work is older than the name.
     expect(result.record.createdAt).toBe(NOW);
     expect(result.record.modifiedAt).toBe(LATER);
-    expect(recordIds(storage)).toEqual(['edsb:record:held']);
+    expect(recordIds(storage)).toEqual(['ednb:record:held']);
   });
 
   it('takes the lock of the record it is naming', async () => {
@@ -291,7 +291,7 @@ describe('NamedRecordService', () => {
 
     await named.nameHeldRecord({ ...request(), recordId: 'held' });
 
-    expect(locks.held).toEqual(['edsb:record:held']);
+    expect(locks.held).toEqual(['ednb:record:held']);
   });
 
   it('mints a record rather than replacing one named while the dialog was open', async () => {
@@ -355,7 +355,7 @@ describe('NamedRecordService', () => {
     );
 
     expect(result.kind).toBe('saved');
-    expect(recordIds(storage)).toEqual([`edsb:record:${saved.record.id}`]);
+    expect(recordIds(storage)).toEqual([`ednb:record:${saved.record.id}`]);
   });
 
   it('keeps the unnamed record when the write it would replace fails', async () => {

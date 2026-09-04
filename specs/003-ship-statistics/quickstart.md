@@ -64,7 +64,7 @@ recognition. A failure is an upstream/package-version issue; do not add a local 
 
 ## 2. Validate structural status
 
-1. Open `/build` without an active build.
+1. Open `/outfitting` without an active build.
 2. Confirm Status creates/selects nothing and the existing workspace empty actions remain.
 3. Load fixtures for every reachable `validation.valid`/`complete` combination.
 4. Compare the visible structural facts and ordered issue items with `loadout.validation()` by identity.

@@ -7,7 +7,7 @@
     <ul class="notice__lines">
       @for (line of resolved(); track line.id) {
         <li class="notice__line">
-          <edsb-status-notice [tone]="tone()" [message]="line.text" [detail]="line.detail" />
+          <ednb-status-notice [tone]="tone()" [message]="line.text" [detail]="line.detail" />
         </li>
       }
     </ul>

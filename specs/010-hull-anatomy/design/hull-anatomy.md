@@ -2,7 +2,7 @@
 
 ## Purpose and parent
 
-Hull Anatomy is a capability inside feature 001's active `/build` workspace. It lets a Commander
+Hull Anatomy is a capability inside feature 001's active `/outfitting` workspace. It lets a Commander
 locate and select both weapon hardpoints and utility mounts on Almanac top/bottom schematics, inspect
 their exact current state and move to/from feature 002's outfitting slot. It adds no route and is not
 available without an active build.
@@ -263,7 +263,7 @@ drawn square there explained something that appears nowhere.
 
 Canvas 1c sets a strip of five segments beside the `HULL ANATOMY` rule — `MOUNTS`, `POWER`,
 `DRIVES`, `DEFENCE`, `OFFENCE` — selecting which layer is drawn over the plates. That strip is what
-is built, at every width: all five in that order, as feature 011's `edsb-tab-group` in the same
+is built, at every width: all five in that order, as feature 011's `ednb-tab-group` in the same
 segmented presentation the side selector uses, full width under the rule when the region is narrow
 and at its own label width beside it when there is room. A caller may add segments after them, for a
 panel this region does not draw; see "Divergence from canvas 1d — the sixth segment".
@@ -276,7 +276,7 @@ between a strip sized by its own labels and a strip dividing 362px between six o
 cosmetic — at the wide canvas's inside the six want 376px, so the phone drew a horizontal scrollbar
 under the strip for the fourteen pixels it was over (Commander request 2026-08-26).
 
-The narrowing lives in `edsb-tab-group`, under the compact viewport query, because the phone artboard
+The narrowing lives in `ednb-tab-group`, under the compact viewport query, because the phone artboard
 draws _every_ one of its segmented strips on that inside — this one, the side selector under it, the
 priority groups in feature 005's panel. It is a viewport query and not a container one on purpose:
 the question is which artboard is being drawn, not how much room this strip was given. The second
@@ -293,7 +293,7 @@ state as well as by the canvas's marker, so no segment's condition is carried by
 disabled segment is never the filled one, whichever is selected: the fill says "this is the mode you
 are in", which a segment nobody can reach is not, and disabled ink on it reads at 1.34:1.
 
-Both canvases draw a segmented strip the same way, and it is not the way `edsb-tab-group` had been
+Both canvases draw a segmented strip the same way, and it is not the way `ednb-tab-group` had been
 drawing one since feature 011: one amber hairline showing between the segments, the chosen one filled
 solid amber carrying the ground colour as its text, the rest on the quiet control surface. The
 component was inverted — dark fill, amber text, a shadow and a rule under the strip — so the
@@ -670,7 +670,7 @@ mount's anchor itself — the same arithmetic that turns the hull — and hands 
 `src/app/domain/ships/anatomy/mount-declutter.ts`, which decides which marks step aside: a pure function
 over published coordinates, testable without rendering anything (constitution III). The one thing it
 needs a browser for, how wide its own frame and its own marks came out, comes through
-`ElementSizeAdapter` in the platform layer. The side selector reuses feature 011's `edsb-tab-group` in
+`ElementSizeAdapter` in the platform layer. The side selector reuses feature 011's `ednb-tab-group` in
 its segmented presentation, and the legend is five static rows in the capability's own template.
 
 The plate accepts immutable view state, emits a typed slot intent, owns its own semantics and its

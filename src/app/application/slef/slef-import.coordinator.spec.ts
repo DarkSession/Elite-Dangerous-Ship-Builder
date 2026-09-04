@@ -40,9 +40,9 @@ describe('the one path from a draft to an active build', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        // A stub `/build`, so the coordinator's move to the workspace resolves
+        // A stub `/outfitting`, so the coordinator's move to the workspace resolves
         // without mounting feature 001's real route.
-        provideRouter([{ path: 'build', children: [] }]),
+        provideRouter([{ path: 'outfitting', children: [] }]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
       ],

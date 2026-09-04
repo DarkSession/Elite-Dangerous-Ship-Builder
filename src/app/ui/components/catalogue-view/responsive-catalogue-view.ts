@@ -49,7 +49,7 @@ export interface CatalogueColumn {
  * (routes-and-ui contract).
  */
 @Component({
-  selector: 'edsb-responsive-catalogue-view',
+  selector: 'ednb-responsive-catalogue-view',
   imports: [GameText, HullSummaryCard, UnavailableValue],
   templateUrl: './responsive-catalogue-view.html',
   styleUrl: './responsive-catalogue-view.scss',

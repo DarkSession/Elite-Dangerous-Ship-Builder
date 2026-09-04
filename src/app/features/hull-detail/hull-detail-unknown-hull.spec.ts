@@ -50,7 +50,7 @@ describe('an address no hull answers to', () => {
     const element = render('Nonexistent_Hull');
 
     expect(element.querySelectorAll('dl')).toHaveLength(0);
-    expect(element.querySelectorAll('edsb-fact-list')).toHaveLength(0);
+    expect(element.querySelectorAll('ednb-fact-list')).toHaveLength(0);
   });
 
   it('offers the way back to the catalogue', () => {

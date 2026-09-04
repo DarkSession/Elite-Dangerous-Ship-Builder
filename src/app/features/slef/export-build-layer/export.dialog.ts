@@ -26,7 +26,7 @@ import { ExportBuildLayer } from './export-build-layer';
  * having worked.
  */
 @Component({
-  selector: 'edsb-slef-export-dialog',
+  selector: 'ednb-slef-export-dialog',
   imports: [ChoiceGroup, ExportBuildLayer, Layer, ShareLinkPanel],
   templateUrl: './export.dialog.html',
   styleUrl: './export.dialog.scss',

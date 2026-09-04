@@ -46,7 +46,7 @@ draws, and to the status rail feature 003 already draws, one read-only block and
 
 ## Cross-feature composition
 
-- Feature 001 owns the active build, its revision and the `/build` workspace.
+- Feature 001 owns the active build, its revision and the `/outfitting` workspace.
 - Feature 002 owns enabled/priority mutations and exact-slot selection. Feature 005 selects a slot
   and stops there.
 - Feature 003 owns the status rail's heading and its validation issues, and no condition state of

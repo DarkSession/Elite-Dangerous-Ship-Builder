@@ -62,7 +62,7 @@ test.describe('the workspace, on arrival', () => {
   test('restores the working build before it is interactive', async ({ page }) => {
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await savedToBrowser(page);
 
     await page.reload();
@@ -82,7 +82,7 @@ test.describe('the workspace, on arrival', () => {
 
     // One record, one key, however many revisions went into it.
     const keys = await page.evaluate(() =>
-      Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')),
+      Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')),
     );
     expect(keys).toHaveLength(1);
   });
@@ -92,7 +92,7 @@ test.describe('the codec', () => {
   test('encodes and decodes a real build well inside the sub-50 ms target', async ({ page }) => {
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
 
     // Publication happens once per modelled edit, so the time from an edit to a
     // published fragment is what the target is about. Measured through the

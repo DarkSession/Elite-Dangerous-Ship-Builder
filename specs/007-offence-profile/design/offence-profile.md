@@ -1,6 +1,6 @@
 # Offence Profile
 
-**Route context**: the `OFFENCE` mode of the hull anatomy region inside `/build`; no new route
+**Route context**: the `OFFENCE` mode of the hull anatomy region inside `/outfitting`; no new route
 
 **Design-system composition**: the anatomy mode strip; the range field; semantic not-stated and
 unavailable text; localized game text and values; the status rail's own block pattern. The blocks

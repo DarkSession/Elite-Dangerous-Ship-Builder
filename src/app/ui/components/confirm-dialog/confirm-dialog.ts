@@ -16,7 +16,7 @@ import { Layer } from '../layer/layer';
  * is never the only signal (FR-010).
  */
 @Component({
-  selector: 'edsb-confirm-dialog',
+  selector: 'ednb-confirm-dialog',
   imports: [ActionButton, Layer],
   templateUrl: './confirm-dialog.html',
   styleUrl: './confirm-dialog.scss',

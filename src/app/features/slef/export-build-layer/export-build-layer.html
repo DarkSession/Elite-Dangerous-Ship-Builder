@@ -1,10 +1,10 @@
 <div class="slef-export">
   @if (view().generating; as preparing) {
-    <edsb-status-notice tone="loading" [message]="preparing" />
+    <ednb-status-notice tone="loading" [message]="preparing" />
   }
 
   @if (view().stale; as stale) {
-    <edsb-status-notice tone="warning" [message]="stale" />
+    <ednb-status-notice tone="warning" [message]="stale" />
   }
 
   <!--
@@ -14,7 +14,7 @@
     third time (Commander request 2026-08-26). The label itself stays: it is
     what names the control to a reader who lands on it.
   -->
-  <edsb-textarea-field
+  <ednb-textarea-field
     [label]="view().fieldLabel"
     [labelHidden]="true"
     [value]="view().payload"
@@ -24,7 +24,7 @@
   />
 
   @if (view().validation; as warning) {
-    <edsb-status-notice tone="warning" [message]="warning" />
+    <ednb-status-notice tone="warning" [message]="warning" />
   }
 
   @if (view().link; as link) {
@@ -38,7 +38,7 @@
 
     <div class="slef-export__actions">
       @for (action of view().actions; track action.action) {
-        <edsb-action-button
+        <ednb-action-button
           [label]="action.label"
           [emphasis]="action.action === 'copy' ? 'primary' : 'secondary'"
           [disabled]="!ready()"
@@ -50,7 +50,7 @@
 
   @for (action of view().actions; track action.action) {
     @if (action.status; as status) {
-      <edsb-status-notice [tone]="action.failed ? 'error' : 'info'" [message]="status" />
+      <ednb-status-notice [tone]="action.failed ? 'error' : 'info'" [message]="status" />
     }
   }
 </div>

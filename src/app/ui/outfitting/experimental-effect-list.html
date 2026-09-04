@@ -17,7 +17,7 @@
 
     <!--
       The chosen effect is named on the trigger, so a Commander who never opens
-      the list still reads what is applied. Through `edsb-game-text`, like every
+      the list still reads what is applied. Through `ednb-game-text`, like every
       other place this application prints a game noun, so an untranslated name
       is disclosed as one here too. The caret is decoration: the button says it
       opens a listbox and whether that listbox is open.
@@ -34,7 +34,7 @@
     >
       <span class="menu__value">
         @if (triggerEffect(); as effect) {
-          <edsb-game-text
+          <ednb-game-text
             [text]="effect.name.text"
             [language]="effect.name.language"
             [translationState]="effect.name.translationState"
@@ -97,7 +97,7 @@
             (click)="choose(effect.fdname)"
           >
             <span class="menu__option-name" [id]="optionId(index + 1) + '-name'">
-              <edsb-game-text
+              <ednb-game-text
                 [text]="effect.name.text"
                 [language]="effect.name.language"
                 [translationState]="effect.name.translationState"
@@ -105,13 +105,13 @@
             </span>
             <!--
               Only where the package has one, for the reason the card list gives
-              below: `edsb-game-text` stands in for a missing string with `Name
+              below: `ednb-game-text` stands in for a missing string with `Name
               unavailable`, which is the right answer for a name and the wrong
               one for a description.
             -->
             @if (effect.description.text !== null) {
               <span class="menu__option-description" [id]="optionId(index + 1) + '-description'">
-                <edsb-game-text
+                <ednb-game-text
                   [text]="effect.description.text"
                   [language]="effect.description.language"
                   [translationState]="effect.description.translationState"
@@ -153,14 +153,14 @@
           (change)="chosen.emit(effect.fdname)"
         />
         <span class="effect__identity">
-          <edsb-game-text
+          <ednb-game-text
             class="effect__name"
             [text]="effect.name.text"
             [language]="effect.name.language"
             [translationState]="effect.name.translationState"
           />
           <!--
-            Only where the package has one. `edsb-game-text` stands in for a
+            Only where the package has one. `ednb-game-text` stands in for a
             missing string with `Name unavailable`, which is the right answer for
             a name — an article a reader cannot be told the name of is a fact
             worth stating — and the wrong one here twice over: this is not a
@@ -168,7 +168,7 @@
             already fully named on the line above (Commander request 2026-08-26).
           -->
           @if (effect.description.text !== null) {
-            <edsb-game-text
+            <ednb-game-text
               class="effect__description"
               [text]="effect.description.text"
               [language]="effect.description.language"

@@ -18,7 +18,7 @@
 
         <div class="item__identity">
           <h2 class="item__name" [id]="headingId">
-            <edsb-game-text
+            <ednb-game-text
               [text]="item.name.text"
               [language]="item.name.language"
               [translationState]="item.name.translationState"
@@ -32,7 +32,7 @@
            chosen grade filled and the rest bare. An empty mount publishes no
            grade, so it draws no ladder rather than an empty one. -->
       @if (item.grades.length > 0) {
-        <edsb-grade-selector
+        <ednb-grade-selector
           class="item__grades"
           [grades]="item.grades"
           [selected]="item.grade"
@@ -64,7 +64,7 @@
 
       <!-- The same rows the gate draws: the 2026-09-04 revision made its suit
            list this one, so one row shape serves both. -->
-      <edsb-choice-list
+      <ednb-choice-list
         [choices]="alternatives()"
         [label]="item.chooserTitle"
         [asPairs]="true"
@@ -74,7 +74,7 @@
 
     <!-- The canvas switches the grid on what the item is: `1fr 1fr` for a
          suit's figures and `repeat(4, 1fr)` for a weapon's eight. -->
-    <edsb-metric-group
+    <ednb-metric-group
       class="item__attributes"
       [class.metric-group--quad]="item.target !== 'suit'"
       [class.metric-group--pair]="item.target === 'suit'"
@@ -83,7 +83,7 @@
     />
 
     @if (item.slots; as slots) {
-      <edsb-modification-slots
+      <ednb-modification-slots
         [slots]="slots"
         [heading]="item.slotsHeading"
         [opened]="openSlot()"

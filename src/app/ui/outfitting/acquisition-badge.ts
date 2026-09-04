@@ -93,7 +93,7 @@ interface RenderedLabel {
  * draws are drawn; the rest are read.
  */
 @Component({
-  selector: 'edsb-acquisition-badge',
+  selector: 'ednb-acquisition-badge',
   imports: [Tooltip],
   templateUrl: './acquisition-badge.html',
   styleUrl: './acquisition-badge.scss',

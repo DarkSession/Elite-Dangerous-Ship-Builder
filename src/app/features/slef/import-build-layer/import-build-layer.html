@@ -7,7 +7,7 @@
     one control on the surface is the same fact a third time. Neither exchange
     canvas draws it (Commander request 2026-08-26).
   -->
-  <edsb-textarea-field
+  <ednb-textarea-field
     [label]="view().fieldLabel"
     [labelHidden]="true"
     [value]="view().draft"
@@ -30,14 +30,14 @@
   <p class="slef-import__status" data-bidi-isolate>{{ view().status }}</p>
 
   <!--
-    The refusal is said once, by the field it is about: `edsb-textarea-field`
+    The refusal is said once, by the field it is about: `ednb-textarea-field`
     renders it visibly and associates it with the control, so a reader who lands
     on the payload hears why it was refused. A second copy of the same sentence
     beside it would be the same fact twice on one screen.
   -->
   @if (view().failure; as failure) {
     @if (failure.refusals.length > 0 || failure.diagnostics.length > 0) {
-      <edsb-disclosure
+      <ednb-disclosure
         class="slef-import__advanced"
         [label]="failure.advancedLabel"
         [expanded]="advanced()"
@@ -52,12 +52,12 @@
         }
 
         @if (failure.diagnostics.length > 0) {
-          <edsb-diagnostic-list
+          <ednb-diagnostic-list
             [label]="failure.diagnosticsLabel"
             [diagnostics]="failure.diagnostics"
           />
         }
-      </edsb-disclosure>
+      </ednb-disclosure>
     }
   }
 
@@ -65,12 +65,12 @@
     <p class="slef-import__accepted">{{ view().accepted }}</p>
 
     <div class="slef-import__actions">
-      <edsb-action-button
+      <ednb-action-button
         [label]="view().cancelLabel"
         emphasis="secondary"
         (activated)="cancelled.emit()"
       />
-      <edsb-action-button
+      <ednb-action-button
         [label]="view().submitLabel"
         emphasis="primary"
         [busy]="view().busy"

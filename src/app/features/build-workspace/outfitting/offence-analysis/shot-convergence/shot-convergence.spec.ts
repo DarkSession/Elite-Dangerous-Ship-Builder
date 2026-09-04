@@ -274,7 +274,7 @@ describe('ShotConvergence', () => {
     // The canvas's 2026-08-25 layout: `TARGET RANGE` and `600 m` share the row
     // above the track, and the track's two ends are printed beneath it. The
     // order in the document is the order it is read in.
-    const field = element.querySelector('edsb-range-field');
+    const field = element.querySelector('ednb-range-field');
     const parts = [...(field?.querySelectorAll('.range > *') ?? [])].map((part) =>
       part.className.replace('range__', ''),
     );
@@ -289,7 +289,7 @@ describe('ShotConvergence', () => {
     // else. Everything the cells reported is still in the plate's sentences.
     const readout = element.querySelector('.convergence__readout');
     expect(readout).not.toBeNull();
-    expect(readout?.querySelector('edsb-range-field')).not.toBeNull();
+    expect(readout?.querySelector('ednb-range-field')).not.toBeNull();
     expect(readout?.querySelectorAll('.fact')).toHaveLength(0);
   });
 });

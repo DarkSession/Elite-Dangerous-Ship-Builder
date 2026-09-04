@@ -6,11 +6,11 @@ contract freezes what this feature adds to it and what it may not touch.
 
 ## One key space, two kinds of record
 
-A loadout is stored under `edsb:record:<uuid>` — the same key space, the same prefix filter, the
+A loadout is stored under `ednb:record:<uuid>` — the same key space, the same prefix filter, the
 same absence of an index. The envelope gains a discriminator:
 
 ```text
-edsb.local-record v2
+ednb.local-record v2
 ├── tool: "ship"       → hullSymbol, validation, build
 └── tool: "equipment"  → suitFamily, loadout
 ```

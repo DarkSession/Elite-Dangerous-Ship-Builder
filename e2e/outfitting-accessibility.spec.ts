@@ -40,7 +40,7 @@ import { buildStockHull } from './shell';
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -53,7 +53,7 @@ async function selectMount(page: Page, slotKey: string): Promise<void> {
 
 test.describe('every outfitting state', () => {
   test('an empty workspace says why it is empty and stays sound', async ({ page }, testInfo) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await sweepOutfittingState(page, testInfo, 'no build');
@@ -421,14 +421,14 @@ test.describe('the conditions that break layouts', () => {
       return;
     }
 
-    await page.locator('edsb-experimental-effect-list .menu__trigger').first().click();
-    await expect(page.locator('edsb-experimental-effect-list .menu__list')).toBeVisible();
+    await page.locator('ednb-experimental-effect-list .menu__trigger').first().click();
+    await expect(page.locator('ednb-experimental-effect-list .menu__list')).toBeVisible();
     await settled(page);
 
     await expectNoAccessibilityViolations(page, testInfo, { label: 'effect menu open' });
     // The default selector names no `option`, and every row of this list is one
     // a Commander presses.
-    await expectTargetSizes(page, 'edsb-experimental-effect-list [role="option"]');
+    await expectTargetSizes(page, 'ednb-experimental-effect-list [role="option"]');
     await expectNoDocumentOverflow(page);
   });
 });

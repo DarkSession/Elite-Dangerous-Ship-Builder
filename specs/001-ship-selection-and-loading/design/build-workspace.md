@@ -1,6 +1,6 @@
 # Build Workspace Screen
 
-**Route**: `/build` with optional `#b.…`  
+**Route**: `/outfitting` with optional `#b.…`  
 **Requirements**: FR-007–FR-009, FR-011–FR-012, FR-014–FR-021
 
 This feature defines the active-build shell and persistence/share behavior. Module editors and statistics compose into it under later capability plans.
@@ -34,7 +34,7 @@ Canvas 1c supplies the wide workspace command hierarchy: build name/hull identit
 | Persistence failed/quota           | Blocking status explains that editing remains usable; manage/retry actions remain available.                                                                                                                                                  |
 | Valid incoming link                | Detached candidate completes before the single commit; success becomes an unnamed record with link provenance.                                                                                                                                |
 | Invalid/truncated/unsupported link | Localized structured error; active and stored builds unchanged.                                                                                                                                                                               |
-| Link published                     | Selectable same-origin `/build#b.…` text; path/query contain no build data.                                                                                                                                                                   |
+| Link published                     | Selectable same-origin `/outfitting#b.…` text; path/query contain no build data.                                                                                                                                                              |
 | Link refused                       | Stale build fragment removed; affected slot/reason shown; active build remains; SLEF action available.                                                                                                                                        |
 | Save, unnamed build                | No mode is drawn: saving as a new build is the only thing the commit can do. The name starts from what the build is already called — its ship name, its ident, or its hull — which is the rule the library titles an unnamed row by (FR-010). |
 | Save, opened from a save           | Two modes, the first selected, each led by a square marker filled on the one that stands: replace that save, stating when it was last saved, or keep both as a new build. The name starts from the record’s own and the note from its note.   |
@@ -59,7 +59,7 @@ Visibility loss/pagehide requests a best-effort flush. A manual save takes the t
 - Error alerts fire once per new blocking condition. Repeated autosave success does not interrupt speech.
 - Link text wraps or uses a labeled internal scroll container without document overflow.
 - Share/copy failure never removes selectable text.
-- The share-link mode always renders `/build#b.…`; the reference `/b/<name>#h=…` sample is not implemented because it puts local naming/version detail outside the canonical fragment contract.
+- The share-link mode always renders `/outfitting#b.…`; the reference `/b/<name>#h=…` sample is not implemented because it puts local naming/version detail outside the canonical fragment contract.
 - **Revised 2026-08-22.** Persistence status and record provenance are _not_ added to the visual
   hierarchy: neither canvas draws either, and the standing rule is that what the design does not draw
   is not drawn. Both remain in the accessibility layer, where a reader who has no drawn state to

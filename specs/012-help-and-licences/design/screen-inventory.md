@@ -100,7 +100,7 @@ accepted requirement rather than to nothing.
   defined once and only in the token layer, and `check-interface-foundations.mjs` enforces it as
   `token-outside-source`; the rule turned `pnpm run policy` red the moment this branch rebased onto
   it. The declaration moved verbatim to `styles/tokens/_semantic.scss`, beside the token's own, as
-  `edsb-app-frame.frame--released` — the frame already marks that state on its host element, so the
+  `ednb-app-frame.frame--released` — the frame already marks that state on its host element, so the
   selector reaches exactly what `:host(.frame--released)` reached. Nothing in the frame's behaviour
   changed and its end-to-end assertion still holds; what changed is that the layout decision lives
   in one place again.
@@ -120,31 +120,31 @@ state; where a dismissible layer covers the frame, help is reached from the capa
 the layer is dismissed, which is what FR-011 now requires in place of a substitute route. A missing
 capability or applicable surface is a release failure; representative sampling is not sufficient.
 
-| Capability / surface                         | Owner | Frame entry           | Applies                |
-| -------------------------------------------- | ----- | --------------------- | ---------------------- |
-| Hull catalogue `/ships`                      | 001   | visible               | FR-001, FR-002, FR-011 |
-| Hull detail `/ships/:hull`                   | 001   | visible               | FR-001, FR-002, FR-011 |
-| Build workspace `/build`, including no-build | 001   | visible               | FR-001, FR-011         |
-| Build library layer                          | 001   | obscured, dismissible | FR-001, FR-011         |
-| Save-build layer                             | 001   | obscured, dismissible | FR-011                 |
-| Build-library delete confirmation            | 001   | obscured, dismissible | FR-011                 |
-| Outfitting workspace ledger                  | 002   | visible               | FR-002                 |
-| Module replacement layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
-| Engineering editor layer                     | 002   | obscured, dismissible | FR-002, FR-011         |
-| Incoming-build normalisation refusal         | 002   | obscured, dismissible | FR-011                 |
-| Status rail                                  | 003   | visible               | FR-002, FR-008         |
-| Import Build layer                           | 004   | obscured, dismissible | FR-011                 |
-| Export Build layer                           | 004   | obscured, dismissible | FR-011                 |
-| Import Outcome disclosure                    | 004   | visible               | FR-011                 |
-| Power and Thermals                           | 005   | visible               | FR-002, FR-008         |
-| Defence Analysis                             | 006   | visible               | FR-002, FR-008         |
-| Offence Analysis                             | 007   | visible               | FR-002, FR-008         |
-| Drives and Mass                              | 008   | visible               | FR-002, FR-008         |
-| Cost and Materials blocks                    | 009   | visible               | FR-002, FR-008         |
-| Hull Anatomy plates and mount facts          | 010   | visible               | FR-002, FR-008         |
-| Hull Anatomy side availability/defect state  | 010   | visible               | FR-011                 |
-| Application frame                            | 011   | visible               | FR-001                 |
-| Global feedback/announcement host            | 011   | visible               | FR-011                 |
+| Capability / surface                              | Owner | Frame entry           | Applies                |
+| ------------------------------------------------- | ----- | --------------------- | ---------------------- |
+| Hull catalogue `/ships`                           | 001   | visible               | FR-001, FR-002, FR-011 |
+| Hull detail `/ships/:hull`                        | 001   | visible               | FR-001, FR-002, FR-011 |
+| Build workspace `/outfitting`, including no-build | 001   | visible               | FR-001, FR-011         |
+| Build library layer                               | 001   | obscured, dismissible | FR-001, FR-011         |
+| Save-build layer                                  | 001   | obscured, dismissible | FR-011                 |
+| Build-library delete confirmation                 | 001   | obscured, dismissible | FR-011                 |
+| Outfitting workspace ledger                       | 002   | visible               | FR-002                 |
+| Module replacement layer                          | 002   | obscured, dismissible | FR-002, FR-011         |
+| Engineering editor layer                          | 002   | obscured, dismissible | FR-002, FR-011         |
+| Incoming-build normalisation refusal              | 002   | obscured, dismissible | FR-011                 |
+| Status rail                                       | 003   | visible               | FR-002, FR-008         |
+| Import Build layer                                | 004   | obscured, dismissible | FR-011                 |
+| Export Build layer                                | 004   | obscured, dismissible | FR-011                 |
+| Import Outcome disclosure                         | 004   | visible               | FR-011                 |
+| Power and Thermals                                | 005   | visible               | FR-002, FR-008         |
+| Defence Analysis                                  | 006   | visible               | FR-002, FR-008         |
+| Offence Analysis                                  | 007   | visible               | FR-002, FR-008         |
+| Drives and Mass                                   | 008   | visible               | FR-002, FR-008         |
+| Cost and Materials blocks                         | 009   | visible               | FR-002, FR-008         |
+| Hull Anatomy plates and mount facts               | 010   | visible               | FR-002, FR-008         |
+| Hull Anatomy side availability/defect state       | 010   | visible               | FR-011                 |
+| Application frame                                 | 011   | visible               | FR-001                 |
+| Global feedback/announcement host                 | 011   | visible               | FR-011                 |
 
 The **Applies** column carries this feature's requirement IDs; **Owner** carries the feature that
 owns the surface. The application frame's own row records `visible` like any

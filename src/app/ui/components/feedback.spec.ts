@@ -202,7 +202,7 @@ describe('AppFrame', () => {
       );
 
     expect(labelsIn('.frame__actions')).toEqual(['Save', 'Language']);
-    expect(labelsIn('edsb-action-layer')).toEqual(['Save', 'Language']);
+    expect(labelsIn('ednb-action-layer')).toEqual(['Save', 'Language']);
     expect(textOf(query(fixture, '.action-layer__trigger-label'))).toBe(
       BUNDLED_ENGLISH['shell.actions.open'],
     );
@@ -217,7 +217,7 @@ describe('AppFrame', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.actionsOpen()).toBe(true);
 
-    query(fixture, 'edsb-action-layer .action').click();
+    query(fixture, 'ednb-action-layer .action').click();
     fixture.detectChanges();
 
     expect(emitted).toEqual(['save']);
@@ -267,7 +267,7 @@ describe('AppFrame', () => {
     TestBed.inject(LocaleStore).commitFallbackToEnglish('de-DE', 'load-failed', 'browser');
     fixture.detectChanges();
 
-    const notices = query(fixture, '.frame__status').querySelectorAll('edsb-status-notice');
+    const notices = query(fixture, '.frame__status').querySelectorAll('ednb-status-notice');
 
     expect(notices.length).toBe(2);
     expect(textOf(notices[0])).toContain('A newer version is available.');

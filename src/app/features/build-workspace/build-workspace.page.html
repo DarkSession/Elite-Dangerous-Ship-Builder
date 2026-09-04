@@ -7,14 +7,14 @@
   says nothing when there are none (design-canvas rule).
 -->
 @if (linkFailure(); as failure) {
-  <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
+  <ednb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
 }
 
 @if (hasBuild()) {
-  <edsb-persistence-status />
+  <ednb-persistence-status />
 
   @if (validationProblem(); as verdict) {
-    <edsb-status-notice [tone]="verdict.tone" [message]="verdict.message" />
+    <ednb-status-notice [tone]="verdict.tone" [message]="verdict.message" />
   }
 
   <!--
@@ -26,13 +26,13 @@
     verdict above and the ledger below cannot disagree about what is fitted.
   -->
   <div class="workspace__outlet">
-    <edsb-outfitting-workspace />
+    <ednb-outfitting-workspace />
   </div>
 } @else {
   <div class="workspace__empty">
     <h2>{{ emptyTitle() }}</h2>
     <p>{{ emptyDescription() }}</p>
-    <edsb-action-link
+    <ednb-action-link
       [label]="emptyAction()"
       [href]="catalogueRoute"
       [routerLink]="catalogueRoute"
@@ -46,7 +46,7 @@
   "which of these builds", and what should become of one is asked where a
   Commander is working in it (FR-009).
 -->
-<edsb-save-build-dialog
+<ednb-save-build-dialog
   [open]="saveOpen()"
   [initialName]="saveInitialName()"
   [initialNote]="saveInitialNote()"
@@ -64,7 +64,7 @@
   it. Three answers, each stating which versions survive, and no lock is held
   while it is on screen (FR-012).
 -->
-<edsb-choice-dialog
+<ednb-choice-dialog
   [open]="conflict() !== null"
   [title]="conflictTitle()"
   [description]="conflictDescription()"

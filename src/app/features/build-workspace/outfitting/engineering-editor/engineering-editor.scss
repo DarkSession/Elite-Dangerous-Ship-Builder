@@ -237,7 +237,7 @@
 // edge, so the inset is paid on top of the figure rather than out of the room
 // reserved for the controls.
 .engineering:not(.engineering--layer)
-  .engineering__choices:has(edsb-blueprint-choice-list)
+  .engineering__choices:has(ednb-blueprint-choice-list)
   .engineering__card-body {
   min-block-size: calc(
     var(--ednb-layout-engineering-choices) + var(--ednb-space-xl) + var(--ednb-space-xl)

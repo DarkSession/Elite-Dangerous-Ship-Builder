@@ -37,7 +37,7 @@ Confirm:
 Before implementation acceptance, confirm:
 
 - feature 001 exposes one active `ShipLoadout`, a numeric build revision, a no-build state and
-  `/build`;
+  `/outfitting`;
 - feature 002 advances that revision on committed edits and reveals an exact slot target;
 - feature 010 owns the hull plates, their side selector, their legend and the five-segment mode
   strip, and this feature enables one of those segments rather than adding a surface of its own;
@@ -62,7 +62,7 @@ the shared accessibility helper.
 
 Use a build whose deployed draw sheds a lower priority group while its retracted draw does not:
 
-1. Open `/build`, then the anatomy region's `POWER` segment.
+1. Open `/outfitting`, then the anatomy region's `POWER` segment.
 2. Confirm the region retitles to `POWER & THERMALS`, that the plates, their side selector and their
    legend are gone, and that the dashboard is drawn in the space they left. Nothing stands under the
    rule explaining the panel: the canvas draws a title per mode and nothing else.

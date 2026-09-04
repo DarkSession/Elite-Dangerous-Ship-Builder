@@ -558,7 +558,7 @@
   // agree down the block, and subgrid is what holds that.
   --ednb-measure-damage-bar: 1.375rem;
   // The range field's own band, at the same 22px canvas 1c draws it. Its own
-  // measure rather than the damage bar's: `edsb-range-field` is a design-system
+  // measure rather than the damage bar's: `ednb-range-field` is a design-system
   // control every screen may compose, and a change to one screen's damage bar
   // must not resize it.
   --ednb-measure-range-track: 1.375rem;

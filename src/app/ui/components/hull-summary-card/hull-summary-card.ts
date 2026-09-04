@@ -36,7 +36,7 @@ export interface HullSummary {
  * state is the only signal for everyone else.
  */
 @Component({
-  selector: 'edsb-hull-summary-card',
+  selector: 'ednb-hull-summary-card',
   imports: [GameText, UnavailableValue],
   templateUrl: './hull-summary-card.html',
   styleUrl: './hull-summary-card.scss',

@@ -14,7 +14,7 @@ import { declareMeasurement, declareResizeObserver } from '../measurement.spec-h
  */
 
 @Component({
-  selector: 'edsb-composition-host',
+  selector: 'ednb-composition-host',
   template: '<div class="host"></div>',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

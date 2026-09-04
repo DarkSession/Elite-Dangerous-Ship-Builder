@@ -22,7 +22,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  * a sentence about it.
  */
 @Component({
-  selector: 'edsb-legal-excerpt',
+  selector: 'ednb-legal-excerpt',
   templateUrl: './legal-excerpt.html',
   styleUrl: './legal-excerpt.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -83,8 +83,8 @@ describe('EquipmentBenchPage', () => {
     const bench = render();
 
     expect(bench.querySelector('.bench__region--loadout')).toBeNull();
-    expect(bench.querySelector('edsb-suit-gate')).not.toBeNull();
-    expect(bench.querySelector('edsb-item-view')).toBeNull();
+    expect(bench.querySelector('ednb-suit-gate')).not.toBeNull();
+    expect(bench.querySelector('ednb-item-view')).toBeNull();
     expect(bench.querySelector('.gate__title')?.textContent?.trim()).toBe(
       BUNDLED_ENGLISH['equipment.gate.title'],
     );
@@ -98,7 +98,7 @@ describe('EquipmentBenchPage', () => {
     fixture.detectChanges();
 
     const bench = fixture.nativeElement as HTMLElement;
-    expect(bench.querySelector('edsb-suit-gate')).toBeNull();
+    expect(bench.querySelector('ednb-suit-gate')).toBeNull();
     expect(store.selected()).toBe('suit');
   });
 
@@ -126,7 +126,7 @@ describe('EquipmentBenchPage', () => {
     wear();
     const bench = render();
 
-    expect(bench.querySelector('edsb-tab-group')).not.toBeNull();
+    expect(bench.querySelector('ednb-tab-group')).not.toBeNull();
     expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
     expect(bench.querySelector('.bench__region--stats')).toBeNull();
   });
@@ -256,7 +256,7 @@ describe('EquipmentBenchPage', () => {
     links.ingest('e.notaloadoutatall');
     fixture.detectChanges();
 
-    const notice = (fixture.nativeElement as HTMLElement).querySelector('edsb-status-notice');
+    const notice = (fixture.nativeElement as HTMLElement).querySelector('ednb-status-notice');
     expect(notice?.textContent).toContain('could not be read');
     // Never Frontier's journal key, and never the bench's own loadout.
     expect(notice?.textContent).not.toContain('PrimaryWeapon');

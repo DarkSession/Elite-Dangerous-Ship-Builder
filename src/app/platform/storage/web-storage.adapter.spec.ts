@@ -1,4 +1,4 @@
-import { EDSB_RECORD_KEY_PREFIX } from './storage-keys';
+import { EDNB_RECORD_KEY_PREFIX } from './storage-keys';
 import { classifyStorageError, createWebStoragePort } from './web-storage.adapter';
 
 /** A storage area whose behaviour a test can dictate per operation. */
@@ -61,22 +61,22 @@ describe('web storage port', () => {
     const storage = new FakeStorage();
     const port = createWebStoragePort(() => storage);
 
-    expect(port.write('edsb:record:a', '{"a":1}')).toEqual({ ok: true, value: undefined });
-    expect(port.read('edsb:record:a')).toEqual({ ok: true, value: '{"a":1}' });
-    expect(port.read('edsb:record:missing')).toEqual({ ok: true, value: null });
+    expect(port.write('ednb:record:a', '{"a":1}')).toEqual({ ok: true, value: undefined });
+    expect(port.read('ednb:record:a')).toEqual({ ok: true, value: '{"a":1}' });
+    expect(port.read('ednb:record:missing')).toEqual({ ok: true, value: null });
   });
 
   it('enumerates only the keys this application owns', () => {
     const storage = new FakeStorage();
-    storage.setItem('edsb:record:a', '1');
-    storage.setItem('edsb:record:b', '2');
+    storage.setItem('ednb:record:a', '1');
+    storage.setItem('ednb:record:b', '2');
     storage.setItem('another-app:record:c', '3');
-    storage.setItem('edsb:tab', '4');
+    storage.setItem('ednb:tab', '4');
     const port = createWebStoragePort(() => storage);
 
-    expect(port.keys(EDSB_RECORD_KEY_PREFIX)).toEqual({
+    expect(port.keys(EDNB_RECORD_KEY_PREFIX)).toEqual({
       ok: true,
-      value: ['edsb:record:a', 'edsb:record:b'],
+      value: ['ednb:record:a', 'ednb:record:b'],
     });
   });
 
@@ -85,45 +85,45 @@ describe('web storage port', () => {
       throw new DOMException('denied', 'SecurityError');
     });
 
-    expect(port.read('edsb:record:a')).toEqual({ ok: false, code: 'blocked' });
-    expect(port.keys(EDSB_RECORD_KEY_PREFIX)).toEqual({ ok: false, code: 'blocked' });
-    expect(port.write('edsb:record:a', '{}')).toEqual({ ok: false, code: 'blocked' });
-    expect(port.remove('edsb:record:a')).toEqual({ ok: false, code: 'blocked' });
+    expect(port.read('ednb:record:a')).toEqual({ ok: false, code: 'blocked' });
+    expect(port.keys(EDNB_RECORD_KEY_PREFIX)).toEqual({ ok: false, code: 'blocked' });
+    expect(port.write('ednb:record:a', '{}')).toEqual({ ok: false, code: 'blocked' });
+    expect(port.remove('ednb:record:a')).toEqual({ ok: false, code: 'blocked' });
   });
 
   it('reports an absent storage area as blocked', () => {
     const port = createWebStoragePort(() => null);
 
-    expect(port.read('edsb:record:a')).toEqual({ ok: false, code: 'blocked' });
+    expect(port.read('ednb:record:a')).toEqual({ ok: false, code: 'blocked' });
   });
 
   it('reports a full store and leaves the prior value in place', () => {
     const storage = new FakeStorage();
-    storage.setItem('edsb:record:a', 'original');
+    storage.setItem('ednb:record:a', 'original');
     storage.throwOnWrite = quotaError();
     const port = createWebStoragePort(() => storage);
 
-    expect(port.write('edsb:record:a', 'replacement')).toEqual({ ok: false, code: 'quota' });
-    expect(storage.getItem('edsb:record:a')).toBe('original');
+    expect(port.write('ednb:record:a', 'replacement')).toEqual({ ok: false, code: 'quota' });
+    expect(storage.getItem('ednb:record:a')).toBe('original');
   });
 
   it('reports a generic write failure without losing the prior value', () => {
     const storage = new FakeStorage();
-    storage.setItem('edsb:record:a', 'original');
+    storage.setItem('ednb:record:a', 'original');
     storage.throwOnWrite = new Error('disk on fire');
     const port = createWebStoragePort(() => storage);
 
-    expect(port.write('edsb:record:a', 'replacement')).toEqual({ ok: false, code: 'failed' });
-    expect(storage.getItem('edsb:record:a')).toBe('original');
+    expect(port.write('ednb:record:a', 'replacement')).toEqual({ ok: false, code: 'failed' });
+    expect(storage.getItem('ednb:record:a')).toBe('original');
   });
 
   it('removes a key, and removing an absent key succeeds', () => {
     const storage = new FakeStorage();
-    storage.setItem('edsb:record:a', '1');
+    storage.setItem('ednb:record:a', '1');
     const port = createWebStoragePort(() => storage);
 
-    expect(port.remove('edsb:record:a').ok).toBe(true);
-    expect(port.remove('edsb:record:a').ok).toBe(true);
-    expect(storage.getItem('edsb:record:a')).toBeNull();
+    expect(port.remove('ednb:record:a').ok).toBe(true);
+    expect(port.remove('ednb:record:a').ok).toBe(true);
+    expect(storage.getItem('ednb:record:a')).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 # Screen Design: Power and Thermals
 
-**Route**: existing `/build`
+**Route**: existing `/outfitting`
 **Reference**: canvas 1c's `data-anat-detail="power"` and `data-anat-layer="power"`, canvas 1d's
 `data-m-mode="power"`, and the `POWER` block of canvas 1c's 306 px status rail
 **Rulings**: [reference-review.md](./reference-review.md), wave 12; feature 003's wave 11 A–C
@@ -290,7 +290,7 @@ owned string.
 under its own scenario name, reasoning that hover-only meaning is unreachable by touch (011 FR-006).
 The reasoning holds; what it ruled out was a `title` attribute, not a tooltip. Six glosses under six
 names is also six extra lines on the tallest block of the panel, for a reading a Commander wants
-once and then knows. So the gloss moved into the design system's own `edsb-tooltip`
+once and then knows. So the gloss moved into the design system's own `ednb-tooltip`
 (Commander request 2026-08-27), which is not a `title` and does not behave like one:
 
 - it opens on hover, on focus **and on a press** — the last because touch has no hover at all, so a
@@ -636,7 +636,7 @@ cells they head (`specs/003-ship-statistics/design/status-rail.md`, "Items 3 to 
 There is **no heat sentence and no severity word** here (review note: "Where in the design is
 `Verdict`?"). The sentence says the group is unpowered; a word standing beside it to grade that is a
 word the design does not draw. The sentence is this application's own rather than a package
-diagnostic, so it does not go through `edsb-game-text` and is translated like every other string it
+diagnostic, so it does not go through `ednb-game-text` and is translated like every other string it
 owns.
 
 ## State behaviour

@@ -9,7 +9,7 @@
  */
 
 /** A stable prefix for generated element ids, namespaced to the application. */
-const ID_PREFIX = 'edsb';
+const ID_PREFIX = 'ednb';
 
 let sequence = 0;
 

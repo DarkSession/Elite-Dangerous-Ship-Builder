@@ -160,10 +160,10 @@ capability's own surface offers.
 | Canvas                              | Built instead                                         | Reason                                                                                                                                                                                                           |
 | ----------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Warning blocks as unsemantic `div`s | A list, each item naming its severity in hidden words | Meaning may not be carried by a coloured border alone. The word is not drawn — the design draws none — and it is what carries the severity, because the canvas's four blocks differ from each other in hue alone |
-| Package sentences set as plain text | The shared `edsb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                                                                                 |
+| Package sentences set as plain text | The shared `ednb-game-text` primitive                 | A locale miss must disclose that the words are the package's own                                                                                                                                                 |
 | Inline colours and sizes            | Design tokens                                         | One design system                                                                                                                                                                                                |
 
-`edsb-game-text` is the design system's existing behaviour for every package string in the
+`ednb-game-text` is the design system's existing behaviour for every package string in the
 application, not a feature-003 addition — the same argument feature 009 settled under its ruling F.
 
 ## Responsive consequence

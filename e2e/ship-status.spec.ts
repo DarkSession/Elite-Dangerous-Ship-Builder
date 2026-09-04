@@ -19,8 +19,8 @@ import { buildStockHull, openLibrary, openRecordFromLibrary } from './shell';
 const HULL = 'Anaconda';
 
 const rail = (page: Page) => page.locator('.outfitting__status-rail');
-const issues = (page: Page) => page.locator('edsb-build-status .issue:not(.issue--valid)');
-const allClear = (page: Page) => page.locator('edsb-build-status .issue--valid');
+const issues = (page: Page) => page.locator('ednb-build-status .issue:not(.issue--valid)');
+const allClear = (page: Page) => page.locator('ednb-build-status .issue--valid');
 
 /**
  * A stored build naming mounts the hull does not have.
@@ -34,9 +34,9 @@ const allClear = (page: Page) => page.locator('edsb-build-status .issue--valid')
  */
 function seedInvalidRecord(id: string, slots: readonly string[]) {
   return {
-    key: `edsb:record:${id}`,
+    key: `ednb:record:${id}`,
     value: JSON.stringify({
-      format: 'edsb.local-record',
+      format: 'ednb.local-record',
       version: 1,
       id,
       kind: 'named',
@@ -48,7 +48,7 @@ function seedInvalidRecord(id: string, slots: readonly string[]) {
       hullSymbol: HULL,
       validation: { valid: false, complete: false },
       build: {
-        format: 'edsb.build',
+        format: 'ednb.build',
         version: 1,
         shipSymbol: HULL,
         shipName: null,
@@ -91,9 +91,9 @@ function seedOverloadedRecord(id: string) {
   ] as const;
 
   return {
-    key: `edsb:record:${id}`,
+    key: `ednb:record:${id}`,
     value: JSON.stringify({
-      format: 'edsb.local-record',
+      format: 'ednb.local-record',
       version: 1,
       id,
       kind: 'named',
@@ -105,7 +105,7 @@ function seedOverloadedRecord(id: string) {
       hullSymbol: HULL,
       validation: { valid: true, complete: true },
       build: {
-        format: 'edsb.build',
+        format: 'ednb.build',
         version: 1,
         shipSymbol: HULL,
         shipName: null,
@@ -147,9 +147,9 @@ const LADEN_FIT = [
  */
 function seedLadenRecord(id: string) {
   return {
-    key: `edsb:record:${id}`,
+    key: `ednb:record:${id}`,
     value: JSON.stringify({
-      format: 'edsb.local-record',
+      format: 'ednb.local-record',
       version: 1,
       id,
       kind: 'named',
@@ -161,7 +161,7 @@ function seedLadenRecord(id: string) {
       hullSymbol: HULL,
       validation: { valid: true, complete: true },
       build: {
-        format: 'edsb.build',
+        format: 'ednb.build',
         version: 1,
         shipSymbol: HULL,
         shipName: null,
@@ -225,7 +225,7 @@ async function seed(page: Page, entries: readonly { key: string; value: string }
 async function openStockBuild(page: Page): Promise<void> {
   await page.goto(`/ships/${HULL}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   // Canvas 1d keeps the rail behind its `STATUS` segment rather than in the
   // flow, so a compact run opens it and a wide one finds it already there.
   await revealStatusRail(page);
@@ -291,7 +291,7 @@ test.describe('the BUILD STATUS block', () => {
     await page.setViewportSize({ width: 900, height: 1000 });
     await page.goto(`/ships/${HULL}`);
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
 
     const region = page.locator('.outfitting').first();
     await expect(region).toHaveAttribute('data-composition', 'two-pane');
@@ -431,7 +431,7 @@ test.describe('the BUILD STATUS block', () => {
     // (003/FR-023). Both figures are the package's own for this hull, compared
     // against it rather than written down here, so a cell wired to the wrong
     // one fails.
-    const cells = band.locator('edsb-capacity-summary .metric__number');
+    const cells = band.locator('ednb-capacity-summary .metric__number');
     await expect(cells).toHaveCount(2);
     await expect(band).toContainText(englishMessages['capacity.rail.cargo']);
     await expect(band).toContainText(englishMessages['capacity.rail.passengers']);
@@ -453,7 +453,7 @@ test.describe('the BUILD STATUS block', () => {
     // Anaconda carries no cabin, and zero is the package's answer rather than a
     // substitute for one.
     expect(carried.passengers).toBe(0);
-    await expect(band.locator('edsb-capacity-summary')).not.toContainText(
+    await expect(band.locator('ednb-capacity-summary')).not.toContainText(
       englishMessages['unavailable.value'],
     );
   });
@@ -469,7 +469,7 @@ test.describe('the BUILD STATUS block', () => {
     expect(carried.cargo).not.toBe(carried.passengers);
     expect(carried.passengers).toBeGreaterThan(0);
 
-    const cells = rail(page).locator('edsb-capacity-summary .metric__number');
+    const cells = rail(page).locator('ednb-capacity-summary .metric__number');
     await expect
       .poll(async () => await cells.allInnerTexts())
       .toEqual([String(carried.cargo), String(carried.passengers)]);
@@ -482,8 +482,8 @@ test.describe('the BUILD STATUS block', () => {
     // strip's guest segment the workspace's own strip of key readings stands
     // down while it is open, so no figure is on one screen twice.
     await expect(rail(page).locator('.outfitting__status-cells')).toHaveCount(1);
-    await expect(page.locator('edsb-defence-summary')).toHaveCount(1);
-    await expect(page.locator('edsb-drives-summary')).toHaveCount(1);
+    await expect(page.locator('ednb-defence-summary')).toHaveCount(1);
+    await expect(page.locator('ednb-drives-summary')).toHaveCount(1);
 
     const compact =
       (await page.locator('.outfitting').first().getAttribute('data-composition')) !== 'wide';
@@ -496,7 +496,7 @@ test.describe('the BUILD STATUS block', () => {
         .getByRole('button', { name: /^mounts$/i })
         .click();
       await expect(page.locator('.outfitting__key-figures')).toHaveCount(1);
-      await expect(page.locator('edsb-defence-summary')).toHaveCount(1);
+      await expect(page.locator('ednb-defence-summary')).toHaveCount(1);
     }
   });
 

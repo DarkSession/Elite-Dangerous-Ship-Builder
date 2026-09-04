@@ -181,20 +181,21 @@ home as on the shipyard that does not (Commander request 2026-08-28).
 Canvas 4c draws one bar with two decks rather than two bars. The plate is
 `background: var(--panel-4)` closed by the command rule, on a `0 20px` inline inset; the tool deck
 is `height: 30px` and the command deck `height: 40px`, and between them runs a `1px` line in
-`--amber-a12` that starts where the decks start rather than under the insignia beside them. A tab
+`--amber-a12` that starts where the decks start rather than at the edge of the plate. A tab
 is `0 12px` of inline padding on condensed 700 uppercase tracked `0.16em` at `10.5px`, in
 `--ink-48`; the current tab takes `--amber-3` ink, an `--amber-a14` wash and a
 `2px solid var(--amber)` underline. The tabs are separated by `2px`.
 
 Canvas 4d draws the same two decks at 390px: a `34px` tool deck over a `40px` command deck, a
-`21px` mark inset `16px` from the plate edge with the decks starting at `48px` — `11px` past it —
-and the tool's actions behind one `⋯` control. The product folds its actions at that width already, so what 4d settles is the compact
-gutter pair and that the tool deck is drawn at every width.
+`21px` mark on a `0 10px 0 16px` inset at the head of the tool deck, a `16px` inset on the command
+deck below, and the tool's actions behind one `⋯` control. The product folds its actions at that
+width already, so what 4d settles is the compact gutter pair and that the tool deck is drawn at
+every width.
 
-**The insignia stands on the plate, not on either deck.** Canvas 4c puts one mark on the leading
-edge of the bar as a whole, centred across both decks, and indents the decks past it — `42px`
-inside the plate's own inset at 1180px, `48px` at 390px. So the mark is the banner's own child, and
-the tabs and the screen identity line up on one indent under it.
+**The insignia leads the tool deck.** Canvas 4c puts the mark in flow at the head of the upper deck
+with a `12px` gap after it, and both decks then sit on the plate's own inline inset — `20px` at
+1180px, `16px` at 390px. So the mark is the tool deck's first child rather than a box over the
+plate, and the line between the decks starts on the same inset the decks do.
 
 The divider is drawn in `--ednb-rule-section` (`--amber-a14`), which is the step this system
 already draws a section rule at; the canvas's `--amber-a12` has no semantic name here, and adding
@@ -216,7 +217,7 @@ own controls off (011/FR-011, FR-012).
 
 The canvas puts an `ALL TOOLS` control beside the tabs, and a `⌘K` hint and an avatar plate on the
 trailing edge. None of the three is built (`design/application-shell.md`, "The tool bar"), so the
-product's tool deck carries tabs and nothing else.
+product's tool deck carries the insignia and the tabs and nothing else.
 
 ### One bar height, on every screen
 

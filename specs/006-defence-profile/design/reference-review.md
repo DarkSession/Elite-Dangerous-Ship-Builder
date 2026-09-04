@@ -22,7 +22,7 @@ contract.
 
 | Reference idea                                  | Planned adaptation                                                                               |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Defence is a first-class workspace mode         | Keep one `defenceProfile` capability inside `/build`; add no route.                              |
+| Defence is a first-class workspace mode         | Keep one `defenceProfile` capability inside `/outfitting`; add no route.                         |
 | Shield and armour are visual peers              | Use two complete fluid regions only while both remain legible; otherwise stack.                  |
 | Resistance and EHP read together by damage type | Pair exact same-type package values in semantic rows/cards.                                      |
 | Recovery sits with shields                      | Keep the recharge rate and the two phases adjacent to the shield profile.                        |

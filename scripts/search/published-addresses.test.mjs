@@ -52,7 +52,7 @@ describe('published addresses', () => {
         // be absent from the map entirely.
         `${ORIGIN}/`,
         `${ORIGIN}/ships`,
-        `${ORIGIN}/build`,
+        `${ORIGIN}/outfitting`,
         `${ORIGIN}/equipment`,
         // Addressed by the hull's name with an underscore for each space, and
         // sorted by that address rather than left in the package's order: a pin

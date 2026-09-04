@@ -18,7 +18,7 @@ export type UnavailableKind = 'unavailable' | 'incomplete';
  * value that could exist, while an unavailable one has no value to give.
  */
 @Component({
-  selector: 'edsb-unavailable-value',
+  selector: 'ednb-unavailable-value',
   templateUrl: './unavailable-value.html',
   styleUrl: './unavailable-value.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

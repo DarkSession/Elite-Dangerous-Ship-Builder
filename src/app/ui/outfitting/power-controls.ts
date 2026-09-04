@@ -51,7 +51,7 @@ const GROUPS: readonly PowerPriority[] = [0, 1, 2, 3, 4];
  * only what the chip reads: the group the module is actually in.
  */
 @Component({
-  selector: 'edsb-power-controls',
+  selector: 'ednb-power-controls',
   templateUrl: './power-controls.html',
   styleUrl: './power-controls.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

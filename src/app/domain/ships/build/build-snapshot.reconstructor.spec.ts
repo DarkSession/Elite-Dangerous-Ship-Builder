@@ -85,7 +85,7 @@ describe('snapshot reconstruction', () => {
 
   it('refuses an unknown hull without constructing anything', () => {
     const result = reconstructFromSnapshot({
-      format: 'edsb.build',
+      format: 'ednb.build',
       version: 1,
       shipSymbol: 'Nonexistent_Hull',
       shipName: null,
@@ -114,7 +114,7 @@ describe('snapshot reconstruction', () => {
     };
 
     const result = reconstructFromSnapshot({
-      format: 'edsb.build',
+      format: 'ednb.build',
       version: 1,
       shipSymbol: 'Anaconda',
       shipName: null,

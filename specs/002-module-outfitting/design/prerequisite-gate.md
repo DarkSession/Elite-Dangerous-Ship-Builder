@@ -26,7 +26,7 @@ Verified 2026-08-21 against the working tree at commit `7100dc1d`.
 
 | Boundary                       | Repository evidence                                                                                                                                      |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/build` route                 | `src/app/app.routes.ts`, `src/app/features/build-workspace/build-workspace.page.ts`                                                                      |
+| `/outfitting` route            | `src/app/app.routes.ts`, `src/app/features/build-workspace/build-workspace.page.ts`                                                                      |
 | One `ActiveBuildState`         | `src/app/application/active-build/active-build.models.ts`, `active-build.store.ts`                                                                       |
 | Canonical `BuildSnapshotV1`    | `src/app/domain/ships/build/build-snapshot.ts`                                                                                                           |
 | Capture                        | `src/app/domain/ships/build/build-snapshot.serializer.ts` (`toBuildSnapshotV1`)                                                                          |

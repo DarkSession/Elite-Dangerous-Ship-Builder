@@ -89,7 +89,7 @@ export class SlefImportCoordinator {
     // as a pointer rests on a row. Moving first, while the layer still covers
     // it, is what makes the Commander land on the build they just imported
     // (import contract, step 12).
-    // Compared exactly: starting with `/build` is not the same thing as being
+    // Compared exactly: starting with `/outfitting` is not the same thing as being
     // the workspace.
     const path = this.#router.url.split(/[?#]/)[0];
     if (path !== WORKSPACE) {
@@ -169,4 +169,4 @@ export class SlefImportCoordinator {
 const SUPERSEDED = 'superseded';
 
 /** Where an imported build is looked at. Feature 001's own workspace route. */
-const WORKSPACE = '/build';
+const WORKSPACE = '/outfitting';

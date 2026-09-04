@@ -27,11 +27,11 @@ describe('AppNavigation tools', () => {
 
   it('names the same tool on every route that tool owns', () => {
     // Outfitting a hull is still the ship tool. A bar that stopped naming it
-    // at `/build` would say a Commander had left the tool they are working in.
+    // at `/outfitting` would say a Commander had left the tool they are working in.
     for (const path of [
       NAVIGATION_ROUTES.catalogue,
       `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
-      NAVIGATION_ROUTES.build,
+      NAVIGATION_ROUTES.outfitting,
     ]) {
       expect(navigation().tools(path)[0].current).toBe(true);
     }
@@ -67,13 +67,13 @@ describe('AppNavigation tools', () => {
   });
 
   it('marks the tool a shared link opens, fragment and query and all', () => {
-    // How a link is opened: `/build#s.…` is a shared build and `/equipment#e.…`
+    // How a link is opened: `/outfitting#s.…` is a shared build and `/equipment#e.…`
     // a shared loadout, and the router reports `urlAfterRedirects`, which
     // carries both. Matched whole, they named no tool at all on the one screen
     // a Commander most often arrives at from outside (Commander request
     // 2026-09-04).
     expect(navigation().tools(`${NAVIGATION_ROUTES.equipment}#e.abc`)[1].current).toBe(true);
-    expect(navigation().tools(`${NAVIGATION_ROUTES.build}#s.abc`)[0].current).toBe(true);
+    expect(navigation().tools(`${NAVIGATION_ROUTES.outfitting}#s.abc`)[0].current).toBe(true);
     expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
 
     // And the insignia reads the same address, so it still knows it is home.
@@ -82,8 +82,8 @@ describe('AppNavigation tools', () => {
   });
 
   it('carries the same address the insignia does, so one registry answers both', () => {
-    expect(navigation().tools(NAVIGATION_ROUTES.build)[0].href).toBe(
-      navigation().home(NAVIGATION_ROUTES.build)?.href,
+    expect(navigation().tools(NAVIGATION_ROUTES.outfitting)[0].href).toBe(
+      navigation().home(NAVIGATION_ROUTES.outfitting)?.href,
     );
   });
 });

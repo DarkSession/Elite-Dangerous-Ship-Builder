@@ -27,7 +27,7 @@ export interface Fact {
  * your build" — belong to the screen that places the list, not to the list.
  */
 @Component({
-  selector: 'edsb-fact-list',
+  selector: 'ednb-fact-list',
   imports: [MetricGroup],
   templateUrl: './fact-list.html',
   styleUrl: './fact-list.scss',

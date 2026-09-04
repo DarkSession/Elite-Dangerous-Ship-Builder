@@ -278,7 +278,7 @@ describe('TabOwnershipCoordinator', () => {
 
     // The session now points at the new record; nothing removed the old one,
     // which belongs to the other page.
-    expect(JSON.parse(session.entries.get('edsb:tab')!)).toMatchObject({
+    expect(JSON.parse(session.entries.get('ednb:tab')!)).toMatchObject({
       workingRecordId: coordinator.autosaveRecordId(),
     });
     expect(coordinator.autosaveRecordId()).not.toBe('id-held');

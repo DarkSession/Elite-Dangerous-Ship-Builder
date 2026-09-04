@@ -19,7 +19,7 @@ import { relationId } from '../a11y/text-equivalence';
  * for the same reason (FR-013, reference review).
  */
 @Component({
-  selector: 'edsb-grade-selector',
+  selector: 'ednb-grade-selector',
   templateUrl: './grade-selector.html',
   styleUrl: './grade-selector.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

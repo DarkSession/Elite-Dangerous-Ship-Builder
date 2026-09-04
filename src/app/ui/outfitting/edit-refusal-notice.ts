@@ -20,7 +20,7 @@ import { OutfittingNotice, type NoticeLine } from './outfitting-notice';
  * page.
  */
 @Component({
-  selector: 'edsb-edit-refusal-notice',
+  selector: 'ednb-edit-refusal-notice',
   imports: [OutfittingNotice],
   templateUrl: './edit-refusal-notice.html',
   styleUrl: './edit-refusal-notice.scss',

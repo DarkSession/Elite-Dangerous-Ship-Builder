@@ -25,7 +25,7 @@ interface StatusAction {
  * someone's reading is worse than silence.
  */
 @Component({
-  selector: 'edsb-persistence-status',
+  selector: 'ednb-persistence-status',
   imports: [ActionButton, StatusNotice],
   templateUrl: './persistence-status.html',
   styleUrl: './persistence-status.scss',

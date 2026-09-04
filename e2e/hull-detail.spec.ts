@@ -406,7 +406,7 @@ test.describe('hull detail', () => {
 
     await buildStockHull(page, englishMessages['hullDetail.create']);
 
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await expect(page.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     // The hull is the command bar's identity line, as canvas 1c draws it, and
     // the build itself is the ledger under it. A hull line, a provenance line
@@ -429,7 +429,7 @@ test.describe('hull detail', () => {
     await buildStockHull(page, englishMessages['hullDetail.create']);
 
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await expect(page.getByRole('banner').getByText('Sidewinder').first()).toBeVisible();
 
     // Two builds, two records: the Anaconda is on the library's list rather than
@@ -439,7 +439,7 @@ test.describe('hull detail', () => {
       .poll(
         () =>
           page.evaluate(
-            () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+            () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
           ),
         { timeout: 5_000 },
       )
@@ -459,7 +459,7 @@ test.describe('hull detail', () => {
     // Either way the capability is reachable, and reaching it is what proves
     // it: an absent button is only correct while something else is the build.
     await buildStockHull(page, englishMessages['hullDetail.create']);
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
@@ -528,7 +528,7 @@ test.describe('hull detail', () => {
     // is the column at a 3:2 ratio, so bounding the column is what bounds it:
     // unbounded it reached 979 x 653 at the last width before the rail.
     const plate = await page
-      .locator('edsb-hull-artwork .artwork__frame')
+      .locator('ednb-hull-artwork .artwork__frame')
       .first()
       .evaluate((frame) => {
         const box = frame.getBoundingClientRect();

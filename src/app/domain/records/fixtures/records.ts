@@ -11,7 +11,7 @@
 
 /** A complete, readable version-1 named record. */
 export const NAMED_RECORD_V1 = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 1,
   "id": "11111111-1111-4111-8111-111111111111",
   "kind": "named",
@@ -23,7 +23,7 @@ export const NAMED_RECORD_V1 = `{
   "hullSymbol": "Anaconda",
   "validation": { "valid": true, "complete": true },
   "build": {
-    "format": "edsb.build",
+    "format": "ednb.build",
     "version": 1,
     "shipSymbol": "Anaconda",
     "shipName": null,
@@ -44,7 +44,7 @@ export const NAMED_RECORD_V1 = `{
 
 /** A version-1 working record, with the provenance a fork leaves behind. */
 export const WORKING_RECORD_V1 = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 1,
   "id": "33333333-3333-4333-8333-333333333333",
   "kind": "working",
@@ -56,7 +56,7 @@ export const WORKING_RECORD_V1 = `{
   "hullSymbol": "SideWinder",
   "validation": { "valid": true, "complete": false },
   "build": {
-    "format": "edsb.build",
+    "format": "ednb.build",
     "version": 1,
     "shipSymbol": "SideWinder",
     "shipName": "Gimel",
@@ -71,7 +71,7 @@ export const WORKING_RECORD_V1 = `{
 
 /** A record written by a version this build is too old to read. */
 export const UNSUPPORTED_NEWER_RECORD = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 99,
   "id": "55555555-5555-4555-8555-555555555555",
   "kind": "named",
@@ -84,11 +84,11 @@ export const UNSUPPORTED_NEWER_RECORD = `{
 }`;
 
 /** A record whose bytes are not a record at all. */
-export const MALFORMED_RECORD = '{"format":"edsb.local-record","version":1,"id":';
+export const MALFORMED_RECORD = '{"format":"ednb.local-record","version":1,"id":';
 
 /** A readable record naming a hull the installed package does not carry. */
 export const UNKNOWN_HULL_RECORD = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 1,
   "id": "77777777-7777-4777-8777-777777777777",
   "kind": "named",
@@ -100,7 +100,7 @@ export const UNKNOWN_HULL_RECORD = `{
   "hullSymbol": "Nonexistent_Hull",
   "validation": { "valid": true, "complete": true },
   "build": {
-    "format": "edsb.build",
+    "format": "ednb.build",
     "version": 1,
     "shipSymbol": "Nonexistent_Hull",
     "shipName": null,
@@ -112,7 +112,7 @@ export const UNKNOWN_HULL_RECORD = `{
 
 /** A complete, readable version-2 ship record: the same build, with `tool`. */
 export const NAMED_RECORD_V2 = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 2,
   "tool": "ship",
   "id": "11111111-1111-4111-8111-111111111111",
@@ -125,7 +125,7 @@ export const NAMED_RECORD_V2 = `{
   "hullSymbol": "Anaconda",
   "validation": { "valid": true, "complete": true },
   "build": {
-    "format": "edsb.build",
+    "format": "ednb.build",
     "version": 1,
     "shipSymbol": "Anaconda",
     "shipName": null,
@@ -151,7 +151,7 @@ export const NAMED_RECORD_V2 = `{
  * sniper, which is the state a saved loadout has to survive (FR-018a).
  */
 export const LOADOUT_RECORD_V2 = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 2,
   "tool": "equipment",
   "id": "99999999-9999-4999-8999-999999999999",
@@ -163,7 +163,7 @@ export const LOADOUT_RECORD_V2 = `{
   "note": null,
   "suitFamily": "utilitysuit",
   "loadout": {
-    "format": "edsb.loadout",
+    "format": "ednb.loadout",
     "version": 1,
     "suitFamily": "utilitysuit",
     "suitGrade": 4,
@@ -187,7 +187,7 @@ export const LOADOUT_RECORD_V2 = `{
 
 /** A version-2 loadout naming a suit the installed package does not carry. */
 export const UNKNOWN_SUIT_RECORD = `{
-  "format": "edsb.local-record",
+  "format": "ednb.local-record",
   "version": 2,
   "tool": "equipment",
   "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
@@ -199,7 +199,7 @@ export const UNKNOWN_SUIT_RECORD = `{
   "note": null,
   "suitFamily": "nonexistentsuit",
   "loadout": {
-    "format": "edsb.loadout",
+    "format": "ednb.loadout",
     "version": 1,
     "suitFamily": "nonexistentsuit",
     "suitGrade": 1,

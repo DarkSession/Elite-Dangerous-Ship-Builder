@@ -32,7 +32,7 @@
           <th class="comparison__attribute" scope="row">{{ row.label }}</th>
           <td class="comparison__value" data-bidi-isolate>
             @if (row.stock === null) {
-              <edsb-unavailable-value />
+              <ednb-unavailable-value />
             } @else {
               {{ row.stock }}
             }
@@ -44,7 +44,7 @@
               data-bidi-isolate
             >
               @if (row.modified === null) {
-                <edsb-unavailable-value />
+                <ednb-unavailable-value />
               } @else {
                 {{ row.modified }}
               }

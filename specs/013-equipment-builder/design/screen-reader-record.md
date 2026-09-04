@@ -31,7 +31,8 @@ Step 19 asks a reader to:
 6. hear shield strength, regeneration and firepower as label-and-value pairs with their units, the
    four resistances as a damage type and a figure, and the bars themselves as nothing at all;
 7. hear the material total as types and units with the note about what it covers, and hear a loadout
-   with no modifications say there is nothing to gather rather than present an empty list;
+   that asks for nothing — grade 1 throughout, nothing fitted — say there is nothing to gather
+   rather than present an empty list;
 8. drill into a row at the narrow width, reach the item view under the tab the ledger was under, and
    find the way back announced;
 9. hear the export layer's three formats as one named group of three choices, each with its

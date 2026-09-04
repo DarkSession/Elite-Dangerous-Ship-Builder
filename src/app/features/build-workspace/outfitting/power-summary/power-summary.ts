@@ -75,7 +75,7 @@ const PIP_DIGITS = 1;
  * (constitution V).
  *
  * The sentence about a group the plant cannot keep lit is not here. It is drawn
- * a block higher, in `edsb-power-shed-statements`, beneath feature 003's
+ * a block higher, in `ednb-power-shed-statements`, beneath feature 003's
  * validation issues in the block that opens the rail (Commander request
  * 2026-08-31). No heat sentence is drawn anywhere: canvas 1d does print
  * `Sustained fire peaks at 131% heat` in its `BUILD STATUS` block, and this
@@ -102,10 +102,10 @@ const PIP_DIGITS = 1;
  *
  * Every string here is this application's own, not a package diagnostic, so it
  * is translated like every other string it owns and does not go through
- * `edsb-game-text`.
+ * `ednb-game-text`.
  */
 @Component({
-  selector: 'edsb-power-summary',
+  selector: 'ednb-power-summary',
   templateUrl: './power-summary.html',
   styleUrl: './power-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

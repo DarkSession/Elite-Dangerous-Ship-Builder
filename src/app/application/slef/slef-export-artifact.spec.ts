@@ -8,7 +8,7 @@ import { SlefExportCoordinator } from './slef-export.coordinator';
 import { SlefStore } from './slef.store';
 
 class StubPublisher {
-  url: string | null = 'https://example.test/build#b.abc';
+  url: string | null = 'https://example.test/outfitting#b.abc';
   publishedUrl(): string | null {
     return this.url;
   }
@@ -109,7 +109,7 @@ describe('the export artifact’s life', () => {
 
       coordinator.generate();
 
-      expect(store.artifact()?.header.appURL).toBe('https://example.test/build#b.abc');
+      expect(store.artifact()?.header.appURL).toBe('https://example.test/outfitting#b.abc');
       expect(store.artifact()?.linkOmission).toBeNull();
     });
 

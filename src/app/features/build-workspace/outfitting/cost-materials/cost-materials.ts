@@ -54,7 +54,7 @@ const COST_LABELS = {
  * in either of them (`design/reference-review.md`, rulings A–F).
  */
 @Component({
-  selector: 'edsb-cost-materials',
+  selector: 'ednb-cost-materials',
   imports: [GameText, MaterialGrade],
   templateUrl: './cost-materials.html',
   styleUrl: './cost-materials.scss',

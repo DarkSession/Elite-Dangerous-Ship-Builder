@@ -13,7 +13,7 @@ const generatorPath = fileURLToPath(
 );
 
 async function generate(t) {
-  const directory = await mkdtemp(join(tmpdir(), 'edsb-slef-corpus-'));
+  const directory = await mkdtemp(join(tmpdir(), 'ednb-slef-corpus-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
 
   const result = spawnSync(process.execPath, [generatorPath], {

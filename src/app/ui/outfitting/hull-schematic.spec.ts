@@ -262,7 +262,7 @@ describe('HullSchematic', () => {
     expect(query(fixture, '.schematic__loader').getAttribute('src')).toBe('assets/loader.svg');
     expect(textOf(query(fixture, '.schematic__spoken')).length).toBeGreaterThan(0);
     expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('loading');
-    expect(element(fixture).querySelector('edsb-action-button')).toBeNull();
+    expect(element(fixture).querySelector('ednb-action-button')).toBeNull();
   });
 
   it('reserves the plate’s box in every state, so a late drawing moves nothing', () => {
@@ -298,7 +298,7 @@ describe('HullSchematic', () => {
 
     // And asking again re-creates the image, because the store's own state is
     // already `ready` and nothing it does would re-request the file.
-    query(fixture, 'edsb-action-button button').click();
+    query(fixture, 'ednb-action-button button').click();
     fixture.detectChanges();
     expect(query(fixture, '.schematic__artwork image')).not.toBeNull();
   });
@@ -310,7 +310,7 @@ describe('HullSchematic', () => {
     const retried: number[] = [];
     unavailable.componentInstance.retryRequested.subscribe(() => retried.push(1));
 
-    query(unavailable, 'edsb-action-button button').click();
+    query(unavailable, 'ednb-action-button button').click();
     expect(retried.length).toBe(1);
 
     // A package defect is not a network hiccup: asking again returns the same
@@ -319,7 +319,7 @@ describe('HullSchematic', () => {
       view: view({ state: { kind: 'contractDefect' }, occurrences: [] }),
     });
     expect(query(defect, '.schematic').getAttribute('data-state')).toBe('contractDefect');
-    expect(element(defect).querySelector('edsb-action-button')).toBeNull();
+    expect(element(defect).querySelector('ednb-action-button')).toBeNull();
     expect(textOf(query(defect, '.schematic__status-text')).length).toBeGreaterThan(0);
   });
 });

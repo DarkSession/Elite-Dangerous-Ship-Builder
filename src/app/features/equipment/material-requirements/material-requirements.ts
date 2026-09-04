@@ -22,7 +22,7 @@ import { GameText } from '../../../ui/components/game-text/game-text';
  * something they cannot apply (FR-011).
  */
 @Component({
-  selector: 'edsb-material-requirements',
+  selector: 'ednb-material-requirements',
   imports: [GameText],
   templateUrl: './material-requirements.html',
   styleUrl: './material-requirements.scss',

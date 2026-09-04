@@ -34,7 +34,7 @@ export type TabPresentation = 'tabs' | 'segmented';
  * or an underline alone, which is how the reference canvas marks it (FR-010).
  */
 @Component({
-  selector: 'edsb-tab-group',
+  selector: 'ednb-tab-group',
   templateUrl: './tab-group.html',
   styleUrl: './tab-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

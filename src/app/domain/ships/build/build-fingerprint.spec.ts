@@ -3,7 +3,7 @@ import type { BuildSnapshotV1 } from './build-snapshot';
 
 function snapshot(overrides: Partial<BuildSnapshotV1> = {}): BuildSnapshotV1 {
   return {
-    format: 'edsb.build',
+    format: 'ednb.build',
     version: 1,
     shipSymbol: 'Anaconda',
     shipName: null,

@@ -1,6 +1,6 @@
 # Screen Design: The Status Rail
 
-**Route**: existing `/build`
+**Route**: existing `/outfitting`
 **Reference**: canvas 1c's 306 px rail, and canvas 1d's Status mode, which stacks the same blocks
 **Rulings**: [reference-review.md](./reference-review.md), wave 11 A–C
 
@@ -110,7 +110,7 @@ nothing. That word is what carries the severity, because the four tones differ f
 hue alone. The tones reinforce it; they do not state it.
 
 The sentence itself is package game text, resolved through `getLoadoutIssueMessage` by way of feature
-011's presenter and rendered by `edsb-game-text`, so a locale the package has no translation for shows
+011's presenter and rendered by `ednb-game-text`, so a locale the package has no translation for shows
 its canonical English with the shared untranslated disclosure. The application keeps no copy of a
 package diagnostic and parses none.
 

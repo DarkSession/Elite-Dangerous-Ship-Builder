@@ -28,7 +28,7 @@ import { TextareaField } from '../../../ui/components/textarea-field/textarea-fi
  * about the loadout, and they live in the presenter beside it.
  */
 @Component({
-  selector: 'edsb-export-loadout-dialog',
+  selector: 'ednb-export-loadout-dialog',
   imports: [ActionButton, ChoiceGroup, Layer, ShareLinkPanel, TextareaField],
   templateUrl: './export-loadout.dialog.html',
   styleUrl: './export-loadout.dialog.scss',

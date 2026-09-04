@@ -283,7 +283,7 @@ chosen:
    the four rows. Two of the four figures move when the allocation moves, and a
    figure that changes with a condition shown without that condition is the
    misleading number constitution IV forbids. An earlier revision of this
-   paragraph justified it as the condition line `edsb-metric-group` already
+   paragraph justified it as the condition line `ednb-metric-group` already
    draws under a value; the panel composes no metric group, and the line is its
    own element — the addition is the sentence, not a component. It is not a
    control: the canvas draws the pip control in `POWER`, and it stays there.
@@ -426,7 +426,7 @@ worked out once, in the projection:
    capacitor value is stated in words either way.
 
 7. **The damage-type enumeration is withdrawn.** An earlier revision drew two
-   `edsb-metric-group` lists — burst by type and sustained by type — with a line
+   `ednb-metric-group` lists — burst by type and sustained by type — with a line
    for every member of `DamageSplit`, including a stated zero for each type the
    build does not deal and a row for `antiXeno`. **No canvas draws any of it.**
    Canvas 1c draws one stacked bar and writes the types it has segments for
@@ -591,7 +591,7 @@ worked out once, in the projection:
     `4A GIMBALLED · OVERCHARGED G5 · CORROSIVE` (design L14450), and gives an
     unengineered weapon `3E FIXED · STOCK` (L14663) rather than no line at all.
     This panel had been drawing only the engineering fragment, and nothing where
-    there was no recipe. `edsb-module-identity-badge` already draws exactly this
+    there was no recipe. `ednb-module-identity-badge` already draws exactly this
     line for the same module on a ledger row, from the module's class, rating and
     mount as three separate package values, so it is composed here rather than
     re-set (constitution VII).
@@ -874,7 +874,7 @@ each one is built as rather than what it was waiting on.
 | Plate square in angle; `ASPECT = 6 / 16` withdrawn           | **Built.** `PLATE_ASPECT` is gone, and the box is the canvas's own square one, so a ring is a pixel circle.  |
 | Off-axis shots clamped to the frame, not clipped             | **Departed 2026-08-27.** `PLATE_MARGIN_FRACTION` is now the bound past which a mount is not drawn at all.    |
 | Edge badge and leader replaced by a numeral beside the dot   | **Departed 2026-08-27.** One dot per mount and no numeral at all; the mount's number is in its sentence.     |
-| Slider re-laid out: `TARGET RANGE` and value above the track | **Built.** `edsb-range-field` sets label and value on the row above its track.                               |
+| Slider re-laid out: `TARGET RANGE` and value above the track | **Built.** `ednb-range-field` sets label and value on the row above its track.                               |
 | Canvas 1d rewritten as canvas 1c's blocks stacked            | **Already built.** One DOM at both widths was the built answer; the drawing now agrees.                      |
 | `VS 45% RESIST` block removed from canvas 1d                 | **Already correct.** It was excluded; it is now not drawn at all.                                            |
 | `CORROSIVE +30%` chip kept on canvas 1d                      | **Still excluded.** No package field publishes an effect bonus.                                              |

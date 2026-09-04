@@ -16,7 +16,7 @@ import { AnnouncementService } from './announcement.service';
  * missed by screen readers.
  */
 @Component({
-  selector: 'edsb-announcement-outlet',
+  selector: 'ednb-announcement-outlet',
   templateUrl: './announcement-outlet.html',
   styleUrl: './announcement-outlet.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

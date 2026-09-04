@@ -160,12 +160,12 @@ describe('RouteTitleStrategy', () => {
   it('keeps the build out of the canonical address, because it lives in the fragment', () => {
     const { strategy, locale, snapshot } = strategyWith(
       [{ title: 'workspace.title' }],
-      '/build#AQIDBAUGBwgJCg',
+      '/outfitting#AQIDBAUGBwgJCg',
     );
 
     strategy.updateTitle(snapshot);
 
-    expect(locale.canonical()).toBe(`${SITE_ORIGIN}/build`);
+    expect(locale.canonical()).toBe(`${SITE_ORIGIN}/outfitting`);
   });
 
   it('hands over keys rather than sentences, so a later catalogue retranslates both', () => {
