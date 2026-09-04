@@ -2451,6 +2451,8 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
     'tools.ship':
       'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
+    'equipment.export.meta':
+      'A composition pattern. Every part of it is translated on its own — the format name, the two counted phrases and `KB` — and what is left here is the separator between them.',
     'equipment.badge.empty':
       'A `+` in the row’s leading square where a badge goes: a sign, not a word, and the same sign in every language.',
     'equipment.count.none':
@@ -2470,22 +2472,16 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both variables and the solidus are language-neutral.',
     'equipment.attribute.dps': 'The in-game abbreviation for damage per second, not translated.',
     'equipment.value.perSecond': 'The SI form for “per second”, identical in German.',
-    'equipment.value.mounts':
-      'A composition pattern; both variables and the plus sign are language-neutral.',
     'equipment.damage.plasma': 'Plasma is the ordinary German word.',
     'equipment.stats.regen':
       'The canvas’s own abbreviation over the regeneration figure, with the SI form for “per second”; German abbreviates Regeneration the same way.',
     'equipment.stats.dps': 'The same in-game abbreviation, in a composition pattern.',
     'equipment.weapon.figure.unit':
       'The same in-game abbreviation again, drawn small beside a chooser row’s figure.',
-    'equipment.suit.figure.unit':
-      'The in-game abbreviation for shield points, which the game does not translate.',
     'equipment.weapon.mounted':
       'A composition pattern; both variables and the separator are language-neutral. The words it composes — the weapon class and the mount name — are translated where they are stated.',
     'equipment.weapon.candidate':
       'The same pattern with a third variable. Every word in it comes from the package or from a translated message; nothing here is wording.',
-    'equipment.chooser.engineers':
-      'The variable alone. Engineers are people, and their names are the package’s in every language.',
     'equipment.chooser.shieldPoints':
       'SP is the in-game abbreviation for shield points and is not translated.',
     'shell.status.label': '"Status" is the ordinary German word.',

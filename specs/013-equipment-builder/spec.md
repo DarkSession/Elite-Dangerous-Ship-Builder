@@ -83,7 +83,7 @@ resistance and firepower figures change with each choice and match the equipment
 
 A Commander applies engineering modifications to the suit and to each weapon,
 within the slots the item's grade has unlocked, and reads the micro-resources the
-whole loadout would require and which engineers grant each modification.
+whole loadout would require.
 
 **Why this priority**: modifications are what distinguishes a planned loadout from
 a shopping trip, and the material requirement is the reason to plan one before
@@ -107,8 +107,8 @@ modifications are added and removed.
 4. **Given** a weapon modification whose requirement differs by the weapon's damage
    type, **When** it is fitted to a kinetic weapon and to a plasma weapon, **Then** the
    stated materials are those of the weapon it is fitted to.
-5. **Given** any fitted modification, **When** the Commander reads it, **Then** the
-   engineers who grant it are named.
+5. **Given** any fitted modification, **When** the Commander reads it, **Then** it is
+   named with its status and its materials, and no engineer is named.
 
 ---
 
@@ -209,10 +209,19 @@ reopens the same loadout and the readable summary names every fitted item.
   grade and no modification slot.
 - **FR-006**: The application MUST state the assembled Commander's shield strength,
   regeneration, damage resistances and firepower, and MUST restate them whenever a choice
-  changes them. Firepower is each fitted weapon's damage per second as the library
-  computes it, never arithmetic performed here.
-- **FR-007**: A weapon or suit slot that the current suit does not offer MUST be shown
-  as unavailable, and its contents MUST be retained rather than discarded.
+  changes them. The reference draws two resistance groups, `ARMOUR` over `SHIELDS`, and each
+  MUST read the set the library publishes for it: the armour's four on the suit's grade,
+  which a grade moves, and the shield's four on the suit, which no grade moves. The
+  application MUST NOT compute or invent either set — the reference's own armour figures are
+  its mock's arithmetic. Firepower is one row per carried
+  mount, each fitted weapon's damage per second as the library computes it and a dash where
+  nothing counts, never arithmetic performed here.
+- **FR-007**: A weapon mount the current suit does not carry MUST NOT be drawn — not in the
+  ledger, and not as a firepower row — and its contents MUST be retained rather than
+  discarded, returning intact when a suit carrying that mount is worn. A bench that lists
+  mounts a Commander cannot use is listing the catalogue rather than the suit (Commander
+  request 2026-09-04). Where such a mount is what the Commander had open, the item column
+  MUST fall back to the suit rather than stand on a mount nothing points at.
 
 **Modifications**
 
@@ -220,8 +229,10 @@ reopens the same loadout and the readable summary names every fitted item.
   unlocked, and MUST show the remaining slots as locked rather than hiding them.
 - **FR-009**: The application MUST offer only the modifications the library publishes
   for that kind of item, and MUST NOT offer one twice on the same item.
-- **FR-010**: The application MUST name the engineers the library records as granting
-  each modification.
+- **FR-010**: The application MUST NOT name the engineers who grant a modification. The
+  library records them and the reference draws none — its only mention of them is a
+  feature caption — so naming them anywhere is wording this application invented
+  (Commander request 2026-09-04).
 - **FR-011**: A modification held by a slot that is currently locked MUST be retained,
   MUST be excluded from the material requirement, and MUST return to effect when the
   grade that unlocks its slot is restored.

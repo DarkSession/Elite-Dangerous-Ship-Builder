@@ -43,6 +43,35 @@
       }
     </header>
 
+    <!--
+      What else could go here. The canvas moved this block above the figures on
+      2026-09-04: swapping the item is a choice about the whole column, so the
+      figures a Commander reads are the ones belonging to the row they just
+      pressed. Wide it sits under the grade ladder (`#pe-alt` before
+      `#pe-stats`); compact it opens the scrolling body above the ladder
+      (`$('#me-dbody').innerHTML = altHtml + h`), which the stylesheet orders on
+      the item's own container query.
+
+      Canvas 1a lays them two across (`#pe-alt` is `grid-template-columns: 1fr
+      1fr`) and canvas 1b runs them down the sheet it has already drilled into;
+      the list decides which from its own width.
+    -->
+    <div class="item__alternatives">
+      <div class="item__rule">
+        <h3 class="item__step">{{ item.chooserTitle }}</h3>
+        <span class="item__line" aria-hidden="true"></span>
+      </div>
+
+      <!-- The same rows the gate draws: the 2026-09-04 revision made its suit
+           list this one, so one row shape serves both. -->
+      <edsb-choice-list
+        [choices]="alternatives()"
+        [label]="item.chooserTitle"
+        [asPairs]="true"
+        (chosen)="alternativeChosen.emit($event)"
+      />
+    </div>
+
     <!-- The canvas switches the grid on what the item is: `1fr 1fr` for a
          suit's figures and `repeat(4, 1fr)` for a weapon's eight. -->
     <edsb-metric-group
@@ -74,31 +103,6 @@
            true instead (spec Edge Cases). -->
       <p class="item__notice">{{ notice }}</p>
     }
-
-    <!--
-      What else could go here. Both artboards draw it inline under the slots — a
-      ruled `SWAP PRIMARY WEAPON` over the alternatives, always on screen, so a
-      Commander can read what they have against what they could have without
-      opening anything. Canvas 1a lays them two across (`#pe-alt` is
-      `grid-template-columns: 1fr 1fr`) and canvas 1b runs them down the sheet
-      it has already drilled into; the list decides which from its own width.
-    -->
-    <div class="item__alternatives">
-      <div class="item__rule">
-        <h3 class="item__step">{{ item.chooserTitle }}</h3>
-        <span class="item__line" aria-hidden="true"></span>
-      </div>
-
-      <!-- Rows, not the gate's cards: the card's frame and its name in the
-           display face belong to choosing a suit on an empty bench. What these
-           two share is the arrangement, two to a line. -->
-      <edsb-choice-list
-        [choices]="alternatives()"
-        [label]="item.chooserTitle"
-        [asPairs]="true"
-        (chosen)="alternativeChosen.emit($event)"
-      />
-    </div>
   </article>
 } @else {
   <p class="item__empty">{{ noSelectionLabel() }}</p>

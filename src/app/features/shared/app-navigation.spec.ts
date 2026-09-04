@@ -31,7 +31,6 @@ describe('AppNavigation tools', () => {
       NAVIGATION_ROUTES.catalogue,
       `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
       NAVIGATION_ROUTES.build,
-      NAVIGATION_ROUTES.library,
     ]) {
       expect(navigation().tools(path)[0].current).toBe(true);
     }
@@ -64,6 +63,21 @@ describe('AppNavigation tools', () => {
         .tools('/equipmentsomething')
         .some((tool) => tool.current),
     ).toBe(false);
+  });
+
+  it('marks the tool a shared link opens, fragment and query and all', () => {
+    // How a link is opened: `/build#s.…` is a shared build and `/equipment#e.…`
+    // a shared loadout, and the router reports `urlAfterRedirects`, which
+    // carries both. Matched whole, they named no tool at all on the one screen
+    // a Commander most often arrives at from outside (Commander request
+    // 2026-09-04).
+    expect(navigation().tools(`${NAVIGATION_ROUTES.equipment}#e.abc`)[1].current).toBe(true);
+    expect(navigation().tools(`${NAVIGATION_ROUTES.build}#s.abc`)[0].current).toBe(true);
+    expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
+
+    // And the insignia reads the same address, so it still knows it is home.
+    expect(navigation().home(`${NAVIGATION_ROUTES.catalogue}?q=viper`)).toBeNull();
+    expect(navigation().home(`${NAVIGATION_ROUTES.equipment}#e.abc`)).not.toBeNull();
   });
 
   it('carries the same address the insignia does, so one registry answers both', () => {

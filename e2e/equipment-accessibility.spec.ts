@@ -112,9 +112,7 @@ test.describe('every bench state', () => {
     await sweepOutfittingState(page, testInfo, 'material requirements');
   });
 
-  test('a mount the worn suit does not carry reads as held, in words', async ({
-    page,
-  }, testInfo) => {
+  test('a bench whose suit carries fewer mounts than the catalogue', async ({ page }, testInfo) => {
     await page.goto('/equipment');
     await expect(page.locator('.gate')).toBeVisible();
     await chooseSuit(page, 'Dominator Suit');
@@ -123,7 +121,8 @@ test.describe('every bench state', () => {
     await openRow(page, 'suit');
     await chooseSuit(page, 'Maverick Suit');
 
-    await sweepOutfittingState(page, testInfo, 'held mount');
+    await expect(page.locator('.ledger__row[data-target="PrimaryWeapon2"]')).toHaveCount(0);
+    await sweepOutfittingState(page, testInfo, 'fewer mounts');
   });
 });
 
@@ -207,7 +206,9 @@ test.describe('the conditions that break layouts', () => {
     // figures stand behind their own tab: the reading survives the size, in
     // whichever arrangement the room allows.
     expect(await figures(page)).toHaveLength(2);
-    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(4);
+    // Four in the `ARMOUR` block and four in `SHIELDS`, both read from the one
+    // set the package publishes on the suit's grade.
+    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(8);
     await expectNoDocumentOverflow(page);
   });
 
@@ -221,7 +222,7 @@ test.describe('the conditions that break layouts', () => {
 
     await showTab(page, 'Stats');
     await expect(page.locator('.bench__region--stats .metric__number')).toHaveCount(2);
-    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(4);
+    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(8);
     await page.emulateMedia({ reducedMotion: null });
   });
 });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { ActionButton } from '../action/action-button';
 import { relationId } from '../../a11y/text-equivalence';
-import type { NavigationEntry, ShellAction } from './app-frame';
+import type { ShellAction } from './app-frame';
 
 /**
  * The folded shell action layer.
@@ -36,12 +36,6 @@ export class ActionLayer {
   /** The actions the layer holds. Each keeps its own visible label. */
   readonly actions = input.required<readonly ShellAction[]>();
 
-  /** The screens the layer offers, drawn above the actions as links. */
-  readonly links = input<readonly NavigationEntry[]>([]);
-
-  /** Accessible name of the navigation landmark those links sit in. */
-  readonly linksLabel = input('');
-
   /** Accessible name of the group of actions. */
   readonly label = input.required<string>();
 
@@ -56,8 +50,6 @@ export class ActionLayer {
 
   readonly toggled = output<boolean>();
   readonly actionSelected = output<string>();
-  readonly linkSelected = output<{ entry: NavigationEntry; event: MouseEvent }>();
-
   readonly triggerId = relationId('action-layer-trigger');
   readonly layerId = relationId('action-layer-panel');
 

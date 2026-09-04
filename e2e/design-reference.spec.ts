@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { buildStockHull, openFirstHullFromManifest, reachShellLink } from './shell';
+import { buildStockHull, openFirstHullFromManifest, openLibrary } from './shell';
 
 /**
  * The interface still looks like the reference canvas.
@@ -681,7 +681,7 @@ test.describe('the saved-build surface', () => {
         { timeout: 10_000 },
       )
       .toBe(1);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await expect(page.locator('[data-record-id]').first()).toBeVisible();
   }
 
@@ -796,72 +796,6 @@ test.describe('the saved-build surface', () => {
     expect(await style(remove, 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(await style(remove, 'border-inline-start-width')).toBe('1px');
   });
-
-  test('reacts to the pointer on the bar’s link exactly as it does on its buttons', async ({
-    page,
-  }) => {
-    // A link and a button sitting in one command bar and reacting differently
-    // to the pointer reads as one of them being inert, and the reference draws
-    // no such distinction (Commander request 2026-08-27).
-    //
-    // Read out of the cascade rather than by putting a pointer on each control.
-    // A headless engine has no input device, so a synthesised move never puts
-    // an element into `:hover` at all — an assertion on the computed ground
-    // would pass by reading the resting one. What both controls declare is the
-    // claim, and it is the thing a regression would change.
-    await page.goto('/ships/Anaconda');
-    await buildStockHull(page, 'Build');
-    await expect(
-      page.getByRole('banner').getByRole('link', { name: 'Open saved build' }),
-    ).toBeVisible();
-
-    const hoverGrounds = await page.evaluate(() => {
-      const declared: Record<string, string> = {};
-      const walk = (rules: CSSRuleList) => {
-        for (const rule of [...rules]) {
-          const group = rule as CSSMediaRule;
-          if (group.cssRules && group.conditionText !== undefined) {
-            walk(group.cssRules);
-            continue;
-          }
-          const styled = rule as CSSStyleRule;
-          if (typeof styled.selectorText !== 'string' || !styled.selectorText.includes(':hover')) {
-            continue;
-          }
-          const ground = styled.style.getPropertyValue('background-color');
-          if (ground === '') {
-            continue;
-          }
-          // The encapsulation attribute sits between the class and the
-          // pseudo-class, so the class is matched on its own.
-          if (/\.frame__navigation-link\[[^\]]*\]:hover$/.test(styled.selectorText)) {
-            declared['link'] = ground;
-          }
-          if (/\.action-layer__link\[[^\]]*\]:hover$/.test(styled.selectorText)) {
-            declared['foldedLink'] = ground;
-          }
-          if (/^\.action\[[^\]]*\]:hover/.test(styled.selectorText)) {
-            declared['button'] = ground;
-          }
-        }
-      };
-      for (const sheet of [...document.styleSheets]) {
-        try {
-          walk(sheet.cssRules);
-        } catch {
-          // A stylesheet this document may not read is not one this application
-          // wrote.
-        }
-      }
-      return declared;
-    });
-
-    expect(hoverGrounds['button']).toBeTruthy();
-    expect(hoverGrounds['link']).toBe(hoverGrounds['button']);
-    // The same control in the folded bar's menu, which is where a Commander reaches
-    // it at narrow widths and where the complaint was first made.
-    expect(hoverGrounds['foldedLink']).toBe(hoverGrounds['button']);
-  });
 });
 
 test.describe('the save-build surface', () => {
@@ -879,7 +813,7 @@ test.describe('the save-build surface', () => {
   async function withSaveOpen(page: Page): Promise<Locator> {
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, 'Build');
-    await page.getByRole('banner').getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('banner').getByRole('button', { name: 'Save', exact: true }).click();
     const layer = page.getByRole('dialog', { name: 'Save build' });
     await expect(layer).toBeVisible();
     await layer.getByRole('textbox', { name: 'Build name' }).fill('Anaconda explorer');
@@ -898,7 +832,7 @@ test.describe('the save-build surface', () => {
     await first.getByRole('button', { name: 'Save build' }).click();
     await expect(first).toBeHidden();
 
-    await page.getByRole('banner').getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('banner').getByRole('button', { name: 'Save', exact: true }).click();
     const layer = page.getByRole('dialog', { name: 'Save build' });
     await expect(layer.locator('.save__modes .choice')).toHaveCount(2);
     return layer;

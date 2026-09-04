@@ -25,7 +25,7 @@ import { ActionLayer } from './action-layer';
 import { StatusNotice, type StatusTone } from '../status/status-notice';
 import { observeBanner } from './sticky-banner';
 
-/** One entry in the primary navigation. */
+/** One place the shell can send a Commander: the mark's way home. */
 export interface NavigationEntry {
   readonly id: string;
   readonly label: string;
@@ -121,6 +121,8 @@ export interface ScreenIdentity {
   readonly identField?: boolean;
   /** Which field is open for editing, or `null` for the drawn, idle state. */
   readonly editing: 'name' | 'ident' | null;
+  /** What the rename control is called, where `Rename the ship` is the wrong noun. */
+  readonly nameEditLabel?: string | null;
 }
 
 /**
@@ -195,8 +197,6 @@ export class AppFrame {
   /** The one count the bar carries beside that name, when the screen has one. */
   readonly routeCount = input<string | null>(null);
 
-  readonly navigation = input<readonly NavigationEntry[]>([]);
-
   /**
    * The tools the application carries, in the order the bar draws them.
    *
@@ -244,7 +244,7 @@ export class AppFrame {
   readonly identityCommitted = output<IdentityCommit>();
 
   /**
-   * A primary navigation link was activated.
+   * The mark's way home, or a layer's way back, was activated.
    *
    * The link stays a real link — it has an `href`, it can be opened in a new
    * tab, its address can be copied — and the frame does not decide what
@@ -261,7 +261,6 @@ export class AppFrame {
   readonly toolSelected = output<{ entry: ToolEntry; event: MouseEvent }>();
 
   readonly bannerLabel = this.#messages.messageSignal('shell.banner.label');
-  readonly navigationLabel = this.#messages.messageSignal('shell.navigation.label');
   readonly toolsLabel = this.#messages.messageSignal('shell.tools.label');
   readonly actionsLabel = this.#messages.messageSignal('shell.actions.label');
   readonly statusLabel = this.#messages.messageSignal('shell.status.label');

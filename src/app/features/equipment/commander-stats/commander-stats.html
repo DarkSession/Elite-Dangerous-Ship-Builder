@@ -6,23 +6,37 @@
       <h2 class="stats__region">{{ regionLabel() }}</h2>
     </div>
 
+    <!-- Canvas 1a's `ARMOUR` block, over `SHIELDS`. Each reads its own published
+         set: the armour's four sit on the suit's grade and a grade moves them,
+         the shield's four sit on the suit and no grade does. Almanac 0.2.10
+         split them; until then the one published set was drawn in both, because
+         the alternative was stating armour figures nothing published. `Damage
+         Resistance` folds into the armour's four alone, which is where the
+         package points it (`readings/suit-readings.ts`). -->
+    <section class="stats__block" [attr.aria-labelledby]="armourHeadingId">
+      <h2 class="stats__heading" [id]="armourHeadingId">{{ armourLabel() }}</h2>
+
+      <ul class="stats__resistances">
+        @for (resistance of stats.armourResistances; track resistance.key) {
+          <li>
+            <edsb-resistance-bar
+              [label]="resistance.label"
+              [value]="resistance.value"
+              [magnitude]="resistance.magnitude"
+              [negative]="resistance.negative"
+            />
+          </li>
+        }
+      </ul>
+    </section>
+
     <section class="stats__block" [attr.aria-labelledby]="shieldsHeadingId">
       <h2 class="stats__heading" [id]="shieldsHeadingId">{{ shieldsLabel() }}</h2>
 
       <edsb-metric-group [label]="shieldsLabel()" [metrics]="shieldFigures()" />
-    </section>
-
-    <!-- The canvas's second resistance group, drawn from the one set of four the
-         library publishes. Its `ARMOUR` bars are the mock's own arithmetic — a
-         flat 0.2 whenever `Damage Resistance` is fitted — and that modification
-         is already folded into these four (`readings/suit-readings.ts`). What
-         survives is the shape: the figures a suit resists damage by are not the
-         shield's own strength and regeneration and are not read as them. -->
-    <section class="stats__block" [attr.aria-labelledby]="resistancesHeadingId">
-      <h2 class="stats__heading" [id]="resistancesHeadingId">{{ resistancesLabel() }}</h2>
 
       <ul class="stats__resistances">
-        @for (resistance of stats.resistances; track resistance.key) {
+        @for (resistance of stats.shieldResistances; track resistance.key) {
           <li>
             <edsb-resistance-bar
               [label]="resistance.label"

@@ -24,8 +24,30 @@
   padding-block-end: var(--ednb-space-4xl);
 }
 
+// Compact the header is not a box at all. Canvas 1b's band is `#me-detail`'s own
+// header and the ladder belongs to the scrolling body under it — and the
+// 2026-09-04 revision put the swap block at the top of that body, above the
+// ladder (`$('#me-dbody').innerHTML = altHtml + h`, where `h` opens on `GRADE`).
+// So the header's two children join the column directly and the column orders
+// them: band, alternatives, ladder, then the rest as they are written.
 .item__header {
-  display: block;
+  display: contents;
+}
+
+.item > * {
+  order: 4;
+}
+
+.item__bar {
+  order: 1;
+}
+
+.item > .item__alternatives {
+  order: 2;
+}
+
+.item__grades {
+  order: 3;
 }
 
 // Canvas 1b's `#me-detail` header: a band on the raised fill under an amber
@@ -85,7 +107,6 @@
   // (`flex: 1` each over `#me-dbody`'s width); the declared measure is canvas
   // 1a's, where the ladder stands beside a name rather than under one.
   inline-size: 100%;
-  margin-block-start: var(--ednb-space-md);
   padding-inline: var(--ednb-space-2xl);
 }
 
@@ -93,8 +114,8 @@
   padding-inline: var(--ednb-space-3xl);
 }
 
-// Canvas 1a's `SWAP PRIMARY WEAPON` block: the same ruled heading the slots
-// above it carry, over the alternatives themselves.
+// Canvas 1a's `PRIMARY WEAPON` block: the same ruled heading the slots below it
+// carry, over the alternatives themselves.
 .item__alternatives {
   @include layout.stack(var(--ednb-space-md));
 
@@ -166,8 +187,16 @@
     display: contents;
   }
 
+  // Wide the column reads in the order it is written, so the compact ordering
+  // comes off every child of it. The ladder keeps its `order: 3`: it is a child
+  // of the header row here rather than of the column, so nothing below reaches
+  // it — and last in a `space-between` row is where canvas 1a draws it anyway.
+  .item > *,
+  .item > .item__alternatives {
+    order: 0;
+  }
+
   .item__grades {
-    margin-block-start: 0;
     padding-inline: 0;
     inline-size: var(--ednb-layout-grade-ladder);
   }

@@ -73,12 +73,15 @@ describe('SuitGate', () => {
   it('offers the saved builds this bench can open, and no import it cannot', () => {
     // The canvas draws two ways past the gate. Importing a journal event is not
     // a capability the bench has (013 design/reference-review.md).
+    //
+    // A control and not a link: the saved builds are a layer over the screen
+    // with no address of its own, so there is no `href` for this to carry
+    // (Commander request 2026-09-04).
     const element = render().nativeElement as HTMLElement;
-    const links = [...element.querySelectorAll('a')];
 
-    expect(links.map((link) => link.textContent?.trim())).toEqual([
+    expect(element.querySelectorAll('a').length).toBe(0);
+    expect(element.querySelector('.gate__link')?.textContent?.trim()).toBe(
       BUNDLED_ENGLISH['equipment.gate.saved'],
-    ]);
-    expect(links[0]?.getAttribute('href')).toBe('/builds');
+    );
   });
 });

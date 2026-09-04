@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { LoadoutPresenter } from '../../../application/equipment/loadout.presenter';
+import { LibraryPresence } from '../../build-library/library-presence';
 import { MODIFICATION_SLOT_COUNT } from '../../../domain/equipment/loadout/loadout-edit';
 import { MessageService } from '../../../i18n/message.service';
 import { relationId } from '../../../ui/a11y/text-equivalence';
@@ -29,7 +29,7 @@ import { GradeSelector } from '../../../ui/outfitting/grade-selector';
  */
 @Component({
   selector: 'edsb-suit-gate',
-  imports: [ChoiceList, GradeSelector, RouterLink],
+  imports: [ChoiceList, GradeSelector],
   templateUrl: './suit-gate.html',
   styleUrl: './suit-gate.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +37,7 @@ import { GradeSelector } from '../../../ui/outfitting/grade-selector';
 export class SuitGate {
   readonly #messages = inject(MessageService);
   readonly #presenter = inject(LoadoutPresenter);
+  readonly #library = inject(LibraryPresence);
 
   /** Canvas 2b's arrangement: the chooser alone, without the two previews. */
   readonly compact = input(false);
@@ -68,6 +69,17 @@ export class SuitGate {
     ),
   );
 
+  /**
+   * Opens the saved builds over the bench.
+   *
+   * A control rather than a link: the library has no address of its own, so
+   * there is nothing here to point an `href` at (Commander request 2026-09-04,
+   * `build-library/library-presence.ts`).
+   */
+  openSaved(): void {
+    this.#library.raise();
+  }
+
   readonly choices = computed<readonly EquipmentChoice[]>(() =>
     this.#presenter.suitChoices().map((choice) => ({
       id: choice.family,
@@ -76,8 +88,6 @@ export class SuitGate {
       figure: choice.figure,
       figureUnit: choice.figureUnit,
       current: choice.current,
-      unavailable: false,
-      unavailableLabel: null,
     })),
   );
 }

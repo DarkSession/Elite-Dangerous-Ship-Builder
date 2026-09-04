@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { reachShellAction, reachShellLink } from './shell';
+import { openLibrary, reachShellAction } from './shell';
 
 /**
  * Keeping a loadout and coming back to it (US3).
@@ -78,7 +78,7 @@ test.describe('keeping a loadout', () => {
     // Reloaded, so what is opened is what this browser is holding rather than
     // anything the page kept in memory (FR-018).
     await page.reload();
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(library(page)).toBeVisible();
 
     // One list, both tools: the row names the suit where a build would name a
@@ -102,7 +102,7 @@ test.describe('keeping a loadout', () => {
     await saveLoadout(page, 'Salvage run');
     expect(await recordCount(page)).toBe(1);
 
-    await page.goto('/builds');
+    await openLibrary(page);
     await chooseRecord(page, 'Salvage run');
     await library(page).getByRole('button', { name: 'Delete', exact: true }).click();
     // Destructive, so it is confirmed and the confirmation names what it removes.
@@ -143,8 +143,11 @@ test.describe('keeping a loadout', () => {
 
     await page.locator('.gate__link').click();
 
-    await expect(page).toHaveURL(/\/builds(#|$)/);
+    // Over the bench and not away from it: the library has no address of its
+    // own (Commander request 2026-09-04), so the gate raises the same layer the
+    // bar's own control raises.
     await expect(library(page)).toBeVisible();
+    await expect(page).toHaveURL(/\/equipment(#|$)/);
   });
 });
 
@@ -179,7 +182,7 @@ test.describe('a record this version cannot open', () => {
       );
     });
 
-    await page.goto('/builds');
+    await openLibrary(page);
     await chooseRecord(page, 'A suit that is not carried');
     await library(page).getByRole('button', { name: 'Open in outfitting', exact: true }).click();
 

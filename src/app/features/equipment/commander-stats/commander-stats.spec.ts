@@ -7,10 +7,11 @@ import { CommanderStats } from './commander-stats';
 /**
  * The trailing column of artboard `1a`.
  *
- * One set of resistance bars, in a group of its own: the library publishes one
- * set of four and the canvas's second group, `ARMOUR`, was invented in the mock
- * (013 design/reference-review.md). The published four are the suit's rather
- * than the shield's, so they are not read under the `SHIELDS` heading.
+ * The canvas's two resistance groups, `ARMOUR` over `SHIELDS`, both drawn from
+ * the one set the library publishes: a resistance multiplies the damage taken,
+ * which is why `SuitGrade` carries one set and not two. The canvas's own
+ * `ARMOUR` figures are the mock's arithmetic and are not published
+ * (013 design/reference-review.md).
  */
 
 const RIFLE = 'wpn_m_assaultrifle_plasma_fauto';
@@ -38,7 +39,8 @@ describe('CommanderStats', () => {
     const element = render();
 
     expect(element.querySelectorAll('.metric').length).toBe(2);
-    expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(4);
+    // Four in each of the two blocks.
+    expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(8);
     expect(element.textContent).toContain('—');
     // Canvas 2a keeps `FIREPOWER` too, with a dash against each of the
     // catalogue's own mounts: a block that disappears says nothing about which
@@ -52,16 +54,33 @@ describe('CommanderStats', () => {
     ).toBe(true);
   });
 
-  it('states shield strength, regeneration and the four resistances', () => {
+  it('states shield strength, regeneration and the resistances in both groups', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
     const element = render();
 
     expect(element.querySelectorAll('edsb-metric-group .metric').length).toBe(2);
-    expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(4);
-    // The bars stand outside the shield block rather than under its heading.
-    expect(element.querySelector('.stats__resistances')?.closest('.stats__block')).not.toBe(
-      element.querySelector('edsb-metric-group')?.closest('.stats__block'),
+
+    // Two blocks of four, as the canvas draws them: an `ARMOUR` group of bars
+    // over a `SHIELDS` group that also carries the strength and the
+    // regeneration. Each reads its own published set (Almanac 0.2.10).
+    const blocks = [...element.querySelectorAll('.stats__block')].filter(
+      (block) => block.querySelector('.stats__resistances') !== null,
     );
+    expect(blocks.length).toBe(2);
+    expect(blocks[0]?.querySelector('edsb-metric-group')).toBeNull();
+    expect(blocks[1]?.querySelector('edsb-metric-group')).not.toBeNull();
+    for (const block of blocks) {
+      expect(block.querySelectorAll('edsb-resistance-bar').length).toBe(4);
+    }
+    const values = blocks.map((block) =>
+      [...block.querySelectorAll('.resistance__value')].map((cell) => cell.textContent?.trim()),
+    );
+    // Two sets, not one drawn twice.
+    expect(values[0]).not.toEqual(values[1]);
+    for (const block of values) {
+      expect(block).toHaveLength(4);
+      for (const value of block) expect(value).toMatch(/^[+−-]/);
+    }
   });
 
   it('restates every figure when the grade changes', () => {
@@ -75,15 +94,24 @@ describe('CommanderStats', () => {
     expect(raised).not.toBe(first);
   });
 
-  it('names one firepower row per fitted weapon, and none where nothing is fitted', () => {
+  it('draws a row for every mount, named by what is on it', () => {
+    // One block, one answer. A suit with nothing carried used to render the
+    // heading over nothing, while the bench with no suit at all drew the same
+    // block with a dash against each of the catalogue's mounts (Commander
+    // request 2026-09-04).
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
-    expect(render().querySelectorAll('.stats__row').length).toBe(0);
+    const empty = [...render().querySelectorAll('.stats__row')];
+
+    expect(empty.length).toBe(3);
+    expect(
+      empty.every((row) => row.querySelector('.stats__figure')?.textContent?.trim() === '—'),
+    ).toBe(true);
 
     store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon1', symbol: RIFLE });
     const rows = [...render().querySelectorAll('.stats__row')];
 
-    expect(rows.length).toBe(1);
+    expect(rows.length).toBe(3);
     expect(rows[0]?.querySelector('.stats__weapon')?.textContent?.trim()).not.toBe('');
-    expect(rows[0]?.querySelector('.stats__figure')?.textContent?.trim()).not.toBe('');
+    expect(rows[0]?.querySelector('.stats__figure')?.textContent?.trim()).toContain('dps');
   });
 });

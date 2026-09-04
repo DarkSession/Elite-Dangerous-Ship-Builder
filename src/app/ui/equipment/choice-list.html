@@ -1,6 +1,5 @@
 <ul
   class="choices"
-  [class.choices--cards]="asCards()"
   [class.choices--pairs]="asPairs()"
   [class.choices--ruled]="ruled()"
   [attr.aria-label]="label()"
@@ -11,10 +10,8 @@
         class="choice"
         type="button"
         [class.choice--current]="choice.current"
-        [class.choice--unavailable]="choice.unavailable"
         [attr.data-choice]="choice.id"
         [attr.aria-current]="choice.current ? 'true' : null"
-        [attr.aria-disabled]="choice.unavailable ? 'true' : null"
         (click)="choose(choice)"
       >
         <span class="choice__identity">
@@ -29,11 +26,7 @@
           }
         </span>
 
-        <!-- Why the row cannot be chosen, in words. The dimming beside it is
-             not the carrier (constitution V). -->
-        @if (choice.unavailableLabel) {
-          <span class="choice__marker">{{ choice.unavailableLabel }}</span>
-        } @else if (choice.figure) {
+        @if (choice.figure) {
           <span class="choice__figure">
             <span class="choice__number">{{ choice.figure }}</span>
             @if (choice.figureUnit) {

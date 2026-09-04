@@ -70,6 +70,7 @@
   gap: var(--ednb-space-inline);
   padding: var(--ednb-space-md) var(--ednb-space-2xl);
   border-block-end-color: transparent;
+  cursor: pointer;
   text-align: start;
   transition:
     background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),

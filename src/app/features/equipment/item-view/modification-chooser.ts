@@ -10,14 +10,16 @@ import { ChoiceList, type EquipmentChoice } from '../../../ui/equipment/choice-l
  * What may go in one modification slot.
  *
  * The same layer and the same row shape as the weapon chooser, because the
- * canvas draws one row for both: a name over a code line. Here the code line is
- * the engineers who grant the recipe — the canvas's own recipe list carries
- * them and its render drops them, and a Commander choosing a modification is
- * choosing an errand as much as a figure (FR-010).
+ * canvas draws one row for both. Here the row is the recipe's name alone: the
+ * canvas's picker draws `'<div …>' + m[0] + '</div>'` and nothing under it. The
+ * package names the engineers who grant each recipe and no artboard draws one,
+ * so neither does this (Commander request 2026-09-04, FR-010 revised).
  *
- * A recipe another slot on this item already holds stays in the list, marked
- * and refused. Dropping it would answer "where is the one I wanted" with
- * silence (FR-009).
+ * A recipe another slot on this item already holds is not offered. The
+ * 2026-09-04 canvas revision filters it out of the picker
+ * (`lib.filter(m => !(list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick))`)
+ * rather than drawing it refused, so the slot it is in is where a Commander
+ * finds it (FR-009).
  *
  * Clearing is a control in the chooser rather than something that appears on
  * hover: a slot is emptied by opening it and saying so, which is reachable
@@ -68,18 +70,12 @@ export class ModificationChooser {
     const target = this.target();
     const slot = this.slot();
     if (target === null || slot === null) return [];
-    const fittedLabel = this.#messages.message('equipment.chooser.fitted');
-
     return this.#presenter.modificationChoices(target, slot).map((choice) => ({
       id: choice.symbol,
       name: choice.name,
-      meta: choice.engineers,
+      meta: null,
       figure: null,
       current: choice.current,
-      // Held elsewhere on this item, which is not the same as being in this
-      // slot: the one in this slot is the current choice, not a refusal.
-      unavailable: choice.fitted && !choice.current,
-      unavailableLabel: choice.fitted && !choice.current ? fittedLabel : null,
     }));
   });
 }

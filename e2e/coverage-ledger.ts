@@ -2065,11 +2065,11 @@ export const helpRouteCoverage: readonly HelpRouteRow[] = [
     requirements: ['012/FR-001', '012/FR-011'],
   },
   {
-    // Obscured since 2026-08-25: `/builds` is drawn as the reference draws it,
+    // Obscured since 2026-08-25: the library is drawn as the reference draws it,
     // a framed layer over the screen it was opened from, so help is reached
     // from the capability beneath once the layer is dismissed.
     id: 'build-library',
-    surface: 'Build library /builds',
+    surface: 'Build library layer',
     owner: '001',
     frameEntry: 'obscured',
     requirements: ['012/FR-001', '012/FR-011'],

@@ -103,11 +103,19 @@ test.describe('handing a loadout to someone else', () => {
     await page.goto('about:blank');
     await page.goto(link);
 
-    // The Maverick carries one primary, so the second is held — and the weapon
-    // on it survived the link that was minted while it was held.
-    const row = page.locator('.ledger__row[data-target="PrimaryWeapon2"]');
-    await expect(row).toContainText(held);
-    await expect(row).toHaveAttribute('aria-disabled', 'true');
+    // The Maverick carries one primary, so the second draws no row — but the
+    // weapon on it survived the link, which is what FR-018a is about. Put the
+    // Dominator back on and there it is.
+    await expect(page.locator('.ledger__row[data-target="PrimaryWeapon2"]')).toHaveCount(0);
+    await openRow(page, 'suit');
+    await pickSwap(swapList(page).filter({ hasText: 'Dominator Suit' }));
+
+    // Compact draws the ledger behind its own tab, so ask for it back before
+    // reading a row: `openRow` is what knows how to reach one either way.
+    await openRow(page, 'PrimaryWeapon2');
+    await expect(page.locator('.item[data-target="PrimaryWeapon2"] .item__name')).toContainText(
+      held,
+    );
   });
 
   test('offers the loadout as an object, a link and a readable summary', async ({
@@ -128,10 +136,18 @@ test.describe('handing a loadout to someone else', () => {
     // Identities only: nothing the package can answer leaves the bench.
     await expect(payload).not.toHaveValue(/shieldStrength|damagePerSecond/);
 
+    // Canvas 1a's `#ge-exp-meta`, across from the two actions: what was written,
+    // counted. The suit counts among the items, so a bench carrying nothing else
+    // is one item and no modifications.
+    const meta = dialog.locator('.export-loadout__meta');
+    await expect(meta).toHaveText(/^Loadout JSON · 1 item · 0 mods · \d+\.\d KB$/);
+
     await sweepOutfittingState(page, testInfo, 'export loadout');
 
     await dialog.getByRole('radio', { name: /Plain text/ }).check();
     await expect(dialog.getByRole('textbox', { name: 'Plain text' })).toHaveValue(/Dominator Suit/);
+    // The line is about the text this format wrote, so both ends of it move.
+    await expect(meta).toHaveText(/^Plain text · 1 item · 0 mods · \d+\.\d KB$/);
 
     await dialog.getByRole('radio', { name: /Share link/ }).check();
     await expect(dialog.getByText(/#e\./)).toBeVisible();

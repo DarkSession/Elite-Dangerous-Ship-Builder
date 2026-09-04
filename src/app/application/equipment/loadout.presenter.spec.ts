@@ -86,23 +86,26 @@ describe('LoadoutPresenter', () => {
       ]);
     });
 
-    it('names a held mount’s weapon and says the mount is unavailable', () => {
-      // An unavailable row whose weapon vanished would lose the very thing the
-      // loadout retains (FR-007).
+    it('draws no row for a mount the worn suit does not carry, and keeps its weapon', () => {
+      // The bench lists the mounts the worn suit carries. What is on a mount the
+      // suit does not carry is retained by the loadout and comes back with a
+      // suit that carries it — it is simply not drawn (Commander request
+      // 2026-09-04, FR-007 revised).
       dominator();
       store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon2', symbol: RIFLE });
       store.dispatch({ kind: 'selectSuit', suitFamily: 'utilitysuit' });
 
-      const held = presenter.ledger().weapons.find((row) => row.target === 'PrimaryWeapon2')!;
-
-      expect(held.held).toBe(true);
-      expect(held.name?.text).toBe('Manticore Oppressor');
-      expect(held.meta).toContain('Primary Weapon 2');
-      // Held and unavailable read as text, not as dimming.
-      expect(held.accessibleName).toContain('Manticore Oppressor');
-      expect(held.accessibleName).toContain(
-        BUNDLED_ENGLISH['equipment.mount.held'].split('·')[0]!.trim(),
+      expect(presenter.ledger().weapons.some((row) => row.target === 'PrimaryWeapon2')).toBe(false);
+      expect(presenter.stats()!.firepower.some((row) => row.mount === 'PrimaryWeapon2')).toBe(
+        false,
       );
+
+      // Retained all the same: back on a suit that carries the mount, so is the
+      // weapon.
+      store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+      const back = presenter.ledger().weapons.find((row) => row.target === 'PrimaryWeapon2')!;
+
+      expect(back.name?.text).toBe('Manticore Oppressor');
     });
 
     it('states an empty mount as empty, with the mount named for a reader', () => {
@@ -151,7 +154,20 @@ describe('LoadoutPresenter', () => {
       expect(item.attributes.find((attribute) => attribute.id === 'shieldStrength')?.value).toBe(
         readings.shieldStrength.toFixed(1),
       );
-      expect(item.attributes.map((attribute) => attribute.id)).toContain('kinetic');
+      // Canvas 1a pairs the grid across: an armour cell beside a shield cell for
+      // each of the four damage types, each reading its own published stat —
+      // the armour's from the grade, the shield's from the suit (Almanac
+      // 0.2.10).
+      expect(item.attributes.map((attribute) => attribute.id)).toContain('armour-kinetic');
+      expect(item.attributes.map((attribute) => attribute.id)).toContain('shield-kinetic');
+      const armour = item.attributes.find((attribute) => attribute.id === 'armour-kinetic');
+      const shield = item.attributes.find((attribute) => attribute.id === 'shield-kinetic');
+      expect(armour?.label).not.toBe(shield?.label);
+      // Each cell follows its own reading rather than the other's — the two
+      // disagree, which is the whole of the split.
+      expect(armour?.value).not.toBe(shield?.value);
+      expect(armour?.value?.startsWith('−')).toBe(readings.armourKineticResistance < 0);
+      expect(shield?.value?.startsWith('−')).toBe(readings.shieldKineticResistance < 0);
     });
 
     it('states the Flight Suit honestly rather than drawing four locked slots', () => {
@@ -255,44 +271,67 @@ describe('LoadoutPresenter', () => {
 
       expect(stats.shieldStrength).toBe(readings.shieldStrength.toFixed(1));
       expect(stats.shieldRegeneration).toBe(readings.shieldRegeneration.toFixed(2));
-      expect(stats.resistances.map((resistance) => resistance.key)).toEqual([
-        'kinetic',
-        'thermal',
-        'plasma',
-        'explosive',
-      ]);
-      // The figure carries the direction, so a bar is decoration a reader can
-      // do without (constitution V).
-      for (const resistance of stats.resistances) {
-        expect(resistance.value).toMatch(/^[+−-]/);
+      for (const block of [stats.armourResistances, stats.shieldResistances]) {
+        expect(block.map((resistance) => resistance.key)).toEqual([
+          'kinetic',
+          'thermal',
+          'plasma',
+          'explosive',
+        ]);
+        // The figure carries the direction, so a bar is decoration a reader can
+        // do without (constitution V).
+        for (const resistance of block) {
+          expect(resistance.value).toMatch(/^[+−-]/);
+        }
       }
+
+      // Two published sets read separately, not one set drawn twice: the
+      // armour's come from the suit's grade and the shield's from the suit
+      // (Almanac 0.2.10). Each block follows its own reading's sign, and the two
+      // disagree somewhere across the four.
+      expect(stats.armourResistances.map((r) => r.negative)).toEqual([
+        readings.armourKineticResistance < 0,
+        readings.armourThermalResistance < 0,
+        readings.armourPlasmaResistance < 0,
+        readings.armourExplosiveResistance < 0,
+      ]);
+      expect(stats.shieldResistances.map((r) => r.negative)).toEqual([
+        readings.shieldKineticResistance < 0,
+        readings.shieldThermalResistance < 0,
+        readings.shieldPlasmaResistance < 0,
+        readings.shieldExplosiveResistance < 0,
+      ]);
+      expect(stats.armourResistances.map((r) => r.value)).not.toEqual(
+        stats.shieldResistances.map((r) => r.value),
+      );
     });
 
     it('states a negative resistance with its sign, and the bar as its magnitude', () => {
       store.dispatch({ kind: 'selectSuit', suitFamily: 'flightsuit' });
-      const kinetic = presenter.stats()!.resistances[0]!;
+      const kinetic = presenter.stats()!.armourResistances[0]!;
 
       expect(kinetic.negative).toBe(true);
       expect(kinetic.magnitude).toBeGreaterThan(0);
     });
 
-    it('states one firepower row per counted weapon, and none for a held one', () => {
+    it('draws a row for every mount the suit carries, and none for the rest', () => {
       dominator();
       store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon1', symbol: RIFLE });
       store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon2', symbol: RIFLE });
       store.dispatch({ kind: 'fitWeapon', mount: 'SecondaryWeapon', symbol: PISTOL });
 
-      expect(presenter.stats()!.firepower.map((row) => row.mount)).toEqual([
-        'PrimaryWeapon1',
-        'PrimaryWeapon2',
-        'SecondaryWeapon',
-      ]);
+      const mounts = ['PrimaryWeapon1', 'PrimaryWeapon2', 'SecondaryWeapon'];
+      expect(presenter.stats()!.firepower.map((row) => row.mount)).toEqual(mounts);
 
+      // The Utility suit carries one primary, so the second stops being drawn at
+      // all — the canvas skips it too (`if (!enabled(i)) return ''`). The weapon
+      // on it is retained by the loadout, and contributes to no figure while the
+      // mount is not carried (FR-007).
       store.dispatch({ kind: 'selectSuit', suitFamily: 'utilitysuit' });
-      expect(presenter.stats()!.firepower.map((row) => row.mount)).toEqual([
-        'PrimaryWeapon1',
-        'SecondaryWeapon',
-      ]);
+      const carried = presenter.stats()!.firepower;
+
+      expect(carried.map((row) => row.mount)).toEqual(['PrimaryWeapon1', 'SecondaryWeapon']);
+      expect(carried.find((row) => row.mount === 'PrimaryWeapon1')?.value).toContain('dps');
     });
   });
 
@@ -357,20 +396,31 @@ describe('LoadoutPresenter', () => {
       }
     });
 
-    it('names the engineers who grant each modification', () => {
-      // FR-010: the canvas's own recipe list carries them and its render drops
-      // them; the requirement keeps them.
+    it('names nobody on a fitted modification slot', () => {
+      // FR-010, revised: the package records who grants a recipe and no artboard
+      // draws one, so the bench names none of them (Commander request
+      // 2026-09-04).
       dominator();
-      const choices = presenter.modificationChoices('suit', 0);
-      const nightVision = choices.find((choice) => choice.symbol === 'suit_nightvision')!;
+      store.dispatch({ kind: 'setSuitGrade', grade: 5 });
+      store.dispatch({
+        kind: 'fitModification',
+        target: 'suit',
+        slot: 0,
+        symbol: 'suit_nightvision',
+      });
+      const [fitted] = presenter.item()!.slots!;
+      const engineers = getPersonalModification('suit_nightvision')!.engineers;
 
-      expect(nightVision.engineers).toBe(
-        getPersonalModification('suit_nightvision')!.engineers.join(' · '),
-      );
-      expect(nightVision.engineers.length).toBeGreaterThan(0);
+      expect(engineers.length).toBeGreaterThan(0);
+      for (const engineer of engineers) {
+        expect(fitted!.accessibleName).not.toContain(engineer);
+      }
+      expect(
+        presenter.modificationChoices('suit', 1).every((choice) => !('engineers' in choice)),
+      ).toBe(true);
     });
 
-    it('marks a recipe another slot already holds rather than hiding it', () => {
+    it('leaves out a recipe another slot already holds', () => {
       dominator();
       store.dispatch({
         kind: 'fitModification',
@@ -380,7 +430,7 @@ describe('LoadoutPresenter', () => {
       });
       const choices = presenter.modificationChoices('suit', 1);
 
-      expect(choices.find((choice) => choice.symbol === 'suit_nightvision')?.fitted).toBe(true);
+      expect(choices.some((choice) => choice.symbol === 'suit_nightvision')).toBe(false);
     });
 
     it('names a modification chooser by the slot it is for', () => {

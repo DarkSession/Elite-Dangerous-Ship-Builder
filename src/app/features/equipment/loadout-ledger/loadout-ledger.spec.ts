@@ -62,21 +62,21 @@ describe('LoadoutLedger', () => {
     ).toEqual(['PrimaryWeapon1']);
   });
 
-  it('draws a held mount as unavailable with its weapon still named (FR-007)', () => {
+  it('draws no row for a mount the worn suit does not carry (FR-007)', () => {
     store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon2', symbol: RIFLE });
-    // The Maverick carries one primary. The second one is not lost — it is held.
+    // The Maverick carries one primary. The weapon on the second is not lost —
+    // the loadout keeps it — but the ledger lists the suit's mounts, not the
+    // catalogue's (Commander request 2026-09-04).
     store.dispatch({ kind: 'selectSuit', suitFamily: 'utilitysuit' });
 
     const element = render().nativeElement as HTMLElement;
-    const held = rows(element).find((row) => row.dataset['target'] === 'PrimaryWeapon2');
 
-    expect(held?.getAttribute('aria-disabled')).toBe('true');
-    expect(held?.querySelector('.ledger__name')?.textContent?.trim()).not.toBe('');
-    // The state is in the row's own sentence, not only in the dimming.
-    expect(held?.getAttribute('aria-label')).not.toBe(null);
+    expect(rows(element).some((row) => row.dataset['target'] === 'PrimaryWeapon2')).toBe(false);
+    expect(rows(element).some((row) => row.dataset['target'] === 'PrimaryWeapon1')).toBe(true);
+    expect(rows(element).some((row) => row.dataset['target'] === 'SecondaryWeapon')).toBe(true);
   });
 
-  it('opens the row a Commander presses, and refuses a held one', () => {
+  it('opens the row a Commander presses', () => {
     store.dispatch({ kind: 'fitWeapon', mount: 'PrimaryWeapon2', symbol: RIFLE });
     store.dispatch({ kind: 'selectSuit', suitFamily: 'utilitysuit' });
 
@@ -85,9 +85,8 @@ describe('LoadoutLedger', () => {
     fixture.componentInstance.opened.subscribe((target) => opened.push(target));
     const element = fixture.nativeElement as HTMLElement;
 
-    rows(element)
-      .find((row) => row.dataset['target'] === 'PrimaryWeapon2')
-      ?.click();
+    // There is no row for the mount the suit does not carry, so there is nothing
+    // here to refuse: the ledger offers only what can be opened.
     rows(element)
       .find((row) => row.dataset['target'] === 'SecondaryWeapon')
       ?.click();

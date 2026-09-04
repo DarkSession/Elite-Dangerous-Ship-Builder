@@ -104,8 +104,11 @@ test.describe('product semantics', () => {
         .trim();
 
     // Every address the ship tool owns: the shipyard the `beforeEach` opened,
-    // a hull's own page, the outfitting bench and the library.
-    for (const route of ['/ships/Anaconda', '/build', '/builds']) {
+    // a hull's own page and the outfitting bench. The saved builds were a fourth
+    // until they stopped being an address (2026-09-04); walking `/builds` now
+    // lands on the shipyard through the wildcard and re-asserts the first
+    // iteration.
+    for (const route of ['/ships/Anaconda', '/build']) {
       expect(await named()).toBe('Ship Builder');
 
       await page.goto(route);

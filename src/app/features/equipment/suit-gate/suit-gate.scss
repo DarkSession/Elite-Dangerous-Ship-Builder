@@ -77,10 +77,12 @@
   @include layout.visually-hidden;
 }
 
-// And with the header gone the gate opens on its own first rule, which the
-// ledger's closing padding has already separated from what came before it.
+// And with the header gone the gate opens on its own first rule. Canvas 2b sets
+// the scrolling column's own `padding: 14px 0 24px` above it, which is the step
+// this takes: with nothing on the bench there is no ledger above the gate, and
+// at zero the rule sat against the tab strip.
 .gate--compact {
-  padding-block-start: 0;
+  padding-block-start: var(--ednb-space-xl);
 }
 
 // The canvas dims both previews as a block rather than by ink: they are
@@ -140,10 +142,17 @@
 
   display: inline-flex;
   align-items: center;
+  // A button rather than a link — the saved builds have no address — so the
+  // agent's own chrome has to come off before the canvas's own can go on.
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
   color: var(--ednb-text-accent);
+  cursor: pointer;
   // The canvas draws it in the accent and rules nothing under it; the colour is
-  // not the only carrier, since it is the one link in the block and a link in
-  // the accessibility tree either way.
+  // not the only carrier, since it is the one control in the block and is named
+  // in words either way.
   text-decoration: none;
 }
 

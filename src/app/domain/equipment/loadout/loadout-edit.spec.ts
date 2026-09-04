@@ -117,6 +117,16 @@ describe('fitting a weapon', () => {
     expect(swapped.weapons[0]?.modifications).toEqual([null, null, null, null]);
   });
 
+  it('leaves the mount alone when the weapon fitted is the one already on it', () => {
+    // The canvas lists the fitted weapon among its alternatives and marks it, so
+    // its row is a live control. Pressing it is not a swap, and it must not take
+    // the modifications with it.
+    const fitted = fitWeapon(dominator(), 'PrimaryWeapon1', RIFLE);
+    const modified = fitModification(fitted, 'PrimaryWeapon1', 0, 'weapon_clipsize');
+
+    expect(fitWeapon(modified, 'PrimaryWeapon1', RIFLE)).toBe(modified);
+  });
+
   it('empties a mount', () => {
     const fitted = fitWeapon(dominator(), 'PrimaryWeapon1', RIFLE);
 

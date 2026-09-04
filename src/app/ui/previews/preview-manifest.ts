@@ -1213,7 +1213,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: true,
       exposedStates: ['current'],
       relationships: ['label'],
-      textEquivalents: ['current navigation entry'],
+      textEquivalents: ['current tool'],
     },
     ['default', 'empty', 'error'],
   ),
@@ -1222,12 +1222,12 @@ registerPreview({
       'default',
       {
         routeContext: 'Anaconda explorer',
-        tools: [{ id: 'ship', label: 'Ship', href: '/ships', current: true }],
-        navigation: [
-          { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
-          { id: 'builds', label: 'Saved builds', href: '/builds' },
+        tools: [
+          { id: 'ship', label: 'Ship Builder', href: '/ships', current: true },
+          { id: 'equipment', label: 'Equipment Builder', href: '/equipment' },
         ],
         actions: [
+          { id: 'library', label: 'Open saved build' },
           { id: 'save', label: 'Save', emphasis: 'primary' },
           { id: 'language', label: 'Language' },
           {
@@ -1242,8 +1242,8 @@ registerPreview({
       [
         'exposes banner, navigation and main landmarks',
         'every action keeps a text name — the Help mark carries its own as text inside the button',
-        'the current navigation entry exposes aria-current',
-        'the tool region is a second navigation landmark with a name of its own',
+        'the current tool exposes aria-current',
+        'the tool region is the shell\u2019s navigation landmark, with a name of its own',
         'the tool a Commander is in is a word carrying aria-current, never a link to the open screen',
         'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
@@ -1255,7 +1255,7 @@ registerPreview({
     state(
       'empty',
       {},
-      ['renders the landmarks with no route context, tools, navigation or actions'],
+      ['renders the landmarks with no route context, tools or actions'],
       ['normal'],
       true,
     ),
@@ -4602,20 +4602,17 @@ registerPreview({
     {
       role: 'list',
       visibleNameMatchesAccessibleName: false,
-      exposedStates: ['selected', 'disabled'],
+      exposedStates: ['selected'],
       relationships: ['label'],
-      textEquivalents: [
-        'the fitted or worn row, as state rather than as a wash',
-        'a row another slot already holds, in words beside it (FR-009)',
-      ],
+      textEquivalents: ['the fitted or worn row, as state rather than as a wash'],
     },
-    ['default', 'empty', 'disabled'],
+    ['default', 'empty'],
   ),
   states: [
     state(
       'default',
       {
-        label: 'Swap primary weapon',
+        label: 'Primary weapon',
         choices: [
           {
             id: 'a',
@@ -4623,8 +4620,6 @@ registerPreview({
             meta: 'RIFLE · KINETIC · AUTOMATIC',
             figure: 'G3',
             current: true,
-            unavailable: false,
-            unavailableLabel: null,
           },
           {
             id: 'b',
@@ -4632,8 +4627,6 @@ registerPreview({
             meta: 'RIFLE · THERMAL · AUTOMATIC',
             figure: null,
             current: false,
-            unavailable: false,
-            unavailableLabel: null,
           },
         ],
       },
@@ -4644,34 +4637,16 @@ registerPreview({
       ],
       ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
     ),
-    state('empty', { label: 'Swap primary weapon', choices: [] }, [
+    state('empty', { label: 'Primary weapon', choices: [] }, [
       'nothing offered draws no rows, and no row-shaped placeholder',
     ]),
-    state(
-      'disabled',
-      {
-        label: 'Fit a modification',
-        choices: [
-          {
-            id: 'c',
-            name: localized('Extra Ammo Capacity'),
-            meta: 'DOMINO GREEN',
-            figure: null,
-            current: false,
-            unavailable: true,
-            unavailableLabel: 'Already fitted',
-          },
-        ],
-      },
-      [
-        'a row already held elsewhere is still drawn, marked in words and refused',
-        'the refusal is on the row rather than in the absence of the row',
-      ],
-      ['normal', 'expanded-copy', 'rtl'],
-    ),
     notApplicable(
       'loading',
       'Every chooser is built synchronously from the equipment library; there is no moment at which the list is open and empty of an answer.',
+    ),
+    notApplicable(
+      'disabled',
+      'Every row this list draws can be chosen. The 2026-09-04 canvas revision took the refused row out of the modification picker rather than drawing it, and the swap block lists the fitted item as a row a Commander can press.',
     ),
     notApplicable(
       'error',

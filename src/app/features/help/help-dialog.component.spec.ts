@@ -79,7 +79,7 @@ const TOPICS = HELP_TOPIC_IDS.map((id, index) => ({
 
 const VIEW: HelpDialogViewModel = {
   title: 'Help · About',
-  purpose: 'Ship Builder is an Elite Dangerous outfitting bench.',
+  purpose: 'NavBeacon is an Elite Dangerous outfitting bench.',
   sections: { about: 'About', faq: 'FAQ', licence: 'Licence' },
   about: ABOUT,
   topics: TOPICS,

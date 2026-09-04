@@ -37,7 +37,7 @@
 
     <edsb-choice-list
       class="gate__suits"
-      [asCards]="true"
+      [asPairs]="true"
       [choices]="choices()"
       [label]="step()"
       (chosen)="chosen.emit($event)"
@@ -48,7 +48,7 @@
            has a loadout. Only this one exists: importing a journal event is a
            capability the bench does not have (013 design/reference-review.md). -->
       <span class="gate__prompt">{{ prompt() }}</span>
-      <a class="gate__link" routerLink="/builds">{{ savedLabel() }}</a>
+      <button class="gate__link" type="button" (click)="openSaved()">{{ savedLabel() }}</button>
     </p>
   </div>
 

@@ -12,22 +12,41 @@ export interface SuitReadings {
   readonly shieldStrength: number;
   /** Shield points regenerated per second, modified. */
   readonly shieldRegeneration: number;
-  /** Damage resistances as fractions; a negative one increases damage taken. */
-  readonly kineticResistance: number;
-  readonly thermalResistance: number;
-  readonly plasmaResistance: number;
-  readonly explosiveResistance: number;
+  /**
+   * Damage resistances as fractions; a negative one increases damage taken.
+   *
+   * Two sets, because a suit defends in two layers and 0.2.10 publishes both.
+   * The armour's four sit on the grade and a grade moves them; the shield's four
+   * sit on the family and are the same at every grade.
+   */
+  readonly armourKineticResistance: number;
+  readonly armourThermalResistance: number;
+  readonly armourPlasmaResistance: number;
+  readonly armourExplosiveResistance: number;
+  readonly shieldKineticResistance: number;
+  readonly shieldThermalResistance: number;
+  readonly shieldPlasmaResistance: number;
+  readonly shieldExplosiveResistance: number;
   /** Modification slots this grade unlocks. */
   readonly modificationSlots: number;
   /** The recipes in those slots, which are the ones in effect. */
   readonly unlocked: readonly string[];
 }
 
-const RESISTANCES = [
-  'kineticResistance',
-  'thermalResistance',
-  'plasmaResistance',
-  'explosiveResistance',
+/** The armour's four, on the grade. */
+const ARMOUR_RESISTANCES = [
+  'armourKineticResistance',
+  'armourThermalResistance',
+  'armourPlasmaResistance',
+  'armourExplosiveResistance',
+] as const;
+
+/** The shield's four, on the family — the same at every grade. */
+const SHIELD_RESISTANCES = [
+  'shieldKineticResistance',
+  'shieldThermalResistance',
+  'shieldPlasmaResistance',
+  'shieldExplosiveResistance',
 ] as const;
 
 /**
@@ -36,7 +55,11 @@ const RESISTANCES = [
  * A resistance folds on damage *taken*, which `applyPersonalModifiers` already
  * handles for any stat whose name ends in `Resistance`: Damage Resistance is
  * ×0.9 on damage taken, which turns a 0.5 resistance into 0.55 rather than 0.45.
- * The bench does not reimplement that rule and does not correct it.
+ * The bench does not reimplement that rule and does not correct it. Both sets are
+ * put through it rather than only the armour's, so that a recipe the package
+ * later points at a shield stat folds without a change here — 0.2.10 points
+ * Damage Resistance at the armour's four alone, and a stat no modifier names
+ * comes back as it went in.
  *
  * `null` where the release publishes no such suit, or no such grade of it. It is
  * never a zero (constitution IV).
@@ -60,10 +83,12 @@ export function suitReadings(loadout: EquipmentLoadout): SuitReadings | null {
     family: suit.family,
     shieldStrength: fold('shieldStrength', grade.shieldStrength),
     shieldRegeneration: fold('shieldRegeneration', grade.shieldRegeneration),
-    ...(Object.fromEntries(RESISTANCES.map((stat) => [stat, fold(stat, grade[stat])])) as Record<
-      (typeof RESISTANCES)[number],
-      number
-    >),
+    ...(Object.fromEntries(
+      ARMOUR_RESISTANCES.map((stat) => [stat, fold(stat, grade[stat])]),
+    ) as Record<(typeof ARMOUR_RESISTANCES)[number], number>),
+    ...(Object.fromEntries(
+      SHIELD_RESISTANCES.map((stat) => [stat, fold(stat, suit[stat])]),
+    ) as Record<(typeof SHIELD_RESISTANCES)[number], number>),
     modificationSlots: grade.modificationSlots,
     unlocked,
   };

@@ -25,6 +25,17 @@ test.describe('the bench has an address of its own', () => {
 
     await page.goto('/ships');
     await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
+
+    // How a Commander arrives from outside: a shared loadout is `/equipment#e.…`
+    // and a shared build is `/build#s.…`. The router reports the fragment as
+    // part of the address, and matched whole it named no tool at all — which is
+    // the one screen where a Commander most needs the bar to say where they are
+    // (Commander request 2026-09-04).
+    await page.goto('/equipment#e.notaloadout');
+    await expect(page.locator('.frame__tool--current')).toHaveText('Equipment Builder');
+
+    await page.goto('/build#s.notabuild');
+    await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
   });
 });
 
@@ -131,7 +142,9 @@ test.describe('assembling a loadout', () => {
 
     await showTab(page, 'Stats');
     await expect(page.locator('.bench__region--stats .metric')).toHaveCount(2);
-    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(4);
+    // The canvas's `ARMOUR` block over `SHIELDS`, both drawn from the one
+    // published set (FR-006).
+    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(8);
   });
 
   test('restates the shields when the suit’s grade is raised', async ({ page }) => {
@@ -160,9 +173,11 @@ test.describe('assembling a loadout', () => {
     await expect(await ledgerRow(page, 'PrimaryWeapon1')).toContainText(chosen);
 
     await showTab(page, 'Stats');
+    // One row per catalogue mount, with a dash against the two carrying nothing:
+    // which mounts answer a figure is itself something to read (FR-006).
     const firepower = page.locator('.bench__region--stats .stats__row');
-    await expect(firepower).toHaveCount(1);
-    await expect(firepower).toContainText(chosen);
+    await expect(firepower).toHaveCount(3);
+    await expect(firepower.first()).toContainText(chosen);
   });
 
   test('offers the Flight Suit one grade, and says it takes no modification', async ({ page }) => {
@@ -175,7 +190,7 @@ test.describe('assembling a loadout', () => {
 });
 
 test.describe('a mount the worn suit does not carry', () => {
-  test('keeps the weapon, and says the mount is held rather than dropping it', async ({ page }) => {
+  test('draws no row for it, and gives the weapon back with the suit', async ({ page }) => {
     await openBench(page);
     await chooseSuit(page, 'Dominator Suit');
 
@@ -185,11 +200,11 @@ test.describe('a mount the worn suit does not carry', () => {
     const held = (await list.first().locator('.choice__name').textContent())?.trim() ?? '';
     await pickSwap(list.first());
 
-    // The Maverick carries one primary. The second is not lost (FR-007).
+    // The Maverick carries one primary, so the second stops being drawn: the
+    // bench lists the mounts the worn suit carries rather than the catalogue's
+    // (Commander request 2026-09-04). The weapon is not lost (FR-007).
     await chooseSuit(page, 'Maverick Suit');
-    const row = await ledgerRow(page, 'PrimaryWeapon2');
-    await expect(row).toHaveAttribute('aria-disabled', 'true');
-    await expect(row).toContainText(held);
+    await expect(page.locator('.ledger__row[data-target="PrimaryWeapon2"]')).toHaveCount(0);
 
     // And it comes back intact on a suit that carries the mount again.
     await chooseSuit(page, 'Dominator Suit');
@@ -253,7 +268,7 @@ test.describe('fitting modifications', () => {
     await expect((await materials(page)).locator('.materials__empty')).toBeVisible();
   });
 
-  test('refuses a recipe another slot holds, and still shows it (FR-009)', async ({ page }) => {
+  test('does not offer a recipe another slot already holds (FR-009)', async ({ page }) => {
     await openRow(page, 'suit');
     await openSlot(page, 0);
     const taken =
@@ -262,10 +277,12 @@ test.describe('fitting modifications', () => {
 
     await openRow(page, 'suit');
     await openSlot(page, 1);
-    const held = choices(page).filter({ hasText: taken });
 
-    await expect(held).toBeVisible();
-    await expect(held).toHaveAttribute('aria-disabled', 'true');
+    // The 2026-09-04 canvas revision filters it out rather than drawing it
+    // refused: the slot it is already in is where a Commander finds it, and the
+    // list holds nothing that cannot be chosen.
+    await expect(choices(page).filter({ hasText: taken })).toHaveCount(0);
+    await expect(choices(page).first()).toBeVisible();
   });
 });
 

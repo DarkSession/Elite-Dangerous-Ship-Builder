@@ -5,7 +5,6 @@ import {
   computed,
   effect,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
@@ -73,10 +72,10 @@ interface PendingDelete {
 /**
  * Everything this browser is holding for the Commander.
  *
- * A route rather than a menu, so it can be opened directly, appears in
- * history, and is somewhere a screen reader can be told it has arrived at. At
- * wide widths it presents as a layer over the screen that opened it; at narrow
- * widths it is the whole screen. Both are the same address.
+ * A layer rather than a screen: it is raised over whatever a Commander is on,
+ * takes a history entry at that same address so the back button closes it, and
+ * is announced on opening. It has no address of its own — a saved build is
+ * something you reach for from where you are (Commander request 2026-09-04).
  *
  * Every destructive action on this screen is confirmed, names the exact record
  * it will remove, and removes only that one key. Nothing here deletes anything
@@ -112,17 +111,6 @@ export class BuildLibraryPage {
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
   readonly #presence = inject(LibraryPresence);
-
-  /**
-   * Whether this is the layer the shell stands over a screen, or the page the
-   * `/builds` address renders on its own.
-   *
-   * The same content either way — the canvas draws one surface — and the
-   * difference is only what happens on the way out: a layer lowers and gives
-   * the screen behind it back, and a page has nothing behind it and navigates
-   * (build-library design, "Composition").
-   */
-  readonly asLayer = input(false);
 
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');
@@ -376,50 +364,7 @@ export class BuildLibraryPage {
    * the dismiss the canvas draws.
    */
   close(): void {
-    if (this.asLayer()) {
-      this.#presence.lower();
-      return;
-    }
-    void this.#router.navigateByUrl(this.#origin());
-  }
-
-  /**
-   * Where dismissing goes.
-   *
-   * The address this navigation came from, whatever it was. A library reached
-   * by its own address has no such screen behind it: then the build in hand is
-   * the honest destination, and the shipyard where there is no build — which
-   * is also where a Commander goes when the build they came from is the one
-   * they have just deleted.
-   *
-   * Without its fragment. The router records an address as it was when it
-   * navigated, and the workspace's link is written over it with `replaceState`
-   * afterwards — so a remembered fragment is the build as it stood before the
-   * edits that followed. The workspace publishes its own the moment it is back
-   * (FR-020).
-   */
-  #origin(): string {
-    const hasBuild = this.#active.loadout() !== null;
-    const fallback = hasBuild ? NAVIGATION_ROUTES.build : NAVIGATION_ROUTES.catalogue;
-    const previous = this.#router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl;
-    if (previous === undefined) {
-      return fallback;
-    }
-
-    const url = this.#router.serializeUrl(previous).split('#')[0] ?? '';
-    if (url === '') {
-      return fallback;
-    }
-
-    // By whole first segment, never by prefix. `/builds` starts with `/build`,
-    // so a prefix test answers both questions for this screen's own address and
-    // reads whichever way the two tests happen to be ordered — a trap that goes
-    // off silently the day someone swaps the lines.
-    const root = `/${(url.split('?')[0] ?? '').split('/')[1] ?? ''}`;
-    if (root === NAVIGATION_ROUTES.library) {
-      return fallback;
-    }
-    return root === NAVIGATION_ROUTES.build && !hasBuild ? fallback : url;
+    this.#presence.lower();
   }
 
   /** Narrows the list. Changes no record, no order and nothing stored. */
@@ -466,7 +411,7 @@ export class BuildLibraryPage {
             return;
           }
           this.#presence.lowerForNavigation();
-          void this.#router.navigateByUrl(NAVIGATION_ROUTES.equipment);
+          void this.#router.navigateByUrl(NAVIGATION_ROUTES.equipment, { replaceUrl: true });
           return;
         }
 
@@ -478,12 +423,13 @@ export class BuildLibraryPage {
           return;
         }
         if (result.kind === 'committed') {
-          // Leaving through the layer rather than closing it: the address goes
-          // back to the screen behind before the navigation, or the router —
-          // which never left that screen — would navigate to where it already
-          // is and leave `/builds` standing in the bar.
+          // Leaving through the layer rather than closing it. The layer has no
+          // address of its own: raising it pushed a second entry at the screen
+          // behind, so the navigation replaces that entry rather than stacking
+          // on it — otherwise every visit to the library would leave one back
+          // press that does nothing.
           this.#presence.lowerForNavigation();
-          void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
+          void this.#router.navigateByUrl(NAVIGATION_ROUTES.build, { replaceUrl: true });
         }
         return;
       }

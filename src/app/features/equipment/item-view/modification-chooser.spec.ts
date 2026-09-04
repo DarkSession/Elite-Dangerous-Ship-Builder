@@ -41,31 +41,27 @@ describe('ModificationChooser', () => {
     ...element.querySelectorAll<HTMLButtonElement>('.choice'),
   ];
 
-  it('offers the suit’s own recipes, and names who grants each of them (FR-010)', () => {
+  it('offers the suit’s own recipes as a name and nothing else (FR-010)', () => {
+    // The canvas's picker row is `'<div …>' + m[0] + '</div>'` — the recipe's
+    // name, with no code line under it. The package records who grants each
+    // recipe and no artboard draws one, so the row names nobody (Commander
+    // request 2026-09-04).
     const element = render().nativeElement as HTMLElement;
 
     expect(rows(element).length).toBeGreaterThan(0);
-    expect(
-      rows(element).every((row) => (row.querySelector('.choice__meta')?.textContent ?? '') !== ''),
-    ).toBe(true);
+    expect(rows(element).every((row) => row.querySelector('.choice__meta') === null)).toBe(true);
   });
 
-  it('keeps a recipe another slot holds in the list, marked and refused (FR-009)', () => {
+  it('withholds a recipe another slot already holds (FR-009)', () => {
+    // Listed dimmed and marked `FITTED` until the 2026-09-04 canvas revision,
+    // which filters it out: a list of things that cannot be chosen is a list a
+    // Commander reads twice, and where the recipe went is a question the slot
+    // holding it already answers.
     store.dispatch({ kind: 'fitModification', target: 'suit', slot: 0, symbol: REGEN });
-    const fixture = render(1);
-    const chosen: string[] = [];
-    fixture.componentInstance.chosen.subscribe((symbol) => chosen.push(symbol));
-    const element = fixture.nativeElement as HTMLElement;
-    const held = rows(element).find((row) => row.dataset['choice'] === REGEN);
+    const element = render(1).nativeElement as HTMLElement;
 
-    expect(held).toBeDefined();
-    expect(held?.getAttribute('aria-disabled')).toBe('true');
-    expect(held?.querySelector('.choice__marker')?.textContent?.trim()).toBe(
-      BUNDLED_ENGLISH['equipment.chooser.fitted'],
-    );
-
-    held?.click();
-    expect(chosen).toEqual([]);
+    expect(rows(element).some((row) => row.dataset['choice'] === REGEN)).toBe(false);
+    expect(rows(element).length).toBeGreaterThan(0);
   });
 
   it('marks the recipe this slot already holds as the current choice, not a refusal', () => {

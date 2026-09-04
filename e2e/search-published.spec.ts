@@ -41,7 +41,7 @@ test.describe('the document each published address answers with', () => {
     // 200. What separates a published document from that fallback is the
     // canonical it carries — the shell's names the site root — so that is what
     // is read.
-    for (const path of ['/ships', '/build', '/builds', '/ships/Anaconda']) {
+    for (const path of ['/ships', '/build', '/equipment', '/ships/Anaconda']) {
       const response = await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 });
 
       expect(response.status(), path).toBe(200);
@@ -58,9 +58,12 @@ test.describe('the document each published address answers with', () => {
   test('carries the screen its address is, not the application in general', async ({ page }) => {
     // All three top-level addresses, because a mapping exchanged between two of
     // them would leave every key declared somewhere and only the pairing wrong.
+    // The saved builds were a fourth until 2026-09-04, when they stopped being
+    // an address at all: they are a layer over the screen a Commander is on,
+    // and there is no document for a crawler to read.
     const catalogue = await (await page.request.get(`${PRODUCT_URL}/ships`)).text();
     const workspace = await (await page.request.get(`${PRODUCT_URL}/build`)).text();
-    const library = await (await page.request.get(`${PRODUCT_URL}/builds`)).text();
+    const bench = await (await page.request.get(`${PRODUCT_URL}/equipment`)).text();
 
     expect(description(catalogue)).toBe(englishMessages['catalogue.description']);
     expect(canonical(catalogue)).toBe(`${SITE_ORIGIN}/ships`);
@@ -71,11 +74,11 @@ test.describe('the document each published address answers with', () => {
     );
     expect(canonical(workspace)).toBe(`${SITE_ORIGIN}/build`);
 
-    expect(description(library)).toBe(englishMessages['library.description']);
-    expect(title(library)).toBe(
-      `${englishMessages['library.title']} · ${englishMessages['app.name']}`,
+    expect(description(bench)).toBe(englishMessages['equipment.description']);
+    expect(title(bench)).toBe(
+      `${englishMessages['equipment.title']} · ${englishMessages['app.name']}`,
     );
-    expect(canonical(library)).toBe(`${SITE_ORIGIN}/builds`);
+    expect(canonical(bench)).toBe(`${SITE_ORIGIN}/equipment`);
   });
 
   test('names the hull, and shows the hull, on a hull address', async ({ page }) => {

@@ -62,11 +62,26 @@ describe('every suit at every published grade', () => {
 
         expect(readings.shieldStrength).toBe(published.shieldStrength);
         expect(readings.shieldRegeneration).toBe(published.shieldRegeneration);
-        expect(readings.kineticResistance).toBe(published.kineticResistance);
-        expect(readings.thermalResistance).toBe(published.thermalResistance);
-        expect(readings.plasmaResistance).toBe(published.plasmaResistance);
-        expect(readings.explosiveResistance).toBe(published.explosiveResistance);
+        expect(readings.armourKineticResistance).toBe(published.armourKineticResistance);
+        expect(readings.armourThermalResistance).toBe(published.armourThermalResistance);
+        expect(readings.armourPlasmaResistance).toBe(published.armourPlasmaResistance);
+        expect(readings.armourExplosiveResistance).toBe(published.armourExplosiveResistance);
+        // The shield's four are the suit's, at every grade.
+        expect(readings.shieldKineticResistance).toBe(suit.shieldKineticResistance);
+        expect(readings.shieldThermalResistance).toBe(suit.shieldThermalResistance);
+        expect(readings.shieldPlasmaResistance).toBe(suit.shieldPlasmaResistance);
+        expect(readings.shieldExplosiveResistance).toBe(suit.shieldExplosiveResistance);
         expect(readings.modificationSlots).toBe(published.modificationSlots);
+
+        // Every one of them an actual number. Compared only against the package,
+        // a field the package stopped publishing would read `undefined` on both
+        // sides and pass — which is exactly how a renamed stat gets through: the
+        // 0.2.10 split renamed all four resistances, and `applyPersonalModifiers`
+        // refuses a base that is not finite the moment anything is fitted.
+        for (const value of Object.values(readings)) {
+          if (typeof value === 'number') expect(Number.isFinite(value)).toBe(true);
+          else expect(value).not.toBeUndefined();
+        }
       }
     }
   });
@@ -104,10 +119,10 @@ describe('every suit modification on every suit it is offered for', () => {
             applyPersonalModifiers('shieldRegeneration', published.shieldRegeneration, inEffect),
           );
           for (const stat of [
-            'kineticResistance',
-            'thermalResistance',
-            'plasmaResistance',
-            'explosiveResistance',
+            'armourKineticResistance',
+            'armourThermalResistance',
+            'armourPlasmaResistance',
+            'armourExplosiveResistance',
           ] as const) {
             expect(readings[stat]).toBe(applyPersonalModifiers(stat, published[stat], inEffect));
           }

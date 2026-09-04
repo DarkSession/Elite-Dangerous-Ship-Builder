@@ -7,7 +7,7 @@ import {
   revealMount,
   revealStatusRail,
 } from './outfitting-surfaces';
-import { buildStockHull, openFirstHullFromManifest } from './shell';
+import { buildStockHull, openFirstHullFromManifest, openLibrary } from './shell';
 
 /**
  * Offline capability and the privacy promise (US1, US2, US3).
@@ -292,7 +292,7 @@ test.describe('the privacy promise', () => {
     await openFirstHullFromManifest(page);
     await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build(#|$)/);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     const origin = new URL(page.url()).origin;
     expect(foreign.filter((url) => new URL(url).origin !== origin)).toEqual([]);

@@ -87,6 +87,56 @@ export class LoadoutSharePresenter {
   /** What the field shows for the format in front of the Commander. */
   readonly payload = computed(() => (this.#format() === 'json' ? this.json() : this.text()));
 
+  /**
+   * Canvas 1a's line across from the buttons: what the format is, how much of a
+   * loadout it carries, and how large it came out.
+   *
+   * `fmt.toUpperCase() + ' · ' + (o.weapons.length + 1) + ' ITEMS · ' + mods +
+   * ' MODS · ' + (txt.length / 1024).toFixed(1) + ' KB'`. Every part is a fact
+   * about the text this layer just wrote — nothing here is a figure about the
+   * equipment, which is the library's to state (constitution II).
+   */
+  readonly meta = computed(() => {
+    const loadout = this.#store.loadout();
+    if (loadout === null) return null;
+
+    // The layer draws this line beside the text a format wrote. The link format
+    // draws the ship tool's own share panel instead, which has no such line and
+    // no payload to count, so there is nothing here to state.
+    if (this.#format() === 'link') return null;
+
+    const written = this.payload();
+    if (written.length === 0) return null;
+
+    const weapons = loadout.weapons.filter((weapon) => weapon !== null);
+    const modifications =
+      loadout.suitModifications.filter((held) => held !== null).length +
+      weapons.reduce(
+        (total, weapon) => total + weapon.modifications.filter((held) => held !== null).length,
+        0,
+      );
+
+    // The suit counts among the items, as the canvas counts it.
+    const items = weapons.length + 1;
+
+    return this.#messages.message('equipment.export.meta', {
+      format: this.#messages.message(`equipment.export.mode.${this.#format()}`),
+      items: this.#counted('equipment.export.items', items),
+      modifications: this.#counted('equipment.export.mods', modifications),
+      // Bytes rather than characters: what a Commander is about to copy or
+      // download is the encoded text, and an identity outside ASCII is longer
+      // than the string that holds it.
+      size: (new TextEncoder().encode(written).length / 1024).toFixed(1),
+    });
+  });
+
+  /** `1 item` against `4 items`, the way every other counted phrase is written. */
+  #counted(key: 'equipment.export.items' | 'equipment.export.mods', count: number): string {
+    return count === 1
+      ? this.#messages.message(`${key}.one`)
+      : this.#messages.message(`${key}.many`, { count: String(count) });
+  }
+
   selectFormat(format: ExportFormat): void {
     this.#format.set(format);
     this.#feedback.set('idle');

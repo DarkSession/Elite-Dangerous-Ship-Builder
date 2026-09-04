@@ -21,11 +21,15 @@
   list-style: none;
 }
 
-// Canvas 2a's suit cards: the same rows, laid out **two** to a line, and canvas
-// 2b's single file. Two exactly rather than as many as fit — an `auto-fit`
-// track with a floor put all four across the gate's column, which is neither
-// artboard and wraps the mount line under itself.
-.choices--cards,
+// Canvas 2a's suit choices and canvas 1a's swap block: the same rows, laid out
+// **two** to a line, and canvas 2b's single file. Two exactly rather than as
+// many as fit — an `auto-fit` track with a floor put all four across the gate's
+// column, which is neither artboard and wraps the mount line under itself.
+//
+// The gate drew boxed cards with their names in the display face until the
+// 2026-09-04 canvas revision, which made its suits the same row the swap block
+// draws. One row shape now serves both, which is what the two were always
+// saying: this is the list of suits.
 .choices--pairs {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -33,28 +37,9 @@
 }
 
 @include layout.container-medium-up(choices) {
-  .choices--cards,
   .choices--pairs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-
-// Canvas 2a's card is a box: `padding: 15px 16px` on the panel fill inside one
-// amber hairline. The row inside it is the chooser's own, which is the whole
-// point of one component serving both — what the card adds is the frame around
-// it and the way it says the name.
-.choices--cards .choice {
-  padding: var(--ednb-space-lg) var(--ednb-space-lg);
-  border-color: var(--ednb-border-card);
-  background-color: var(--ednb-surface-panel-raised);
-}
-
-// The loudest thing on canvas 2a: the suit's name in the display face, set in
-// the accent, where the same component's list rows draw a name as prose. A card
-// is read across a grid rather than down a column, and the canvas makes the
-// name the thing that is scanned.
-.choices--cards .choice__name {
-  @include layout.display-title(var(--ednb-text-size-heading-sm), var(--ednb-text-tracking-code));
 }
 
 .choice {
@@ -75,6 +60,7 @@
   // 0.04, which does not render on the ground the rows sit on.
   border: var(--ednb-border-width-hairline) solid var(--ednb-border-row);
   background-color: var(--ednb-surface-inset);
+  cursor: pointer;
   text-align: start;
   transition:
     background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
@@ -95,11 +81,6 @@
   background-color: transparent;
 }
 
-.choice--unavailable {
-  color: var(--ednb-text-muted);
-  cursor: default;
-}
-
 .choice__identity {
   @include layout.stack(var(--ednb-space-3xs));
 
@@ -111,6 +92,15 @@
   font-family: var(--ednb-font-body);
   font-size: var(--ednb-text-size-compact);
   color: var(--ednb-text-primary);
+}
+
+// The one that is fitted. The canvas lists it among the rest and marks it as it
+// marks any selected row — `background:rgba(255,140,26,.14);border:1px solid
+// #ff8c1a` with the name in the lightest amber — so a Commander reads what they
+// have in the same list as what they could have.
+.choice--current {
+  border-color: var(--ednb-border-accent);
+  background-color: var(--ednb-surface-accent-selected);
 }
 
 .choice--current .choice__name {
@@ -142,12 +132,6 @@
   font-size: var(--ednb-text-size-micro);
 }
 
-.choice__marker {
-  @include layout.micro-label(var(--ednb-text-danger-quiet), var(--ednb-text-tracking-label));
-
-  flex: none;
-}
-
 // Declared last so it wins on source order: a container query weighs the same
 // as the rule it is undoing.
 @include layout.container-medium-up(choices) {
@@ -159,25 +143,27 @@
 // What a pointer does here, as the canvas records it: a row takes the quiet
 // amber wash the ship tool's own candidate rows take, and a card lifts its edge
 // and its fill (`style-hover="border-color:var(--amber-a7);background:var(--panel-4)"`).
-// A row that cannot be chosen answers nothing, because nothing would follow.
+// Every row in these lists can be chosen — the 2026-09-04 revision took the
+// refused row out of the picker rather than drawing it — so none of them is
+// excused from answering.
 @media (hover: hover) {
   // `.pe-alt:hover { background: #1a1917; border-color: rgba(255,140,26,.4) }`.
-  .choice:not(.choice--unavailable):hover {
+  // The marked row keeps its own wash and its own edge: the canvas writes both
+  // of those inline on the row it marks, which the hover rule cannot reach — so
+  // a pointer never makes the fitted row look like one of the alternatives.
+  .choice:not([aria-current]):hover {
     background-color: var(--ednb-surface-panel-hover);
     border-color: var(--ednb-border-row-hover);
   }
 
-  // A card is a heavier box and lifts further, on the raised panel rather than
-  // the hover ground: `border-color:var(--amber-a7); background:var(--panel-4)`.
-  .choices--cards .choice:not(.choice--unavailable):hover {
-    background-color: var(--ednb-surface-bar);
-    border-color: var(--ednb-border-card-hover);
+  .choice[aria-current]:hover {
+    filter: var(--ednb-effect-lit);
   }
 
   // The picker's rows are the one arrangement the canvas draws unboxed, so
-  // there is no edge on them to lift: `.pe-pi:not([data-taken]):hover
+  // there is no edge on them to lift: `.pe-pi:hover
   // { background: rgba(255,140,26,.09) }`.
-  .choices--ruled .choice:not(.choice--unavailable):hover {
+  .choices--ruled .choice:not([aria-current]):hover {
     background-color: var(--ednb-surface-accent-quiet);
     border-color: var(--ednb-border-decorative);
   }

@@ -10,7 +10,7 @@ navigates to `/build` only after feature 001 commits the candidate.
 | `/ships/:hull`     | Same shell action; selected hull does not constrain incoming hull | No Export action; enter the active `/build` workspace first                  |
 | `/build`, no build | Primary recovery action                                           | Host explains prerequisite and offers Import/Create; no layer/artifact       |
 | `/build`, active   | Available; shared replacement rule                                | Shared Export Build layer, SLEF mode available                               |
-| `/builds`          | Shared shell action; accepted candidate navigates to `/build`     | No selected-row export; open a record as the active `/build` workspace first |
+| library layer      | Shared shell action; accepted candidate navigates to `/build`     | No selected-row export; open a record as the active `/build` workspace first |
 
 The shared Export Build layer composes feature 001's Share Link mode and feature 004's SLEF mode with
 an accessible mode control, in that order and opening on SLEF. Journal and Markdown modes are

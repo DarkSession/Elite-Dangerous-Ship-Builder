@@ -95,6 +95,13 @@ export function fitWeapon(
   const weapon = getPersonalWeaponBySymbol(symbol);
   if (weapon === null || weapon.slot !== CATALOGUE_MOUNTS[position]!.kind) return loadout;
 
+  // Fitting what is already there is not a change, and the mount keeps what it
+  // carries. The canvas lists the fitted weapon among the alternatives and marks
+  // it, so the row for the weapon on the mount is a live control a Commander can
+  // press — without this the press would rebuild the mount on `EMPTY_SLOTS` and
+  // take four modifications with it. `selectSuit` above refuses the same way.
+  if (loadout.weapons[position]?.symbol === weapon.symbol) return loadout;
+
   const grades = publishedGrades(weapon);
   const carried = loadout.weapons[position]?.grade;
   return withWeapon(loadout, position, {

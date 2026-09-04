@@ -141,7 +141,10 @@ export interface FirepowerRowView {
 export interface CommanderStatsView {
   readonly shieldStrength: string;
   readonly shieldRegeneration: string;
-  readonly resistances: readonly ResistanceView[];
+  /** The armour's four, which the suit's grade publishes and a grade moves. */
+  readonly armourResistances: readonly ResistanceView[];
+  /** The shield's four, which the suit publishes and no grade moves. */
+  readonly shieldResistances: readonly ResistanceView[];
   readonly firepower: readonly FirepowerRowView[];
 }
 
@@ -178,18 +181,21 @@ export interface SuitChoiceView {
 export interface ModificationChoiceView {
   readonly symbol: string;
   readonly name: GameTextPresentation;
-  /** The engineers who grant it, as the package names them (FR-010). */
-  readonly engineers: string;
-  /** True where another slot on this item already holds it (FR-009). */
-  readonly fitted: boolean;
   readonly current: boolean;
 }
 
+/**
+ * The four damage types, each with the two stats the library publishes for it.
+ *
+ * Two sets since 0.2.10: the armour's on the suit's grade, the shield's on the
+ * suit itself. The bench drew one set in both blocks while only one was
+ * published; now each block reads its own.
+ */
 const RESISTANCES = [
-  ['kineticResistance', 'kinetic'],
-  ['thermalResistance', 'thermal'],
-  ['plasmaResistance', 'plasma'],
-  ['explosiveResistance', 'explosive'],
+  ['armourKineticResistance', 'shieldKineticResistance', 'kinetic'],
+  ['armourThermalResistance', 'shieldThermalResistance', 'thermal'],
+  ['armourPlasmaResistance', 'shieldPlasmaResistance', 'plasma'],
+  ['armourExplosiveResistance', 'shieldExplosiveResistance', 'explosive'],
 ] as const;
 
 /**
@@ -246,7 +252,18 @@ export class LoadoutPresenter {
     const loadout = this.#store.loadout();
     const target = this.#store.selected();
     if (loadout === null || target === null) return null;
-    return target === 'suit' ? this.#suitItem(loadout) : this.#weaponItem(loadout, target);
+    if (target === 'suit') return this.#suitItem(loadout);
+
+    // The mount a Commander was reading can stop being one the suit carries, by
+    // their choosing another suit. Its row is gone from the ledger, so the
+    // column falls back to the suit rather than standing on a mount nothing
+    // points at — which is what the canvas does
+    // (`if (!isSuit && !enabled(i)) { st.sel = 'suit'; return renderDetail(); }`).
+    const position = CATALOGUE_MOUNTS.findIndex((mount) => mount.key === target);
+    if (position < 0 || mountAvailability(loadout)[position] !== 'offered') {
+      return this.#suitItem(loadout);
+    }
+    return this.#weaponItem(loadout, target);
   });
 
   /** The commander stats, or nothing where no suit is worn. */
@@ -259,13 +276,8 @@ export class LoadoutPresenter {
       return {
         shieldStrength: dash,
         shieldRegeneration: dash,
-        resistances: RESISTANCES.map(([, damage]) => ({
-          key: damage,
-          label: this.#message(`equipment.damage.${damage}`),
-          value: dash,
-          magnitude: 0,
-          negative: false,
-        })),
+        armourResistances: this.#dashedResistances(dash),
+        shieldResistances: this.#dashedResistances(dash),
         // Canvas 2a keeps `FIREPOWER` on an empty bench with a dash against
         // every mount the catalogue offers. The mounts are the package's own,
         // so nothing here is a figure this bench invented — the dash is the
@@ -284,23 +296,77 @@ export class LoadoutPresenter {
     return {
       shieldStrength: this.#formatters.decimal(suit.shieldStrength, 1),
       shieldRegeneration: this.#formatters.decimal(suit.shieldRegeneration, 2),
-      resistances: RESISTANCES.map(([stat, damage]) => ({
-        key: damage,
-        label: this.#message(`equipment.damage.${damage}`),
-        value: this.#formatters.signedPercent(suit[stat]),
-        magnitude: Math.min(1, Math.abs(suit[stat])),
-        negative: suit[stat] < 0,
-      })),
-      firepower: fittedWeaponReadings(loadout).map((weapon) => ({
-        mount: weapon.mount,
-        name: this.#text.personalWeaponName(weapon.symbol),
-        value: this.#messages.message('equipment.stats.dps', {
-          value: this.#formatters.decimal(weapon.metrics.damagePerSecond, 1),
-        }),
-        primary: CATALOGUE_MOUNTS.find((mount) => mount.key === weapon.mount)?.kind === 'primary',
-      })),
+      armourResistances: RESISTANCES.map(([armour, , damage]) =>
+        this.#resistance(damage, suit[armour]),
+      ),
+      shieldResistances: RESISTANCES.map(([, shield, damage]) =>
+        this.#resistance(damage, suit[shield]),
+      ),
+      // Every mount the catalogue offers, in its order, whether or not a weapon
+      // is on it. The block used to draw only the weapons that were fitted, so
+      // a suit with nothing carried rendered a heading over nothing — the same
+      // state the empty bench answers with a dash on every row, given two
+      // different answers by one block (Commander request 2026-09-04).
+      firepower: this.#firepower(loadout),
     };
   });
+
+  /**
+   * One row per mount the worn suit carries, with the weapon on it or a dash.
+   *
+   * A mount the suit does not carry draws no row, as the canvas draws none
+   * (`st.w.map((sl, i) => { if (!enabled(i)) return ''; … })`). What is held on
+   * it is still kept — FR-007 is about the loadout, not about the block — and
+   * its row comes back with a suit that carries the mount (Commander request
+   * 2026-09-04).
+   */
+  #firepower(loadout: EquipmentLoadout): readonly FirepowerRowView[] {
+    const fitted = fittedWeaponReadings(loadout);
+    const dash = this.#message('equipment.count.none');
+    const availability = mountAvailability(loadout);
+
+    return CATALOGUE_MOUNTS.filter((_, position) => availability[position] === 'offered').map(
+      (mount) => {
+        const weapon = fitted.find((reading) => reading.mount === mount.key) ?? null;
+        return {
+          mount: mount.key,
+          name:
+            weapon === null
+              ? this.#text.personalMountName(mount)
+              : this.#text.personalWeaponName(weapon.symbol),
+          value:
+            weapon === null
+              ? dash
+              : this.#messages.message('equipment.stats.dps', {
+                  value: this.#formatters.decimal(weapon.metrics.damagePerSecond, 1),
+                }),
+          primary: mount.kind === 'primary',
+        };
+      },
+    );
+  }
+
+  /** One signed bar, the way both blocks draw one. */
+  #resistance(damage: string, value: number): ResistanceView {
+    return {
+      key: damage,
+      label: this.#message(`equipment.damage.${damage}`),
+      value: this.#formatters.signedPercent(value),
+      magnitude: Math.min(1, Math.abs(value)),
+      negative: value < 0,
+    };
+  }
+
+  /** The same four with the canvas's dash, for a bench with no suit on it. */
+  #dashedResistances(dash: string): readonly ResistanceView[] {
+    return RESISTANCES.map(([, , damage]) => ({
+      key: damage,
+      label: this.#message(`equipment.damage.${damage}`),
+      value: dash,
+      magnitude: 0,
+      negative: false,
+    }));
+  }
 
   /** The micro resources the fitted modifications require. */
   readonly materials = computed<MaterialsView>(() => {
@@ -417,7 +483,15 @@ export class LoadoutPresenter {
     });
   }
 
-  /** The recipes one slot's chooser offers, with the engineers who grant each. */
+  /**
+   * The recipes one slot's chooser offers.
+   *
+   * The recipe's name and nothing else, which is the whole of the canvas's own
+   * picker row (`'<div …>' + m[0] + '</div>'`). The package names the engineers
+   * who grant each recipe and the canvas never draws one — its only mention of
+   * them is a feature caption — so the bench does not either (Commander request
+   * 2026-09-04).
+   */
   modificationChoices(target: EditTarget, slot: number): readonly ModificationChoiceView[] {
     const loadout = this.#store.loadout();
     if (loadout === null) return [];
@@ -425,8 +499,6 @@ export class LoadoutPresenter {
     return modificationCandidates(loadout, target, slot).map((candidate) => ({
       symbol: candidate.symbol,
       name: this.#text.personalModificationName(candidate.symbol),
-      engineers: (getPersonalModification(candidate.symbol)?.engineers ?? []).join(' · '),
-      fitted: candidate.fitted,
       current: held === candidate.symbol,
     }));
   }
@@ -509,9 +581,15 @@ export class LoadoutPresenter {
     const availability = mountAvailability(loadout);
     const suitModifiers = modifiersOf(suitReadings(loadout)?.unlocked ?? []);
     return CATALOGUE_MOUNTS.flatMap((mount, position): LedgerRowView[] => {
-      if (availability[position] === 'absent') return [];
+      // A mount the worn suit does not carry draws no row at all. What is on it
+      // is retained and comes back with a suit that carries the mount (FR-007 is
+      // about the loadout, not about the ledger) — but a bench that lists mounts
+      // a Commander cannot use is listing the catalogue rather than the suit
+      // (Commander request 2026-09-04). The canvas draws a dimmed
+      // `Slot unavailable` row here; this is the divergence recorded in
+      // 013 design/reference-review.md.
+      if (availability[position] !== 'offered') return [];
       const fitted = loadout.weapons[position] ?? null;
-      const held = availability[position] === 'held';
       const mountName = this.#text.personalMountName(mount).text ?? mount.key;
       const badge = this.#mountBadge(mount.key);
 
@@ -535,14 +613,9 @@ export class LoadoutPresenter {
 
       const readings = weaponReadings(mount.key, fitted, suitModifiers);
       const name = this.#text.personalWeaponName(fitted.symbol);
-      // A held mount is drawn unavailable **with its weapon still named**: an
-      // unavailable row whose content vanished would lose the very thing the
-      // format retains (FR-007).
-      const meta = held
-        ? this.#messages.message('equipment.mount.held', { mount: mountName })
-        : readings === null
-          ? ''
-          : this.#weaponMeta(readings.weapon);
+      // Every row that survives the filter above is a mount the worn suit
+      // carries, so there is no unavailable state left to draw here.
+      const meta = readings === null ? '' : this.#weaponMeta(readings.weapon);
       const used = readings?.unlocked.length ?? 0;
       const total = readings?.modificationSlots ?? 0;
       return [
@@ -552,17 +625,17 @@ export class LoadoutPresenter {
           name,
           emptyLabel: null,
           meta,
-          grade: held ? this.#message('equipment.grade.none') : this.#grade(fitted.grade),
-          modifications: held ? null : this.#modificationCount(used, total),
-          modificationsWanting: !held && used < total,
-          held,
+          grade: this.#grade(fitted.grade),
+          modifications: this.#modificationCount(used, total),
+          modificationsWanting: used < total,
+          held: false,
           accessibleName: [
             this.#messages.message('equipment.mount.selected', {
               mount: mountName,
               item: name.text ?? fitted.symbol,
             }),
             meta,
-            held ? '' : this.#modificationSummary(used, total),
+            this.#modificationSummary(used, total),
           ]
             .filter((part) => part.length > 0)
             .join(' · '),
@@ -591,8 +664,6 @@ export class LoadoutPresenter {
     const everUnlocks = grades.some(
       (grade) => (suit.grades[String(grade) as '1']?.modificationSlots ?? 0) > 0,
     );
-    const primary = suit.mounts.filter((mount) => mount.kind === 'primary').length;
-    const secondary = suit.mounts.length - primary;
 
     return {
       target: 'suit',
@@ -613,21 +684,30 @@ export class LoadoutPresenter {
             value: this.#formatters.decimal(readings.shieldRegeneration, 2),
           }),
         ),
-        ...RESISTANCES.map(([stat, damage]) => ({
-          id: damage,
-          label: this.#messages.message('equipment.attribute.resistance', {
-            damage: this.#message(`equipment.damage.${damage}`),
-          }),
-          value: this.#formatters.signedPercent(readings[stat]),
-        })),
-        this.#attribute(
-          'weaponSlots',
-          'equipment.attribute.weaponSlots',
-          this.#messages.message('equipment.value.mounts', {
-            primary: this.#formatters.integer(primary),
-            secondary: this.#formatters.integer(secondary),
-          }),
-        ),
+        // Canvas 1a pairs the grid across: an `ARMOUR · KINETIC` cell beside a
+        // `SHIELD · KINETIC` cell, and so on down the four damage types. Each
+        // cell reads its own published stat — the armour's from the suit's grade
+        // and the shield's from the suit — which is what Almanac 0.2.10 split
+        // apart.
+        ...RESISTANCES.flatMap(([armour, shield, damage]) => {
+          const name = this.#message(`equipment.damage.${damage}`);
+          return [
+            {
+              id: `armour-${damage}`,
+              label: this.#messages.message('equipment.attribute.resistance.armour', {
+                damage: name,
+              }),
+              value: this.#formatters.signedPercent(readings[armour]),
+            },
+            {
+              id: `shield-${damage}`,
+              label: this.#messages.message('equipment.attribute.resistance.shield', {
+                damage: name,
+              }),
+              value: this.#formatters.signedPercent(readings[shield]),
+            },
+          ];
+        }),
       ],
       slotsHeading: this.#slotsHeading(readings.unlocked.length, readings.modificationSlots),
       slots: everUnlocks

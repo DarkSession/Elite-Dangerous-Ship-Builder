@@ -391,6 +391,89 @@ loadout and the readable summary names every fitted item.
 
 ---
 
+## Phase 8: Answering the review (2026-09-04)
+
+Six findings from the first pass over the built bench, and one from CI. Each is recorded here
+because each changed shipped behaviour rather than only the bench's own files.
+
+- [x] T080 Give every control a pointer cursor. The ledger's rows and every `choice` declare it —
+      not the shared `layout.selectable-row`, whose other callers are an `<li>` and a `<div>`
+      wrapping a button. The rename control keeps `cursor: text`, which all three canvases set on
+      it
+- [x] T081 Name the engineers on a fitted modification slot, not only on the rows the picker offers
+      (FR-010, revised)
+- [x] T082 Mark the open tool on the first paint. The shell seeded its path from `Router.url`,
+      which is `/` until the first navigation finishes, so a direct load of `/equipment` drew
+      `Equipment Builder` as a link to the page a Commander was already on
+- [x] T083 Take the address off the saved builds. The library is a layer over the screen a
+      Commander is on and nothing else: the `/builds` route, its sitemap entry, its published
+      document and the shell's primary-navigation row are all gone, and the control that raises it
+      is a shell action beside `IMPORT BUILD`
+- [x] T084 Hold the export layer to one height across its three formats. The payload asked for
+      fourteen rows against a floor sized for twelve, so choosing `Share link` moved the panel
+      under the hand that chose
+- [x] T085 Split the resistances into the canvas's two blocks, `ARMOUR` over `SHIELDS`, both read
+      from the one set the library publishes on the suit's grade, and pair the item grid's cells
+      `ARMOUR · KINETIC` / `SHIELD · KINETIC` as the canvas pairs them. Neither block states a
+      figure the package does not publish (FR-006, revised)
+- [x] T086 Widen the CI shard axis from ten to sixteen and lift the job cap to 30 minutes. A shard
+      is a slice of the test count and not of the time: the equipment suite pushed the
+      firefox-heavy shards to 24 minutes against the quickest shard's 13, and the slowest was
+      cancelled on the 25-minute cap with the rest of the run green
+
+## Phase 9: The second 2026-09-04 canvas revision, and the reviews of it (2026-09-04)
+
+The canvas was refined again, and a design pass and an implementation pass over the result each
+returned findings. Everything below changed shipped behaviour.
+
+- [x] T087 Follow the revision through the item column: the swap block above the figures and
+      renamed, the fitted item listed among the alternatives and marked, the gate's suits drawn as
+      the swap block's rows, the picker filtering out a recipe another slot holds, `SHIELD` for
+      `SP`, the mount counts onto the swap row's code line, and the `WEAPON SLOTS` cell gone
+- [x] T088 Order the item column compact as the revision orders it — the swap block opens the
+      scrolling body, above the grade ladder — while wide keeps the ladder in the header row
+- [x] T089 Fill the marked row. The canvas draws the fitted alternative on
+      `rgba(255,140,26,.14)` behind its amber edge; only the edge had shipped, and a pointer took
+      the row's own wash off it
+- [x] T090 Refuse a weapon fitted to the mount it is already on. Listing the fitted weapon among
+      the alternatives made its row a live control, and `fitWeapon` rebuilt the mount on empty
+      slots — pressing the row a Commander already had discarded its four modifications
+- [x] T091 Replace, rather than stack, the history entry the library layer raises. Opening a record
+      from the layer left one back press that did nothing, once per visit
+- [x] T092 Take the ship tool's name out of the shared help copy. The revision rewrote
+      `help.purpose` and the completed-grades answer to name the application, because one help
+      dialog now opens over both benches
+- [x] T093 Sweep what the revision orphaned: the `unavailable` state and its marker across the
+      shared list, its stylesheet and its preview contract, the `equipment.value.mounts` and
+      `library.description` messages, two entries in the reviewed-identical register, and the
+      comments that described the behaviour before any of it
+- [x] T094 Reach the token layer from three stylesheets that named `--ednb-font-mono`, which is
+      declared nowhere — the mono face fell back to the body face on the slot marks, the material
+      figures and the candidate search
+- [x] T095a Match the tool tabs on the address alone. `Router` reports `urlAfterRedirects`, which
+      carries the query and the fragment, so `/equipment#e.…` and `/build#s.…` — every shared
+      loadout and every shared build — marked no tool at all, on the one screen a Commander most
+      often arrives at from outside (Commander request 2026-09-04)
+- [x] T095 Cover what shipped untested: the fitted slot's engineers, the export layer's counted
+      meta line, and the refused refit
+
+## Phase 10: Two overrides and a package upgrade (2026-09-04)
+
+- [x] T096 Draw no row for a mount the worn suit does not carry, in the ledger or in
+      `FIREPOWER`, and fall the item column back to the suit when the mount it was on stops
+      being carried. The weapon is retained and returns with a suit that carries the mount
+      (FR-007 revised)
+- [x] T097 Name no engineer anywhere. The package records them and no artboard draws one, so the
+      picker row is the recipe's name alone and the fitted slot draws its status and nothing more
+      (FR-010 reversed)
+- [x] T098 Pin Almanac 0.2.10 and read both published resistance sets. `SuitGrade` now carries
+      `armour*Resistance` and `Suit` carries `shield*Resistance`, so the `ARMOUR` block and the
+      `SHIELDS` block each read their own rather than repeating one; Damage Resistance folds into
+      the armour's four, which is where the package points it. Both codec tables were regenerated
+      — the ship table came out byte-identical (`f9f977a6ebda…`) (FR-006 revised)
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

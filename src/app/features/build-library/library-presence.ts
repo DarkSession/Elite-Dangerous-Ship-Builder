@@ -1,47 +1,40 @@
 import { DOCUMENT, Injectable, DestroyRef, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
-import { Router } from '@angular/router';
-import { LocaleStore, type RouteIdentity } from '../../i18n/locale.store';
-import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 
 /**
- * Whether the saved-build layer is standing over the screen, and at what address.
+ * Whether the saved-build layer is standing over the screen.
  *
- * `/builds` is drawn on canvas 1a as a modal over an inert originating screen,
- * and a modal is only a modal if there is a screen behind it. Built as a
- * sibling route it was not: the router replaced the workspace with a page whose
- * whole body was the layer, so the scrim covered nothing and a Commander
+ * The library is drawn on canvas 1a as a modal over an inert originating
+ * screen, and a modal is only a modal if there is a screen behind it. Built as
+ * a sibling route it was not: the router replaced the workspace with a page
+ * whose whole body was the layer, so the scrim covered nothing and a Commander
  * glancing at their saved builds lost the ship they were working in. The design
  * has recorded that gap since it was built ("Scrim and modal frame over an
  * inert originating screen | An ordinary route page; nothing is behind it and
  * nothing is inert"); this closes it (Commander request 2026-08-28).
  *
- * The address is kept without a navigation, which is the whole trick: a router
- * navigation to `/builds` would destroy the screen this layer needs behind it.
- * `Location.go` writes the address and pushes the entry, so the browser's back
- * still closes the layer and the address is still `/builds` to copy, bookmark
- * or reload — reloading lands on the route, which renders the library as an
- * ordinary page, exactly as the design says direct navigation should.
+ * It has no address of its own (Commander request 2026-09-04). It had one until
+ * then — `/builds`, written without a navigation so the screen behind survived
+ * — and an address is a promise this surface cannot keep: the records are held
+ * on one device, so the address resolves to a different list for every
+ * Commander who opens it and to an empty one for anybody else. What the layer
+ * opens is a build, and a build has an address.
  *
- * While the layer is up the router's own URL is the screen behind it. Nothing
- * navigates from under a layer without closing it first, and closing restores
- * the address the router still believes in, so the two are never out of step
- * for longer than the layer is open.
+ * A history entry is still pushed, at the address already showing, so the
+ * browser's back closes the layer the way it closes every other one. The
+ * address the entry carries is the screen's own, which is the address a
+ * Commander would copy from the bar while the layer is up: the screen they were
+ * on, which is where a reload puts them back.
  */
 @Injectable({ providedIn: 'root' })
 export class LibraryPresence {
   readonly #location = inject(Location);
-  readonly #router = inject(Router);
-  readonly #locale = inject(LocaleStore);
   readonly #window = inject(DOCUMENT).defaultView;
 
   readonly #open = signal(false);
 
   /** Whether the layer is standing over a screen. */
   readonly open = this.#open.asReadonly();
-
-  /** What the screen behind was contributing to the document, to be given back. */
-  #restoring: RouteIdentity | null = null;
 
   constructor() {
     const view = this.#window;
@@ -60,24 +53,22 @@ export class LibraryPresence {
     inject(DestroyRef).onDestroy(() => view.removeEventListener('popstate', onPopState));
   }
 
-  /**
-   * Raises the layer over whatever screen is showing, and takes the address.
-   *
-   * Refused where the screen already *is* the library: a Commander who reloaded
-   * on `/builds` has the page, and a layer over it would be the same list twice.
-   */
+  /** Raises the layer over whatever screen is showing. */
   raise(): boolean {
-    if (this.#open() || this.#onLibraryAddress()) {
+    if (this.#open()) {
       return false;
     }
 
-    this.#restoring = this.#locale.route();
-    this.#locale.setRoute({
-      titleKey: 'library.title',
-      descriptionKey: 'library.description',
-      path: NAVIGATION_ROUTES.library,
-    });
-    this.#location.go(NAVIGATION_ROUTES.library);
+    // The address stays the screen's own; the entry is pushed so back closes
+    // the layer rather than leaving the screen underneath it.
+    //
+    // Read from the address bar and not from the router, fragment included. The
+    // workspace publishes its build link over its own address with
+    // `replaceState`, which the router never learns about — pushed from
+    // `Router.url` the entry would drop the build a Commander is holding, and
+    // the address they copied while glancing at their saved builds would open
+    // an empty workspace (FR-020).
+    this.#location.go(this.#location.path(true));
     this.#open.set(true);
     return true;
   }
@@ -100,40 +91,23 @@ export class LibraryPresence {
 
   /**
    * Lowers the layer without touching history, for a Commander leaving through
-   * the layer rather than closing it — opening a record puts them in the
-   * workspace, and the entry the layer added is the one that navigation
-   * replaces.
+   * the layer rather than closing it: opening a record navigates, and a `back()`
+   * racing that navigation would land somewhere neither of them chose.
+   *
+   * The entry `raise` pushed is left behind. It carries the address the
+   * navigation came from, which is where back from the workspace should go
+   * anyway — one duplicate of the screen a Commander was on, not a step into a
+   * surface that no longer exists.
    */
   lowerForNavigation(): void {
     if (!this.#open()) {
       return;
     }
     this.#lower();
-    // The router still believes in the screen behind, so the address has to be
-    // its own again before anything navigates from it: a navigation to a route
-    // the router thinks it is already on writes no address at all, and `/builds`
-    // would simply stay in the bar.
-    this.#location.replaceState(this.#router.url);
   }
 
-  /** Closes the layer and gives the document its identity back. */
+  /** Closes the layer. */
   #lower(): void {
-    const restoring = this.#restoring;
-    this.#restoring = null;
     this.#open.set(false);
-    if (restoring !== null) {
-      this.#locale.setRoute(restoring);
-    }
-  }
-
-  /**
-   * Whether the address already is the library's.
-   *
-   * By whole first segment, never by prefix: `/builds` starts with `/build`,
-   * and a prefix test answers both questions at once.
-   */
-  #onLibraryAddress(): boolean {
-    const path = (this.#router.url.split('?')[0] ?? '').split('#')[0] ?? '';
-    return `/${path.split('/')[1] ?? ''}` === NAVIGATION_ROUTES.library;
   }
 }

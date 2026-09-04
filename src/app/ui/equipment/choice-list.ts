@@ -7,8 +7,13 @@ export interface EquipmentChoice {
   /** The identity the chooser answers with: a suit family, a symbol, a recipe key. */
   readonly id: string;
   readonly name: GameTextPresentation;
-  /** The code line under the name: what the thing is, or who grants it. */
-  readonly meta: string;
+  /**
+   * The code line under the name: what the thing is, where there is one.
+   *
+   * `null` on the modification picker, whose rows the canvas draws as the
+   * recipe's name and nothing else.
+   */
+  readonly meta: string | null;
   /** The one figure the canvas draws at the row's trailing edge, where it draws one. */
   readonly figure: string | null;
   /**
@@ -21,10 +26,6 @@ export interface EquipmentChoice {
   readonly figureUnit?: string | null;
   /** True where this is what is already fitted or worn. */
   readonly current: boolean;
-  /** True where another slot on the same item already holds it (FR-009). */
-  readonly unavailable: boolean;
-  /** What `unavailable` means, in words rather than in dimming. */
-  readonly unavailableLabel: string | null;
 }
 
 /**
@@ -41,9 +42,11 @@ export interface EquipmentChoice {
  * family level to fold them into. Fitting one to the other would mean inventing
  * ship-shaped data for equipment (013 design/equipment-bench.md).
  *
- * Nothing is dropped from the list to say it cannot be chosen. A recipe another
- * slot already holds is drawn, marked and refused, because it is the answer to
- * "where is the one I wanted" (FR-009).
+ * What a list offers is the caller's. The 2026-09-04 canvas revision settled two
+ * of those calls in opposite directions: the swap block lists the fitted item
+ * among the alternatives and marks it, and the modification picker drops a
+ * recipe another slot already holds rather than drawing it refused. Every row
+ * this component draws can therefore be chosen.
  */
 @Component({
   selector: 'edsb-choice-list',
@@ -59,20 +62,12 @@ export class ChoiceList {
   readonly label = input.required<string>();
 
   /**
-   * Draws the rows as canvas 2a's two-up cards instead of one stacked column.
+   * Two to a line.
    *
-   * The same rows either way — a name over a code line with one figure — laid
-   * out in the arrangement the canvas the list stands on draws.
-   */
-  readonly asCards = input(false);
-
-  /**
-   * Two to a line, without the card's frame.
-   *
-   * Canvas 1a's swap block: `#pe-alt` is `grid-template-columns: 1fr 1fr`, and
-   * the rows in it are the ordinary boxed rows rather than the gate's cards.
-   * The compact artboard draws the same rows in a single file, which is what
-   * the list's own container query already decides.
+   * Canvas 1a's swap block and canvas 2a's suit list: both are
+   * `grid-template-columns: 1fr 1fr` over the same row. The compact artboards
+   * draw them in a single file, which is what the list's own container query
+   * already decides.
    */
   readonly asPairs = input(false);
 
@@ -86,7 +81,6 @@ export class ChoiceList {
   readonly chosen = output<string>();
 
   choose(choice: EquipmentChoice): void {
-    if (choice.unavailable) return;
     this.chosen.emit(choice.id);
   }
 }

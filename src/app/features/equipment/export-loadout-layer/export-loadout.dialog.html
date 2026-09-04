@@ -36,18 +36,29 @@
           (retryRequested)="share.retry()"
         />
       } @else {
+        <!-- Twelve rows, which is what `--ednb-layout-export-content` keeps room
+             for and what the ship tool's own export layer asks of the same
+             field. At fourteen the payload stood 19px past that floor, so the
+             layer was two heights: one for the two payload formats and a
+             shorter one for the link, and choosing between them moved the panel
+             under the hand that chose (Commander request 2026-09-04). -->
         <edsb-textarea-field
           class="export-loadout__payload"
           [label]="fieldLabel()"
           [value]="share.payload()"
           [readonly]="true"
           [technical]="true"
-          [rows]="14"
+          [rows]="12"
         />
 
         <!-- The canvas's own pair, in its own order: the file first, the
-             clipboard emphasised beside it. -->
+             clipboard emphasised beside it, with `#ge-exp-meta` across from
+             them on the leading edge. -->
         <div class="export-loadout__actions">
+          @if (share.meta(); as meta) {
+            <p class="export-loadout__meta" data-bidi-isolate>{{ meta }}</p>
+          }
+
           <edsb-action-button [label]="downloadLabel()" (activated)="share.download()" />
           <edsb-action-button [label]="copyLabel()" emphasis="primary" (activated)="share.copy()" />
         </div>

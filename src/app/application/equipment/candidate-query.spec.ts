@@ -68,28 +68,29 @@ describe('what may be chosen', () => {
     expect(offered.filter((symbol) => symbol.startsWith('weapon_range_')).length).toBe(1);
   });
 
-  it('marks a recipe another slot on the same item already holds', () => {
-    // Offered and marked rather than hidden: it is why the slot cannot take it,
-    // and a list that dropped it would leave a Commander looking for something
-    // the game says they already have (FR-009).
-    const fitted = modificationCandidates(
+  it('withholds a recipe another slot on the same item already holds', () => {
+    // The canvas listed it dimmed and marked `FITTED` until its 2026-09-04
+    // revision, which filters it out. FR-009 asks that no modification be
+    // offered twice on one item, which either answers.
+    const offered = modificationCandidates(
       bench([null, null, null], ['suit_nightvision', null, null, null]),
       'suit',
       1,
     );
 
-    expect(fitted.find((candidate) => candidate.symbol === 'suit_nightvision')?.fitted).toBe(true);
-    expect(fitted.filter((candidate) => candidate.fitted).length).toBe(1);
+    expect(offered.some((candidate) => candidate.symbol === 'suit_nightvision')).toBe(false);
   });
 
-  it('does not mark the recipe the slot itself holds', () => {
+  it('goes on offering the recipe the slot itself holds', () => {
+    // The one in this slot is the current choice, not a refusal: without it the
+    // picker for a filled slot would not name what is in it.
     const held = modificationCandidates(
       bench([null, null, null], ['suit_nightvision', null, null, null]),
       'suit',
       0,
     );
 
-    expect(held.find((candidate) => candidate.symbol === 'suit_nightvision')?.fitted).toBe(false);
+    expect(held.some((candidate) => candidate.symbol === 'suit_nightvision')).toBe(true);
   });
 
   it('offers nothing for a mount with no weapon on it, or a slot outside the four', () => {

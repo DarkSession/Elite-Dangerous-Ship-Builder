@@ -72,6 +72,7 @@
   // draws it: an outline for something a Commander may still put there.
   border: var(--ednb-border-width-hairline) dashed var(--ednb-border-control-quiet);
   color: inherit;
+  cursor: pointer;
   text-align: start;
   transition:
     background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
@@ -145,7 +146,7 @@
   flex: none;
   inline-size: var(--ednb-text-size-micro);
   color: var(--ednb-text-faint);
-  font-family: var(--ednb-font-mono);
+  font-family: var(--ednb-font-metric);
   font-size: var(--ednb-text-size-micro);
   stroke-width: 1.1;
 }

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
-import { buildStockHull, openFirstHullFromManifest, reachShellAction } from './shell';
+import { buildStockHull, openFirstHullFromManifest, openLibrary, reachShellAction } from './shell';
 
 /**
  * A build, passed to someone else.
@@ -102,7 +102,7 @@ test.describe('restoring a build from a link', () => {
     // A link is not a save. Opening one leaves a working record whose title is
     // derived from the hull, so what matters is that nothing in the library
     // carries a name a Commander gave it.
-    await incoming.goto('/builds');
+    await openLibrary(incoming);
     await expect(incoming.locator('edsb-saved-build-card').first()).toBeVisible();
     await expect(
       incoming.locator('edsb-saved-build-card .record__title:not(.record__title--derived)'),
@@ -209,7 +209,12 @@ test.describe('what a link never sends', () => {
     await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build#b\./);
     await openShare(page);
-    await page.goto('/builds');
+    // The share layer comes down before the library goes up. They are both
+    // layers over the same screen now — the library stopped being an address to
+    // navigate to (2026-09-04) — so the second cannot be reached through the
+    // first.
+    await page.keyboard.press('Escape');
+    await openLibrary(page);
 
     const origin = new URL(page.url()).origin;
     for (const request of requests) {

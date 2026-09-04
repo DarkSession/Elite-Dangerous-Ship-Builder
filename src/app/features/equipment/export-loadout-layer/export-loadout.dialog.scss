@@ -27,7 +27,7 @@
   @include layout.stack(var(--ednb-space-stack));
 
   min-inline-size: 0;
-  // One height for all three formats. The payload is fourteen rows and the link
+  // One height for all three formats. The payload is twelve rows and the link
   // is one line, so choosing between them must not move the layer under the
   // hand that chose. A floor and not a cap: a refusal is a state of the panel
   // and still grows it.
@@ -37,11 +37,25 @@
 }
 
 // The canvas's own pair at the payload's trailing edge, wrapping rather than
-// squeezing where the layer is narrow.
+// squeezing where the layer is narrow, with what was written stated across
+// from them.
 .export-loadout__actions {
   @include layout.wrapping-row(var(--ednb-space-inline));
 
   justify-content: flex-end;
+}
+
+// `#ge-exp-meta`: the format, what it carries and how large it came out, in the
+// mono face every count on this bench is set in. It takes the room the buttons
+// do not, and wraps onto its own line before it squeezes them.
+.export-loadout__meta {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-meta));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-family: var(--ednb-font-metric);
+  text-wrap: pretty;
 }
 
 @include layout.medium-up {

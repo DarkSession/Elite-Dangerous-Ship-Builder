@@ -7,7 +7,6 @@ import { MessageService } from '../../i18n/message.service';
 export const NAVIGATION_ROUTES = {
   catalogue: '/ships',
   build: '/build',
-  library: '/builds',
   equipment: '/equipment',
 } as const;
 
@@ -57,7 +56,7 @@ const TOOLS: readonly ToolRecord[] = [
     id: 'ship',
     labelKey: 'tools.ship',
     href: NAVIGATION_ROUTES.catalogue,
-    routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.build, NAVIGATION_ROUTES.library],
+    routes: [NAVIGATION_ROUTES.catalogue, NAVIGATION_ROUTES.build],
   },
   {
     id: 'equipment',
@@ -68,36 +67,38 @@ const TOOLS: readonly ToolRecord[] = [
 ];
 
 /**
- * The application's primary navigation, in one place.
+ * Where the shell can send a Commander, in one place.
  *
- * Every screen composes the same entries in the same order, so a Commander who
- * has learned where "Saved builds" is finds it there on every screen. The
- * entries feature 004 and feature 012 own — importing a build and help — are
- * listed as they land; naming them here rather than in four route components is
- * what stops one screen quietly offering fewer than another.
+ * Two tools and the way home. There is no third list: the saved builds were the
+ * one entry the primary navigation ever held, and they became a shell action
+ * when they stopped being a place with an address (Commander request
+ * 2026-09-04, `build-library/library-presence.ts`). The frame's navigation row
+ * went with them — an empty row that every screen drew and nothing filled.
  *
- * The screen a Commander is already on is left out: the reference's command
- * bar names it once, on the leading edge, and never repeats it as a control
- * (canvas 1a/1b/1c).
+ * The screen a Commander is already on is never offered: the reference's
+ * command bar names it once, on the leading edge, and never repeats it as a
+ * control (canvas 1a/1b/1c).
  *
- * The build screen is not listed. The reference reaches it by committing to a
- * hull or by opening a saved build, and draws no chip for it on any artboard.
+ * The build screen is not listed either. The reference reaches it by committing
+ * to a hull or by opening a saved build, and draws no chip for it on any
+ * artboard.
  */
 @Injectable({ providedIn: 'root' })
 export class AppNavigation {
   readonly #messages = inject(MessageService);
 
-  /** The navigation entries for a screen, with the current one marked. */
-  entries(currentPath: string): readonly NavigationEntry[] {
-    const entries: readonly NavigationEntry[] = [
-      {
-        id: 'library',
-        label: this.#messages.message('navigation.library'),
-        href: NAVIGATION_ROUTES.library,
-        current: currentPath === NAVIGATION_ROUTES.library,
-      },
-    ];
-    return entries.filter((entry) => entry.current !== true);
+  /**
+   * The address alone, without what is written after it.
+   *
+   * Both readings below are asked about a route, and what they are handed is a
+   * URL: `Router` reports `urlAfterRedirects`, which carries the query and the
+   * fragment. Every shared build and every shared loadout arrives as one —
+   * `/build#s.…` and `/equipment#e.…` are how a link is opened — so a bar that
+   * matched the whole string named no tool at all on the one screen a Commander
+   * most often lands on from outside (Commander request 2026-09-04).
+   */
+  #address(url: string): string {
+    return url.split(/[?#]/)[0] ?? url;
   }
 
   /**
@@ -114,7 +115,7 @@ export class AppNavigation {
    * reading is not a way anywhere.
    */
   home(currentPath: string): NavigationEntry | null {
-    if (currentPath.startsWith(NAVIGATION_ROUTES.catalogue)) {
+    if (this.#address(currentPath).startsWith(NAVIGATION_ROUTES.catalogue)) {
       return null;
     }
     return {
@@ -135,13 +136,12 @@ export class AppNavigation {
    * control in one chrome opening the same address (011/FR-028).
    */
   tools(currentPath: string): readonly ToolEntry[] {
+    const address = this.#address(currentPath);
     return TOOLS.map((tool) => ({
       id: tool.id,
       label: this.#messages.message(tool.labelKey),
       href: tool.href,
-      current: tool.routes.some(
-        (route) => currentPath === route || currentPath.startsWith(`${route}/`),
-      ),
+      current: tool.routes.some((route) => address === route || address.startsWith(`${route}/`)),
     }));
   }
 }

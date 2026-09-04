@@ -72,9 +72,8 @@ export class ItemView {
    * What else this item could be — the suits, or this mount's own weapons.
    *
    * Asked of the presenter here rather than threaded through the page, the way
-   * the chooser over this view already asks. What is on the item is left out:
-   * the canvas's list is what a Commander could swap *to*, and the one they
-   * have is the heading above it.
+   * the chooser over this view already asks. What is on the item is listed among
+   * them and marked, which is what the 2026-09-04 canvas revision settled.
    */
   readonly alternatives = computed<readonly EquipmentChoice[]>(() => {
     const item = this.item();
@@ -87,17 +86,19 @@ export class ItemView {
             ...choice,
           }));
 
-    return offered
-      .filter((choice) => !choice.current)
-      .map((choice) => ({
-        id: choice.id,
-        name: choice.name,
-        meta: choice.meta,
-        figure: choice.figure,
-        figureUnit: 'figureUnit' in choice ? choice.figureUnit : null,
-        current: false,
-        unavailable: false,
-        unavailableLabel: null,
-      }));
+    // The whole catalogue, the fitted one among them and marked. The canvas
+    // filtered it out until 2026-09-04 and now lists it with the amber wash and
+    // the solid edge every selected row carries (`k === curKey`): a list of
+    // three when a suit is worn and four when none is reads as a catalogue that
+    // changes size, and the row a Commander is comparing against is the one
+    // that was missing from it.
+    return offered.map((choice) => ({
+      id: choice.id,
+      name: choice.name,
+      meta: choice.meta,
+      figure: choice.figure,
+      figureUnit: 'figureUnit' in choice ? choice.figureUnit : null,
+      current: choice.current,
+    }));
   });
 }

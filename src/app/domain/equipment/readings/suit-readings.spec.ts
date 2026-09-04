@@ -15,6 +15,7 @@ const dominator = (suitGrade: number, suitModifications = EMPTY_SLOTS): Equipmen
 });
 
 const grade = (family: string, value: number) => getSuitGrade(getSuitByFamily(family)!, value)!;
+const suit = (family: string) => getSuitByFamily(family)!;
 
 describe('suit readings', () => {
   it('states the package’s own figures at the selected grade', () => {
@@ -23,10 +24,16 @@ describe('suit readings', () => {
 
     expect(readings.shieldStrength).toBe(published.shieldStrength);
     expect(readings.shieldRegeneration).toBe(published.shieldRegeneration);
-    expect(readings.kineticResistance).toBe(published.kineticResistance);
-    expect(readings.thermalResistance).toBe(published.thermalResistance);
-    expect(readings.plasmaResistance).toBe(published.plasmaResistance);
-    expect(readings.explosiveResistance).toBe(published.explosiveResistance);
+    // Two published sets since 0.2.10: the armour's on the grade, the shield's
+    // on the family, and neither is the other.
+    expect(readings.armourKineticResistance).toBe(published.armourKineticResistance);
+    expect(readings.armourThermalResistance).toBe(published.armourThermalResistance);
+    expect(readings.armourPlasmaResistance).toBe(published.armourPlasmaResistance);
+    expect(readings.armourExplosiveResistance).toBe(published.armourExplosiveResistance);
+    expect(readings.shieldKineticResistance).toBe(suit('tacticalsuit').shieldKineticResistance);
+    expect(readings.shieldThermalResistance).toBe(suit('tacticalsuit').shieldThermalResistance);
+    expect(readings.shieldPlasmaResistance).toBe(suit('tacticalsuit').shieldPlasmaResistance);
+    expect(readings.shieldExplosiveResistance).toBe(suit('tacticalsuit').shieldExplosiveResistance);
     expect(readings.modificationSlots).toBe(published.modificationSlots);
   });
 
@@ -51,9 +58,18 @@ describe('suit readings', () => {
     const published = grade('tacticalsuit', 5);
     const readings = suitReadings(dominator(5, ['suit_improvedarmourrating', null, null, null]))!;
 
-    expect(readings.kineticResistance).toBe(
-      applyPersonalModifiers('kineticResistance', published.kineticResistance, recipe.modifiers),
+    expect(readings.armourKineticResistance).toBe(
+      applyPersonalModifiers(
+        'armourKineticResistance',
+        published.armourKineticResistance,
+        recipe.modifiers,
+      ),
     );
+
+    // The recipe points at the armour's four alone, so the shield's are exactly
+    // what the suit publishes — the split is a real one, not two readings of one
+    // number.
+    expect(readings.shieldKineticResistance).toBe(suit('tacticalsuit').shieldKineticResistance);
   });
 
   it('leaves a modification in a locked slot out of every figure', () => {

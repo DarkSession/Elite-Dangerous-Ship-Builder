@@ -198,6 +198,7 @@ export class EquipmentBenchPage {
         identity: {
           name: this.loadoutName(),
           fallbackName: this.#messages.message('equipment.identity.untitled'),
+          nameEditLabel: this.#messages.message('equipment.identity.rename'),
           detail: this.loadoutDetail(),
           // A loadout carries no ID plate. The game registers a ship, not a
           // Commander's kit, so there is no second field to draw.

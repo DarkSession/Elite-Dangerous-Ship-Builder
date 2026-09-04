@@ -11,12 +11,10 @@ import {
 } from '../../domain/equipment/loadout/loadout-edit';
 import { CATALOGUE_MOUNTS, mountPosition } from '../../domain/equipment/loadout/loadout-mounts';
 
-/** One recipe a slot accepts, and whether this item already holds it. */
+/** One recipe a slot accepts. */
 export interface ModificationCandidate {
   /** The recipe key `PERSONAL_MODIFICATIONS` is keyed by. */
   readonly symbol: string;
-  /** True when another slot on this item already holds it (FR-009). */
-  readonly fitted: boolean;
 }
 
 /**
@@ -47,14 +45,17 @@ export function weaponCandidates(mount: PersonalMountKey): readonly string[] {
 }
 
 /**
- * The recipes one modification slot accepts, each marked if it is already on
- * this item.
+ * The recipes one modification slot accepts.
  *
  * A three-technology recipe is offered as the one spelling this weapon takes,
- * never as three (FR-015). A recipe held in another slot of the same item is
- * offered and marked rather than hidden: it is why the slot cannot take it, and
- * a list that dropped it would leave a Commander looking for something the game
- * says they already have (FR-009).
+ * never as three (FR-015). A recipe already held in another slot of the same
+ * item is not offered at all: the canvas listed it dimmed and marked `FITTED`
+ * until its 2026-09-04 revision, which filters it out
+ * (`lib.filter(m => !(list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick))`).
+ * A list of things that cannot be chosen is a list a Commander reads twice, and
+ * where the recipe went is a question the slot holding it already answers.
+ * FR-009 is satisfied either way: it asks that no modification be offered twice
+ * on one item.
  *
  * A slot the item's grade has not unlocked accepts nothing: it is drawn, it
  * keeps what it holds, and it does not open a chooser (FR-008, FR-011).
@@ -68,11 +69,9 @@ export function modificationCandidates(
   const slots = slotsOf(loadout, target);
   if (slots === null) return [];
 
-  const symbols = offered(loadout, target);
-  return symbols.map((symbol) => ({
-    symbol,
-    fitted: slots.some((held, index) => held === symbol && index !== slot),
-  }));
+  return offered(loadout, target)
+    .filter((symbol) => !slots.some((held, index) => held === symbol && index !== slot))
+    .map((symbol) => ({ symbol }));
 }
 
 function offered(loadout: EquipmentLoadout, target: EditTarget): readonly string[] {

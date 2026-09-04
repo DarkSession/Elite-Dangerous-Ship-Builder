@@ -202,7 +202,7 @@
 
   // The floor. This is where the canvas's 0.32–0.50 label washes land: it is the
   // dimmest ink that is still readable text rather than decoration.
-  --ednb-text-faint: var(--ednb-palette-ink-a55); //       4.74:1 min
+  --ednb-text-faint: var(--ednb-palette-ink-a55); //       4.52:1 min
 
   --ednb-text-accent: var(--ednb-palette-amber-2); //      8.62:1 min
   --ednb-text-accent-strong: var(--ednb-palette-amber-3); // 9.33:1 min

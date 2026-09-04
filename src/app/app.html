@@ -1,7 +1,6 @@
 <edsb-app-frame
   [routeContext]="pageName()"
   [routeCount]="pageCount()"
-  [navigation]="navigation()"
   [tools]="tools()"
   [home]="home()"
   [actions]="actions()"
@@ -35,14 +34,14 @@
   belongs to no screen in particular — and deferred, because a Commander who
   never opens it should never pay for it.
 
-  `/builds` remains a real address and a real route. Reached directly it renders
-  the same content as an ordinary page, which is what the design says direct
-  navigation should do; reached from the shell it is this, and the address is
-  taken without a navigation so the screen behind survives.
+  It has no address of its own. Opening it takes a history entry at the address
+  a Commander is already on, so the back button closes it and the screen behind
+  survives — a saved build is something you reach for from wherever you are
+  rather than somewhere you go (Commander request 2026-09-04).
 -->
 @defer (when library.open()) {
   @if (library.open()) {
-    <edsb-build-library-page [asLayer]="true" />
+    <edsb-build-library-page />
   }
 }
 

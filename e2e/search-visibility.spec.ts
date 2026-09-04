@@ -46,32 +46,35 @@ test.describe('what the head says this page is', () => {
       .poll(() => page.title())
       .toBe(`${englishMessages['catalogue.title']} · ${englishMessages['app.name']}`);
 
-    await page.goto(`${PRODUCT_URL}/builds`);
+    // The saved builds are not among the addressable routes: they are a layer
+    // over the screen a Commander is on, with no address, no document and
+    // nothing for a crawler to read (Commander request 2026-09-04).
+    await page.goto(`${PRODUCT_URL}/equipment`);
     await expect(page.getByRole('main')).toBeVisible();
-    await description(page).toBe(englishMessages['library.description']);
+    await description(page).toBe(englishMessages['equipment.description']);
     await expect
       .poll(() => page.title())
-      .toBe(`${englishMessages['library.title']} · ${englishMessages['app.name']}`);
+      .toBe(`${englishMessages['equipment.title']} · ${englishMessages['app.name']}`);
 
     expect(englishMessages['catalogue.description']).not.toBe(
-      englishMessages['library.description'],
+      englishMessages['equipment.description'],
     );
   });
 
   test('carries the route into the canonical address and both cards', async ({ page }) => {
-    await page.goto(`${PRODUCT_URL}/builds`);
+    await page.goto(`${PRODUCT_URL}/equipment`);
     await expect(page.getByRole('main')).toBeVisible();
 
-    await canonical(page).toBe(`${SITE_ORIGIN}/builds`);
-    await head(page, 'head meta[property="og:url"]', 'content').toBe(`${SITE_ORIGIN}/builds`);
+    await canonical(page).toBe(`${SITE_ORIGIN}/equipment`);
+    await head(page, 'head meta[property="og:url"]', 'content').toBe(`${SITE_ORIGIN}/equipment`);
     await head(page, 'head meta[property="og:description"]', 'content').toBe(
-      englishMessages['library.description'],
+      englishMessages['equipment.description'],
     );
 
     const title = await page.title();
     await head(page, 'head meta[property="og:title"]', 'content').toBe(title);
     await head(page, 'head meta[name="twitter:title"]', 'content').toBe(title);
-    expect(title).toContain(englishMessages['library.title']);
+    expect(title).toContain(englishMessages['equipment.title']);
   });
 
   test('names the production site rather than wherever it is being served from', async ({
@@ -210,7 +213,7 @@ test.describe('what the head says this page is', () => {
     expect(robots).not.toMatch(/^\s*Disallow:\s*\/\s*$/m);
 
     const sitemap = await read('/sitemap.xml');
-    for (const route of ['/ships', '/build', '/builds']) {
+    for (const route of ['/ships', '/build', '/equipment']) {
       expect(sitemap).toContain(`<loc>${SITE_ORIGIN}${route}</loc>`);
     }
 
