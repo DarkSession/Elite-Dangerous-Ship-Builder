@@ -323,6 +323,9 @@
   // the detail column's own heading, and the largest word on that screen.
   --ednb-text-size-heading-item: var(--ednb-type-size-4xl);
   --ednb-text-size-display: var(--ednb-type-size-3xl);
+  // A masthead: the one heading that names the product rather than a screen.
+  --ednb-text-size-masthead: var(--ednb-type-size-6xl);
+  --ednb-text-size-masthead-compact: var(--ednb-type-size-5xl);
 
   --ednb-text-leading-flat: var(--ednb-type-leading-flat);
   --ednb-text-leading-heading: var(--ednb-type-leading-tight);
@@ -416,6 +419,7 @@
   --ednb-schematic-filter: var(--ednb-filter-schematic);
 
   --ednb-layout-content-max: var(--ednb-measure-content-max);
+  --ednb-layout-content-narrow: var(--ednb-measure-content-narrow);
   --ednb-layout-prose-max: var(--ednb-measure-prose-max);
   --ednb-layout-rail-min: var(--ednb-measure-rail-min);
   --ednb-layout-sheet-column: var(--ednb-measure-sheet-column);

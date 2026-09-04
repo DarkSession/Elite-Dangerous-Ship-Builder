@@ -3,8 +3,9 @@ import { Routes } from '@angular/router';
 /**
  * The application's routes.
  *
- * Four screens and one redirect, each addressable by what it is about: hull
- * detail by the hull's own name, the two benches by their tools.
+ * Five screens, each addressable by what it is about: the product's own address
+ * by the product, hull detail by the hull's own name, the two benches by their
+ * tools.
  *
  * The saved builds are not among them. They are a layer over the screen a
  * Commander is on and nothing else — no address, no history entry of its own,
@@ -27,11 +28,21 @@ import { Routes } from '@angular/router';
  */
 export const routes: Routes = [
   {
+    // The product's own address, which used to redirect into the ship tool. It
+    // is a screen now: a Commander who opens NavBeacon is shown what NavBeacon
+    // carries rather than dropped into one of its tools (`.design/Home.dc.html`).
+    //
+    // Being a screen rather than a redirect is also what makes Back work. A
+    // redirect replaces itself, so there was nothing here to come back to.
     path: '',
     pathMatch: 'full',
-    // Replaced rather than pushed: the redirect is not a place a Commander
-    // visited, and leaving it in history makes Back a loop.
-    redirectTo: 'ships',
+    // The bar names the product here, because that is what the canvas draws in
+    // the identity deck: `NAV BEACON`, not the masthead below it. The screen a
+    // Commander is on *is* the product, so the tab says it once — see
+    // `resolveDocumentTitle`.
+    title: 'app.name',
+    data: { description: 'app.description' },
+    loadComponent: () => import('./features/start/start.page').then((module) => module.StartPage),
   },
   {
     path: 'ships',
@@ -89,5 +100,7 @@ export const routes: Routes = [
         (module) => module.EquipmentBenchPage,
       ),
   },
-  { path: '**', redirectTo: 'ships' },
+  // An address that resolves to nothing lands where a Commander who typed the
+  // product's name lands, rather than inside a tool they did not ask for.
+  { path: '**', redirectTo: '' },
 ];

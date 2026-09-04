@@ -37,12 +37,23 @@ describe('resolveDocumentTitle', () => {
     );
   });
 
-  it('names the tool beside the product on the screen the root redirects to', () => {
-    // The product is NavBeacon and the screen is the ship builder, so the one
-    // address `/` redirects to says which screen it is rather than repeating
-    // the product name.
+  it('names the tool beside the product on a tool screen', () => {
+    // The product is NavBeacon and the screen is the ship builder, so a tool
+    // address says which tool it is rather than repeating the product name.
     expect(resolveDocumentTitle(catalogue(), BUNDLED_ENGLISH['catalogue.title'])).toBe(
       `${BUNDLED_ENGLISH['catalogue.title']} · ${BUNDLED_ENGLISH['app.name']}`,
+    );
+  });
+
+  it('states the product once where the screen is the product', () => {
+    // The start page's own name is the product's name, because the screen is
+    // the product rather than one of its tools. `NavBeacon · NavBeacon` is not
+    // a title anyone would write.
+    expect(resolveDocumentTitle(catalogue(), BUNDLED_ENGLISH['app.name'])).toBe(
+      BUNDLED_ENGLISH['app.document-title.default'],
+    );
+    expect(resolveDocumentTitle(catalogue(), ` ${BUNDLED_ENGLISH['app.name']} `)).toBe(
+      BUNDLED_ENGLISH['app.document-title.default'],
     );
   });
 

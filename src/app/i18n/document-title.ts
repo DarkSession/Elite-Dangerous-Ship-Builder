@@ -17,6 +17,13 @@ export function resolveDocumentTitle(catalogue: MessageCatalogue, page: string |
     return application;
   }
 
+  // The start page's own name is the product's name, because the screen is the
+  // product rather than one of its tools. `NavBeacon · NavBeacon` is not a
+  // title anyone would write, so the product is stated once.
+  if (page.trim() === catalogue['app.name']) {
+    return application;
+  }
+
   return interpolate(catalogue['app.document-title'], {
     page,
     app: catalogue['app.name'],

@@ -1,0 +1,42 @@
+<div class="start">
+  <div class="start__content">
+    <!--
+      The masthead. The `h1` belongs to the bar above, which names the screen —
+      here the product itself — so this is the level below it, however large the
+      canvas draws it. The tool names inside the cards are link names rather
+      than headings: a heading inside a link would put the document outline
+      inside the navigation.
+    -->
+    <div class="start__masthead">
+      <h2 class="start__heading">{{ heading() }}</h2>
+      <p class="start__tagline">{{ tagline() }}</p>
+    </div>
+
+    <!--
+      The selector. Two columns where there is room, one flow where there is
+      not, from whatever the registry holds — the canvas draws two tools and
+      the grid is written for however many it carries.
+    -->
+    <div class="start__tools">
+      @for (tool of tools(); track tool.id) {
+        <edsb-tool-card
+          [name]="tool.name"
+          [href]="tool.href"
+          [subjects]="tool.subjects"
+          [summary]="tool.summary"
+          [short]="tool.short"
+          (opened)="open(tool.href, $event)"
+        />
+      }
+    </div>
+  </div>
+
+  <!--
+    The band the canvas closes both artboards with. A `footer` rather than a
+    landmark: this sits inside the shell's `main`, where a footer element is
+    the end of the page rather than the end of the document.
+  -->
+  <footer class="start__legal">
+    <edsb-legal-excerpt [text]="disclaimer.exactText" [language]="disclaimer.language" />
+  </footer>
+</div>

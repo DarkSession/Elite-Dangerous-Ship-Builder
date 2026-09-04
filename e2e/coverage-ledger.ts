@@ -45,6 +45,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '007-offence-profile',
   '008-mobility-and-jump',
   '012-help-and-licences',
+  '014-start-page',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -1989,6 +1990,95 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'removing motion removes no reading, and open and closed stay textual facts rather than appearances',
       'the modal’s only control is its close, and nothing depends on colour, icon, shape or placement',
       'the first complete frame is presented within 100 ms on a fourfold-throttled phone',
+    ],
+    manualRecord: 'actual-zoom',
+  },
+  // ---------------------------------------------------------------------------
+  // 014 — the start page. The product's own address, which used to be a
+  // redirect into the ship tool.
+  // ---------------------------------------------------------------------------
+  {
+    surfaceId: 'start/tool-selector',
+    requirements: [
+      '014/FR-001',
+      '014/FR-002',
+      '014/FR-003',
+      '014/FR-004',
+      '014/FR-005',
+      '014/FR-006',
+      '014/SC-001',
+      '014/SC-002',
+      '014/SC-004',
+    ],
+    journey: 'start/choose-a-tool',
+    axe: true,
+    assertions: [
+      'the product address answers with a choice of tools rather than with one of them',
+      'the masthead names the product and the line beneath says what it is for',
+      'every tool the registry holds is offered, and each states its subjects and what it does',
+      'a tool entry is a link carrying its own address, so it opens in a new tab and copies',
+      'the entry point and the tool bar are drawn from one registry, so neither can gain a tool alone',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'start/address',
+    requirements: ['014/FR-007', '014/FR-008', '014/FR-009', '014/FR-016', '014/SC-007'],
+    journey: 'start/choose-a-tool',
+    axe: true,
+    assertions: [
+      'opening a tool leaves the entry point in history, so back returns to the choice',
+      'an address that resolves to nothing lands at the entry point, not inside a tool',
+      'every address that did resolve still opens directly, a link fragment included',
+      'the root publishes a document title and a description of its own, in the committed language',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'start/no-current-tool',
+    requirements: ['014/FR-010', '014/FR-011'],
+    journey: 'start/choose-a-tool',
+    axe: true,
+    assertions: [
+      'the bar marks no tool as current, because a Commander here is in none of them',
+      'the shell actions carry over unchanged, and the screen publishes none of its own',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'start/tool-card-composition',
+    requirements: ['014/FR-017', '014/FR-018', '014/FR-019', '014/SC-003', '014/SC-008'],
+    journey: 'start/choose-a-tool',
+    axe: true,
+    assertions: [
+      'exactly one of a tool’s two descriptions is on screen at every viewport, never both and never neither',
+      'the subject list travels with the fuller form and the go mark with the shorter one',
+      'which form is shown follows the composition modes the application already names',
+      'the choice of tools is reachable without scrolling at desktop and tablet, and the first tool on a phone',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'start/attribution',
+    requirements: ['014/FR-012'],
+    journey: 'start/choose-a-tool',
+    axe: true,
+    assertions: [
+      'the notice is the help manifest’s exact text, ending in the words the licence file ends in',
+      'it is marked in the language it was written in rather than the interface’s',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'start/responsive-and-localised',
+    requirements: ['014/FR-013', '014/FR-014', '014/FR-015', '014/SC-005', '014/SC-006'],
+    journey: 'start/choose-a-tool',
+    axe: true,
+    assertions: [
+      'the document never scrolls sideways, at 200% text and at actual 400% zoom',
+      'every owned string resolves in the other shipped locale, with no key and no placeholder on screen',
+      'text expansion and a right-to-left script leave nothing truncated to ambiguity',
+      'the accessibility scan reports no in-scope violation in any of the ten projects',
     ],
     manualRecord: 'actual-zoom',
   },

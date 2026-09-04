@@ -1211,6 +1211,7 @@ describe('search metadata', () => {
   const ROBOTS = 'User-agent: *\nAllow: /\n\nSitemap: https://navbeacon.app/sitemap.xml\n';
 
   const SITEMAP = `<urlset>
+    <url><loc>https://navbeacon.app/</loc></url>
     <url><loc>https://navbeacon.app/ships</loc></url>
     <url><loc>https://navbeacon.app/build</loc></url>
   </urlset>`;
@@ -1242,6 +1243,15 @@ describe('search metadata', () => {
   // What `scripts/search/published-addresses.mjs` hands the rule: the addresses
   // the deployment writes documents for, each with the keys that name it.
   const PUBLISHED = [
+    // The root, which stopped being a redirect and became the start page.
+    {
+      path: '',
+      route: '',
+      address: 'https://navbeacon.app/',
+      titleKey: 'app.name',
+      descriptionKey: 'app.description',
+      image: 'assets/link-card.png',
+    },
     {
       path: 'ships',
       route: 'ships',
@@ -1280,7 +1290,7 @@ describe('search metadata', () => {
 
   // The route table as the rule pairs it: one triple per addressable route.
   const ROUTE_TABLE = [
-    { path: '' },
+    { path: '', titleKey: 'app.name', descriptionKey: 'app.description' },
     { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
     { path: ':hull', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
     { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
@@ -1288,6 +1298,8 @@ describe('search metadata', () => {
   ];
 
   const MESSAGE_KEYS = [
+    'app.name',
+    'app.description',
     'catalogue.title',
     'catalogue.description',
     'workspace.title',
@@ -1325,6 +1337,7 @@ describe('search metadata', () => {
     for (const commented of [
       `<urlset>
         <!-- <loc>https://navbeacon.app/ghost</loc> -->
+        <url><loc>https://navbeacon.app/</loc></url>
         <url><loc>https://navbeacon.app/ships</loc></url>
         <url><loc>https://navbeacon.app/build</loc></url>
       </urlset>`,
@@ -1332,6 +1345,7 @@ describe('search metadata', () => {
         <!--
           <loc>https://navbeacon.app/ghost</loc>
         -->
+        <url><loc>https://navbeacon.app/</loc></url>
         <url><loc>https://navbeacon.app/ships</loc></url>
         <url><loc>https://navbeacon.app/build</loc></url>
       </urlset>`,
@@ -1348,6 +1362,7 @@ describe('search metadata', () => {
     // the cut and the file is refused for what is actually wrong with it.
     const malformed = `<urlset>
       <!-- old -- gone <loc>https://navbeacon.app/ghost</loc> -->
+      <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
       <url><loc>https://navbeacon.app/build</loc></url>
     </urlset>`;
@@ -1363,6 +1378,7 @@ describe('search metadata', () => {
     // refuse it rather than guess which of the two the author meant.
     const html = `<urlset>
       <!-- gone <loc>https://navbeacon.app/ghost</loc> --!>
+      <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
       <url><loc>https://navbeacon.app/build</loc></url>
     </urlset>`;
@@ -1380,6 +1396,7 @@ describe('search metadata', () => {
     // pass — would publish `/ghost`. The two must agree, so both refuse it.
     const nested = `<urlset>
       <!<!-- -->-- <loc>https://navbeacon.app/ghost</loc> -->
+      <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
       <url><loc>https://navbeacon.app/build</loc></url>
     </urlset>`;
@@ -1394,6 +1411,7 @@ describe('search metadata', () => {
     // it, and an addressable route that nothing lists is the drift this exists
     // to catch.
     const commented = `<urlset>
+      <url><loc>https://navbeacon.app/</loc></url>
       <url><loc>https://navbeacon.app/ships</loc></url>
       <!-- <url><loc>https://navbeacon.app/build</loc></url> -->
     </urlset>`;

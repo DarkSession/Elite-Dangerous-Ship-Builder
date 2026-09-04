@@ -260,6 +260,7 @@ import { SaveBuildDialog } from '../../features/build-workspace/save-build.dialo
 import { HELP_MANIFEST } from '../../platform/build/help-manifest.generated';
 import { HELP_TOPICS } from '../../platform/build/help-topics.generated';
 import { LegalExcerpt } from '../components/legal-excerpt/legal-excerpt';
+import { ToolCard } from '../components/tool-card/tool-card';
 import { VersionFacts } from '../components/version-facts/version-facts';
 import { ExportBuildLayer } from '../../features/slef/export-build-layer/export-build-layer';
 import { ImportBuildLayer } from '../../features/slef/import-build-layer/import-build-layer';
@@ -4651,6 +4652,58 @@ registerPreview({
     notApplicable(
       'error',
       'A refusal belongs to the choice that was attempted, and the bench publishes it.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'tool-card',
+  group: 'Navigation',
+  component: ToolCard,
+  contract: contract(
+    'tool-card',
+    {
+      role: 'link',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: ['the go mark, which repeats the destination the link already names'],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        name: 'Ship Builder',
+        href: '/ships',
+        subjects: 'Shipyard · Outfitting · Anatomy · Power',
+        summary:
+          'Fit any ship slot by slot, set power priorities, apply engineering blueprints and watch jump range, shields and rebuy move as you go.',
+        short: 'Ships, module slots, power priorities, engineering.',
+      },
+      [
+        'the whole card is one link, and its accessible name is the tool name alone',
+        'exactly one of the two descriptions is shown at any width',
+        'the go mark is hidden from a reader, which the link already names',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    notApplicable(
+      'empty',
+      'A tool card always names a tool and a destination. A card for no tool is a control for something that does not exist.',
+    ),
+    notApplicable(
+      'loading',
+      'The tool registry is a source literal, so it is resolved before the first frame and there is no moment at which the card is waiting.',
+    ),
+    notApplicable(
+      'error',
+      'The card renders what it is handed and performs nothing that can fail.',
+    ),
+    notApplicable(
+      'disabled',
+      'Every tool offered answers an address. A tool that could not be opened would be left out of the registry rather than drawn unavailable.',
     ),
   ],
 });

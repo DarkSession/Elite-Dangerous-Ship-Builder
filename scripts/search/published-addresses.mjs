@@ -57,10 +57,16 @@ export const SITE_CARD = 'assets/link-card.png';
  * The addresses that exist whatever the package contains.
  *
  * `path` is the route table's own path, and the two message keys are the ones
- * that route declares. `''` and `'**'` are absent because a redirect and a
- * wildcard are not addresses (the checker's `UNLISTABLE_ROUTES` agrees).
+ * that route declares. `'**'` is absent because a wildcard is not an address
+ * (the checker's `UNLISTABLE_ROUTES` agrees).
+ *
+ * `''` is here, and used not to be. It was a redirect into the ship tool, and a
+ * redirect is not an address; it is the start page now, and it is the one
+ * address that describes the product rather than one of its tools — which is
+ * the address a search for NavBeacon should return.
  */
 export const STATIC_ADDRESSES = [
+  { path: '', titleKey: 'app.name', descriptionKey: 'app.description' },
   { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
   { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
   { path: 'equipment', titleKey: 'equipment.title', descriptionKey: 'equipment.description' },
@@ -109,6 +115,11 @@ export function documentTitle(catalogue, page) {
   const application = catalogue['app.document-title.default'];
 
   if (page === null || page.trim().length === 0) {
+    return application;
+  }
+  // The root's own name is the product's name. Stated once, as
+  // `resolveDocumentTitle` states it.
+  if (page.trim() === catalogue['app.name']) {
     return application;
   }
   return interpolate(catalogue['app.document-title'], { page, app: catalogue['app.name'] });
