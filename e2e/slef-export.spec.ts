@@ -16,7 +16,7 @@ import { buildStockHull, reachShellAction, savedToBrowser } from './shell';
 async function withStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 

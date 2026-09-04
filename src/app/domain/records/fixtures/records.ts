@@ -2,11 +2,16 @@
  * Frozen record fixtures.
  *
  * These are *bytes*, not builders. A fixture written by calling the current
- * serializer proves only that the serializer agrees with itself; the point of
- * a frozen fixture is that it was written by a version that no longer exists
- * and must still open. Every published version adds its own here and none is
- * ever edited — editing one would silently retire the compatibility it exists
- * to prove (persistence contract, "Version and migration behavior").
+ * serializer proves only that the serializer agrees with itself; the point of a
+ * frozen fixture is that it is read rather than generated, so a decoder cannot
+ * be changed and its test changed with it. Every published version adds its own
+ * here (persistence contract, "Version and migration behavior").
+ *
+ * They carry the current `ednb` prefix. The product's key space moved with its
+ * name and nothing reads across the move, so a record under the earlier prefix
+ * is not one of this application's keys and no fixture holds one: these state
+ * the shapes the decoder accepts, and which release wrote a given shape is not
+ * something a fixture can prove any more (`docs/navbeacon-migration.md`).
  */
 
 /** A complete, readable version-1 named record. */

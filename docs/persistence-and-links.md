@@ -77,10 +77,10 @@ whether the build can be edited, calculated, shared or exported.
 Stored records are a versioned envelope, `format: "ednb.local-record"`, carrying one tool's payload:
 a modelled build as `format: "ednb.build"`, or a loadout as `format: "ednb.loadout"`.
 
-| Version | Status                                                                                   |
-| ------- | ---------------------------------------------------------------------------------------- |
-| 1       | Superseded. Never written by this release; one found under this prefix migrates on open. |
-| 2       | Current. Written by this release and read by it.                                         |
+| Version | Status                                                                                                                                                |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | Superseded. Never written by this release; the decoder and its migration step stand for the version ladder, and no key under this prefix carries one. |
+| 2       | Current. Written by this release and read by it.                                                                                                      |
 
 Version 2 adds one field: `tool`, which is `"ship"` or `"equipment"` and says which payload the
 envelope carries.

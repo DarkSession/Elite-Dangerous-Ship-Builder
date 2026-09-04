@@ -368,7 +368,7 @@ export class LoadoutPresenter {
     }));
   }
 
-  /** The micro resources the fitted modifications require. */
+  /** The micro resources the loadout requires: each climb, and each modification. */
   readonly materials = computed<MaterialsView>(() => {
     const loadout = this.#store.loadout();
     const requirement =

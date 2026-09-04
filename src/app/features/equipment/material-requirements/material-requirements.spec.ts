@@ -30,6 +30,11 @@ describe('MaterialRequirements', () => {
     store.dispatch({ kind: 'setSuitGrade', grade: 1 });
   });
 
+  /** The total under the list, which is what a change to the loadout moves. */
+  function total(): string {
+    return render().querySelector('.materials__summary')?.textContent?.trim() ?? '';
+  }
+
   function render(compact = false): HTMLElement {
     const fixture = TestBed.createComponent(MaterialRequirements);
     fixture.componentRef.setInput('materials', presenter.materials());
@@ -63,31 +68,36 @@ describe('MaterialRequirements', () => {
 
   it('drops back to the climb alone when the only modification is removed', () => {
     store.dispatch({ kind: 'setSuitGrade', grade: 5 });
-    const climb = render().querySelector('.materials__summary')?.textContent?.trim();
+    const climb = total();
     store.dispatch({ kind: 'fitModification', target: 'suit', slot: 0, symbol: REGEN });
-    expect(render().querySelector('.materials__summary')?.textContent?.trim()).not.toBe(climb);
+    expect(total()).not.toBe(climb);
 
     store.dispatch({ kind: 'clearSlot', target: 'suit', slot: 0 });
 
-    expect(render().querySelector('.materials__summary')?.textContent?.trim()).toBe(climb);
+    expect(total()).toBe(climb);
   });
 
   it('counts nothing for a modification whose slot is locked (FR-011)', () => {
-    // Grade 2 closes the fourth slot, so what compares is the same grade with
-    // the slot open and closed: the climb to it is counted either way, and the
-    // held modification is counted in neither.
+    // Two baselines, because the climb moves with the grade: what the held
+    // modification must not change is the total at its own grade, and what
+    // unlocking it must change is the total at the grade that opens it.
     store.dispatch({ kind: 'setSuitGrade', grade: 2 });
-    const climb = render().querySelector('.materials__summary')?.textContent?.trim();
-    expect(climb).not.toBe('');
+    const atTwo = total();
+    store.dispatch({ kind: 'setSuitGrade', grade: 5 });
+    const atFive = total();
+    expect(atTwo).not.toBe('');
+    expect(atFive).not.toBe(atTwo);
 
+    // Grade 2 closes the fourth slot. What is in it is held, not fitted.
+    store.dispatch({ kind: 'setSuitGrade', grade: 2 });
     store.dispatch({ kind: 'fitModification', target: 'suit', slot: 3, symbol: REGEN });
 
-    expect(render().querySelector('.materials__summary')?.textContent?.trim()).toBe(climb);
+    expect(total()).toBe(atTwo);
 
-    // Grade 5 opens it, and the modification joins the total.
+    // Grade 5 opens it, and the modification joins the climb to grade 5.
     store.dispatch({ kind: 'setSuitGrade', grade: 5 });
 
-    expect(render().querySelector('.materials__summary')?.textContent?.trim()).not.toBe(climb);
+    expect(total()).not.toBe(atFive);
   });
 
   it('says what the total covers where the list is the whole screen', () => {

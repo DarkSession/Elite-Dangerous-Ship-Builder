@@ -21,6 +21,13 @@ describe('owned key space', () => {
     expect(recordIdFromKey(EDNB_RECORD_KEY_PREFIX)).toBeNull();
   });
 
+  it('refuses a key written under the product’s earlier prefix', () => {
+    // One prefix, and no reading across it: a record under the earlier one is
+    // not this application's key, and the Commander ruled for the break rather
+    // than a key space carrying two (`docs/navbeacon-migration.md`).
+    expect(recordIdFromKey('edsb:record:7f3a')).toBeNull();
+  });
+
   it('locks per record rather than globally', () => {
     expect(recordLockName('a')).not.toBe(recordLockName('b'));
     expect(recordLockName('a')).toBe('ednb:record:a');

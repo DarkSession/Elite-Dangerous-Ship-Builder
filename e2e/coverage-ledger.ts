@@ -189,7 +189,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'equipment/bench',
     axe: true,
     assertions: [
-      'the list is the climb to each selected grade and every fitted, unlocked modification',
+      'the list is the climb to each selected grade and every fitted, unlocked modification, commonest first',
       'a held modification counts nothing, and neither does a held mount’s weapon',
       'the block says what the total covers, and says when there is nothing to gather',
     ],

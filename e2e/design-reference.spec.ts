@@ -214,7 +214,10 @@ test.describe('the reference visual language', () => {
     // The gap between the tab's underline and the deck's own edge, read in one
     // evaluation so both boxes describe the same moment.
     const met = await page.evaluate(() => {
-      const deck = document.querySelector('.frame__tools') as HTMLElement;
+      // The deck itself, not the tools inside it: the nav sizes to the tab it
+      // holds, so measuring against that would prove the tab is as tall as its
+      // own box rather than as tall as the deck.
+      const deck = document.querySelector('.frame__deck') as HTMLElement;
       const tab = deck.querySelector('.frame__tool--current') as HTMLElement;
       return deck.getBoundingClientRect().bottom - tab.getBoundingClientRect().bottom;
     });

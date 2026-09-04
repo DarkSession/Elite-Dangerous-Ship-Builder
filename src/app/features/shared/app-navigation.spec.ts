@@ -67,13 +67,13 @@ describe('AppNavigation tools', () => {
   });
 
   it('marks the tool a shared link opens, fragment and query and all', () => {
-    // How a link is opened: `/outfitting#s.…` is a shared build and `/equipment#e.…`
+    // How a link is opened: `/outfitting#b.…` is a shared build and `/equipment#e.…`
     // a shared loadout, and the router reports `urlAfterRedirects`, which
     // carries both. Matched whole, they named no tool at all on the one screen
     // a Commander most often arrives at from outside (Commander request
     // 2026-09-04).
     expect(navigation().tools(`${NAVIGATION_ROUTES.equipment}#e.abc`)[1].current).toBe(true);
-    expect(navigation().tools(`${NAVIGATION_ROUTES.outfitting}#s.abc`)[0].current).toBe(true);
+    expect(navigation().tools(`${NAVIGATION_ROUTES.outfitting}#b.abc`)[0].current).toBe(true);
     expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
 
     // And the insignia reads the same address, so it still knows it is home.

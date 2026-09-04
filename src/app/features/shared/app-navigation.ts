@@ -130,7 +130,7 @@ export class AppNavigation {
    * Both readings below are asked about a route, and what they are handed is a
    * URL: `Router` reports `urlAfterRedirects`, which carries the query and the
    * fragment. Every shared build and every shared loadout arrives as one —
-   * `/outfitting#s.…` and `/equipment#e.…` are how a link is opened — so a bar that
+   * `/outfitting#b.…` and `/equipment#e.…` are how a link is opened — so a bar that
    * matched the whole string named no tool at all on the one screen a Commander
    * most often lands on from outside (Commander request 2026-09-04).
    */

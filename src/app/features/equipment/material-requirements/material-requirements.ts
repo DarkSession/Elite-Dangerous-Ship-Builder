@@ -5,12 +5,13 @@ import { relationId } from '../../../ui/a11y/text-equivalence';
 import { GameText } from '../../../ui/components/game-text/game-text';
 
 /**
- * The micro resources every fitted, unlocked modification asks for.
+ * The micro resources the loadout asks for: the climb to each selected grade,
+ * and every fitted, unlocked modification (FR-014).
  *
  * Canvas 1a draws it under the commander stats and canvas 1b gives it a tab of
  * its own; both draw the same block — a rule carrying `n TYPES · n UNITS`, then
  * one row per resource, commonest first, then the note saying what the total
- * does and does not cover.
+ * covers.
  *
  * The rows are `ui/outfitting/material-lines`' own view, which the ship tool's
  * cost rail already renders: a name and a count, with the rarity chip left off

@@ -27,14 +27,14 @@ test.describe('the bench has an address of its own', () => {
     await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
 
     // How a Commander arrives from outside: a shared loadout is `/equipment#e.…`
-    // and a shared build is `/outfitting#s.…`. The router reports the fragment as
+    // and a shared build is `/outfitting#b.…`. The router reports the fragment as
     // part of the address, and matched whole it named no tool at all — which is
     // the one screen where a Commander most needs the bar to say where they are
     // (Commander request 2026-09-04).
     await page.goto('/equipment#e.notaloadout');
     await expect(page.locator('.frame__tool--current')).toHaveText('Equipment Builder');
 
-    await page.goto('/outfitting#s.notabuild');
+    await page.goto('/outfitting#b.notabuild');
     await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
   });
 });
