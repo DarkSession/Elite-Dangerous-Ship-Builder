@@ -1,0 +1,238 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's leading column: three ruled groups over one unbroken ground.
+:host {
+  display: block;
+}
+
+// Canvas 1a's `padding: 14px 0 22px; gap: 18px`. Its own step rather than the
+// shared `--ednb-space-section` (34px), which is the seam between the regions of
+// a workspace; these are three groups inside one column, and at 34px the third
+// of them was a screen further down than the canvas draws it.
+.ledger {
+  @include layout.stack(var(--ednb-space-3xl));
+
+  padding-block: var(--ednb-space-xl) var(--ednb-space-4xl);
+}
+
+.ledger__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+  padding-inline: var(--ednb-space-2xl);
+  padding-block-end: var(--ednb-space-sm);
+}
+
+.ledger__heading {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.ledger__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+.ledger__count {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+
+  flex: none;
+}
+
+// The ground between rows is the separation, as both artboards draw it.
+.ledger__rows {
+  @include layout.stack(var(--ednb-space-rule));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The canvas's row: a 3px marker on the leading edge for the selected one, over
+// a wash that fades out across the row.
+//
+// No rule under it. The shared row draws one, and both artboards separate these
+// rows with the ground itself instead — the rule read as a line boxing every
+// row in, which is not a list the canvas draws anywhere.
+.ledger__row {
+  @include layout.selectable-row;
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-md) var(--ednb-space-2xl);
+  border-block-end-color: transparent;
+  cursor: pointer;
+  text-align: start;
+  transition:
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
+}
+
+// Canvas 1b's disclosure mark, in the faint ink it is drawn in.
+.ledger__chevron {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
+
+  flex: none;
+  font-size: var(--ednb-text-size-compact);
+}
+
+.ledger__row--held {
+  color: var(--ednb-text-muted);
+  cursor: default;
+}
+
+// The canvas's mount square, at the 26px it draws beside an item — its own
+// measure rather than the ship builder's numbered step, which is 16px and was
+// what made this ledger the first thing that did not read as the design.
+.ledger__badge {
+  @include layout.micro-label(var(--ednb-text-primary), var(--ednb-text-tracking-code));
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--ednb-layout-mount-badge);
+  block-size: var(--ednb-layout-mount-badge);
+  background: var(--ednb-surface-accent-quiet);
+  font-weight: var(--ednb-text-weight-emphasis);
+}
+
+.ledger__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.ledger__name {
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-lead);
+  color: var(--ednb-text-primary);
+}
+
+// No italic. There is not one italic glyph on any of the four artboards, and
+// the muted ink and the row's own words already say the mount is empty.
+.ledger__name--empty {
+  color: var(--ednb-text-muted);
+}
+
+.ledger__row--current .ledger__name {
+  color: var(--ednb-text-accent-strong);
+}
+
+// The canvas draws the code line on one line and it fits there. It is allowed to
+// take a second rather than be cut: at 400% zoom the ledger column is narrow
+// enough that `1 primary / 1 secondary` runs 11px past it, and an ellipsis there
+// is a fact a Commander cannot read by any means (SC 1.4.10).
+.ledger__meta {
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-code));
+
+  text-wrap: pretty;
+}
+
+// The canvas's grade chip: the figure on an amber wash, in the mono face every
+// number on this screen is set in.
+.ledger__grade {
+  @include layout.micro-label(var(--ednb-text-accent-strong), var(--ednb-text-tracking-count));
+
+  flex: none;
+  padding: var(--ednb-space-3xs) var(--ednb-space-xs);
+  background: var(--ednb-surface-accent-quiet);
+  font-size: var(--ednb-text-size-micro);
+}
+
+.ledger__mods {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+
+  flex: none;
+}
+
+// Both artboards draw a count short of what the grade opened in the alarm ink.
+// The count says it too — `2/4` is the carrier and this is the second statement
+// — and the row's own name spells it out for a reader (constitution V).
+.ledger__mods--wanting {
+  color: var(--ednb-text-danger-quiet);
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// Canvas 1b reads the rows at arm's length rather than beside the item they
+// name, so it steps them up: a larger name and a taller row than the three
+// columns share.
+.ledger--compact .ledger__name {
+  font-size: var(--ednb-text-size-row-compact);
+}
+
+.ledger--compact .ledger__badge {
+  inline-size: var(--ednb-layout-mount-badge-compact);
+  block-size: var(--ednb-layout-mount-badge-compact);
+}
+
+.ledger--compact .ledger__row {
+  min-block-size: var(--ednb-layout-bench-row-compact);
+  padding-block: var(--ednb-space-lg);
+}
+
+// The bench with nothing on it. Canvas 2a and 2b hush the whole ledger — the
+// section rules, the badges and the row names alike — so the one live control
+// beside it is what the eye lands on. Every one of these rows also says
+// `Locked` in words and is `aria-disabled`, so the ink is the second carrier
+// rather than the only one (constitution V).
+.ledger--waiting .ledger__heading,
+.ledger--waiting .ledger__count,
+.ledger--waiting .ledger__name,
+.ledger--waiting .ledger__meta,
+.ledger--waiting .ledger__badge {
+  color: var(--ednb-text-faint);
+}
+
+.ledger--waiting .ledger__badge {
+  background: transparent;
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-quiet);
+}
+
+// The suit row is the exception: it is the one row on an empty bench that can
+// be acted on, and canvas 2a and 2b wash it and mark it exactly as the live
+// ledger marks its current row. Its code line is not part of that: the canvas
+// leaves `EMPTY · REQUIRED FIRST` in the neutral ink every other row's code
+// line carries, and keeps the amber for the name, the badge and `SELECT →`.
+.ledger--waiting .ledger__row--current .ledger__name,
+.ledger--waiting .ledger__row--current .ledger__badge {
+  color: var(--ednb-text-accent);
+}
+
+// The canvas's dashed `+`, which is a heavier edge than the locked rows carry
+// because this is the one square on the bench that leads somewhere.
+.ledger--waiting .ledger__row--current .ledger__badge {
+  border-color: var(--ednb-border-control-strong);
+}
+
+// The canvas answers a pointer with a flat ground and a lit leading marker,
+// keeping the amber wash for the row that is actually selected:
+// `.pe-row:not([data-active]):not([data-disabled]):hover { background: #191917;
+// border-left-color: rgba(255,140,26,.45) }`. The selected row answers too, but
+// by brightening what it already carries rather than taking a second ground —
+// so a pointer never makes an unselected row look chosen. A held mount is not a
+// control and answers nothing, as the canvas's `[data-disabled]` rows do not.
+@media (hover: hover) {
+  .ledger__row:not([aria-current]):not(.ledger__row--held):hover {
+    background-color: var(--ednb-surface-panel-hover);
+    border-inline-start-color: var(--ednb-marker-hover);
+  }
+
+  .ledger__row[aria-current]:hover {
+    filter: var(--ednb-effect-lit);
+  }
+}

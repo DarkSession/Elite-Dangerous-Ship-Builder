@@ -4,10 +4,11 @@ import {
   FIXTURE_IDS,
   MALFORMED_RECORD,
   NAMED_RECORD_V1,
+  NAMED_RECORD_V2,
   UNKNOWN_HULL_RECORD,
   UNSUPPORTED_NEWER_RECORD,
   WORKING_RECORD_V1,
-} from '../../domain/ships/build/fixtures/records';
+} from '../../domain/records/fixtures/records';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { BroadcastChannelAdapter } from '../../platform/browser/broadcast-channel.adapter';
@@ -425,7 +426,7 @@ describe('RecordOpenService', () => {
 
   it('leaves the source record untouched when it is opened', async () => {
     const { open, storage } = setup((store) =>
-      store.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V1),
+      store.setItem(recordKey(FIXTURE_IDS.named), NAMED_RECORD_V2),
     );
     const before = storage.entries.get(recordKey(FIXTURE_IDS.named));
 

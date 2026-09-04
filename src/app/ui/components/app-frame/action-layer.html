@@ -28,25 +28,10 @@
 >
   <!--
     Canvas 1d's `⋮` menu is one list: `SAVE`, then the history pair, then
-    `IMPORT · EXPORT`, then `HELP & FAQ`. The screens a Commander can move to
-    are part of that list at this width, not a second row of chips under the
-    bar — the folded bar is one row and nothing else.
+    `IMPORT · EXPORT`, then `HELP & FAQ`. Everything a Commander can reach from
+    the bar is part of that list at this width, not a second row of chips under
+    it — the folded bar is one row and nothing else.
   -->
-  @if (links().length > 0) {
-    <nav class="action-layer__navigation" [attr.aria-label]="linksLabel()">
-      @for (entry of links(); track entry.id) {
-        <a
-          class="action-layer__link"
-          [href]="entry.href"
-          [attr.aria-current]="entry.current ? 'page' : null"
-          (click)="linkSelected.emit({ entry, event: $event })"
-        >
-          {{ entry.label }}
-        </a>
-      }
-    </nav>
-  }
-
   @for (action of actions(); track action.id) {
     <!--
       The canvas rules its groups apart and leaves the rows inside a group
@@ -54,7 +39,7 @@
       grouping the wide bar draws with its hairline, so it is read from the
       same flag rather than counted out again here.
     -->
-    @if (action.startsGroup || ($first && links().length > 0)) {
+    @if (action.startsGroup) {
       <span class="action-layer__rule" aria-hidden="true"></span>
     }
     <edsb-action-button

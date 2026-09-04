@@ -1,0 +1,40 @@
+<section
+  class="materials"
+  [class.materials--compact]="compact()"
+  [attr.aria-labelledby]="headingId"
+>
+  <div class="materials__rule">
+    <h2 class="materials__heading" [id]="headingId">{{ heading() }}</h2>
+    @if (materials().summary; as summary) {
+      <p class="materials__summary">{{ summary }}</p>
+    }
+  </div>
+
+  @if (materials().lines.length > 0) {
+    <dl class="materials__list">
+      @for (line of materials().lines; track line.symbol) {
+        <div class="materials__row">
+          <dt class="materials__name">
+            <edsb-game-text
+              [text]="line.name.text"
+              [language]="line.name.language"
+              [translationState]="line.name.translationState"
+            />
+          </dt>
+          <dd class="materials__count" data-bidi-isolate>{{ line.count }}</dd>
+        </div>
+      }
+    </dl>
+  } @else {
+    <p class="materials__empty">{{ materials().emptyLabel }}</p>
+  }
+
+  <!-- Canvas 1b's footnote, under the tab that is nothing but this list. The
+       wide column draws no note beside a total (canvas 1a) and the empty bench
+       writes one line rather than two (canvas 2a) — what the total covers is
+       worth saying where the list is the whole screen, and is a second
+       sentence about a figure that is not there anywhere else. -->
+  @if (compact() && materials().lines.length > 0) {
+    <p class="materials__note">{{ note() }}</p>
+  }
+</section>

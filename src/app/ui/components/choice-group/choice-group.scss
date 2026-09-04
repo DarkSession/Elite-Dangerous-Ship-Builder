@@ -198,6 +198,15 @@
     min-block-size: 0;
   }
 
+  // `.me-fmt:hover { color: #ffb060 }` — the same ink-only answer the tab strip
+  // gives, for the same reason: a card that is not the chosen one has no fill
+  // to lift, and lifting one would say the choice had moved.
+  @media (hover: hover) {
+    .choice__input:not(:checked):not(:disabled):hover ~ .choice__label {
+      color: var(--ednb-text-accent-strong);
+    }
+  }
+
   // `~` rather than `+`: a marked card puts its marker between the input and
   // the label, so the adjacent-sibling form would reach the label on one
   // arrangement and nothing at all on the other.

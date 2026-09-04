@@ -82,7 +82,7 @@ const germanCatalogue = {
   ...BUNDLED_ENGLISH,
   'locale.self-name': 'Deutsch',
   'catalogue.title': 'Schiffsbaukasten',
-  'library.description': 'Verwalte die in diesem Browser gespeicherten Builds.',
+  'workspace.description': 'Rüste einen Rumpf Slot für Slot aus.',
 };
 
 describe('LocaleStore', () => {
@@ -387,17 +387,17 @@ describe('LocaleStore document title', () => {
     const { store, document } = setup({ browserLanguages: ['de'] });
     store.setRoute({
       titleKey: 'catalogue.title',
-      descriptionKey: 'library.description',
+      descriptionKey: 'workspace.description',
       path: '/ships',
     });
-    expect(document.commits.at(-1)?.description).toBe(BUNDLED_ENGLISH['library.description']);
+    expect(document.commits.at(-1)?.description).toBe(BUNDLED_ENGLISH['workspace.description']);
 
     await store.start();
 
     const last = document.commits.at(-1);
     expect(last?.language).toBe('de');
     expect(last?.title).toContain(germanCatalogue['catalogue.title']);
-    expect(last?.description).toBe(germanCatalogue['library.description']);
+    expect(last?.description).toBe(germanCatalogue['workspace.description']);
     expect(store.page()).toBe(germanCatalogue['catalogue.title']);
   });
 

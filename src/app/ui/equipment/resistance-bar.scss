@@ -1,0 +1,48 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ednb-space-stack-tight);
+}
+
+.resistance__reading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ednb-space-inline-tight);
+}
+
+.resistance__label {
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  letter-spacing: var(--ednb-text-tracking-label);
+  color: var(--ednb-text-muted);
+  text-transform: uppercase;
+}
+
+.resistance__value {
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  font-weight: var(--ednb-text-weight-control);
+  color: var(--ednb-text-numeric);
+}
+
+.resistance__value--negative {
+  color: var(--ednb-text-danger-quiet);
+}
+
+// The unfilled remainder is what says how far the bar could go, so it has to be
+// a ground somebody can see: the canvas lifts it 14 units off the column
+// (`rgba(255,255,255,.06)`), where the inset fill lifted it five.
+.resistance__track {
+  block-size: var(--ednb-layout-resistance-bar);
+  background: var(--ednb-surface-track);
+}
+
+.resistance__fill {
+  block-size: 100%;
+  background: var(--ednb-surface-success-solid);
+}
+
+.resistance__fill--negative {
+  background: var(--ednb-surface-danger-solid);
+}

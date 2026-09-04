@@ -38,6 +38,22 @@ const TABLE_VERSION_BITS = 10;
 const CURRENT_TABLE_VERSION = table.$generated.tableVersion;
 const MODIFICATION_SLOTS = table.MODIFICATION_SLOTS;
 
+/**
+ * Every mount the catalogue offers, in the order the payload writes them.
+ *
+ * The catalogue's whole set rather than the encoded suit's, so a weapon on a
+ * mount the suit does not offer is held content and round-trips (FR-018a). Each
+ * mount is checked against its own kind — a rifle on `SecondaryWeapon` is still
+ * refused — and never against the suit, which is what makes holding expressible.
+ *
+ * The key is Frontier's journal `SlotName`. It is what a refusal carries as its
+ * slot, and `getPersonalMountName` is what names it before a Commander reads it.
+ */
+const MOUNTS: readonly Mount[] = table.MOUNTS.map((key, index) => ({
+  key,
+  kind: table.MOUNT_KINDS[index]!,
+}));
+
 /** What a refusal names when it is about the suit itself rather than a mount. */
 const SUIT_MOUNT = 'suit';
 
@@ -80,15 +96,14 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
     SUIT_MOUNT,
   );
 
-  const mounts = mountsOf(suitIndex);
-  if (loadout.weapons.length !== mounts.length) {
+  if (loadout.weapons.length !== table.MOUNT_SLOTS) {
     throw invalidPayload(
-      `The suit offers ${mounts.length} mounts and the loadout names ${loadout.weapons.length}.`,
+      `The catalogue offers ${table.MOUNT_SLOTS} mounts and the loadout names ${loadout.weapons.length}.`,
       null,
     );
   }
 
-  for (const [position, mount] of mounts.entries()) {
+  for (const [position, mount] of MOUNTS.entries()) {
     const fitted = loadout.weapons[position] ?? null;
     if (fitted === null) {
       writer.writeBits(0, WEAPON_BITS);
@@ -97,15 +112,15 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
 
     const weaponIndex = table.WEAPONS.indexOf(fitted.symbol);
     if (weaponIndex < 0) {
-      throw unknownIdentity(`No handheld weapon is named ${fitted.symbol}.`, mount.name);
+      throw unknownIdentity(`No handheld weapon is named ${fitted.symbol}.`, mount.key);
     }
     if (table.WEAPON_MOUNTS[weaponIndex] !== mount.kind) {
-      throw invalidPayload(`${fitted.symbol} does not fit a ${mount.kind} mount.`, mount.name);
+      throw invalidPayload(`${fitted.symbol} does not fit a ${mount.kind} mount.`, mount.key);
     }
 
     writer.writeBits(weaponIndex + 1, WEAPON_BITS);
     writer.writeBits(
-      publishedGrade(fitted.grade, table.WEAPON_GRADES[weaponIndex]!, mount.name),
+      publishedGrade(fitted.grade, table.WEAPON_GRADES[weaponIndex]!, mount.key),
       GRADE_BITS,
     );
     writeModifications(
@@ -115,7 +130,7 @@ export function encodeEquipmentLinkFragment(loadout: EquipmentLoadout): string {
       WEAPON_MODIFICATION_BITS,
       table.WEAPON_MODIFICATIONS,
       table.WEAPON_SLOTS[weaponIndex]!,
-      mount.name,
+      mount.key,
     );
   }
 
@@ -153,7 +168,7 @@ export function decodeEquipmentLinkFragment(fragment: string): EquipmentLoadout 
     SUIT_MOUNT,
   );
 
-  const weapons = mountsOf(suitIndex).map((mount) => readWeapon(reader, mount));
+  const weapons = MOUNTS.map((mount) => readWeapon(reader, mount));
 
   if (!reader.done) {
     throw invalidPayload('The equipment-link payload carries trailing data.', null);
@@ -170,45 +185,31 @@ function readWeapon(reader: RawBitReader, mount: Mount): FittedPersonalWeapon | 
   if (symbol === undefined) {
     throw unknownIdentity(
       'The link names a handheld weapon that is not available here.',
-      mount.name,
+      mount.key,
     );
   }
   if (table.WEAPON_MOUNTS[weaponIndex] !== mount.kind) {
-    throw invalidPayload(`${symbol} does not fit a ${mount.kind} mount.`, mount.name);
+    throw invalidPayload(`${symbol} does not fit a ${mount.kind} mount.`, mount.key);
   }
   return {
     symbol,
-    grade: readGrade(reader, table.WEAPON_GRADES[weaponIndex]!, mount.name),
+    grade: readGrade(reader, table.WEAPON_GRADES[weaponIndex]!, mount.key),
     modifications: readModifications(
       reader,
       table.WEAPON_MODIFICATION_SETS[weaponIndex]!,
       WEAPON_MODIFICATION_BITS,
       table.WEAPON_MODIFICATIONS,
       table.WEAPON_SLOTS[weaponIndex]!,
-      mount.name,
+      mount.key,
     ),
   };
 }
 
-/**
- * The suit's mounts, in the order a loadout lists them: the kind of weapon each
- * takes, as `PersonalWeapon.slot` names it, and the name a refusal calls it by.
- *
- * Named rather than numbered because a refusal has to say which mount it is
- * about (`EquipmentLoadout.weapons` for the gap this stands in for).
- */
-function mountsOf(suitIndex: number): readonly Mount[] {
-  const [primary, secondary] = table.SUIT_MOUNTS[suitIndex]!;
-  const of = (kind: string, count: number): Mount[] =>
-    Array.from({ length: count }, (_, position) => ({ kind, name: `${kind}${position + 1}` }));
-  return [...of('primary', primary!), ...of('secondary', secondary!)];
-}
-
 interface Mount {
+  /** Frontier's journal `SlotName`, which is what a refusal carries. */
+  readonly key: string;
   /** `PersonalWeapon.slot`: which kind of weapon this mount takes. */
   readonly kind: string;
-  /** What a refusal calls this mount. */
-  readonly name: string;
 }
 
 /** A grade the item publishes, refused where it does not publish it. */

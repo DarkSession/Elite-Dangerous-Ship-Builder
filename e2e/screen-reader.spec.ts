@@ -35,36 +35,25 @@ test.describe('accessibility tree', () => {
     `);
   });
 
-  test('offers the screens it navigates to as one landmark, at either width', async ({ page }) => {
+  test('offers the screens it navigates to as one named landmark', async ({ page }) => {
     await page.goto('/');
 
-    // Canvas 1c draws them on the bar's trailing edge and canvas 1d puts them
-    // in the `⋮` menu, so which composition is drawn depends on the width. The
-    // landmark is in the banner either way; at compact it is inside the menu,
-    // which is where the reference puts them.
+    // One navigation landmark in the banner, and it is the tool deck canvas 4c
+    // draws. There were two until the saved builds stopped being a place with
+    // an address and became a shell action (Commander request 2026-09-04): the
+    // row that held them held nothing else, and a reader met a landmark with
+    // nothing in it.
     //
-    // Found by what it holds rather than by its name. The banner carries a
-    // second navigation landmark canvas 4c draws — the tool bar — and this file
-    // deliberately pins no catalogue text, so the one being asked about here is
-    // the one offering screens to open.
+    // Found by what it holds rather than by its name, because this file
+    // deliberately pins no catalogue text.
     const screens = page
       .getByRole('banner')
       .getByRole('navigation')
       .filter({ has: page.getByRole('link') });
 
-    // Asked and answered as one unit. Which composition is drawn is settled by
-    // the shell's own stylesheet, which Angular inserts as the component first
-    // renders — so for a frame at a folded width the wide row is in the document
-    // and the question answers itself wrongly. Retried, the reading that counts
-    // is the one that is still true a moment later.
-    await expect(async () => {
-      if ((await screens.count()) === 0) {
-        await openActionLayer(page);
-      }
-      await expect(screens).toHaveCount(1, { timeout: 2_000 });
-      await expect(screens).toBeVisible({ timeout: 2_000 });
-      await expect(screens).toHaveAccessibleName(/.+/, { timeout: 2_000 });
-    }).toPass({ timeout: 15_000 });
+    await expect(screens).toHaveCount(1);
+    await expect(screens).toBeVisible();
+    await expect(screens).toHaveAccessibleName(/.+/);
   });
 
   test('names the announcement outlets rather than leaving them anonymous', async ({ page }) => {

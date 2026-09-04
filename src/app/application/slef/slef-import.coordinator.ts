@@ -89,8 +89,8 @@ export class SlefImportCoordinator {
     // as a pointer rests on a row. Moving first, while the layer still covers
     // it, is what makes the Commander land on the build they just imported
     // (import contract, step 12).
-    // Compared exactly: `/builds` is the library, and starting with `/build`
-    // is not the same thing as being the workspace.
+    // Compared exactly: starting with `/build` is not the same thing as being
+    // the workspace.
     const path = this.#router.url.split(/[?#]/)[0];
     if (path !== WORKSPACE) {
       await this.#router.navigateByUrl(WORKSPACE);

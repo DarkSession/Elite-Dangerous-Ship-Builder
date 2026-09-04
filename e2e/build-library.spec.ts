@@ -3,10 +3,10 @@ import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
 import {
   buildStockHull,
+  openLibrary,
   openRecordFromLibrary,
   reachShellAction,
   savedToBrowser,
-  reachShellLink,
 } from './shell';
 
 /**
@@ -128,7 +128,12 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
   // A row is named by its own words, so it is found by its title — anchored,
   // because "Anaconda" would otherwise also match "Anaconda explorer".
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const row = page.getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
+  // Scoped to the layer. The screen it stands over is in the same document, and
+  // the shipyard behind it names forty-eight of its own controls `Build a stock
+  // …` — which a bare page-wide match claims as well (2026-09-04).
+  const row = page
+    .getByRole('dialog', { name: 'Saved builds' })
+    .getByRole('button', { name: new RegExp(`^${escaped}\\b`, 'i') });
   // Retried, because the listing re-reads storage after a write and the row a
   // press was aimed at can be replaced a frame later: the click then resolves
   // against a detached node and its handler never runs.
@@ -197,7 +202,7 @@ const library = (page: Page) => page.getByRole('dialog', { name: 'Saved builds' 
 
 test.describe('the build library', () => {
   test('says so when nothing is stored', async ({ page }) => {
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await expect(library(page)).toBeVisible();
     await expect(page.getByText('Nothing is stored yet')).toBeVisible();
@@ -205,7 +210,7 @@ test.describe('the build library', () => {
 
   test('lists an unnamed build with its hull, time and recorded state', async ({ page }) => {
     await createBuild(page);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
 
     await expect(library(page)).toBeVisible();
     // Titled by what the build calls itself — here the hull, since a stock
@@ -230,7 +235,7 @@ test.describe('the build library', () => {
       seedRecord('named-one', { name: 'Anaconda explorer' }),
       seedRecord('unnamed-one', { kind: 'working', name: null, modifiedAt: recent }),
     ]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(library(page)).toBeVisible();
 
     await expect(page.getByRole('heading', { name: 'Unnamed builds' })).toHaveCount(0);
@@ -253,7 +258,7 @@ test.describe('the build library', () => {
     // (FR-010, clarification 2026-08-27).
     const modifiedAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer', modifiedAt })]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await expect(page.locator('[data-record-id="a"] .record__modified')).toHaveText(/ago/i);
     await expect(page.locator('[data-record-id="a"] .record__modified')).not.toHaveText(/2026/);
@@ -268,7 +273,7 @@ test.describe('the build library', () => {
     // The canvas's two, and nothing else. Naming, renaming and saving a copy
     // are the workspace's own `SAVE` since 2026-08-27 (FR-009).
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await chooseRecord(page, 'Anaconda explorer');
     const footer = page.locator('.library__footer');
@@ -282,24 +287,27 @@ test.describe('the build library', () => {
     ).toBeVisible();
   });
 
-  test('stands over the screen it was opened from, keeping its own address', async ({ page }) => {
-    // Canvas 1a draws `/builds` as a modal over an inert originating screen,
+  test('stands over the screen it was opened from, taking no address of its own', async ({
+    page,
+  }) => {
+    // Canvas 1a draws the library as a modal over an inert originating screen,
     // and a modal is only a modal if there is a screen behind it. Built as a
     // sibling route there was none: the workspace was replaced by a page whose
     // whole body was the layer (Commander request 2026-08-28).
     await createBuild(page);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
 
     const layer = page.getByRole('dialog', { name: 'Saved builds' });
     await expect(layer).toBeVisible();
 
-    // The address is the library's, without a navigation having taken the
-    // workspace away: the ship is still there, behind and inert.
-    await expect(page).toHaveURL(/\/builds$/);
+    // No navigation took the workspace away — the ship is still there, behind
+    // and inert — and no address was taken either. The records are held on one
+    // device, so an address for them resolves to a different list for every
+    // Commander who opens it (Commander request 2026-09-04).
+    await expect(page).toHaveURL(/\/build#b\./);
     await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(1);
-    await expect(page).toHaveTitle(/^Saved builds/);
 
-    // And closing gives all of it back, fragment included — the build link the
+    // And closing gives the screen back, fragment included — the build link the
     // workspace published on the entry the layer was opened over.
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     await expect(layer).toBeHidden();
@@ -308,10 +316,10 @@ test.describe('the build library', () => {
   });
 
   test('closes on the browser’s own back, as a screen would', async ({ page }) => {
-    // The address is real, so the entry is real: back is one of the two ways
-    // out and the canvas draws the other.
+    // The entry is real even though the address does not change: back is one of
+    // the two ways out and the canvas draws the other.
     await createBuild(page);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
 
     const layer = page.getByRole('dialog', { name: 'Saved builds' });
     await expect(layer).toBeVisible();
@@ -322,15 +330,17 @@ test.describe('the build library', () => {
     await expect(page).toHaveURL(/\/build#b\./);
   });
 
-  test('is an ordinary page where it was reached by its own address', async ({ page }) => {
-    // Nothing to stand over. The same content and the same title, on a page
-    // background — which is what the design says direct navigation supplies.
+  test('is the same layer over the shipyard, where no build is open', async ({ page }) => {
+    // There is one composition. The library used to be a page as well, at its
+    // own address, and that address is gone (Commander request 2026-09-04) —
+    // so the screen behind is whichever one a Commander opened it from, and
+    // over the shipyard there is simply no workspace behind it.
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await expect(library(page)).toBeVisible();
     await expect(page.locator('edsb-outfitting-workspace')).toHaveCount(0);
-    await expect(page).toHaveTitle(/^Saved builds/);
+    await expect(page).toHaveURL(/\/ships$/);
   });
 
   test('marks exactly one row, and moves the mark to whichever was chosen', async ({ page }) => {
@@ -345,7 +355,7 @@ test.describe('the build library', () => {
     // Beta while Alpha is another row on the list.
     await saveActiveBuild(page, 'Beta');
 
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     const marked = page.locator('.record--chosen');
 
     // Opening marks where the Commander is: the library opens on the record the
@@ -371,7 +381,7 @@ test.describe('the build library', () => {
 
     await saveActiveBuild(page, 'Anaconda explorer');
 
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await expect(library(page).getByText('Anaconda explorer').first()).toBeVisible();
     expect(await recordCount(page)).toBe(1);
   });
@@ -402,7 +412,7 @@ test.describe('the build library', () => {
     // alternative is one press away (FR-009).
     const modifiedAt = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer', modifiedAt })]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await openRecordFromLibrary(page, 'Anaconda explorer');
 
     await reachShellAction(page, /^Save$/);
@@ -478,7 +488,7 @@ test.describe('the build library', () => {
     // saved builds out of a build they had chosen nothing to leave (Commander
     // request 2026-08-27).
     await createBuild(page);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await expect(library(page)).toBeVisible();
 
     await page.getByRole('button', { name: 'Close', exact: true }).click();
@@ -494,7 +504,7 @@ test.describe('the build library', () => {
     // not: a record is copied by opening it and saving it as a new build, which
     // leaves the original exactly where it was (FR-009).
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await openRecordFromLibrary(page, 'Anaconda explorer');
 
     await saveActiveBuild(page, 'Anaconda explorer copy');
@@ -511,7 +521,7 @@ test.describe('the build library', () => {
 
   test('renames a saved build by saving it over the save it was opened from', async ({ page }) => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await openRecordFromLibrary(page, 'Anaconda explorer');
 
     await saveActiveBuild(page, 'Deep black', 'overwrite');
@@ -531,7 +541,7 @@ test.describe('the build library', () => {
 
   test('confirms a deletion, names the record, and cancelling keeps it', async ({ page }) => {
     await seed(page, [seedRecord('a')]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await chooseRecord(page, 'Build a');
     await footerAction(page, 'Delete').click();
@@ -552,7 +562,7 @@ test.describe('the build library', () => {
 
   test('deletes only the record that was confirmed', async ({ page }) => {
     await seed(page, [seedRecord('a'), seedRecord('b')]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await chooseRecord(page, 'Build a');
     await footerAction(page, 'Delete').click();
@@ -569,7 +579,7 @@ test.describe('the build library', () => {
 
   test('opens a stored build into the workspace', async ({ page }) => {
     await seed(page, [seedRecord('a')]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await openRecordFromLibrary(page, 'Build a');
 
@@ -594,7 +604,7 @@ test.describe('the build library', () => {
         },
       }),
     ]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(page.getByText('2 builds', { exact: true })).toBeVisible();
 
     await page.getByRole('searchbox', { name: 'Search saved builds' }).fill('python');
@@ -610,7 +620,7 @@ test.describe('the build library', () => {
 
   test('says nothing matched, and leaves every control reachable', async ({ page }) => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     const search = page.getByRole('searchbox', { name: 'Search saved builds' });
     await search.fill('nothing like this');
@@ -629,7 +639,7 @@ test.describe('the build library', () => {
     await seed(page, [
       seedRecord('a', { name: 'Broken build', validation: { valid: false, complete: false } }),
     ]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     const row = page.locator('[data-record-id="a"] button');
     await expect(row).toContainText('Invalid');
@@ -651,7 +661,7 @@ test.describe('the build library', () => {
       seedRecord('fresh', { kind: 'working', name: null, modifiedAt: days(6) }),
       seedRecord('stale', { kind: 'working', name: null, modifiedAt: days(8) }),
     ]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     // The one with a day left says so; the one that ran out is simply not
     // there, swept before the listing was drawn and announced by nothing.
@@ -676,11 +686,13 @@ test.describe('the build library', () => {
       },
       { key: 'edsb:record:broken', value: '{"format":"edsb.local-record","version":1,"id":' },
     ]);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     await expect(page.getByText(/newer version of the application/i)).toBeVisible();
     await expect(page.getByText(/could not be read/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /Open/ })).toHaveCount(0);
+    // Scoped to the layer: the bar behind it carries `Open saved build`, which
+    // is the control that raised this (2026-09-04).
+    await expect(library(page).getByRole('button', { name: /Open/ })).toHaveCount(0);
 
     const stored = await page.evaluate(() => ({
       newer: localStorage.getItem('edsb:record:newer'),
@@ -712,7 +724,7 @@ test.describe('the build library', () => {
       'quota-full',
     );
     await expect(page.getByText(/storage is full/i)).toBeVisible();
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await expect(page.getByRole('heading', { name: 'Choose builds to discard' })).toBeVisible();
 
     // Nothing was removed to make room, and expiry is never offered as a way
@@ -736,7 +748,7 @@ test.describe('the build library', () => {
     );
     await fillStorage(page);
     await openWorkspaceWithBuild(page);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
 
     const manager = page.getByRole('group', { name: 'Choose builds to discard' });
     await manager.getByRole('checkbox').first().check();
@@ -760,14 +772,14 @@ test.describe('the build library', () => {
     // lists what is stored, and autosave coalesces before it writes.
     await createBuild(first);
     await saveActiveBuild(first, 'Shared build');
-    await reachShellLink(first, 'Open saved build');
+    await openLibrary(first);
     await expect(library(first).getByText('Shared build').first()).toBeVisible();
 
     // The other page opens the same named record, so both hold the same baseline.
-    await second.goto('/builds');
+    await openLibrary(second);
     await openRecordFromLibrary(second, 'Shared build');
 
-    await first.goto('/builds');
+    await openLibrary(first);
     await openRecordFromLibrary(first, 'Shared build');
 
     // One page saves; the other's baseline is now stale. Both pages hold the
@@ -811,14 +823,14 @@ test.describe('the build library', () => {
 
     await createBuild(first);
     await saveActiveBuild(first, 'Shared build');
-    await reachShellLink(first, 'Open saved build');
+    await openLibrary(first);
     await expect(library(first).getByText('Shared build').first()).toBeVisible();
 
     // Both pages open the record before either saves, so both hold one
     // baseline and the collision is between two deliberate saves (FR-012).
-    await second.goto('/builds');
+    await openLibrary(second);
     await openRecordFromLibrary(second, 'Shared build');
-    await first.goto('/builds');
+    await openLibrary(first);
     await openRecordFromLibrary(first, 'Shared build');
 
     await saveActiveBuild(second, 'From the other page', 'overwrite');
@@ -850,7 +862,7 @@ test.describe('the build library', () => {
       seedRecord('a'),
       seedRecord('b', { validation: { valid: false, complete: false } }),
     ]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(library(page)).toBeVisible();
 
     await expectSingleVisibleH1(page);
@@ -865,7 +877,7 @@ test.describe('the build library', () => {
 
   test('scans the save layer over the build it names', async ({ page }, testInfo) => {
     await seed(page, [seedRecord('a', { name: 'Anaconda explorer' })]);
-    await page.goto('/builds');
+    await openLibrary(page);
     await openRecordFromLibrary(page, 'Anaconda explorer');
 
     await reachShellAction(page, /^Save$/);

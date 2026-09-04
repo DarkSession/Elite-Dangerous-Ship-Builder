@@ -125,7 +125,7 @@ capability or applicable surface is a release failure; representative sampling i
 | Hull catalogue `/ships`                      | 001   | visible               | FR-001, FR-002, FR-011 |
 | Hull detail `/ships/:hull`                   | 001   | visible               | FR-001, FR-002, FR-011 |
 | Build workspace `/build`, including no-build | 001   | visible               | FR-001, FR-011         |
-| Build library `/builds`                      | 001   | obscured, dismissible | FR-001, FR-011         |
+| Build library layer                          | 001   | obscured, dismissible | FR-001, FR-011         |
 | Save-build layer                             | 001   | obscured, dismissible | FR-011                 |
 | Build-library delete confirmation            | 001   | obscured, dismissible | FR-011                 |
 | Outfitting workspace ledger                  | 002   | visible               | FR-002                 |

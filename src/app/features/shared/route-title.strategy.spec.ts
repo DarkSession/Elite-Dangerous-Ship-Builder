@@ -101,12 +101,12 @@ describe('RouteTitleStrategy', () => {
   it('publishes the route description a search result quotes', () => {
     const { strategy, locale, snapshot } = strategyWith([
       { title: 'library.title' },
-      { description: 'library.description' },
+      { description: 'workspace.description' },
     ]);
 
     strategy.updateTitle(snapshot);
 
-    expect(locale.description()).toBe(BUNDLED_ENGLISH['library.description']);
+    expect(locale.description()).toBe(BUNDLED_ENGLISH['workspace.description']);
   });
 
   it('falls back to the application description rather than publishing none', () => {
@@ -140,13 +140,13 @@ describe('RouteTitleStrategy', () => {
 
   it('lets a child that states its own description keep it', () => {
     const { strategy, locale, snapshot } = strategyWith(
-      [{ description: 'catalogue.description' }, { description: 'library.description' }],
+      [{ description: 'catalogue.description' }, { description: 'workspace.description' }],
       '/ships/Anaconda',
     );
 
     strategy.updateTitle(snapshot);
 
-    expect(locale.description()).toBe(BUNDLED_ENGLISH['library.description']);
+    expect(locale.description()).toBe(BUNDLED_ENGLISH['workspace.description']);
   });
 
   it('publishes the production address of the route, not of wherever it is served', () => {
@@ -172,7 +172,7 @@ describe('RouteTitleStrategy', () => {
     // The order a non-English session actually starts in: the route is entered
     // under bundled English, and the catalogue lands behind it.
     const { strategy, locale, snapshot } = strategyWith([
-      { title: 'catalogue.title', description: 'library.description' },
+      { title: 'catalogue.title', description: 'workspace.description' },
     ]);
     strategy.updateTitle(snapshot);
     expect(locale.page()).toBe(BUNDLED_ENGLISH['catalogue.title']);
@@ -180,7 +180,7 @@ describe('RouteTitleStrategy', () => {
     const german: MessageCatalogue = {
       ...BUNDLED_ENGLISH,
       'catalogue.title': 'Schiffsbaukasten',
-      'library.description': 'Verwalte die gespeicherten Builds.',
+      'workspace.description': 'Rüste einen Rumpf aus.',
     };
     locale.commitCandidate(
       { requested: 'de', catalogue: german, source: 'asset', failure: null },
@@ -188,7 +188,7 @@ describe('RouteTitleStrategy', () => {
     );
 
     expect(locale.page()).toBe('Schiffsbaukasten');
-    expect(locale.description()).toBe('Verwalte die gespeicherten Builds.');
+    expect(locale.description()).toBe('Rüste einen Rumpf aus.');
   });
 });
 

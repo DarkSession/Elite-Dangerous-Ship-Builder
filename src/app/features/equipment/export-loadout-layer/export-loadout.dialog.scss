@@ -1,0 +1,77 @@
+@use '../../../../styles/responsive' as layout;
+
+/*
+ * Canvas 1a's export layer: a fixed format list beside the content, divided by
+ * one amber hairline that runs from under the title bar to the foot of the
+ * panel. The same two regions the ship tool's export layer draws, and the same
+ * bounds — the layer's body is flush, so each region carries its own padding.
+ *
+ * Below the medium breakpoint the list becomes a strip above the payload, which
+ * is the same choice group in the same layer.
+ */
+.export-loadout {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.export-loadout__formats {
+  // A grid item's automatic minimum is its own min-content width, so without
+  // this a long translated format name pushes the list past the width it is
+  // drawn at and takes the room from the payload beside it.
+  min-inline-size: 0;
+  padding-block: var(--ednb-space-panel) 0;
+  padding-inline: var(--ednb-space-panel);
+}
+
+.export-loadout__content {
+  @include layout.stack(var(--ednb-space-stack));
+
+  min-inline-size: 0;
+  // One height for all three formats. The payload is twelve rows and the link
+  // is one line, so choosing between them must not move the layer under the
+  // hand that chose. A floor and not a cap: a refusal is a state of the panel
+  // and still grows it.
+  min-block-size: var(--ednb-layout-export-content);
+  padding-block: var(--ednb-space-stack) var(--ednb-space-panel);
+  padding-inline: var(--ednb-space-panel);
+}
+
+// The canvas's own pair at the payload's trailing edge, wrapping rather than
+// squeezing where the layer is narrow, with what was written stated across
+// from them.
+.export-loadout__actions {
+  @include layout.wrapping-row(var(--ednb-space-inline));
+
+  justify-content: flex-end;
+}
+
+// `#ge-exp-meta`: the format, what it carries and how large it came out, in the
+// mono face every count on this bench is set in. It takes the room the buttons
+// do not, and wraps onto its own line before it squeezes them.
+.export-loadout__meta {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-meta));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-family: var(--ednb-font-metric);
+  text-wrap: pretty;
+}
+
+@include layout.medium-up {
+  .export-loadout {
+    grid-template-columns:
+      minmax(0, min(var(--ednb-layout-layer-aside), 35%))
+      minmax(0, 1fr);
+  }
+
+  .export-loadout__formats {
+    padding: var(--ednb-space-lg);
+    border-inline-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-grid);
+  }
+
+  .export-loadout__content {
+    min-block-size: var(--ednb-layout-export-content-wide);
+    padding: var(--ednb-space-panel);
+  }
+}

@@ -414,52 +414,6 @@
   @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
 }
 
-// Canvas 1a draws the bar's trailing edge as `OPEN SAVED BUILD \u00b7 6`,
-// `IMPORT`, `?` — the screen a Commander can move to first, then what they can
-// do here, then help. It is the one artboard that draws a navigation chip at
-// all: canvas 1c's bar has none, so it settles the order of the actions among
-// themselves and says nothing about where a chip would go. The navigation
-// therefore leads, which is where the artboard that draws it puts it.
-
-.frame__navigation-list {
-  @include layout.wrapping-row(var(--ednb-space-inline-tight));
-
-  list-style: none;
-}
-
-// The reference puts the bar's trailing controls on a quiet plate behind an
-// amber hairline rather than setting them as bare text (canvas 1a
-// "OPEN SAVED BUILD · 6 / IMPORT / ?", canvas 1b "IMPORT / ?").
-.frame__navigation-link {
-  @include layout.control-base(var(--ednb-text-tracking-heading));
-  @include layout.control-secondary;
-
-  min-inline-size: 0;
-  padding-inline: var(--ednb-space-inline-loose);
-  text-decoration: none;
-}
-
-// The current entry takes the amber fill the reference gives an active
-// segment. It is not the only carrier: `aria-current` states the same thing.
-.frame__navigation-link[aria-current='page'] {
-  @include layout.control-primary;
-}
-
-// The same hover the bar's actions take. A link and a button sitting in one row
-// and reacting differently to the pointer reads as one of them being inert, and
-// the reference draws no such distinction between the bar's controls (Commander
-// request 2026-08-27). Hover is an enhancement either way: nothing is only
-// reachable through it, because a touch device has no hover at all.
-@media (hover: hover) {
-  .frame__navigation-link:hover {
-    background-color: var(--ednb-surface-accent-selected);
-  }
-
-  .frame__navigation-link[aria-current='page']:hover {
-    background-color: var(--ednb-text-accent-strong);
-  }
-}
-
 .frame__actions {
   @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }
@@ -522,8 +476,7 @@
 // moved as a Commander opened a build (`$mode-bar-folded-max`, which carries
 // how the width was chosen; Commander request 2026-08-28).
 @include layout.bar-folded {
-  .frame__actions,
-  .frame__navigation {
+  .frame__actions {
     display: none;
   }
 
@@ -559,6 +512,15 @@
 // (wave 9).
 .frame__main {
   flex: 1 1 auto;
+
+  // A column, so a screen that draws to the bottom of the shell can say so. In
+  // block layout a routed page is content-height and a percentage floor on it
+  // resolves against nothing, because the height this box has is one the shell
+  // stretched it to rather than one it was given. Every page that does not ask
+  // to grow is laid out exactly as it was: a column flex item keeps its content
+  // height and takes the full width, which is what it had.
+  display: flex;
+  flex-direction: column;
 
   // The page stacks inside itself. Every `z-index` a screen sets is about the
   // order of that screen's own parts — a mark over a hull plate, a fill over a

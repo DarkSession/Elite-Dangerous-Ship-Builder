@@ -1,0 +1,204 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's `MODIFICATION SLOTS` block: a ruled heading over a two-column
+// grid of cells, each a numbered square beside a name and a status line.
+:host {
+  display: block;
+}
+
+.slots {
+  @include layout.stack(var(--ednb-space-md));
+
+  padding-inline: var(--ednb-space-3xl);
+}
+
+.slots__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+}
+
+.slots__heading {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.slots__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+// Canvas 1a's `grid-template-columns: 1fr 1fr` — two columns, four slots, two
+// rows — and canvas 1b's single file. Two exactly, not as many as fit: an
+// `auto-fit` track with a floor put four across the bench's own column and
+// squeezed `CHOOSE A MODIFICATION` onto three lines.
+.slots__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ednb-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@include layout.container-medium-up(item) {
+  .slots__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.slots__slot {
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  // Canvas 1b gives a slot read on its own the height of a row rather than of
+  // its own two lines; canvas 1a's wide cell is `padding: 10px 12px` and
+  // nothing more, so the floor comes back off at the width that draws two
+  // across.
+  min-block-size: var(--ednb-layout-bench-row-compact);
+  display: flex;
+  align-items: center;
+  // Canvas 1a's `padding: 10px 12px; gap: 10px`.
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-md) var(--ednb-space-lg);
+  background-color: var(--ednb-surface-row);
+  // Dashed while the slot stands open and nothing is in it, as the canvas
+  // draws it: an outline for something a Commander may still put there.
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-control-quiet);
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  transition:
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
+}
+
+// A slot that holds something is drawn quieter than one still open: the canvas
+// gives an empty slot a dashed `amber-a28` and a filled one a solid `amber-a18`,
+// because the open one is the invitation. At one weight for both, a full block
+// of slots shouted as loudly as an empty one.
+.slots__slot--filled {
+  background-color: var(--ednb-surface-panel-raised);
+  border-style: solid;
+  border-color: var(--ednb-border-region);
+}
+
+.slots__slot--locked {
+  background-color: transparent;
+  border-style: solid;
+  border-color: var(--ednb-border-decorative);
+  color: var(--ednb-text-faint);
+  // The canvas draws a locked slot as a different element altogether
+  // (`.pe-locked`), with no pointer on it and no hover: there is nothing behind
+  // it to open.
+  cursor: default;
+}
+
+.slots__number {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-count));
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // The canvas's own 20px square. Not the ship builder's numbered step, which
+  // is 16px and shared: the same borrowing made the ledger the first thing on
+  // this screen that did not read as the design.
+  inline-size: var(--ednb-layout-slot-badge);
+  block-size: var(--ednb-layout-slot-badge);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control-quiet);
+}
+
+// Canvas 1a's `margin-top: 6px` between the name and the line under it. At the
+// 2px this had, the two were one block rather than a name and its status.
+.slots__identity {
+  @include layout.stack(var(--ednb-space-xs));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.slots__name {
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-emphasis);
+  color: var(--ednb-text-primary);
+}
+
+.slots__name--empty {
+  font-weight: var(--ednb-text-weight-prose);
+  font-style: italic;
+  color: var(--ednb-text-subtle);
+}
+
+.slots__status {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+}
+
+.slots__mark {
+  flex: none;
+  inline-size: var(--ednb-text-size-micro);
+  color: var(--ednb-text-faint);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-micro);
+  stroke-width: 1.1;
+}
+
+.slots__slot--locked,
+.slots__slot--locked .slots__name,
+.slots__slot--locked .slots__number {
+  color: var(--ednb-text-faint);
+}
+
+// Declared last so it wins on source order: a container query weighs the same
+// as the rule it is undoing.
+@include layout.container-medium-up(item) {
+  .slots__slot {
+    min-block-size: 0;
+  }
+}
+
+// The slot whose picker is open, marked as the canvas marks a selected row: a
+// wash across the cell, a solid amber edge and an inset leading marker, with
+// the number filled and the name in the lightest amber. The picker itself
+// stands directly under it, so without this the block that opened belonged to
+// nothing on screen.
+.slots__slot--open {
+  background-color: transparent;
+  background-image: var(--ednb-surface-row-opened);
+  border-style: solid;
+  border-color: var(--ednb-border-accent);
+  box-shadow: var(--ednb-elevation-opened);
+}
+
+.slots__slot--open .slots__number {
+  background-color: var(--ednb-surface-accent-solid);
+  border-color: var(--ednb-border-accent);
+  color: var(--ednb-text-on-accent);
+}
+
+.slots__slot--open .slots__name {
+  color: var(--ednb-text-accent-opened);
+}
+
+// `.pe-slot:not([data-active]):hover { background: #1a1917; border-color:
+// rgba(255,140,26,.55) }`, and the open one brightens what it already carries
+// rather than taking a second ground. A locked slot is a `.pe-locked` on the
+// canvas, which carries no hover and no pointer at all.
+@media (hover: hover) {
+  .slots__slot:not(.slots__slot--locked):not(.slots__slot--open):hover {
+    background-color: var(--ednb-surface-panel-hover);
+    border-color: var(--ednb-border-cell-hover);
+  }
+
+  .slots__slot--open:hover {
+    filter: var(--ednb-effect-lit);
+  }
+}

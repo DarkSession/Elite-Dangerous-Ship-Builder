@@ -1,0 +1,109 @@
+@if (item(); as item) {
+  <!-- `data-target` states which item the column is about, so a test can read
+       the decision the ledger made rather than inferring it from the name. -->
+  <article class="item" [attr.data-target]="item.target" [attr.aria-labelledby]="headingId">
+    <header class="item__header">
+      <!-- Canvas 1b's band. Wide it is not a band at all: the wrapper takes
+           `display: contents` and its two children join the header's own row
+           beside the ladder, which is canvas 1a's header. -->
+      <div class="item__bar">
+        @if (showBack()) {
+          <!-- Canvas 1b's `←`: the way back out of the drill-in, named in words
+             rather than by the glyph alone. -->
+          <button class="item__back" type="button" (click)="closed.emit()">
+            <span aria-hidden="true">←</span>
+            <span class="visually-hidden">{{ backLabel() }}</span>
+          </button>
+        }
+
+        <div class="item__identity">
+          <h2 class="item__name" [id]="headingId">
+            <edsb-game-text
+              [text]="item.name.text"
+              [language]="item.name.language"
+              [translationState]="item.name.translationState"
+            />
+          </h2>
+          <p class="item__subtitle">{{ item.subtitle }}</p>
+        </div>
+      </div>
+
+      <!-- The ship tool's own ladder, drawn as canvas 1a draws this one: the
+           chosen grade filled and the rest bare. An empty mount publishes no
+           grade, so it draws no ladder rather than an empty one. -->
+      @if (item.grades.length > 0) {
+        <edsb-grade-selector
+          class="item__grades"
+          [grades]="item.grades"
+          [selected]="item.grade"
+          [cellLabels]="gradeLabels()"
+          [asSteps]="true"
+          (chosen)="gradeChosen.emit($event)"
+        />
+      }
+    </header>
+
+    <!--
+      What else could go here. The canvas moved this block above the figures on
+      2026-09-04: swapping the item is a choice about the whole column, so the
+      figures a Commander reads are the ones belonging to the row they just
+      pressed. Wide it sits under the grade ladder (`#pe-alt` before
+      `#pe-stats`); compact it opens the scrolling body above the ladder
+      (`$('#me-dbody').innerHTML = altHtml + h`), which the stylesheet orders on
+      the item's own container query.
+
+      Canvas 1a lays them two across (`#pe-alt` is `grid-template-columns: 1fr
+      1fr`) and canvas 1b runs them down the sheet it has already drilled into;
+      the list decides which from its own width.
+    -->
+    <div class="item__alternatives">
+      <div class="item__rule">
+        <h3 class="item__step">{{ item.chooserTitle }}</h3>
+        <span class="item__line" aria-hidden="true"></span>
+      </div>
+
+      <!-- The same rows the gate draws: the 2026-09-04 revision made its suit
+           list this one, so one row shape serves both. -->
+      <edsb-choice-list
+        [choices]="alternatives()"
+        [label]="item.chooserTitle"
+        [asPairs]="true"
+        (chosen)="alternativeChosen.emit($event)"
+      />
+    </div>
+
+    <!-- The canvas switches the grid on what the item is: `1fr 1fr` for a
+         suit's figures and `repeat(4, 1fr)` for a weapon's eight. -->
+    <edsb-metric-group
+      class="item__attributes"
+      [class.metric-group--quad]="item.target !== 'suit'"
+      [class.metric-group--pair]="item.target === 'suit'"
+      [label]="attributesLabel()"
+      [metrics]="item.attributes"
+    />
+
+    @if (item.slots; as slots) {
+      <edsb-modification-slots
+        [slots]="slots"
+        [heading]="item.slotsHeading"
+        [opened]="openSlot()"
+        (openSlot)="slotOpened.emit($event)"
+      />
+    }
+
+    <!-- Canvas 1a's `#pe-pick`: the slot picker is a sibling of the slot grid
+         with no `position` on it at all, so it expands in place under the
+         slots and pushes what follows down. What goes here is the page's, so
+         the item view neither knows nor cares which slot is open. -->
+    <ng-content />
+
+    @if (item.noUpgradeNotice; as notice) {
+      <!-- Four locked slots with nothing to explain them would say the suit
+           could be upgraded and this bench would not let you. It says what is
+           true instead (spec Edge Cases). -->
+      <p class="item__notice">{{ notice }}</p>
+    }
+  </article>
+} @else {
+  <p class="item__empty">{{ noSelectionLabel() }}</p>
+}

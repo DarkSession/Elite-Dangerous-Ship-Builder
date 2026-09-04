@@ -1,0 +1,962 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet
+        ><meta name="design_doc_mode" content="canvas" /><link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" /><link
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+          rel="stylesheet"
+        /><style>
+          body {
+            margin: 0;
+            background: #121213;
+            font-family: Barlow, system-ui, sans-serif;
+          }
+          html {
+            background: #121213;
+          }
+          a {
+            color: var(--amber);
+            text-decoration: none;
+          }
+          a:hover {
+            color: var(--amber-3);
+          }
+          .dv-turn {
+            padding: 40px 44px 32px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            scroll-margin-top: 16px;
+          }
+          .dv-thd {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin: 0 0 20px;
+          }
+          .dv-tid {
+            font:
+              600 10px ui-monospace,
+              Menlo,
+              monospace;
+            padding: 3px 7px;
+            background: var(--amber);
+            color: #121213;
+            border-radius: 2px;
+            text-decoration: none;
+          }
+          .dv-tname {
+            font:
+              600 13px/1.2 Barlow,
+              sans-serif;
+            color: #e3dbd0;
+            letter-spacing: 0.06em;
+          }
+          .dv-opts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 34px;
+            align-items: flex-start;
+          }
+          .dv-opt {
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            scroll-margin-top: 16px;
+          }
+          .dv-oid {
+            font:
+              600 10.5px ui-monospace,
+              Menlo,
+              monospace;
+            padding: 3px 7px;
+            background: var(--amber-a16);
+            color: var(--amber-2);
+            border-radius: 2px;
+            text-decoration: none;
+          }
+          .dv-olabel {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font:
+              400 11px/1.3 Barlow,
+              sans-serif;
+            color: rgba(227, 219, 208, 0.55);
+          }
+          .dv-card {
+            max-width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--amber-a2);
+            overflow: hidden;
+          }
+          .dv-opt:target .dv-oid {
+            background: var(--amber);
+            color: #121213;
+          }
+          .hm-tool {
+            transition:
+              background-color 0.14s ease,
+              border-color 0.14s ease,
+              transform 0.14s ease;
+          }
+          .hm-tool:hover {
+            background: #151412 !important;
+            border-color: rgba(255, 140, 26, 0.55) !important;
+          }
+          .hm-tool:hover .hm-go {
+            color: #ffb060 !important;
+            border-color: rgba(255, 140, 26, 0.7) !important;
+          }
+          .hm-btn:hover {
+            border-color: rgba(255, 140, 26, 0.7) !important;
+            color: #ffb060 !important;
+          }
+          .hm-tab {
+            transition:
+              color 0.12s ease,
+              background-color 0.12s ease;
+          }
+          .hm-tab:hover {
+            background: rgba(255, 140, 26, 0.08);
+            color: #ffb060 !important;
+          }
+        </style>
+        <style>
+          :root {
+            --bg: #0b0b0c;
+            --panel: #101010;
+            --panel-1: #131313;
+            --panel-2: #141414;
+            --panel-4: #161615;
+            --amber: #ff8c1a;
+            --amber-2: #ffa54d;
+            --amber-3: #ffb060;
+            --ink: #e8ded1;
+            --ink-2: #ddd3c6;
+            --good: #8fd94a;
+            --ink-8: rgba(232, 222, 209, 0.8);
+            --ink-7: rgba(232, 222, 209, 0.7);
+            --ink-66: rgba(232, 222, 209, 0.66);
+            --ink-62: rgba(232, 222, 209, 0.62);
+            --ink-55: rgba(232, 222, 209, 0.55);
+            --ink-5: rgba(232, 222, 209, 0.5);
+            --ink-48: rgba(232, 222, 209, 0.48);
+            --ink-45: rgba(232, 222, 209, 0.45);
+            --ink-42: rgba(232, 222, 209, 0.42);
+            --ink-38: rgba(232, 222, 209, 0.38);
+            --ink-32: rgba(232, 222, 209, 0.32);
+            --ink-3: rgba(232, 222, 209, 0.3);
+            --ink-18: rgba(232, 222, 209, 0.18);
+            --amber-a7: rgba(255, 140, 26, 0.7);
+            --amber-a5: rgba(255, 140, 26, 0.5);
+            --amber-a45: rgba(255, 140, 26, 0.45);
+            --amber-a4: rgba(255, 140, 26, 0.4);
+            --amber-a35: rgba(255, 140, 26, 0.35);
+            --amber-a3: rgba(255, 140, 26, 0.3);
+            --amber-a25: rgba(255, 140, 26, 0.25);
+            --amber-a2: rgba(255, 140, 26, 0.2);
+            --amber-a18: rgba(255, 140, 26, 0.18);
+            --amber-a16: rgba(255, 140, 26, 0.16);
+            --amber-a14: rgba(255, 140, 26, 0.14);
+            --amber-a12: rgba(255, 140, 26, 0.12);
+            --amber-a1: rgba(255, 140, 26, 0.1);
+          }
+        </style>
+      </helmet>
+
+      <section class="dv-turn" id="t1">
+        <div class="dv-thd">
+          <a class="dv-tid" href="#t1">1</a><span class="dv-tname">START PAGE — TOOL SELECTOR</span>
+        </div>
+        <div class="dv-opts">
+          <div class="dv-opt" id="1a">
+            <div class="dv-olabel">
+              <a class="dv-oid" href="#1a">1a</a>Desktop — merged toolbar, tool selector in the
+              middle
+            </div>
+            <div class="dv-card" style="width: 1440px">
+              <div
+                data-screen-label="Start page"
+                style="
+                  background: var(--bg);
+                  color: var(--ink);
+                  min-height: 900px;
+                  display: flex;
+                  flex-direction: column;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    position: relative;
+                    background: var(--panel-4);
+                    border-bottom: 2px solid var(--amber);
+                    padding: 0 20px;
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 20px;
+                      top: 0;
+                      bottom: 0;
+                      display: flex;
+                      align-items: center;
+                      z-index: 2;
+                    "
+                  >
+                    <img
+                      src="./assets/nav-beacon-mark-header.svg"
+                      alt="Nav Beacon"
+                      width="24"
+                      height="24"
+                      style="flex: none; display: block"
+                    />
+                  </div>
+                  <div
+                    style="display: flex; align-items: stretch; height: 30px; padding-left: 42px"
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: stretch;
+                        gap: 2px;
+                        min-width: 0;
+                        flex: 0 1 auto;
+                        overflow: hidden;
+                      "
+                    >
+                      <a
+                        class="hm-tab"
+                        href="./Ship Builder.dc.html"
+                        style="
+                          display: flex;
+                          flex: none;
+                          align-items: center;
+                          padding: 0 12px;
+                          border-bottom: 2px solid transparent;
+                          font:
+                            700 10.5px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.16em;
+                          white-space: nowrap;
+                          color: var(--ink-48);
+                          text-decoration: none;
+                        "
+                        >SHIP BUILDER</a
+                      >
+                      <a
+                        class="hm-tab"
+                        href="./Equipment Builder.dc.html"
+                        style="
+                          display: flex;
+                          flex: none;
+                          align-items: center;
+                          padding: 0 12px;
+                          border-bottom: 2px solid transparent;
+                          font:
+                            700 10.5px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.16em;
+                          white-space: nowrap;
+                          color: var(--ink-48);
+                          text-decoration: none;
+                        "
+                        >EQUIPMENT BUILDER</a
+                      >
+                      <div
+                        style="
+                          display: flex;
+                          flex: none;
+                          align-items: center;
+                          padding: 0 12px;
+                          font:
+                            700 10.5px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.16em;
+                          white-space: nowrap;
+                          color: var(--ink-3);
+                        "
+                      >
+                        ⋯
+                      </div>
+                    </div>
+                    <div style="flex: 1; min-width: 12px"></div>
+                    <div style="display: flex; align-items: center; flex: none">
+                      <div
+                        style="
+                          width: 22px;
+                          height: 22px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          background: var(--amber-a14);
+                          font:
+                            700 7.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-3);
+                        "
+                      >
+                        CH
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 14px;
+                      height: 40px;
+                      padding-left: 42px;
+                      background: linear-gradient(
+                          to right,
+                          transparent 0,
+                          transparent 42px,
+                          var(--amber-a12) 42px,
+                          var(--amber-a12) 100%
+                        )
+                        top/100% 1px no-repeat;
+                    "
+                  >
+                    <div
+                      style="
+                        font:
+                          700 15px/1 'Barlow Condensed',
+                          sans-serif;
+                        letter-spacing: 0.18em;
+                        color: var(--amber-3);
+                        flex: none;
+                      "
+                    >
+                      NAV BEACON
+                    </div>
+                    <div style="flex: 1; min-width: 12px"></div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex: none">
+                      <div
+                        class="hm-btn"
+                        style="
+                          height: 32px;
+                          display: flex;
+                          align-items: center;
+                          padding: 0 14px;
+                          border: 1px solid var(--amber-a35);
+                          font:
+                            600 10px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.18em;
+                          color: var(--amber-2);
+                          cursor: pointer;
+                        "
+                      >
+                        IMPORT
+                      </div>
+                      <div
+                        class="hm-btn"
+                        style="
+                          height: 32px;
+                          display: flex;
+                          align-items: center;
+                          padding: 0 18px;
+                          background: var(--amber);
+                          font:
+                            700 10px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.18em;
+                          color: var(--bg);
+                          cursor: pointer;
+                        "
+                      >
+                        OPEN BUILD
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 74px 40px 40px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 100%;
+                      max-width: 1080px;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 44px;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        align-items: center;
+                        text-align: center;
+                      "
+                    >
+                      <h1
+                        style="
+                          margin: 0;
+                          font:
+                            700 46px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.14em;
+                          color: var(--ink);
+                        "
+                      >
+                        TOOLS FOR COMMANDERS
+                      </h1>
+                      <p
+                        style="
+                          margin: 0;
+                          max-width: 640px;
+                          font:
+                            300 15px/1.6 Barlow,
+                            sans-serif;
+                          color: var(--ink-55);
+                          text-wrap: pretty;
+                        "
+                      >
+                        A growing set of tools for the galaxy.
+                      </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+                      <a
+                        class="hm-tool"
+                        href="./Ship Builder.dc.html"
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          gap: 14px;
+                          padding: 26px 26px 28px;
+                          background: var(--panel-1);
+                          border: 1px solid var(--amber-a18);
+                          text-decoration: none;
+                          color: inherit;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 26px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-3);
+                          "
+                        >
+                          SHIP BUILDER
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 9px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.16em;
+                          "
+                        >
+                          SHIPYARD · OUTFITTING · ANATOMY · POWER
+                        </div>
+                        <p
+                          style="
+                            margin: 0;
+                            font:
+                              300 14px/1.6 Barlow,
+                              sans-serif;
+                            color: var(--ink-62);
+                            text-wrap: pretty;
+                          "
+                        >
+                          Fit any ship slot by slot, set power priorities, apply engineering
+                          blueprints and watch jump range, shields and rebuy move as you go.
+                        </p>
+                      </a>
+
+                      <a
+                        class="hm-tool"
+                        href="./Equipment Builder.dc.html"
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          gap: 14px;
+                          padding: 26px 26px 28px;
+                          background: var(--panel-1);
+                          border: 1px solid var(--amber-a18);
+                          text-decoration: none;
+                          color: inherit;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 26px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-3);
+                          "
+                        >
+                          EQUIPMENT BUILDER
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 9px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.16em;
+                          "
+                        >
+                          SUITS · WEAPONS · GRADES · MODS
+                        </div>
+                        <p
+                          style="
+                            margin: 0;
+                            font:
+                              300 14px/1.6 Barlow,
+                              sans-serif;
+                            color: var(--ink-62);
+                            text-wrap: pretty;
+                          "
+                        >
+                          Build an on-foot loadout: suit and three weapons, grade ladders,
+                          modification slots and the engineers who grant them.
+                        </p>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    justify-content: center;
+                    padding: 18px 20px 20px;
+                    border-top: 1px solid var(--amber-a12);
+                    background: var(--panel);
+                  "
+                >
+                  <p
+                    style="
+                      margin: 0;
+                      max-width: 880px;
+                      text-align: center;
+                      font:
+                        300 10.5px/1.6 Barlow,
+                        sans-serif;
+                      color: var(--ink-32);
+                      text-wrap: pretty;
+                    "
+                  >
+                    Nav Beacon was created using assets and imagery from Elite Dangerous, with the
+                    permission of Frontier Developments plc, for non-commercial purposes. It is not
+                    endorsed by nor reflects the views or opinions of Frontier Developments and no
+                    employee of Frontier Developments was involved in the making
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dv-opt" id="1b">
+            <div class="dv-olabel">
+              <a class="dv-oid" href="#1b">1b</a>Mobile — stacked selector
+            </div>
+            <div class="dv-card" style="width: 390px">
+              <div
+                data-screen-label="Start page — mobile"
+                style="
+                  width: 390px;
+                  height: 844px;
+                  background: var(--bg);
+                  color: var(--ink);
+                  display: flex;
+                  flex-direction: column;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    position: relative;
+                    background: var(--panel-4);
+                    border-bottom: 2px solid var(--amber);
+                  "
+                >
+                  <div
+                    style="
+                      position: absolute;
+                      left: 16px;
+                      top: 0;
+                      bottom: 0;
+                      display: flex;
+                      align-items: center;
+                      z-index: 2;
+                    "
+                  >
+                    <img
+                      src="./assets/nav-beacon-mark-header.svg"
+                      alt="Nav Beacon"
+                      width="21"
+                      height="21"
+                      style="flex: none; display: block"
+                    />
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: stretch;
+                      height: 34px;
+                      padding-left: 48px;
+                      padding-right: 14px;
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: stretch;
+                        gap: 2px;
+                        min-width: 0;
+                        flex: 1;
+                        overflow: hidden;
+                      "
+                    >
+                      <a
+                        class="hm-tab"
+                        href="./Ship Builder.dc.html"
+                        style="
+                          display: flex;
+                          flex: none;
+                          align-items: center;
+                          padding: 0 10px;
+                          border-bottom: 2px solid transparent;
+                          font:
+                            700 10px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.14em;
+                          white-space: nowrap;
+                          color: var(--ink-48);
+                          text-decoration: none;
+                        "
+                        >SHIP</a
+                      >
+                      <a
+                        class="hm-tab"
+                        href="./Equipment Builder.dc.html"
+                        style="
+                          display: flex;
+                          flex: none;
+                          align-items: center;
+                          padding: 0 10px;
+                          border-bottom: 2px solid transparent;
+                          font:
+                            700 10px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.14em;
+                          white-space: nowrap;
+                          color: var(--ink-48);
+                          text-decoration: none;
+                        "
+                        >EQUIPMENT</a
+                      >
+                      <div
+                        style="
+                          display: flex;
+                          flex: none;
+                          align-items: center;
+                          padding: 0 10px;
+                          font:
+                            700 10px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.14em;
+                          color: var(--ink-3);
+                        "
+                      >
+                        ⋯
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      height: 40px;
+                      padding-left: 48px;
+                      padding-right: 16px;
+                      background: linear-gradient(
+                          to right,
+                          transparent 0,
+                          transparent 48px,
+                          var(--amber-a12) 48px,
+                          var(--amber-a12) 100%
+                        )
+                        top/100% 1px no-repeat;
+                    "
+                  >
+                    <div
+                      style="
+                        font:
+                          700 13px/1 'Barlow Condensed',
+                          sans-serif;
+                        letter-spacing: 0.16em;
+                        color: var(--amber-3);
+                        min-width: 0;
+                        flex: 1;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      "
+                    >
+                      NAV BEACON
+                    </div>
+                    <div
+                      class="hm-btn"
+                      title="Tool actions"
+                      style="
+                        flex: none;
+                        width: 30px;
+                        height: 28px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 1px solid var(--amber-a4);
+                        color: var(--amber-2);
+                        font:
+                          600 15px/1 'JetBrains Mono',
+                          monospace;
+                        cursor: pointer;
+                      "
+                    >
+                      ⋯
+                    </div>
+                    <div
+                      style="
+                        width: 24px;
+                        height: 24px;
+                        flex: none;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: var(--amber-a14);
+                        font:
+                          700 7.5px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--amber-3);
+                      "
+                    >
+                      CH
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 22px;
+                    padding: 26px 16px 0;
+                  "
+                >
+                  <div style="display: flex; flex-direction: column; gap: 11px">
+                    <h1
+                      style="
+                        margin: 0;
+                        font:
+                          700 28px/1.05 'Barlow Condensed',
+                          sans-serif;
+                        letter-spacing: 0.12em;
+                        color: var(--ink);
+                      "
+                    >
+                      TOOLS FOR COMMANDERS
+                    </h1>
+                    <p
+                      style="
+                        margin: 0;
+                        font:
+                          300 12.5px/1.55 Barlow,
+                          sans-serif;
+                        color: var(--ink-55);
+                        text-wrap: pretty;
+                      "
+                    >
+                      A growing set of tools for the galaxy.
+                    </p>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 11px">
+                    <a
+                      class="hm-tool"
+                      href="./Ship Builder.dc.html"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 13px;
+                        padding: 15px;
+                        background: var(--panel-1);
+                        border: 1px solid var(--amber-a18);
+                        text-decoration: none;
+                        color: inherit;
+                      "
+                    >
+                      <div
+                        style="
+                          flex: 1;
+                          min-width: 0;
+                          display: flex;
+                          flex-direction: column;
+                          gap: 7px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 17px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-3);
+                          "
+                        >
+                          SHIP BUILDER
+                        </div>
+                        <div
+                          style="
+                            font:
+                              300 11.5px/1.45 Barlow,
+                              sans-serif;
+                            color: var(--ink-55);
+                            text-wrap: pretty;
+                          "
+                        >
+                          Ships, module slots, power priorities, engineering.
+                        </div>
+                      </div>
+                      <div
+                        class="hm-go"
+                        style="
+                          flex: none;
+                          font:
+                            600 13px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-2);
+                        "
+                      >
+                        →
+                      </div>
+                    </a>
+                    <a
+                      class="hm-tool"
+                      href="./Equipment Builder.dc.html"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        gap: 13px;
+                        padding: 15px;
+                        background: var(--panel-1);
+                        border: 1px solid var(--amber-a18);
+                        text-decoration: none;
+                        color: inherit;
+                      "
+                    >
+                      <div
+                        style="
+                          flex: 1;
+                          min-width: 0;
+                          display: flex;
+                          flex-direction: column;
+                          gap: 7px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 17px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-3);
+                          "
+                        >
+                          EQUIPMENT BUILDER
+                        </div>
+                        <div
+                          style="
+                            font:
+                              300 11.5px/1.45 Barlow,
+                              sans-serif;
+                            color: var(--ink-55);
+                            text-wrap: pretty;
+                          "
+                        >
+                          Suits, handheld weapons, grades, modifications.
+                        </div>
+                      </div>
+                      <div
+                        class="hm-go"
+                        style="
+                          flex: none;
+                          font:
+                            600 13px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-2);
+                        "
+                      >
+                        →
+                      </div>
+                    </a>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    padding: 12px 16px 14px;
+                    border-top: 1px solid var(--amber-a12);
+                    background: var(--panel);
+                  "
+                >
+                  <p
+                    style="
+                      margin: 0;
+                      font:
+                        300 9px/1.5 Barlow,
+                        sans-serif;
+                      color: var(--ink-32);
+                      text-wrap: pretty;
+                    "
+                  >
+                    Nav Beacon was created using assets and imagery from Elite Dangerous, with the
+                    permission of Frontier Developments plc, for non-commercial purposes. It is not
+                    endorsed by nor reflects the views or opinions of Frontier Developments and no
+                    employee of Frontier Developments was involved in the making
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="dv-next">
+          Top bar carried over from the builders; the middle is the tool selector.
+        </p>
+      </section>
+    </x-dc>
+    <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1540}}'></script>
+  </body>
+</html>

@@ -6,8 +6,8 @@ import {
   MALFORMED_RECORD,
   NAMED_RECORD_V1,
   UNSUPPORTED_NEWER_RECORD,
-} from '../../domain/ships/build/fixtures/records';
-import type { RecordDraft } from '../../domain/ships/build/stored-build.serializer';
+} from '../../domain/records/fixtures/records';
+import type { RecordDraft } from '../../domain/records/local-record.serializer';
 import { LocalRecordRepository } from './local-record.repository';
 import { MemoryStorage, provideMemoryStorage, quotaError } from './storage.spec-helpers';
 import { recordKey } from './storage-keys';
@@ -32,8 +32,11 @@ function draft(id: string, overrides: Partial<RecordDraft> = {}): RecordDraft {
     modifiedAt: '2026-01-02T03:04:05.000Z',
     name: 'Anaconda explorer',
     note: null,
-    validation: { valid: true, complete: true },
-    build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+    payload: {
+      tool: 'ship',
+      build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+      validation: { valid: true, complete: true },
+    },
     sourceNamed: null,
     ...overrides,
   };

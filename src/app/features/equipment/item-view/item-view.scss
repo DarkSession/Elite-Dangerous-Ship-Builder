@@ -1,0 +1,217 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's middle column: a header row of identity and grade ladder over a
+// ruled grid of figures.
+:host {
+  display: block;
+  min-inline-size: 0;
+
+  // The blocks inside compose on the column they were given rather than on the
+  // window: canvas 1a draws the attribute grid four across and the slots and
+  // the alternatives two across, and canvas 1b draws every one of them in a
+  // single file. The seam is the column, so it is measured here.
+  container-type: inline-size;
+  container-name: item;
+}
+
+// The canvas's own seams down this column: `margin: 20px 24px 0` under the
+// header, then `padding: 22px 24px 0` on the slots and `24px` on the swap
+// block. One step of 22px rather than the workspace's 34px — at that gap the
+// picker sat a third of the way down the column from the slots it belongs to.
+.item {
+  @include layout.stack(var(--ednb-space-4xl));
+
+  padding-block-end: var(--ednb-space-4xl);
+}
+
+// Compact the header is not a box at all. Canvas 1b's band is `#me-detail`'s own
+// header and the ladder belongs to the scrolling body under it — and the
+// 2026-09-04 revision put the swap block at the top of that body, above the
+// ladder (`$('#me-dbody').innerHTML = altHtml + h`, where `h` opens on `GRADE`).
+// So the header's two children join the column directly and the column orders
+// them: band, alternatives, ladder, then the rest as they are written.
+.item__header {
+  display: contents;
+}
+
+.item > * {
+  order: 4;
+}
+
+.item__bar {
+  order: 1;
+}
+
+.item > .item__alternatives {
+  order: 2;
+}
+
+.item__grades {
+  order: 3;
+}
+
+// Canvas 1b's `#me-detail` header: a band on the raised fill under an amber
+// rule, carrying the way back, the name and its code line and nothing else —
+// the ladder stands below it in the body.
+.item__bar {
+  @include layout.wrapping-row(var(--ednb-space-inline));
+
+  align-items: center;
+  min-block-size: var(--ednb-layout-detail-bar);
+  padding-inline: var(--ednb-space-2xl);
+  background-color: var(--ednb-surface-panel-hover);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-card);
+}
+
+// Canvas 1b's `border: 1px solid var(--amber-a3); color: var(--amber-2)`. The
+// one control on the compact bench that navigates, drawn in the colour that
+// means actionable on this screen rather than in the ink of something spent.
+.item__back {
+  @include layout.target-baseline;
+
+  flex: none;
+  background-color: transparent;
+  border-color: var(--ednb-border-card);
+  color: var(--ednb-text-accent);
+}
+
+.item__identity {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.item__name {
+  @include layout.display-title(var(--ednb-text-size-heading-md), var(--ednb-text-tracking-code));
+
+  margin: 0;
+}
+
+.item__subtitle {
+  margin: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-muted);
+}
+
+// Canvas 1a's ladder: `GRADE` over one row of cells, at the trailing edge of
+// the header. The width is declared rather than left to the control, which
+// cannot size to its own cells — the group is a `fieldset`, whose intrinsic
+// width is its legend's, so an auto-width box collapses to the width of the
+// word `GRADE` and the row folds to one cell a line.
+.item__grades {
+  flex: none;
+  // Canvas 1b runs the five cells across the whole of the drilled-in column
+  // (`flex: 1` each over `#me-dbody`'s width); the declared measure is canvas
+  // 1a's, where the ladder stands beside a name rather than under one.
+  inline-size: 100%;
+  padding-inline: var(--ednb-space-2xl);
+}
+
+.item__attributes {
+  padding-inline: var(--ednb-space-3xl);
+}
+
+// Canvas 1a's `PRIMARY WEAPON` block: the same ruled heading the slots below it
+// carry, over the alternatives themselves.
+.item__alternatives {
+  @include layout.stack(var(--ednb-space-md));
+
+  padding-inline: var(--ednb-space-3xl);
+}
+
+.item__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex-wrap: nowrap;
+}
+
+.item__step {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.item__line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+.item__notice,
+.item__empty {
+  margin: 0;
+  padding-inline: var(--ednb-space-3xl);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
+  text-wrap: pretty;
+}
+
+.item__empty {
+  padding-block: var(--ednb-space-xl);
+}
+
+.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// Canvas 1a's column header is a 26px name over a rule; canvas 1b's is a 56px
+// bar carrying a 16px name and its code line, because the name there is a
+// heading for a screen rather than for a column beside two others.
+@include layout.container-medium-up(item) {
+  // Canvas 1a's header: the name, its code line and the ladder on one row over
+  // a rule. The bar the narrow branch draws is not a band there — it is the
+  // top of a column that already has two beside it.
+  .item__header {
+    @include layout.wrapping-row(var(--ednb-space-inline-loose));
+
+    align-items: flex-end;
+    justify-content: space-between;
+    // Canvas 1a's `padding: 20px 24px 16px`. The top of the column is the
+    // header's own, which is why the block below carries none: compact, canvas
+    // 1b runs its band flush to the strip above it.
+    padding-inline: var(--ednb-space-3xl);
+    padding-block: var(--ednb-space-4xl) var(--ednb-space-2xl);
+    border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+  }
+
+  .item__bar {
+    display: contents;
+  }
+
+  // Wide the column reads in the order it is written, so the compact ordering
+  // comes off every child of it. The ladder keeps its `order: 3`: it is a child
+  // of the header row here rather than of the column, so nothing below reaches
+  // it — and last in a `space-between` row is where canvas 1a draws it anyway.
+  .item > *,
+  .item > .item__alternatives {
+    order: 0;
+  }
+
+  .item__grades {
+    padding-inline: 0;
+    inline-size: var(--ednb-layout-grade-ladder);
+  }
+
+  .item__name {
+    font-size: var(--ednb-text-size-heading-item);
+    letter-spacing: var(--ednb-text-tracking-count);
+  }
+}
+
+// `.me-back:hover { color: #ffb060 }` — the edge stays where it is and the
+// glyph brightens, which is what the canvas does to every bare control it
+// records: the close marks, the tabs and the format buttons all answer this way.
+@media (hover: hover) {
+  .item__back:hover {
+    color: var(--ednb-text-accent-strong);
+  }
+}

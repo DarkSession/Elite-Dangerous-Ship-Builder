@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { isShipRecord } from '../../domain/records/local-record';
 import { normalizeReconstructedBuild } from '../../domain/ships/build/build-ingress-normalizer';
 import { reconstructFromSnapshot } from '../../domain/ships/build/build-snapshot.reconstructor';
 import { baselineFingerprint } from '../../domain/ships/build/build-fingerprint';
@@ -52,6 +53,12 @@ export class RecordOpenService {
     }
 
     const record = opened.record;
+    // The ship tool's open path. A loadout is opened by the bench, which owns
+    // the store it would go into; refusing here rather than reaching for its
+    // payload keeps one record from being opened as the other kind of thing.
+    if (!isShipRecord(record)) {
+      return { ok: false, reason: 'This record is a loadout, and belongs to the equipment bench.' };
+    }
     const rebuilt = reconstructFromSnapshot(record.build);
     if (!rebuilt.ok) {
       return { ok: false, reason: rebuilt.reason };

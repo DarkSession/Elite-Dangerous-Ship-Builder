@@ -2451,6 +2451,39 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
     'tools.ship':
       'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
+    'equipment.export.meta':
+      'A composition pattern. Every part of it is translated on its own — the format name, the two counted phrases and `KB` — and what is left here is the separator between them.',
+    'equipment.badge.empty':
+      'A `+` in the row’s leading square where a badge goes: a sign, not a word, and the same sign in every language.',
+    'equipment.count.none':
+      'An em dash where a count would be, on a rule that has nothing to count yet. A punctuation mark, not a word.',
+    'equipment.badge.PrimaryWeapon1':
+      'A two-character mount code on the row’s leading square. The letter is the mount kind’s initial, which German spells the same way (primär, sekundär).',
+    'equipment.badge.PrimaryWeapon2': 'The same mount code, for the second primary mount.',
+    'equipment.badge.SecondaryWeapon': 'The same mount code, for the secondary mount.',
+    'equipment.weapon.meta':
+      'A composition pattern; all three variables and the separator are language-neutral.',
+    'equipment.mount.selected':
+      'A composition pattern; both variables and the separator are language-neutral.',
+    'equipment.grade.short':
+      'The canvas’s own grade chip. G is the in-game abbreviation and German abbreviates Grad the same way.',
+    'equipment.grade.none': 'An em dash standing for a mount with no grade to state.',
+    'equipment.modifications.count':
+      'A composition pattern; both variables and the solidus are language-neutral.',
+    'equipment.attribute.dps': 'The in-game abbreviation for damage per second, not translated.',
+    'equipment.value.perSecond': 'The SI form for “per second”, identical in German.',
+    'equipment.damage.plasma': 'Plasma is the ordinary German word.',
+    'equipment.stats.regen':
+      'The canvas’s own abbreviation over the regeneration figure, with the SI form for “per second”; German abbreviates Regeneration the same way.',
+    'equipment.stats.dps': 'The same in-game abbreviation, in a composition pattern.',
+    'equipment.weapon.figure.unit':
+      'The same in-game abbreviation again, drawn small beside a chooser row’s figure.',
+    'equipment.weapon.mounted':
+      'A composition pattern; both variables and the separator are language-neutral. The words it composes — the weapon class and the mount name — are translated where they are stated.',
+    'equipment.weapon.candidate':
+      'The same pattern with a third variable. Every word in it comes from the package or from a translated message; nothing here is wording.',
+    'equipment.chooser.shieldPoints':
+      'SP is the in-game abbreviation for shield points and is not translated.',
     'shell.status.label': '"Status" is the ordinary German word.',
     'outfitting.status-rail.mode': '"Status" is the ordinary German word.',
     'status.info': '"Information" is the ordinary German word.',
@@ -2501,6 +2534,7 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: both parts are variables, and the colon is language-neutral.',
     'slef.diagnostic.code': '"Code" is the ordinary German word.',
     'slef.export.mode.label': '"Format" is the ordinary German word.',
+    'equipment.export.mode.label': 'The same word, on the bench\u2019s own export layer.',
     'slef.export.mode.slef': 'SLEF JSON is the interchange format\u2019s own name, not a phrase.',
     'outfitting.engineering.materials.merc-coin':
       'Merc Coins is the in-game currency name and is not translated.',

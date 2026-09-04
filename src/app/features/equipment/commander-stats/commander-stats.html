@@ -1,0 +1,75 @@
+@if (stats(); as stats) {
+  <div class="stats">
+    <!-- Canvas 1a and 2a head the column with its own name over a rule. The
+         region was named to a reader and drawn to nobody. -->
+    <div class="stats__title" [class.stats__title--hidden]="compact()">
+      <h2 class="stats__region">{{ regionLabel() }}</h2>
+    </div>
+
+    <!-- Canvas 1a's `ARMOUR` block, over `SHIELDS`. Each reads its own published
+         set: the armour's four sit on the suit's grade and a grade moves them,
+         the shield's four sit on the suit and no grade does. Almanac 0.2.10
+         split them; until then the one published set was drawn in both, because
+         the alternative was stating armour figures nothing published. `Damage
+         Resistance` folds into the armour's four alone, which is where the
+         package points it (`readings/suit-readings.ts`). -->
+    <section class="stats__block" [attr.aria-labelledby]="armourHeadingId">
+      <h2 class="stats__heading" [id]="armourHeadingId">{{ armourLabel() }}</h2>
+
+      <ul class="stats__resistances">
+        @for (resistance of stats.armourResistances; track resistance.key) {
+          <li>
+            <edsb-resistance-bar
+              [label]="resistance.label"
+              [value]="resistance.value"
+              [magnitude]="resistance.magnitude"
+              [negative]="resistance.negative"
+            />
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="stats__block" [attr.aria-labelledby]="shieldsHeadingId">
+      <h2 class="stats__heading" [id]="shieldsHeadingId">{{ shieldsLabel() }}</h2>
+
+      <edsb-metric-group [label]="shieldsLabel()" [metrics]="shieldFigures()" />
+
+      <ul class="stats__resistances">
+        @for (resistance of stats.shieldResistances; track resistance.key) {
+          <li>
+            <edsb-resistance-bar
+              [label]="resistance.label"
+              [value]="resistance.value"
+              [magnitude]="resistance.magnitude"
+              [negative]="resistance.negative"
+            />
+          </li>
+        }
+      </ul>
+    </section>
+
+    <!-- Drawn whether or not anything is carried. Canvas 2a keeps `FIREPOWER`
+         with a dash against every mount: which figures a loadout answers is
+         itself information, and an absent block states none of it. -->
+    <section class="stats__block" [attr.aria-labelledby]="firepowerHeadingId">
+      <h2 class="stats__heading" [id]="firepowerHeadingId">{{ firepowerLabel() }}</h2>
+
+      <ul class="stats__firepower">
+        @for (row of stats.firepower; track row.mount) {
+          <li class="stats__row">
+            <edsb-game-text
+              class="stats__weapon"
+              [text]="row.name.text"
+              [language]="row.name.language"
+              [translationState]="row.name.translationState"
+            />
+            <span class="stats__figure" [class.stats__figure--quiet]="!row.primary">{{
+              row.value
+            }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+}

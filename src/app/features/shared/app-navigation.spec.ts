@@ -11,14 +11,17 @@ describe('AppNavigation tools', () => {
 
   it('offers only the tools this application serves an address for', () => {
     // The canvas names eight and the migration names two. What answers an
-    // address is the ship builder, and a tab that opens nothing is a control
-    // for a thing that does not exist (011/FR-028).
+    // address is the ship builder and the equipment builder, and a tab that
+    // opens nothing is a control for a thing that does not exist (011/FR-028).
     const tools = navigation().tools(NAVIGATION_ROUTES.catalogue);
 
-    expect(tools.map((tool) => tool.href)).toEqual([NAVIGATION_ROUTES.catalogue]);
-    // The tool's full name, as canvas 4c draws it in the tab. The product's tool
-    // is Ship Builder; `Ship` names something else.
-    expect(tools[0].label).toBe('Ship Builder');
+    expect(tools.map((tool) => tool.href)).toEqual([
+      NAVIGATION_ROUTES.catalogue,
+      NAVIGATION_ROUTES.equipment,
+    ]);
+    // Each tool's full name, as canvas 4c draws it in the tab. The product's
+    // tools are Ship Builder and Equipment Builder; `Ship` names something else.
+    expect(tools.map((tool) => tool.label)).toEqual(['Ship Builder', 'Equipment Builder']);
   });
 
   it('names the same tool on every route that tool owns', () => {
@@ -28,20 +31,53 @@ describe('AppNavigation tools', () => {
       NAVIGATION_ROUTES.catalogue,
       `${NAVIGATION_ROUTES.catalogue}/Anaconda`,
       NAVIGATION_ROUTES.build,
-      NAVIGATION_ROUTES.library,
     ]) {
       expect(navigation().tools(path)[0].current).toBe(true);
     }
   });
 
+  it('names the equipment builder on the bench, and the ship tool on neither', () => {
+    const tools = navigation().tools(NAVIGATION_ROUTES.equipment);
+
+    expect(tools.map((tool) => tool.current)).toEqual([false, true]);
+  });
+
   it('marks no tool current on a route no tool owns', () => {
-    expect(navigation().tools('/somewhere-else')[0].current).toBe(false);
+    expect(
+      navigation()
+        .tools('/somewhere-else')
+        .some((tool) => tool.current),
+    ).toBe(false);
   });
 
   it('does not treat a route that merely starts with the same letters as owned', () => {
     // `/shipsomething` is not under `/ships`. A plain prefix test would claim
     // it, and the bar would name a tool that does not serve the address.
-    expect(navigation().tools('/shipsomething')[0].current).toBe(false);
+    expect(
+      navigation()
+        .tools('/shipsomething')
+        .some((tool) => tool.current),
+    ).toBe(false);
+    expect(
+      navigation()
+        .tools('/equipmentsomething')
+        .some((tool) => tool.current),
+    ).toBe(false);
+  });
+
+  it('marks the tool a shared link opens, fragment and query and all', () => {
+    // How a link is opened: `/build#s.…` is a shared build and `/equipment#e.…`
+    // a shared loadout, and the router reports `urlAfterRedirects`, which
+    // carries both. Matched whole, they named no tool at all on the one screen
+    // a Commander most often arrives at from outside (Commander request
+    // 2026-09-04).
+    expect(navigation().tools(`${NAVIGATION_ROUTES.equipment}#e.abc`)[1].current).toBe(true);
+    expect(navigation().tools(`${NAVIGATION_ROUTES.build}#s.abc`)[0].current).toBe(true);
+    expect(navigation().tools(`${NAVIGATION_ROUTES.catalogue}?q=viper`)[0].current).toBe(true);
+
+    // And the insignia reads the same address, so it still knows it is home.
+    expect(navigation().home(`${NAVIGATION_ROUTES.catalogue}?q=viper`)).toBeNull();
+    expect(navigation().home(`${NAVIGATION_ROUTES.equipment}#e.abc`)).not.toBeNull();
   });
 
   it('carries the same address the insignia does, so one registry answers both', () => {

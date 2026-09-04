@@ -1,4 +1,5 @@
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
+import type { EquipmentLoadout } from '../../domain/equipment/loadout-link/equipment-loadout';
 import type { ActiveBuildState } from '../active-build/active-build.models';
 
 /**
@@ -33,4 +34,33 @@ export const FIELDS_EXCLUDED_FROM_LINKS = [
  */
 export function linkPayloadSource(state: ActiveBuildState): ShipLoadout | null {
   return state.loadout;
+}
+
+/**
+ * Everything the bench knows that a loadout link must never carry.
+ *
+ * The same guarantee as the build's, over a smaller store. Which item the item
+ * view is showing is workflow, the record a loadout was opened from is
+ * meaningless in anyone else's browser, and the undo tape is this session's
+ * (013 contracts/equipment-loadout-link.md).
+ */
+export const FIELDS_EXCLUDED_FROM_EQUIPMENT_LINKS = [
+  'selected',
+  'source',
+  'revision',
+  'canUndo',
+  'canRedo',
+] as const;
+
+/**
+ * The only thing the bench's publication is allowed to see.
+ *
+ * The loadout itself: a suit, its grade, what is on each catalogue mount and
+ * what is in each modification slot. Nothing the package can answer is carried,
+ * because nothing the package can answer is reachable from here.
+ */
+export function equipmentLinkPayloadSource(
+  loadout: EquipmentLoadout | null,
+): EquipmentLoadout | null {
+  return loadout;
 }

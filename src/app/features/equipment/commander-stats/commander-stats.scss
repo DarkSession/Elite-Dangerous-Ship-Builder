@@ -1,0 +1,84 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's trailing column: blocks separated by a hairline, each opening
+// with a tracked micro label.
+:host {
+  display: block;
+}
+
+.stats {
+  @include layout.stack(0);
+}
+
+// Canvas 1a: `COMMANDER STATS` in the display face on its own band, closed by
+// the same hairline every block below it carries.
+.stats__title {
+  padding: var(--ednb-space-2xl) var(--ednb-space-3xl);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+}
+
+.stats__region {
+  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
+
+  margin: 0;
+  font-family: var(--ednb-font-heading);
+  font-size: var(--ednb-text-size-micro);
+}
+
+// Canvas 1a's `padding: 16px 18px; gap: 10px` — wider at the edges and tighter
+// inside than the shared workspace steps, which had it the other way round.
+.stats__block {
+  @include layout.stack(var(--ednb-space-md));
+
+  padding: var(--ednb-space-2xl) var(--ednb-space-3xl);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+}
+
+.stats__heading {
+  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-label));
+
+  margin: 0;
+}
+
+.stats__resistances,
+.stats__firepower {
+  @include layout.stack(var(--ednb-space-md));
+
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stats__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ednb-space-inline);
+}
+
+.stats__weapon {
+  min-inline-size: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-caption);
+  color: var(--ednb-text-muted);
+}
+
+// Canvas 1a writes a primary mount's figure in the accent, not in the ink the
+// rest of the line is in: the block's total is read from the primaries, and the
+// accent is what says which rows it came from. A secondary's figure is drawn in
+// ordinary ink. The accent is never the carrier — each row names its own mount.
+.stats__figure {
+  @include layout.micro-label(var(--ednb-text-accent-strong), var(--ednb-text-tracking-count));
+
+  flex: none;
+  font-size: var(--ednb-text-size-caption);
+  text-transform: none;
+}
+
+.stats__figure--quiet {
+  color: var(--ednb-text-primary);
+}
+
+.stats__title--hidden {
+  @include layout.visually-hidden;
+}

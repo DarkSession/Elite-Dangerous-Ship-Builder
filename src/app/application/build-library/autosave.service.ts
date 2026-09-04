@@ -148,9 +148,12 @@ export class AutosaveService {
       modifiedAt: now,
       name: null,
       note: null,
-      validation: this.#active.validation() ?? { valid: false, complete: false },
-      build: toBuildSnapshotV1(loadout),
       sourceNamed: this.#active.sourceNamed(),
+      payload: {
+        tool: 'ship',
+        validation: this.#active.validation() ?? { valid: false, complete: false },
+        build: toBuildSnapshotV1(loadout),
+      },
     });
 
     if (written.ok) {

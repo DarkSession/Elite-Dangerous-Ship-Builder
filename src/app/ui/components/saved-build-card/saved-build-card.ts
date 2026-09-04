@@ -17,7 +17,8 @@ export interface SavedBuild {
   readonly named: boolean;
   /** The one line beneath the title: a note, or which save these edits are of. */
   readonly note: string | null;
-  readonly hull: GameTextPresentation;
+  /** The hull for a ship build, the suit for a loadout. */
+  readonly subject: GameTextPresentation;
   /**
    * How long ago the build was last edited, in the active locale's own words.
    *
@@ -38,8 +39,27 @@ export interface SavedBuild {
    * `aria-hidden` and every other fact in that span says what it is.
    */
   readonly modifiedExact: string;
-  /** The package's verdict when the build was saved, in words. */
-  readonly validation: { readonly label: string; readonly tone: 'success' | 'warning' | 'error' };
+  /**
+   * Which tool made the record, in words.
+   *
+   * The library holds one row shape for two tools, and the column beside the
+   * title carries a hull for one and a suit for the other. Read rather than
+   * drawn, with the row's other read-not-drawn facts: the subject says which
+   * it is to anyone who knows the names, and this says it to everyone else
+   * (013 contracts/loadout-persistence.md).
+   */
+  readonly toolLabel: string;
+  /**
+   * The package's verdict when the build was saved, in words.
+   *
+   * `null` where the tool records none: a loadout is a set of chosen
+   * identities and the equipment library publishes no validity of its own, so
+   * the row says nothing rather than inventing a verdict.
+   */
+  readonly validation: {
+    readonly label: string;
+    readonly tone: 'success' | 'warning' | 'error';
+  } | null;
   /** How many issues that verdict counted, or `null` where it counted none. */
   readonly issues: { readonly count: string; readonly label: string } | null;
   /** How long an unnamed record has left, in words. `null` for a named one. */

@@ -113,3 +113,32 @@ ready, unavailable and stacked states in all ten projects.
 | —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 18   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | mobile        | 18   | As stated in the protocol | —      | not run |
 | —    | —   | Chromium | TalkBack | —     | —        | tablet        | 18   | As stated in the protocol | —      | not run |
+
+## The equipment bench (feature 013)
+
+Step 19 covers `/equipment` end to end. Three states are separate observations
+rather than one: the bench with no suit on it, where every region is drawn and
+exactly one control is live; the bench with a suit on it, where held mounts and
+grade-locked slots have to carry their reason in words; and an address that
+arrived unreadable, where the announcement has to say the bench did not change.
+
+Each configuration is its own observation for the usual reason: the bench draws
+four regions side by side where there is room and one tabbed region where there
+is not, so what a reader walks between the ledger and the figures is a different
+screen at each width.
+
+The automated coverage that does exist for the same requirements is
+`e2e/equipment-builder.spec.ts`, `e2e/equipment-library.spec.ts`,
+`e2e/equipment-link.spec.ts` and `e2e/equipment-accessibility.spec.ts` — every
+control resolved by its accessible name rather than its class, every held and
+grade-locked state asserted to carry its reason as text, the gate's two previews
+asserted to be out of the accessibility tree entirely, and an axe pass, heading
+walk, target measurement, overflow check and clipping check over the empty
+bench, the fitted bench, both choosers and the export layer in all ten
+projects.
+
+| Date | OS  | Browser  | Reader   | Build | Viewport | Configuration | Step | Expected                  | Actual | Result  |
+| ---- | --- | -------- | -------- | ----- | -------- | ------------- | ---- | ------------------------- | ------ | ------- |
+| —    | —   | Firefox  | NVDA     | —     | —        | desktop       | 19   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | mobile        | 19   | As stated in the protocol | —      | not run |
+| —    | —   | Chromium | TalkBack | —     | —        | tablet        | 19   | As stated in the protocol | —      | not run |

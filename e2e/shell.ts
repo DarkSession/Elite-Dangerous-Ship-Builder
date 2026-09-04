@@ -23,11 +23,35 @@ export async function reachShellAction(page: Page, name: RegExp): Promise<void> 
 }
 
 /**
- * Follows one of the screens the bar offers, at whichever width.
+ * Opens the saved builds, at whichever width.
  *
- * Canvas 1c puts them on the bar's trailing edge; canvas 1d puts them in the
- * same `⋮` menu as the actions, because the folded bar is one row. Same list,
- * two placements, and a journey knows only which screen it wants.
+ * They have no address of its own (2026-09-04): the library is a layer over
+ * whatever screen a Commander is on, raised by a shell action. A journey that
+ * used to `goto('/builds')` lands on a screen first and presses the control,
+ * which is the only way in there now is.
+ */
+export async function openLibrary(page: Page): Promise<void> {
+  if (!page.url().startsWith('http')) {
+    await page.goto('/ships');
+  }
+  // Named in whichever language the browser asked for.
+  const layer = page.getByRole('dialog', {
+    name: /^(Saved builds|Gespeicherte Aufbauten)/i,
+  });
+  // A journey that used to re-`goto` the address while the layer was already up
+  // asked for the list it is looking at. Pressing the control again would reach
+  // through the layer for a button the layer is covering.
+  if (!(await layer.isVisible())) {
+    await reachShellAction(page, /^(Open saved build|Gespeicherten Build öffnen)$/);
+  }
+  await expect(layer).toBeVisible();
+}
+
+/**
+ * Follows one of the tools the bar offers, at whichever width.
+ *
+ * Canvas 4c puts them on the tool deck; canvas 1d folds the bar's own controls
+ * into the `⋮` menu beneath it. A journey knows only which tool it wants.
  */
 export async function reachShellLink(page: Page, name: RegExp | string): Promise<void> {
   const link = page.getByRole('link', { name });
@@ -82,7 +106,11 @@ export async function openRecordFromLibrary(page: Page, title: string): Promise<
   const open = surface.getByRole('button', { name: 'Open in outfitting', exact: true });
 
   await expect(async () => {
-    if (/\/build(#|$)/.test(page.url())) {
+    // Already in the workspace with nothing standing over it. The address alone
+    // no longer answers this: the library is a layer with no address of its own
+    // (2026-09-04), so it can be open on top of `/build` and the record has
+    // still not been opened.
+    if (/\/build(#|$)/.test(page.url()) && !(await surface.isVisible())) {
       return;
     }
     await row.click({ timeout: 5_000 });

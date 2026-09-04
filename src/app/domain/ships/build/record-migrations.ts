@@ -1,18 +1,22 @@
-import { parseLocalRecord, type RecordParseResult } from './stored-build.parser';
-import { LOCAL_RECORD_VERSION, type LocalRecordV1 } from './stored-build';
+import { parseLocalRecord, type RecordParseResult } from '../../records/local-record.parser';
+import {
+  LOCAL_RECORD_VERSION,
+  type LocalRecord,
+  type RecordTool,
+} from '../../records/local-record';
 
 /**
  * The migration registry.
  *
- * Version 1 is the first published version, so there is nothing to migrate
- * *from* yet — and deliberately no fictional version 0 to pretend otherwise. A
- * migration that exists only to be symmetrical is a migration nobody has ever
- * run against real bytes.
+ * One published step: version 1 to version 2, which stamps the `tool` field
+ * version 1 had no room for. Version 1 was written when the application had one
+ * tool, so every record it wrote was a ship build and the absence of the field
+ * means exactly that (013 contracts/loadout-persistence.md).
  *
- * When a version 2 lands, it arrives as one entry here: a frozen decoder for
- * version 1's shape and a pure function to the next canonical model. Decoders
- * are never removed, because a Commander's browser may hold a record written
- * years ago and every published version must still open (FR-014).
+ * Decoders are never removed, because a Commander's browser may hold a record
+ * written years ago and every published version must still open (001/FR-014).
+ * A migration is pure: it reads one canonical shape and returns the next, and
+ * whether the result is *valid* is the parser's question, asked afterwards.
  */
 
 /** One step from a published version to the next. */
@@ -23,19 +27,34 @@ export interface RecordMigration {
   readonly migrate: (record: unknown) => unknown;
 }
 
-/** Every published migration, in order. Empty until a version 2 exists. */
-export const RECORD_MIGRATIONS: readonly RecordMigration[] = [];
+/** Every published migration, in order. */
+export const RECORD_MIGRATIONS: readonly RecordMigration[] = [
+  {
+    from: 1,
+    to: 2,
+    migrate: (record) => ({
+      ...(record as object),
+      version: 2,
+      // Stamped rather than inferred later: a record that goes through this
+      // step comes out saying what it is, so nothing downstream has to know
+      // that a missing field once meant something.
+      tool: 'ship' satisfies RecordTool,
+    }),
+  },
+];
 
 /** The versions this build can open, newest last. */
-export const SUPPORTED_RECORD_VERSIONS: readonly number[] = [LOCAL_RECORD_VERSION];
+export const SUPPORTED_RECORD_VERSIONS: readonly number[] = [1, LOCAL_RECORD_VERSION];
 
 export type MigrationResult =
-  | { readonly ok: true; readonly record: LocalRecordV1; readonly migrated: boolean }
+  | { readonly ok: true; readonly record: LocalRecord; readonly migrated: boolean }
   | {
       readonly ok: false;
       readonly reason: 'unsupported-version' | 'malformed';
       readonly detail: string;
+      readonly tool: RecordTool | null;
       readonly hullSymbol: string | null;
+      readonly suitFamily: string | null;
       readonly name: string | null;
     };
 
@@ -56,7 +75,9 @@ export function decodeAndMigrate(value: unknown, expectedId: string): MigrationR
         ok: false,
         reason: 'malformed',
         detail: migrated.detail,
+        tool: null,
         hullSymbol: null,
+        suitFamily: null,
         name: null,
       };
     }
@@ -73,7 +94,9 @@ function finish(parsed: RecordParseResult, migrated: boolean): MigrationResult {
         ok: false,
         reason: parsed.reason,
         detail: parsed.detail,
+        tool: parsed.tool,
         hullSymbol: parsed.hullSymbol,
+        suitFamily: parsed.suitFamily,
         name: parsed.name,
       };
 }

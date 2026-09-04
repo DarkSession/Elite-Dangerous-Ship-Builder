@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
+import type { LocalRecord } from '../../domain/records/local-record';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import {
   NamedRecordService,
@@ -15,7 +15,7 @@ export interface SaveConflict {
   /** This tab's version. Still in memory and still in its working record. */
   readonly attempted: NamedSaveRequest & { recordId: string };
   /** What is actually stored right now. */
-  readonly observed: LocalRecordV1;
+  readonly observed: LocalRecord;
   /**
    * The unnamed record these edits were autosaved into, if there is one.
    *
@@ -105,16 +105,14 @@ export class SaveConflictService {
           ? this.#named.createNamed({
               name: conflict.attempted.name,
               note: conflict.attempted.note,
-              build: conflict.attempted.build,
-              validation: conflict.attempted.validation,
+              payload: conflict.attempted.payload,
               now: conflict.attempted.now,
             })
           : this.#named.nameHeldRecord({
               recordId: conflict.consumes,
               name: conflict.attempted.name,
               note: conflict.attempted.note,
-              build: conflict.attempted.build,
-              validation: conflict.attempted.validation,
+              payload: conflict.attempted.payload,
               now: conflict.attempted.now,
             });
       }

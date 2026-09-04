@@ -1,0 +1,40 @@
+<ul
+  class="choices"
+  [class.choices--pairs]="asPairs()"
+  [class.choices--ruled]="ruled()"
+  [attr.aria-label]="label()"
+>
+  @for (choice of choices(); track choice.id) {
+    <li>
+      <button
+        class="choice"
+        type="button"
+        [class.choice--current]="choice.current"
+        [attr.data-choice]="choice.id"
+        [attr.aria-current]="choice.current ? 'true' : null"
+        (click)="choose(choice)"
+      >
+        <span class="choice__identity">
+          <edsb-game-text
+            class="choice__name"
+            [text]="choice.name.text"
+            [language]="choice.name.language"
+            [translationState]="choice.name.translationState"
+          />
+          @if (choice.meta) {
+            <span class="choice__meta">{{ choice.meta }}</span>
+          }
+        </span>
+
+        @if (choice.figure) {
+          <span class="choice__figure">
+            <span class="choice__number">{{ choice.figure }}</span>
+            @if (choice.figureUnit) {
+              <span class="choice__unit">{{ choice.figureUnit }}</span>
+            }
+          </span>
+        }
+      </button>
+    </li>
+  }
+</ul>

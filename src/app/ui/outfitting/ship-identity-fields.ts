@@ -93,10 +93,29 @@ export class ShipIdentityFields {
   /** What the heading reads when the build has no name of its own. */
   readonly fallbackName = input.required<string>();
 
+  /**
+   * What the rename control is called, where the screen calls it something else.
+   *
+   * The shell draws one identity block and two tools use it. `Rename the ship`
+   * is a ship's word, and on the equipment bench it named a control that renames
+   * a loadout (Commander request 2026-09-04).
+   */
+  readonly nameEditLabel = input<string | null>(null);
+
   /** The hull, drawn ahead of the ID plate as the canvas draws it. */
   readonly detail = input<string | null>(null);
 
   readonly ident = input<string | null>(null);
+
+  /**
+   * Whether this screen has an ID plate at all.
+   *
+   * A build does, named or not, so the field is drawn empty and waiting. A
+   * loadout does not — the game registers a ship, not a Commander's kit — and
+   * an empty plate with a pencil beside it would offer to fill in something
+   * that does not exist.
+   */
+  readonly identField = input(true);
 
   /** Which field is open for editing. `null` is the drawn, idle state. */
   readonly editing = input<IdentityField | null>(null);
@@ -143,7 +162,9 @@ export class ShipIdentityFields {
 
   readonly nameLabel = this.#messages.messageSignal('outfitting.identity.name.label');
   readonly identLabel = this.#messages.messageSignal('outfitting.identity.ident.label');
-  readonly nameEdit = this.#messages.messageSignal('outfitting.identity.name.edit');
+  readonly nameEdit = computed(
+    () => this.nameEditLabel() ?? this.#messages.message('outfitting.identity.name.edit'),
+  );
   /**
    * The ID plate's control names itself with the plate it is showing.
    *

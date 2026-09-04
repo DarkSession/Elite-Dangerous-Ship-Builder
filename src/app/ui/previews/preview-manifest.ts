@@ -243,6 +243,8 @@ import { GradeSelector } from '../outfitting/grade-selector';
 import { IngressRefusalNotice } from '../outfitting/ingress-refusal-notice';
 import { PowerControls } from '../outfitting/power-controls';
 import { CandidateList } from '../outfitting/candidate-list';
+import { ChoiceList } from '../equipment/choice-list';
+import { ResistanceBar } from '../equipment/resistance-bar';
 import { CandidateSearch } from '../outfitting/candidate-search';
 import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
 import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
@@ -1211,7 +1213,7 @@ registerPreview({
       visibleNameMatchesAccessibleName: true,
       exposedStates: ['current'],
       relationships: ['label'],
-      textEquivalents: ['current navigation entry'],
+      textEquivalents: ['current tool'],
     },
     ['default', 'empty', 'error'],
   ),
@@ -1220,12 +1222,12 @@ registerPreview({
       'default',
       {
         routeContext: 'Anaconda explorer',
-        tools: [{ id: 'ship', label: 'Ship', href: '/ships', current: true }],
-        navigation: [
-          { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
-          { id: 'builds', label: 'Saved builds', href: '/builds' },
+        tools: [
+          { id: 'ship', label: 'Ship Builder', href: '/ships', current: true },
+          { id: 'equipment', label: 'Equipment Builder', href: '/equipment' },
         ],
         actions: [
+          { id: 'library', label: 'Open saved build' },
           { id: 'save', label: 'Save', emphasis: 'primary' },
           { id: 'language', label: 'Language' },
           {
@@ -1240,8 +1242,8 @@ registerPreview({
       [
         'exposes banner, navigation and main landmarks',
         'every action keeps a text name — the Help mark carries its own as text inside the button',
-        'the current navigation entry exposes aria-current',
-        'the tool region is a second navigation landmark with a name of its own',
+        'the current tool exposes aria-current',
+        'the tool region is the shell\u2019s navigation landmark, with a name of its own',
         'the tool a Commander is in is a word carrying aria-current, never a link to the open screen',
         'the Help entry is in the wide row and in the folded action layer, and is the only one of its kind',
       ],
@@ -1253,7 +1255,7 @@ registerPreview({
     state(
       'empty',
       {},
-      ['renders the landmarks with no route context, tools, navigation or actions'],
+      ['renders the landmarks with no route context, tools or actions'],
       ['normal'],
       true,
     ),
@@ -2039,7 +2041,8 @@ const NAMED_BUILD = {
   id: 'record-1',
   title: 'Anaconda explorer',
   named: true,
-  hull: ANACONDA_NAME,
+  subject: ANACONDA_NAME,
+  toolLabel: 'Ship Builder',
   modified: '2 weeks ago',
   modifiedExact: 'Edited 12 August 2026, 14:20',
   validation: { label: 'Complete', tone: 'success' },
@@ -2070,6 +2073,30 @@ const CURRENT_BUILD = {
   ...NAMED_BUILD,
   id: 'record-current',
   current: true,
+} as const;
+
+/**
+ * A loadout, in the same row as a build.
+ *
+ * One library holds both tools' records, so the column beside the title carries
+ * a hull for one and a suit for the other, and the row names which tool made it
+ * among its read-not-drawn facts. A loadout records no verdict of its own (013
+ * contracts/loadout-persistence.md).
+ */
+const LOADOUT_RECORD = {
+  ...NAMED_BUILD,
+  id: 'record-loadout',
+  title: 'Silent Entry',
+  subject: {
+    text: 'Maverick Suit',
+    language: 'en',
+    translationState: 'localized',
+    disclosureKey: null,
+  },
+  toolLabel: 'Equipment Builder',
+  validation: null,
+  issues: null,
+  note: null,
 } as const;
 
 /** A build whose recorded verdict counted issues against it. */
@@ -2106,6 +2133,7 @@ registerPreview({
         'choosing the row is one action that names the record it would act on',
         'the recorded verdict is words with a tone, never a coloured dot',
         'the row reads title, hull and edited-at in the order the headers name',
+        'the row names the tool that made it, read rather than drawn',
       ],
       ['normal', 'expanded-copy', 'rtl', 'german-format', 'long-identity'],
     ),
@@ -2167,6 +2195,7 @@ registerPreview({
           CURRENT_BUILD,
           WORKING_BUILD,
           NAMED_BUILD,
+          LOADOUT_RECORD,
           ISSUE_BUILD,
           { ...NAMED_BUILD, id: 'record-2', title: 'Krait combat' },
         ],
@@ -2177,6 +2206,7 @@ registerPreview({
         'the record the workspace holds is marked in words as well as in the wash',
         'an unnamed row states which save its edits are of, and how long it has left',
         'the edited column reads how long ago, and the instant itself stays in words',
+        'one list holds both tools\u2019 records, each row naming the tool that made it',
         'the narrow and wide compositions present the same records in the same order',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
@@ -4503,5 +4533,124 @@ registerPreview({
       'A missing or mismatched artifact fails generation; it is never a state the modal renders.',
     ),
     notApplicable('disabled', 'Help is either open or closed; it has no disabled state.'),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// Feature 013 — the equipment bench
+//
+// Two components, both shared by every chooser and every reading on the bench.
+// The regions themselves — the ledger, the item view and the commander stats —
+// are not here: their inputs are presenter view models carrying package
+// figures, and a fixture for one would have to state a shield strength or a DPS
+// that no package call produced. That is the one thing a fixture may never be
+// (constitution II), so those four surfaces are swept as the bench itself in
+// `e2e/equipment-builder.spec.ts` instead.
+// ---------------------------------------------------------------------------
+
+registerPreview({
+  componentId: 'resistance-bar',
+  group: 'Equipment',
+  component: ResistanceBar,
+  contract: contract(
+    'resistance-bar',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: ['label'],
+      textEquivalents: [
+        'the signed percentage as text, so the bar carries none of the meaning',
+        'a resistance that is a weakness, by its sign rather than by its colour',
+      ],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { label: 'Kinetic', value: '+35%', magnitude: 0.35, negative: false },
+      [
+        'the figure is text beside the bar, and the bar is hidden from the reader',
+        'the sign is on the number rather than in the direction the bar grows',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'german-format'],
+    ),
+    state('empty', { label: 'Explosive', value: '0%', magnitude: 0, negative: false }, [
+      'no resistance draws no bar and still states the figure',
+    ]),
+    state(
+      'disabled',
+      { label: 'Thermal', value: '-15%', magnitude: 0.15, negative: true },
+      ['a weakness reads as a negative figure, not as a differently coloured bar'],
+      ['normal', 'rtl', 'german-format'],
+    ),
+    notApplicable(
+      'loading',
+      'The figure arrives with the suit reading it belongs to; the bar is never drawn awaiting one.',
+    ),
+    notApplicable('error', 'A resistance the package does not publish is not rendered at all.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'choice-list',
+  group: 'Equipment',
+  component: ChoiceList,
+  contract: contract(
+    'choice-list',
+    {
+      role: 'list',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: ['selected'],
+      relationships: ['label'],
+      textEquivalents: ['the fitted or worn row, as state rather than as a wash'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Primary weapon',
+        choices: [
+          {
+            id: 'a',
+            name: localized('Karma AR-50'),
+            meta: 'RIFLE · KINETIC · AUTOMATIC',
+            figure: 'G3',
+            current: true,
+          },
+          {
+            id: 'b',
+            name: canonical('TK Aphelion'),
+            meta: 'RIFLE · THERMAL · AUTOMATIC',
+            figure: null,
+            current: false,
+          },
+        ],
+      },
+      [
+        'the fitted row carries its state as well as its wash',
+        'a row with no figure draws none rather than a zero',
+        'package text with no translation is marked as the language it is in',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'canonical-untranslated', 'long-identity'],
+    ),
+    state('empty', { label: 'Primary weapon', choices: [] }, [
+      'nothing offered draws no rows, and no row-shaped placeholder',
+    ]),
+    notApplicable(
+      'loading',
+      'Every chooser is built synchronously from the equipment library; there is no moment at which the list is open and empty of an answer.',
+    ),
+    notApplicable(
+      'disabled',
+      'Every row this list draws can be chosen. The 2026-09-04 canvas revision took the refused row out of the modification picker rather than drawing it, and the swap block lists the fitted item as a row a Commander can press.',
+    ),
+    notApplicable(
+      'error',
+      'A refusal belongs to the choice that was attempted, and the bench publishes it.',
+    ),
   ],
 });

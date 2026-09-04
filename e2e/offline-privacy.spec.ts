@@ -7,7 +7,7 @@ import {
   revealMount,
   revealStatusRail,
 } from './outfitting-surfaces';
-import { buildStockHull, openFirstHullFromManifest } from './shell';
+import { buildStockHull, openFirstHullFromManifest, openLibrary } from './shell';
 
 /**
  * Offline capability and the privacy promise (US1, US2, US3).
@@ -254,6 +254,31 @@ test.describe('offline capability', () => {
    */
 });
 
+test.describe('the bench, offline', () => {
+  test('assembles a loadout with no network at all (013/FR-026)', async ({ page, context }) => {
+    await withWorker(page, '/equipment');
+    await expect(page.locator('.gate')).toBeVisible();
+
+    await context.setOffline(true);
+    await page.reload();
+
+    // The whole tool is a synchronous read of an in-memory loadout and an
+    // installed package: choosing a suit, fitting a weapon and reading what
+    // both are worth all work with the network gone.
+    await expect(page.locator('.gate')).toBeVisible();
+    await page.locator('.gate__suits .choice').first().click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+
+    const stats = page.locator('.bench__region--stats');
+    const tab = page.getByRole('tab', { name: 'Stats' });
+    if ((await tab.count()) > 0) await tab.click();
+    await expect(stats.locator('.metric__number')).toHaveCount(2);
+    await expect(stats.locator('edsb-resistance-bar')).toHaveCount(4);
+
+    await context.setOffline(false);
+  });
+});
+
 test.describe('the privacy promise', () => {
   test('reaches no other origin and caches nothing of a build', async ({ page }) => {
     const foreign: string[] = [];
@@ -267,7 +292,7 @@ test.describe('the privacy promise', () => {
     await openFirstHullFromManifest(page);
     await buildStockHull(page, 'Build');
     await expect(page).toHaveURL(/\/build(#|$)/);
-    await page.goto('/builds');
+    await openLibrary(page);
 
     const origin = new URL(page.url()).origin;
     expect(foreign.filter((url) => new URL(url).origin !== origin)).toEqual([]);
@@ -286,5 +311,36 @@ test.describe('the privacy promise', () => {
     // Only same-origin static assets, and never anything carrying a build.
     expect(cached.filter((url) => new URL(url).origin !== origin)).toEqual([]);
     expect(cached.filter((url) => url.includes('#b.') || url.includes('edsb:record'))).toEqual([]);
+  });
+
+  test('reaches no other origin from the bench, and caches no loadout', async ({ page }) => {
+    const foreign: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).origin !== new URL(page.url() || '/', 'http://x').origin) {
+        foreign.push(request.url());
+      }
+    });
+
+    await withWorker(page, '/equipment');
+    await page.locator('.gate__suits .choice').first().click();
+    await expect(page.locator('.gate')).toHaveCount(0);
+
+    const origin = new URL(page.url()).origin;
+    expect(foreign.filter((url) => new URL(url).origin !== origin)).toEqual([]);
+
+    const cached = await page.evaluate(async () => {
+      const urls: string[] = [];
+      for (const name of await caches.keys()) {
+        const cache = await caches.open(name);
+        for (const request of await cache.keys()) {
+          urls.push(request.url);
+        }
+      }
+      return urls;
+    });
+
+    // The loadout link lives in the fragment, which a browser never transmits
+    // and a cache never keys on. Nothing carrying one is stored either.
+    expect(cached.filter((url) => url.includes('#e.'))).toEqual([]);
   });
 });

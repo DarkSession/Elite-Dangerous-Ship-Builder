@@ -1284,7 +1284,6 @@ describe('search metadata', () => {
     { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
     { path: ':hull', titleKey: 'hullDetail.title', descriptionKey: 'hullDetail.description' },
     { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
-    { path: 'builds', titleKey: 'library.title', descriptionKey: 'library.description' },
     { path: '**' },
   ];
 
@@ -1864,7 +1863,7 @@ describe('search metadata', () => {
     // names one screen and the application names another a moment later.
     const swapped = ROUTE_TABLE.map((route) =>
       route.path === 'build'
-        ? { ...route, titleKey: 'library.title', descriptionKey: 'library.description' }
+        ? { ...route, titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' }
         : route,
     );
     const found = rules.searchMetadataViolations(complete({ routeTable: swapped }));

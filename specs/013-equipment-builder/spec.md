@@ -13,22 +13,47 @@ handheld weapons, apply modifications, and read what the resulting Commander is
 worth. Drawn in `.design/Equipment Builder.dc.html` at 1640px (artboard `1a`) and
 390px (artboard `1b`).
 
+## Clarifications
+
+### Session 2026-09-02
+
+- Q: Where do the combat figures the equipment library does not publish — a weapon's
+  sustained damage per second and its headshot damage — come from? → A: The library
+  publishes them. The gap is raised upstream, and until that release the bench states
+  only the figures the library holds rather than deriving them here.
+  **Settled 2026-09-03**: the release landed. Almanac 0.2.9 publishes
+  `personalWeaponMetrics`, so the answer stands and the waiting is over — the bench states
+  the figures because the library computes them.
+- Q: Can a Commander paste a saved loadout payload back into the bench, or is a share
+  link the only way a loadout comes in? → A: Links only for this feature. Reading a
+  loadout payload back in is recorded as a follow-on feature rather than as out of scope.
+- Q: When a loadout is saved or shared as a link, does it carry the weapons and
+  modifications the bench is only holding — the ones in a mount the current suit does
+  not offer, or in a slot the current grade has locked? → A: Both carry it. A saved
+  loadout and a share link round-trip held content as well as what is in effect.
+- Q: How is "every figure matches the library, in every combination the library
+  publishes" actually checked, given how many combinations that is? → A: Exhaustively
+  where no rendering is needed, and over a named representative set end to end.
+- Q: Can a Commander set the grade of each fitted weapon separately from the suit's
+  grade? → A: Independent per weapon. Each fitted weapon carries its own grade, which
+  unlocks its own modification slots.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Assemble a loadout and read what it is worth (Priority: P1)
 
 A Commander opens the bench, chooses one of the personal suits, sets the grade it
 is upgraded to, and fills its weapon slots from the handheld weapons the suit can
-carry. As each choice is made, the shield strength, regeneration, damage
-resistances and firepower of the assembled Commander update beside the loadout.
+carry. As each choice is made, the shield strength, regeneration, damage resistances and
+firepower of the assembled Commander update beside the loadout.
 
 **Why this priority**: this is the bench. Without it there is nothing to modify,
 nothing to cost and nothing to save. It is also the whole of the value for a
 Commander comparing two suits before spending at Pioneer Supplies.
 
 **Independent Test**: choose each suit in turn at each available grade, fit a
-weapon in every slot the suit offers, and confirm the stated shield, resistance
-and firepower figures change with each choice and match the equipment library.
+weapon in every slot the suit offers, and confirm the stated shield, regeneration,
+resistance and firepower figures change with each choice and match the equipment library.
 
 **Acceptance Scenarios**:
 
@@ -45,6 +70,12 @@ and firepower figures change with each choice and match the equipment library.
 5. **Given** a fitted weapon, **When** the Commander selects it, **Then** its class, make,
    damage type, fire mode, rate of fire, magazine, reserve, range and per-grade damage
    are stated.
+6. **Given** a fitted weapon at grade 3 on a suit at grade 5, **When** the Commander raises
+   that weapon to grade 5, **Then** its damage and its unlocked modification slots restate
+   at grade 5 and neither the suit nor any other fitted weapon changes grade.
+7. **Given** any selected suit, **When** the Commander reads its tools, **Then** the tools the
+   library records for that suit are named and counted, and none of them can be selected, changed,
+   removed or swapped.
 
 ---
 
@@ -52,7 +83,7 @@ and firepower figures change with each choice and match the equipment library.
 
 A Commander applies engineering modifications to the suit and to each weapon,
 within the slots the item's grade has unlocked, and reads the micro-resources the
-whole loadout would require and which engineers grant each modification.
+whole loadout would require.
 
 **Why this priority**: modifications are what distinguishes a planned loadout from
 a shopping trip, and the material requirement is the reason to plan one before
@@ -76,8 +107,8 @@ modifications are added and removed.
 4. **Given** a weapon modification whose requirement differs by the weapon's damage
    type, **When** it is fitted to a kinetic weapon and to a plasma weapon, **Then** the
    stated materials are those of the weapon it is fitted to.
-5. **Given** any fitted modification, **When** the Commander reads it, **Then** the
-   engineers who grant it are named.
+5. **Given** any fitted modification, **When** the Commander reads it, **Then** it is
+   named with its status and its materials, and no engineer is named.
 
 ---
 
@@ -120,7 +151,8 @@ reopens the same loadout and the readable summary names every fitted item.
 **Acceptance Scenarios**:
 
 1. **Given** an open loadout, **When** the Commander copies its link and opens it,
-   **Then** the same suit, grades, weapons and modifications are restored.
+   **Then** the same suit, grades, weapons and modifications are restored, including any
+   the bench was only holding.
 2. **Given** an open loadout, **When** the Commander exports a readable summary, **Then**
    it names the suit, its grade, each weapon with its grade, and each fitted modification.
 3. **Given** a link that names equipment this version does not recognise, **When** it is
@@ -156,6 +188,9 @@ reopens the same loadout and the readable summary names every fitted item.
   publishes, identified by the library's own name and symbol.
 - **FR-002**: The application MUST offer the grades each suit supports, and MUST NOT
   offer a grade the library does not publish for that suit.
+- **FR-002a**: The application MUST offer the grades the library publishes for each
+  fitted weapon, set for that weapon alone and unrelated to the suit's grade, and each
+  weapon's grade MUST govern its own attributes and its own unlocked modification slots.
 - **FR-003**: The application MUST offer weapon slots according to the selected suit's
   primary and secondary slot counts, and MUST offer in each slot only the weapons that
   slot accepts.
@@ -164,12 +199,29 @@ reopens the same loadout and the readable summary names every fitted item.
 - **FR-005**: The application MUST state, for the selected item, the attributes the
   library holds for it at the selected grade — for a suit its shield strength,
   regeneration and each damage resistance; for a weapon its damage, rate of fire,
-  sustained damage, headshot damage, magazine, reserve and range.
+  headshot multiplier, magazine, reserve and range, and its damage per shot, headshot
+  damage, damage per second and sustained damage per second. A figure the library does not
+  publish MUST NOT be derived here; the derived combat figures are stated because the
+  library computes them, not because this application can multiply.
+- **FR-005a**: The application MUST name the suit tools the library records for the selected
+  suit, and MUST state how many there are. Tools are fitted to every suit and cannot be
+  swapped, so they are named and never offered as a choice, never selectable, and carry no
+  grade and no modification slot.
 - **FR-006**: The application MUST state the assembled Commander's shield strength,
-  regeneration, damage resistances and firepower, and MUST restate them whenever a
-  choice changes them.
-- **FR-007**: A weapon or suit slot that the current suit does not offer MUST be shown
-  as unavailable, and its contents MUST be retained rather than discarded.
+  regeneration, damage resistances and firepower, and MUST restate them whenever a choice
+  changes them. The reference draws two resistance groups, `ARMOUR` over `SHIELDS`, and each
+  MUST read the set the library publishes for it: the armour's four on the suit's grade,
+  which a grade moves, and the shield's four on the suit, which no grade moves. The
+  application MUST NOT compute or invent either set — the reference's own armour figures are
+  its mock's arithmetic. Firepower is one row per carried
+  mount, each fitted weapon's damage per second as the library computes it and a dash where
+  nothing counts, never arithmetic performed here.
+- **FR-007**: A weapon mount the current suit does not carry MUST NOT be drawn — not in the
+  ledger, and not as a firepower row — and its contents MUST be retained rather than
+  discarded, returning intact when a suit carrying that mount is worn. A bench that lists
+  mounts a Commander cannot use is listing the catalogue rather than the suit (Commander
+  request 2026-09-04). Where such a mount is what the Commander had open, the item column
+  MUST fall back to the suit rather than stand on a mount nothing points at.
 
 **Modifications**
 
@@ -177,8 +229,10 @@ reopens the same loadout and the readable summary names every fitted item.
   unlocked, and MUST show the remaining slots as locked rather than hiding them.
 - **FR-009**: The application MUST offer only the modifications the library publishes
   for that kind of item, and MUST NOT offer one twice on the same item.
-- **FR-010**: The application MUST name the engineers the library records as granting
-  each modification.
+- **FR-010**: The application MUST NOT name the engineers who grant a modification. The
+  library records them and the reference draws none — its only mention of them is a
+  feature caption — so naming them anywhere is wording this application invented
+  (Commander request 2026-09-04).
 - **FR-011**: A modification held by a slot that is currently locked MUST be retained,
   MUST be excluded from the material requirement, and MUST return to effect when the
   grade that unlocks its slot is restored.
@@ -201,12 +255,18 @@ reopens the same loadout and the readable summary names every fitted item.
   it or keep both.
 - **FR-018**: Saved loadouts MUST survive closing and reopening the application, and
   MUST live only in the Commander's own browser.
+- **FR-018a**: A saved loadout and a shared link MUST carry the content the bench is
+  holding under FR-007 and FR-011 as well as what is in effect, so that neither saving
+  nor sharing discards a choice the Commander has made.
 - **FR-019**: A stored loadout this version cannot rebuild MUST be reported as
   unopenable and MUST be left in store exactly as it was.
 - **FR-020**: Users MUST be able to export the open loadout as a link that restores it,
   as a structured payload, and as a readable summary.
-- **FR-021**: An import or link that names equipment the application cannot resolve MUST
-  say what could not be resolved and MUST NOT replace the open loadout with a partial one.
+- **FR-021**: A link that names equipment the application cannot resolve MUST say what
+  could not be resolved and MUST NOT replace the open loadout with a partial one. A link
+  is the only way a loadout comes in: this feature offers no route for reading an
+  exported payload back, and the structured payload of FR-020 leaves the bench for other
+  tools the way SLEF does for a ship build.
 - **FR-022**: Users MUST be able to undo and redo their outfitting choices.
 
 **Everywhere**
@@ -224,8 +284,9 @@ reopens the same loadout and the readable summary names every fitted item.
 ### Key Entities
 
 - **Loadout**: one planned on-foot Commander — a suit at a grade with its modifications,
-  a weapon at a grade with its modifications in each slot the suit offers, and a name
-  once the Commander has given it one.
+  a weapon at its own grade with its modifications in each slot the suit offers, and a
+  name once the Commander has given it one. A weapon's grade is its own; nothing ties it
+  to the suit's.
 - **Suit**: a personal suit as the library publishes it — its family, name, the number
   of primary and secondary weapon slots it offers, and the shield, regeneration and
   resistance figures for each grade it supports.
@@ -244,14 +305,17 @@ reopens the same loadout and the readable summary names every fitted item.
 - **SC-001**: A Commander can assemble a complete loadout — suit, grade, every weapon
   slot filled, and modifications in every unlocked slot — in under three minutes.
 - **SC-002**: Every figure the bench states matches the equipment library for the same
-  suit, weapon, grade and modifications, in every combination the library publishes.
+  suit, weapon, grade and modifications. This is verified exhaustively over every
+  combination the library publishes where no screen has to be rendered, and over a named
+  representative set of combinations on screen.
 - **SC-003**: A Commander can tell, without leaving the bench, which micro-resources and
   how many of each a planned loadout will cost.
 - **SC-004**: Every screen passes an automated accessibility check against WCAG 2.0, 2.1
   and 2.2 A and AA with no disabled rules, at desktop, tablet and mobile sizes in both
   supported engines, excepting only the criteria the constitution names.
-- **SC-005**: A shared link restores exactly the loadout it was made from, in 100% of
-  loadouts the application can build.
+- **SC-005**: A shared link restores exactly the loadout it was made from — including
+  the weapons and modifications the bench was only holding — in 100% of loadouts the
+  application can build.
 - **SC-006**: Every screen remains fully usable with no network connection after first load.
 - **SC-007**: A Commander switching between two suits can compare their protection at the
   same grade without losing the weapons or modifications they had already chosen.
@@ -267,10 +331,22 @@ reopens the same loadout and the readable summary names every fitted item.
   feature's design notes.
 - **Saved loadouts share one library with ship builds.** `Tool Navigation.dc.html` draws a
   single saved list holding both, distinguished by the tool that made them.
-- **Suit tools are out of scope.** Artboard `1a` draws a `SUIT TOOLS` region holding the
-  Energylink, Arc Cutter and Profile Analyser. The equipment library publishes no data for
-  them at all, and constitution II forbids hand-maintaining a parallel copy, so the region
-  is withdrawn rather than filled locally. It returns if the library gains them.
+- **Suit tools are in scope, on the condition this spec set.** The region was withdrawn
+  while the library published nothing for it, on the stated condition that it returns if
+  the library gains them. [#25](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/25) closed and Almanac 0.2.9 publishes
+  `equipment/tools` — four tools, which suits carry each, their battery and timing stats,
+  and `i18n/personal-tools` for their names — so the condition is met and the `SUIT TOOLS`
+  region of artboard `1a` returns (FR-005a). What returns is what the canvas draws: a
+  named, dimmed, unselectable row per tool under a count. The canvas draws three fixed
+  rows; which rows appear follows the selected suit's own `suitFamilies` membership, and
+  the catalogue holds a fourth the canvas does not draw — the Genetic Sampler, which the
+  Artemis carries. The tools' battery and timing stats are published and are **not** drawn
+  on either artboard, so they are not stated.
+- **Reading a loadout payload back in is a follow-on feature.** Neither artboard draws a
+  paste field, and the `EXPORT LOADOUT` dialog of artboard `1a` offers a share link, a
+  loadout JSON and a readable summary and nothing inbound. The bench therefore restores a
+  loadout from a link and from the saved list only. This is deferred rather than
+  rejected: it needs its own design before it can be specified.
 - **Grade upgrade costs are out of scope**, as the design's own FAQ states: the material
   requirement covers applying modifications, not raising a grade.
 - **Modification quality is not modelled**, consistent with the ship builder's treatment of
@@ -307,24 +383,43 @@ reopens the same loadout and the readable summary names every fitted item.
   `PersonalWeapon.scopeMagnification`.
   A figure a modified loadout states is that call's answer, never arithmetic performed here.
 
-- **A suit's weapon mounts have no published key.** `Suit.primarySlots` and
-  `Suit.secondarySlots` are counts, and nothing under `equipment/` names a mount the way
-  `ships/` names a slot. Constitution II asks for the game's own slot keys and never a
-  positional index, so a loadout that has to say _which_ mount a weapon is on cannot
-  satisfy it as the library stands. Until the library publishes keys, a mount is named by
-  the suit's own order — primary mounts, then secondary — and that order is written down
-  wherever it is relied on. A gap to raise, not a blocker.
+- **Derived combat figures are published.** [#23](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/23) is closed: Almanac 0.2.9 adds
+  `personalWeaponMetrics(weapon, grade, modifiers?, options?)` in `equipment/weapons`,
+  returning `damagePerShot`, `headshotDamagePerShot`, `rateOfFire`, `sustainedRateOfFire`,
+  `damagePerSecond` and `sustainedDamagePerSecond`. The three inputs that were missing came
+  with it — `PersonalWeapon.projectiles`, `burstRounds` / `burstRateOfFire` and
+  `reloadTime` — so the `FIREPOWER` region of artboard `1a` and the `SUSTAINED DPS` and
+  `HEADSHOT DPS` lines of the item view ship as drawn. Nothing here multiplies: the call
+  takes the fitted modifiers, reads `magazineSize` and `headshotMultiplier` off them, and
+  takes Reload Speed through its `reloadSpeed` option because that recipe carries its
+  magnitude as `reloadTime.upgraded` rather than as a modifier.
 
-  Those names (`primary1`, `secondary1`, `suit`) are identities and not text: FR-021 has
-  the bench name the mount a refusal is about, and it MUST name it in the Commander's
-  language, the way `src/app/ui/outfitting/slot-naming.ts` names a ship's mounts.
-  Interpolating the identity into the notice would ship an untranslated string
-  (constitution VI). Nothing renders one yet — the codec has no consumer — so this is a
-  requirement on the bench when it is built, not an outstanding defect.
+- **A suit's weapon mounts now have a published key.** [#24](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/24) is closed: Almanac 0.2.9 replaced the
+  `Suit.primarySlots` / `Suit.secondarySlots` counts with `Suit.mounts`, a `PersonalMount[]`
+  whose `key` is Frontier's journal `SlotName` — `PrimaryWeapon1`, `PrimaryWeapon2`,
+  `SecondaryWeapon` — and whose `kind` is `primary` or `secondary`, listed in the game's own
+  order. Constitution II asks for exactly those keys, so the positional order this feature
+  reserved is withdrawn and the published keys replace it everywhere — in the loadout
+  model, in the link format and in every refusal. Counting a kind is
+  `suit.mounts.filter((mount) => mount.kind === 'primary').length`.
 
-- **Suit tools are absent upstream** — the Energylink, Arc Cutter and Profile Analyser the
-  `SUIT TOOLS` region of artboard `1a` draws. A gap to raise, not a blocker: the region
-  is withdrawn and the rest of the feature stands without it.
+  A mount key is an identity and not text. `getPersonalMountName(mount, locale)` in
+  `i18n/suits` is what names one, so the name is the library's like every other game noun
+  and this application keeps no translation of its own (constitution VI). Probed on 0.2.9
+  it answers for `en-GB` only and `null` for the other five stored locales, which is
+  [#26](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/26) — closed, but not present in the installed release. Until it lands, a
+  mount name presents as canonical English through the same path a hull name already
+  takes, which states what it is rather than claiming a translation.
+
+- **Suit tools are published.** [#25](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/25) is closed: `equipment/tools` holds the
+  Energylink, Profile Analyser, Arc Cutter and Genetic Sampler, each naming the suit
+  families that carry it and the battery and timing stats it has — a stat a tool does not
+  have is absent rather than zero. `i18n/personal-tools` names them in all six stored
+  locales ([#29](https://github.com/DarkSession/Elite-Dangerous-Almanac/issues/29)). FR-005a
+  takes the names and the count and not the stats, because neither artboard draws a tool stat;
+  the rest of what the library holds here — the battery and timing figures, and the Reduced
+  Tool Battery Consumption recipe that moves `toolEnergyDrain` — is available whenever the
+  design asks for it.
 
 - **The shared tool shell** exists: `src/app/ui/components/app-frame` draws canvas 4c's bar
   from the tool registry in `src/app/features/shared/app-navigation.ts`, and this feature

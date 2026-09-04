@@ -15,7 +15,7 @@ import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { PRODUCT_URL } from './servers';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import germanMessages from '../src/app/i18n/locales/de.json';
-import { buildStockHull, openFirstHullFromManifest, reachShellLink } from './shell';
+import { buildStockHull, openFirstHullFromManifest, openLibrary, reachShellLink } from './shell';
 
 /**
  * Every screen this feature adds, held to the same interface contract.
@@ -54,7 +54,7 @@ async function openScreen(
     await buildStockHull(page, messages['hullDetail.create']);
     await expect(page).toHaveURL(/\/build(#|$)/);
     if (screen === 'library') {
-      await page.goto('/builds');
+      await openLibrary(page);
     }
   }
   // The route owns the h1 and the shell owns none, so a visible top-level

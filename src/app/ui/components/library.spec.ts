@@ -3,7 +3,7 @@ import { ResponsiveRecordList } from './record-list/responsive-record-list';
 import { SavedBuildCard, type SavedBuild } from './saved-build-card/saved-build-card';
 import { element, query, renderComponent, textOf } from './ui-component.spec-helpers';
 
-const hull = {
+const subject = {
   text: 'Anaconda',
   language: 'en',
   translationState: 'localized',
@@ -15,7 +15,8 @@ function build(overrides: Partial<SavedBuild> = {}): SavedBuild {
     id: 'r1',
     title: 'Anaconda explorer',
     named: true,
-    hull,
+    subject,
+    toolLabel: 'Ship Builder',
     modified: '2 days ago',
     modifiedExact: 'Edited 2 Jan 2026, 03:04',
     validation: { label: 'Valid', tone: 'success' },

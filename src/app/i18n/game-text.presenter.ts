@@ -10,6 +10,10 @@ import { getExperimentalEffectDescription } from '@elite-dangerous-almanac/core/
 import { getExperimentalEffectName } from '@elite-dangerous-almanac/core/i18n/experimental-effects';
 import { getMaterialName } from '@elite-dangerous-almanac/core/i18n/materials';
 import { getMicroResourceName } from '@elite-dangerous-almanac/core/i18n/micro-resources';
+import { getPersonalModificationName } from '@elite-dangerous-almanac/core/i18n/personal-modifications';
+import { getPersonalToolName } from '@elite-dangerous-almanac/core/i18n/personal-tools';
+import { getPersonalMountName, getSuitName } from '@elite-dangerous-almanac/core/i18n/suits';
+import { getPersonalWeaponBySymbol } from '@elite-dangerous-almanac/core/equipment/weapons';
 import { getOutfittingFamilyName } from '@elite-dangerous-almanac/core/i18n/module-families';
 import { getModuleName } from '@elite-dangerous-almanac/core/i18n/modules';
 import { getPreEngineeredVariantName } from '@elite-dangerous-almanac/core/i18n/pre-engineered';
@@ -136,6 +140,20 @@ export const shipNameLookup = shipCatalogueText('name');
 export const shipManufacturerLookup = shipCatalogueText('manufacturer');
 
 /**
+ * A handheld weapon's name, in the one language the game writes it.
+ *
+ * The package publishes an i18n leaf for a weapon's *description* and none for
+ * its name, for the reason a hull has none: a Manticore Oppressor is a product
+ * name and every locale spells it the same. So the catalogue answers for the
+ * canonical locale and for no other, and the rule above states it as canonical
+ * wherever a Commander is reading something else — which is what it is.
+ */
+export const personalWeaponNameLookup: GameTextLookup<string> = (symbol, locale) =>
+  locale.split('-')[0]?.toLowerCase() === FALLBACK_LOCALE
+    ? (getPersonalWeaponBySymbol(symbol)?.name ?? null)
+    : null;
+
+/**
  * The injectable presenter, bound to the committed locale.
  *
  * One method per package family. The identity types come from the package's own
@@ -193,6 +211,35 @@ export class GameTextPresenter {
 
   microResourceName(symbol: string): GameTextPresentation {
     return this.present(getMicroResourceName, symbol);
+  }
+
+  suitName(family: string): GameTextPresentation {
+    return this.present(getSuitName, family);
+  }
+
+  personalModificationName(symbol: string): GameTextPresentation {
+    return this.present(getPersonalModificationName, symbol);
+  }
+
+  personalToolName(id: string): GameTextPresentation {
+    return this.present(getPersonalToolName, id);
+  }
+
+  /**
+   * A suit weapon mount's name, from the library like every other game noun.
+   *
+   * The leaf carries `en-GB` alone in Almanac 0.2.9, so a mount presents as
+   * canonical English with its provenance stated, the way a hull name does. It
+   * becomes localized on the release that carries the other five values, with
+   * no change here. This application mints no key and keeps no translation of
+   * its own (constitution II, 013/FR-021).
+   */
+  personalMountName(mount: Parameters<typeof getPersonalMountName>[0]): GameTextPresentation {
+    return this.present(getPersonalMountName, mount);
+  }
+
+  personalWeaponName(symbol: string): GameTextPresentation {
+    return this.present(personalWeaponNameLookup, symbol);
   }
 
   shipName(symbol: string): GameTextPresentation {

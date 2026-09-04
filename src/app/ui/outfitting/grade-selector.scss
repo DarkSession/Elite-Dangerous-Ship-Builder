@@ -51,6 +51,13 @@
   border: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
   color: var(--ednb-text-accent);
   cursor: pointer;
+  // The edge and the fill ease; the ink does not. A cell's number is what says
+  // whether the cell is past the choice, and both tools read that colour the
+  // moment a grade is pressed (`module-engineering.spec.ts`, "numbers every
+  // grade cell") — eased, the read lands mid-flight on a blend of the two.
+  transition:
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
 
   // The canvas fills the bar up to the chosen grade rather than marking one
   // cell, so grade 5 reads as five. Fill is not the only carrier: the radio's
@@ -135,6 +142,17 @@
 // own fieldset in any engine, so putting `GRADE` on the cells' line means either
 // hiding the group's own name and drawing a second copy of it — announced twice
 // — or a wrapper the control does not need. The row it heads is the same row.
+// One row on both artboards that draw steps: canvas 1d's five buttons across a
+// layer, and canvas 1a's five beside an item's name. The bar variant wraps
+// because it spans whatever width it is given; this one is often a group in a
+// shrink-to-fit box, and a wrapping row there resolves to its widest single
+// cell — one cell per line, and a header four times the height the canvas
+// draws. The cells still shrink, so a narrow layer keeps the row rather than
+// running past its edge.
+.grades--steps .grades__cells {
+  flex-wrap: nowrap;
+}
+
 .grades--steps .grade {
   block-size: var(--ednb-layout-grade-step);
 }
@@ -147,8 +165,44 @@
   background-color: var(--ednb-surface-accent-quiet);
 }
 
+// A ladder drawn to show what a chosen item will bring. Flat, on the plain
+// ground of a control that is not one, with none of the accent that says "this
+// one" — because none of them is one, and there is nothing to press.
+//
+// Carrying the same two `:not()`s the steps rule above carries is what makes it
+// apply at all. Written later is only half of the cascade: the steps rule weighs
+// four classes to a bare `.grades--preview .grade`'s two, so the quiet amber
+// wash won on every cell the preview draws and the ladder read as live.
+.grades--preview .grade:not([data-filled='true']):not([data-unavailable='true']),
+.grades--preview .grade[data-filled='true'] {
+  background-color: var(--ednb-surface-control-quiet);
+  border-color: var(--ednb-border-decorative);
+  color: var(--ednb-text-faint);
+  cursor: default;
+}
+
+.grades--preview .grade__number {
+  color: var(--ednb-text-faint);
+}
+
 .grades--steps .grade__number {
   font-family: var(--ednb-font-heading);
   font-size: var(--ednb-text-size-compact);
   font-weight: var(--ednb-text-weight-control);
+}
+
+// A cell a pointer could press. The filled ones are the choice itself and the
+// preview is not a control, so neither answers; an out-of-range cell does,
+// because taking a recipe back down to it is a thing a Commander may do.
+// `.pe-gr:hover { border-color: rgba(255,140,26,.6); color: #ffb060 }` — the
+// edge only. The ink is the half this ladder cannot take: it is the ship tool's
+// control too, and there the number's colour is what says a cell is past the
+// choice (`module-engineering.spec.ts`, "numbers every grade cell"). Lifting it
+// under a pointer gives that claim two unfilled inks and makes a hovered cell
+// read as the chosen one. The edge carries the answer on its own
+// (013 design/reference-review.md).
+@media (hover: hover) {
+  .grades:not(.grades--preview) .grade:not([data-filled='true']):hover {
+    border-color: var(--ednb-border-control-hover);
+  }
 }

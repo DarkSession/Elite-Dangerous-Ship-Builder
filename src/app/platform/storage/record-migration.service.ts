@@ -1,14 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { reconstructFromSnapshot } from '../../domain/ships/build/build-snapshot.reconstructor';
 import { toBuildSnapshotV1 } from '../../domain/ships/build/build-snapshot.serializer';
-import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
+import { isShipRecord, type LocalRecord } from '../../domain/records/local-record';
+import { reconstructLoadout } from '../../domain/equipment/loadout/loadout-reconstructor';
 import { LocalRecordRepository } from './local-record.repository';
 
 /** What happened when a record was opened. */
 export type OpenOutcome =
   | {
       readonly ok: true;
-      readonly record: LocalRecordV1;
+      readonly record: LocalRecord;
     }
   | { readonly ok: false; readonly reason: string };
 
@@ -42,9 +43,35 @@ export class RecordMigrationService {
 
     const { record, migrated } = read.value;
 
-    // Through the package before anything is written back: an unknown hull or
-    // an unresolvable module identity refuses here, and the original bytes are
-    // never touched.
+    const envelope = {
+      id: record.id,
+      kind: record.kind,
+      revisionId: record.revisionId,
+      createdAt: record.createdAt,
+      modifiedAt: record.modifiedAt,
+      name: record.name,
+      note: record.note,
+      sourceNamed: record.sourceNamed,
+    };
+
+    // Through the package before anything is written back: an unknown hull,
+    // suit, weapon or recipe refuses here, and the original bytes are never
+    // touched (FR-019).
+    if (!isShipRecord(record)) {
+      const loadout = reconstructLoadout(record.loadout);
+      if (!loadout.ok) {
+        return { ok: false, reason: loadout.reason };
+      }
+      if (!migrated) {
+        return { ok: true, record };
+      }
+      this.#records.write({
+        ...envelope,
+        payload: { tool: 'equipment', loadout: loadout.loadout },
+      });
+      return { ok: true, record };
+    }
+
     const rebuilt = reconstructFromSnapshot(record.build);
     if (!rebuilt.ok) {
       return { ok: false, reason: rebuilt.reason };
@@ -57,16 +84,12 @@ export class RecordMigrationService {
     // The reconstructed build is what gets stored, so the migrated record and
     // the build a Commander is now editing are the same thing.
     this.#records.write({
-      id: record.id,
-      kind: record.kind,
-      revisionId: record.revisionId,
-      createdAt: record.createdAt,
-      modifiedAt: record.modifiedAt,
-      name: record.name,
-      note: record.note,
-      validation: record.validation,
-      build: toBuildSnapshotV1(rebuilt.loadout),
-      sourceNamed: record.sourceNamed,
+      ...envelope,
+      payload: {
+        tool: 'ship',
+        validation: record.validation,
+        build: toBuildSnapshotV1(rebuilt.loadout),
+      },
     });
 
     return { ok: true, record };

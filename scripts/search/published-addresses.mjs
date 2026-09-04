@@ -63,7 +63,7 @@ export const SITE_CARD = 'assets/link-card.png';
 export const STATIC_ADDRESSES = [
   { path: 'ships', titleKey: 'catalogue.title', descriptionKey: 'catalogue.description' },
   { path: 'build', titleKey: 'workspace.title', descriptionKey: 'workspace.description' },
-  { path: 'builds', titleKey: 'library.title', descriptionKey: 'library.description' },
+  { path: 'equipment', titleKey: 'equipment.title', descriptionKey: 'equipment.description' },
 ];
 
 /** The message keys the hull address resolves, with the hull interpolated in. */

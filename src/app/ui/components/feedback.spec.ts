@@ -166,19 +166,22 @@ describe('AppFrame', () => {
     expect(element(fixture).querySelector('nav')).toBeNull();
   });
 
-  it('names the navigation and marks the current entry', () => {
+  it('names the tool region and marks the tool a Commander is in', () => {
     const fixture = renderComponent(AppFrame, {
-      navigation: [
-        { id: 'ships', label: 'Ship Builder', href: '/ships', current: true },
-        { id: 'builds', label: 'Saved builds', href: '/builds' },
+      tools: [
+        { id: 'ship', label: 'Ship Builder', href: '/ships', current: true },
+        { id: 'equipment', label: 'Equipment Builder', href: '/equipment' },
       ],
     });
     const nav = query(fixture, 'nav');
-    const links = element(fixture).querySelectorAll('.frame__navigation-link');
+    const entries = element(fixture).querySelectorAll('.frame__tool');
 
-    expect(nav.getAttribute('aria-label')).toBe(BUNDLED_ENGLISH['shell.navigation.label']);
-    expect(links[0]?.getAttribute('aria-current')).toBe('page');
-    expect(links[1]?.getAttribute('aria-current')).toBeNull();
+    // The shell's one navigation landmark. The primary navigation row it used
+    // to sit beside held exactly one entry, the saved builds, and went when
+    // they became an action (Commander request 2026-09-04).
+    expect(nav.getAttribute('aria-label')).toBe(BUNDLED_ENGLISH['shell.tools.label']);
+    expect(entries[0]?.getAttribute('aria-current')).toBe('true');
+    expect(entries[1]?.getAttribute('aria-current')).toBeNull();
   });
 
   it('gives every action visible text in both compositions', () => {

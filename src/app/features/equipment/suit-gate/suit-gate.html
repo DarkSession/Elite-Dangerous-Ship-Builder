@@ -1,0 +1,70 @@
+<section class="gate" [class.gate--compact]="compact()" [attr.aria-labelledby]="headingId">
+  <header class="gate__header" [class.visually-hidden]="compact()">
+    <!-- Canvas 2b goes straight from the ledger to the step rule: the gate
+         stands inside the `LOADOUT` tab there, under rows that already say
+         every mount is locked, and a second heading saying so is the same
+         thing twice. The words stay for anyone reading the region aloud, which
+         is what names it. -->
+    <div class="gate__identity">
+      <h2 class="gate__title" [id]="headingId">{{ title() }}</h2>
+      <p class="gate__description">{{ description() }}</p>
+    </div>
+
+    <!--
+      A preview of the ladder a suit will bring, not a control: there is nothing
+      to grade yet. `inert` keeps it out of the focus order and `aria-hidden`
+      out of the accessibility tree, so nobody is handed five radio buttons that
+      answer nothing. Canvas 2b leaves it out where the column is narrow.
+    -->
+    @if (!compact()) {
+      <div class="gate__grades" [attr.inert]="true" aria-hidden="true">
+        <edsb-grade-selector
+          [grades]="gradePreview()"
+          [selected]="null"
+          [cellLabels]="gradeLabels()"
+          [asSteps]="true"
+          [preview]="true"
+        />
+      </div>
+    }
+  </header>
+
+  <div class="gate__choose">
+    <div class="gate__rule">
+      <h3 class="gate__step">{{ step() }}</h3>
+      <span class="gate__line" aria-hidden="true"></span>
+    </div>
+
+    <edsb-choice-list
+      class="gate__suits"
+      [asPairs]="true"
+      [choices]="choices()"
+      [label]="step()"
+      (chosen)="chosen.emit($event)"
+    />
+
+    <p class="gate__saved">
+      <!-- The canvas offers two ways past the gate for a Commander who already
+           has a loadout. Only this one exists: importing a journal event is a
+           capability the bench does not have (013 design/reference-review.md). -->
+      <span class="gate__prompt">{{ prompt() }}</span>
+      <button class="gate__link" type="button" (click)="openSaved()">{{ savedLabel() }}</button>
+    </p>
+  </div>
+
+  <!-- The slots a suit will unlock, previewed and inert for the same reason the
+       ladder is, and left out on the narrow canvas for the same reason. -->
+  @if (!compact()) {
+    <div class="gate__slots" [attr.inert]="true" aria-hidden="true">
+      <div class="gate__rule">
+        <span class="gate__step">{{ slotsHeading() }}</span>
+        <span class="gate__line"></span>
+      </div>
+      <ul class="gate__slot-grid">
+        @for (slot of slotPreview(); track slot) {
+          <li class="gate__slot">{{ slot }}</li>
+        }
+      </ul>
+    </div>
+  }
+</section>

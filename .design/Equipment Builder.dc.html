@@ -27,6 +27,70 @@
           a:hover {
             color: var(--amber-3);
           }
+          .pe-row,
+          .pe-slot,
+          .pe-alt,
+          .pe-pi,
+          .pe-gr,
+          .pe-pclose,
+          .pe-pclear,
+          .me-row,
+          .me-slot,
+          .me-alt,
+          .me-pi,
+          .me-gr,
+          .me-tab,
+          .me-fmt,
+          .me-back,
+          .me-pclose,
+          .me-pclear {
+            transition:
+              background-color 0.12s ease,
+              border-color 0.12s ease,
+              color 0.12s ease;
+          }
+          .pe-row:not([data-active]):not([data-disabled]):hover,
+          .me-row:not([data-active]):not([data-disabled]):hover {
+            background: #191917 !important;
+            border-left-color: rgba(255, 140, 26, 0.45) !important;
+          }
+          .pe-slot:not([data-active]):hover,
+          .me-slot:not([data-active]):hover {
+            background: #1a1917 !important;
+            border-color: rgba(255, 140, 26, 0.55) !important;
+          }
+          .pe-row[data-active]:hover,
+          .me-row[data-active]:hover,
+          .pe-slot[data-active]:hover,
+          .me-slot[data-active]:hover {
+            filter: brightness(1.12);
+          }
+          .pe-alt:hover,
+          .me-alt:hover {
+            background: #1a1917 !important;
+            border-color: rgba(255, 140, 26, 0.4) !important;
+          }
+          .pe-pi:not([data-taken='1']):hover,
+          .me-pi:not([data-taken='1']):hover {
+            background: rgba(255, 140, 26, 0.09) !important;
+          }
+          .pe-gr:hover,
+          .me-gr:hover {
+            border-color: rgba(255, 140, 26, 0.6) !important;
+            color: #ffb060 !important;
+          }
+          .pe-pclose:hover,
+          .pe-pclear:hover,
+          .me-pclose:hover,
+          .me-pclear:hover,
+          .me-back:hover,
+          .me-tab:hover,
+          .me-fmt:hover {
+            color: #ffb060 !important;
+          }
+          .pe-locked {
+            cursor: default;
+          }
           .dv-turn {
             padding: 40px 44px 32px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -167,6 +231,1967 @@
           }
         </style>
       </helmet>
+
+      <section class="dv-turn" id="t2">
+        <div class="dv-thd">
+          <a class="dv-tid" href="#t2">2</a
+          ><span class="dv-tname">EMPTY STATE — EVERYTHING LOCKED UNTIL A SUIT IS CHOSEN</span>
+        </div>
+        <div class="dv-opts">
+          <div class="dv-opt" id="2a">
+            <div class="dv-olabel">
+              <a class="dv-oid" href="#2a">2a</a>Inline gate — bench stays visible but inert, suit
+              chooser occupies the detail column
+            </div>
+            <div class="dv-card" style="width: 1640px">
+              <div style="background: var(--bg); color: var(--ink); position: relative">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0 20px;
+                    height: 54px;
+                    background: var(--panel-4);
+                    border-bottom: 2px solid var(--amber-a35);
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 14px">
+                    <img
+                      src="./assets/nav-beacon-mark-header.svg"
+                      alt="Nav Beacon"
+                      width="24"
+                      height="24"
+                      style="flex: none; display: block; opacity: 0.55"
+                    />
+                    <div
+                      style="
+                        flex: none;
+                        padding: 4px 7px 3px;
+                        background: var(--amber-a3);
+                        color: var(--amber-2);
+                        font:
+                          700 11px/1 'Barlow Condensed',
+                          sans-serif;
+                        letter-spacing: 0.18em;
+                      "
+                    >
+                      BETA
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px">
+                      <div
+                        style="
+                          font:
+                            700 16px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.16em;
+                          color: var(--ink-38);
+                        "
+                      >
+                        UNTITLED LOADOUT
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 7px">
+                        <div
+                          style="
+                            font:
+                              400 9.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          NO SUIT SELECTED
+                        </div>
+                        <div style="width: 3px; height: 3px; background: var(--ink-32)"></div>
+                        <div
+                          style="
+                            font:
+                              400 9.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-38);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          ON FOOT
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <div
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 13px;
+                        border: 1px solid rgba(255, 140, 26, 0.12);
+                        font:
+                          500 10px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--ink-3);
+                        letter-spacing: 0.1em;
+                      "
+                    >
+                      ↶ UNDO
+                    </div>
+                    <div
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 13px;
+                        border: 1px solid rgba(255, 140, 26, 0.12);
+                        font:
+                          500 10px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--ink-3);
+                        letter-spacing: 0.1em;
+                      "
+                    >
+                      REDO ↷
+                    </div>
+                    <div
+                      style="width: 1px; height: 22px; background: var(--amber-a2); margin: 0 4px"
+                    ></div>
+                    <div
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 16px;
+                        border: 1px solid var(--amber-a35);
+                        font:
+                          600 10px/1 'Barlow Condensed',
+                          sans-serif;
+                        color: var(--amber-2);
+                        letter-spacing: 0.18em;
+                        cursor: pointer;
+                      "
+                      style-hover="border-color:var(--amber-a7)"
+                    >
+                      OPEN BUILD
+                    </div>
+                    <div
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 16px;
+                        border: 1px solid var(--amber-a35);
+                        font:
+                          600 10px/1 'Barlow Condensed',
+                          sans-serif;
+                        color: var(--amber-2);
+                        letter-spacing: 0.18em;
+                        cursor: pointer;
+                      "
+                      style-hover="border-color:var(--amber-a7)"
+                    >
+                      IMPORT
+                    </div>
+                    <div
+                      title="Choose a suit before exporting"
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 16px;
+                        border: 1px solid rgba(255, 140, 26, 0.12);
+                        font:
+                          600 10px/1 'Barlow Condensed',
+                          sans-serif;
+                        color: var(--ink-3);
+                        letter-spacing: 0.18em;
+                        cursor: not-allowed;
+                      "
+                    >
+                      EXPORT
+                    </div>
+                    <div
+                      title="Choose a suit before saving"
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 20px;
+                        background: rgba(255, 140, 26, 0.14);
+                        color: rgba(255, 165, 77, 0.42);
+                        font:
+                          700 10px/1 'Barlow Condensed',
+                          sans-serif;
+                        letter-spacing: 0.18em;
+                        cursor: not-allowed;
+                      "
+                    >
+                      SAVE
+                    </div>
+                    <div
+                      style="
+                        width: 34px;
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 1px solid var(--amber-a35);
+                        font:
+                          600 12px/1 'JetBrains Mono',
+                          monospace;
+                        color: var(--amber-2);
+                        cursor: pointer;
+                      "
+                      style-hover="border-color:var(--amber-a7)"
+                    >
+                      ?
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style="display: grid; grid-template-columns: 392px 1fr 320px; min-height: 840px"
+                >
+                  <div
+                    style="
+                      border-right: 1px solid var(--amber-a18);
+                      display: flex;
+                      flex-direction: column;
+                      background: #0d0d0d;
+                    "
+                  >
+                    <div
+                      style="padding: 14px 0 22px; display: flex; flex-direction: column; gap: 18px"
+                    >
+                      <div>
+                        <div
+                          style="display: flex; align-items: center; gap: 9px; padding: 0 16px 8px"
+                        >
+                          <div
+                            style="
+                              font:
+                                500 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--amber-2);
+                              letter-spacing: 0.2em;
+                            "
+                          >
+                            SUIT
+                          </div>
+                          <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
+                          <div
+                            style="
+                              font:
+                                400 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-38);
+                            "
+                          >
+                            0
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 16px;
+                            background: linear-gradient(90deg, var(--amber-a12), transparent);
+                            border-left: 3px solid var(--amber);
+                            cursor: pointer;
+                          "
+                          style-hover="background:linear-gradient(90deg,var(--amber-a18),transparent)"
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--amber-a6);
+                              font:
+                                700 13px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--amber-2);
+                            "
+                          >
+                            +
+                          </div>
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--amber-3);
+                              "
+                            >
+                              Choose a suit
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 9px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-48);
+                                margin-top: 5px;
+                                letter-spacing: 0.04em;
+                              "
+                            >
+                              EMPTY · REQUIRED FIRST
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font:
+                                400 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--amber-a7);
+                              letter-spacing: 0.08em;
+                            "
+                          >
+                            SELECT →
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style="opacity: 0.34; pointer-events: none">
+                        <div
+                          style="display: flex; align-items: center; gap: 9px; padding: 0 16px 8px"
+                        >
+                          <div
+                            style="
+                              font:
+                                500 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-5);
+                              letter-spacing: 0.2em;
+                            "
+                          >
+                            WEAPONS
+                          </div>
+                          <div
+                            style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.06)"
+                          ></div>
+                          <div
+                            style="
+                              font:
+                                400 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-3);
+                            "
+                          >
+                            —
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 16px;
+                            border-left: 3px solid transparent;
+                          "
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--ink-18);
+                              font:
+                                700 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            P1
+                          </div>
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  400 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-42);
+                              "
+                            >
+                              Primary slot 1
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 9px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-3);
+                                margin-top: 5px;
+                                letter-spacing: 0.04em;
+                              "
+                            >
+                              LOCKED
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 16px;
+                            border-left: 3px solid transparent;
+                          "
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--ink-18);
+                              font:
+                                700 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            P2
+                          </div>
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  400 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-42);
+                              "
+                            >
+                              Primary slot 2
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 9px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-3);
+                                margin-top: 5px;
+                                letter-spacing: 0.04em;
+                              "
+                            >
+                              LOCKED
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 16px;
+                            border-left: 3px solid transparent;
+                          "
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--ink-18);
+                              font:
+                                700 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            S1
+                          </div>
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  400 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-42);
+                              "
+                            >
+                              Secondary slot
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 9px/1 'JetBrains Mono',
+                                  monospace;
+                                color: var(--ink-3);
+                                margin-top: 5px;
+                                letter-spacing: 0.04em;
+                              "
+                            >
+                              LOCKED
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style="opacity: 0.22; pointer-events: none">
+                        <div
+                          style="display: flex; align-items: center; gap: 9px; padding: 0 16px 8px"
+                        >
+                          <div
+                            style="
+                              font:
+                                500 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-5);
+                              letter-spacing: 0.2em;
+                            "
+                          >
+                            SUIT TOOLS
+                          </div>
+                          <div
+                            style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.06)"
+                          ></div>
+                          <div
+                            style="
+                              font:
+                                400 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-3);
+                            "
+                          >
+                            —
+                          </div>
+                        </div>
+                        <div
+                          style="display: flex; align-items: center; gap: 11px; padding: 10px 16px"
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--ink-18);
+                              font:
+                                700 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            T
+                          </div>
+                          <div style="flex: 1">
+                            <div
+                              style="
+                                font:
+                                  400 12.5px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-42);
+                              "
+                            >
+                              Energylink
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style="display: flex; align-items: center; gap: 11px; padding: 10px 16px"
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--ink-18);
+                              font:
+                                700 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            T
+                          </div>
+                          <div style="flex: 1">
+                            <div
+                              style="
+                                font:
+                                  400 12.5px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-42);
+                              "
+                            >
+                              Arc Cutter
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style="display: flex; align-items: center; gap: 11px; padding: 10px 16px"
+                        >
+                          <div
+                            style="
+                              width: 26px;
+                              height: 26px;
+                              flex: none;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              border: 1px dashed var(--ink-18);
+                              font:
+                                700 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            T
+                          </div>
+                          <div style="flex: 1">
+                            <div
+                              style="
+                                font:
+                                  400 12.5px/1.2 Barlow,
+                                  sans-serif;
+                                color: var(--ink-42);
+                              "
+                            >
+                              Profile Analyser
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      background: var(--panel-0);
+                      border-right: 1px solid var(--amber-a18);
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: flex-end;
+                        justify-content: space-between;
+                        gap: 20px;
+                        padding: 20px 24px 16px;
+                        border-bottom: 1px solid var(--amber-a16);
+                      "
+                    >
+                      <div style="min-width: 0">
+                        <div
+                          style="
+                            font:
+                              700 26px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.1em;
+                            color: var(--ink-32);
+                          "
+                        >
+                          NO SUIT FITTED
+                        </div>
+                        <div
+                          style="
+                            font:
+                              300 12px/1.4 Barlow,
+                              sans-serif;
+                            color: var(--ink-38);
+                            margin-top: 9px;
+                          "
+                        >
+                          Pick one of the four suits to open the bench
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          flex-direction: column;
+                          gap: 8px;
+                          align-items: flex-end;
+                          opacity: 0.3;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              500 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          GRADE
+                        </div>
+                        <div style="display: flex; gap: 6px">
+                          <div
+                            style="
+                              width: 44px;
+                              height: 32px;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--panel-2);
+                              border: 1px solid var(--ink-18);
+                              font:
+                                600 11px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            G1
+                          </div>
+                          <div
+                            style="
+                              width: 44px;
+                              height: 32px;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--panel-2);
+                              border: 1px solid var(--ink-18);
+                              font:
+                                600 11px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            G2
+                          </div>
+                          <div
+                            style="
+                              width: 44px;
+                              height: 32px;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--panel-2);
+                              border: 1px solid var(--ink-18);
+                              font:
+                                600 11px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            G3
+                          </div>
+                          <div
+                            style="
+                              width: 44px;
+                              height: 32px;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--panel-2);
+                              border: 1px solid var(--ink-18);
+                              font:
+                                600 11px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            G4
+                          </div>
+                          <div
+                            style="
+                              width: 44px;
+                              height: 32px;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                              background: var(--panel-2);
+                              border: 1px solid var(--ink-18);
+                              font:
+                                600 11px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                            "
+                          >
+                            G5
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="padding: 26px 24px 0; display: flex; flex-direction: column; gap: 14px"
+                    >
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <div
+                          style="
+                            font:
+                              500 9px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                            letter-spacing: 0.2em;
+                          "
+                        >
+                          STEP 1 · CHOOSE A SUIT
+                        </div>
+                        <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
+                      </div>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 13px;
+                            background: #131313;
+                            border: 1px solid rgba(255, 140, 26, 0.12);
+                            cursor: pointer;
+                          "
+                          style-hover="border-color:var(--amber-a35);background:var(--panel-2)"
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: #ddd3c6;
+                              "
+                            >
+                              Dominator Suit
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                                margin-top: 6px;
+                                letter-spacing: 0.1em;
+                              "
+                            >
+                              TACTICAL · 2 PRIMARY / 1 SECONDARY
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 15px/1 'Barlow Condensed',
+                                sans-serif;
+                              color: #ffa54d;
+                            "
+                          >
+                            15.0<span
+                              style="
+                                font:
+                                  400 8px 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                              "
+                            >
+                              SHIELD</span
+                            >
+                          </div>
+                        </div>
+
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 13px;
+                            background: #131313;
+                            border: 1px solid rgba(255, 140, 26, 0.12);
+                            cursor: pointer;
+                          "
+                          style-hover="border-color:var(--amber-a35);background:var(--panel-2)"
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: #ddd3c6;
+                              "
+                            >
+                              Maverick Suit
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                                margin-top: 6px;
+                                letter-spacing: 0.1em;
+                              "
+                            >
+                              UTILITY · 1 PRIMARY / 1 SECONDARY
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 15px/1 'Barlow Condensed',
+                                sans-serif;
+                              color: #ffa54d;
+                            "
+                          >
+                            13.5<span
+                              style="
+                                font:
+                                  400 8px 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                              "
+                            >
+                              SHIELD</span
+                            >
+                          </div>
+                        </div>
+
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 13px;
+                            background: #131313;
+                            border: 1px solid rgba(255, 140, 26, 0.12);
+                            cursor: pointer;
+                          "
+                          style-hover="border-color:var(--amber-a35);background:var(--panel-2)"
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: #ddd3c6;
+                              "
+                            >
+                              Artemis Suit
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                                margin-top: 6px;
+                                letter-spacing: 0.1em;
+                              "
+                            >
+                              EXPLORATION · 1 PRIMARY / 1 SECONDARY
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 15px/1 'Barlow Condensed',
+                                sans-serif;
+                              color: #ffa54d;
+                            "
+                          >
+                            12.0<span
+                              style="
+                                font:
+                                  400 8px 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                              "
+                            >
+                              SHIELD</span
+                            >
+                          </div>
+                        </div>
+
+                        <div
+                          style="
+                            display: flex;
+                            align-items: center;
+                            gap: 11px;
+                            padding: 11px 13px;
+                            background: #131313;
+                            border: 1px solid rgba(255, 140, 26, 0.12);
+                            cursor: pointer;
+                          "
+                          style-hover="border-color:var(--amber-a35);background:var(--panel-2)"
+                        >
+                          <div style="flex: 1; min-width: 0">
+                            <div
+                              style="
+                                font:
+                                  500 13px/1.2 Barlow,
+                                  sans-serif;
+                                color: #ddd3c6;
+                              "
+                            >
+                              Flight Suit
+                            </div>
+                            <div
+                              style="
+                                font:
+                                  400 8.5px/1 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                                margin-top: 6px;
+                                letter-spacing: 0.1em;
+                              "
+                            >
+                              FLIGHT · SIDEARM ONLY
+                            </div>
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 15px/1 'Barlow Condensed',
+                                sans-serif;
+                              color: #ffa54d;
+                            "
+                          >
+                            7.5<span
+                              style="
+                                font:
+                                  400 8px 'JetBrains Mono',
+                                  monospace;
+                                color: rgba(232, 222, 209, 0.42);
+                              "
+                            >
+                              SHIELD</span
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px; padding-top: 2px">
+                        <div
+                          style="
+                            font:
+                              300 11.5px/1.5 Barlow,
+                              sans-serif;
+                            color: var(--ink-45);
+                          "
+                        >
+                          Already have a loadout?
+                        </div>
+                        <div
+                          style="
+                            font:
+                              500 11.5px/1.5 Barlow,
+                              sans-serif;
+                            color: var(--amber-2);
+                            cursor: pointer;
+                          "
+                          style-hover="color:var(--amber-3)"
+                        >
+                          Import a journal event
+                        </div>
+                        <div style="width: 3px; height: 3px; background: var(--ink-32)"></div>
+                        <div
+                          style="
+                            font:
+                              500 11.5px/1.5 Barlow,
+                              sans-serif;
+                            color: var(--amber-2);
+                            cursor: pointer;
+                          "
+                          style-hover="color:var(--amber-3)"
+                        >
+                          Open a saved build
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 28px 24px 24px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 22px;
+                        opacity: 0.28;
+                        pointer-events: none;
+                      "
+                    >
+                      <div style="display: flex; flex-direction: column; gap: 12px">
+                        <div style="display: flex; align-items: center; gap: 9px">
+                          <div
+                            style="
+                              font:
+                                500 9px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-5);
+                              letter-spacing: 0.2em;
+                            "
+                          >
+                            MODIFICATION SLOTS · LOCKED
+                          </div>
+                          <div
+                            style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.06)"
+                          ></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                          <div
+                            style="
+                              height: 66px;
+                              border: 1px dashed var(--ink-18);
+                              display: flex;
+                              align-items: center;
+                              padding: 0 14px;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                              letter-spacing: 0.1em;
+                            "
+                          >
+                            SLOT 1 · EMPTY
+                          </div>
+                          <div
+                            style="
+                              height: 66px;
+                              border: 1px dashed var(--ink-18);
+                              display: flex;
+                              align-items: center;
+                              padding: 0 14px;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                              letter-spacing: 0.1em;
+                            "
+                          >
+                            SLOT 2 · EMPTY
+                          </div>
+                          <div
+                            style="
+                              height: 66px;
+                              border: 1px dashed var(--ink-18);
+                              display: flex;
+                              align-items: center;
+                              padding: 0 14px;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                              letter-spacing: 0.1em;
+                            "
+                          >
+                            SLOT 3 · EMPTY
+                          </div>
+                          <div
+                            style="
+                              height: 66px;
+                              border: 1px dashed var(--ink-18);
+                              display: flex;
+                              align-items: center;
+                              padding: 0 14px;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-32);
+                              letter-spacing: 0.1em;
+                            "
+                          >
+                            SLOT 4 · EMPTY
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="background: #0d0d0d; display: flex; flex-direction: column">
+                    <div style="padding: 15px 18px; border-bottom: 1px solid var(--amber-a16)">
+                      <div
+                        style="
+                          font:
+                            700 12px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.22em;
+                          color: var(--ink-38);
+                        "
+                      >
+                        COMMANDER STATS
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 16px 18px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 11px;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        opacity: 0.34;
+                      "
+                    >
+                      <div
+                        style="
+                          font:
+                            500 8.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-5);
+                          letter-spacing: 0.14em;
+                        "
+                      >
+                        ARMOUR
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 9px; margin-top: 2px">
+                        <div>
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: space-between;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-42);
+                            "
+                          >
+                            <span>KINETIC</span><span>—</span>
+                          </div>
+                          <div
+                            style="
+                              height: 4px;
+                              background: rgba(255, 255, 255, 0.05);
+                              margin-top: 7px;
+                            "
+                          ></div>
+                        </div>
+                        <div>
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: space-between;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-42);
+                            "
+                          >
+                            <span>THERMAL</span><span>—</span>
+                          </div>
+                          <div
+                            style="
+                              height: 4px;
+                              background: rgba(255, 255, 255, 0.05);
+                              margin-top: 7px;
+                            "
+                          ></div>
+                        </div>
+                        <div>
+                          <div
+                            style="
+                              display: flex;
+                              justify-content: space-between;
+                              font:
+                                400 10px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-42);
+                            "
+                          >
+                            <span>PLASMA</span><span>—</span>
+                          </div>
+                          <div
+                            style="
+                              height: 4px;
+                              background: rgba(255, 255, 255, 0.05);
+                              margin-top: 7px;
+                            "
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 16px 18px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 11px;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        opacity: 0.34;
+                      "
+                    >
+                      <div
+                        style="
+                          font:
+                            500 8.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-5);
+                          letter-spacing: 0.14em;
+                        "
+                      >
+                        SHIELDS
+                      </div>
+                      <div style="display: flex; gap: 10px">
+                        <div style="flex: 1; padding: 10px 12px; background: var(--panel-2)">
+                          <div
+                            style="
+                              font:
+                                500 8px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-38);
+                              letter-spacing: 0.12em;
+                            "
+                          >
+                            STRENGTH
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 21px/1 'Barlow Condensed',
+                                sans-serif;
+                              color: var(--ink-32);
+                              margin-top: 8px;
+                            "
+                          >
+                            —
+                          </div>
+                        </div>
+                        <div style="flex: 1; padding: 10px 12px; background: var(--panel-2)">
+                          <div
+                            style="
+                              font:
+                                500 8px/1 'JetBrains Mono',
+                                monospace;
+                              color: var(--ink-38);
+                              letter-spacing: 0.12em;
+                            "
+                          >
+                            REGEN /s
+                          </div>
+                          <div
+                            style="
+                              font:
+                                600 21px/1 'Barlow Condensed',
+                                sans-serif;
+                              color: var(--ink-32);
+                              margin-top: 8px;
+                            "
+                          >
+                            —
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 16px 18px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        opacity: 0.34;
+                      "
+                    >
+                      <div
+                        style="
+                          font:
+                            500 8.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-5);
+                          letter-spacing: 0.14em;
+                        "
+                      >
+                        FIREPOWER
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 8px">
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            font:
+                              400 10px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                          "
+                        >
+                          <span>SUSTAINED DPS</span><span>—</span>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            font:
+                              400 10px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                          "
+                        >
+                          <span>BURST DPS</span><span>—</span>
+                        </div>
+                        <div
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            font:
+                              400 10px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                          "
+                        >
+                          <span>RESERVE AMMO</span><span>—</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 16px 18px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        opacity: 0.34;
+                      "
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          align-items: baseline;
+                          justify-content: space-between;
+                          gap: 10px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              500 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-5);
+                            letter-spacing: 0.14em;
+                          "
+                        >
+                          MATERIAL REQUIREMENTS
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-3);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          NONE
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          font:
+                            300 11.5px/1.5 Barlow,
+                            sans-serif;
+                          color: var(--ink-38);
+                          text-wrap: pretty;
+                        "
+                      >
+                        Modification costs appear once a suit and weapons are fitted.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dv-opt" id="2b">
+            <div class="dv-olabel">
+              <a class="dv-oid" href="#2b">2b</a>Mobile — same inline gate: ledger inert, stats and
+              materials tabs locked, suit chooser in flow
+            </div>
+            <div class="dv-card" style="width: 390px">
+              <div
+                style="
+                  background: var(--bg);
+                  color: var(--ink);
+                  min-height: 844px;
+                  max-height: 844px;
+                  display: flex;
+                  flex-direction: column;
+                  position: relative;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0 12px 0 14px;
+                    height: 52px;
+                    background: var(--panel-4);
+                    border-bottom: 2px solid var(--amber-a35);
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                    <img
+                      src="./assets/nav-beacon-mark-header.svg"
+                      alt="Nav Beacon"
+                      width="24"
+                      height="24"
+                      style="flex: none; display: block; opacity: 0.55"
+                    />
+                    <div
+                      style="
+                        flex: none;
+                        padding: 3px 5px 2px;
+                        background: var(--amber-a3);
+                        color: var(--amber-2);
+                        font:
+                          700 9.5px/1 'Barlow Condensed',
+                          sans-serif;
+                        letter-spacing: 0.18em;
+                      "
+                    >
+                      BETA
+                    </div>
+                    <div style="min-width: 0">
+                      <div
+                        style="
+                          font:
+                            700 15px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.14em;
+                          color: var(--ink-38);
+                        "
+                      >
+                        UNTITLED LOADOUT
+                      </div>
+                      <div
+                        style="
+                          font:
+                            400 8.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-2);
+                          margin-top: 5px;
+                          letter-spacing: 0.1em;
+                        "
+                      >
+                        NO SUIT SELECTED · ON FOOT
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      flex: none;
+                      width: 40px;
+                      height: 40px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      border: 1px solid var(--amber-a4);
+                      color: var(--amber-2);
+                      font:
+                        600 17px/1 'JetBrains Mono',
+                        monospace;
+                      cursor: pointer;
+                    "
+                  >
+                    ⋮
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: none;
+                    display: flex;
+                    gap: 1px;
+                    background: var(--amber-a16);
+                    border-bottom: 1px solid var(--amber-a2);
+                  "
+                >
+                  <div
+                    style="
+                      flex: 1 1 0;
+                      text-align: center;
+                      padding: 12px 3px;
+                      background: var(--amber);
+                      color: var(--bg);
+                      font:
+                        700 11px/1 'Barlow Condensed',
+                        sans-serif;
+                      letter-spacing: 0.14em;
+                    "
+                  >
+                    LOADOUT
+                  </div>
+                  <div
+                    title="Fit a suit to see stats"
+                    style="
+                      flex: 1 1 0;
+                      text-align: center;
+                      padding: 12px 3px;
+                      background: var(--panel-3);
+                      color: var(--ink-3);
+                      font:
+                        600 11px/1 'Barlow Condensed',
+                        sans-serif;
+                      letter-spacing: 0.14em;
+                      cursor: not-allowed;
+                    "
+                  >
+                    STATS
+                  </div>
+                  <div
+                    title="Fit a suit to see materials"
+                    style="
+                      flex: 1 1 0;
+                      text-align: center;
+                      padding: 12px 3px;
+                      background: var(--panel-3);
+                      color: var(--ink-3);
+                      font:
+                        600 11px/1 'Barlow Condensed',
+                        sans-serif;
+                      letter-spacing: 0.14em;
+                      cursor: not-allowed;
+                    "
+                  >
+                    MATERIALS
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    flex: 1;
+                    min-height: 0;
+                    overflow-y: auto;
+                    background: #0d0d0d;
+                    padding: 14px 0 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 18px;
+                  "
+                >
+                  <div style="padding: 0 14px; display: flex; flex-direction: column; gap: 12px">
+                    <div style="display: flex; align-items: center; gap: 9px">
+                      <div
+                        style="
+                          font:
+                            500 9px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--amber-2);
+                          letter-spacing: 0.2em;
+                        "
+                      >
+                        STEP 1 · CHOOSE A SUIT
+                      </div>
+                      <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 14px;
+                        background: var(--panel-2);
+                        border: 1px solid var(--amber-a3);
+                        cursor: pointer;
+                      "
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          align-items: baseline;
+                          justify-content: space-between;
+                          gap: 10px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 16px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.12em;
+                            color: var(--amber-3);
+                          "
+                        >
+                          DOMINATOR SUIT
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 8px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          TACTICAL
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          font:
+                            300 12px/1.5 Barlow,
+                            sans-serif;
+                          color: var(--ink-62);
+                          margin-top: 9px;
+                          text-wrap: pretty;
+                        "
+                      >
+                        Combat frame. Two primaries, extra shield strength, grenade capacity.
+                      </div>
+                      <div
+                        style="
+                          font:
+                            500 9.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-7);
+                          margin-top: 11px;
+                          letter-spacing: 0.06em;
+                        "
+                      >
+                        2 PRIMARY / 1 SECONDARY
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 14px;
+                        background: var(--panel-2);
+                        border: 1px solid var(--amber-a2);
+                        cursor: pointer;
+                      "
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          align-items: baseline;
+                          justify-content: space-between;
+                          gap: 10px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 16px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.12em;
+                            color: var(--ink-2);
+                          "
+                        >
+                          MAVERICK SUIT
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 8px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          UTILITY
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          font:
+                            300 12px/1.5 Barlow,
+                            sans-serif;
+                          color: var(--ink-62);
+                          margin-top: 9px;
+                          text-wrap: pretty;
+                        "
+                      >
+                        Salvage frame. Arc cutter yield, larger backpack, tool-focused mods.
+                      </div>
+                      <div
+                        style="
+                          font:
+                            500 9.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-7);
+                          margin-top: 11px;
+                          letter-spacing: 0.06em;
+                        "
+                      >
+                        1 PRIMARY / 1 SECONDARY
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 14px;
+                        background: var(--panel-2);
+                        border: 1px solid var(--amber-a2);
+                        cursor: pointer;
+                      "
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          align-items: baseline;
+                          justify-content: space-between;
+                          gap: 10px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 16px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.12em;
+                            color: var(--ink-2);
+                          "
+                        >
+                          ARTEMIS SUIT
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 8px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          EXPLORATION
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          font:
+                            300 12px/1.5 Barlow,
+                            sans-serif;
+                          color: var(--ink-62);
+                          margin-top: 9px;
+                          text-wrap: pretty;
+                        "
+                      >
+                        Survey frame. Genetic sampler range, oxygen capacity, jump assist.
+                      </div>
+                      <div
+                        style="
+                          font:
+                            500 9.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-7);
+                          margin-top: 11px;
+                          letter-spacing: 0.06em;
+                        "
+                      >
+                        1 PRIMARY / 1 SECONDARY
+                      </div>
+                    </div>
+
+                    <div
+                      style="
+                        padding: 14px;
+                        background: var(--panel-2);
+                        border: 1px solid var(--amber-a2);
+                        cursor: pointer;
+                      "
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          align-items: baseline;
+                          justify-content: space-between;
+                          gap: 10px;
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              700 16px/1 'Barlow Condensed',
+                              sans-serif;
+                            letter-spacing: 0.12em;
+                            color: var(--ink-2);
+                          "
+                        >
+                          FLIGHT SUIT
+                        </div>
+                        <div
+                          style="
+                            font:
+                              400 8px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-42);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          STANDARD ISSUE
+                        </div>
+                      </div>
+                      <div
+                        style="
+                          font:
+                            300 12px/1.5 Barlow,
+                            sans-serif;
+                          color: var(--ink-62);
+                          margin-top: 9px;
+                          text-wrap: pretty;
+                        "
+                      >
+                        Cockpit frame. No grade ladder and no modifications — sidearm only.
+                      </div>
+                      <div
+                        style="
+                          font:
+                            500 9.5px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-7);
+                          margin-top: 11px;
+                          letter-spacing: 0.06em;
+                        "
+                      >
+                        1 SECONDARY
+                      </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 6px">
+                      <div
+                        style="
+                          height: 48px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          border: 1px solid var(--amber-a35);
+                          font:
+                            600 11px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.18em;
+                          color: var(--amber-2);
+                          cursor: pointer;
+                        "
+                      >
+                        IMPORT A JOURNAL EVENT
+                      </div>
+                      <div
+                        style="
+                          height: 48px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          border: 1px solid var(--amber-a35);
+                          font:
+                            600 11px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.18em;
+                          color: var(--amber-2);
+                          cursor: pointer;
+                        "
+                      >
+                        OPEN A SAVED BUILD
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="dv-next">
+          Bench stays visible but inert until a suit is fitted. Mobile version of this state next,
+          if you want it.
+        </p>
+      </section>
 
       <section class="dv-turn" id="t1">
         <div class="dv-thd">
@@ -917,6 +2942,167 @@
                   </div>
                 </div>
                 <div
+                  id="ge-imp-modal"
+                  class="ge-modal"
+                  style="
+                    display: none;
+                    position: absolute;
+                    inset: 0;
+                    z-index: 43;
+                    background: rgba(6, 6, 7, 0.78);
+                    align-items: center;
+                    justify-content: center;
+                  "
+                >
+                  <div
+                    style="
+                      width: 560px;
+                      background: var(--panel);
+                      border: 1px solid var(--amber-a45);
+                      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 13px 18px;
+                        background: var(--panel-4);
+                        border-bottom: 1px solid var(--amber-a3);
+                      "
+                    >
+                      <div
+                        style="
+                          font:
+                            700 13px/1.35 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.22em;
+                          color: var(--amber-3);
+                        "
+                      >
+                        IMPORT LOADOUT
+                      </div>
+                      <div
+                        class="ge-x"
+                        style="
+                          font:
+                            400 11px/1 'JetBrains Mono',
+                            monospace;
+                          color: var(--ink-5);
+                          letter-spacing: 0.1em;
+                          cursor: pointer;
+                        "
+                        style-hover="color:var(--amber-2)"
+                      >
+                        CLOSE ✕
+                      </div>
+                    </div>
+                    <div style="padding: 18px; display: flex; flex-direction: column; gap: 12px">
+                      <div
+                        style="
+                          font:
+                            400 10.5px/1.5 Barlow,
+                            sans-serif;
+                          color: var(--ink-62);
+                          text-wrap: pretty;
+                        "
+                      >
+                        Paste a loadout JSON export or a journal SuitLoadout event.
+                      </div>
+                      <textarea
+                        id="ge-imp-in"
+                        placeholder='{"event":"SuitLoadout","SuitName_Localised":"Dominator Suit","Modules":[…]}'
+                        spellcheck="false"
+                        style="
+                          width: 100%;
+                          height: 132px;
+                          resize: vertical;
+                          box-sizing: border-box;
+                          background: var(--bg);
+                          border: 1px solid var(--amber-a22);
+                          color: var(--ink);
+                          padding: 11px 12px;
+                          font:
+                            400 11px/1.5 'JetBrains Mono',
+                            monospace;
+                          outline: none;
+                        "
+                        style-focus="border-color:var(--amber-a6)"
+                      ></textarea>
+                      <div
+                        id="ge-imp-msg"
+                        style="
+                          min-height: 13px;
+                          font:
+                            400 9.5px/1.3 'JetBrains Mono',
+                            monospace;
+                          letter-spacing: 0.06em;
+                          color: var(--ink-45);
+                        "
+                      >
+                        AWAITING INPUT
+                      </div>
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: space-between;
+                          gap: 10px;
+                          padding-top: 4px;
+                          border-top: 1px solid var(--amber-a14);
+                        "
+                      >
+                        <div
+                          style="
+                            font:
+                              400 8.5px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--ink-36);
+                            letter-spacing: 0.1em;
+                          "
+                        >
+                          LOADOUT JSON · JOURNAL SUITLOADOUT EVENT
+                        </div>
+                        <div style="display: flex; gap: 8px">
+                          <div
+                            class="ge-x"
+                            style="
+                              padding: 9px 15px;
+                              border: 1px solid var(--ink-18);
+                              font:
+                                600 10px/1 'Barlow Condensed',
+                                sans-serif;
+                              letter-spacing: 0.18em;
+                              color: var(--ink-66);
+                              cursor: pointer;
+                            "
+                            style-hover="border-color:var(--ink-5);color:var(--ink)"
+                          >
+                            CANCEL
+                          </div>
+                          <div
+                            id="ge-imp-go"
+                            style="
+                              padding: 9px 17px;
+                              background: var(--amber);
+                              font:
+                                700 10px/1 'Barlow Condensed',
+                                sans-serif;
+                              letter-spacing: 0.18em;
+                              color: var(--bg);
+                              cursor: pointer;
+                            "
+                            style-hover="background:var(--amber-2)"
+                          >
+                            LOAD LOADOUT
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
                   id="ge-help-modal"
                   class="ge-modal"
                   style="
@@ -1382,6 +3568,26 @@
                       style-hover="border-color:var(--amber-a7)"
                     >
                       OPEN BUILD
+                    </div>
+                    <div
+                      id="ge-imp-btn"
+                      title="Paste a loadout JSON export or a journal SuitLoadout event"
+                      style="
+                        height: 34px;
+                        display: flex;
+                        align-items: center;
+                        padding: 0 16px;
+                        border: 1px solid var(--amber-a35);
+                        font:
+                          600 10px/1 'Barlow Condensed',
+                          sans-serif;
+                        color: var(--amber-2);
+                        letter-spacing: 0.18em;
+                        cursor: pointer;
+                      "
+                      style-hover="border-color:var(--amber-a7)"
+                    >
+                      IMPORT
                     </div>
                     <div
                       id="ge-exp-btn"
@@ -2177,6 +4383,30 @@
                     </div>
 
                     <div
+                      style="padding: 20px 24px 0; display: flex; flex-direction: column; gap: 12px"
+                    >
+                      <div style="display: flex; align-items: center; gap: 9px">
+                        <div
+                          id="pe-althd"
+                          style="
+                            font:
+                              500 9px/1 'JetBrains Mono',
+                              monospace;
+                            color: var(--amber-2);
+                            letter-spacing: 0.2em;
+                          "
+                        >
+                          PRIMARY WEAPON
+                        </div>
+                        <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
+                      </div>
+                      <div
+                        id="pe-alt"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
+                      ></div>
+                    </div>
+
+                    <div
                       id="pe-stats"
                       style="
                         display: grid;
@@ -2319,28 +4549,6 @@
                           background: var(--panel-2);
                           border: 1px solid var(--amber-a35);
                         "
-                      ></div>
-                    </div>
-
-                    <div style="padding: 24px; display: flex; flex-direction: column; gap: 12px">
-                      <div style="display: flex; align-items: center; gap: 9px">
-                        <div
-                          id="pe-althd"
-                          style="
-                            font:
-                              500 9px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--amber-2);
-                            letter-spacing: 0.2em;
-                          "
-                        >
-                          SWAP PRIMARY WEAPON
-                        </div>
-                        <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
-                      </div>
-                      <div
-                        id="pe-alt"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"
                       ></div>
                     </div>
                   </div>
@@ -2723,6 +4931,24 @@
                         "
                       >
                         OPEN BUILD
+                      </div>
+                      <div
+                        class="me-mi"
+                        data-act="import"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          height: 46px;
+                          padding: 0 14px;
+                          cursor: pointer;
+                          font:
+                            600 12px/1 'Barlow Condensed',
+                            sans-serif;
+                          letter-spacing: 0.16em;
+                          color: var(--ink-8);
+                        "
+                      >
+                        IMPORT
                       </div>
                       <div
                         class="me-mi"
@@ -3251,6 +5477,8 @@
               const live = isSuit || enabled(i);
               r.style.background = on && live ? 'linear-gradient(90deg,var(--amber-a16),transparent)' : 'transparent';
               r.style.borderLeftColor = on && live ? 'var(--amber)' : 'transparent';
+              if (on && live) r.dataset.active = '1'; else delete r.dataset.active;
+              if (!live) r.dataset.disabled = '1'; else delete r.dataset.disabled;
               r.style.opacity = live ? '1' : '.42';
               r.style.cursor = live ? 'pointer' : 'not-allowed';
               const nEl = r.querySelector('.pe-rn'), mEl = r.querySelector('.pe-rm'),
@@ -3296,7 +5524,7 @@
             const obj = isSuit ? suit() : wpn(i);
             $('#pe-dn').textContent = obj.n.toUpperCase();
             $('#pe-dsub').textContent = isSuit
-              ? (obj.t + ' suit · ' + obj.p + ' primary / ' + obj.s + ' secondary')
+              ? (obj.t + ' suit')
               : (obj.mk + ' ' + obj.cl.toLowerCase() + ' · ' + obj.sl + ' slot');
             const mx = isSuit ? maxG(obj) : 5;
             $$('.pe-gr').forEach(b => {
@@ -3318,8 +5546,7 @@
                 + cell('ARMOUR · KINETIC', pc(ar)) + cell('SHIELD · KINETIC', pc(r[2]))
                 + cell('ARMOUR · THERMAL', pc(ar)) + cell('SHIELD · THERMAL', pc(r[3]))
                 + cell('ARMOUR · PLASMA', pc(ar)) + cell('SHIELD · PLASMA', pc(r[4]))
-                + cell('ARMOUR · EXPLOSIVE', pc(ar)) + cell('SHIELD · EXPLOSIVE', pc(r[5]))
-                + '<div style="grid-column:1/-1">' + cell('WEAPON SLOTS', obj.p + ' + ' + obj.s) + '</div>';
+                + cell('ARMOUR · EXPLOSIVE', pc(ar)) + cell('SHIELD · EXPLOSIVE', pc(r[5]));
             } else {
               const w = obj, d = w.d[g - 1], sd = d * w.rof;
               $('#pe-stats').style.gridTemplateColumns = 'repeat(4,1fr)';
@@ -3337,9 +5564,10 @@
             $('#pe-mods').innerHTML = Array.from({ length: maxSlots }, (_, si) => {
               const locked = si >= unlocked, m = list[si];
               const gNeed = si + 2;
-              return '<div class="' + (locked ? 'pe-locked' : 'pe-slot') + '" data-i="' + si + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:' + (locked ? 'rgba(255,255,255,.015)' : m ? '#141414' : 'transparent') + ';border:1px ' + (locked ? 'solid rgba(255,140,26,.09)' : m ? 'solid rgba(255,140,26,.18)' : 'dashed rgba(255,140,26,.28)') + ';cursor:' + (locked ? 'default' : 'pointer') + '">'
-                + '<div style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,26,' + (locked ? '.14' : '.35') + ');font:600 9px/1 \'JetBrains Mono\',monospace;color:' + (locked ? 'rgba(232,222,209,.28)' : '#ffa54d') + '">' + (si + 1) + '</div>'
-                + '<div style="flex:1;min-width:0"><div style="font:' + (m ? '500' : '400 italic') + ' 12.5px/1.2 Barlow,sans-serif;color:' + (locked ? 'rgba(232,222,209,.3)' : m ? '#ddd3c6' : 'rgba(232,222,209,.5)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (m || (locked ? 'Locked slot' : 'Empty slot')) + '</div>'
+              const act = !locked && st.pick === si;
+              return '<div class="' + (locked ? 'pe-locked' : 'pe-slot') + '"' + (act ? ' data-active="1"' : '') + ' data-i="' + si + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:' + (act ? 'linear-gradient(90deg,rgba(255,140,26,.16),rgba(255,140,26,.05))' : locked ? 'rgba(255,255,255,.015)' : m ? '#141414' : 'transparent') + ';border:1px ' + (act ? 'solid #ff8c1a' : locked ? 'solid rgba(255,140,26,.09)' : m ? 'solid rgba(255,140,26,.18)' : 'dashed rgba(255,140,26,.28)') + ';' + (act ? 'box-shadow:inset 3px 0 0 #ff8c1a;' : '') + 'cursor:' + (locked ? 'default' : 'pointer') + '">'
+                + '<div style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid ' + (act ? '#ff8c1a' : 'rgba(255,140,26,' + (locked ? '.14' : '.35') + ')') + ';background:' + (act ? '#ff8c1a' : 'transparent') + ';font:600 9px/1 \'JetBrains Mono\',monospace;color:' + (act ? '#141210' : locked ? 'rgba(232,222,209,.28)' : '#ffa54d') + '">' + (si + 1) + '</div>'
+                + '<div style="flex:1;min-width:0"><div style="font:' + (m ? '500' : '400 italic') + ' 12.5px/1.2 Barlow,sans-serif;color:' + (act ? '#ffc98a' : locked ? 'rgba(232,222,209,.3)' : m ? '#ddd3c6' : 'rgba(232,222,209,.5)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (m || (locked ? 'Locked slot' : 'Empty slot')) + '</div>'
                 + '<div style="font:400 8px/1.4 \'JetBrains Mono\',monospace;color:rgba(232,222,209,' + (locked ? '.25' : '.38') + ');margin-top:6px;letter-spacing:.1em">' + (locked ? (m ? 'HELD \u00b7 REQUIRES GRADE ' + gNeed : 'REQUIRES GRADE ' + gNeed) : m ? 'FITTED' : 'CHOOSE A MODIFICATION') + '</div></div>'
                 + (locked
                   ? '<svg width="11" height="13" viewBox="0 0 11 13" fill="none" style="flex:none;opacity:.42"><path d="M2.2 5.5V3.6a3.3 3.3 0 0 1 6.6 0v1.9" stroke="rgba(232,222,209,.6)" stroke-width="1.1"/><rect x=".8" y="5.5" width="9.4" height="6.8" stroke="rgba(232,222,209,.6)" stroke-width="1.1"/></svg>'
@@ -3347,20 +5575,21 @@
                 + '</div>';
             }).join('');
             renderPick();
-            const alts = isSuit ? Object.keys(SUITS).filter(k => k !== st.suit)
-              : Object.keys(W).filter(k => W[k].sl === wpn(i).sl && k !== st.w[i].k);
-            $('#pe-althd').textContent = isSuit ? 'SWAP SUIT' : ('SWAP ' + wpn(i).sl.toUpperCase() + ' WEAPON');
+            const alts = isSuit ? Object.keys(SUITS)
+              : Object.keys(W).filter(k => W[k].sl === wpn(i).sl);
+            const curKey = isSuit ? st.suit : st.w[i].k;
+            $('#pe-althd').textContent = isSuit ? 'SUIT' : (wpn(i).sl.toUpperCase() + ' WEAPON');
             $('#pe-alt').innerHTML = alts.map(k => {
               if (isSuit) {
                 const s = SUITS[k], gg = Math.min(st.sg, maxG(s));
-                return '<div class="pe-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:#131313;border:1px solid rgba(255,140,26,.12);cursor:pointer">'
-                  + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:#ddd3c6">' + s.n + '</div>'
-                  + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);margin-top:6px;letter-spacing:.1em">' + (s.t + ' · ' + s.p + 'P / ' + s.s + 'S').toUpperCase() + '</div></div>'
-                  + '<div style="font:600 15px/1 \'Barlow Condensed\',sans-serif;color:#ffa54d">' + n1(s.g[gg - 1][0]) + '<span style="font:400 8px \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42)"> SP</span></div></div>';
+                return '<div class="pe-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;padding:11px 13px;' + (k === curKey ? 'background:rgba(255,140,26,.14);border:1px solid #ff8c1a' : 'background:#131313;border:1px solid rgba(255,140,26,.12)') + ';cursor:pointer">'
+                  + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (k === curKey ? '#ffb060' : '#ddd3c6') + '">' + s.n + '</div>'
+                  + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);margin-top:6px;letter-spacing:.1em">' + (s.t + ' · ' + s.p + ' primary / ' + s.s + ' secondary').toUpperCase() + '</div></div>'
+                  + '<div style="font:600 15px/1 \'Barlow Condensed\',sans-serif;color:#ffa54d">' + n1(s.g[gg - 1][0]) + '<span style="font:400 8px \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42)"> SHIELD</span></div></div>';
               }
               const w = W[k], gg = st.w[i].g;
-              return '<div class="pe-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:#131313;border:1px solid rgba(255,140,26,.12);cursor:pointer">'
-                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:#ddd3c6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + w.n + '</div>'
+              return '<div class="pe-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;padding:11px 13px;' + (k === curKey ? 'background:rgba(255,140,26,.14);border:1px solid #ff8c1a' : 'background:#131313;border:1px solid rgba(255,140,26,.12)') + ';cursor:pointer">'
+                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (k === curKey ? '#ffb060' : '#ddd3c6') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + w.n + '</div>'
                 + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);margin-top:6px;letter-spacing:.1em">' + (w.cl + ' · ' + w.dt + ' · ' + w.rng + ' M').toUpperCase() + '</div></div>'
                 + '<div style="font:600 15px/1 \'Barlow Condensed\',sans-serif;color:#ffa54d">' + n1(w.d[gg - 1] * w.rof) + '<span style="font:400 8px \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42)"> DPS</span></div></div>';
             }).join('');
@@ -3378,12 +5607,11 @@
             box.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 13px;background:#161615;border-bottom:1px solid rgba(255,140,26,.2)">'
               + '<div style="font:700 10px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.2em;color:#ffb060">SLOT ' + (st.pick + 1) + ' · CHOOSE A MODIFICATION</div>'
               + '<div class="pe-pclose" style="font:400 10px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.5);cursor:pointer">CLOSE ✕</div></div>'
-              + '<div style="max-height:230px;overflow-y:auto">' + lib.map(m => {
-                const taken = list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick;
-                return '<div class="pe-pi" data-m="' + m[0] + '" data-taken="' + (taken ? 1 : '') + '" style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.04);cursor:' + (taken ? 'not-allowed' : 'pointer') + ';opacity:' + (taken ? '.35' : '1') + '">'
+              + '<div style="max-height:230px;overflow-y:auto">' + lib.filter(m => !(list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick)).map(m => {
+                return '<div class="pe-pi" data-m="' + m[0] + '" style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer">'
                   + '<div style="flex:1"><div style="font:500 12.5px/1.2 Barlow,sans-serif;color:' + (list[st.pick] === m[0] ? '#ffb060' : '#ddd3c6') + '">' + m[0] + '</div>'
                   + '</div>'
-                  + (taken ? '<div style="font:400 8px/1 \'JetBrains Mono\',monospace;color:#ff9b78;letter-spacing:.1em">FITTED</div>' : '') + '</div>';
+                  + '</div>';
               }).join('') + '</div>'
               + '<div class="pe-pclear" style="padding:10px 13px;font:600 9.5px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;color:rgba(232,222,209,.6);cursor:pointer;border-top:1px solid rgba(255,140,26,.16)">CLEAR SLOT</div>';
           };
@@ -3441,8 +5669,8 @@
               st.pick = -1; render(); return;
             }
             const slot = e.target.closest('.pe-slot');
-            if (slot) { const i = Number(slot.dataset.i); st.pick = st.pick === i ? -1 : i; renderPick(); return; }
-            if (e.target.closest('.pe-pclose')) { st.pick = -1; renderPick(); return; }
+            if (slot) { const i = Number(slot.dataset.i); st.pick = st.pick === i ? -1 : i; renderDetail(); return; }
+            if (e.target.closest('.pe-pclose')) { st.pick = -1; renderDetail(); return; }
             if (e.target.closest('.pe-pclear')) {
               const list = st.sel === 'suit' ? st.smods : st.w[Number(st.sel)].m;
               list[st.pick] = null; st.pick = -1; render(); return;
@@ -3529,6 +5757,59 @@
           $('#ge-save-btn').addEventListener('click', () => { $('#ge-save-msg').textContent = ''; openModal('#ge-save-modal'); });
           $('#ge-open-btn').addEventListener('click', () => { savedRender(); openModal('#ge-open-modal'); });
           $('#ge-help-btn').addEventListener('click', () => openModal('#ge-help-modal'));
+
+          const parseLoadout = raw => {
+            raw = (raw || '').trim();
+            if (!raw) return { err: 'NOTHING TO IMPORT' };
+            if (/^https?:\/\//i.test(raw)) return { err: 'SHARE LINKS NOT SUPPORTED \u00b7 PASTE LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT' };
+            let d;
+            try { d = JSON.parse(raw); } catch (e) { return { err: 'JSON PARSE ERROR \u00b7 ' + e.message.toUpperCase().slice(0, 46) }; }
+            if (!d || typeof d !== 'object') return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT' };
+            if (String(d.event || '').toLowerCase() === 'suitloadout') {
+              const sn = d.SuitName_Localised || d.SuitName;
+              if (!sn) return { err: 'JOURNAL SUITLOADOUT \u00b7 NO SUIT IN PAYLOAD' };
+              const wp = Array.isArray(d.Modules) ? d.Modules : [];
+              const mods = (Array.isArray(d.SuitMods) ? d.SuitMods.length : 0)
+                + wp.reduce((s, m) => s + (Array.isArray(m.WeaponMods) ? m.WeaponMods.length : 0), 0);
+              return { src: 'JOURNAL SUITLOADOUT', name: d.LoadoutName || String(sn), suit: String(sn), grade: Number(d.SuitClass) || 1, items: wp.length + 1, mods };
+            }
+            if (d.suit && d.suit.name) {
+              const wp = Array.isArray(d.weapons) ? d.weapons : [];
+              const mods = (Array.isArray(d.suit.modifications) ? d.suit.modifications.length : 0)
+                + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
+              return { src: 'LOADOUT JSON', name: d.name || String(d.suit.name), suit: String(d.suit.name), grade: Number(d.suit.grade) || 1, items: wp.length + 1, mods };
+            }
+            return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT' };
+          };
+
+          const impSay = (t, c) => { const m = $('#ge-imp-msg'); if (m) { m.textContent = t; m.style.color = c || 'rgba(232,222,209,.45)'; } };
+          $('#ge-imp-btn').addEventListener('click', () => {
+            const inp = $('#ge-imp-in');
+            if (inp) inp.value = '';
+            impSay('AWAITING INPUT');
+            openModal('#ge-imp-modal');
+            if (inp) inp.focus();
+          });
+          const impGo = () => {
+            const r = parseLoadout($('#ge-imp-in').value);
+            if (r.err) return impSay(r.err, '#ff6b3d');
+            const k = Object.keys(SUITS).find(x => SUITS[x].n.toLowerCase() === r.suit.toLowerCase());
+            if (!k) return impSay(r.src + ' \u00b7 UNKNOWN SUIT \u00b7 ' + r.suit.toUpperCase(), '#ff6b3d');
+            st.suit = k;
+            st.sg = Math.max(1, Math.min(r.grade, maxG(SUITS[k])));
+            fit(st.smods);
+            st.sel = 'suit'; st.pick = -1;
+            const nameEl = $('#ge-save-name');
+            if (nameEl && r.name) nameEl.value = r.name;
+            render();
+            impSay(r.src + ' \u00b7 ' + r.suit.toUpperCase() + ' G' + st.sg + ' \u00b7 ' + r.items + ' ITEMS \u00b7 ' + r.mods + ' MODS \u00b7 LOADOUT APPLIED', '#7fc46b');
+            setTimeout(closeModals, 900);
+          };
+          $('#ge-imp-go').addEventListener('click', impGo);
+          $('#ge-imp-in').addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModals();
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) impGo();
+          });
           $('#ge-exp-modal').addEventListener('click', e => {
             const b = e.target.closest('.ge-fmt');
             if (b) { st.expFmt = b.dataset.fmt; expRender(); return; }
@@ -3611,7 +5892,7 @@
 
           const rowHTML = (k, badge, name, meta, grade, mods, live) => {
             const short = mods.split('/'), lo = Number(short[0]) < Number(short[1]);
-            return '<div class="me-row" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:58px;padding:11px 14px;border-left:3px solid transparent;cursor:' + (live ? 'pointer' : 'not-allowed') + ';opacity:' + (live ? '1' : '.42') + '">'
+            return '<div class="me-row"' + (live ? '' : ' data-disabled="1"') + ' data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:58px;padding:11px 14px;border-left:3px solid transparent;cursor:' + (live ? 'pointer' : 'not-allowed') + ';opacity:' + (live ? '1' : '.42') + '">'
               + '<div style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(255,140,26,.1);font:700 10px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.7)">' + badge + '</div>'
               + '<div style="flex:1;min-width:0"><div style="font:500 14px/1.2 Barlow,sans-serif;color:#ddd3c6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(name) + '</div>'
               + '<div style="font:400 8.5px/1.3 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.45);margin-top:6px;letter-spacing:.06em">' + meta + '</div></div>'
@@ -3630,7 +5911,7 @@
             fit(st.smods);
             const sTot = slotsFor(st.sg), sUsed = usedIn(st.smods, st.sg);
             let h = '<div>' + hd('SUIT', '1')
-              + rowHTML('suit', 'SU', s.n, (s.t + ' · ' + s.p + 'P / ' + s.s + 'S').toUpperCase(), 'G' + st.sg, sUsed + '/' + sTot, true) + '</div>';
+              + rowHTML('suit', 'SU', s.n, (s.t + ' · ' + s.p + ' primary / ' + s.s + ' secondary').toUpperCase(), 'G' + st.sg, sUsed + '/' + sTot, true) + '</div>';
             h += '<div>' + hd('WEAPONS', String(s.p + s.s));
             st.w.forEach((sl, i) => {
               const badge = i === 2 ? 'S1' : 'P' + (i + 1);
@@ -3666,7 +5947,7 @@
             const g = isSuit ? st.sg : st.w[i].g;
             $('#me-dn').textContent = obj.n.toUpperCase();
             $('#me-dsub').textContent = (isSuit
-              ? (obj.t + ' suit · ' + obj.p + ' primary / ' + obj.s + ' secondary')
+              ? (obj.t + ' suit')
               : (obj.mk + ' ' + obj.cl + ' · ' + obj.sl + ' slot')).toUpperCase();
 
             const mx = isSuit ? maxG(obj) : 5;
@@ -3683,9 +5964,10 @@
               const pc = v => Math.round(v * 100) + '%';
               h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,140,26,.12);padding:1px">'
                 + cell('SHIELD STRENGTH', n1(r[0]), true) + cell('SHIELD REGEN', r[1].toFixed(2) + ' /s')
-                + cell('ARMOUR RESIST', pc(ar)) + cell('WEAPON SLOTS', obj.p + ' + ' + obj.s)
-                + cell('SHIELD · KINETIC', pc(r[2])) + cell('SHIELD · THERMAL', pc(r[3]))
-                + cell('SHIELD · PLASMA', pc(r[4])) + cell('SHIELD · EXPLOSIVE', pc(r[5])) + '</div>';
+                + cell('ARMOUR · KINETIC', pc(ar)) + cell('SHIELD · KINETIC', pc(r[2]))
+                + cell('ARMOUR · THERMAL', pc(ar)) + cell('SHIELD · THERMAL', pc(r[3]))
+                + cell('ARMOUR · PLASMA', pc(ar)) + cell('SHIELD · PLASMA', pc(r[4]))
+                + cell('ARMOUR · EXPLOSIVE', pc(ar)) + cell('SHIELD · EXPLOSIVE', pc(r[5])) + '</div>';
             } else {
               const w = obj, d = w.d[g - 1], sd = d * w.rof;
               h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,140,26,.12);padding:1px">'
@@ -3710,26 +5992,27 @@
                   + '<div style="flex:none;font:400 12px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,' + (locked ? '.22' : '.38') + ')">' + (locked ? '🔒' : m ? '›' : '+') + '</div></div>';
               }).join('') + '</div>';
 
-            const alts = isSuit ? Object.keys(SUITS).filter(k => k !== st.suit)
-              : Object.keys(W).filter(k => W[k].sl === wpn(i).sl && k !== st.w[i].k);
-            h += '<div style="display:flex;flex-direction:column;gap:10px">'
-              + '<div style="display:flex;align-items:center;gap:9px"><div style="font:500 9px/1 \'JetBrains Mono\',monospace;color:#ffa54d;letter-spacing:.2em">' + (isSuit ? 'SWAP SUIT' : 'SWAP ' + wpn(i).sl.toUpperCase() + ' WEAPON') + '</div><div style="flex:1;height:1px;background:rgba(255,140,26,.16)"></div></div>'
+            const alts = isSuit ? Object.keys(SUITS)
+              : Object.keys(W).filter(k => W[k].sl === wpn(i).sl);
+            const curKey = isSuit ? st.suit : st.w[i].k;
+            const altHtml = '<div style="display:flex;flex-direction:column;gap:10px">'
+              + '<div style="display:flex;align-items:center;gap:9px"><div style="font:500 9px/1 \'JetBrains Mono\',monospace;color:#ffa54d;letter-spacing:.2em">' + (isSuit ? 'SUIT' : wpn(i).sl.toUpperCase() + ' WEAPON') + '</div><div style="flex:1;height:1px;background:rgba(255,140,26,.16)"></div></div>'
               + alts.map(k => {
                 if (isSuit) {
                   const s2 = SUITS[k], gg = Math.min(st.sg, maxG(s2));
-                  return '<div class="me-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:56px;padding:11px 13px;background:#131313;border:1px solid rgba(255,140,26,.12);cursor:pointer">'
-                    + '<div style="flex:1;min-width:0"><div style="font:500 13.5px/1.2 Barlow,sans-serif;color:#ddd3c6">' + s2.n + '</div>'
-                    + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);margin-top:6px;letter-spacing:.1em">' + (s2.t + ' · ' + s2.p + 'P / ' + s2.s + 'S').toUpperCase() + '</div></div>'
-                    + '<div style="font:600 16px/1 \'Barlow Condensed\',sans-serif;color:#ffa54d">' + n1(s2.g[gg - 1][0]) + '<span style="font:400 8px \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42)"> SP</span></div></div>';
+                  return '<div class="me-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:56px;padding:11px 13px;' + (k === curKey ? 'background:rgba(255,140,26,.14);border:1px solid #ff8c1a' : 'background:#131313;border:1px solid rgba(255,140,26,.12)') + ';cursor:pointer">'
+                    + '<div style="flex:1;min-width:0"><div style="font:500 13.5px/1.2 Barlow,sans-serif;color:' + (k === curKey ? '#ffb060' : '#ddd3c6') + '">' + s2.n + '</div>'
+                    + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);margin-top:6px;letter-spacing:.1em">' + (s2.t + ' · ' + s2.p + ' primary / ' + s2.s + ' secondary').toUpperCase() + '</div></div>'
+                    + '<div style="font:600 16px/1 \'Barlow Condensed\',sans-serif;color:#ffa54d">' + n1(s2.g[gg - 1][0]) + '<span style="font:400 8px \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42)"> SHIELD</span></div></div>';
                 }
                 const w2 = W[k], gg = st.w[i].g;
-                return '<div class="me-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:56px;padding:11px 13px;background:#131313;border:1px solid rgba(255,140,26,.12);cursor:pointer">'
-                  + '<div style="flex:1;min-width:0"><div style="font:500 13.5px/1.2 Barlow,sans-serif;color:#ddd3c6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + w2.n + '</div>'
+                return '<div class="me-alt" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:56px;padding:11px 13px;' + (k === curKey ? 'background:rgba(255,140,26,.14);border:1px solid #ff8c1a' : 'background:#131313;border:1px solid rgba(255,140,26,.12)') + ';cursor:pointer">'
+                  + '<div style="flex:1;min-width:0"><div style="font:500 13.5px/1.2 Barlow,sans-serif;color:' + (k === curKey ? '#ffb060' : '#ddd3c6') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + w2.n + '</div>'
                   + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42);margin-top:6px;letter-spacing:.1em">' + (w2.cl + ' · ' + w2.dt + ' · ' + w2.rng + ' M').toUpperCase() + '</div></div>'
                   + '<div style="font:600 16px/1 \'Barlow Condensed\',sans-serif;color:#ffa54d">' + n1(w2.d[gg - 1] * w2.rof) + '<span style="font:400 8px \'JetBrains Mono\',monospace;color:rgba(232,222,209,.42)"> DPS</span></div></div>';
               }).join('') + '</div>';
 
-            $('#me-dbody').innerHTML = h;
+            $('#me-dbody').innerHTML = altHtml + h;
           };
 
           const renderPick = () => {
@@ -3739,13 +6022,11 @@
             const lib = isSuit ? SMODS : WMODS;
             $('#me-pickscr').style.display = 'flex';
             $('#me-ptitle').textContent = 'SLOT ' + (st.pick + 1) + ' · MODIFICATION';
-            $('#me-pbody').innerHTML = lib.map(m => {
-              const taken = list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick;
+            $('#me-pbody').innerHTML = lib.filter(m => !(list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick)).map(m => {
               const cur = list[st.pick] === m[0];
-              return '<div class="me-pi" data-m="' + m[0] + '" data-taken="' + (taken ? 1 : '') + '" style="display:flex;align-items:center;gap:10px;min-height:60px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:' + (taken ? 'not-allowed' : 'pointer') + ';opacity:' + (taken ? '.35' : '1') + ';background:' + (cur ? 'linear-gradient(90deg,rgba(255,140,26,.14),transparent)' : 'transparent') + '">'
-                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (cur ? '#ffb060' : '#ddd3c6') + '">' + m[0] + '</div>'
-                + '<div style="font:400 8.5px/1.4 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.36);margin-top:6px;letter-spacing:.06em">' + m[1].toUpperCase() + '</div></div>'
-                + (taken ? '<div style="flex:none;font:400 8px/1 \'JetBrains Mono\',monospace;color:#ff9b78;letter-spacing:.1em">FITTED</div>' : '') + '</div>';
+              return '<div class="me-pi" data-m="' + m[0] + '" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;background:' + (cur ? 'linear-gradient(90deg,rgba(255,140,26,.14),transparent)' : 'transparent') + '">'
+                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (cur ? '#ffb060' : '#ddd3c6') + '">' + m[0] + '</div></div>'
+                + '</div>';
             }).join('');
           };
 
@@ -3863,6 +6144,14 @@
                 + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.38);margin-top:7px;letter-spacing:.1em">' + b.s.toUpperCase() + ' G' + b.g + ' · ' + b.m + ' MODS · ' + b.t.toUpperCase() + '</div></div></div>').join('');
               foot.innerHTML = '<div class="me-act" style="width:110px;height:48px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,107,61,.4);color:#ff9b78;font:600 11px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.16em;cursor:pointer">DELETE</div>'
                 + '<div id="me-ogo" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;background:#ff8c1a;color:#0b0b0c;font:700 12px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;cursor:pointer">OPEN LOADOUT</div>';
+            } else if (st.sheet === 'import') {
+              title.textContent = 'IMPORT LOADOUT';
+              body.innerHTML = '<div style="font:400 11.5px/1.5 Barlow,sans-serif;color:rgba(232,222,209,.62);text-wrap:pretty">Paste a loadout JSON export or a journal SuitLoadout event.</div>'
+                + '<textarea id="me-iin" spellcheck="false" placeholder="{&quot;event&quot;:&quot;SuitLoadout&quot;,&quot;SuitName_Localised&quot;:&quot;Dominator Suit&quot;,&quot;Modules&quot;:[…]}" style="width:100%;height:190px;box-sizing:border-box;resize:none;background:#0b0b0c;border:1px solid rgba(255,140,26,.22);color:#e8ded1;padding:11px 12px;font:400 10.5px/1.6 \'JetBrains Mono\',monospace;outline:none"></textarea>'
+                + '<div id="me-imsg" style="min-height:13px;font:400 9px/1.4 \'JetBrains Mono\',monospace;letter-spacing:.06em;color:rgba(232,222,209,.45)">AWAITING INPUT</div>'
+                + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.34);letter-spacing:.1em">LOADOUT JSON · JOURNAL SUITLOADOUT EVENT</div>';
+              foot.innerHTML = '<div class="me-x" style="width:110px;height:48px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(232,222,209,.18);color:rgba(232,222,209,.66);font:600 11px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.16em;cursor:pointer">CANCEL</div>'
+                + '<div id="me-igo" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;background:#ff8c1a;color:#0b0b0c;font:700 12px/1 \'Barlow Condensed\',sans-serif;letter-spacing:.18em;cursor:pointer">LOAD LOADOUT</div>';
             } else if (st.sheet === 'help') {
               title.textContent = 'HELP · ABOUT';
               body.style.padding = '16px 14px';
@@ -3892,7 +6181,7 @@
             if (mi) {
               menu.style.display = 'none';
               const a = mi.dataset.act;
-              if (a === 'save' || a === 'export' || a === 'open' || a === 'help') openSheet(a);
+              if (a === 'save' || a === 'export' || a === 'open' || a === 'help' || a === 'import') openSheet(a);
               return;
             }
             if (menu.style.display === 'block' && !e.target.closest('#me-menu')) menu.style.display = 'none';
@@ -3909,6 +6198,41 @@
               $('#me-name').innerHTML = st.name.toUpperCase() + ' <span style="display:inline-block;transform:scaleX(-1)">✎</span>';
               $('#me-smsg').textContent = 'SAVED TO THIS BROWSER';
               setTimeout(closeSheet, 700);
+              return;
+            }
+            if (e.target.closest('#me-igo')) {
+              const msg = $('#me-imsg');
+              const say = (t, c) => { if (msg) { msg.textContent = t; msg.style.color = c || 'rgba(232,222,209,.45)'; } };
+              const raw = (($('#me-iin') || {}).value || '').trim();
+              if (!raw) return say('NOTHING TO IMPORT', '#ff6b3d');
+              if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 PASTE LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
+              let d;
+              try { d = JSON.parse(raw); } catch (err) { return say('JSON PARSE ERROR \u00b7 ' + err.message.toUpperCase().slice(0, 40), '#ff6b3d'); }
+              let src, sname, grade, lname, items, mods;
+              if (d && String(d.event || '').toLowerCase() === 'suitloadout') {
+                sname = d.SuitName_Localised || d.SuitName;
+                if (!sname) return say('JOURNAL SUITLOADOUT \u00b7 NO SUIT IN PAYLOAD', '#ff6b3d');
+                const wp = Array.isArray(d.Modules) ? d.Modules : [];
+                src = 'JOURNAL SUITLOADOUT'; grade = Number(d.SuitClass) || 1; lname = d.LoadoutName || String(sname);
+                items = wp.length + 1;
+                mods = (Array.isArray(d.SuitMods) ? d.SuitMods.length : 0) + wp.reduce((s, m) => s + (Array.isArray(m.WeaponMods) ? m.WeaponMods.length : 0), 0);
+              } else if (d && d.suit && d.suit.name) {
+                const wp = Array.isArray(d.weapons) ? d.weapons : [];
+                src = 'LOADOUT JSON'; sname = String(d.suit.name); grade = Number(d.suit.grade) || 1; lname = d.name || sname;
+                items = wp.length + 1;
+                mods = (Array.isArray(d.suit.modifications) ? d.suit.modifications.length : 0) + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
+              } else {
+                return say('UNRECOGNISED PAYLOAD \u00b7 EXPECTED LOADOUT JSON OR A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
+              }
+              const k = Object.keys(SUITS).find(x => SUITS[x].n.toLowerCase() === String(sname).toLowerCase());
+              if (!k) return say(src + ' \u00b7 UNKNOWN SUIT \u00b7 ' + String(sname).toUpperCase(), '#ff6b3d');
+              st.suit = k; st.sg = Math.max(1, Math.min(grade, maxG(SUITS[k]))); fit(st.smods);
+              st.name = lname;
+              $('#me-name').innerHTML = st.name.toUpperCase() + ' <span style="display:inline-block;transform:scaleX(-1)">✎</span>';
+              st.sel = null; st.pick = -1;
+              render();
+              say(src + ' \u00b7 ' + String(sname).toUpperCase() + ' G' + st.sg + ' \u00b7 ' + items + ' ITEMS \u00b7 ' + mods + ' MODS \u00b7 APPLIED', '#7fc46b');
+              setTimeout(closeSheet, 900);
               return;
             }
             const srow = e.target.closest('.me-srow');

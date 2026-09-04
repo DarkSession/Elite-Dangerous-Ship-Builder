@@ -1,0 +1,99 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's block under the commander stats: a rule carrying the two counts,
+// the rows, and the note about what the total covers.
+:host {
+  display: block;
+}
+
+.materials {
+  @include layout.stack(var(--ednb-space-md));
+
+  padding-block: var(--ednb-space-lg);
+}
+
+.materials__rule {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  align-items: baseline;
+  justify-content: space-between;
+  padding-inline: var(--ednb-space-xl);
+}
+
+.materials__heading {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-label));
+
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+.materials__summary {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
+
+  margin: 0;
+}
+
+// Canvas 1a's list: `display: flex; flex-direction: column; gap: 7px`, and no
+// rule anywhere in it. A hairline under every line boxed each resource in and
+// halved how many of them the column could hold.
+.materials__list {
+  @include layout.stack(var(--ednb-space-3xs));
+
+  margin: 0;
+}
+
+.materials__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline-tight);
+  padding-inline: var(--ednb-space-xl);
+}
+
+.materials__name {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  color: var(--ednb-text-secondary);
+}
+
+.materials__count {
+  @include layout.metric-value(var(--ednb-text-size-compact), var(--ednb-text-accent));
+
+  flex: none;
+  margin: 0;
+  font-family: var(--ednb-font-metric);
+}
+
+.materials__empty,
+.materials__note {
+  margin: 0;
+  padding-inline: var(--ednb-space-xl);
+  font-family: var(--ednb-font-body);
+  font-size: var(--ednb-text-size-compact);
+  font-weight: var(--ednb-text-weight-prose);
+  color: var(--ednb-text-subtle);
+  text-wrap: pretty;
+}
+
+.materials__note {
+  font-size: var(--ednb-text-size-caption);
+  color: var(--ednb-text-faint);
+}
+
+// Canvas 1b's list, which is the same rows at the density of a screen a
+// Commander is holding: `padding: 11px 14px` under a hairline, and the name a
+// size up from the wide column's.
+.materials--compact .materials__list {
+  gap: 0;
+}
+
+.materials--compact .materials__row {
+  padding-block: var(--ednb-space-lg);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
+}
+
+.materials--compact .materials__name,
+.materials--compact .materials__count {
+  font-size: var(--ednb-text-size-body);
+}

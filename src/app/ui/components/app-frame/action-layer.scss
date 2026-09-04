@@ -21,6 +21,7 @@
   border-radius: var(--ednb-shape-control);
   background-color: var(--ednb-surface-control);
   color: var(--ednb-text-accent);
+  cursor: pointer;
   transition:
     background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
     border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
@@ -94,44 +95,4 @@
 // taking space and stays reachable.
 .action-layer__panel[hidden] {
   display: none;
-}
-
-// The rows run to the panel's own edges (canvas 1d): the ground behind a row is
-// the row's, so the panel keeps no inset of its own and each row carries its
-// padding instead.
-.action-layer__navigation {
-  @include layout.stack(0);
-}
-
-// A row that navigates is drawn exactly like a row that acts: canvas 1d sets
-// every entry of the menu the same way, whatever it does.
-.action-layer__link {
-  @include layout.control-base(var(--ednb-text-tracking-heading));
-
-  display: flex;
-  inline-size: 100%;
-  min-block-size: var(--ednb-layout-menu-row);
-  justify-content: flex-start;
-  padding-inline: var(--ednb-space-inline-loose);
-  border-color: transparent;
-  background-color: transparent;
-  color: var(--ednb-text-accent);
-  text-decoration: none;
-}
-
-// The screen a Commander is already on. Named as such by `aria-current` too —
-// the wash is not the only carrier.
-.action-layer__link[aria-current='page'] {
-  background-color: var(--ednb-surface-accent-selected);
-  color: var(--ednb-text-accent-strong);
-}
-
-// The same hover the menu's buttons take. A link and a button in one menu
-// reacting differently to the pointer reads as one of them being inert
-// (Commander request 2026-08-27). Hover is an enhancement either way: nothing
-// is only reachable through it, because a touch device has no hover at all.
-@media (hover: hover) {
-  .action-layer__link:hover {
-    background-color: var(--ednb-surface-accent-selected);
-  }
 }

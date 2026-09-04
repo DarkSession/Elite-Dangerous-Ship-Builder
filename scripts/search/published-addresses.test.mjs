@@ -49,7 +49,7 @@ describe('published addresses', () => {
       [
         `${ORIGIN}/ships`,
         `${ORIGIN}/build`,
-        `${ORIGIN}/builds`,
+        `${ORIGIN}/equipment`,
         // Addressed by the hull's name with an underscore for each space, and
         // sorted by that address rather than left in the package's order: a pin
         // move that reorders the catalogue then does not rewrite the whole

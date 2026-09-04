@@ -1,0 +1,160 @@
+<!--
+  Three columns wide, tabs compact. `data-composition` states which arrangement
+  the bench has room for, so a test can read the decision without measuring
+  pixels (responsive composition, "Verification matrix").
+-->
+@if (linkFailure(); as failure) {
+  <!-- A link that arrived unreadable, said where the Commander is: they opened
+       an address and the bench did not change (FR-021). -->
+  <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
+}
+
+<section class="bench" [attr.data-composition]="composition()">
+  @if (composition() !== 'wide') {
+    <!--
+      Canvas 1b's tab strip. It is a size container of its own, so its width is
+      declared in the stylesheet rather than left to size to its labels.
+    -->
+    <edsb-tab-group
+      class="bench__tabs"
+      [label]="tabsLabel()"
+      [tabs]="tabs()"
+      [selectedId]="tab()"
+      (selected)="showTab($event)"
+    />
+  }
+
+  @if (ledgerShown()) {
+    <section
+      class="bench__region bench__region--loadout"
+      [id]="loadoutPanelId"
+      [attr.aria-label]="ledgerLabel()"
+    >
+      <edsb-loadout-ledger
+        [ledger]="presenter.ledger()"
+        [selected]="store.selected()"
+        [compact]="composition() !== 'wide'"
+        [worn]="store.hasLoadout()"
+        (opened)="open($event)"
+      />
+    </section>
+  }
+
+  @if (itemShown()) {
+    <!-- Compact, the item view stands where the ledger was, so it is what the
+         `LOADOUT` tab points at while a Commander is drilled into a row. -->
+    <section
+      class="bench__region bench__region--item"
+      [id]="ledgerShown() ? null : loadoutPanelId"
+      [attr.aria-label]="itemLabel()"
+    >
+      @if (store.hasLoadout()) {
+        <edsb-item-view
+          [item]="presenter.item()"
+          [openSlot]="composition() === 'wide' ? slotOpen() : null"
+          [showBack]="composition() !== 'wide'"
+          (gradeChosen)="setGrade($event)"
+          (alternativeChosen)="fit($event)"
+          (slotOpened)="slotOpen.set($event)"
+          (closed)="closeItem()"
+        >
+          <!-- Canvas 1a expands the slot picker in this column, under the slots
+               it belongs to. Compact it has nowhere to expand into, so canvas
+               1b takes the screen and the layer below draws it. -->
+          @if (composition() === 'wide') {
+            <edsb-modification-chooser
+              [open]="slotOpen() !== null"
+              [inline]="true"
+              [target]="store.selected()"
+              [slot]="slotOpen()"
+              (chosen)="fitModification($event)"
+              (cleared)="clearSlot()"
+              (dismissed)="slotOpen.set(null)"
+            />
+          }
+        </edsb-item-view>
+      } @else {
+        <!-- Canvas 2a and 2b: the one live choice on an empty bench stands in
+             the column the item will occupy, not in place of the bench. -->
+        <edsb-suit-gate [compact]="composition() !== 'wide'" (chosen)="chooseFirstSuit($event)" />
+      }
+    </section>
+  }
+
+  @if (shows('stats')) {
+    <div class="bench__column">
+      <section
+        class="bench__region bench__region--stats"
+        [id]="statsPanelId"
+        [attr.aria-label]="statsLabel()"
+      >
+        <edsb-commander-stats [stats]="presenter.stats()" [compact]="composition() !== 'wide'" />
+      </section>
+
+      <!-- Canvas 1a puts the material requirements under the stats in the
+           same column; canvas 1b gives them a tab of their own. -->
+      @if (composition() === 'wide') {
+        <section
+          class="bench__region bench__region--materials"
+          [id]="materialsPanelId"
+          [attr.aria-label]="materialsLabel()"
+        >
+          <edsb-material-requirements [materials]="presenter.materials()" />
+        </section>
+      }
+    </div>
+  }
+
+  @if (composition() !== 'wide' && tab() === 'materials') {
+    <section
+      class="bench__region bench__region--materials"
+      [id]="materialsPanelId"
+      [attr.aria-label]="materialsLabel()"
+    >
+      <edsb-material-requirements [materials]="presenter.materials()" [compact]="true" />
+    </section>
+  }
+
+  <edsb-export-loadout-dialog [open]="exportOpen()" (dismissed)="exportOpen.set(false)" />
+
+  <!--
+    Naming and saving, through the ship tool's own save layer: one library holds
+    both tools' records, so the question a duplicate name raises is asked once
+    and answered the same way (FR-016, FR-017).
+  -->
+  <edsb-save-build-dialog
+    [open]="saveOpen()"
+    [initialName]="saveInitialName()"
+    [source]="saveSource()"
+    [duplicateCount]="saveDuplicateCount()"
+    [failure]="saveFailure()"
+    [saving]="saving()"
+    (nameChanged)="changeSaveName($event)"
+    (saveRequested)="requestSave($event)"
+    (dismissed)="dismissSave()"
+  />
+
+  <!-- Another tab wrote the record after this bench opened it. Three answers,
+       each stating which versions survive, and no lock is held while the
+       question is on screen (FR-017). -->
+  <edsb-choice-dialog
+    [open]="conflict() !== null"
+    [title]="conflictTitle()"
+    [description]="conflictDescription()"
+    [choices]="conflictChoices()"
+    [dismissLabel]="dismissLabel()"
+    (chosen)="resolveConflict($event)"
+    (dismissed)="dismissConflict()"
+  />
+
+  @if (composition() !== 'wide') {
+    <edsb-modification-chooser
+      [open]="slotOpen() !== null"
+      [target]="store.selected()"
+      [slot]="slotOpen()"
+      (chosen)="fitModification($event)"
+      (cleared)="clearSlot()"
+      (dismissed)="slotOpen.set(null)"
+    />
+  }
+</section>

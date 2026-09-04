@@ -1,0 +1,101 @@
+<div class="ledger" [class.ledger--compact]="compact()" [class.ledger--waiting]="!worn()">
+  @if (ledger().suit; as suit) {
+    <section class="ledger__group" [attr.aria-labelledby]="suitHeadingId">
+      <div class="ledger__rule">
+        <h2 class="ledger__heading" [id]="suitHeadingId">{{ suitLabel() }}</h2>
+        <span class="ledger__line" aria-hidden="true"></span>
+        <span class="ledger__count" aria-hidden="true">{{ ledger().suitCount }}</span>
+        <span class="visually-hidden">{{ suitCount() }}</span>
+      </div>
+
+      <ul class="ledger__rows">
+        <li>
+          <ng-container
+            [ngTemplateOutlet]="ledgerRow"
+            [ngTemplateOutletContext]="{ $implicit: suit }"
+          />
+        </li>
+      </ul>
+    </section>
+
+    <section class="ledger__group" [attr.aria-labelledby]="weaponsHeadingId">
+      <div class="ledger__rule">
+        <h2 class="ledger__heading" [id]="weaponsHeadingId">{{ weaponsLabel() }}</h2>
+        <span class="ledger__line" aria-hidden="true"></span>
+        <span class="ledger__count" aria-hidden="true">{{ ledger().weaponCount }}</span>
+        <span class="visually-hidden">{{ weaponCount() }}</span>
+      </div>
+
+      <ul class="ledger__rows">
+        @for (row of ledger().weapons; track row.target) {
+          <li>
+            <ng-container
+              [ngTemplateOutlet]="ledgerRow"
+              [ngTemplateOutletContext]="{ $implicit: row }"
+            />
+          </li>
+        }
+      </ul>
+    </section>
+
+    <edsb-suit-tools [tools]="ledger().tools" [compact]="compact()" />
+  }
+</div>
+
+<ng-template #ledgerRow let-row>
+  <!--
+    The whole row is the control, which it can be here: nothing inside it is
+    another control. The grade chip and the slot count are text.
+
+    `aria-label` states the row as one sentence — the mount, the item, its code
+    line and its slot count — because the parts read separately are a badge, a
+    name and two bare numbers.
+  -->
+  <button
+    class="ledger__row"
+    type="button"
+    [class.ledger__row--current]="!drillsIn() && selected() === row.target"
+    [class.ledger__row--held]="row.held"
+    [class.ledger__row--empty]="row.name === null"
+    [attr.data-target]="row.target"
+    [attr.aria-current]="!drillsIn() && selected() === row.target ? 'true' : null"
+    [attr.aria-disabled]="row.held ? 'true' : null"
+    [attr.aria-label]="row.accessibleName"
+    (click)="choose(row)"
+  >
+    <span class="ledger__badge" aria-hidden="true">{{ row.badge }}</span>
+
+    <span class="ledger__identity">
+      @if (row.name) {
+        <edsb-game-text
+          class="ledger__name"
+          [text]="row.name.text"
+          [language]="row.name.language"
+          [translationState]="row.name.translationState"
+        />
+      } @else {
+        <span class="ledger__name ledger__name--empty">{{ row.emptyLabel }}</span>
+      }
+      <span class="ledger__meta">{{ row.meta }}</span>
+    </span>
+
+    @if (row.grade) {
+      <span class="ledger__grade" aria-hidden="true">{{ row.grade }}</span>
+    }
+    @if (row.modifications) {
+      <span
+        class="ledger__mods"
+        [class.ledger__mods--wanting]="row.modificationsWanting"
+        aria-hidden="true"
+        >{{ row.modifications }}</span
+      >
+    }
+
+    <!-- Canvas 1b's `›`: where the row opens a screen of its own rather than
+         selecting in place, the mark that says so. Decoration — the row is a
+         button and its accessible name already says what it opens. -->
+    @if (drillsIn() && !row.held) {
+      <span class="ledger__chevron" aria-hidden="true">›</span>
+    }
+  </button>
+</ng-template>

@@ -1,6 +1,10 @@
+import { Location } from '@angular/common';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { App, HELP_ACTION } from './app';
+import { routes } from './app.routes';
+import { EquipmentBenchPage } from './features/equipment/equipment-bench.page';
+import { NAVIGATION_ROUTES } from './features/shared/app-navigation';
 import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { SlefStore } from './application/slef/slef.store';
@@ -28,6 +32,13 @@ describe('App', () => {
       // marker another test wrote.
       providers: [provideLocalization(), ...provideMemoryStorage(new MemoryStorage())],
     }).compileComponents();
+  });
+
+  // The shell seeds itself from the address it was loaded at, so a test that
+  // sets one is writing real history. Put it back, or every test declared after
+  // it builds the shell somewhere other than the shipyard.
+  afterEach(() => {
+    TestBed.inject(Location).go('/');
   });
 
   it('creates the application root', () => {
@@ -59,27 +70,44 @@ describe('App', () => {
     expect(element.querySelector('header')?.querySelector('h1') ?? null).toBeNull();
   });
 
-  it('offers the same primary navigation from every screen', () => {
+  it('offers the saved builds as an action, from every screen', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
     const named = (selector: string) =>
-      [...(fixture.nativeElement as HTMLElement).querySelectorAll(selector)].map((link) =>
-        link.textContent?.trim(),
+      [...(fixture.nativeElement as HTMLElement).querySelectorAll(selector)].map((control) =>
+        control.textContent?.trim(),
       );
 
-    // The reference's command bar offers the library as a chip, and never a
-    // chip for the build screen (canvas 1a/1b/1c).
-    const expected = [BUNDLED_ENGLISH['navigation.library']];
+    // A control and not a chip. The library has no address of its own
+    // (Commander request 2026-09-04, `build-library/library-presence.ts`), so
+    // the one entry the bar's navigation ever held became a shell action, and
+    // the row it was the only occupant of went with it.
+    //
+    // Both compositions, because the folded bar is where a Commander reaches it
+    // at narrow widths: the frame renders the wide row and the `⋮` layer
+    // together and lets a media query present one of them.
+    expect(named('.frame__actions .action__label')).toContain(
+      BUNDLED_ENGLISH['navigation.library'],
+    );
+    expect(named('.action-layer__panel .action__label')).toContain(
+      BUNDLED_ENGLISH['navigation.library'],
+    );
 
-    // The same list in both placements: on the bar's trailing edge where there
-    // is room (canvas 1c), and in the `⋮` menu where there is not (canvas 1d).
-    // One is drawn at a time, and which one is a stylesheet's decision.
-    expect(named('.frame__navigation a')).toEqual(expected);
-    expect(named('.action-layer__navigation a')).toEqual(expected);
+    // Nothing links to it, at either width — an `href` here would point at an
+    // address the route table no longer serves.
+    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a[href]')].map(
+      (link) => link.getAttribute('href'),
+    );
+    expect(links).not.toContain('/builds');
   });
 
   it('carries the way back to the shipyard on the bar\u2019s own insignia', () => {
+    // Away from the shipyard, which is the one screen where the way home is no
+    // way anywhere. The shell reads the address it was loaded at rather than
+    // waiting for the router's first navigation, so the address has to be set
+    // before the component reads it (Commander request 2026-09-04).
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.build);
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
@@ -509,5 +537,18 @@ describe('App and a newly published version', () => {
     // carries the summary instead, the way hull detail's unknown hull does.
     expect(announcements.assertive()).toBe(BUNDLED_ENGLISH['update.unusable.announcement']);
     expect(announcements.assertive()).not.toBe(BUNDLED_ENGLISH['update.unusable.notice']);
+  });
+});
+
+describe('routes', () => {
+  it('serves the equipment bench at its own address, lazily and named', async () => {
+    // Both tools answer an address of their own, so either can be opened,
+    // bookmarked and returned to without going through the other (013/FR-027).
+    // Lazy, so the ship tool's initial bundle does not carry the bench.
+    const bench = routes.find((route) => route.path === 'equipment');
+
+    expect(bench?.title).toBe('equipment.title');
+    expect(bench?.data?.['description']).toBe('equipment.description');
+    expect(await bench?.loadComponent?.()).toBe(EquipmentBenchPage);
   });
 });

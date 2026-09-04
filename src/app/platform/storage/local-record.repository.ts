@@ -3,8 +3,12 @@ import { decodeAndMigrate } from '../../domain/ships/build/record-migrations';
 import {
   serializeLocalRecord,
   type RecordDraft,
-} from '../../domain/ships/build/stored-build.serializer';
-import type { LocalRecordV1, StoredRecordEntry } from '../../domain/ships/build/stored-build';
+} from '../../domain/records/local-record.serializer';
+import {
+  isShipRecord,
+  type LocalRecord,
+  type StoredRecordEntry,
+} from '../../domain/records/local-record';
 import { EDSB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
 import { LOCAL_STORAGE_PORT, type StorageFailureCode } from './web-storage.port';
 
@@ -15,7 +19,7 @@ export type RepositoryResult<T> =
 
 /** One record read back, with whether it had to be migrated to be readable. */
 export interface ReadRecord {
-  readonly record: LocalRecordV1;
+  readonly record: LocalRecord;
   readonly migrated: boolean;
 }
 
@@ -81,7 +85,15 @@ export class LocalRecordRepository {
     if (raw.value === null) {
       return {
         ok: true,
-        value: { available: false, id, reason: 'malformed', hullSymbol: null, name: null },
+        value: {
+          available: false,
+          id,
+          reason: 'malformed',
+          tool: null,
+          hullSymbol: null,
+          suitFamily: null,
+          name: null,
+        },
       };
     }
 
@@ -141,8 +153,10 @@ export class LocalRecordRepository {
     const matches = listed.value
       .filter((entry) => entry.available && entry.record.kind === 'working')
       .map((entry) => (entry.available ? entry.record : null))
-      .filter((record): record is LocalRecordV1 => record !== null)
-      .filter((record) => JSON.stringify(record.build) === fingerprint)
+      .filter((record): record is LocalRecord => record !== null)
+      // The fingerprint is a build's. A loadout record is never a match for
+      // one, and asking would compare a build to something that has no build.
+      .filter((record) => isShipRecord(record) && JSON.stringify(record.build) === fingerprint)
       .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 
     return matches[0]?.id ?? null;
@@ -176,7 +190,9 @@ function decodeEntry(id: string, raw: string): StoredRecordEntry {
     available: false,
     id,
     reason: decoded.reason,
+    tool: decoded.tool,
     hullSymbol: decoded.hullSymbol,
+    suitFamily: decoded.suitFamily,
     name: decoded.name,
   };
 }

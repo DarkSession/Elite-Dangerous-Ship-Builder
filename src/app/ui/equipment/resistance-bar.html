@@ -1,0 +1,19 @@
+<div class="resistance__reading">
+  <span class="resistance__label">{{ label() }}</span>
+  <span class="resistance__value" [class.resistance__value--negative]="negative()">
+    {{ value() }}
+  </span>
+</div>
+
+<!--
+  Decoration. The figure above says the same thing in words, with its sign, so
+  the bar is hidden rather than announced: a reader who has just been told
+  `-50%` does not need a second element saying it (constitution V).
+-->
+<div class="resistance__track" aria-hidden="true">
+  <div
+    class="resistance__fill"
+    [class.resistance__fill--negative]="negative()"
+    [style.inline-size]="width()"
+  ></div>
+</div>

@@ -7,6 +7,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { Location } from '@angular/common';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
@@ -22,7 +23,7 @@ import { ImportDialog } from './features/slef/import-build-layer/import.dialog';
 import { AnnouncementService } from './ui/announcements/announcement.service';
 import {
   AppFrame,
-  type NavigationEntry,
+  type ToolEntry,
   type ShellAction,
   type ShellStatus,
 } from './ui/components/app-frame/app-frame';
@@ -32,6 +33,15 @@ import { Layer } from './ui/components/layer/layer';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
+
+/**
+ * Opening a build already saved on this device.
+ *
+ * An action rather than a place. The library is a layer over the screen a
+ * Commander is on, with no address of its own, so a link to it would be a link
+ * to nowhere — see `build-library/library-presence.ts`.
+ */
+export const LIBRARY_ACTION = 'library.open';
 
 /** The shell action that opens the Help · About modal, named once. */
 export const HELP_ACTION = 'help.open';
@@ -73,6 +83,7 @@ export class App {
   readonly #locale = inject(LocaleStore);
   readonly chrome = inject(ScreenChrome);
   readonly #router = inject(Router);
+  readonly #location = inject(Location);
   readonly #messages = inject(MessageService);
   readonly #slef = inject(SlefStore);
   readonly #active = inject(ActiveBuildStore);
@@ -81,9 +92,18 @@ export class App {
   readonly #announcements = inject(AnnouncementService);
   readonly library = inject(LibraryPresence);
 
-  readonly #path = signal(this.#router.url);
-
-  readonly navigation = computed(() => this.#navigation.entries(this.#path()));
+  /**
+   * The address on screen, as the chrome reads it.
+   *
+   * Seeded from `Location` rather than from `Router.url`, which is `/` until the
+   * first navigation finishes. On a direct load of any address but the
+   * shipyard's, that made the shell's first paint name no current tool at all —
+   * `/equipment` drew `Equipment Builder` as a link to the page a Commander was
+   * already on, and corrected itself a frame later (Commander request
+   * 2026-09-04). `Location.path()` answers before the router has run, in the
+   * browser and in the prerender alike.
+   */
+  readonly #path = signal(this.#location.path() || NAVIGATION_ROUTES.catalogue);
 
   /** Where the bar's insignia goes: the shipyard, from every screen but itself. */
   readonly home = computed(() => this.#navigation.home(this.#path()));
@@ -140,11 +160,16 @@ export class App {
     // that carries both is this application's decision. They belong beside each
     // other: they are the same question with two answers, and the screen's own
     // history and export sat between them (Commander request 2026-08-26).
-    // The library is a route and stays the link in the bar's navigation, which
-    // the frame draws immediately before this row, so the pair are neighbours
-    // with the screen's own actions grouped off after them.
+    // The library is the first of the two, where it was the link in the bar's
+    // navigation immediately before this row until it stopped being a place a
+    // Commander goes (2026-09-04). It is drawn where it was drawn.
     const [first, ...rest] = screen;
     return [
+      {
+        id: LIBRARY_ACTION,
+        label: this.#messages.message('navigation.library'),
+        emphasis: 'secondary' as const,
+      },
       {
         id: IMPORT_ACTION,
         label: this.#messages.message('slef.import.title'),
@@ -368,7 +393,7 @@ export class App {
    * — new tab, new window, download — are left to the browser, because that is
    * what the reader asked for.
    */
-  navigateFromShell({ entry, event }: { entry: NavigationEntry; event: MouseEvent }): void {
+  navigateFromShell({ entry, event }: { entry: ToolEntry; event: MouseEvent }): void {
     if (event.defaultPrevented || event.button !== 0) {
       return;
     }
@@ -376,17 +401,6 @@ export class App {
       return;
     }
     event.preventDefault();
-
-    // The saved builds are a layer over the screen a Commander is on, not a
-    // screen they leave: `/builds` is drawn as a modal over an inert
-    // originating screen, and navigating to it takes that screen away
-    // (Commander request 2026-08-28). The address is still the entry's own, so
-    // the modified clicks that never reach here — a middle click, a new tab —
-    // still open the library at its own address as an ordinary page.
-    if (entry.href === NAVIGATION_ROUTES.library && this.library.raise()) {
-      return;
-    }
-
     void this.#router.navigateByUrl(entry.href);
   }
 
@@ -405,6 +419,10 @@ export class App {
         this.#slef.selectExportMode('slef');
       }
       this.#slef.openLayer('export');
+      return;
+    }
+    if (id === LIBRARY_ACTION) {
+      this.library.raise();
       return;
     }
     if (id === IMPORT_ACTION) {

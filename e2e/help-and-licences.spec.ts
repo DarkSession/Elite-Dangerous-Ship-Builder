@@ -19,7 +19,7 @@ import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
 import { helpRouteCoverage, type HelpRouteRow } from './coverage-ledger';
 import { openChooser, openEditor, revealMount, revealStatusRail } from './outfitting-surfaces';
-import { buildStockHull, openActionLayer, reachShellAction, reachShellLink } from './shell';
+import { buildStockHull, openActionLayer, openLibrary, reachShellAction } from './shell';
 
 /**
  * Help, reached from everywhere.
@@ -211,7 +211,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     // The library is a framed layer over the screen it was opened from, so what
     // is waited for is the layer rather than the route component's own host —
     // which has no box of its own once its content is in the top layer.
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(
       page.getByRole('dialog', { name: englishMessages['library.title'] }),
     ).toBeVisible();
@@ -226,7 +226,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await saveAs(page, 'Ledger build');
     // Deleting is the library's, and the row it acts on is the one the
     // workspace is holding — the build just saved.
-    await reachShellLink(page, /^open saved build$/i);
+    await openLibrary(page);
     // The footer's action is named for what it does, so it is reached on the
     // footer's own plate: `Delete` also reads inside `Delete this build`.
     await page

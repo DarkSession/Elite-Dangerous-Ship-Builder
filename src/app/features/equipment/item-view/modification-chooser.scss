@@ -1,0 +1,94 @@
+@use '../../../../styles/responsive' as layout;
+
+// Canvas 1a's `#pe-pick`: a panel on the raised fill inside one amber hairline,
+// standing in the item column between the slots it belongs to and the swap
+// block under them.
+.chooser {
+  display: flex;
+  flex-direction: column;
+  margin-inline: var(--ednb-space-3xl);
+  background-color: var(--ednb-surface-panel-raised);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control-quiet);
+}
+
+// The canvas's own header for it: which slot is being filled, and the way to
+// close it again without choosing anything.
+.chooser__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ednb-space-inline);
+  padding: var(--ednb-space-sm) var(--ednb-space-md);
+  background-color: var(--ednb-surface-bar);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+}
+
+.chooser__title {
+  @include layout.display-title(var(--ednb-text-size-caption), var(--ednb-text-tracking-heading));
+
+  min-inline-size: 0;
+}
+
+// The floor rather than the baseline: this is a control the canvas draws small
+// inside a 30px bar, not one standing on its own, and at 44px the bar comes out
+// twice the height the canvas gives it. It still clears SC 2.5.8.
+.chooser__close {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
+  @include layout.target-floor;
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline-tight);
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+// `max-height: 230px; overflow-y: auto`. The list is eleven recipes long and
+// the column it stands in carries the slots above it and the swap block below;
+// a picker that grew to the whole list would push both off the screen.
+.chooser__scroll {
+  max-block-size: var(--ednb-layout-picker-scroll);
+  overflow-y: auto;
+}
+
+// The canvas's `CLEAR SLOT`: a tracked uppercase line rather than a sentence in
+// the body face. `control-quiet` states three colours and no type at all, so
+// without this the one control at the foot of the picker read as prose.
+.chooser__clear {
+  // The condensed control face, which is what the canvas sets it in
+  // (`600 9.5px 'Barlow Condensed'` wide, `600 11px` compact) — not the mono
+  // face `micro-label` would have given it beside a mono `CLOSE ✕`.
+  @include layout.display-title(var(--ednb-text-size-micro), var(--ednb-text-tracking-control));
+  @include layout.control-quiet;
+  @include layout.target-baseline;
+
+  inline-size: 100%;
+  margin-block-start: var(--ednb-space-rule);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  cursor: pointer;
+}
+
+// Inside the inline picker it is not a button standing on its own: canvas 1a
+// draws one line under one rule, aligned with the rows above it and open at the
+// sides. The sheet keeps the boxed control, which is what canvas 1b draws.
+.chooser .chooser__clear {
+  @include layout.target-floor;
+
+  margin-block-start: 0;
+  padding: var(--ednb-space-sm) var(--ednb-space-md);
+  border-width: var(--ednb-border-width-hairline) 0 0;
+  text-align: start;
+}
+
+// `.pe-pclose:hover, .pe-pclear:hover { color: #ffb060 }` — both of the
+// picker's own controls answer in ink alone, at either width. Neither moves its
+// edge: the inline clear's only edge is the rule between it and the list, and
+// the sheet's box is the layer's rather than the control's.
+@media (hover: hover) {
+  .chooser__close:hover,
+  .chooser__clear:hover {
+    color: var(--ednb-text-accent-strong);
+  }
+}

@@ -58,7 +58,10 @@
       @if (build().current) {
         <span>{{ build().currentLabel }}</span>
       }
-      <span>{{ build().validation.label }}</span>
+      <span>{{ build().toolLabel }}</span>
+      @if (build().validation; as validation) {
+        <span>{{ validation.label }}</span>
+      }
       <span>{{ build().modifiedExact }}</span>
       @if (build().remaining; as remaining) {
         <span>{{ remaining }}</span>
@@ -66,11 +69,11 @@
     </span>
   </span>
 
-  <span class="record__hull">
+  <span class="record__subject">
     <edsb-game-text
-      [text]="build().hull.text"
-      [language]="build().hull.language"
-      [translationState]="build().hull.translationState"
+      [text]="build().subject.text"
+      [language]="build().subject.language"
+      [translationState]="build().subject.translationState"
     />
   </span>
 

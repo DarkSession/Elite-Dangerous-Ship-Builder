@@ -61,8 +61,8 @@ describe('build-link codec pinned symbol models', () => {
     expect(fragments).toEqual([
       'b.1S..A@YX6Cjy!R',
       'b.vz,jdQ_4',
-      'b.8oUeO4wu5ZrfCrTfzWgzw4R5x,/c-XJsc!MqzvUN.tw7Y:YwviztiNydqXRqom',
-      'b.26da!i-2iAMHR6!JZmTxbE77Oyj3V5R-f,ZnbT!fa_:86xIg:BUBnp6QoP26u6hI3sH,GUQdzesv1z',
+      'b.8oUeO4wu5ZrfCrTfzkyEp9VJ1NAj-M4u5tBFFEp3.:aLg6tfRJSrwSAe4Dz6jB',
+      'b.26da!i-2iAMHR6!JZRgv2A4OO8ezAd.KALtMaTu1R3sY,Lfi0zRNpDcH3ulwYrH!LT9kA@3_!oKDpG',
       'b.7yvr6:PyEpDGgEs9aI:gxA@uHybdm4IM',
     ]);
   });

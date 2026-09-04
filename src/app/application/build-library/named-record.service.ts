@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import type { BuildSnapshotV1 } from '../../domain/ships/build/build-snapshot';
-import type { LocalRecordV1, RecordValidation } from '../../domain/ships/build/stored-build';
+import type { LocalRecord } from '../../domain/records/local-record';
+import type { RecordPayload } from '../../domain/records/local-record.serializer';
 import { LocksUnavailableError, WebLocksAdapter } from '../../platform/browser/web-locks.adapter';
 import { UuidAdapter } from '../../platform/browser/uuid.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
@@ -15,20 +15,27 @@ export interface NamedSaveRequest {
   readonly expectedRevisionId: string | null;
   readonly name: string;
   readonly note: string | null;
-  readonly build: BuildSnapshotV1;
-  readonly validation: RecordValidation;
+  /**
+   * What the record holds: a build, or a loadout.
+   *
+   * The service never looks inside it. Naming, the revision precondition and
+   * the lock protocol are the same protocol for both tools, so the payload
+   * passes straight through to the serializer's allowlist (013
+   * contracts/loadout-persistence.md).
+   */
+  readonly payload: RecordPayload;
   /** The instant to stamp. Passed in so the service stays clock-free. */
   readonly now: string;
 }
 
 /** How a named write ended. */
 export type NamedSaveResult =
-  | { readonly kind: 'saved'; readonly record: LocalRecordV1 }
+  | { readonly kind: 'saved'; readonly record: LocalRecord }
   | {
       readonly kind: 'conflict';
       readonly recordId: string;
       readonly expectedRevisionId: string | null;
-      readonly observed: LocalRecordV1;
+      readonly observed: LocalRecord;
     }
   | { readonly kind: 'failed'; readonly code: StorageFailureCode }
   | { readonly kind: 'locks-unavailable' }
@@ -73,9 +80,8 @@ export class NamedRecordService {
       modifiedAt: request.now,
       name: request.name,
       note: request.note,
-      validation: request.validation,
-      build: request.build,
       sourceNamed: null,
+      payload: request.payload,
     };
 
     const written = this.#records.write(record);
@@ -200,9 +206,8 @@ export class NamedRecordService {
       modifiedAt: request.now,
       name: request.name,
       note: request.note,
-      validation: request.validation,
-      build: request.build,
       sourceNamed: observed.sourceNamed,
+      payload: request.payload,
     });
     if (!written.ok) {
       return { kind: 'failed', code: written.code };
@@ -221,8 +226,7 @@ export class NamedRecordService {
     const created = await this.createNamed({
       name: request.name,
       note: request.note,
-      build: request.build,
-      validation: request.validation,
+      payload: request.payload,
       now: request.now,
     });
     if (created.kind === 'saved') {
@@ -280,9 +284,8 @@ export class NamedRecordService {
       modifiedAt: request.now,
       name: request.name,
       note: request.note,
-      validation: request.validation,
-      build: request.build,
       sourceNamed: observed.sourceNamed,
+      payload: request.payload,
     });
     if (!written.ok) {
       return { kind: 'failed', code: written.code };

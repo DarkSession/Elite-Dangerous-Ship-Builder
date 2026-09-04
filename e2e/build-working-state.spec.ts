@@ -1,7 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow, expectSingleVisibleH1 } from './accessibility/assertions';
-import { buildStockHull, reachShellAction, savedToBrowser, reachShellLink } from './shell';
+import {
+  buildStockHull,
+  openLibrary,
+  reachShellAction,
+  reachShellLink,
+  savedToBrowser,
+} from './shell';
 
 /**
  * Work that survives — and work that is never silently lost.
@@ -334,7 +340,7 @@ test.describe('the tab’s working build', () => {
     // The same offer after opening that save from the library, and still there
     // once an edit has forked the working record away from it: what the layer
     // offers to replace is the build's provenance, not whether it is unedited.
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await chooseRecord(page, 'Explorer');
     await page
       .locator('.library__footer')
@@ -355,7 +361,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
     await savedToBrowser(page);
     await saveActiveBuild(page, 'Explorer');
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await expect(library(page).getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
@@ -385,7 +391,7 @@ test.describe('the tab’s working build', () => {
     await createBuild(page);
     await savedToBrowser(page);
     await saveActiveBuild(page, 'Explorer');
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
     await expect(library(page).getByText('Explorer').first()).toBeVisible();
 
     const id = await page.evaluate(() =>
@@ -415,7 +421,7 @@ test.describe('the tab’s working build', () => {
     await saveActiveBuild(page, 'Explorer');
     // Naming consumes the record the build was already in: one record, not two.
     await expectRecords(page, 1);
-    await reachShellLink(page, 'Open saved build');
+    await openLibrary(page);
 
     await chooseRecord(page, 'Explorer');
     await page

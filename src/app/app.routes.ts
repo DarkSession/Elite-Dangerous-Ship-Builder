@@ -3,12 +3,16 @@ import { Routes } from '@angular/router';
 /**
  * The application's routes.
  *
- * Four screens and one redirect. Every one of them is addressable: hull detail
- * by the hull's own name, the build library by its own path even
- * though it usually appears as a layer over the screen that opened it. A
- * surface that is only reachable by clicking through another one cannot be
- * bookmarked, cannot be returned to with the back button, and cannot be told
- * apart by a screen reader from the screen behind it (routes-and-ui contract).
+ * Four screens and one redirect, each addressable by what it is about: hull
+ * detail by the hull's own name, the two benches by their tools.
+ *
+ * The saved builds are not among them. They are a layer over the screen a
+ * Commander is on and nothing else — no address, no history entry of its own,
+ * no document of its own to crawl (Commander request 2026-09-04). The
+ * routes-and-ui contract asks that a *surface* be addressable, and the library
+ * is not one: it is a list of records held on this device, which no address off
+ * this device could resolve and no crawler could read. What it opens — a build
+ * — has an address, and that is where a Commander lands.
  *
  * `title` and `data.description` are message keys rather than phrases:
  * `RouteTitleStrategy` resolves both in the committed locale, so the document
@@ -77,12 +81,12 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'builds',
-    title: 'library.title',
-    data: { description: 'library.description' },
+    path: 'equipment',
+    title: 'equipment.title',
+    data: { description: 'equipment.description' },
     loadComponent: () =>
-      import('./features/build-library/build-library.page').then(
-        (module) => module.BuildLibraryPage,
+      import('./features/equipment/equipment-bench.page').then(
+        (module) => module.EquipmentBenchPage,
       ),
   },
   { path: '**', redirectTo: 'ships' },

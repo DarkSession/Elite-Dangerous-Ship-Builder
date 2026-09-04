@@ -44,6 +44,28 @@ export class GradeSelector {
   /** The first grade the recipe offers. Cells below it are drawn and refused. */
   readonly lowest = input<number | null>(null);
 
+  /**
+   * How a cell writes the grade it is.
+   *
+   * The ship tool's cells carry the bare number both its canvases draw. The
+   * bench's carry `G1`…`G5`, which is how the equipment canvas writes a grade
+   * everywhere it writes one — including on the ledger chip beside the row this
+   * ladder belongs to. The words come from the caller rather than from a flag,
+   * so the format stays in the catalogue the caller already reads.
+   */
+  readonly cellLabels = input<readonly string[] | null>(null);
+
+  /**
+   * Drawn as a preview of a ladder rather than as one.
+   *
+   * Canvas 2a shows what a suit will bring before there is a suit to grade, and
+   * draws those cells flat — nothing chosen, nothing choosable. Without it the
+   * preview is the live control's amber, which reads as five buttons that
+   * answer nothing. The caller keeps it out of the accessibility tree; this is
+   * what stops it looking like a control to everyone else.
+   */
+  readonly preview = input(false);
+
   readonly selected = input<number | null>(null);
 
   readonly chosen = output<number>();
@@ -71,6 +93,10 @@ export class GradeSelector {
    * can still be taken back down to 1, and a cell that could not be pressed
    * would make that a thing a Commander can see and not do (wave 5).
    */
+  /** What one cell writes: the caller's word for the grade, else the number. */
+  readonly cellLabel = (grade: number, index: number): string =>
+    this.cellLabels()?.[index] ?? String(grade);
+
   readonly unavailable = (grade: number): boolean => {
     const lowest = this.lowest();
     return lowest !== null && grade < lowest;

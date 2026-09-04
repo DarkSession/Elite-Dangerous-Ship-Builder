@@ -115,6 +115,38 @@ export class Formatters {
   }
 
   /**
+   * A figure at its own precision, up to a stated ceiling: `15`, not `15.000`.
+   *
+   * For a catalogue value whose precision varies from item to item — a weapon's
+   * damage is `15` on one and `3.275` on another — where `decimal` would pad
+   * the short one with zeros the package never stated.
+   */
+  figure(value: number, maximumFractionDigits: number): string {
+    this.#assertFinite('decimal', value);
+    return this.#numberFormat('decimal', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits,
+    }).format(value);
+  }
+
+  /**
+   * A percentage that always states its sign.
+   *
+   * For a figure that can go either way and whose direction is the point: a
+   * suit resistance is negative on some suits at low grades, and a reader who
+   * cannot see the colour has only the sign to tell them (constitution V).
+   */
+  signedPercent(fraction: number, fractionDigits = 0): string {
+    this.#assertFinite('percent', fraction);
+    return this.#numberFormat('percent', {
+      style: 'percent',
+      signDisplay: 'always',
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(fraction);
+  }
+
+  /**
    * A percentage. The input contract is a **fraction**: `0.35` renders as 35%.
    *
    * Stated explicitly because the alternative convention is the single most

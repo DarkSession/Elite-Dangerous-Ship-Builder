@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import applicationManifest from '../package.json';
 import englishMessages from '../src/app/i18n/locales/en.json';
 import { HELP_TOPIC_IDS } from '../src/app/domain/help/help-topic';
-import { reachShellAction } from './shell';
+import { openLibrary, reachShellAction } from './shell';
 
 /**
  * Help with no network at all (FR-001, SC-005).
@@ -45,7 +45,7 @@ test.describe('help offline', () => {
   test('opens complete after one online load, with the network gone', async ({ page, context }) => {
     // One completed load, then a second so the worker serves rather than
     // merely installs: in Chromium it does not control the page it installed on.
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(page.getByRole('main')).toBeVisible();
     await waitForController(page);
 

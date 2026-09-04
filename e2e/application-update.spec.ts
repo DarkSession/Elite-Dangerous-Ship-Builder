@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { reachShellLink } from './shell';
+import { openLibrary } from './shell';
 import { HELP_MANIFEST } from '../src/app/platform/build/help-manifest.generated';
 
 /**
@@ -351,8 +351,12 @@ test.describe('a newly published version', () => {
     // session does not meet it again.
     await expect(appliedNotice(page)).toHaveCount(0, { timeout: 30_000 });
 
-    await reachShellLink(page, /^open saved build$/i);
-    await expect(page).toHaveURL(/\/builds/);
+    // Raising the saved builds over the screen is a navigation as far as the
+    // shell is concerned — it pushes a history entry and redraws the chrome —
+    // and the notice does not come back with it. The address does not change:
+    // the library stopped being one on 2026-09-04.
+    await openLibrary(page);
+    await expect(page.getByRole('dialog', { name: 'Saved builds' })).toBeVisible();
     await expect(appliedNotice(page)).toHaveCount(0);
 
     // What this cannot show is that activation happened: the stood-in

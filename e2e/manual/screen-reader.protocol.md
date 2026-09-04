@@ -2,7 +2,7 @@
 
 **Protocol id**: `screen-reader`
 **Covers**: FR-006, FR-007, FR-008, FR-009, FR-010, FR-020, FR-023, FR-025, FR-026, SC-001
-**Version**: 9
+**Version**: 10
 
 ## What is automated, and what is left
 
@@ -310,6 +310,72 @@ disagrees or where the announcement is correct but unusable.
     here is a number with a unit, qualified by a load and an allocation set
     somewhere else, and whether that survives being spoken in sequence is a
     question no snapshot of the accessibility tree can answer.
+
+19. **The equipment bench.** Open `/equipment` from the tool navigation with
+    nothing saved. Expect the bench itself to be announced — every region
+    present and named: the loadout, the item beside it, the Commander's stats
+    and the material requirements where the width allows all four, and the tab
+    strip naming the same regions where it does not.
+
+    On the empty bench, expect the ledger to be walkable before any suit is
+    chosen: the three groups — suit, weapons and suit tools — each announced
+    with its own count, the suit row announced as empty and required first, and
+    every mount announced as locked in words. Expect exactly one live choice in
+    the whole screen: the four suits, under a heading that says it is the first
+    step. Expect **no** grade ladder and **no** modification slot to be
+    reachable at all — they are drawn as previews of controls that do not exist
+    yet, and a reader that reaches them has been handed five radio buttons that
+    answer nothing. Expect one link out, to the saved builds, announced by the
+    words on screen.
+
+    Choose a suit. Expect the bench to fill in: the stats to be announced as
+    changed, once, politely, and the item column to become the suit. Expect the
+    grade ladder to be announced as five choices with the current one selected,
+    and expect changing it to change the figures audibly without the reader
+    losing its place.
+
+    Walk the mounts. Expect each to be announced with its mount name and what
+    is in it, or as an empty mount, and expect a mount this suit does not have
+    to say so **in words** — held, with the reason — rather than by being
+    quieter than the others. Do the same in the modification slots: expect a
+    slot the current grade cannot take to announce the grade it requires, and
+    expect a fitted modification that changes no number to say that rather than
+    to sound like it did nothing.
+
+    Open a chooser. Expect the reader to be moved into it, its title to name
+    what is being chosen and which mount or slot it is for, the fitted entry to
+    be announced as fitted, and the content behind it unreachable. Dismiss it
+    and expect to be returned to the control that opened it.
+
+    In the stats, expect shield strength, regeneration and firepower to be
+    announced as label-and-value pairs each with its unit, and the four
+    resistances to be announced as a damage type and a figure. Expect the bars
+    themselves to be announced as nothing at all: their meaning is the figures
+    already read. In the material requirements, expect the total to be
+    announced as types and units, expect the note about what the total covers
+    to be read with it, and expect a loadout with no modifications to say there
+    is nothing to gather rather than to present an empty list.
+
+    At the narrow width, drill into a row from the tab strip. Expect the item
+    view to be reached under the same tab the ledger was, expect a way back to
+    be announced, and expect the tab strip never to claim a region that is not
+    on screen.
+
+    Then the two ways out. Open the export layer: expect the three formats to
+    be announced as one named group of three choices, each with the sentence
+    that describes it, expect the text itself to be reachable and readable, and
+    expect copy and download to be announced by what they do. Finally, open an
+    address carrying a loadout this build cannot read. Expect one assertive
+    announcement saying the link was refused, and expect the bench beneath it
+    to be announced as unchanged — not as empty, and not as something a
+    Commander must now repair.
+
+    The judgment this step exists for: whether a Commander who has only heard
+    this bench can say what they are wearing, what they are carrying, what it
+    cannot do, and what the next choice in front of them is. Half of this
+    screen's meaning is which of two dozen small controls is live right now,
+    and whether that survives being spoken one control at a time is a question
+    no snapshot of the accessibility tree can answer.
 
 ## Recording the result
 

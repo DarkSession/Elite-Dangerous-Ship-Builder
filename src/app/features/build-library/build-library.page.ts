@@ -5,17 +5,21 @@ import {
   computed,
   effect,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { LibraryPresence } from './library-presence';
 import { deriveBuildTitle } from '../../domain/ships/build/build-title';
-import type { LocalRecordV1, StoredRecordEntry } from '../../domain/ships/build/stored-build';
+import {
+  isShipRecord,
+  type LocalRecord,
+  type StoredRecordEntry,
+} from '../../domain/records/local-record';
 import { ActiveBuildStore } from '../../application/active-build/active-build.store';
 import { BuildLibraryStore } from '../../application/build-library/build-library.store';
 import { RecordInvalidationService } from '../../application/build-library/record-invalidation.service';
 import { RecordOpenService } from '../../application/build-library/record-open.service';
+import { LoadoutOpenService } from '../../application/equipment/loadout-open.service';
 import { RetentionService } from '../../application/build-library/retention.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
@@ -68,10 +72,10 @@ interface PendingDelete {
 /**
  * Everything this browser is holding for the Commander.
  *
- * A route rather than a menu, so it can be opened directly, appears in
- * history, and is somewhere a screen reader can be told it has arrived at. At
- * wide widths it presents as a layer over the screen that opened it; at narrow
- * widths it is the whole screen. Both are the same address.
+ * A layer rather than a screen: it is raised over whatever a Commander is on,
+ * takes a history entry at that same address so the back button closes it, and
+ * is announced on opening. It has no address of its own — a saved build is
+ * something you reach for from where you are (Commander request 2026-09-04).
  *
  * Every destructive action on this screen is confirmed, names the exact record
  * it will remove, and removes only that one key. Nothing here deletes anything
@@ -95,6 +99,7 @@ interface PendingDelete {
 export class BuildLibraryPage {
   readonly #library = inject(BuildLibraryStore);
   readonly #open = inject(RecordOpenService);
+  readonly #openLoadout = inject(LoadoutOpenService);
   readonly #invalidation = inject(RecordInvalidationService);
   readonly #records = inject(LocalRecordRepository);
   readonly #retention = inject(RetentionService);
@@ -106,17 +111,6 @@ export class BuildLibraryPage {
   readonly #gameText = inject(GameTextPresenter);
   readonly #router = inject(Router);
   readonly #presence = inject(LibraryPresence);
-
-  /**
-   * Whether this is the layer the shell stands over a screen, or the page the
-   * `/builds` address renders on its own.
-   *
-   * The same content either way — the canvas draws one surface — and the
-   * difference is only what happens on the way out: a layer lowers and gives
-   * the screen behind it back, and a page has nothing behind it and navigates
-   * (build-library design, "Composition").
-   */
-  readonly asLayer = input(false);
 
   readonly emptyTitle = this.#messages.messageSignal('library.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('library.empty.description');
@@ -296,7 +290,7 @@ export class BuildLibraryPage {
           ? {
               id: entry.record.id,
               label: entry.record.name ?? this.#messages.message('library.record.unnamed'),
-              detail: `${this.#hullName(entry.record.hullSymbol)} · ${this.#instant(entry.record.modifiedAt)}`,
+              detail: `${this.#subjectName(entry.record)} · ${this.#instant(entry.record.modifiedAt)}`,
             }
           : null,
       )
@@ -370,50 +364,7 @@ export class BuildLibraryPage {
    * the dismiss the canvas draws.
    */
   close(): void {
-    if (this.asLayer()) {
-      this.#presence.lower();
-      return;
-    }
-    void this.#router.navigateByUrl(this.#origin());
-  }
-
-  /**
-   * Where dismissing goes.
-   *
-   * The address this navigation came from, whatever it was. A library reached
-   * by its own address has no such screen behind it: then the build in hand is
-   * the honest destination, and the shipyard where there is no build — which
-   * is also where a Commander goes when the build they came from is the one
-   * they have just deleted.
-   *
-   * Without its fragment. The router records an address as it was when it
-   * navigated, and the workspace's link is written over it with `replaceState`
-   * afterwards — so a remembered fragment is the build as it stood before the
-   * edits that followed. The workspace publishes its own the moment it is back
-   * (FR-020).
-   */
-  #origin(): string {
-    const hasBuild = this.#active.loadout() !== null;
-    const fallback = hasBuild ? NAVIGATION_ROUTES.build : NAVIGATION_ROUTES.catalogue;
-    const previous = this.#router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl;
-    if (previous === undefined) {
-      return fallback;
-    }
-
-    const url = this.#router.serializeUrl(previous).split('#')[0] ?? '';
-    if (url === '') {
-      return fallback;
-    }
-
-    // By whole first segment, never by prefix. `/builds` starts with `/build`,
-    // so a prefix test answers both questions for this screen's own address and
-    // reads whichever way the two tests happen to be ordered — a trap that goes
-    // off silently the day someone swaps the lines.
-    const root = `/${(url.split('?')[0] ?? '').split('/')[1] ?? ''}`;
-    if (root === NAVIGATION_ROUTES.library) {
-      return fallback;
-    }
-    return root === NAVIGATION_ROUTES.build && !hasBuild ? fallback : url;
+    this.#presence.lower();
   }
 
   /** Narrows the list. Changes no record, no order and nothing stored. */
@@ -448,6 +399,21 @@ export class BuildLibraryPage {
 
     switch (actionId) {
       case 'open': {
+        // One list, two tools. Which one opens the row is the record's own
+        // claim, so a loadout is never handed to the ship tool's open path
+        // (013 contracts/loadout-persistence.md).
+        if (record !== null && !isShipRecord(record)) {
+          const opened = this.#openLoadout.open(recordId);
+          if (!opened.ok) {
+            this.#failure.set(
+              this.#messages.message('library.open.failed', { reason: opened.reason }),
+            );
+            return;
+          }
+          void this.#leaveThrough(NAVIGATION_ROUTES.equipment);
+          return;
+        }
+
         const result = await this.#open.open(recordId);
         if (result.kind === 'failed') {
           this.#failure.set(
@@ -456,12 +422,7 @@ export class BuildLibraryPage {
           return;
         }
         if (result.kind === 'committed') {
-          // Leaving through the layer rather than closing it: the address goes
-          // back to the screen behind before the navigation, or the router —
-          // which never left that screen — would navigate to where it already
-          // is and leave `/builds` standing in the bar.
-          this.#presence.lowerForNavigation();
-          void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
+          void this.#leaveThrough(NAVIGATION_ROUTES.build);
         }
         return;
       }
@@ -473,7 +434,7 @@ export class BuildLibraryPage {
         this.#pendingDelete.set({
           recordId,
           title: record.name ?? this.#messages.message('library.record.unnamed'),
-          hull: this.#hullName(record.hullSymbol),
+          hull: this.#subjectName(record),
           unnamed: record.kind === 'working',
         });
         return;
@@ -541,13 +502,18 @@ export class BuildLibraryPage {
       id: record.id,
       title,
       named: record.name !== null,
-      hull: this.#gameText.shipName(record.hullSymbol),
+      toolLabel: this.#messages.message(isShipRecord(record) ? 'tools.ship' : 'tools.equipment'),
+      subject: isShipRecord(record)
+        ? this.#gameText.shipName(record.hullSymbol)
+        : this.#gameText.suitName(record.suitFamily),
       modified: this.#howLongAgo(record.modifiedAt),
       modifiedExact: this.#messages.message('library.record.modified.exact', {
         instant: this.#instant(record.modifiedAt),
       }),
-      validation: this.#validationOf(record.validation),
-      issues: this.#issuesOf(record.validation),
+      // A loadout records no verdict of its own: it is a set of chosen
+      // identities, and the equipment library publishes no validity for one.
+      validation: isShipRecord(record) ? this.#validationOf(record.validation) : null,
+      issues: isShipRecord(record) ? this.#issuesOf(record.validation) : null,
       remaining: this.#remainingLife(record),
       current: record.id === this.#currentRecordId(),
       currentLabel: this.#messages.message('library.record.current'),
@@ -575,12 +541,23 @@ export class BuildLibraryPage {
    * from a Commander's name by the row rather than passed off as one (FR-010,
    * clarification 2026-08-25).
    */
-  #derivedTitle(record: LocalRecordV1): string {
-    return deriveBuildTitle(
-      record.build,
-      this.#hullName(record.hullSymbol),
-      this.#messages.message('library.record.unnamed'),
-    );
+  #derivedTitle(record: LocalRecord): string {
+    return isShipRecord(record)
+      ? deriveBuildTitle(
+          record.build,
+          this.#hullName(record.hullSymbol),
+          this.#messages.message('library.record.unnamed'),
+        )
+      : // A loadout has no name of its own to fall back to — no ship name, no
+        // ident — so the suit it is built on is what the row is called.
+        this.#subjectName(record);
+  }
+
+  /** The hull for a ship build, the suit for a loadout, in the reading language. */
+  #subjectName(record: LocalRecord): string {
+    return isShipRecord(record)
+      ? this.#hullName(record.hullSymbol)
+      : (this.#gameText.suitName(record.suitFamily).text ?? record.suitFamily);
   }
 
   /**
@@ -590,7 +567,7 @@ export class BuildLibraryPage {
    * of the notice: nothing announces the removal afterwards, because a message
    * about a build already gone offers nothing to act on (FR-010, FR-013).
    */
-  #remainingLife(record: LocalRecordV1): string | null {
+  #remainingLife(record: LocalRecord): string | null {
     const deadline = this.#retention.expiresAt(record);
     return deadline === null
       ? null
@@ -636,7 +613,7 @@ export class BuildLibraryPage {
    * list a Commander could not explain (build-library design, "Searched").
    */
   #matches(build: SavedBuild, query: string): boolean {
-    return [build.title, build.note, build.hull.text].some((part) =>
+    return [build.title, build.note, build.subject.text].some((part) =>
       this.#contains(part ?? null, query),
     );
   }
@@ -654,7 +631,7 @@ export class BuildLibraryPage {
    * X" is what that record is, and a row that did not say so would look like a
    * second copy of X (FR-010, T155).
    */
-  #noteFor(record: LocalRecordV1): string | null {
+  #noteFor(record: LocalRecord): string | null {
     if (record.note !== null) {
       return record.note;
     }
@@ -696,6 +673,25 @@ export class BuildLibraryPage {
 
   #hullName(symbol: string): string {
     return this.#gameText.shipName(symbol).text ?? symbol;
+  }
+
+  /**
+   * Leaves through the layer rather than closing it.
+   *
+   * The navigation runs first and the layer comes down when it lands. Closing
+   * first uncovers a screen that is still live under the Commander's pointer,
+   * and the shipyard writes its own address whenever a pointer rests on a hull
+   * row — exactly where the press that opened the record left it. Uncovered a
+   * frame early, that write lands after this navigation and strands the
+   * Commander on `/ships/<hull>` with the build never opened, which is what
+   * turned CI red on firefox (2026-09-04).
+   *
+   * The layer is `inert` while it stands, so nothing underneath can answer a
+   * pointer until the navigation it is waiting for has already happened.
+   */
+  async #leaveThrough(target: string): Promise<void> {
+    await this.#router.navigateByUrl(target);
+    this.#presence.lowerForNavigation();
   }
 }
 

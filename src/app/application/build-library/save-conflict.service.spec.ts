@@ -57,8 +57,11 @@ function attempt(recordId: string, expectedRevisionId: string, name = 'From this
     expectedRevisionId,
     name,
     note: null,
-    build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
-    validation: { valid: true, complete: true },
+    payload: {
+      tool: 'ship',
+      build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+      validation: { valid: true, complete: true },
+    },
     now: NOW,
   } satisfies NamedSaveRequest & { recordId: string };
 }
@@ -68,8 +71,11 @@ async function contested(setUp: ReturnType<typeof setup>) {
   const created = await setUp.named.createNamed({
     name: 'Anaconda explorer',
     note: null,
-    build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
-    validation: { valid: true, complete: true },
+    payload: {
+      tool: 'ship',
+      build: toBuildSnapshotV1(ShipLoadout.default('Anaconda')),
+      validation: { valid: true, complete: true },
+    },
     now: NOW,
   });
   if (created.kind !== 'saved') {

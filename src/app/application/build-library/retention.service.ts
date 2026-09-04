@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import type { LocalRecordV1 } from '../../domain/ships/build/stored-build';
+import type { LocalRecord } from '../../domain/records/local-record';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { LocalRecordRepository } from '../../platform/storage/local-record.repository';
 import { TabOwnershipCoordinator } from './tab-ownership.coordinator';
@@ -54,7 +54,7 @@ export class RetentionService {
    * cannot be read as a date: a record nobody can date is not a record anyone
    * can prove is old.
    */
-  expiresAt(record: LocalRecordV1): Date | null {
+  expiresAt(record: LocalRecord): Date | null {
     if (record.kind !== 'working') {
       return null;
     }
@@ -69,13 +69,13 @@ export class RetentionService {
    * sweep runs at two moments rather than continuously, so a record can outlive
    * its deadline until one of them comes round.
    */
-  remaining(record: LocalRecordV1): number | null {
+  remaining(record: LocalRecord): number | null {
     const deadline = this.expiresAt(record);
     return deadline === null ? null : deadline.getTime() - this.#clock.now().getTime();
   }
 
   /** Whether this record's seven days have run out, as of right now. */
-  hasExpired(record: LocalRecordV1): boolean {
+  hasExpired(record: LocalRecord): boolean {
     const remaining = this.remaining(record);
     return remaining !== null && remaining <= 0;
   }

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
-import { buildStockHull, reachShellAction } from './shell';
+import { buildStockHull, openLibrary, reachShellAction } from './shell';
 
 /**
  * A build arriving from somewhere else.
@@ -79,7 +79,7 @@ test.describe('importing a build', () => {
   });
 
   test('is offered from the screen the library was opened over', async ({ page }) => {
-    await page.goto('/builds');
+    await openLibrary(page);
     await expect(page.getByRole('dialog', { name: /saved builds/i })).toBeVisible();
 
     await page.getByRole('button', { name: /^close$/i }).click();
