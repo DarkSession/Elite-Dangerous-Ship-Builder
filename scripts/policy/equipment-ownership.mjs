@@ -59,7 +59,9 @@ export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]
  * asks — a second call site is a second opinion nothing reconciles. That covers
  * the two upgrade calls: what a grade costs to reach is part of one total, and a
  * screen asking for it directly would be a second answer to the material
- * requirement (FR-014).
+ * requirement (FR-014). The per-step calls are on the list beside them: a caller
+ * that loops the grades and totals the steps itself has re-derived the figure
+ * the summing call already gives.
  *
  * `getSuitGrade` and `getPersonalWeaponGrade` are on the list because the
  * record each returns carries every figure of that grade: reading one outside
@@ -70,7 +72,9 @@ export const PACKAGE_CALLS = [
   'personalWeaponMetrics(',
   'getPersonalModificationCost(',
   'getSuitUpgradeCost(',
+  'getSuitUpgradeStepCost(',
   'getPersonalWeaponUpgradeCost(',
+  'getPersonalWeaponUpgradeStepCost(',
   'sumPersonalEngineeringIngredients(',
   'getSuitGrade(',
   'getPersonalWeaponGrade(',

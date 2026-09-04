@@ -160,7 +160,9 @@ test.describe('the reference visual language', () => {
     expect(placed).not.toBeNull();
     expect(Math.abs(placed?.offset ?? Infinity)).toBeLessThanOrEqual(1);
     expect(placed?.markInset ?? 0).toBeCloseTo(placed?.inset ?? -1, 0);
-    expect(placed?.gap ?? -1).toBeGreaterThan(0);
+    // The figure, not merely a gap: canvas 4c leaves `12px` after the mark and
+    // 4d leaves `10px`, and one value at both widths is what this catches.
+    expect([10, 12]).toContain(Math.round(placed?.gap ?? -1));
   });
 
   test('leaves the whole of the way home pressable', async ({ page }) => {
@@ -676,9 +678,8 @@ test.describe('the saved-build surface', () => {
   /**
    * A build, and the library opened over the workspace holding it.
    *
-   * Reached in the application rather than by address, because the marker names
-   * the record the workspace is holding — and a cold load of `/builds` has no
-   * workspace behind it and so, honestly, no current record.
+   * Reached in the application, because the marker names the record the
+   * workspace is holding and the library has no address to load it from.
    */
   async function withOneBuild(page: Page): Promise<void> {
     await page.goto('/ships/Anaconda');

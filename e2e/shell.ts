@@ -25,10 +25,9 @@ export async function reachShellAction(page: Page, name: RegExp): Promise<void> 
 /**
  * Opens the saved builds, at whichever width.
  *
- * They have no address of its own (2026-09-04): the library is a layer over
- * whatever screen a Commander is on, raised by a shell action. A journey that
- * used to `goto('/builds')` lands on a screen first and presses the control,
- * which is the only way in there now is.
+ * They have no address of their own: the library is a layer over whatever
+ * screen a Commander is on, raised by a shell action. So a journey lands on a
+ * screen first and presses the control, which is the only way in.
  */
 export async function openLibrary(page: Page): Promise<void> {
   if (!page.url().startsWith('http')) {

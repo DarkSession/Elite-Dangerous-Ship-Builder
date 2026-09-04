@@ -1,9 +1,8 @@
 # NavBeacon migration
 
-NavBeacon is published at `navbeacon.app`. It holds one tool, Ship Builder, and it
-is built to hold more: the equipment builder is the second, and it waits on an
-upstream release. This document records the decisions that shape the move and the
-work that is left.
+NavBeacon is published at `navbeacon.app`. It holds two tools, Ship Builder and
+Equipment Builder, and it is built to hold more. This document records the
+decisions that shape the move and the work that is left.
 
 ## Standing decisions
 
@@ -102,7 +101,7 @@ The registry holds the tools the application serves: the ship builder at `/ships
 an entry here, and the tab deck and the start page's tool cards both read it.
 
 Not built: the `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin. A grid and a search
-palette are more than one tool needs; revisit at five. Drag-to-pin is pointer-only and
+palette are more than two tools need; revisit at five. Drag-to-pin is pointer-only and
 would need a touch equivalent before it could ship at all. The avatar plate the canvas
 draws at the bar's trailing edge is not deferred but refused: there are no accounts.
 
@@ -131,17 +130,15 @@ Its link codec is written ahead of the bench and specified in
 [equipment-link-codec.md](./equipment-link-codec.md): a codec of its own behind the `e.` prefix,
 standing on the same Base70 radix, CRC-32 envelope and bit packer as the ship link.
 
-The suit tools — Energylink, Arc Cutter, Profile Analyser — are absent upstream. That is
-a gap to raise, not a blocker: spec 013 withdraws the region rather than filling it
-locally.
+The suit tools — Energylink, Arc Cutter, Profile Analyser, Genetic Sampler — are
+published in `equipment/tools`, and the bench names the ones the worn suit carries.
 
-One design collision to rule on when the work opens: artboard `1a` draws the equipment
-builder as a standalone application, with its own app icon, its own `EXPORT` dialog, its
-own `SAVED LOADOUTS` list and its own `HELP · ABOUT` carrying a separate `APP VERSION`.
-That contradicts the shared shell in `Tool Navigation.dc.html`, whose closing note asks
-for the ruling rather than making it. Folding it into the shell — and deleting the
-duplicated chrome from the artboard — is the expected answer, but it is a ruling to
-record, not to assume.
+Artboard `1a` draws the equipment builder as a standalone application, with its own app
+icon, its own `EXPORT` dialog, its own `SAVED LOADOUTS` list and its own `HELP · ABOUT`
+carrying a separate `APP VERSION`. It is folded into the shared shell instead: one bar,
+one record library, one `HELP · ABOUT` and one pair of versions for the deployment. The
+ruling and what it withdrew are in
+`specs/013-equipment-builder/design/reference-review.md`.
 
 ## Not doing
 
@@ -153,7 +150,7 @@ record rather than an omission:
 - A `301` from `sb.edct.dev`, and the second Pages site it would need
 - A saved-build handoff page, a bulk export format, or a cross-origin `postMessage` bridge
 - Reading a key written under the earlier prefix, or migrating one
-- The `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin, at one tool
+- The `ALL TOOLS` grid, the `⌘K` palette and drag-to-pin, at two tools
 - An account plate on the tool bar, which the canvas draws and constitution I refuses
 - The Market Finder and Thargoid War Tracker from the canvas — both need a network
   data source that constitution I forbids

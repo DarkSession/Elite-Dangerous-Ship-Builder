@@ -5,7 +5,7 @@ import { openLibrary, reachShellAction } from './shell';
  * Keeping a loadout and coming back to it (US3).
  *
  * One library holds both tools' records, so this journey never leaves the
- * application's own surfaces: the bench saves, `/builds` lists what this
+ * application's own surfaces: the bench saves, the library lists what this
  * browser is holding, and opening a loadout row lands back on the bench with
  * the suit, grade, weapons and modifications it was saved with (FR-016,
  * FR-018).

@@ -60,13 +60,11 @@ async function withStockBuild(page: Page): Promise<void> {
 
 test.describe('importing a build', () => {
   test('is offered from every screen, with no build and no chosen hull', async ({ page }) => {
-    // `/builds` is not on this list since 2026-08-25: the library is a modal
-    // layer over the screen it was opened from, and a modal makes the frame
-    // behind it inert — which is what a modal is for. The import action is
-    // offered by that screen, reached by closing the library (feature 001,
-    // build-library design, "Composition"). True of the address as well since
-    // 2026-08-28, when the layer stopped replacing the screen it stands over:
-    // reached directly it is a page, and a page carries no screen's actions.
+    // The library is not on this list. It is a modal layer over the screen it
+    // was opened from, with no address of its own, and a modal makes the frame
+    // behind it inert — which is what a modal is for. The import action is the
+    // screen's, reached by closing the library (feature 001, build-library
+    // design, "Composition").
     for (const route of ['/ships', '/ships/Anaconda', '/outfitting']) {
       await page.goto(route);
       await openImport(page);

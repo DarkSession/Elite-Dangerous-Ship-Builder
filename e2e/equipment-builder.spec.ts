@@ -322,7 +322,7 @@ async function expectTotal(page: Page, total: string, changed = false): Promise<
   await expect(summary).toHaveText(total);
 }
 
-test.describe('fitting modifications', () => {
+test.describe('what a loadout asks for', () => {
   test('says there is nothing to gather for a loadout that asks for nothing', async ({ page }) => {
     // A suit arrives at its lowest grade with nothing fitted, so there is no
     // climb and no application to pay for. The words are drawn rather than an
@@ -332,7 +332,9 @@ test.describe('fitting modifications', () => {
 
     await expect((await materials(page)).locator('.materials__empty')).toBeVisible();
   });
+});
 
+test.describe('fitting modifications', () => {
   test.beforeEach(async ({ page }) => {
     await openBench(page);
     await chooseSuit(page, 'Dominator Suit');
