@@ -273,7 +273,7 @@ test.describe('the bench, offline', () => {
     const tab = page.getByRole('tab', { name: 'Stats' });
     if ((await tab.count()) > 0) await tab.click();
     await expect(stats.locator('.metric__number')).toHaveCount(2);
-    await expect(stats.locator('ednb-resistance-bar')).toHaveCount(4);
+    await expect(stats.locator('ednb-resistance-bar')).toHaveCount(8);
 
     await context.setOffline(false);
   });
