@@ -50,11 +50,18 @@ describe('SuitTools', () => {
     );
   });
 
-  it('draws nothing at all where the suit carries no tool', () => {
+  it('keeps the rule and marks its count where there is no suit to ask', () => {
+    // Canvas 2a and 2b draw `SUIT TOOLS` with a `—` on an empty bench: what a
+    // suit will carry is part of what the ledger is offering to fill in, and a
+    // `0` would claim this suit carries nothing rather than that there is no
+    // suit yet.
     const fixture = TestBed.createComponent(SuitTools);
     fixture.componentRef.setInput('tools', []);
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('.tools')).toBeNull();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.tools')).not.toBeNull();
+    expect(element.querySelectorAll('.tools__row').length).toBe(0);
+    expect(element.querySelector('.tools__count')?.textContent?.trim()).toBe('—');
   });
 });

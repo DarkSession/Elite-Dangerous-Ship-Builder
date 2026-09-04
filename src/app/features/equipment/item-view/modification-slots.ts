@@ -36,12 +36,23 @@ export class ModificationSlots {
   /** The rule's own heading, already counting what is filled of what is open. */
   readonly heading = input.required<string>();
 
-  readonly opened = output<number>();
+  /**
+   * The slot whose picker is open under the grid, or none.
+   *
+   * Canvas 1a marks it the way it marks a selected ledger row, because the
+   * picker expands directly under the grid: without the mark, the block that
+   * opened belongs to nothing on screen. Canvas 1b marks nothing, and neither
+   * does this — the compact picker takes the screen, so there is no grid behind
+   * it to mark and nothing on it is expanded.
+   */
+  readonly opened = input<number | null>(null);
+
+  readonly openSlot = output<number>();
 
   readonly headingId = relationId('modification-slots');
 
   open(slot: ModificationSlotView): void {
     if (slot.locked) return;
-    this.opened.emit(slot.slot);
+    this.openSlot.emit(slot.slot);
   }
 }

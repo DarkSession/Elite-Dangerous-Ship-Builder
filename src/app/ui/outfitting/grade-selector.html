@@ -1,4 +1,4 @@
-<fieldset class="grades" [class.grades--steps]="asSteps()">
+<fieldset class="grades" [class.grades--steps]="asSteps()" [class.grades--preview]="preview()">
   <legend class="grades__legend">
     <span class="grades__label">{{ legend() }}</span>
     @if (selectedLabel(); as grade) {
@@ -7,7 +7,7 @@
   </legend>
 
   <div class="grades__cells">
-    @for (grade of grades(); track grade) {
+    @for (grade of grades(); track grade; let index = $index) {
       <label
         class="grade"
         [attr.data-selected]="selected() === grade"
@@ -23,7 +23,7 @@
           [attr.aria-label]="optionLabel(grade)"
           (change)="chosen.emit(grade)"
         />
-        <span class="grade__number">{{ grade }}</span>
+        <span class="grade__number">{{ cellLabel(grade, index) }}</span>
       </label>
     }
   </div>

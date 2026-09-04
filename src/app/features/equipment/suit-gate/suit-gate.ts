@@ -56,6 +56,11 @@ export class SuitGate {
   /** The ladder the canvas previews: every grade a suit can reach, none chosen. */
   readonly gradePreview = computed(() => this.#presenter.gradeLadder());
 
+  /** The same `G1`…`G5` words the live ladder carries. */
+  readonly gradeLabels = computed(() =>
+    this.gradePreview().map((grade) => this.#messages.message('equipment.grade.short', { grade })),
+  );
+
   /** The four locked slots the canvas previews under the chooser. */
   readonly slotPreview = computed(() =>
     Array.from({ length: MODIFICATION_SLOT_COUNT }, (_, slot) =>
@@ -69,6 +74,7 @@ export class SuitGate {
       name: choice.name,
       meta: choice.meta,
       figure: choice.figure,
+      figureUnit: choice.figureUnit,
       current: choice.current,
       unavailable: false,
       unavailableLabel: null,

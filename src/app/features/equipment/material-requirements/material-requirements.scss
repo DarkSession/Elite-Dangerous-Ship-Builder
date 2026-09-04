@@ -33,7 +33,12 @@
   margin: 0;
 }
 
+// Canvas 1a's list: `display: flex; flex-direction: column; gap: 7px`, and no
+// rule anywhere in it. A hairline under every line boxed each resource in and
+// halved how many of them the column could hold.
 .materials__list {
+  @include layout.stack(var(--ednb-space-3xs));
+
   margin: 0;
 }
 
@@ -41,8 +46,7 @@
   display: flex;
   align-items: center;
   gap: var(--ednb-space-inline-tight);
-  padding: var(--ednb-space-sm) var(--ednb-space-xl);
-  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
+  padding-inline: var(--ednb-space-xl);
 }
 
 .materials__name {
@@ -75,4 +79,21 @@
 .materials__note {
   font-size: var(--ednb-text-size-caption);
   color: var(--ednb-text-faint);
+}
+
+// Canvas 1b's list, which is the same rows at the density of a screen a
+// Commander is holding: `padding: 11px 14px` under a hairline, and the name a
+// size up from the wide column's.
+.materials--compact .materials__list {
+  gap: 0;
+}
+
+.materials--compact .materials__row {
+  padding-block: var(--ednb-space-lg);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
+}
+
+.materials--compact .materials__name,
+.materials--compact .materials__count {
+  font-size: var(--ednb-text-size-body);
 }

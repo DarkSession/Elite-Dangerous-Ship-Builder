@@ -94,7 +94,7 @@ test.describe('keeping a loadout', () => {
     await expect(page.locator('.gate')).toHaveCount(0);
     await openRow(page, 'suit');
     await expect(page.locator('.item__name')).toContainText('Dominator Suit');
-    await expect(page.locator('.grade[data-selected="true"]')).toHaveText('5');
+    await expect(page.locator('.grade[data-selected="true"]')).toHaveText('G5');
   });
 
   test('deletes one, and leaves the browser holding nothing', async ({ page }) => {

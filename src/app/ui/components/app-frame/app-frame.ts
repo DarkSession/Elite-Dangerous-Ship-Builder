@@ -111,6 +111,14 @@ export interface ScreenIdentity {
   readonly fallbackName?: string | null;
   readonly detail: string | null;
   readonly ident: string | null;
+  /**
+   * Whether the screen has an ID plate to draw at all.
+   *
+   * Defaults to drawing one, which is what a build wants: a plate it has not
+   * been given yet is still a plate it can have. A screen whose subject has no
+   * such label says so, and no empty field is offered.
+   */
+  readonly identField?: boolean;
   /** Which field is open for editing, or `null` for the drawn, idle state. */
   readonly editing: 'name' | 'ident' | null;
 }

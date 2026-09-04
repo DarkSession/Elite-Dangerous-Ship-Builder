@@ -96,6 +96,63 @@
   }
 }
 
+// Canvas 1a's bench draws eight weapon figures as `repeat(4, 1fr)` — two rows
+// of four filling the item column edge to edge. Three columns is what a 340px
+// inspector rail holds, and in an 890px column it leaves the last row with a
+// cell of empty ground beside it.
+//
+// A modifier rather than another container step, for the reason the tight
+// footer below states: it is what this particular grid is drawn as, and the
+// steps above go on deciding for every other group. The narrower steps still
+// apply beneath it, so the same grid is two across on a phone.
+:host(.metric-group--quad) {
+  @include layout.container-wide-up(metric-group) {
+    .metric-group {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    // Whatever ends the grid runs to the end of its row, so the group's own
+    // amber ground never shows through as an empty cell. Seven figures in four
+    // columns is the case that made this visible — a suit states one fewer than
+    // a weapon — and it needs the span said outright: `grid-column-end` alone
+    // on an auto-placed item moves the item rather than stretching it.
+    .metric:last-child:nth-child(3n + 1) {
+      grid-column: auto;
+    }
+
+    .metric:last-child:nth-child(4n + 1) {
+      grid-column: 1 / -1;
+    }
+
+    .metric:last-child:nth-child(4n + 2) {
+      grid-column: span 3;
+    }
+
+    .metric:last-child:nth-child(4n + 3) {
+      grid-column: span 2;
+    }
+  }
+}
+
+// A suit's attributes, which canvas 1a draws as `1fr 1fr` where the same grid
+// holds a weapon's eight at `repeat(4, 1fr)`. Two across is already what the
+// narrower steps give; this only stops the wide step from making it three.
+:host(.metric-group--pair) {
+  @include layout.container-wide-up(metric-group) {
+    .metric-group {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metric:last-child:nth-child(3n + 1) {
+      grid-column: auto;
+    }
+
+    .metric:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
 // The three-cell footer both canvases draw under the priority groups:
 // `repeat(3, 1fr)` at every width, on a smaller label and a smaller figure than
 // a metric cell ordinarily takes (canvas 1c `9px 10px / 7.5px / 13px`, canvas 1d

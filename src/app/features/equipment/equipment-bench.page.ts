@@ -25,6 +25,7 @@ import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { MessageService } from '../../i18n/message.service';
 import { ClockAdapter } from '../../platform/browser/clock.adapter';
 import { relationId } from '../../ui/a11y/text-equivalence';
+import type { IdentityCommit, IdentityField } from '../../ui/outfitting/ship-identity-fields';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { TabGroup, type TabItem } from '../../ui/components/tab-group/tab-group';
@@ -42,7 +43,6 @@ import { LoadoutLedger } from './loadout-ledger/loadout-ledger';
 import { MaterialRequirements } from './material-requirements/material-requirements';
 import { SuitGate } from './suit-gate/suit-gate';
 import { ModificationChooser } from './item-view/modification-chooser';
-import { WeaponChooser } from './item-view/weapon-chooser';
 
 /** Which region the compact composition is showing. */
 type BenchTab = 'loadout' | 'stats' | 'materials';
@@ -82,7 +82,6 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
     StatusNotice,
     SuitGate,
     TabGroup,
-    WeaponChooser,
   ],
   templateUrl: './equipment-bench.page.html',
   styleUrl: './equipment-bench.page.scss',
@@ -112,7 +111,6 @@ export class EquipmentBenchPage {
   readonly statsLabel = this.#messages.messageSignal('equipment.region.stats');
   readonly materialsLabel = this.#messages.messageSignal('equipment.region.materials');
   readonly tabsLabel = this.#messages.messageSignal('equipment.tab.group');
-  readonly suitChooserTitle = this.#messages.messageSignal('equipment.chooser.suit');
   readonly saveLabel = this.#messages.messageSignal('workspace.actions.save');
   readonly exportLabel = this.#messages.messageSignal('equipment.action.export');
   readonly conflictTitle = this.#messages.messageSignal('workspace.conflict.title');
@@ -126,9 +124,6 @@ export class EquipmentBenchPage {
 
   /** Whether the compact drill-in is showing the item view instead of the ledger. */
   readonly drilledIn = signal(false);
-
-  /** Whether the chooser for the selected item is open. */
-  readonly chooserOpen = signal(false);
 
   /** Which modification slot has its chooser open, or none. */
   readonly slotOpen = signal<number | null>(null);
@@ -157,15 +152,25 @@ export class EquipmentBenchPage {
     return this.composition() === 'wide' || this.tab() === tab;
   }
 
-  /** Compact replaces the ledger with the item view; wide draws both. */
+  /**
+   * Compact replaces the ledger with the item view; wide draws both.
+   *
+   * And on an empty compact bench there is no ledger at all: canvas 2b opens
+   * the `LOADOUT` tab straight onto `STEP 1 · CHOOSE A SUIT`. Every row the
+   * ledger would draw there says `LOCKED` about a mount no suit has offered
+   * yet, and at 390px they fill the screen the one live choice has to be on.
+   * Wide keeps them, because canvas 2a has a column to keep them in.
+   */
   readonly ledgerShown = computed(
-    () => this.shows('loadout') && (this.composition() === 'wide' || !this.drilledIn()),
+    () =>
+      this.shows('loadout') &&
+      (this.composition() === 'wide' || (!this.drilledIn() && this.store.hasLoadout())),
   );
 
   /**
    * Wide draws the detail column always; compact draws it in place of the ledger
-   * while a row is drilled into — and beneath the ledger while the bench is
-   * empty, where canvas 2b puts the gate under the rows it will fill in.
+   * while a row is drilled into — and on its own while the bench is empty, which
+   * is the whole of what canvas 2b's `LOADOUT` tab holds.
    */
   readonly itemShown = computed(
     () =>
@@ -185,48 +190,80 @@ export class EquipmentBenchPage {
       stopListening();
     });
 
+    // Canvas 1a and 1b put the loadout's own name where every screen's name
+    // goes, over the suit and grade it is built on. The shell places the block;
+    // the bench owns what it says and what renaming it means.
     effect((onCleanup) => {
-      this.#chrome.setActions(
-        this.store.hasLoadout()
-          ? [
-              {
-                action: {
-                  id: 'equipment.undo',
-                  label: this.#messages.message('equipment.action.undo'),
-                  mark: HISTORY_UNDO_MARK,
-                  disabled: !this.store.canUndo(),
-                },
-                perform: () => void this.store.undo(),
-              },
-              {
-                action: {
-                  id: 'equipment.redo',
-                  label: this.#messages.message('equipment.action.redo'),
-                  mark: HISTORY_REDO_MARK,
-                  // `REDO ↷`, not `↷ REDO`: each arrow points the way its
-                  // action travels, as the canvas draws them.
-                  markPosition: 'trailing' as const,
-                  disabled: !this.store.canRedo(),
-                },
-                perform: () => void this.store.redo(),
-              },
-              {
-                action: {
-                  id: 'equipment.export',
-                  label: this.#messages.message('equipment.action.export'),
-                },
-                perform: () => this.exportOpen.set(true),
-              },
-              {
-                action: {
-                  id: 'equipment.save',
-                  label: this.#messages.message('workspace.actions.save'),
-                },
-                perform: () => this.openSave(),
-              },
-            ]
-          : [],
-      );
+      this.#chrome.setIdentity({
+        identity: {
+          name: this.loadoutName(),
+          fallbackName: this.#messages.message('equipment.identity.untitled'),
+          detail: this.loadoutDetail(),
+          // A loadout carries no ID plate. The game registers a ship, not a
+          // Commander's kit, so there is no second field to draw.
+          ident: null,
+          identField: false,
+          editing: this.editingIdentity(),
+        },
+        open: (field) => this.editingIdentity.set(field),
+        close: () => this.editingIdentity.set(null),
+        commit: (commit) => this.#commitIdentity(commit),
+      });
+      onCleanup(() => this.#chrome.setIdentity(null));
+    });
+
+    // `↶ UNDO  REDO ↷` ahead of the shell's own actions, which is where the
+    // canvas draws them and where the ship tool already publishes its pair.
+    effect((onCleanup) => {
+      this.#chrome.setRegionActions([
+        {
+          action: {
+            id: 'equipment.undo',
+            label: this.#messages.message('equipment.action.undo'),
+            mark: HISTORY_UNDO_MARK,
+            disabled: !this.store.canUndo(),
+          },
+          perform: () => void this.store.undo(),
+        },
+        {
+          action: {
+            id: 'equipment.redo',
+            label: this.#messages.message('equipment.action.redo'),
+            mark: HISTORY_REDO_MARK,
+            // `REDO ↷`, not `↷ REDO`: each arrow points the way its action
+            // travels, as the canvas draws them.
+            markPosition: 'trailing' as const,
+            disabled: !this.store.canRedo(),
+          },
+          perform: () => void this.store.redo(),
+        },
+      ]);
+      onCleanup(() => this.#chrome.setRegionActions([]));
+    });
+
+    // Both are drawn on an empty bench and both are refused there, which is how
+    // canvas 2a draws them. A control that vanishes takes the knowledge that it
+    // exists with it, and a Commander cannot tell a bench that cannot export
+    // from a bench that never could.
+    effect((onCleanup) => {
+      this.#chrome.setActions([
+        {
+          action: {
+            id: 'equipment.export',
+            label: this.#messages.message('equipment.action.export'),
+            disabled: !this.store.hasLoadout(),
+          },
+          perform: () => this.exportOpen.set(true),
+        },
+        {
+          action: {
+            id: 'equipment.save',
+            label: this.#messages.message('workspace.actions.save'),
+            disabled: !this.store.hasLoadout(),
+          },
+          perform: () => this.openSave(),
+        },
+      ]);
       onCleanup(() => this.#chrome.setActions([]));
     });
   }
@@ -243,6 +280,53 @@ export class EquipmentBenchPage {
     const failure = this.#links.failure();
     return failure === null ? null : this.#linkErrors.describe(failure, 'equipment');
   });
+
+  /** Which identity field the command bar has open for editing, or none. */
+  readonly editingIdentity = signal<IdentityField | null>(null);
+
+  /**
+   * What the bar calls this loadout: the name it was saved under, or nothing.
+   *
+   * Nothing rather than the suit's name — the shell draws `UNTITLED LOADOUT`
+   * beneath it, and the suit is already the line under that.
+   */
+  readonly loadoutName = computed(() => this.saveSource()?.name ?? null);
+
+  /**
+   * Canvas 1a's crumb: the suit this is built on, its grade, and where it is worn.
+   *
+   * Canvas 2a and 2b write the same line on an empty bench, saying there is no
+   * suit rather than leaving the bar with a name and nothing under it.
+   */
+  readonly loadoutDetail = computed(() => {
+    const loadout = this.store.loadout();
+    if (loadout === null) return this.#messages.message('equipment.identity.empty');
+    return this.#messages.message('equipment.identity.detail', {
+      suit: this.#gameText.suitName(loadout.suitFamily).text ?? '',
+      grade: loadout.suitGrade,
+    });
+  });
+
+  /**
+   * Renaming from the command bar.
+   *
+   * A loadout's name lives on the record it was saved into, so renaming one is
+   * writing that record again under the new name. With nothing saved yet there
+   * is no name to change: the save layer opens instead, which is where naming
+   * an unsaved loadout has always happened, rather than a rename quietly
+   * putting a record in the library.
+   */
+  #commitIdentity(commit: IdentityCommit): void {
+    this.editingIdentity.set(null);
+    const name = commit.value?.trim() ?? '';
+    if (name === '' || commit.field !== 'name') return;
+    if (this.store.source() === null) {
+      this.#saveName.set(name);
+      this.#saveOpen.set(true);
+      return;
+    }
+    void this.requestSave({ name, note: null, overwrite: true });
+  }
 
   /** Whether the export layer is open. */
   readonly exportOpen = signal(false);
@@ -420,11 +504,6 @@ export class EquipmentBenchPage {
     this.tab.set(tab as BenchTab);
   }
 
-  /** What the open chooser is called: the item's own title, or the suit chooser. */
-  readonly chooserTitle = computed(
-    () => this.presenter.item()?.chooserTitle ?? this.suitChooserTitle(),
-  );
-
   /** The first suit, chosen from the gate rather than from a chooser layer. */
   chooseFirstSuit(family: string): void {
     this.store.dispatch({ kind: 'selectSuit', suitFamily: family });
@@ -433,7 +512,6 @@ export class EquipmentBenchPage {
   /** Opens a ledger row in the item view, drilling in where there is no room. */
   open(target: EditTarget): void {
     this.store.select(target);
-    this.chooserOpen.set(false);
     this.slotOpen.set(null);
     // An empty bench has no item view to drill into, and canvas 2b keeps the
     // ledger and the gate on screen together.
@@ -482,6 +560,5 @@ export class EquipmentBenchPage {
         ? { kind: 'selectSuit', suitFamily: identity }
         : { kind: 'fitWeapon', mount: target as PersonalMountKey, symbol: identity },
     );
-    this.chooserOpen.set(false);
   }
 }

@@ -32,6 +32,9 @@ export class SuitTools {
 
   readonly tools = input.required<readonly ToolRowView[]>();
 
+  /** Canvas 1b's arrangement: the ledger read on its own, a step larger. */
+  readonly compact = input(false);
+
   readonly headingId = relationId('suit-tools-heading');
 
   readonly heading = this.#messages.messageSignal('equipment.ledger.tools');
@@ -39,5 +42,18 @@ export class SuitTools {
   /** What the bare number at the rule's trailing edge counts, said in words. */
   readonly count = computed(() =>
     this.#messages.message('equipment.ledger.tools.count', { count: this.tools().length }),
+  );
+
+  /**
+   * The mark the canvas writes at the rule's trailing edge.
+   *
+   * A count where a suit is worn, and the dash canvas 2a and 2b draw where none
+   * is — `0` would state that this suit carries nothing, which is a different
+   * claim from having no suit to ask about.
+   */
+  readonly mark = computed(() =>
+    this.tools().length === 0
+      ? this.#messages.message('equipment.count.none')
+      : String(this.tools().length),
   );
 }

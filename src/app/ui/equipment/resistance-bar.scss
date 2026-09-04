@@ -30,9 +30,12 @@
   color: var(--ednb-text-danger-quiet);
 }
 
+// The unfilled remainder is what says how far the bar could go, so it has to be
+// a ground somebody can see: the canvas lifts it 14 units off the column
+// (`rgba(255,255,255,.06)`), where the inset fill lifted it five.
 .resistance__track {
   block-size: var(--ednb-layout-resistance-bar);
-  background: var(--ednb-surface-inset);
+  background: var(--ednb-surface-track);
 }
 
 .resistance__fill {

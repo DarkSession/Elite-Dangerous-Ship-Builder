@@ -78,7 +78,7 @@ describe('ModificationSlots', () => {
     store.dispatch({ kind: 'setSuitGrade', grade: 2 });
     const fixture = render();
     const opened: number[] = [];
-    fixture.componentInstance.opened.subscribe((slot) => opened.push(slot));
+    fixture.componentInstance.openSlot.subscribe((slot) => opened.push(slot));
     const element = fixture.nativeElement as HTMLElement;
 
     cells(element)[0]?.click();

@@ -1,4 +1,4 @@
-<div class="ledger">
+<div class="ledger" [class.ledger--compact]="compact()" [class.ledger--waiting]="!worn()">
   @if (ledger().suit; as suit) {
     <section class="ledger__group" [attr.aria-labelledby]="suitHeadingId">
       <div class="ledger__rule">
@@ -38,7 +38,7 @@
       </ul>
     </section>
 
-    <edsb-suit-tools [tools]="ledger().tools" />
+    <edsb-suit-tools [tools]="ledger().tools" [compact]="compact()" />
   }
 </div>
 
@@ -54,11 +54,11 @@
   <button
     class="ledger__row"
     type="button"
-    [class.ledger__row--current]="selected() === row.target"
+    [class.ledger__row--current]="!drillsIn() && selected() === row.target"
     [class.ledger__row--held]="row.held"
     [class.ledger__row--empty]="row.name === null"
     [attr.data-target]="row.target"
-    [attr.aria-current]="selected() === row.target ? 'true' : null"
+    [attr.aria-current]="!drillsIn() && selected() === row.target ? 'true' : null"
     [attr.aria-disabled]="row.held ? 'true' : null"
     [attr.aria-label]="row.accessibleName"
     (click)="choose(row)"
@@ -83,7 +83,19 @@
       <span class="ledger__grade" aria-hidden="true">{{ row.grade }}</span>
     }
     @if (row.modifications) {
-      <span class="ledger__mods" aria-hidden="true">{{ row.modifications }}</span>
+      <span
+        class="ledger__mods"
+        [class.ledger__mods--wanting]="row.modificationsWanting"
+        aria-hidden="true"
+        >{{ row.modifications }}</span
+      >
+    }
+
+    <!-- Canvas 1b's `›`: where the row opens a screen of its own rather than
+         selecting in place, the mark that says so. Decoration — the row is a
+         button and its accessible name already says what it opens. -->
+    @if (drillsIn() && !row.held) {
+      <span class="ledger__chevron" aria-hidden="true">›</span>
     }
   </button>
 </ng-template>

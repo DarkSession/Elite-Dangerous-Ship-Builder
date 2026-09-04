@@ -24,8 +24,15 @@
 
 .bench {
   display: grid;
-  gap: var(--ednb-space-rule);
-  background: var(--ednb-border-decorative);
+  // No gap compact: canvas 1b and 2b run the regions into one another over one
+  // unbroken ground, and the only rule drawn there is the one under the tab
+  // strip. The grid's own gaps are the wide arrangement's column seams.
+  gap: 0;
+  // The one-pixel grid the canvas rules between the columns: `border-right: 1px
+  // solid var(--amber-a18)` down the ledger and down the item column. Shown
+  // through the grid's own gaps, so the rule is the ground rather than three
+  // borders that have to agree about where a column ends.
+  background: var(--ednb-border-region);
   flex: 1 1 auto;
 
   // Canvas 1b: the strip is as tall as its labels and the region under it takes
@@ -39,6 +46,7 @@
 // column carrying the stats over the materials.
 @container bench-page (min-width: 66rem) {
   .bench {
+    gap: var(--ednb-space-rule);
     grid-template-columns:
       var(--ednb-layout-ledger-rail) minmax(0, 1fr)
       var(--ednb-layout-commander-rail);
@@ -49,10 +57,14 @@
   }
 }
 
+// The column's own ground under the two regions it stacks. Without it the grid's
+// rule colour shows through below the shorter of them as a lighter block, and
+// the canvas fills the column to the foot of the bench.
 .bench__column {
   display: grid;
   gap: var(--ednb-space-rule);
   align-content: start;
+  background-color: var(--ednb-surface-panel);
 }
 
 .bench__region {
@@ -65,15 +77,18 @@
 // as a grid item is still a row, and a grid told to fill the shell stretches
 // that empty row to half the space the regions were meant to have. The layer
 // primitive and the ship tool's own dialogs say the same of themselves; these
-// three are said here because one of them carries no stylesheet.
-edsb-weapon-chooser,
+// two are said here because one of them carries no stylesheet.
 edsb-modification-chooser,
 edsb-export-loadout-dialog {
   display: contents;
 }
 
 // Compact draws one region at a time, so the strip and the region it names
-// stand in one column over the same ground.
+// stand in one column over the same ground. Canvas 1b rules the strip off from
+// what follows it; nothing else on the compact bench is ruled. Its literal is
+// `1px solid var(--amber-a2)` over the strip's own `--amber-a16` ground, which
+// renders as a30 does here — and the rendering is what a Commander sees.
 .bench__tabs {
   background: var(--ednb-surface-panel);
+  border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-card);
 }

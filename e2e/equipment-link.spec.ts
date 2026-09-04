@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { sweepOutfittingState } from './accessibility';
 import { reachShellAction } from './shell';
 
@@ -23,17 +23,32 @@ async function openRow(page: Page, target: string): Promise<void> {
     await page.locator('.item__back').click();
   }
   await page.locator(`.ledger__row[data-target="${target}"]`).click();
-  await expect(page.locator('.item')).toBeVisible();
+  // Wide keeps the item column on screen while its contents change, so waiting
+  // for the column says nothing. Wait for it to be about this row.
+  await expect(page.locator(`.item[data-target="${target}"]`)).toBeVisible();
+}
+
+/**
+ * The rows a Commander swaps from, wherever the composition draws them.
+ *
+ * Canvas 1a lists them inline under the modification slots, always on screen;
+ * canvas 1b opens the same rows in a sheet over the drill-in.
+ */
+function swapList(page: Page): Locator {
+  return page.locator('.item__alternatives .choice');
+}
+
+/** Chooses one of them. */
+async function pickSwap(row: Locator): Promise<void> {
+  await row.click();
 }
 
 /** Fits the first weapon a mount offers, and answers with what it is called. */
 async function fitFirstWeapon(page: Page, mount: string): Promise<string> {
   await openRow(page, mount);
-  await page.locator('.item__swap').click();
-  const choice = page.locator('dialog[open] .choice').first();
+  const choice = swapList(page).first();
   const name = (await choice.locator('.choice__name').textContent())?.trim() ?? '';
-  await choice.click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await pickSwap(choice);
   return name;
 }
 
@@ -54,7 +69,7 @@ test.describe('handing a loadout to someone else', () => {
     await page.locator('.grade').last().click();
     // The link carries the loadout on the bench, so the bench has to have the
     // choice before the address can be expected to.
-    await expect(page.locator('.grade[data-selected="true"]')).toHaveText('5');
+    await expect(page.locator('.grade[data-selected="true"]')).toHaveText('G5');
 
     // Published after every choice, without a control having been pressed.
     // Read from the document rather than from the driver: the fragment is
@@ -71,7 +86,7 @@ test.describe('handing a loadout to someone else', () => {
     await expect(page.locator('.gate')).toHaveCount(0);
     await openRow(page, 'suit');
     await expect(page.locator('.item__name')).toContainText('Dominator Suit');
-    await expect(page.locator('.grade[data-selected="true"]')).toHaveText('5');
+    await expect(page.locator('.grade[data-selected="true"]')).toHaveText('G5');
     await openRow(page, 'PrimaryWeapon1');
     await expect(page.locator('.item__name')).toContainText(weapon);
   });
@@ -81,8 +96,7 @@ test.describe('handing a loadout to someone else', () => {
     await wearSuit(page, 'Dominator Suit');
     const held = await fitFirstWeapon(page, 'PrimaryWeapon2');
     await openRow(page, 'suit');
-    await page.locator('.item__swap').click();
-    await page.locator('dialog[open] .choice').filter({ hasText: 'Maverick Suit' }).click();
+    await pickSwap(swapList(page).filter({ hasText: 'Maverick Suit' }));
     await expect(page.locator('.item__name')).toContainText('Maverick Suit');
 
     const link = await page.evaluate(() => location.href);

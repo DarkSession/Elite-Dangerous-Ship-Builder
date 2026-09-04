@@ -1,9 +1,25 @@
 @if (stats(); as stats) {
   <div class="stats">
+    <!-- Canvas 1a and 2a head the column with its own name over a rule. The
+         region was named to a reader and drawn to nobody. -->
+    <div class="stats__title" [class.stats__title--hidden]="compact()">
+      <h2 class="stats__region">{{ regionLabel() }}</h2>
+    </div>
+
     <section class="stats__block" [attr.aria-labelledby]="shieldsHeadingId">
       <h2 class="stats__heading" [id]="shieldsHeadingId">{{ shieldsLabel() }}</h2>
 
       <edsb-metric-group [label]="shieldsLabel()" [metrics]="shieldFigures()" />
+    </section>
+
+    <!-- The canvas's second resistance group, drawn from the one set of four the
+         library publishes. Its `ARMOUR` bars are the mock's own arithmetic — a
+         flat 0.2 whenever `Damage Resistance` is fitted — and that modification
+         is already folded into these four (`readings/suit-readings.ts`). What
+         survives is the shape: the figures a suit resists damage by are not the
+         shield's own strength and regeneration and are not read as them. -->
+    <section class="stats__block" [attr.aria-labelledby]="resistancesHeadingId">
+      <h2 class="stats__heading" [id]="resistancesHeadingId">{{ resistancesLabel() }}</h2>
 
       <ul class="stats__resistances">
         @for (resistance of stats.resistances; track resistance.key) {
@@ -19,24 +35,27 @@
       </ul>
     </section>
 
-    @if (stats.firepower.length > 0) {
-      <section class="stats__block" [attr.aria-labelledby]="firepowerHeadingId">
-        <h2 class="stats__heading" [id]="firepowerHeadingId">{{ firepowerLabel() }}</h2>
+    <!-- Drawn whether or not anything is carried. Canvas 2a keeps `FIREPOWER`
+         with a dash against every mount: which figures a loadout answers is
+         itself information, and an absent block states none of it. -->
+    <section class="stats__block" [attr.aria-labelledby]="firepowerHeadingId">
+      <h2 class="stats__heading" [id]="firepowerHeadingId">{{ firepowerLabel() }}</h2>
 
-        <ul class="stats__firepower">
-          @for (row of stats.firepower; track row.mount) {
-            <li class="stats__row">
-              <edsb-game-text
-                class="stats__weapon"
-                [text]="row.name.text"
-                [language]="row.name.language"
-                [translationState]="row.name.translationState"
-              />
-              <span class="stats__figure">{{ row.value }}</span>
-            </li>
-          }
-        </ul>
-      </section>
-    }
+      <ul class="stats__firepower">
+        @for (row of stats.firepower; track row.mount) {
+          <li class="stats__row">
+            <edsb-game-text
+              class="stats__weapon"
+              [text]="row.name.text"
+              [language]="row.name.language"
+              [translationState]="row.name.translationState"
+            />
+            <span class="stats__figure" [class.stats__figure--quiet]="!row.primary">{{
+              row.value
+            }}</span>
+          </li>
+        }
+      </ul>
+    </section>
   </div>
 }

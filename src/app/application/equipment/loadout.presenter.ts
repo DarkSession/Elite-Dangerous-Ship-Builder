@@ -45,6 +45,16 @@ export interface LedgerRowView {
   readonly grade: string | null;
   /** `2/4`, or none for a mount with nothing on it. */
   readonly modifications: string | null;
+  /**
+   * Whether that count is short of what the grade has opened.
+   *
+   * Both artboards draw an unfilled count in the alarm ink and a full one in
+   * ordinary ink (`used < tot ? 'var(--hot-2)' : 'var(--ink-42)'`): it is the
+   * one thing on the ledger that says there is capacity nobody has used. The
+   * count itself is what carries it — the colour is the second statement
+   * (constitution V).
+   */
+  readonly modificationsWanting: boolean;
   /** True where the worn suit does not carry this mount (FR-007). */
   readonly held: boolean;
   /** The whole row as one sentence, for a reader who cannot see the dimming. */
@@ -116,6 +126,15 @@ export interface FirepowerRowView {
   readonly mount: string;
   readonly name: GameTextPresentation;
   readonly value: string;
+  /**
+   * Whether the mount is a primary one.
+   *
+   * Canvas 1a writes a primary's figure in the accent and a secondary's in
+   * ink: the block's own total is the primaries', and the accent is what says
+   * which rows it was read from. The mount's `kind` is the package's, so this
+   * is a fact about the catalogue rather than a rule the bench invented.
+   */
+  readonly primary: boolean;
 }
 
 /** The commander stats region. */
@@ -139,6 +158,8 @@ export interface WeaponChoiceView {
   readonly name: GameTextPresentation;
   readonly meta: string;
   readonly figure: string;
+  /** The unit under the figure, which the canvas draws as its own small word. */
+  readonly figureUnit: string | null;
   readonly current: boolean;
 }
 
@@ -147,6 +168,8 @@ export interface SuitChoiceView {
   readonly family: string;
   readonly name: GameTextPresentation;
   readonly meta: string;
+  /** The unit under the figure, which the canvas draws as its own small word. */
+  readonly figureUnit: string | null;
   readonly figure: string;
   readonly current: boolean;
 }
@@ -243,7 +266,16 @@ export class LoadoutPresenter {
           magnitude: 0,
           negative: false,
         })),
-        firepower: [],
+        // Canvas 2a keeps `FIREPOWER` on an empty bench with a dash against
+        // every mount the catalogue offers. The mounts are the package's own,
+        // so nothing here is a figure this bench invented — the dash is the
+        // statement that none of them is carrying anything yet.
+        firepower: CATALOGUE_MOUNTS.map((mount) => ({
+          mount: mount.key,
+          name: this.#text.personalMountName(mount),
+          value: dash,
+          primary: mount.kind === 'primary',
+        })),
       };
     }
     const suit = suitReadings(loadout);
@@ -265,6 +297,7 @@ export class LoadoutPresenter {
         value: this.#messages.message('equipment.stats.dps', {
           value: this.#formatters.decimal(weapon.metrics.damagePerSecond, 1),
         }),
+        primary: CATALOGUE_MOUNTS.find((mount) => mount.key === weapon.mount)?.kind === 'primary',
       })),
     };
   });
@@ -342,12 +375,8 @@ export class LoadoutPresenter {
         family,
         name: this.#text.suitName(family),
         meta: this.#suitMounts(family),
-        figure:
-          readings === null
-            ? ''
-            : this.#messages.message('equipment.chooser.shieldPoints', {
-                value: this.#formatters.decimal(readings.shieldStrength, 1),
-              }),
+        figure: readings === null ? '' : this.#formatters.decimal(readings.shieldStrength, 1),
+        figureUnit: readings === null ? null : this.#message('equipment.suit.figure.unit'),
         current: loadout?.suitFamily === family,
       };
     });
@@ -369,13 +398,20 @@ export class LoadoutPresenter {
       return {
         symbol,
         name: this.#text.personalWeaponName(symbol),
-        meta: readings === null ? '' : this.#weaponMeta(readings.weapon),
-        figure:
+        // Canvas 1a's swap card ends its code line with the effective range
+        // rather than the firing mode the ledger row carries: the row states
+        // what is fitted, and the card is a decision about what to fit instead.
+        meta:
           readings === null
             ? ''
-            : this.#messages.message('equipment.stats.dps', {
-                value: this.#formatters.decimal(readings.metrics.damagePerSecond, 1),
+            : this.#messages.message('equipment.weapon.candidate', {
+                class: this.#message(`equipment.class.${readings.weapon.class}`),
+                damage: this.#message(`equipment.damage.${readings.weapon.damageType}`),
+                range: this.#formatters.metres(readings.effectiveRange),
               }),
+        figure:
+          readings === null ? '' : this.#formatters.decimal(readings.metrics.damagePerSecond, 1),
+        figureUnit: readings === null ? null : this.#message('equipment.weapon.figure.unit'),
         current: fitted?.symbol === symbol,
       };
     });
@@ -420,6 +456,7 @@ export class LoadoutPresenter {
       meta: required,
       grade: null,
       modifications: this.#message('equipment.suit.select'),
+      modificationsWanting: false,
       held: false,
       accessibleName: `${choose} · ${required}`,
     };
@@ -437,6 +474,7 @@ export class LoadoutPresenter {
       meta: locked,
       grade: null,
       modifications: null,
+      modificationsWanting: false,
       held: true,
       accessibleName: `${mountName} · ${locked}`,
     };
@@ -456,6 +494,7 @@ export class LoadoutPresenter {
       meta,
       grade: this.#grade(loadout.suitGrade),
       modifications: this.#modificationCount(used, readings.modificationSlots),
+      modificationsWanting: used < readings.modificationSlots,
       held: false,
       accessibleName: [
         name.text ?? '',
@@ -487,6 +526,7 @@ export class LoadoutPresenter {
             meta: this.#message('equipment.mount.choose'),
             grade: null,
             modifications: null,
+            modificationsWanting: false,
             held: false,
             accessibleName: `${mountName} · ${empty}`,
           },
@@ -514,6 +554,7 @@ export class LoadoutPresenter {
           meta,
           grade: held ? this.#message('equipment.grade.none') : this.#grade(fitted.grade),
           modifications: held ? null : this.#modificationCount(used, total),
+          modificationsWanting: !held && used < total,
           held,
           accessibleName: [
             this.#messages.message('equipment.mount.selected', {
@@ -629,7 +670,14 @@ export class LoadoutPresenter {
     return {
       target: mount,
       name: this.#text.personalWeaponName(fitted.symbol),
-      subtitle: this.#weaponMeta(weapon),
+      // Canvas 1a's subtitle says what kind of weapon it is and which mount it
+      // is on — not the code line, which the ledger row beside it already
+      // carries. The canvas's manufacturer word is not published for a weapon
+      // and is left out (013 design/reference-review.md).
+      subtitle: this.#messages.message('equipment.weapon.mounted', {
+        class: this.#message(`equipment.class.${weapon.class}`),
+        mount: this.#mountName(position) ?? mount,
+      }),
       grades,
       grade: fitted.grade,
       attributes: [
@@ -763,6 +811,12 @@ export class LoadoutPresenter {
       primary: this.#formatters.integer(primary),
       secondary: this.#formatters.integer(secondary),
     });
+  }
+
+  /** The catalogue's own word for one mount position, where it has one. */
+  #mountName(position: number): string | null {
+    const catalogue = CATALOGUE_MOUNTS[position];
+    return catalogue === undefined ? null : this.#text.personalMountName(catalogue).text;
   }
 
   #weaponMeta(weapon: {

@@ -136,6 +136,7 @@
           [fallbackName]="screenIdentity.fallbackName ?? routeContext() ?? ''"
           [detail]="screenIdentity.detail"
           [ident]="screenIdentity.ident"
+          [identField]="screenIdentity.identField ?? true"
           [editing]="screenIdentity.editing"
           (opened)="identityOpened.emit($event)"
           (closed)="identityClosed.emit()"

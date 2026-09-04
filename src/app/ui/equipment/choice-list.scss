@@ -4,6 +4,13 @@
 // with one figure or one marker at the trailing edge.
 :host {
   display: block;
+
+  // The card arrangement below is two to a line, and which of those two the
+  // list has room for is a fact about the list's own box rather than the
+  // window's — the same rows are drawn in a 390px column, in the bench's
+  // detail column and inside a layer.
+  container-type: inline-size;
+  container-name: choices;
 }
 
 .choices {
@@ -14,13 +21,40 @@
   list-style: none;
 }
 
-// Canvas 2a's suit cards: the same rows, two to a line where there is room for
-// two. The track has a floor rather than an equal share, so a suit's name and
-// its mount line are never squeezed into a column too narrow to hold them.
-.choices--cards {
+// Canvas 2a's suit cards: the same rows, laid out **two** to a line, and canvas
+// 2b's single file. Two exactly rather than as many as fit — an `auto-fit`
+// track with a floor put all four across the gate's column, which is neither
+// artboard and wraps the mount line under itself.
+.choices--cards,
+.choices--pairs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ednb-space-sm);
+}
+
+@include layout.container-medium-up(choices) {
+  .choices--cards,
+  .choices--pairs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+// Canvas 2a's card is a box: `padding: 15px 16px` on the panel fill inside one
+// amber hairline. The row inside it is the chooser's own, which is the whole
+// point of one component serving both — what the card adds is the frame around
+// it and the way it says the name.
+.choices--cards .choice {
+  padding: var(--ednb-space-lg) var(--ednb-space-lg);
+  border-color: var(--ednb-border-card);
+  background-color: var(--ednb-surface-panel-raised);
+}
+
+// The loudest thing on canvas 2a: the suit's name in the display face, set in
+// the accent, where the same component's list rows draw a name as prose. A card
+// is read across a grid rather than down a column, and the canvas makes the
+// name the thing that is scanned.
+.choices--cards .choice__name {
+  @include layout.display-title(var(--ednb-text-size-heading-sm), var(--ednb-text-tracking-code));
 }
 
 .choice {
@@ -32,8 +66,33 @@
   align-items: center;
   gap: var(--ednb-space-inline);
   padding: var(--ednb-space-md) var(--ednb-space-lg);
+  // Canvas 1b gives a row read on its own the height of a bench row rather than
+  // of its own two lines; canvas 1a's is its content's, so the floor comes off
+  // again at the width that draws them two across.
+  min-block-size: var(--ednb-layout-bench-row-compact);
+  // The canvas boxes every one of these rows in an amber hairline, on both the
+  // swap list and the two layers. The decorative hairline this used is white at
+  // 0.04, which does not render on the ground the rows sit on.
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-row);
   background-color: var(--ednb-surface-inset);
   text-align: start;
+  transition:
+    background-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    border-color var(--ednb-motion-duration-state) var(--ednb-motion-easing),
+    color var(--ednb-motion-duration-state) var(--ednb-motion-easing);
+}
+
+// The modification picker, which the canvas rules rather than boxes: the rows
+// stand inside a layer that is already a box, and a second edge around each of
+// them is a grid the canvas does not draw.
+.choices--ruled .choice {
+  // The picker's rows are the one list that is not read on its own: the canvas
+  // gives them `min-height: 44px` compact and no floor at all wide, because the
+  // block they stand in is already inside something.
+  min-block-size: var(--ednb-target-size);
+  border-width: 0 0 var(--ednb-border-width-hairline);
+  border-color: var(--ednb-border-decorative);
+  background-color: transparent;
 }
 
 .choice--unavailable {
@@ -64,16 +123,62 @@
   text-wrap: pretty;
 }
 
+// Canvas 1a's card figure: a large amber numeral with its unit as a small word
+// beside it, both on the row's trailing edge.
 .choice__figure {
-  @include layout.micro-label(var(--ednb-text-accent-strong), var(--ednb-text-tracking-count));
-
   flex: none;
-  font-size: var(--ednb-text-size-caption);
-  text-transform: none;
+  display: flex;
+  align-items: baseline;
+  gap: var(--ednb-space-inline-tight);
+}
+
+.choice__number {
+  @include layout.metric-value(var(--ednb-text-size-heading-sm), var(--ednb-text-accent-strong));
+}
+
+.choice__unit {
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
+
+  font-size: var(--ednb-text-size-micro);
 }
 
 .choice__marker {
   @include layout.micro-label(var(--ednb-text-danger-quiet), var(--ednb-text-tracking-label));
 
   flex: none;
+}
+
+// Declared last so it wins on source order: a container query weighs the same
+// as the rule it is undoing.
+@include layout.container-medium-up(choices) {
+  .choice {
+    min-block-size: 0;
+  }
+}
+
+// What a pointer does here, as the canvas records it: a row takes the quiet
+// amber wash the ship tool's own candidate rows take, and a card lifts its edge
+// and its fill (`style-hover="border-color:var(--amber-a7);background:var(--panel-4)"`).
+// A row that cannot be chosen answers nothing, because nothing would follow.
+@media (hover: hover) {
+  // `.pe-alt:hover { background: #1a1917; border-color: rgba(255,140,26,.4) }`.
+  .choice:not(.choice--unavailable):hover {
+    background-color: var(--ednb-surface-panel-hover);
+    border-color: var(--ednb-border-row-hover);
+  }
+
+  // A card is a heavier box and lifts further, on the raised panel rather than
+  // the hover ground: `border-color:var(--amber-a7); background:var(--panel-4)`.
+  .choices--cards .choice:not(.choice--unavailable):hover {
+    background-color: var(--ednb-surface-bar);
+    border-color: var(--ednb-border-card-hover);
+  }
+
+  // The picker's rows are the one arrangement the canvas draws unboxed, so
+  // there is no edge on them to lift: `.pe-pi:not([data-taken]):hover
+  // { background: rgba(255,140,26,.09) }`.
+  .choices--ruled .choice:not(.choice--unavailable):hover {
+    background-color: var(--ednb-surface-accent-quiet);
+    border-color: var(--ednb-border-decorative);
+  }
 }

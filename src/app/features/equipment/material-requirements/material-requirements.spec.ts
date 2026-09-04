@@ -26,9 +26,10 @@ describe('MaterialRequirements', () => {
     store.dispatch({ kind: 'setSuitGrade', grade: 5 });
   });
 
-  function render(): HTMLElement {
+  function render(compact = false): HTMLElement {
     const fixture = TestBed.createComponent(MaterialRequirements);
     fixture.componentRef.setInput('materials', presenter.materials());
+    fixture.componentRef.setInput('compact', compact);
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
@@ -75,9 +76,20 @@ describe('MaterialRequirements', () => {
     expect(render().querySelector('.materials__empty')).not.toBeNull();
   });
 
-  it('says what the total covers, because the total cannot say it', () => {
-    expect(render().querySelector('.materials__note')?.textContent?.trim()).toBe(
+  it('says what the total covers where the list is the whole screen', () => {
+    // Canvas 1b's `MATERIALS` tab carries the footnote; canvas 1a's column,
+    // where the list stands under the stats, draws no note beside a total.
+    store.dispatch({ kind: 'fitModification', target: 'suit', slot: 0, symbol: REGEN });
+
+    expect(render(true).querySelector('.materials__note')?.textContent?.trim()).toBe(
       BUNDLED_ENGLISH['equipment.materials.note'],
     );
+    expect(render().querySelector('.materials__note')).toBeNull();
+  });
+
+  it('leaves the note off where there is no total for it to be about', () => {
+    // Canvas 2a writes one line on an empty bench, not two: a footnote
+    // explaining what a total covers, printed above no total, explains nothing.
+    expect(render(true).querySelector('.materials__note')).toBeNull();
   });
 });

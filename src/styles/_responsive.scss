@@ -536,6 +536,12 @@ $bench-bounded-min-height: 65.5rem;
 // the chosen row only and states the other in words.
 @mixin selectable-row($current-marks: true) {
   position: relative;
+  // The two edges below are the only ones this row draws. Said as a whole first
+  // because a row is often a `button`, and a button whose borders are only
+  // partly declared keeps the user agent's own `2px outset ButtonBorder` on the
+  // other two — which renders as a white box around every row, on a design that
+  // draws no box around any of them.
+  border: 0;
   background-color: var(--ednb-surface-row);
   border-inline-start: var(--ednb-border-width-marker) solid transparent;
   border-block-end: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);

@@ -1,32 +1,39 @@
-@if (tools().length > 0) {
-  <section class="tools" [attr.aria-labelledby]="headingId">
-    <div class="tools__rule">
-      <h2 class="tools__heading" [id]="headingId">{{ heading() }}</h2>
-      <span class="tools__line" aria-hidden="true"></span>
-      <!-- The canvas writes a bare number at the rule's trailing edge. What it
-           counts is spoken beside it rather than drawn, so the rule reads as
-           the canvas draws it and a reader still hears "3 tools carried". -->
-      <span class="tools__count" aria-hidden="true">{{ tools().length }}</span>
-      <span class="visually-hidden">{{ count() }}</span>
-    </div>
+<!-- The rule is drawn whether or not a suit is worn. Canvas 2a and 2b both
+   carry `SUIT TOOLS` with a `—` where the count goes: what a suit will carry
+   is part of what the ledger is offering to fill in, and a heading that
+   disappears says nothing about it (013 design/reference-review.md). -->
+<section
+  class="tools"
+  [class.tools--compact]="compact()"
+  [class.tools--waiting]="tools().length === 0"
+  [attr.aria-labelledby]="headingId"
+>
+  <div class="tools__rule">
+    <h2 class="tools__heading" [id]="headingId">{{ heading() }}</h2>
+    <span class="tools__line" aria-hidden="true"></span>
+    <!-- The canvas writes a bare number at the rule's trailing edge. What it
+         counts is spoken beside it rather than drawn, so the rule reads as
+         the canvas draws it and a reader still hears "3 tools carried". -->
+    <span class="tools__count" aria-hidden="true">{{ mark() }}</span>
+    <span class="visually-hidden">{{ count() }}</span>
+  </div>
 
-    <ul class="tools__rows">
-      @for (tool of tools(); track tool.name.text) {
-        <!--
-          A list item, not a control. A tool is carried rather than chosen, so
-          there is nothing here to press; the name says it cannot be changed,
-          which is what the dimming means and what a reader is given instead.
-        -->
-        <li class="tools__row" [attr.aria-label]="tool.accessibleName">
-          <span class="tools__badge" aria-hidden="true">{{ tool.badge }}</span>
-          <edsb-game-text
-            class="tools__name"
-            [text]="tool.name.text"
-            [language]="tool.name.language"
-            [translationState]="tool.name.translationState"
-          />
-        </li>
-      }
-    </ul>
-  </section>
-}
+  <ul class="tools__rows">
+    @for (tool of tools(); track tool.name.text) {
+      <!--
+        A list item, not a control. A tool is carried rather than chosen, so
+        there is nothing here to press; the name says it cannot be changed,
+        which is what the dimming means and what a reader is given instead.
+      -->
+      <li class="tools__row" [attr.aria-label]="tool.accessibleName">
+        <span class="tools__badge" aria-hidden="true">{{ tool.badge }}</span>
+        <edsb-game-text
+          class="tools__name"
+          [text]="tool.name.text"
+          [language]="tool.name.language"
+          [translationState]="tool.name.translationState"
+        />
+      </li>
+    }
+  </ul>
+</section>

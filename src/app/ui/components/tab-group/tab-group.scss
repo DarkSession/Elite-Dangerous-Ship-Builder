@@ -129,6 +129,15 @@
   text-transform: none;
 }
 
+// `.me-tab:hover { color: #ffb060 }`. Ink alone: a segment that is not the
+// chosen one carries no fill to lift, and filling it under a pointer would say
+// the mode had changed. The chosen one is already the accent and does not move.
+@media (hover: hover) {
+  .tab:not([aria-selected='true']):not([aria-pressed='true']):not(:disabled):hover {
+    color: var(--ednb-text-accent-strong);
+  }
+}
+
 // A segment that cannot be chosen is not filled, whichever one is selected.
 // Disabled ink on the accent fill is 1.34:1, and the fill means "this is the
 // mode you are in" — which a control nobody can reach is not. The selected

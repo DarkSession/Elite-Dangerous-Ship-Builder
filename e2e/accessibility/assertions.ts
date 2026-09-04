@@ -39,6 +39,12 @@ const DENSE_TARGETS = [
   // strip wider than the rest of the distributor's figures put together, and
   // three such rows do not share a 306-pixel status rail at all.
   '.pips__step',
+  // The slot picker's own two controls, which canvas 1a draws inside a 30px bar
+  // and as a 30px line under one rule (`padding: 10px 13px` around a 9.5–10px
+  // label). At the 44px baseline the bar comes out twice the height the canvas
+  // gives it and the line stops being a line. Both clear the 24px floor.
+  '.chooser__close',
+  '.chooser .chooser__clear',
   // A segmented strip is drawn dense everywhere it appears: 23.5px beside
   // canvas 1c's `HULL ANATOMY` rule, 30px under canvas 1d's, 25px for 1d's side
   // selector and 38px for canvas 1a's catalogue filter. At 44 it stops being a

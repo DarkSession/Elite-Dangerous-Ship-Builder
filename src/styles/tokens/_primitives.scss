@@ -37,6 +37,9 @@
   --ednb-palette-panel-3: #151514;
   --ednb-palette-panel-3b: #151515;
   --ednb-palette-panel-4: #161615;
+  // The ground a row or a cell takes under a pointer, which the canvas draws a
+  // step over the raised panel and short of the track (`#191917`, `#1a1917`).
+  --ednb-palette-panel-4b: #1a1917;
   --ednb-palette-panel-5: #1c1c1a;
   --ednb-palette-panel-6: #1e1d1b;
 
@@ -47,10 +50,14 @@
   --ednb-palette-amber: #ff8c1a;
   --ednb-palette-amber-2: #ffa54d;
   --ednb-palette-amber-3: #ffb060;
+  // The tint the canvas writes the name of an open modification slot in, over
+  // that slot's own amber wash.
+  --ednb-palette-amber-4: #ffc98a;
   --ednb-palette-amber-dim: #c7893a;
   --ednb-palette-amber-deep: #8a6a3a;
 
   // Amber washes. Fills and boundaries only — none reaches a text contrast floor.
+  --ednb-palette-amber-a05: rgb(255 140 26 / 0.05);
   --ednb-palette-amber-a10: rgb(255 140 26 / 0.1);
   --ednb-palette-amber-a12: rgb(255 140 26 / 0.12);
   --ednb-palette-amber-a14: rgb(255 140 26 / 0.14);
@@ -156,6 +163,7 @@
   --ednb-type-size-xl: 1rem; //          canvas 16
   --ednb-type-size-2xl: 1.125rem; //     canvas 18
   --ednb-type-size-3xl: 1.375rem; //     canvas 22
+  --ednb-type-size-4xl: 1.625rem; //     canvas 26
 
   // The canvas sets `line-height: 1` on every tracked single-line label and
   // number. `flat` is that; it is only ever correct on a line that cannot wrap.
@@ -236,6 +244,11 @@
   --ednb-elevation-underline: inset 0 calc(-1 * var(--ednb-border-width-rule)) 0
     var(--ednb-palette-amber);
 
+  // The leading marker the canvas draws on the cell whose picker is open. An
+  // inset shadow for the same reason: the cell already carries a border on all
+  // four sides, and a thicker one on the leading edge alone would move it.
+  --ednb-elevation-marker: inset var(--ednb-border-width-marker) 0 0 var(--ednb-palette-amber);
+
   // ---------------------------------------------------------------------------
   // Surface textures
   // ---------------------------------------------------------------------------
@@ -259,6 +272,17 @@
 
   // The wash that marks a selected row, run from the leading edge.
   --ednb-texture-selected: linear-gradient(90deg, var(--ednb-palette-amber-a16), transparent);
+  // The same wash a step brighter, which is what the canvas puts under a
+  // pointer: `linear-gradient(90deg, var(--amber-a18), transparent)`.
+  // The wash under the one modification slot whose picker is open: the canvas
+  // runs it right across the cell rather than fading it out, because the cell is
+  // the head of the block that opened under it.
+  --ednb-texture-opened: linear-gradient(
+    90deg,
+    var(--ednb-palette-amber-a16),
+    var(--ednb-palette-amber-a05)
+  );
+  --ednb-texture-hover: linear-gradient(90deg, var(--ednb-palette-amber-a18), transparent);
 
   // Canvas 1c's family bar: raised at the leading edge and falling back to the
   // manifest's own ground, which is what separates a family from its rows
@@ -313,6 +337,18 @@
   --ednb-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   --ednb-easing-decelerate: cubic-bezier(0, 0, 0, 1);
   --ednb-easing-accelerate: cubic-bezier(0.3, 0, 1, 1);
+
+  // What the canvas does to a control that is already carrying a state when a
+  // pointer reaches it: lifts what is there rather than putting a second ground
+  // over it (`filter: brightness(1.12)`).
+  --ednb-effect-lit-amount: 1.12;
+
+  // The one thing the canvas dims as a block rather than by ink: a picture of a
+  // control that will exist once something is chosen. Drawn at 0.28–0.3 over
+  // ground on canvas 2a, which reads a third of the ink of the live column
+  // beside it. Only ever put on a block that is `inert` and out of the
+  // accessibility tree, so nothing it dims is text anybody has to read.
+  --ednb-opacity-preview: 0.3;
 
   // ---------------------------------------------------------------------------
   // Target size — the 44 CSS-pixel design baseline. The canvas already meets it
@@ -642,6 +678,29 @@
   // same size only by coincidence (`design/module-replacement.md`, "The three
   // steps, numbered").
   --ednb-measure-step-number: 1rem; // 16
+  // The equipment ledger's mount badge, which is a larger square than that
+  // numbered step: the canvas draws it at 26px beside the item it names and at
+  // 28px where the ledger is read on its own (canvas 1a/2a and 1b/2b).
+  // The numbered square inside a modification slot, which canvas 1a draws at
+  // 20px — larger than the ship builder's 16px step and smaller than the mount
+  // badge beside a name.
+  --ednb-measure-slot-badge: 1.25rem; // 20
+  --ednb-measure-mount-badge: 1.625rem; // 26
+  --ednb-measure-mount-badge-compact: 1.75rem; // 28
+  // A bench row read on its own rather than beside the item it names. Canvas
+  // 1b's ledger rows, modification slots and swap rows all state a `min-height`
+  // of 56–58px over 11px of padding and render at 78–80.
+  --ednb-measure-bench-row-compact: 5rem; // 80
+  // Canvas 2a's preview of a modification slot, drawn taller than the cell it
+  // previews so the four of them read as the block a suit will unlock.
+  --ednb-measure-slot-preview: 4.125rem; // 66
+  // Canvas 1a's `max-height: 230px` on the slot picker's scroller, which is what
+  // keeps the block it expands into from pushing the swap list off the column.
+  --ednb-measure-picker-scroll: 14.375rem; // 230
+  // Canvas 1b's `#me-detail` header band, and canvas 2b's one control on the
+  // empty bench — the two fixed heights the compact equipment screens draw.
+  --ednb-measure-detail-bar: 3.5rem; // 56
+  --ednb-measure-primary-control: 3rem; // 48
   // The canvas's manifest row: 13px of name between 11px of padding, plus the
   // 2px that separates one row from the next.
   --ednb-measure-candidate-row: 2.625rem;

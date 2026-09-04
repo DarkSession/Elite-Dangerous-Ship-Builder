@@ -1,24 +1,31 @@
 @if (item(); as item) {
-  <article class="item" [attr.aria-labelledby]="headingId">
+  <!-- `data-target` states which item the column is about, so a test can read
+       the decision the ledger made rather than inferring it from the name. -->
+  <article class="item" [attr.data-target]="item.target" [attr.aria-labelledby]="headingId">
     <header class="item__header">
-      @if (showBack()) {
-        <!-- Canvas 1b's `←`: the way back out of the drill-in, named in words
+      <!-- Canvas 1b's band. Wide it is not a band at all: the wrapper takes
+           `display: contents` and its two children join the header's own row
+           beside the ladder, which is canvas 1a's header. -->
+      <div class="item__bar">
+        @if (showBack()) {
+          <!-- Canvas 1b's `←`: the way back out of the drill-in, named in words
              rather than by the glyph alone. -->
-        <button class="item__back" type="button" (click)="closed.emit()">
-          <span aria-hidden="true">←</span>
-          <span class="visually-hidden">{{ backLabel() }}</span>
-        </button>
-      }
+          <button class="item__back" type="button" (click)="closed.emit()">
+            <span aria-hidden="true">←</span>
+            <span class="visually-hidden">{{ backLabel() }}</span>
+          </button>
+        }
 
-      <div class="item__identity">
-        <h2 class="item__name" [id]="headingId">
-          <edsb-game-text
-            [text]="item.name.text"
-            [language]="item.name.language"
-            [translationState]="item.name.translationState"
-          />
-        </h2>
-        <p class="item__subtitle">{{ item.subtitle }}</p>
+        <div class="item__identity">
+          <h2 class="item__name" [id]="headingId">
+            <edsb-game-text
+              [text]="item.name.text"
+              [language]="item.name.language"
+              [translationState]="item.name.translationState"
+            />
+          </h2>
+          <p class="item__subtitle">{{ item.subtitle }}</p>
+        </div>
       </div>
 
       <!-- The ship tool's own ladder, drawn as canvas 1a draws this one: the
@@ -29,34 +36,37 @@
           class="item__grades"
           [grades]="item.grades"
           [selected]="item.grade"
+          [cellLabels]="gradeLabels()"
           [asSteps]="true"
           (chosen)="gradeChosen.emit($event)"
         />
       }
     </header>
 
+    <!-- The canvas switches the grid on what the item is: `1fr 1fr` for a
+         suit's figures and `repeat(4, 1fr)` for a weapon's eight. -->
     <edsb-metric-group
       class="item__attributes"
+      [class.metric-group--quad]="item.target !== 'suit'"
+      [class.metric-group--pair]="item.target === 'suit'"
       [label]="attributesLabel()"
       [metrics]="item.attributes"
     />
-
-    <!--
-      The item's own chooser: the suits, or the weapons this mount takes. It
-      opens over the item view rather than beside it, so a narrow column never
-      has to hold two lists (013 design/equipment-bench.md).
-    -->
-    <button class="item__swap" type="button" (click)="chooserOpened.emit()">
-      {{ item.chooserTitle }}
-    </button>
 
     @if (item.slots; as slots) {
       <edsb-modification-slots
         [slots]="slots"
         [heading]="item.slotsHeading"
-        (opened)="slotOpened.emit($event)"
+        [opened]="openSlot()"
+        (openSlot)="slotOpened.emit($event)"
       />
     }
+
+    <!-- Canvas 1a's `#pe-pick`: the slot picker is a sibling of the slot grid
+         with no `position` on it at all, so it expands in place under the
+         slots and pushes what follows down. What goes here is the page's, so
+         the item view neither knows nor cares which slot is open. -->
+    <ng-content />
 
     @if (item.noUpgradeNotice; as notice) {
       <!-- Four locked slots with nothing to explain them would say the suit
@@ -65,7 +75,30 @@
       <p class="item__notice">{{ notice }}</p>
     }
 
-    <ng-content />
+    <!--
+      What else could go here. Both artboards draw it inline under the slots — a
+      ruled `SWAP PRIMARY WEAPON` over the alternatives, always on screen, so a
+      Commander can read what they have against what they could have without
+      opening anything. Canvas 1a lays them two across (`#pe-alt` is
+      `grid-template-columns: 1fr 1fr`) and canvas 1b runs them down the sheet
+      it has already drilled into; the list decides which from its own width.
+    -->
+    <div class="item__alternatives">
+      <div class="item__rule">
+        <h3 class="item__step">{{ item.chooserTitle }}</h3>
+        <span class="item__line" aria-hidden="true"></span>
+      </div>
+
+      <!-- Rows, not the gate's cards: the card's frame and its name in the
+           display face belong to choosing a suit on an empty bench. What these
+           two share is the arrangement, two to a line. -->
+      <edsb-choice-list
+        [choices]="alternatives()"
+        [label]="item.chooserTitle"
+        [asPairs]="true"
+        (chosen)="alternativeChosen.emit($event)"
+      />
+    </div>
   </article>
 } @else {
   <p class="item__empty">{{ noSelectionLabel() }}</p>

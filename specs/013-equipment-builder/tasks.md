@@ -185,9 +185,14 @@ choice and match the equipment library.
       `.html`, `.scss` and `.spec.ts` — identity, the grade ladder composed from
       `src/app/ui/outfitting/grade-selector`, and the attribute list including damage per shot,
       headshot damage, DPS and sustained DPS
-- [x] T031 [US1] Offer only a mount's own weapons in
-      `src/app/features/equipment/item-view/weapon-chooser.ts`, `.html`, `.scss` and `.spec.ts`,
-      composed from `src/app/ui/outfitting/candidate-list` and `candidate-search` (FR-003)
+- [x] T031 [US1] Offer only a mount's own weapons (FR-003) — **relocated**: the chooser shipped as
+      `weapon-chooser.ts` opening a layer over the bench, and the design-conformance pass withdrew
+      it. Both artboards draw the alternatives inline under the modification slots — canvas 1a's
+      `#pe-alt` two across in the item column, canvas 1b's in the drill-in it has already opened —
+      and no artboard draws a layer for them. The list is
+      `src/app/ui/equipment/choice-list` in the item view, filtered to the mount's own weapons by
+      `src/app/application/equipment/candidate-query`; the component and its spec are deleted (013
+      design/reference-review.md, "Left as built, after the fifth pass")
 - [x] T032 [US1] Build the commander stats region in
       `src/app/features/equipment/commander-stats/commander-stats.ts`, `.html`, `.scss` and
       `.spec.ts` — armour and shield resistance groups, strength, regeneration, and one firepower

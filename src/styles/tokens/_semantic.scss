@@ -51,12 +51,19 @@
   --ednb-surface-panel: var(--ednb-palette-panel);
   --ednb-surface-panel-raised: var(--ednb-palette-panel-2);
   --ednb-surface-inset: var(--ednb-palette-panel-3);
+  // The ground a bar is drawn on, which the canvas lifts further off the panel
+  // than an inset field: what is left of the track is part of the reading.
+  --ednb-surface-track: var(--ednb-palette-panel-5);
   --ednb-surface-menu: var(--ednb-palette-panel-menu);
   --ednb-surface-layer: var(--ednb-palette-panel);
   --ednb-surface-scrim: var(--ednb-palette-scrim);
 
   // The bar that carries a screen title or a dialog title.
   --ednb-surface-bar: var(--ednb-palette-panel-4);
+  // What a row or a cell takes under a pointer. The canvas answers a pointer
+  // with a flat ground a step over the panel, not with the amber wash a
+  // selected row carries — the two states have to stay apart.
+  --ednb-surface-panel-hover: var(--ednb-palette-panel-4b);
 
   // The footer that carries a dialog's committing actions.
   --ednb-surface-footer: var(--ednb-palette-panel-2);
@@ -129,6 +136,13 @@
 
   // The wash that runs from the leading edge of a selected row.
   --ednb-surface-row-selected: var(--ednb-texture-selected);
+  // What a row under a pointer takes. One step over the selected wash, so a row
+  // that is already selected does not change under the pointer and a row that
+  // is not answers it (canvas 2a's `style-hover`).
+  --ednb-surface-row-hover: var(--ednb-texture-hover);
+  // The one slot whose picker is open, which the canvas marks as it marks a
+  // selected row: a wash, a solid amber edge and an inset marker.
+  --ednb-surface-row-opened: var(--ednb-texture-opened);
 
   // The bar a collapsible module family sits on, in the wide manifest.
   --ednb-surface-family: var(--ednb-texture-family);
@@ -192,6 +206,7 @@
 
   --ednb-text-accent: var(--ednb-palette-amber-2); //      8.62:1 min
   --ednb-text-accent-strong: var(--ednb-palette-amber-3); // 9.33:1 min
+  --ednb-text-accent-opened: var(--ednb-palette-amber-4); //  12.35:1 min
   --ednb-text-on-accent: var(--ednb-palette-bg-deep); //   8.50:1 on amber
   --ednb-text-on-info: var(--ednb-palette-bg-deep); //    10.92:1 on cool
   --ednb-text-merc: var(--ednb-palette-merc); //           4.67:1 min
@@ -227,9 +242,30 @@
   --ednb-border-field: var(--ednb-palette-amber-a22);
   --ednb-border-control: var(--ednb-palette-amber-a40);
   --ednb-border-control-quiet: var(--ednb-palette-amber-a35);
+  // A control's edge under a pointer: the canvas lifts every bordered one to
+  // `--amber-a7` on hover and lifts a card's fill with it.
+  // A control's edge under a pointer. The canvas lifts a bordered cell to 0.55,
+  // a boxed row to 0.40, a grade cell to 0.60 and a row's leading marker to
+  // 0.45 — one rung apart, and each named for what it edges.
+  --ednb-border-cell-hover: var(--ednb-palette-amber-a55);
+  --ednb-border-row-hover: var(--ednb-palette-amber-a40);
+  --ednb-border-card-hover: var(--ednb-palette-amber-a70);
+  --ednb-border-control-hover: var(--ednb-palette-amber-a60);
+  --ednb-marker-hover: var(--ednb-palette-amber-a45);
+  // The hairline the equipment canvas boxes a chooser row in, and the heavier
+  // one it frames a card with. Both are edges the eye follows rather than the
+  // thing that identifies the control, so they sit beside the decorative
+  // hairline rather than replacing it — but at 0.04 white that hairline does
+  // not render at all on the panel ground these are drawn on.
+  --ednb-border-row: var(--ednb-palette-amber-a12);
+  --ednb-border-card: var(--ednb-palette-amber-a30);
+  --ednb-border-control-strong: var(--ednb-palette-amber-a60);
   --ednb-border-region: var(--ednb-palette-amber-a18);
   --ednb-border-dialog: var(--ednb-palette-amber-a45);
   --ednb-border-quiet: var(--ednb-palette-ink-a18);
+  // What that edge lifts to, which the canvas records once and exactly:
+  // `style-hover="border-color:var(--ink-5);color:var(--ink)"`.
+  --ednb-border-quiet-hover: var(--ednb-palette-ink-a50);
   // The line from a mount to the mark that stepped aside from it, where the hull
   // draws two mounts closer together than a mark is wide. It has to be followed
   // across a lit technical drawing over a hatched plate, and at 0.4 it could
@@ -274,12 +310,18 @@
   // number is sized against the hull it is drawn on, not against the interface.
   --ednb-text-size-node-mark: var(--ednb-measure-node-mark-text);
   --ednb-text-size-compact: var(--ednb-type-size-xs);
+  // The equipment ledger read on its own, where the row name is a size larger
+  // than the same row drawn beside the item it names (canvas 1b, `500 14px`).
+  --ednb-text-size-row-compact: var(--ednb-type-size-lg);
   --ednb-text-size-body: var(--ednb-type-size-sm);
   --ednb-text-size-lead: var(--ednb-type-size-md);
   --ednb-text-size-metric: var(--ednb-type-size-lg);
   --ednb-text-size-heading-sm: var(--ednb-type-size-lg);
   --ednb-text-size-heading-md: var(--ednb-type-size-xl);
   --ednb-text-size-heading-lg: var(--ednb-type-size-2xl);
+  // The equipment canvas's item title, at the 26px both artboards draw it:
+  // the detail column's own heading, and the largest word on that screen.
+  --ednb-text-size-heading-item: var(--ednb-type-size-4xl);
   --ednb-text-size-display: var(--ednb-type-size-3xl);
 
   --ednb-text-leading-flat: var(--ednb-type-leading-flat);
@@ -358,6 +400,7 @@
   --ednb-elevation-menu: var(--ednb-elevation-overlay);
   --ednb-elevation-dialog: var(--ednb-elevation-overlay);
   --ednb-elevation-current: var(--ednb-elevation-underline);
+  --ednb-elevation-opened: var(--ednb-elevation-marker);
 
   --ednb-motion-duration-state: var(--ednb-duration-fast);
   --ednb-motion-duration-layer: var(--ednb-duration-base);
@@ -492,6 +535,16 @@
   --ednb-layout-key-figure: var(--ednb-measure-key-figure);
   --ednb-layout-icon-size: var(--ednb-measure-icon);
   --ednb-layout-step-number: var(--ednb-measure-step-number);
+  --ednb-effect-preview-dim: var(--ednb-opacity-preview);
+  --ednb-effect-lit: brightness(var(--ednb-effect-lit-amount));
+  --ednb-layout-slot-badge: var(--ednb-measure-slot-badge);
+  --ednb-layout-mount-badge: var(--ednb-measure-mount-badge);
+  --ednb-layout-mount-badge-compact: var(--ednb-measure-mount-badge-compact);
+  --ednb-layout-bench-row-compact: var(--ednb-measure-bench-row-compact);
+  --ednb-layout-slot-preview: var(--ednb-measure-slot-preview);
+  --ednb-layout-picker-scroll: var(--ednb-measure-picker-scroll);
+  --ednb-layout-detail-bar: var(--ednb-measure-detail-bar);
+  --ednb-layout-primary-control: var(--ednb-measure-primary-control);
   --ednb-layout-menu-row: var(--ednb-measure-menu-row);
   --ednb-layout-menu-min: var(--ednb-measure-menu-min);
   --ednb-layout-menu-max: var(--ednb-measure-menu-max);

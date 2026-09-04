@@ -7,9 +7,10 @@ import { CommanderStats } from './commander-stats';
 /**
  * The trailing column of artboard `1a`.
  *
- * One resistance group, not the canvas's two: the library publishes one set of
- * four resistances and the canvas's `ARMOUR` group was invented in the mock
- * (013 design/reference-review.md).
+ * One set of resistance bars, in a group of its own: the library publishes one
+ * set of four and the canvas's second group, `ARMOUR`, was invented in the mock
+ * (013 design/reference-review.md). The published four are the suit's rather
+ * than the shield's, so they are not read under the `SHIELDS` heading.
  */
 
 const RIFLE = 'wpn_m_assaultrifle_plasma_fauto';
@@ -38,9 +39,17 @@ describe('CommanderStats', () => {
 
     expect(element.querySelectorAll('.metric').length).toBe(2);
     expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(4);
-    expect(element.textContent).toContain('\u2014');
-    // No weapon is fitted, so the firepower block has nothing to list.
-    expect(element.querySelectorAll('.stats__firepower').length).toBe(0);
+    expect(element.textContent).toContain('—');
+    // Canvas 2a keeps `FIREPOWER` too, with a dash against each of the
+    // catalogue's own mounts: a block that disappears says nothing about which
+    // figures a loadout would answer.
+    expect(element.querySelectorAll('.stats__firepower').length).toBe(1);
+    expect(element.querySelectorAll('.stats__firepower .stats__row').length).toBe(3);
+    expect(
+      [...element.querySelectorAll('.stats__firepower .stats__figure')].every(
+        (figure) => figure.textContent?.trim() === '—',
+      ),
+    ).toBe(true);
   });
 
   it('states shield strength, regeneration and the four resistances', () => {
@@ -49,6 +58,10 @@ describe('CommanderStats', () => {
 
     expect(element.querySelectorAll('edsb-metric-group .metric').length).toBe(2);
     expect(element.querySelectorAll('.stats__resistances edsb-resistance-bar').length).toBe(4);
+    // The bars stand outside the shield block rather than under its heading.
+    expect(element.querySelector('.stats__resistances')?.closest('.stats__block')).not.toBe(
+      element.querySelector('edsb-metric-group')?.closest('.stats__block'),
+    );
   });
 
   it('restates every figure when the grade changes', () => {

@@ -49,29 +49,56 @@
   align-items: center;
   gap: var(--ednb-space-inline);
   padding: var(--ednb-space-sm) var(--ednb-space-2xl);
+  // The same transparent leading marker every ledger row carries, so a tool
+  // starts on the line the mounts above it start on rather than three pixels
+  // to the left of them (canvas 1a's `border-left: 3px solid transparent`).
+  border-inline-start: var(--ednb-border-width-marker) solid transparent;
   color: var(--ednb-text-muted);
 }
 
 // The canvas's dashed square, which is what marks a tool apart from a mount:
 // a mount's badge is filled because something can go in it.
 .tools__badge {
-  @include layout.micro-label(var(--ednb-text-muted), var(--ednb-text-tracking-code));
+  @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-code));
 
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--ednb-layout-step-number);
-  block-size: var(--ednb-layout-step-number);
-  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-accent);
+  inline-size: var(--ednb-layout-mount-badge);
+  block-size: var(--ednb-layout-mount-badge);
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-control-quiet);
 }
 
+// The canvas draws this block back from the rows above it: a tool is carried
+// rather than chosen, and it is the one region of the ledger nothing selects.
+// The ink is never the only carrier — each row's accessible name says the tool
+// cannot be changed (constitution V).
 .tools__name {
   min-inline-size: 0;
   font-family: var(--ednb-font-body);
-  font-size: var(--ednb-text-size-compact);
+  font-size: var(--ednb-text-size-lead);
+  color: var(--ednb-text-faint);
 }
 
 .visually-hidden {
   @include layout.visually-hidden;
+}
+
+// With no suit to ask, the rule is drawn back with the rest of the ledger:
+// canvas 2a and 2b hush every heading on an empty bench so the one live choice
+// beside them is what the eye lands on. The `—` count says the same in words.
+.tools--waiting .tools__heading {
+  color: var(--ednb-text-faint);
+}
+
+// Canvas 1b reads the tools at the density of the mounts above them: the same
+// step up the ledger's own rows take when they are what a screen is about.
+.tools--compact .tools__row {
+  padding-block: var(--ednb-space-lg);
+}
+
+.tools--compact .tools__badge {
+  inline-size: var(--ednb-layout-mount-badge-compact);
+  block-size: var(--ednb-layout-mount-badge-compact);
 }

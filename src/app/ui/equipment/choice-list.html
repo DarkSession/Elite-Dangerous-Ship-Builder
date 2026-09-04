@@ -1,4 +1,10 @@
-<ul class="choices" [class.choices--cards]="asCards()" [attr.aria-label]="label()">
+<ul
+  class="choices"
+  [class.choices--cards]="asCards()"
+  [class.choices--pairs]="asPairs()"
+  [class.choices--ruled]="ruled()"
+  [attr.aria-label]="label()"
+>
   @for (choice of choices(); track choice.id) {
     <li>
       <button
@@ -28,7 +34,12 @@
         @if (choice.unavailableLabel) {
           <span class="choice__marker">{{ choice.unavailableLabel }}</span>
         } @else if (choice.figure) {
-          <span class="choice__figure">{{ choice.figure }}</span>
+          <span class="choice__figure">
+            <span class="choice__number">{{ choice.figure }}</span>
+            @if (choice.figureUnit) {
+              <span class="choice__unit">{{ choice.figureUnit }}</span>
+            }
+          </span>
         }
       </button>
     </li>

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { LoadoutPresenter } from '../../../application/equipment/loadout.presenter';
 import type { EditTarget } from '../../../domain/equipment/loadout/loadout-edit';
@@ -24,7 +25,7 @@ import { ChoiceList, type EquipmentChoice } from '../../../ui/equipment/choice-l
  */
 @Component({
   selector: 'edsb-modification-chooser',
-  imports: [ChoiceList, Layer],
+  imports: [ChoiceList, Layer, NgTemplateOutlet],
   templateUrl: './modification-chooser.html',
   styleUrl: './modification-chooser.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +35,16 @@ export class ModificationChooser {
   readonly #messages = inject(MessageService);
 
   readonly open = input(false);
+
+  /**
+   * Canvas 1a's arrangement: the picker expanded in the item column.
+   *
+   * Not a layer at all there. `#pe-pick` carries no `position`, no `inset` and
+   * no `z-index` — it is a sibling of the slot grid that goes from `display:
+   * none` to `display: flex`, and the block under it moves down. Compact, where
+   * there is no column to expand into, canvas 1b takes the screen instead.
+   */
+  readonly inline = input(false);
 
   /** The item the slot belongs to: the suit, or one mount's weapon. */
   readonly target = input<EditTarget | null>(null);

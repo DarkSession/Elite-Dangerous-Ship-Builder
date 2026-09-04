@@ -43,6 +43,12 @@ describe('EquipmentBenchPage', () => {
   let records: LocalRecordRepository;
 
   beforeEach(async () => {
+    // The bench publishes the loadout it holds into the address, and the
+    // document's address outlives one test. A fragment left by an earlier one
+    // is a loadout this bench would open on creation, so each test starts from
+    // an address carrying nothing.
+    history.replaceState(null, '', location.pathname);
+
     await TestBed.configureTestingModule({
       imports: [EquipmentBenchPage],
       providers: [
@@ -68,12 +74,15 @@ describe('EquipmentBenchPage', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
   };
 
-  it('keeps the bench drawn on an empty one, with the gate in the detail column', () => {
-    // Canvas 2b: the ledger is drawn and inert, and the gate stands under it in
-    // the `LOADOUT` tab rather than in place of the bench (US1 scenario 1).
+  it('opens an empty compact bench straight onto the chooser', () => {
+    // Canvas 2b draws no ledger at all: the `LOADOUT` tab opens on `STEP 1 ·
+    // CHOOSE A SUIT`. Every row a ledger would draw there says `LOCKED` about a
+    // mount no suit has offered yet, and at 390px they fill the screen the one
+    // live choice has to be on. The gate keeps its heading for a reader, which
+    // is what names the region (US1 scenario 1).
     const bench = render();
 
-    expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
+    expect(bench.querySelector('.bench__region--loadout')).toBeNull();
     expect(bench.querySelector('edsb-suit-gate')).not.toBeNull();
     expect(bench.querySelector('edsb-item-view')).toBeNull();
     expect(bench.querySelector('.gate__title')?.textContent?.trim()).toBe(
@@ -153,9 +162,11 @@ describe('EquipmentBenchPage', () => {
     expect(bench.querySelector('.bench__region--loadout')).not.toBeNull();
   });
 
-  it('publishes its actions to the shell rather than drawing its own bar (FR-022)', () => {
+  it('draws every action on an empty bench, and refuses the two that need a loadout', () => {
+    // Canvas 2a keeps `↶ UNDO REDO ↷ | OPEN BUILD IMPORT EXPORT SAVE ?` with
+    // export and save dimmed. A control that vanishes takes with it the fact
+    // that it exists (FR-022).
     const chrome = TestBed.inject(ScreenChrome);
-    wear();
     const fixture = TestBed.createComponent(EquipmentBenchPage);
     fixture.detectChanges();
 
@@ -165,15 +176,27 @@ describe('EquipmentBenchPage', () => {
       'equipment.export',
       'equipment.save',
     ]);
-    // Starting a loadout is not an edit — there is nothing behind it to undo.
-    // Exporting and saving are always available, which is why neither states a
-    // disabled state.
-    expect(chrome.actions().map((action) => action.disabled)).toEqual([
-      true,
-      true,
-      undefined,
-      undefined,
+    expect(chrome.actions().every((action) => action.disabled === true)).toBe(true);
+  });
+
+  it('publishes its actions to the shell rather than drawing its own bar (FR-022)', () => {
+    const chrome = TestBed.inject(ScreenChrome);
+    wear();
+    const fixture = TestBed.createComponent(EquipmentBenchPage);
+    fixture.detectChanges();
+
+    // The history pair leads, ahead of the shell's own actions, which is where
+    // both canvases draw them and where the ship tool already publishes its.
+    expect(chrome.actions().map((action) => action.id)).toEqual([
+      'equipment.undo',
+      'equipment.redo',
+      'equipment.export',
+      'equipment.save',
     ]);
+    // Starting a loadout is not an edit — there is nothing behind it to undo.
+    // Exporting and saving are drawn and refused on an empty bench rather than
+    // taken away, so this loadout can use both.
+    expect(chrome.actions().map((action) => action.disabled)).toEqual([true, true, false, false]);
 
     fixture.destroy();
     expect(chrome.actions()).toEqual([]);

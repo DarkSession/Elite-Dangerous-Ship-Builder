@@ -45,7 +45,7 @@ test.describe('the bench has an address of its own', () => {
  * front of a Commander.
  */
 function choices(page: Page): Locator {
-  return page.locator('dialog[open] .choice');
+  return page.locator('.chooser__choices .choice');
 }
 
 /** Opens the bench and waits for it: it always opens on the gate (canvas 2a). */
@@ -68,10 +68,24 @@ async function chooseSuit(page: Page, name: string): Promise<void> {
     return;
   }
   await openRow(page, 'suit');
-  await page.locator('.item__swap').click();
-  await choices(page).filter({ hasText: name }).click();
-  // The layer keeps its content in the document; what closes is the dialog.
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  const list = swapList(page);
+  await pickSwap(list.filter({ hasText: name }));
+}
+
+/**
+ * The rows a Commander swaps from, wherever the composition draws them.
+ *
+ * Canvas 1a lists them inline under the modification slots, always on screen;
+ * canvas 1b has no room beside the item and opens the same rows in a sheet, so
+ * the control that opens it stands where the list would have been.
+ */
+function swapList(page: Page): Locator {
+  return page.locator('.item__alternatives .choice');
+}
+
+/** Chooses one of them. */
+async function pickSwap(row: Locator): Promise<void> {
+  await row.click();
 }
 
 /** Opens one ledger row in the item view, at either composition. */
@@ -81,7 +95,9 @@ async function openRow(page: Page, target: string): Promise<void> {
     await page.locator('.item__back').click();
   }
   await page.locator(`.ledger__row[data-target="${target}"]`).click();
-  await expect(page.locator('.item')).toBeVisible();
+  // Wide keeps the item column on screen while its contents change, so waiting
+  // for the column says nothing. Wait for it to be about this row.
+  await expect(page.locator(`.item[data-target="${target}"]`)).toBeVisible();
 }
 
 /** Selects a compact tab. The wide composition draws every region at once. */
@@ -137,10 +153,9 @@ test.describe('assembling a loadout', () => {
   test('fits a weapon on a mount and counts it in the firepower', async ({ page }) => {
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, 'PrimaryWeapon1');
-    await page.locator('.item__swap').click();
-    const chosen =
-      (await choices(page).first().locator('.choice__name').textContent())?.trim() ?? '';
-    await choices(page).first().click();
+    const list = swapList(page);
+    const chosen = (await list.first().locator('.choice__name').textContent())?.trim() ?? '';
+    await pickSwap(list.first());
 
     await expect(await ledgerRow(page, 'PrimaryWeapon1')).toContainText(chosen);
 
@@ -166,9 +181,9 @@ test.describe('a mount the worn suit does not carry', () => {
 
     // The Dominator's second primary, filled.
     await openRow(page, 'PrimaryWeapon2');
-    await page.locator('.item__swap').click();
-    const held = (await choices(page).first().locator('.choice__name').textContent())?.trim() ?? '';
-    await choices(page).first().click();
+    const list = swapList(page);
+    const held = (await list.first().locator('.choice__name').textContent())?.trim() ?? '';
+    await pickSwap(list.first());
 
     // The Maverick carries one primary. The second is not lost (FR-007).
     await chooseSuit(page, 'Maverick Suit');

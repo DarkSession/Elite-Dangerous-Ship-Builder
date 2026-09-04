@@ -19,7 +19,22 @@ const RIFLE_MOUNT = 'PrimaryWeapon1';
 
 /** The rows of whichever chooser is open: both draw the same row. */
 function choices(page: Page): Locator {
-  return page.locator('dialog[open] .choice');
+  return page.locator('.chooser__choices .choice');
+}
+
+/**
+ * The rows a Commander swaps from, wherever the composition draws them.
+ *
+ * Canvas 1a lists them inline under the modification slots, always on screen;
+ * canvas 1b opens the same rows in a sheet over the drill-in.
+ */
+function swapList(page: Page): Locator {
+  return page.locator('.item__alternatives .choice');
+}
+
+/** Chooses one of them. */
+async function pickSwap(row: Locator): Promise<void> {
+  await row.click();
 }
 
 async function chooseSuit(page: Page, name: string): Promise<void> {
@@ -29,9 +44,8 @@ async function chooseSuit(page: Page, name: string): Promise<void> {
     await expect(page.locator('.gate')).toHaveCount(0);
     return;
   }
-  await page.locator('.item__swap').click();
-  await choices(page).filter({ hasText: name }).click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  const list = swapList(page);
+  await pickSwap(list.filter({ hasText: name }));
 }
 
 /** Selects a compact tab. The wide composition draws every region at once. */
@@ -46,7 +60,9 @@ async function openRow(page: Page, target: string): Promise<void> {
     await page.locator('.item__back').click();
   }
   await page.locator(`.ledger__row[data-target="${target}"]`).click();
-  await expect(page.locator('.item')).toBeVisible();
+  // Wide keeps the item column on screen while its contents change, so waiting
+  // for the column says nothing. Wait for it to be about this row.
+  await expect(page.locator(`.item[data-target="${target}"]`)).toBeVisible();
 }
 
 test.describe('every bench state', () => {
@@ -65,14 +81,14 @@ test.describe('every bench state', () => {
     await expect(page.locator('.gate')).toBeVisible();
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, RIFLE_MOUNT);
-    await page.locator('.item__swap').click();
-    await choices(page).first().click();
+    await pickSwap(swapList(page).first());
 
     await sweepOutfittingState(page, testInfo, 'loadout');
 
+    // Wide keeps the alternatives on the page; compact opens them over it.
+    // Either way this is the state where both lists are readable at once.
     await openRow(page, RIFLE_MOUNT);
-    await page.locator('.item__swap').click();
-    await expect(choices(page).first()).toBeVisible();
+    await expect(swapList(page).first()).toBeVisible();
 
     await sweepOutfittingState(page, testInfo, 'weapon chooser');
   });
@@ -103,8 +119,7 @@ test.describe('every bench state', () => {
     await expect(page.locator('.gate')).toBeVisible();
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, 'PrimaryWeapon2');
-    await page.locator('.item__swap').click();
-    await choices(page).first().click();
+    await pickSwap(swapList(page).first());
     await openRow(page, 'suit');
     await chooseSuit(page, 'Maverick Suit');
 

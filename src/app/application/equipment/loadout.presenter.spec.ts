@@ -46,7 +46,14 @@ describe('LoadoutPresenter', () => {
     // named with the canvas's dash rather than left out.
     expect(presenter.item()).toBeNull();
     expect(presenter.stats()?.shieldStrength).toBe('—');
-    expect(presenter.stats()?.firepower).toEqual([]);
+    // Canvas 2a keeps the firepower block with a dash against each mount the
+    // catalogue publishes, rather than removing it.
+    expect(presenter.stats()?.firepower.map((row) => row.mount)).toEqual([
+      'PrimaryWeapon1',
+      'PrimaryWeapon2',
+      'SecondaryWeapon',
+    ]);
+    expect(presenter.stats()?.firepower.every((row) => row.value === '—')).toBe(true);
     expect(presenter.materials().lines).toEqual([]);
     expect(presenter.materials().summary).toBe('None');
   });

@@ -74,23 +74,23 @@ describe('ItemView', () => {
     expect(labels).toContain(BUNDLED_ENGLISH['equipment.attribute.dps']);
   });
 
-  it('asks for a grade, a chooser and the way back out, and nothing else', () => {
+  it('asks for a grade, an alternative and the way back out, and nothing else', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
     const fixture = render(true);
     const element = fixture.nativeElement as HTMLElement;
     const grades: number[] = [];
-    let chooserOpened = 0;
+    const chosen: string[] = [];
     let closed = 0;
     fixture.componentInstance.gradeChosen.subscribe((grade) => grades.push(grade));
-    fixture.componentInstance.chooserOpened.subscribe(() => (chooserOpened += 1));
+    fixture.componentInstance.alternativeChosen.subscribe((id) => chosen.push(id));
     fixture.componentInstance.closed.subscribe(() => (closed += 1));
 
     element.querySelectorAll<HTMLInputElement>('edsb-grade-selector .grade__radio')[3]?.click();
-    element.querySelector<HTMLButtonElement>('.item__swap')?.click();
+    element.querySelector<HTMLButtonElement>('.item__alternatives .choice')?.click();
     element.querySelector<HTMLButtonElement>('.item__back')?.click();
 
     expect(grades).toEqual([4]);
-    expect(chooserOpened).toBe(1);
+    expect(chosen.length).toBe(1);
     expect(closed).toBe(1);
   });
 

@@ -33,6 +33,15 @@ export class MaterialRequirements {
 
   readonly materials = input.required<MaterialsView>();
 
+  /**
+   * Canvas 1b's arrangement: the list read on its own in a tab of its own.
+   *
+   * The wide column packs the rows at `gap: 7px` with nothing between them;
+   * the compact tab gives each one `padding: 11px 14px` over a hairline, which
+   * is the same list at the size a thumb reaches for.
+   */
+  readonly compact = input(false);
+
   readonly headingId = relationId('material-requirements');
 
   readonly heading = this.#messages.messageSignal('equipment.region.materials');

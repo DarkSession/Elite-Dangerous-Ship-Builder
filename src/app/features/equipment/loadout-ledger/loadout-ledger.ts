@@ -39,6 +39,37 @@ export class LoadoutLedger {
   /** Which item the item view is showing, so the ledger can mark its row. */
   readonly selected = input<EditTarget | null>(null);
 
+  /**
+   * Whether the ledger is drawn as canvas 1b draws it, in a column of its own.
+   *
+   * The rows are read at arm's length there rather than beside the item they
+   * name, so the canvas steps their names up; wide keeps them at the size the
+   * three columns share.
+   */
+  readonly compact = input(false);
+
+  /**
+   * Whether there is a suit on the bench.
+   *
+   * Canvas 2a and 2b draw the whole ledger back at a third of its ink while
+   * there is not: every row is a mount that cannot be filled yet, and the one
+   * live thing on the screen is the chooser beside them. The words say `Locked`
+   * either way — the dimming is the second carrier, not the only one
+   * (constitution V).
+   */
+  readonly worn = input(true);
+
+  /**
+   * Whether a row opens a screen of its own instead of selecting in place.
+   *
+   * Canvas 1b draws a `›` on the rows that open one and marks none of them:
+   * compact replaces the ledger with the item view, so there is no selected row
+   * to see. Canvas 1a keeps the item beside the ledger and marks the row it is
+   * about, and draws no chevron. An empty bench drills into nothing at either
+   * width — canvas 2b keeps the gate under the rows.
+   */
+  readonly drillsIn = computed(() => this.compact() && this.worn());
+
   /** A row a Commander chose. A held row emits nothing. */
   readonly opened = output<EditTarget>();
 

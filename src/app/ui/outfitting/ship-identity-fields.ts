@@ -98,6 +98,16 @@ export class ShipIdentityFields {
 
   readonly ident = input<string | null>(null);
 
+  /**
+   * Whether this screen has an ID plate at all.
+   *
+   * A build does, named or not, so the field is drawn empty and waiting. A
+   * loadout does not — the game registers a ship, not a Commander's kit — and
+   * an empty plate with a pencil beside it would offer to fill in something
+   * that does not exist.
+   */
+  readonly identField = input(true);
+
   /** Which field is open for editing. `null` is the drawn, idle state. */
   readonly editing = input<IdentityField | null>(null);
 

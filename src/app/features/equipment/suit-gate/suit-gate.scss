@@ -5,12 +5,20 @@
 :host {
   display: block;
   min-inline-size: 0;
+
+  // The gate's own blocks compose on the column they were given, exactly as the
+  // item view's do: canvas 2a draws the slot previews two across, canvas 2b in
+  // a single file.
+  container-type: inline-size;
+  container-name: item;
 }
 
+// The item view's own seams: the gate stands in the column the item will take,
+// and the two have to read as one column at one rhythm.
 .gate {
-  @include layout.stack(var(--ednb-space-section));
+  @include layout.stack(var(--ednb-space-4xl));
 
-  padding-block: var(--ednb-space-xl);
+  padding-block: var(--ednb-space-4xl);
 }
 
 .gate__header {
@@ -34,7 +42,10 @@
 // muted ink of something that is not there yet rather than the amber of
 // something that is.
 .gate__title {
-  @include layout.display-title;
+  @include layout.display-title(
+    var(--ednb-text-size-heading-item),
+    var(--ednb-text-tracking-count)
+  );
 
   margin: 0;
   color: var(--ednb-text-muted);
@@ -54,9 +65,32 @@
 // cannot size to its own cells — the group is a `fieldset`, whose intrinsic
 // width is its legend's, so an auto-width box collapses to the width of the
 // word `GRADE` and the row folds to one cell a line.
+// Canvas 2b runs the ledger straight into the step rule. The whole header goes,
+// not just its words: hidden by its content alone it stayed an item of the
+// gate's stack, and an empty one still takes a gap either side of it — 44px of
+// nothing where the canvas draws 26. `visually-hidden` takes it out of flow, so
+// the heading is still there to name the region to a reader.
+//
+// The mixin is a mixin and not a global class, so the binding in the template
+// needs this declaration to mean anything.
+.gate__header.visually-hidden {
+  @include layout.visually-hidden;
+}
+
+// And with the header gone the gate opens on its own first rule, which the
+// ledger's closing padding has already separated from what came before it.
+.gate--compact {
+  padding-block-start: 0;
+}
+
+// The canvas dims both previews as a block rather than by ink: they are
+// pictures of controls, and every word in them is already out of the
+// accessibility tree and out of the focus order, so there is nothing here a
+// reader has to be able to read.
 .gate__grades {
   flex: none;
   inline-size: var(--ednb-layout-grade-ladder);
+  opacity: var(--ednb-effect-preview-dim);
 }
 
 .gate__choose,
@@ -107,15 +141,44 @@
   display: inline-flex;
   align-items: center;
   color: var(--ednb-text-accent);
+  // The canvas draws it in the accent and rules nothing under it; the colour is
+  // not the only carrier, since it is the one link in the block and a link in
+  // the accessibility tree either way.
+  text-decoration: none;
 }
 
+// The slots this previews are the same four the item view draws, so they are
+// arranged the same way: canvas 2a's `1fr 1fr`.
 .gate__slot-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ednb-space-sm);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+@include layout.container-medium-up(item) {
+  .gate__slot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+// The whole preview block reads back from the choice above it. Canvas 2a draws
+// it at a third of the ink of everything else on the column: it is a picture of
+// what a suit will unlock, and drawn in the live block's amber it shouts over
+// the one control that is actually live.
+.gate__slots {
+  opacity: var(--ednb-effect-preview-dim);
+}
+
+.gate__slots .gate__step,
+.gate__slots .gate__slot {
+  color: var(--ednb-text-faint);
+}
+
+.gate__slots .gate__line {
+  background-color: var(--ednb-border-decorative);
 }
 
 // The canvas's dashed placeholder: a slot that exists but belongs to nothing.
@@ -124,10 +187,38 @@
 // it (constitution V).
 .gate__slot {
   @include layout.micro-label(var(--ednb-text-faint), var(--ednb-text-tracking-count));
-  @include layout.target-baseline;
 
+  // Canvas 2a's `height: 66px`. No pointer floor: nothing here is a target —
+  // the block is `inert` and out of the accessibility tree.
+  block-size: var(--ednb-layout-slot-preview);
   display: flex;
   align-items: center;
   padding: var(--ednb-space-sm) var(--ednb-space-md);
-  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-control-quiet);
+  border: var(--ednb-border-width-hairline) dashed var(--ednb-border-quiet);
+}
+
+// Canvas 2b draws the way to the library as a control rather than as the end of
+// a sentence: a full-width 48px box in the accent, which is also the one thing
+// on the empty compact bench a thumb has to be able to hit. Canvas 2a writes
+// the prose line, and the prompt belongs to that line alone.
+.gate--compact .gate__prompt {
+  display: none;
+}
+
+.gate--compact .gate__link {
+  @include layout.display-title(var(--ednb-text-size-compact), var(--ednb-text-tracking-control));
+
+  inline-size: 100%;
+  block-size: var(--ednb-layout-primary-control);
+  justify-content: center;
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-control-quiet);
+  color: var(--ednb-text-accent);
+}
+
+// The canvas lifts both of its links to the brighter amber under a pointer
+// (`style-hover="color:var(--amber-3)"`).
+@media (hover: hover) {
+  .gate__link:hover {
+    color: var(--ednb-text-accent-strong);
+  }
 }

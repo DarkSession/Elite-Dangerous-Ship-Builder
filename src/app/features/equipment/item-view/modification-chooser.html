@@ -1,14 +1,56 @@
-<edsb-layer
-  [open]="open()"
-  [title]="title()"
-  [dismissLabel]="closeLabel()"
-  presentation="adaptive"
-  (dismissed)="dismissed.emit()"
->
-  <edsb-choice-list [choices]="choices()" [label]="title()" (chosen)="chosen.emit($event)" />
+@if (inline()) {
+  <!-- Canvas 1a expands the picker in the item column rather than opening it
+       over the bench: it is a sibling of the slot grid, and the swap block
+       below moves down to make room. Nothing about it is a dialog — the slots
+       it belongs to stay on screen and stay readable behind nothing. -->
+  @if (open()) {
+    <section class="chooser" [attr.aria-label]="title()">
+      <div class="chooser__bar">
+        <h3 class="chooser__title">{{ title() }}</h3>
+        <!-- The canvas writes `CLOSE ✕`. The glyph is decoration beside the
+             word, so it is drawn here rather than carried in the message a
+             reader is given. -->
+        <button class="chooser__close" type="button" (click)="dismissed.emit()">
+          {{ closeLabel() }}
+          <span aria-hidden="true">✕</span>
+        </button>
+      </div>
 
+      <div class="chooser__scroll">
+        <ng-container [ngTemplateOutlet]="rows" />
+      </div>
+
+      <ng-container [ngTemplateOutlet]="clear" />
+    </section>
+  }
+} @else {
+  <!-- Canvas 1b has no room beside the slots, so it takes the screen: a sheet
+       with its own way back, which is what the layer draws compact. -->
+  <edsb-layer
+    [open]="open()"
+    [title]="title()"
+    [dismissLabel]="closeLabel()"
+    presentation="sheet"
+    (dismissed)="dismissed.emit()"
+  >
+    <ng-container [ngTemplateOutlet]="rows" />
+    <ng-container [ngTemplateOutlet]="clear" />
+  </edsb-layer>
+}
+
+<ng-template #rows>
+  <edsb-choice-list
+    class="chooser__choices"
+    [choices]="choices()"
+    [label]="title()"
+    [ruled]="true"
+    (chosen)="chosen.emit($event)"
+  />
+</ng-template>
+
+<ng-template #clear>
   <!-- The canvas's `CLEAR SLOT`, at the foot of the picker: emptying a slot is
        a choice made here, not a control that appears when a pointer is over
        the slot (FR-012). -->
   <button class="chooser__clear" type="button" (click)="cleared.emit()">{{ clearLabel() }}</button>
-</edsb-layer>
+</ng-template>

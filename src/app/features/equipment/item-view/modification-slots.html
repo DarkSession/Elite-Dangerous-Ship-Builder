@@ -18,8 +18,10 @@
           type="button"
           [class.slots__slot--locked]="slot.locked"
           [class.slots__slot--filled]="slot.name !== null"
+          [class.slots__slot--open]="slot.slot === opened()"
           [attr.data-slot]="slot.slot"
           [attr.aria-disabled]="slot.locked ? 'true' : null"
+          [attr.aria-expanded]="slot.locked ? null : slot.slot === opened()"
           [attr.aria-label]="slot.accessibleName"
           (click)="open(slot)"
         >

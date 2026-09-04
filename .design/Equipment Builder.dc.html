@@ -27,6 +27,70 @@
           a:hover {
             color: var(--amber-3);
           }
+          .pe-row,
+          .pe-slot,
+          .pe-alt,
+          .pe-pi,
+          .pe-gr,
+          .pe-pclose,
+          .pe-pclear,
+          .me-row,
+          .me-slot,
+          .me-alt,
+          .me-pi,
+          .me-gr,
+          .me-tab,
+          .me-fmt,
+          .me-back,
+          .me-pclose,
+          .me-pclear {
+            transition:
+              background-color 0.12s ease,
+              border-color 0.12s ease,
+              color 0.12s ease;
+          }
+          .pe-row:not([data-active]):not([data-disabled]):hover,
+          .me-row:not([data-active]):not([data-disabled]):hover {
+            background: #191917 !important;
+            border-left-color: rgba(255, 140, 26, 0.45) !important;
+          }
+          .pe-slot:not([data-active]):hover,
+          .me-slot:not([data-active]):hover {
+            background: #1a1917 !important;
+            border-color: rgba(255, 140, 26, 0.55) !important;
+          }
+          .pe-row[data-active]:hover,
+          .me-row[data-active]:hover,
+          .pe-slot[data-active]:hover,
+          .me-slot[data-active]:hover {
+            filter: brightness(1.12);
+          }
+          .pe-alt:hover,
+          .me-alt:hover {
+            background: #1a1917 !important;
+            border-color: rgba(255, 140, 26, 0.4) !important;
+          }
+          .pe-pi:not([data-taken='1']):hover,
+          .me-pi:not([data-taken='1']):hover {
+            background: rgba(255, 140, 26, 0.09) !important;
+          }
+          .pe-gr:hover,
+          .me-gr:hover {
+            border-color: rgba(255, 140, 26, 0.6) !important;
+            color: #ffb060 !important;
+          }
+          .pe-pclose:hover,
+          .pe-pclear:hover,
+          .me-pclose:hover,
+          .me-pclear:hover,
+          .me-back:hover,
+          .me-tab:hover,
+          .me-fmt:hover {
+            color: #ffb060 !important;
+          }
+          .pe-locked {
+            cursor: default;
+          }
           .dv-turn {
             padding: 40px 44px 32px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1897,373 +1961,6 @@
                     gap: 18px;
                   "
                 >
-                  <div>
-                    <div style="display: flex; align-items: center; gap: 9px; padding: 0 14px 8px">
-                      <div
-                        style="
-                          font:
-                            500 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--amber-2);
-                          letter-spacing: 0.2em;
-                        "
-                      >
-                        SUIT
-                      </div>
-                      <div style="flex: 1; height: 1px; background: var(--amber-a16)"></div>
-                      <div
-                        style="
-                          font:
-                            400 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-38);
-                        "
-                      >
-                        0
-                      </div>
-                    </div>
-                    <div
-                      style="
-                        display: flex;
-                        align-items: center;
-                        gap: 11px;
-                        padding: 14px;
-                        min-height: 56px;
-                        box-sizing: border-box;
-                        background: linear-gradient(90deg, var(--amber-a12), transparent);
-                        border-left: 3px solid var(--amber);
-                        cursor: pointer;
-                      "
-                    >
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          border: 1px dashed var(--amber-a6);
-                          font:
-                            700 15px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--amber-2);
-                        "
-                      >
-                        +
-                      </div>
-                      <div style="flex: 1; min-width: 0">
-                        <div
-                          style="
-                            font:
-                              500 14px/1.2 Barlow,
-                              sans-serif;
-                            color: var(--amber-3);
-                          "
-                        >
-                          Choose a suit
-                        </div>
-                        <div
-                          style="
-                            font:
-                              400 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--ink-48);
-                            margin-top: 6px;
-                            letter-spacing: 0.06em;
-                          "
-                        >
-                          EMPTY · REQUIRED FIRST
-                        </div>
-                      </div>
-                      <div
-                        style="
-                          font:
-                            400 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--amber-a7);
-                          letter-spacing: 0.08em;
-                        "
-                      >
-                        SELECT →
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style="opacity: 0.34; pointer-events: none">
-                    <div style="display: flex; align-items: center; gap: 9px; padding: 0 14px 8px">
-                      <div
-                        style="
-                          font:
-                            500 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-5);
-                          letter-spacing: 0.2em;
-                        "
-                      >
-                        WEAPONS
-                      </div>
-                      <div
-                        style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.06)"
-                      ></div>
-                      <div
-                        style="
-                          font:
-                            400 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-3);
-                        "
-                      >
-                        —
-                      </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 11px; padding: 13px 14px">
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          border: 1px dashed var(--ink-18);
-                          font:
-                            700 10px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-32);
-                        "
-                      >
-                        P1
-                      </div>
-                      <div style="flex: 1; min-width: 0">
-                        <div
-                          style="
-                            font:
-                              400 13.5px/1.2 Barlow,
-                              sans-serif;
-                            color: var(--ink-42);
-                          "
-                        >
-                          Primary slot 1
-                        </div>
-                        <div
-                          style="
-                            font:
-                              400 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--ink-3);
-                            margin-top: 6px;
-                            letter-spacing: 0.06em;
-                          "
-                        >
-                          LOCKED
-                        </div>
-                      </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 11px; padding: 13px 14px">
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          border: 1px dashed var(--ink-18);
-                          font:
-                            700 10px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-32);
-                        "
-                      >
-                        P2
-                      </div>
-                      <div style="flex: 1; min-width: 0">
-                        <div
-                          style="
-                            font:
-                              400 13.5px/1.2 Barlow,
-                              sans-serif;
-                            color: var(--ink-42);
-                          "
-                        >
-                          Primary slot 2
-                        </div>
-                        <div
-                          style="
-                            font:
-                              400 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--ink-3);
-                            margin-top: 6px;
-                            letter-spacing: 0.06em;
-                          "
-                        >
-                          LOCKED
-                        </div>
-                      </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 11px; padding: 13px 14px">
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          border: 1px dashed var(--ink-18);
-                          font:
-                            700 10px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-32);
-                        "
-                      >
-                        S1
-                      </div>
-                      <div style="flex: 1; min-width: 0">
-                        <div
-                          style="
-                            font:
-                              400 13.5px/1.2 Barlow,
-                              sans-serif;
-                            color: var(--ink-42);
-                          "
-                        >
-                          Secondary slot
-                        </div>
-                        <div
-                          style="
-                            font:
-                              400 8.5px/1 'JetBrains Mono',
-                              monospace;
-                            color: var(--ink-3);
-                            margin-top: 6px;
-                            letter-spacing: 0.06em;
-                          "
-                        >
-                          LOCKED
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style="opacity: 0.22; pointer-events: none">
-                    <div style="display: flex; align-items: center; gap: 9px; padding: 0 14px 8px">
-                      <div
-                        style="
-                          font:
-                            500 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-5);
-                          letter-spacing: 0.2em;
-                        "
-                      >
-                        SUIT TOOLS
-                      </div>
-                      <div
-                        style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.06)"
-                      ></div>
-                      <div
-                        style="
-                          font:
-                            400 9px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-3);
-                        "
-                      >
-                        —
-                      </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px">
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          border: 1px dashed var(--ink-18);
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          font:
-                            700 10px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-32);
-                        "
-                      >
-                        T
-                      </div>
-                      <div
-                        style="
-                          font:
-                            400 13px/1.2 Barlow,
-                            sans-serif;
-                          color: var(--ink-42);
-                        "
-                      >
-                        Energylink
-                      </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px">
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          border: 1px dashed var(--ink-18);
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          font:
-                            700 10px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-32);
-                        "
-                      >
-                        T
-                      </div>
-                      <div
-                        style="
-                          font:
-                            400 13px/1.2 Barlow,
-                            sans-serif;
-                          color: var(--ink-42);
-                        "
-                      >
-                        Arc Cutter
-                      </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px">
-                      <div
-                        style="
-                          width: 30px;
-                          height: 30px;
-                          flex: none;
-                          border: 1px dashed var(--ink-18);
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          font:
-                            700 10px/1 'JetBrains Mono',
-                            monospace;
-                          color: var(--ink-32);
-                        "
-                      >
-                        T
-                      </div>
-                      <div
-                        style="
-                          font:
-                            400 13px/1.2 Barlow,
-                            sans-serif;
-                          color: var(--ink-42);
-                        "
-                      >
-                        Profile Analyser
-                      </div>
-                    </div>
-                  </div>
-
                   <div style="padding: 0 14px; display: flex; flex-direction: column; gap: 12px">
                     <div style="display: flex; align-items: center; gap: 9px">
                       <div
@@ -5870,6 +5567,8 @@
               const live = isSuit || enabled(i);
               r.style.background = on && live ? 'linear-gradient(90deg,var(--amber-a16),transparent)' : 'transparent';
               r.style.borderLeftColor = on && live ? 'var(--amber)' : 'transparent';
+              if (on && live) r.dataset.active = '1'; else delete r.dataset.active;
+              if (!live) r.dataset.disabled = '1'; else delete r.dataset.disabled;
               r.style.opacity = live ? '1' : '.42';
               r.style.cursor = live ? 'pointer' : 'not-allowed';
               const nEl = r.querySelector('.pe-rn'), mEl = r.querySelector('.pe-rm'),
@@ -5956,9 +5655,10 @@
             $('#pe-mods').innerHTML = Array.from({ length: maxSlots }, (_, si) => {
               const locked = si >= unlocked, m = list[si];
               const gNeed = si + 2;
-              return '<div class="' + (locked ? 'pe-locked' : 'pe-slot') + '" data-i="' + si + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:' + (locked ? 'rgba(255,255,255,.015)' : m ? '#141414' : 'transparent') + ';border:1px ' + (locked ? 'solid rgba(255,140,26,.09)' : m ? 'solid rgba(255,140,26,.18)' : 'dashed rgba(255,140,26,.28)') + ';cursor:' + (locked ? 'default' : 'pointer') + '">'
-                + '<div style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,26,' + (locked ? '.14' : '.35') + ');font:600 9px/1 \'JetBrains Mono\',monospace;color:' + (locked ? 'rgba(232,222,209,.28)' : '#ffa54d') + '">' + (si + 1) + '</div>'
-                + '<div style="flex:1;min-width:0"><div style="font:' + (m ? '500' : '400 italic') + ' 12.5px/1.2 Barlow,sans-serif;color:' + (locked ? 'rgba(232,222,209,.3)' : m ? '#ddd3c6' : 'rgba(232,222,209,.5)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (m || (locked ? 'Locked slot' : 'Empty slot')) + '</div>'
+              const act = !locked && st.pick === si;
+              return '<div class="' + (locked ? 'pe-locked' : 'pe-slot') + '"' + (act ? ' data-active="1"' : '') + ' data-i="' + si + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:' + (act ? 'linear-gradient(90deg,rgba(255,140,26,.16),rgba(255,140,26,.05))' : locked ? 'rgba(255,255,255,.015)' : m ? '#141414' : 'transparent') + ';border:1px ' + (act ? 'solid #ff8c1a' : locked ? 'solid rgba(255,140,26,.09)' : m ? 'solid rgba(255,140,26,.18)' : 'dashed rgba(255,140,26,.28)') + ';' + (act ? 'box-shadow:inset 3px 0 0 #ff8c1a;' : '') + 'cursor:' + (locked ? 'default' : 'pointer') + '">'
+                + '<div style="width:20px;height:20px;flex:none;display:flex;align-items:center;justify-content:center;border:1px solid ' + (act ? '#ff8c1a' : 'rgba(255,140,26,' + (locked ? '.14' : '.35') + ')') + ';background:' + (act ? '#ff8c1a' : 'transparent') + ';font:600 9px/1 \'JetBrains Mono\',monospace;color:' + (act ? '#141210' : locked ? 'rgba(232,222,209,.28)' : '#ffa54d') + '">' + (si + 1) + '</div>'
+                + '<div style="flex:1;min-width:0"><div style="font:' + (m ? '500' : '400 italic') + ' 12.5px/1.2 Barlow,sans-serif;color:' + (act ? '#ffc98a' : locked ? 'rgba(232,222,209,.3)' : m ? '#ddd3c6' : 'rgba(232,222,209,.5)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (m || (locked ? 'Locked slot' : 'Empty slot')) + '</div>'
                 + '<div style="font:400 8px/1.4 \'JetBrains Mono\',monospace;color:rgba(232,222,209,' + (locked ? '.25' : '.38') + ');margin-top:6px;letter-spacing:.1em">' + (locked ? (m ? 'HELD \u00b7 REQUIRES GRADE ' + gNeed : 'REQUIRES GRADE ' + gNeed) : m ? 'FITTED' : 'CHOOSE A MODIFICATION') + '</div></div>'
                 + (locked
                   ? '<svg width="11" height="13" viewBox="0 0 11 13" fill="none" style="flex:none;opacity:.42"><path d="M2.2 5.5V3.6a3.3 3.3 0 0 1 6.6 0v1.9" stroke="rgba(232,222,209,.6)" stroke-width="1.1"/><rect x=".8" y="5.5" width="9.4" height="6.8" stroke="rgba(232,222,209,.6)" stroke-width="1.1"/></svg>'
@@ -6060,8 +5760,8 @@
               st.pick = -1; render(); return;
             }
             const slot = e.target.closest('.pe-slot');
-            if (slot) { const i = Number(slot.dataset.i); st.pick = st.pick === i ? -1 : i; renderPick(); return; }
-            if (e.target.closest('.pe-pclose')) { st.pick = -1; renderPick(); return; }
+            if (slot) { const i = Number(slot.dataset.i); st.pick = st.pick === i ? -1 : i; renderDetail(); return; }
+            if (e.target.closest('.pe-pclose')) { st.pick = -1; renderDetail(); return; }
             if (e.target.closest('.pe-pclear')) {
               const list = st.sel === 'suit' ? st.smods : st.w[Number(st.sel)].m;
               list[st.pick] = null; st.pick = -1; render(); return;
@@ -6283,7 +5983,7 @@
 
           const rowHTML = (k, badge, name, meta, grade, mods, live) => {
             const short = mods.split('/'), lo = Number(short[0]) < Number(short[1]);
-            return '<div class="me-row" data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:58px;padding:11px 14px;border-left:3px solid transparent;cursor:' + (live ? 'pointer' : 'not-allowed') + ';opacity:' + (live ? '1' : '.42') + '">'
+            return '<div class="me-row"' + (live ? '' : ' data-disabled="1"') + ' data-k="' + k + '" style="display:flex;align-items:center;gap:11px;min-height:58px;padding:11px 14px;border-left:3px solid transparent;cursor:' + (live ? 'pointer' : 'not-allowed') + ';opacity:' + (live ? '1' : '.42') + '">'
               + '<div style="width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(255,140,26,.1);font:700 10px/1 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.7)">' + badge + '</div>'
               + '<div style="flex:1;min-width:0"><div style="font:500 14px/1.2 Barlow,sans-serif;color:#ddd3c6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(name) + '</div>'
               + '<div style="font:400 8.5px/1.3 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.45);margin-top:6px;letter-spacing:.06em">' + meta + '</div></div>'
@@ -6414,9 +6114,8 @@
             $('#me-pbody').innerHTML = lib.map(m => {
               const taken = list.indexOf(m[0]) > -1 && list.indexOf(m[0]) !== st.pick;
               const cur = list[st.pick] === m[0];
-              return '<div class="me-pi" data-m="' + m[0] + '" data-taken="' + (taken ? 1 : '') + '" style="display:flex;align-items:center;gap:10px;min-height:60px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:' + (taken ? 'not-allowed' : 'pointer') + ';opacity:' + (taken ? '.35' : '1') + ';background:' + (cur ? 'linear-gradient(90deg,rgba(255,140,26,.14),transparent)' : 'transparent') + '">'
-                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (cur ? '#ffb060' : '#ddd3c6') + '">' + m[0] + '</div>'
-                + '<div style="font:400 8.5px/1.4 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.36);margin-top:6px;letter-spacing:.06em">' + m[1].toUpperCase() + '</div></div>'
+              return '<div class="me-pi" data-m="' + m[0] + '" data-taken="' + (taken ? 1 : '') + '" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:' + (taken ? 'not-allowed' : 'pointer') + ';opacity:' + (taken ? '.35' : '1') + ';background:' + (cur ? 'linear-gradient(90deg,rgba(255,140,26,.14),transparent)' : 'transparent') + '">'
+                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (cur ? '#ffb060' : '#ddd3c6') + '">' + m[0] + '</div></div>'
                 + (taken ? '<div style="flex:none;font:400 8px/1 \'JetBrains Mono\',monospace;color:#ff9b78;letter-spacing:.1em">FITTED</div>' : '') + '</div>';
             }).join('');
           };

@@ -2476,6 +2476,14 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'equipment.stats.regen':
       'The canvas’s own abbreviation over the regeneration figure, with the SI form for “per second”; German abbreviates Regeneration the same way.',
     'equipment.stats.dps': 'The same in-game abbreviation, in a composition pattern.',
+    'equipment.weapon.figure.unit':
+      'The same in-game abbreviation again, drawn small beside a chooser row’s figure.',
+    'equipment.suit.figure.unit':
+      'The in-game abbreviation for shield points, which the game does not translate.',
+    'equipment.weapon.mounted':
+      'A composition pattern; both variables and the separator are language-neutral. The words it composes — the weapon class and the mount name — are translated where they are stated.',
+    'equipment.weapon.candidate':
+      'The same pattern with a third variable. Every word in it comes from the package or from a translated message; nothing here is wording.',
     'equipment.chooser.engineers':
       'The variable alone. Engineers are people, and their names are the package’s in every language.',
     'equipment.chooser.shieldPoints':
