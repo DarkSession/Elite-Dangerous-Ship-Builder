@@ -19,7 +19,7 @@
     arriving late moves nothing on the page. It is also the positioning
     container for the marks, and its own container query is what scales them.
   -->
-  <div class="schematic__frame" #plateFrame>
+  <div class="schematic__frame" [class.schematic__frame--pending]="isWaiting()" #plateFrame>
     @if (showsDrawing()) {
       <!--
         The hull, turned a quarter turn and centred in the plate. `viewBox` and
@@ -64,6 +64,7 @@
               [attr.y]="artworkBox().y"
               [attr.width]="artworkBox().width"
               [attr.height]="artworkBox().height"
+              (load)="pictureArrived()"
               (error)="pictureUnavailable()"
             />
           </g>
@@ -72,13 +73,13 @@
 
       @if (leaders().length > 0) {
         <!--
-          The hairlines back to the mounts whose marks stepped aside, in the
-          plate's own frame — the same coordinate space the turned hull is
-          drawn in, so a line ends on the package's annotation rather than near
-          it. Decoration: the mount it points at is a named button, and nothing
-          about its state is carried by the line
-          (design/hull-anatomy.md, "Marks that would touch").
-        -->
+        The hairlines back to the mounts whose marks stepped aside, in the
+        plate's own frame — the same coordinate space the turned hull is
+        drawn in, so a line ends on the package's annotation rather than near
+        it. Decoration: the mount it points at is a named button, and nothing
+        about its state is carried by the line
+        (design/hull-anatomy.md, "Marks that would touch").
+      -->
         <svg
           class="schematic__leaders"
           [attr.viewBox]="frame().viewBox"
@@ -101,14 +102,14 @@
 
       @for (mark of marks(); track mark.occurrence.item.key) {
         <!--
-          Canvas 1c's `hp-node`: a small square carrying the mount's node
-          number, set on the hull at that mount's own position — or, where the
-          hull draws two mounts closer together than a mark is wide, one step
-          aside from it with a leader back to it. A real button rather than the
-          reference's `div`, so it is reachable, pressable and named;
-          `data-kind`, `data-fitted`, `data-engineered` and `aria-pressed` carry
-          the same four facts the treatment draws and the name says.
-        -->
+        Canvas 1c's `hp-node`: a small square carrying the mount's node
+        number, set on the hull at that mount's own position — or, where the
+        hull draws two mounts closer together than a mark is wide, one step
+        aside from it with a leader back to it. A real button rather than the
+        reference's `div`, so it is reachable, pressable and named;
+        `data-kind`, `data-fitted`, `data-engineered` and `aria-pressed` carry
+        the same four facts the treatment draws and the name says.
+      -->
         <button
           #plateMark
           class="schematic__mount"
@@ -127,15 +128,17 @@
           {{ mark.occurrence.item.node }}
           @if (mark.occurrence.item.engineered) {
             <!--
-              The canvas hangs the engineering icon off the node's top corner.
-              Decoration: the button's own name already says the module is
-              engineered, in words.
-            -->
+            The canvas hangs the engineering icon off the node's top corner.
+            Decoration: the button's own name already says the module is
+            engineered, in words.
+          -->
             <img class="schematic__engineered" src="assets/icons/engineered.svg" alt="" />
           }
         </button>
       }
-    } @else if (isLoading()) {
+    }
+
+    @if (isWaiting()) {
       <!--
         The same mark the hull illustration carries while it is on its way, in
         the place the drawing will be. The words are spoken rather than drawn,
@@ -143,10 +146,10 @@
         height when the fetch lands.
       -->
       <p class="schematic__loading">
-        <img class="schematic__loader" [src]="loaderSource" alt="" aria-hidden="true" />
+        <ednb-waiting-mark />
         <span class="schematic__spoken">{{ statusText() }}</span>
       </p>
-    } @else {
+    } @else if (!showsDrawing()) {
       <!--
         The reference draws one hull that is always there. When it is not, the
         plate says so in words in its place — never a blank frame, and never a

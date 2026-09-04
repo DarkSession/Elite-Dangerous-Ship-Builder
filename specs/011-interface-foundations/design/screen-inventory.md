@@ -55,6 +55,7 @@ mapping. They register/preview shared extensions through this feature's contract
 | FR-024      | Fixture-tested Angular/TypeScript/PostCSS policy plus UI-export/preview-ledger reconciliation                                                           |
 | FR-027      | Route-owned title/description/canonical in the one document commit, static head, crawl policy, sitemap, manifest and JSON-LD, reconciled by policy gate |
 | FR-028      | One tool registry read by the shell; tool bar naming every served tool, with the open route's tool exposed as current at every width                    |
+| FR-029      | Shared waiting components, the accounted wait inventory in `design/waiting-states.md`, and a scanned state for each                                     |
 
 ## Cross-feature ownership
 

@@ -1,0 +1,28 @@
+@use '../../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+}
+
+.footer {
+  @include layout.wrapping-row(var(--ednb-space-inline));
+
+  justify-content: space-between;
+}
+
+.footer--rule-section {
+  padding-block-start: var(--ednb-space-control-block);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-section);
+}
+
+.footer--rule-quiet {
+  padding-block-start: var(--ednb-space-xs);
+  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
+}
+
+.footer__actions {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}

@@ -70,3 +70,8 @@ identity/acquisition badges, unavailable facts, named power controls, candidate 
 engineering choices/material costs, undo/redo actions, ship name/ident fields and ingress/edit
 refusal notices. Previews cover default/populated, selected, empty, unavailable, disabled, loading,
 stale and refusal states at wide, tablet and compact widths with expanded/RTL text.
+
+Each of these surfaces closes with a commitment: remove, cancel, fit, revert, apply, and the compact
+bench's own pair. Each one is the shared action button, at its primary or its secondary emphasis.
+The bench composes that control rather than restyling it, so the busy state, the focus treatment and
+the disabled treatment come with it (011/FR-001).

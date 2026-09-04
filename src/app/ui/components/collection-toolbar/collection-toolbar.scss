@@ -45,14 +45,13 @@
 // One row that scrolls sideways rather than wrapping, as the reference draws
 // it (canvas 1b). The row owns the overflow; the document never scrolls.
 .toolbar__sort-chips {
+  @include layout.bare-list;
+
   display: flex;
   flex: 1 1 auto;
   min-inline-size: 0;
   gap: var(--ednb-space-inline-tight);
   overflow-x: auto;
-  list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
 .toolbar__sort-chips > li {

@@ -46,10 +46,7 @@
     </div>
 
     @if (isEmpty()) {
-      <div class="library__empty">
-        <h2>{{ emptyTitle() }}</h2>
-        <p>{{ emptyDescription() }}</p>
-      </div>
+      <ednb-empty-state [title]="emptyTitle()" [description]="emptyDescription()" />
     } @else {
       <ednb-responsive-record-list
         [label]="listLabel()"

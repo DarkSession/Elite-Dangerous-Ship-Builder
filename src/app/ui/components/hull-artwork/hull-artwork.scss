@@ -48,11 +48,6 @@
   justify-content: center;
 }
 
-.artwork__loader {
-  inline-size: var(--ednb-target-size);
-  block-size: var(--ednb-target-size);
-}
-
 .artwork__spoken {
   @include layout.visually-hidden;
 }

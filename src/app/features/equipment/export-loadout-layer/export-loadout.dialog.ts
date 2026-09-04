@@ -6,7 +6,7 @@ import {
 import { MessageService } from '../../../i18n/message.service';
 import { ActionButton } from '../../../ui/components/action/action-button';
 import { ChoiceGroup, type Choice } from '../../../ui/components/choice-group/choice-group';
-import { Layer } from '../../../ui/components/layer/layer';
+import { FormatLayer } from '../../../ui/components/layer/format-layer';
 import { ShareLinkPanel } from '../../../ui/components/share-link-panel/share-link-panel';
 import { TextareaField } from '../../../ui/components/textarea-field/textarea-field';
 
@@ -29,7 +29,7 @@ import { TextareaField } from '../../../ui/components/textarea-field/textarea-fi
  */
 @Component({
   selector: 'ednb-export-loadout-dialog',
-  imports: [ActionButton, ChoiceGroup, Layer, ShareLinkPanel, TextareaField],
+  imports: [ActionButton, ChoiceGroup, FormatLayer, ShareLinkPanel, TextareaField],
   templateUrl: './export-loadout.dialog.html',
   styleUrl: './export-loadout.dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

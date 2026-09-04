@@ -6,10 +6,7 @@
 
 .choice__list {
   @include layout.stack(var(--ednb-space-stack));
-
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  @include layout.bare-list;
 }
 
 // The reference offers a dialog's choices as bordered cards, the recommended

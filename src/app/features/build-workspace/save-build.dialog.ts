@@ -13,6 +13,7 @@ import { Formatters } from '../../i18n/formatters/formatters';
 import { ActionButton } from '../../ui/components/action/action-button';
 import { ChoiceGroup, type Choice } from '../../ui/components/choice-group/choice-group';
 import { Layer } from '../../ui/components/layer/layer';
+import { LayerFooter } from '../../ui/components/layer/layer-footer';
 import { TextField } from '../../ui/components/text-field/text-field';
 import { TextareaField } from '../../ui/components/textarea-field/textarea-field';
 
@@ -77,7 +78,7 @@ type SaveMode = 'overwrite' | 'new';
  */
 @Component({
   selector: 'ednb-save-build-dialog',
-  imports: [ActionButton, ChoiceGroup, Layer, TextField, TextareaField],
+  imports: [ActionButton, ChoiceGroup, Layer, LayerFooter, TextField, TextareaField],
   templateUrl: './save-build.dialog.html',
   styleUrl: './save-build.dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

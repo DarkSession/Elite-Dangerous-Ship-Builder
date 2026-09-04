@@ -29,6 +29,7 @@ import { ElementSizeAdapter, type ElementSize } from '../../platform/browser/ele
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 import { ActionButton } from '../components/action/action-button';
+import { WaitingMark } from '../components/waiting/waiting-mark';
 
 /** One side of the hull, and everything needed to draw it. */
 export interface HullSchematicView {
@@ -188,7 +189,7 @@ interface SchematicPlacement {
  */
 @Component({
   selector: 'ednb-hull-schematic',
-  imports: [ActionButton],
+  imports: [ActionButton, WaitingMark],
   templateUrl: './hull-schematic.html',
   styleUrl: './hull-schematic.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -319,8 +320,41 @@ export class HullSchematic {
     return source !== null && this.#failedSource() === source;
   });
 
+  /**
+   * The picture that has arrived, if one has.
+   *
+   * A side is two requests and the mount extract is only the first of them. Its
+   * arrival is what turns the plate `ready`, and the rendering is still on the
+   * wire — so without this the plate took its mark down and drew the numbered
+   * mounts and their leader lines over an empty frame, which says the hull has
+   * no drawing rather than that it is on its way.
+   *
+   * Recorded as *which* file arrived rather than as a flag, for the reason the
+   * failure beside it is: a different picture has not arrived until it says so.
+   */
+  readonly #arrivedSource = signal<string | null>(null);
+
+  readonly pictureLoaded = computed(() => {
+    const source = this.artworkSource();
+    return source !== null && this.#arrivedSource() === source;
+  });
+
+  pictureArrived(): void {
+    this.#arrivedSource.set(this.artworkSource());
+  }
+
   /** The drawing is shown when there is one and its picture has not failed. */
   readonly showsDrawing = computed(() => this.document() !== null && !this.pictureFailed());
+
+  /**
+   * The plate is waiting: for its mounts, or for the drawing they go on.
+   *
+   * One state for both, because a Commander is waiting for the same thing
+   * either way — the hull — and the plate says so in the same words.
+   */
+  readonly isWaiting = computed(
+    () => this.isLoading() || (this.showsDrawing() && !this.pictureLoaded()),
+  );
 
   /**
    * What the plate reports it is, which is not always what the fetch reported.
@@ -371,16 +405,6 @@ export class HullSchematic {
   );
 
   readonly isLoading = computed(() => this.view().state.kind === 'loading');
-
-  /**
-   * The loading mark, which is the one the hull illustration uses.
-   *
-   * A plate that is still fetching says so the same way the inspector's
-   * illustration says it: the mark sits where the drawing will be, and the
-   * words are spoken rather than drawn, so nothing on the page moves when the
-   * drawing arrives.
-   */
-  readonly loaderSource = 'assets/loader.svg';
 
   /**
    * A mount's own point on the turned plate, in the frame's own units.

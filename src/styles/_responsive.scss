@@ -575,6 +575,103 @@ $bench-bounded-min-height: 65.5rem;
   }
 }
 
+// The same rule written as two elements instead of one.
+//
+// `section-rule` puts the hairline in an `::after`, which is always last. A
+// section that ends in a count needs the line between its name and its number,
+// so the name takes `section-heading`, a span between them takes `section-line`
+// and the row is the caller's own flex.
+@mixin section-heading(
+  $colour: var(--ednb-text-accent),
+  $tracking: var(--ednb-text-tracking-heading)
+) {
+  @include micro-label($colour, $tracking);
+
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  font-size: var(--ednb-text-size-micro);
+}
+
+@mixin section-line {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-rule-section);
+}
+
+// A bounded plate on the panel ground: the canvas's blocks in the anatomy
+// region and the status rail. `1px solid var(--amber-a2)` over `var(--panel)`
+// at `16px 18px`, stated once.
+@mixin panel-plate {
+  @include stack(var(--ednb-space-stack));
+
+  min-inline-size: 0;
+  padding-block: var(--ednb-space-2xl);
+  padding-inline: var(--ednb-space-panel);
+  background-color: var(--ednb-surface-panel);
+  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+}
+
+// The plate's head: its heading on the leading edge, a note on the trailing
+// one. `baseline` where the note is a figure beside the name, `center` where it
+// is a control.
+@mixin panel-plate-head($align: center) {
+  @include wrapping-row(var(--ednb-space-inline));
+
+  align-items: $align;
+  justify-content: space-between;
+}
+
+// A sentence carrying its tone in a marker, a tinted ground and its ink. The
+// words say what the tone says; this is what makes the colour a supplement.
+@mixin toned-block($marker, $ground, $ink) {
+  padding-block: var(--ednb-space-control-block);
+  padding-inline: var(--ednb-space-inline-loose);
+  border-inline-start: var(--ednb-border-width-marker) solid $marker;
+  background-color: $ground;
+  color: $ink;
+}
+
+// One tone of a block already drawn by `toned-block`.
+@mixin block-tone($marker, $ground, $ink) {
+  border-inline-start-color: $marker;
+  background-color: $ground;
+  color: $ink;
+}
+
+// A muted paragraph: the prose weight, subdued ink and pretty wrapping the
+// canvas gives every explanatory line.
+@mixin prose-note($colour: var(--ednb-text-subtle)) {
+  font-weight: var(--ednb-text-weight-prose);
+  color: $colour;
+  text-wrap: pretty;
+}
+
+// The foot of a scrolling panel: the last row of the column, pinned to the
+// bottom of it while the column scrolls under it. The raised ground and the
+// hairline are what separate it from the rows passing beneath.
+//
+// Whether it gives the pin up on a short viewport is the caller's: two of the
+// three release it there, and the third is inside a layer that bounds itself.
+@mixin panel-foot($rule: var(--ednb-border-quiet)) {
+  position: sticky;
+  inset-block-end: 0;
+  background-color: var(--ednb-surface-panel-raised);
+  border-block-start: var(--ednb-border-width-hairline) solid $rule;
+}
+
+// A list with the browser's markers and indent taken off.
+//
+// The reset only. What the list does with the room instead — a stack, a
+// wrapping row, a grid of named tracks — is the caller's, and every list in
+// this application does something different with it.
+@mixin bare-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 // The hatched plate the canvas puts behind hull artwork.
 @mixin artwork-plate {
   position: relative;

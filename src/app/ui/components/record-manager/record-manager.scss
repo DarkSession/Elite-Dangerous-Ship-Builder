@@ -20,7 +20,5 @@
 .manager__reason,
 .manager__description,
 .manager__empty {
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
-  text-wrap: pretty;
+  @include layout.prose-note;
 }

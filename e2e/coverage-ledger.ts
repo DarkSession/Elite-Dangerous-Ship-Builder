@@ -322,6 +322,18 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'screen-reader',
   },
   {
+    surfaceId: 'ui/waiting-states',
+    requirements: ['011/FR-029', '011/SC-010'],
+    journey: 'preview/sweep',
+    axe: true,
+    assertions: [
+      'the waiting state holds the room the content will take',
+      'what is pending is said in words, so the bars and the mark are a supplement',
+      'the served waiting mark carries its own reduced-motion rule, which the page cannot reach',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
     surfaceId: 'preview/component-catalogue',
     requirements: ['011/FR-004', '011/FR-005'],
     journey: 'preview/sweep',

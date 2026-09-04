@@ -12,10 +12,7 @@
 
 .diagnostics {
   @include layout.stack(var(--ednb-space-stack-tight));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 .diagnostics__item {

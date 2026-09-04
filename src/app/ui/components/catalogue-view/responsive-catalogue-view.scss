@@ -8,10 +8,7 @@
 // from layout and from the accessibility tree.
 .catalogue__cards {
   @include layout.stack(var(--ednb-space-stack));
-
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  @include layout.bare-list;
 }
 
 .catalogue__manifest {

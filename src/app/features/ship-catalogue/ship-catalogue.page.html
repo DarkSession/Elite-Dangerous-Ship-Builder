@@ -50,6 +50,16 @@
        region is not drawn at all until a hull is open, so an empty group is
        never focusable. -->
   <div class="catalogue__inspector" tabindex="0" role="group" [attr.aria-label]="inspectorLabel()">
-    <router-outlet />
+    <!--
+      A hull opened straight from its own address arrives here before its screen
+      does: the rail is drawn because the address names a hull, and the chunk
+      that fills it is still on the wire. The skeleton holds the hull's place,
+      so the rail is never a named group with nothing in it (011/FR-029).
+    -->
+    @if (detailWaiting()) {
+      <ednb-skeleton [label]="detailLoadingLabel()" [lines]="5" />
+    }
+
+    <router-outlet (activate)="detailActivated()" (deactivate)="detailDeactivated()" />
   </div>
 </div>

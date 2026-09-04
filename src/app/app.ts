@@ -8,7 +8,13 @@ import {
   untracked,
 } from '@angular/core';
 import { Location } from '@angular/common';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import {
+  NavigationEnd,
+  RouteConfigLoadEnd,
+  RouteConfigLoadStart,
+  Router,
+  RouterOutlet,
+} from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { MessageService } from './i18n/message.service';
@@ -30,6 +36,7 @@ import {
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { Layer } from './ui/components/layer/layer';
+import { Skeleton } from './ui/components/waiting/skeleton';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
@@ -73,6 +80,7 @@ export const UPDATE_ACTION = 'app.update';
     ImportDialog,
     Layer,
     RouterOutlet,
+    Skeleton,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -320,10 +328,61 @@ export class App {
    */
   readonly exchangeWanted = computed(() => this.#slef.layer() !== 'none');
 
+  /** The way out of a layer, and of the state that stands in for one. */
+  readonly dismissLabel = this.#messages.messageSignal('action.close');
+
+  /** What a layer says while the chunk that draws it is on its way. */
+  readonly layerPendingNotice = this.#messages.messageSignal('layer.pending.notice');
+
+  /** What the frame says while the screen's own chunk is on its way. */
+  readonly routePendingNotice = this.#messages.messageSignal('route.pending.notice');
+
+  /** The name the waiting layer takes: the one the layer on its way will take. */
+  readonly exchangePendingTitle = computed(() =>
+    this.#messages.message(
+      this.#slef.layer() === 'export' ? 'slef.export.title' : 'slef.import.title',
+    ),
+  );
+
+  readonly libraryPendingTitle = this.#messages.messageSignal('library.title');
+
+  /** Takes back the request that opened a layer, before the layer is there. */
+  cancelExchange(): void {
+    this.#slef.closeLayer();
+  }
+
+  /**
+   * Whether a screen is on its way to a frame that has none.
+   *
+   * Two conditions, and both are needed. The router reports a chunk only when
+   * it has one to fetch, so an address already loaded draws nothing. And a
+   * screen already activated stays on screen while the next one loads, which is
+   * what the router does for free — a skeleton over that would take a screen
+   * away to say another was coming (011/FR-029).
+   */
+  readonly #chunkLoading = signal(false);
+  readonly #routeActive = signal(false);
+
+  readonly routeWaiting = computed(() => this.#chunkLoading() && !this.#routeActive());
+
+  routeActivated(): void {
+    this.#routeActive.set(true);
+  }
+
+  routeDeactivated(): void {
+    this.#routeActive.set(false);
+  }
+
   constructor() {
     this.#router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.#path.set(event.urlAfterRedirects);
+      }
+      if (event instanceof RouteConfigLoadStart) {
+        this.#chunkLoading.set(true);
+      }
+      if (event instanceof RouteConfigLoadEnd) {
+        this.#chunkLoading.set(false);
       }
     });
 

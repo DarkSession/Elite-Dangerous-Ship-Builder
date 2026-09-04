@@ -15,10 +15,7 @@
 
 .choices {
   @include layout.stack(var(--ednb-space-rule));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 // Canvas 2a's suit choices and canvas 1a's swap block: the same rows, laid out

@@ -59,9 +59,12 @@
         superseding wave 8).
       -->
       @if (canRemove()) {
-        <button class="replacement__remove" type="button" (click)="remove()">
-          {{ removeLabel() }}
-        </button>
+        <ednb-action-button
+          class="replacement__remove"
+          [label]="removeLabel()"
+          emphasis="secondary"
+          (activated)="remove()"
+        />
       }
     </div>
   }
@@ -120,12 +123,20 @@
   @if (asLayer()) {
     <div class="replacement__foot">
       <div class="replacement__actions">
-        <button class="replacement__cancel" type="button" (click)="cancel()">
-          {{ cancelLabel() }}
-        </button>
-        <button class="replacement__fit" type="button" [disabled]="!canFit()" (click)="fit()">
-          {{ fitLabel() }}
-        </button>
+        <ednb-action-button
+          class="replacement__cancel"
+          [label]="cancelLabel()"
+          emphasis="secondary"
+          (activated)="cancel()"
+        />
+        <ednb-action-button
+          class="replacement__fit"
+          block
+          [label]="fitLabel()"
+          emphasis="primary"
+          [disabled]="!canFit()"
+          (activated)="fit()"
+        />
       </div>
     </div>
   }

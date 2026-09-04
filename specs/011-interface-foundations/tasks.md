@@ -522,3 +522,39 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       scrim below is unchanged, and hold the layer to it in `e2e/responsive.spec.ts`. Flush against
       the edge, a sheet's title bar met the top of the screen with nothing above it and a phone's own
       status bar cut into it (`design/canvas-extraction.md`, "Panel dialog")
+
+- [x] T150 Take the repeated screen furniture into the library. `ednb-empty-state` for the three
+      screens that state an absence, `ednb-layer-footer` for the four layers that close with a row of
+      answers, `ednb-format-layer` for the two export layers that draw a format list beside the chosen
+      format, and `ednb-pip-control` for the two regions that set one bank's pips. Each is declared in
+      `preview-manifest.ts` with all five states and carries its own unit test. Recorded in
+      `design/shared-patterns.md`, with the rule that decides component from mixin
+      _An agreement kept by hand between two copies is not an agreement._
+- [x] T151 Name the declaration bodies the stylesheets repeated. `panel-plate`, `panel-plate-head`,
+      `toned-block`, `block-tone`, `prose-note`, `panel-foot`, `bare-list`, `section-heading` and
+      `section-line` join `src/styles/_responsive.scss` and replace 60-odd hand-written copies. A
+      repeated body on markup that differs is a mixin, because a component there would only put the
+      caller's own children behind a projection boundary
+      _A mixin nothing calls is dead code; every one of these is applied where it was found._
+- [x] T152 Draw the waits. `ednb-waiting-mark` holds the mark and the path to it; `ednb-skeleton`
+      holds the room the content will take, with a sentence a reader gets and bars that do not move.
+      The frame draws a skeleton for a route chunk it has to fetch, each deferred block draws one
+      after 200ms and holds it for 400, the catalogue's inspector draws one for the hull-detail chunk,
+      and the workspace draws one while the build link is being read. FR-029, SC-010 and
+      `design/waiting-states.md` state the rule and account for every wait, including the ones that
+      draw nothing (`011/FR-029`, `011/SC-010` in `e2e/coverage-ledger.ts`)
+      _A screen that cannot draw its content yet must not claim the content is absent._
+- [x] T153 Let the schematic's plate wait for both of its requests. The mount geometry and the hull
+      drawing arrive separately, so the plate holds the waiting mark until the picture has loaded and
+      hides the marks and their leaders behind `visibility` until then. Drawn over an empty plate they
+      say the hull has no drawing rather than that one is on its way
+      (`specs/010-hull-anatomy/design/hull-anatomy.md`)
+      _Hidden rather than absent: the marks are placed from the drawing's own coordinates._
+- [x] T154 Give the waiting mark its own reduced-motion rule. It is an SVG loaded through `img`, so
+      it is a separate document and `_base.scss` cannot reach it. The rule goes inside
+      `public/assets/loader.svg`, and root `LICENSE` records the adaptation of the EDAssets mark
+      _A global rule that cannot reach a document is not a rule that document follows._
+- [x] T155 Announce the wait once. The skeleton's region is a `status` and carries no `aria-busy`: an
+      assistive technology holds a live region marked busy until the flag drops, and this region only
+      exists while the wait is on, so the flag would suppress the one announcement it exists to make
+      _A busy flag on the region that only exists while it is busy says nothing and costs the notice._

@@ -213,7 +213,13 @@ plate holds its whole document at its own ratio at every width.
   stands in for the rest.
 - A side that has not arrived carries the hull illustration's own loading mark, in the place the
   drawing will be, with the words spoken rather than drawn. Prose in the frame and a hull after it is
-  a plate that changes height when the fetch lands.
+  a plate that changes height when the fetch lands. It is the shared waiting mark, so one file holds
+  what the mark is and how it behaves for a Commander who asked for less motion (011/FR-029).
+- A side has arrived when its geometry **and** its drawing have arrived. These are two requests: the
+  mount boxes come as data, and the hull comes as a picture. The mark stands until both arrive.
+  Taking the mark down after the first request would draw the marks and their leader lines over an
+  empty plate. That states that the hull has no drawing, rather than that the drawing is on its way.
+  A picture that fails is the plate's own unavailable state, as it already is.
 - Where the plates share a bounded column with feature 002's bench, the plates ask for the height
   their hulls need at that width and the bench takes everything else. A capability that stretched to
   fill the column and pushed the editor off it would have got its own priority backwards.

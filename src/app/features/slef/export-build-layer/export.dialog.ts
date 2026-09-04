@@ -3,7 +3,7 @@ import { LinkSharePresenter } from '../../../application/build-link/link-share.p
 import { SlefPresenter } from '../../../application/slef/slef.presenter';
 import { MessageService } from '../../../i18n/message.service';
 import { ChoiceGroup, type Choice } from '../../../ui/components/choice-group/choice-group';
-import { Layer } from '../../../ui/components/layer/layer';
+import { FormatLayer } from '../../../ui/components/layer/format-layer';
 import { ShareLinkPanel } from '../../../ui/components/share-link-panel/share-link-panel';
 import { ExportBuildLayer } from './export-build-layer';
 
@@ -27,9 +27,8 @@ import { ExportBuildLayer } from './export-build-layer';
  */
 @Component({
   selector: 'ednb-slef-export-dialog',
-  imports: [ChoiceGroup, ExportBuildLayer, Layer, ShareLinkPanel],
+  imports: [ChoiceGroup, ExportBuildLayer, FormatLayer, ShareLinkPanel],
   templateUrl: './export.dialog.html',
-  styleUrl: './export.dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExportDialog {

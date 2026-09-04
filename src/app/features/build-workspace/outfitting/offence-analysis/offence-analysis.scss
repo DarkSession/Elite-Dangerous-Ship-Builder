@@ -68,21 +68,13 @@
 // same border and the same padding: `1px solid var(--amber-a2)` over
 // `var(--panel)` at `16px 18px`.
 .offence__block {
-  @include layout.stack(var(--ednb-space-stack));
-
-  min-inline-size: 0;
-  padding-block: var(--ednb-space-2xl);
-  padding-inline: var(--ednb-space-panel);
-  background-color: var(--ednb-surface-panel);
-  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  @include layout.panel-plate;
 }
 
 // Canvas 1c's labelled rule: a tracked mono label with the block's own note set
 // against it at the trailing edge.
 .offence__head {
-  @include layout.wrapping-row(var(--ednb-space-inline));
-
-  justify-content: space-between;
+  @include layout.panel-plate-head;
 }
 
 .offence__heading {
@@ -193,10 +185,7 @@
 
 .weapons__list {
   @include layout.stack(var(--ednb-space-stack));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 // Canvas 1c's six columns: `MODULE` fluid, then `DPS BURST`, `SUSTAINED`,
@@ -445,11 +434,9 @@
 // a build with more than two types wraps instead of shrinking them.
 .split__legend {
   @include layout.wrapping-row(var(--ednb-space-inline));
+  @include layout.bare-list;
 
   justify-content: space-between;
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .split__entry {
@@ -479,6 +466,8 @@
 // and figure columns take the canvas's own 104px and 62px as floors, so a
 // German label at 200% text widens the column rather than wrapping inside it.
 .bars__list {
+  @include layout.bare-list;
+
   display: grid;
   // The floors are capped against the list's own width as well as stated in
   // `rem`, because at 200% text the canvas's 104px and 62px resolve to 208px
@@ -490,9 +479,6 @@
     minmax(min(var(--ednb-layout-offence-value), 30%), auto);
   column-gap: var(--ednb-space-inline);
   row-gap: var(--ednb-space-stack-tight);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .bar {

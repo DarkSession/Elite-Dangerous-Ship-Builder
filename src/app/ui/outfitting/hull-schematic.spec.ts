@@ -259,7 +259,7 @@ describe('HullSchematic', () => {
     expect(element(fixture).querySelector('.schematic__drawing')).toBeNull();
     // The same mark the hull illustration carries, in the place the drawing
     // will be, with the words spoken rather than drawn.
-    expect(query(fixture, '.schematic__loader').getAttribute('src')).toBe('assets/loader.svg');
+    expect(query(fixture, 'ednb-waiting-mark .mark').getAttribute('src')).toBe('assets/loader.svg');
     expect(textOf(query(fixture, '.schematic__spoken')).length).toBeGreaterThan(0);
     expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('loading');
     expect(element(fixture).querySelector('ednb-action-button')).toBeNull();

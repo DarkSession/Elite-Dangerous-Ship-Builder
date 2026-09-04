@@ -39,13 +39,23 @@ Every relevant declaration adds:
 - nested visible label, description, unit and error relationships;
 - pointer/touch-visible state that does not require hover.
 
-## Initial foundation inventory
+## Foundation inventory
 
 Preview the shell/context heading/navigation; visible-name actions/menu; labelled input/select/search/
 textarea; segmented/choice/tab controls; panel/card; semantic list/table shells; definition/metric
-groups; status/notice/error/unavailable; disclosure; tooltip; dialog/sheet/full-height layer; language
-selector; game-text provenance; and announcement outlets. Later capability components join the same
-manifest before use.
+groups; status/notice/error/unavailable; empty state; waiting mark and skeleton; disclosure; tooltip;
+dialog/sheet/full-height layer, its footer and the format layer; language selector; game-text
+provenance; and announcement outlets. Later capability components join the same manifest before use.
+
+## What the checker reaches, and what the rule reaches
+
+The preview-coverage checker reads `src/app/ui/components`. Every exported component there must carry
+a declaration, and a missing one fails the build.
+
+A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outside that scan. It
+carries a declaration all the same, because FR-004 applies to every exported component and the
+catalogue is where a state is reviewed. `ednb-pip-control` is one of these: it is declared by the
+rule, not because a checker demanded it.
 
 ## Inspection
 

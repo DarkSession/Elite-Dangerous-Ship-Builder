@@ -920,18 +920,18 @@ test.describe('the save-build surface', () => {
     // commitments on the trailing one, cancel bordered and save filled amber.
     const layer = await withSaveOpen(page);
 
-    const footer = layer.locator('.save__footer');
+    const footer = layer.locator('ednb-layer-footer .footer');
     expect(await style(footer, 'border-block-start-width')).toBe('1px');
     expect(await style(layer.locator('.save__message'), 'font-family')).toContain('JetBrains Mono');
 
-    const labels = await layer.locator('.save__actions button').allInnerTexts();
+    const labels = await layer.locator('.footer__actions button').allInnerTexts();
     expect(labels).toHaveLength(2);
     expect(labels[0]).toMatch(/^CANCEL/i);
     expect(labels[1]).toMatch(/^SAVE BUILD/i);
 
     // Polled, because the control fades from its disabled ground to the filled
     // one as the build takes a name.
-    const commit = layer.locator('.save__actions button').last();
+    const commit = layer.locator('.footer__actions button').last();
     await expect.poll(() => style(commit, 'background-color')).toBe(AMBER);
   });
 });

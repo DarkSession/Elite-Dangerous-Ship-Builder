@@ -28,16 +28,21 @@
   <div class="workspace__outlet">
     <ednb-outfitting-workspace />
   </div>
+} @else if (readingLink()) {
+  <!--
+    A page opened at an address that carries a build link, with the codec still
+    on its way. There may well be a build; saying there is none is the one thing
+    this screen must not do while it is finding out (011/FR-029).
+  -->
+  <ednb-skeleton [label]="readingLabel()" [lines]="4" />
 } @else {
-  <div class="workspace__empty">
-    <h2>{{ emptyTitle() }}</h2>
-    <p>{{ emptyDescription() }}</p>
+  <ednb-empty-state [title]="emptyTitle()" [description]="emptyDescription()">
     <ednb-action-link
       [label]="emptyAction()"
       [href]="catalogueRoute"
       [routerLink]="catalogueRoute"
     />
-  </div>
+  </ednb-empty-state>
 }
 
 <!--

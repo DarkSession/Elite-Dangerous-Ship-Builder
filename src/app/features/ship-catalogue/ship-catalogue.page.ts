@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CatalogueFacade } from '../../application/catalogue/catalogue.facade';
 import { Formatters } from '../../i18n/formatters/formatters';
@@ -20,6 +27,7 @@ import type { CatalogueSortField } from '../../domain/ships/catalogue/catalogue-
 import { hullAddressForSymbol } from '../../domain/ships/catalogue/hull-address';
 import type { HullSize } from '../../domain/ships/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
+import { Skeleton } from '../../ui/components/waiting/skeleton';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { observeRestingReads } from '../../ui/wide-composition';
@@ -53,7 +61,7 @@ const ALL_SIZES = 'all';
  */
 @Component({
   selector: 'ednb-ship-catalogue-page',
-  imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet],
+  imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet, Skeleton],
   templateUrl: './ship-catalogue.page.html',
   styleUrl: './ship-catalogue.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -82,6 +90,27 @@ export class ShipCataloguePage {
   readonly emptyDescription = this.#messages.messageSignal('catalogue.empty.description');
   readonly caption = this.#messages.messageSignal('catalogue.table.caption');
   readonly inspectorLabel = this.#messages.messageSignal('catalogue.inspector');
+  readonly detailLoadingLabel = this.#messages.messageSignal('catalogue.inspector.loading');
+
+  /**
+   * Whether the hull's own screen is still on its way to the rail beside the
+   * manifest.
+   *
+   * The rail is drawn from the address, and the screen that fills it is a chunk
+   * of its own. Between the two the rail was a named group with nothing in it,
+   * which the skeleton now holds (011/FR-029).
+   */
+  readonly #detailActive = signal(false);
+
+  readonly detailWaiting = computed(() => this.detailOpen() && !this.#detailActive());
+
+  detailActivated(): void {
+    this.#detailActive.set(true);
+  }
+
+  detailDeactivated(): void {
+    this.#detailActive.set(false);
+  }
 
   readonly countText = this.#catalogue.countText;
   readonly search = computed(() => this.#catalogue.filters().query);

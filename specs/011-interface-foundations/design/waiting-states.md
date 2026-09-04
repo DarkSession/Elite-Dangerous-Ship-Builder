@@ -1,0 +1,81 @@
+# Waiting States
+
+What a screen draws between asking for something and having it. FR-029 is the rule. This record
+accounts for every wait in the application.
+
+## The two components
+
+`ednb-waiting-mark` draws the waiting mark and nothing else. It draws one image, hidden from a
+reader, and holds the path to it, so no screen has to know where the file is. Use it for a wait that
+already has a place of its own, such as a fixed-ratio plate with a picture on the way.
+
+`ednb-skeleton` draws the shape of content that has not arrived: bars that hold the space the content
+will take, the waiting mark above them, and a sentence a reader gets. Use it for a wait that would
+otherwise leave a blank region.
+
+Both stand where the content will be. Neither stands in a corner, and neither covers the screen.
+
+## Text, and what is announced
+
+The skeleton's bars are hidden from a reader. Its sentence is not, and the region is a `status`, so a
+Commander who cannot see the bars is told that the screen is loading.
+
+The region carries no `aria-busy`. An assistive technology holds a live region marked busy until the
+flag drops, and this region exists only while the wait is on. The flag would suppress the one
+announcement the region exists to make.
+
+The skeleton announces on a cold arrival at an address, which is the one case where nothing is
+activated behind it. It does not announce on a move between two screens, because it is not drawn
+there.
+
+The waiting mark announces nothing on its own. A screen that draws it has its own sentence: the hull
+illustration describes its picture, and the schematic describes its plate. A live region here would
+state the same fact a second time. This is the feedback contract's rule of one event and one notice,
+applied to a state.
+
+## Motion
+
+The waiting mark is the only thing that moves. The skeleton's bars hold still. A bar that pulsed
+would state a second time what the mark above it states, and one animation is one thing to stop.
+
+The application's own reduced-motion rule cannot reach the mark. The mark is an SVG loaded through
+`img`, which makes it a separate document that this application's stylesheet does not style. The mark
+therefore carries its own reduced-motion rule inside the file. The file is an EDAssets mark under
+CC BY-NC-SA 4.0, and that rule is an adaptation of it. Root `LICENSE` records the adaptation.
+
+## Every wait, and what it draws
+
+| Wait                                  | What is on the way                                  | What the Commander sees                                            |
+| ------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
+| First arrival at any address          | The route's own chunk                               | A page skeleton inside the frame, where the screen will be         |
+| First arrival at a hull's own address | The catalogue chunk, and then the hull-detail chunk | A page skeleton, and then a skeleton in the inspector              |
+| A hull opened from the catalogue      | The hull-detail chunk                               | A skeleton in the inspector, where the hull will be                |
+| The exchange block, first opening     | The SLEF codec and both layers                      | A layer holding a skeleton, once the wait is perceptible           |
+| The library block, first opening      | The library layer                                   | The same                                                           |
+| A build link arriving with the page   | The link codec and its table                        | A skeleton where the build will be, and a sentence naming the link |
+| A hull illustration                   | The picture                                         | The waiting mark on the reserved plate, and the plate's sentence   |
+| A hull schematic                      | The mount geometry, and then the drawing            | The waiting mark on the plate until both have arrived              |
+
+`/ships/:hull` is a child address, so a cold arrival there fetches two chunks in sequence. The order
+is in the table. Each fetch is reported on its own, and the page skeleton stands until the catalogue
+activates.
+
+A route chunk that is already loaded draws nothing. The router reports only a chunk it must fetch,
+and the skeleton stands only while no screen is activated. A move between two screens therefore keeps
+the screen a Commander is reading until the next screen is ready.
+
+The two deferred blocks wait 200 milliseconds before they draw, and then hold what they draw for 400
+milliseconds. A Commander does not perceive a wait shorter than the first figure. A layer that
+appeared and closed inside one frame would be harder to read than a press that takes a moment.
+
+## What draws no waiting state, and why
+
+- **A language catalogue.** The application starts on complete bundled English and commits the other
+  language in one step. Nothing is missing, and a skeleton would replace text a Commander can already
+  read.
+- **Icons and marks.** These are sized in the document, prefetched by the service worker, and
+  decorative. A placeholder would be the only thing that ever moved them.
+- **Saving, exporting, importing and choosing a candidate.** Each of these already carries a named
+  status of its own. Exporting states `Preparing this export` in a loading notice, saving reports its
+  own outcome, and a candidate list names its own loading state. A second waiting state over any of
+  them would state one fact twice.

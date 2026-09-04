@@ -19,19 +19,11 @@
 }
 
 .slots__heading {
-  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
-
-  flex: 0 1 auto;
-  min-inline-size: 0;
-  margin: 0;
-  font-size: var(--ednb-text-size-micro);
+  @include layout.section-heading;
 }
 
 .slots__line {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  block-size: var(--ednb-border-width-hairline);
-  background-color: var(--ednb-rule-section);
+  @include layout.section-line;
 }
 
 // Canvas 1a's `grid-template-columns: 1fr 1fr` — two columns, four slots, two
@@ -39,12 +31,11 @@
 // `auto-fit` track with a floor put four across the bench's own column and
 // squeezed `CHOOSE A MODIFICATION` onto three lines.
 .slots__grid {
+  @include layout.bare-list;
+
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--ednb-space-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 @include layout.container-medium-up(item) {

@@ -14,7 +14,20 @@
   (navigationSelected)="navigateFromShell($event)"
   (toolSelected)="navigateFromShell($event)"
 >
-  <router-outlet />
+  <!--
+    A cold arrival at any address waits for that screen's own chunk, and the
+    frame around it is already drawn. The skeleton holds the room the screen
+    will take, so the page it lands in was never blank (011/FR-029).
+
+    Only while nothing is activated. Moving between two screens keeps the one a
+    Commander is reading until the next is ready, and a skeleton over that would
+    take away a screen to show that another is coming.
+  -->
+  @if (routeWaiting()) {
+    <ednb-skeleton [label]="routePendingNotice()" [lines]="6" />
+  }
+
+  <router-outlet (activate)="routeActivated()" (deactivate)="routeDeactivated()" />
 </ednb-app-frame>
 
 <!--
@@ -25,6 +38,24 @@
 @defer (when exchangeWanted()) {
   <ednb-slef-import-dialog />
   <ednb-slef-export-dialog />
+} @loading (after 200ms; minimum 400ms) {
+  <!--
+    The layer a Commander asked for, standing where it will stand, while the
+    chunk that draws it is fetched. It waits 200 milliseconds first: a layer
+    that appeared and vanished inside one frame would be worse than a press
+    that takes a moment (011/FR-029).
+
+    It closes. Pressing the way out here cancels the opening rather than the
+    fetch, so the layer that arrives a moment later arrives closed.
+  -->
+  <ednb-layer
+    [open]="true"
+    [title]="exchangePendingTitle()"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="cancelExchange()"
+  >
+    <ednb-skeleton [label]="layerPendingNotice()" />
+  </ednb-layer>
 }
 
 <!--
@@ -43,6 +74,15 @@
   @if (library.open()) {
     <ednb-build-library-page />
   }
+} @loading (after 200ms; minimum 400ms) {
+  <ednb-layer
+    [open]="true"
+    [title]="libraryPendingTitle()"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="library.lower()"
+  >
+    <ednb-skeleton [label]="layerPendingNotice()" />
+  </ednb-layer>
 }
 
 <!--

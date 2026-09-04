@@ -1,53 +1,48 @@
-<ednb-layer
+<!--
+  Canvas 1c: the format list on the leading edge, the chosen format's content
+  beside it, one amber hairline between them running the height of the panel.
+  That arrangement is the shared `FormatLayer`. Both modes are the same layer,
+  because passing a build on is one decision with two answers rather than two
+  screens.
+
+  The list carries no question above it, as it is drawn. The words stay for
+  anyone reading the group aloud.
+-->
+<ednb-format-layer
   [title]="title()"
   [open]="open()"
   [dismissLabel]="dismissLabel()"
-  width="wide"
-  [flush]="true"
   (dismissed)="slef.closeLayer()"
 >
-  <!--
-    Canvas 1c: the format list on the leading edge, the chosen format's content
-    beside it, one amber hairline between them running the height of the panel.
-    Both modes are the same layer, because passing a build on is one decision
-    with two answers rather than two screens.
+  <ednb-choice-group
+    formats
+    layout="cards"
+    [legend]="modeLegend()"
+    [legendHidden]="true"
+    [choices]="modes()"
+    [selected]="selectedModes()"
+    (changed)="selectMode($event)"
+  />
 
-    The list carries no question above it, as it is drawn. The words stay for
-    anyone reading the group aloud.
-  -->
-  <div class="export-dialog">
-    <ednb-choice-group
-      class="export-dialog__modes"
-      layout="cards"
-      [legend]="modeLegend()"
-      [legendHidden]="true"
-      [choices]="modes()"
-      [selected]="selectedModes()"
-      (changed)="selectMode($event)"
+  @if (selectedMode() === 'slef') {
+    <ednb-slef-export-layer
+      [view]="slef.exportView()"
+      (copyRequested)="slef.copy()"
+      (downloadRequested)="slef.download()"
+      (shareRequested)="slef.share()"
     />
-
-    <div class="export-dialog__content">
-      @if (selectedMode() === 'slef') {
-        <ednb-slef-export-layer
-          [view]="slef.exportView()"
-          (copyRequested)="slef.copy()"
-          (downloadRequested)="slef.download()"
-          (shareRequested)="slef.share()"
-        />
-      } @else {
-        <ednb-share-link-panel
-          [state]="link.state()"
-          [url]="link.url()"
-          [refusal]="link.refusal()"
-          [feedback]="link.feedback()"
-          [shareAvailable]="link.shareAvailable"
-          [slefAvailable]="true"
-          (copyRequested)="link.copy()"
-          (shareRequested)="link.share()"
-          (retryRequested)="link.retry()"
-          (slefRequested)="chooseSlef()"
-        />
-      }
-    </div>
-  </div>
-</ednb-layer>
+  } @else {
+    <ednb-share-link-panel
+      [state]="link.state()"
+      [url]="link.url()"
+      [refusal]="link.refusal()"
+      [feedback]="link.feedback()"
+      [shareAvailable]="link.shareAvailable"
+      [slefAvailable]="true"
+      (copyRequested)="link.copy()"
+      (shareRequested)="link.share()"
+      (retryRequested)="link.retry()"
+      (slefRequested)="chooseSlef()"
+    />
+  }
+</ednb-format-layer>

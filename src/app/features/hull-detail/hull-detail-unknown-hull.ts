@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { MessageService } from '../../i18n/message.service';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ActionLink } from '../../ui/components/action/action-link';
+import { EmptyState } from '../../ui/components/empty-state/empty-state';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 
 /**
@@ -15,12 +16,15 @@ import { StatusNotice } from '../../ui/components/status/status-notice';
  *
  * The address is echoed so a Commander can see what was actually asked for,
  * isolated from the surrounding text direction because it is not prose.
+ *
+ * It is the shared empty state, drawn leading rather than centred: at the wide
+ * composition this screen is a rail beside the manifest, and a centred column
+ * in a rail stands away from the hull list it belongs to.
  */
 @Component({
   selector: 'ednb-hull-detail-unknown-hull',
-  imports: [ActionLink, RouterLink, StatusNotice],
+  imports: [ActionLink, EmptyState, RouterLink, StatusNotice],
   templateUrl: './hull-detail-unknown-hull.html',
-  styleUrl: './hull-detail-unknown-hull.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HullDetailUnknownHull {

@@ -276,7 +276,7 @@ test.describe('the layer’s semantics', () => {
     // region carries a floor the taller of the two already stands at.
     await withStockBuild(page);
     await openExport(page);
-    const content = layer(page).locator('.export-dialog__content');
+    const content = layer(page).locator('.format-layer__content');
     await chooseSlef(page);
     const withPayload = await content.boundingBox();
 

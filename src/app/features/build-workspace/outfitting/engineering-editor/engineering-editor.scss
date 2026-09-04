@@ -246,28 +246,17 @@
 
 .engineering__actions {
   @include layout.wrapping-row(var(--ednb-space-inline));
+  @include layout.panel-foot;
 
-  position: sticky;
-  inset-block-end: 0;
   flex: none;
   // The bar runs the width of canvas 1d's screen and carries its own inset, so
   // it takes back the body's — drawn inside it the plate stopped short of both
   // edges and read as a fourth card rather than as the screen's foot.
   margin-inline: calc(var(--ednb-space-inline-loose) * -1);
   padding: var(--ednb-space-row) var(--ednb-space-inline-loose);
-  background-color: var(--ednb-surface-panel-raised);
-  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-quiet);
-}
-
-.engineering__revert {
-  @include layout.control-base;
-  @include layout.control-secondary;
 }
 
 .engineering__apply {
-  @include layout.control-base;
-  @include layout.control-primary;
-
   flex: 1;
   min-inline-size: 0;
 }

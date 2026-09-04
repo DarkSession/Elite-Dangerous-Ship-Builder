@@ -212,7 +212,12 @@ import { Collection } from '../components/collection/collection';
 import { Disclosure } from '../components/disclosure/disclosure';
 import { Tooltip } from '../components/tooltip/tooltip';
 import { GameText } from '../components/game-text/game-text';
+import { EmptyState } from '../components/empty-state/empty-state';
+import { FormatLayer } from '../components/layer/format-layer';
 import { Layer } from '../components/layer/layer';
+import { LayerFooter } from '../components/layer/layer-footer';
+import { WaitingMark } from '../components/waiting/waiting-mark';
+import { Skeleton } from '../components/waiting/skeleton';
 import { MetricGroup } from '../components/metric-group/metric-group';
 import { Panel } from '../components/panel/panel';
 import { RangeField } from '../components/range-field/range-field';
@@ -250,6 +255,7 @@ import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
 import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
 import { OutfittingNotice } from '../outfitting/outfitting-notice';
 import { SlotCard } from '../outfitting/slot-card';
+import { PipControl } from '../outfitting/pip-control';
 import { SlotGroup } from '../outfitting/slot-group';
 import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
 import { UnavailableFact } from '../outfitting/unavailable-fact';
@@ -1851,7 +1857,12 @@ registerPreview({
         label: 'Illustration of the Anaconda',
         state: 'loading',
       },
-      ['the pending state is stated in text', 'the reserved area holds its size'],
+      [
+        'the pending state is stated in text',
+        'the reserved area holds its size',
+        'the waiting mark holds still where a Commander has asked for reduced motion',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
     ),
     state(
       'error',
@@ -3891,7 +3902,9 @@ registerPreview({
       [
         'the pending state is stated in text, in place of the drawing',
         'the side is still named, so a peer plate reads as one of two',
+        'the waiting mark holds still where a Commander has asked for reduced motion',
       ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
     ),
     state(
       'error',
@@ -4704,6 +4717,241 @@ registerPreview({
     notApplicable(
       'disabled',
       'Every tool offered answers an address. A tool that could not be opened would be left out of the registry rather than drawn unavailable.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'empty-state',
+  group: 'Feedback',
+  component: EmptyState,
+  contract: contract(
+    'empty-state',
+    {
+      role: 'heading',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        title: 'No build is open.',
+        description: 'Choose a hull to start one, or open a build you have saved.',
+      },
+      [
+        'names the absence in a heading a reader can land on',
+        'the way out of the absence is projected under the words',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    notApplicable('empty', 'This block *is* the empty state of a screen.'),
+    notApplicable(
+      'loading',
+      'A screen that is still waiting draws the skeleton. Absence is a settled answer, and this block states it.',
+    ),
+    notApplicable('error', 'A failure is a status notice. An absence is not a failure.'),
+    notApplicable('disabled', 'The block holds no control of its own, so it cannot be disabled.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'waiting-mark',
+  group: 'Feedback',
+  component: WaitingMark,
+  contract: contract(
+    'waiting-mark',
+    {
+      role: 'presentation',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['loading'],
+  ),
+  states: [
+    notApplicable(
+      'default',
+      'The mark is drawn only while something is pending, so waiting is the only state it has.',
+    ),
+    notApplicable('empty', 'The mark carries no content that could be absent.'),
+    state(
+      'loading',
+      {},
+      [
+        'is hidden from a reader, because what is pending is said in words beside it',
+        'holds still where a Commander has asked for reduced motion',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+    ),
+    notApplicable('error', 'A wait that failed is drawn by a status notice in place of the mark.'),
+    notApplicable('disabled', 'The mark holds no control, so it cannot be disabled.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'skeleton',
+  group: 'Feedback',
+  component: Skeleton,
+  contract: contract(
+    'skeleton',
+    {
+      role: 'status',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: ['the wait, which the bars only draw'],
+    },
+    ['loading'],
+  ),
+  states: [
+    notApplicable(
+      'default',
+      'The skeleton stands only while content is on its way, so waiting is the only state it has.',
+    ),
+    notApplicable(
+      'empty',
+      'A skeleton draws at least one bar. One that held no room would be a wait a Commander cannot see.',
+    ),
+    state(
+      'loading',
+      { label: 'This screen is loading.', lines: 6 },
+      ['says what is pending in words, not in bars alone', 'holds the room the content will take'],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+    ),
+    notApplicable(
+      'error',
+      'A wait that failed is drawn by a status notice in place of the skeleton.',
+    ),
+    notApplicable('disabled', 'The skeleton holds no control, so it cannot be disabled.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'layer-footer',
+  group: 'Layers',
+  component: LayerFooter,
+  contract: contract(
+    'layer-footer',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { rule: 'section' },
+      ['the answers sit at the trailing edge and wrap rather than squeeze'],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    state('empty', { rule: 'none' }, ['a foot with no answers draws no rule and no row']),
+    notApplicable('loading', 'The foot is a container; the controls in it own any busy state.'),
+    notApplicable('error', 'The foot is a container; its layer owns any failure.'),
+    notApplicable(
+      'disabled',
+      'The foot is a container; each control in it carries its own disabled state.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'format-layer',
+  group: 'Layers',
+  component: FormatLayer,
+  contract: contract(
+    'format-layer',
+    {
+      role: 'dialog',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['expanded'],
+      relationships: ['label'],
+      textEquivalents: [],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { title: 'Export this build', dismissLabel: 'Close', open: true },
+      [
+        'the format list and the chosen format stand side by side where there is room',
+        'the content region keeps one height whichever format is chosen',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+      // Isolated: an open modal makes everything behind it inert, which is
+      // correct behaviour and incompatible with sharing a catalogue page.
+      true,
+    ),
+    state('empty', { title: 'Export this build', dismissLabel: 'Close', open: false }, [
+      'a closed layer renders nothing and holds no focus',
+    ]),
+    notApplicable(
+      'loading',
+      'The layer is a shell; the format drawn in it owns any pending state.',
+    ),
+    notApplicable('error', 'The layer is a shell; the format drawn in it owns any failure.'),
+    notApplicable('disabled', 'A layer is either open or closed; it has no disabled state.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'pip-control',
+  group: 'Outfitting',
+  component: PipControl,
+  contract: contract(
+    'pip-control',
+    {
+      role: 'group',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['pressed'],
+      relationships: ['label'],
+      textEquivalents: ['the allocation, which the filled blocks only draw'],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        bank: 'systems',
+        label: 'Systems, 2.5 of 4 pips',
+        steps: [
+          { id: 'systems-1', value: 1, fill: 1, label: 'Set systems to 1' },
+          { id: 'systems-2', value: 2, fill: 1, label: 'Set systems to 2' },
+          { id: 'systems-3', value: 3, fill: 0.5, label: 'Set systems to 3' },
+          { id: 'systems-4', value: 4, fill: 0, label: 'Set systems to 4' },
+        ],
+      },
+      [
+        'each block is a control that names the allocation it sets',
+        'the allocation is stated in the labels, so the fill colour is a supplement',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+    ),
+    state('empty', { bank: 'engines', label: 'Engines, 0 of 4 pips', steps: [] }, [
+      'a bank with no blocks draws its name and nothing to press',
+    ]),
+    notApplicable(
+      'loading',
+      'The allocation is held in the session, so it is resolved before the first frame.',
+    ),
+    notApplicable(
+      'error',
+      'A press the distributor refuses leaves the allocation where it was; the refusal is stated by the block around this control.',
+    ),
+    notApplicable(
+      'disabled',
+      'Every allocation a bank can hold is reachable, so no block is ever drawn unavailable.',
     ),
   ],
 });

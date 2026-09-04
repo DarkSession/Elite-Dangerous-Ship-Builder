@@ -84,10 +84,9 @@
 }
 
 .record__note {
+  @include layout.prose-note;
+
   font-size: var(--ednb-text-size-compact);
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
-  text-wrap: pretty;
   overflow-wrap: anywhere;
 }
 

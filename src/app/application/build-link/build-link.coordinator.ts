@@ -94,6 +94,26 @@ export class BuildLinkCoordinator {
   readonly failure = this.#failure.asReadonly();
 
   /**
+   * Whether a link is being read into a build right now.
+   *
+   * Steps 3 to 6 of the ingress pipeline are a wait, and on a first visit a
+   * long one: the codec and its table are a chunk of their own, fetched before
+   * a fragment can be decoded at all. A screen with no build yet cannot say it
+   * has no build while this is true — there may be one, and it is being read
+   * (build-link contract, "Ingress pipeline"; 011/FR-029).
+   *
+   * Seeded from the address this was constructed at, because the first ingest
+   * comes after this tab's own record has been restored and a screen rendered
+   * before it would otherwise draw the state this exists to prevent.
+   */
+  readonly #reading = signal(
+    recognizeBuildLinkFragment(this.#location.fragment()).kind === 'build',
+  );
+
+  /** Whether an incoming link is on its way to being a build. */
+  readonly reading = this.#reading.asReadonly();
+
+  /**
    * Records a fragment as this application's own output.
    *
    * Publication writes the fragment, which moves the same signal an incoming
@@ -129,33 +149,45 @@ export class BuildLinkCoordinator {
       // Deliberately not an error and deliberately not cleared: the fragment
       // belongs to something else, and this application has no business
       // interpreting or removing it.
+      this.#reading.set(false);
       return { kind: 'ignored' };
     }
 
     if (recognized.kind === 'over-limit') {
+      this.#reading.set(false);
       this.#failure.set({ code: 'tooLong', slot: null });
       return { kind: 'refused', failure: { code: 'tooLong', slot: null } };
     }
 
     if (recognized.fragment === this.#settled) {
+      this.#reading.set(false);
       return { kind: 'unchanged' };
     }
     this.#settled = recognized.fragment;
 
     this.#token += 1;
     const token = this.#token;
+    this.#reading.set(true);
 
-    const result = await this.#ingress.commit(async () =>
-      this.#construct(recognized.fragment, token),
-    );
+    try {
+      const result = await this.#ingress.commit(async () =>
+        this.#construct(recognized.fragment, token),
+      );
 
-    if (result.kind === 'failed' && result.reason === UNCHANGED) {
-      return { kind: 'unchanged' };
+      if (result.kind === 'failed' && result.reason === UNCHANGED) {
+        return { kind: 'unchanged' };
+      }
+      if (result.kind === 'committed') {
+        this.#failure.set(null);
+      }
+      return { kind: 'replacement', result };
+    } finally {
+      // Only the newest read clears the state. A superseded one finishing later
+      // would otherwise report that the read it was replaced by had finished.
+      if (this.#token === token) {
+        this.#reading.set(false);
+      }
     }
-    if (result.kind === 'committed') {
-      this.#failure.set(null);
-    }
-    return { kind: 'replacement', result };
   }
 
   async #construct(fragment: string, token: number): Promise<CandidateOutcome> {

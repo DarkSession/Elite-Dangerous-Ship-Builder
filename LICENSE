@@ -79,6 +79,11 @@ Attribution-NonCommercial-ShareAlike 4.0 International:
 
 https://creativecommons.org/licenses/by-nc-sa/4.0/
 
+One of them is adapted. `public/assets/loader.svg` carries an added
+`prefers-reduced-motion` rule that stops its animation, because the mark is
+loaded as its own document and this application's stylesheet cannot reach it.
+Nothing else in the file is changed.
+
 The MIT License above does not cover them and does not relicense them. A
 distribution or use that retains these files must credit EDAssets, must remain
 non-commercial, and must place any adaptation of them under the same terms.
