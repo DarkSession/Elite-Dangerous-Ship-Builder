@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
 import { BuildLinkCoordinator } from '../../application/build-link/build-link.coordinator';
+import { RecordOpenService } from '../../application/build-library/record-open.service';
+import { TabOwnershipCoordinator } from '../../application/build-library/tab-ownership.coordinator';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { BuildWorkspacePage } from './build-workspace.page';
@@ -66,6 +68,25 @@ describe('BuildWorkspacePage, reading an incoming link', () => {
     const host = fixture.nativeElement as HTMLElement;
 
     expect(host.querySelector('ednb-skeleton')).not.toBeNull();
+
+    await settle();
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-skeleton')).toBeNull();
+    expect(host.querySelector('ednb-empty-state')).not.toBeNull();
+  });
+
+  it('reads the link even when this tab’s own record cannot be opened', async () => {
+    // The restore and the read are one chain, and the read is what ends the
+    // wait. A restore that failed and took the read with it would leave the
+    // skeleton over an empty workspace for the rest of the session.
+    setFragment('#b.broken');
+    TestBed.inject(TabOwnershipCoordinator).claim = () => 'a-held-record';
+    TestBed.inject(RecordOpenService).open = () => Promise.reject(new Error('storage unavailable'));
+    TestBed.inject(BuildLinkCoordinator).decode = () => Promise.reject(new Error('refused'));
+
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
 
     await settle();
     fixture.detectChanges();

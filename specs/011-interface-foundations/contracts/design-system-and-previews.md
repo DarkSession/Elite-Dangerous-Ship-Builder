@@ -77,9 +77,9 @@ mobile portrait/landscape projects in both engines.
 
 Relevant cross-cutting fixtures add doubled/long copy, RTL direction, reduced motion, German formats,
 canonical package text with untranslated disclosure, absent canonical package text, long unbroken
-identities and nested label/description/error relationships. A state that animates declares the
-reduced-motion variant. The state that animates declares it, not the still one. A component whose
-only motion is in its loading state is therefore scanned under reduced motion in that state.
+identities and nested label/description/error relationships. The state that animates declares the
+reduced-motion variant, not the still one. A component whose only motion is in its loading state is
+therefore scanned under reduced motion in that state.
 Fixtures are presentation data. A
 package integration fixture may query real package data but cannot turn a copied mock value into an
 application fact.

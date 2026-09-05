@@ -52,9 +52,10 @@ provenance; and announcement outlets. Later capability components join the same 
 The preview-coverage checker reads `src/app/ui/components`. Every exported component there must carry
 a declaration, and a missing one fails the build.
 
-A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outside that scan. It
-carries a declaration all the same, because FR-004 applies to every exported component and the
-catalogue is where a state is reviewed.
+A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outside that scan. FR-004
+reaches it all the same: the catalogue is where a state is reviewed, so a composite declares its
+states there unless the catalogue cannot render it. Nothing fails a build over that, which is why the
+one component the catalogue cannot render is written down below.
 
 The catalogue renders a declaration from its inputs alone. A component that
 projects content therefore stands in the catalogue with its slots empty, and

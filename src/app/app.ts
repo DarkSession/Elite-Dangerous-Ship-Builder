@@ -36,7 +36,7 @@ import {
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
-import { Layer } from './ui/components/layer/layer';
+import { Layer, type LayerWidth } from './ui/components/layer/layer';
 import { Skeleton } from './ui/components/waiting/skeleton';
 
 /** The shell action that opens the import layer, named once. */
@@ -356,6 +356,18 @@ export class App {
     ),
   );
 
+  /**
+   * The width the waiting exchange layer takes.
+   *
+   * The width of the layer it stands in for. The import layer is a panel at the
+   * default measure and the export layer is a wide one, so a placeholder at one
+   * width would grow or shrink under the hand that opened it when the chunk
+   * lands.
+   */
+  readonly exchangePendingWidth = computed<LayerWidth>(() =>
+    this.#slef.layer() === 'export' ? 'wide' : 'default',
+  );
+
   readonly libraryPendingTitle = this.#messages.messageSignal('library.title');
 
   /** Takes back the request that opened a layer, before the layer is there. */
@@ -414,7 +426,7 @@ export class App {
       // The router reports the end of a fetch that succeeded and says nothing
       // about one that failed, so a chunk that cannot be fetched would leave
       // the frame saying a screen is loading for the rest of the session. Every
-      // way a navigation can finish lowers it, as does the screen arriving.
+      // way a navigation can finish lowers it.
       if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||

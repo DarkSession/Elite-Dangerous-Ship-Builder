@@ -47,10 +47,16 @@
 
     It closes. Pressing the way out here cancels the opening rather than the
     fetch, so the layer that arrives a moment later arrives closed.
+
+    At the width of the layer it stands in for, so the panel a Commander is
+    looking at is the size of the one that lands. Its body keeps the layer's own
+    inset: what the panel holds changes wholesale when the chunk arrives, and a
+    skeleton against the panel edge is not what the inset is for.
   -->
   <ednb-layer
     [open]="exchangeWanted()"
     [title]="exchangePendingTitle()"
+    [width]="exchangePendingWidth()"
     [dismissLabel]="dismissLabel()"
     (dismissed)="cancelExchange()"
   >
@@ -75,9 +81,14 @@
     <ednb-build-library-page />
   }
 } @loading (after 200ms; minimum 400ms) {
+  <!--
+    The widest measure, which is the library's own. A narrower placeholder would
+    widen under the hand when the chunk lands.
+  -->
   <ednb-layer
     [open]="library.open()"
     [title]="libraryPendingTitle()"
+    width="widest"
     [dismissLabel]="dismissLabel()"
     (dismissed)="library.lower()"
   >

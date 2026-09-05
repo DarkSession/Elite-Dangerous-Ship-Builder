@@ -567,13 +567,6 @@ describe('routes', () => {
   });
 });
 
-/**
- * The frame's own waiting state.
- *
- * Driven from router events rather than from a rendered screen, because that is
- * what the shell reads: the events say a chunk is on the wire, and nothing else
- * in the frame knows (011/FR-029).
- */
 /** A screen with nothing in it, so a navigation activates the outlet. */
 @Component({
   selector: 'ednb-waiting-screen',
@@ -582,6 +575,13 @@ describe('routes', () => {
 })
 class WaitingScreen {}
 
+/**
+ * The frame's own waiting state.
+ *
+ * Driven from router events rather than from a rendered screen, because that is
+ * what the shell reads: the events say a chunk is on the wire, and nothing else
+ * in the frame knows (011/FR-029).
+ */
 describe('App, waiting for a screen', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -732,6 +732,25 @@ describe('App, waiting for a layer', () => {
     expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.export.title']);
   });
 
+  it('stands at the width of the layer it is standing in for', async () => {
+    // A placeholder narrower than what lands grows under the hand that opened
+    // it. The import layer is a panel at the default measure and the export
+    // layer is a wide one, so the placeholder takes whichever was asked for.
+    TestBed.inject(SlefStore).openLayer('export');
+
+    const host = await waitingLayer(0);
+
+    expect(host.querySelector('.layer')?.classList).toContain('layer--wide');
+  });
+
+  it('stands at the default measure for the import layer', async () => {
+    TestBed.inject(SlefStore).openLayer('import');
+
+    const host = await waitingLayer(0);
+
+    expect(host.querySelector('.layer')?.classList).not.toContain('layer--wide');
+  });
+
   it('closes the exchange layer that is not there yet', async () => {
     // The way out cancels the opening rather than the fetch, so the layer that
     // lands a moment later lands closed.
@@ -756,6 +775,9 @@ describe('App, waiting for a layer', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(titleOf(host)).toContain(BUNDLED_ENGLISH['library.title']);
+    // The library's own measure. A narrower placeholder would widen under the
+    // hand when the chunk lands.
+    expect(host.querySelector('.layer')?.classList).toContain('layer--widest');
 
     host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
     expect(fixture.componentInstance.library.open()).toBe(false);
