@@ -43,8 +43,9 @@ A heading, an optional sentence and a projected way out. The way out is projecte
 at every call site: a link to the shipyard on one screen, a notice and a link on another, nothing on
 a third.
 
-The heading is an `h2`. Each call site sits one level under the heading above it — a screen's `h1`,
-or a layer's own title — so a level of its own would be one outline decision taken in three places.
+The heading is an `h2` at every call site. On a screen it sits one level under that screen's `h1`; in
+a layer it stands beside the layer's own title, which is an `h2` as well. A level of its own would be
+one outline decision taken in three places.
 
 Where the block sits is an input with two values. A centred block is the whole screen and centres
 itself at every width. A leading one shares its width with something else where there is room, so it

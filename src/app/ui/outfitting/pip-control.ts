@@ -14,9 +14,10 @@ export interface PipStepView {
  * The four blocks that set one bank's pips.
  *
  * One control drawn in two places — the status rail's pip sets and the
- * distributor table's cells — on one allocation. The canvas draws it the same
- * size in both, so a Commander presses the same thing wherever they reach for
- * it, and two copies of that are an agreement kept by hand.
+ * distributor table's cells — on one allocation. It is drawn at the same size
+ * in both, at the 24-pixel target floor rather than at the reference's own 14
+ * and 16, so a Commander presses the same thing wherever they reach for it.
+ * Two copies of that are an agreement kept by hand.
  *
  * A block is filled from its leading edge, so a bank standing on a half fills
  * half a block. The group is named with the allocation it stands at, which is
