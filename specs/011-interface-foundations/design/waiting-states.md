@@ -67,7 +67,10 @@ What stands after a failed one depends on what is behind it. There are three cas
 screen behind it has nothing to keep, so the frame itself says the screen did not arrive. A screen
 that owns the region the child would have filled says it there, in that region: the shipyard's rail
 is the one such region, and it holds the sentence in place of the hull. Every other screen keeps what
-a Commander is reading and changes nothing, because the router leaves them where they were.
+a Commander is reading and draws nothing, because the router leaves them where they were. The shell
+speaks the sentence there instead, politely, on each attempt: nothing on such a screen moves when the
+chunk is refused, so the press reads as a control that did nothing, and the control does nothing for
+the rest of the session.
 
 A screen that says it in its own region keeps the rest of itself in reach. The shipyard's rail is
 drawn for the failure under a modifier of its own, which draws the rail and takes nothing away. The

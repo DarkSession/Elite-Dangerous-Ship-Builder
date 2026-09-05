@@ -56,6 +56,38 @@ describe('Layer', () => {
     invoker.remove();
   });
 
+  it('does not reach for the control a native close already returned to', async () => {
+    // Escape closes the element itself, and the browser puts focus back where
+    // it came from. The `open` input falls after that, so the branch that would
+    // forget the control never runs, and a teardown that still remembered one
+    // would pull focus off whatever the reader had reached in the meantime.
+    const invoker = document.createElement('button');
+    const elsewhere = document.createElement('button');
+    document.body.append(invoker, elsewhere);
+    invoker.focus();
+
+    stubNativeDialog();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [Layer] });
+    const fixture = TestBed.createComponent(Layer);
+    fixture.componentRef.setInput('title', 'A layer');
+    fixture.componentRef.setInput('dismissLabel', 'Close');
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    // What Escape does: the element closes and dispatches `close` itself.
+    dialogOf(fixture).close();
+    await settle();
+
+    elsewhere.focus();
+    fixture.destroy();
+    await settle();
+
+    expect(document.activeElement).toBe(elsewhere);
+    invoker.remove();
+    elsewhere.remove();
+  });
+
   it('does not report a close its own owner asked for as a dismissal', async () => {
     const { fixture, dismissals } = render();
     expect(dialogOf(fixture).hasAttribute('open')).toBe(true);

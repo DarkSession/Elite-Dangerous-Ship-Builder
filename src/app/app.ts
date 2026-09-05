@@ -437,6 +437,15 @@ export class App {
 
   readonly routeFailed = computed(() => this.#routeFailed() && !this.#screenShown());
 
+  /**
+   * How many navigations have failed into a frame that already holds a screen.
+   *
+   * The announcement's revision, so a Commander who presses the dead control
+   * again is told again rather than met with the silence the dedupe would
+   * otherwise keep.
+   */
+  readonly #navigationFailures = signal(0);
+
   routeActivated(): void {
     this.#screenShown.set(true);
   }
@@ -463,6 +472,23 @@ export class App {
       }
       if (event instanceof NavigationError) {
         this.#routeFailed.set(true);
+
+        // A frame with no screen says it itself, in the frame. A frame that
+        // holds one keeps it, and the router leaves the Commander on the screen
+        // they were reading, so nothing changes and the press reads as a
+        // control that did nothing. It will do nothing again: the document
+        // records the failed import and refuses the same address without
+        // reaching the network. Said rather than drawn, because the screen the
+        // frame is keeping is the whole point of keeping it (011/FR-029).
+        if (this.#screenShown()) {
+          this.#navigationFailures.update((count) => count + 1);
+          this.#announcements.announce({
+            kind: 'route.failed',
+            revision: this.#navigationFailures(),
+            urgency: 'polite',
+            messageKey: 'route.failed.notice',
+          });
+        }
       }
     });
 

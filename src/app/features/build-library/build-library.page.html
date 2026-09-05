@@ -1,9 +1,10 @@
 <!--
-  The reference draws `/builds` as a surface rather than a page: a centred
-  dialog over an inert originating screen where there is room, the same content
-  as a full-screen layer where there is not (canvas 1a "SAVED BUILDS", canvas
-  1b `ssv-screen`). It stays a route, so it is addressable, in history, and
-  closed by the browser's own back as well as by its own dismiss.
+  The reference draws the saved builds as a surface rather than a page: a
+  centred dialog over an inert originating screen where there is room, the same
+  content as a full-screen layer where there is not (canvas 1a "SAVED BUILDS",
+  canvas 1b `ssv-screen`). It has no address of its own. Opening it takes a
+  history entry at the address already showing, so the browser's own back closes
+  it as well as its own dismiss (`library-presence.ts`).
 -->
 <ednb-layer
   [open]="true"

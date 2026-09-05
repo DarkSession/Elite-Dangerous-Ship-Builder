@@ -275,6 +275,12 @@ export class Layer {
    * for by whatever lowered it.
    */
   closed(): void {
+    // The element closed itself, so it has already put focus back where it
+    // belongs. Forgetting the control here keeps the teardown from reaching
+    // for it later: `open` falls after the element has closed, so the branch
+    // that would otherwise clear it never runs.
+    this.#invoker = null;
+
     if (this.#closingFromInput) {
       this.#closingFromInput = false;
       return;

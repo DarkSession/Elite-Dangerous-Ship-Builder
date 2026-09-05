@@ -720,6 +720,31 @@ describe('App, waiting for a screen', () => {
 
     expect(host.querySelector('ednb-status-notice')).toBeNull();
   });
+
+  it('says the screen did not arrive, to the reader on the screen it kept', async () => {
+    // Keeping the screen is not the same as saying nothing. Nothing on the page
+    // moves when the chunk is refused, so the press reads as a control that did
+    // nothing, and it will do nothing again for the rest of the session. The
+    // sentence is spoken rather than drawn, because drawing it would take away
+    // the screen the frame is keeping.
+    const { fixture, publish } = shell();
+    const announcements = TestBed.inject(AnnouncementService);
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    publish(new NavigationError(1, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['route.failed.notice']);
+
+    // Pressing again is the same dead control, and a reader who has moved on
+    // hears nothing unless the second attempt is its own event.
+    announcements.clearOutlets();
+    publish(new NavigationError(2, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(announcements.polite()).toBe(BUNDLED_ENGLISH['route.failed.notice']);
+  });
 });
 
 /**
