@@ -7,11 +7,11 @@ function state(overrides: Partial<RootDocumentState> = {}): RootDocumentState {
   return {
     language: 'en',
     direction: 'ltr',
-    title: 'Saved builds · NavBeacon',
+    title: 'Saved builds · Nav Beacon',
     description: 'Plan Elite Dangerous loadouts.',
     canonical: `${SITE_ORIGIN}/ships`,
     image: absoluteAsset(LINK_CARD),
-    imageAlt: 'Saved builds · NavBeacon',
+    imageAlt: 'Saved builds · Nav Beacon',
     ...overrides,
   };
 }
@@ -87,10 +87,10 @@ describe('DocumentAdapter', () => {
   });
 
   it('carries the title into both card blocks so a pasted link names the page', () => {
-    adapter.commitRootState(state({ title: 'Saved builds · NavBeacon' }));
+    adapter.commitRootState(state({ title: 'Saved builds · Nav Beacon' }));
 
-    expect(content('meta[property="og:title"]')).toBe('Saved builds · NavBeacon');
-    expect(content('meta[name="twitter:title"]')).toBe('Saved builds · NavBeacon');
+    expect(content('meta[property="og:title"]')).toBe('Saved builds · Nav Beacon');
+    expect(content('meta[name="twitter:title"]')).toBe('Saved builds · Nav Beacon');
   });
 
   it('carries the standing title into both card blocks when the caller supplies none', () => {
@@ -119,15 +119,15 @@ describe('DocumentAdapter', () => {
     const illustration = `${SITE_ORIGIN}/assets/ships/Anaconda/illustration.png`;
     adapter.commitRootState(
       state({
-        title: 'Anaconda · NavBeacon',
+        title: 'Anaconda · Nav Beacon',
         image: illustration,
-        imageAlt: 'Anaconda · NavBeacon',
+        imageAlt: 'Anaconda · Nav Beacon',
       }),
     );
 
     expect(content('meta[property="og:image"]')).toBe(illustration);
     expect(content('meta[name="twitter:image"]')).toBe(illustration);
-    expect(content('meta[property="og:image:alt"]')).toBe('Anaconda · NavBeacon');
+    expect(content('meta[property="og:image:alt"]')).toBe('Anaconda · Nav Beacon');
   });
 
   it('rewrites the picture rather than leaving the previous page’s standing', () => {

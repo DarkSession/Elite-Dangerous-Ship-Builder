@@ -255,8 +255,8 @@ drawing never changed, only the source. The canvas's own `ARMOUR` figures remain
 The shared help copy is the revision's too, and not this feature's wording. All four Ship Builder
 artboards rewrote `help.purpose` from "Ship Builder is an Elite Dangerous outfitting bench." to name
 the application instead, and the completed-grades answer with it — one help dialog now opens over
-both benches, so neither sentence can name one of them. The house spelling is `NavBeacon`
-(AGENTS.md), not the canvas's loose "Nav Beacon".
+both benches, so neither sentence can name one of them. The application is `Nav Beacon`
+(AGENTS.md), which is the spelling the canvas carries.
 
 The export layer's `#ge-exp-meta` line is built with it. The canvas names the chosen format in the
 same words its own format chips carry (`st.expFmt.toUpperCase()`, so `JSON · 4 ITEMS · 6 MODS ·

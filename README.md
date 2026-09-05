@@ -1,4 +1,4 @@
-# NavBeacon
+# Nav Beacon
 
 Browser-based tools for Elite Dangerous. Ship Builder is the first of them: pick
 a hull, fit and engineer modules, read the resulting build metrics, and export
@@ -335,7 +335,7 @@ reach the application through
 and are used under Frontier's
 [media-usage rules](https://forums.frontier.co.uk/threads/elite-dangerous-media-usage-rules.510879/):
 
-> NavBeacon was created using assets and imagery from Elite Dangerous, with the
+> Nav Beacon was created using assets and imagery from Elite Dangerous, with the
 > permission of Frontier Developments plc, for non-commercial purposes. It is not
 > endorsed by nor reflects the views or opinions of Frontier Developments and no
 > employee of Frontier Developments was involved in the making of it.

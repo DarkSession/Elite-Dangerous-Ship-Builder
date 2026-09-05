@@ -2447,7 +2447,6 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern; both the variable and the multiplication sign are language-neutral. The words the chip stands for are hullDetail.slots.run.one and .many, which are translated.',
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
-    'app.document-title.default': 'The product name again.',
     'catalogue.title':
       'The product name. The screen the application opens on is named after the product, ruled 2026-08-27, and a product renamed in one language is a different product.',
     'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',

@@ -1,4 +1,4 @@
-# Dev container image for NavBeacon.
+# Dev container image for Nav Beacon.
 # Extends the standard TypeScript + Node base with Bubblewrap, which
 # Claude Code uses to sandbox command execution.
 FROM mcr.microsoft.com/devcontainers/typescript-node:24-bookworm

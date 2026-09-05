@@ -63,7 +63,7 @@ export const SITE_CARD = 'assets/link-card.png';
  * `''` is here, and used not to be. It was a redirect into the ship tool, and a
  * redirect is not an address; it is the start page now, and it is the one
  * address that describes the product rather than one of its tools — which is
- * the address a search for NavBeacon should return.
+ * the address a search for Nav Beacon should return.
  */
 export const STATIC_ADDRESSES = [
   { path: '', titleKey: 'app.name', descriptionKey: 'app.description' },

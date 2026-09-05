@@ -6,7 +6,7 @@ import { expectNoDocumentOverflow } from './accessibility/assertions';
  * The start page journey (014/US1–US3).
  *
  * The product's own address used to redirect into the ship tool, so a Commander
- * who opened NavBeacon landed in a shipyard and discovered the other tool from
+ * who opened Nav Beacon landed in a shipyard and discovered the other tool from
  * a tab. It is a screen now, and these assertions are what makes it one: the
  * choice is offered, either tool opens, back returns, and an address that
  * resolves to nothing lands here rather than inside a tool nobody asked for.

@@ -7,7 +7,7 @@ import { ToolCard } from '../../ui/components/tool-card/tool-card';
 import { AppNavigation } from '../shared/app-navigation';
 
 /**
- * The start page: what NavBeacon is, and the tools it carries.
+ * The start page: what Nav Beacon is, and the tools it carries.
  *
  * Drawn in `.design/Home.dc.html`, artboards `1a` (1440px) and `1b` (390px).
  * The canvas's own note — "Top bar carried over from the builders; the middle

@@ -188,7 +188,7 @@ describe('the help manifest generator', () => {
       const { manifest } = await run(root);
       const text = manifest.disclaimer.exactText;
 
-      assert.ok(text.startsWith('NavBeacon was created using assets'));
+      assert.ok(text.startsWith('Nav Beacon was created using assets'));
       assert.ok(text.endsWith('was involved in the making of it.'));
       assert.equal(text.includes('\n    '), false);
       assert.equal(text.startsWith(' '), false);

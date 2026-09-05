@@ -19,7 +19,7 @@ regenerated and advertises `https://navbeacon.app/` for the first time.
 **Rationale**: `UNLISTABLE_ROUTES` holds `''` and `'**'` with the comment "a redirect and a
 wildcard are not addresses". That was true and stops being true here. The root is now the
 one address that describes the product rather than one of its tools, which is the address a
-search for "NavBeacon" should return — and today the sitemap advertises three tool addresses
+search for "Nav Beacon" should return — and today the sitemap advertises three tool addresses
 and forty-eight hulls, and not the product.
 
 `src/index.html` already carries the root's canonical (`https://navbeacon.app/`), its
@@ -123,10 +123,9 @@ as text rather than markup and to mark the language they were written in. Consti
 and VI both point at reuse here: a second copy could drift from the licence file, and
 translating it would be this application editing a notice it is only carrying.
 
-The canvas's own footer text differs from the manifest's in two ways — it writes "Nav
-Beacon" where the product is "NavBeacon", and it stops at "was involved in the making"
-without the closing "of it." Both are the canvas quoting loosely. The document is the
-record, so the manifest's text ships and the canvas's rendering of it does not.
+The canvas's own footer text stops at "was involved in the making" without the closing
+"of it." That is the canvas quoting loosely. The document is the record, so the manifest's
+text ships and the canvas's rendering of it does not.
 
 **Alternatives considered**:
 

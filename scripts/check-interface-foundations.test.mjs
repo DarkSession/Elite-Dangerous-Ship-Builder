@@ -1219,8 +1219,8 @@ describe('search metadata', () => {
   const TOKENS = '  --ednb-palette-bg: #0b0b0c;\n';
 
   const MANIFEST = JSON.stringify({
-    name: 'NavBeacon',
-    short_name: 'NavBeacon',
+    name: 'Nav Beacon',
+    short_name: 'Nav Beacon',
     description: 'What this is.',
     start_url: './',
     scope: './',

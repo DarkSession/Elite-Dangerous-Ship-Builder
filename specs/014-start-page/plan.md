@@ -6,7 +6,7 @@
 
 ## Summary
 
-Give NavBeacon's own address a page. Today `''` is a redirect into `/ships`, so a Commander
+Give Nav Beacon's own address a page. Today `''` is a redirect into `/ships`, so a Commander
 who opens the product lands in one of its tools and discovers the other from a tab. This
 feature makes the root a screen: the product's name and line, the tools it carries as
 activatable entries, and the Frontier attribution at the foot.

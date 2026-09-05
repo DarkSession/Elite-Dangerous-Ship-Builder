@@ -184,7 +184,11 @@ test.describe('what the head says this page is', () => {
     expect(value(/property="og:description"[^>]*content="([^"]*)"/s)).toBe(
       englishMessages['app.description'],
     );
-    expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(englishMessages['app.name']);
+    // The card's title is the document's, which at the root is the product's
+    // full title rather than its bare name.
+    expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(
+      englishMessages['app.document-title.default'],
+    );
     expect(value(/rel="canonical"[^>]*href="([^"]*)"/)).toBe(`${SITE_ORIGIN}/`);
     expect(value(/name="twitter:card"[^>]*content="([^"]*)"/)).toBe('summary_large_image');
     expect(value(/property="og:image"[^>]*content="([^"]*)"/)).toBe(

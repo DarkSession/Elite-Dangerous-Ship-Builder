@@ -31,10 +31,10 @@ const SHIPS = [
 ];
 
 const CATALOGUE = {
-  'app.name': 'NavBeacon',
+  'app.name': 'Nav Beacon',
   'app.document-title': '{{page}} · {{app}}',
-  'app.document-title.default': 'NavBeacon',
-  'app.description': 'NavBeacon is a set of Elite Dangerous tools.',
+  'app.document-title.default': 'Nav Beacon - Elite Dangerous Commander Tools',
+  'app.description': 'Nav Beacon is a set of Elite Dangerous tools.',
   'catalogue.title': 'Ship Builder',
   'catalogue.description': 'Browse every hull.',
   'hullDetail.title': '{{hull}}',
@@ -98,7 +98,7 @@ describe('what a published document says', () => {
   it('names the hull in the title and in the description', () => {
     const head = documentHead(hull(), CATALOGUE, ORIGIN);
 
-    assert.equal(head.title, 'Anaconda · NavBeacon');
+    assert.equal(head.title, 'Anaconda · Nav Beacon');
     assert.equal(head.description, 'Anaconda: every figure and the slot layout.');
   });
 
@@ -111,16 +111,19 @@ describe('what a published document says', () => {
   });
 
   it('states the product once on the root address, and names the screen elsewhere', () => {
-    // The root is the start page now, and its own name is the product's name.
-    // `NavBeacon · NavBeacon` is not a title anyone would write.
+    // The root is the start page, and its own name is the product's name, so
+    // the tab carries the product's title rather than its name twice over.
     const [root, catalogue] = publishedAddresses({ origin: ORIGIN, ships: SHIPS });
 
-    assert.equal(documentHead(root, CATALOGUE, ORIGIN).title, 'NavBeacon');
+    assert.equal(
+      documentHead(root, CATALOGUE, ORIGIN).title,
+      'Nav Beacon - Elite Dangerous Commander Tools',
+    );
     assert.equal(
       documentHead(root, CATALOGUE, ORIGIN).description,
-      'NavBeacon is a set of Elite Dangerous tools.',
+      'Nav Beacon is a set of Elite Dangerous tools.',
     );
-    assert.equal(documentHead(catalogue, CATALOGUE, ORIGIN).title, 'Ship Builder · NavBeacon');
+    assert.equal(documentHead(catalogue, CATALOGUE, ORIGIN).title, 'Ship Builder · Nav Beacon');
   });
 
   it('leaves a placeholder with no value as nothing rather than as its own name', () => {
@@ -128,7 +131,7 @@ describe('what a published document says', () => {
   });
 
   it('falls back to the application title where the page has no name', () => {
-    assert.equal(documentTitle(CATALOGUE, null), 'NavBeacon');
-    assert.equal(documentTitle(CATALOGUE, '   '), 'NavBeacon');
+    assert.equal(documentTitle(CATALOGUE, null), 'Nav Beacon - Elite Dangerous Commander Tools');
+    assert.equal(documentTitle(CATALOGUE, '   '), 'Nav Beacon - Elite Dangerous Commander Tools');
   });
 });

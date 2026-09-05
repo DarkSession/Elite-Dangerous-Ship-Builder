@@ -1,17 +1,19 @@
 <!--
-Sync Impact Report (9.0.1)
-- Version change: 9.0.0 -> 9.0.1 (PATCH)
-- Modified principles: none. The product is named NavBeacon, and this document says so.
-- Rationale: the application is the first of several tools under one name and one origin
-  (`docs/navbeacon-migration.md`). Ship Builder is the tool that plans ship loadouts; NavBeacon is
-  the product that carries it. No obligation changes, so the bump is a patch.
+Sync Impact Report (9.0.2)
+- Version change: 9.0.1 -> 9.0.2 (PATCH)
+- Modified principles: none. The product is named Nav Beacon, two words, and this document
+  spells it so.
+- Rationale: the design canvases and the wordmark the bar flies both read `NAV BEACON`; the
+  written name follows them, so the product is spelled one way everywhere
+  (`docs/navbeacon-migration.md`). Ship Builder is the tool that plans ship loadouts; Nav
+  Beacon is the product that carries it. No obligation changes, so the bump is a patch.
 - Invalidated-spec review: none. No principle, exclusion or count moves.
 - Follow-up TODOs: none.
 -->
 
-# NavBeacon Constitution
+# Nav Beacon Constitution
 
-NavBeacon is a browser application carrying tools for Elite Dangerous. Ship Builder
+Nav Beacon is a browser application carrying tools for Elite Dangerous. Ship Builder
 is the first of them: pick a hull, fit and engineer modules, read the resulting
 build metrics, and hand the build to other tools as SLEF.
 
@@ -66,12 +68,12 @@ SLEF parsing/serialisation MUST be taken from that package.
 
 **Defects and gaps in the library are fixed in the library.** When the package
 returns a wrong value, is missing a datum or calculation, or has an awkward API,
-NavBeacon does not paper over it:
+Nav Beacon does not paper over it:
 
 - The problem MUST be called out and raised against
   [Elite-Dangerous-Almanac](https://github.com/DarkSession/Elite-Dangerous-Almanac),
   with a minimal reproduction.
-- The fix MUST land in the library, and NavBeacon MUST then consume the
+- The fix MUST land in the library, and Nav Beacon MUST then consume the
   released version. Correcting, patching, clamping, re-deriving or
   special-casing a library result inside this application is prohibited —
   including "just this once" adjustments buried in a component or a formatter.
@@ -370,7 +372,7 @@ requirements without prescribing implementation.
   (principle VI) and composition from the design system (principle VII) are
   behavioural requirements, not design choices, and are in scope from the start.
 - A defect traced to `@elite-dangerous-almanac/core` is raised and fixed
-  upstream (principle II). NavBeacon tracks the released fix; it does not
+  upstream (principle II). Nav Beacon tracks the released fix; it does not
   route around it.
 
 ## Governance
@@ -389,4 +391,4 @@ to justify itself against them; when it cannot, the simpler option wins. An
 amendment's rationale is recorded in the change that makes it; this document
 states the principles as they stand now, not the history of how they got here.
 
-**Version**: 9.0.1 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-09-01
+**Version**: 9.0.2 | **Ratified**: 2026-08-12 | **Last Amended**: 2026-09-05

@@ -24,7 +24,7 @@ describe('resolveDocumentTitle', () => {
   });
 
   it('treats a blank page name as no page at all', () => {
-    // A caller that has nothing to say must not be able to publish `· NavBeacon`
+    // A caller that has nothing to say must not be able to publish `· Nav Beacon`
     // with an empty half.
     expect(resolveDocumentTitle(catalogue(), '   ')).toBe(
       BUNDLED_ENGLISH['app.document-title.default'],
@@ -38,7 +38,7 @@ describe('resolveDocumentTitle', () => {
   });
 
   it('names the tool beside the product on a tool screen', () => {
-    // The product is NavBeacon and the screen is the ship builder, so a tool
+    // The product is Nav Beacon and the screen is the ship builder, so a tool
     // address says which tool it is rather than repeating the product name.
     expect(resolveDocumentTitle(catalogue(), BUNDLED_ENGLISH['catalogue.title'])).toBe(
       `${BUNDLED_ENGLISH['catalogue.title']} · ${BUNDLED_ENGLISH['app.name']}`,
@@ -47,8 +47,8 @@ describe('resolveDocumentTitle', () => {
 
   it('states the product once where the screen is the product', () => {
     // The start page's own name is the product's name, because the screen is
-    // the product rather than one of its tools. `NavBeacon · NavBeacon` is not
-    // a title anyone would write.
+    // the product rather than one of its tools. `Nav Beacon · Nav Beacon` is not
+    // a title anyone would write, so the product's own title is the tab.
     expect(resolveDocumentTitle(catalogue(), BUNDLED_ENGLISH['app.name'])).toBe(
       BUNDLED_ENGLISH['app.document-title.default'],
     );

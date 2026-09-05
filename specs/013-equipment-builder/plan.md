@@ -7,7 +7,7 @@
 
 ## Summary
 
-Add a second tool to NavBeacon: an on-foot outfitting bench at `/equipment` where a Commander picks
+Add a second tool to Nav Beacon: an on-foot outfitting bench at `/equipment` where a Commander picks
 a suit, sets its grade, fits handheld weapons at grades of their own, applies engineering
 modifications within the slots each grade unlocks, and reads what the assembled Commander is worth
 and what the modifications would cost in micro-resources. It joins the shared shell as one entry in

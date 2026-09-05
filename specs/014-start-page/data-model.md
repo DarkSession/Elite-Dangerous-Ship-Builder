@@ -8,7 +8,7 @@ outlives a navigation. What follows is the shape of what one screen is handed.
 
 ## Tool
 
-One of the things NavBeacon carries. Extends `ToolRecord`, which already exists in
+One of the things Nav Beacon carries. Extends `ToolRecord`, which already exists in
 `src/app/features/shared/app-navigation.ts` and today holds the first four fields.
 
 | Field             | Type                | Existing | Meaning                                                                      |

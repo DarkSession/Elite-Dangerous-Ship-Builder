@@ -1,6 +1,6 @@
-# NavBeacon migration
+# Nav Beacon migration
 
-NavBeacon is published at `navbeacon.app`. It holds two tools, Ship Builder and
+Nav Beacon is published at `navbeacon.app`. It holds two tools, Ship Builder and
 Equipment Builder, and it is built to hold more. This document records the
 decisions that shape the move and the work that is left.
 
@@ -49,14 +49,20 @@ DNS setup; "Enforce HTTPS" is the step that ends the gap.
 
 ## The name
 
-NavBeacon is the product and Ship Builder is a tool inside it. The product identity is
+Nav Beacon is the product and Ship Builder is a tool inside it. The name is two words,
+the spelling the wordmark on the bar and the design canvases carry. The product identity is
 `app.name`, `app.description` and `app.document-title.default` in the locale
 catalogues, the manifest's `name`, `short_name` and `description`, the `package.json`
 name, the project key in `angular.json`, and the Frontier media-usage notice in
 `LICENSE`. Everything that names the outfitting bench — `catalogue.title`,
 `navigation.catalogue`, `hullDetail.back`, `workspace.empty.description`,
 `workspace.empty.action`, `help.purpose` and the help topics that describe the bench's
-behaviour — names the tool, which is what those strings mean under NavBeacon.
+behaviour — names the tool, which is what those strings mean under Nav Beacon.
+
+`app.document-title.default` is the one string that says more than the name:
+`Nav Beacon - Elite Dangerous Commander Tools`, which titles the root document and
+`404.html` and nothing else. Every other address reads `<screen> · Nav Beacon`.
+`specs/011-interface-foundations/design/search-visibility.md` is the record.
 
 Help content is generated: run `pnpm run help:artifacts` after touching any help string,
 and `pnpm run help:artifacts:check` gates it.
