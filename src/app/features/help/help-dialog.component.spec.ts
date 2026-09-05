@@ -9,6 +9,7 @@ import {
 import { HelpDialog } from './help-dialog.component';
 import type { HelpDialogViewModel } from '../../application/help/help.presenter';
 import { HELP_TOPIC_IDS } from '../../domain/help/help-topic';
+import { stubNativeDialog } from '../../ui/components/layer/layer.spec-helpers';
 
 /** Two lines with the punctuation a real notice carries. */
 const EXCERPT = [
@@ -85,23 +86,6 @@ const VIEW: HelpDialogViewModel = {
   topics: TOPICS,
   licence: LICENCE,
 };
-
-/**
- * `<dialog>` without the native modal methods, which jsdom does not implement.
- *
- * The shared layer calls them the moment it opens; what these tests are about
- * is the modal's content and reading order, not what a browser does with a
- * dialog element. The Playwright suite covers the real one.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
-}
 
 function render(open = true, view: HelpDialogViewModel = VIEW) {
   stubNativeDialog();

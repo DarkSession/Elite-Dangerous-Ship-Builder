@@ -1,17 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormatLayer } from './format-layer';
-
-/** jsdom implements neither modal method, and neither is what these test. */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
-}
+import { stubNativeDialog } from './layer.spec-helpers';
 
 @Component({
   imports: [FormatLayer],

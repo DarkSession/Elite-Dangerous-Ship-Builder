@@ -17,6 +17,7 @@ import { provideLocalization } from '../../../../i18n/i18n.providers';
 import { provideIsolatedLocaleEnvironment } from '../../../../i18n/testing/localization-harness';
 import { NO_BLUEPRINT_CHOICE } from '../../../../ui/outfitting/blueprint-choice-list';
 import { EngineeringEditor } from './engineering-editor';
+import { stubNativeDialog } from '../../../../ui/components/layer/layer.spec-helpers';
 
 /**
  * The editor's states, from the outside.
@@ -43,7 +44,6 @@ function candidateFor(loadout: ShipLoadout): BuildCandidate {
 describe('engineering editor surface', () => {
   let store: OutfittingStore;
   let active: ActiveBuildStore;
-  const stubbed: (() => void)[] = [];
 
   /**
    * The editor over one mount, in the composition that holds a draft.
@@ -71,22 +71,7 @@ describe('engineering editor surface', () => {
    * the layer's own markup rather than only what the component decides.
    */
   function openLayer(slotKey: string) {
-    const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-    const restore = { showModal: prototype['showModal'], close: prototype['close'] };
-    prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
-    prototype['close'] = function close(this: HTMLDialogElement) {
-      this.removeAttribute('open');
-    };
-    // Put back after the test that asked for it: a patched prototype is shared
-    // by every later test in the file, and one that opens a layer without
-    // meaning to would then get one.
-    stubbed.push(() => {
-      prototype['showModal'] = restore.showModal;
-      prototype['close'] = restore.close;
-    });
-
+    stubNativeDialog();
     const fixture = open(slotKey);
     fixture.detectChanges();
     return fixture;
@@ -118,12 +103,6 @@ describe('engineering editor surface', () => {
     });
     active = TestBed.inject(ActiveBuildStore);
     store = TestBed.inject(OutfittingStore);
-  });
-
-  afterEach(() => {
-    while (stubbed.length > 0) {
-      stubbed.pop()!();
-    }
   });
 
   describe('canvas 1d’s own screen', () => {

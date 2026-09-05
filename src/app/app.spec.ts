@@ -37,6 +37,7 @@ import { HelpPresenter } from './application/help/help.presenter';
 import { HELP_MANIFEST } from './platform/build/help-manifest.generated';
 import { EDNB_UPDATE_APPLIED_KEY } from './platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from './platform/storage/storage.spec-helpers';
+import { stubNativeDialog } from './ui/components/layer/layer.spec-helpers';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -309,23 +310,6 @@ class FakeUpdates {
   expire(): void {
     this.#pending.pop()?.();
   }
-}
-
-/**
- * `<dialog>` without the native modal methods, which jsdom does not implement.
- *
- * The overlay is a layer, and a layer calls them the moment it opens. What
- * these tests are about is what the shell decides to put up, not what a
- * browser does with a dialog element once it is up.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
 }
 
 describe('App and a newly published version', () => {

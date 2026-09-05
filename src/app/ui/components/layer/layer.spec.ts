@@ -1,28 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Layer } from './layer';
-
-/**
- * `<dialog>` with the modal methods jsdom does not implement, faithful in the
- * one respect these tests are about: `close()` queues a `close` event rather
- * than dispatching it inline, exactly as the HTML specification requires and
- * exactly as a browser does.
- *
- * The other layer specs stub these methods without the event, which is why the
- * behaviour below went unnoticed until a Playwright run in a real browser.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    if (!this.hasAttribute('open')) {
-      return;
-    }
-    this.removeAttribute('open');
-    queueMicrotask(() => this.dispatchEvent(new Event('close')));
-  };
-}
+import { stubNativeDialog } from './layer.spec-helpers';
 
 function render() {
   stubNativeDialog();
