@@ -44,18 +44,6 @@
   }
 }
 
-// A viewport this short cannot divide a screen into a scroller and a foot and
-// still show one choice, so the layer's actions stop sticking and the layer's
-// own scroller carries them — the same release the command bar and the bench
-// make at the same threshold, and what keeps the whole of it readable at 400%
-// zoom (FR-011). The host's own release went with the bound it released: there
-// is no longer one to lift.
-@include layout.short-viewport {
-  .engineering__actions {
-    position: static;
-  }
-}
-
 .engineering {
   @include layout.stack(var(--ednb-space-stack));
 
@@ -247,6 +235,17 @@
 .engineering__actions {
   @include layout.wrapping-row(var(--ednb-space-inline));
   @include layout.panel-foot;
+
+  // A viewport this short cannot divide a screen into a scroller and a foot.
+  // The actions stop sticking, and the layer's own scroller carries them. It is
+  // the same release the command bar and the bench make at that threshold. It
+  // keeps the layer readable at 400% zoom (FR-011).
+  //
+  // Stated here rather than beside the other bounds, because a media query
+  // carries no specificity. Before this rule it loses to it on source order.
+  @include layout.short-viewport {
+    position: static;
+  }
 
   flex: none;
   // The bar runs the width of canvas 1d's screen and carries its own inset, so
