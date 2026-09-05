@@ -16,9 +16,9 @@
 // four at the baseline are wider than the rest of the distributor's figures put
 // together, and wider than a third of the 306-pixel rail, and the canvas draws a
 // pip block as a chip in a row of them rather than as a button standing on its
-// own. The floor is a floor and not a waiver — the canvas's own 14 pixels stay
-// unbuilt, and `.pips__step` is recorded on `DENSE_TARGETS` in
-// `e2e/accessibility/assertions.ts`.
+// own. The floor is a floor and not a waiver — the canvas's own 14 pixels in the
+// rail and 16 in the table stay unbuilt, and `.pips__step` is recorded on
+// `DENSE_TARGETS` in `e2e/accessibility/assertions.ts`.
 //
 // No scroller of its own: four floors and their gaps come to 114px in a 269px
 // row at ordinary text and 210px at doubled text, measured, so the row holds at
