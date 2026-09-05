@@ -10,10 +10,13 @@ import {
 /**
  * The component preview manifest.
  *
- * Every exported `src/app/ui/` component has exactly one declaration here, and
- * every declaration accounts for all five required states — with a fixture, or
- * with a nonempty machine-readable reason the component's contract cannot
- * represent that state (FR-004).
+ * Every exported `src/app/ui/components/` component has exactly one declaration
+ * here, and every declaration accounts for all five required states — with a
+ * fixture, or with a nonempty machine-readable reason the component's contract
+ * cannot represent that state (FR-004). A domain composite under
+ * `src/app/ui/outfitting/` or `src/app/ui/equipment/` belongs here too wherever
+ * the catalogue can render it, which is the wider rule no checker enforces
+ * (`011 design/component-preview-catalogue.md`).
  *
  * The N/A escape exists for contracts that genuinely cannot hold a state (a
  * static text equivalent has no loading state). It is not a way to skip a

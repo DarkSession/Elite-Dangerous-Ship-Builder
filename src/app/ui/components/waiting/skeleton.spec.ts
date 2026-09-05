@@ -48,12 +48,17 @@ describe('Skeleton', () => {
     expect(host.querySelectorAll('.skeleton__bar').length).toBe(1);
   });
 
-  it('draws the same widths on every pass', () => {
+  it('draws a ragged run of widths, and the same one on every pass', () => {
+    // The ragged cycle is what makes the block read as lines of content rather
+    // than one solid slab, and it repeats from the start so a long block stays
+    // the same shape as a short one. A run that is stable but flat would read
+    // as a slab, so the values are asserted rather than only their stability.
     const first = [...render({ label: 'Loading', lines: 6 }).querySelectorAll('.skeleton__bar')];
     const second = [...render({ label: 'Loading', lines: 6 }).querySelectorAll('.skeleton__bar')];
 
     const widths = (bars: readonly Element[]) =>
       bars.map((bar) => (bar as HTMLElement).style.inlineSize);
+    expect(widths(first)).toEqual(['100%', '94%', '72%', '86%', '100%', '94%']);
     expect(widths(second)).toEqual(widths(first));
   });
 });
