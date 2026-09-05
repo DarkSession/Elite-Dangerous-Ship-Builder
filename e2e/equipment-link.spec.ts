@@ -25,7 +25,7 @@ async function openRow(page: Page, target: string): Promise<void> {
   // projects (CI, 2026-09-04). The page's own host is what says it has booted:
   // no region is drawn in every arrangement, and the compact bench draws one
   // tab at a time.
-  await expect(page.locator('edsb-equipment-bench-page')).toBeAttached();
+  await expect(page.locator('ednb-equipment-bench-page')).toBeAttached();
 
   const tab = page.getByRole('tab', { name: 'Loadout' });
   if ((await tab.count()) > 0) await tab.click();
@@ -142,7 +142,7 @@ test.describe('handing a loadout to someone else', () => {
     }
 
     const payload = dialog.getByRole('textbox', { name: 'Loadout JSON' });
-    await expect(payload).toHaveValue(/"format": "edsb\.loadout"/);
+    await expect(payload).toHaveValue(/"format": "ednb\.loadout"/);
     // Identities only: nothing the package can answer leaves the bench.
     await expect(payload).not.toHaveValue(/shieldStrength|damagePerSecond/);
 
@@ -169,7 +169,7 @@ test.describe('a loadout link this version cannot read', () => {
     // An `e.` fragment that is not a loadout this application minted.
     await page.goto('/equipment#e.notaloadoutatall');
 
-    const notice = page.locator('edsb-status-notice');
+    const notice = page.locator('ednb-status-notice');
     await expect(notice).toBeVisible();
     // Said in words a Commander can act on, never as a codec's own diagnostic,
     // and never by a journal key (FR-021).
@@ -190,7 +190,7 @@ test.describe('a loadout link this version cannot read', () => {
       location.hash = 'e.notaloadoutatall';
     });
 
-    await expect(page.locator('edsb-status-notice')).toBeVisible();
+    await expect(page.locator('ednb-status-notice')).toBeVisible();
     await expect(page.locator('.gate')).toHaveCount(0);
     await openRow(page, 'suit');
     await expect(page.locator('.item__name')).toContainText('Dominator Suit');

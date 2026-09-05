@@ -27,7 +27,7 @@ view rather than beside it, as the canvas draws, so a narrow column never has to
 
 The three columns become three tabs — `LOADOUT`, `STATS`, `MATERIALS` — and the item view becomes a
 drill-in from a ledger row, with the choosers as sheets over it. Undo and redo are on the bar, as
-the canvas draws them. The tab strip is `edsb-tab-group`, which is a size container and must be
+the canvas draws them. The tab strip is `ednb-tab-group`, which is a size container and must be
 given a rem width rather than left to size to its labels.
 
 ## What it composes from
@@ -60,9 +60,13 @@ Extended, in the design system and not locally (constitution VII):
 
 - **`saved-build-card` gains a tool identity.** One list holds builds and loadouts, so a row states
   which tool made it and summarises accordingly — a hull for one, a suit for the other.
-- **A resistance bar.** The canvas draws resistances as signed percentage bars in two groups,
-  armour and shields. The ship side states resistances as table figures and has no bar. This is one
-  new component with its own preview, in `ui/`, not a chart drawn inside the bench.
+- **A resistance bar, anchored at its midline.** The canvas draws resistances as signed percentage
+  bars in two groups, armour and shields. A bar carries a tick at the centre of its track and fills
+  from there at half the track's width: a positive resistance runs to the trailing edge in the good
+  colour, a negative one to the leading edge in the danger colour. So a −40% and a +40% are told
+  apart by where the bar starts as well as by the sign on the figure. The ship side states
+  resistances as table figures and has no bar. This is one new component with its own preview, in
+  `ui/`, not a chart drawn inside the bench.
 - **`unavailable-fact` covers "this tool does not have this stat".** Only the Energylink
   discharges and overloads and only the Profile Analyser scans and clones, so a tool's stat list is
   short and uneven; an absent stat is stated as absent rather than as a zero, through the component

@@ -141,7 +141,7 @@ async function withStockBuild(page: Page, hull = HULL): Promise<void> {
 
 /** Presses one segment of the anatomy mode strip. */
 async function openMode(page: Page, label: string): Promise<void> {
-  await page.locator('edsb-hull-anatomy .anatomy__modes button').filter({ hasText: label }).click();
+  await page.locator('ednb-hull-anatomy .anatomy__modes button').filter({ hasText: label }).click();
 }
 
 /** Selects a mount, however this width offers it. */
@@ -194,18 +194,18 @@ async function dismissLayer(page: Page): Promise<void> {
 const REACH: Record<string, (page: Page) => Promise<void>> = {
   'hull-catalogue': async (page) => {
     await page.goto('/ships');
-    await expect(page.locator('edsb-ship-catalogue-page')).toBeVisible();
+    await expect(page.locator('ednb-ship-catalogue-page')).toBeVisible();
   },
   'hull-detail': async (page) => {
     // Waited for by the screen rather than by its build action: the wide
     // composition draws no action at all, because the manifest beside it is the
     // build (001/FR-007).
     await page.goto(`/ships/${HULL}`);
-    await expect(page.locator('edsb-hull-detail-page')).toBeVisible();
+    await expect(page.locator('ednb-hull-detail-page')).toBeVisible();
   },
   'build-workspace': async (page) => {
-    await page.goto('/build');
-    await expect(page.locator('edsb-build-workspace-page')).toBeVisible();
+    await page.goto('/outfitting');
+    await expect(page.locator('ednb-build-workspace-page')).toBeVisible();
   },
   'build-library': async (page) => {
     // The library is a framed layer over the screen it was opened from, so what
@@ -250,7 +250,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await openEditor(page);
   },
   'normalisation-refusal': async (page) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await pasteImport(page, JSON.stringify(UNSUPPORTED_PARTIAL_QUALITY));
     await expect(page.getByRole('dialog', { name: /import build/i })).toContainText(
       englishMessages['slef.import.failure.normalizationUnsupported']
@@ -265,7 +265,7 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await revealStatusRail(page);
   },
   'import-layer': async (page) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await reachShellAction(page, /^import build$/i);
     await expect(page.getByRole('dialog', { name: /import build/i })).toBeVisible();
   },
@@ -281,44 +281,44 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     // is behind the anatomy strip's `STATUS` segment, so it is opened rather
     // than waited for.
     await revealStatusRail(page);
-    await expect(page.locator('edsb-build-status')).toBeVisible();
+    await expect(page.locator('ednb-build-status')).toBeVisible();
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   },
   'power-and-thermals': async (page) => {
     await withStockBuild(page);
     await openMode(page, englishMessages['anatomy.mode.power']);
-    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await expect(page.locator('ednb-power-thermals')).toBeVisible();
   },
   'defence-analysis': async (page) => {
     await withStockBuild(page);
     await openMode(page, englishMessages['anatomy.mode.defence']);
-    await expect(page.locator('edsb-defence-analysis')).toBeVisible();
+    await expect(page.locator('ednb-defence-analysis')).toBeVisible();
   },
   'offence-analysis': async (page) => {
     await withStockBuild(page);
     await openMode(page, englishMessages['anatomy.mode.offence']);
-    await expect(page.locator('edsb-offence-analysis')).toBeVisible();
+    await expect(page.locator('ednb-offence-analysis')).toBeVisible();
   },
   'drives-and-mass': async (page) => {
     await withStockBuild(page);
     await openMode(page, englishMessages['anatomy.mode.drives']);
-    await expect(page.locator('edsb-drives-mass')).toBeVisible();
+    await expect(page.locator('ednb-drives-mass')).toBeVisible();
   },
   'cost-and-materials': async (page) => {
     await withStockBuild(page);
     await revealStatusRail(page);
-    await expect(page.locator('edsb-cost-materials .cost__row').first()).toBeVisible();
+    await expect(page.locator('ednb-cost-materials .cost__row').first()).toBeVisible();
   },
   'hull-anatomy': async (page) => {
     await withStockBuild(page);
     await openMode(page, englishMessages['anatomy.mode.mounts']);
-    await expect(page.locator('edsb-hull-anatomy')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy')).toBeVisible();
   },
   'hull-anatomy-side-state': async (page) => {
     await withStockBuild(page);
     await openMode(page, englishMessages['anatomy.mode.mounts']);
     await expect(
-      page.locator('edsb-hull-anatomy .anatomy__sides, edsb-hull-anatomy'),
+      page.locator('ednb-hull-anatomy .anatomy__sides, ednb-hull-anatomy'),
     ).not.toHaveCount(0);
   },
   'application-frame': async (page) => {
@@ -326,8 +326,8 @@ const REACH: Record<string, (page: Page) => Promise<void>> = {
     await expect(page.getByRole('banner')).toBeVisible();
   },
   'feedback-host': async (page) => {
-    await page.goto('/build');
-    await expect(page.locator('edsb-announcement-outlet').first()).toBeAttached();
+    await page.goto('/outfitting');
+    await expect(page.locator('ednb-announcement-outlet').first()).toBeAttached();
   },
 };
 
@@ -419,7 +419,7 @@ async function pasteImport(page: Page, payload: string): Promise<void> {
  * would be this suite asserting against its own guess at what the Almanac does.
  */
 async function importPayload(page: Page, payload: string): Promise<void> {
-  await page.goto('/build');
+  await page.goto('/outfitting');
   await pasteImport(page, payload);
 
   // Nothing is asked before an import replaces what is on screen: since
@@ -570,7 +570,7 @@ test.describe('the one destination FR-002 requires', () => {
     // the frame, which is everything a Commander is looking at: the modal is
     // mounted beside it and closed, and counting its contents here would be
     // counting the one destination FR-002 asks for as a violation of it.
-    const capability = page.locator('edsb-app-frame');
+    const capability = page.locator('ednb-app-frame');
     await expect(capability.getByRole('link', { name: /licen[cs]e/i })).toHaveCount(0);
     await expect(capability.getByText(/Frontier Developments plc/i)).toHaveCount(0);
 
@@ -599,7 +599,7 @@ test.describe('the one destination FR-002 requires', () => {
   });
 
   test('opening help makes no request of any kind', async ({ page }) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await page.waitForLoadState('networkidle');
     await settled(page);
 
@@ -977,7 +977,7 @@ test.describe('the three destinations the modal points at', () => {
     page,
     context,
   }) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await page.waitForLoadState('networkidle');
     await settled(page);
 
@@ -1051,7 +1051,7 @@ test.describe('the three destinations the modal points at', () => {
     // And nothing about the open build, the route or this browser's stored
     // records is drawn either.
     expect(text).not.toContain(fragment.slice(1));
-    expect(text).not.toContain('edsb:');
+    expect(text).not.toContain('ednb:');
   });
 
   test('says the same thing on screen as it says to a reader', async ({ page }) => {
@@ -1171,7 +1171,7 @@ test.describe('which artifact a Commander is looking at', () => {
       englishMessages['help.maintainer'],
       englishMessages['help.source'].replace('{{source}}', englishMessages['help.source.link']),
     ]);
-    await expect(about.locator('edsb-version-facts')).toHaveCount(1);
+    await expect(about.locator('ednb-version-facts')).toHaveCount(1);
   });
 
   test('wraps long identities within the measure rather than sideways', async ({ page }) => {
@@ -1254,7 +1254,7 @@ test.describe('the floor beneath every open state', () => {
     const page = await context.newPage();
 
     try {
-      await page.goto('/build');
+      await page.goto('/outfitting');
       await expectRootLanguage(page, { lang: 'de', dir: 'ltr' });
       await reachShellAction(page, new RegExp(`^${germanMessages['help.action.label']}$`, 'i'));
 

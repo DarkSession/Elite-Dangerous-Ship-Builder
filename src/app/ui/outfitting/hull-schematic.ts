@@ -187,7 +187,7 @@ interface SchematicPlacement {
  * and the drawing fits itself into it, so nothing pans, zooms or scrolls.
  */
 @Component({
-  selector: 'edsb-hull-schematic',
+  selector: 'ednb-hull-schematic',
   imports: [ActionButton],
   templateUrl: './hull-schematic.html',
   styleUrl: './hull-schematic.scss',

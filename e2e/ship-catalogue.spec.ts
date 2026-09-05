@@ -159,7 +159,7 @@ test.describe('hull catalogue', () => {
     }));
     expect(stored.local).toEqual([]);
     // Browsing state is this tab's, and lives under exactly one owned key.
-    expect(stored.session).toEqual(['edsb:catalogue']);
+    expect(stored.session).toEqual(['ednb:catalogue']);
   });
 
   test('keeps the address a Commander followed, under a pointer that never moved', async ({

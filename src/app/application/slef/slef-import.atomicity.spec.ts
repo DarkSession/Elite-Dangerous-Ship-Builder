@@ -113,7 +113,7 @@ describe('what an import that does not happen costs', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'build', children: [] }]),
+        provideRouter([{ path: 'outfitting', children: [] }]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
       ],
@@ -189,7 +189,7 @@ describe('what an import that does not happen costs', () => {
       store.setDraft(VALID);
       const stop = replacement.addSink({
         onCommitted: () => {
-          void router.navigateByUrl('/build');
+          void router.navigateByUrl('/outfitting');
           coordinator.abandon();
         },
       });

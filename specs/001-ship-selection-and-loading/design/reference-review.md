@@ -50,7 +50,7 @@ The design file is a product visual reference. It is not application source, a g
 
 ### Link and export behavior
 
-- The mock sample `https://shipbuilder.local/b/pacifier#h=...` is noncanonical. Generated links are same-origin `/build#b.<versioned-payload>`; local save names never enter the path and build data never enters path/query.
+- The mock sample `https://shipbuilder.local/b/pacifier#h=...` is noncanonical. Generated links are same-origin `/outfitting#b.<versioned-payload>`; local save names never enter the path and build data never enters path/query.
 - The share value is selectable after copy/share failure. Encode refusal clears a stale fragment, explains the structured slot/reason and preserves feature 004's SLEF fallback.
 - SLEF export belongs to feature 004. The mock's journal and Markdown export formats are rejected by
   that accepted plan and do not expand feature 001's ownership.
@@ -91,7 +91,7 @@ Checked against the production build (`pnpm run build`), not against intent.
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `.design/` mock data or assets in the built tree | None. No file under `dist/` references `.design`, and every shipped asset is either a font, a locale catalogue or one of the 48 hull illustrations copied from the installed package.                                                                                                               |
 | Google Fonts request                             | None. `fonts.googleapis.com` and `fonts.gstatic.com` appear nowhere in the built CSS, JavaScript or HTML. Barlow, Barlow Condensed and JetBrains Mono are served same-origin from `browser/fonts/`, with system fallbacks and feature 012's licence attribution.                                    |
-| The `/b/<name>#h=…` sample link                  | Absent. `#h=` appears nowhere in the built tree. Published links are same-origin `/build#b.<payload>`, and a local save name never enters the path.                                                                                                                                                 |
+| The `/b/<name>#h=…` sample link                  | Absent. `#h=` appears nowhere in the built tree. Published links are same-origin `/outfitting#b.<payload>`, and a local save name never enters the path.                                                                                                                                            |
 | Any other origin                                 | The only absolute URLs in the built output are inside framework diagnostic text (`angular.dev`, `github.com`) and an XML namespace. Nothing is fetched from them; the end-to-end suite additionally asserts that no request during any catalogue, detail, storage or share flow leaves this origin. |
 
 ### Composition (Scenario 10, steps 1 and 2)

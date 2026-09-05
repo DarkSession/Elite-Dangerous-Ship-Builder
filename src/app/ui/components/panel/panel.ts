@@ -13,7 +13,7 @@ export type PanelElevation = 'flat' | 'raised';
  * fits the document outline it is placed into rather than imposing one.
  */
 @Component({
-  selector: 'edsb-panel',
+  selector: 'ednb-panel',
   templateUrl: './panel.html',
   styleUrl: './panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

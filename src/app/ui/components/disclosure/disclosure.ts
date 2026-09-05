@@ -14,7 +14,7 @@ import { relationId } from '../../a11y/text-equivalence';
  * saying goes in here, where a tap opens it (FR-006, FR-010).
  */
 @Component({
-  selector: 'edsb-disclosure',
+  selector: 'ednb-disclosure',
   templateUrl: './disclosure.html',
   styleUrl: './disclosure.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

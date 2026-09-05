@@ -21,7 +21,7 @@ import { GameText } from '../../../ui/components/game-text/game-text';
  * accessible name says so in words (constitution V).
  */
 @Component({
-  selector: 'edsb-suit-tools',
+  selector: 'ednb-suit-tools',
   imports: [GameText],
   templateUrl: './suit-tools.html',
   styleUrl: './suit-tools.scss',

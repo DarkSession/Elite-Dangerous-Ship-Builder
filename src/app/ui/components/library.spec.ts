@@ -161,7 +161,7 @@ describe('ResponsiveRecordList', () => {
     });
 
     expect([...element(fixture).querySelectorAll('h3')].map(textOf)).toEqual([]);
-    expect(element(fixture).querySelectorAll('edsb-saved-build-card')).toHaveLength(2);
+    expect(element(fixture).querySelectorAll('ednb-saved-build-card')).toHaveLength(2);
     expect(
       [...element(fixture).querySelectorAll('[data-record-id]')].map((row) =>
         row.getAttribute('data-record-id'),

@@ -39,7 +39,7 @@ export interface AttributeComparisonRow {
  * position.
  */
 @Component({
-  selector: 'edsb-attribute-comparison',
+  selector: 'ednb-attribute-comparison',
   imports: [UnavailableValue],
   templateUrl: './attribute-comparison.html',
   styleUrl: './attribute-comparison.scss',

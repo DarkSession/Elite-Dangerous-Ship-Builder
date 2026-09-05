@@ -14,7 +14,7 @@
         <h4 class="card__heading" [id]="shieldHeadingId">{{ shieldHeading() }}</h4>
         @if (shieldIdentity(); as identity) {
           <p class="card__identity">
-            <edsb-game-text
+            <ednb-game-text
               [text]="identity.name.text"
               [language]="identity.name.language"
               [translationState]="identity.name.translationState"
@@ -47,11 +47,11 @@
           words. No headline, no table and no source rows stand in for them: the
           package produced no shield, so neither does this.
         -->
-        <edsb-unavailable-value [label]="shieldUnavailableLabel()" />
+        <ednb-unavailable-value [label]="shieldUnavailableLabel()" />
         <ul class="issues">
           @for (issue of shieldIssues(); track issue.id) {
             <li class="issue">
-              <edsb-game-text
+              <ednb-game-text
                 [text]="issue.message.text"
                 [language]="issue.message.language"
                 [translationState]="issue.message.translationState"
@@ -64,7 +64,7 @@
       <hr class="card__rule" />
 
       @if (recoveryFacts().length > 0) {
-        <edsb-metric-group
+        <ednb-metric-group
           class="card__facts"
           [label]="recoveryLabel()"
           [metrics]="recoveryFacts()"
@@ -75,11 +75,11 @@
           read and a recovery it could not read are two answers, and either can
           arrive without the other.
         -->
-        <edsb-unavailable-value [label]="recoveryLabel()" />
+        <ednb-unavailable-value [label]="recoveryLabel()" />
         <ul class="issues">
           @for (issue of recoveryIssues(); track issue.id) {
             <li class="issue">
-              <edsb-game-text
+              <ednb-game-text
                 [text]="issue.message.text"
                 [language]="issue.message.language"
                 [translationState]="issue.message.translationState"
@@ -136,7 +136,7 @@
             @for (bank of reserve.banks; track bank.id) {
               <li class="source" [class.source--off]="bank.unpowered">
                 <span class="source__name">
-                  <edsb-module-identity-badge
+                  <ednb-module-identity-badge
                     [name]="bank.name"
                     [moduleClass]="bank.moduleClass"
                     [rating]="bank.rating"
@@ -145,7 +145,7 @@
                     @if (bank.count; as count) {
                       <span class="source__count" data-bidi-isolate>{{ count }}</span>
                     }
-                  </edsb-module-identity-badge>
+                  </ednb-module-identity-badge>
                 </span>
 
                 <!--
@@ -173,7 +173,7 @@
         <h4 class="card__heading" [id]="armourHeadingId">{{ armourHeading() }}</h4>
         @if (armourIdentity(); as identity) {
           <p class="card__identity">
-            <edsb-game-text
+            <ednb-game-text
               [text]="identity.name.text"
               [language]="identity.name.language"
               [translationState]="identity.name.translationState"
@@ -194,7 +194,7 @@
 
       <hr class="card__rule" />
 
-      <edsb-metric-group
+      <ednb-metric-group
         class="card__facts"
         [label]="armourFactsLabel()"
         [metrics]="armourFacts()"
@@ -367,7 +367,7 @@
       <li class="source">
         <span class="source__name">
           @if (row.name; as name) {
-            <edsb-module-identity-badge
+            <ednb-module-identity-badge
               [name]="name"
               [moduleClass]="row.moduleClass"
               [rating]="row.rating"
@@ -376,7 +376,7 @@
               @if (row.count; as count) {
                 <span class="source__count" data-bidi-isolate>{{ count }}</span>
               }
-            </edsb-module-identity-badge>
+            </ednb-module-identity-badge>
           } @else {
             <span class="source__role">{{ row.roleLabel }}</span>
             @if (row.count; as count) {

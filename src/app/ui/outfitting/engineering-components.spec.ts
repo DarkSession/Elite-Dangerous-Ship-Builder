@@ -298,7 +298,7 @@ describe('experimental effect menu', () => {
     // (constitution VI, FR-020). The options were always drawn this way.
     const fixture = renderMenu({ selected: 'special_corrosive_shell' });
 
-    expect(query(fixture, '.menu__value').querySelector('edsb-game-text')).not.toBeNull();
+    expect(query(fixture, '.menu__value').querySelector('ednb-game-text')).not.toBeNull();
   });
 
   it('opens a listbox whose options carry the package’s two lines', () => {

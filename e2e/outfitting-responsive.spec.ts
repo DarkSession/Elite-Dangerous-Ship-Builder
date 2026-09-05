@@ -46,7 +46,7 @@ const SHORT_VIEWPORT_REM = 30;
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -191,7 +191,7 @@ test.describe('the composition this width has room for', () => {
     // which is what makes the step above a statement about the composition
     // rather than about the observer.
     const bench = await page
-      .locator('edsb-candidate-list')
+      .locator('ednb-candidate-list')
       .first()
       .evaluate((node) => node.getBoundingClientRect().width);
     expect(await manifestOf(page)).toBe(bench / rem >= 39.875 ? 'rail' : 'accordion');
@@ -231,7 +231,7 @@ test.describe('the composition this width has room for', () => {
     // rule, and it is asserted here too so neither composition can drift into
     // the other's answer.
     const measured = await page.evaluate(() => {
-      const frame = document.querySelector('edsb-app-frame')!;
+      const frame = document.querySelector('ednb-app-frame')!;
       const columns = [
         '.outfitting__ledger-region',
         '.outfitting__centre',
@@ -388,7 +388,7 @@ test.describe('the composition this width has room for', () => {
     // same screen as it (`design/outfitting-workspace.md`, "The status rail is a
     // segment wherever it has no column").
     expect(centre).toEqual([
-      'edsb-hull-anatomy',
+      'ednb-hull-anatomy',
       ...(railIsColumn ? [] : ['outfitting__status-rail', 'outfitting__key-figures']),
       'outfitting__bench',
     ]);

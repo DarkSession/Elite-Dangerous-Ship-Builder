@@ -258,7 +258,7 @@ describe('acquisition badge', () => {
     });
 
     const item = element(fixture).querySelector('.acquisition__item')!;
-    const tooltip = item.querySelector('edsb-tooltip')!;
+    const tooltip = item.querySelector('ednb-tooltip')!;
     const mark = item.querySelector('.acquisition__route')!;
 
     // Canvas 1c gives every one of these icons a tip. It hangs on the design
@@ -451,7 +451,7 @@ describe('candidate list', () => {
 
     const mark = element(fixture).querySelector('.candidate__merc-mark')!;
 
-    expect(mark.tagName.toLowerCase()).toBe('edsb-tooltip');
+    expect(mark.tagName.toLowerCase()).toBe('ednb-tooltip');
     expect(mark.querySelector('[role="tooltip"]')?.textContent?.trim()).toBe(
       englishCatalogue['outfitting.engineering.materials.merc-coin'],
     );
@@ -614,7 +614,7 @@ describe('candidate list', () => {
       for (const cost of element(fixture).querySelectorAll('.candidate__cost')) {
         cells += 1;
         const value = cost.querySelector('.fact__value');
-        const word = cost.querySelector('edsb-unavailable-value');
+        const word = cost.querySelector('ednb-unavailable-value');
 
         // One or the other, never both and never an empty cell.
         expect(value === null).toBe(word !== null);
@@ -715,7 +715,7 @@ describe('the wide manifest', () => {
     // `MODULE`, `CLASS`, `COST`, and no damage, mass, power or weapon draw
     // (FR-024's 2026-08-25 narrowing, SC-006). `MODULE` is the step ② bar's own
     // name, because the head and the step bar are one bar.
-    expect(header.querySelectorAll('.edsb-step__name').length).toBe(1);
+    expect(header.querySelectorAll('.ednb-step__name').length).toBe(1);
     expect(header.querySelectorAll('.candidates__column').length).toBe(2);
 
     const row = query(fixture, '.candidates__pane .candidate');
@@ -733,21 +733,21 @@ describe('the wide manifest', () => {
     const { fixture } = railFixture();
     const root = element(fixture);
 
-    const steps = [...root.querySelectorAll('.edsb-step')];
+    const steps = [...root.querySelectorAll('.ednb-step')];
     expect(steps).toHaveLength(2);
-    expect(steps.map((step) => textOf(step.querySelector('.edsb-step__name')))).toEqual([
+    expect(steps.map((step) => textOf(step.querySelector('.ednb-step__name')))).toEqual([
       englishCatalogue['outfitting.family.heading'],
       englishCatalogue['outfitting.column.module'],
     ]);
 
     for (const step of steps) {
-      expect(step.querySelector('.edsb-step__number')).not.toBeNull();
-      expect(step.querySelector('.edsb-step__chevron')).not.toBeNull();
+      expect(step.querySelector('.ednb-step__number')).not.toBeNull();
+      expect(step.querySelector('.ednb-step__chevron')).not.toBeNull();
       // Either the bar itself is hidden from a reader or every decorative part
       // of it is: step ② is the column head, which is hidden whole.
       expect(
         step.getAttribute('aria-hidden') === 'true' ||
-          step.querySelector('.edsb-step__number')?.getAttribute('aria-hidden') === 'true',
+          step.querySelector('.ednb-step__number')?.getAttribute('aria-hidden') === 'true',
       ).toBe(true);
     }
   });

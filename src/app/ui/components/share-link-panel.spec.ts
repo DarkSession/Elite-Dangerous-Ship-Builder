@@ -2,7 +2,7 @@ import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { ShareLinkPanel } from './share-link-panel/share-link-panel';
 import { element, query, renderComponent, textOf } from './ui-component.spec-helpers';
 
-const URL = 'https://ships.example/build#b.abcdef';
+const URL = 'https://ships.example/outfitting#b.abcdef';
 
 describe('ShareLinkPanel', () => {
   it('shows the canonical address as selectable text', () => {
@@ -41,8 +41,8 @@ describe('ShareLinkPanel', () => {
     // The label swapped rather than a notice arriving under it, so the panel
     // does not grow a second place saying the same thing.
     expect(textOf(element(copied))).not.toContain(BUNDLED_ENGLISH['link.copy']);
-    expect(query(copied, '.share-link__actions edsb-action-button')).not.toBeNull();
-    expect(element(copied).querySelector('edsb-status-notice')).toBeNull();
+    expect(query(copied, '.share-link__actions ednb-action-button')).not.toBeNull();
+    expect(element(copied).querySelector('ednb-status-notice')).toBeNull();
   });
 
   it('says a share that did not start is not a lost link', () => {

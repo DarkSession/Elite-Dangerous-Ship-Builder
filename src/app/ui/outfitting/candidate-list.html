@@ -20,10 +20,10 @@
         and at every width, even though the ledger's own strip is a category
         strip too (`design/module-replacement.md`, "The three steps, numbered").
       -->
-      <p class="edsb-step candidates__step--rail">
-        <span class="edsb-step__number" aria-hidden="true">1</span>
-        <span class="edsb-step__name" [id]="railHeadingId">{{ familiesLabel() }}</span>
-        <span class="edsb-step__chevron" aria-hidden="true">›</span>
+      <p class="ednb-step candidates__step--rail">
+        <span class="ednb-step__number" aria-hidden="true">1</span>
+        <span class="ednb-step__name" [id]="railHeadingId">{{ familiesLabel() }}</span>
+        <span class="ednb-step__chevron" aria-hidden="true">›</span>
       </p>
 
       <!--
@@ -43,7 +43,7 @@
             (click)="revealFamily(family.familyId)"
           >
             <span class="family__name">
-              <edsb-game-text
+              <ednb-game-text
                 [text]="family.name.text"
                 [language]="family.name.language"
                 [translationState]="family.name.translationState"
@@ -63,14 +63,14 @@
         Every row restates the same labels for a reader, so the whole bar is
         decoration rather than a second announcement.
       -->
-      <div class="edsb-step candidates__columns" aria-hidden="true">
+      <div class="ednb-step candidates__columns" aria-hidden="true">
         <span class="candidates__step-lead">
-          <span class="edsb-step__number">2</span>
-          <span class="edsb-step__name">{{ moduleColumn() }}</span>
+          <span class="ednb-step__number">2</span>
+          <span class="ednb-step__name">{{ moduleColumn() }}</span>
         </span>
         <span class="candidates__column">{{ classColumn() }}</span>
         <span class="candidates__column candidates__column--figure">{{ costColumn() }}</span>
-        <span class="edsb-step__chevron">›</span>
+        <span class="ednb-step__chevron">›</span>
       </div>
 
       @if (revealedFamily(); as revealed) {
@@ -159,7 +159,7 @@
             (click)="revealFamily(family.familyId)"
           >
             <span class="family__name">
-              <edsb-game-text
+              <ednb-game-text
                 [text]="family.name.text"
                 [language]="family.name.language"
                 [translationState]="family.name.translationState"
@@ -239,7 +239,7 @@
     -->
     <span class="candidate__identity">
       <span class="candidate__name">
-        <edsb-game-text
+        <ednb-game-text
           [text]="choice.presentation.name.text"
           [language]="choice.presentation.name.language"
           [translationState]="choice.presentation.name.translationState"
@@ -257,7 +257,7 @@
         <span class="visually-hidden">{{ grade }}</span>
       }
 
-      <edsb-acquisition-badge class="candidate__badge" [labels]="choice.presentation.labels" />
+      <ednb-acquisition-badge class="candidate__badge" [labels]="choice.presentation.labels" />
     </span>
 
     <!-- The canvas's own `CLASS` column: the package's class and rating. -->
@@ -285,7 +285,7 @@
         or a column of its own.
       -->
       <span class="candidate__cost">
-        <edsb-unavailable-fact
+        <ednb-unavailable-fact
           [label]="resolved.cost.label"
           [value]="resolved.cost.value"
           [unit]="resolved.cost.unit ?? null"
@@ -306,7 +306,7 @@
               words for a reader either way, so the tip is a way to *see* what a
               reader is already told.
             -->
-            <edsb-tooltip
+            <ednb-tooltip
               class="candidate__merc-mark"
               aria-hidden="true"
               [presentational]="true"
@@ -319,7 +319,7 @@
                 width="15"
                 height="15"
               />
-            </edsb-tooltip>
+            </ednb-tooltip>
             <span class="visually-hidden">{{ mercCoinLabel() }}</span>
           </span>
         }

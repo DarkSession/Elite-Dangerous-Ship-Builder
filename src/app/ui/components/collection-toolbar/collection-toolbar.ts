@@ -33,7 +33,7 @@ export interface ToolbarSort {
  * so the chip row is removed there rather than repeating them.
  */
 @Component({
-  selector: 'edsb-collection-toolbar',
+  selector: 'ednb-collection-toolbar',
   imports: [ChoiceGroup, TextField],
   templateUrl: './collection-toolbar.html',
   styleUrl: './collection-toolbar.scss',

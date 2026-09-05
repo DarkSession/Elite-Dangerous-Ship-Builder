@@ -40,7 +40,7 @@ async function openStockBuild(
 ): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, create);
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -846,7 +846,7 @@ test.describe('package-populated fixed mounts', () => {
     // read happened after construction rather than before it. It is read as
     // state rather than as a banner: the canvas reports a problem and is silent
     // otherwise, so a healthy build draws nothing to look for.
-    await expect(page.locator('edsb-build-workspace-page')).toHaveAttribute(
+    await expect(page.locator('ednb-build-workspace-page')).toHaveAttribute(
       'data-validation',
       /valid|incomplete|invalid/,
     );
@@ -860,7 +860,7 @@ test.describe('package-populated fixed mounts', () => {
 
     const stored = await page.evaluate(() =>
       Object.keys(localStorage)
-        .filter((key) => key.startsWith('edsb:record:'))
+        .filter((key) => key.startsWith('ednb:record:'))
         .map((key) => localStorage.getItem(key) ?? '')
         .join('\n'),
     );
@@ -892,7 +892,7 @@ async function drawnCount(page: Page): Promise<number> {
   // all, and the figure is spoken instead. Either way it is one figure, read
   // from wherever this width keeps it (wave 4).
   const text = await page
-    .locator('.replacement__count, edsb-candidate-search [role="status"]')
+    .locator('.replacement__count, ednb-candidate-search [role="status"]')
     .first()
     .innerText();
   return Number(text.replace(/\D+/gu, ''));
@@ -1081,7 +1081,7 @@ test.describe('finding a replacement', () => {
       .locator('.candidate')
       .filter({ hasText: /not sold anywhere/i })
       .first()
-      .locator('edsb-tooltip')
+      .locator('ednb-tooltip')
       .first();
     await expect(gloss).toHaveCount(1);
 
@@ -1371,9 +1371,9 @@ test.describe('power and the cargo hatch', () => {
     // from. Neither has power to group, and the canvas draws no chip on one
     // (wave 4).
     await revealMount(page, 'Armour');
-    await expect(page.locator('[data-slot-key="Armour"] edsb-power-controls')).toHaveCount(0);
-    await expect(page.locator('[data-slot-key="PowerPlant"] edsb-power-controls')).toHaveCount(0);
-    await expect(page.locator('[data-slot-key="FrameShiftDrive"] edsb-power-controls')).toHaveCount(
+    await expect(page.locator('[data-slot-key="Armour"] ednb-power-controls')).toHaveCount(0);
+    await expect(page.locator('[data-slot-key="PowerPlant"] ednb-power-controls')).toHaveCount(0);
+    await expect(page.locator('[data-slot-key="FrameShiftDrive"] ednb-power-controls')).toHaveCount(
       1,
     );
   });

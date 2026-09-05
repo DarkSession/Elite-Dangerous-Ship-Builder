@@ -708,7 +708,7 @@ describe('OffenceAnalysis', () => {
       const { element, detect } = render(loadout);
 
       const asked = [weapons.mock.calls.length, capacitor.mock.calls.length] as const;
-      const geometry = element.querySelector('edsb-shot-convergence');
+      const geometry = element.querySelector('ednb-shot-convergence');
       // Where the marks sit is what moves with the range now: the 2026-08-26
       // revision withdrew the ring caption and the four cells alike, so the
       // plate itself is the reading that has to change.
@@ -742,7 +742,7 @@ describe('OffenceAnalysis', () => {
       // The panel decides whether the hull can be placed at all; the plate and
       // its four cells are the block's own, and are checked where they live.
       expect(component.convergenceGeometry()).not.toBeNull();
-      expect(element.querySelector('edsb-shot-convergence')).not.toBeNull();
+      expect(element.querySelector('ednb-shot-convergence')).not.toBeNull();
       expect(element.querySelector('.plate')).not.toBeNull();
     });
 
@@ -782,7 +782,7 @@ describe('OffenceAnalysis', () => {
       const { component, element } = render(loadout);
 
       expect(component.convergenceGeometry()).toBeNull();
-      expect(element.querySelector('edsb-shot-convergence')).toBeNull();
+      expect(element.querySelector('ednb-shot-convergence')).toBeNull();
       expect(element.querySelector('.plate')).toBeNull();
       // A sentence rather than an empty plate: a plate with no marks on it
       // reads as a build whose shots all converge, which is a different claim.

@@ -7,6 +7,7 @@ import {
 } from '@elite-dangerous-almanac/core/equipment/weapons';
 import { PERSONAL_MODIFICATIONS } from '@elite-dangerous-almanac/core/equipment/modifications';
 import { getPersonalModificationCost } from '@elite-dangerous-almanac/core/equipment/modification-costs';
+import { getSuitUpgradeCost } from '@elite-dangerous-almanac/core/equipment/upgrade-costs';
 import {
   applyPersonalModifiers,
   sumPersonalEngineeringIngredients,
@@ -131,17 +132,19 @@ describe('every suit modification on every suit it is offered for', () => {
     }
   });
 
-  it('requires exactly what the package costs it at, one application each', () => {
+  it('requires exactly what the package costs it at: the climb, and one application each', () => {
     for (const suit of SUITS) {
       for (const grade of publishedGrades(suit)) {
         const unlocked = getSuitGrade(suit, grade)!.modificationSlots;
+        const climb = getSuitUpgradeCost(suit.family, grade) ?? [];
         for (const symbol of suitRecipes) {
           const slots: ModificationSlots = [symbol, null, null, null];
 
           expect(materialRequirement(bench(suit.family, grade, slots)).ingredients).toEqual(
-            unlocked > 0
-              ? sumPersonalEngineeringIngredients(getPersonalModificationCost(symbol)!)
-              : [],
+            sumPersonalEngineeringIngredients(
+              climb,
+              ...(unlocked > 0 ? [getPersonalModificationCost(symbol)!] : []),
+            ),
           );
         }
       }

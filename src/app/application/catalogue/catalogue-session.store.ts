@@ -18,7 +18,7 @@ export interface CatalogueSessionState {
 }
 
 /** The key this store owns in `sessionStorage`, and the shape it writes. */
-const SESSION_KEY = 'edsb:catalogue';
+const SESSION_KEY = 'ednb:catalogue';
 const SESSION_VERSION = 2;
 
 /**

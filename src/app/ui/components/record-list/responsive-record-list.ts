@@ -43,7 +43,7 @@ export interface RecordColumns {
  * listing them says it is still there and still theirs.
  */
 @Component({
-  selector: 'edsb-responsive-record-list',
+  selector: 'ednb-responsive-record-list',
   imports: [SavedBuildCard, StatusNotice],
   templateUrl: './responsive-record-list.html',
   styleUrl: './responsive-record-list.scss',

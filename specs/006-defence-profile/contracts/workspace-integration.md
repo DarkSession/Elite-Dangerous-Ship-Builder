@@ -8,7 +8,7 @@
 
 ## Ownership
 
-- Feature 001 supplies one active `{ loadout, buildRevision }` and the `/build` workspace.
+- Feature 001 supplies one active `{ loadout, buildRevision }` and the `/outfitting` workspace.
 - Feature 005 owns the SYS pip allocation, in the package's own `[0, 4]` units.
 - Feature 006 produces the `Defence` projection and the two blocks that read it.
 - Feature 010 owns the anatomy mode strip and the space its plates leave.

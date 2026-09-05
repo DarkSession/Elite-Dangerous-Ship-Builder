@@ -5,7 +5,7 @@ import { openLibrary, reachShellAction } from './shell';
  * Keeping a loadout and coming back to it (US3).
  *
  * One library holds both tools' records, so this journey never leaves the
- * application's own surfaces: the bench saves, `/builds` lists what this
+ * application's own surfaces: the bench saves, the library lists what this
  * browser is holding, and opening a loadout row lands back on the bench with
  * the suit, grade, weapons and modifications it was saved with (FR-016,
  * FR-018).
@@ -62,7 +62,7 @@ async function chooseRecord(page: Page, title: string): Promise<void> {
 /** How many records this browser is holding, whatever their tool. */
 async function recordCount(page: Page): Promise<number> {
   return page.evaluate(
-    () => Object.keys(localStorage).filter((key) => key.startsWith('edsb:record:')).length,
+    () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
   );
 }
 
@@ -157,9 +157,9 @@ test.describe('a record this version cannot open', () => {
     // partial is opened and nothing is repaired (FR-019).
     await page.addInitScript(() => {
       localStorage.setItem(
-        'edsb:record:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        'ednb:record:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
         JSON.stringify({
-          format: 'edsb.local-record',
+          format: 'ednb.local-record',
           version: 2,
           tool: 'equipment',
           id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -171,7 +171,7 @@ test.describe('a record this version cannot open', () => {
           note: null,
           suitFamily: 'nonexistentsuit',
           loadout: {
-            format: 'edsb.loadout',
+            format: 'ednb.loadout',
             version: 1,
             suitFamily: 'nonexistentsuit',
             suitGrade: 1,

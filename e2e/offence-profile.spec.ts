@@ -30,10 +30,10 @@ async function openOffence(page: Page, messages = englishMessages): Promise<void
   await buildStockHull(page, messages['hullDetail.create']);
 
   await page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: messages['anatomy.mode.offence'] })
     .click();
-  await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+  await expect(page.locator('ednb-offence-analysis .offence')).toBeVisible();
 }
 
 /** Every digit in a string, so a locale's own grouping cannot change the value. */
@@ -49,7 +49,7 @@ function digits(text: string): string {
  * difference between two paints is not a mirrored diagram.
  */
 async function plateMarks(page: Page): Promise<string[]> {
-  return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
+  return page.locator('ednb-shot-convergence .plate').evaluate((plate) => {
     const box = plate.getBoundingClientRect();
     const place = (node: Element): string => {
       const mark = node.getBoundingClientRect();
@@ -115,7 +115,7 @@ async function hardpointKeys(page: Page): Promise<string[]> {
  * they sit.
  */
 async function dotPlacements(page: Page): Promise<{ left: number; top: number }[]> {
-  return page.locator('edsb-shot-convergence .plate').evaluate((plate) => {
+  return page.locator('ednb-shot-convergence .plate').evaluate((plate) => {
     // The plate's padding box, not its border box: a mark is positioned as a
     // percentage of the box its offset parent gives it, which excludes the
     // hairline border. Measuring against the border box instead puts every
@@ -148,19 +148,19 @@ async function barRows(page: Page, selector: string): Promise<[string, string][]
 /** Opens the anatomy region's `POWER` mode, where feature 005 draws the pips. */
 async function openPower(page: Page): Promise<void> {
   await page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: englishMessages['anatomy.mode.power'] })
     .click();
-  await expect(page.locator('edsb-power-thermals')).toBeVisible();
+  await expect(page.locator('ednb-power-thermals')).toBeVisible();
 }
 
 /** Returns to `OFFENCE` from whichever mode is open. */
 async function backToOffence(page: Page): Promise<void> {
   await page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: englishMessages['anatomy.mode.offence'] })
     .click();
-  await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+  await expect(page.locator('ednb-offence-analysis .offence')).toBeVisible();
 }
 
 /** Sets the WEP allocation from feature 005's own control, and waits for it. */
@@ -180,47 +180,47 @@ test.describe('opening the layer', () => {
   test('retitles the region and replaces the plates with the panel', async ({ page }) => {
     await openOffence(page);
 
-    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+    await expect(page.locator('ednb-hull-anatomy .anatomy__heading')).toHaveText(
       englishMessages['offence.heading'],
     );
     // A title and nothing under it, which is all the canvas's switching script
     // carries per mode. Canvas 1d's `OUTPUT, RANGE, CONVERGENCE` sub-line lives
     // in the mobile head map, which the desktop script never reads
     // (design/canvas-contract.md, "Where the capability lives").
-    await expect(page.locator('edsb-hull-anatomy .anatomy__title p')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__title p')).toHaveCount(0);
 
     // The plates go with the mode. The canvas's switching script hides the
     // plate container outside `mounts`, so the side selector and the legend
     // that belong to the plates leave with them.
-    await expect(page.locator('edsb-offence-analysis')).toBeVisible();
-    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__sides')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__legend')).toHaveCount(0);
+    await expect(page.locator('ednb-offence-analysis')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__plates')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__sides')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__legend')).toHaveCount(0);
   });
 
   test('leaves the mounts layer exactly as it was when the mode is closed', async ({ page }) => {
     await openOffence(page);
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.mounts'] })
       .click();
 
-    await expect(page.locator('edsb-offence-analysis')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+    await expect(page.locator('ednb-offence-analysis')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__heading')).toHaveText(
       englishMessages['anatomy.heading'],
     );
-    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__plates')).toBeVisible();
   });
 
   test('opens one dashboard at a time', async ({ page }) => {
     await openOffence(page);
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: englishMessages['anatomy.mode.power'] })
       .click();
 
-    await expect(page.locator('edsb-power-thermals')).toBeVisible();
-    await expect(page.locator('edsb-offence-analysis')).toHaveCount(0);
+    await expect(page.locator('ednb-power-thermals')).toBeVisible();
+    await expect(page.locator('ednb-offence-analysis')).toHaveCount(0);
   });
 });
 
@@ -228,7 +228,7 @@ test.describe('reading the build', () => {
   test('sets the burst total large, and names the sustained one beside it', async ({ page }) => {
     await openOffence(page);
 
-    const headline = page.locator('edsb-offence-analysis .headline');
+    const headline = page.locator('ednb-offence-analysis .headline');
     await expect(headline).toBeVisible();
 
     // Both named. The canvas's own two panels disagree about which of the two
@@ -253,7 +253,7 @@ test.describe('reading the build', () => {
     // one it does not deal has no line at all.
     // Lowered on both sides: the legend is set in the canvas's tracked mono
     // label, which uppercases in CSS, and `innerText` reports what is rendered.
-    const entries = page.locator('edsb-offence-analysis .split__entry');
+    const entries = page.locator('ednb-offence-analysis .split__entry');
     const legend = (await entries.allInnerTexts()).join(' ').toLowerCase();
     const named = (['kinetic', 'thermal', 'explosive', 'absolute'] as const).filter((type) =>
       legend.includes(englishMessages[`offence.damage.type.${type}` as const].toLowerCase()),
@@ -265,7 +265,7 @@ test.describe('reading the build', () => {
     // inside the legend. A second list of the types with a figure each is what
     // was withdrawn (`design/canvas-contract.md`, review note 7), and it would
     // show up here as a type named outside `.split__legend`.
-    const outside = await page.locator('edsb-offence-analysis').evaluate(
+    const outside = await page.locator('ednb-offence-analysis').evaluate(
       (panel, words: string[]) => {
         const legend = panel.querySelector('.split__legend');
         return words.filter((word) =>
@@ -285,8 +285,8 @@ test.describe('reading the build', () => {
   test('draws the canvas’s stacked split, and writes every segment down', async ({ page }) => {
     await openOffence(page);
 
-    const segments = page.locator('edsb-offence-analysis .split__segment');
-    const entries = page.locator('edsb-offence-analysis .split__entry');
+    const segments = page.locator('ednb-offence-analysis .split__segment');
+    const entries = page.locator('ednb-offence-analysis .split__entry');
     expect(await segments.count()).toBeGreaterThan(0);
 
     // The bar is decorative: every segment's amount and share are in the
@@ -307,7 +307,7 @@ test.describe('reading the build', () => {
   test('draws the canvas’s four range bands, weakening with distance', async ({ page }) => {
     await openOffence(page);
 
-    const bands = await barRows(page, 'edsb-offence-analysis .bars--range .bar');
+    const bands = await barRows(page, 'ednb-offence-analysis .bars--range .bar');
     expect(bands).toHaveLength(4);
     for (const [label, value] of bands) {
       expect(digits(label)).not.toBe('');
@@ -321,8 +321,8 @@ test.describe('reading the build', () => {
     // The stock Anaconda deals no unclassified damage, and the canvas draws a
     // segment only for a type that has one. A legend entry always accompanies a
     // segment, so the two counts agreeing is what says nothing was invented.
-    const segments = page.locator('edsb-offence-analysis .split__segment');
-    const entries = page.locator('edsb-offence-analysis .split__entry');
+    const segments = page.locator('ednb-offence-analysis .split__segment');
+    const entries = page.locator('ednb-offence-analysis .split__entry');
 
     await expect(entries).toHaveCount(await segments.count());
     expect((await entries.allInnerTexts()).join(' ').toLowerCase()).not.toContain(
@@ -335,7 +335,7 @@ test.describe('reading the build', () => {
 async function weaponRows(
   page: Page,
 ): Promise<{ module: string; figures: string[]; controls: number }[]> {
-  return page.locator('edsb-offence-analysis .weapon').evaluateAll((nodes) =>
+  return page.locator('ednb-offence-analysis .weapon').evaluateAll((nodes) =>
     nodes.map((node) => ({
       module: node.querySelector('.weapon__module')?.textContent?.trim() ?? '',
       figures: [...node.querySelectorAll('.weapon__figure')].map(
@@ -399,7 +399,7 @@ test.describe('inspecting the weapons', () => {
       await openOffence(page, messages);
 
       const table = await page
-        .locator('edsb-offence-analysis .weapons__table')
+        .locator('ednb-offence-analysis .weapons__table')
         .evaluate((node: HTMLElement) => {
           const head = node.querySelector('.weapons__columns');
           const rights = (row: Element): number[] =>
@@ -494,7 +494,7 @@ test.describe('inspecting the weapons', () => {
       // asserted rather than described.
       await page.setViewportSize({ width: 1920, height: 900 });
       await settled(page);
-      await expect(page.locator('edsb-offence-analysis .weapons__table')).not.toHaveCSS(
+      await expect(page.locator('ednb-offence-analysis .weapons__table')).not.toHaveCSS(
         'display',
         'grid',
       );
@@ -532,7 +532,7 @@ test.describe('inspecting the weapons', () => {
       await openOffence(page, messages);
 
       const cells = await page
-        .locator('edsb-offence-analysis .weapon__module')
+        .locator('ednb-offence-analysis .weapon__module')
         .evaluateAll((nodes) =>
           nodes.map((node) => Math.round(node.getBoundingClientRect().width)),
         );
@@ -562,7 +562,7 @@ test.describe('inspecting the weapons', () => {
         messages['offence.column.falloff'],
       ]) {
         await expect(
-          page.locator('edsb-offence-analysis .weapon').first().getByText(label, { exact: true }),
+          page.locator('ednb-offence-analysis .weapon').first().getByText(label, { exact: true }),
         ).toBeVisible();
       }
 
@@ -584,14 +584,14 @@ test.describe('inspecting the weapons', () => {
   test('leaves the row itself inert, and offers no control inside it', async ({ page }) => {
     await openOffence(page);
 
-    const before = await page.locator('edsb-slot-card [data-selected="true"]').count();
-    await page.locator('edsb-offence-analysis .weapon__module').first().click();
+    const before = await page.locator('ednb-slot-card [data-selected="true"]').count();
+    await page.locator('ednb-offence-analysis .weapon__module').first().click();
 
     // Nothing in a row navigates, discloses or selects: the canvas puts the
     // mount control in `HULL ANATOMY`, and it stays there.
-    await expect(page.locator('edsb-slot-card [data-selected="true"]')).toHaveCount(before);
+    await expect(page.locator('ednb-slot-card [data-selected="true"]')).toHaveCount(before);
     await expect(
-      page.locator('edsb-offence-analysis .weapon button, edsb-offence-analysis .weapon a'),
+      page.locator('ednb-offence-analysis .weapon button, ednb-offence-analysis .weapon a'),
     ).toHaveCount(0);
   });
 });
@@ -601,7 +601,7 @@ test.describe('the weapon row’s second line', () => {
     await openOffence(page);
 
     const lines = await page
-      .locator('edsb-offence-analysis .weapon__module .identity__code-line')
+      .locator('ednb-offence-analysis .weapon__module .identity__code-line')
       .evaluateAll((nodes) =>
         nodes.map((node) => {
           const text = (node.textContent ?? '').trim();
@@ -627,13 +627,13 @@ test.describe('the status rail', () => {
 
     // The cell is composed from the design system's metric group, which is what
     // the canvas draws all six rail cells as.
-    const cell = page.locator('edsb-offence-summary .metric');
+    const cell = page.locator('ednb-offence-summary .metric');
     await expect(cell.locator('.metric__label')).toHaveText(englishMessages['offence.rail.label']);
 
     const railFigure = digits(await cell.locator('.metric__number').innerText());
     // The panel's headline names the sustained total on the line beside its
     // large burst figure, which is the rail cell's own reading.
-    const note = digits(await page.locator('edsb-offence-analysis .headline__note').innerText());
+    const note = digits(await page.locator('ednb-offence-analysis .headline__note').innerText());
 
     // The same projection reaches both, so the two readings have to agree
     // without either being written down here.
@@ -646,10 +646,10 @@ test.describe('the status rail', () => {
   }) => {
     await openOffence(page);
 
-    await expect(page.locator('edsb-offence-summary button, edsb-offence-summary a')).toHaveCount(
+    await expect(page.locator('ednb-offence-summary button, ednb-offence-summary a')).toHaveCount(
       0,
     );
-    await expect(page.locator('edsb-offence-summary .metric__description')).toHaveCount(0);
+    await expect(page.locator('ednb-offence-summary .metric__description')).toHaveCount(0);
   });
 
   test('stands in the rail whichever mode the anatomy region has open', async ({ page }) => {
@@ -658,8 +658,8 @@ test.describe('the status rail', () => {
 
     // The rail is not the panel: it reports the build, not what is on screen
     // beside it.
-    await expect(page.locator('edsb-offence-summary .metric')).toBeVisible();
-    await expect(page.locator('edsb-offence-analysis')).toHaveCount(0);
+    await expect(page.locator('ednb-offence-summary .metric')).toBeVisible();
+    await expect(page.locator('ednb-offence-analysis')).toHaveCount(0);
   });
 });
 
@@ -669,7 +669,7 @@ test.describe('reading the firing endurance', () => {
   }) => {
     await openOffence(page);
 
-    const drawn = await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar');
+    const drawn = await barRows(page, 'ednb-offence-analysis .bars--capacitor .bar');
     // Canvas 1c's own three rows in its own order, with canvas 1d's `WEP CAP`
     // behind them.
     expect(drawn.map(([label]) => label)).toEqual([
@@ -694,12 +694,12 @@ test.describe('reading the firing endurance', () => {
   test('moves the recharge and the endurance when the allocation moves', async ({ page }) => {
     await openOffence(page);
     await setWeaponPips(page, 1);
-    const low = (await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).map(
+    const low = (await barRows(page, 'ednb-offence-analysis .bars--capacitor .bar')).map(
       ([, value]) => value,
     );
 
     await setWeaponPips(page, 4);
-    const high = (await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).map(
+    const high = (await barRows(page, 'ednb-offence-analysis .bars--capacitor .bar')).map(
       ([, value]) => value,
     );
 
@@ -720,7 +720,7 @@ test.describe('reading the firing endurance', () => {
     await openOffence(page);
     await setWeaponPips(page, 3);
 
-    const capacitor = page.locator('edsb-offence-analysis .bars--capacitor');
+    const capacitor = page.locator('ednb-offence-analysis .bars--capacitor');
     // The allocation line itself, not the block: `DRAW` reads `2.31 MJ/s` at
     // every allocation and `RECHARGE` reads `3.50 MJ/s` at this one, so a `3`
     // anywhere in the block was true whether or not the line was drawn at all.
@@ -735,7 +735,7 @@ test.describe('reading the firing endurance', () => {
     await openOffence(page);
     await setWeaponPips(page, 4);
 
-    const capacitor = page.locator('edsb-offence-analysis .bars--capacitor');
+    const capacitor = page.locator('ednb-offence-analysis .bars--capacitor');
     // The package's own sentinel never reaches the screen as a word or a
     // number; where a recharge keeps pace the block draws `∞` instead, and
     // says what it stands for beside it rather than leaving a glyph alone.
@@ -770,11 +770,11 @@ test.describe('reading the firing endurance', () => {
 
   test('reads the same capacitor whatever the dashboard’s hardpoint state is', async ({ page }) => {
     await openOffence(page);
-    const deployed = await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar');
+    const deployed = await barRows(page, 'ednb-offence-analysis .bars--capacitor .bar');
 
     await openPower(page);
     await page
-      .locator('edsb-power-thermals .power__hardpoints button')
+      .locator('ednb-power-thermals .power__hardpoints button')
       .filter({ hasText: englishMessages['power.hardpoints.retracted'] })
       .click();
     await settled(page);
@@ -782,7 +782,7 @@ test.describe('reading the firing endurance', () => {
 
     // The capacitor facade always models deployed firing, independently of what
     // feature 005's dashboard is showing (contracts/capacitor-endurance.md).
-    expect(await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).toEqual(deployed);
+    expect(await barRows(page, 'ednb-offence-analysis .bars--capacitor .bar')).toEqual(deployed);
   });
 });
 
@@ -790,7 +790,7 @@ test.describe('shot convergence', () => {
   test('draws the gunsight, and states every shot in words beside it', async ({ page }) => {
     await openOffence(page);
 
-    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const block = page.locator('ednb-offence-analysis .offence__block--convergence');
     await expect(block).toBeVisible();
 
     // The plate is decorative in full; the sentences under it are the reading.
@@ -798,7 +798,7 @@ test.describe('shot convergence', () => {
     await expect(plate).toHaveAttribute('aria-hidden', 'true');
     const shots = block.locator('.shots__entry');
     const mounts = (await hardpointKeys(page)).length;
-    const armed = await page.locator('edsb-offence-analysis .weapon').count();
+    const armed = await page.locator('ednb-offence-analysis .weapon').count();
     expect(mounts).toBeGreaterThan(armed);
 
     // Every mark on the plate is a sentence beside it, and only those: the ring
@@ -827,7 +827,7 @@ test.describe('shot convergence', () => {
     await openOffence(page);
 
     const drawn = await page
-      .locator('edsb-shot-convergence .plate')
+      .locator('ednb-shot-convergence .plate')
       .evaluate((plate: HTMLElement) => {
         const rings = [...plate.querySelectorAll('.plate__ring')].map((ring) => {
           const box = ring.getBoundingClientRect();
@@ -865,7 +865,7 @@ test.describe('shot convergence', () => {
     // `justify-self` alone it shrank to its contents and drew a *smaller* plate
     // than the unbounded block had. A `max-inline-size` with no lower bound
     // under it cannot tell those two apart.
-    const measured = await page.locator('edsb-offence-analysis').evaluate((panel) => {
+    const measured = await page.locator('ednb-offence-analysis').evaluate((panel) => {
       const box = (selector: string): { width: number; top: number; bottom: number } => {
         const rect = panel.querySelector(selector)?.getBoundingClientRect();
         return { width: rect?.width ?? 0, top: rect?.top ?? 0, bottom: rect?.bottom ?? 0 };
@@ -907,7 +907,7 @@ test.describe('shot convergence', () => {
   }) => {
     await openOffence(page);
 
-    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const block = page.locator('ednb-offence-analysis .offence__block--convergence');
     const slider = block.locator('input[type="range"]');
     const mounts = (await hardpointKeys(page)).length;
 
@@ -956,9 +956,9 @@ test.describe('shot convergence', () => {
   }) => {
     await openOffence(page);
 
-    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const block = page.locator('ednb-offence-analysis .offence__block--convergence');
     const mounts = (await hardpointKeys(page)).length;
-    const armed = await page.locator('edsb-offence-analysis .weapon').count();
+    const armed = await page.locator('ednb-offence-analysis .weapon').count();
 
     // The stock hull arms two of its hardpoints and leaves the rest empty. Where
     // a mount sits is a property of the hull rather than of what is on it, so
@@ -1041,7 +1041,7 @@ test.describe('shot convergence', () => {
   }) => {
     await openOffence(page);
 
-    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const block = page.locator('ednb-offence-analysis .offence__block--convergence');
     const dots = block.locator('.plate__dot');
 
     /**
@@ -1126,7 +1126,7 @@ test.describe('shot convergence', () => {
   test('moves the shots when the target range moves', async ({ page }) => {
     await openOffence(page);
 
-    const block = page.locator('edsb-offence-analysis .offence__block--convergence');
+    const block = page.locator('ednb-offence-analysis .offence__block--convergence');
     const before = await block.locator('.shots__entry').allInnerTexts();
 
     const slider = block.locator('input[type="range"]');
@@ -1143,13 +1143,13 @@ test.describe('shot convergence', () => {
   test('announces the range as a Commander reads it, not as a bare number', async ({ page }) => {
     await openOffence(page);
 
-    const slider = page.locator('edsb-offence-analysis input[type="range"]');
+    const slider = page.locator('ednb-offence-analysis input[type="range"]');
     const announced = await slider.getAttribute('aria-valuetext');
 
     expect(announced).not.toBeNull();
     expect(digits(announced ?? '')).not.toBe('');
     // The readout beside the control says exactly what is announced.
-    await expect(page.locator('edsb-offence-analysis .range__value')).toHaveText(announced ?? '');
+    await expect(page.locator('ednb-offence-analysis .range__value')).toHaveText(announced ?? '');
   });
 
   test('draws nothing under the plate but the range, and no dot in the boresight', async ({
@@ -1162,14 +1162,14 @@ test.describe('shot convergence', () => {
     // spread — along with the ring caption. Nothing is drawn beneath the plate
     // but the range, and every reading the cells carried is still in the
     // plate's own sentences.
-    await expect(page.locator('edsb-offence-analysis .fact')).toHaveCount(0);
-    await expect(page.locator('edsb-offence-analysis .plate__boresight')).toHaveCount(1);
+    await expect(page.locator('ednb-offence-analysis .fact')).toHaveCount(0);
+    await expect(page.locator('ednb-offence-analysis .plate__boresight')).toHaveCount(1);
     // The canvas's filled dot at the boresight's centre is withdrawn: on a
     // plate whose marks are dots it read as a shot landing dead on the axis.
-    await expect(page.locator('edsb-offence-analysis .plate__boresight-centre')).toHaveCount(0);
+    await expect(page.locator('ednb-offence-analysis .plate__boresight-centre')).toHaveCount(0);
 
     const stated = await page
-      .locator('edsb-offence-analysis .shots__entry')
+      .locator('ednb-offence-analysis .shots__entry')
       .evaluateAll((entries) => entries.map((entry) => entry.textContent?.trim() ?? ''));
     expect(stated.length).toBeGreaterThan(0);
     for (const sentence of stated) {
@@ -1180,7 +1180,7 @@ test.describe('shot convergence', () => {
     // stand beside each dot are withdrawn (2026-08-27), so every word about
     // this diagram is in the sentences beside it.
     const drawn = await page
-      .locator('edsb-offence-analysis .plate')
+      .locator('ednb-offence-analysis .plate')
       .evaluate((plate) => (plate.textContent ?? '').trim());
     expect(drawn).toBe('');
   });
@@ -1190,9 +1190,9 @@ test.describe('shot convergence', () => {
 async function everyFigure(page: Page): Promise<string[]> {
   return page
     .locator(
-      'edsb-offence-analysis .headline__value, edsb-offence-analysis .headline__note, ' +
-        'edsb-offence-analysis .weapon__figure, edsb-offence-analysis .split__entry, ' +
-        'edsb-offence-analysis .bar__value',
+      'ednb-offence-analysis .headline__value, ednb-offence-analysis .headline__note, ' +
+        'ednb-offence-analysis .weapon__figure, ednb-offence-analysis .split__entry, ' +
+        'ednb-offence-analysis .bar__value',
     )
     .evaluateAll((nodes) => nodes.map((node) => (node.textContent ?? '').trim()));
 }
@@ -1209,8 +1209,8 @@ test.describe('the units on the screen', () => {
     // its own content turns one into the other, which is a different unit.
     const rendered = await page
       .locator(
-        'edsb-offence-analysis .bar__label, edsb-offence-analysis .bar__value, ' +
-          'edsb-offence-analysis .range__scale span, edsb-offence-analysis .range__value',
+        'ednb-offence-analysis .bar__label, ednb-offence-analysis .bar__value, ' +
+          'ednb-offence-analysis .range__scale span, ednb-offence-analysis .range__value',
       )
       .evaluateAll((nodes) =>
         nodes.map((node) => {
@@ -1237,7 +1237,7 @@ test.describe('the units on the screen', () => {
     // `RECHARGE` and `FULL FIRE` in the same 9px mono at the same tracking as
     // `500 m` beside them, and uppercases only the words.
     const capacitor = await page
-      .locator('edsb-offence-analysis .bars--capacitor .bar__label')
+      .locator('ednb-offence-analysis .bars--capacitor .bar__label')
       .evaluateAll((nodes) =>
         nodes.map((node) => {
           const text = (node.textContent ?? '').trim();
@@ -1262,14 +1262,14 @@ test.describe('what the panel does not touch', () => {
     // value captured before then would make that arrival look like a change
     // this capability made. Only this test reads the URL, so only this test
     // waits for it.
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     const fragment = new URL(page.url()).hash;
     const entries = await page.evaluate(() => window.history.length);
 
     // Both of this screen's controls: the mode that opened the layer, and the
     // range the plate is drawn at.
-    await page.locator('edsb-offence-analysis input[type="range"]').fill('2000');
-    await expect(page.locator('edsb-offence-analysis .range__value')).not.toHaveText('');
+    await page.locator('ednb-offence-analysis input[type="range"]').fill('2000');
+    await expect(page.locator('ednb-offence-analysis .range__value')).not.toHaveText('');
 
     expect(new URL(page.url()).hash).toBe(fragment);
     expect(await page.evaluate(() => window.history.length)).toBe(entries);
@@ -1316,10 +1316,10 @@ test.describe('the conditions that break layouts', () => {
 
     // German is the longer catalogue, and the labels are what grow. Every
     // figure is still drawn, and the panel still says the same things.
-    const bands = await barRows(page, 'edsb-offence-analysis .bars--range .bar');
+    const bands = await barRows(page, 'ednb-offence-analysis .bars--range .bar');
     expect(bands).toHaveLength(4);
-    expect(await barRows(page, 'edsb-offence-analysis .bars--capacitor .bar')).toHaveLength(4);
-    await expect(page.locator('edsb-offence-analysis .offence__block--convergence')).toContainText(
+    expect(await barRows(page, 'ednb-offence-analysis .bars--capacitor .bar')).toHaveLength(4);
+    await expect(page.locator('ednb-offence-analysis .offence__block--convergence')).toContainText(
       germanMessages['offence.convergence.heading'],
     );
     await expectEveryBlock(page);
@@ -1360,15 +1360,15 @@ test.describe('the conditions that break layouts', () => {
     // The bars and the plate are the parts a transition could have been
     // carrying, so the figures and the sentences beside them are what is read
     // back.
-    expect(await barRows(page, 'edsb-offence-analysis .bars--range .bar')).toHaveLength(4);
-    expect(await page.locator('edsb-offence-analysis .shots__entry').count()).toBeGreaterThan(0);
+    expect(await barRows(page, 'ednb-offence-analysis .bars--range .bar')).toHaveLength(4);
+    expect(await page.locator('ednb-offence-analysis .shots__entry').count()).toBeGreaterThan(0);
     await page.emulateMedia({ reducedMotion: null });
   });
 });
 
 /** The three blocks the canvas draws, each still carrying its own content. */
 async function expectEveryBlock(page: Page): Promise<void> {
-  const panel = page.locator('edsb-offence-analysis');
+  const panel = page.locator('ednb-offence-analysis');
   expect(await panel.locator('.weapon').count()).toBeGreaterThan(0);
   await expect(panel.locator('.bars--range .bar')).toHaveCount(4);
   await expect(panel.locator('.bars--capacitor .bar')).toHaveCount(4);
@@ -1387,21 +1387,21 @@ test.describe('accessibility', () => {
     await openOffence(page);
     await sweepOutfittingState(page, testInfo, 'offence-analysis/near');
 
-    await page.locator('edsb-offence-analysis input[type="range"]').fill('2000');
+    await page.locator('ednb-offence-analysis input[type="range"]').fill('2000');
     await settled(page);
     await sweepOutfittingState(page, testInfo, 'offence-analysis/far');
   });
 
   test('says everything in words, and never only in a bar or a colour', async ({ page }) => {
     await openOffence(page);
-    const panel = page.locator('edsb-offence-analysis');
+    const panel = page.locator('ednb-offence-analysis');
 
     // Every bar row states its own reading beside the track, and every segment
     // of the stacked bar has a legend entry. A length and a colour are not a
     // reading (spec.md FR-009). Words rather than digits: `FULL FIRE` answers
     // with `∞` and the phrase it stands for when the recharge keeps pace, and
     // with a sentence when the capacitor drains immediately.
-    for (const [label, value] of await barRows(page, 'edsb-offence-analysis .bar')) {
+    for (const [label, value] of await barRows(page, 'ednb-offence-analysis .bar')) {
       expect(label).not.toBe('');
       expect(value).not.toBe('');
     }

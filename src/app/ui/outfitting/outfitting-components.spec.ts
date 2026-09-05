@@ -457,13 +457,13 @@ describe('slot card', () => {
       }),
       capabilities: EVERY_CAPABILITY,
     });
-    expect(element(armour).querySelector('edsb-power-controls')).toBeNull();
+    expect(element(armour).querySelector('ednb-power-controls')).toBeNull();
 
     const drawing = renderComponent(SlotCard, {
       slot: slotView(),
       capabilities: EVERY_CAPABILITY,
     });
-    expect(drawing.nativeElement.querySelector('edsb-power-controls')).not.toBeNull();
+    expect(drawing.nativeElement.querySelector('ednb-power-controls')).not.toBeNull();
   });
 
   it('keeps the engineered mark’s place on a row that carries none', () => {

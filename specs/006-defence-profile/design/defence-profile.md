@@ -1,6 +1,6 @@
 # Defence Profile
 
-**Route context**: complete capability inside `/build`; no new route
+**Route context**: complete capability inside `/outfitting`; no new route
 
 **Reference context**: `.design/Ship Builder.dc.html` canvas 1c wide Defence Analysis and canvas 1d
 mobile Defence mode

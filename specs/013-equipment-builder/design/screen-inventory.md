@@ -5,18 +5,18 @@ no chrome: the shared shell surrounds it as it surrounds the ship tool.
 
 ## Inventory
 
-| Surface               | Kind                     | Appears at                                   | Purpose                                                                   |
-| --------------------- | ------------------------ | -------------------------------------------- | ------------------------------------------------------------------------- |
-| Tool bar entry        | shared shell             | every screen                                 | names and opens the bench; the registry gains one row                     |
-| Loadout ledger        | region                   | `/equipment`, wide; `LOADOUT` tab, compact   | the suit and every mount, each with its modification count                |
-| Item view             | region                   | `/equipment`, wide; a drill-in, compact      | the selected item: identity, grade ladder, attributes, modification slots |
-| Weapon chooser        | layer over the item view | both                                         | the weapons the selected mount accepts                                    |
-| Modification chooser  | layer over the item view | both                                         | the recipes the selected slot accepts, and clearing it                    |
-| Commander stats       | region                   | `/equipment`, wide; `STATS` tab, compact     | shields, resistances and firepower for the assembled Commander            |
-| Material requirements | region                   | `/equipment`, wide; `MATERIALS` tab, compact | the micro-resources the fitted modifications require                      |
-| Save dialog           | feature 001              | over the bench                               | name, note, and the overwrite-or-keep-both question                       |
-| Saved records         | feature 001              | `/builds`                                    | one list holding builds and loadouts, each row naming its tool            |
-| Export dialog         | feature 004 pattern      | over the bench                               | share link, loadout JSON, readable summary                                |
+| Surface               | Kind                     | Appears at                                   | Purpose                                                                                 |
+| --------------------- | ------------------------ | -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Tool bar entry        | shared shell             | every screen                                 | names and opens the bench; the registry gains one row                                   |
+| Loadout ledger        | region                   | `/equipment`, wide; `LOADOUT` tab, compact   | the suit and every mount, each with its modification count                              |
+| Item view             | region                   | `/equipment`, wide; a drill-in, compact      | the selected item: identity, grade ladder, attributes, modification slots               |
+| Weapon chooser        | layer over the item view | both                                         | the weapons the selected mount accepts                                                  |
+| Modification chooser  | layer over the item view | both                                         | the recipes the selected slot accepts, and clearing it                                  |
+| Commander stats       | region                   | `/equipment`, wide; `STATS` tab, compact     | shields, resistances and firepower for the assembled Commander                          |
+| Material requirements | region                   | `/equipment`, wide; `MATERIALS` tab, compact | the micro-resources the loadout requires: each grade climb and each fitted modification |
+| Save dialog           | feature 001              | over the bench                               | name, note, and the overwrite-or-keep-both question                                     |
+| Saved records         | feature 001              | no address; a layer                          | one list holding builds and loadouts, each row naming its tool                          |
+| Export dialog         | feature 004 pattern      | over the bench                               | share link, loadout JSON, readable summary                                              |
 
 The `SUIT TOOLS` rows sit inside the ledger and are never selectable: tools are fitted to every
 suit and cannot be swapped, so the region states what the suit carries and the item view never
@@ -47,11 +47,11 @@ shell, feature 001's library and feature 012's modal own all four. Recorded in
 | FR-011      | —                         | locked-slot state                               | locked excluded                        | —                           | locked content round-trips |
 | FR-012      | —                         | clear slot                                      | —                                      | —                           | —                          |
 | FR-013      | —                         | —                                               | the material list                      | —                           | —                          |
-| FR-014      | —                         | —                                               | one application each; no upgrade cost  | —                           | —                          |
+| FR-014      | —                         | the grade ladder                                | each climb, one application each       | —                           | —                          |
 | FR-015      | —                         | the resolved recipe                             | its own materials                      | —                           | `WEAPON_MODIFICATION_SETS` |
 | FR-016      | —                         | —                                               | —                                      | save, saved records         | record envelope            |
 | FR-017      | —                         | —                                               | —                                      | overwrite or keep both      | —                          |
-| FR-018      | —                         | —                                               | —                                      | —                           | `edsb:record:<uuid>`       |
+| FR-018      | —                         | —                                               | —                                      | —                           | `ednb:record:<uuid>`       |
 | FR-018a     | —                         | —                                               | —                                      | —                           | held and locked carried    |
 | FR-019      | —                         | —                                               | —                                      | unopenable row, left intact | migrate-on-open            |
 | FR-020      | —                         | —                                               | —                                      | the export dialog's three   | encoder                    |

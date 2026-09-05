@@ -20,7 +20,7 @@ import { TextareaField } from '../../../ui/components/textarea-field/textarea-fi
  * events it fires (`contracts/routes-and-ui.md`, "Intent boundary").
  */
 @Component({
-  selector: 'edsb-slef-export-layer',
+  selector: 'ednb-slef-export-layer',
   imports: [ActionButton, StatusNotice, TextareaField],
   templateUrl: './export-build-layer.html',
   styleUrl: './export-build-layer.scss',

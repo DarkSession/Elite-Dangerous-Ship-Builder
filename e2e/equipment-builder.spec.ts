@@ -27,14 +27,14 @@ test.describe('the bench has an address of its own', () => {
     await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
 
     // How a Commander arrives from outside: a shared loadout is `/equipment#e.…`
-    // and a shared build is `/build#s.…`. The router reports the fragment as
+    // and a shared build is `/outfitting#b.…`. The router reports the fragment as
     // part of the address, and matched whole it named no tool at all — which is
     // the one screen where a Commander most needs the bar to say where they are
     // (Commander request 2026-09-04).
     await page.goto('/equipment#e.notaloadout');
     await expect(page.locator('.frame__tool--current')).toHaveText('Equipment Builder');
 
-    await page.goto('/build#s.notabuild');
+    await page.goto('/outfitting#b.notabuild');
     await expect(page.locator('.frame__tool--current')).toHaveText('Ship Builder');
   });
 });
@@ -109,7 +109,7 @@ async function openRow(page: Page, target: string): Promise<void> {
   // projects (CI, 2026-09-04). The page's own host is what says it has booted:
   // no region is drawn in every arrangement, and the compact bench draws one
   // tab at a time.
-  await expect(page.locator('edsb-equipment-bench-page')).toBeAttached();
+  await expect(page.locator('ednb-equipment-bench-page')).toBeAttached();
 
   await showTab(page, 'Loadout');
   if ((await page.locator('.bench__region--loadout').count()) === 0) {
@@ -154,7 +154,47 @@ test.describe('assembling a loadout', () => {
     await expect(page.locator('.bench__region--stats .metric')).toHaveCount(2);
     // The canvas's `ARMOUR` block over `SHIELDS`, both drawn from the one
     // published set (FR-006).
-    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(8);
+    await expect(page.locator('.bench__region--stats ednb-resistance-bar')).toHaveCount(8);
+  });
+
+  test('fills every resistance bar from its midline, the way it reads', async ({ page }) => {
+    // The 2026-09-04 canvas revision anchors a bar at the centre of its track:
+    // a positive resistance runs to the trailing edge and a negative one to the
+    // leading edge, so the two never draw alike (013 design/equipment-bench.md).
+    await chooseSuit(page, 'Dominator Suit');
+    await showTab(page, 'Stats');
+    await expect(page.locator('.bench__region--stats ednb-resistance-bar').first()).toBeVisible();
+
+    const bars = await page
+      .locator('.bench__region--stats ednb-resistance-bar')
+      .evaluateAll((elements) =>
+        elements.map((bar) => {
+          const track = bar.querySelector('.resistance__track')!.getBoundingClientRect();
+          const fill = bar.querySelector('.resistance__fill')!.getBoundingClientRect();
+          const figure = bar.querySelector('.resistance__value')!.textContent ?? '';
+          const middle = (track.left + track.right) / 2;
+          return {
+            // A minus sign of either kind: the figure is formatted for the
+            // locale, and `Intl` writes one of the two.
+            negative: /^[-\u2212]/.test(figure.trim()),
+            fromMiddle: Math.abs(
+              (/^[-\u2212]/.test(figure.trim()) ? fill.right : fill.left) - middle,
+            ),
+            // Which side of the midline the fill actually runs.
+            towardsLeading: fill.right <= middle + 1,
+            towardsTrailing: fill.left >= middle - 1,
+            // Half scale: a bar can reach one end of the track and no further.
+            withinHalf: fill.width <= track.width / 2 + 1,
+          };
+        }),
+      );
+
+    expect(bars.length).toBe(8);
+    for (const bar of bars) {
+      expect(bar.fromMiddle).toBeLessThanOrEqual(1);
+      expect(bar.withinHalf).toBe(true);
+      expect(bar.negative ? bar.towardsLeading : bar.towardsTrailing).toBe(true);
+    }
   });
 
   test('restates the shields when the suit’s grade is raised', async ({ page }) => {
@@ -233,6 +273,19 @@ test.describe('a mount the worn suit does not carry', () => {
  * when the grade that opened its slot comes back (FR-011, FR-014).
  */
 
+/**
+ * Sets the open item's grade, and waits for the ladder to say it took.
+ *
+ * The cells re-render on every choice, so a read taken straight after the click
+ * can be a read of the grade before it — which is a total that is right for a
+ * loadout the bench is no longer showing.
+ */
+async function setGrade(page: Page, position: number): Promise<void> {
+  const cell = position < 0 ? page.locator('.grade').last() : page.locator('.grade').nth(position);
+  await cell.click();
+  await expect(cell).toHaveAttribute('data-selected', 'true');
+}
+
 /** Opens one of the selected item's four modification slots. */
 async function openSlot(page: Page, slot: number): Promise<void> {
   await page.locator(`.slots__slot[data-slot="${slot}"]`).click();
@@ -245,18 +298,58 @@ async function materials(page: Page): Promise<Locator> {
   return page.locator('.bench__region--materials');
 }
 
+/** The total under the list, which is what changes as a loadout changes. */
+async function materialTotal(page: Page): Promise<string> {
+  const region = await materials(page);
+  const summary = region.locator('.materials__summary');
+  await expect(summary).toBeVisible();
+  return ((await summary.textContent()) ?? '').trim();
+}
+
+/**
+ * Waits for the total to be, or to stop being, one reading.
+ *
+ * A retrying assertion rather than a read: the list is already drawn before and
+ * after a choice, so nothing else in the region changes state to wait on, and a
+ * bare read can be taken before the frame that answers the click.
+ */
+async function expectTotal(page: Page, total: string, changed = false): Promise<void> {
+  const summary = (await materials(page)).locator('.materials__summary');
+  if (changed) {
+    await expect(summary).not.toHaveText(total);
+    return;
+  }
+  await expect(summary).toHaveText(total);
+}
+
+test.describe('what a loadout asks for', () => {
+  test('says there is nothing to gather for a loadout that asks for nothing', async ({ page }) => {
+    // A suit arrives at its lowest grade with nothing fitted, so there is no
+    // climb and no application to pay for. The words are drawn rather than an
+    // empty list (FR-013).
+    await openBench(page);
+    await chooseSuit(page, 'Dominator Suit');
+
+    await expect((await materials(page)).locator('.materials__empty')).toBeVisible();
+  });
+});
+
 test.describe('fitting modifications', () => {
   test.beforeEach(async ({ page }) => {
     await openBench(page);
     await chooseSuit(page, 'Dominator Suit');
     await openRow(page, 'suit');
-    await page.locator('.grade').last().click();
+    await setGrade(page, -1);
   });
 
   test('fits a modification, counts its materials, and gives them back on removal', async ({
     page,
   }) => {
-    await expect((await materials(page)).locator('.materials__empty')).toBeVisible();
+    // The suit is at grade 5, so the list already carries the climb to it: the
+    // requirement covers what a loadout costs to reach, not the modifications
+    // alone (FR-014).
+    const climb = await materialTotal(page);
+    expect(climb).not.toBe('');
 
     await openRow(page, 'suit');
     await openSlot(page, 0);
@@ -268,14 +361,14 @@ test.describe('fitting modifications', () => {
     await expect(page.locator('.slots__slot[data-slot="0"]')).toContainText(fitted);
     const listed = await materials(page);
     await expect(listed.locator('.materials__row').first()).toBeVisible();
-    await expect(listed.locator('.materials__summary')).toBeVisible();
+    await expectTotal(page, climb, true);
 
     // Cleared from the chooser rather than from a control that appears on hover.
     await openRow(page, 'suit');
     await openSlot(page, 0);
     await page.locator('.chooser__clear').click();
 
-    await expect((await materials(page)).locator('.materials__empty')).toBeVisible();
+    await expectTotal(page, climb);
   });
 
   test('does not offer a recipe another slot already holds (FR-009)', async ({ page }) => {
@@ -302,30 +395,39 @@ test.describe('a slot the grade no longer opens', () => {
   }) => {
     await openBench(page);
     await chooseSuit(page, 'Dominator Suit');
+
+    // The climb to grade 2 with nothing fitted, which is what the total should
+    // come back to once the fourth slot is locked again.
     await openRow(page, 'suit');
-    await page.locator('.grade').last().click();
+    await setGrade(page, 1);
+    const grade2 = await materialTotal(page);
+
+    await openRow(page, 'suit');
+    await setGrade(page, -1);
+    const grade5 = await materialTotal(page);
 
     await openRow(page, 'suit');
     await openSlot(page, 3);
     const held = (await choices(page).first().locator('.choice__name').textContent())?.trim() ?? '';
     await choices(page).first().click();
 
-    await expect((await materials(page)).locator('.materials__row').first()).toBeVisible();
+    await expectTotal(page, grade5, true);
+    const fitted = await materialTotal(page);
 
     // Grade 2 closes the fourth slot.
     await openRow(page, 'suit');
-    await page.locator('.grade').nth(1).click();
+    await setGrade(page, 1);
 
     const slot = page.locator('.slots__slot[data-slot="3"]');
     await expect(slot).toHaveAttribute('aria-disabled', 'true');
     await expect(slot).toContainText(held);
-    await expect((await materials(page)).locator('.materials__empty')).toBeVisible();
+    await expectTotal(page, grade2);
 
     // And back at grade 5 it is fitted again, uncleared.
     await openRow(page, 'suit');
-    await page.locator('.grade').last().click();
+    await setGrade(page, -1);
 
     await expect(page.locator('.slots__slot[data-slot="3"]')).toContainText(held);
-    await expect((await materials(page)).locator('.materials__row').first()).toBeVisible();
+    await expectTotal(page, fitted);
   });
 });

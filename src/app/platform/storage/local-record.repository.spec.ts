@@ -50,7 +50,7 @@ describe('LocalRecordRepository', () => {
 
     expect([...storage.entries.keys()]).toEqual([recordKey('r1')]);
     expect(JSON.parse(storage.entries.get(recordKey('r1'))!)).toMatchObject({
-      format: 'edsb.local-record',
+      format: 'ednb.local-record',
       id: 'r1',
     });
   });

@@ -22,7 +22,7 @@
       <ul class="records__list">
         @for (build of builds(); track build.id) {
           <li [attr.data-record-id]="build.id">
-            <edsb-saved-build-card
+            <ednb-saved-build-card
               [build]="build"
               [chosen]="build.id === chosen()"
               (chose)="chose.emit($event)"
@@ -37,7 +37,7 @@
           <ul class="records__list">
             @for (record of unavailable(); track record.id) {
               <li [attr.data-record-id]="record.id">
-                <edsb-status-notice
+                <ednb-status-notice
                   tone="warning"
                   [message]="record.explanation"
                   [detail]="record.detail"

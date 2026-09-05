@@ -17,7 +17,7 @@ Before feature acceptance, confirm:
 
 - the installed `@elite-dangerous-almanac/core` exposes the four defence facade methods, structured
   calculation issues, hull hardness and leaf i18n helpers;
-- feature 001 supplies `/build` and one active loadout/revision;
+- feature 001 supplies `/outfitting` and one active loadout/revision;
 - feature 005 supplies the SYS allocation, already in the package's `[0, 4]` units;
 - feature 010 supplies the anatomy mode strip and the space its plates leave;
 - feature 011 enables strict compilation, shared UI/i18n, five layouts in Chromium and Firefox and

@@ -54,7 +54,7 @@ describe('ExportLoadoutDialog', () => {
 
     expect(field?.readOnly).toBe(true);
     const payload = JSON.parse(field?.value ?? '{}') as Record<string, unknown>;
-    expect(payload['format']).toBe('edsb.loadout');
+    expect(payload['format']).toBe('ednb.loadout');
     expect(payload['suitFamily']).toBe('tacticalsuit');
     expect(Object.keys(payload)).not.toContain('shieldStrength');
   });

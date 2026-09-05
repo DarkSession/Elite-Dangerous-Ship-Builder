@@ -239,6 +239,11 @@
   // that — so they are decorative here and are never a control's only boundary.
   --ednb-border-decorative: var(--ednb-palette-hair);
   --ednb-border-decorative-strong: var(--ednb-palette-ink-a18);
+  // The tick that marks zero on a bar that fills either way. It is the one mark
+  // a reader looks for on such a bar, so it takes the step above the decorative
+  // hairlines: the equipment canvas draws it at ink 0.28 and 0.30 is the
+  // audited step (013 design/equipment-bench.md).
+  --ednb-border-midline: var(--ednb-palette-ink-a30);
   --ednb-border-field: var(--ednb-palette-amber-a22);
   --ednb-border-control: var(--ednb-palette-amber-a40);
   --ednb-border-control-quiet: var(--ednb-palette-amber-a35);
@@ -569,7 +574,7 @@
 //
 // Everything derived from that height has to be derived again beside it, since
 // a custom property substitutes its own `var()`s where it is declared.
-edsb-app-frame {
+ednb-app-frame {
   @include bar-derived;
 }
 
@@ -588,6 +593,6 @@ edsb-app-frame {
 // measurement, not the decision — and while it is released it states the same
 // nothing this rule does, because an inline value outranks a rule and the two
 // may not disagree.
-edsb-app-frame.frame--released {
+ednb-app-frame.frame--released {
   --ednb-layout-bar-height: 0px;
 }

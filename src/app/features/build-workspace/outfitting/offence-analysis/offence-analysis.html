@@ -91,7 +91,7 @@
                     same way in this panel as it does in the mount it came from.
                   -->
                   <p class="weapon__module">
-                    <edsb-module-identity-badge
+                    <ednb-module-identity-badge
                       class="weapon__identity"
                       [compact]="true"
                       [name]="row.name"
@@ -269,7 +269,7 @@
       </div>
 
       @if (convergenceGeometry(); as geometry) {
-        <edsb-shot-convergence [geometry]="geometry" [selectedSlot]="selectedSlot()" />
+        <ednb-shot-convergence [geometry]="geometry" [selectedSlot]="selectedSlot()" />
       } @else {
         <!--
           No gunsight for this hull, said rather than drawn as an empty plate:

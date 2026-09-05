@@ -11,8 +11,8 @@ offers the tools it carries, and closes with the notice attached to the material
 | From                   | What                                                                  |
 | ---------------------- | --------------------------------------------------------------------- |
 | the shell (`app.ts`)   | the tool bar and the action row, unchanged and unaware of this screen |
-| `edsb-tool-card` (new) | one per tool                                                          |
-| `edsb-legal-excerpt`   | the attribution band                                                  |
+| `ednb-tool-card` (new) | one per tool                                                          |
+| `ednb-legal-excerpt`   | the attribution band                                                  |
 | the token layer        | every colour, size, tracking and gap. Nothing is hard-coded           |
 | `AppNavigation`        | `catalogue()`, the tools with their copy                              |
 | `helpManifest`         | `disclaimer.exactText` and `disclaimer.language`                      |
@@ -49,7 +49,7 @@ arrive. It is still declared:
 | error    | not applicable: nothing can fail                                                                      |
 | disabled | not applicable: the screen has no controls of its own                                                 |
 
-`edsb-tool-card`'s own preview declaration carries the five states the component contract
+`ednb-tool-card`'s own preview declaration carries the five states the component contract
 asks for, with a machine-readable reason for the ones its inputs cannot represent.
 
 ## Behaviour

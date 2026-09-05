@@ -1,4 +1,4 @@
-<edsb-layer
+<ednb-layer
   [title]="title()"
   [open]="open()"
   [dismissLabel]="dismissLabel()"
@@ -16,7 +16,7 @@
     anyone reading the group aloud.
   -->
   <div class="export-dialog">
-    <edsb-choice-group
+    <ednb-choice-group
       class="export-dialog__modes"
       layout="cards"
       [legend]="modeLegend()"
@@ -28,14 +28,14 @@
 
     <div class="export-dialog__content">
       @if (selectedMode() === 'slef') {
-        <edsb-slef-export-layer
+        <ednb-slef-export-layer
           [view]="slef.exportView()"
           (copyRequested)="slef.copy()"
           (downloadRequested)="slef.download()"
           (shareRequested)="slef.share()"
         />
       } @else {
-        <edsb-share-link-panel
+        <ednb-share-link-panel
           [state]="link.state()"
           [url]="link.url()"
           [refusal]="link.refusal()"
@@ -50,4 +50,4 @@
       }
     </div>
   </div>
-</edsb-layer>
+</ednb-layer>

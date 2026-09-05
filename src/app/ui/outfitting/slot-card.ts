@@ -42,7 +42,7 @@ export type SlotCardIntent =
  * `OVERCHARGED G5` (FR-010 of feature 011).
  */
 @Component({
-  selector: 'edsb-slot-card',
+  selector: 'ednb-slot-card',
   imports: [AcquisitionBadge, ModuleIdentityBadge, PowerControls],
   templateUrl: './slot-card.html',
   styleUrl: './slot-card.scss',

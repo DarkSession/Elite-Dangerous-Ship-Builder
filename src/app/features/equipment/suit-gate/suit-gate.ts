@@ -28,7 +28,7 @@ import { GradeSelector } from '../../../ui/outfitting/grade-selector';
  * ladder that does nothing.
  */
 @Component({
-  selector: 'edsb-suit-gate',
+  selector: 'ednb-suit-gate',
   imports: [ChoiceList, GradeSelector],
   templateUrl: './suit-gate.html',
   styleUrl: './suit-gate.scss',

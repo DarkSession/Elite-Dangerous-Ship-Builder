@@ -57,7 +57,7 @@ export type ReplacementState = CandidateStatus | 'notReplaceable';
  * refused anyway — after they had been offered it.
  */
 @Component({
-  selector: 'edsb-module-replacement',
+  selector: 'ednb-module-replacement',
   imports: [CandidateList, CandidateSearch, Layer, NgTemplateOutlet],
   templateUrl: './module-replacement.html',
   styleUrl: './module-replacement.scss',

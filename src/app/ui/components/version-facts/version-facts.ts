@@ -32,7 +32,7 @@ export interface VersionFact {
  * announces between every pair of them.
  */
 @Component({
-  selector: 'edsb-version-facts',
+  selector: 'ednb-version-facts',
   templateUrl: './version-facts.html',
   styleUrl: './version-facts.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

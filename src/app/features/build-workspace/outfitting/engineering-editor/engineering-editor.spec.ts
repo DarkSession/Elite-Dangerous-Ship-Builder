@@ -324,10 +324,10 @@ describe('engineering editor surface', () => {
       // The bar the family rail and the module pane also carry, third in the
       // strip (`design/module-replacement.md`, "The three steps, numbered").
       const step = host.querySelector('.engineering__step');
-      expect(step?.querySelector('.edsb-step__name')?.textContent?.trim()).toBe(
+      expect(step?.querySelector('.ednb-step__name')?.textContent?.trim()).toBe(
         BUNDLED_ENGLISH['outfitting.engineering.heading'],
       );
-      expect(step?.querySelector('.edsb-step__number')?.getAttribute('aria-hidden')).toBe('true');
+      expect(step?.querySelector('.ednb-step__number')?.getAttribute('aria-hidden')).toBe('true');
 
       // Two cards under it, each with its own name.
       const headings = [...host.querySelectorAll('.engineering__card-heading')].map((heading) =>

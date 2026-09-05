@@ -189,7 +189,7 @@ describe('cost and materials surface', () => {
       const fixture = render(build);
 
       const marked = fixture.componentInstance.materialRows().filter((row) => row.grade !== null);
-      expect(fixture.nativeElement.querySelectorAll('edsb-material-grade').length).toBe(
+      expect(fixture.nativeElement.querySelectorAll('ednb-material-grade').length).toBe(
         marked.length,
       );
     });

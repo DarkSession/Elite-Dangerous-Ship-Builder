@@ -41,7 +41,7 @@ Feature 005 enables one of those segments, and takes the space the plates occupy
 - selecting `POWER` retitles the region `POWER & THERMALS` and removes the plate container, the side
   selector and the legend, exactly as the artboard's switching script does — it sets
   `[data-anat-plates]` to `display: none` for every mode but `mounts`;
-- `edsb-power-thermals` is drawn in the space they leave;
+- `ednb-power-thermals` is drawn in the space they leave;
 - leaving the mode restores the mounts layer as it was, side selection included.
 
 Nothing is drawn on a mount. There is no overlay, no per-mount priority mark and no observation of

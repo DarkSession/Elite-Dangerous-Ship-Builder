@@ -20,7 +20,7 @@ const MAX_LENGTH = 500;
 async function buildWithLink(page: Page, hull = 'Anaconda'): Promise<string> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build#b\./);
+  await expect(page).toHaveURL(/\/outfitting#b\./);
   return new URL(page.url()).hash.slice(1);
 }
 
@@ -55,7 +55,7 @@ test.describe('publishing a build link', () => {
     expect(fragment.length).toBeLessThanOrEqual(MAX_LENGTH);
     // Path and query carry no build data: the fragment is the only place it is,
     // and the fragment is the one part a browser never transmits.
-    expect(url.pathname).toBe('/build');
+    expect(url.pathname).toBe('/outfitting');
     expect(url.search).toBe('');
   });
 
@@ -71,12 +71,12 @@ test.describe('publishing a build link', () => {
   test('replaces the fragment rather than growing history', async ({ page }) => {
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
 
     await page.goBack();
 
     // One entry back is the hull the build was created from. If publication
-    // pushed instead of replacing, this would be `/build` with no fragment.
+    // pushed instead of replacing, this would be `/outfitting` with no fragment.
     await expect(page).toHaveURL(/\/ships\/Anaconda$/);
   });
 
@@ -94,7 +94,7 @@ test.describe('restoring a build from a link', () => {
     const fragment = await buildWithLink(page);
 
     const incoming = await page.context().newPage();
-    await incoming.goto(`/build#${fragment}`);
+    await incoming.goto(`/outfitting#${fragment}`);
 
     await expect(incoming.getByRole('heading', { level: 1, name: /anaconda/i })).toBeVisible();
     await buildIsOpen(incoming);
@@ -103,9 +103,9 @@ test.describe('restoring a build from a link', () => {
     // derived from the hull, so what matters is that nothing in the library
     // carries a name a Commander gave it.
     await openLibrary(incoming);
-    await expect(incoming.locator('edsb-saved-build-card').first()).toBeVisible();
+    await expect(incoming.locator('ednb-saved-build-card').first()).toBeVisible();
     await expect(
-      incoming.locator('edsb-saved-build-card .record__title:not(.record__title--derived)'),
+      incoming.locator('ednb-saved-build-card .record__title:not(.record__title--derived)'),
     ).toHaveCount(0);
     await incoming.close();
   });
@@ -114,7 +114,7 @@ test.describe('restoring a build from a link', () => {
     const fragment = await buildWithLink(page);
 
     const incoming = await page.context().newPage();
-    await incoming.goto(`/build#${fragment}`);
+    await incoming.goto(`/outfitting#${fragment}`);
     await buildIsOpen(incoming);
 
     // The package pins fixed modules, so the payload omits them and the
@@ -129,7 +129,7 @@ test.describe('restoring a build from a link', () => {
     const fragment = await buildWithLink(page);
 
     const incoming = await page.context().newPage();
-    await incoming.goto(`/build#${fragment}`);
+    await incoming.goto(`/outfitting#${fragment}`);
     await buildIsOpen(incoming);
     await incoming.waitForFunction(
       (expected) => window.location.hash === `#${expected}`,
@@ -183,7 +183,7 @@ test.describe('a link that cannot be read', () => {
   test('leaves a fragment that is not a build link alone', async ({ page }) => {
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
 
     await page.evaluate(() => {
       window.location.hash = 'some-anchor';
@@ -207,7 +207,7 @@ test.describe('what a link never sends', () => {
     // layout profile without opening a filter panel.
     await openFirstHullFromManifest(page);
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     await openShare(page);
     // The share layer comes down before the library goes up. They are both
     // layers over the same screen now — the library stopped being an address to

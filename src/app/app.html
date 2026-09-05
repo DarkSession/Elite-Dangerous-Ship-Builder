@@ -1,4 +1,4 @@
-<edsb-app-frame
+<ednb-app-frame
   [routeContext]="pageName()"
   [routeCount]="pageCount()"
   [tools]="tools()"
@@ -15,7 +15,7 @@
   (toolSelected)="navigateFromShell($event)"
 >
   <router-outlet />
-</edsb-app-frame>
+</ednb-app-frame>
 
 <!--
   Loaded when a Commander asks for one, not before. Both layers are deferred
@@ -23,8 +23,8 @@
   the first of them to be opened pays the load either way.
 -->
 @defer (when exchangeWanted()) {
-  <edsb-slef-import-dialog />
-  <edsb-slef-export-dialog />
+  <ednb-slef-import-dialog />
+  <ednb-slef-export-dialog />
 }
 
 <!--
@@ -41,7 +41,7 @@
 -->
 @defer (when library.open()) {
   @if (library.open()) {
-    <edsb-build-library-page />
+    <ednb-build-library-page />
   }
 }
 
@@ -51,7 +51,7 @@
   visit after one completed load, and a chunk fetched on activation is a
   request waiting to fail (012/FR-001).
 -->
-<edsb-help-dialog
+<ednb-help-dialog
   [open]="help.open()"
   [view]="help.view()"
   [dismissLabel]="help.dismissLabel()"
@@ -69,7 +69,7 @@
   cannot stop, and constitution V names WCAG 2.2.1 among the excluded criteria
   for this one mechanism.
 -->
-<edsb-layer
+<ednb-layer
   [open]="updateOverlay()"
   [title]="updateOverlayTitle()"
   [description]="updateOverlayNotice()"
@@ -84,7 +84,7 @@
   seconds by itself as well — nothing is pending behind it, because the update
   is already applied.
 -->
-<edsb-layer
+<ednb-layer
   [open]="updateApplied()"
   [title]="updateAppliedTitle()"
   [description]="updateAppliedNotice()"
@@ -92,4 +92,4 @@
   (dismissed)="acknowledgeUpdate()"
 >
   <p class="app__update-detail">{{ updateAppliedDetail() }}</p>
-</edsb-layer>
+</ednb-layer>

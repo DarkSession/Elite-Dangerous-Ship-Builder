@@ -91,7 +91,7 @@ Lossless, non-derived application representation used by local persistence. It i
 
 | Field        | Type                          | Rule                                                                      |
 | ------------ | ----------------------------- | ------------------------------------------------------------------------- |
-| `format`     | literal `edsb.build`          | Discriminator                                                             |
+| `format`     | literal `ednb.build`          | Discriminator                                                             |
 | `version`    | literal `1`                   | Build snapshot decoder version                                            |
 | `shipSymbol` | string                        | Package-resolved hull identity in retained spelling                       |
 | `shipName`   | `string \| null`              | Null is absent; empty string, if accepted, remains distinct               |
@@ -122,11 +122,11 @@ Validation:
 
 ## LocalRecordV1
 
-One atomic value stored under `edsb:record:<id>`.
+One atomic value stored under `ednb:record:<id>`.
 
 | Field         | Type                                    | Rule                                                                                          |
 | ------------- | --------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `format`      | literal `edsb.local-record`             | Reject other owned-looking values without deleting them                                       |
+| `format`      | literal `ednb.local-record`             | Reject other owned-looking values without deleting them                                       |
 | `version`     | literal `1`                             | Record-envelope version                                                                       |
 | `id`          | UUID                                    | Immutable local identity; must equal key suffix                                               |
 | `kind`        | `working \| named`                      | Whether the Commander has named this record; `working` is the stored spelling of unnamed      |
@@ -178,7 +178,7 @@ carries its remaining time (FR-010) and a name stops it at any moment (FR-013).
 
 ## TabDescriptorV1
 
-Stored in this top-level browsing context's `sessionStorage` under `edsb:tab`.
+Stored in this top-level browsing context's `sessionStorage` under `ednb:tab`.
 
 | Field             | Type        | Rule                                   |
 | ----------------- | ----------- | -------------------------------------- |

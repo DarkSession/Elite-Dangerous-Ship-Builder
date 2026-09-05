@@ -1,4 +1,4 @@
-<edsb-layer
+<ednb-layer
   [open]="open()"
   [title]="title()"
   [description]="description()"
@@ -7,11 +7,11 @@
   (dismissed)="cancelled.emit()"
 >
   <div class="confirm__actions">
-    <edsb-action-button
+    <ednb-action-button
       [label]="confirmLabel()"
       [emphasis]="destructive() ? 'danger' : 'primary'"
       (activated)="confirmed.emit()"
     />
-    <edsb-action-button [label]="cancelLabel()" emphasis="quiet" (activated)="cancelled.emit()" />
+    <ednb-action-button [label]="cancelLabel()" emphasis="quiet" (activated)="cancelled.emit()" />
   </div>
-</edsb-layer>
+</ednb-layer>

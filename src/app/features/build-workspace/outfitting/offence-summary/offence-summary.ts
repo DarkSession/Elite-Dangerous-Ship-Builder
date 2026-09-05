@@ -38,7 +38,7 @@ const DAMAGE_DIGITS = 1;
  * zero is not qualified: zero is an answer.
  */
 @Component({
-  selector: 'edsb-offence-summary',
+  selector: 'ednb-offence-summary',
   imports: [MetricGroup],
   templateUrl: './offence-summary.html',
   styleUrl: './offence-summary.scss',

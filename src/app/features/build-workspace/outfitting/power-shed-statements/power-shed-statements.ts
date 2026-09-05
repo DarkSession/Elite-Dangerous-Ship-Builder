@@ -34,11 +34,11 @@ const MW_DIGITS = 2;
  *
  * The sentence is this application's own rather than a package diagnostic, so
  * it is translated like every other string it owns and does not go through
- * `edsb-game-text`. It carries no severity word beside it and no control: at
+ * `ednb-game-text`. It carries no severity word beside it and no control: at
  * both widths the dashboard it describes is a segment away (005/FR-013).
  */
 @Component({
-  selector: 'edsb-power-shed-statements',
+  selector: 'ednb-power-shed-statements',
   templateUrl: './power-shed-statements.html',
   styleUrl: './power-shed-statements.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -30,7 +30,7 @@
     <figcaption class="artwork__status" [id]="statusId">
       <span>{{ label() }}</span>
       <span>{{ unavailableText() }}</span>
-      <edsb-action-button
+      <ednb-action-button
         [label]="retryLabel()"
         emphasis="quiet"
         (activated)="retryRequested.emit()"

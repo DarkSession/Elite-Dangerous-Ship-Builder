@@ -5,7 +5,7 @@ import {
 } from '../../platform/browser/application-update.adapter';
 import { ConnectivityAdapter } from '../../platform/browser/connectivity.adapter';
 import { PageLifecycleAdapter } from '../../platform/browser/page-lifecycle.adapter';
-import { EDSB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
+import { EDNB_UPDATE_APPLIED_KEY } from '../../platform/storage/storage-keys';
 import { SESSION_STORAGE_PORT } from '../../platform/storage/web-storage.port';
 
 /**
@@ -228,14 +228,14 @@ export class ApplicationUpdateStore {
       // is no code here to write anything. A repair of an unusable cache leaves
       // no marker: it restarts onto the version this session was already
       // supposed to be running, which is not an update to announce.
-      this.#session.write(EDSB_UPDATE_APPLIED_KEY, '1');
+      this.#session.write(EDNB_UPDATE_APPLIED_KEY, '1');
     }
 
     if (!this.#updates.reload()) {
       // Nothing to start over — a frame that may not navigate itself, or no
       // window at all. The marker would otherwise greet the next session with
       // news of a restart that never happened.
-      this.#session.remove(EDSB_UPDATE_APPLIED_KEY);
+      this.#session.remove(EDNB_UPDATE_APPLIED_KEY);
       this.#applying.set(false);
       this.#lowerOverlay();
     }
@@ -261,8 +261,8 @@ export class ApplicationUpdateStore {
    * session after the restart rather than by every session in that tab.
    */
   #takeAppliedMarker(): void {
-    const marker = this.#session.read(EDSB_UPDATE_APPLIED_KEY);
-    this.#session.remove(EDSB_UPDATE_APPLIED_KEY);
+    const marker = this.#session.read(EDNB_UPDATE_APPLIED_KEY);
+    this.#session.remove(EDNB_UPDATE_APPLIED_KEY);
     if (marker.ok && marker.value !== null) {
       this.#applied.set(true);
       // The same route the control takes, so a notice that went by itself and

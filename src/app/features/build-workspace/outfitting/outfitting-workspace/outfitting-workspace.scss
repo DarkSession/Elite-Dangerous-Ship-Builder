@@ -237,7 +237,7 @@
   // now reserves is the empty bench itself, so the column does not collapse to
   // the plates and leave the region without the box a Commander is about to
   // fill (restated 2026-08-27).
-  .outfitting__centre edsb-hull-anatomy {
+  .outfitting__centre ednb-hull-anatomy {
     flex: none;
   }
 
@@ -428,7 +428,7 @@
     flex: none;
   }
 
-  .outfitting__status-rail edsb-cost-materials {
+  .outfitting__status-rail ednb-cost-materials {
     flex: 1 1 auto;
     min-block-size: 0;
   }
@@ -461,12 +461,12 @@
     overflow: visible;
   }
 
-  .outfitting__centre edsb-hull-anatomy {
+  .outfitting__centre ednb-hull-anatomy {
     flex: none;
   }
 
-  .outfitting__bench edsb-module-replacement,
-  .outfitting__bench edsb-engineering-editor {
+  .outfitting__bench ednb-module-replacement,
+  .outfitting__bench ednb-engineering-editor {
     flex: none;
     min-block-size: 0;
   }
@@ -776,7 +776,7 @@
     display: contents;
   }
 
-  .outfitting__centre edsb-hull-anatomy {
+  .outfitting__centre ednb-hull-anatomy {
     order: 1;
   }
 
@@ -808,8 +808,8 @@
   // hosts would otherwise fall into the notices' band at the head of the stack.
   // Both are the layers' own and paint nothing in the flow, so this decides
   // where they sit rather than what is seen.
-  .outfitting__bench edsb-module-replacement,
-  .outfitting__bench edsb-engineering-editor {
+  .outfitting__bench ednb-module-replacement,
+  .outfitting__bench ednb-engineering-editor {
     order: 4;
   }
 

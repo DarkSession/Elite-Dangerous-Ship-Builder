@@ -20,7 +20,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  * they are going before they go (constitution I), and told it once.
  */
 @Component({
-  selector: 'edsb-inline-link',
+  selector: 'ednb-inline-link',
   templateUrl: './inline-link.html',
   styleUrl: './inline-link.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

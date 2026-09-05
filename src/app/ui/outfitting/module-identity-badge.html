@@ -7,7 +7,7 @@
     which is a third line the canvas does not have.
   -->
   <span class="identity__line">
-    <edsb-game-text
+    <ednb-game-text
       class="identity__name"
       [class.identity__name--compact]="compact()"
       [attr.data-text-reachable]="cut() ? '' : null"
@@ -28,16 +28,16 @@
       -->
       @if (nameTip(); as tip) {
         @if (cut()) {
-          <edsb-tooltip
+          <ednb-tooltip
             class="identity__more"
             aria-hidden="true"
             [presentational]="true"
             [tip]="tip"
-            >…</edsb-tooltip
+            >…</ednb-tooltip
           >
         }
       }
-    </edsb-game-text>
+    </ednb-game-text>
     <ng-content />
   </span>
 

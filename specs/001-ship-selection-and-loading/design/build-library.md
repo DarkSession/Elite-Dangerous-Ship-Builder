@@ -60,7 +60,7 @@ footer. Three differences from the drawing remain, deliberately:
   three are the workspace's `SAVE`. See "The footer is the canvas's two
   actions" below.
 
-- **The compact surface is the shared layer's sheet.** `edsb-layer`'s adaptive
+- **The compact surface is the shared layer's sheet.** `ednb-layer`'s adaptive
   presentation resolves to a bottom sheet where the space is narrow and to a
   full-height layer where the viewport is also short. Feature 001 does not fork
   the shared component's responsive contract for one screen (constitution VII).
@@ -206,7 +206,7 @@ holds.
 ### Standing over a screen rather than replacing one, 2026-08-28 (Commander request)
 
 Reported as a navigation that should not be one: opening the saved builds took the Commander out of
-the ship they were working in. It did. `/builds` was a sibling route to `/build`, so the router
+the ship they were working in. It did. `/builds` was a sibling route to `/outfitting`, so the router
 destroyed the workspace and rendered a page whose whole body was the layer — the scrim covered
 nothing, and the modal frame framed an empty background. That is the gap the table above recorded
 from the day it was built, and this closes it.

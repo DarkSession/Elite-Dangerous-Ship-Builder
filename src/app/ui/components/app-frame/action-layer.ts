@@ -26,7 +26,7 @@ import type { ShellAction } from './app-frame';
  * the layer never becomes a second place where shell state lives.
  */
 @Component({
-  selector: 'edsb-action-layer',
+  selector: 'ednb-action-layer',
   imports: [ActionButton],
   templateUrl: './action-layer.html',
   styleUrl: './action-layer.scss',

@@ -1,4 +1,4 @@
-<edsb-layer
+<ednb-layer
   [title]="view().title"
   [open]="open()"
   [dismissLabel]="dismissLabel()"
@@ -28,9 +28,9 @@
         adds between the pieces is drawn as a gap before the full stop.
       -->
       <!-- prettier-ignore -->
-      <p class="help-dialog__source">{{ about().source.before }}@if (about().source.link; as link) {<edsb-inline-link [label]="link.label" [href]="link.href" />}{{ about().source.after }}</p>
+      <p class="help-dialog__source">{{ about().source.before }}@if (about().source.link; as link) {<ednb-inline-link [label]="link.label" [href]="link.href" />}{{ about().source.after }}</p>
 
-      <edsb-version-facts [facts]="about().facts" />
+      <ednb-version-facts [facts]="about().facts" />
     </section>
 
     <!--
@@ -80,11 +80,11 @@
         -->
         @for (entry of licence().index; track entry.id) {
           <!-- prettier-ignore -->
-          <li class="help-dialog__licence-line">{{ entry.before }}@if (entry.link; as link) {<edsb-inline-link [label]="link.label" [href]="link.href" />}{{ entry.after }}</li>
+          <li class="help-dialog__licence-line">{{ entry.before }}@if (entry.link; as link) {<ednb-inline-link [label]="link.label" [href]="link.href" />}{{ entry.after }}</li>
         }
       </ul>
 
-      <edsb-legal-excerpt [text]="licence().excerpt" [language]="licence().excerptLanguage" />
+      <ednb-legal-excerpt [text]="licence().excerpt" [language]="licence().excerptLanguage" />
     </section>
   </div>
-</edsb-layer>
+</ednb-layer>

@@ -2,15 +2,15 @@
 
 Feature 004 adds no route. Its logical layers compose into feature 001 hosts; opening, closing,
 failure and cancellation do not alter route/history. Accepted import from a non-workspace host
-navigates to `/build` only after feature 001 commits the candidate.
+navigates to `/outfitting` only after feature 001 commits the candidate.
 
-| Host               | Import                                                            | Export/SLEF                                                                  |
-| ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `/ships`           | Shared shell action; no active build required                     | No Export action; enter the active `/build` workspace first                  |
-| `/ships/:hull`     | Same shell action; selected hull does not constrain incoming hull | No Export action; enter the active `/build` workspace first                  |
-| `/build`, no build | Primary recovery action                                           | Host explains prerequisite and offers Import/Create; no layer/artifact       |
-| `/build`, active   | Available; shared replacement rule                                | Shared Export Build layer, SLEF mode available                               |
-| library layer      | Shared shell action; accepted candidate navigates to `/build`     | No selected-row export; open a record as the active `/build` workspace first |
+| Host                    | Import                                                             | Export/SLEF                                                                       |
+| ----------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `/ships`                | Shared shell action; no active build required                      | No Export action; enter the active `/outfitting` workspace first                  |
+| `/ships/:hull`          | Same shell action; selected hull does not constrain incoming hull  | No Export action; enter the active `/outfitting` workspace first                  |
+| `/outfitting`, no build | Primary recovery action                                            | Host explains prerequisite and offers Import/Create; no layer/artifact            |
+| `/outfitting`, active   | Available; shared replacement rule                                 | Shared Export Build layer, SLEF mode available                                    |
+| library layer           | Shared shell action; accepted candidate navigates to `/outfitting` | No selected-row export; open a record as the active `/outfitting` workspace first |
 
 The shared Export Build layer composes feature 001's Share Link mode and feature 004's SLEF mode with
 an accessible mode control, in that order and opening on SLEF. Journal and Markdown modes are

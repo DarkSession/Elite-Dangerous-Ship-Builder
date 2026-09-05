@@ -45,7 +45,7 @@ The heading carries the blueprint count opposite it, exactly as the canvas draws
 
 Every consolidated row, with no truncation and no top-N cut (ruled E). Each row is a rarity marker,
 the package-localised material name, and the locale-formatted quantity — the row composition feature
-002 shipped in `edsb-material-cost-list`, which is now this block's alone (ruling G, amended
+002 shipped in `ednb-material-cost-list`, which is now this block's alone (ruling G, amended
 2026-08-23).
 
 Rows run **commonest first, then by name** within a rarity band — a shopping list in the order a
@@ -97,10 +97,10 @@ figures.
 
 Both blocks are labelled regions with localized headings. Label/value pairs are description lists,
 so each number is associated with its label natively rather than by sitting beside it — the pattern
-`edsb-material-cost-list` established.
+`ednb-material-cost-list` established.
 
-Material names render through feature 011's `edsb-game-text`, which carries the untranslated
-disclosure the rest of the application uses. Rarity uses `edsb-material-grade`, not the canvas's
+Material names render through feature 011's `ednb-game-text`, which carries the untranslated
+disclosure the rest of the application uses. Rarity uses `ednb-material-grade`, not the canvas's
 cross-origin icon. Every owned label comes from application messages; every number uses a named
 active-locale formatter and changes no value.
 
@@ -109,7 +109,7 @@ Nothing in these blocks depends on colour alone: the Merc Coin row is named as w
 
 ## Component impact
 
-Compose the shared section, description-list, micro-label, `edsb-game-text` and `edsb-material-grade`
+Compose the shared section, description-list, micro-label, `ednb-game-text` and `ednb-material-grade`
 primitives, and feature 011's active-locale collator for the name tie-break. Nothing here needs a new
 shared primitive, and no screen-local colours, sizes, spacing, radii, elevation or motion are added:
 the four rules use `--ednb-border-region` and the insets use the existing space roles.

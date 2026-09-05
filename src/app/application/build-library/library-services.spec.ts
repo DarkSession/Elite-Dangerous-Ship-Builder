@@ -93,7 +93,7 @@ function seedWorkingRecords(storage: MemoryStorage, count: number): void {
     storage.setItem(
       recordKey(`working-${index}`),
       JSON.stringify({
-        format: 'edsb.local-record',
+        format: 'ednb.local-record',
         version: 1,
         id: `working-${index}`,
         kind: 'working',
@@ -105,7 +105,7 @@ function seedWorkingRecords(storage: MemoryStorage, count: number): void {
         hullSymbol: 'Anaconda',
         validation: { valid: true, complete: true },
         build: {
-          format: 'edsb.build',
+          format: 'ednb.build',
           version: 1,
           shipSymbol: 'Anaconda',
           shipName: null,
@@ -228,7 +228,7 @@ describe('RetentionService', () => {
   }
 
   const remainingIds = (storage: MemoryStorage) =>
-    [...storage.entries.keys()].filter((key) => key.startsWith('edsb:record:')).sort();
+    [...storage.entries.keys()].filter((key) => key.startsWith('ednb:record:')).sort();
 
   it('gives an unnamed record seven days from the instant it was last edited', () => {
     const { retention, records } = setup(seedOne);
@@ -275,7 +275,7 @@ describe('RetentionService', () => {
 
     retention.sweep();
 
-    expect(remainingIds(storage)).toEqual(['edsb:record:working-0']);
+    expect(remainingIds(storage)).toEqual(['ednb:record:working-0']);
   });
 
   it('leaves a named record alone however old it is', () => {
@@ -287,7 +287,7 @@ describe('RetentionService', () => {
 
     retention.sweep();
 
-    expect(remainingIds(storage)).toEqual([`edsb:record:${FIXTURE_IDS.named}`]);
+    expect(remainingIds(storage)).toEqual([`ednb:record:${FIXTURE_IDS.named}`]);
   });
 
   it('leaves the record a live page is autosaving into', () => {
@@ -308,7 +308,7 @@ describe('RetentionService', () => {
 
     retention.sweep();
 
-    expect(remainingIds(storage)).toEqual(['edsb:record:working-0']);
+    expect(remainingIds(storage)).toEqual(['ednb:record:working-0']);
   });
 
   it('leaves an unreadable record listed rather than removing it', () => {
@@ -321,7 +321,7 @@ describe('RetentionService', () => {
 
     retention.sweep();
 
-    expect(remainingIds(storage)).toEqual(['edsb:record:broken']);
+    expect(remainingIds(storage)).toEqual(['ednb:record:broken']);
   });
 
   it('removes nothing when storage cannot even be listed', () => {
@@ -331,7 +331,7 @@ describe('RetentionService', () => {
     expect(() => retention.sweep()).not.toThrow();
 
     storage.accessError = null;
-    expect(remainingIds(storage)).toEqual(['edsb:record:working-0']);
+    expect(remainingIds(storage)).toEqual(['ednb:record:working-0']);
   });
 
   it('carries on when one removal fails, and leaves that record whole', () => {

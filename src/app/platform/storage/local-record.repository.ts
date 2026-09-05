@@ -9,7 +9,7 @@ import {
   type LocalRecord,
   type StoredRecordEntry,
 } from '../../domain/records/local-record';
-import { EDSB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
+import { EDNB_RECORD_KEY_PREFIX, recordIdFromKey, recordKey } from './storage-keys';
 import { LOCAL_STORAGE_PORT, type StorageFailureCode } from './web-storage.port';
 
 /** How a record operation ended. */
@@ -44,7 +44,7 @@ export class LocalRecordRepository {
 
   /** Whether the browser is letting this application store anything at all. */
   available(): boolean {
-    return this.#storage.keys(EDSB_RECORD_KEY_PREFIX).ok;
+    return this.#storage.keys(EDNB_RECORD_KEY_PREFIX).ok;
   }
 
   /**
@@ -55,7 +55,7 @@ export class LocalRecordRepository {
    * watching it silently vanish (persistence contract, "Failure behavior").
    */
   list(): RepositoryResult<readonly StoredRecordEntry[]> {
-    const keys = this.#storage.keys(EDSB_RECORD_KEY_PREFIX);
+    const keys = this.#storage.keys(EDNB_RECORD_KEY_PREFIX);
     if (!keys.ok) {
       return keys;
     }

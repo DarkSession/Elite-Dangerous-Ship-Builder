@@ -52,7 +52,7 @@ const ALL_SIZES = 'all';
  * what the Commander did (routes-and-ui contract, "Intent boundary").
  */
 @Component({
-  selector: 'edsb-ship-catalogue-page',
+  selector: 'ednb-ship-catalogue-page',
   imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet],
   templateUrl: './ship-catalogue.page.html',
   styleUrl: './ship-catalogue.page.scss',
@@ -275,7 +275,7 @@ export class ShipCataloguePage {
     this.previewHull(symbol);
     const result = await this.#creator.create(symbol);
     if (result.kind === 'committed') {
-      void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
+      void this.#router.navigateByUrl(NAVIGATION_ROUTES.outfitting);
     }
   }
 }

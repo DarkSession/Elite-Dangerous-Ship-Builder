@@ -3,7 +3,7 @@
 ## Canonical form
 
 ```text
-<same-origin base>/build#b.<versioned-payload>
+<same-origin base>/outfitting#b.<versioned-payload>
 ```
 
 - Path and query contain no build data.

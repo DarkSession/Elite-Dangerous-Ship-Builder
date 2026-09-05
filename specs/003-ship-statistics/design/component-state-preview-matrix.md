@@ -1,11 +1,11 @@
 # Component State Preview Matrix: Ship Statistics and Status
 
 The wave 11 rulings left feature 003 with one component, and it is a feature component rather than a
-shared `src/app/ui/components` primitive — so, like feature 009's `edsb-cost-materials`, it is covered
+shared `src/app/ui/components` primitive — so, like feature 009's `ednb-cost-materials`, it is covered
 by its unit suite and the product end-to-end suite rather than by a preview declaration. The preview
 manifest covers the design system's shared primitives; a feature block that composes them is not one.
 
-The primitives this feature composes are already previewed by feature 011: `edsb-game-text` carries
+The primitives this feature composes are already previewed by feature 011: `ednb-game-text` carries
 the localized, canonical and unavailable states, and the tokens carry the severity treatments.
 
 | Component     | Default/populated                | Empty                    | Loading | Error | Disabled | Required variants                          |

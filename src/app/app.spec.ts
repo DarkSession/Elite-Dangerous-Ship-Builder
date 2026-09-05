@@ -20,7 +20,7 @@ import { LocaleStore } from './i18n/locale.store';
 import { AnnouncementService } from './ui/announcements/announcement.service';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HELP_MANIFEST } from './platform/build/help-manifest.generated';
-import { EDSB_UPDATE_APPLIED_KEY } from './platform/storage/storage-keys';
+import { EDNB_UPDATE_APPLIED_KEY } from './platform/storage/storage-keys';
 import { MemoryStorage, provideMemoryStorage } from './platform/storage/storage.spec-helpers';
 
 describe('App', () => {
@@ -53,7 +53,7 @@ describe('App', () => {
 
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.querySelector('edsb-app-frame')).not.toBeNull();
+    expect(element.querySelector('ednb-app-frame')).not.toBeNull();
     expect(element.querySelector('header')).not.toBeNull();
     expect(element.querySelector('main')).not.toBeNull();
   });
@@ -107,7 +107,7 @@ describe('App', () => {
     // way anywhere. The shell reads the address it was loaded at rather than
     // waiting for the router's first navigation, so the address has to be set
     // before the component reads it (Commander request 2026-09-04).
-    TestBed.inject(Location).go(NAVIGATION_ROUTES.build);
+    TestBed.inject(Location).go(NAVIGATION_ROUTES.outfitting);
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
@@ -435,7 +435,7 @@ describe('App and a newly published version', () => {
     // The overlay above went with the page that drew it. This is the half a
     // Commander who looked away is certain to read, and it names the version
     // they landed on.
-    sessionArea.entries.set(EDSB_UPDATE_APPLIED_KEY, '1');
+    sessionArea.entries.set(EDNB_UPDATE_APPLIED_KEY, '1');
     const fixture = render();
 
     expect(fixture.componentInstance.updateApplied()).toBe(true);

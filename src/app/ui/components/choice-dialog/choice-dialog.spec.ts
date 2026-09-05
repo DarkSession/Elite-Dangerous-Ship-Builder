@@ -49,7 +49,7 @@ describe('ChoiceDialog', () => {
       const button = [...element(fixture).querySelectorAll('button')].find(
         (candidate) => textOf(candidate) === choice.label,
       )!;
-      const describedBy = button.closest('edsb-action-button')?.getAttribute('aria-describedby');
+      const describedBy = button.closest('ednb-action-button')?.getAttribute('aria-describedby');
       expect(describedBy).not.toBeNull();
       expect(textOf(element(fixture).querySelector(`#${describedBy}`))).toBe(choice.outcome);
     }

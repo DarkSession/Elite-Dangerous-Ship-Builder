@@ -30,7 +30,7 @@ export interface DialogChoice {
  * inference from button order.
  */
 @Component({
-  selector: 'edsb-choice-dialog',
+  selector: 'ednb-choice-dialog',
   imports: [ActionButton, Layer],
   templateUrl: './choice-dialog.html',
   styleUrl: './choice-dialog.scss',

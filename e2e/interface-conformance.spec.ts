@@ -52,7 +52,7 @@ async function openScreen(
   } else {
     await page.goto('/ships/Anaconda');
     await buildStockHull(page, messages['hullDetail.create']);
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     if (screen === 'library') {
       await openLibrary(page);
     }
@@ -100,7 +100,7 @@ test.describe('cross-route semantics', () => {
 
     // Opening a hull marks it as the current one rather than only colouring it.
     await openFirstHullFromManifest(page);
-    await expect(page.locator('edsb-hull-detail-page')).toBeVisible();
+    await expect(page.locator('ednb-hull-detail-page')).toBeVisible();
     await expect(page.locator('[aria-current="true"]').first()).toBeAttached();
   });
 

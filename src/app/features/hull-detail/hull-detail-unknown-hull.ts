@@ -17,7 +17,7 @@ import { StatusNotice } from '../../ui/components/status/status-notice';
  * isolated from the surrounding text direction because it is not prose.
  */
 @Component({
-  selector: 'edsb-hull-detail-unknown-hull',
+  selector: 'ednb-hull-detail-unknown-hull',
   imports: [ActionLink, RouterLink, StatusNotice],
   templateUrl: './hull-detail-unknown-hull.html',
   styleUrl: './hull-detail-unknown-hull.scss',

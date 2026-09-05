@@ -26,7 +26,7 @@ export type ActionEmphasis = 'primary' | 'secondary' | 'quiet' | 'danger';
  * lean on passes no symbol and gets the visible label.
  */
 @Component({
-  selector: 'edsb-action-button',
+  selector: 'ednb-action-button',
   templateUrl: './action-button.html',
   styleUrl: './action.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

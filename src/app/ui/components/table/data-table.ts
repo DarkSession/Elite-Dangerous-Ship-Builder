@@ -30,7 +30,7 @@ export interface TableRow {
  * scrolls horizontally (FR-011).
  */
 @Component({
-  selector: 'edsb-data-table',
+  selector: 'ednb-data-table',
   templateUrl: './data-table.html',
   styleUrl: './data-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

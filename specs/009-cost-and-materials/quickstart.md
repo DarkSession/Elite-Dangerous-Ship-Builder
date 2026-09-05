@@ -17,7 +17,7 @@ their scenarios are withdrawn — see "Withdrawn scenarios" at the end.
    ```
 
 2. Confirm features 001, 002 and 011 are implemented against their accepted contracts: the active
-   build and `/build` workspace, `engineeringCost()` / `materialRarity()` / `edsb-material-grade`,
+   build and `/outfitting` workspace, `engineeringCost()` / `materialRarity()` / `ednb-material-grade`,
    and shared localization/UI/dual-engine accessibility infrastructure. Feature 003 is **not**
    required.
 3. Confirm the Almanac resolves from the committed lockfile and rerun every package-contract
@@ -125,7 +125,7 @@ Expected:
 - app-owned headings and labels use application messages;
 - every number uses active-locale named formatting and changes no value;
 - material names come from package helpers by exact symbol;
-- a locale miss shows canonical package text through the shared `edsb-game-text` disclosure, as
+- a locale miss shows canonical package text through the shared `ednb-game-text` disclosure, as
   everywhere else in the application;
 - no raw message key, blank label or private game translation appears;
 - the bundled English fallback works offline.

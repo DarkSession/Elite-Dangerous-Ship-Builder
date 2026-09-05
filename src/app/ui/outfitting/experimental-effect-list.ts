@@ -51,7 +51,7 @@ export interface ExperimentalEffectView {
  * whether they are the selected one.
  */
 @Component({
-  selector: 'edsb-experimental-effect-list',
+  selector: 'ednb-experimental-effect-list',
   imports: [GameText],
   templateUrl: './experimental-effect-list.html',
   styleUrl: './experimental-effect-list.scss',
@@ -160,7 +160,7 @@ export class ExperimentalEffectList {
    * the trigger reads as `None` — an application string rather than game text.
    *
    * The name is handed over as the package presented it, so the trigger draws
-   * it through `edsb-game-text` exactly as the options below it do: an effect
+   * it through `ednb-game-text` exactly as the options below it do: an effect
    * the catalogue has no translation for is disclosed as untranslated and
    * carries the language it is actually in, rather than being presented as a
    * translation (constitution VI, FR-020). Printing `name.text` here would have

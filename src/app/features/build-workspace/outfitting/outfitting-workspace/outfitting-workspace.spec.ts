@@ -222,9 +222,9 @@ describe('the compact workspace', () => {
     // stay unbuilt, or every cell would be live twice for one screen.
     expect(element.querySelectorAll('.outfitting__status-rail')).toHaveLength(1);
     expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(0);
-    expect(element.querySelectorAll('edsb-capacity-summary')).toHaveLength(0);
+    expect(element.querySelectorAll('ednb-capacity-summary')).toHaveLength(0);
     expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(1);
-    expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
+    expect(element.querySelectorAll('ednb-defence-summary')).toHaveLength(1);
   });
 
   it('moves the key readings into the rail when the status segment opens', () => {
@@ -239,8 +239,8 @@ describe('the compact workspace', () => {
     // reader no way to tell which is the reading (003/FR-024).
     expect(element.querySelectorAll('.outfitting__status-cells')).toHaveLength(1);
     expect(element.querySelectorAll('.outfitting__key-figures')).toHaveLength(0);
-    expect(element.querySelectorAll('edsb-defence-summary')).toHaveLength(1);
-    expect(element.querySelectorAll('edsb-capacity-summary')).toHaveLength(1);
+    expect(element.querySelectorAll('ednb-defence-summary')).toHaveLength(1);
+    expect(element.querySelectorAll('ednb-capacity-summary')).toHaveLength(1);
   });
 
   it('hands the anatomy strip a status segment, and draws the rail for it', () => {

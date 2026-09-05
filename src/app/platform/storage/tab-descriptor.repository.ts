@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { EDSB_TAB_KEY } from './storage-keys';
+import { EDNB_TAB_KEY } from './storage-keys';
 import { SESSION_STORAGE_PORT } from './web-storage.port';
 
 /** The only published tab-descriptor version. */
@@ -31,7 +31,7 @@ export class TabDescriptorRepository {
 
   /** The working record this tab owns, or `null` when it has none yet. */
   read(): TabDescriptorV1 | null {
-    const raw = this.#session.read(EDSB_TAB_KEY);
+    const raw = this.#session.read(EDNB_TAB_KEY);
     if (!raw.ok || raw.value === null) {
       return null;
     }
@@ -63,12 +63,12 @@ export class TabDescriptorRepository {
   /** Claims a working record for this tab. Best effort, like every session write. */
   write(workingRecordId: string): void {
     this.#session.write(
-      EDSB_TAB_KEY,
+      EDNB_TAB_KEY,
       JSON.stringify({ version: TAB_DESCRIPTOR_VERSION, workingRecordId }),
     );
   }
 
   clear(): void {
-    this.#session.remove(EDSB_TAB_KEY);
+    this.#session.remove(EDNB_TAB_KEY);
   }
 }

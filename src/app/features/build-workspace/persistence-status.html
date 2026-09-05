@@ -7,12 +7,12 @@
 -->
 @if (problem()) {
   <div class="persistence" role="group" [attr.aria-label]="label()">
-    <edsb-status-notice [tone]="tone()" [message]="message()" />
+    <ednb-status-notice [tone]="tone()" [message]="message()" />
 
     @if (actions().length > 0) {
       <div class="persistence__actions">
         @for (action of actions(); track action.id) {
-          <edsb-action-button
+          <ednb-action-button
             [label]="action.label"
             emphasis="quiet"
             (activated)="select(action)"

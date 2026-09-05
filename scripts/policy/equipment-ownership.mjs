@@ -40,6 +40,7 @@ export const ALLOWED_SUBPATHS = [
   '@elite-dangerous-almanac/core/equipment/weapons',
   '@elite-dangerous-almanac/core/equipment/modifications',
   '@elite-dangerous-almanac/core/equipment/modification-costs',
+  '@elite-dangerous-almanac/core/equipment/upgrade-costs',
   '@elite-dangerous-almanac/core/equipment/modification-journal',
   '@elite-dangerous-almanac/core/equipment/engineering',
   '@elite-dangerous-almanac/core/equipment/tools',
@@ -54,8 +55,13 @@ export const ALMANAC_IMPORT = /from\s+(['"])(@elite-dangerous-almanac\/core[^'"]
  * Identity lookups are deliberately absent: `getSuitByFamily`,
  * `getPersonalWeaponBySymbol` and `getPersonalModification` answer *what a
  * thing is*, and a chooser, a codec table and a link reconstructor all have to
- * ask that. These four answer *what it is worth*, which is the question one
- * place asks — a second call site is a second opinion nothing reconciles.
+ * ask that. The rest answer *what it is worth*, which is the question one place
+ * asks — a second call site is a second opinion nothing reconciles. That covers
+ * the two upgrade calls: what a grade costs to reach is part of one total, and a
+ * screen asking for it directly would be a second answer to the material
+ * requirement (FR-014). The per-step calls are on the list beside them: a caller
+ * that loops the grades and totals the steps itself has re-derived the figure
+ * the summing call already gives.
  *
  * `getSuitGrade` and `getPersonalWeaponGrade` are on the list because the
  * record each returns carries every figure of that grade: reading one outside
@@ -65,6 +71,10 @@ export const PACKAGE_CALLS = [
   'applyPersonalModifiers(',
   'personalWeaponMetrics(',
   'getPersonalModificationCost(',
+  'getSuitUpgradeCost(',
+  'getSuitUpgradeStepCost(',
+  'getPersonalWeaponUpgradeCost(',
+  'getPersonalWeaponUpgradeStepCost(',
   'sumPersonalEngineeringIngredients(',
   'getSuitGrade(',
   'getPersonalWeaponGrade(',

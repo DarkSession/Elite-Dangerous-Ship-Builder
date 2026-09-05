@@ -163,7 +163,7 @@ describe('HelpDialog', () => {
       ABOUT.maintainer,
       `${ABOUT.source.before}${ABOUT.source.link.label}${ABOUT.source.after}`,
     ]);
-    expect(about.lastElementChild?.tagName.toLowerCase()).toBe('edsb-version-facts');
+    expect(about.lastElementChild?.tagName.toLowerCase()).toBe('ednb-version-facts');
   });
 
   // The link is inside the sentence, at the place the sentence puts it, and it
@@ -227,14 +227,14 @@ describe('HelpDialog', () => {
       const about = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[0];
       const order = [
         ...about.querySelectorAll<HTMLElement>(
-          '.help-dialog__heading, .help-dialog__purpose, edsb-version-facts',
+          '.help-dialog__heading, .help-dialog__purpose, ednb-version-facts',
         ),
       ];
 
       expect(order.map((node) => node.tagName.toLowerCase())).toEqual([
         'h3',
         'p',
-        'edsb-version-facts',
+        'ednb-version-facts',
       ]);
     });
 
@@ -321,11 +321,11 @@ describe('HelpDialog', () => {
 
     it('embeds exactly one legal excerpt, and it is in the LICENCE section', () => {
       const fixture = render();
-      const excerpts = element(fixture).querySelectorAll('edsb-legal-excerpt');
+      const excerpts = element(fixture).querySelectorAll('ednb-legal-excerpt');
       const licence = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[2];
 
       expect(excerpts.length).toBe(1);
-      expect(licence.querySelector('edsb-legal-excerpt')).not.toBeNull();
+      expect(licence.querySelector('ednb-legal-excerpt')).not.toBeNull();
     });
 
     it('renders the excerpt as text in an English region, never as markup', () => {
@@ -397,14 +397,14 @@ describe('HelpDialog', () => {
       const licence = element(fixture).querySelectorAll<HTMLElement>('.help-dialog__section')[2];
       const order = [
         ...licence.querySelectorAll<HTMLElement>(
-          '.help-dialog__heading, .help-dialog__licence-index, edsb-legal-excerpt',
+          '.help-dialog__heading, .help-dialog__licence-index, ednb-legal-excerpt',
         ),
       ];
 
       expect(order.map((node) => node.tagName.toLowerCase())).toEqual([
         'h3',
         'ul',
-        'edsb-legal-excerpt',
+        'ednb-legal-excerpt',
       ]);
     });
   });

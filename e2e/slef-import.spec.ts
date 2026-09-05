@@ -55,19 +55,17 @@ async function withStockBuild(page: Page): Promise<void> {
   // Waits for the published fragment, not merely the route: publication is
   // asynchronous, and a hash captured before it lands would compare unequal to
   // itself a moment later.
-  await expect(page).toHaveURL(/\/build#b\./);
+  await expect(page).toHaveURL(/\/outfitting#b\./);
 }
 
 test.describe('importing a build', () => {
   test('is offered from every screen, with no build and no chosen hull', async ({ page }) => {
-    // `/builds` is not on this list since 2026-08-25: the library is a modal
-    // layer over the screen it was opened from, and a modal makes the frame
-    // behind it inert — which is what a modal is for. The import action is
-    // offered by that screen, reached by closing the library (feature 001,
-    // build-library design, "Composition"). True of the address as well since
-    // 2026-08-28, when the layer stopped replacing the screen it stands over:
-    // reached directly it is a page, and a page carries no screen's actions.
-    for (const route of ['/ships', '/ships/Anaconda', '/build']) {
+    // The library is not on this list. It is a modal layer over the screen it
+    // was opened from, with no address of its own, and a modal makes the frame
+    // behind it inert — which is what a modal is for. The import action is the
+    // screen's, reached by closing the library (feature 001, build-library
+    // design, "Composition").
+    for (const route of ['/ships', '/ships/Anaconda', '/outfitting']) {
       await page.goto(route);
       await openImport(page);
       await expect(layer(page).getByLabel(/slef payload/i)).toBeEditable();
@@ -94,7 +92,7 @@ test.describe('importing a build', () => {
     await paste(page, JOURNAL_EVENT);
     await submit(page);
 
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
@@ -104,7 +102,7 @@ test.describe('importing a build', () => {
     await paste(page, SLEF_ENVELOPE);
     await submit(page);
 
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
   });
 
@@ -114,7 +112,7 @@ test.describe('importing a build', () => {
     await paste(page, JOURNAL_EVENT);
     await submit(page);
 
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
 
     // A journal event names its hull the way the game logs it — `anaconda` —
     // and feature 010 draws from `assets/ships/<symbol>/`, a directory named
@@ -122,7 +120,7 @@ test.describe('importing a build', () => {
     // asks for a directory no host serves, and both plates report the hull as
     // temporarily unavailable for a build that is perfectly whole.
     for (const side of ['top', 'bottom']) {
-      const plate = page.locator(`edsb-hull-anatomy .schematic[data-side="${side}"]`);
+      const plate = page.locator(`ednb-hull-anatomy .schematic[data-side="${side}"]`);
       await expect(plate).toHaveAttribute('data-state', 'ready');
       await expect(plate.locator('.schematic__artwork image')).toHaveAttribute(
         'href',
@@ -303,7 +301,7 @@ test.describe('the network', () => {
     await openImport(page);
     await paste(page, JOURNAL_EVENT);
     await submit(page);
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
 
     expect(foreign).toEqual([]);
   });
@@ -413,7 +411,7 @@ test.describe('the layer’s semantics', () => {
 
     await paste(page, JOURNAL_EVENT);
     await submit(page);
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
 
     const announced = await page.evaluate(
       () => (window as unknown as { __announced: string[] }).__announced,
@@ -484,7 +482,7 @@ test.describe('what is never trusted', () => {
       ]),
     );
     await submit(page);
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
 
     expect(await page.evaluate(() => '__pwned' in window)).toBe(false);
     await expect(page.locator('img[src="x"]')).toHaveCount(0);
@@ -505,13 +503,17 @@ test.describe('what is never trusted', () => {
       page,
       JSON.stringify([
         {
-          header: { appName: 'EDSY', appVersion: '2.0', appURL: 'https://elsewhere.test/build' },
+          header: {
+            appName: 'EDSY',
+            appVersion: '2.0',
+            appURL: 'https://elsewhere.test/outfitting',
+          },
           data: JSON.parse(JOURNAL_EVENT),
         },
       ]),
     );
     await submit(page);
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
 
     expect(foreign).toEqual([]);
     await expect(page.getByRole('link', { name: /elsewhere/i })).toHaveCount(0);

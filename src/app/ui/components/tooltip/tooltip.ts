@@ -140,7 +140,7 @@ function pixels(declared: string, root: HTMLElement): number {
  * placement outside a cutting box gets anyway.
  */
 @Component({
-  selector: 'edsb-tooltip',
+  selector: 'ednb-tooltip',
   templateUrl: './tooltip.html',
   styleUrl: './tooltip.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -20,7 +20,7 @@
  */
 
 /** The discriminator every snapshot carries. */
-export const BUILD_SNAPSHOT_FORMAT = 'edsb.build';
+export const BUILD_SNAPSHOT_FORMAT = 'ednb.build';
 
 /** The only published snapshot version. */
 export const BUILD_SNAPSHOT_VERSION = 1;

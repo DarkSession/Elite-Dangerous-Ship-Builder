@@ -45,15 +45,15 @@ describe('ItemView', () => {
 
     expect(element.querySelector('.item__name')?.textContent?.trim()).not.toBe('');
     // Five grades, and the ladder is the ship tool's own.
-    expect(element.querySelectorAll('edsb-grade-selector .grade__radio').length).toBe(5);
-    expect(element.querySelectorAll('edsb-metric-group .metric').length).toBeGreaterThan(0);
+    expect(element.querySelectorAll('ednb-grade-selector .grade__radio').length).toBe(5);
+    expect(element.querySelectorAll('ednb-metric-group .metric').length).toBeGreaterThan(0);
   });
 
   it('offers only the one grade the Flight Suit publishes, and says why (spec Edge Cases)', () => {
     store.dispatch({ kind: 'selectSuit', suitFamily: 'flightsuit' });
     const element = render().nativeElement as HTMLElement;
 
-    expect(element.querySelectorAll('edsb-grade-selector .grade__radio').length).toBe(1);
+    expect(element.querySelectorAll('ednb-grade-selector .grade__radio').length).toBe(1);
     // Four locked slots with nothing to explain them would say the suit could
     // be upgraded and this bench would not let you.
     expect(element.querySelector('.item__notice')?.textContent?.trim()).toBe(
@@ -67,7 +67,7 @@ describe('ItemView', () => {
     store.select('PrimaryWeapon1');
     const element = render().nativeElement as HTMLElement;
 
-    const labels = [...element.querySelectorAll('edsb-metric-group .metric__label')].map((label) =>
+    const labels = [...element.querySelectorAll('ednb-metric-group .metric__label')].map((label) =>
       label.textContent?.trim(),
     );
     expect(labels).toContain(BUNDLED_ENGLISH['equipment.attribute.damagePerShot']);
@@ -85,7 +85,7 @@ describe('ItemView', () => {
     fixture.componentInstance.alternativeChosen.subscribe((id) => chosen.push(id));
     fixture.componentInstance.closed.subscribe(() => (closed += 1));
 
-    element.querySelectorAll<HTMLInputElement>('edsb-grade-selector .grade__radio')[3]?.click();
+    element.querySelectorAll<HTMLInputElement>('ednb-grade-selector .grade__radio')[3]?.click();
     element.querySelector<HTMLButtonElement>('.item__alternatives .choice')?.click();
     element.querySelector<HTMLButtonElement>('.item__back')?.click();
 

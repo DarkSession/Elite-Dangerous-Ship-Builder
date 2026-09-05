@@ -49,7 +49,7 @@ export interface EquipmentChoice {
  * this component draws can therefore be chosen.
  */
 @Component({
-  selector: 'edsb-choice-list',
+  selector: 'ednb-choice-list',
   imports: [GameText],
   templateUrl: './choice-list.html',
   styleUrl: './choice-list.scss',

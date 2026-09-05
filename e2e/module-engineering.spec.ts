@@ -40,7 +40,7 @@ import { buildStockHull, reachShellAction } from './shell';
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -98,7 +98,7 @@ async function stockBuild(hull = 'Anaconda'): Promise<ShipLoadout> {
  */
 function recipeRows(page: Page) {
   return page.locator(
-    '.blueprint:not(.blueprint--none), edsb-blueprint-choice-list option:not(:first-child)',
+    '.blueprint:not(.blueprint--none), ednb-blueprint-choice-list option:not(:first-child)',
   );
 }
 
@@ -170,8 +170,8 @@ test.describe('engineering a module', () => {
       return;
     }
 
-    await page.locator('edsb-experimental-effect-list .menu__trigger').click();
-    const list = page.locator('edsb-experimental-effect-list .menu__list');
+    await page.locator('ednb-experimental-effect-list .menu__trigger').click();
+    const list = page.locator('ednb-experimental-effect-list .menu__list');
     await expect(list).toBeVisible();
 
     // Only where the package offers more effects than the box can hold; with a
@@ -351,9 +351,9 @@ test.describe('engineering a module', () => {
     // offered (FR-009). The details half stays — the hatch has the attributes
     // it was catalogued with whether or not anything will ever engineer them,
     // and FR-009 requires its facts to be exposed (wave 11).
-    await expect(page.locator('edsb-blueprint-choice-list')).toHaveCount(0);
-    await expect(page.locator('edsb-grade-selector')).toHaveCount(0);
-    await expect(page.locator('edsb-experimental-effect-list')).toHaveCount(0);
+    await expect(page.locator('ednb-blueprint-choice-list')).toHaveCount(0);
+    await expect(page.locator('ednb-grade-selector')).toHaveCount(0);
+    await expect(page.locator('ednb-experimental-effect-list')).toHaveCount(0);
     await expect(page.locator('.engineering__attributes')).toBeVisible();
 
     // And the panel keeps its shape: the sentence takes the half the controls
@@ -406,7 +406,7 @@ test.describe('engineering costs', () => {
     // not this panel making a materials list.
     const editor = page.locator('.engineering').first();
     await expect(
-      editor.locator('edsb-cost-materials, .block--materials, .rail-materials, .materials-box'),
+      editor.locator('ednb-cost-materials, .block--materials, .rail-materials, .materials-box'),
     ).toHaveCount(0);
     await expect(
       editor.getByText(englishMessages['cost-materials.materials.heading'], { exact: true }),
@@ -423,7 +423,7 @@ test.describe('engineering costs', () => {
     // may sit inside the Status stack there (feature 009).
     await applyDraft(page);
     await expect
-      .poll(() => page.locator('edsb-cost-materials .rail-material').count())
+      .poll(() => page.locator('ednb-cost-materials .rail-material').count())
       .toBeGreaterThan(0);
   });
 
@@ -528,13 +528,13 @@ test.describe('engineering costs', () => {
       // them down. What that width owes is the same three controls.
       await expect(page.locator('.engineering')).toHaveClass(/engineering--layer/);
       await chooseRecipe(page, /increased range/i);
-      await expect(page.locator('edsb-grade-selector')).toBeVisible();
+      await expect(page.locator('ednb-grade-selector')).toBeVisible();
       return;
     }
 
     await chooseRecipe(page, /increased range/i);
-    await expect(page.locator('edsb-grade-selector')).toBeVisible();
-    await expect(page.locator('edsb-experimental-effect-list')).toBeVisible();
+    await expect(page.locator('ednb-grade-selector')).toBeVisible();
+    await expect(page.locator('ednb-experimental-effect-list')).toBeVisible();
 
     const after = await boxOf();
     // Two controls appeared into room that was already paid for, so the card is
@@ -720,7 +720,7 @@ test.describe('purchased and reward articles', () => {
     // total. It joins no material list even there — Merc Coin has no credit or
     // material equivalent, so summing it into one would invent an exchange rate
     // the game does not have (wave 11).
-    const coins = page.locator('edsb-cost-materials .rail-material--merc-coin');
+    const coins = page.locator('ednb-cost-materials .rail-material--merc-coin');
     await expect(coins).toHaveCount(1);
     await expect(coins).toContainText(/merc coin/i);
 
@@ -737,7 +737,7 @@ test.describe('purchased and reward articles', () => {
     // Its own timeout: publishing a fragment lazily loads the codec table and
     // encodes off the main thread, which is comfortably under a second here and
     // past the default assertion window on a machine running the whole matrix.
-    await expect(page).toHaveURL(/\/build#b\./, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/outfitting#b\./, { timeout: 15_000 });
 
     const climbed = await applied(page, 'SmallHardpoint1');
     await page.locator('.grade').first().click();
@@ -827,7 +827,7 @@ test.describe('the bench’s three columns', () => {
   /** The top edge of each numbered bar, in document order. */
   async function stripTops(page: Page): Promise<number[]> {
     return await page.evaluate(() =>
-      [...document.querySelectorAll('.edsb-step')].map((bar) =>
+      [...document.querySelectorAll('.ednb-step')].map((bar) =>
         Math.round(bar.getBoundingClientRect().top),
       ),
     );
@@ -840,8 +840,8 @@ test.describe('the bench’s three columns', () => {
     await openStockBuild(page);
     await selectMount(page, 'FrameShiftDrive');
 
-    const manifest = page.locator('edsb-module-replacement');
-    const editor = page.locator('edsb-engineering-editor');
+    const manifest = page.locator('ednb-module-replacement');
+    const editor = page.locator('ednb-engineering-editor');
     await expect(manifest).toBeVisible();
     await expect(editor).toBeVisible();
 
@@ -891,7 +891,7 @@ test.describe('the bench’s three columns', () => {
 
       const measured = await page.evaluate(() => ({
         toolbar: document.querySelector('.replacement__toolbar')?.getBoundingClientRect().height,
-        tops: [...document.querySelectorAll('.edsb-step')].map((bar) =>
+        tops: [...document.querySelectorAll('.ednb-step')].map((bar) =>
           Math.round(bar.getBoundingClientRect().top),
         ),
       }));
@@ -917,8 +917,8 @@ test.describe('the bench’s three columns', () => {
       return;
     }
 
-    const manifest = page.locator('edsb-module-replacement');
-    const editor = page.locator('edsb-engineering-editor');
+    const manifest = page.locator('ednb-module-replacement');
+    const editor = page.locator('ednb-engineering-editor');
     const [manifestBox, editorBox] = await Promise.all([
       manifest.boundingBox(),
       editor.boundingBox(),
@@ -1030,7 +1030,7 @@ test.describe('the bench’s three columns', () => {
       expect(released.document).toBeGreaterThan(released.viewport);
 
       const scrollers = await page.evaluate(() =>
-        [...document.querySelectorAll('edsb-engineering-editor *')]
+        [...document.querySelectorAll('ednb-engineering-editor *')]
           .filter((box) => {
             const drawn = getComputedStyle(box);
             const scrolls = /auto|scroll/.test(drawn.overflowY);
@@ -1058,7 +1058,7 @@ test.describe('the bench’s three columns', () => {
 
     const inside = async () =>
       await page.evaluate(() => {
-        const scrollers = [...document.querySelectorAll('edsb-engineering-editor *')].filter(
+        const scrollers = [...document.querySelectorAll('ednb-engineering-editor *')].filter(
           (box) => {
             const drawn = getComputedStyle(box);
             return /auto|scroll/.test(drawn.overflowY) && box.scrollHeight - box.clientHeight > 1;
@@ -1111,12 +1111,12 @@ test.describe('the bench’s three columns', () => {
 
     if (await surfacesAreLayers(page)) {
       // Canvas 1d draws no strip at all: each surface is a screen of its own.
-      await expect(page.locator('.edsb-step')).toHaveCount(0);
+      await expect(page.locator('.ednb-step')).toHaveCount(0);
       return;
     }
 
-    const chooserSteps = await page.locator('edsb-candidate-list .edsb-step').count();
-    const editorNumber = page.locator('.engineering__step .edsb-step__number');
+    const chooserSteps = await page.locator('ednb-candidate-list .ednb-step').count();
+    const editorNumber = page.locator('.engineering__step .ednb-step__number');
     await expect(editorNumber).toHaveCount(1);
 
     if (chooserSteps === 0) {
@@ -1138,20 +1138,20 @@ test.describe('the bench’s three columns', () => {
     await selectMount(page, 'CargoHatch');
 
     if (await surfacesAreLayers(page)) {
-      await expect(page.locator('.edsb-step')).toHaveCount(0);
+      await expect(page.locator('.ednb-step')).toHaveCount(0);
       return;
     }
 
-    await expect(page.locator('edsb-module-replacement')).toHaveCount(0);
-    await expect(page.locator('.engineering__step .edsb-step__name')).toBeVisible();
-    await expect(page.locator('.engineering__step .edsb-step__number')).toBeHidden();
+    await expect(page.locator('ednb-module-replacement')).toHaveCount(0);
+    await expect(page.locator('.engineering__step .ednb-step__name')).toBeVisible();
+    await expect(page.locator('.engineering__step .ednb-step__number')).toBeHidden();
 
     // And the editor takes the bench, rather than a 396px track with an empty
     // column beside it.
     await page.setViewportSize({ width: 2020, height: 1100 });
     const [bench, editor] = await Promise.all([
       page.locator('.outfitting__bench').boundingBox(),
-      page.locator('edsb-engineering-editor').boundingBox(),
+      page.locator('ednb-engineering-editor').boundingBox(),
     ]);
     expect(editor!.width).toBeGreaterThan(bench!.width * 0.9);
   });
@@ -1170,7 +1170,7 @@ test('numbers every grade cell and dims the ones past the choice', async ({ page
   await chooseRecipe(page, /increased range/i);
   await chooseGrade(page, 2);
 
-  const cells = page.locator('edsb-grade-selector .grade');
+  const cells = page.locator('ednb-grade-selector .grade');
   await expect(cells).toHaveCount(5);
 
   const drawn = await cells.evaluateAll((nodes) =>
@@ -1188,7 +1188,7 @@ test('numbers every grade cell and dims the ones past the choice', async ({ page
   // being *below* the choice is four buttons claiming to be the one that is
   // pressed. Both number every cell, which is the part this is about.
   const steps = await page
-    .locator('edsb-grade-selector .grades')
+    .locator('ednb-grade-selector .grades')
     .first()
     .evaluate((node) => node.classList.contains('grades--steps'));
   expect(drawn.map((cell) => cell.filled)).toEqual(

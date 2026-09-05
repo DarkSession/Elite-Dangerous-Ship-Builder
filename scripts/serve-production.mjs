@@ -87,7 +87,7 @@ async function publishedDocument(candidate) {
  * deployment appear in another browser's session, and a journey that asserts
  * "nothing has been published yet" would fail on someone else's publish.
  */
-const PUBLICATION_COOKIE = 'edsb-e2e-publications';
+const PUBLICATION_COOKIE = 'ednb-e2e-publications';
 
 function publicationsIn(request) {
   const cookies = request.headers.cookie ?? '';

@@ -52,7 +52,7 @@
             could not settle the load to weigh it at. The whole card says the
             same word for the same cause.
           -->
-          <edsb-unavailable-value kind="incomplete" [label]="loadedMassLabel()" />
+          <ednb-unavailable-value kind="incomplete" [label]="loadedMassLabel()" />
         }
         @if (envelopeLoad(); as load) {
           <span class="drives__headline-load">{{ load }}</span>
@@ -156,7 +156,7 @@
                 below say for the same cause.
               -->
               <span class="drives__legend-value">
-                <edsb-unavailable-value kind="incomplete" />
+                <ednb-unavailable-value kind="incomplete" />
               </span>
             }
           </li>
@@ -197,7 +197,7 @@
           thrusters, and each of its own reasons is shown as it gave them
           (FR-005).
         -->
-        <edsb-unavailable-value kind="incomplete" [label]="mobilityUnavailableLabel()" />
+        <ednb-unavailable-value kind="incomplete" [label]="mobilityUnavailableLabel()" />
         <!--
           The package's reasons, under a name that says which reading they
           explain. An anonymous list beside an unavailable value is associated
@@ -210,7 +210,7 @@
           <ul class="drives__issues" [attr.aria-label]="mobilityIssuesLabel()">
             @for (issue of mobilityIssues(); track $index) {
               <li>
-                <edsb-game-text
+                <ednb-game-text
                   [text]="issue.text"
                   [language]="issue.language"
                   [translationState]="issue.translationState"
@@ -270,7 +270,7 @@
         width the trio came out two across with `MASS LOCK` alone underneath,
         which is neither artboard (Commander request 2026-08-26).
       -->
-      <edsb-metric-group
+      <ednb-metric-group
         class="drives__cells metric-group--tight"
         [label]="jumpCellsLabel()"
         [metrics]="jumpCells()"
@@ -299,7 +299,7 @@
         card beside it stays whole (FR-003).
       -->
       @if (!ranges().length) {
-        <edsb-unavailable-value kind="incomplete" [label]="driveUnavailableLabel()" />
+        <ednb-unavailable-value kind="incomplete" [label]="driveUnavailableLabel()" />
         <!--
           Drawn only when the package gave reasons. A drive whose record makes
           the getter throw has none — a throw is not a `CalculationResult` — and
@@ -309,7 +309,7 @@
           <ul class="drives__issues" [attr.aria-label]="driveIssuesLabel()">
             @for (issue of driveIssues(); track $index) {
               <li>
-                <edsb-game-text
+                <ednb-game-text
                   [text]="issue.text"
                   [language]="issue.language"
                   [translationState]="issue.translationState"
@@ -369,7 +369,7 @@
                 envelope on the other card call incomplete.
               -->
               <span class="drives__legend-value">
-                <edsb-unavailable-value kind="incomplete" />
+                <ednb-unavailable-value kind="incomplete" />
               </span>
             }
           </li>

@@ -172,7 +172,7 @@ export interface ShellStatus {
  * second copy of it (canvas 1a/1b/1c, "Command bar").
  */
 @Component({
-  selector: 'edsb-app-frame',
+  selector: 'ednb-app-frame',
   imports: [ActionButton, ActionLayer, AnnouncementOutlet, ShipIdentityFields, StatusNotice],
   templateUrl: './app-frame.html',
   styleUrl: './app-frame.scss',

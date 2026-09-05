@@ -16,7 +16,7 @@ import { buildStockHull, reachShellAction, savedToBrowser } from './shell';
 async function withStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -448,7 +448,7 @@ test.describe('the layer, against the canvas', () => {
     const rule = await formats.evaluate((node) => {
       // The rule closes the region the group is placed in, which is the
       // component's own host element rather than its fieldset.
-      const style = getComputedStyle(node.closest('edsb-choice-group') ?? node);
+      const style = getComputedStyle(node.closest('ednb-choice-group') ?? node);
       return { width: style.borderInlineEndWidth, colour: style.borderInlineEndColor };
     });
 
@@ -462,7 +462,7 @@ test.describe('the layer, against the canvas', () => {
       // at the taller region's content would be the drawn mark at the wrong
       // length.
       const spans = await formats.evaluate((node) => {
-        const region = node.closest('edsb-choice-group') ?? node;
+        const region = node.closest('ednb-choice-group') ?? node;
         const body = region.closest('.layer__body')!;
         return Math.abs(
           region.getBoundingClientRect().height - body.getBoundingClientRect().height,
@@ -682,7 +682,7 @@ test.describe('with no network at all', () => {
     await importLayer.getByRole('button', { name: /^load build$/i }).click();
     // Nothing is asked: the stock build being replaced is in a record of its
     // own, so the import lands straight in the workspace (feature 001, FR-008).
-    await expect(page).toHaveURL(/\/build($|[#?])/);
+    await expect(page).toHaveURL(/\/outfitting($|[#?])/);
 
     // From here on, nothing but static files. The import landed in the
     // workspace, which is where feature 010 asks for the hull's schematics and
@@ -780,7 +780,7 @@ test.describe('what is never trusted', () => {
 
 test.describe('with no build to pass on', () => {
   test('offers no Export action, and the layer cannot open', async ({ page }) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await expect(page.getByRole('main')).toBeVisible();
 
     // The honest state: the action is not published rather than published and
@@ -797,7 +797,7 @@ test.describe('with no build to pass on', () => {
   });
 
   test('says what to do next through the workspace’s own empty state', async ({ page }) => {
-    await page.goto('/build');
+    await page.goto('/outfitting');
 
     await expect(page.getByRole('main')).toContainText(/ship|build|hull/i);
     // Import is a shell action, so it is there with no build and no chosen hull.
@@ -814,7 +814,7 @@ test.describe('with no build to pass on', () => {
 
     // Reloading the application starts a session with no build; nothing about
     // the previous payload is persisted, so there is nothing to come back.
-    await page.goto('/build');
+    await page.goto('/outfitting');
     await expect(page.getByRole('dialog', { name: /export build/i })).toHaveCount(0);
   });
 });

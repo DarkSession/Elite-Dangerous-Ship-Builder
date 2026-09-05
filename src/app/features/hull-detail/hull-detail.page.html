@@ -1,6 +1,6 @@
 @if (view(); as detail) {
   @if (detail.kind === 'unknown') {
-    <edsb-hull-detail-unknown-hull [hull]="detail.address" />
+    <ednb-hull-detail-unknown-hull [hull]="detail.address" />
   } @else {
     <!--
       The reference's inspector, in its order and with its contents: the
@@ -9,7 +9,7 @@
       and the stock-hull action (canvas 1a rail, canvas 1b detail sheet).
     -->
     <article class="detail" [class.detail--named-by-bar]="barCarriesName()">
-      <edsb-hull-artwork
+      <ednb-hull-artwork
         [source]="detail.artworkPath"
         [label]="detail.artworkLabel"
         [state]="artworkState()"
@@ -21,7 +21,7 @@
 
       <div class="detail__identity">
         <h2 class="detail__name">
-          <edsb-game-text
+          <ednb-game-text
             [text]="detail.name.text"
             [language]="detail.name.language"
             [translationState]="detail.name.translationState"
@@ -33,7 +33,7 @@
         <dl class="detail__blurb">
           <dt>{{ manufacturerLabel() }}</dt>
           <dd>
-            <edsb-game-text
+            <ednb-game-text
               [text]="detail.manufacturer.text"
               [language]="detail.manufacturer.language"
               [translationState]="detail.manufacturer.translationState"
@@ -46,7 +46,7 @@
         </dl>
       </div>
 
-      <edsb-fact-list [label]="specificationsHeading()" [facts]="summaryFacts()" />
+      <ednb-fact-list [label]="specificationsHeading()" [facts]="summaryFacts()" />
 
       @if (mounts().length > 0) {
         <div class="detail__mounts" data-slot-group="hardpoint">
@@ -82,7 +82,7 @@
                 @for (mount of group.named; track mount.id) {
                   <li class="detail__mount">
                     <span class="detail__mount-label">
-                      <edsb-game-text
+                      <ednb-game-text
                         [text]="mount.name.text"
                         [language]="mount.name.language"
                         [translationState]="mount.name.translationState"
@@ -156,7 +156,7 @@
       <div class="detail__create">
         @if (detail.canCreate) {
           <div class="detail__create-action">
-            <edsb-action-button
+            <ednb-action-button
               block
               [label]="createLabel()"
               emphasis="primary"
@@ -164,11 +164,11 @@
             />
           </div>
         } @else {
-          <edsb-status-notice tone="warning" [message]="createUnavailable()" />
+          <ednb-status-notice tone="warning" [message]="createUnavailable()" />
         }
 
         @if (creationError(); as failure) {
-          <edsb-status-notice tone="error" [message]="failure" />
+          <ednb-status-notice tone="error" [message]="failure" />
         }
       </div>
     </article>

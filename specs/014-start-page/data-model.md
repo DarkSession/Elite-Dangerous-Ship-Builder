@@ -39,7 +39,7 @@ feature and listed here so the two readings are visibly different shapes:
 
 ## ToolCard
 
-What `AppNavigation.catalogue()` returns, one per tool, and what `edsb-tool-card` is handed.
+What `AppNavigation.catalogue()` returns, one per tool, and what `ednb-tool-card` is handed.
 All text is already resolved in the committed locale.
 
 | Field      | Type     | Meaning                                                            |
@@ -63,8 +63,8 @@ and the page never chooses.
 ```text
 TOOLS (literal, app-navigation.ts)
   │
-  ├── tools(currentPath) ──→ ToolEntry[]  ──→ edsb-app-frame       (unchanged)
-  └── catalogue()        ──→ ToolCard[]   ──→ edsb-tool-card × n   (new)
+  ├── tools(currentPath) ──→ ToolEntry[]  ──→ ednb-app-frame       (unchanged)
+  └── catalogue()        ──→ ToolCard[]   ──→ ednb-tool-card × n   (new)
 ```
 
 One source, two readings, no third list. A tool added to `TOOLS` appears in the bar and at

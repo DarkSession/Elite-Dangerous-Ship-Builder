@@ -29,13 +29,13 @@ capability.
 | FR-007      | Consolidated rows come from `buildCost().materials`; 002's boundary supplies only the blueprint count. |
 | FR-008      | An uncostable recipe contributes nothing and is not named (ruled F).                                   |
 | FR-009      | Fixed and Mercenary purchase baselines contribute no craft cost, as 002's boundary already decides.    |
-| FR-010      | Names use package helpers through `edsb-game-text`; rarity uses `edsb-material-grade`.                 |
+| FR-010      | Names use package helpers through `ednb-game-text`; rarity uses `ednb-material-grade`.                 |
 
 ## Cross-feature ownership
 
-- Feature 001 supplies the active build and the `/build` workspace.
+- Feature 001 supplies the active build and the `/outfitting` workspace.
 - Feature 002 supplies the fitted state, the `engineeringCost()` boundary, `sortMaterialLines` and
-  `edsb-material-grade`. It also supplied `edsb-material-cost-list`, withdrawn 2026-08-23 with the
+  `ednb-material-grade`. It also supplied `ednb-material-cost-list`, withdrawn 2026-08-23 with the
   Engineer panel's own list (ruling G, amended).
 - Feature 003 owns the rest of the status rail. Feature 009 contributes two sibling blocks into it
   and holds no port, adapter or summary vocabulary of its own — the Assembly Requirements adapter is

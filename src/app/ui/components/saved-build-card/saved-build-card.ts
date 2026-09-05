@@ -86,7 +86,7 @@ export interface SavedBuild {
  * (FR-010).
  */
 @Component({
-  selector: 'edsb-saved-build-card',
+  selector: 'ednb-saved-build-card',
   imports: [GameText],
   templateUrl: './saved-build-card.html',
   styleUrl: './saved-build-card.scss',

@@ -82,7 +82,7 @@ interface PendingDelete {
  * to make room (FR-009, FR-013).
  */
 @Component({
-  selector: 'edsb-build-library-page',
+  selector: 'ednb-build-library-page',
   imports: [
     ActionButton,
     ConfirmDialog,
@@ -422,7 +422,7 @@ export class BuildLibraryPage {
           return;
         }
         if (result.kind === 'committed') {
-          void this.#leaveThrough(NAVIGATION_ROUTES.build);
+          void this.#leaveThrough(NAVIGATION_ROUTES.outfitting);
         }
         return;
       }

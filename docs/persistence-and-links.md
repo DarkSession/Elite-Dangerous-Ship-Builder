@@ -7,16 +7,19 @@ about both across releases. Feature 001 owns everything here.
 
 Everything written to a browser store is named in `src/app/platform/storage/storage-keys.ts`.
 Enumeration filters on these prefixes: a key this application did not write is never read,
-migrated, repaired or removed, even when it looks like one of ours.
+migrated, repaired or removed, even when it looks like one of ours. That rule covers a key the
+product wrote under an earlier prefix as well, so the records under one are left where they are
+and are not opened here — the Commander ruled for one prefix over a key space carrying two
+(`docs/navbeacon-migration.md`).
 
 | Key                   | Store              | Holds                                                                             |
 | --------------------- | ------------------ | --------------------------------------------------------------------------------- |
-| `edsb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.                   |
-| `edsb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record it autosaves into.                   |
-| `edsb:catalogue`      | `sessionStorage`   | This tab's browsing position in the catalogue: search, filters, order, anchor.    |
-| `edsb:update-applied` | `sessionStorage`   | That this tab restarted onto a newer version, so the arriving session can say so. |
-| `edsb.persistence.v1` | `BroadcastChannel` | Autosave-record claims between live pages, and cross-tab invalidation.            |
-| `edsb:record:<uuid>`  | Web Locks          | Serialises deliberate writes to one record. Per record, never global.             |
+| `ednb:record:<uuid>`  | `localStorage`     | One build, named or not. One key per record; there is no index.                   |
+| `ednb:tab`            | `sessionStorage`   | This page's descriptor: which unnamed record it autosaves into.                   |
+| `ednb:catalogue`      | `sessionStorage`   | This tab's browsing position in the catalogue: search, filters, order, anchor.    |
+| `ednb:update-applied` | `sessionStorage`   | That this tab restarted onto a newer version, so the arriving session can say so. |
+| `ednb.persistence.v1` | `BroadcastChannel` | Autosave-record claims between live pages, and cross-tab invalidation.            |
+| `ednb:record:<uuid>`  | Web Locks          | Serialises deliberate writes to one record. Per record, never global.             |
 
 No index key exists on purpose. An index is a second source of truth that can disagree with the
 records it lists, and a Commander whose index was lost would have builds that are present in the
@@ -38,7 +41,7 @@ moment it exists, and the bound on the ones they never named is time rather than
   does not touch `modifiedAt`.
 - Autosave never writes to a named record. The check reads the stored record's own `kind` rather
   than the page's belief about it, so a record named in another tab is covered too.
-- `edsb:tab` carries the unnamed record this page is autosaving into, across a reload. A duplicated
+- `ednb:tab` carries the unnamed record this page is autosaving into, across a reload. A duplicated
   tab clones it and claims an id that is already live; the BroadcastChannel handshake forks the
   later claimant before either page next writes. Two pages holding one _named_ record open is not a
   collision, because neither writes to it.
@@ -71,26 +74,26 @@ whether the build can be edited, calculated, shared or exported.
 
 ## Supported record versions
 
-Stored records are a versioned envelope, `format: "edsb.local-record"`, carrying one tool's payload:
-a modelled build as `format: "edsb.build"`, or a loadout as `format: "edsb.loadout"`.
+Stored records are a versioned envelope, `format: "ednb.local-record"`, carrying one tool's payload:
+a modelled build as `format: "ednb.build"`, or a loadout as `format: "ednb.loadout"`.
 
-| Version | Status                                                                      |
-| ------- | --------------------------------------------------------------------------- |
-| 1       | Superseded. Read by this release and migrated on open; never written by it. |
-| 2       | Current. Written by this release and read by it.                            |
+| Version | Status                                                                                                                                                |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | Superseded. Never written by this release; the decoder and its migration step stand for the version ladder, and no key under this prefix carries one. |
+| 2       | Current. Written by this release and read by it.                                                                                                      |
 
 Version 2 adds one field: `tool`, which is `"ship"` or `"equipment"` and says which payload the
 envelope carries.
 
 ```text
-edsb.local-record v2
+ednb.local-record v2
 ├── tool: "ship"       → hullSymbol, validation, build
 └── tool: "equipment"  → suitFamily, loadout
 ```
 
 Everything else is shared by both: `format`, `version`, `id`, `kind`, `revisionId`, `createdAt`,
 `modifiedAt`, `name`, `note` and `sourceNamed`. **One key space and no index**: both tools' records
-live under `edsb:record:<uuid>`, and the library lists them together, each row naming the tool that
+live under `ednb:record:<uuid>`, and the library lists them together, each row naming the tool that
 made it. A row's summary comes from the envelope alone — for a loadout, its name and its
 `suitFamily` — so listing never rebuilds a loadout and never asks the package anything.
 
@@ -118,7 +121,7 @@ neither, so saving is never destructive of a choice a Commander made.
 
 ## Published link versions
 
-A build link is `<origin><base>/build#b.<payload>`.
+A build link is `<origin><base>/outfitting#b.<payload>`.
 
 - The value after `#` starts `b.` and is **at most 500 characters including that prefix**.
 - Origin, deployment base path and the `#` itself are outside that limit.

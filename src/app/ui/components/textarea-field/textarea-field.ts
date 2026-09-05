@@ -17,7 +17,7 @@ import { createFieldRelations } from '../field/field-relations';
  * label rather than a block of text pretending to be one.
  */
 @Component({
-  selector: 'edsb-textarea-field',
+  selector: 'ednb-textarea-field',
   templateUrl: './textarea-field.html',
   styleUrl: './textarea-field.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

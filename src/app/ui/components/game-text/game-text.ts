@@ -33,7 +33,7 @@ import { relationId } from '../../a11y/text-equivalence';
  * wording — is application-owned.
  */
 @Component({
-  selector: 'edsb-game-text',
+  selector: 'ednb-game-text',
   templateUrl: './game-text.html',
   styleUrl: './game-text.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -38,7 +38,7 @@ export interface DiagnosticEntry {
  * `entries[1].Modules[0].Item` into something that points somewhere else.
  */
 @Component({
-  selector: 'edsb-diagnostic-list',
+  selector: 'ednb-diagnostic-list',
   templateUrl: './diagnostic-list.html',
   styleUrl: './diagnostic-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -42,7 +42,7 @@ export interface BlueprintChoiceView {
  * the comparison the draft actually computes.
  */
 @Component({
-  selector: 'edsb-blueprint-choice-list',
+  selector: 'ednb-blueprint-choice-list',
   imports: [GameText, SelectField],
   templateUrl: './blueprint-choice-list.html',
   styleUrl: './blueprint-choice-list.scss',

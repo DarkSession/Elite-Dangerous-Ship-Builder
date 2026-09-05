@@ -3,14 +3,14 @@
 
   @switch (state()) {
     @case ('encoding') {
-      <edsb-status-notice tone="loading" [message]="encodingLabel()" />
+      <ednb-status-notice tone="loading" [message]="encodingLabel()" />
     }
     @case ('absent') {
-      <edsb-status-notice tone="info" [message]="absentLabel()" />
+      <ednb-status-notice tone="info" [message]="absentLabel()" />
     }
     @case ('refused') {
       @if (refusal(); as reason) {
-        <edsb-status-notice
+        <ednb-status-notice
           tone="error"
           [message]="refusedTitle()"
           [detail]="reason.detail === null ? reason.message : reason.message + ' ' + reason.detail"
@@ -33,13 +33,13 @@
     >
 
     <div class="share-link__actions">
-      <edsb-action-button
+      <ednb-action-button
         [label]="copyLabel()"
         emphasis="primary"
         (activated)="copyRequested.emit()"
       />
       @if (shareAvailable()) {
-        <edsb-action-button [label]="shareLabel()" (activated)="shareRequested.emit()" />
+        <ednb-action-button [label]="shareLabel()" (activated)="shareRequested.emit()" />
       }
     </div>
 
@@ -58,15 +58,15 @@
   }
 
   @if (feedbackNotice(); as notice) {
-    <edsb-status-notice [tone]="notice.tone" [message]="notice.message" />
+    <ednb-status-notice [tone]="notice.tone" [message]="notice.message" />
   }
 
   @if (state() === 'refused') {
     <div class="share-link__actions">
-      <edsb-action-button [label]="retryLabel()" (activated)="retryRequested.emit()" />
+      <ednb-action-button [label]="retryLabel()" (activated)="retryRequested.emit()" />
     </div>
     @if (slefAvailable()) {
-      <edsb-action-button [label]="slefLabel()" (activated)="slefRequested.emit()" />
+      <ednb-action-button [label]="slefLabel()" (activated)="slefRequested.emit()" />
     } @else {
       <p class="share-link__slef-unavailable">{{ slefUnavailableLabel() }}</p>
     }

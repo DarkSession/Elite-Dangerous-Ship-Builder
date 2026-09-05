@@ -1,6 +1,6 @@
 # Outfitting Workspace Surface
 
-**Route**: `/build`  
+**Route**: `/outfitting`  
 **Requirements**: FR-001–FR-003, FR-006–FR-011, FR-015–FR-019
 
 ## Purpose
@@ -190,7 +190,7 @@ own pip blocks below the panel's fold and the page underneath refusing to move.
 So the column releases while a dashboard is open — `position: static`, its own content height, the
 bench released with it — and the page scrolls instead, exactly as a short viewport releases it. The
 plates keep the bound: they are the arrangement it was written for and they fit it. Which of the two
-is open is read off `edsb-hull-anatomy`'s own `anatomy--dashboard` host class rather than a flag
+is open is read off `ednb-hull-anatomy`'s own `anatomy--dashboard` host class rather than a flag
 beside it, so a mode that lands next is bounded or released by what it draws rather than by a list
 somebody remembered to add it to (Commander request 2026-08-26).
 
@@ -264,7 +264,7 @@ difference, and freezing the ledger at it put the category strip _behind_ the ba
 62px of it, at 834px, once the page was scrolled. The frame
 already measures its own bar to decide whether to release it; it now republishes that reading as the
 token on its own host, so every region that clears the bar clears the bar that is there
-(`app-frame.ts`, `sticky-banner.ts`; token layer, `edsb-app-frame`). This is feature 011's shell, and
+(`app-frame.ts`, `sticky-banner.ts`; token layer, `ednb-app-frame`). This is feature 011's shell, and
 the reading is shared: the change is recorded here because this screen is where the declared figure
 stopped being true.
 

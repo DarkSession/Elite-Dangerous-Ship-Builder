@@ -25,10 +25,9 @@ export async function reachShellAction(page: Page, name: RegExp): Promise<void> 
 /**
  * Opens the saved builds, at whichever width.
  *
- * They have no address of its own (2026-09-04): the library is a layer over
- * whatever screen a Commander is on, raised by a shell action. A journey that
- * used to `goto('/builds')` lands on a screen first and presses the control,
- * which is the only way in there now is.
+ * They have no address of their own: the library is a layer over whatever
+ * screen a Commander is on, raised by a shell action. So a journey lands on a
+ * screen first and presses the control, which is the only way in.
  */
 export async function openLibrary(page: Page): Promise<void> {
   if (!page.url().startsWith('http')) {
@@ -108,21 +107,21 @@ export async function openRecordFromLibrary(page: Page, title: string): Promise<
   await expect(async () => {
     // Already in the workspace with nothing standing over it. The address alone
     // no longer answers this: the library is a layer with no address of its own
-    // (2026-09-04), so it can be open on top of `/build` and the record has
+    // (2026-09-04), so it can be open on top of `/outfitting` and the record has
     // still not been opened.
-    if (/\/build(#|$)/.test(page.url()) && !(await surface.isVisible())) {
+    if (/\/outfitting(#|$)/.test(page.url()) && !(await surface.isVisible())) {
       return;
     }
     await row.click({ timeout: 5_000 });
     await open.click({ timeout: 5_000 });
-    await expect(page).toHaveURL(/\/build(#|$)/, { timeout: 5_000 });
+    await expect(page).toHaveURL(/\/outfitting(#|$)/, { timeout: 5_000 });
   }).toPass({ timeout: 30_000 });
 
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
 }
 
 export async function savedToBrowser(page: Page | Locator): Promise<void> {
-  await expect(page.locator('edsb-build-workspace-page')).toHaveAttribute(
+  await expect(page.locator('ednb-build-workspace-page')).toHaveAttribute(
     'data-persistence',
     'saved',
   );

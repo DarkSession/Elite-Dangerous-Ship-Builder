@@ -107,7 +107,7 @@ defined once, in the token layer, with `check-interface-foundations.mjs` enforci
 `token-outside-source`. `pnpm run policy` was green before the rebase and red after it, on a file
 this feature does not own. It was fixed here rather than left for `main`, because a red gate on this
 branch is this branch's problem whatever wrote it: the declaration moved to
-`styles/tokens/_semantic.scss` beside the token's own, selected as `edsb-app-frame.frame--released`.
+`styles/tokens/_semantic.scss` beside the token's own, selected as `ednb-app-frame.frame--released`.
 The frame already puts that class on its host element, so the new selector reaches exactly what
 `:host(.frame--released)` reached, and the released bar still takes the chrome below it with it. The
 behaviour, the unit tests over the measurement and the end-to-end assertion at 200% text are

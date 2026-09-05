@@ -6,7 +6,7 @@
 @if (linkFailure(); as failure) {
   <!-- A link that arrived unreadable, said where the Commander is: they opened
        an address and the bench did not change (FR-021). -->
-  <edsb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
+  <ednb-status-notice tone="error" [message]="failure.message" [detail]="failure.detail" />
 }
 
 <section class="bench" [attr.data-composition]="composition()">
@@ -15,7 +15,7 @@
       Canvas 1b's tab strip. It is a size container of its own, so its width is
       declared in the stylesheet rather than left to size to its labels.
     -->
-    <edsb-tab-group
+    <ednb-tab-group
       class="bench__tabs"
       [label]="tabsLabel()"
       [tabs]="tabs()"
@@ -30,7 +30,7 @@
       [id]="loadoutPanelId"
       [attr.aria-label]="ledgerLabel()"
     >
-      <edsb-loadout-ledger
+      <ednb-loadout-ledger
         [ledger]="presenter.ledger()"
         [selected]="store.selected()"
         [compact]="composition() !== 'wide'"
@@ -49,7 +49,7 @@
       [attr.aria-label]="itemLabel()"
     >
       @if (store.hasLoadout()) {
-        <edsb-item-view
+        <ednb-item-view
           [item]="presenter.item()"
           [openSlot]="composition() === 'wide' ? slotOpen() : null"
           [showBack]="composition() !== 'wide'"
@@ -62,7 +62,7 @@
                it belongs to. Compact it has nowhere to expand into, so canvas
                1b takes the screen and the layer below draws it. -->
           @if (composition() === 'wide') {
-            <edsb-modification-chooser
+            <ednb-modification-chooser
               [open]="slotOpen() !== null"
               [inline]="true"
               [target]="store.selected()"
@@ -72,11 +72,11 @@
               (dismissed)="slotOpen.set(null)"
             />
           }
-        </edsb-item-view>
+        </ednb-item-view>
       } @else {
         <!-- Canvas 2a and 2b: the one live choice on an empty bench stands in
              the column the item will occupy, not in place of the bench. -->
-        <edsb-suit-gate [compact]="composition() !== 'wide'" (chosen)="chooseFirstSuit($event)" />
+        <ednb-suit-gate [compact]="composition() !== 'wide'" (chosen)="chooseFirstSuit($event)" />
       }
     </section>
   }
@@ -88,7 +88,7 @@
         [id]="statsPanelId"
         [attr.aria-label]="statsLabel()"
       >
-        <edsb-commander-stats [stats]="presenter.stats()" [compact]="composition() !== 'wide'" />
+        <ednb-commander-stats [stats]="presenter.stats()" [compact]="composition() !== 'wide'" />
       </section>
 
       <!-- Canvas 1a puts the material requirements under the stats in the
@@ -99,7 +99,7 @@
           [id]="materialsPanelId"
           [attr.aria-label]="materialsLabel()"
         >
-          <edsb-material-requirements [materials]="presenter.materials()" />
+          <ednb-material-requirements [materials]="presenter.materials()" />
         </section>
       }
     </div>
@@ -111,18 +111,18 @@
       [id]="materialsPanelId"
       [attr.aria-label]="materialsLabel()"
     >
-      <edsb-material-requirements [materials]="presenter.materials()" [compact]="true" />
+      <ednb-material-requirements [materials]="presenter.materials()" [compact]="true" />
     </section>
   }
 
-  <edsb-export-loadout-dialog [open]="exportOpen()" (dismissed)="exportOpen.set(false)" />
+  <ednb-export-loadout-dialog [open]="exportOpen()" (dismissed)="exportOpen.set(false)" />
 
   <!--
     Naming and saving, through the ship tool's own save layer: one library holds
     both tools' records, so the question a duplicate name raises is asked once
     and answered the same way (FR-016, FR-017).
   -->
-  <edsb-save-build-dialog
+  <ednb-save-build-dialog
     [open]="saveOpen()"
     [initialName]="saveInitialName()"
     [source]="saveSource()"
@@ -137,7 +137,7 @@
   <!-- Another tab wrote the record after this bench opened it. Three answers,
        each stating which versions survive, and no lock is held while the
        question is on screen (FR-017). -->
-  <edsb-choice-dialog
+  <ednb-choice-dialog
     [open]="conflict() !== null"
     [title]="conflictTitle()"
     [description]="conflictDescription()"
@@ -148,7 +148,7 @@
   />
 
   @if (composition() !== 'wide') {
-    <edsb-modification-chooser
+    <ednb-modification-chooser
       [open]="slotOpen() !== null"
       [target]="store.selected()"
       [slot]="slotOpen()"

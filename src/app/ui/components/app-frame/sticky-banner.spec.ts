@@ -20,7 +20,7 @@ import { declareMeasurement, declareResizeObserver } from '../../measurement.spe
  */
 
 @Component({
-  selector: 'edsb-sticky-banner-host',
+  selector: 'ednb-sticky-banner-host',
   template: '<header #banner></header>',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

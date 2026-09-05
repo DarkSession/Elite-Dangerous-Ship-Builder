@@ -15,7 +15,7 @@ import { MessageService } from '../../i18n/message.service';
  * is the shape rather than a hue.
  */
 @Component({
-  selector: 'edsb-material-grade',
+  selector: 'ednb-material-grade',
   host: { '[attr.data-grade]': 'grade()' },
   templateUrl: './material-grade.html',
   styleUrl: './material-grade.scss',

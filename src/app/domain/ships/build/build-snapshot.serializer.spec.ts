@@ -10,7 +10,7 @@ describe('build snapshot serializer', () => {
 
     const snapshot = toBuildSnapshotV1(loadout);
 
-    expect(snapshot.format).toBe('edsb.build');
+    expect(snapshot.format).toBe('ednb.build');
     expect(snapshot.version).toBe(1);
     expect(snapshot.shipSymbol).toBe('Anaconda');
     expect(snapshot.modules.map((module) => module.slot)).toEqual(

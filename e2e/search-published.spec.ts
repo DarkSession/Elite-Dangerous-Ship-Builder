@@ -41,7 +41,7 @@ test.describe('the document each published address answers with', () => {
     // 200. What separates a published document from that fallback is the
     // canonical it carries — the shell's names the site root — so that is what
     // is read.
-    for (const path of ['/ships', '/build', '/equipment', '/ships/Anaconda']) {
+    for (const path of ['/ships', '/outfitting', '/equipment', '/ships/Anaconda']) {
       const response = await page.request.get(`${PRODUCT_URL}${path}`, { maxRedirects: 0 });
 
       expect(response.status(), path).toBe(200);
@@ -62,7 +62,7 @@ test.describe('the document each published address answers with', () => {
     // an address at all: they are a layer over the screen a Commander is on,
     // and there is no document for a crawler to read.
     const catalogue = await (await page.request.get(`${PRODUCT_URL}/ships`)).text();
-    const workspace = await (await page.request.get(`${PRODUCT_URL}/build`)).text();
+    const workspace = await (await page.request.get(`${PRODUCT_URL}/outfitting`)).text();
     const bench = await (await page.request.get(`${PRODUCT_URL}/equipment`)).text();
 
     expect(description(catalogue)).toBe(englishMessages['catalogue.description']);
@@ -72,7 +72,7 @@ test.describe('the document each published address answers with', () => {
     expect(title(workspace)).toBe(
       `${englishMessages['workspace.title']} · ${englishMessages['app.name']}`,
     );
-    expect(canonical(workspace)).toBe(`${SITE_ORIGIN}/build`);
+    expect(canonical(workspace)).toBe(`${SITE_ORIGIN}/outfitting`);
 
     expect(description(bench)).toBe(englishMessages['equipment.description']);
     expect(title(bench)).toBe(

@@ -70,7 +70,7 @@ export type EngineeringState =
  * "Clearing engineering").
  */
 @Component({
-  selector: 'edsb-engineering-editor',
+  selector: 'ednb-engineering-editor',
   imports: [
     AttributeComparison,
     BlueprintChoiceList,

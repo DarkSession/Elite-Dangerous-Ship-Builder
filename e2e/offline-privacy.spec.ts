@@ -86,18 +86,18 @@ test.describe('offline capability', () => {
     // installed package, so opening the mode, moving the target range and
     // changing the WEP allocation all work with the network gone.
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: 'Offence' })
       .click();
-    await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+    await expect(page.locator('ednb-offence-analysis .offence')).toBeVisible();
 
-    const shots = page.locator('edsb-offence-analysis .shots__entry');
+    const shots = page.locator('ednb-offence-analysis .shots__entry');
     const before = await shots.allInnerTexts();
-    await page.locator('edsb-offence-analysis input[type="range"]').fill('2000');
+    await page.locator('ednb-offence-analysis input[type="range"]').fill('2000');
     await expect.poll(() => shots.allInnerTexts()).not.toEqual(before);
 
-    await expect(page.locator('edsb-offence-analysis .bars--range .bar')).toHaveCount(4);
-    const capacitor = page.locator('edsb-offence-analysis .bars--capacitor .bar');
+    await expect(page.locator('ednb-offence-analysis .bars--range .bar')).toHaveCount(4);
+    const capacitor = page.locator('ednb-offence-analysis .bars--capacitor .bar');
     await expect(capacitor).toHaveCount(4);
 
     // The one condition this panel reads from another feature's store. Setting
@@ -106,16 +106,16 @@ test.describe('offline capability', () => {
     const recharge = capacitor.nth(1).locator('.bar__value');
     const chargedAt = await recharge.innerText();
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: 'Power' })
       .click();
-    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await expect(page.locator('ednb-power-thermals')).toBeVisible();
     await page.locator('.distributor tbody tr').nth(2).locator('.pips__step').first().click();
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: 'Offence' })
       .click();
-    await expect(page.locator('edsb-offence-analysis .offence')).toBeVisible();
+    await expect(page.locator('ednb-offence-analysis .offence')).toBeVisible();
     await expect.poll(() => recharge.innerText()).not.toBe(chargedAt);
 
     await context.setOffline(false);
@@ -124,7 +124,7 @@ test.describe('offline capability', () => {
   test('reads the cost and material blocks with no network at all', async ({ page, context }) => {
     await withWorker(page, '/ships/Anaconda');
     await buildStockHull(page, 'Build');
-    await expect(page.locator('edsb-cost-materials .cost__row')).toHaveCount(4);
+    await expect(page.locator('ednb-cost-materials .cost__row')).toHaveCount(4);
 
     await context.setOffline(true);
 
@@ -141,8 +141,8 @@ test.describe('offline capability', () => {
     // the materials block is absent for a build that crafts nothing, and it has
     // to be built from the package's consolidated result to appear at all
     // (feature 009, quickstart scenario 6).
-    const credits = await page.locator('edsb-cost-materials .cost__value').allInnerTexts();
-    await expect(page.locator('edsb-cost-materials .rail-material')).toHaveCount(0);
+    const credits = await page.locator('ednb-cost-materials .cost__value').allInnerTexts();
+    await expect(page.locator('ednb-cost-materials .rail-material')).toHaveCount(0);
 
     // Its category first: at compact width a mount nobody has asked for is not
     // on the page at all (`revealMount`).
@@ -162,11 +162,11 @@ test.describe('offline capability', () => {
     // deliberately outside the footer's counts, so counting it here would
     // compare two different things and happen to agree only while this journey
     // buys no Mercenary article.
-    const rows = page.locator('edsb-cost-materials .rail-material:not(.rail-material--merc-coin)');
+    const rows = page.locator('ednb-cost-materials .rail-material:not(.rail-material--merc-coin)');
     await expect(rows.first()).toBeVisible();
 
     // The footer counts the rows beside it, and it counted them here, offline.
-    const footer = await page.locator('edsb-cost-materials .block__footer span').allInnerTexts();
+    const footer = await page.locator('ednb-cost-materials .block__footer span').allInnerTexts();
     expect(footer).toHaveLength(2);
     expect(Number(footer[0]?.replaceAll(/\D/gu, ''))).toBe(await rows.count());
 
@@ -174,7 +174,7 @@ test.describe('offline capability', () => {
     // materials, and a module's catalogue price is what it is whether or not it
     // has been engineered. Stated rather than left implicit, because a reader
     // who assumed otherwise would read the line above as a bug.
-    expect(await page.locator('edsb-cost-materials .cost__value').allInnerTexts()).toEqual(credits);
+    expect(await page.locator('ednb-cost-materials .cost__value').allInnerTexts()).toEqual(credits);
 
     // The reading itself came from the installed package rather than from a
     // fetch: every row has a name and a count with the network gone.
@@ -208,38 +208,38 @@ test.describe('offline capability', () => {
     // the network gone — the headline mass, the three-part split, the position
     // on the curve, the five-reading envelope and the three ranges.
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: 'Drives' })
       .click();
-    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
-    await expect(page.locator('edsb-drives-mass .drives__headline-mass')).toHaveText(/\d/u);
-    await expect(page.locator('edsb-drives-mass .drives__curve-position')).toHaveText(/\d/u);
+    await expect(page.locator('ednb-drives-mass .drives')).toBeVisible();
+    await expect(page.locator('ednb-drives-mass .drives__headline-mass')).toHaveText(/\d/u);
+    await expect(page.locator('ednb-drives-mass .drives__curve-position')).toHaveText(/\d/u);
     // The thruster card's own legend, which is three rows whatever the build
     // carries. The drive card's legend beside it is not counted here: its total
     // range row is drawn only where the package states one, so a count over
     // both would turn this offline test red for a reason about the package.
     await expect(
-      page.locator('edsb-drives-mass .drives__card:first-child .drives__legend-value'),
+      page.locator('ednb-drives-mass .drives__card:first-child .drives__legend-value'),
     ).toHaveCount(3);
-    await expect(page.locator('edsb-drives-mass .drives__envelope-value')).toHaveCount(5);
-    await expect(page.locator('edsb-drives-mass .drives__range')).toHaveCount(3);
+    await expect(page.locator('ednb-drives-mass .drives__envelope-value')).toHaveCount(5);
+    await expect(page.locator('ednb-drives-mass .drives__range')).toHaveCount(3);
 
     // The one condition these cards read from another feature's store. Setting
     // it goes through the `POWER` mode's own control and comes back, so the
     // whole round trip is proven to need no network either.
-    const speed = page.locator('edsb-drives-mass .drives__envelope-value').first();
+    const speed = page.locator('ednb-drives-mass .drives__envelope-value').first();
     const before = await speed.innerText();
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: 'Power' })
       .click();
-    await expect(page.locator('edsb-power-thermals')).toBeVisible();
+    await expect(page.locator('ednb-power-thermals')).toBeVisible();
     await page.locator('.distributor tbody tr').nth(1).locator('.pips__step').first().click();
     await page
-      .locator('edsb-hull-anatomy .anatomy__modes button')
+      .locator('ednb-hull-anatomy .anatomy__modes button')
       .filter({ hasText: 'Drives' })
       .click();
-    await expect(page.locator('edsb-drives-mass .drives')).toBeVisible();
+    await expect(page.locator('ednb-drives-mass .drives')).toBeVisible();
     await expect.poll(() => speed.innerText()).not.toBe(before);
 
     await context.setOffline(false);
@@ -273,7 +273,7 @@ test.describe('the bench, offline', () => {
     const tab = page.getByRole('tab', { name: 'Stats' });
     if ((await tab.count()) > 0) await tab.click();
     await expect(stats.locator('.metric__number')).toHaveCount(2);
-    await expect(stats.locator('edsb-resistance-bar')).toHaveCount(4);
+    await expect(stats.locator('ednb-resistance-bar')).toHaveCount(8);
 
     await context.setOffline(false);
   });
@@ -291,7 +291,7 @@ test.describe('the privacy promise', () => {
     await withWorker(page, '/ships');
     await openFirstHullFromManifest(page);
     await buildStockHull(page, 'Build');
-    await expect(page).toHaveURL(/\/build(#|$)/);
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
     await openLibrary(page);
 
     const origin = new URL(page.url()).origin;
@@ -310,7 +310,7 @@ test.describe('the privacy promise', () => {
 
     // Only same-origin static assets, and never anything carrying a build.
     expect(cached.filter((url) => new URL(url).origin !== origin)).toEqual([]);
-    expect(cached.filter((url) => url.includes('#b.') || url.includes('edsb:record'))).toEqual([]);
+    expect(cached.filter((url) => url.includes('#b.') || url.includes('ednb:record'))).toEqual([]);
   });
 
   test('reaches no other origin from the bench, and caches no loadout', async ({ page }) => {

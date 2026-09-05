@@ -37,7 +37,7 @@ export class HistoryLocationAdapter {
    * The document the fragment would be written onto, as path and query.
    *
    * A build link belongs to the build it describes. Publishing is asynchronous,
-   * so a Commander can leave `/build` while an encoding is still running; a
+   * so a Commander can leave `/outfitting` while an encoding is still running; a
    * caller compares this before and after to keep the finished fragment from
    * being stamped onto whatever screen they went to instead.
    */

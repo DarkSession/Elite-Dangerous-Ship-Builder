@@ -89,9 +89,9 @@ whole loadout would require.
 a shopping trip, and the material requirement is the reason to plan one before
 going to a settlement. It depends on US1 having something to modify.
 
-**Independent Test**: fit modifications across a suit and three weapons, and confirm
-the material requirement is the sum of every fitted modification and changes as
-modifications are added and removed.
+**Independent Test**: raise a suit and three weapons and fit modifications across them,
+and confirm the material requirement is the sum of every climb and every fitted
+modification, and that it changes as a grade or a modification changes.
 
 **Acceptance Scenarios**:
 
@@ -102,8 +102,11 @@ modifications are added and removed.
    grade is lowered to 3, **Then** the modification is retained but shown as held by a
    locked slot, and it is not counted in the material requirement.
 3. **Given** a loadout with modifications fitted, **When** the material requirement is
-   read, **Then** it lists each micro-resource and the total quantity across every
-   fitted modification.
+   read, **Then** it lists each micro-resource and the total quantity across every climb
+   and every fitted modification.
+   3a. **Given** a suit raised above grade 1 with no modification fitted, **When** the
+   material requirement is read, **Then** it states the climb to that grade rather than
+   nothing to gather.
 4. **Given** a weapon modification whose requirement differs by the weapon's damage
    type, **When** it is fitted to a kinetic weapon and to a plasma weapon, **Then** the
    stated materials are those of the weapon it is fitted to.
@@ -240,10 +243,15 @@ reopens the same loadout and the readable summary names every fitted item.
 
 **Materials**
 
-- **FR-013**: The application MUST state the micro-resources the fitted modifications
-  require, as a total across the whole loadout, taken from the library.
-- **FR-014**: The material requirement MUST cover one application of each fitted
-  modification, and MUST NOT include the cost of raising an item's grade.
+- **FR-013**: The application MUST state the micro-resources the loadout requires, as a
+  total across the whole loadout, taken from the library.
+- **FR-014**: The material requirement MUST cover both of the costs an on-foot loadout
+  carries: one application of each fitted modification, and the climb to each item's
+  selected grade — the suit's and every fitted weapon's, counted from grade 1 (Commander
+  request 2026-09-04). A grade a Commander has not asked for costs nothing, so an item at
+  grade 1 adds nothing to the total, and neither does an item with no grade ladder to
+  climb. Every item on the bench is one the library named, so a library answer of
+  _no recipe_ means the item has no ladder to climb rather than that the item is unknown.
 - **FR-015**: Where a modification's requirement differs by the weapon's damage type,
   the stated requirement MUST be the one for the weapon it is fitted to.
 
@@ -295,8 +303,9 @@ reopens the same loadout and the readable summary names every fitted item.
   range and per-grade damage.
 - **Modification**: one engineering modification the library publishes for suits or for
   weapons, the engineers who grant it, and the micro-resources one application requires.
-- **Material requirement**: the micro-resources a whole loadout's fitted modifications
-  require, totalled by resource.
+- **Material requirement**: the micro-resources a whole loadout requires — the climb to
+  each item's selected grade and one application of each fitted modification — totalled by
+  resource.
 
 ## Success Criteria _(mandatory)_
 
@@ -347,8 +356,12 @@ reopens the same loadout and the readable summary names every fitted item.
   loadout JSON and a readable summary and nothing inbound. The bench therefore restores a
   loadout from a link and from the saved list only. This is deferred rather than
   rejected: it needs its own design before it can be specified.
-- **Grade upgrade costs are out of scope**, as the design's own FAQ states: the material
-  requirement covers applying modifications, not raising a grade.
+- **Grade upgrade costs are in scope.** The design's own FAQ says they are paid separately
+  and are not counted, and the Commander ruled against it on 2026-09-04: raising a suit or
+  a weapon consumes micro-resources, and a shopping list that leaves them out understates
+  what the loadout costs to reach. `equipment/upgrade-costs` publishes the recipes, so
+  FR-014 counts them beside the modifications. The footnote the bench draws under the total
+  states both costs.
 - **Modification quality is not modelled**, consistent with the ship builder's treatment of
   blueprint grades: a fitted modification is a completed one.
 - **The compact layout follows artboard `1b`** — a loadout ledger, a stats view and a

@@ -21,63 +21,52 @@
 // sticky region and the measured one, so what a region below clears is both
 // decks rather than the lower of the two.
 //
-// The decks run the full width of the plate and the insignia stands over them,
-// which is how the canvas draws it. A column of its own would be the tidier
-// arrangement and it is the wrong one twice over: the rule that closes the
-// plate is the command deck's own border, so a deck that started after the mark
-// would stop the heaviest mark in the reference short of the leading edge; and
-// the deck would paint over the press box the mark's link overhangs into.
+// Both decks run the full width of the plate and take its own inline inset. The
+// insignia is a flow item at the head of the upper deck, so nothing is placed
+// over the plate and nothing is indented past anything: the rule that closes
+// the plate is the command deck's own border and reaches the leading edge, and
+// the press box the mark's link overhangs into is over the plate's gutter,
+// which no deck paints.
 .frame__banner {
   display: flex;
   flex-direction: column;
-  // Sticky, and so also the frame the mark is placed against: any positioned
-  // box is one.
   position: sticky;
   inset-block-start: 0;
   z-index: 2;
   background-color: var(--ednb-surface-bar);
 }
 
-// What both decks hold clear on the leading edge for the mark: the plate's own
-// inset, the mark, and the gap the canvas leaves after it (canvas 4c's `42px`
-// inside a `0 20px` plate). The line between the decks is inset to match, so
-// the two cannot drift apart at a width where only one of them was changed.
+// The plate's own inline inset, taken by both decks and by the line between
+// them, so the three cannot drift apart at a width where only one was changed
+// (canvas 4c's `0 20px` plate, canvas 4d's `16px`). `$gap` is what the canvas
+// leaves between the mark and the first tab: `12px` wide, `10px` compact.
 @mixin deck-insets($gutter, $gap) {
-  $indent: calc(#{$gutter} + var(--ednb-layout-insignia-size) + #{$gap});
-
-  .frame__tools,
+  .frame__deck,
   .frame__bar {
-    padding-inline: $indent #{$gutter};
+    padding-inline: #{$gutter};
   }
 
-  .frame__tools + .frame__bar::before {
-    inset-inline: $indent #{$gutter};
+  .frame__deck + .frame__bar::before {
+    inset-inline: #{$gutter};
   }
 
-  // With the mark hidden the decks have nothing to clear, so both take the
-  // plate's own inset and the line starts there too.
-  //
-  // At the width the sheet is drawn at, and only there. `frame--returning` says
-  // the screen has a way back, which is true at every width; what hides the mark
-  // is the sheet's own composition, which is drawn below the wide breakpoint
-  // alone. Keyed on the class without the width, the wide inspector took the
-  // gutter back while the mark was still standing in it, and the mark was drawn
-  // over the tab and the screen's own name.
-  @include layout.below-wide {
-    :host(.frame--returning) .frame__tools,
-    :host(.frame--returning) .frame__bar {
-      padding-inline-start: #{$gutter};
-    }
+  .frame__deck > .frame__flag {
+    margin-inline-end: #{$gap};
+  }
 
-    :host(.frame--returning) .frame__tools + .frame__bar::before {
-      inset-inline-start: #{$gutter};
-    }
+  // The press box already stands half of what it is wider than the mark past
+  // the drawing, so the gap after it pays that out and the mark keeps the
+  // canvas's own distance from the first tab either way.
+  .frame__flag-home {
+    margin-inline: calc((var(--ednb-target-size) - var(--ednb-layout-insignia-size)) / -2)
+      calc(#{$gap} - (var(--ednb-target-size) - var(--ednb-layout-insignia-size)) / 2);
   }
 }
 
-// Canvas 4c's tool deck: the bar's own ground, because it is the same plate,
-// divided from the identity below it by the hairline that deck carries.
-.frame__tools {
+// Canvas 4c's tool deck: the insignia, then the tabs. The bar's own ground,
+// because it is the same plate, divided from the identity below it by the
+// hairline that deck carries.
+.frame__deck {
   display: flex;
   // Stretched rather than centred, so a tab is the height of the deck and the
   // canvas's underline sits on the deck's own edge (canvas 4c).
@@ -86,6 +75,13 @@
   // text size or a long language makes a tab taller than the drawing, and a bar
   // that could not grow would cut its own controls off (011/FR-011).
   min-block-size: var(--ednb-layout-tool-bar-floor);
+}
+
+// The tools themselves, which take what the mark beside them leaves.
+.frame__tools {
+  display: flex;
+  align-items: stretch;
+  min-inline-size: 0;
 }
 
 .frame__tools-list {
@@ -146,9 +142,9 @@
 }
 
 // The line between the decks. It is drawn on the lower deck rather than under
-// the upper one so that it starts where the decks start and does not run under
-// the insignia beside them (canvas 4c). Canvas 4c sets `--amber-a12`; the
-// section rule this system already draws is the step above it.
+// the upper one so that it starts where the decks start rather than at the edge
+// of the plate (canvas 4c). Canvas 4c sets `--amber-a12`; the section rule this
+// system already draws is the step above it.
 //
 // A line placed on the deck rather than a border of it, which is what the
 // canvas draws and what keeps the deck the height it is drawn at: a border is
@@ -157,9 +153,9 @@
 //
 // Its own box rather than a background, because the two edges it answers to are
 // on different axes: it sits on the deck's block start, where the decks meet,
-// and runs inline from the indent the mark is cleared by to the plate's
-// trailing inset. A background can be inset on both axes or neither.
-.frame__tools + .frame__bar {
+// and runs inline from the plate's leading inset to its trailing one, which is
+// where both decks start. A background can be inset on both axes or neither.
+.frame__deck + .frame__bar {
   position: relative;
 
   &::before {
@@ -195,10 +191,10 @@
   min-block-size: var(--ednb-layout-bar-floor);
 }
 
-// Canvas 4c's wide insets. Declared after both decks, because the command deck
-// takes its padding from the shared command-bar mixin and the deck the mark
-// stands over is inset further than a bar that carries no mark.
-@include deck-insets(var(--ednb-space-region), var(--ednb-space-inline-loose));
+// Canvas 4c's wide inset. Declared after both decks, because the command deck
+// takes its padding from the shared command-bar mixin and would otherwise win
+// on order.
+@include deck-insets(var(--ednb-space-region), var(--ednb-space-control-inline));
 
 // A sticky banner is a fixed share of a short viewport, and at 400% zoom that
 // share is most of it. Below the short-viewport threshold it releases and
@@ -253,32 +249,13 @@
   @include layout.command-flag;
 }
 
-// The mark stands over the leading edge of the plate, centred on the decks it
-// stands beside (canvas 4c). Only where it is the banner's own child: the same
-// class inside the link is the drawing rather than the box that is placed.
-//
-// Centred on the band the decks are *declared* at rather than on the banner as
-// it came out, so a bar that has wrapped — a long build name, a German label, a
-// doubled text size — does not carry the mark down into the middle of its own
-// identity. That is the same reason the folded bar holds its controls to the
-// block start (011/FR-011).
-.frame__flag-home,
-.frame__banner > .frame__flag {
-  position: absolute;
-  // Half the band, less half of whatever box is being placed — the press box
-  // where the mark is the way home, the mark itself where it is not. The box is
-  // centred rather than stretched, or the mark would be as tall as the plate.
-  inset-block-start: calc(var(--ednb-layout-bar-floor) / 2);
-  translate: 0 -50%;
-  // Over the decks, so the press box the link overhangs into the gutter is not
-  // covered by the deck it overhangs.
-  z-index: 1;
-  inset-inline-start: var(--ednb-space-region);
-}
-
-.frame__banner:has(.frame__tools) .frame__flag-home,
-.frame__banner:has(.frame__tools) > .frame__flag {
-  inset-block-start: calc((var(--ednb-layout-tool-bar-floor) + var(--ednb-layout-bar-floor)) / 2);
+// The mark leads the tool deck, centred on the deck's own band (canvas 4c).
+// Only where it is the deck's own child: the same class inside the link is the
+// drawing rather than the box that is placed. The gap after it is a width's own
+// figure, so it comes from `deck-insets`.
+.frame__deck > .frame__flag {
+  flex: none;
+  align-self: center;
 }
 
 // The way back to the shipyard: a link around the mark, never the mark itself.
@@ -305,11 +282,9 @@
   // this colour — but an inherited `#0000EE` is still a colour this design
   // system did not choose, and it is measured as one (011/FR-009).
   color: var(--ednb-text-primary);
-  // Pulled back by half of what the press is wider than the mark, so the mark
-  // lands on the plate's own inset and the target overhangs it evenly. The
-  // decks are indented past the mark rather than past the press box, which is
-  // the same relationship the canvas draws.
-  margin-inline-start: calc((var(--ednb-target-size) - var(--ednb-layout-insignia-size)) / -2);
+  // The inline margins are a width's own figures and are in `deck-insets`: the
+  // box is pulled back by half of what it is wider than the mark, so the mark
+  // lands on the plate's own inset and the target overhangs it evenly.
   cursor: pointer;
 
   &:focus-visible {
@@ -366,7 +341,7 @@
   // shipyard's own bar, and none of them on the sheet's.
   :host(.frame--returning) .frame__identity,
   :host(.frame--returning) .frame__flag-home,
-  :host(.frame--returning) .frame__banner > .frame__flag {
+  :host(.frame--returning) .frame__deck > .frame__flag {
     display: none;
   }
 
@@ -434,13 +409,8 @@
 }
 
 @include layout.compact {
-  // Canvas 4d's compact gutter: the mark stands on the compact inset and the
-  // decks start a tighter gap past it than the wide drawing leaves.
-  .frame__flag-home,
-  .frame__banner > .frame__flag {
-    inset-inline-start: var(--ednb-space-inline-loose);
-  }
-
+  // Canvas 4d's compact gutter: the same inset on both decks, one step tighter
+  // than the wide drawing.
   @include deck-insets(var(--ednb-space-inline-loose), var(--ednb-space-inline));
 
   .frame__bar {
@@ -540,12 +510,10 @@
   // each side, on the bar and on every band under it (canvas 1b's rows, search
   // band and hull-detail column; canvas 1d's mode panels and ledger rows, all
   // `0 14px` or `… 14px`). It is the bar's own inset carried down the page, so
-  // the page's content lines up with the mark on the bar's leading edge rather
-  // than running to the glass. Not with the identity beside it, which stands
-  // further in: canvas 4d indents both decks past the mark and still runs the
-  // page under them at its own gutter. Only compact: the wide reading above
-  // stands, and this deliberately does not reinstate the 22px frame wave 9
-  // removed.
+  // the page's content lines up with the plate's own inset — the line the mark
+  // and both decks stand on — rather than running to the glass. Only compact:
+  // the wide reading above stands, and this deliberately does not reinstate the
+  // 22px frame wave 9 removed.
   @include layout.compact {
     padding-inline: var(--ednb-space-inline-loose);
   }

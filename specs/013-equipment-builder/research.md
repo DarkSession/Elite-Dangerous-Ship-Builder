@@ -178,9 +178,9 @@ refused.
   publishes four: the Energylink, Profile Analyser, Arc Cutter and Genetic Sampler. The spec's
   Assumption withdrew the region on the stated condition that it returns if the library gains
   them, and it has. See decision 10.
-- **Grade upgrade costs.** `equipment/upgrade-costs` is installed and is deliberately not read:
-  FR-014 puts the cost of raising a grade outside the material requirement, as the canvas's own
-  FAQ does.
+- **Grade upgrade costs.** `equipment/upgrade-costs` is read for the climb to each selected grade:
+  FR-014 counts it beside the modification costs (Commander request 2026-09-04, reversing the
+  canvas's own FAQ).
 - **Reading a payload back in.** Settled in clarification: links and the saved list are the only
   way a loadout comes in.
 - **A second theme, a route for the item view, or a private catalogue of any kind.**

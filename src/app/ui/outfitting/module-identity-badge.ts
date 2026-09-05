@@ -31,7 +31,7 @@ import { Tooltip } from '../components/tooltip/tooltip';
  * ellipsis (module-replacement design, "identity ambiguity").
  */
 @Component({
-  selector: 'edsb-module-identity-badge',
+  selector: 'ednb-module-identity-badge',
   imports: [GameText, Tooltip],
   templateUrl: './module-identity-badge.html',
   styleUrl: './module-identity-badge.scss',

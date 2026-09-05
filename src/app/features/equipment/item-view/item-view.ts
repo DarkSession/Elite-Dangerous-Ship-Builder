@@ -28,7 +28,7 @@ import { ModificationSlots } from './modification-slots';
  * locked slots with nothing to explain them (spec Edge Cases).
  */
 @Component({
-  selector: 'edsb-item-view',
+  selector: 'ednb-item-view',
   imports: [ChoiceList, GameText, GradeSelector, MetricGroup, ModificationSlots],
   templateUrl: './item-view.html',
   styleUrl: './item-view.scss',

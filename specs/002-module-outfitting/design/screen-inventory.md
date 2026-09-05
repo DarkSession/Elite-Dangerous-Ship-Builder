@@ -1,6 +1,6 @@
 # Screen and Surface Inventory
 
-Feature 002 adds no route. Every surface composes inside feature 001's `/build` workspace or an
+Feature 002 adds no route. Every surface composes inside feature 001's `/outfitting` workspace or an
 owning feature's pre-activation ingress flow. Canvas sizes are references, not breakpoints; exact
 wide, tablet and compact behavior is in
 [responsive-composition.md](./responsive-composition.md).

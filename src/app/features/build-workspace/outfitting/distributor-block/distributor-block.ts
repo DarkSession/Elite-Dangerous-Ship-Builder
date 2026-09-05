@@ -52,7 +52,7 @@ export interface PipRequest {
  * intent, so the one pip condition stays where it lives.
  */
 @Component({
-  selector: 'edsb-distributor-block',
+  selector: 'ednb-distributor-block',
   imports: [UnavailableValue],
   templateUrl: './distributor-block.html',
   styleUrl: './distributor-block.scss',

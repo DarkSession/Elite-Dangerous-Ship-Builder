@@ -125,7 +125,7 @@ the chrome no single component owns: canvas 1c's three-column bench and the numb
 across it, which run through the outfitting workspace, the module chooser and the engineering editor
 at once. A mixin would put the same rules in three stylesheets and leave the three free to drift; here
 each bar is the same bar by construction. Its selectors are global, so every class it draws carries
-the `edsb-` prefix or names a region it arranges.
+the `ednb-` prefix or names a region it arranges.
 
 ### The one deliberate transform
 

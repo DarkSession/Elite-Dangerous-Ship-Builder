@@ -336,8 +336,9 @@ describe('LoadoutPresenter', () => {
   });
 
   describe('the material requirement', () => {
-    it('states nothing to gather when nothing is fitted', () => {
-      dominator();
+    it('states nothing to gather where nothing is fitted and no grade is raised', () => {
+      store.dispatch({ kind: 'selectSuit', suitFamily: 'tacticalsuit' });
+      store.dispatch({ kind: 'setSuitGrade', grade: 1 });
 
       expect(presenter.materials().lines).toEqual([]);
       expect(presenter.materials().summary).toBeNull();

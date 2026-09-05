@@ -26,7 +26,7 @@ import { ChoiceList, type EquipmentChoice } from '../../../ui/equipment/choice-l
  * however a Commander is driving the bench (FR-012).
  */
 @Component({
-  selector: 'edsb-modification-chooser',
+  selector: 'ednb-modification-chooser',
   imports: [ChoiceList, Layer, NgTemplateOutlet],
   templateUrl: './modification-chooser.html',
   styleUrl: './modification-chooser.scss',

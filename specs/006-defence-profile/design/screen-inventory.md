@@ -35,7 +35,7 @@ is read at is the one feature 005's dashboard already owns.
 
 ## Cross-feature composition
 
-- Feature 001 owns the active build, its revision and the `/build` workspace.
+- Feature 001 owns the active build, its revision and the `/outfitting` workspace.
 - Feature 002 owns enabled/priority mutations and exact-slot selection. Feature 006 selects nothing:
   the canvas draws no action inside either card.
 - Feature 003 owns the status rail's heading, its validation issues and the two capacity cells that

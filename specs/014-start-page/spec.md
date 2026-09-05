@@ -138,7 +138,7 @@ present and readable at desktop, tablet and mobile widths.
   point adds a step for the returning Commander. Their addresses — the shipyard, a
   build link, the bench — still open directly, so the cost falls only on someone who
   opens the bare product address.
-- **A shared build or loadout link.** Opening `/build#…` or `/equipment#…` is
+- **A shared build or loadout link.** Opening `/outfitting#…` or `/equipment#…` is
   unaffected: the link resolves into its tool, and the entry point is not
   interposed.
 - **No tool is the current one.** The tool bar names the open tool on every other

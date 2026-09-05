@@ -208,7 +208,7 @@ test.describe('the conditions that break layouts', () => {
     expect(await figures(page)).toHaveLength(2);
     // Four in the `ARMOUR` block and four in `SHIELDS`, both read from the one
     // set the package publishes on the suit's grade.
-    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(8);
+    await expect(page.locator('.bench__region--stats ednb-resistance-bar')).toHaveCount(8);
     await expectNoDocumentOverflow(page);
   });
 
@@ -222,7 +222,7 @@ test.describe('the conditions that break layouts', () => {
 
     await showTab(page, 'Stats');
     await expect(page.locator('.bench__region--stats .metric__number')).toHaveCount(2);
-    await expect(page.locator('.bench__region--stats edsb-resistance-bar')).toHaveCount(8);
+    await expect(page.locator('.bench__region--stats ednb-resistance-bar')).toHaveCount(8);
     await page.emulateMedia({ reducedMotion: null });
   });
 });

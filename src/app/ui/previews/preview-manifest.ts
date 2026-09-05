@@ -562,7 +562,7 @@ registerPreview({
       'default',
       {
         label: 'SLEF payload',
-        value: '[\n  {\n    "header": { "appName": "EDSB", "appVersion": "0.1.0" }\n  }\n]',
+        value: '[\n  {\n    "header": { "appName": "EDNB", "appVersion": "0.1.0" }\n  }\n]',
         description: '1 entry · 41 modules · 4.1 kB',
         technical: true,
         readonly: true,
@@ -2426,7 +2426,7 @@ registerPreview({
 
 /** A published link at roughly the length a real engineered build produces. */
 const PUBLISHED_URL =
-  'https://ships.example/build#b.1QAcOnR2yV9tGm4KpZ0xLbW7fEuHsJdCiNrTaMoPqXvYbZ3g5hKlD8eF';
+  'https://ships.example/outfitting#b.1QAcOnR2yV9tGm4KpZ0xLbW7fEuHsJdCiNrTaMoPqXvYbZ3g5hKlD8eF';
 
 registerPreview({
   componentId: 'share-link-panel',
@@ -3751,7 +3751,7 @@ registerPreview({
 // Feature 010 — hull anatomy
 //
 // One component: the schematic plate. The side selector is feature 011's
-// `edsb-tab-group` in its segmented presentation and the legend is five static
+// `ednb-tab-group` in its segmented presentation and the legend is five static
 // rows in the capability's own template, so neither is a new export
 // (design/hull-anatomy.md, "Component-system impact").
 // ---------------------------------------------------------------------------

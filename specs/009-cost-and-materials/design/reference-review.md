@@ -161,7 +161,7 @@ a package that cannot cost a recipe contributes nothing to the list, and neither
 
 The one ruling in this feature that does not follow the artboard. The order is a
 shopping list's — what a Commander gathers first — and it is the order
-`edsb-material-cost-list` already puts the Engineer panel's list in, under
+`ednb-material-cost-list` already puts the Engineer panel's list in, under
 feature 002's wave 9 ruling. Copying the artboard here would have left the two
 material lists in one application sorted opposite ways, each faithful to its own
 drawing and neither to the other. A material the package grades no rarity for
@@ -183,7 +183,7 @@ takes the active-locale collator, and feature 002 called it.
 **Amended 2026-08-23 (feature 002 wave 11, Commander request).** There is now one
 list, not two: neither outfitting canvas draws a `MATERIALS` block inside the
 engineering panel, so feature 002 withdrew the Engineer panel's list and
-`edsb-material-cost-list` with it. This block is the application's only statement
+`ednb-material-cost-list` with it. This block is the application's only statement
 of material requirements. The ruling stands unchanged — the order is still the
 shopping list's and still not the artboard's — and `sortMaterialLines` stays in
 `ui/outfitting/material-lines.ts` rather than moving in here, because it is how a
@@ -192,7 +192,7 @@ that motivated the ruling is now against the artboard alone.
 
 ### What survives ruling F, and why
 
-Material names render through feature 011's shared `edsb-game-text` primitive, which carries its own
+Material names render through feature 011's shared `ednb-game-text` primitive, which carries its own
 untranslated disclosure. That is the design system's existing behaviour for every game name in the
 application — feature 002's material rows already render this way — not a feature-009 addition.
 Removing it here would make this one surface inconsistent with the rest of the app.
@@ -204,7 +204,7 @@ canvas's _intent_ is preserved by another means. Both were already settled for f
 
 | Canvas                                                                           | Built instead                                               | Reason                                               |
 | -------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------- |
-| `<img src="https://edassets.org/static/img/materials/grade-N.svg">` rarity icons | `edsb-material-grade`, the same fact drawn from the package | Constitution I forbids cross-origin runtime requests |
+| `<img src="https://edassets.org/static/img/materials/grade-N.svg">` rarity icons | `ednb-material-grade`, the same fact drawn from the package | Constitution I forbids cross-origin runtime requests |
 | `Mcr` in 1d's module rows                                                        | Locale-formatted numbers with the block's own labels        | The abbreviation is not locale-safe                  |
 | Clickable unsemantic `div`s and inline colours/sizes                             | Shared primitives and design tokens                         | Touch, screen-reader operation and one design system |
 
@@ -239,7 +239,7 @@ permanently off-screen. The scroll box is what prevents that; `tabindex="0"` is
 what the automated axe gate requires of a scroll box, since
 `scrollable-region-focusable` carries the `wcag2a` tag the scan selects on and
 the scan has no per-criterion exclusion. Same pattern, and same reasoning,
-as `edsb-data-table` and `edsb-attribute-comparison`.
+as `ednb-data-table` and `ednb-attribute-comparison`.
 
 ## Responsive consequence
 

@@ -2,8 +2,8 @@
 
 ## Ownership and key space
 
-- The application owns only `localStorage` keys beginning `edsb:record:` and the `sessionStorage` key `edsb:tab`.
-- A local record key is `edsb:record:<record-id>`, where the suffix is the record's UUID and equals its embedded `id`.
+- The application owns only `localStorage` keys beginning `ednb:record:` and the `sessionStorage` key `ednb:tab`.
+- A local record key is `ednb:record:<record-id>`, where the suffix is the record's UUID and equals its embedded `id`.
 - Listing enumerates owned keys and validates records independently. There is no mutable global index.
 - Unknown, malformed and unsupported-version values are never repaired, overwritten or removed merely by listing/opening them.
 
@@ -45,7 +45,7 @@ itself and the Commander has not named. There is no per-tab working record that 
 over, which is why nothing has to be confirmed before a build is replaced — and there is no path by
 which autosave reaches a named record, which is why naming one is still a decision that holds.
 
-- `edsb:tab` supplies the autosave record ID this top-level browsing context is holding, across
+- `ednb:tab` supplies the autosave record ID this top-level browsing context is holding, across
   reload, together with the named record it was opened from where there is one.
 - A build with no record yet — stock creation, a decoded link, a SLEF import — mints a fresh unnamed
   ID and is written to it before the Commander changes anything.
@@ -104,7 +104,7 @@ of twenty and the rule that only a Commander action removed a record):
 
 ## Deliberate operations and conflicts
 
-Naming, renaming, duplicating and deleting use `navigator.locks.request('edsb:record:<record-id>', {mode: 'exclusive'}, ...)` with an expected `revisionId`. Duplicate/keep-both creates a fresh UUID and lock target. The lock name was `edsb:named:<record-id>` while named records were the only ones written deliberately; it guards any record now, named or not, and is a Web Locks name rather than stored bytes, so nothing a Commander has saved changes with it.
+Naming, renaming, duplicating and deleting use `navigator.locks.request('ednb:record:<record-id>', {mode: 'exclusive'}, ...)` with an expected `revisionId`. Duplicate/keep-both creates a fresh UUID and lock target. The lock guards any record, named or not, and its name is a Web Locks name rather than stored bytes, so it carries no compatibility of its own.
 
 Autosave does not take the lock. The claim handshake above guarantees this page is the only live writer of the record it holds, and a lock per coalesced edit would serialize writes against a contender that cannot exist.
 

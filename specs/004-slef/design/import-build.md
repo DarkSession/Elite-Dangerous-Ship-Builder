@@ -61,7 +61,7 @@ renders an immutable view and emits draft/clear/submit/cancel intents.
 | Candidate ready                 | Not drawn. The canvas has no candidate panel: when confirmation is unnecessary feature 001 commits straight away, and when it is necessary feature 001's own confirmation names the incoming hull. A second summary beside it would say the same thing twice |
 | Awaiting replacement            | Layer remains behind shared confirmation; candidate/token cannot commit independently                                                                                                                                                                        |
 | Cancelled/superseded            | Draft/current work remain; concise no-op status, no stale announcement/commit                                                                                                                                                                                |
-| Committed transition            | After one confirmed commit, move to `/build` when needed and remove the input layer; the workspace's own notice and rail describe the build that arrived                                                                                                     |
+| Committed transition            | After one confirmed commit, move to `/outfitting` when needed and remove the input layer; the workspace's own notice and rail describe the build that arrived                                                                                                |
 
 ## Responsive behavior
 

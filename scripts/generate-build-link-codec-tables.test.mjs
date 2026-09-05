@@ -26,7 +26,7 @@ const committedTablePath = fileURLToPath(
 );
 
 test('refuses to overwrite a table whose payload does not match its declared hash', async (t) => {
-  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'edsb-codec-table-'));
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'ednb-codec-table-'));
   t.after(() => rm(temporaryDirectory, { recursive: true, force: true }));
 
   const tamperedTablePath = join(temporaryDirectory, 'codec-table-1.json');

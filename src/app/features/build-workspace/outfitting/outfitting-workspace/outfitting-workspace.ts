@@ -70,7 +70,7 @@ const COMPACT_CATEGORIES = ['hardpoint', 'core', 'optional', 'utility'] as const
 const WIDE_CATEGORIES = ['all', ...COMPACT_CATEGORIES] as const;
 
 /**
- * The outfitting region inside feature 001's `/build`.
+ * The outfitting region inside feature 001's `/outfitting`.
  *
  * Canvas 1c composes three regions at wide width — the categories and the
  * ledger, the selected mount's bench, and the status rail — and canvas 1d
@@ -89,7 +89,7 @@ const WIDE_CATEGORIES = ['all', ...COMPACT_CATEGORIES] as const;
  * empty and stops there rather than offering an action it does not own (FR-001).
  */
 @Component({
-  selector: 'edsb-outfitting-workspace',
+  selector: 'ednb-outfitting-workspace',
   imports: [
     NgTemplateOutlet,
     BuildStatus,

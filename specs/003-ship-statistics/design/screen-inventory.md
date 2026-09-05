@@ -1,7 +1,7 @@
 # Screen Inventory: Ship Statistics and Status
 
 Feature 003 adds no route and, after the wave 11 rulings, no screen. Its whole surface is two blocks
-at the head of the existing `/build` status rail and two cells in that rail's own band, and it
+at the head of the existing `/outfitting` status rail and two cells in that rail's own band, and it
 requires the active build from feature 001.
 
 ## Responsive inventory

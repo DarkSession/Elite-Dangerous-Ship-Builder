@@ -1,6 +1,6 @@
 # Module Replacement Surface
 
-**Parent route**: `/build` application state  
+**Parent route**: `/outfitting` application state  
 **Requirements**: FR-002, FR-004–FR-008, FR-020–FR-024
 
 ## Purpose

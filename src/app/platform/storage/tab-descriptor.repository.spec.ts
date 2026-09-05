@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MemoryStorage, provideMemoryStorage } from './storage.spec-helpers';
-import { EDSB_TAB_KEY } from './storage-keys';
+import { EDNB_TAB_KEY } from './storage-keys';
 import { TabDescriptorRepository } from './tab-descriptor.repository';
 
 function setup(seed: (storage: MemoryStorage) => void = () => {}): {
@@ -28,7 +28,7 @@ describe('TabDescriptorRepository', () => {
 
     expect(
       setup((storage) =>
-        storage.entries.set(EDSB_TAB_KEY, session.entries.get(EDSB_TAB_KEY)!),
+        storage.entries.set(EDNB_TAB_KEY, session.entries.get(EDNB_TAB_KEY)!),
       ).tab.read(),
     ).toEqual({ version: 1, workingRecordId: 'working-1' });
   });
@@ -38,12 +38,12 @@ describe('TabDescriptorRepository', () => {
 
     tab.write('working-1');
 
-    expect([...session.entries.keys()]).toEqual([EDSB_TAB_KEY]);
+    expect([...session.entries.keys()]).toEqual([EDNB_TAB_KEY]);
   });
 
   it('ignores a descriptor written by a version it does not know', () => {
     const { tab } = setup((storage) =>
-      storage.entries.set(EDSB_TAB_KEY, JSON.stringify({ version: 99, workingRecordId: 'x' })),
+      storage.entries.set(EDNB_TAB_KEY, JSON.stringify({ version: 99, workingRecordId: 'x' })),
     );
 
     // Starting a fresh working record is safe; adopting a record described by
@@ -53,7 +53,7 @@ describe('TabDescriptorRepository', () => {
 
   it('ignores a malformed descriptor', () => {
     for (const value of ['not json', '{}', JSON.stringify({ version: 1 }), JSON.stringify(null)]) {
-      const { tab } = setup((storage) => storage.entries.set(EDSB_TAB_KEY, value));
+      const { tab } = setup((storage) => storage.entries.set(EDNB_TAB_KEY, value));
 
       expect(tab.read(), value).toBeNull();
     }
@@ -65,6 +65,6 @@ describe('TabDescriptorRepository', () => {
 
     tab.clear();
 
-    expect(session.entries.has(EDSB_TAB_KEY)).toBe(false);
+    expect(session.entries.has(EDNB_TAB_KEY)).toBe(false);
   });
 });

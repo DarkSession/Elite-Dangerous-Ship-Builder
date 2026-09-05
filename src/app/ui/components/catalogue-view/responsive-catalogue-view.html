@@ -79,7 +79,7 @@
           <td class="catalogue__mark" aria-hidden="true">{{ hull.selected ? marker : '' }}</td>
           <th scope="row">
             <button type="button" class="catalogue__open" [attr.aria-label]="openActionLabel(hull)">
-              <edsb-game-text
+              <ednb-game-text
                 [text]="hull.name.text"
                 [language]="hull.name.language"
                 [translationState]="hull.name.translationState"
@@ -90,7 +90,7 @@
             }
           </th>
           <td>
-            <edsb-game-text
+            <ednb-game-text
               [text]="hull.manufacturer.text"
               [language]="hull.manufacturer.language"
               [translationState]="hull.manufacturer.translationState"
@@ -101,7 +101,7 @@
               <span aria-hidden="true">{{ hull.size }}</span>
               <span class="catalogue__spoken">{{ size }}</span>
             } @else {
-              <edsb-unavailable-value />
+              <ednb-unavailable-value />
             }
           </td>
           <td class="catalogue__code catalogue__numeric">
@@ -112,7 +112,7 @@
             @if (hull.price; as price) {
               {{ price }}
             } @else {
-              <edsb-unavailable-value />
+              <ednb-unavailable-value />
             }
           </td>
         </tr>
@@ -129,7 +129,7 @@
 <ul class="catalogue__cards">
   @for (hull of hulls(); track hull.symbol) {
     <li [attr.data-hull-symbol]="hull.symbol">
-      <edsb-hull-summary-card [hull]="hull" (opened)="hullOpened.emit($event)" />
+      <ednb-hull-summary-card [hull]="hull" (opened)="hullOpened.emit($event)" />
     </li>
   }
 </ul>

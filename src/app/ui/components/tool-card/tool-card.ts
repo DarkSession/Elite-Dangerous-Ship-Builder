@@ -24,7 +24,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
  * navigates nothing itself (constitution III).
  */
 @Component({
-  selector: 'edsb-tool-card',
+  selector: 'ednb-tool-card',
   templateUrl: './tool-card.html',
   styleUrl: './tool-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

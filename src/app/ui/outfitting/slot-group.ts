@@ -24,7 +24,7 @@ export interface SlotGroupView {
  * above the optional mounts (002/FR-002a).
  */
 @Component({
-  selector: 'edsb-slot-group',
+  selector: 'ednb-slot-group',
   templateUrl: './slot-group.html',
   styleUrl: './slot-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

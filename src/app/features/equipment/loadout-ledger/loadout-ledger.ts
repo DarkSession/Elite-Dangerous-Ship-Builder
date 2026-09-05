@@ -25,7 +25,7 @@ import { SuitTools } from '../suit-tools/suit-tools';
  * is no weapon to name and no mount to fill.
  */
 @Component({
-  selector: 'edsb-loadout-ledger',
+  selector: 'ednb-loadout-ledger',
   imports: [GameText, NgTemplateOutlet, SuitTools],
   templateUrl: './loadout-ledger.html',
   styleUrl: './loadout-ledger.scss',

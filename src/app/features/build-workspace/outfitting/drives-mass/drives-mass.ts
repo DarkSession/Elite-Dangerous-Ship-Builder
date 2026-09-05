@@ -172,7 +172,7 @@ interface CurveMarkView {
  * IV; see the projector's module note).
  */
 @Component({
-  selector: 'edsb-drives-mass',
+  selector: 'ednb-drives-mass',
   imports: [GameText, MetricGroup, UnavailableValue],
   templateUrl: './drives-mass.html',
   styleUrl: './drives-mass.scss',

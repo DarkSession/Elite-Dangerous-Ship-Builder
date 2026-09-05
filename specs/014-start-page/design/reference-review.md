@@ -17,9 +17,9 @@ and the collision is written down here.
 
 The plate from `Tool Navigation.dc.html` turn 4, which this application already builds:
 `--panel-4` closed by the 2px amber rule, two decks divided by a 1px `--amber-a12` line, the
-insignia standing on the leading edge across both decks with the decks indented past it
-(42px at 1440px, 48px at 390px). The upper deck carries the tool tabs at 30px / 34px; the
-lower carries `NAV BEACON` and the actions at 40px.
+insignia leading the upper deck in flow with the tabs following it, and both decks on the
+plate's own inline inset. The upper deck carries the mark and the tool tabs at 30px / 34px;
+the lower carries `NAV BEACON` and the actions at 40px.
 
 Both tool tabs are drawn inactive (`--ink-48`). Neither takes the `--amber-a14` wash the
 current tab takes elsewhere. That is the canvas stating FR-010: at the entry point no tool

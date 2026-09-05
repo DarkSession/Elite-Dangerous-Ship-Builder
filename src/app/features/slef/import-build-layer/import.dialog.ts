@@ -17,7 +17,7 @@ import { ImportBuildLayer } from './import-build-layer';
  * It adds no route and no history entry.
  */
 @Component({
-  selector: 'edsb-slef-import-dialog',
+  selector: 'ednb-slef-import-dialog',
   imports: [ImportBuildLayer, Layer],
   templateUrl: './import.dialog.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

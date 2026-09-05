@@ -36,11 +36,11 @@ async function waitForController(page: Page): Promise<void> {
 async function openStockBuild(page: Page, hull: string): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, englishMessages['hullDetail.create']);
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
 }
 
 function plates(page: Page) {
-  return page.locator('edsb-hull-anatomy .schematic');
+  return page.locator('ednb-hull-anatomy .schematic');
 }
 
 test.describe('hull schematics offline', () => {
@@ -63,7 +63,7 @@ test.describe('hull schematics offline', () => {
     await expect(plates(page)).toHaveCount(2);
     await expect(plates(page).nth(0)).toHaveAttribute('data-state', 'ready');
     await expect(plates(page).nth(1)).toHaveAttribute('data-state', 'ready');
-    expect(await page.locator('edsb-hull-anatomy .schematic__mount').count()).toBeGreaterThan(0);
+    expect(await page.locator('ednb-hull-anatomy .schematic__mount').count()).toBeGreaterThan(0);
 
     await context.setOffline(false);
   });

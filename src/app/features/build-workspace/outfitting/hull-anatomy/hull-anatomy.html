@@ -22,7 +22,7 @@
       <h3 class="anatomy__heading" [id]="headingId">{{ heading() }}</h3>
     </div>
 
-    <edsb-tab-group
+    <ednb-tab-group
       class="anatomy__modes"
       [label]="modeLabel()"
       [tabs]="modes()"
@@ -48,7 +48,7 @@
       than dimmed at wide widths, because a control whose two states show the
       same screen is a control that does nothing.
     -->
-      <edsb-tab-group
+      <ednb-tab-group
         class="anatomy__sides"
         [label]="sideLabel()"
         [tabs]="sideChoices()"
@@ -58,7 +58,7 @@
       />
 
       @for (plate of plates(); track plate.side) {
-        <edsb-hull-schematic
+        <ednb-hull-schematic
           class="anatomy__plate"
           [class.anatomy__plate--hidden]="plate.side !== visibleSide()"
           [view]="plate"
@@ -102,14 +102,14 @@
       is the treatment the distributor's table scroller already carries, for the
       same reason.
     -->
-    <edsb-power-thermals
+    <ednb-power-thermals
       class="anatomy__dashboard"
       role="group"
       tabindex="0"
       [attr.aria-labelledby]="headingId"
     />
   } @else if (isOffence()) {
-    <edsb-offence-analysis
+    <ednb-offence-analysis
       class="anatomy__dashboard"
       role="group"
       tabindex="0"
@@ -125,7 +125,7 @@
       that nothing here claims should draw nothing, not the last capability in
       the chain under somebody else's heading.
     -->
-    <edsb-defence-analysis
+    <ednb-defence-analysis
       class="anatomy__dashboard"
       role="group"
       tabindex="0"
@@ -138,7 +138,7 @@
 
       Named for the reason the mode above it is, not left as the final `@else`.
     -->
-    <edsb-drives-mass
+    <ednb-drives-mass
       class="anatomy__dashboard"
       role="group"
       tabindex="0"

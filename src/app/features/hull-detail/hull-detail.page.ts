@@ -73,7 +73,7 @@ export interface MountCount {
  * address.
  */
 @Component({
-  selector: 'edsb-hull-detail-page',
+  selector: 'ednb-hull-detail-page',
   imports: [ActionButton, FactList, GameText, HullArtwork, HullDetailUnknownHull, StatusNotice],
   templateUrl: './hull-detail.page.html',
   styleUrl: './hull-detail.page.scss',
@@ -318,7 +318,7 @@ export class HullDetailPage {
       return;
     }
     if (result.kind === 'committed') {
-      void this.#router.navigateByUrl(NAVIGATION_ROUTES.build);
+      void this.#router.navigateByUrl(NAVIGATION_ROUTES.outfitting);
     }
   }
 }

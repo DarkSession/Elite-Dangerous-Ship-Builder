@@ -1,11 +1,15 @@
 import { getPersonalModificationCost } from '@elite-dangerous-almanac/core/equipment/modification-costs';
 import { sumPersonalEngineeringIngredients } from '@elite-dangerous-almanac/core/equipment/engineering';
+import {
+  getPersonalWeaponUpgradeCost,
+  getSuitUpgradeCost,
+} from '@elite-dangerous-almanac/core/equipment/upgrade-costs';
 import type { PersonalEngineeringIngredient } from '@elite-dangerous-almanac/core/equipment/engineering';
 import type { EquipmentLoadout } from '../loadout-link/equipment-loadout';
 import { fittedWeaponReadings } from './weapon-readings';
 import { suitReadings } from './suit-readings';
 
-/** What every fitted, unlocked modification on the bench costs to apply. */
+/** What the loadout on the bench costs to reach. */
 export interface MaterialRequirement {
   /** One line per micro resource, in the order the package sums them. */
   readonly ingredients: readonly PersonalEngineeringIngredient[];
@@ -16,22 +20,38 @@ export interface MaterialRequirement {
 }
 
 /**
- * The micro resources the fitted modifications require.
+ * The micro resources the loadout requires.
  *
- * One application of each fitted, unlocked modification and nothing else. A
- * locked slot's modification costs nothing while it is locked, and a held
- * mount's weapon costs nothing at all (FR-011, FR-007). Raising a grade is paid
- * for separately at a settlement and is not counted here (FR-014).
+ * Two costs, which is what an on-foot loadout carries: the climb to each item's
+ * selected grade, counted from grade 1, and one application of each fitted,
+ * unlocked modification (FR-014).
  *
- * Every figure is `getPersonalModificationCost` summed by
+ * The package answers a climb three ways and two of them are nothing to gather:
+ * `[]` where the grade asks for no climb, and `null` where the item has no
+ * ladder — the Flight Suit. `null` also means an item the catalogue does not
+ * know, and that cannot arrive here: the family and the symbols come from
+ * `suitReadings` and `fittedWeaponReadings`, which answer only for items the
+ * package published. So neither answer is a figure the package withheld
+ * (constitution IV).
+ *
+ * A locked slot's modification costs nothing while it is locked, and a held
+ * mount's weapon costs nothing at all: it is neither modified nor raised until a
+ * suit carrying its mount is worn again (FR-011, FR-007).
+ *
+ * Every figure is the package's — `getSuitUpgradeCost`,
+ * `getPersonalWeaponUpgradeCost` and `getPersonalModificationCost`, summed by
  * `sumPersonalEngineeringIngredients`; nothing is added up here.
  */
 export function materialRequirement(loadout: EquipmentLoadout): MaterialRequirement {
-  const recipes = [
-    ...(suitReadings(loadout)?.unlocked ?? []),
-    ...fittedWeaponReadings(loadout).flatMap((weapon) => weapon.unlocked),
+  const suit = suitReadings(loadout);
+  const weapons = fittedWeaponReadings(loadout);
+  const climbs = [
+    ...(suit === null ? [] : [getSuitUpgradeCost(suit.family, loadout.suitGrade)]),
+    ...weapons.map((weapon) => getPersonalWeaponUpgradeCost(weapon.symbol, weapon.grade)),
   ];
+  const recipes = [...(suit?.unlocked ?? []), ...weapons.flatMap((weapon) => weapon.unlocked)];
   const ingredients = sumPersonalEngineeringIngredients(
+    ...climbs.map((climb) => climb ?? []),
     ...recipes.map((symbol) => getPersonalModificationCost(symbol) ?? []),
   );
   return {

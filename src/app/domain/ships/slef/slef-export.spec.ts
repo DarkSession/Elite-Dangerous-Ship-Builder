@@ -132,9 +132,9 @@ describe('generateSlefExportArtifact', () => {
 
 describe('the appURL rule', () => {
   it('includes a link certified for exactly this revision', () => {
-    const link: CanonicalLink = { kind: 'certified', url: 'https://example.test/build#abc' };
+    const link: CanonicalLink = { kind: 'certified', url: 'https://example.test/outfitting#abc' };
 
-    expect(exportHeader(link, METADATA).appURL).toBe('https://example.test/build#abc');
+    expect(exportHeader(link, METADATA).appURL).toBe('https://example.test/outfitting#abc');
     expect(linkOmissionReason(link)).toBeNull();
   });
 

@@ -2,7 +2,7 @@ import type { StoredLoadoutV1 } from '../equipment/loadout/stored-loadout.serial
 import type { BuildSnapshotV1 } from '../ships/build/build-snapshot';
 
 /** The discriminator every local record carries. */
-export const LOCAL_RECORD_FORMAT = 'edsb.local-record';
+export const LOCAL_RECORD_FORMAT = 'ednb.local-record';
 
 /**
  * The published record-envelope version.

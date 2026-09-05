@@ -26,7 +26,7 @@ import { buildStockHull, savedToBrowser } from './shell';
 async function openStockBuild(page: Page, hull = 'Anaconda'): Promise<void> {
   await page.goto(`/ships/${hull}`);
   await buildStockHull(page, 'Build');
-  await expect(page).toHaveURL(/\/build(#|$)/);
+  await expect(page).toHaveURL(/\/outfitting(#|$)/);
   await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 }
 
@@ -275,7 +275,7 @@ test.describe('what resets the tape', () => {
     // A different hull's link, so the incoming build genuinely replaces this
     // one rather than being the build already on screen.
     await openStockBuild(page, 'Sidewinder');
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     const incoming = new URL(page.url()).hash;
 
     await openStockBuild(page, 'Anaconda');
@@ -284,7 +284,7 @@ test.describe('what resets the tape', () => {
 
     // Nothing is asked before the link replaces what is on screen: the build it
     // replaces has a record of its own (feature 001, FR-008).
-    await page.goto(`/build${incoming}`);
+    await page.goto(`/outfitting${incoming}`);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
@@ -313,7 +313,7 @@ test.describe('what resets the tape', () => {
     await openStockBuild(page);
     await setGroup(page, 'SmallHardpoint1', '1');
 
-    await page.goto('/build#b.not-a-real-link');
+    await page.goto('/outfitting#b.not-a-real-link');
     await expect(page.locator('[data-slot-key]').first()).toBeVisible();
 
     // Nothing replaced the build, so nothing about its history changed.
@@ -343,7 +343,7 @@ test.describe('boundary isolation', () => {
     await openStockBuild(page);
     // Captured after the link is published, not before: the workspace renders
     // the ledger first and the fragment a moment later.
-    await expect(page).toHaveURL(/\/build#b\./);
+    await expect(page).toHaveURL(/\/outfitting#b\./);
     const stock = new URL(page.url()).hash;
 
     // A change the link carries: the fragment encodes what is fitted, and a

@@ -27,7 +27,7 @@ import { AppNavigation } from '../shared/app-navigation';
  * No state. Nothing is fetched, stored, read from a build or written to one.
  */
 @Component({
-  selector: 'edsb-start-page',
+  selector: 'ednb-start-page',
   imports: [LegalExcerpt, ToolCard],
   templateUrl: './start.page.html',
   styleUrl: './start.page.scss',

@@ -117,7 +117,7 @@ test.describe('product semantics', () => {
     await page.goto('/ships');
     await expect(page.getByRole('main')).toBeVisible();
 
-    for (const route of ['/ships/Anaconda', '/build']) {
+    for (const route of ['/ships/Anaconda', '/outfitting']) {
       expect(await named()).toBe('Ship Builder');
 
       await page.goto(route);

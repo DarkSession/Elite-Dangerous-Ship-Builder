@@ -167,7 +167,7 @@ describe('HullAnatomy', () => {
       // `display: none` for every mode but `mounts`, so the side selector and
       // the legend that belong to the plates go with them and the panel is what
       // the region draws (design/canvas-contract.md).
-      expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
+      expect(element.querySelector('ednb-power-thermals')).not.toBeNull();
       const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
       expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
       expect(element.querySelector('.anatomy__plates')).toBeNull();
@@ -180,7 +180,7 @@ describe('HullAnatomy', () => {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       detect();
 
-      expect(element.querySelector('edsb-power-thermals')).toBeNull();
+      expect(element.querySelector('ednb-power-thermals')).toBeNull();
       expect(element.querySelector('.anatomy__plates')).not.toBeNull();
       expect(element.querySelector('.anatomy__legend')).not.toBeNull();
       expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
@@ -235,7 +235,7 @@ describe('HullAnatomy', () => {
     it('replaces the plates rather than drawing under them', async () => {
       const { element } = await openDrives();
 
-      expect(element.querySelector('edsb-drives-mass')).not.toBeNull();
+      expect(element.querySelector('ednb-drives-mass')).not.toBeNull();
       const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
       expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
       expect(element.querySelector('.anatomy__plates')).toBeNull();
@@ -251,7 +251,7 @@ describe('HullAnatomy', () => {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       detect();
 
-      expect(element.querySelector('edsb-drives-mass')).toBeNull();
+      expect(element.querySelector('ednb-drives-mass')).toBeNull();
       expect(element.querySelector('.anatomy__plates')).not.toBeNull();
       expect(element.querySelector('.anatomy__legend')).not.toBeNull();
       expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
@@ -288,8 +288,8 @@ describe('HullAnatomy', () => {
     it('replaces the plates with the two cards, and gives them back on the way out', async () => {
       const { element, detect } = await openDefence();
 
-      expect(element.querySelector('edsb-defence-analysis')).not.toBeNull();
-      expect(element.querySelector('edsb-power-thermals')).toBeNull();
+      expect(element.querySelector('ednb-defence-analysis')).not.toBeNull();
+      expect(element.querySelector('ednb-power-thermals')).toBeNull();
       const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
       expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
       expect(element.querySelector('.anatomy__plates')).toBeNull();
@@ -300,7 +300,7 @@ describe('HullAnatomy', () => {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       detect();
 
-      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+      expect(element.querySelector('ednb-defence-analysis')).toBeNull();
       expect(element.querySelector('.anatomy__plates')).not.toBeNull();
       expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
     });
@@ -313,8 +313,8 @@ describe('HullAnatomy', () => {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       detect();
 
-      expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
-      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+      expect(element.querySelector('ednb-power-thermals')).not.toBeNull();
+      expect(element.querySelector('ednb-defence-analysis')).toBeNull();
     });
   });
 
@@ -353,9 +353,9 @@ describe('HullAnatomy', () => {
     it('replaces the plates rather than drawing under them', async () => {
       const { element, detect } = await openOffence();
 
-      expect(element.querySelector('edsb-offence-analysis')).not.toBeNull();
-      expect(element.querySelector('edsb-power-thermals')).toBeNull();
-      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+      expect(element.querySelector('ednb-offence-analysis')).not.toBeNull();
+      expect(element.querySelector('ednb-power-thermals')).toBeNull();
+      expect(element.querySelector('ednb-defence-analysis')).toBeNull();
       const blocks = [...element.querySelectorAll('.anatomy > *')].map((node) => node.className);
       expect(blocks).toEqual(['anatomy__header', 'anatomy__dashboard']);
       expect(element.querySelector('.anatomy__plates')).toBeNull();
@@ -367,7 +367,7 @@ describe('HullAnatomy', () => {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       detect();
 
-      expect(element.querySelector('edsb-offence-analysis')).toBeNull();
+      expect(element.querySelector('ednb-offence-analysis')).toBeNull();
       expect(element.querySelector('.anatomy__plates')).not.toBeNull();
       expect(element.querySelector('.anatomy__heading')?.textContent?.trim()).toBe('Hull anatomy');
     });
@@ -397,9 +397,9 @@ describe('HullAnatomy', () => {
         ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       detect();
 
-      expect(element.querySelector('edsb-power-thermals')).not.toBeNull();
-      expect(element.querySelector('edsb-offence-analysis')).toBeNull();
-      expect(element.querySelector('edsb-defence-analysis')).toBeNull();
+      expect(element.querySelector('ednb-power-thermals')).not.toBeNull();
+      expect(element.querySelector('ednb-offence-analysis')).toBeNull();
+      expect(element.querySelector('ednb-defence-analysis')).toBeNull();
     });
   });
 
@@ -423,7 +423,7 @@ describe('HullAnatomy', () => {
     TestBed.tick();
     const { element } = render();
 
-    const plates = element.querySelectorAll('edsb-hull-schematic');
+    const plates = element.querySelectorAll('ednb-hull-schematic');
     expect(plates.length).toBe(2);
     // The layout decides which is seen; both exist so a container query is the
     // only thing that has to change between the wide and compact arrangements.
@@ -503,7 +503,7 @@ describe('HullAnatomy', () => {
     const plate = element.querySelector('.schematic[data-side="top"]');
     expect(plate?.getAttribute('data-state')).toBe('temporarilyUnavailable');
 
-    plate?.querySelector<HTMLElement>('edsb-action-button button')?.click();
+    plate?.querySelector<HTMLElement>('ednb-action-button button')?.click();
     TestBed.tick();
     detect();
 

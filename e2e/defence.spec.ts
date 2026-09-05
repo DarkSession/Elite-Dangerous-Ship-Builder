@@ -30,13 +30,13 @@ async function openDefence(page: Page, messages = englishMessages): Promise<void
   await page.goto(`/ships/${HULL}`);
   await buildStockHull(page, messages['hullDetail.create']);
   await openMode(page, messages['anatomy.mode.defence']);
-  await expect(page.locator('edsb-defence-analysis .defence')).toBeVisible();
+  await expect(page.locator('ednb-defence-analysis .defence')).toBeVisible();
 }
 
 /** Presses one segment of the anatomy mode strip. */
 async function openMode(page: Page, label: string): Promise<void> {
   const segment = page
-    .locator('edsb-hull-anatomy .anatomy__modes button')
+    .locator('ednb-hull-anatomy .anatomy__modes button')
     .filter({ hasText: label });
   await segment.click();
   await expect(segment).toHaveAttribute('aria-pressed', 'true');
@@ -52,7 +52,7 @@ async function openMode(page: Page, label: string): Promise<void> {
  */
 async function damageRows(page: Page, card: string): Promise<string[][]> {
   return page
-    .locator(`edsb-defence-analysis .${card} .damage tbody tr`)
+    .locator(`ednb-defence-analysis .${card} .damage tbody tr`)
     .evaluateAll((nodes) =>
       nodes.map((node) =>
         [...node.querySelectorAll('th, td:not(.damage__bar)')].map((cell) =>
@@ -81,7 +81,7 @@ function caps(text: string): string {
 
 /** One card's headline figure, as drawn. */
 function pool(page: Page, card: string): Locator {
-  return page.locator(`edsb-defence-analysis .${card} .card__pool-value`);
+  return page.locator(`ednb-defence-analysis .${card} .card__pool-value`);
 }
 
 /**
@@ -95,7 +95,7 @@ function pool(page: Page, card: string): Locator {
  */
 async function recoveryDurations(page: Page): Promise<number[]> {
   const drawn = await page
-    .locator('edsb-defence-analysis .card--shield .card__facts .metric__value')
+    .locator('ednb-defence-analysis .card--shield .card__facts .metric__value')
     .allInnerTexts();
 
   return drawn.flatMap((text) => {
@@ -108,29 +108,29 @@ test.describe('opening the layer', () => {
   test('retitles the region and replaces the plates with the two cards', async ({ page }) => {
     await openDefence(page);
 
-    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+    await expect(page.locator('ednb-hull-anatomy .anatomy__heading')).toHaveText(
       englishMessages['defence.heading'],
     );
     // A title and nothing under it, which is all the canvas's switching script
     // carries per mode.
-    await expect(page.locator('edsb-hull-anatomy .anatomy__title p')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__title p')).toHaveCount(0);
 
-    await expect(page.locator('edsb-defence-analysis')).toBeVisible();
-    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__legend')).toHaveCount(0);
-    await expect(page.locator('edsb-power-thermals')).toHaveCount(0);
+    await expect(page.locator('ednb-defence-analysis')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .anatomy__plates')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__legend')).toHaveCount(0);
+    await expect(page.locator('ednb-power-thermals')).toHaveCount(0);
   });
 
   test('leaves the mounts layer exactly as it was when the mode is closed', async ({ page }) => {
     await openDefence(page);
     await openMode(page, englishMessages['anatomy.mode.mounts']);
 
-    await expect(page.locator('edsb-defence-analysis')).toHaveCount(0);
-    await expect(page.locator('edsb-hull-anatomy .anatomy__heading')).toHaveText(
+    await expect(page.locator('ednb-defence-analysis')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__heading')).toHaveText(
       englishMessages['anatomy.heading'],
     );
-    await expect(page.locator('edsb-hull-anatomy .anatomy__plates')).toBeVisible();
-    await expect(page.locator('edsb-hull-anatomy .schematic__mount[data-power]')).toHaveCount(0);
+    await expect(page.locator('ednb-hull-anatomy .anatomy__plates')).toBeVisible();
+    await expect(page.locator('ednb-hull-anatomy .schematic__mount[data-power]')).toHaveCount(0);
   });
 });
 
@@ -141,13 +141,13 @@ test.describe('reading the build', () => {
     for (const card of ['card--shield', 'card--armour'] as const) {
       await expect(pool(page, card)).toHaveText(/\d/u);
     }
-    const headings = await page.locator('edsb-defence-analysis .card__heading').allInnerTexts();
+    const headings = await page.locator('ednb-defence-analysis .card__heading').allInnerTexts();
     expect(headings.map((heading) => caps(heading.trim()))).toEqual([
       caps(englishMessages['defence.shield.heading']),
       caps(englishMessages['defence.armour.heading']),
     ]);
     // The canvas names the fitted article beside each heading.
-    await expect(page.locator('edsb-defence-analysis .card--shield .card__identity')).toContainText(
+    await expect(page.locator('ednb-defence-analysis .card--shield .card__identity')).toContainText(
       /\S/u,
     );
   });
@@ -167,7 +167,7 @@ test.describe('reading the build', () => {
 
     for (const card of ['card--shield', 'card--armour'] as const) {
       const cells = await page
-        .locator(`edsb-defence-analysis .${card} .damage tbody .damage__cell--numeric`)
+        .locator(`ednb-defence-analysis .${card} .damage tbody .damage__cell--numeric`)
         .evaluateAll((nodes) =>
           nodes.map((node) => {
             const style = getComputedStyle(node);
@@ -273,13 +273,13 @@ test.describe('reading the build', () => {
     await openDefence(page);
 
     const facts = caps(
-      await page.locator('edsb-defence-analysis .card--armour .card__facts').innerText(),
+      await page.locator('ednb-defence-analysis .card--armour .card__facts').innerText(),
     );
     expect(facts).toContain(caps(englishMessages['defence.armour.hardness']));
     expect(facts).toContain(caps(englishMessages['defence.armour.module-protection']));
     expect(facts).toContain(caps(englishMessages['defence.armour.integrity']));
     await expect(
-      page.locator('edsb-defence-analysis .card--armour .card__facts .metric'),
+      page.locator('ednb-defence-analysis .card--armour .card__facts .metric'),
     ).toHaveCount(3);
   });
 
@@ -287,20 +287,20 @@ test.describe('reading the build', () => {
     await openDefence(page);
 
     const recovery = caps(
-      await page.locator('edsb-defence-analysis .card--shield .card__facts').innerText(),
+      await page.locator('ednb-defence-analysis .card--shield .card__facts').innerText(),
     );
     expect(recovery).toContain(caps(englishMessages['defence.recovery.rate']));
     expect(recovery).toContain(caps(englishMessages['defence.recovery.full']));
     expect(recovery).toContain(caps(englishMessages['defence.recovery.broken']));
     await expect(
-      page.locator('edsb-defence-analysis .card--shield .card__facts .metric'),
+      page.locator('ednb-defence-analysis .card--shield .card__facts .metric'),
     ).toHaveCount(3);
   });
 
   test('names every source row and closes it with the package aggregate', async ({ page }) => {
     await openDefence(page);
 
-    const rows = page.locator('edsb-defence-analysis .sources .source');
+    const rows = page.locator('ednb-defence-analysis .sources .source');
     expect(await rows.count()).toBeGreaterThan(0);
     for (const row of await rows.all()) {
       await expect(row.locator('.source__name')).toContainText(/\S/u);
@@ -310,8 +310,8 @@ test.describe('reading the build', () => {
     // The rows carry aggregates, not shares: no row offers a per-module figure
     // and none of them is a control, because the package publishes no split and
     // the canvas draws no action here.
-    await expect(page.locator('edsb-defence-analysis .sources button')).toHaveCount(0);
-    await expect(page.locator('edsb-defence-analysis .sources a')).toHaveCount(0);
+    await expect(page.locator('ednb-defence-analysis .sources button')).toHaveCount(0);
+    await expect(page.locator('ednb-defence-analysis .sources a')).toHaveCount(0);
   });
 
   test('draws a weakness back from the zero mark the scale states', async ({ page }) => {
@@ -320,11 +320,11 @@ test.describe('reading the build', () => {
     // The stock hull is kinetically weak, so the armour table reaches below
     // zero and carries the mark. Measured rather than read off a style, because
     // the thing worth guarding is where the ink lands.
-    const zero = page.locator('edsb-defence-analysis .card--armour .damage__zero').first();
+    const zero = page.locator('ednb-defence-analysis .card--armour .damage__zero').first();
     await expect(zero).toBeAttached();
     const mark = (await zero.boundingBox())!.x;
 
-    const weak = page.locator('edsb-defence-analysis .card--armour .damage__row--weak').first();
+    const weak = page.locator('ednb-defence-analysis .card--armour .damage__row--weak').first();
     await expect(weak).toBeAttached();
     const fill = (await weak.locator('.damage__fill').boundingBox())!;
 
@@ -339,10 +339,10 @@ test.describe('reading the build', () => {
     await openDefence(page);
 
     const track = (await page
-      .locator('edsb-defence-analysis .card--armour .damage__track')
+      .locator('ednb-defence-analysis .card--armour .damage__track')
       .first()
       .boundingBox())!;
-    const scale = (await page.locator('edsb-defence-analysis .card--armour .scale').boundingBox())!;
+    const scale = (await page.locator('ednb-defence-analysis .card--armour .scale').boundingBox())!;
 
     // A scale a length above it cannot be read off is measuring something else,
     // so it is the bar column's own width rather than the card's.
@@ -350,17 +350,17 @@ test.describe('reading the build', () => {
     expect(Math.abs(scale.width - track.width)).toBeLessThanOrEqual(1);
 
     const mark = (await page
-      .locator('edsb-defence-analysis .card--armour .damage__zero')
+      .locator('ednb-defence-analysis .card--armour .damage__zero')
       .first()
       .boundingBox())!;
     const label = (await page
-      .locator('edsb-defence-analysis .card--armour .scale__mark--zero .scale__label')
+      .locator('ednb-defence-analysis .card--armour .scale__mark--zero .scale__label')
       .boundingBox())!;
 
     // And zero is named where the mark stands, not only at the ends: it is what
     // says which of the bars above are resistances and which are weaknesses.
     await expect(
-      page.locator('edsb-defence-analysis .card--armour .scale__mark--zero'),
+      page.locator('ednb-defence-analysis .card--armour .scale__mark--zero'),
     ).toContainText(/\d/u);
     expect(Math.abs(label.x + label.width / 2 - (mark.x + mark.width / 2))).toBeLessThanOrEqual(2);
   });
@@ -371,7 +371,7 @@ test.describe('reading the build', () => {
     // Canvas 1c builds its metric grids as cells on a panel fill with the amber
     // ground showing through one-pixel gaps. The ground is the rule; a border
     // around the whole grid is a box the canvas does not draw.
-    const grid = page.locator('edsb-defence-analysis .card--armour .card__facts .metric-group');
+    const grid = page.locator('ednb-defence-analysis .card--armour .card__facts .metric-group');
     const box = await grid.evaluate((node) => {
       const style = getComputedStyle(node);
       return { width: style.borderTopWidth, gap: style.rowGap, padding: style.paddingTop };
@@ -383,11 +383,11 @@ test.describe('reading the build', () => {
   test('rules each block off across the whole card', async ({ page }) => {
     await openDefence(page);
 
-    const rules = page.locator('edsb-defence-analysis .card--shield .card__rule');
+    const rules = page.locator('ednb-defence-analysis .card--shield .card__rule');
     expect(await rules.count()).toBeGreaterThan(0);
 
     const card = await page
-      .locator('edsb-defence-analysis .card--shield')
+      .locator('ednb-defence-analysis .card--shield')
       .evaluate((node) => node.getBoundingClientRect().width);
 
     // A rule that separates two blocks has to reach across them. Measured
@@ -403,7 +403,7 @@ test.describe('reading the build', () => {
 test.describe('the allocation the pip column and the recovery are read at', () => {
   test('moves the pip column alone, and leaves the bare shield where it is', async ({ page }) => {
     await openDefence(page);
-    const heading = page.locator('edsb-defence-analysis .card--shield .damage thead th').last();
+    const heading = page.locator('ednb-defence-analysis .card--shield .damage thead th').last();
     const before = await damageRows(page, 'card--shield');
     const column = await heading.innerText();
     const strength = await pool(page, 'card--shield').innerText();
@@ -470,7 +470,7 @@ test.describe('the status rail', () => {
   test('carries the same shield and hull figures the cards carry', async ({ page }) => {
     await openDefence(page);
 
-    const rail = page.locator('edsb-defence-summary');
+    const rail = page.locator('ednb-defence-summary');
     await expect(rail).toBeVisible();
     const cells = await rail.locator('.metric').allInnerTexts();
     expect(cells).toHaveLength(2);
@@ -488,7 +488,7 @@ test.describe('the status rail', () => {
 
     await expect(
       page.locator(
-        'edsb-defence-summary button, edsb-defence-summary a, edsb-defence-summary input',
+        'ednb-defence-summary button, ednb-defence-summary a, ednb-defence-summary input',
       ),
     ).toHaveCount(0);
   });
@@ -514,9 +514,9 @@ test.describe('the conditions that break layouts', () => {
     expect(await damageRows(page, 'card--shield')).toHaveLength(4);
     expect(await damageRows(page, 'card--armour')).toHaveLength(4);
     await expect(
-      page.locator('edsb-defence-analysis .card--armour .card__facts .metric'),
+      page.locator('ednb-defence-analysis .card--armour .card__facts .metric'),
     ).toHaveCount(3);
-    expect(await page.locator('edsb-defence-analysis .sources .source').count()).toBeGreaterThan(0);
+    expect(await page.locator('ednb-defence-analysis .sources .source').count()).toBeGreaterThan(0);
     await expectNoDocumentOverflow(page);
   });
 

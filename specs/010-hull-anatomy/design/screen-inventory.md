@@ -1,6 +1,6 @@
 # Screen and Surface Inventory
 
-Feature 010 adds no route. Hull Anatomy composes inside feature 001's `/build` workspace beside
+Feature 010 adds no route. Hull Anatomy composes inside feature 001's `/outfitting` workspace beside
 feature 002's complete outfitting ledger. Wide and narrow arrangements are responsive presentations
 of one capability, not separate screens. Side choice, pan and list disclosure are memory-only.
 
@@ -38,7 +38,7 @@ FR-011").
 
 ## Cross-feature composition
 
-- Feature 001 owns active build/hull/revision, `/build`, package artwork delivery, single service
+- Feature 001 owns active build/hull/revision, `/outfitting`, package artwork delivery, single service
   worker and online recovery coordination.
 - Feature 002 owns all slot views, one selected key, complete ledger, exact-slot surface and editing.
 - Feature 003 owns deployed/retracted viewing state and condition revision.
