@@ -327,7 +327,6 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/semantics',
     axe: true,
     assertions: [
-      'what is pending is written beside the bars, so the shapes are a supplement to a sentence',
       'the served waiting mark carries its own reduced-motion rule, which no check inside the page can read',
     ],
     manualRecord: null,

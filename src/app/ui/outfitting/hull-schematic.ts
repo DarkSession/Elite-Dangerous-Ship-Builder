@@ -324,18 +324,6 @@ export class HullSchematic {
   readonly showsDrawing = computed(() => this.document() !== null && !this.pictureFailed());
 
   /**
-   * The plate is waiting for the side it draws.
-   *
-   * Read from the fetch the plate reports and from nothing else. Waiting for
-   * the rendering to paint as well would read the picture's own `load`, and a
-   * plate that never hears one has no way back: it would keep saying the hull
-   * is on its way, with every mount hidden under it, for the rest of the
-   * session. The state a Commander is told is the one the plate can always
-   * leave.
-   */
-  readonly isWaiting = computed(() => this.isLoading());
-
-  /**
    * What the plate reports it is, which is not always what the fetch reported.
    *
    * A ready extract whose picture failed is not a ready plate. The attribute
@@ -343,12 +331,9 @@ export class HullSchematic {
    * colour, which is only true while it names the state the plate is actually
    * in.
    */
-  readonly plateState = computed(() => {
-    if (this.pictureFailed()) {
-      return 'temporarilyUnavailable';
-    }
-    return this.isWaiting() ? 'loading' : this.view().state.kind;
-  });
+  readonly plateState = computed(() =>
+    this.pictureFailed() ? 'temporarilyUnavailable' : this.view().state.kind,
+  );
 
   pictureUnavailable(event: Event): void {
     this.#failedSource.set(pictureOf(event));
@@ -371,14 +356,10 @@ export class HullSchematic {
     if (this.pictureFailed()) {
       return this.#messages.message('anatomy.side.unavailable');
     }
-    // A plate whose mounts have arrived and whose drawing has not is waiting,
-    // and says the same words as one waiting for both. The mark beside these
-    // words is hidden from a reader, so a plate that fell through to no words
-    // would say nothing at all while it waits (011/FR-029).
-    if (this.isWaiting()) {
-      return this.#messages.message('anatomy.side.loading');
-    }
     switch (this.view().state.kind) {
+      // The mark beside these words is hidden from a reader, so a plate that
+      // fell through to no words would say nothing at all while it waits
+      // (011/FR-029).
       case 'loading':
         return this.#messages.message('anatomy.side.loading');
       case 'temporarilyUnavailable':

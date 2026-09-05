@@ -2,6 +2,7 @@ import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import {
   NavigationCancel,
+  NavigationEnd,
   RouteConfigLoadEnd,
   RouteConfigLoadStart,
   Router,
@@ -71,10 +72,11 @@ describe('ShipCataloguePage, waiting for a hull', () => {
     expect(skeletonOf(host)).not.toBeNull();
   });
 
-  it('holds it past the chunk, until the hull’s screen is there', () => {
-    // The chunk landing and the screen arriving are two moments. Taking the
-    // skeleton down at the first leaves the rail a named group with nothing in
-    // it for the gap between them.
+  it('holds it past the chunk, until the navigation that fetched it ends', () => {
+    // The chunk landing and the screen arriving are two moments: the router
+    // reports the fetch, then creates the screen, then ends the navigation.
+    // Taking the skeleton down at the first leaves the rail a named group with
+    // nothing in it for the gap between them.
     const { fixture, publish } = page();
     const host = fixture.nativeElement as HTMLElement;
 
@@ -84,10 +86,24 @@ describe('ShipCataloguePage, waiting for a hull', () => {
 
     expect(skeletonOf(host)).not.toBeNull();
 
-    fixture.componentInstance.detailActivated();
+    publish(new NavigationEnd(1, '/ships/Anaconda', '/ships/Anaconda'));
     fixture.detectChanges();
 
     expect(skeletonOf(host)).toBeNull();
+  });
+
+  it('draws the rail while it waits, rather than leaving it hidden', () => {
+    // The rail is not drawn until a hull is open, and the symbol that says one
+    // is open is written by the hull screen itself. A skeleton in a region the
+    // stylesheet has taken out of the layout is a wait a Commander cannot see,
+    // which FR-029 counts as no wait at all.
+    const { fixture, publish } = page();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(detailRoute()));
+    fixture.detectChanges();
+
+    expect(host.querySelector('.catalogue')?.classList).toContain('catalogue--detail-open');
   });
 
   it('draws nothing for a chunk that is not the hull screen’s', () => {

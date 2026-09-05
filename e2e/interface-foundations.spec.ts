@@ -147,10 +147,7 @@ test.describe('product semantics', () => {
  */
 test.describe('waiting states', () => {
   test('serves a waiting mark that carries its own reduced-motion rule', async ({ request }) => {
-    // Asked for the way the mark asks for it, which is relative: the
-    // application is served from a base path and a root-absolute address would
-    // reach past it.
-    const response = await request.get('assets/loader.svg');
+    const response = await request.get('/assets/loader.svg');
     expect(response.status()).toBe(200);
 
     const file = await response.text();

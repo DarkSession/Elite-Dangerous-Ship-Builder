@@ -114,18 +114,15 @@ export class ShipCataloguePage {
    * chunk is already fetched draws no skeleton at all, because the router asks
    * for nothing and reports nothing.
    *
-   * Lowered by the hull screen arriving rather than by its chunk landing. The
-   * two are not the same moment, and a skeleton taken down at the end of the
-   * fetch leaves the rail a named group with nothing in it for the gap between
-   * them.
+   * Lowered when the navigation ends rather than when the chunk lands. The two
+   * are not the same moment — the router reports the fetch, then creates the
+   * screen, then ends the navigation — and a skeleton taken down at the end of
+   * the fetch leaves the rail a named group with nothing in it for the gap
+   * between them.
    */
   readonly #detailLoading = signal(false);
 
   readonly detailWaiting = this.#detailLoading.asReadonly();
-
-  detailActivated(): void {
-    this.#detailLoading.set(false);
-  }
 
   /**
    * Whether a route the router is fetching is a child of this screen's own.

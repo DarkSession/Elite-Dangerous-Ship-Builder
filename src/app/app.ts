@@ -345,6 +345,10 @@ export class App {
    * is known. The layer that arrives names itself for the build it is about,
    * which needs the build and the hull's own text: reaching for those here
    * would load, in the shell, the presenter whose chunk this is waiting for.
+   *
+   * So the export layer's name gains the hull when the chunk lands. The layer
+   * is named throughout, which is what a reader needs; the name it settles on
+   * is the more precise of the two.
    */
   readonly exchangePendingTitle = computed(() =>
     this.#messages.message(
@@ -366,6 +370,12 @@ export class App {
    * chunk that has landed is a screen that still has to be created and drawn,
    * and a skeleton taken down at the end of the fetch leaves the frame empty
    * for that gap.
+   *
+   * Every fetch this can see belongs to a navigation, which is what lowers it
+   * again on the paths where no screen arrives. A preloading strategy would
+   * break that: it asks for chunks outside any navigation, and there would be
+   * no `Navigation*` event to answer the raise. This application registers
+   * none.
    */
   readonly #routeLoading = signal(false);
 
@@ -384,7 +394,6 @@ export class App {
 
   routeActivated(): void {
     this.#routeActive.set(true);
-    this.#routeLoading.set(false);
   }
 
   routeDeactivated(): void {

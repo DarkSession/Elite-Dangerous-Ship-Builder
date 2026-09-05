@@ -12,13 +12,14 @@ const BAR_WIDTHS = [100, 94, 72, 86] as const;
  * down when the chunk lands (011/FR-029).
  *
  * The bars are hidden from a reader and the sentence is not. The block is a
- * `status`, so a Commander who cannot see the bars is told the screen is
- * loading rather than told nothing.
+ * `status` carrying words for what is pending, so the shapes supplement a
+ * sentence rather than stand in place of one. The block is mounted with that
+ * sentence already in it, so the words are there to be reached and read.
  *
  * It carries no `aria-busy`. A live region marked busy is a region an assistive
  * technology holds back until the busy flag drops, and this region is only ever
  * drawn while the wait is on — so the flag that describes it is the flag that
- * suppresses the one announcement it exists to make.
+ * would hold back any reading of it at all.
  *
  * The bars do not move. The mark above them is the whole of the motion here,
  * which is one animation to still rather than one for every bar, and a bar that

@@ -1,4 +1,4 @@
-<div class="catalogue" [class.catalogue--detail-open]="detailOpen()">
+<div class="catalogue" [class.catalogue--detail-open]="detailOpen() || detailWaiting()">
   <div class="catalogue__manifest-region">
     <!--
       Everything that is browsing rather than heading. At narrow widths with a
@@ -47,8 +47,8 @@
        declares its own: below the wide step the box does not scroll and the
        stop is one extra tab on a region that is already the whole screen, which
        is cheaper than a stop that appears and disappears with the width. The
-       region is not drawn at all until a hull is open, so an empty group is
-       never focusable. -->
+       region is not drawn until a hull is open, or on its way, so an empty group
+       is never focusable. -->
   <div class="catalogue__inspector" tabindex="0" role="group" [attr.aria-label]="inspectorLabel()">
     <!--
       The first hull opened from the manifest is a chunk of its own, and the rail
@@ -64,6 +64,6 @@
       <ednb-skeleton [label]="detailLoadingLabel()" [lines]="5" />
     }
 
-    <router-outlet (activate)="detailActivated()" />
+    <router-outlet />
   </div>
 </div>

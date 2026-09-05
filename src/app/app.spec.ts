@@ -1,10 +1,12 @@
 import { Location } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import {
   NavigationError,
   RouteConfigLoadEnd,
   RouteConfigLoadStart,
   Router,
+  provideRouter,
   type Route,
 } from '@angular/router';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
@@ -567,11 +569,25 @@ describe('routes', () => {
  * what the shell reads: the events say a chunk is on the wire, and nothing else
  * in the frame knows (011/FR-029).
  */
+/** A screen with nothing in it, so a navigation activates the outlet. */
+@Component({
+  selector: 'ednb-waiting-screen',
+  template: '<p>screen</p>',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class WaitingScreen {}
+
 describe('App, waiting for a screen', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideLocalization(), ...provideMemoryStorage(new MemoryStorage())],
+      providers: [
+        provideLocalization(),
+        // A screen of its own, so a navigation activates the outlet without
+        // fetching one of the application's real chunks.
+        provideRouter([{ path: 'screen', component: WaitingScreen }]),
+        ...provideMemoryStorage(new MemoryStorage()),
+      ],
     }).compileComponents();
   });
 
@@ -617,12 +633,16 @@ describe('App, waiting for a screen', () => {
     expect(skeletonOf(fixture)).toBeNull();
   });
 
-  it('keeps the screen a Commander is reading while the next one loads', () => {
+  it('keeps the screen a Commander is reading while the next one loads', async () => {
     // The router leaves a screen activated until the next is ready, which is
     // the behaviour worth having. A skeleton over it would take a screen away
     // to say another was coming (011/FR-029).
+    //
+    // The screen is activated by navigating rather than by calling the handler,
+    // so the outlet's own binding is what carries this. Without it the frame
+    // has no way to know a screen is there, and covers it.
     const { fixture, publish } = shell();
-    fixture.componentInstance.routeActivated();
+    await TestBed.inject(Router).navigate(['/screen']);
     fixture.detectChanges();
 
     publish(new RouteConfigLoadStart(someRoute('equipment')));
