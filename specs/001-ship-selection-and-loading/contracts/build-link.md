@@ -42,8 +42,9 @@ chunk of their own, and the application fetches them before it can decode anythi
 
 The pipeline therefore exposes that it is running. The workspace holds the build's place while it
 runs, instead of stating that there is no build — a statement that is false while a link is being
-read (011/FR-029). The state ends when the pipeline ends, whether it committed, refused, or found the
-fragment unchanged.
+read (011/FR-029). The state belongs to the read that raised it, and ends when that read ends,
+whether it committed or refused. A fragment that starts no read ends the state only where no read is
+running.
 
 ## Active-edit synchronization
 
