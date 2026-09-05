@@ -47,6 +47,37 @@ const dialogOf = (fixture: ReturnType<typeof render>['fixture']) =>
 const settle = () => new Promise<void>((resolve) => queueMicrotask(() => resolve()));
 
 describe('Layer', () => {
+  it('hands focus back when the layer is taken away rather than closed', async () => {
+    // A deferred block stands a layer on the screen while its chunk is on the
+    // wire, and the chunk landing takes that layer away without its `open`
+    // input ever falling. A layer that hands focus back only on that input
+    // leaves the reader at the top of the document, and the layer arriving
+    // records the document body as the control that opened it.
+    const invoker = document.createElement('button');
+    document.body.append(invoker);
+    invoker.focus();
+
+    stubNativeDialog();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [Layer] });
+    const fixture = TestBed.createComponent(Layer);
+    fixture.componentRef.setInput('title', 'A layer');
+    fixture.componentRef.setInput('dismissLabel', 'Close');
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    // What `showModal` does in a browser and jsdom does not: the layer takes
+    // the focus off the control that opened it.
+    dialogOf(fixture).querySelector('button')!.focus();
+    expect(document.activeElement).not.toBe(invoker);
+
+    fixture.destroy();
+    await settle();
+
+    expect(document.activeElement).toBe(invoker);
+    invoker.remove();
+  });
+
   it('does not report a close its own owner asked for as a dismissal', async () => {
     const { fixture, dismissals } = render();
     expect(dialogOf(fixture).hasAttribute('open')).toBe(true);

@@ -26,7 +26,9 @@ function layer(page: Page) {
 
 async function openExport(page: Page): Promise<void> {
   await reachShellAction(page, /^export$/i);
-  await expect(layer(page)).toBeVisible();
+  // The format list, not the name: while the layer's chunk is on the wire the
+  // shell stands a waiting layer here under the same name, holding a skeleton.
+  await expect(layer(page).getByRole('group', { name: /format/i })).toBeVisible();
 }
 
 async function chooseSlef(page: Page): Promise<void> {
@@ -247,15 +249,11 @@ test.describe('the layer’s semantics', () => {
     const dialog = layer(page);
 
     await expect(dialog.getByRole('heading', { level: 2 })).toBeVisible();
-    // The format list is the layer this test means. While its chunk is on the
-    // wire the shell stands a waiting layer here under the same name, holding a
-    // skeleton, so the name alone does not say which layer is on the page. The
-    // reads below state that rather than inherit it: the one after this takes a
-    // single sample, and a sample of the wrong layer is a sample of a dialog
-    // whose `showModal` has not run yet.
     await expect(dialog.getByRole('group', { name: /format/i })).toBeVisible();
     // Open is not modal. A layer opened with `show` would be visible here and
-    // would leave the screen behind it reachable.
+    // would leave the screen behind it reachable. Read once, which `openExport`
+    // makes safe: it waits for the loaded layer rather than for the name, which
+    // the waiting layer carries too.
     expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
     await chooseSlef(page);
     await expect(dialog.getByLabel(/slef payload/i)).toBeVisible();

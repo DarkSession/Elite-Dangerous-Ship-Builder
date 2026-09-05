@@ -54,8 +54,8 @@ a declaration, and a missing one fails the build.
 
 A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outside that scan. FR-004
 reaches it all the same: the catalogue is where a state is reviewed, so a composite declares its
-states there unless the catalogue cannot render it. Nothing fails a build over that, which is why the
-one component the catalogue cannot render is written down below.
+states there unless the catalogue cannot render it. Nothing fails a build over that, which is why a
+composite the catalogue cannot render is written down below instead.
 
 The catalogue renders a declaration from its inputs alone. A component that
 projects content therefore stands in the catalogue with its slots empty, and

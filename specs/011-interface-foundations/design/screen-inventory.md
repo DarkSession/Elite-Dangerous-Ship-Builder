@@ -27,35 +27,35 @@ mapping. They register/preview shared extensions through this feature's contract
 
 ## Requirement coverage
 
-| Requirement | Surface/contract/verification owner                                                                                                                     |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001      | Product/preview compose `src/app/ui/`; token/component contract and cross-feature screen review                                                         |
-| FR-002      | Primitive/semantic token sources plus PostCSS property-aware policy gate                                                                                |
-| FR-003      | One semantic dark set; no shell control, media-selected light set or stored theme                                                                       |
-| FR-004      | Typed preview manifest reconciled with every exported component/state and all global profiles                                                           |
-| FR-005      | Shared extension rule, exported inventory and screen-design review before capability use                                                                |
-| FR-006      | Native/shared controls; click/tap primary journeys; no essential hover or multipointer path                                                             |
-| FR-007      | Component semantic contracts and explicit visible-name/accessibility-name/state/relationship assertions                                                 |
-| FR-008      | Shell banner/navigation and route-owned main/h1 contract; E2E/AT heading and landmark checks                                                            |
-| FR-009      | Global visible feedback plus assertive/polite revision-deduplicated outlets                                                                             |
-| FR-010      | Text-equivalence contract and fixtures for status, bars, icons, selections and visualizations                                                           |
-| FR-011      | Wide/medium/compact design, ten projects, 200% text, 320px proxy, overflow checks and actual-400%-zoom records                                          |
-| FR-012      | Contrast-evidenced tokens, 44px design target, axe/computed/box checks and documented exception handling                                                |
-| FR-013      | Motion tokens, reduced-motion fixtures/emulation and semantic-state equivalence                                                                         |
-| FR-014      | Logical CSS, stable DOM order, expanded/RTL/bidi fixtures and glyph coverage                                                                            |
-| FR-015      | Canonical qualified message plus scoped policy check naming all eight exclusions                                                                        |
-| FR-016      | Typed message facade and Angular/TypeScript AST display-text gate, including document title                                                             |
-| FR-017      | Locale startup state machine: browser-language match, then bundled English                                                                              |
-| FR-018      | Named cached `Intl` formatter registry                                                                                                                  |
-| FR-019      | Canonical catalogues, bundled English, same-origin versioned assets, atomic fallback and offline production test                                        |
-| FR-020      | Almanac leaf presenter with known-identity provenance, canonical disclosure and unavailable state                                                       |
-| FR-021      | Generated five-profile × two-engine primary-journey matrix and coverage-ledger test                                                                     |
-| FR-022      | Shared axe helper scans each ledger product/preview state and fails on in-scope violations                                                              |
-| FR-023      | Versioned NVDA/Firefox, TalkBack/Chromium, materially different tablet and actual-zoom protocol/results                                                 |
-| FR-024      | Fixture-tested Angular/TypeScript/PostCSS policy plus UI-export/preview-ledger reconciliation                                                           |
-| FR-027      | Route-owned title/description/canonical in the one document commit, static head, crawl policy, sitemap, manifest and JSON-LD, reconciled by policy gate |
-| FR-028      | One tool registry read by the shell; tool bar naming every served tool, with the open route's tool exposed as current at every width                    |
-| FR-029      | Shared waiting components, the accounted wait inventory in `design/waiting-states.md`, and a scanned state for each                                     |
+| Requirement | Surface/contract/verification owner                                                                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001      | Product/preview compose `src/app/ui/`; token/component contract and cross-feature screen review                                                                         |
+| FR-002      | Primitive/semantic token sources plus PostCSS property-aware policy gate                                                                                                |
+| FR-003      | One semantic dark set; no shell control, media-selected light set or stored theme                                                                                       |
+| FR-004      | Typed preview manifest reconciled with every exported component/state and all global profiles                                                                           |
+| FR-005      | Shared extension rule, exported inventory and screen-design review before capability use                                                                                |
+| FR-006      | Native/shared controls; click/tap primary journeys; no essential hover or multipointer path                                                                             |
+| FR-007      | Component semantic contracts and explicit visible-name/accessibility-name/state/relationship assertions                                                                 |
+| FR-008      | Shell banner/navigation and route-owned main/h1 contract; E2E/AT heading and landmark checks                                                                            |
+| FR-009      | Global visible feedback plus assertive/polite revision-deduplicated outlets                                                                                             |
+| FR-010      | Text-equivalence contract and fixtures for status, bars, icons, selections and visualizations                                                                           |
+| FR-011      | Wide/medium/compact design, ten projects, 200% text, 320px proxy, overflow checks and actual-400%-zoom records                                                          |
+| FR-012      | Contrast-evidenced tokens, 44px design target, axe/computed/box checks and documented exception handling                                                                |
+| FR-013      | Motion tokens, reduced-motion fixtures/emulation and semantic-state equivalence                                                                                         |
+| FR-014      | Logical CSS, stable DOM order, expanded/RTL/bidi fixtures and glyph coverage                                                                                            |
+| FR-015      | Canonical qualified message plus scoped policy check naming all eight exclusions                                                                                        |
+| FR-016      | Typed message facade and Angular/TypeScript AST display-text gate, including document title                                                                             |
+| FR-017      | Locale startup state machine: browser-language match, then bundled English                                                                                              |
+| FR-018      | Named cached `Intl` formatter registry                                                                                                                                  |
+| FR-019      | Canonical catalogues, bundled English, same-origin versioned assets, atomic fallback and offline production test                                                        |
+| FR-020      | Almanac leaf presenter with known-identity provenance, canonical disclosure and unavailable state                                                                       |
+| FR-021      | Generated five-profile × two-engine primary-journey matrix and coverage-ledger test                                                                                     |
+| FR-022      | Shared axe helper scans each ledger product/preview state and fails on in-scope violations                                                                              |
+| FR-023      | Versioned NVDA/Firefox, TalkBack/Chromium, materially different tablet and actual-zoom protocol/results                                                                 |
+| FR-024      | Fixture-tested Angular/TypeScript/PostCSS policy plus UI-export/preview-ledger reconciliation                                                                           |
+| FR-027      | Route-owned title/description/canonical in the one document commit, static head, crawl policy, sitemap, manifest and JSON-LD, reconciled by policy gate                 |
+| FR-028      | One tool registry read by the shell; tool bar naming every served tool, with the open route's tool exposed as current at every width                                    |
+| FR-029      | Shared waiting components, the accounted wait inventory in `design/waiting-states.md`, and a ledger entry for each, scanned where the state stands long enough to sweep |
 
 ## Cross-feature ownership
 
