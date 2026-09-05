@@ -29,13 +29,25 @@ describe('BuildWorkspacePage, reading an incoming link', () => {
   });
 
   afterEach(() => {
-    setFragment('');
+    clearFragment();
   });
 
   /** Writes the address this page is opened at, before anything reads it. */
   function setFragment(value: string): void {
     const view = TestBed.inject(DOCUMENT).defaultView;
     view!.location.hash = value;
+  }
+
+  /**
+   * Takes the fragment off the address entirely.
+   *
+   * The document outlives one test, and a page opened at no fragment is a state
+   * this file has to state rather than inherit: a fragment left on the address
+   * by anything before it would make this page read a link it was never given.
+   */
+  function clearFragment(): void {
+    const view = TestBed.inject(DOCUMENT).defaultView!;
+    view.history.replaceState(null, '', view.location.pathname + view.location.search);
   }
 
   /** Lets the restore, the ingest and the decode behind it all finish. */
@@ -50,6 +62,8 @@ describe('BuildWorkspacePage, reading an incoming link', () => {
   }
 
   it('says there is no build only once it has finished finding out', () => {
+    clearFragment();
+
     const fixture = render();
     const host = fixture.nativeElement as HTMLElement;
 
