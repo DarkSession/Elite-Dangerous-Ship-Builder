@@ -246,9 +246,17 @@ test.describe('the layer’s semantics', () => {
     await openExport(page);
     const dialog = layer(page);
 
-    expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
     await expect(dialog.getByRole('heading', { level: 2 })).toBeVisible();
+    // The format list is the layer this test means. While its chunk is on the
+    // wire the shell stands a waiting layer here under the same name, holding a
+    // skeleton, so the name alone does not say which layer is on the page. The
+    // reads below state that rather than inherit it: the one after this takes a
+    // single sample, and a sample of the wrong layer is a sample of a dialog
+    // whose `showModal` has not run yet.
     await expect(dialog.getByRole('group', { name: /format/i })).toBeVisible();
+    // Open is not modal. A layer opened with `show` would be visible here and
+    // would leave the screen behind it reachable.
+    expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
     await chooseSlef(page);
     await expect(dialog.getByLabel(/slef payload/i)).toBeVisible();
   });

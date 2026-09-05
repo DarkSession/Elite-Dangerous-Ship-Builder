@@ -318,6 +318,12 @@ test.describe('the layer’s semantics', () => {
     // attribute the application manages and could get wrong.
     await expect(dialog).toHaveJSProperty('nodeName', 'DIALOG');
     await expect(dialog.getByRole('heading', { level: 2 })).toBeVisible();
+    // The payload field is the layer this test means. While its chunk is on the
+    // wire the shell stands a waiting layer here under the same name, holding a
+    // skeleton, so the name alone does not say which layer is on the page. The
+    // read below takes a single sample, and a sample of the wrong layer is a
+    // sample of a dialog whose `showModal` has not run yet.
+    await expect(dialog.getByLabel(/slef payload/i)).toBeVisible();
 
     // Modal in the browser's own sense, which is what makes the page behind it
     // inert without the application managing an attribute it could get wrong.
