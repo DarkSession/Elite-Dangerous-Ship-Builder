@@ -418,6 +418,20 @@ test.describe('the editor’s actions on a short viewport', () => {
 
     expect(pin).toBe('static');
   });
+
+  test('keeps the pin where the viewport has the height for a foot', async ({ page }) => {
+    // The other direction. Without it a foot that had stopped sticking entirely
+    // would satisfy the release above, and nothing else in the suite reads it.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    const pin = await page
+      .locator('.engineering__actions')
+      .evaluate((node) => getComputedStyle(node).position);
+
+    expect(pin).toBe('sticky');
+  });
 });
 
 test.describe('engineering costs', () => {

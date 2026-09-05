@@ -316,6 +316,32 @@ test.describe('hull catalogue', () => {
  * them then is a sentence saying so, where they are looking, with the list they
  * were reading still under it (011/FR-029).
  */
+test.describe('the manifest head on a short viewport', () => {
+  test('releases the pin rather than freezing part way down the screen', async ({ page }) => {
+    // The shell's own bar is released at this height, and the head is frozen
+    // under that bar. A head that stays frozen stands part way down the screen,
+    // with rows running uncovered above it (FR-011).
+    //
+    // The release and the pin carry the same selector, and a media query carries
+    // no specificity, so only source order decides which one takes. A release
+    // stated in the wrong place compiles and ships silent.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.goto('/ships');
+    await expect(visibleHulls(page)).toHaveCount(48);
+
+    const head = page.locator('thead th').first();
+    const pin = () => head.evaluate((node) => getComputedStyle(node).position);
+
+    expect(await pin()).toBe('static');
+
+    // The other direction, so a head that never freezes cannot pass this either.
+    // The head is a cell of a table the width still draws, so it survives the
+    // change of height.
+    await page.setViewportSize({ width: 844, height: 900 });
+    await expect.poll(pin).toBe('sticky');
+  });
+});
+
 test.describe('when a hull’s screen does not arrive', () => {
   // The chunks are precached in a production run, so the worker would answer the
   // press from its own store and there would be no request to refuse. The
