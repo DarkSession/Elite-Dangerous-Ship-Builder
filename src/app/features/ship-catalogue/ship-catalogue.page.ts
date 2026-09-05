@@ -271,14 +271,20 @@ export class ShipCataloguePage {
         event instanceof NavigationError
       ) {
         this.#detailLoading.set(false);
+        // The claim lasts exactly as long as the wait it is about. A hull that
+        // opened leaves the rail drawing a hull, so a later chunk refused
+        // somewhere else is not this rail's to say — and a claim left standing
+        // would keep it from being said anywhere.
+        this.#chrome.setOwnsRouteFailure(false);
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
         this.#detailFailed.set(false);
       }
     });
 
-    // A rail that is gone draws nothing, and a claim it left behind would keep
-    // every later failure from being said at all.
+    // And a rail taken away mid-fetch never sees the event that would have
+    // lowered it. A claim it left behind would keep every later failure from
+    // being said at all.
     inject(DestroyRef).onDestroy(() => this.#chrome.setOwnsRouteFailure(false));
 
     // The reference carries the manifest's count in the command bar beside the

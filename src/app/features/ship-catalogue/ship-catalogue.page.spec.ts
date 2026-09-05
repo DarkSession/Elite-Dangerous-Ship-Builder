@@ -14,6 +14,7 @@ import { routes } from '../../app.routes';
 import { provideLocalization } from '../../i18n/i18n.providers';
 import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
+import { ScreenChrome } from '../shared/screen-chrome';
 import { ShipCataloguePage } from './ship-catalogue.page';
 
 /**
@@ -61,6 +62,82 @@ describe('ShipCataloguePage, waiting for a hull', () => {
   }
 
   const skeletonOf = (host: HTMLElement) => host.querySelector('ednb-skeleton');
+
+  const ownsFailure = () => TestBed.inject(ScreenChrome).ownsRouteFailure();
+
+  /**
+   * The claim the shell reads before it speaks.
+   *
+   * The rail draws the sentence for its own hull, and a drawn error notice is
+   * an alert already, so the shell stays quiet while this stands. It therefore
+   * has to stand for exactly the wait it describes: left up, it silences the
+   * shell for a chunk refused somewhere else, which no rail draws and nothing
+   * then says at all.
+   */
+  describe('the claim on the sentence', () => {
+    it('is made while the hull is on its way', () => {
+      const { publish } = page();
+      expect(ownsFailure()).toBe(false);
+
+      publish(new RouteConfigLoadStart(detailRoute()));
+
+      expect(ownsFailure()).toBe(true);
+    });
+
+    it('is given up when the hull arrives', () => {
+      const { publish } = page();
+
+      publish(new RouteConfigLoadStart(detailRoute()));
+      publish(new NavigationEnd(1, '/ships/Anaconda', '/ships/Anaconda'));
+
+      expect(ownsFailure()).toBe(false);
+    });
+
+    it('is given up when the hull does not arrive', () => {
+      // The rail says this one itself, and the sentence it drew is the reader's
+      // answer. The next failure is a different question.
+      const { publish } = page();
+
+      publish(new RouteConfigLoadStart(detailRoute()));
+      publish(new NavigationError(1, '/ships/Anaconda', new Error('chunk unavailable')));
+
+      expect(ownsFailure()).toBe(false);
+    });
+
+    it('is given up when the hull is no longer wanted', () => {
+      const { publish } = page();
+
+      publish(new RouteConfigLoadStart(detailRoute()));
+      publish(new NavigationCancel(1, '/ships/Anaconda', ''));
+
+      expect(ownsFailure()).toBe(false);
+    });
+
+    it('is not made for a chunk refused after a hull opened', () => {
+      // The case the rail cannot answer: a hull is open, the rail draws it, and
+      // a Commander presses a tool link whose chunk is refused. Nothing is
+      // drawn anywhere, so the shell is the only thing that can say it.
+      const { publish } = page();
+
+      publish(new RouteConfigLoadStart(detailRoute()));
+      publish(new NavigationEnd(1, '/ships/Anaconda', '/ships/Anaconda'));
+      publish(new NavigationError(2, '/equipment', new Error('chunk unavailable')));
+
+      expect(ownsFailure()).toBe(false);
+    });
+
+    it('is given up by a rail that is taken away mid-fetch', () => {
+      // A destroyed rail never sees the event that would have lowered it.
+      const { fixture, publish } = page();
+
+      publish(new RouteConfigLoadStart(detailRoute()));
+      expect(ownsFailure()).toBe(true);
+
+      fixture.destroy();
+
+      expect(ownsFailure()).toBe(false);
+    });
+  });
 
   it('holds the hull’s place while the hull’s own chunk is fetched', () => {
     const { fixture, publish } = page();

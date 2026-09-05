@@ -136,9 +136,10 @@ export class ScreenChrome {
    * once in the outlet (`011 contracts/feedback-and-semantics.md`, "The visible
    * notice is an alert in its own right").
    *
-   * Raised while the screen waits for the chunk rather than when the failure
-   * arrives. The shell subscribes to the router first, so it reads this on the
-   * same event the screen would otherwise still be setting it from.
+   * Raised while the screen waits for the chunk, and lowered on every way that
+   * wait can end. Raised at the fetch rather than at the failure because the
+   * shell subscribes to the router first, and so reads it on the same event the
+   * screen would otherwise still be setting it from.
    */
   readonly ownsRouteFailure = this.#ownsRouteFailure.asReadonly();
 
