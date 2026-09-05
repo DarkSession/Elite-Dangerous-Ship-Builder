@@ -326,10 +326,10 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     requirements: ['011/FR-029'],
     journey: 'product/semantics',
     // No scan: the check here is on a file the server sends, not on a page.
-    // What a Commander actually sees drawn while a fetch is open is asserted on
-    // the two surfaces that draw it — `ships/:hull` and
-    // `build/hull-anatomy-waiting` — because a wait can only be observed where
-    // something is genuinely still on the wire.
+    // What a Commander sees drawn while a fetch is open is asserted on
+    // `ships/:hull` and `build/hull-anatomy-waiting`. A wait can only be
+    // observed where something is genuinely still on the wire, and those two
+    // surfaces are where an end-to-end run can hold one open.
     axe: false,
     assertions: [
       'the served waiting mark carries its own reduced-motion rule, which no check inside the page can read',

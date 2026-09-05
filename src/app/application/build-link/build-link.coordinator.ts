@@ -126,9 +126,9 @@ export class BuildLinkCoordinator {
   /**
    * Ends a fragment that is not a read, and leaves a running read alone.
    *
-   * The seed makes this necessary in both directions. A workspace opened at an
-   * address with no build link must lower the state the seed raised, and the
-   * first fragment it sees is the one that does it.
+   * The address seeds the waiting state where it carries a build link. A
+   * fragment that replaces that link before the first read starts has to lower
+   * the state the seed raised, because no read is coming to lower it.
    */
   #endWithoutReading(): void {
     if (!this.#running) {

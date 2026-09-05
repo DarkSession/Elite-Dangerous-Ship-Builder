@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { BuildLinkCodecError } from '../../domain/build-link/build-link-codec-error';
@@ -54,6 +55,22 @@ function setup() {
   };
 }
 
+/** Writes the address the coordinator is constructed at, before it reads it. */
+function setFragment(value: string): void {
+  TestBed.inject(DOCUMENT).defaultView!.location.hash = value;
+}
+
+/**
+ * Takes the fragment off the address entirely.
+ *
+ * The document outlives one test. A fragment left behind seeds the next
+ * coordinator, which would make it wait for a link that test never gave it.
+ */
+function clearFragment(): void {
+  const view = TestBed.inject(DOCUMENT).defaultView!;
+  view.history.replaceState(null, '', view.location.pathname + view.location.search);
+}
+
 function commitAnaconda(active: ActiveBuildStore): void {
   active.commit({
     loadout: ShipLoadout.default('Anaconda'),
@@ -101,6 +118,12 @@ describe('an incoming link that arrives late', () => {
 });
 
 describe('a fragment that arrives while a link is being read', () => {
+  // A test that fails part way through still has to leave the address as it
+  // found it, or every test after it reads a link it was never given.
+  afterEach(() => {
+    clearFragment();
+  });
+
   it('keeps the waiting state up for a fragment this application does not read', async () => {
     // The reader clicks an in-page anchor while the codec chunk is on the wire.
     // That fragment is not a read, so it ends where it is recognised. Lowering
@@ -140,10 +163,13 @@ describe('a fragment that arrives while a link is being read', () => {
     expect(ingress.reading()).toBe(false);
   });
 
-  it('lowers the waiting state the address seeded when no link follows', async () => {
-    // A workspace opened with no build link seeds the state from the address
-    // and needs the first fragment to lower it. No read is running there.
+  it('lowers the waiting state the address seeded when the link is replaced', async () => {
+    // The workspace is opened at a build link, so the address seeds the state.
+    // The fragment becomes something else before the first read starts. No read
+    // is coming to lower the state, so the fragment that is not a read does it.
+    setFragment('b.seeded');
     const { ingress } = setup();
+    expect(ingress.reading()).toBe(true);
 
     await ingress.ingest('some-anchor');
 
