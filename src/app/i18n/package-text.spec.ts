@@ -170,7 +170,7 @@ describe('package text', () => {
     ];
 
     // Every offence is collected and asserted once. An assertion inside the
-    // loop runs it a thousand keys by thirty tokens by two catalogues deep, and
+    // loop runs it a thousand keys by sixty tokens by two catalogues deep, and
     // the report it produces is the same list this one names.
     const offences: string[] = [];
     for (const catalogue of catalogues) {

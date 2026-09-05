@@ -51,8 +51,8 @@ function readSchematic(symbol: string, side: string): string {
 /**
  * Every hull, both sides, read and parsed once.
  *
- * The parse is shared because five of the tests below ask the same question of
- * the same 96 documents. Parsing per test is the same answer computed five
+ * The parse is shared because six of the tests below ask the same question of
+ * the same 96 documents. Parsing per test is the same answer computed six
  * times, and it is the whole cost of this file.
  *
  * `parseSchematic` refuses by returning `null` rather than by throwing, so
