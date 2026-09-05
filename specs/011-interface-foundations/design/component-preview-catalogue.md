@@ -52,11 +52,10 @@ provenance; and announcement outlets. Later capability components join the same 
 The preview-coverage checker reads `src/app/ui/components`. Every exported component there must carry
 a declaration, and a missing one fails the build.
 
-A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outside that scan, and no
-build fails over one that carries no declaration. FR-004 reaches it all the same: the catalogue is
-where a state is reviewed, so a composite belongs in the manifest wherever the catalogue can render
-it. One of the six components here is a composite the catalogue cannot render, and the reason is
-written down below.
+A component under `src/app/ui/` outside `components/` is beyond that scan, and no build fails over
+one that carries no declaration. FR-004 reaches it all the same: the catalogue is where a state is
+reviewed, so a component belongs in the manifest wherever the catalogue can render it.
+`ednb-pip-control` is one the catalogue cannot render, and the reason is written down below.
 
 The catalogue renders a declaration from its inputs alone. A component that
 projects content therefore stands in the catalogue with its slots empty, and
