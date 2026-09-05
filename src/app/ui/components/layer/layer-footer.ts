@@ -8,8 +8,8 @@ export type LayerFooterRule = 'none' | 'section' | 'quiet';
  * what it offers on the trailing one.
  *
  * A component of its own rather than a slot on `Layer`, because two of its
- * callers project a whole region into the layer's body and draw their footer
- * inside that region, where a slot on the layer cannot reach.
+ * callers draw the footer inside a component of their own. A slot on the layer
+ * cannot reach into another component's template.
  *
  * The row wraps rather than clipping. At 200% text the message and the actions
  * stack instead of pushing each other past the edge of the panel.

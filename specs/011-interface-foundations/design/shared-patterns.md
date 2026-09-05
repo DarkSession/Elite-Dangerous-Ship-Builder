@@ -32,14 +32,19 @@ where it is drawn.
 two of that feature's own regions, so it lives in `src/app/ui/outfitting/` with the other domain
 composites. The rest are foundation components and live in `src/app/ui/components/`.
 
+It is also the one of the six with no preview declaration. A pip block is a control whose whole
+reading is its accessible name, and the preview catalogue's expanded-copy sweep requires visible text
+on every button it finds. The two regions that draw the blocks sweep them in place instead
+(`design/component-preview-catalogue.md`, "What the checker reaches, and what the rule reaches").
+
 ### `ednb-empty-state`
 
 A heading, an optional sentence and a projected way out. The way out is projected because it differs
 at every call site: a link to the shipyard on one screen, a notice and a link on another, nothing on
 a third.
 
-The heading is an `h2`. Every call site draws this block as the whole of a screen whose `h1` is the
-bar above it, so a level of its own would be one outline decision taken in three places.
+The heading is an `h2`. Each call site sits one level under the heading above it — a screen's `h1`,
+or a layer's own title — so a level of its own would be one outline decision taken in three places.
 
 Where the block sits is an input with two values. A centred block is the whole screen and centres
 itself at every width. A leading one shares its width with something else where there is room, so it
@@ -51,8 +56,8 @@ is still finding out — that is a waiting state, and `design/waiting-states.md`
 ### `ednb-layer-footer`
 
 `ednb-layer` draws a header and a body. Its footer is a separate component rather than a third slot
-because two of the three callers project a whole region into the layer's body and draw their own
-footer inside it, where a slot on the layer cannot reach.
+because two of the three callers draw the footer inside a component of their own. A slot on the layer
+cannot reach into another component's template.
 
 The row is the shared part: the message on the leading edge, the actions on the trailing edge, both
 wrapping rather than clipping when the room runs out. The rule above it is an input with three
@@ -89,8 +94,8 @@ the line. A section that ends in a number uses the two mixins and its own row.
 words, which is what makes its colour a supplement rather than the carrier. Three blocks use this
 mixin, and each one already meets that rule by another route.
 
-- The build status rail draws four tones and names the severity of each in a hidden equivalent beside
-  the sentence.
+- The build status rail draws four tones. Three of them name the severity in a hidden equivalent
+  beside the sentence. The fourth is the verdict line, whose own sentence says the build is valid.
 - The power shed statements draw one tone. The colour separates nothing, because there is nothing to
   separate it from.
 - The defence analysis issues draw one tone, under an unavailable value that has already named the

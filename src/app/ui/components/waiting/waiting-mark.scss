@@ -2,7 +2,7 @@
   display: inline-flex;
 }
 
-// The size both plates draw it at.
+// The size every caller draws it at.
 .mark {
   inline-size: var(--ednb-target-size);
   block-size: var(--ednb-target-size);

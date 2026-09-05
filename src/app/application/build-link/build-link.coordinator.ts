@@ -102,9 +102,9 @@ export class BuildLinkCoordinator {
    * has no build while this is true — there may be one, and it is being read
    * (build-link contract, "Ingress pipeline"; 011/FR-029).
    *
-   * Seeded from the address this was constructed at, because the first ingest
-   * comes after this tab's own record has been restored and a screen rendered
-   * before it would otherwise draw the state this exists to prevent.
+   * Seeded from the address this was constructed at. The first ingest runs only
+   * after this tab's own record is restored. Without the seed the workspace
+   * renders first and says there is no build.
    */
   readonly #reading = signal(
     recognizeBuildLinkFragment(this.#location.fragment()).kind === 'build',

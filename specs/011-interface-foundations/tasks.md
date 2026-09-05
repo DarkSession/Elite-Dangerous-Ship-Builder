@@ -524,15 +524,15 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       status bar cut into it (`design/canvas-extraction.md`, "Panel dialog")
 
 - [x] T150 Take the repeated screen furniture into the library. `ednb-empty-state` for the three
-      screens that state an absence, `ednb-layer-footer` for the four layers that close with a row of
+      screens that state an absence, `ednb-layer-footer` for the three layers that close with a row of
       answers, `ednb-format-layer` for the two export layers that draw a format list beside the chosen
-      format, and `ednb-pip-control` for the two regions that set one bank's pips. Each is declared in
-      `preview-manifest.ts` with all five states and carries its own unit test. Recorded in
-      `design/shared-patterns.md`, with the rule that decides component from mixin
+      format, and `ednb-pip-control` for the two regions that set one bank's pips. Each carries its own
+      unit test, and each but the pip blocks is declared in `preview-manifest.ts` with all five
+      states. Recorded in `design/shared-patterns.md`, with the rule that decides component from mixin
       _An agreement kept by hand between two copies is not an agreement._
 - [x] T151 Name the declaration bodies the stylesheets repeated. `panel-plate`, `panel-plate-head`,
       `toned-block`, `block-tone`, `prose-note`, `panel-foot`, `bare-list`, `section-heading` and
-      `section-line` join `src/styles/_responsive.scss` and replace 60-odd hand-written copies. A
+      `section-line` join `src/styles/_responsive.scss` and replace seventy-odd hand-written copies. A
       repeated body on markup that differs is a mixin, because a component there would only put the
       caller's own children behind a projection boundary
       _A mixin nothing calls is dead code; every one of these is applied where it was found._

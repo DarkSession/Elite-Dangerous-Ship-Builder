@@ -255,7 +255,6 @@ import { EditRefusalNotice } from '../outfitting/edit-refusal-notice';
 import { ModuleIdentityBadge } from '../outfitting/module-identity-badge';
 import { OutfittingNotice } from '../outfitting/outfitting-notice';
 import { SlotCard } from '../outfitting/slot-card';
-import { PipControl } from '../outfitting/pip-control';
 import { SlotGroup } from '../outfitting/slot-group';
 import { ShipIdentityFields } from '../outfitting/ship-identity-fields';
 import { UnavailableFact } from '../outfitting/unavailable-fact';
@@ -4901,57 +4900,5 @@ registerPreview({
     ),
     notApplicable('error', 'The layer is a shell; the format drawn in it owns any failure.'),
     notApplicable('disabled', 'A layer is either open or closed; it has no disabled state.'),
-  ],
-});
-
-registerPreview({
-  componentId: 'pip-control',
-  group: 'Outfitting',
-  component: PipControl,
-  contract: contract(
-    'pip-control',
-    {
-      role: 'group',
-      visibleNameMatchesAccessibleName: true,
-      exposedStates: ['pressed'],
-      relationships: ['label'],
-      textEquivalents: ['the allocation, which the filled blocks only draw'],
-    },
-    ['default', 'empty'],
-  ),
-  states: [
-    state(
-      'default',
-      {
-        bank: 'systems',
-        label: 'Systems, 2.5 of 4 pips',
-        steps: [
-          { id: 'systems-1', value: 1, fill: 1, label: 'Set systems to 1' },
-          { id: 'systems-2', value: 2, fill: 1, label: 'Set systems to 2' },
-          { id: 'systems-3', value: 3, fill: 0.5, label: 'Set systems to 3' },
-          { id: 'systems-4', value: 4, fill: 0, label: 'Set systems to 4' },
-        ],
-      },
-      [
-        'each block is a control that names the allocation it sets',
-        'the allocation is stated in the labels, so the fill colour is a supplement',
-      ],
-      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
-    ),
-    state('empty', { bank: 'engines', label: 'Engines, 0 of 4 pips', steps: [] }, [
-      'a bank with no blocks draws its name and nothing to press',
-    ]),
-    notApplicable(
-      'loading',
-      'The allocation is held in the session, so it is resolved before the first frame.',
-    ),
-    notApplicable(
-      'error',
-      'A press the distributor refuses leaves the allocation where it was; the refusal is stated by the block around this control.',
-    ),
-    notApplicable(
-      'disabled',
-      'Every allocation a bank can hold is reachable, so no block is ever drawn unavailable.',
-    ),
   ],
 });

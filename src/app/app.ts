@@ -9,7 +9,9 @@ import {
 } from '@angular/core';
 import { Location } from '@angular/common';
 import {
+  NavigationCancel,
   NavigationEnd,
+  NavigationError,
   RouteConfigLoadEnd,
   RouteConfigLoadStart,
   Router,
@@ -352,6 +354,18 @@ export class App {
   }
 
   /**
+   * How many chunks this navigation is still fetching.
+   *
+   * A count rather than a flag, because one navigation can ask for more than
+   * one. A cold arrival at a child address resolves the parent's component and
+   * the child's together, so both starts arrive before either end — and a flag
+   * would report the fetch over when the first of the two landed.
+   */
+  readonly #chunkLoads = signal(0);
+
+  readonly #routeActive = signal(false);
+
+  /**
    * Whether a screen is on its way to a frame that has none.
    *
    * Two conditions, and both are needed. The router reports a chunk only when
@@ -360,10 +374,7 @@ export class App {
    * what the router does for free — a skeleton over that would take a screen
    * away to say another was coming (011/FR-029).
    */
-  readonly #chunkLoading = signal(false);
-  readonly #routeActive = signal(false);
-
-  readonly routeWaiting = computed(() => this.#chunkLoading() && !this.#routeActive());
+  readonly routeWaiting = computed(() => this.#chunkLoads() > 0 && !this.#routeActive());
 
   routeActivated(): void {
     this.#routeActive.set(true);
@@ -379,10 +390,21 @@ export class App {
         this.#path.set(event.urlAfterRedirects);
       }
       if (event instanceof RouteConfigLoadStart) {
-        this.#chunkLoading.set(true);
+        this.#chunkLoads.update((count) => count + 1);
       }
       if (event instanceof RouteConfigLoadEnd) {
-        this.#chunkLoading.set(false);
+        this.#chunkLoads.update((count) => Math.max(0, count - 1));
+      }
+      // The router reports the end of a fetch that succeeded and says nothing
+      // about one that failed, so a chunk that cannot be fetched would leave
+      // the frame saying a screen is loading for the rest of the session. Every
+      // way a navigation can finish clears the count.
+      if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.#chunkLoads.set(0);
       }
     });
 

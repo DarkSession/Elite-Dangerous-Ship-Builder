@@ -169,14 +169,23 @@ describe('package text', () => {
       germanCatalogue as Record<string, string>,
     ];
 
+    // Every offence is collected and asserted once. An assertion inside the
+    // loop runs it a thousand keys by thirty tokens by two catalogues deep, and
+    // the report it produces is the same list this one names.
+    const offences: string[] = [];
     for (const catalogue of catalogues) {
       for (const [key, value] of Object.entries(catalogue)) {
         for (const token of tokens) {
-          expect(key.includes(token), `${key} is keyed by an entitlement token`).toBe(false);
-          expect(value.includes(token), `${key} hard-codes an entitlement token`).toBe(false);
+          if (key.includes(token)) {
+            offences.push(`${key} is keyed by an entitlement token`);
+          }
+          if (value.includes(token)) {
+            offences.push(`${key} hard-codes an entitlement token`);
+          }
         }
       }
     }
+    expect(offences).toEqual([]);
   });
 
   it('resolves every package leaf this feature needs through one rule', () => {

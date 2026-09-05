@@ -323,11 +323,10 @@ export class HullSchematic {
   /**
    * The picture that has arrived, if one has.
    *
-   * A side is two requests and the mount extract is only the first of them. Its
-   * arrival is what turns the plate `ready`, and the rendering is still on the
-   * wire — so without this the plate took its mark down and drew the numbered
-   * mounts and their leader lines over an empty frame, which says the hull has
-   * no drawing rather than that it is on its way.
+   * A side is two requests, and the mount extract is only the first of them.
+   * Its arrival is what turns the plate `ready`, while the rendering is still
+   * on the wire. The mark stands until the picture arrives, because marks and
+   * leader lines over an empty frame say the hull has no drawing.
    *
    * Recorded as *which* file arrived rather than as a flag, for the reason the
    * failure beside it is: a different picture has not arrived until it says so.
@@ -359,11 +358,18 @@ export class HullSchematic {
   /**
    * What the plate reports it is, which is not always what the fetch reported.
    *
-   * A ready extract whose picture failed is not a ready plate.
+   * A ready extract whose picture failed is not a ready plate, and one whose
+   * picture has not arrived yet is not a ready plate either — its mounts are
+   * hidden until the drawing they sit on is there. The attribute exists so a
+   * test reads the state off the element rather than off the colour, which is
+   * only true while it names the state the plate is actually in.
    */
-  readonly plateState = computed(() =>
-    this.pictureFailed() ? 'temporarilyUnavailable' : this.view().state.kind,
-  );
+  readonly plateState = computed(() => {
+    if (this.pictureFailed()) {
+      return 'temporarilyUnavailable';
+    }
+    return this.isWaiting() ? 'loading' : this.view().state.kind;
+  });
 
   pictureUnavailable(): void {
     this.#failedSource.set(this.artworkSource());
@@ -385,6 +391,13 @@ export class HullSchematic {
   readonly statusText = computed(() => {
     if (this.pictureFailed()) {
       return this.#messages.message('anatomy.side.unavailable');
+    }
+    // A plate whose mounts have arrived and whose drawing has not is waiting,
+    // and says the same words as one waiting for both. The mark beside these
+    // words is hidden from a reader, so a plate that fell through to no words
+    // would say nothing at all while it waits (011/FR-029).
+    if (this.isWaiting()) {
+      return this.#messages.message('anatomy.side.loading');
     }
     switch (this.view().state.kind) {
       case 'loading':

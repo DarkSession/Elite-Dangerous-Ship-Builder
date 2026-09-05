@@ -6,7 +6,16 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  type Route,
+  RouteConfigLoadEnd,
+  RouteConfigLoadStart,
+  Router,
+  RouterOutlet,
+} from '@angular/router';
 import { CatalogueFacade } from '../../application/catalogue/catalogue.facade';
 import { Formatters } from '../../i18n/formatters/formatters';
 import { MessageService } from '../../i18n/message.service';
@@ -31,6 +40,7 @@ import { Skeleton } from '../../ui/components/waiting/skeleton';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { observeRestingReads } from '../../ui/wide-composition';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /** Every column the manifest shows, and the fact each one orders by. */
 const COLUMNS: readonly { field: CatalogueSortField; labelKey: string; numeric?: boolean }[] = [
@@ -93,16 +103,23 @@ export class ShipCataloguePage {
   readonly detailLoadingLabel = this.#messages.messageSignal('catalogue.inspector.loading');
 
   /**
-   * Whether the hull's own screen is still on its way to the rail beside the
-   * manifest.
+   * Whether the hull's own screen is still on its way to the rail beside it.
    *
-   * The rail is drawn from the address, and the screen that fills it is a chunk
-   * of its own. Between the two the rail was a named group with nothing in it,
-   * which the skeleton now holds (011/FR-029).
+   * The hull screen is a chunk of its own, so opening a hull from the manifest
+   * fetches it. The skeleton holds the hull's place for that fetch, so the rail
+   * is never a named group with nothing in it (011/FR-029).
+   *
+   * Taken from the chunk the router asks for rather than from the child that
+   * arrives. `detailOpen` reads a symbol the hull screen itself writes, so it
+   * is false for the whole of the wait it would be describing. A hull whose
+   * chunk is already fetched draws no skeleton at all, because the router asks
+   * for nothing and reports nothing.
    */
+  readonly #detailLoading = signal(false);
+
   readonly #detailActive = signal(false);
 
-  readonly detailWaiting = computed(() => this.detailOpen() && !this.#detailActive());
+  readonly detailWaiting = computed(() => this.#detailLoading() && !this.#detailActive());
 
   detailActivated(): void {
     this.#detailActive.set(true);
@@ -110,6 +127,20 @@ export class ShipCataloguePage {
 
   detailDeactivated(): void {
     this.#detailActive.set(false);
+  }
+
+  /**
+   * Whether a route the router is fetching is a child of this screen's own.
+   *
+   * Found in the router's configuration by the address this screen answers,
+   * which the shell already holds. Matching the child's declared path here
+   * instead would put a second copy of it beside the route table, free to
+   * drift from it without anything failing.
+   */
+  #isDetailRoute(route: Route): boolean {
+    const address = NAVIGATION_ROUTES.catalogue.replace(/^\//u, '');
+    const catalogue = this.#router.config.find((entry) => entry.path === address);
+    return catalogue?.children?.includes(route) ?? false;
   }
 
   readonly countText = this.#catalogue.countText;
@@ -197,6 +228,30 @@ export class ShipCataloguePage {
   });
 
   constructor() {
+    // The hull screen's own chunk. The route it belongs to is recognised by
+    // identity against this screen's own children rather than by its declared
+    // path: a copy of that path here would drift from the route table without
+    // anything failing.
+    //
+    // The router reports the end of a fetch that succeeded and says nothing
+    // about one that failed, so every way a navigation can finish clears the
+    // state as well.
+    this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+      if (event instanceof RouteConfigLoadStart && this.#isDetailRoute(event.route)) {
+        this.#detailLoading.set(true);
+      }
+      if (event instanceof RouteConfigLoadEnd && this.#isDetailRoute(event.route)) {
+        this.#detailLoading.set(false);
+      }
+      if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.#detailLoading.set(false);
+      }
+    });
+
     // The reference carries the manifest's count in the command bar beside the
     // screen's own name, and nowhere else (canvas 1a "48 SHIPS", canvas 1b
     // "8 OF 48 SHIPS").

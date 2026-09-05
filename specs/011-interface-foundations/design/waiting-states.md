@@ -45,20 +45,29 @@ CC BY-NC-SA 4.0, and that rule is an adaptation of it. Root `LICENSE` records th
 
 ## Every wait, and what it draws
 
-| Wait                                  | What is on the way                                  | What the Commander sees                                            |
-| ------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
-| First arrival at any address          | The route's own chunk                               | A page skeleton inside the frame, where the screen will be         |
-| First arrival at a hull's own address | The catalogue chunk, and then the hull-detail chunk | A page skeleton, and then a skeleton in the inspector              |
-| A hull opened from the catalogue      | The hull-detail chunk                               | A skeleton in the inspector, where the hull will be                |
-| The exchange block, first opening     | The SLEF codec and both layers                      | A layer holding a skeleton, once the wait is perceptible           |
-| The library block, first opening      | The library layer                                   | The same                                                           |
-| A build link arriving with the page   | The link codec and its table                        | A skeleton where the build will be, and a sentence naming the link |
-| A hull illustration                   | The picture                                         | The waiting mark on the reserved plate, and the plate's sentence   |
-| A hull schematic                      | The mount geometry, and then the drawing            | The waiting mark on the plate until both have arrived              |
+| Wait                                    | What is on the way                                      | What the Commander sees                                            |
+| --------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
+| First arrival at any address            | The route's own chunk                                   | A page skeleton inside the frame, where the screen will be         |
+| First arrival at a hull's own address   | The catalogue chunk and the hull-detail chunk, together | A page skeleton, until both have arrived                           |
+| The first hull opened from the manifest | The hull-detail chunk                                   | A skeleton in the inspector, where the hull will be                |
+| The exchange block, first opening       | The SLEF codec and both layers                          | A layer holding a skeleton, once the wait is perceptible           |
+| The library block, first opening        | The library layer                                       | The same                                                           |
+| A build link arriving with the page     | The link codec and its table                            | A skeleton where the build will be, and a sentence naming the link |
+| A hull illustration                     | The picture                                             | The waiting mark on the reserved plate, and the plate's sentence   |
+| A hull schematic                        | The mount geometry, and then the drawing                | The waiting mark on the plate until both have arrived              |
 
-`/ships/:hull` is a child address, so a cold arrival there fetches two chunks in sequence. The order
-is in the table. Each fetch is reported on its own, and the page skeleton stands until the catalogue
-activates.
+`/ships/:hull` is a child address, so a cold arrival there fetches two chunks. The router asks for
+both at once and activates the screen when both have arrived. The page skeleton counts the fetches
+rather than flagging them, so it stands for the whole of that wait and not only for the first of the
+two. The inspector draws no second skeleton there, because the page skeleton already stands over the
+whole screen.
+
+Opening a hull from the manifest is the inspector's own case. The manifest is already drawn, the
+hull's screen is a chunk of its own, and the skeleton holds the rail for that fetch. The rail reads
+the fetch the router reports rather than the screen that has not arrived: the screen is what writes
+the symbol the rail is otherwise keyed on, so a rail keyed on the symbol would be empty for exactly
+as long as the wait it is meant to describe. Every hull after the first draws nothing, because the
+chunk is fetched and the router reports no fetch.
 
 A route chunk that is already loaded draws nothing. The router reports only a chunk it must fetch,
 and the skeleton stands only while no screen is activated. A move between two screens therefore keeps

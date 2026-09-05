@@ -323,3 +323,54 @@ describe('HullSchematic', () => {
     expect(textOf(query(defect, '.schematic__status-text')).length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * The second of a side's two requests.
+ *
+ * The mount extract turns the plate `ready` while its rendering is still on the
+ * wire. What the plate says and what it reports it is have to follow the whole
+ * wait, not the first half of it (011/FR-029).
+ */
+describe('HullSchematic, waiting for the drawing', () => {
+  function readyWithoutPicture() {
+    const fixture = renderComponent(HullSchematic, { view: view() });
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('says the side is on its way while its drawing is', () => {
+    // The mark beside these words is hidden from a reader, so a plate that said
+    // nothing here would say nothing at all for the length of the fetch.
+    const fixture = readyWithoutPicture();
+
+    expect(textOf(query(fixture, '.schematic__spoken')).length).toBeGreaterThan(0);
+  });
+
+  it('reports the state it is in, not the state the extract arrived in', () => {
+    // `data-state` exists so a test reads the state off the element rather than
+    // off the colour, which is only true while it names the state the plate is
+    // actually in.
+    const fixture = readyWithoutPicture();
+
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('loading');
+  });
+
+  it('holds the mounts back until the drawing they sit on is there', () => {
+    // Drawn over an empty frame, a numbered mount and its leader say the hull
+    // has no drawing rather than that one is coming.
+    const fixture = readyWithoutPicture();
+
+    expect(query(fixture, '.schematic__frame').classList).toContain('schematic__frame--pending');
+  });
+
+  it('gives the plate over to the drawing once it arrives', () => {
+    const fixture = readyWithoutPicture();
+
+    query(fixture, '.schematic__drawing image').dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('ready');
+    expect(element(fixture).querySelector('.schematic__frame--pending')).toBeNull();
+    expect(element(fixture).querySelectorAll('.schematic__mount').length).toBe(1);
+  });
+});

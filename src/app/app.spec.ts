@@ -1,5 +1,12 @@
 import { Location } from '@angular/common';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import {
+  NavigationError,
+  RouteConfigLoadEnd,
+  RouteConfigLoadStart,
+  Router,
+  type Route,
+} from '@angular/router';
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { App, HELP_ACTION } from './app';
 import { routes } from './app.routes';
@@ -550,5 +557,79 @@ describe('routes', () => {
     expect(bench?.title).toBe('equipment.title');
     expect(bench?.data?.['description']).toBe('equipment.description');
     expect(await bench?.loadComponent?.()).toBe(EquipmentBenchPage);
+  });
+});
+
+/**
+ * The frame's own waiting state.
+ *
+ * Driven from router events rather than from a rendered screen, because that is
+ * what the shell reads: the events say a chunk is on the wire, and nothing else
+ * in the frame knows (011/FR-029).
+ */
+describe('App, waiting for a screen', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [provideLocalization(), ...provideMemoryStorage(new MemoryStorage())],
+    }).compileComponents();
+  });
+
+  afterEach(() => {
+    TestBed.inject(Location).go('/');
+  });
+
+  /** A route object standing in for one the router would report. */
+  const someRoute = (path: string): Route => ({ path });
+
+  function shell() {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const events = TestBed.inject(Router).events as unknown as {
+      next: (event: unknown) => void;
+    };
+    return { fixture, publish: (event: unknown) => events.next(event) };
+  }
+
+  const skeletonOf = (fixture: ComponentFixture<App>) =>
+    (fixture.nativeElement as HTMLElement).querySelector('ednb-skeleton');
+
+  it('holds the frame open until every chunk of one navigation has arrived', () => {
+    // A cold arrival at a child address resolves the parent's component and the
+    // child's together, so both starts arrive before either end. Counted rather
+    // than flagged: a flag reports the fetch over when the first of the two
+    // lands, and the frame goes blank for the rest of it.
+    const { fixture, publish } = shell();
+    const parent = someRoute('ships');
+    const child = someRoute(':hull');
+
+    publish(new RouteConfigLoadStart(parent));
+    publish(new RouteConfigLoadStart(child));
+    publish(new RouteConfigLoadEnd(parent));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).not.toBeNull();
+
+    publish(new RouteConfigLoadEnd(child));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
+  });
+
+  it('stops waiting for a chunk that never arrives', () => {
+    // The router reports the end of a fetch that succeeded and says nothing
+    // about one that failed. Without this the frame would say a screen is
+    // loading for the rest of the session, which is the false statement
+    // FR-029 forbids.
+    const { fixture, publish } = shell();
+
+    publish(new RouteConfigLoadStart(someRoute('ships')));
+    fixture.detectChanges();
+    expect(skeletonOf(fixture)).not.toBeNull();
+
+    publish(new NavigationError(1, '/ships', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
   });
 });

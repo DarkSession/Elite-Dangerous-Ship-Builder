@@ -54,8 +54,15 @@ a declaration, and a missing one fails the build.
 
 A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outside that scan. It
 carries a declaration all the same, because FR-004 applies to every exported component and the
-catalogue is where a state is reviewed. `ednb-pip-control` is one of these: it is declared by the
-rule, not because a checker demanded it.
+catalogue is where a state is reviewed.
+
+One kind of control cannot be reviewed here. The catalogue is swept under expanded copy, and that
+sweep requires every button on the page to carry visible text. A control whose whole reading is its
+accessible name carries none, so the sweep reports it as a control that lost its label. The pip
+blocks of `ednb-pip-control` are such a control: the canvas draws four blocks and no numerals
+(`005 design/power-and-heat-detail.md`, "Power distributor and pips"). It is reviewed in the two
+feature 005 regions that draw it, each of which has its own accessibility sweep, and it is absent
+from this manifest.
 
 ## Inspection
 
