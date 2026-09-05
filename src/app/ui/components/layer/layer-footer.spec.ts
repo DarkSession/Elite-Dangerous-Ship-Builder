@@ -53,8 +53,7 @@ describe('LayerFooter', () => {
 
   it('sets the answers close together unless a caller asks otherwise', () => {
     // The two exchange layers draw a pair of answers tight. The save layer sets
-    // its own at the inline measure, and lost that gap when the three footers
-    // became one component.
+    // its own at the inline measure, so the gap is an input.
     expect(render().querySelector('.footer')?.classList).toContain('footer--tight');
     expect(render('section', 'inline').querySelector('.footer')?.classList).toContain(
       'footer--inline',
