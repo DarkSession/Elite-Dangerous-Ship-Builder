@@ -114,6 +114,29 @@ export class BuildLinkCoordinator {
   readonly reading = this.#reading.asReadonly();
 
   /**
+   * Whether a read is between its start and its end.
+   *
+   * A fragment this application does not read ends where it is recognised, and
+   * lowers the waiting state on its way out. That state belongs to the read
+   * that is running, if one is, and lowering it there drops the mark over a
+   * build that is still on its way.
+   */
+  #running = false;
+
+  /**
+   * Ends a fragment that is not a read, and leaves a running read alone.
+   *
+   * The seed makes this necessary in both directions. A workspace opened at an
+   * address with no build link must lower the state the seed raised, and the
+   * first fragment it sees is the one that does it.
+   */
+  #endWithoutReading(): void {
+    if (!this.#running) {
+      this.#reading.set(false);
+    }
+  }
+
+  /**
    * Records a fragment as this application's own output.
    *
    * Publication writes the fragment, which moves the same signal an incoming
@@ -149,18 +172,18 @@ export class BuildLinkCoordinator {
       // Deliberately not an error and deliberately not cleared: the fragment
       // belongs to something else, and this application has no business
       // interpreting or removing it.
-      this.#reading.set(false);
+      this.#endWithoutReading();
       return { kind: 'ignored' };
     }
 
     if (recognized.kind === 'over-limit') {
-      this.#reading.set(false);
+      this.#endWithoutReading();
       this.#failure.set({ code: 'tooLong', slot: null });
       return { kind: 'refused', failure: { code: 'tooLong', slot: null } };
     }
 
     if (recognized.fragment === this.#settled) {
-      this.#reading.set(false);
+      this.#endWithoutReading();
       return { kind: 'unchanged' };
     }
     this.#settled = recognized.fragment;
@@ -168,6 +191,7 @@ export class BuildLinkCoordinator {
     this.#token += 1;
     const token = this.#token;
     this.#reading.set(true);
+    this.#running = true;
 
     try {
       const result = await this.#ingress.commit(async () =>
@@ -185,6 +209,7 @@ export class BuildLinkCoordinator {
       // Only the newest read clears the state. A superseded one finishing later
       // would otherwise report that the read it was replaced by had finished.
       if (this.#token === token) {
+        this.#running = false;
         this.#reading.set(false);
       }
     }
