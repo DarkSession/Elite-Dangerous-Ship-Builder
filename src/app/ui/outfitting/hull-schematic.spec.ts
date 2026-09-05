@@ -259,7 +259,7 @@ describe('HullSchematic', () => {
     expect(element(fixture).querySelector('.schematic__drawing')).toBeNull();
     // The same mark the hull illustration carries, in the place the drawing
     // will be, with the words spoken rather than drawn.
-    expect(query(fixture, '.schematic__loader').getAttribute('src')).toBe('assets/loader.svg');
+    expect(query(fixture, 'ednb-waiting-mark .mark').getAttribute('src')).toBe('assets/loader.svg');
     expect(textOf(query(fixture, '.schematic__spoken')).length).toBeGreaterThan(0);
     expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('loading');
     expect(element(fixture).querySelector('ednb-action-button')).toBeNull();
@@ -321,5 +321,63 @@ describe('HullSchematic', () => {
     expect(query(defect, '.schematic').getAttribute('data-state')).toBe('contractDefect');
     expect(element(defect).querySelector('ednb-action-button')).toBeNull();
     expect(textOf(query(defect, '.schematic__status-text')).length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * What the plate says while its side is on its way, and whose picture it
+ * believes (011/FR-029).
+ */
+describe('HullSchematic, waiting for its side', () => {
+  function loading() {
+    const fixture = renderComponent(HullSchematic, {
+      view: view({ state: { kind: 'loading' } satisfies SideAssetState }),
+    });
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  it('says the side is on its way rather than waiting in silence', () => {
+    // The mark beside these words is hidden from a reader, so a plate that said
+    // nothing here would say nothing at all for the length of the fetch.
+    const fixture = loading();
+
+    expect(textOf(query(fixture, '.schematic__spoken')).length).toBeGreaterThan(0);
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('loading');
+  });
+
+  it('leaves the wait when the side arrives, whatever its picture does', () => {
+    // The picture's own `load` is not part of this. A plate that waited for one
+    // and never heard it would keep saying the hull is on its way for the rest
+    // of the session, and no reader could tell it otherwise.
+    const fixture = renderComponent(HullSchematic, { view: view() });
+    fixture.detectChanges();
+
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('ready');
+    expect(element(fixture).querySelectorAll('.schematic__mount').length).toBe(1);
+  });
+
+  it('lets a picture report only its own failure', () => {
+    // The failure is recorded as the file it happened to, not as a flag. A flag
+    // would follow the plate to the next hull, and a picture nobody has asked
+    // for yet would be reported as one that did not arrive.
+    const fixture = renderComponent(HullSchematic, { view: view() });
+
+    query(fixture, '.schematic__artwork image').dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('temporarilyUnavailable');
+
+    fixture.componentRef.setInput('view', {
+      ...view(),
+      hullName: 'Python',
+      state: {
+        kind: 'ready',
+        document: { ...document(), symbol: 'Python' },
+      } satisfies SideAssetState,
+    });
+    fixture.detectChanges();
+
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('ready');
+    expect(query(fixture, '.schematic__artwork image')).not.toBeNull();
   });
 });

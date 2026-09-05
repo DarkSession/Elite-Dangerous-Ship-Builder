@@ -9,20 +9,8 @@
   display: flex;
 }
 
-.workspace__empty {
-  @include layout.stack(var(--ednb-space-stack));
-
+// The block itself is the shared empty state; what belongs to this screen is
+// where it stands under the bar.
+ednb-empty-state {
   padding-block: var(--ednb-space-section);
-  max-inline-size: var(--ednb-layout-prose-max);
-  margin-inline: auto;
-  text-align: center;
-}
-
-.workspace__empty h2 {
-  @include layout.display-title(var(--ednb-text-size-heading-md));
-}
-
-.workspace__empty p {
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
 }

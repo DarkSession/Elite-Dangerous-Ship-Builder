@@ -32,6 +32,8 @@ import { NAVIGATION_ROUTES } from '../shared/app-navigation';
 import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from '../shared/screen-chrome';
 import { ActionLink } from '../../ui/components/action/action-link';
 import { ChoiceDialog, type DialogChoice } from '../../ui/components/choice-dialog/choice-dialog';
+import { EmptyState } from '../../ui/components/empty-state/empty-state';
+import { Skeleton } from '../../ui/components/waiting/skeleton';
 import { StatusNotice } from '../../ui/components/status/status-notice';
 import { OutfittingWorkspace } from './outfitting/outfitting-workspace/outfitting-workspace';
 import { PersistenceStatus } from './persistence-status';
@@ -55,9 +57,11 @@ import { SaveBuildDialog, type SaveRequest, type SaveSource } from './save-build
   imports: [
     ActionLink,
     ChoiceDialog,
+    EmptyState,
     OutfittingWorkspace,
     PersistenceStatus,
     SaveBuildDialog,
+    Skeleton,
     StatusNotice,
     RouterLink,
   ],
@@ -97,12 +101,16 @@ export class BuildWorkspacePage {
   readonly emptyTitle = this.#messages.messageSignal('workspace.empty.title');
   readonly emptyDescription = this.#messages.messageSignal('workspace.empty.description');
   readonly emptyAction = this.#messages.messageSignal('workspace.empty.action');
+  readonly readingLabel = this.#messages.messageSignal('workspace.reading');
   readonly shareLabel = this.#messages.messageSignal('workspace.actions.share');
   readonly saveLabel = this.#messages.messageSignal('workspace.actions.save');
   readonly dismissLabel = this.#messages.messageSignal('action.close');
   readonly conflictTitle = this.#messages.messageSignal('workspace.conflict.title');
 
   readonly hasBuild = computed(() => this.#active.loadout() !== null);
+
+  /** Whether an incoming link is still being read into a build. */
+  readonly readingLink = computed(() => this.#link.reading());
 
   /** What persistence is doing, as the shared state name. */
   readonly persistence = computed(() => this.#active.persistence());
@@ -305,6 +313,11 @@ export class BuildWorkspacePage {
     let live = true;
 
     void restored
+      // A restore that fails changes persistence and nothing else. The ingest
+      // still has to run: it is what lowers the coordinator's reading state,
+      // and a workspace that never reached it would hold the skeleton over an
+      // empty build for the rest of the session.
+      .catch(() => undefined)
       .then(() => this.#link.ingest(this.#location.fragment()))
       .then(() => {
         if (!live) {

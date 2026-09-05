@@ -1,0 +1,9 @@
+:host {
+  display: inline-flex;
+}
+
+// The size every caller draws it at.
+.mark {
+  inline-size: var(--ednb-target-size);
+  block-size: var(--ednb-target-size);
+}

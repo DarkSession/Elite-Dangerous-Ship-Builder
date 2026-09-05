@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import type { DeliveryAction } from '../../../domain/ships/slef/slef-export.models';
 import type { SlefExportView } from '../../../application/slef/slef.presenter';
 import { ActionButton } from '../../../ui/components/action/action-button';
+import { LayerFooter } from '../../../ui/components/layer/layer-footer';
 import { StatusNotice } from '../../../ui/components/status/status-notice';
 import { TextareaField } from '../../../ui/components/textarea-field/textarea-field';
 
@@ -21,7 +22,7 @@ import { TextareaField } from '../../../ui/components/textarea-field/textarea-fi
  */
 @Component({
   selector: 'ednb-slef-export-layer',
-  imports: [ActionButton, StatusNotice, TextareaField],
+  imports: [ActionButton, LayerFooter, StatusNotice, TextareaField],
   templateUrl: './export-build-layer.html',
   styleUrl: './export-build-layer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

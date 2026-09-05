@@ -257,12 +257,6 @@
   text-align: center;
 }
 
-// The illustration's own mark and its own size, because it is the same wait.
-.schematic__loader {
-  inline-size: var(--ednb-target-size);
-  block-size: var(--ednb-target-size);
-}
-
 .schematic__spoken {
   @include layout.visually-hidden;
 }

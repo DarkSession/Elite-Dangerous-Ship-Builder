@@ -296,6 +296,50 @@ test.describe('moving between geometry and the ledger', () => {
   });
 });
 
+test.describe('while a schematic is on its way', () => {
+  // The schematic files are a lazy asset group, so in a production run the
+  // service worker is what fetches them and an interception in the page never
+  // sees the request. Holding the file open is the whole condition here, so the
+  // worker is kept out of this one describe and the hold is the same in both
+  // runs. What is under test is what the application draws, which the worker
+  // has no part in.
+  test.use({ serviceWorkers: 'block' });
+
+  test('draws the shared waiting mark on the plate, and no marks over an empty frame', async ({
+    page,
+  }) => {
+    // The one thing a unit suite cannot show about a wait: that the mark is
+    // actually drawn on a real plate, in the place the drawing will be, while
+    // the file the plate needs is genuinely still on the wire (011/FR-029,
+    // 011/SC-010).
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/assets/ships/**/schematic-top.json', async (route) => {
+      await held;
+      await route.continue();
+    });
+    await openStockBuild(page);
+
+    const plate = page.locator('ednb-hull-anatomy .schematic[data-side="top"]');
+    await expect(plate.locator('.schematic__loading ednb-waiting-mark')).toBeVisible({
+      timeout: 15_000,
+    });
+    // A plate that says nothing is on its way and draws its numbered marks over
+    // a frame with no hull in it is the false absence SC-010 rules out.
+    await expect(plate.locator('.schematic__mount')).toHaveCount(0);
+    await expect(plate.locator('.schematic__spoken')).not.toBeEmpty();
+
+    // Letting go rather than dropping the pattern: taking it away would release
+    // the held request onto a route the run has already dealt with.
+    release();
+    await expect(plate.locator('.schematic__drawing')).toBeVisible({ timeout: 15_000 });
+    await expect(plate.locator('.schematic__loading ednb-waiting-mark')).toHaveCount(0);
+    await expect(plate.locator('.schematic__mount').first()).toBeVisible();
+  });
+});
+
 test.describe('when a schematic does not arrive', () => {
   test('says so and leaves the ledger and the editor whole', async ({ page }) => {
     await page.route('**/assets/ships/**/schematic-bottom.json', (route) => route.abort());

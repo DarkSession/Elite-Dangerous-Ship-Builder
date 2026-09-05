@@ -14,7 +14,27 @@
   (navigationSelected)="navigateFromShell($event)"
   (toolSelected)="navigateFromShell($event)"
 >
-  <router-outlet />
+  <!--
+    A cold arrival at any address waits for that screen's own chunk, and the
+    frame around it is already drawn. The skeleton holds the room the screen
+    will take, so the page it lands in was never blank (011/FR-029).
+
+    Only while nothing is activated. Moving between two screens keeps the one a
+    Commander is reading until the next is ready, and a skeleton over that would
+    take away a screen to show that another is coming.
+  -->
+  @if (routeWaiting()) {
+    <ednb-skeleton [label]="routePendingNotice()" [lines]="6" />
+  } @else if (routeFailed()) {
+    <!--
+      The chunk did not arrive, and there is no screen behind this to fall back
+      to. A skeleton taken down over an empty frame says nothing at all, which
+      is the one thing a frame that failed must not do.
+    -->
+    <ednb-status-notice tone="error" [message]="routeFailedNotice()" />
+  }
+
+  <router-outlet (activate)="routeActivated()" />
 </ednb-app-frame>
 
 <!--
@@ -25,6 +45,46 @@
 @defer (when exchangeWanted()) {
   <ednb-slef-import-dialog />
   <ednb-slef-export-dialog />
+} @loading (after 200ms; minimum 400ms) {
+  <!--
+    The layer a Commander asked for, standing where it will stand, while the
+    chunk that draws it is fetched. It waits 200 milliseconds first: a layer
+    that appeared and vanished inside one frame would be worse than a press
+    that takes a moment (011/FR-029).
+
+    It closes. Pressing the way out here cancels the opening rather than the
+    fetch, so the layer that arrives a moment later arrives closed.
+
+    At the width of the layer it stands in for, so the panel a Commander is
+    looking at is the size of the one that lands. Its body keeps the layer's own
+    inset: what the panel holds changes wholesale when the chunk arrives, and a
+    skeleton against the panel edge is not what the inset is for.
+  -->
+  <ednb-layer
+    [open]="exchangeWanted()"
+    [title]="exchangePendingTitle()"
+    [width]="exchangePendingWidth()"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="cancelExchange()"
+  >
+    <ednb-skeleton [label]="layerPendingNotice()" />
+  </ednb-layer>
+} @error {
+  <!--
+    The chunk did not arrive. The layer says so and offers the way out, because
+    the block does not try again: without this the layer a Commander asked for
+    would close on its own and the control that opened it would do nothing for
+    the rest of the session (011/FR-029).
+  -->
+  <ednb-layer
+    [open]="exchangeWanted()"
+    [title]="exchangePendingTitle()"
+    [width]="exchangePendingWidth()"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="cancelExchange()"
+  >
+    <ednb-status-notice tone="error" [message]="layerFailedNotice()" />
+  </ednb-layer>
 }
 
 <!--
@@ -43,6 +103,30 @@
   @if (library.open()) {
     <ednb-build-library-page />
   }
+} @loading (after 200ms; minimum 400ms) {
+  <!--
+    The widest measure, which is the library's own. A narrower placeholder would
+    widen under the hand when the chunk lands.
+  -->
+  <ednb-layer
+    [open]="library.open()"
+    [title]="libraryPendingTitle()"
+    width="widest"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="library.lower()"
+  >
+    <ednb-skeleton [label]="layerPendingNotice()" />
+  </ednb-layer>
+} @error {
+  <ednb-layer
+    [open]="library.open()"
+    [title]="libraryPendingTitle()"
+    width="widest"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="library.lower()"
+  >
+    <ednb-status-notice tone="error" [message]="layerFailedNotice()" />
+  </ednb-layer>
 }
 
 <!--

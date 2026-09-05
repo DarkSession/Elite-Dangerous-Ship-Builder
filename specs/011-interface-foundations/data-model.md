@@ -175,17 +175,30 @@ There is one semantic dark set and no theme preference/state.
 
 ## Component Preview Declaration
 
-| Field          | Type                                        | Rules                                                      |
-| -------------- | ------------------------------------------- | ---------------------------------------------------------- |
-| `componentId`  | UI component id                             | Exactly one declaration for each exported component        |
-| `state`        | fixture or explicit N/A                     | Every required state accounted for                         |
-| `fixture`      | immutable presentation inputs or `null`     | No mock game datum is presented as authoritative           |
-| `naReason`     | stable nonblank reason or `null`            | Allowed only when the contract cannot represent that state |
-| `variants`     | normal/expanded/RTL/reduced-motion/etc. set | Required where the component can expose the behavior       |
-| `expectations` | semantic/visual behavior ids                | Shared by policy and Playwright                            |
+| Field          | Type                                        | Rules                                                                                                                 |
+| -------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `componentId`  | UI component id                             | Exactly one declaration for each exported component                                                                   |
+| `state`        | fixture or explicit N/A                     | Every required state accounted for                                                                                    |
+| `fixture`      | immutable presentation inputs or `null`     | No mock game datum is presented as authoritative                                                                      |
+| `naReason`     | stable nonblank reason or `null`            | Allowed only when the contract cannot represent that state                                                            |
+| `variants`     | normal/expanded/RTL/reduced-motion/etc. set | Required where the component can expose the behavior; the state that animates is the one that declares reduced motion |
+| `expectations` | semantic/visual behavior ids                | Shared by policy and Playwright                                                                                       |
 
 Viewport/orientation comes from the global Playwright profile, so declarations do not duplicate five
 copies of the same state.
+
+## Waiting State
+
+| Field       | Type                          | Rules                                                                    |
+| ----------- | ----------------------------- | ------------------------------------------------------------------------ |
+| `subject`   | what is on its way            | A route chunk, a deferred layer, a fetched asset or a decoded link       |
+| `place`     | the region the content fills  | The waiting state is drawn there, never over the screen or in a corner   |
+| `text`      | localized sentence            | Present for a reader whether or not the mark is drawn                    |
+| `motion`    | the waiting mark alone        | Stilled by the mark's own reduced-motion rule; never the only carrier    |
+| `threshold` | delay before drawing anything | Omitted where the region is already blank; set where a flash is possible |
+
+A wait with no perceptible duration has no waiting state. `design/waiting-states.md` accounts for
+every one of them, including the ones that draw nothing and why.
 
 ## Verification Coverage Entry
 

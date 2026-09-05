@@ -106,7 +106,9 @@ specs/011-interface-foundations/
     ├── reference-review.md
     ├── responsive-composition.md
     ├── screen-inventory.md
-    └── search-visibility.md
+    ├── search-visibility.md
+    ├── shared-patterns.md
+    └── waiting-states.md
 ```
 
 `tasks.md` is Phase 2 output and is intentionally not created by this command.
@@ -239,6 +241,10 @@ No planning clarification marker remains.
   fixture addressing and the required state/profile/variant ledger.
 - [design/reference-review.md](./design/reference-review.md) records the exact 1a–1d patterns retained
   and the fixed-layout, remote-asset, contrast, target, semantics and localization mechanics rejected.
+- [design/shared-patterns.md](./design/shared-patterns.md) records the patterns more than one screen
+  draws, the rule that decides whether one is a component or a mixin, and where each library lives.
+- [design/waiting-states.md](./design/waiting-states.md) accounts for every wait in the application:
+  what each one draws, what it announces, what moves, and which waits draw nothing and why (FR-029).
 - [design/search-visibility.md](./design/search-visibility.md) records the 2026-08-27 search-engine
   analysis: what a crawler was previously served on all four routes, the six findings that were
   acted on, the three assets and one build step the remaining omissions wait on, and what was

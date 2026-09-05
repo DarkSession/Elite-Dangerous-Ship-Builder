@@ -29,6 +29,7 @@ import { ElementSizeAdapter, type ElementSize } from '../../platform/browser/ele
 import { MessageService } from '../../i18n/message.service';
 import { relationId } from '../a11y/text-equivalence';
 import { ActionButton } from '../components/action/action-button';
+import { WaitingMark } from '../components/waiting/waiting-mark';
 
 /** One side of the hull, and everything needed to draw it. */
 export interface HullSchematicView {
@@ -188,7 +189,7 @@ interface SchematicPlacement {
  */
 @Component({
   selector: 'ednb-hull-schematic',
-  imports: [ActionButton],
+  imports: [ActionButton, WaitingMark],
   templateUrl: './hull-schematic.html',
   styleUrl: './hull-schematic.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -325,12 +326,16 @@ export class HullSchematic {
   /**
    * What the plate reports it is, which is not always what the fetch reported.
    *
-   * A ready extract whose picture failed is not a ready plate.
+   * A ready extract whose picture failed is not a ready plate. The attribute
+   * exists so a test reads the state off the element rather than off the
+   * colour, which is only true while it names the state the plate is actually
+   * in.
    */
   readonly plateState = computed(() =>
     this.pictureFailed() ? 'temporarilyUnavailable' : this.view().state.kind,
   );
 
+  /** Records the file the plate is drawing now as the one that did not arrive. */
   pictureUnavailable(): void {
     this.#failedSource.set(this.artworkSource());
   }
@@ -353,6 +358,9 @@ export class HullSchematic {
       return this.#messages.message('anatomy.side.unavailable');
     }
     switch (this.view().state.kind) {
+      // The mark beside these words is hidden from a reader, so a plate that
+      // fell through to no words would say nothing at all while it waits
+      // (011/FR-029).
       case 'loading':
         return this.#messages.message('anatomy.side.loading');
       case 'temporarilyUnavailable':
@@ -371,16 +379,6 @@ export class HullSchematic {
   );
 
   readonly isLoading = computed(() => this.view().state.kind === 'loading');
-
-  /**
-   * The loading mark, which is the one the hull illustration uses.
-   *
-   * A plate that is still fetching says so the same way the inspector's
-   * illustration says it: the mark sits where the drawing will be, and the
-   * words are spoken rather than drawn, so nothing on the page moves when the
-   * drawing arrives.
-   */
-  readonly loaderSource = 'assets/loader.svg';
 
   /**
    * A mount's own point on the turned plate, in the frame's own units.

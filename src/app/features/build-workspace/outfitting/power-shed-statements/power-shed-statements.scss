@@ -14,18 +14,16 @@
 
 .statements {
   @include layout.stack(var(--ednb-space-stack-tight));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 .statement {
-  padding-block: var(--ednb-space-control-block);
-  padding-inline: var(--ednb-space-inline-loose);
-  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-danger);
-  background-color: var(--ednb-surface-danger-quiet);
-  color: var(--ednb-text-danger);
+  @include layout.toned-block(
+    var(--ednb-border-danger),
+    var(--ednb-surface-danger-quiet),
+    var(--ednb-text-danger)
+  );
+
   overflow-wrap: break-word;
   text-wrap: pretty;
 }

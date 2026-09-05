@@ -24,19 +24,11 @@
 }
 
 .ledger__heading {
-  @include layout.micro-label(var(--ednb-text-accent), var(--ednb-text-tracking-heading));
-
-  flex: 0 1 auto;
-  min-inline-size: 0;
-  margin: 0;
-  font-size: var(--ednb-text-size-micro);
+  @include layout.section-heading;
 }
 
 .ledger__line {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  block-size: var(--ednb-border-width-hairline);
-  background-color: var(--ednb-rule-section);
+  @include layout.section-line;
 }
 
 .ledger__count {
@@ -48,10 +40,7 @@
 // The ground between rows is the separation, as both artboards draw it.
 .ledger__rows {
   @include layout.stack(var(--ednb-space-rule));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 // The canvas's row: a 3px marker on the leading edge for the selected one, over

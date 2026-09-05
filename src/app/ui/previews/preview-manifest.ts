@@ -10,10 +10,13 @@ import {
 /**
  * The component preview manifest.
  *
- * Every exported `src/app/ui/` component has exactly one declaration here, and
- * every declaration accounts for all five required states — with a fixture, or
- * with a nonempty machine-readable reason the component's contract cannot
- * represent that state (FR-004).
+ * Every exported `src/app/ui/components/` component has exactly one declaration
+ * here, and every declaration accounts for all five required states — with a
+ * fixture, or with a nonempty machine-readable reason the component's contract
+ * cannot represent that state (FR-004). A component under `src/app/ui/` outside
+ * `components/` belongs here too wherever the catalogue can render it, which is
+ * the wider rule no checker enforces
+ * (`011 design/component-preview-catalogue.md`).
  *
  * The N/A escape exists for contracts that genuinely cannot hold a state (a
  * static text equivalent has no loading state). It is not a way to skip a
@@ -212,7 +215,12 @@ import { Collection } from '../components/collection/collection';
 import { Disclosure } from '../components/disclosure/disclosure';
 import { Tooltip } from '../components/tooltip/tooltip';
 import { GameText } from '../components/game-text/game-text';
+import { EmptyState } from '../components/empty-state/empty-state';
+import { FormatLayer } from '../components/layer/format-layer';
 import { Layer } from '../components/layer/layer';
+import { LayerFooter } from '../components/layer/layer-footer';
+import { WaitingMark } from '../components/waiting/waiting-mark';
+import { Skeleton } from '../components/waiting/skeleton';
 import { MetricGroup } from '../components/metric-group/metric-group';
 import { Panel } from '../components/panel/panel';
 import { RangeField } from '../components/range-field/range-field';
@@ -1851,7 +1859,12 @@ registerPreview({
         label: 'Illustration of the Anaconda',
         state: 'loading',
       },
-      ['the pending state is stated in text', 'the reserved area holds its size'],
+      [
+        'the pending state is stated in text',
+        'the reserved area holds its size',
+        'the waiting mark holds still where a Commander has asked for reduced motion',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
     ),
     state(
       'error',
@@ -3891,7 +3904,9 @@ registerPreview({
       [
         'the pending state is stated in text, in place of the drawing',
         'the side is still named, so a peer plate reads as one of two',
+        'the waiting mark holds still where a Commander has asked for reduced motion',
       ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
     ),
     state(
       'error',
@@ -4705,5 +4720,188 @@ registerPreview({
       'disabled',
       'Every tool offered answers an address. A tool that could not be opened would be left out of the registry rather than drawn unavailable.',
     ),
+  ],
+});
+
+registerPreview({
+  componentId: 'empty-state',
+  group: 'Feedback',
+  component: EmptyState,
+  contract: contract(
+    'empty-state',
+    {
+      role: 'heading',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['default'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        title: 'No build is open.',
+        description: 'Choose a hull to start one, or open a build you have saved.',
+      },
+      [
+        'names the absence in a heading a reader can land on',
+        'states the absence in a sentence under it, and names no control in doing so',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    notApplicable('empty', 'This block *is* the empty state of a screen.'),
+    notApplicable(
+      'loading',
+      'A screen that is still waiting draws the skeleton. Absence is a settled answer, and this block states it.',
+    ),
+    notApplicable('error', 'A failure is a status notice. An absence is not a failure.'),
+    notApplicable('disabled', 'The block holds no control of its own, so it cannot be disabled.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'waiting-mark',
+  group: 'Feedback',
+  component: WaitingMark,
+  contract: contract(
+    'waiting-mark',
+    {
+      role: 'presentation',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['loading'],
+  ),
+  states: [
+    notApplicable(
+      'default',
+      'The mark is drawn only while something is pending, so waiting is the only state it has.',
+    ),
+    notApplicable('empty', 'The mark carries no content that could be absent.'),
+    state(
+      'loading',
+      {},
+      [
+        'is hidden from a reader, because what is pending is said in words beside it',
+        'holds still where a Commander has asked for reduced motion',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+    ),
+    notApplicable('error', 'A wait that failed is drawn by a status notice in place of the mark.'),
+    notApplicable('disabled', 'The mark holds no control, so it cannot be disabled.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'skeleton',
+  group: 'Feedback',
+  component: Skeleton,
+  contract: contract(
+    'skeleton',
+    {
+      role: 'status',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: ['the wait, which the bars only draw'],
+    },
+    ['loading'],
+  ),
+  states: [
+    notApplicable(
+      'default',
+      'The skeleton stands only while content is on its way, so waiting is the only state it has.',
+    ),
+    notApplicable(
+      'empty',
+      'A skeleton draws at least one bar. One that held no room would be a wait a Commander cannot see.',
+    ),
+    state(
+      'loading',
+      { label: 'This screen is loading.', lines: 6 },
+      ['says what is pending in words, not in bars alone', 'holds the room the content will take'],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+    ),
+    notApplicable(
+      'error',
+      'A wait that failed is drawn by a status notice in place of the skeleton.',
+    ),
+    notApplicable('disabled', 'The skeleton holds no control, so it cannot be disabled.'),
+  ],
+});
+
+registerPreview({
+  componentId: 'layer-footer',
+  group: 'Layers',
+  component: LayerFooter,
+  contract: contract(
+    'layer-footer',
+    {
+      role: 'generic',
+      visibleNameMatchesAccessibleName: false,
+      exposedStates: [],
+      relationships: [],
+      textEquivalents: [],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { rule: 'section' },
+      ['the rule above the row is the section hairline, drawn the width of the foot'],
+      ['normal', 'expanded-copy', 'rtl'],
+    ),
+    state('empty', { rule: 'none' }, ['a foot that closes nothing above it draws no rule']),
+    notApplicable('loading', 'The foot is a container; the controls in it own any busy state.'),
+    notApplicable('error', 'The foot is a container; its layer owns any failure.'),
+    notApplicable(
+      'disabled',
+      'The foot is a container; each control in it carries its own disabled state.',
+    ),
+  ],
+});
+
+registerPreview({
+  componentId: 'format-layer',
+  group: 'Layers',
+  component: FormatLayer,
+  contract: contract(
+    'format-layer',
+    {
+      role: 'dialog',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['expanded'],
+      relationships: ['label'],
+      textEquivalents: [],
+    },
+    ['default', 'empty'],
+  ),
+  states: [
+    state(
+      'default',
+      { title: 'Export this build', dismissLabel: 'Close', open: true },
+      [
+        'the two regions stand side by side where there is room, divided by one hairline',
+        'the content region holds its declared height with nothing in it',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
+      // Isolated: an open modal makes everything behind it inert, which is
+      // correct behaviour and incompatible with sharing a catalogue page.
+      true,
+    ),
+    state('empty', { title: 'Export this build', dismissLabel: 'Close', open: false }, [
+      'a closed layer renders nothing and holds no focus',
+    ]),
+    notApplicable(
+      'loading',
+      'The layer is a shell; the format drawn in it owns any pending state.',
+    ),
+    notApplicable('error', 'The layer is a shell; the format drawn in it owns any failure.'),
+    notApplicable('disabled', 'A layer is either open or closed; it has no disabled state.'),
   ],
 });

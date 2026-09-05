@@ -1,0 +1,16 @@
+<div class="skeleton" role="status">
+  <span class="skeleton__spoken">{{ label() }}</span>
+
+  <!--
+    The mark and the bars are the same statement drawn twice for the eye, so
+    neither is in the accessibility tree: the sentence above is what a reader
+    gets.
+  -->
+  <ednb-waiting-mark />
+
+  <span class="skeleton__bars" aria-hidden="true">
+    @for (bar of bars(); track $index) {
+      <span class="skeleton__bar" [style.inline-size.%]="bar"></span>
+    }
+  </span>
+</div>

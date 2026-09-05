@@ -998,7 +998,7 @@ test.describe('the accessibility sweep, state by state', () => {
     // would go on passing if `shown()` ever started drawing one. Waited for by
     // the empty state the page draws in place of the workspace, since
     // `ednb-outfitting-workspace` is exactly what is not rendered here.
-    await expect(page.locator('.workspace__empty')).toBeVisible();
+    await expect(page.locator('ednb-empty-state')).toBeVisible();
 
     // The state is asserted, not swept: `sweepOutfittingState` scans the whole
     // document, and this exact state is already swept by

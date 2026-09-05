@@ -1,5 +1,4 @@
-<div class="unknown">
-  <h2>{{ title() }}</h2>
+<ednb-empty-state align="leading" [title]="title()">
   <ednb-status-notice tone="error" [message]="description()" />
   <ednb-action-link [label]="backLabel()" [href]="catalogueRoute" [routerLink]="catalogueRoute" />
-</div>
+</ednb-empty-state>

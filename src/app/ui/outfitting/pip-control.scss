@@ -1,0 +1,69 @@
+@use '../../../styles/responsive' as layout;
+
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+// Four blocks across the line, each of them the control for that many pips.
+.pips {
+  display: flex;
+  gap: var(--ednb-space-inline-tight);
+  min-inline-size: 0;
+}
+
+// The blocks hold the 24-pixel floor rather than the 2.75rem design baseline:
+// four at the baseline are wider than the rest of the distributor's figures put
+// together, and wider than a third of the 306-pixel rail, and the canvas draws a
+// pip block as a chip in a row of them rather than as a button standing on its
+// own. The floor is a floor and not a waiver — the canvas's own 14 pixels in the
+// rail and 16 in the table stay unbuilt, and `.pips__step` is recorded on
+// `DENSE_TARGETS` in `e2e/accessibility/assertions.ts`.
+//
+// No scroller of its own: four floors and their gaps come to 114px in a 269px
+// row at ordinary text and 210px at doubled text, measured, so the row holds at
+// both.
+.pips__step {
+  @include layout.target-floor;
+
+  position: relative;
+  flex: 1 1 var(--ednb-target-size-floor);
+  min-inline-size: var(--ednb-target-size-floor);
+  padding: 0;
+  background-color: var(--ednb-surface-inset);
+  border: var(--ednb-border-width-hairline) solid transparent;
+  cursor: pointer;
+}
+
+// Filled from the leading edge, so half a pip fills half a block.
+.pips__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: block;
+  background-color: var(--ednb-surface-accent-solid);
+}
+
+// The canvas's own colour per bank. Decoration on top of the reading: the group
+// is named with the allocation it stands at.
+@mixin bank-colour($colour) {
+  .pips__fill {
+    background-color: $colour;
+  }
+
+  .pips__step:hover {
+    border-color: $colour;
+  }
+}
+
+[data-bank='systems'] {
+  @include bank-colour(var(--ednb-surface-bank-systems));
+}
+
+[data-bank='engines'] {
+  @include bank-colour(var(--ednb-surface-bank-engines));
+}
+
+[data-bank='weapons'] {
+  @include bank-colour(var(--ednb-surface-bank-weapons));
+}

@@ -152,12 +152,15 @@
     -->
     @if (asLayer() && showChoices()) {
       <div class="engineering__actions">
-        <button class="engineering__revert" type="button" (click)="revert()">
-          {{ revertLabel() }}
-        </button>
-        <button class="engineering__apply" type="button" [disabled]="!canApply()" (click)="apply()">
-          {{ applyLabel() }}
-        </button>
+        <ednb-action-button [label]="revertLabel()" emphasis="secondary" (activated)="revert()" />
+        <ednb-action-button
+          class="engineering__apply"
+          block
+          [label]="applyLabel()"
+          emphasis="primary"
+          [disabled]="!canApply()"
+          (activated)="apply()"
+        />
       </div>
     }
   }

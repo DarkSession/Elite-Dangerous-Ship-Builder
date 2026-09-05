@@ -1,33 +1,33 @@
 @use '../../../../styles/responsive' as layout;
 
 /*
- * The reference's two-region layer: a fixed format list beside the content
- * (canvas 1c, `grid-template-columns: 236px 1fr`), divided by one amber
- * hairline that runs from under the title bar to the foot of the panel. The
- * layer's body is flush, so each region carries its own padding and the rule
- * has a full height to run.
+ * Canvas 1c's two-region layer: a fixed format list beside the content, divided
+ * by one amber hairline that runs from under the title bar to the foot of the
+ * panel.
  *
  * Below the medium breakpoint the list becomes the strip canvas 1d draws above
- * the payload, which is the same choice group in the same layer.
+ * the content, which is the same list in the same layer.
  */
-.export-dialog {
+.format-layer {
   display: grid;
   grid-template-columns: 1fr;
 }
 
-.export-dialog__modes {
+.format-layer__list {
   // The track is bounded and so is the item in it: a grid item's automatic
   // minimum is its own min-content width, so without this a long unbroken
   // format name pushes the list past the width it is drawn at and takes the
-  // room from the payload beside it.
+  // room from the content beside it.
   min-inline-size: 0;
   padding-block: var(--ednb-space-panel) 0;
   padding-inline: var(--ednb-space-panel);
 }
 
-.export-dialog__content {
+.format-layer__content {
+  @include layout.stack(var(--ednb-space-stack));
+
   min-inline-size: 0;
-  // One height for both formats. The payload is twelve rows and the link is one
+  // One height for every format. The payload is twelve rows and the link is one
   // line, so choosing between them moved the layer under the hand that chose
   // (Commander request 2026-08-28). A floor and not a cap: a refusal or a stale
   // notice is a state of the panel and still grows it.
@@ -37,29 +37,30 @@
 }
 
 @include layout.medium-up {
-  .export-dialog {
+  .format-layer {
     // Both tracks are bounded. An `auto` maximum on the list lets a translated
-    // format name take the width of its own longest line and leave the payload
+    // format name take the width of its own longest line and leave the content
     // beside it with whatever is left.
     //
     // The measure is in `rem`, so it grows with the text — which is right until
     // it is the larger half of the layer. The share of the panel it may take is
-    // the other bound, and at the declared text size it is the wider of the two,
-    // so the drawn width is what a Commander sees until the text is scaled.
+    // the other bound, and at the declared text size it is the wider of the
+    // two, so the drawn width is what a Commander sees until the text is
+    // scaled.
     grid-template-columns:
       minmax(0, min(var(--ednb-layout-layer-aside), 35%))
       minmax(0, 1fr);
   }
 
-  .export-dialog__modes {
+  .format-layer__list {
     padding: var(--ednb-space-lg);
     border-inline-end: var(--ednb-border-width-hairline) solid var(--ednb-rule-grid);
   }
 
-  .export-dialog__content {
-    // The payload panel is shorter where the two regions stand side by side:
-    // its actions have the room to stay on one line. The floor is that panel,
-    // measured at this composition.
+  .format-layer__content {
+    // The content is shorter where the two regions stand side by side: the
+    // payload's actions have the room to stay on one line. The floor is that
+    // panel, measured at this composition.
     min-block-size: var(--ednb-layout-export-content-wide);
     padding: var(--ednb-space-panel);
   }

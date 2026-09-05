@@ -8,7 +8,14 @@ import {
   untracked,
 } from '@angular/core';
 import { Location } from '@angular/common';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  RouteConfigLoadStart,
+  Router,
+  RouterOutlet,
+} from '@angular/router';
 import { ApplicationUpdateStore } from './application/updates/application-update.store';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { MessageService } from './i18n/message.service';
@@ -29,7 +36,9 @@ import {
 } from './ui/components/app-frame/app-frame';
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
-import { Layer } from './ui/components/layer/layer';
+import { Layer, type LayerWidth } from './ui/components/layer/layer';
+import { StatusNotice } from './ui/components/status/status-notice';
+import { Skeleton } from './ui/components/waiting/skeleton';
 
 /** The shell action that opens the import layer, named once. */
 export const IMPORT_ACTION = 'slef.import';
@@ -73,6 +82,8 @@ export const UPDATE_ACTION = 'app.update';
     ImportDialog,
     Layer,
     RouterOutlet,
+    Skeleton,
+    StatusNotice,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -320,10 +331,169 @@ export class App {
    */
   readonly exchangeWanted = computed(() => this.#slef.layer() !== 'none');
 
+  /** The way out of a layer, and of the state that stands in for one. */
+  readonly dismissLabel = this.#messages.messageSignal('action.close');
+
+  /** What a layer says while the chunk that draws it is on its way. */
+  readonly layerPendingNotice = this.#messages.messageSignal('layer.pending.notice');
+
+  /** What a layer says when the chunk that draws it did not arrive. */
+  readonly layerFailedNotice = this.#messages.messageSignal('layer.failed.notice');
+
+  /** What the frame says while the screen's own chunk is on its way. */
+  readonly routePendingNotice = this.#messages.messageSignal('route.pending.notice');
+
+  /** What the frame says when the screen's own chunk did not arrive. */
+  readonly routeFailedNotice = this.#messages.messageSignal('route.failed.notice');
+
+  /**
+   * The name the waiting layer takes.
+   *
+   * The import layer's own name, and for export the name it takes before a hull
+   * is known. The layer that arrives names itself for the build it is about,
+   * which needs the build and the hull's own text: reaching for those here
+   * would load, in the shell, the presenter whose chunk this is waiting for.
+   *
+   * So the export layer's name gains the hull when the chunk lands. The layer
+   * is named throughout, which is what a reader needs; the name it settles on
+   * is the more precise of the two.
+   */
+  readonly exchangePendingTitle = computed(() =>
+    this.#messages.message(
+      this.#slef.layer() === 'import' ? 'slef.import.title' : 'slef.export.title',
+    ),
+  );
+
+  /**
+   * The width the waiting exchange layer takes.
+   *
+   * The width of the layer it stands in for. The import layer is a panel at the
+   * default measure and the export layer is a wide one, so a placeholder at one
+   * width would grow or shrink under the hand that opened it when the chunk
+   * lands.
+   */
+  readonly exchangePendingWidth = computed<LayerWidth>(() =>
+    this.#slef.layer() === 'export' ? 'wide' : 'default',
+  );
+
+  readonly libraryPendingTitle = this.#messages.messageSignal('library.title');
+
+  /** Takes back the request that opened a layer, before the layer is there. */
+  cancelExchange(): void {
+    this.#slef.closeLayer();
+  }
+
+  /**
+   * Whether this navigation asked for a chunk it has not finished with.
+   *
+   * Raised by the first fetch and lowered by the screen, not by the fetch. A
+   * chunk that has landed is a screen that still has to be created and drawn,
+   * and a skeleton taken down at the end of the fetch leaves the frame empty
+   * for that gap.
+   *
+   * Every fetch this can see belongs to a navigation, which is what lowers it
+   * again on the paths where no screen arrives. A preloading strategy would
+   * break that: it asks for chunks outside any navigation, and there would be
+   * no `Navigation*` event to answer the raise. This application registers
+   * none.
+   */
+  readonly #routeLoading = signal(false);
+
+  /**
+   * Whether this frame has held a screen.
+   *
+   * Raised once and never lowered. The router takes the old screen out and puts
+   * the new one in inside one step, so a frame that has held a screen holds one
+   * from then on: what changes is which.
+   */
+  readonly #screenShown = signal(false);
+
+  /**
+   * Whether a screen is on its way to a frame that has none.
+   *
+   * Two conditions, and both are needed. The router reports a chunk only when
+   * it has one to fetch, so an address already loaded draws nothing. And a
+   * screen already on the frame stays there while the next one loads, which is
+   * what the router does for free — a skeleton over that would take a screen
+   * away to say another was coming (011/FR-029).
+   */
+  readonly routeWaiting = computed(() => this.#routeLoading() && !this.#screenShown());
+
+  /**
+   * Whether the last navigation into an empty frame ended with no screen.
+   *
+   * The router leaves the screen a Commander is reading when a navigation
+   * fails, so this speaks only for the frame that has none: without it a cold
+   * arrival at a chunk that cannot be fetched takes its skeleton down and
+   * leaves the shell around an empty page, saying nothing (011/FR-029).
+   *
+   * Lowered when the next fetch starts, so the notice never outlives the attempt
+   * it describes. It is not a way back to the screen: the router would ask for
+   * the chunk again, but the document remembers an import that failed and
+   * refuses it without reaching the network. Only a fresh document clears that,
+   * which is what the words say.
+   */
+  readonly #routeFailed = signal(false);
+
+  readonly routeFailed = computed(() => this.#routeFailed() && !this.#screenShown());
+
+  /**
+   * How many navigations have failed into a frame that already holds a screen.
+   *
+   * The announcement's revision, so a Commander who presses the dead control
+   * again is told again rather than met with the silence the dedupe would
+   * otherwise keep.
+   */
+  readonly #navigationFailures = signal(0);
+
+  routeActivated(): void {
+    this.#screenShown.set(true);
+  }
+
   constructor() {
     this.#router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.#path.set(event.urlAfterRedirects);
+      }
+      if (event instanceof RouteConfigLoadStart) {
+        this.#routeLoading.set(true);
+        this.#routeFailed.set(false);
+      }
+      // The router reports the end of a fetch that succeeded and says nothing
+      // about one that failed, so a chunk that cannot be fetched would leave
+      // the frame saying a screen is loading for the rest of the session. Every
+      // way a navigation can finish lowers it.
+      if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.#routeLoading.set(false);
+      }
+      if (event instanceof NavigationError) {
+        this.#routeFailed.set(true);
+
+        // A frame with no screen says it itself, in the frame. A frame that
+        // holds one keeps it, and the router leaves the Commander on the screen
+        // they were reading, so nothing changes and the press reads as a
+        // control that did nothing. It will do nothing again: the document
+        // records the failed import and refuses the same address without
+        // reaching the network. Said rather than drawn, because the screen the
+        // frame is keeping is the whole point of keeping it (011/FR-029).
+        //
+        // Unless the screen drew it. The shipyard's rail holds the sentence in
+        // place of the hull, and that notice is an alert in its own right, so
+        // speaking it as well would say the same thing twice for one refused
+        // chunk (011 contracts/feedback-and-semantics.md).
+        if (this.#screenShown() && !this.chrome.ownsRouteFailure()) {
+          this.#navigationFailures.update((count) => count + 1);
+          this.#announcements.announce({
+            kind: 'route.failed',
+            revision: this.#navigationFailures(),
+            urgency: 'polite',
+            messageKey: 'route.failed.notice',
+          });
+        }
       }
     });
 

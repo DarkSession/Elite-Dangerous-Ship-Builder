@@ -159,6 +159,10 @@ test.describe('responsive availability', () => {
 
     const layer = page.locator('dialog[open]');
     await expect(layer).toBeVisible();
+    // The import layer's own body, not any open dialog: while the layer's chunk
+    // is on the wire the shell stands a waiting layer here at the same width,
+    // and a skeleton panel is shorter than the bound this test exists to hold.
+    await expect(layer.locator('.slef-import')).toBeVisible();
 
     const measured = await layer.evaluate((node) => ({
       top: Math.round(node.getBoundingClientRect().top),

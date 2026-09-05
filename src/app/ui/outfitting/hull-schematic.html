@@ -143,7 +143,7 @@
         height when the fetch lands.
       -->
       <p class="schematic__loading">
-        <img class="schematic__loader" [src]="loaderSource" alt="" aria-hidden="true" />
+        <ednb-waiting-mark />
         <span class="schematic__spoken">{{ statusText() }}</span>
       </p>
     } @else {

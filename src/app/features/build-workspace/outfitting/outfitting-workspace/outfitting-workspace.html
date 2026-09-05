@@ -196,22 +196,20 @@
     @if (benchIsLayer() && selectedSlot(); as slot) {
       <div class="outfitting__bench-actions">
         @if (capabilitiesFor(slot).canOpenReplacement) {
-          <button
-            class="outfitting__action outfitting__action--primary"
-            type="button"
-            (click)="handle(slot, { kind: 'replace' })"
-          >
-            {{ replaceLabel() }}
-          </button>
+          <ednb-action-button
+            class="outfitting__bench-primary"
+            block
+            [label]="replaceLabel()"
+            emphasis="primary"
+            (activated)="handle(slot, { kind: 'replace' })"
+          />
         }
         @if (capabilitiesFor(slot).canOpenEngineering) {
-          <button
-            class="outfitting__action"
-            type="button"
-            (click)="handle(slot, { kind: 'engineer' })"
-          >
-            {{ engineerLabel() }}
-          </button>
+          <ednb-action-button
+            [label]="engineerLabel()"
+            emphasis="secondary"
+            (activated)="handle(slot, { kind: 'engineer' })"
+          />
         }
       </div>
     }

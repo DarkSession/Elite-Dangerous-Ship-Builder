@@ -72,23 +72,11 @@
   white-space: nowrap;
 }
 
-.library__empty {
-  @include layout.stack(var(--ednb-space-stack));
-
+// The block itself is the shared empty state; the inset is this layer's, which
+// draws its rows to its own edges and has to stand prose off them.
+ednb-empty-state {
   padding-block: var(--ednb-space-section);
   padding-inline: var(--ednb-space-row);
-  max-inline-size: var(--ednb-layout-prose-max);
-  margin-inline: auto;
-  text-align: center;
-}
-
-.library__empty h2 {
-  @include layout.display-title(var(--ednb-text-size-heading-md));
-}
-
-.library__empty p {
-  font-weight: var(--ednb-text-weight-prose);
-  color: var(--ednb-text-subtle);
 }
 
 // The committing footer both canvases draw, on its own plate above the surface's
@@ -96,14 +84,11 @@
 // trailing one, with everything else between them.
 .library__footer {
   @include layout.wrapping-row(var(--ednb-space-inline));
+  @include layout.panel-foot(var(--ednb-rule-panel));
 
-  position: sticky;
-  inset-block-end: 0;
   align-items: center;
   padding-block: var(--ednb-space-control-block);
   padding-inline: var(--ednb-space-row);
-  background-color: var(--ednb-surface-panel-raised);
-  border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-rule-panel);
 
   // Where the viewport is too short for the layer to bound its own list, the
   // layer scrolls and a pinned foot floats over the rows passing beneath it. A

@@ -9,6 +9,7 @@ import { NavigatorAdapter } from '../../../platform/browser/navigator.adapter';
 import { ActiveBuildStore } from '../../../application/active-build/active-build.store';
 import { SlefStore } from '../../../application/slef/slef.store';
 import { ExportDialog } from './export.dialog';
+import { stubNativeDialog } from '../../../ui/components/layer/layer.spec-helpers';
 
 class SilentDocumentAdapter {
   commitRootState(): void {}
@@ -34,22 +35,6 @@ class FakeNavigator {
   async shareData(): Promise<'shared'> {
     return 'shared';
   }
-}
-
-/**
- * `<dialog>` without the native modal methods, which jsdom does not implement.
- *
- * The layer calls them the moment it opens; what these tests are about is what
- * the host decides, not what the browser does with a dialog element.
- */
-function stubNativeDialog(): void {
-  const prototype = HTMLDialogElement.prototype as unknown as Record<string, unknown>;
-  prototype['showModal'] = function showModal(this: HTMLDialogElement) {
-    this.setAttribute('open', '');
-  };
-  prototype['close'] = function close(this: HTMLDialogElement) {
-    this.removeAttribute('open');
-  };
 }
 
 describe('the export layer’s host', () => {

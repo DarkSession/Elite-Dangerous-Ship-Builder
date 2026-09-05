@@ -322,6 +322,21 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'screen-reader',
   },
   {
+    surfaceId: 'ui/waiting-states',
+    requirements: ['011/FR-029'],
+    journey: 'product/semantics',
+    // No scan: the check here is on a file the server sends, not on a page.
+    // What a Commander sees drawn while a fetch is open is asserted on
+    // `ships/:hull` and `build/hull-anatomy-waiting`. A wait can only be
+    // observed where something is genuinely still on the wire, and those two
+    // surfaces are where an end-to-end run can hold one open.
+    axe: false,
+    assertions: [
+      'the served waiting mark carries its own reduced-motion rule, which no check inside the page can read',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'preview/component-catalogue',
     requirements: ['011/FR-004', '011/FR-005'],
     journey: 'preview/sweep',
@@ -737,8 +752,25 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the narrow list restates every label as a definition list',
       'the match count precedes the results and is announced once, politely',
       'a rested pointer reads a hull only where the rail that reading appears in is drawn; below it the press opens the hull and the row is named for that',
+      'the manifest head freezes under the command bar, and releases with it on a short viewport',
     ],
     manualRecord: 'screen-reader',
+  },
+  {
+    // The hull opened from the manifest, refused. The chunk is aborted, so the
+    // failure is the router's own rather than one the test states for it.
+    surfaceId: 'ships/catalogue-detail-failed',
+    requirements: ['001/FR-001', '011/FR-029'],
+    journey: 'product/ship-catalogue',
+    // No scan: the sweep on the settled manifest beside this one covers the
+    // markup, and the notice is the shared status component it already scans.
+    axe: false,
+    assertions: [
+      'a hull whose screen is refused is stated as an alert in the rail rather than left blank',
+      'the manifest stays drawn, at every composition, so the list is still there to press',
+      'the sentence is on the screen the Commander is already looking at, not below the fold',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'ships/catalogue-session',
@@ -753,7 +785,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'ships/:hull',
-    requirements: ['001/FR-004', '001/FR-005', '001/FR-006', '001/FR-022'],
+    requirements: ['001/FR-004', '001/FR-005', '001/FR-006', '001/FR-022', '011/FR-029'],
     journey: 'product/hull-detail',
     axe: true,
     assertions: [
@@ -772,6 +804,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'an address cased differently from the canonical one opens the hull and is replaced by it',
       'an address no hull is named or symbolled is a named error with no facts, no build and no creation action',
       'a missing illustration is explained as temporary and disables nothing',
+      'an illustration still on the wire draws the shared waiting mark on its reserved plate, and the picture only when it arrives',
       'the detail is the inspector at the manifest rail’s width and the sheet at every width below it',
       'the sheet is a bounded column centred in the window, and its illustration follows the column rather than the screen',
     ],
@@ -1167,6 +1200,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the effect menu the application draws passes an accessibility scan with its list open, every option at the target baseline',
       'the effect menu keeps the option it is on inside the box its list scrolls in',
       'a pointer resting on an unchosen effect washes it, measured on the menu the wide width draws',
+      'the editor’s actions freeze at the foot, and release the pin on a short viewport instead of standing over the rows',
     ],
     manualRecord: 'screen-reader',
   },
@@ -1288,6 +1322,23 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'only the opened hull’s two files are cached, never the package’s ninety-six',
     ],
     manualRecord: 'screen-reader',
+  },
+  {
+    // The waiting state, observed while the file it waits for is genuinely
+    // held open. Everything the plate does after the fetch is the entries
+    // beside this one; this is the only place the wait itself is on screen.
+    surfaceId: 'build/hull-anatomy-waiting',
+    requirements: ['011/FR-029', '011/SC-010'],
+    journey: 'anatomy/plates',
+    // No scan: the state lasts only while a request is held, and the settled
+    // states either side of it are scanned by the entries around this one.
+    axe: false,
+    assertions: [
+      'a schematic still on the wire draws the shared waiting mark in the place the drawing will be',
+      'the plate states the wait in words as well as in the mark',
+      'no mount mark is drawn over a frame with no hull in it, and a mark is drawn once the hull is',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'build/hull-anatomy-targets',

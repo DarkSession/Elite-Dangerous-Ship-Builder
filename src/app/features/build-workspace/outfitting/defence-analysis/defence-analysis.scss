@@ -45,21 +45,12 @@
 // same padding the canvas gives it: `1px solid var(--amber-a2)` over
 // `var(--panel)` at `16px 18px`.
 .card {
-  @include layout.stack(var(--ednb-space-stack));
-
-  min-inline-size: 0;
-  padding-block: var(--ednb-space-2xl);
-  padding-inline: var(--ednb-space-panel);
-  background-color: var(--ednb-surface-panel);
-  border: var(--ednb-border-width-hairline) solid var(--ednb-border-region);
+  @include layout.panel-plate;
 }
 
 // The canvas's header row: the card's name against the article it is reading.
 .card__head {
-  @include layout.wrapping-row(var(--ednb-space-inline));
-
-  align-items: baseline;
-  justify-content: space-between;
+  @include layout.panel-plate-head(baseline);
 }
 
 .card__heading {
@@ -317,6 +308,8 @@
 // started their bars in different places down one column of figures.
 .sources,
 .reserve {
+  @include layout.bare-list;
+
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
       var(--ednb-layout-defence-value),
@@ -324,9 +317,6 @@
     );
   column-gap: var(--ednb-space-inline);
   row-gap: var(--ednb-space-stack);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
 .source {
@@ -413,18 +403,16 @@
 // the mono numeric voice of the figures these stand in for.
 .issues {
   @include layout.stack(var(--ednb-space-stack-tight));
-
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  @include layout.bare-list;
 }
 
 .issue {
-  padding-block: var(--ednb-space-control-block);
-  padding-inline: var(--ednb-space-inline-loose);
-  border-inline-start: var(--ednb-border-width-marker) solid var(--ednb-border-danger);
-  background-color: var(--ednb-surface-danger-quiet);
-  color: var(--ednb-text-danger);
+  @include layout.toned-block(
+    var(--ednb-border-danger),
+    var(--ednb-surface-danger-quiet),
+    var(--ednb-text-danger)
+  );
+
   overflow-wrap: break-word;
   text-wrap: pretty;
 }

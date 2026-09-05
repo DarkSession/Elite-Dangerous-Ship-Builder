@@ -55,12 +55,11 @@
 }
 
 .records__list {
+  @include layout.bare-list;
+
   display: grid;
   gap: var(--ednb-border-width-hairline);
   grid-template-columns: 1fr;
-  list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
 // Where the surface is wide enough, the headers appear and the rows take the

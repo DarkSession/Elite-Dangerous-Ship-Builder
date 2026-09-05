@@ -61,22 +61,22 @@
     }
   }
 
-  <div class="slef-import__footer">
+  <ednb-layer-footer rule="quiet">
     <p class="slef-import__accepted">{{ view().accepted }}</p>
 
-    <div class="slef-import__actions">
-      <ednb-action-button
-        [label]="view().cancelLabel"
-        emphasis="secondary"
-        (activated)="cancelled.emit()"
-      />
-      <ednb-action-button
-        [label]="view().submitLabel"
-        emphasis="primary"
-        [busy]="view().busy"
-        [disabled]="!view().canSubmit"
-        (activated)="submit()"
-      />
-    </div>
-  </div>
+    <ednb-action-button
+      actions
+      [label]="view().cancelLabel"
+      emphasis="secondary"
+      (activated)="cancelled.emit()"
+    />
+    <ednb-action-button
+      actions
+      [label]="view().submitLabel"
+      emphasis="primary"
+      [busy]="view().busy"
+      [disabled]="!view().canSubmit"
+      (activated)="submit()"
+    />
+  </ednb-layer-footer>
 </div>

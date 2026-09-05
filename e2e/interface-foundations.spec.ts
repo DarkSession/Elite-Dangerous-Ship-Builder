@@ -134,3 +134,26 @@ test.describe('product semantics', () => {
     await expect(status).toHaveCount(1);
   });
 });
+
+/**
+ * The waiting states the application draws, and the one guarantee about them
+ * that no assertion inside the page can make.
+ *
+ * The waiting mark is an SVG served as its own document and drawn through
+ * `img`. Nothing in the parent document can read its animation, so the
+ * application's global reduced-motion rule cannot reach it and neither can a
+ * DOM check. What can be checked is the file the browser is actually served
+ * (011/FR-029, 011/SC-010).
+ */
+test.describe('waiting states', () => {
+  test('serves a waiting mark that carries its own reduced-motion rule', async ({ request }) => {
+    const response = await request.get('/assets/loader.svg');
+    expect(response.status()).toBe(200);
+
+    const file = await response.text();
+    expect(file).toContain('prefers-reduced-motion: reduce');
+    // The rule has to stop the animation it is written for. A media block with
+    // nothing in it would satisfy a bare substring check and change nothing.
+    expect(file).toMatch(/@media[^{]*prefers-reduced-motion[^{]*\{[^}]*\{[^}]*animation:\s*none/u);
+  });
+});

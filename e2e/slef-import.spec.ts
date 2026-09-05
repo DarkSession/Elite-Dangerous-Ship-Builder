@@ -29,7 +29,11 @@ const LIMIT_BYTES = 65_536;
 
 async function openImport(page: Page): Promise<void> {
   await reachShellAction(page, /^import build$/i);
-  await expect(page.getByRole('dialog', { name: /import build/i })).toBeVisible();
+  // The payload field, not the name: while the layer's chunk is on the wire the
+  // shell stands a waiting layer here under the same name, holding a skeleton.
+  await expect(
+    page.getByRole('dialog', { name: /import build/i }).getByLabel(/slef payload/i),
+  ).toBeVisible();
 }
 
 function layer(page: Page) {
@@ -321,6 +325,8 @@ test.describe('the layer’s semantics', () => {
 
     // Modal in the browser's own sense, which is what makes the page behind it
     // inert without the application managing an attribute it could get wrong.
+    // Read once, which `openImport` makes safe: it waits for the loaded layer
+    // rather than for the name, which the waiting layer carries too.
     expect(await dialog.evaluate((node) => node.matches(':modal'))).toBe(true);
   });
 

@@ -1,0 +1,18 @@
+<ednb-layer
+  [title]="title()"
+  [open]="open()"
+  [dismissLabel]="dismissLabel()"
+  width="wide"
+  [flush]="true"
+  (dismissed)="dismissed.emit()"
+>
+  <div class="format-layer">
+    <div class="format-layer__list">
+      <ng-content select="[formats]" />
+    </div>
+
+    <div class="format-layer__content">
+      <ng-content />
+    </div>
+  </div>
+</ednb-layer>

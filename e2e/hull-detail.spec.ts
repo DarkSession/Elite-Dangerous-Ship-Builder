@@ -314,7 +314,9 @@ test.describe('hull detail', () => {
     // held until the line below lets it go, so the loader cannot slip away
     // while the wait is on.
     const image = page.locator('.artwork__image');
-    await expect(page.locator('.artwork__loader')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.artwork__loading ednb-waiting-mark')).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(image).toBeHidden();
 
     // Letting go here, rather than dropping the interception: taking the
@@ -322,7 +324,7 @@ test.describe('hull detail', () => {
     // then finishes onto a route the run has already dealt with.
     release();
     await expect(image).toBeVisible({ timeout: 15_000 });
-    await expect(page.locator('.artwork__loader')).toHaveCount(0);
+    await expect(page.locator('.artwork__loading ednb-waiting-mark')).toHaveCount(0);
   });
 
   test('keeps every action usable when the illustration cannot be fetched', async ({ page }) => {
