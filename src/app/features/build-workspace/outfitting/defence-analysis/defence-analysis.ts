@@ -21,7 +21,6 @@ import { relationId } from '../../../../ui/a11y/text-equivalence';
 import { GameText } from '../../../../ui/components/game-text/game-text';
 import type { Metric } from '../../../../ui/components/metric-group/metric-group';
 import { MetricGroup } from '../../../../ui/components/metric-group/metric-group';
-import { UnavailableValue } from '../../../../ui/components/unavailable-value/unavailable-value';
 import { ModuleIdentityBadge } from '../../../../ui/outfitting/module-identity-badge';
 
 /** One damage line: `KINETIC`, its bar, `41%` and `3,122`, in that order. */
@@ -175,7 +174,16 @@ interface BankLineView {
 /** One package issue, in the package's own words. */
 interface IssueView {
   readonly id: string;
-  readonly message: GameTextPresentation;
+  /**
+   * This capability's own sentence for the package's pair, where it has one.
+   *
+   * Ordinary application text, drawn as such. It carries no disclosure and no
+   * language of its own: it is written in every locale this application ships,
+   * so there is nothing to frame.
+   */
+  readonly text: string | null;
+  /** The package's own wording, where this capability has no sentence. */
+  readonly message: GameTextPresentation | null;
 }
 
 /** The role names, written out: `MessageKey` is the catalogue's own key union. */
@@ -211,6 +219,55 @@ const pipDigits = (pips: number): number => (Number.isInteger(pips) ? 0 : 1);
 const RESISTANCE_CEILING = 1;
 
 /**
+ * The refusals this card states in its own words, by the package's own
+ * `field` and `reason`.
+ *
+ * The package publishes the diagnosis twice: once as a machine-readable pair,
+ * and once as an English sentence. The pair is what a surface is given to act
+ * on, and this reads the pair. It does not translate the sentence, parse it, or
+ * infer a reason from another result — a pair with no entry here keeps the
+ * package's own words (`specs/006-defence-profile/contracts/shield-profile.md`,
+ * "Refusal presentation").
+ *
+ * Wording the pair is labelling a package result, which constitution II
+ * sanctions, and it is what lets these states reach a Commander in the language
+ * they chose: `getCalculationIssueMessage()` answers for English and returns
+ * `null` for every other locale, whatever the reason.
+ */
+const REFUSAL_MESSAGES: Readonly<Record<string, MessageKey | undefined>> = {
+  'shieldGenerator/missing': 'defence.shield.refused.generator-missing',
+  'shieldGenerator/disabled': 'defence.shield.refused.generator-disabled',
+  // Both ways the plant leaves the generator unfed read alike, because the
+  // shields are down for one reason either way and there is one thing to do
+  // about it. They stay two package diagnoses on the projection; what a
+  // Commander is told here is the thing they have in common. The plant's own
+  // state is feature 005's to report.
+  'shieldGenerator/shed': 'defence.shield.refused.power',
+  'powerCapacity/disabled': 'defence.shield.refused.power',
+};
+
+/**
+ * What makes two package issues the same diagnosis.
+ *
+ * Everything the package states about the issue except the `message` it states
+ * it in: the field, the reason, the mount and module it names, and the values it
+ * interpolates. The message is left out because it is derived from those and
+ * because comparing it would be reading the English text, which nothing here
+ * does. Two results carrying an issue with this key carry one reason between
+ * them, and a Commander is given it once.
+ */
+function issueKey(issue: CalculationIssueView): string {
+  // Sorted, because a key order is not a promise the package made. The values
+  // are compared as well as the four identities above them: a release that
+  // interpolates something the two results disagree on has told them apart, and
+  // an equality ignoring it would draw two reasons as one.
+  const params = Object.entries(issue.params ?? {})
+    .map(([name, value]) => `${name}=${value}`)
+    .sort();
+  return [issue.field, issue.reason, issue.slot ?? '', issue.symbol ?? '', ...params].join('|');
+}
+
+/**
  * `DEFENCE ANALYSIS`: what the shields hold, what the hull takes, and against what.
  *
  * Canvas 1c draws this as the `DEFENCE` mode of the hull anatomy region — two
@@ -236,7 +293,7 @@ const RESISTANCE_CEILING = 1;
  */
 @Component({
   selector: 'ednb-defence-analysis',
-  imports: [GameText, MetricGroup, ModuleIdentityBadge, NgTemplateOutlet, UnavailableValue],
+  imports: [GameText, MetricGroup, ModuleIdentityBadge, NgTemplateOutlet],
   templateUrl: './defence-analysis.html',
   styleUrl: './defence-analysis.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -253,7 +310,6 @@ export class DefenceAnalysis {
 
   readonly shieldHeading = this.#messages.messageSignal('defence.shield.heading');
   readonly shieldPoolLabel = this.#messages.messageSignal('defence.shield.pool');
-  readonly shieldUnavailableLabel = this.#messages.messageSignal('defence.shield.unavailable');
   readonly armourHeading = this.#messages.messageSignal('defence.armour.heading');
   readonly armourPoolLabel = this.#messages.messageSignal('defence.armour.pool');
   readonly armourFactsLabel = this.#messages.messageSignal('defence.armour.facts');
@@ -358,10 +414,7 @@ export class DefenceAnalysis {
   );
 
   /** Every ordered package reason the shield could not be read. */
-  readonly shieldIssues = computed<readonly IssueView[]>(() => {
-    const shield = this.#projection()?.shield;
-    return shield === undefined || shield.kind !== 'unavailable' ? [] : this.#issues(shield.issues);
-  });
+  readonly shieldIssues = computed<readonly IssueView[]>(() => this.#issues(this.#statedIssues()));
 
   /**
    * The canvas's `RECHARGE` / `0→100%` / `BROKEN RESET`.
@@ -390,12 +443,48 @@ export class DefenceAnalysis {
     ];
   });
 
-  /** Every ordered package reason the recovery could not be read. */
+  /**
+   * Every ordered package reason the recovery could not be read, less the ones
+   * the strength has already given.
+   *
+   * Everything that refuses the strength refuses the recovery too. Both calls
+   * resolve the same generator and the same retracted power state first, and
+   * the recovery reads more besides.
+   *
+   * So whatever stops the strength returns as the same issue here, and a card
+   * drawing both lists gives a Commander one fault to read as two.
+   *
+   * So an issue drawn under the strength is not drawn again here. An issue this
+   * result has and that one did not is drawn, because it is a reason nobody has
+   * been given yet (`specs/006-defence-profile/contracts/shield-profile.md`,
+   * "Refusal presentation").
+   */
   readonly recoveryIssues = computed<readonly IssueView[]>(() => {
     const recovery = this.#projection()?.recovery;
-    return recovery === undefined || recovery.kind !== 'unavailable'
-      ? []
-      : this.#issues(recovery.issues);
+    if (recovery === undefined || recovery.kind !== 'unavailable') {
+      return [];
+    }
+
+    const stated = new Set(this.#statedIssues().map(issueKey));
+    return this.#issues(recovery.issues.filter((issue) => !stated.has(issueKey(issue))));
+  });
+
+  /**
+   * Whether the card says anything about the recovery at all.
+   *
+   * The strength states its reasons. A recovery with no reason of its own would
+   * repeat them, and its unavailable state is the second half of that
+   * repetition, so both are removed together. A recovery the package produced,
+   * or refused for a reason of its own, keeps its block.
+   */
+  readonly recoveryShown = computed(
+    () => this.recoveryFacts().length > 0 || this.recoveryIssues().length > 0,
+  );
+
+  /** The issues the strength states, which nothing below it states again. */
+  readonly #statedIssues = computed<readonly CalculationIssueView[]>(() => {
+    const shield = this.#projection()?.shield;
+    return shield === undefined || shield.kind !== 'unavailable' ? [] : shield.issues;
   });
 
   /** The canvas's `HARDNESS` / `MODULE PROT.` / `INTEGRITY`. */
@@ -735,12 +824,25 @@ export class DefenceAnalysis {
     };
   }
 
-  /** Every package issue in the order the package returned it, in its own words. */
+  /**
+   * Every package issue, in the order the package returned it.
+   *
+   * A diagnosis {@link REFUSAL_MESSAGES} words is stated in this application's
+   * own language, chosen by the package's `field` and `reason` and by nothing
+   * else. Every other diagnosis keeps the package's sentence through the shared
+   * presenter, with its canonical language disclosed.
+   */
   #issues(issues: readonly CalculationIssueView[]): readonly IssueView[] {
-    return issues.map((issue, index) => ({
-      id: `${issue.field}-${issue.reason}-${index}`,
-      message: this.#gameText.calculationIssueMessage(issue.packageIssue),
-    }));
+    return issues.map((issue, index) => {
+      const worded = REFUSAL_MESSAGES[`${issue.field}/${issue.reason}`];
+
+      return {
+        id: `${issue.field}-${issue.reason}-${index}`,
+        text: worded === undefined ? null : this.#messages.message(worded),
+        message:
+          worded === undefined ? this.#gameText.calculationIssueMessage(issue.packageIssue) : null,
+      };
+    });
   }
 
   #megajoules(value: number): string {

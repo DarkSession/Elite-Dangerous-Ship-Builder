@@ -58,7 +58,11 @@ export interface Defence {
    * moves with it too; the bare shield above does not.
    */
   readonly capacitor: CalculationView<CapacitorSnapshot>;
-  /** Independently complete or unavailable: a shield may be one and this the other. */
+  /**
+   * The recovery may be unavailable while the shield is complete. The reverse
+   * cannot occur: the recovery resolves the shield's own inputs first and hands
+   * back their refusal unchanged.
+   */
   readonly recovery: CalculationView<RecoverySnapshot>;
   readonly cellBanks: CellBankCollection;
   /** Non-nullable for a constructed known hull, so never an unavailable view. */
