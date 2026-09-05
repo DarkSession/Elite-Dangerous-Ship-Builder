@@ -756,6 +756,22 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'screen-reader',
   },
   {
+    // The hull opened from the manifest, refused. The chunk is aborted, so the
+    // failure is the router's own rather than one the test states for it.
+    surfaceId: 'ships/catalogue-detail-failed',
+    requirements: ['001/FR-001', '011/FR-029'],
+    journey: 'product/ship-catalogue',
+    // No scan: the sweep on the settled manifest beside this one covers the
+    // markup, and the notice is the shared status component it already scans.
+    axe: false,
+    assertions: [
+      'a hull whose screen is refused is stated as an alert in the rail rather than left blank',
+      'the manifest stays drawn, at every composition, so the list is still there to press',
+      'the sentence is on the screen the Commander is already looking at, not below the fold',
+    ],
+    manualRecord: null,
+  },
+  {
     surfaceId: 'ships/catalogue-session',
     requirements: ['001/FR-003'],
     journey: 'product/ship-catalogue',
@@ -1318,7 +1334,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     assertions: [
       'a schematic still on the wire draws the shared waiting mark in the place the drawing will be',
       'the plate states the wait in words as well as in the mark',
-      'no mount mark is drawn over a frame with no hull in it, and every mark is drawn once the hull is',
+      'no mount mark is drawn over a frame with no hull in it, and a mark is drawn once the hull is',
     ],
     manualRecord: null,
   },

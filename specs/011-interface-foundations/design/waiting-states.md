@@ -69,10 +69,10 @@ that owns the region the child would have filled says it there, in that region: 
 is the one such region, and it holds the sentence in place of the hull. Every other screen keeps what
 a Commander is reading and changes nothing, because the router leaves them where they were.
 
-A screen that says it in its own region keeps the rest of itself readable. The shipyard's rail is
-drawn for the failure under a modifier of its own, and that modifier takes nothing else away: below
-the wide step the modifier for a hull that is open or on its way takes the manifest off the screen,
-which for a failure would leave a sentence and nothing to press.
+A screen that says it in its own region keeps the rest of itself in reach. The shipyard's rail is
+drawn for the failure under a modifier of its own, which draws the rail and takes nothing away. The
+manifest is beside the sentence at the rail's width, and under it below that step: no screen is
+coming, so the sentence leads and the list a Commander was reading stays where they can press it.
 
 The way out is a fresh document, and the words say so. The router would ask for the chunk again on
 the next navigation, because it keeps only the configurations it loaded. The document would not: it

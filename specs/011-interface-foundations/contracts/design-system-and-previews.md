@@ -79,7 +79,8 @@ Relevant cross-cutting fixtures add doubled/long copy, RTL direction, reduced mo
 canonical package text with untranslated disclosure, absent canonical package text, long unbroken
 identities and nested label/description/error relationships. The state that animates declares the
 reduced-motion variant, not the still one. A component whose only motion is in its loading state is
-therefore scanned under reduced motion in that state.
+therefore reviewed under reduced motion in that state. The preview sweep renders no state under the
+reduced-motion media, so the declaration is a reviewer's note rather than a check that runs.
 Fixtures are presentation data. A
 package integration fixture may query real package data but cannot turn a copied mock value into an
 application fact.

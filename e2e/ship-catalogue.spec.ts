@@ -307,3 +307,49 @@ test.describe('hull catalogue', () => {
     await expectNoAccessibilityViolations(page, testInfo, { label: 'catalogue-no-matches' });
   });
 });
+
+/**
+ * A hull whose screen never arrives.
+ *
+ * The screen behind the manifest is a chunk of its own, so a Commander on a bad
+ * connection can press a hull and have nothing come back. What the shipyard owes
+ * them then is a sentence saying so, where they are looking, with the list they
+ * were reading still under it (011/FR-029).
+ */
+test.describe('when a hull’s screen does not arrive', () => {
+  // The chunks are precached in a production run, so the worker would answer the
+  // press from its own store and there would be no request to refuse. The
+  // refusal is the whole condition, so the worker is kept out of this block.
+  test.use({ serviceWorkers: 'block' });
+
+  test('says so where the Commander is looking, and keeps the manifest', async ({ page }) => {
+    let refuse = false;
+    await page.route('**/chunk-*.js', (route) => (refuse ? route.abort() : route.continue()));
+    await page.goto('/ships');
+    await expect(visibleHulls(page)).toHaveCount(48);
+
+    refuse = true;
+    // Opened the way the composition opens a hull: where a rest reads one, the
+    // pointer coming to rest is the trip; where it does not, the press is.
+    const row = visibleHulls(page).first();
+    if (await restsToRead(page)) {
+      await row.hover();
+    } else {
+      await row.click();
+    }
+
+    const notice = page.locator('ednb-status-notice .status');
+    await expect(notice).toBeVisible();
+    await expect(notice).toHaveAttribute('role', 'alert');
+    // The list a Commander was reading is still there to press again, at every
+    // composition. Taking it away would leave the sentence and no way on.
+    await expect(visibleHulls(page)).toHaveCount(48);
+
+    // And the sentence is on the screen they are already looking at. Under 48
+    // hulls it would be a screenful and a half below the fold.
+    const box = (await notice.boundingBox())!;
+    const viewport = page.viewportSize()!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeLessThan(viewport.height);
+  });
+});

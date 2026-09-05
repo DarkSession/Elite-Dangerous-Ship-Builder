@@ -547,9 +547,9 @@ Task: "Status, notice and error in src/app/ui/components/status/"
 - [x] T153 Let the schematic's plate wait for the request it can finish. The wait is the geometry
       fetch, which the plate is told the end of. The drawing is a second request, and the plate does
       not wait on it: that wait would read the picture's own `load` event, and a plate that never
-      hears one holds the mark for the rest of the session. A picture that fails is answered for by
-      the file the event came from, so a hull replaced mid-fetch cannot be marked failed by the
-      picture it replaced (`specs/010-hull-anatomy/design/hull-anatomy.md`)
+      hears one holds the mark for the rest of the session. The plate records which file did not
+      arrive rather than that one did not, so the record clears itself when the hull or the side
+      changes (`specs/010-hull-anatomy/design/hull-anatomy.md`)
       _A state a screen cannot leave is worse than a state it never enters._
 - [x] T154 Give the waiting mark its own reduced-motion rule. It is an SVG loaded through `img`, so
       it is a separate document and `_base.scss` cannot reach it. The rule goes inside

@@ -82,8 +82,8 @@
 // go.
 //
 // A hull whose screen did not arrive carries the second modifier instead. It
-// draws the rail on the same terms, and takes nothing away: no screen is coming,
-// so the manifest under it is the only thing left to read.
+// draws the rail on the same terms and takes nothing away, because no screen is
+// coming and the manifest is the only thing left to work with.
 .catalogue:not(.catalogue--detail-open):not(.catalogue--detail-failed) .catalogue__inspector {
   display: none;
 }
@@ -143,6 +143,14 @@
   .catalogue--detail-open .catalogue__manifest-region {
     padding-block: 0;
     gap: 0;
+  }
+
+  // A failure keeps the manifest, so the two regions stack, and the rail is
+  // second in the document because the wide composition reads it second. Stacked
+  // under 48 hulls the sentence would sit a screenful and a half below the fold.
+  // It leads instead: it is what changed, and the list under it is unchanged.
+  .catalogue--detail-failed .catalogue__inspector {
+    order: -1;
   }
 }
 
