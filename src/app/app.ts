@@ -343,6 +343,9 @@ export class App {
   /** What the frame says while the screen's own chunk is on its way. */
   readonly routePendingNotice = this.#messages.messageSignal('route.pending.notice');
 
+  /** What the frame says when the screen's own chunk did not arrive. */
+  readonly routeFailedNotice = this.#messages.messageSignal('route.failed.notice');
+
   /**
    * The name the waiting layer takes.
    *
@@ -416,6 +419,22 @@ export class App {
    */
   readonly routeWaiting = computed(() => this.#routeLoading() && !this.#screenShown());
 
+  /**
+   * Whether the last navigation into an empty frame ended with no screen.
+   *
+   * The router leaves the screen a Commander is reading when a navigation
+   * fails, so this speaks only for the frame that has none: without it a cold
+   * arrival at a chunk that cannot be fetched takes its skeleton down and
+   * leaves the shell around an empty page, saying nothing (011/FR-029).
+   *
+   * The router asks again on the next navigation, because it keeps only the
+   * configurations it has loaded. Choosing the screen again is therefore a way
+   * out, and lowering this on the next fetch is what makes it one.
+   */
+  readonly #routeFailed = signal(false);
+
+  readonly routeFailed = computed(() => this.#routeFailed() && !this.#screenShown());
+
   routeActivated(): void {
     this.#screenShown.set(true);
   }
@@ -427,6 +446,7 @@ export class App {
       }
       if (event instanceof RouteConfigLoadStart) {
         this.#routeLoading.set(true);
+        this.#routeFailed.set(false);
       }
       // The router reports the end of a fetch that succeeded and says nothing
       // about one that failed, so a chunk that cannot be fetched would leave
@@ -438,6 +458,9 @@ export class App {
         event instanceof NavigationError
       ) {
         this.#routeLoading.set(false);
+      }
+      if (event instanceof NavigationError) {
+        this.#routeFailed.set(true);
       }
     });
 

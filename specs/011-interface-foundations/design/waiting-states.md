@@ -63,6 +63,12 @@ stands for the whole of that wait — across both chunks, and across the gap bet
 landing and the screen being drawn. A navigation that is cancelled or fails lowers it too, so a chunk
 that never arrives is a wait that still ends.
 
+What stands after a failed one depends on what is behind it. The router keeps the screen a Commander
+is reading, so a navigation that fails from a screen changes nothing on the page. A frame with no
+screen behind it has nothing to keep, so it says the screen did not arrive and names the way out: the
+router keeps only the configurations it loaded, so choosing the screen again asks for the chunk
+again.
+
 The inspector draws no second skeleton on that arrival. It cannot: the router resolves the catalogue
 and the hull together, so the catalogue does not exist to draw anything while its own chunk is on the
 wire. The page skeleton is the whole of what a cold arrival shows.

@@ -25,6 +25,13 @@
   -->
   @if (routeWaiting()) {
     <ednb-skeleton [label]="routePendingNotice()" [lines]="6" />
+  } @else if (routeFailed()) {
+    <!--
+      The chunk did not arrive, and there is no screen behind this to fall back
+      to. A skeleton taken down over an empty frame says nothing at all, which
+      is the one thing a frame that failed must not do.
+    -->
+    <ednb-status-notice tone="error" [message]="routeFailedNotice()" />
   }
 
   <router-outlet (activate)="routeActivated()" />

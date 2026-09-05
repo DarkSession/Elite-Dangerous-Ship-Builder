@@ -672,6 +672,53 @@ describe('App, waiting for a screen', () => {
 
     expect(skeletonOf(fixture)).toBeNull();
   });
+
+  it('says so when the screen’s chunk does not arrive', () => {
+    // A skeleton taken down over a frame with no screen behind it leaves the
+    // shell around an empty page. The frame says what happened, and names the
+    // way out: the router asks again on the next navigation.
+    const { fixture, publish } = shell();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(someRoute('ships')));
+    publish(new NavigationError(1, '/ships', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    const notice = host.querySelector('ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['route.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
+  });
+
+  it('takes the failure down when the next screen is asked for', () => {
+    const { fixture, publish } = shell();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(someRoute('ships')));
+    publish(new NavigationError(1, '/ships', new Error('chunk unavailable')));
+    fixture.detectChanges();
+    expect(host.querySelector('ednb-status-notice')).not.toBeNull();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
+    expect(skeletonOf(fixture)).not.toBeNull();
+  });
+
+  it('leaves the screen a Commander is reading alone when a navigation fails', async () => {
+    // The router keeps them where they were. A notice over that would report a
+    // failure by taking away the screen that did not fail.
+    const { fixture, publish } = shell();
+    const host = fixture.nativeElement as HTMLElement;
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    publish(new NavigationError(1, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
+  });
 });
 
 /**
@@ -777,8 +824,14 @@ describe('App, waiting for a layer', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('ednb-layer ednb-status-notice')).not.toBeNull();
+    // The words, and the role that carries them. A layer that failed and still
+    // says it is loading is the state this branch exists to replace, and an
+    // error read as an incidental update is not read as a problem.
+    const notice = host.querySelector('ednb-layer ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['layer.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
     expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.import.title']);
+    expect(host.querySelector('.layer')?.classList).not.toContain('layer--wide');
 
     host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
     expect(store.layer()).toBe('none');
@@ -795,7 +848,11 @@ describe('App, waiting for a layer', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('ednb-layer ednb-status-notice')).not.toBeNull();
+    const notice = host.querySelector('ednb-layer ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['layer.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['library.title']);
+    expect(host.querySelector('.layer')?.classList).toContain('layer--widest');
 
     host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
     expect(fixture.componentInstance.library.open()).toBe(false);
