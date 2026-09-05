@@ -20,8 +20,12 @@
   border-block-start: var(--ednb-border-width-hairline) solid var(--ednb-border-decorative);
 }
 
+/*
+ * The actions share the row with the line beside them, and take a line of their
+ * own where there is not room for both. The group shrinks, so text at 200%
+ * reflows inside the sheet instead of pushing the controls past its edge.
+ */
 .footer__actions {
-  flex: 0 0 auto;
   justify-content: flex-end;
 }
 
