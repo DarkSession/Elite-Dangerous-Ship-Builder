@@ -446,9 +446,9 @@ test.describe('the layer, against the canvas', () => {
     // Canvas 1c: `border-right: 1px solid var(--amber-a16)` on the format
     // column, running the height of the panel. Canvas 1d draws no rule.
     const rule = await formats.evaluate((node) => {
-      // The rule closes the region the group is placed in, which is the
-      // component's own host element rather than its fieldset.
-      const style = getComputedStyle(node.closest('ednb-choice-group') ?? node);
+      // The rule closes the region the group is placed in, which is the shared
+      // layer's own list track rather than the group or its fieldset.
+      const style = getComputedStyle(node.closest('.format-layer__list') ?? node);
       return { width: style.borderInlineEndWidth, colour: style.borderInlineEndColor };
     });
 
@@ -462,7 +462,7 @@ test.describe('the layer, against the canvas', () => {
       // at the taller region's content would be the drawn mark at the wrong
       // length.
       const spans = await formats.evaluate((node) => {
-        const region = node.closest('ednb-choice-group') ?? node;
+        const region = node.closest('.format-layer__list') ?? node;
         const body = region.closest('.layer__body')!;
         return Math.abs(
           region.getBoundingClientRect().height - body.getBoundingClientRect().height,
