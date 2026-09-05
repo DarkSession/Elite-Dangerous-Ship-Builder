@@ -72,6 +72,11 @@ speaks the sentence there instead, politely, on each attempt: nothing on such a 
 chunk is refused, so the press reads as a control that did nothing, and the control does nothing for
 the rest of the session.
 
+The shell speaks it only where no region drew it. A drawn sentence is an error notice, and an error
+notice is an alert in its own right, so speaking it as well tells a Commander the same thing twice
+for one refused chunk (`contracts/feedback-and-semantics.md`). The screen that draws it says so while
+it waits, and the shell reads that claim on the failure.
+
 A screen that says it in its own region keeps the rest of itself in reach. The shipyard's rail is
 drawn for the failure under a modifier of its own, which draws the rail and takes nothing away. The
 manifest is beside the sentence at the rail's width, and under it below that step: no screen is

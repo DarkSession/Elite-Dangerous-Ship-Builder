@@ -480,7 +480,12 @@ export class App {
         // records the failed import and refuses the same address without
         // reaching the network. Said rather than drawn, because the screen the
         // frame is keeping is the whole point of keeping it (011/FR-029).
-        if (this.#screenShown()) {
+        //
+        // Unless the screen drew it. The shipyard's rail holds the sentence in
+        // place of the hull, and that notice is an alert in its own right, so
+        // speaking it as well would say the same thing twice for one refused
+        // chunk (011 contracts/feedback-and-semantics.md).
+        if (this.#screenShown() && !this.chrome.ownsRouteFailure()) {
           this.#navigationFailures.update((count) => count + 1);
           this.#announcements.announce({
             kind: 'route.failed',

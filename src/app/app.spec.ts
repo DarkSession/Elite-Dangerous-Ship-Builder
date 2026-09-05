@@ -20,7 +20,7 @@ import { App, HELP_ACTION } from './app';
 import { routes } from './app.routes';
 import { EquipmentBenchPage } from './features/equipment/equipment-bench.page';
 import { NAVIGATION_ROUTES } from './features/shared/app-navigation';
-import { WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
+import { ScreenChrome, WORKSPACE_EXPORT_ACTION } from './features/shared/screen-chrome';
 import { ActiveBuildStore } from './application/active-build/active-build.store';
 import { SlefStore } from './application/slef/slef.store';
 import { FIXTURE_HULL } from './domain/ships/outfitting/outfitting.fixtures';
@@ -744,6 +744,23 @@ describe('App, waiting for a screen', () => {
     fixture.detectChanges();
 
     expect(announcements.polite()).toBe(BUNDLED_ENGLISH['route.failed.notice']);
+  });
+
+  it('stays quiet where the screen draws the sentence itself', async () => {
+    // The shipyard's rail holds the sentence in place of the hull, and an error
+    // notice is an alert in its own right. Speaking it as well would tell a
+    // Commander the same thing twice, in two places, for one refused chunk
+    // (011 contracts/feedback-and-semantics.md).
+    const { fixture, publish } = shell();
+    const announcements = TestBed.inject(AnnouncementService);
+    await TestBed.inject(Router).navigate(['/screen']);
+    fixture.detectChanges();
+
+    TestBed.inject(ScreenChrome).setOwnsRouteFailure(true);
+    publish(new NavigationError(1, '/ships/anaconda', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(announcements.polite()).toBe('');
   });
 });
 

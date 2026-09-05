@@ -124,6 +124,28 @@ export class ScreenChrome {
   readonly #actions = signal<readonly ScreenAction[]>([]);
   readonly #regionActions = signal<readonly ScreenAction[]>([]);
 
+  readonly #ownsRouteFailure = signal(false);
+
+  /**
+   * Whether the open screen draws the sentence for a chunk that did not arrive.
+   *
+   * The shipyard's rail is the one region that draws it: the rail is where the
+   * hull would have been, so the sentence stands there in its place. That notice
+   * is an alert in its own right, so the shell does not also speak it — a
+   * Commander would otherwise be told the same thing twice, once in the rail and
+   * once in the outlet (`011 contracts/feedback-and-semantics.md`, "The visible
+   * notice is an alert in its own right").
+   *
+   * Raised while the screen waits for the chunk rather than when the failure
+   * arrives. The shell subscribes to the router first, so it reads this on the
+   * same event the screen would otherwise still be setting it from.
+   */
+  readonly ownsRouteFailure = this.#ownsRouteFailure.asReadonly();
+
+  setOwnsRouteFailure(owns: boolean): void {
+    this.#ownsRouteFailure.set(owns);
+  }
+
   readonly #return = signal<ScreenReturn | null>(null);
 
   /**

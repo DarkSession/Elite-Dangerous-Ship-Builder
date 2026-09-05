@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -254,6 +255,10 @@ export class ShipCataloguePage {
       if (event instanceof RouteConfigLoadStart && this.#isDetailRoute(event.route)) {
         this.#detailLoading.set(true);
         this.#detailFailed.set(false);
+        // The rail draws the sentence for this fetch, so the shell does not
+        // speak it. Said here rather than where the failure arrives, because the
+        // shell reads it on that event and subscribes to the router first.
+        this.#chrome.setOwnsRouteFailure(true);
       }
       // A failure belongs to this rail only where this rail was waiting for it.
       // Every other navigation that fails is some other screen's.
@@ -271,6 +276,10 @@ export class ShipCataloguePage {
         this.#detailFailed.set(false);
       }
     });
+
+    // A rail that is gone draws nothing, and a claim it left behind would keep
+    // every later failure from being said at all.
+    inject(DestroyRef).onDestroy(() => this.#chrome.setOwnsRouteFailure(false));
 
     // The reference carries the manifest's count in the command bar beside the
     // screen's own name, and nowhere else (canvas 1a "48 SHIPS", canvas 1b
