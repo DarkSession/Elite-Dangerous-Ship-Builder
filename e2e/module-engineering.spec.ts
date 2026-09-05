@@ -396,6 +396,30 @@ test.describe('engineering a module', () => {
   });
 });
 
+test.describe('the editor’s actions on a short viewport', () => {
+  test('releases the pin so the rows are not scrolled under them', async ({ page }) => {
+    // A viewport this short cannot divide the layer into a scroller and a foot
+    // and still show one choice. The actions stop sticking, and the layer's own
+    // scroller carries them (FR-011).
+    //
+    // The release and the pin carry the same class, and a media query carries no
+    // specificity, so only source order decides which one takes. Nothing else in
+    // the suite reads that, and a release stated in the wrong place is silent:
+    // it compiles, it ships, and the foot goes on sticking.
+    // The width the editor is opened at decides whether it is drawn inline or as
+    // a layer, so the viewport is set before the journey rather than during it.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await openStockBuild(page);
+    await openEditor(page, 'FrameShiftDrive');
+
+    const pin = await page
+      .locator('.engineering__actions')
+      .evaluate((node) => getComputedStyle(node).position);
+
+    expect(pin).toBe('static');
+  });
+});
+
 test.describe('engineering costs', () => {
   test('prices no job of its own — the rail states the build’s materials', async ({ page }) => {
     await openStockBuild(page);

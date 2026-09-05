@@ -1199,6 +1199,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the effect menu the application draws passes an accessibility scan with its list open, every option at the target baseline',
       'the effect menu keeps the option it is on inside the box its list scrolls in',
       'a pointer resting on an unchosen effect washes it, measured on the menu the wide width draws',
+      'the editor’s actions release the pin on a short viewport instead of standing over the rows',
     ],
     manualRecord: 'screen-reader',
   },
