@@ -84,6 +84,15 @@ The two deferred blocks wait 200 milliseconds before they draw, and then hold wh
 milliseconds. A Commander does not perceive a wait shorter than the first figure. A layer that
 appeared and closed inside one frame would be harder to read than a press that takes a moment.
 
+The service worker fetches every chunk on the first load, so a layer opened after that draws no wait
+at all: the chunk is already in the cache. What the two blocks draw is the visit where the press
+comes before the cache is filled.
+
+A chunk that does not arrive is the third state each block draws. The block makes no second attempt,
+so a layer that closed on its own would leave the control that opened it doing nothing for the rest
+of the session. The layer stays, says the chunk did not arrive, and offers the way out it always
+offers.
+
 ## What draws no waiting state, and why
 
 - **A language catalogue.** The application starts on complete bundled English and commits the other

@@ -763,6 +763,44 @@ describe('App, waiting for a layer', () => {
     expect(store.layer()).toBe('none');
   });
 
+  it('says so, and stays open, when the chunk does not arrive', async () => {
+    // The block does not try again. Without a word here the layer a Commander
+    // asked for would close on its own, and the control that opened it would do
+    // nothing for the rest of the session.
+    const store = TestBed.inject(SlefStore);
+    store.openLayer('import');
+
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[0].render(DeferBlockState.Error);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('ednb-layer ednb-status-notice')).not.toBeNull();
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.import.title']);
+
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+    expect(store.layer()).toBe('none');
+  });
+
+  it('says so when the library’s own chunk does not arrive', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    fixture.componentInstance.library.raise();
+    fixture.detectChanges();
+
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[1].render(DeferBlockState.Error);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('ednb-layer ednb-status-notice')).not.toBeNull();
+
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+    expect(fixture.componentInstance.library.open()).toBe(false);
+  });
+
   it('names the library layer, and closes it', async () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();

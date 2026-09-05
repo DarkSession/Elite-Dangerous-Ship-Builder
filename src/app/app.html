@@ -62,6 +62,22 @@
   >
     <ednb-skeleton [label]="layerPendingNotice()" />
   </ednb-layer>
+} @error {
+  <!--
+    The chunk did not arrive. The layer says so and offers the way out, because
+    the block does not try again: without this the layer a Commander asked for
+    would close on its own and the control that opened it would do nothing for
+    the rest of the session (011/FR-029).
+  -->
+  <ednb-layer
+    [open]="exchangeWanted()"
+    [title]="exchangePendingTitle()"
+    [width]="exchangePendingWidth()"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="cancelExchange()"
+  >
+    <ednb-status-notice tone="error" [message]="layerFailedNotice()" />
+  </ednb-layer>
 }
 
 <!--
@@ -93,6 +109,16 @@
     (dismissed)="library.lower()"
   >
     <ednb-skeleton [label]="layerPendingNotice()" />
+  </ednb-layer>
+} @error {
+  <ednb-layer
+    [open]="library.open()"
+    [title]="libraryPendingTitle()"
+    width="widest"
+    [dismissLabel]="dismissLabel()"
+    (dismissed)="library.lower()"
+  >
+    <ednb-status-notice tone="error" [message]="layerFailedNotice()" />
   </ednb-layer>
 }
 

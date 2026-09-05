@@ -15,6 +15,7 @@
   "shell.announcements.urgent.label": "Dringende Meldungen",
   "shell.announcements.polite.label": "Meldungen",
   "layer.pending.notice": "Diese Ebene wird geladen.",
+  "layer.failed.notice": "Diese Ebene konnte nicht geladen werden. Prüfen Sie die Verbindung und versuchen Sie es erneut.",
   "route.pending.notice": "Dieser Bildschirm wird geladen.",
   "action.close": "Schließen",
   "action.cancel": "Abbrechen",

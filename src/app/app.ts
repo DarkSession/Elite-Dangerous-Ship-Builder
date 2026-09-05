@@ -37,6 +37,7 @@ import {
 import { HelpPresenter } from './application/help/help.presenter';
 import { HelpDialog } from './features/help/help-dialog.component';
 import { Layer, type LayerWidth } from './ui/components/layer/layer';
+import { StatusNotice } from './ui/components/status/status-notice';
 import { Skeleton } from './ui/components/waiting/skeleton';
 
 /** The shell action that opens the import layer, named once. */
@@ -82,6 +83,7 @@ export const UPDATE_ACTION = 'app.update';
     Layer,
     RouterOutlet,
     Skeleton,
+    StatusNotice,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -334,6 +336,9 @@ export class App {
 
   /** What a layer says while the chunk that draws it is on its way. */
   readonly layerPendingNotice = this.#messages.messageSignal('layer.pending.notice');
+
+  /** What a layer says when the chunk that draws it did not arrive. */
+  readonly layerFailedNotice = this.#messages.messageSignal('layer.failed.notice');
 
   /** What the frame says while the screen's own chunk is on its way. */
   readonly routePendingNotice = this.#messages.messageSignal('route.pending.notice');

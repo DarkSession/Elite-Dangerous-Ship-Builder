@@ -15,6 +15,7 @@
   "shell.announcements.urgent.label": "Urgent messages",
   "shell.announcements.polite.label": "Messages",
   "layer.pending.notice": "This layer is loading.",
+  "layer.failed.notice": "This layer could not be loaded. Check the connection and try again.",
   "route.pending.notice": "This screen is loading.",
   "action.close": "Close",
   "action.cancel": "Cancel",
