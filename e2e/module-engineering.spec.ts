@@ -183,17 +183,28 @@ test.describe('engineering a module', () => {
 
     await page.keyboard.press('End');
 
-    const inView = await list.evaluate((box) => {
-      const active = box.querySelector(
-        `#${CSS.escape(box.getAttribute('aria-activedescendant') ?? '')}`,
-      );
-      const listBox = box.getBoundingClientRect();
-      const optionBox = active!.getBoundingClientRect();
-      return optionBox.top >= listBox.top - 1 && optionBox.bottom <= listBox.bottom + 1;
-    });
-
-    expect(inView).toBe(true);
-    expect(await list.evaluate((box) => box.scrollTop)).toBeGreaterThan(0);
+    // The key moves the option the menu is on, and the box scrolls to bring it
+    // into view. Both happen after the event, so the two facts are read together
+    // and until they settle: a sample taken as the key goes down finds the menu
+    // still on its first option, which is in view at a scroll of nought.
+    await expect
+      .poll(() =>
+        list.evaluate((box) => {
+          const active = box.querySelector(
+            `#${CSS.escape(box.getAttribute('aria-activedescendant') ?? '')}`,
+          );
+          if (active === null) {
+            return null;
+          }
+          const listBox = box.getBoundingClientRect();
+          const optionBox = active.getBoundingClientRect();
+          return {
+            inView: optionBox.top >= listBox.top - 1 && optionBox.bottom <= listBox.bottom + 1,
+            scrolled: box.scrollTop > 0,
+          };
+        }),
+      )
+      .toEqual({ inView: true, scrolled: true });
   });
 
   test('opens with nothing selected on an unengineered module', async ({ page }) => {
