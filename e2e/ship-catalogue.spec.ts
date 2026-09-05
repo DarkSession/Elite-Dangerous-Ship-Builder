@@ -308,14 +308,6 @@ test.describe('hull catalogue', () => {
   });
 });
 
-/**
- * A hull whose screen never arrives.
- *
- * The screen behind the manifest is a chunk of its own, so a Commander on a bad
- * connection can press a hull and have nothing come back. What the shipyard owes
- * them then is a sentence saying so, where they are looking, with the list they
- * were reading still under it (011/FR-029).
- */
 test.describe('the manifest head on a short viewport', () => {
   test('releases the pin rather than freezing part way down the screen', async ({ page }) => {
     // The shell's own bar is released at this height, and the head is frozen
@@ -342,6 +334,14 @@ test.describe('the manifest head on a short viewport', () => {
   });
 });
 
+/**
+ * A hull whose screen never arrives.
+ *
+ * The screen behind the manifest is a chunk of its own, so a Commander on a bad
+ * connection can press a hull and have nothing come back. What the shipyard owes
+ * them then is a sentence saying so, where they are looking, with the list they
+ * were reading still under it (011/FR-029).
+ */
 test.describe('when a hull’s screen does not arrive', () => {
   // The chunks are precached in a production run, so the worker would answer the
   // press from its own store and there would be no request to refuse. The
