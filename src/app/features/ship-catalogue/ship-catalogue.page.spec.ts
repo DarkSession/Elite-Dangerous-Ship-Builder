@@ -124,7 +124,12 @@ describe('ShipCataloguePage, waiting for a hull', () => {
     expect(notice?.textContent).toContain(BUNDLED_ENGLISH['route.failed.notice']);
     expect(notice?.getAttribute('role')).toBe('alert');
     // The rail has to be in the layout for any of that to be read.
-    expect(host.querySelector('.catalogue')?.classList).toContain('catalogue--detail-open');
+    const catalogue = host.querySelector('.catalogue')?.classList;
+    expect(catalogue).toContain('catalogue--detail-failed');
+    // And under its own modifier rather than the open one, which below the wide
+    // step takes the manifest off the screen. No hull screen is coming, so that
+    // would leave a Commander an error notice and nothing else to press.
+    expect(catalogue).not.toContain('catalogue--detail-open');
   });
 
   it('takes the failure down when a hull arrives after it', () => {

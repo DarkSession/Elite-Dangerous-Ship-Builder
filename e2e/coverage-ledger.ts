@@ -323,9 +323,13 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'ui/waiting-states',
-    requirements: ['011/FR-029', '011/SC-010'],
+    requirements: ['011/FR-029'],
     journey: 'product/semantics',
     // No scan: the check here is on a file the server sends, not on a page.
+    // What a Commander actually sees drawn while a fetch is open is asserted on
+    // the two surfaces that draw it — `ships/:hull` and
+    // `build/hull-anatomy-waiting` — because a wait can only be observed where
+    // something is genuinely still on the wire.
     axe: false,
     assertions: [
       'the served waiting mark carries its own reduced-motion rule, which no check inside the page can read',
@@ -764,7 +768,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'ships/:hull',
-    requirements: ['001/FR-004', '001/FR-005', '001/FR-006', '001/FR-022'],
+    requirements: ['001/FR-004', '001/FR-005', '001/FR-006', '001/FR-022', '011/FR-029'],
     journey: 'product/hull-detail',
     axe: true,
     assertions: [
@@ -783,6 +787,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'an address cased differently from the canonical one opens the hull and is replaced by it',
       'an address no hull is named or symbolled is a named error with no facts, no build and no creation action',
       'a missing illustration is explained as temporary and disables nothing',
+      'an illustration still on the wire draws the shared waiting mark on its reserved plate, and the picture only when it arrives',
       'the detail is the inspector at the manifest rail’s width and the sheet at every width below it',
       'the sheet is a bounded column centred in the window, and its illustration follows the column rather than the screen',
     ],
@@ -1299,6 +1304,23 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'only the opened hull’s two files are cached, never the package’s ninety-six',
     ],
     manualRecord: 'screen-reader',
+  },
+  {
+    // The waiting state, observed while the file it waits for is genuinely
+    // held open. Everything the plate does after the fetch is the entries
+    // beside this one; this is the only place the wait itself is on screen.
+    surfaceId: 'build/hull-anatomy-waiting',
+    requirements: ['011/FR-029', '011/SC-010'],
+    journey: 'anatomy/plates',
+    // No scan: the state lasts only while a request is held, and the settled
+    // states either side of it are scanned by the entries around this one.
+    axe: false,
+    assertions: [
+      'a schematic still on the wire draws the shared waiting mark in the place the drawing will be',
+      'the plate states the wait in words as well as in the mark',
+      'no mount mark is drawn over a frame with no hull in it, and every mark is drawn once the hull is',
+    ],
+    manualRecord: null,
   },
   {
     surfaceId: 'build/hull-anatomy-targets',

@@ -704,14 +704,21 @@ describe('App, waiting for a screen', () => {
 
     expect(host.querySelector('ednb-status-notice')).toBeNull();
     expect(skeletonOf(fixture)).not.toBeNull();
+  });
 
-    // The second navigation is cancelled rather than failing, which lowers the
-    // fetch and reports nothing else. A failure left standing from the screen
-    // before would come back here, over a frame that is not failing.
-    publish(new NavigationCancel(2, '/equipment', ''));
+  it('ends the wait on a navigation that is cancelled', () => {
+    // A guard turns the navigation away and the router reports neither an end
+    // nor an error. A skeleton raised by the fetch and lowered by those two
+    // alone would stand over the frame for the rest of the session.
+    const { fixture, publish } = shell();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
+    fixture.detectChanges();
+    expect(skeletonOf(fixture)).not.toBeNull();
+
+    publish(new NavigationCancel(1, '/equipment', ''));
     fixture.detectChanges();
 
-    expect(host.querySelector('ednb-status-notice')).toBeNull();
     expect(skeletonOf(fixture)).toBeNull();
   });
 

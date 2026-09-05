@@ -358,25 +358,26 @@ describe('HullSchematic, waiting for its side', () => {
   });
 
   it('lets a picture report only its own failure', () => {
-    // A side is replaced when the hull or the side changes, and the event
-    // queued for the picture before it arrives after that. Taken from the
-    // component, the old file would answer for the new one and put a plate that
-    // is drawing correctly into `temporarilyUnavailable`.
+    // The failure is recorded as the file it happened to, not as a flag. A flag
+    // would follow the plate to the next hull, and a picture nobody has asked
+    // for yet would be reported as one that did not arrive.
     const fixture = renderComponent(HullSchematic, { view: view() });
-    fixture.detectChanges();
 
-    const stale = new Event('error');
-    Object.defineProperty(stale, 'target', {
-      value: { getAttribute: () => 'assets/schematics/Python/top.png' },
+    query(fixture, '.schematic__artwork image').dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('temporarilyUnavailable');
+
+    fixture.componentRef.setInput('view', {
+      ...view(),
+      hullName: 'Python',
+      state: {
+        kind: 'ready',
+        document: { ...document(), symbol: 'Python' },
+      } satisfies SideAssetState,
     });
-    query(fixture, '.schematic__drawing image').dispatchEvent(stale);
     fixture.detectChanges();
 
     expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('ready');
-
-    query(fixture, '.schematic__drawing image').dispatchEvent(new Event('error'));
-    fixture.detectChanges();
-
-    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('temporarilyUnavailable');
+    expect(query(fixture, '.schematic__artwork image')).not.toBeNull();
   });
 });

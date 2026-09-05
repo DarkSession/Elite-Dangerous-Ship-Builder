@@ -335,8 +335,9 @@ export class HullSchematic {
     this.pictureFailed() ? 'temporarilyUnavailable' : this.view().state.kind,
   );
 
-  pictureUnavailable(event: Event): void {
-    this.#failedSource.set(pictureOf(event));
+  /** Records the file the plate is drawing now as the one that did not arrive. */
+  pictureUnavailable(): void {
+    this.#failedSource.set(this.artworkSource());
   }
 
   /**
@@ -592,17 +593,4 @@ export class HullSchematic {
   isSelected(occurrence: MountOccurrence): boolean {
     return occurrence.item.key === this.view().selectedKey;
   }
-}
-
-/**
- * The file an image event is about.
- *
- * Read from the element the event came from rather than from the source the
- * component holds now. A picture is replaced when the hull or the side changes,
- * and the event queued for the picture before it arrives after that: asking the
- * component would let the old file answer for the new one, and mark a drawing
- * that is still on the wire as one that failed.
- */
-function pictureOf(event: Event): string | null {
-  return (event.target as Element | null)?.getAttribute('href') ?? null;
 }

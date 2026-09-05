@@ -63,9 +63,16 @@ stands for the whole of that wait — across both chunks, and across the gap bet
 landing and the screen being drawn. A navigation that is cancelled or fails lowers it too, so a chunk
 that never arrives is a wait that still ends.
 
-What stands after a failed one depends on what is behind it. The router keeps the screen a Commander
-is reading, so a navigation that fails from a screen changes nothing on the page. A frame with no
-screen behind it has nothing to keep, so it says the screen did not arrive.
+What stands after a failed one depends on what is behind it. There are three cases. A frame with no
+screen behind it has nothing to keep, so the frame itself says the screen did not arrive. A screen
+that owns the region the child would have filled says it there, in that region: the shipyard's rail
+is the one such region, and it holds the sentence in place of the hull. Every other screen keeps what
+a Commander is reading and changes nothing, because the router leaves them where they were.
+
+A screen that says it in its own region keeps the rest of itself readable. The shipyard's rail is
+drawn for the failure under a modifier of its own, and that modifier takes nothing else away: below
+the wide step the modifier for a hull that is open or on its way takes the manifest off the screen,
+which for a failure would leave a sentence and nothing to press.
 
 The way out is a fresh document, and the words say so. The router would ask for the chunk again on
 the next navigation, because it keeps only the configurations it loaded. The document would not: it

@@ -1,6 +1,7 @@
 <div
   class="catalogue"
-  [class.catalogue--detail-open]="detailOpen() || detailWaiting() || detailFailed()"
+  [class.catalogue--detail-open]="detailOpen() || detailWaiting()"
+  [class.catalogue--detail-failed]="detailFailed()"
 >
   <div class="catalogue__manifest-region">
     <!--

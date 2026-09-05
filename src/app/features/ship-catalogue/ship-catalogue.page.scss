@@ -75,11 +75,16 @@
 // first hull — and a manifest that loses 340px under the cursor reflows five
 // columns out from under them. The track costs nothing while it is empty.
 //
-// The modifier stands for a hull that is open *or* on its way, so the rail is
-// drawn for the fetch as well. Below the wide step that takes the manifest with
-// it: the skeleton then holds the room the hull screen is about to take, which
-// is the whole screen, rather than standing under a list that is about to go.
-.catalogue:not(.catalogue--detail-open) .catalogue__inspector {
+// The open modifier stands for a hull that is open *or* on its way, so the rail
+// is drawn for the fetch as well. Below the wide step that takes the manifest
+// with it: the skeleton then holds the room the hull screen is about to take,
+// which is the whole screen, rather than standing under a list that is about to
+// go.
+//
+// A hull whose screen did not arrive carries the second modifier instead. It
+// draws the rail on the same terms, and takes nothing away: no screen is coming,
+// so the manifest under it is the only thing left to read.
+.catalogue:not(.catalogue--detail-open):not(.catalogue--detail-failed) .catalogue__inspector {
   display: none;
 }
 
