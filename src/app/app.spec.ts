@@ -672,6 +672,11 @@ describe('App, waiting for a screen', () => {
     const notice = host.querySelector('ednb-status-notice .status');
     expect(notice?.textContent).toContain(BUNDLED_ENGLISH['route.failed.notice']);
     expect(notice?.getAttribute('role')).toBe('alert');
+
+    // The frame drew the sentence, and that notice is an alert in its own
+    // right. Speaking it as well tells a Commander the same thing twice for
+    // one refused chunk.
+    expect(TestBed.inject(AnnouncementService).polite()).toBe('');
   });
 
   it('takes the failure down when the next screen is asked for', () => {
