@@ -193,9 +193,14 @@ test.describe('what the head says this page is', () => {
     expect(value(/property="og:description"[^>]*content="([^"]*)"/s)).toBe(
       englishMessages['app.description'],
     );
-    // The card's title is the document's, which at the root is the product's
-    // full title rather than its bare name.
+    // Both cards' titles are the document's, which at the root is the product's
+    // full title rather than its bare name. Asserted tag by tag: the checker
+    // holds the three descriptions equal to each other but has no title
+    // equivalent, so a title tag left behind drifts in silence.
     expect(value(/property="og:title"[^>]*content="([^"]*)"/s)).toBe(
+      englishMessages['app.document-title.default'],
+    );
+    expect(value(/name="twitter:title"[^>]*content="([^"]*)"/s)).toBe(
       englishMessages['app.document-title.default'],
     );
     expect(value(/rel="canonical"[^>]*href="([^"]*)"/)).toBe(`${SITE_ORIGIN}/`);

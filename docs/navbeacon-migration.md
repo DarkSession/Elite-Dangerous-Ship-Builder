@@ -50,16 +50,17 @@ DNS setup; "Enforce HTTPS" is the step that ends the gap.
 ## The name
 
 Nav Beacon is the product and Ship Builder is a tool inside it. The name is two words,
-the spelling the wordmark on the bar and the design canvases carry. The product identity is
-`app.name`, `app.description` and `app.document-title.default` in the locale
-catalogues, the manifest's `name`, `short_name` and `description`, the `package.json`
-name, the project key in `angular.json`, and the Frontier media-usage notice in
-`LICENSE`. Everything that names the outfitting bench — `catalogue.title`,
+the spelling the wordmark on the bar and the design canvases carry. The written name is
+`app.name`, `app.description` and `app.document-title.default` in the locale catalogues,
+the manifest's `name`, `short_name` and `description`, and the Frontier media-usage notice
+in `LICENSE`. The `package.json` name and the project key in `angular.json` are the
+lowercase identifier the same product is filed under, and do not follow the spelling. Everything that names the outfitting bench — `catalogue.title`,
 `navigation.catalogue`, `hullDetail.back`, `workspace.empty.description`,
 `workspace.empty.action` and the help topics that describe the bench's behaviour — names
 the tool, which is what those strings mean under Nav Beacon. `help.purpose` is the one help
-string on the product's side of that line: one dialog opens over both benches, so it names
-the application (`specs/013-equipment-builder/design/reference-review.md`).
+string on the product's side of that line: one dialog opens over both benches, so it opens
+with the product's name rather than a bench's
+(`specs/013-equipment-builder/design/reference-review.md`).
 
 `app.document-title.default` is the one string that says more than the name:
 `Nav Beacon – Elite Dangerous Commander Tools`, which titles the root document and

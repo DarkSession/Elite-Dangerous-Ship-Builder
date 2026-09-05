@@ -38,14 +38,6 @@ test.describe('start page', () => {
     await expect(cards(page).nth(1)).toContainText('Equipment Builder');
   });
 
-  test('titles the tab with the product rather than with a screen', async ({ page }) => {
-    // The screen a Commander is on here *is* the product, so the tab carries
-    // the product's own title. Read from the running application rather than
-    // from the published document: `resolveDocumentTitle` is what decides it,
-    // and only a browser exercises that branch.
-    await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
-  });
-
   test('marks no tool as the one being read', async ({ page }) => {
     // A Commander here is in none of the tools, so the bar names none of them
     // as current and offers both as links (014/FR-010).
@@ -78,6 +70,12 @@ test.describe('start page', () => {
       await page.goBack();
       await expect(page).toHaveURL(/\/$/);
       await expect(cards(page)).toHaveCount(2);
+
+      // The tab as well as the screen. Asserted after coming back rather than
+      // on the first load, because the served document already carries this
+      // title: only a title the application has written over `<tool> · Nav
+      // Beacon` proves `resolveDocumentTitle` chose it (014/FR-006).
+      await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
     });
   }
 

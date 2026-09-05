@@ -27,8 +27,8 @@ import { hullArtworkPath } from '../../platform/assets/hull-artwork-path';
  * second (011/FR-027, 011/FR-019).
  *
  * A route with no title, or with a key this build does not carry, contributes
- * nothing and leaves the product name standing rather than writing a raw key
- * into the tab. The same is true of the description: an absent one falls back
+ * nothing and leaves the product's own title standing rather than writing a raw
+ * key into the tab. The same is true of the description: an absent one falls back
  * to the application's own rather than being published blank.
  *
  * One route names a subject: a hull address says which hull. Its two keys
