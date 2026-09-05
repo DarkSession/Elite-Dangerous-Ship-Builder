@@ -62,7 +62,9 @@ cannot reach into another component's template.
 
 The row is the shared part: the message on the leading edge, the actions on the trailing edge, both
 wrapping rather than clipping when the room runs out. The rule above it is an input with three
-values, because two of the callers close their body with a rule and one does not.
+values, because two of the callers close their body with a rule and one does not. The gap between the
+actions is an input with two, because the save layer sets its pair wider apart than the two export
+layers set theirs.
 
 ### `ednb-format-layer`
 
