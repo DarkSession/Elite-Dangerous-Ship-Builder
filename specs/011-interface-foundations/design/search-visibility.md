@@ -425,8 +425,8 @@ a Commander reads, and `docs/navbeacon-migration.md` records why the SLEF one is
 
 ## The root document is titled with what the product is
 
-`app.document-title.default` is `Nav Beacon - Elite Dangerous Commander Tools`, and German
-carries its own wording (`Nav Beacon - Werkzeuge für Elite Dangerous Commander`). The words
+`app.document-title.default` is `Nav Beacon – Elite Dangerous Commander Tools`, and German
+carries its own wording (`Nav Beacon – Werkzeuge für Elite-Dangerous-Commander`). The words
 after the name are wording, and constitution VI translates wording.
 
 That key is the title of exactly two documents. The first is the root, whose page name is the

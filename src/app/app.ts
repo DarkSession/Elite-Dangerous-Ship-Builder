@@ -113,8 +113,8 @@ export class App {
 
   /**
    * What the command bar shows: the screen's own name, and the one count that
-   * belongs to it. The name is the same string the document title uses, so the
-   * bar and the tab can never disagree.
+   * belongs to it. The name is what the document title is composed from, so the
+   * bar and the tab can never name different screens.
    */
   readonly pageName = this.#locale.page;
   readonly pageCount = this.chrome.count;

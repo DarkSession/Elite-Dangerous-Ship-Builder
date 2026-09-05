@@ -4,9 +4,9 @@
 
   It is served before Angular runs and is the only thing a crawler that executes
   no script ever sees, so every phrase in it is the English default for the
-  screen the application opens on — which is the start page, and used to be the
-  shipyard. The product's own description is unchanged by that: `app.description`
-  describes Nav Beacon, not whichever screen it opens on. This file is also the
+  screen the application opens on, which is the start page. The product's own
+  description is not the screen's: `app.description` describes Nav Beacon, not
+  whichever screen it opens on. This file is also the
   document the root address answers with:
   `publish-static-routes.mjs` writes the root's own head into it through the same
   substitution every other address goes through. The locale store replaces the title, the
@@ -18,7 +18,7 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8" />
-    <title>Nav Beacon - Elite Dangerous Commander Tools</title>
+    <title>Nav Beacon – Elite Dangerous Commander Tools</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
@@ -42,7 +42,7 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Nav Beacon" />
-    <meta property="og:title" content="Nav Beacon - Elite Dangerous Commander Tools" />
+    <meta property="og:title" content="Nav Beacon – Elite Dangerous Commander Tools" />
     <meta
       property="og:description"
       content="Nav Beacon is a set of Elite Dangerous tools. Ship Builder is its outfitting bench: pick a hull, outfit it, read the numbers, and share a build as a link."
@@ -50,7 +50,7 @@
     <meta property="og:url" content="https://navbeacon.app/" />
     <meta property="og:locale" content="en" />
     <meta property="og:image" content="https://navbeacon.app/assets/link-card.png" />
-    <meta property="og:image:alt" content="Nav Beacon - Elite Dangerous Commander Tools" />
+    <meta property="og:image:alt" content="Nav Beacon – Elite Dangerous Commander Tools" />
 
     <!-- The card carries the mark on the application's own ground and no words:
          a picture with `NAV BEACON` baked into it is display text in one
@@ -60,7 +60,7 @@
          renders it; a hull address is published with its own illustration
          instead. -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Nav Beacon - Elite Dangerous Commander Tools" />
+    <meta name="twitter:title" content="Nav Beacon – Elite Dangerous Commander Tools" />
     <meta
       name="twitter:description"
       content="Nav Beacon is a set of Elite Dangerous tools. Ship Builder is its outfitting bench: pick a hull, outfit it, read the numbers, and share a build as a link."

@@ -33,7 +33,7 @@ const SHIPS = [
 const CATALOGUE = {
   'app.name': 'Nav Beacon',
   'app.document-title': '{{page}} · {{app}}',
-  'app.document-title.default': 'Nav Beacon - Elite Dangerous Commander Tools',
+  'app.document-title.default': 'Nav Beacon – Elite Dangerous Commander Tools',
   'app.description': 'Nav Beacon is a set of Elite Dangerous tools.',
   'catalogue.title': 'Ship Builder',
   'catalogue.description': 'Browse every hull.',
@@ -117,7 +117,7 @@ describe('what a published document says', () => {
 
     assert.equal(
       documentHead(root, CATALOGUE, ORIGIN).title,
-      'Nav Beacon - Elite Dangerous Commander Tools',
+      'Nav Beacon – Elite Dangerous Commander Tools',
     );
     assert.equal(
       documentHead(root, CATALOGUE, ORIGIN).description,
@@ -131,7 +131,7 @@ describe('what a published document says', () => {
   });
 
   it('falls back to the application title where the page has no name', () => {
-    assert.equal(documentTitle(CATALOGUE, null), 'Nav Beacon - Elite Dangerous Commander Tools');
-    assert.equal(documentTitle(CATALOGUE, '   '), 'Nav Beacon - Elite Dangerous Commander Tools');
+    assert.equal(documentTitle(CATALOGUE, null), 'Nav Beacon – Elite Dangerous Commander Tools');
+    assert.equal(documentTitle(CATALOGUE, '   '), 'Nav Beacon – Elite Dangerous Commander Tools');
   });
 });

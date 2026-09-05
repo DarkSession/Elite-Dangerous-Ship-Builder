@@ -163,6 +163,15 @@ test.describe('what the head says this page is', () => {
 
     await description(page).toBe(germanMessages['catalogue.description']);
     await head(page, 'head meta[property="og:locale"]', 'content').toBe('de');
+    await expect
+      .poll(() => page.title())
+      .toBe(`${germanMessages['catalogue.title']} · ${germanMessages['app.name']}`);
+
+    // The product's own address, whose title is a phrase rather than a name and
+    // so is the one title with wording of its own to translate.
+    await page.goto(`${PRODUCT_URL}/`);
+    await expect(page.getByRole('main')).toBeVisible();
+    await expect.poll(() => page.title()).toBe(germanMessages['app.document-title.default']);
 
     await context.close();
   });

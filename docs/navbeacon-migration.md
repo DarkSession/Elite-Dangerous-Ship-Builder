@@ -62,7 +62,7 @@ string on the product's side of that line: one dialog opens over both benches, s
 the application (`specs/013-equipment-builder/design/reference-review.md`).
 
 `app.document-title.default` is the one string that says more than the name:
-`Nav Beacon - Elite Dangerous Commander Tools`, which titles the root document and
+`Nav Beacon – Elite Dangerous Commander Tools`, which titles the root document and
 `404.html`, and nothing else. Every other address reads `<screen> · Nav Beacon`.
 `specs/011-interface-foundations/design/search-visibility.md` is the record.
 

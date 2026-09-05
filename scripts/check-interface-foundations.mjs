@@ -2448,10 +2448,10 @@ export const REVIEWED_IDENTICAL_VALUES = {
     'drives.fsd.optimal-mass.detail':
       'A composition pattern; both variables and the separator are language-neutral.',
     'catalogue.title':
-      'The product name. The screen the application opens on is named after the product, ruled 2026-08-27, and a product renamed in one language is a different product.',
-    'navigation.catalogue': 'The same product name, carried by the link that reaches that screen.',
+      'The ship tool’s own name. Ship Builder is the name of the tool in every language, ruled 2026-08-27, and a tool renamed in one language is a different tool.',
+    'navigation.catalogue': 'The same tool name, carried by the link that reaches that screen.',
     'tools.ship':
-      'The same product name again, carried by the tool’s own tab. The tool is Ship Builder in every language, for the reason catalogue.title gives.',
+      'The same tool name again, carried by the tool’s own tab, for the reason catalogue.title gives.',
     'equipment.export.meta':
       'A composition pattern. Every part of it is translated on its own — the format name, the two counted phrases and `KB` — and what is left here is the separator between them.',
     'equipment.badge.empty':

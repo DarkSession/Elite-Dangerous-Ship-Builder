@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoAccessibilityViolations } from './accessibility/axe';
 import { expectNoDocumentOverflow } from './accessibility/assertions';
+import englishMessages from '../src/app/i18n/locales/en.json';
 
 /**
  * The start page journey (014/US1–US3).
@@ -35,6 +36,14 @@ test.describe('start page', () => {
     await expect(cards(page)).toHaveCount(2);
     await expect(cards(page).nth(0)).toContainText('Ship Builder');
     await expect(cards(page).nth(1)).toContainText('Equipment Builder');
+  });
+
+  test('titles the tab with the product rather than with a screen', async ({ page }) => {
+    // The screen a Commander is on here *is* the product, so the tab carries
+    // the product's own title. Read from the running application rather than
+    // from the published document: `resolveDocumentTitle` is what decides it,
+    // and only a browser exercises that branch.
+    await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
   });
 
   test('marks no tool as the one being read', async ({ page }) => {

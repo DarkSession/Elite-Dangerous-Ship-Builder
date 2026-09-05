@@ -3,7 +3,7 @@
   "app.tagline": "Tools for Elite Dangerous.",
   "app.description": "Nav Beacon is a set of Elite Dangerous tools. Ship Builder is its outfitting bench: pick a hull, outfit it, read the numbers, and share a build as a link.",
   "app.document-title": "{{page}} · {{app}}",
-  "app.document-title.default": "Nav Beacon - Elite Dangerous Commander Tools",
+  "app.document-title.default": "Nav Beacon – Elite Dangerous Commander Tools",
   "shell.banner.label": "Application",
   "shell.tools.label": "Tools",
   "shell.context.label": "Current view",

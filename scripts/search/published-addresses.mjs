@@ -60,10 +60,9 @@ export const SITE_CARD = 'assets/link-card.png';
  * that route declares. `'**'` is absent because a wildcard is not an address
  * (the checker's `UNLISTABLE_ROUTES` agrees).
  *
- * `''` is here, and used not to be. It was a redirect into the ship tool, and a
- * redirect is not an address; it is the start page now, and it is the one
- * address that describes the product rather than one of its tools — which is
- * the address a search for Nav Beacon should return.
+ * `''` is here: it answers with the start page, and is the one address that
+ * describes the product rather than one of its tools — which is the address a
+ * search for Nav Beacon should return.
  */
 export const STATIC_ADDRESSES = [
   { path: '', titleKey: 'app.name', descriptionKey: 'app.description' },
@@ -117,8 +116,8 @@ export function documentTitle(catalogue, page) {
   if (page === null || page.trim().length === 0) {
     return application;
   }
-  // The root's own name is the product's name. Stated once, as
-  // `resolveDocumentTitle` states it.
+  // The root's own name is the product's name, so the root carries the product's
+  // own title rather than its name twice over. As `resolveDocumentTitle` states it.
   if (page.trim() === catalogue['app.name']) {
     return application;
   }
