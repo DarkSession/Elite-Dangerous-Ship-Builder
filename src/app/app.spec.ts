@@ -594,11 +594,11 @@ describe('App, waiting for a screen', () => {
   const skeletonOf = (fixture: ComponentFixture<App>) =>
     (fixture.nativeElement as HTMLElement).querySelector('ednb-skeleton');
 
-  it('holds the frame open until every chunk of one navigation has arrived', () => {
-    // A cold arrival at a child address resolves the parent's component and the
-    // child's together, so both starts arrive before either end. Counted rather
-    // than flagged: a flag reports the fetch over when the first of the two
-    // lands, and the frame goes blank for the rest of it.
+  it('holds the frame open past the fetch, until the screen is there', () => {
+    // The chunk landing and the screen arriving are two moments, and one
+    // navigation can ask for more than one chunk: a cold arrival at a child
+    // address resolves the parent's component and the child's together. The
+    // wait ends where the screen does, so neither gap leaves the frame blank.
     const { fixture, publish } = shell();
     const parent = someRoute('ships');
     const child = someRoute(':hull');
@@ -606,11 +606,26 @@ describe('App, waiting for a screen', () => {
     publish(new RouteConfigLoadStart(parent));
     publish(new RouteConfigLoadStart(child));
     publish(new RouteConfigLoadEnd(parent));
+    publish(new RouteConfigLoadEnd(child));
     fixture.detectChanges();
 
     expect(skeletonOf(fixture)).not.toBeNull();
 
-    publish(new RouteConfigLoadEnd(child));
+    fixture.componentInstance.routeActivated();
+    fixture.detectChanges();
+
+    expect(skeletonOf(fixture)).toBeNull();
+  });
+
+  it('keeps the screen a Commander is reading while the next one loads', () => {
+    // The router leaves a screen activated until the next is ready, which is
+    // the behaviour worth having. A skeleton over it would take a screen away
+    // to say another was coming (011/FR-029).
+    const { fixture, publish } = shell();
+    fixture.componentInstance.routeActivated();
+    fixture.detectChanges();
+
+    publish(new RouteConfigLoadStart(someRoute('equipment')));
     fixture.detectChanges();
 
     expect(skeletonOf(fixture)).toBeNull();

@@ -3,6 +3,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 /** What closes the body above the footer, where anything does. */
 export type LayerFooterRule = 'none' | 'section' | 'quiet';
 
+/** How far apart the answers on the trailing edge stand. */
+export type LayerFooterSpacing = 'tight' | 'inline';
+
 /**
  * A layer's closing row: what the layer has to say on the leading edge, and
  * what it offers on the trailing one.
@@ -30,5 +33,14 @@ export class LayerFooter {
    */
   readonly rule = input<LayerFooterRule>('none');
 
-  readonly classes = computed(() => `footer footer--rule-${this.rule()}`);
+  /**
+   * The gap between the answers.
+   *
+   * Two values because the layers draw them at two widths: the exchange layers
+   * set a pair of answers close together, and the save layer sets its own at the
+   * inline measure.
+   */
+  readonly spacing = input<LayerFooterSpacing>('tight');
+
+  readonly classes = computed(() => `footer footer--rule-${this.rule()} footer--${this.spacing()}`);
 }

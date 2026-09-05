@@ -20,10 +20,10 @@ describe('Skeleton', () => {
     expect(block?.textContent).toContain('This screen is loading.');
   });
 
-  it('marks the status as no longer busy, so the sentence is announced', () => {
+  it('carries no aria-busy, so nothing holds the sentence back', () => {
     // A live region carrying `aria-busy` is one an assistive technology holds
     // back until the flag drops. This region only exists while the wait is on,
-    // so the flag would suppress the single announcement it exists to make.
+    // so the flag would suppress any reading of it at all.
     const host = render({ label: 'This screen is loading.' });
 
     expect(host.querySelector('[role="status"]')?.hasAttribute('aria-busy')).toBe(false);

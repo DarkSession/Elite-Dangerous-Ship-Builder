@@ -15,23 +15,23 @@ otherwise leave a blank region.
 
 Both stand where the content will be. Neither stands in a corner, and neither covers the screen.
 
-## Text, and what is announced
+## Text, and what is read
 
-The skeleton's bars are hidden from a reader. Its sentence is not, and the region is a `status`, so a
-Commander who cannot see the bars is told that the screen is loading.
+The skeleton's bars are hidden from a reader. Its sentence is not: the region carries words for what
+is pending, so the shapes supplement a sentence rather than stand in place of one.
+
+The region is a `status`. A live region is read when its content changes, and this one is mounted
+with its sentence already in it, so the reading a Commander gets is the one they reach rather than
+one the region is relied on to make. The words are the promise here; the announcement is not.
 
 The region carries no `aria-busy`. An assistive technology holds a live region marked busy until the
-flag drops, and this region exists only while the wait is on. The flag would suppress the one
-announcement the region exists to make.
+flag drops, and this region exists only while the wait is on. The flag would suppress any reading of
+it at all.
 
-The skeleton announces on a cold arrival at an address, which is the one case where nothing is
-activated behind it. It does not announce on a move between two screens, because it is not drawn
-there.
-
-The waiting mark announces nothing on its own. A screen that draws it has its own sentence: the hull
-illustration describes its picture, and the schematic describes its plate. A live region here would
-state the same fact a second time. This is the feedback contract's rule of one event and one notice,
-applied to a state.
+The waiting mark carries no words of its own. A screen that draws it has its own sentence: the hull
+illustration describes its picture, and the schematic describes its plate. A second region here would
+state the same fact twice. This is the feedback contract's rule of one event and one notice, applied
+to a state.
 
 ## Motion
 
@@ -48,19 +48,22 @@ CC BY-NC-SA 4.0, and that rule is an adaptation of it. Root `LICENSE` records th
 | Wait                                    | What is on the way                                      | What the Commander sees                                            |
 | --------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
 | First arrival at any address            | The route's own chunk                                   | A page skeleton inside the frame, where the screen will be         |
-| First arrival at a hull's own address   | The catalogue chunk and the hull-detail chunk, together | A page skeleton, until both have arrived                           |
+| First arrival at a hull's own address   | The catalogue chunk and the hull-detail chunk, together | A page skeleton, until the screen is drawn                         |
 | The first hull opened from the manifest | The hull-detail chunk                                   | A skeleton in the inspector, where the hull will be                |
 | The exchange block, first opening       | The SLEF codec and both layers                          | A layer holding a skeleton, once the wait is perceptible           |
 | The library block, first opening        | The library layer                                       | The same                                                           |
 | A build link arriving with the page     | The link codec and its table                            | A skeleton where the build will be, and a sentence naming the link |
 | A hull illustration                     | The picture                                             | The waiting mark on the reserved plate, and the plate's sentence   |
-| A hull schematic                        | The mount geometry, and then the drawing                | The waiting mark on the plate until both have arrived              |
+| A hull schematic                        | The mount geometry the marks are placed from            | The waiting mark on the plate, and the plate's own sentence        |
 
 `/ships/:hull` is a child address, so a cold arrival there fetches two chunks. The router asks for
-both at once and activates the screen when both have arrived. The page skeleton counts the fetches
-rather than flagging them, so it stands for the whole of that wait and not only for the first of the
-two. The inspector draws no second skeleton there, because the page skeleton already stands over the
-whole screen.
+both at once and activates the screen when both have arrived. The page skeleton is raised by the
+first fetch and lowered by the screen, not by the fetch, so it stands for the whole of that wait —
+across both chunks, and across the gap between the last one landing and the screen being drawn.
+
+The inspector draws no second skeleton on that arrival. It cannot: the router resolves the catalogue
+and the hull together, so the catalogue does not exist to draw anything while its own chunk is on the
+wire. The page skeleton is the whole of what a cold arrival shows.
 
 Opening a hull from the manifest is the inspector's own case. The manifest is already drawn, the
 hull's screen is a chunk of its own, and the skeleton holds the rail for that fetch. The rail reads

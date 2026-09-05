@@ -56,6 +56,13 @@ A domain composite in `src/app/ui/outfitting` or `src/app/ui/equipment` is outsi
 carries a declaration all the same, because FR-004 applies to every exported component and the
 catalogue is where a state is reviewed.
 
+The catalogue renders a declaration from its inputs alone. A component that
+projects content therefore stands in the catalogue with its slots empty, and
+what a call site puts in them — the way out of an empty state, the answers in a
+layer's foot, the format list and the format beside it — is reviewed on the
+screens that pass it. The declaration states what the empty shell is expected to
+do, and never what the projected content does.
+
 One kind of control cannot be reviewed here. The catalogue is swept under expanded copy, and that
 sweep requires every button on the page to carry visible text. A control whose whole reading is its
 accessible name carries none, so the sweep reports it as a control that lost its label. The pip

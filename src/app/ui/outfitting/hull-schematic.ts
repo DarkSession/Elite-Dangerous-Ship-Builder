@@ -320,49 +320,28 @@ export class HullSchematic {
     return source !== null && this.#failedSource() === source;
   });
 
-  /**
-   * The picture that has arrived, if one has.
-   *
-   * A side is two requests, and the mount extract is only the first of them.
-   * Its arrival is what turns the plate `ready`, while the rendering is still
-   * on the wire. The mark stands until the picture arrives, because marks and
-   * leader lines over an empty frame say the hull has no drawing.
-   *
-   * Recorded as *which* file arrived rather than as a flag, for the reason the
-   * failure beside it is: a different picture has not arrived until it says so.
-   */
-  readonly #arrivedSource = signal<string | null>(null);
-
-  readonly pictureLoaded = computed(() => {
-    const source = this.artworkSource();
-    return source !== null && this.#arrivedSource() === source;
-  });
-
-  pictureArrived(): void {
-    this.#arrivedSource.set(this.artworkSource());
-  }
-
   /** The drawing is shown when there is one and its picture has not failed. */
   readonly showsDrawing = computed(() => this.document() !== null && !this.pictureFailed());
 
   /**
-   * The plate is waiting: for its mounts, or for the drawing they go on.
+   * The plate is waiting for the side it draws.
    *
-   * One state for both, because a Commander is waiting for the same thing
-   * either way — the hull — and the plate says so in the same words.
+   * Read from the fetch the plate reports and from nothing else. Waiting for
+   * the rendering to paint as well would read the picture's own `load`, and a
+   * plate that never hears one has no way back: it would keep saying the hull
+   * is on its way, with every mount hidden under it, for the rest of the
+   * session. The state a Commander is told is the one the plate can always
+   * leave.
    */
-  readonly isWaiting = computed(
-    () => this.isLoading() || (this.showsDrawing() && !this.pictureLoaded()),
-  );
+  readonly isWaiting = computed(() => this.isLoading());
 
   /**
    * What the plate reports it is, which is not always what the fetch reported.
    *
-   * A ready extract whose picture failed is not a ready plate, and one whose
-   * picture has not arrived yet is not a ready plate either — its mounts are
-   * hidden until the drawing they sit on is there. The attribute exists so a
-   * test reads the state off the element rather than off the colour, which is
-   * only true while it names the state the plate is actually in.
+   * A ready extract whose picture failed is not a ready plate. The attribute
+   * exists so a test reads the state off the element rather than off the
+   * colour, which is only true while it names the state the plate is actually
+   * in.
    */
   readonly plateState = computed(() => {
     if (this.pictureFailed()) {
@@ -371,8 +350,8 @@ export class HullSchematic {
     return this.isWaiting() ? 'loading' : this.view().state.kind;
   });
 
-  pictureUnavailable(): void {
-    this.#failedSource.set(this.artworkSource());
+  pictureUnavailable(event: Event): void {
+    this.#failedSource.set(pictureOf(event));
   }
 
   /**
@@ -632,4 +611,17 @@ export class HullSchematic {
   isSelected(occurrence: MountOccurrence): boolean {
     return occurrence.item.key === this.view().selectedKey;
   }
+}
+
+/**
+ * The file an image event is about.
+ *
+ * Read from the element the event came from rather than from the source the
+ * component holds now. A picture is replaced when the hull or the side changes,
+ * and the event queued for the picture before it arrives after that: asking the
+ * component would let the old file answer for the new one, and mark a drawing
+ * that is still on the wire as one that failed.
+ */
+function pictureOf(event: Event): string | null {
+  return (event.target as Element | null)?.getAttribute('href') ?? null;
 }

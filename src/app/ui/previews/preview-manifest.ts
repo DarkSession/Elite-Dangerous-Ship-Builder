@@ -4744,7 +4744,7 @@ registerPreview({
       },
       [
         'names the absence in a heading a reader can land on',
-        'the way out of the absence is projected under the words',
+        'states the absence in a sentence under it, and names no control in doing so',
       ],
       ['normal', 'expanded-copy', 'rtl', 'long-identity'],
     ),
@@ -4838,7 +4838,7 @@ registerPreview({
   contract: contract(
     'layer-footer',
     {
-      role: 'group',
+      role: 'generic',
       visibleNameMatchesAccessibleName: false,
       exposedStates: [],
       relationships: [],
@@ -4850,10 +4850,10 @@ registerPreview({
     state(
       'default',
       { rule: 'section' },
-      ['the answers sit at the trailing edge and wrap rather than squeeze'],
+      ['the rule above the row is the section hairline, drawn the width of the foot'],
       ['normal', 'expanded-copy', 'rtl'],
     ),
-    state('empty', { rule: 'none' }, ['a foot with no answers draws no rule and no row']),
+    state('empty', { rule: 'none' }, ['a foot that closes nothing above it draws no rule']),
     notApplicable('loading', 'The foot is a container; the controls in it own any busy state.'),
     notApplicable('error', 'The foot is a container; its layer owns any failure.'),
     notApplicable(
@@ -4883,8 +4883,8 @@ registerPreview({
       'default',
       { title: 'Export this build', dismissLabel: 'Close', open: true },
       [
-        'the format list and the chosen format stand side by side where there is room',
-        'the content region keeps one height whichever format is chosen',
+        'the two regions stand side by side where there is room, divided by one hairline',
+        'the content region holds its declared height with nothing in it',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion'],
       // Isolated: an open modal makes everything behind it inert, which is

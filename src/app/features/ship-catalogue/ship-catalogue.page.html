@@ -51,15 +51,19 @@
        never focusable. -->
   <div class="catalogue__inspector" tabindex="0" role="group" [attr.aria-label]="inspectorLabel()">
     <!--
-      A hull opened straight from its own address arrives here before its screen
-      does: the rail is drawn because the address names a hull, and the chunk
-      that fills it is still on the wire. The skeleton holds the hull's place,
-      so the rail is never a named group with nothing in it (011/FR-029).
+      The first hull opened from the manifest is a chunk of its own, and the rail
+      beside the list is drawn before it lands. The skeleton holds the hull's
+      place, so the rail is never a named group with nothing in it (011/FR-029).
+
+      A hull opened straight at its own address is the page's case rather than
+      this one: the router resolves this screen and the hull's together, so this
+      screen does not exist yet to draw anything, and the frame's own skeleton
+      stands over the whole page.
     -->
     @if (detailWaiting()) {
       <ednb-skeleton [label]="detailLoadingLabel()" [lines]="5" />
     }
 
-    <router-outlet (activate)="detailActivated()" (deactivate)="detailDeactivated()" />
+    <router-outlet (activate)="detailActivated()" />
   </div>
 </div>

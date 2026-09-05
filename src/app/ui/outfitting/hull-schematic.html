@@ -19,7 +19,7 @@
     arriving late moves nothing on the page. It is also the positioning
     container for the marks, and its own container query is what scales them.
   -->
-  <div class="schematic__frame" [class.schematic__frame--pending]="isWaiting()" #plateFrame>
+  <div class="schematic__frame" #plateFrame>
     @if (showsDrawing()) {
       <!--
         The hull, turned a quarter turn and centred in the plate. `viewBox` and
@@ -64,8 +64,7 @@
               [attr.y]="artworkBox().y"
               [attr.width]="artworkBox().width"
               [attr.height]="artworkBox().height"
-              (load)="pictureArrived()"
-              (error)="pictureUnavailable()"
+              (error)="pictureUnavailable($event)"
             />
           </g>
         </svg>

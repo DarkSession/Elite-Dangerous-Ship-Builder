@@ -60,18 +60,6 @@
   pointer-events: none;
 }
 
-// While the drawing is on its way the plate holds the waiting mark alone.
-//
-// The hull, its leaders and its marks are in the document before the drawing
-// has decoded, because the picture has to be there to be fetched and the marks
-// are placed from the same coordinates it is. Hidden rather than absent: a mark
-// over a half-drawn plate points at nothing, and `visibility` takes the marks
-// out of the reading and out of the tab order without tearing them down and
-// rebuilding them when the fetch lands.
-.schematic__frame--pending :is(.schematic__picture, .schematic__leaders, .schematic__mount) {
-  visibility: hidden;
-}
-
 // Fills the frame exactly, so a percentage on a mark and a coordinate in the
 // drawing land on the same point: the `viewBox` is the frame's own rectangle
 // and `preserveAspectRatio` therefore has nothing left to letterbox.

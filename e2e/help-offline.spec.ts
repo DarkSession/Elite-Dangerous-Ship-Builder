@@ -51,10 +51,13 @@ async function quiet(page: Page): Promise<void> {
 
   page.on('request', tally);
   try {
-    while (seen !== asked) {
+    // Bounded, so a page that asks for something on a timer fails here saying
+    // it never settled rather than running out the whole test budget.
+    for (let round = 0; round < 8 && seen !== asked; round += 1) {
       seen = asked;
       await page.waitForTimeout(700);
     }
+    expect(asked, 'the screen never stopped asking for things').toBe(seen);
   } finally {
     page.off('request', tally);
   }

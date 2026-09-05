@@ -11,7 +11,6 @@ import {
   NavigationEnd,
   NavigationError,
   type Route,
-  RouteConfigLoadEnd,
   RouteConfigLoadStart,
   Router,
   RouterOutlet,
@@ -114,19 +113,18 @@ export class ShipCataloguePage {
    * is false for the whole of the wait it would be describing. A hull whose
    * chunk is already fetched draws no skeleton at all, because the router asks
    * for nothing and reports nothing.
+   *
+   * Lowered by the hull screen arriving rather than by its chunk landing. The
+   * two are not the same moment, and a skeleton taken down at the end of the
+   * fetch leaves the rail a named group with nothing in it for the gap between
+   * them.
    */
   readonly #detailLoading = signal(false);
 
-  readonly #detailActive = signal(false);
-
-  readonly detailWaiting = computed(() => this.#detailLoading() && !this.#detailActive());
+  readonly detailWaiting = this.#detailLoading.asReadonly();
 
   detailActivated(): void {
-    this.#detailActive.set(true);
-  }
-
-  detailDeactivated(): void {
-    this.#detailActive.set(false);
+    this.#detailLoading.set(false);
   }
 
   /**
@@ -239,9 +237,6 @@ export class ShipCataloguePage {
     this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event instanceof RouteConfigLoadStart && this.#isDetailRoute(event.route)) {
         this.#detailLoading.set(true);
-      }
-      if (event instanceof RouteConfigLoadEnd && this.#isDetailRoute(event.route)) {
-        this.#detailLoading.set(false);
       }
       if (
         event instanceof NavigationEnd ||

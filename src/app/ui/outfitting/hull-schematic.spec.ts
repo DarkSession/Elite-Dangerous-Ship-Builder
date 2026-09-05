@@ -325,52 +325,58 @@ describe('HullSchematic', () => {
 });
 
 /**
- * The second of a side's two requests.
- *
- * The mount extract turns the plate `ready` while its rendering is still on the
- * wire. What the plate says and what it reports it is have to follow the whole
- * wait, not the first half of it (011/FR-029).
+ * What the plate says while its side is on its way, and whose picture it
+ * believes (011/FR-029).
  */
-describe('HullSchematic, waiting for the drawing', () => {
-  function readyWithoutPicture() {
-    const fixture = renderComponent(HullSchematic, { view: view() });
+describe('HullSchematic, waiting for its side', () => {
+  function loading() {
+    const fixture = renderComponent(HullSchematic, {
+      view: view({ state: { kind: 'loading' } satisfies SideAssetState }),
+    });
     fixture.detectChanges();
     return fixture;
   }
 
-  it('says the side is on its way while its drawing is', () => {
+  it('says the side is on its way rather than waiting in silence', () => {
     // The mark beside these words is hidden from a reader, so a plate that said
     // nothing here would say nothing at all for the length of the fetch.
-    const fixture = readyWithoutPicture();
+    const fixture = loading();
 
     expect(textOf(query(fixture, '.schematic__spoken')).length).toBeGreaterThan(0);
-  });
-
-  it('reports the state it is in, not the state the extract arrived in', () => {
-    // `data-state` exists so a test reads the state off the element rather than
-    // off the colour, which is only true while it names the state the plate is
-    // actually in.
-    const fixture = readyWithoutPicture();
-
     expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('loading');
   });
 
-  it('holds the mounts back until the drawing they sit on is there', () => {
-    // Drawn over an empty frame, a numbered mount and its leader say the hull
-    // has no drawing rather than that one is coming.
-    const fixture = readyWithoutPicture();
-
-    expect(query(fixture, '.schematic__frame').classList).toContain('schematic__frame--pending');
-  });
-
-  it('gives the plate over to the drawing once it arrives', () => {
-    const fixture = readyWithoutPicture();
-
-    query(fixture, '.schematic__drawing image').dispatchEvent(new Event('load'));
+  it('leaves the wait when the side arrives, whatever its picture does', () => {
+    // The picture's own `load` is not part of this. A plate that waited for one
+    // and never heard it would keep saying the hull is on its way for the rest
+    // of the session, and no reader could tell it otherwise.
+    const fixture = renderComponent(HullSchematic, { view: view() });
     fixture.detectChanges();
 
     expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('ready');
-    expect(element(fixture).querySelector('.schematic__frame--pending')).toBeNull();
     expect(element(fixture).querySelectorAll('.schematic__mount').length).toBe(1);
+  });
+
+  it('lets a picture report only its own failure', () => {
+    // A side is replaced when the hull or the side changes, and the event
+    // queued for the picture before it arrives after that. Taken from the
+    // component, the old file would answer for the new one and put a plate that
+    // is drawing correctly into `temporarilyUnavailable`.
+    const fixture = renderComponent(HullSchematic, { view: view() });
+    fixture.detectChanges();
+
+    const stale = new Event('error');
+    Object.defineProperty(stale, 'target', {
+      value: { getAttribute: () => 'assets/schematics/Python/top.png' },
+    });
+    query(fixture, '.schematic__drawing image').dispatchEvent(stale);
+    fixture.detectChanges();
+
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('ready');
+
+    query(fixture, '.schematic__drawing image').dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+
+    expect(query(fixture, '.schematic').getAttribute('data-state')).toBe('temporarilyUnavailable');
   });
 });

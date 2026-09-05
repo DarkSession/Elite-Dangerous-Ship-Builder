@@ -327,10 +327,10 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     journey: 'product/semantics',
     axe: true,
     assertions: [
-      'what is pending is said in words, so the bars and the mark are a supplement',
+      'what is pending is written beside the bars, so the shapes are a supplement to a sentence',
       'the served waiting mark carries its own reduced-motion rule, which no check inside the page can read',
     ],
-    manualRecord: 'screen-reader',
+    manualRecord: null,
   },
   {
     surfaceId: 'preview/component-catalogue',

@@ -1,6 +1,12 @@
 import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { RouteConfigLoadEnd, RouteConfigLoadStart, Router, type Route } from '@angular/router';
+import {
+  NavigationCancel,
+  RouteConfigLoadEnd,
+  RouteConfigLoadStart,
+  Router,
+  type Route,
+} from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
 import { provideLocalization } from '../../i18n/i18n.providers';
@@ -65,10 +71,10 @@ describe('ShipCataloguePage, waiting for a hull', () => {
     expect(skeletonOf(host)).not.toBeNull();
   });
 
-  it('gives the rail over to the hull once its screen is there', () => {
-    // Two conditions, and the fetch is only the first. The chunk arrives before
-    // the screen is activated, so taking the skeleton down on the fetch alone
-    // would leave the rail a named group with nothing in it.
+  it('holds it past the chunk, until the hull’s screen is there', () => {
+    // The chunk landing and the screen arriving are two moments. Taking the
+    // skeleton down at the first leaves the rail a named group with nothing in
+    // it for the gap between them.
     const { fixture, publish } = page();
     const host = fixture.nativeElement as HTMLElement;
 
@@ -76,14 +82,45 @@ describe('ShipCataloguePage, waiting for a hull', () => {
     publish(new RouteConfigLoadEnd(detailRoute()));
     fixture.detectChanges();
 
+    expect(skeletonOf(host)).not.toBeNull();
+
+    fixture.componentInstance.detailActivated();
+    fixture.detectChanges();
+
     expect(skeletonOf(host)).toBeNull();
   });
 
-  it('draws nothing for a hull whose chunk is already fetched', () => {
-    // The router reports only a chunk it has to fetch, so a second hull opens
-    // with no wait to draw.
-    const { fixture } = page();
+  it('draws nothing for a chunk that is not the hull screen’s', () => {
+    // The rail answers its own child and nothing else. Every other screen in
+    // the application is a chunk too, and one fetched from here would otherwise
+    // put a skeleton in a rail that is not waiting for it.
+    const { fixture, publish } = page();
+    const host = fixture.nativeElement as HTMLElement;
+    const other = TestBed.inject(Router).config.find(
+      (route) => route.path !== 'ships' && route.loadComponent !== undefined,
+    );
 
-    expect(skeletonOf(fixture.nativeElement as HTMLElement)).toBeNull();
+    expect(other).toBeDefined();
+
+    publish(new RouteConfigLoadStart(other as Route));
+    fixture.detectChanges();
+
+    expect(skeletonOf(host)).toBeNull();
+  });
+
+  it('gives up the wait when the navigation ends without a hull', () => {
+    // The router reports the end of a fetch that succeeded and says nothing
+    // about one that failed, so nothing else would take this skeleton down.
+    const { fixture, publish } = page();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(detailRoute()));
+    fixture.detectChanges();
+    expect(skeletonOf(host)).not.toBeNull();
+
+    publish(new NavigationCancel(1, '/ships/Anaconda', ''));
+    fixture.detectChanges();
+
+    expect(skeletonOf(host)).toBeNull();
   });
 });

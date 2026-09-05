@@ -25,6 +25,7 @@ import { StatusNotice } from '../../ui/components/status/status-notice';
   selector: 'ednb-hull-detail-unknown-hull',
   imports: [ActionLink, EmptyState, RouterLink, StatusNotice],
   templateUrl: './hull-detail-unknown-hull.html',
+  styleUrl: './hull-detail-unknown-hull.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HullDetailUnknownHull {

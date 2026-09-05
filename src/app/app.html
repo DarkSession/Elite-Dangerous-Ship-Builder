@@ -49,7 +49,7 @@
     fetch, so the layer that arrives a moment later arrives closed.
   -->
   <ednb-layer
-    [open]="true"
+    [open]="exchangeWanted()"
     [title]="exchangePendingTitle()"
     [dismissLabel]="dismissLabel()"
     (dismissed)="cancelExchange()"
@@ -76,7 +76,7 @@
   }
 } @loading (after 200ms; minimum 400ms) {
   <ednb-layer
-    [open]="true"
+    [open]="library.open()"
     [title]="libraryPendingTitle()"
     [dismissLabel]="dismissLabel()"
     (dismissed)="library.lower()"

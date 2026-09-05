@@ -313,6 +313,11 @@ export class BuildWorkspacePage {
     let live = true;
 
     void restored
+      // A restore that fails changes persistence and nothing else. The ingest
+      // still has to run: it is what lowers the coordinator's reading state,
+      // and a workspace that never reached it would hold the skeleton over an
+      // empty build for the rest of the session.
+      .catch(() => undefined)
       .then(() => this.#link.ingest(this.#location.fragment()))
       .then(() => {
         if (!live) {

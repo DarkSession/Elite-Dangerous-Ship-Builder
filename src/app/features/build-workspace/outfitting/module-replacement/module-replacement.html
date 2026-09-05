@@ -123,6 +123,11 @@
   @if (asLayer()) {
     <div class="replacement__foot">
       <div class="replacement__actions">
+        <!--
+          `replacement__cancel` carries no rule of its own. It names this one
+          control for the journeys that reach the way out of the layer, which
+          would otherwise have to find it by its position among the actions.
+        -->
         <ednb-action-button
           class="replacement__cancel"
           [label]="cancelLabel()"

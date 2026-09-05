@@ -21,8 +21,14 @@
 }
 
 .footer__actions {
-  @include layout.wrapping-row(var(--ednb-space-inline-tight));
-
   flex: 0 0 auto;
   justify-content: flex-end;
+}
+
+.footer--tight .footer__actions {
+  @include layout.wrapping-row(var(--ednb-space-inline-tight));
+}
+
+.footer--inline .footer__actions {
+  @include layout.wrapping-row(var(--ednb-space-inline));
 }

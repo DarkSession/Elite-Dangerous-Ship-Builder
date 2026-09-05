@@ -1,0 +1,7 @@
+// The state is a sibling of the populated screen rather than a region inside
+// it, so it takes a block of its own. Everything it draws — the measure, the
+// stack and the centring below the wide composition — belongs to the shared
+// empty state and is declared there.
+:host {
+  display: block;
+}

@@ -11,9 +11,10 @@ export type EmptyStateAlign = 'centre' | 'leading';
  * to the shipyard on one screen, a notice and a link on another, nothing at all
  * on a third.
  *
- * The heading is an `h2` at every call site. Each site sits one level under the
- * heading above it — a screen's `h1`, or a layer's own title — so a level of its
- * own would be a second outline decision made in three places.
+ * The heading is an `h2` at every call site. On a screen it sits one level under
+ * that screen's `h1`; in a layer it stands beside the layer's own title, which
+ * is an `h2` as well, and names the state of the list the title named. A level
+ * of its own would be a second outline decision made in three places.
  *
  * It says what is not there. It never says a screen is empty while the screen
  * is still finding out — that is a waiting state, and `Skeleton` draws it
