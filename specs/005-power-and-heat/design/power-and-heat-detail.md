@@ -403,8 +403,9 @@ Pressing the block a bank already stands at gives the pip back. A block is fille
 edge, so a bank standing on a half fills half a block, and no block stands for a bank at 1.5 pips.
 
 **The four blocks are one shared component** (`ui/outfitting/pip-control`). This feature draws them
-in two places: the status rail's pip sets and this table's cells. The canvas draws the same control
-at the same size in both. Two copies of one control drift apart, so there is one component.
+in two places: the status rail's pip sets and this table's cells. The canvas draws 14 pixels in the
+rail and 16 in the table; both are drawn here at the target floor below, which is one size. Two
+copies of one control drift apart, so there is one component.
 
 The component takes the bank's name, its blocks and its colour key. It reports the pip a Commander
 presses. This feature owns the allocation and decides what the press does.

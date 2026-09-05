@@ -652,8 +652,9 @@ $bench-bounded-min-height: 65.5rem;
 // bottom of it while the column scrolls under it. The raised ground and the
 // hairline are what separate it from the rows passing beneath.
 //
-// Whether it gives the pin up on a short viewport is the caller's: two of the
-// three release it there, and the third is inside a layer that bounds itself.
+// Whether it gives the pin up on a short viewport is the caller's. Each of the
+// three states its own release, at the threshold the command bar and the bench
+// release on.
 @mixin panel-foot($rule: var(--ednb-border-quiet)) {
   position: sticky;
   inset-block-end: 0;
