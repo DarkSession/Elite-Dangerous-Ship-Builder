@@ -4,6 +4,7 @@ import germanMessages from '../src/app/i18n/locales/de.json';
 import { sweepOutfittingState } from './accessibility';
 import { expectNoDocumentOverflow, settled } from './accessibility/assertions';
 import { DOUBLED_TEXT, withRootTextScale } from './accessibility/text-scale';
+import { openChooser, revealMount, surfacesAreLayers } from './outfitting-surfaces';
 import { buildStockHull } from './shell';
 
 /**
@@ -24,6 +25,9 @@ import { buildStockHull } from './shell';
  */
 
 const HULL = 'Anaconda';
+
+/** The mount the stock hull carries its shield generator in. */
+const GENERATOR_SLOT = 'Slot03_Size6';
 
 /** Creates a stock build and opens the anatomy region's `DEFENCE` mode. */
 async function openDefence(page: Page, messages = englishMessages): Promise<void> {
@@ -397,6 +401,89 @@ test.describe('reading the build', () => {
       const width = await rule.evaluate((node) => node.getBoundingClientRect().width);
       expect(width).toBeGreaterThan(card / 2);
     }
+  });
+});
+
+test.describe('a shield the package refuses', () => {
+  test('states the reason once rather than under the strength and the recovery both', async ({
+    page,
+  }, testInfo: TestInfo) => {
+    // The mount is emptied before the mode is opened, because the chooser is a
+    // layer at compact width and the mode strip is behind it.
+    await page.goto(`/ships/${HULL}`);
+    await buildStockHull(page, englishMessages['hullDetail.create']);
+    await revealMount(page, GENERATOR_SLOT);
+    await page.locator(`[data-slot-key="${GENERATOR_SLOT}"] button`).first().click();
+    await openChooser(page);
+    await page.getByRole('button', { name: /remove module/i }).click();
+    await expect(page.locator(`[data-slot-key="${GENERATOR_SLOT}"]`)).toContainText(/empty/i);
+    if (await surfacesAreLayers(page)) {
+      await expect(page.locator('.replacement')).toHaveCount(0);
+    }
+
+    await openMode(page, englishMessages['anatomy.mode.defence']);
+    const card = page.locator('ednb-defence-analysis .card--shield');
+    await expect(card).toBeVisible();
+
+    // One thing refuses two readings, and the package returns the same issue in
+    // both. A Commander is given it once: one unavailable state, one reason,
+    // and no recovery block repeating it underneath (FR-003).
+    await expect(card.locator('.issue')).toHaveCount(1);
+    await expect(card.locator('ednb-unavailable-value')).toHaveCount(1);
+    await expect(card.locator('.issue')).toHaveText(/shield generator/i);
+
+    // Nothing stands in for the result the package declined.
+    await expect(card.locator('.damage')).toHaveCount(0);
+    await expect(card.locator('.card__pool')).toHaveCount(0);
+    await expect(card.locator('.sources')).toHaveCount(0);
+
+    // And the hull card is untouched by any of it.
+    await expect(pool(page, 'card--armour')).toBeVisible();
+    await expect(page.locator('ednb-defence-analysis .card--armour .damage tbody tr')).toHaveCount(
+      4,
+    );
+
+    // The ledger carries this surface with a scan of its own, and the refusal
+    // is the half of it a complete build never draws.
+    await sweepOutfittingState(page, testInfo, 'defence-analysis/refused');
+  });
+
+  test('gives a generator switched off a different reason from one that is not fitted', async ({
+    page,
+  }) => {
+    // Stating each reason once is not the same as stating them alike. A card
+    // that had collapsed the package's diagnoses into one verdict about the
+    // generator would pass the test above and fail here (FR-003).
+    await page.goto(`/ships/${HULL}`);
+    await buildStockHull(page, englishMessages['hullDetail.create']);
+    await revealMount(page, GENERATOR_SLOT);
+    const mount = page.locator(`.slot[data-slot-key="${GENERATOR_SLOT}"]`);
+
+    // The label is the control: its checkbox is a clipped one-pixel box, so a
+    // click aimed at the box lands on whatever the ledger draws over that point.
+    await mount.locator('.power__switch').click();
+    await expect(mount.locator('.power__toggle')).not.toBeChecked();
+    await settled(page);
+
+    await openMode(page, englishMessages['anatomy.mode.defence']);
+    const issue = page.locator('ednb-defence-analysis .card--shield .issue');
+    await expect(issue).toHaveCount(1);
+    const switchedOff = await issue.innerText();
+
+    // The mount emptied, from the same build. The package names a second
+    // reason, and the card draws that one instead.
+    await revealMount(page, GENERATOR_SLOT);
+    await page.locator(`[data-slot-key="${GENERATOR_SLOT}"] button`).first().click();
+    await openChooser(page);
+    await page.getByRole('button', { name: /remove module/i }).click();
+    await expect(page.locator(`[data-slot-key="${GENERATOR_SLOT}"]`)).toContainText(/empty/i);
+    if (await surfacesAreLayers(page)) {
+      await expect(page.locator('.replacement')).toHaveCount(0);
+      await openMode(page, englishMessages['anatomy.mode.defence']);
+    }
+
+    await expect(issue).toHaveCount(1);
+    await expect(issue).not.toHaveText(switchedOff);
   });
 });
 

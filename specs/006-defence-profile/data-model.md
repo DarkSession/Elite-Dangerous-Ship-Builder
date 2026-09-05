@@ -78,7 +78,8 @@ Rules:
   `fuelCapacity`, `frameShiftDrive`, `powerCapacity`, `powerDraw`, `thrusters` and
   `shieldGenerator`; it has no `cargoCapacity`.
 - `slot` and `symbol` remain exact package identities.
-- No issue is collapsed, reordered, deduplicated or relabeled.
+- No issue is collapsed, reordered, deduplicated or relabeled in the projection. What a region draws
+  from the projected issues is `contracts/shield-profile.md`, "Refusal presentation".
 - Incomplete shield/recovery is a valid package state, not a failed `DefenceProjection`.
 
 ## ShieldSnapshot

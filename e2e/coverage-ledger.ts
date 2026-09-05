@@ -1588,7 +1588,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
   },
   {
     surfaceId: 'build/defence-analysis-shields',
-    requirements: ['006/FR-001', '006/FR-002', '006/SC-001'],
+    requirements: ['006/FR-001', '006/FR-002', '006/SC-001', '006/SC-002'],
     journey: 'defence/analysis',
     axe: true,
     assertions: [
@@ -1614,16 +1614,16 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     axe: true,
     assertions: [
       'a refused shield states every package issue in the order the package gave them',
-      'a missing, disabled and shed generator each keep the reason the package named',
+      'one reason refusing the strength and the recovery alike is stated once, not under both',
+      'a generator that is not fitted and one switched off read as two different reasons',
       'no damage table, no source rows and no headline figure stand in for a refused result',
       'the armour card stays complete while the shield card is unavailable',
-      'a negative resistance stays signed and says weakness in words beside the hatch',
     ],
     manualRecord: 'screen-reader',
   },
   {
     surfaceId: 'build/defence-analysis-recovery',
-    requirements: ['006/FR-004', '006/FR-005'],
+    requirements: ['006/FR-004', '006/FR-005', '006/SC-002'],
     journey: 'defence/analysis',
     axe: true,
     assertions: [

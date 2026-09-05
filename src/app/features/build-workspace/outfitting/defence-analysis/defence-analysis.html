@@ -61,32 +61,41 @@
         </ul>
       }
 
-      <hr class="card__rule" />
+      <!--
+        The recovery block, where there is one. The strength above states its
+        reasons. A recovery with no reason of its own would repeat them, so its
+        block is removed: drawn anyway, it would give a Commander one fault to
+        read as two.
+      -->
+      @if (recoveryShown()) {
+        <hr class="card__rule" />
 
-      @if (recoveryFacts().length > 0) {
-        <ednb-metric-group
-          class="card__facts"
-          [label]="recoveryLabel()"
-          [metrics]="recoveryFacts()"
-        />
-      } @else {
-        <!--
-          The recovery is diagnosed on its own: a shield the package could not
-          read and a recovery it could not read are two answers, and either can
-          arrive without the other.
-        -->
-        <ednb-unavailable-value [label]="recoveryLabel()" />
-        <ul class="issues">
-          @for (issue of recoveryIssues(); track issue.id) {
-            <li class="issue">
-              <ednb-game-text
-                [text]="issue.message.text"
-                [language]="issue.message.language"
-                [translationState]="issue.message.translationState"
-              />
-            </li>
-          }
-        </ul>
+        @if (recoveryFacts().length > 0) {
+          <ednb-metric-group
+            class="card__facts"
+            [label]="recoveryLabel()"
+            [metrics]="recoveryFacts()"
+          />
+        } @else {
+          <!--
+            The recovery is diagnosed on its own: a shield the package could not
+            read and a recovery it could not read are two answers, and the
+            contract keeps them independent. What is drawn here is what this
+            result says and the strength did not.
+          -->
+          <ednb-unavailable-value [label]="recoveryLabel()" />
+          <ul class="issues">
+            @for (issue of recoveryIssues(); track issue.id) {
+              <li class="issue">
+                <ednb-game-text
+                  [text]="issue.message.text"
+                  [language]="issue.message.language"
+                  [translationState]="issue.message.translationState"
+                />
+              </li>
+            }
+          </ul>
+        }
       }
 
       @if (shieldSources().length > 0) {

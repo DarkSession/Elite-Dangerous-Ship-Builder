@@ -43,6 +43,54 @@ The authoritative reasons are `missing`, `unresolved`, `disabled`, `shed` and `i
 failure. Shield/recovery availability uses package hardpoints-retracted power semantics; deployed
 power is not compared or required to agree.
 
+## Refusal presentation
+
+The projection above keeps every issue of every result. What a region draws from them is each
+distinct diagnosis once.
+
+Everything that refuses the strength refuses the recovery too. Both calls resolve the same
+generator and the same retracted power state first, and the recovery reads more besides, so whatever
+stops the strength returns as the same issue from the recovery. The rule is therefore per issue
+rather than per result. An issue drawn under the strength is not drawn again under the
+recovery when its `field`, `reason`, `slot`, `symbol` and `params` all match. Every issue that does
+not match one already drawn is drawn, in package order, under its own reading. What a Commander
+reads is one statement of each reason, never the same reason twice.
+
+The unavailable state itself follows the issues it explains. The strength states its own. A recovery
+with no reason of its own would state a second absence for the same fault, so it is left out of the
+region entirely, its unavailable state with it. A recovery refused by anything else keeps that state
+and says what refused it.
+
+Each reason is stated in the Commander's own language where this capability has words for it. The
+package publishes every diagnosis twice: as a machine-readable `field` and `reason` pair, and as an
+English sentence built from a slot key and a module symbol. The pair is what a surface is given to
+act on, and these four are read from the pair:
+
+| Package diagnosis              | What a Commander reads                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------- |
+| `shieldGenerator` / `missing`  | no shield generator is fitted                                                    |
+| `shieldGenerator` / `disabled` | the shield generator is switched off                                             |
+| `shieldGenerator` / `shed`     | the generator has no power, because the build draws more than the plant supplies |
+| `powerCapacity` / `disabled`   | the power plant is switched off                                                  |
+
+Wording a pair is labelling a package result, which principle II sanctions, and it is what lets the
+most common shield states reach a Commander in the language they chose:
+`getCalculationIssueMessage()` answers for English and returns `null` for every other locale. It is
+not a private translation of the package's sentence — that sentence is never read, parsed or
+reproduced here.
+
+Each sentence states its own diagnosis and no other. A `powerCapacity` issue says what the package
+said about the plant and draws no conclusion about the generator, which is the relabelling this
+contract has always refused.
+
+Every other pair keeps the package's own words through `getCalculationIssueMessage()` and the shared
+canonical-language presenter, each issue in package order. Nothing is inferred from another result
+or folded into another diagnosis: the four above and an `unresolved` record are five reasons and
+read as five.
+
+The region states a refusal and nothing else in its place: no headline figure, no damage table, no
+source row and no action.
+
 ## Complete shield mapping
 
 | Presentation fact       | `ShieldMetrics` source                                 | Unit/meaning     |
@@ -109,16 +157,22 @@ No clamp, finite substitute, generic infinity label, truthiness check or mislead
 - Damage values use a semantic table when roomy and equivalent complete labelled cards when stacked.
 - Missing, disabled, shed, unresolved, invalid, negative and unbounded meanings are visible text and
   programmatic state, never colour or bar alone.
+- A refusal is standing content a Commander finds and re-reads, not an announced update. The
+  projection is read again at every build revision and at every pip move, and a refusal that has not
+  changed is not spoken again for either.
 
 ## Verification
 
 - Compare every complete field directly with the same real package result: the bare shield once, and
   the capacitor at 0, 2 and 4 SYS pips.
 - Compare incomplete issue arrays in exact order and with exact fields/identities.
-- Prove missing generator, disabled generator, shed generator, disabled plant and unresolved power
-  remain distinct package diagnoses.
+- Prove missing generator, disabled generator, shed generator and disabled plant each read as their
+  own sentence, and that a diagnosis with no entry in the table keeps the package's own words.
+- Prove one diagnosis refusing the strength and the recovery alike is drawn once, and that the
+  recovery's own unavailable state is removed with it.
+- Prove an issue refusing the recovery and not the strength is still drawn, under the recovery,
+  beside a strength that stands.
 - Prove a retracted-powered/deployed-shed generator remains package-complete for shields.
-- Prove shield/recovery may differ without one result suppressing the other.
 - Prove the bare shield and the capacitor are independent in both directions: a refused capacitor
   withdraws the fifth column and leaves the four bare ones whole, and neither result stands a figure
   in for the other.

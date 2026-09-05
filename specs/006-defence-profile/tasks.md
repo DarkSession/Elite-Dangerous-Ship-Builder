@@ -280,3 +280,41 @@ Found by reading the delivered surface back against `spec.md` and `design/defenc
       still counted the pre-0.2.0 "both shield calls" in its headline while its body already named
       the right two; and T093 credited this branch with a claim it inherited
 - [x] T096 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`
+
+## A refused shield states each reason once (2026-09-05, Commander request)
+
+The `SHIELDS` card drew the same package diagnosis twice — once under the strength and once under
+the recovery. Everything that refuses the strength refuses the recovery too, and the package returns
+the same issue in each result, so a Commander was given one fault to read as two.
+
+The reasons themselves read badly. The package builds its sentence from a raw slot key and a module
+symbol — `Slot03_Size6: Int_ShieldGenerator_Size6_Class1 is not powered with hardpoints retracted` —
+and `getCalculationIssueMessage()` resolves it for English alone, so every other locale reads the
+canonical fallback for the most common shield state there is.
+
+- [x] T097 Amend `spec.md` FR-003 and its edge cases, and add "Refusal presentation" to
+      [contracts/shield-profile.md](./contracts/shield-profile.md): the rule is per issue rather
+      than per result, so an issue drawn under the strength is not drawn again under the recovery,
+      and a recovery refused by nothing else is left out
+- [x] T098 Reconcile [design/defence-profile.md](./design/defence-profile.md),
+      [design/screen-inventory.md](./design/screen-inventory.md), `data-model.md`'s "no issue is
+      deduplicated" rule and `quickstart.md` §4 with the amendment, and replace the stale
+      assertions on `build/defence-analysis-unavailable` in `e2e/coverage-ledger.ts`
+- [x] T099 Draw each reason once in `DefenceAnalysis`: the recovery's issue list holds only what the
+      strength did not already state, and its unavailable state is removed when nothing is left
+- [x] T100 Cover the change in `defence-analysis.spec.ts` and `e2e/defence.spec.ts`: one statement
+      for a missing, a shed and a disabled generator and for a switched-off plant, a recovery
+      refused on its own still stated, and every reason still the package's own words
+- [x] T101 Re-run the feature's e2e specs with the axe scan, then `pnpm run check`. Every stage
+      passed but three, which the development environment cannot run: the five Firefox projects,
+      whose browser the network policy will not fetch; `e2e:timing`, whose 100 ms budget under a
+      throttled CPU is missed on `main` as well; and `e2e:offline`, which fails two of its
+      Chromium tests on `main` as well, on a set that moves between runs. CI is the first to run
+      all three
+- [x] T102 State the four refusals a Commander reaches by outfitting in their own language:
+      `defence.shield.refused.*` in both locales, chosen in `DefenceAnalysis` by the package's own
+      `field` and `reason`. Principle VI reserves the package's diagnostic _messages_ to the
+      Almanac and refuses a private translation of one; the structured pair is data a surface is
+      given to act on, and principle II sanctions labelling a package result. Each sentence states
+      its own diagnosis and no other, so a plant issue draws no conclusion about the generator.
+      Every pair with no entry keeps the package's sentence and its canonical-language disclosure

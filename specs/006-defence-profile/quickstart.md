@@ -57,8 +57,13 @@ disabled plant and unresolved draw cases.
 
 Expected:
 
-- shield and recovery preserve their own complete ordered issue arrays;
+- the projection preserves shield's and recovery's own complete ordered issue arrays;
+- the region states each reason once: an issue drawn under the strength is not drawn again under the
+  recovery, and a recovery refused by nothing else is left out;
+- an issue refusing the recovery and not the strength is still drawn, under the recovery;
 - issue field/reason/slot/symbol remain exact, and nothing stands in their place;
+- the four states a Commander reaches by outfitting read in the active locale; every other
+  diagnosis keeps the package's own message with its canonical language disclosed;
 - plant/draw issues are not relabeled as generator states;
 - a generator powered with hardpoints retracted remains package-complete even if deployment would
   shed its group;

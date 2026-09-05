@@ -58,8 +58,11 @@ module protection for the active build.
   > multiplied here: both columns are `effectiveHitPoints` straight off two package results, and
   > `systemsResistance` is the package's own field.
 
-- **FR-003**: A `null` shield result MUST remain unavailable. A missing, disabled and power-shed
-  generator MUST remain distinguishable through package and build state.
+- **FR-003**: A `null` shield result MUST remain unavailable, and a Commander MUST be told the
+  reason once: one package diagnosis that refuses two readings MUST NOT be presented twice. A
+  missing, disabled and power-shed generator, and a disabled plant, MUST each be stated in the
+  Commander's own language, chosen by the package's own field and reason and by nothing else. Any
+  other diagnosis MUST keep the package's own words. All of them MUST remain distinguishable.
 - **FR-004**: Recovery MUST use `BuildMetrics.shieldRecoveryResult()` and keep the regeneration rate,
   the regeneration time and the recovery time separate readings.
 - **FR-005**: Infinite recovery and effective hit points MUST be expressed by their package meaning
@@ -78,6 +81,8 @@ module protection for the active build.
 ## Edge Cases
 
 - Negative resistance remains negative.
+- One diagnosis that refuses both the strength and the recovery is presented once.
+- A diagnosis that refuses the recovery alone is presented on its own.
 - No banks and all banks unpowered are different states.
 - An unpowered generator produces package-structured unavailable shield and recovery results while
   its power state remains visible.

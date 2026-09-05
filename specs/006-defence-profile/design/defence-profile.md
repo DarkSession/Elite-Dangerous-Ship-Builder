@@ -40,8 +40,9 @@ protection results for the active build without changing the build.
 11. hardness, module protection and module armour;
 12. the armour role groups, each closed by the package's own aggregate.
 
-A refused shield or a refused recovery replaces its own block with the reasons the package gave, in
-the order it gave them, and leaves the rest of the order intact.
+A refused shield replaces its own block with the reasons the package gave, in the order it gave
+them. A refused recovery replaces its own block with the reasons the strength has not already
+stated, and is left out where none is left. The rest of the order is intact either way.
 
 The DOM and screen-reader order always follows this list. At roomy widths the complete shield block
 (items 2–7) and armour block (items 8–12) may appear as peer fluid columns. When either column would
@@ -101,10 +102,26 @@ a pair is only a pair while both halves can hold what is in them.
   them occupied — half a screen of it across the two cards. 26px is what the offence panel's own
   range-band rows already read at, so the two analyses agree. The inset is the cells', so the column
   heads and the scale under the bars close up with the rows.
-- An unavailable result shows every package issue in order. The UI never derives or announces a
-  different generator verdict, and puts no action in their place.
-- Shield and recovery are independent: either complete result remains visible if the other is
-  unavailable.
+- **Each reason is stated once.** Everything that refuses the strength refuses the recovery too:
+  both calls resolve the same generator and the same retracted power state first, and the recovery
+  reads more besides. So the card draws an issue under the strength and does not draw it again under
+  the recovery. A recovery with no reason of its own is left out of the card, its unavailable state
+  with it. A recovery refused by anything else keeps that state and says what refused it.
+- **The four states a Commander reaches by outfitting are stated in plain words.** No generator, a
+  generator switched off, a generator the plant sheds and a plant switched off each get a sentence
+  of this application's own, chosen by the package's `field` and `reason` and by nothing else. The
+  package's English sentence is never read, parsed or reproduced — it opens with a raw slot key and
+  module symbol, and it is the one thing `getCalculationIssueMessage()` cannot give any locale but
+  English. Wording a structured result is labelling it, which principle II sanctions.
+- Every other reason keeps the package's own words, every issue in package order, with its canonical
+  language disclosed. The card derives no verdict of its own and folds no diagnosis into another:
+  the four above and an unresolved record are five reasons and read as five.
+- A refusal is standing content, not an announced update: the projection is read again at every
+  build revision and at every pip move, and an unchanged refusal is not spoken again.
+- No headline, no damage table, no source row and no action stands in for a refused result.
+- Shield and recovery are independent in the one direction the package can reach: a complete
+  strength stands beside a recovery refused on its own, and that refusal is stated. The reverse
+  cannot occur — the recovery resolves the strength's own inputs first.
 - Recovery presents the three readings the canvas draws — the recharge rate, `0→100%` and the broken
   reset. A phase that does not finish has its own phrase; raw “Infinity” is not shown.
 - Role groups are named by what the package resolved and closed by the package's own aggregate. No
@@ -140,20 +157,22 @@ a pair is only a pair while both halves can hold what is in them.
 
 ## State behavior
 
-| State                            | Presentation                                                                        |
-| -------------------------------- | ----------------------------------------------------------------------------------- |
-| no active build                  | Shared no-build state and feature 001 actions; no package read                      |
-| recomputing revision             | Shared pending state for the requested revision; no stale metric payload            |
-| ready                            | Complete projection, current conditions and exact actions                           |
-| shield/recovery unavailable      | All ordered package issues; independent complete sections remain                    |
-| missing/disabled/shed/unresolved | Exact issue field/reason and package-localized diagnostic, and nothing in its place |
-| non-finishing recovery phase     | Field-specific semantic phrase only for the affected duration                       |
-| no banks                         | No reserve line at all                                                              |
-| all banks unpowered              | The reserve line, every bank in it and the word in text                             |
-| negative resistance              | Signed percentage, exact EHP and visible weakness meaning                           |
-| unbounded EHP                    | Field-specific unbounded text with no clamped/substituted number                    |
-| projection failure               | Shared blocking error for current revision; no fabricated/stale payload             |
-| unknown hull ingress             | Rejected before activation by feature 001/004; no Defence surface state             |
+| State                           | Presentation                                                                            |
+| ------------------------------- | --------------------------------------------------------------------------------------- |
+| no active build                 | Shared no-build state and feature 001 actions; no package read                          |
+| recomputing revision            | Shared pending state for the requested revision; no stale metric payload                |
+| ready                           | Complete projection, current conditions and exact actions                               |
+| shield/recovery unavailable     | Each package issue once, in package order; independent complete sections remain         |
+| one reason refusing both        | Stated under the strength; the recovery block is removed with it                        |
+| missing/disabled/shed/plant off | The capability's own sentence for that exact field and reason, and nothing in its place |
+| any other diagnosis             | Exact issue field/reason and package-localized diagnostic, and nothing in its place     |
+| non-finishing recovery phase    | Field-specific semantic phrase only for the affected duration                           |
+| no banks                        | No reserve line at all                                                                  |
+| all banks unpowered             | The reserve line, every bank in it and the word in text                                 |
+| negative resistance             | Signed percentage, exact EHP and visible weakness meaning                               |
+| unbounded EHP                   | Field-specific unbounded text with no clamped/substituted number                        |
+| projection failure              | Shared blocking error for current revision; no fabricated/stale payload                 |
+| unknown hull ingress            | Rejected before activation by feature 001/004; no Defence surface state                 |
 
 ## Responsive and interaction rules
 

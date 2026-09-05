@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { BuildMetrics } from '@elite-dangerous-almanac/core/ships/build-metrics';
+import type { CalculationIssue } from '@elite-dangerous-almanac/core/ships/loadout-calculations';
 import { getModuleBySymbol } from '@elite-dangerous-almanac/core/ships/modules';
 import type { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import type { BuildCandidate } from '../../../../application/active-build/active-build.models';
@@ -9,10 +10,12 @@ import {
   bankedBuild,
   DEFENCE_FIXTURE_HULL,
   disabledGeneratorBuild,
+  disabledPlantBuild,
   fullyFittedBuild,
   resistantBuild,
   noGeneratorBuild,
   readyBuild,
+  shedGeneratorBuild,
   unpoweredBanksBuild,
 } from '../../../../domain/ships/defence/defence.fixtures';
 import { provideLocalization } from '../../../../i18n/i18n.providers';
@@ -295,7 +298,7 @@ describe('DefenceAnalysis', () => {
       );
     });
 
-    it('says why there is no shield, in the package’s own words and order', () => {
+    it('says why there is no shield, once per reason the package gave', () => {
       const build = noGeneratorBuild();
       const { component, element } = render(build);
       const issues = BuildMetrics.of(build).shieldMetricsResult().issues;
@@ -303,7 +306,30 @@ describe('DefenceAnalysis', () => {
       expect(component.shieldAvailable()).toBe(false);
       expect(component.shieldPool()).toBeNull();
       expect(component.shieldIssues()).toHaveLength(issues.length);
-      expect(text(element, '.card--shield .issue')).toBe(issues[0]!.message);
+      expect(text(element, '.card--shield .issue')).toBe('No shield generator is fitted.');
+    });
+
+    it('keeps the package’s own words for a diagnosis it does not word itself', () => {
+      // `powerDistributor` / `unresolved` has no entry in the card's own table,
+      // so the package's sentence reaches the screen with its canonical
+      // language disclosed. That fallback is what keeps a release adding a new
+      // reason from drawing a blank.
+      vi.spyOn(BuildMetrics.prototype, 'shieldMetricsResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [
+          {
+            field: 'powerDistributor',
+            reason: 'unresolved',
+            message: 'The fitted power distributor could not be resolved.',
+          },
+        ],
+      });
+      const { element } = render(readyBuild());
+
+      expect(text(element, '.card--shield .issue')).toBe(
+        'The fitted power distributor could not be resolved.',
+      );
     });
 
     it('draws no damage table and no source rows for a shield the package refused', () => {
@@ -357,11 +383,188 @@ describe('DefenceAnalysis', () => {
       expect(facts[2]?.value).toBeNull();
     });
 
-    it('is diagnosed on its own when the package cannot read it', () => {
+    it('is diagnosed on its own when the package refuses it and not the strength', () => {
+      // The recovery reads everything the strength reads and more. After the
+      // same generator and retracted power state it reads the generator's
+      // distributor draw and its two regeneration rates, then resolves the
+      // systems capacitor, which refuses with `powerDistributor` / `unresolved`.
+      // That is the pair mocked here; the package reaches it only with a
+      // resolved module, so its own issue would carry a slot and a symbol this
+      // one leaves out.
+      //
+      // It is mocked rather than built because every fixture fits real package
+      // modules, which carry those stats and a distributor the package
+      // resolves. The card states the reason under the recovery, beside a
+      // strength that stands.
+      vi.spyOn(BuildMetrics.prototype, 'shieldRecoveryResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [
+          {
+            field: 'powerDistributor',
+            reason: 'unresolved',
+            message: 'The fitted power distributor could not be resolved.',
+          },
+        ],
+      });
+      const { component, element } = render(fullyFittedBuild());
+
+      expect(component.shieldAvailable()).toBe(true);
+      expect(component.recoveryFacts()).toEqual([]);
+      expect(component.recoveryShown()).toBe(true);
+      expect(component.recoveryIssues()).toHaveLength(1);
+      expect(text(element, '.card--shield .issue')).toBe(
+        'The fitted power distributor could not be resolved.',
+      );
+    });
+  });
+
+  /**
+   * Everything that refuses the strength refuses the recovery too.
+   *
+   * Both calls resolve the same generator and the same retracted power state
+   * first, so whatever stops the strength returns as the same issue from the
+   * recovery. A Commander is given that reason once (FR-003). The four builds
+   * below are the ones the fixtures reach, not the whole of that set.
+   */
+  describe('a reason that refuses both readings', () => {
+    const cases: readonly [string, () => ShipLoadout, string][] = [
+      ['a generator that is not fitted', noGeneratorBuild, 'No shield generator is fitted.'],
+      ['a generator switched off', disabledGeneratorBuild, 'The shield generator is switched off.'],
+      [
+        'a generator the plant sheds',
+        shedGeneratorBuild,
+        'The shield generator has no power. The build draws more than the power plant supplies.',
+      ],
+      ['a plant switched off', disabledPlantBuild, 'The power plant is switched off.'],
+    ];
+
+    it.each(cases)('states %s once rather than under both headings', (_name, make, worded) => {
+      const build = make();
+      const { component, element } = render(build);
+      const refused = BuildMetrics.of(build).shieldMetricsResult().issues;
+
+      // The premise: the package refuses both readings for the same thing.
+      expect(refused).toHaveLength(1);
+      expect(
+        BuildMetrics.of(build).shieldRecoveryResult({ systemsPips: conditions.pips().systems })
+          .issues,
+      ).toEqual(refused);
+
+      // The strength states it, and the recovery block is removed with it: one
+      // unavailable state, one reason, in the Commander's own language.
+      expect(component.shieldIssues()).toHaveLength(1);
+      expect(component.recoveryIssues()).toEqual([]);
+      expect(component.recoveryShown()).toBe(false);
+      expect(element.querySelectorAll('.card--shield .issue')).toHaveLength(1);
+      expect(element.querySelectorAll('.card--shield ednb-unavailable-value')).toHaveLength(1);
+      expect(text(element, '.card--shield .issue')).toBe(worded);
+      // The card states the package's diagnosis, not a reading of its prose.
+      expect(text(element, '.card--shield .issue')).not.toBe(refused[0]!.message);
+    });
+
+    it('keeps every diagnosis the package gave apart', () => {
+      // The four builds above are four package diagnoses, and stating each once
+      // is not the same as stating them alike: a card that collapsed them into
+      // one verdict about the generator would pass every assertion above. The
+      // plant's own sentence is the one to watch — it says what the package
+      // said about the plant and draws no conclusion about the generator.
+      const drawn = cases.map(([, make]) => {
+        const { element } = render(make());
+        return text(element, '.card--shield .issue');
+      });
+
+      expect(new Set(drawn).size).toBe(cases.length);
+      expect(drawn.every((reason) => reason.length > 0)).toBe(true);
+    });
+
+    it('draws a repeated reason once and a reason only the recovery has as well', () => {
+      // The strength is the package's own refusal, unmocked. The recovery is
+      // given that same issue and a second one — a shape Almanac 0.2.10 does
+      // not return, because every incomplete result it builds carries exactly
+      // one issue and a refused strength is handed back to the recovery
+      // unchanged.
+      //
+      // It is mocked to prove the rule is per issue rather than per result. The
+      // per-result shortcut passes every reachable state today, and loses a
+      // diagnosis the first time a release returns two.
+      const build = noGeneratorBuild();
+      const shared = BuildMetrics.of(build).shieldMetricsResult().issues[0]!;
+      const extra: CalculationIssue = {
+        field: 'powerDistributor',
+        reason: 'unresolved',
+        message: 'The fitted power distributor could not be resolved.',
+      };
+      vi.spyOn(BuildMetrics.prototype, 'shieldRecoveryResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [shared, extra],
+      });
+      const { component, element } = render(build);
+
+      expect(component.shieldIssues()).toHaveLength(1);
+      expect(component.recoveryIssues()).toHaveLength(1);
+      expect(component.recoveryShown()).toBe(true);
+      expect(
+        [...element.querySelectorAll('.card--shield .issue')].map((node) =>
+          (node.textContent ?? '').replace(/\s+/gu, ' ').trim(),
+        ),
+      ).toEqual(['No shield generator is fitted.', extra.message]);
+    });
+
+    /**
+     * The five things {@link issueKey} compares, on one issue.
+     *
+     * The `params` here is not a shape the package returns. Its own `params`
+     * mirrors `field`, `reason`, `slot` and `symbol`, so a row moving one of
+     * those would move `params` with it and would still pass with that identity
+     * dropped from the key. An unrelated key holds `params` still while each of
+     * the other four moves alone.
+     *
+     * The message is left out of the comparison: it is derived from the rest,
+     * and comparing it would be reading the English text.
+     */
+    const stated: CalculationIssue = {
+      field: 'shieldGenerator',
+      reason: 'disabled',
+      slot: 'Slot03_Size6',
+      symbol: 'Int_ShieldGenerator_Size6_Class1',
+      message: 'the mount is switched off',
+      params: { available: '4.2' },
+    };
+
+    /**
+     * The same issue, one stated thing different, once for each of them.
+     *
+     * Two issues alike in all five are one reason and are drawn once, so each
+     * of the five has to be part of what tells them apart. Exactly one thing
+     * moves per row, and the message does not move at all: a row that changed
+     * two would still pass with either of them dropped from the key, and one
+     * that changed the message would pass on the text rather than the identity.
+     */
+    const identities: readonly [string, CalculationIssue][] = [
+      ['the input field', { ...stated, field: 'powerCapacity' }],
+      ['the reason', { ...stated, reason: 'shed' }],
+      ['the mount', { ...stated, slot: 'Slot04_Size6' }],
+      ['the module', { ...stated, symbol: 'Int_ShieldGenerator_Size6_Class3' }],
+      ['the interpolated values', { ...stated, params: { available: '5.8' } }],
+    ];
+
+    it.each(identities)('tells two issues apart by %s', (_name, second) => {
+      vi.spyOn(BuildMetrics.prototype, 'shieldMetricsResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [stated],
+      });
+      vi.spyOn(BuildMetrics.prototype, 'shieldRecoveryResult').mockReturnValue({
+        value: null,
+        complete: false,
+        issues: [second],
+      });
       const { component } = render(disabledGeneratorBuild());
 
-      expect(component.recoveryFacts()).toEqual([]);
-      expect(component.recoveryIssues().length).toBeGreaterThan(0);
+      expect(component.shieldIssues()).toHaveLength(1);
+      expect(component.recoveryIssues()).toHaveLength(1);
     });
   });
 
