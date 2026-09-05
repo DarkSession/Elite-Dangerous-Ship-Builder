@@ -36,6 +36,11 @@ describe('BuildWorkspacePage, reading an incoming link', () => {
     view!.location.hash = value;
   }
 
+  /** Lets the restore, the ingest and the decode behind it all finish. */
+  function settle(): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
   function render() {
     const fixture = TestBed.createComponent(BuildWorkspacePage);
     fixture.detectChanges();
@@ -48,6 +53,25 @@ describe('BuildWorkspacePage, reading an incoming link', () => {
 
     expect(host.querySelector('ednb-empty-state')).not.toBeNull();
     expect(host.querySelector('ednb-skeleton')).toBeNull();
+  });
+
+  it('says there is no build once the link turns out not to be one', async () => {
+    setFragment('#b.broken');
+    // A link that cannot be decoded is the path the wait has to leave. A wait
+    // this one latched would hold the skeleton over an empty workspace for the
+    // rest of the session, which is the state FR-029 forbids most of all.
+    TestBed.inject(BuildLinkCoordinator).decode = () => Promise.reject(new Error('refused'));
+
+    const fixture = render();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('ednb-skeleton')).not.toBeNull();
+
+    await settle();
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-skeleton')).toBeNull();
+    expect(host.querySelector('ednb-empty-state')).not.toBeNull();
   });
 
   it('holds the build’s place while a link is being read', () => {

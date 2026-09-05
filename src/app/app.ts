@@ -379,25 +379,28 @@ export class App {
    */
   readonly #routeLoading = signal(false);
 
-  readonly #routeActive = signal(false);
+  /**
+   * Whether this frame has held a screen.
+   *
+   * Raised once and never lowered. The router takes the old screen out and puts
+   * the new one in inside one step, so a frame that has held a screen holds one
+   * from then on: what changes is which.
+   */
+  readonly #screenShown = signal(false);
 
   /**
    * Whether a screen is on its way to a frame that has none.
    *
    * Two conditions, and both are needed. The router reports a chunk only when
    * it has one to fetch, so an address already loaded draws nothing. And a
-   * screen already activated stays on screen while the next one loads, which is
+   * screen already on the frame stays there while the next one loads, which is
    * what the router does for free — a skeleton over that would take a screen
    * away to say another was coming (011/FR-029).
    */
-  readonly routeWaiting = computed(() => this.#routeLoading() && !this.#routeActive());
+  readonly routeWaiting = computed(() => this.#routeLoading() && !this.#screenShown());
 
   routeActivated(): void {
-    this.#routeActive.set(true);
-  }
-
-  routeDeactivated(): void {
-    this.#routeActive.set(false);
+    this.#screenShown.set(true);
   }
 
   constructor() {

@@ -125,6 +125,30 @@ describe('BuildLinkCoordinator', () => {
     expect(active.fingerprint()).toBe(before);
   });
 
+  it('stops reading when the read ends, whatever it ends as', async () => {
+    // The screens draw a skeleton for as long as this is raised, and say there
+    // is no build only once it falls. A read that raised it and did not lower
+    // it again would hold that skeleton for the rest of the session
+    // (011/FR-029).
+    const { ingress, active } = setup();
+    commitAnaconda(active);
+
+    await ingress.ingest('b.zzzzzzzzzzzz');
+    expect(ingress.reading()).toBe(false);
+
+    await ingress.ingest(await anacondaFragment());
+    expect(ingress.reading()).toBe(false);
+  });
+
+  it('reads while the read is in flight', async () => {
+    const { ingress } = setup();
+
+    const reading = ingress.ingest('b.zzzzzzzzzzzz');
+    expect(ingress.reading()).toBe(true);
+
+    await reading;
+  });
+
   it('treats a link describing the build already open as nothing to do', async () => {
     const { ingress, active } = setup();
     commitAnaconda(active);

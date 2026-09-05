@@ -1,6 +1,11 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import {
+  DeferBlockBehavior,
+  DeferBlockState,
+  TestBed,
+  type ComponentFixture,
+} from '@angular/core/testing';
 import {
   NavigationError,
   RouteConfigLoadEnd,
@@ -666,5 +671,93 @@ describe('App, waiting for a screen', () => {
     fixture.detectChanges();
 
     expect(skeletonOf(fixture)).toBeNull();
+  });
+});
+
+/**
+ * The two layers a Commander asks for, while the chunk that draws them is on
+ * its way.
+ *
+ * Neither layer is in the shell's own chunk, so a press has a wait behind it.
+ * What stands in the meantime is a layer of the same name, with a skeleton in
+ * it, and a way out that takes back the request (011/FR-029).
+ */
+describe('App, waiting for a layer', () => {
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [
+        provideLocalization(),
+        provideRouter([]),
+        ...provideMemoryStorage(new MemoryStorage()),
+      ],
+      // The blocks are driven by hand. Left to itself a block resolves before a
+      // test can read the state it is being asked about.
+      deferBlockBehavior: DeferBlockBehavior.Manual,
+    }).compileComponents();
+  });
+
+  /** Renders the placeholder of the block at `index`, and returns the frame. */
+  async function waitingLayer(index: number): Promise<HTMLElement> {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[index].render(DeferBlockState.Loading);
+    fixture.detectChanges();
+
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  const titleOf = (host: HTMLElement) =>
+    host.querySelector('.layer__title')?.textContent?.trim() ?? '';
+
+  it('names the exchange layer a Commander asked for', async () => {
+    TestBed.inject(SlefStore).openLayer('import');
+
+    const host = await waitingLayer(0);
+
+    expect(host.querySelector('ednb-layer ednb-skeleton')).not.toBeNull();
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.import.title']);
+  });
+
+  it('names the export layer for the exchange it is, before the build is known', async () => {
+    // The name the layer settles on carries the hull, which needs the presenter
+    // whose chunk this is waiting for. The name it stands under is the one the
+    // shell can reach without loading that chunk.
+    TestBed.inject(SlefStore).openLayer('export');
+
+    const host = await waitingLayer(0);
+
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['slef.export.title']);
+  });
+
+  it('closes the exchange layer that is not there yet', async () => {
+    // The way out cancels the opening rather than the fetch, so the layer that
+    // lands a moment later lands closed.
+    const store = TestBed.inject(SlefStore);
+    store.openLayer('import');
+
+    const host = await waitingLayer(0);
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+
+    expect(store.layer()).toBe('none');
+  });
+
+  it('names the library layer, and closes it', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    fixture.componentInstance.library.raise();
+    fixture.detectChanges();
+
+    const blocks = await fixture.getDeferBlocks();
+    await blocks[1].render(DeferBlockState.Loading);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(titleOf(host)).toContain(BUNDLED_ENGLISH['library.title']);
+
+    host.querySelector<HTMLButtonElement>('.layer__dismiss')?.click();
+    expect(fixture.componentInstance.library.open()).toBe(false);
   });
 });

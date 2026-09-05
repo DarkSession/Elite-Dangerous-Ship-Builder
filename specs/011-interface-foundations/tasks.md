@@ -544,17 +544,19 @@ Task: "Status, notice and error in src/app/ui/components/status/"
       `design/waiting-states.md` state the rule and account for every wait, including the ones that
       draw nothing (`011/FR-029`, `011/SC-010` in `e2e/coverage-ledger.ts`)
       _A screen that cannot draw its content yet must not claim the content is absent._
-- [x] T153 Let the schematic's plate wait for both of its requests. The mount geometry and the hull
-      drawing arrive separately, so the plate holds the waiting mark until the picture has loaded and
-      hides the marks and their leaders behind `visibility` until then. Drawn over an empty plate they
-      say the hull has no drawing rather than that one is on its way
-      (`specs/010-hull-anatomy/design/hull-anatomy.md`)
-      _Hidden rather than absent: the marks are placed from the drawing's own coordinates._
+- [x] T153 Let the schematic's plate wait for the request it can finish. The wait is the geometry
+      fetch, which the plate is told the end of. The drawing is a second request, and the plate does
+      not wait on it: that wait would read the picture's own `load` event, and a plate that never
+      hears one holds the mark for the rest of the session. A picture that fails is answered for by
+      the file the event came from, so a hull replaced mid-fetch cannot be marked failed by the
+      picture it replaced (`specs/010-hull-anatomy/design/hull-anatomy.md`)
+      _A state a screen cannot leave is worse than a state it never enters._
 - [x] T154 Give the waiting mark its own reduced-motion rule. It is an SVG loaded through `img`, so
       it is a separate document and `_base.scss` cannot reach it. The rule goes inside
       `public/assets/loader.svg`, and root `LICENSE` records the adaptation of the EDAssets mark
       _A global rule that cannot reach a document is not a rule that document follows._
-- [x] T155 Announce the wait once. The skeleton's region is a `status` and carries no `aria-busy`: an
-      assistive technology holds a live region marked busy until the flag drops, and this region only
-      exists while the wait is on, so the flag would suppress the one announcement it exists to make
-      _A busy flag on the region that only exists while it is busy says nothing and costs the notice._
+- [x] T155 Write the wait down. The skeleton's region is a `status` carrying words for what is
+      pending, so the shapes supplement a sentence rather than stand in place of one. It carries no
+      `aria-busy`: an assistive technology holds a live region marked busy until the flag drops, and
+      this region exists only while the wait is on, so the flag would hold back any reading of it
+      _A busy flag on a region that exists only while it is busy hides the words it guards._

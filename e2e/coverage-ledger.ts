@@ -325,7 +325,8 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     surfaceId: 'ui/waiting-states',
     requirements: ['011/FR-029', '011/SC-010'],
     journey: 'product/semantics',
-    axe: true,
+    // No scan: the check here is on a file the server sends, not on a page.
+    axe: false,
     assertions: [
       'the served waiting mark carries its own reduced-motion rule, which no check inside the page can read',
     ],

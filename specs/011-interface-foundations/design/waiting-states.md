@@ -58,8 +58,10 @@ CC BY-NC-SA 4.0, and that rule is an adaptation of it. Root `LICENSE` records th
 
 `/ships/:hull` is a child address, so a cold arrival there fetches two chunks. The router asks for
 both at once and activates the screen when both have arrived. The page skeleton is raised by the
-first fetch and lowered by the screen, not by the fetch, so it stands for the whole of that wait —
-across both chunks, and across the gap between the last one landing and the screen being drawn.
+first fetch and lowered when the navigation ends, which is after the screen is created. It therefore
+stands for the whole of that wait — across both chunks, and across the gap between the last one
+landing and the screen being drawn. A navigation that is cancelled or fails lowers it too, so a chunk
+that never arrives is a wait that still ends.
 
 The inspector draws no second skeleton on that arrival. It cannot: the router resolves the catalogue
 and the hull together, so the catalogue does not exist to draw anything while its own chunk is on the
@@ -73,8 +75,10 @@ as long as the wait it is meant to describe. Every hull after the first draws no
 chunk is fetched and the router reports no fetch.
 
 A route chunk that is already loaded draws nothing. The router reports only a chunk it must fetch,
-and the skeleton stands only while no screen is activated. A move between two screens therefore keeps
-the screen a Commander is reading until the next screen is ready.
+and the skeleton stands only while the frame has never held a screen. The router takes the old screen
+out and puts the new one in inside one step, so a frame that has held a screen holds one from then
+on. A move between two screens therefore keeps the screen a Commander is reading until the next
+screen is ready.
 
 The two deferred blocks wait 200 milliseconds before they draw, and then hold what they draw for 400
 milliseconds. A Commander does not perceive a wait shorter than the first figure. A layer that
