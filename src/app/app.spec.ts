@@ -7,6 +7,7 @@ import {
   type ComponentFixture,
 } from '@angular/core/testing';
 import {
+  NavigationCancel,
   NavigationError,
   RouteConfigLoadEnd,
   RouteConfigLoadStart,
@@ -703,6 +704,15 @@ describe('App, waiting for a screen', () => {
 
     expect(host.querySelector('ednb-status-notice')).toBeNull();
     expect(skeletonOf(fixture)).not.toBeNull();
+
+    // The second navigation is cancelled rather than failing, which lowers the
+    // fetch and reports nothing else. A failure left standing from the screen
+    // before would come back here, over a frame that is not failing.
+    publish(new NavigationCancel(2, '/equipment', ''));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
+    expect(skeletonOf(fixture)).toBeNull();
   });
 
   it('leaves the screen a Commander is reading alone when a navigation fails', async () => {

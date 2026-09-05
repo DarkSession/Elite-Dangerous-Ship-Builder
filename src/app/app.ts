@@ -427,9 +427,11 @@ export class App {
    * arrival at a chunk that cannot be fetched takes its skeleton down and
    * leaves the shell around an empty page, saying nothing (011/FR-029).
    *
-   * The router asks again on the next navigation, because it keeps only the
-   * configurations it has loaded. Choosing the screen again is therefore a way
-   * out, and lowering this on the next fetch is what makes it one.
+   * Lowered when the next fetch starts, so the notice never outlives the attempt
+   * it describes. It is not a way back to the screen: the router would ask for
+   * the chunk again, but the document remembers an import that failed and
+   * refuses it without reaching the network. Only a fresh document clears that,
+   * which is what the words say.
    */
   readonly #routeFailed = signal(false);
 

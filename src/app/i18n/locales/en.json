@@ -17,7 +17,7 @@
   "layer.pending.notice": "This layer is loading.",
   "layer.failed.notice": "This layer could not be loaded. Check the connection, then open the application again.",
   "route.pending.notice": "This screen is loading.",
-  "route.failed.notice": "This screen could not be loaded. Check the connection, then choose the screen again.",
+  "route.failed.notice": "This screen could not be loaded. Check the connection, then open the application again.",
   "action.close": "Close",
   "action.cancel": "Cancel",
   "action.confirm": "Confirm",

@@ -1,4 +1,7 @@
-<div class="catalogue" [class.catalogue--detail-open]="detailOpen() || detailWaiting()">
+<div
+  class="catalogue"
+  [class.catalogue--detail-open]="detailOpen() || detailWaiting() || detailFailed()"
+>
   <div class="catalogue__manifest-region">
     <!--
       Everything that is browsing rather than heading. At narrow widths with a
@@ -62,6 +65,13 @@
     -->
     @if (detailWaiting()) {
       <ednb-skeleton [label]="detailLoadingLabel()" [lines]="5" />
+    } @else if (detailFailed()) {
+      <!--
+        The chunk did not arrive. Without a word here the rail would draw a
+        skeleton, take it down, and leave a Commander back on the manifest with
+        nothing said about the hull they asked for.
+      -->
+      <ednb-status-notice tone="error" [message]="detailFailedLabel()" />
     }
 
     <router-outlet />

@@ -35,6 +35,7 @@ import type { CatalogueSortField } from '../../domain/ships/catalogue/catalogue-
 import { hullAddressForSymbol } from '../../domain/ships/catalogue/hull-address';
 import type { HullSize } from '../../domain/ships/catalogue/hull-catalogue';
 import { CatalogueAnchorRestorer } from './catalogue-anchor.restorer';
+import { StatusNotice } from '../../ui/components/status/status-notice';
 import { Skeleton } from '../../ui/components/waiting/skeleton';
 import { StockBuildCreator } from '../../application/active-build/stock-build.creator';
 import { NAVIGATION_ROUTES } from '../shared/app-navigation';
@@ -70,7 +71,7 @@ const ALL_SIZES = 'all';
  */
 @Component({
   selector: 'ednb-ship-catalogue-page',
-  imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet, Skeleton],
+  imports: [CollectionToolbar, ResponsiveCatalogueView, RouterOutlet, Skeleton, StatusNotice],
   templateUrl: './ship-catalogue.page.html',
   styleUrl: './ship-catalogue.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -123,6 +124,24 @@ export class ShipCataloguePage {
   readonly #detailLoading = signal(false);
 
   readonly detailWaiting = this.#detailLoading.asReadonly();
+
+  /**
+   * Whether the hull's own screen was asked for and did not arrive.
+   *
+   * The rail is drawn for the wait, so it has to be drawn for the end of one
+   * that produced no screen: a skeleton that appears and goes, over a region
+   * the stylesheet then takes out of the layout, leaves a Commander back on the
+   * manifest with nothing said (011/FR-029).
+   *
+   * The frame around this screen cannot say it instead. Its own notice speaks
+   * only for a frame with no screen in it, and this screen is in it.
+   */
+  readonly #detailFailed = signal(false);
+
+  readonly detailFailed = this.#detailFailed.asReadonly();
+
+  /** What the rail says when the hull's own screen did not arrive. */
+  readonly detailFailedLabel = this.#messages.messageSignal('route.failed.notice');
 
   /**
    * Whether a route the router is fetching is a child of this screen's own.
@@ -234,6 +253,12 @@ export class ShipCataloguePage {
     this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event instanceof RouteConfigLoadStart && this.#isDetailRoute(event.route)) {
         this.#detailLoading.set(true);
+        this.#detailFailed.set(false);
+      }
+      // A failure belongs to this rail only where this rail was waiting for it.
+      // Every other navigation that fails is some other screen's.
+      if (event instanceof NavigationError && this.#detailLoading()) {
+        this.#detailFailed.set(true);
       }
       if (
         event instanceof NavigationEnd ||
@@ -241,6 +266,9 @@ export class ShipCataloguePage {
         event instanceof NavigationError
       ) {
         this.#detailLoading.set(false);
+      }
+      if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
+        this.#detailFailed.set(false);
       }
     });
 

@@ -17,7 +17,7 @@
   "layer.pending.notice": "Diese Ebene wird geladen.",
   "layer.failed.notice": "Diese Ebene konnte nicht geladen werden. Prüfen Sie die Verbindung und öffnen Sie die Anwendung erneut.",
   "route.pending.notice": "Dieser Bildschirm wird geladen.",
-  "route.failed.notice": "Dieser Bildschirm konnte nicht geladen werden. Prüfen Sie die Verbindung und wählen Sie den Bildschirm erneut.",
+  "route.failed.notice": "Dieser Bildschirm konnte nicht geladen werden. Prüfen Sie die Verbindung und öffnen Sie die Anwendung erneut.",
   "action.close": "Schließen",
   "action.cancel": "Abbrechen",
   "action.confirm": "Bestätigen",

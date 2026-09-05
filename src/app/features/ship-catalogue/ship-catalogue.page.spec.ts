@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import {
   NavigationCancel,
   NavigationEnd,
+  NavigationError,
   RouteConfigLoadEnd,
   RouteConfigLoadStart,
   Router,
@@ -11,6 +12,7 @@ import {
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
 import { provideLocalization } from '../../i18n/i18n.providers';
+import { BUNDLED_ENGLISH } from '../../i18n/locale-registry';
 import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { ShipCataloguePage } from './ship-catalogue.page';
 
@@ -104,6 +106,56 @@ describe('ShipCataloguePage, waiting for a hull', () => {
     fixture.detectChanges();
 
     expect(host.querySelector('.catalogue')?.classList).toContain('catalogue--detail-open');
+  });
+
+  it('says so when the hull’s screen does not arrive', () => {
+    // A skeleton that appears and goes, over a rail the stylesheet then takes
+    // out of the layout, leaves a Commander back on the manifest with nothing
+    // said about the hull they asked for.
+    const { fixture, publish } = page();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(detailRoute()));
+    publish(new NavigationError(1, '/ships/Anaconda', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(skeletonOf(host)).toBeNull();
+    const notice = host.querySelector('ednb-status-notice .status');
+    expect(notice?.textContent).toContain(BUNDLED_ENGLISH['route.failed.notice']);
+    expect(notice?.getAttribute('role')).toBe('alert');
+    // The rail has to be in the layout for any of that to be read.
+    expect(host.querySelector('.catalogue')?.classList).toContain('catalogue--detail-open');
+  });
+
+  it('takes the failure down when a hull arrives after it', () => {
+    // The hull opened next may be one whose chunk is already fetched, and the
+    // router then reports no fetch at all. A failure only the next fetch
+    // cleared would stand over the hull screen that did arrive.
+    const { fixture, publish } = page();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new RouteConfigLoadStart(detailRoute()));
+    publish(new NavigationError(1, '/ships/Anaconda', new Error('chunk unavailable')));
+    fixture.detectChanges();
+    expect(host.querySelector('ednb-status-notice')).not.toBeNull();
+
+    publish(new NavigationEnd(2, '/ships/Python', '/ships/Python'));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
+    expect(skeletonOf(host)).toBeNull();
+  });
+
+  it('leaves the rail alone when some other screen’s chunk fails', () => {
+    // The rail answers its own child. A failure it was not waiting for belongs
+    // to the frame around this screen, not to this rail.
+    const { fixture, publish } = page();
+    const host = fixture.nativeElement as HTMLElement;
+
+    publish(new NavigationError(1, '/equipment', new Error('chunk unavailable')));
+    fixture.detectChanges();
+
+    expect(host.querySelector('ednb-status-notice')).toBeNull();
   });
 
   it('draws nothing for a chunk that is not the hull screen’s', () => {
