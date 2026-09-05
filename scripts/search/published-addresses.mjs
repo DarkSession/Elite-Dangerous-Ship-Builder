@@ -105,7 +105,7 @@ export function interpolate(pattern, params) {
  * The fourth copy of a runtime rule, and the one most worth stating why. A
  * published document's title has to be the string the bundle will write over it
  * a moment later; a crawler that reads the file and a Commander who watches the
- * tab must not be told two different names for one page. `documentTitleParity`
+ * tab must not be told two different names for one page. `what a published document is titled`
  * in `src/app/i18n/document-title.spec.ts` holds this function and that one to
  * the same answer for every published address, so the copy cannot drift in
  * silence.

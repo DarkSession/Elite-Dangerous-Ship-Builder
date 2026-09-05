@@ -17,7 +17,7 @@ function catalogue(overrides: Partial<Record<string, string>> = {}): MessageCata
 }
 
 describe('resolveDocumentTitle', () => {
-  it('publishes the application name where no page is named', () => {
+  it('publishes the application title where no page is named', () => {
     expect(resolveDocumentTitle(catalogue(), null)).toBe(
       BUNDLED_ENGLISH['app.document-title.default'],
     );

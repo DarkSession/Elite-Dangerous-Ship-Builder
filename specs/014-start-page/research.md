@@ -23,9 +23,9 @@ search for "Nav Beacon" should return — and today the sitemap advertises three
 and forty-eight hulls, and not the product.
 
 `src/index.html` already carries the root's canonical (`https://navbeacon.app/`), its
-`og:url` and the site card, and its own comment says every phrase in it "is the English
-default for the screen the application opens on". That screen changes, so those phrases
-change with it. Mapping the root to `index.html` in `fileFor` means the publisher writes the
+`og:url` and the site card, and its own comment says every phrase in it is the English
+default for the address it answers. That address answers with the start page, so those
+phrases are the start page's. Mapping the root to `index.html` in `fileFor` means the publisher writes the
 root's head into the file that already answers the root, through the same `documentFor`
 substitution every other address goes through — which "refuses rather than adds", so a head
 tag the substitution cannot find fails the build rather than silently publishing the old
@@ -35,8 +35,8 @@ sentence.
 
 - _Leave `''` unlistable and change only `index.html`'s wording._ Fewer moving parts, but
   the gate would never reconcile the root's committed head against the message keys the
-  running application resolves — which is exactly the drift `documentTitleParity` and the
-  checker exist to prevent, and FR-016 would be unverified.
+  running application resolves — which is exactly the drift `what a published document is titled` and
+  the checker exist to prevent, and FR-016 would be unverified.
 - _Write the root as `index.html` copied to some other file._ There is no other file: Pages
   serves `/` from `index.html`, and a directory document would answer 301 to itself.
 - _Special-case the root inside `main()` and skip publishing it._ A branch that says "this

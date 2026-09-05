@@ -26,8 +26,8 @@ descriptionKey: 'app.description' }`, and its address resolves to `${origin}/` â
   answers for a page named after the product
   (`specs/011-interface-foundations/design/search-visibility.md`, "The product title").
   `e2e/search-visibility.spec.ts` asserts every tag of the title family against the key in all
-  ten projects, and the `description` of the other; the checker holds the remaining two
-  descriptions equal to it.
+  ten projects, and the `description` and `og:description` of the other; the checker holds
+  `twitter:description` equal to them.
   The head is not the screen's masthead and tagline: those name the screen, and this file
   names the address.
 - **P6** â€” `public/sitemap.xml` advertises `${origin}/`, first in the list, ahead of the tool

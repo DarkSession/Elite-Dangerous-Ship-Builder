@@ -995,8 +995,8 @@ export async function runChecks({ scope = SCOPE } = {}) {
 
   // Component templates only. `index.html` is the host document, not a
   // component template: it is served before Angular runs, its `<title>` is the
-  // product name a browser tab shows during bootstrap, and the locale store
-  // replaces that title on the first committed snapshot.
+  // product's own title, which a browser tab shows during bootstrap, and the
+  // locale store replaces that title on the first committed snapshot.
   const templates = (await walk(scope.product, ['.html'])).filter(
     (file) => !file.endsWith('index.html'),
   );

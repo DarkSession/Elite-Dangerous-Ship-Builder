@@ -370,7 +370,7 @@ describe('LocaleStore document title', () => {
     );
   });
 
-  it('leaves the product name standing for a route that names no page', () => {
+  it("leaves the product's own title standing for a route that names no page", () => {
     const { store, document } = setup();
     store.commitBundledEnglish();
 

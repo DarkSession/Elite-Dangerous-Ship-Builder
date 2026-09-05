@@ -74,7 +74,7 @@ test.describe('start page', () => {
       // The tab as well as the screen. Asserted after coming back rather than
       // on the first load, because the served document already carries this
       // title: only a title the application has written over `<tool> · Nav
-      // Beacon` proves `resolveDocumentTitle` chose it (014/FR-006).
+      // Beacon` proves `resolveDocumentTitle` chose it (014/FR-016).
       await expect.poll(() => page.title()).toBe(englishMessages['app.document-title.default']);
     });
   }

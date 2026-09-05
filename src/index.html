@@ -7,7 +7,8 @@
   address, which answers with the start page. What that address resolves to is
   the product rather than one of its tools, so the title family carries
   `app.document-title.default` and the descriptions carry `app.description`,
-  while `application-name` and `og:site_name` carry the bare name. This file is
+  while `application-name`, `og:site_name` and the JSON-LD `name` carry the bare
+  name. This file is
   the document the root address answers with:
   `publish-static-routes.mjs` writes the root's own head into it through the same
   substitution every other address goes through. The locale store replaces the title, the
