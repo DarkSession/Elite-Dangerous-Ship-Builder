@@ -56,12 +56,14 @@ catalogues, the manifest's `name`, `short_name` and `description`, the `package.
 name, the project key in `angular.json`, and the Frontier media-usage notice in
 `LICENSE`. Everything that names the outfitting bench — `catalogue.title`,
 `navigation.catalogue`, `hullDetail.back`, `workspace.empty.description`,
-`workspace.empty.action`, `help.purpose` and the help topics that describe the bench's
-behaviour — names the tool, which is what those strings mean under Nav Beacon.
+`workspace.empty.action` and the help topics that describe the bench's behaviour — names
+the tool, which is what those strings mean under Nav Beacon. `help.purpose` is the one help
+string on the product's side of that line: one dialog opens over both benches, so it names
+the application (`specs/013-equipment-builder/design/reference-review.md`).
 
 `app.document-title.default` is the one string that says more than the name:
 `Nav Beacon - Elite Dangerous Commander Tools`, which titles the root document and
-`404.html` and nothing else. Every other address reads `<screen> · Nav Beacon`.
+`404.html`, and nothing else. Every other address reads `<screen> · Nav Beacon`.
 `specs/011-interface-foundations/design/search-visibility.md` is the record.
 
 Help content is generated: run `pnpm run help:artifacts` after touching any help string,
@@ -71,8 +73,9 @@ The `package.json` name is also the SLEF producer identity: every export writes
 `appName: navbeacon` where it wrote `appName: elite-dangerous-ship-builder`
 (`src/app/platform/build/application-metadata.ts`, `specs/004-slef/contracts/slef-export.md`).
 The identifier is stable in the sense the contract means — it does not vary with the reader's
-language or the build — and it moves with the product name, once. A consumer keying on the old
-string sees a new producer, which is the accepted cost of the product having one name.
+language, with the build, or with how the product spells its name. That one move cost a
+consumer keying on the old string a new producer, and is the accepted cost of the product
+having one identity; the written name moving again does not move it.
 
 Renaming the repository to match is optional. GitHub redirects the old URLs and Pages
 follows the rename, so it costs a remote update and nothing else.

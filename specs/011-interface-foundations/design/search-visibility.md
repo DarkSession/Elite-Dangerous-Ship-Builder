@@ -406,12 +406,17 @@ the short name is the product's name rather than an abbreviation of a longer one
 
 ## The name is two words
 
-`Nav Beacon` is the spelling everywhere the product names itself: `app.name` in both
-catalogues, the manifest's `name` and `short_name`, the head's `application-name` and
-`og:site_name`, the JSON-LD `name`, the Frontier media-usage notice in `LICENSE`, and the
-prose in `README.md`, `SECURITY.md` and `AGENTS.md`. It is also the mark the bar flies —
-`NAV BEACON` in the identity deck, and `NAV BEACON` in `.design/Home.dc.html` and
-`.design/Nav Beacon Logos.dc.html` — so the written name and the drawn one are one name.
+`Nav Beacon` is the spelling everywhere the product names itself:
+
+- `app.name` in both catalogues
+- the manifest's `name` and `short_name`
+- the head's `application-name` and `og:site_name`, and the JSON-LD `name`
+- the Frontier media-usage notice in `LICENSE`
+- the prose in `README.md`, `SECURITY.md` and `AGENTS.md`
+
+It is the mark the bar draws too — `NAV BEACON` in the identity deck and in
+`.design/Home.dc.html` and `.design/Nav Beacon Logos.dc.html` — so the written name and the
+drawn one are one name.
 
 The lowercase `navbeacon` identifiers are not the name and do not move with it: the domain
 `navbeacon.app`, the `package.json` name, the Angular project key, the build output
@@ -421,22 +426,24 @@ a Commander reads, and `docs/navbeacon-migration.md` records why the SLEF one is
 ## The root document is titled with what the product is
 
 `app.document-title.default` is `Nav Beacon - Elite Dangerous Commander Tools`, and German
-carries its own wording (`Nav Beacon - Werkzeuge für Elite Dangerous Commander`) because a
-tagline is wording and constitution VI translates wording.
+carries its own wording (`Nav Beacon - Werkzeuge für Elite Dangerous Commander`). The words
+after the name are wording, and constitution VI translates wording.
 
-That key is the title of exactly two documents: the root, whose page name is the product's
-own name and so collapses to it (`resolveDocumentTitle`), and `404.html`, which is the one
-document that must not claim to be a screen. Every other address reads `<screen> · Nav Beacon`,
-composed from `app.document-title` and `app.name`, so the tagline is stated once rather than
-repeated on fifty-one tabs.
+That key is the title of exactly two documents. The first is the root, whose page name is the
+product's own name, so the composed title collapses to this key rather than repeating the name
+(`resolveDocumentTitle`). The second is `404.html`, the one document that must not claim to be
+a screen. Every other address reads `<screen> · Nav Beacon`, composed from
+`app.document-title` and `app.name`, so what the product is gets said once rather than on
+fifty-one tabs.
 
 `src/index.html` carries the same string in its `<title>`, `og:title`, `twitter:title` and
 `og:image:alt`, because `publish-static-routes.mjs` writes the root's own head into that file
-and the two must not disagree. `application-name` and `og:site_name` stay the bare product
-name: they caption the application, not the page.
+and the two must not disagree. `specs/014-start-page/contracts/published-root.md` (P5) is the
+obligation. `application-name` and `og:site_name` carry the bare product name: they caption
+the application, not the page.
 
 ## The manifest carries the bare name
 
 `name` and `short_name` are `Nav Beacon`, under the 2026-08-27 ruling above: an installed icon
-is captioned with the application's name. A caption under a home-screen icon has no room for a
-tagline.
+is captioned with the application's name. A caption under a home-screen icon has no room for
+the rest of the title.

@@ -3,10 +3,12 @@ Sync Impact Report (9.0.2)
 - Version change: 9.0.1 -> 9.0.2 (PATCH)
 - Modified principles: none. The product is named Nav Beacon, two words, and this document
   spells it so.
-- Rationale: the design canvases and the wordmark the bar flies both read `NAV BEACON`; the
+- Rationale: the design canvases and the wordmark on the bar both read `NAV BEACON`; the
   written name follows them, so the product is spelled one way everywhere
-  (`docs/navbeacon-migration.md`). Ship Builder is the tool that plans ship loadouts; Nav
-  Beacon is the product that carries it. No obligation changes, so the bump is a patch.
+  (`docs/navbeacon-migration.md`, and
+  `specs/011-interface-foundations/design/search-visibility.md` for the record). Ship Builder
+  is the tool that plans ship loadouts; Nav Beacon is the product that carries it. No
+  obligation changes, so the bump is a patch.
 - Invalidated-spec review: none. No principle, exclusion or count moves.
 - Follow-up TODOs: none.
 -->
