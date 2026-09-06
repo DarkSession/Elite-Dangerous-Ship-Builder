@@ -734,9 +734,9 @@ test.describe('purchased and reward articles', () => {
     // menu, so until table 1 recorded their variants' own blueprints there was
     // no ordinary record to write and the link vanished the moment one was
     // climbed off its purchase grade (2026-08-22).
-    // Its own timeout: publishing a fragment lazily loads the codec table and
-    // encodes off the main thread, which is comfortably under a second here and
-    // past the default assertion window on a machine running the whole matrix.
+    // Its own timeout: publishing is asynchronous, so the fragment appears one
+    // encode after the climb is applied — comfortably under a second here, and
+    // slower on a machine running the whole matrix.
     await expect(page).toHaveURL(/\/outfitting#b\./, { timeout: 15_000 });
 
     const climbed = await applied(page, 'SmallHardpoint1');

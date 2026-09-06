@@ -349,6 +349,8 @@ test.describe('hull detail', () => {
     // The same page, the same route, the same state: only the illustration
     // changed, and nothing had to be loaded again to get it.
     await expect(retry).toHaveCount(0);
+    // Ten seconds in both environments, because the wait is a fetch of the
+    // illustration rather than a redraw.
     await expect
       .poll(
         () =>
@@ -436,12 +438,10 @@ test.describe('hull detail', () => {
     // gone. Polled rather than read once, because the second build's own write
     // is coalesced and the status still reads "saved" from the first one.
     await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
-          ),
-        { timeout: 5_000 },
+      .poll(() =>
+        page.evaluate(
+          () => Object.keys(localStorage).filter((key) => key.startsWith('ednb:record:')).length,
+        ),
       )
       .toBe(2);
   });
