@@ -44,10 +44,29 @@ export async function waitForTakeover(page: Page): Promise<void> {
   );
 }
 
+/** The trigger that unfolds the bar's own controls, at the widths that fold them. */
+const MENU = /^(menu|menü)$/i;
+
+/**
+ * Waits until the bar has decided which composition it is.
+ *
+ * The bar chooses between offering its controls and folding them into the menu
+ * by measuring itself, and since 015/T006 that measurement is taken after the
+ * first render rather than during it. So there is a moment when neither the
+ * action nor the menu is on screen, and a journey that counted in that moment
+ * would conclude the bar was folded when it had simply not drawn yet — then
+ * wait out its whole timeout for a menu a wide screen never shows.
+ */
+async function waitForBar(page: Page, wanted: Locator): Promise<void> {
+  await expect(wanted.or(page.getByRole('button', { name: MENU })).first()).toBeVisible();
+}
+
 /** Opens the folded action layer if the wanted action is not already visible. */
 export async function reachShellAction(page: Page, name: RegExp): Promise<void> {
   await waitForTakeover(page);
   const action = page.getByRole('button', { name });
+
+  await waitForBar(page, action);
 
   if ((await action.count()) === 0) {
     await openActionLayer(page);
@@ -90,6 +109,8 @@ export async function reachShellLink(page: Page, name: RegExp | string): Promise
   await waitForTakeover(page);
   const link = page.getByRole('link', { name });
 
+  await waitForBar(page, link);
+
   if ((await link.count()) === 0) {
     await openActionLayer(page);
   }
@@ -105,10 +126,7 @@ export async function reachShellLink(page: Page, name: RegExp | string): Promise
  */
 export async function openActionLayer(page: Page): Promise<void> {
   await waitForTakeover(page);
-  await page
-    .getByRole('button', { name: /^(menu|menü)$/i })
-    .first()
-    .click();
+  await page.getByRole('button', { name: MENU }).first().click();
 }
 
 /**

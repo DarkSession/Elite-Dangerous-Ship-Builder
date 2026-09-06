@@ -182,6 +182,36 @@ export function prohibitions(applicationVersion) {
       pattern: /[#?&]build=/,
     },
     {
+      what: 'a shared build or loadout',
+      // The two link codecs' own prefixes, as `build-link.spec.ts` and
+      // `equipment-link.spec.ts` pin them. A build is a Commander's, and one
+      // reaching a published file would be a Commander's work committed to this
+      // repository by a build machine (015/FR-007, FR-017).
+      pattern: /#(?:b|e)\.[A-Za-z0-9]/,
+    },
+    {
+      what: 'a saved record',
+      // Saved records live in this browser under `ednb:record:<id>` and are
+      // never sent anywhere (constitution I). A document naming that prefix has
+      // either serialized one or is about to be read as though it had.
+      pattern: /ednb:record:/,
+    },
+    {
+      what: 'a browsing session',
+      // The catalogue's stored view is Commander data too — smaller, but the
+      // same kind. The build knows no session and must not appear to
+      // (015/FR-009a).
+      pattern: /ednb:(?:catalogue|tab|update-applied)/,
+    },
+    {
+      what: 'runtime environment configuration',
+      // A document is a static asset, produced by the build from the pinned
+      // package (constitution 9.1.0). A machine's own address baked into one is
+      // configuration the deployment cannot change, and it is how a document
+      // built on a contributor's laptop differs from the one CI publishes.
+      pattern: /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b|process\.env/,
+    },
+    {
       what: 'a cross-origin request',
       // `productionOutputViolations` already walks the whole output for these.
       // Repeated here because that check runs over files and this one runs per

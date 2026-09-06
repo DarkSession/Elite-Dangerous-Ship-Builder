@@ -5,7 +5,12 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  TitleStrategy,
+  provideRouter,
+  withComponentInputBinding,
+  withEnabledBlockingInitialNavigation,
+} from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 
@@ -41,7 +46,17 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     // Route parameters are bound to component inputs, so a screen takes its
     // subject as an input rather than reaching into the router for it.
-    provideRouter(routes, withComponentInputBinding()),
+    //
+    // The initial navigation blocks bootstrap, which is what lets the takeover
+    // above adopt a screen instead of rebuilding it. Every screen here is behind
+    // a lazily loaded route, so without this the router reaches the outlet
+    // before that route's chunk has arrived, throws away the document's copy of
+    // the screen and draws its own a moment later. Measured on
+    // `/ships/Anaconda`: the whole inspector — manufacturer, speed, shield, hull
+    // mass, every hardpoint count — left the page for one frame and came back,
+    // which is the content that "disappears and returns" 015/FR-009 forbids and
+    // SC-003 measures.
+    provideRouter(routes, withComponentInputBinding(), withEnabledBlockingInitialNavigation()),
     // Route titles are message keys resolved in the committed locale, so the
     // tab's language cannot lag the page's.
     { provide: TitleStrategy, useClass: RouteTitleStrategy },

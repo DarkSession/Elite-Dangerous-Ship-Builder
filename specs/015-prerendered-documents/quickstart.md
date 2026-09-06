@@ -183,13 +183,32 @@ first frame with nothing failing.
 
 ## 8. The takeover does not move anything
 
-SC-003 asks for zero pixels of movement. What to measure:
+SC-003 asks for zero pixels of movement. What `e2e/prerendered-first-frame.spec.ts`
+measures, and how it ended up measuring it:
 
-- Cumulative Layout Shift across the takeover, per layout profile, expected `0`.
-- No frame between first paint and interactive is emptier than the frame before.
+- **Four boxes**, sampled every animation frame and compared: the shell's bar,
+  `main`, the screen inside it, and the page. Not Cumulative Layout Shift, which
+  the plan expected: `layout-shift` entries are Chromium-only and half the matrix
+  is Firefox, so a CLS assertion would cover five projects and skip five, which
+  the constitution forbids.
+- **No frame is emptier than the frame before**, measured from the frame the
+  document finished arriving in. A 293 KB document paints while it is still being
+  read, so the earliest frames genuinely hold less of it; that is the download,
+  not the takeover (research decision 17).
+- **The subject is painted in a frame the application has not reached yet.** Made
+  with the bundle held back half a second, because on a static server on the same
+  machine the takeover can finish before the browser's first animation frame —
+  which makes the window unobservable rather than absent.
 - On `/ships` with a stored session view, the reorder lands **in the takeover
   frame**, not later — the bounded exception FR-009a allows.
 - On `/ships` with **no** stored view, nothing changes at all.
+- A German Commander's page is compared with the served document's shape, with the
+  untranslated-name disclosures subtracted — the bounded exception FR-011a allows,
+  and the reason FR-011 had to be amended (research decision 18).
+
+Two things this deliberately does not measure: the web font's `swap` reflow, which
+every page has had for as long as it has had a web font; and the visually hidden
+line announcing a pending illustration, which retires when the picture arrives.
 
 ## What CI runs, and what it does not
 

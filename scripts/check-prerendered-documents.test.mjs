@@ -174,6 +174,42 @@ describe('what a document may not carry', () => {
     assert.ok(build.pattern.test('<a href="/outfitting?build=AbCd">'));
     assert.ok(!build.pattern.test('<a href="/outfitting">'));
   });
+
+  it('refuses a shared build or loadout in the shape the codecs actually write', () => {
+    // The two codecs' own prefixes rather than the word "build": what a
+    // Commander shares is `#b.…` and `#e.…`, and a document carrying one would
+    // be a Commander's work committed by a build machine.
+    const shared = prohibitions('0.0.0').find((rule) => rule.what.includes('shared build'));
+
+    assert.ok(shared.pattern.test('<a href="/outfitting#b.A1B2c3">'));
+    assert.ok(shared.pattern.test('<a href="/equipment#e.A1B2c3">'));
+    assert.ok(!shared.pattern.test('<a href="/outfitting">'));
+    // Not every fragment is a payload. The shell's own skip link is one.
+    assert.ok(!shared.pattern.test('<a href="#main">'));
+  });
+
+  it('refuses a saved record and a browsing session, by the keys they are stored under', () => {
+    const record = prohibitions('0.0.0').find((rule) => rule.what === 'a saved record');
+    const session = prohibitions('0.0.0').find((rule) => rule.what === 'a browsing session');
+
+    assert.ok(record.pattern.test('{"ednb:record:7f3":{"title":"My Cutter"}}'));
+    assert.ok(!record.pattern.test('<p>A record of every hull.</p>'));
+    assert.ok(session.pattern.test('sessionStorage.getItem("ednb:catalogue")'));
+    assert.ok(!session.pattern.test('<p>The catalogue.</p>'));
+  });
+
+  it('refuses a machine’s own address baked into a document', () => {
+    // What separates a document built on a contributor's laptop from the one CI
+    // publishes, and the plainest form of runtime configuration in a static
+    // asset.
+    const configured = prohibitions('0.0.0').find((rule) =>
+      rule.what.includes('runtime environment'),
+    );
+
+    assert.ok(configured.pattern.test('<link href="http://localhost:4200/main.js">'));
+    assert.ok(configured.pattern.test('<script>window.api = process.env.API</script>'));
+    assert.ok(!configured.pattern.test('<link href="https://navbeacon.app/main.js">'));
+  });
 });
 
 describe('the gate, against the built output', { skip: built ? false : 'no build to read' }, () => {

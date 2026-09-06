@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { frameTexts, recordFirstFrameText } from './first-frame';
 import {
   applyDraft,
   benchFollowedSelection,
@@ -7,7 +8,7 @@ import {
   revealMount,
   revealStatusRail,
 } from './outfitting-surfaces';
-import { buildStockHull, openFirstHullFromManifest, openLibrary } from './shell';
+import { buildStockHull, openFirstHullFromManifest, openLibrary, waitForTakeover } from './shell';
 
 /**
  * Offline capability and the privacy promise (US1, US2, US3).
@@ -58,9 +59,52 @@ test.describe('offline capability', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     // The catalogue is installed with the package rather than fetched, so every
     // hull is still there.
+    //
+    // Counted after the takeover rather than during it. Since feature 015 the
+    // reload is answered by a document that already draws the catalogue, and
+    // the application then adopts those nodes; a takeover that rebuilt them
+    // instead of adopting them would hold two catalogues at once. A retrying
+    // count would sit through that and report the number it was waiting for, so
+    // the wait is stated here and the count is taken once the page is the
+    // application's.
+    await waitForTakeover(page);
     await expect(page.locator('[data-hull-symbol]:visible')).toHaveCount(48);
+    // Both compositions, and one of each: the view draws a table and a card
+    // list into every document and hides one (`responsive-catalogue-view.html`).
+    // Twice this is a catalogue rendered on top of a catalogue.
+    await expect(page.locator('[data-hull-symbol]')).toHaveCount(96);
 
     await context.setOffline(false);
+  });
+
+  test('serves a returning Commander the hull they asked for, not the start page', async ({
+    page,
+  }) => {
+    // 015/FR-014. The worker used to answer every navigation from its cache and
+    // its cache held one shell, which was harmless while the shell stated
+    // nothing. It is not harmless now: `index.html` is the start page's own
+    // document, so a cache-first worker would have painted "Tools for
+    // Commanders" under a hull's address for every Commander who had been here
+    // before — the returning Commander getting a worse first frame than the
+    // stranger, which is the failure `freshness` exists to prevent.
+    await recordFirstFrameText(page);
+    await withWorker(page, '/ships/Anaconda');
+
+    // A third visit, so this one is answered by a worker that is installed,
+    // controlling and warm.
+    await page.goto('/ships/Anaconda');
+    await expect(page.getByRole('main')).toBeVisible();
+    await waitForTakeover(page);
+
+    // Lower-cased by the recorder: `innerText` reports what the screen shows,
+    // and half of what this application shows is set in capitals.
+    const painted = await frameTexts(page);
+
+    expect(painted.length, 'frames recorded').toBeGreaterThan(0);
+    expect(painted[0], 'the hull in the first painted frame').toContain('anaconda');
+    for (const [index, text] of painted.entries()) {
+      expect(text, `frame ${index} carried the start page`).not.toContain('tools for commanders');
+    }
   });
 
   test('keeps an illustration that has been seen once', async ({ page, context }) => {

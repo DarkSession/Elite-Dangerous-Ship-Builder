@@ -527,11 +527,21 @@ jobs:
       # the same footgun the end-to-end shard flag has, and here it would be
       # silent — a build with the wrong base href succeeds and simply loads
       # nothing.
+      #
+      # Which means the chain has to be written out here, because since feature
+      # 015 `ng build` is only the middle of it: the routes file the builder
+      # reads is generated before it and the documents are placed after it. Left
+      # out, the build fails outright on the missing routes file — and if it did
+      # not, a preview would be a shell where production is fifty documents,
+      # which is the deployment nobody reviews.
       - name: Build the preview
         if: ${{ steps.token.outputs.available == 'true' }}
         run: |
           pnpm run help:artifacts
+          pnpm run search:sitemap
+          node scripts/generate-prerender-routes.mjs
           pnpm exec ng build --base-href="${{ steps.location.outputs.base-href }}"
+          node scripts/publish-static-routes.mjs
           # The stamp above is a build input, not a change to propose. Put the
           # manifest back now that the build has read it, so the publishing step
           # runs its git operations against a clean working tree.
@@ -568,15 +578,13 @@ jobs:
           fi
           echo "::notice title=Preview robots tag::$documents documents marked noindex."
 
-      # Copied from the shell rather than from `index.html`, for the same reason
-      # `publish-static-routes.mjs` copies it from the shell: since feature 015
-      # `index.html` is the start page's own document, and an unmatched address
-      # answered with it would show the start page's content under someone
-      # else's address before the application had a chance to resolve it.
-      # `index.csr.html` is the body-less shell the builder leaves beside it.
-      - name: Serve client-side routes from the 404 page
-        if: ${{ steps.token.outputs.available == 'true' }}
-        run: cp dist/navbeacon/browser/index.csr.html dist/navbeacon/browser/404.html
+      # No `404.html` step here any more: `publish-static-routes.mjs`, which the
+      # build step above now runs, writes it — and writes it from
+      # `index.csr.html` rather than from `index.html`, because since feature
+      # 015 `index.html` is the start page's own document and an unmatched
+      # address answered with it would show the start page's content under
+      # someone else's address. A copy made here as well would either duplicate
+      # that or, if it were left pointing at `index.html`, quietly undo it.
 
       # `public/CNAME` is copied into every build by the asset glob, and it
       # names the production domain. It is inert in a subdirectory — Pages reads

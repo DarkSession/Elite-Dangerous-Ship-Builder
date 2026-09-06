@@ -165,16 +165,32 @@ Two details make the deployment behave on Pages:
   installed file, and a package SVG tracked under `public/` or `src/` fails
   outright. Re-run both scripts after moving the package pin;
   [spec 010](./specs/010-hull-anatomy/spec.md) is where the rule is written.
-- `index.html` is copied to `404.html` before upload. Pages answers any path that
-  is not a file with its own 404 page, which would break a deep link into a
+- `index.csr.html` is copied to `404.html` before upload. Pages answers any path
+  that is not a file with its own 404 page, which would break a deep link into a
   client-side route; serving the application from `404.html` hands those paths to
-  the Angular router instead, with no redirect and no hash fragment.
-- Each route `public/sitemap.xml` advertises is also copied to `<route>.html`.
+  the Angular router instead, with no redirect and no hash fragment. It is copied
+  from `index.csr.html` — the body-less shell — rather than from `index.html`,
+  because `index.html` is now the start page's own document and an unmatched
+  address answered with it would show one screen's content at another's address.
+- Fifty of the fifty-two addresses `public/sitemap.xml` advertises are **rendered
+  at build time**, each to its own `<route>.html`: the root, the hull catalogue
+  and all 48 hulls. The body is there before any script runs, which is what a
+  crawler that executes none of them can read
+  ([spec 015](./specs/015-prerendered-documents/spec.md)). The two benches —
+  `/outfitting` and `/equipment` — state nothing until a Commander acts, so they
+  keep the head-only document they have always had.
   `404.html` alone catches every address, but Pages serves it with a 404 status,
   and a crawler drops a 404 whatever the body says — so a sitemap of paths that
   only `404.html` answers is a sitemap of errors. `<route>.html` answers 200 with
-  no redirect, where `<route>/index.html` would answer 301 to `<route>/`. The
-  route list is read out of the sitemap rather than repeated in the workflow.
+  no redirect, where `<route>/index.html` would answer 301 to `<route>/`, which
+  is why the build moves each rendered document out of the directory Angular
+  writes it into. The route list is read out of the sitemap rather than repeated
+  in the workflow.
+- The output of `pnpm run build` therefore has three kinds of HTML in it: the 50
+  rendered documents, `index.csr.html` (the shell the service worker falls back
+  to and `404.html` is copied from), and `404.html` itself. Nothing runs on the
+  server to produce any of them; per-request rendering stays prohibited
+  (constitution 9.1.0, Technology Constraints).
 
 The repository has to be set up once for this to work: **Settings → Pages →
 Build and deployment → Source** set to **GitHub Actions**, and a DNS `CNAME`

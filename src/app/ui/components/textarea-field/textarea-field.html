@@ -1,12 +1,18 @@
 <div class="field">
-  <label
-    class="field__label"
-    [class.field__label--hidden]="labelHidden()"
-    [id]="relations.labelId"
-    [attr.for]="relations.controlId"
-  >
-    {{ label() }}
-  </label>
+  <!-- Written into the markup rather than bound, for the reason `text-field.html` gives. -->
+  @if (labelHidden()) {
+    <label
+      class="field__label field__label--hidden"
+      [id]="relations.labelId"
+      [attr.for]="relations.controlId"
+    >
+      {{ label() }}
+    </label>
+  } @else {
+    <label class="field__label" [id]="relations.labelId" [attr.for]="relations.controlId">
+      {{ label() }}
+    </label>
+  }
 
   <textarea
     class="field__control"

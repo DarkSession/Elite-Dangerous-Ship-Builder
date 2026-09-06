@@ -1,12 +1,26 @@
 <div class="field">
-  <label
-    class="field__label"
-    [class.field__label--hidden]="labelHidden()"
-    [id]="relations.labelId"
-    [attr.for]="relations.controlId"
-  >
-    {{ label() }}
-  </label>
+  <!--
+    Two labels rather than one with a bound class, because a bound class is not
+    a class a generated document can keep. Angular re-initialises `[class.x]`
+    bindings on the first pass after it takes over a rendered document, and for
+    one frame the class is off the element: measured on `/ships`, the search
+    field's hidden label stood up to its full 12px and pushed all 48 hulls down
+    16 pixels, then sat back down (015/FR-009, SC-003). A class written into the
+    markup is claimed by the takeover and never rewritten.
+  -->
+  @if (labelHidden()) {
+    <label
+      class="field__label field__label--hidden"
+      [id]="relations.labelId"
+      [attr.for]="relations.controlId"
+    >
+      {{ label() }}
+    </label>
+  } @else {
+    <label class="field__label" [id]="relations.labelId" [attr.for]="relations.controlId">
+      {{ label() }}
+    </label>
+  }
 
   <input
     #control

@@ -46,6 +46,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '008-mobility-and-jump',
   '012-help-and-licences',
   '014-start-page',
+  '015-prerendered-documents',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -2083,6 +2084,115 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'the accessibility scan reports no in-scope violation in any of the ten projects',
     ],
     manualRecord: 'actual-zoom',
+  },
+  // ---------------------------------------------------------------------------
+  // 015 — prerendered documents. No screen of its own: it changes *when* three
+  // existing screens are rendered, so its rows are those screens' first frames
+  // and the gates that hold them to the package.
+  // ---------------------------------------------------------------------------
+  {
+    surfaceId: 'prerendered/advertised-address',
+    requirements: [
+      '015/FR-001',
+      '015/FR-002',
+      '015/FR-003',
+      '015/FR-004',
+      '015/FR-005',
+      '015/FR-018',
+      '015/SC-001',
+      '015/SC-002',
+    ],
+    journey: 'product/published-address',
+    axe: false,
+    assertions: [
+      'every advertised address answers from its own file, with no redirect and no directory',
+      'a hull’s document states its manufacturer, speed, shield, mass, crew, mass lock and mounts, with no script run',
+      'each figure is the pinned package’s own value, presented rather than re-derived',
+      'the head every address had before this feature — title, description, canonical, card — is unchanged',
+      'the two benches are advertised, keep their head, and state nothing, which is a ruling rather than an oversight',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'prerendered/first-frame',
+    requirements: [
+      '015/FR-008',
+      '015/FR-009',
+      '015/FR-009a',
+      '015/FR-010',
+      '015/FR-011',
+      '015/FR-011a',
+      '015/FR-012',
+      '015/SC-003',
+      '015/SC-004',
+    ],
+    journey: 'product/prerendered-first-frame',
+    axe: true,
+    assertions: [
+      'the document states its subject to a reader that runs no script at all',
+      'it states it in a frame the application has not reached yet, which is the whole of what changed',
+      'no frame between the document arriving and the takeover holds less than the frame before it',
+      'the boxes content is laid out inside do not move across the takeover, on either engine',
+      'a stored catalogue view lands in the takeover frame itself, and a Commander with none sees no change at all',
+      'a German Commander’s words are replaced without anything being reordered or removed',
+      'the one thing German adds is the note beside each name English has nothing to disclose about',
+      'a Commander whose bundle never arrives is left with the readable document',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'prerendered/first-frame-accessibility',
+    requirements: ['015/FR-019', '015/SC-005'],
+    journey: 'product/prerendered-first-frame',
+    axe: true,
+    assertions: [
+      'the generated frame is scanned before the application has touched it, across all ten projects',
+      'exactly one h1 is rendered and it names the address’s subject, with no CSS and no script',
+      'html[lang] and dir are correct for bundled English before any locale is committed',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'prerendered/returning-and-unmatched',
+    requirements: [
+      '015/FR-013',
+      '015/FR-014',
+      '015/FR-015',
+      '015/FR-016',
+      '015/SC-006',
+      '015/SC-007',
+    ],
+    journey: 'product/offline',
+    axe: false,
+    assertions: [
+      'a returning Commander with a network is served the address they asked for, never the start page',
+      'an address no document was generated for is resolved by the application, offline included',
+      'the navigation fallback states nothing, so no address is ever answered with another’s content',
+      'every offline journey that passed before this feature passes unchanged',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'prerendered/what-a-document-may-not-carry',
+    requirements: [
+      '015/FR-006',
+      '015/FR-007',
+      '015/FR-017',
+      '015/FR-020',
+      '015/FR-021',
+      '015/SC-008',
+      '015/SC-009',
+    ],
+    journey: 'product/published-address',
+    axe: false,
+    assertions: [
+      'no document carries a build, a saved record, a browsing session, a machine’s address or the application version',
+      'a build stays in the fragment, so no part of one is in a path or a query',
+      'every generated document is checked against the pinned package by a gate that has been watched to fail',
+      'which addresses are content-bearing is recorded once and reconciled against what the builder was told to render',
+      'a pin move that changes the hull set changes the generated set with no hand edit',
+    ],
+    manualRecord: null,
   },
 ];
 

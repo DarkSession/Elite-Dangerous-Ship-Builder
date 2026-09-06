@@ -55,10 +55,10 @@ const NEVER_IN_A_DEVELOPMENT_RUN = IS_PRODUCTION_RUN
       '**/schematic-offline.spec.ts',
       '**/application-update.spec.ts',
       '**/help-offline.spec.ts',
-      // Not a service-worker journey, but the same requirement: it reads the
-      // documents `scripts/publish-static-routes.mjs` writes, and a development
-      // server has none of them.
+      // Not service-worker journeys, but the same requirement: they read the
+      // documents the build writes, and a development server has none of them.
       '**/search-published.spec.ts',
+      '**/prerendered-first-frame.spec.ts',
     ];
 
 /**

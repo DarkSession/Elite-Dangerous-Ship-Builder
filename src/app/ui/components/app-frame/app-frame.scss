@@ -339,9 +339,21 @@
   // Where the sheet is on screen the bar underneath it is not: canvas 1b draws
   // the insignia, the release mark, the shipyard's name and its count on the
   // shipyard's own bar, and none of them on the sheet's.
-  :host(.frame--returning) .frame__identity,
-  :host(.frame--returning) .frame__flag-home,
-  :host(.frame--returning) .frame__deck > .frame__flag {
+  //
+  // Asked of the return bar being drawn, not of a host class saying it will be.
+  // `frame--returning` follows `back()`, which the hull sheet publishes from an
+  // effect in its own component — so it is null until that route's chunk has
+  // loaded and run. A generated document is rendered after all of that and draws
+  // the sheet's bar correctly; the application then boots without it for about
+  // 1.1 seconds. Measured on `/ships/Anaconda` at 390px: the shipyard's insignia
+  // and identity came back at 155ms and went away again at 1281ms, and the whole
+  // screen sat 46 pixels lower in between (015/FR-009, SC-003).
+  //
+  // The bar itself is in the document and the takeover adopts it, so asking
+  // whether it is there is a question the first frame can already answer.
+  :host(:has(.frame__return)) .frame__identity,
+  :host(:has(.frame__return)) .frame__flag-home,
+  :host(:has(.frame__return)) .frame__deck > .frame__flag {
     display: none;
   }
 

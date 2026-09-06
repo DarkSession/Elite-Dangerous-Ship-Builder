@@ -185,6 +185,8 @@ Commander data.
 - **A Commander whose language is not English.** The document is written in
   bundled English and the takeover replaces its text with the committed locale
   (FR-011). The replacement is in place: the words change, the layout does not.
+  The one addition it brings is the note beside each game name that English does
+  not need, because in English there is nothing to disclose (FR-011a).
 - **Script runs but the takeover fails** — a bundle blocked, a chunk that never
   arrives. The document must remain readable rather than becoming an empty page.
 - **The service worker serves a cached shell for an address whose document
@@ -234,8 +236,8 @@ Commander data.
   content rather than an empty shell.
 - **FR-009**: When the application takes over from the document, content visible
   to the Commander MUST NOT move position, blank, or disappear and return.
-  Exactly two exceptions exist — FR-011 and FR-009a — and nothing else may claim
-  either.
+  Exactly three exceptions exist — FR-009a, FR-011 and FR-011a — and nothing else
+  may claim any of them.
 - **FR-009a**: When a Commander has a stored catalogue view, the takeover MUST
   apply it, and MUST do so in the takeover frame itself rather than a frame later.
   A Commander with no stored view MUST see no change at all. This exception covers
@@ -248,13 +250,22 @@ Commander data.
   NOT move content the Commander can already see.
 - **FR-011**: A document MUST be written in bundled English. When the committed
   locale is not English, the application replaces the document's text with the
-  committed locale's text once that catalogue arrives. The replacement MUST NOT
-  add, remove or reorder anything on the page; it changes words only. It MAY
-  reflow, because a translation is not the same length as its source. This is the
-  behaviour the application already has — a non-English Commander reads complete
-  bundled English while their catalogue loads — and this feature changes only
-  which frame that English arrives in. It is a named exception to FR-009 and to
-  SC-003.
+  committed locale's text once that catalogue arrives. The replacement changes
+  words only, and MUST NOT reorder anything on the page or remove anything from
+  it. It MAY reflow, because a translation is not the same length as its source.
+  This is the behaviour the application already has — a non-English Commander
+  reads complete bundled English while their catalogue loads — and this feature
+  changes only which frame that English arrives in. It is a named exception to
+  FR-009 and to SC-003.
+- **FR-011a**: The one thing the replacement MAY add is the disclosure that
+  accompanies a game name shown in its original language. A Commander reading in
+  a language the game's own nouns are not published in is told so beside each
+  one, and in bundled English there is nothing to disclose because English is the
+  original. So a document read in another language gains one such note per
+  untranslated name and gains nothing else. Suppressing it would be the
+  alternative, and it is not available: a value shown in a language the Commander
+  did not ask for MUST say so. This exception covers that disclosure and nothing
+  else.
 - **FR-012**: If the takeover does not complete, the Commander MUST be left with
   the readable document rather than an empty or broken page.
 

@@ -325,24 +325,45 @@ Settled in [contracts/address-set.md](./contracts/address-set.md) §2, §3 and �
 
 ## Decision 10: Documents are large but cheap to serve
 
-**Measured**, from the spike:
+**Measured**, from the shipped build rather than from the spike. The spike's
+figures were taken before hydration, the per-address head and the placement step;
+these are the files a deployment actually uploads.
 
-| Document                  | Raw     | Gzipped |
-| ------------------------- | ------- | ------- |
-| `index.html` (start page) | 54,365  | 8,845   |
-| `index.csr.html` (shell)  | 5,541   | —       |
-| `ships/index.html`        | 272,283 | 17,204  |
-| `ships/Adder/index.html`  | 302,196 | 19,884  |
+| Document                 | Raw     | Gzipped |
+| ------------------------ | ------- | ------- |
+| `index.html` (start)     | 60,819  | 11,770  |
+| `index.csr.html` (shell) | 29,373  | 6,794   |
+| `404.html`               | 29,373  | 6,788   |
+| `equipment.html` (bench) | 29,313  | 6,860   |
+| `ships.html`             | 261,802 | 19,623  |
+| `ships/Anaconda.html`    | 293,215 | 22,779  |
+| `ships/Sidewinder.html`  | 290,446 | 22,609  |
 
 A hull document is large because `/ships/:hull` is a **child** of `/ships`, so it
 legitimately contains the catalogue behind the inspector — that is what is on
-screen at wide widths. Roughly 14 MB of raw HTML enters the Pages artifact for 50
-documents, served at about 20 KB each compressed.
+screen at wide widths. 14.46 MB of raw HTML enters the Pages artifact across all
+54 files, served at roughly 22 KB each compressed.
 
-**Decision**: Accept it, and add no size gate. The `initial` budget in
-`angular.json` governs the JavaScript bundle and is unmoved; no existing gate
-measures HTML. About 950 KB of compressed HTML across the whole set is not worth
-a mechanism.
+Every document is larger than the spike measured, and the shell most of all —
+5.5 KB became 29 KB. That is the hydration payload of decision 15 plus the
+per-address head, and it is the price of the takeover not blanking the page.
+
+**The bundle**, measured against `e3b8a36`, the tree before this feature:
+
+| Initial total | Raw       | Compressed |
+| ------------- | --------- | ---------- |
+| Before        | 516.79 kB | 122.68 kB  |
+| After         | 547.99 kB | 132.27 kB  |
+
++31.20 kB raw and +9.59 kB compressed, all of it Angular's hydration and event
+replay runtime. The `initial` budget warns at 500 kB and errors at 1 MB; the
+build **already warned before this feature** at 516.79 kB, and still only warns.
+Nothing here changes that verdict, and this feature is not where a budget the
+application was already over gets renegotiated.
+
+**Decision**: Accept it, and add no size gate. No existing gate measures HTML,
+and about 1.1 MB of compressed HTML across the whole set is not worth a
+mechanism.
 
 ---
 
@@ -492,14 +513,109 @@ excludes. It stays available if the interval ever becomes a complaint.
 
 ---
 
+## Decision 16: Four more things move on the first frame, and none of them is the takeover's fault
+
+**Decision**: fix each of the four at its own cause rather than relaxing what the
+journey measures.
+
+The takeover being invisible turned out to be four separate small defects, all of
+them invisible before this feature because there was nothing on screen for them to
+disturb:
+
+| What a Commander saw                                            | Why                                                                                                  | Fixed by |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------- |
+| A second BETA chip at 155ms, gone at 1281ms, name 36px sideways | `betaFollowsTitle` asked a question with two true answers before the route had reported its identity | T006f    |
+| All 48 catalogue rows jumping 16px for one frame                | `[class.field__label--hidden]` is a binding, and Angular re-initialises bindings on its first pass   | T006g    |
+| The mobile hull bar re-composing 46px lower, 1.1s in            | `frame--returning` follows `back()`, published from a lazily loaded component's effect               | T006h    |
+| The whole hull inspector gone for one frame and back            | The router reached the outlet before the lazily loaded chunk, so it discarded the document's screen  | T006d    |
+
+**Rationale**: every one of them is a real thing a Commander sees, and every one
+would have been reported as "the prerendering flickers" rather than as what it is.
+The pattern in three of the four is the same: **a class written into markup
+survives the takeover, a class computed from state does not**, because state the
+document could not have has not arrived yet. The fourth is the router, and its fix
+is the one line that makes hydration's adoption reach a lazily routed screen at
+all.
+
+**What was not fixed, deliberately**: the web font. `font-display: swap` reflows
+the page when the real face arrives, on this and on every other page, before and
+after this feature. `optional` removes the reflow and was tried; it also renders
+the fallback face on a cold load, which loses the typeface for the Commander who
+has never been here — exactly the reader this feature is for. So the swap stays
+and the journey does not measure it.
+
+---
+
+## Decision 17: What the first-frame journey may not measure
+
+**Decision**: three things the recorder subtracts or waits for, each named.
+
+**The document arrives in pieces.** A hull document is up to 293 KB and the
+browser paints while it is still reading it: under eight parallel workers the
+earliest samples hold a banner and 18 of 48 rows, and the page grows underneath
+them. That is the download, not the takeover, and counting it would report every
+run as a page that changed several times before anything had run. Frames carry
+`parsed` (`document.readyState !== 'loading'`) and the movement assertions start
+from the first frame that has it. Nothing is lost by this: a module script does
+not execute until the parse is done, so every partial frame is by construction a
+frame the application has not touched.
+
+**The pending-illustration note retires.** The build renders every illustration in
+its loading state, because a build has no image to wait for. In a browser the
+picture arrives and the visually hidden line announcing the wait goes with it — 25
+characters, the only text that ever leaves the page. That is the illustration
+arriving rather than content disappearing, and the plate reserves its area at a
+fixed ratio either way, so nothing moves. `RETIRING` in `e2e/first-frame.ts`
+subtracts it before anything is measured.
+
+**The window can be shorter than the first paint.** On a static server on the same
+machine the takeover can complete before the browser's first animation frame, so a
+recorder looking for a pre-takeover frame finds none and reports the machine's load
+rather than the product. The ordering claim — the subject painted in a frame the
+application has not reached — is therefore made with the bundle held back half a
+second, which is a slow connection and the case the window exists for. The
+document and the takeover are unchanged; only the number of frames in between is.
+
+---
+
+## Decision 18: A German Commander's page gains something, and FR-011 was wrong about it
+
+**Decision**: amend FR-011 and add FR-011a rather than suppress the disclosure.
+
+FR-011 said the language replacement "MUST NOT add, remove or reorder anything".
+Measured on `/ships` at `de-DE`, the German page carries **192 more elements** than
+the English one: one `span.game-text__disclosure` inside every `ednb-game-text`,
+reading "Wird in der ursprünglichen Sprache angezeigt, da dafür kein Text auf
+Deutsch verfügbar ist." It is visible, subtle and compact — not visually hidden.
+
+The requirement was wrong, not the application. Every hull, manufacturer and mount
+name is published by the package in English only, and `GameText` exists to say so
+whenever a value is shown in a language the Commander did not ask for. English has
+nothing to disclose because English is the original, so the document carries none
+of these and the German reading of it carries one per name. Suppressing them to
+satisfy FR-011 would trade a spec sentence for a Commander not being told what
+language they are reading.
+
+**Rationale**: the exception is bounded and mechanical — exactly one note per
+untranslated name, added, never removed, never reordering anything. The journey
+subtracts precisely those spans and compares the two shapes; anything else the
+takeover added would still fail.
+
+**Alternatives considered**: rendering the disclosure into the English document as
+an empty node so the shapes match — rejected, it puts a lie in 50 published files
+to make a test easier; comparing only tag counts rather than the shape — rejected,
+it stops detecting reordering, which is the thing FR-011 is actually about.
+
+---
+
 ## Resolved unknowns
 
-| Unknown at spec time                              | Resolution                                                                                |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Can the first frame be correct at every viewport? | Yes, by construction — decision 7                                                         |
-| Which Angular configuration?                      | `routesFile` + `server`, no `outputMode` — decision 2                                     |
-| Does prerendering need a deployed server?         | No; `ignoreServer` emits none — decision 2                                                |
-| What breaks first?                                | The app initializer, then `sticky-banner.ts` — decisions 5, 6                             |
-| How is FR-014 answered?                           | `freshness`, plus a fallback and a `404.html` that move off `index.html` — decisions 8, 9 |
-| Is the payload acceptable?                        | Yes, ~20 KB compressed per document — decision 10                                         |
-| Anything the spec did not foresee?                | Yes — session restore on `/ships`, decision 11; and hydration itself, decision 15         |
+| Unknown at spec time                              | Resolution                                                                                                                                                     |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Can the first frame be correct at every viewport? | Yes, by construction — decision 7                                                                                                                              |
+| Which Angular configuration?                      | `routesFile` + `server`, no `outputMode` — decision 2                                                                                                          |
+| Does prerendering need a deployed server?         | No; `ignoreServer` emits none — decision 2                                                                                                                     |
+| What breaks first?                                | The app initializer, then `sticky-banner.ts` — decisions 5, 6                                                                                                  |
+| How is FR-014 answered?                           | `freshness`, plus a fallback and a `404.html` that move off `index.html` — decisions 8, 9                                                                      |
+| Is the payload acceptable?                        | Yes, ~20 KB compressed per document — decision 10                                                                                                              |
+| Anything the spec did not foresee?                | Yes — session restore on `/ships`, decision 11; hydration itself, decision 15; four more first-frame defects, decision 16; and FR-011 being wrong, decision 18 |
