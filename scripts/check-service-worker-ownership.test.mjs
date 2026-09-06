@@ -56,6 +56,36 @@ describe('service-worker ownership across features', () => {
     assert.deepEqual(found, []);
   });
 
+  it('falls back to a document that states nothing, for every address', () => {
+    // The clause feature 015 rests on, and the one this file exists to keep.
+    //
+    // The worker answers every navigation it cannot match from `index`. Before
+    // 015 that was `/index.html` and it was harmless, because every body was an
+    // empty `<app-root>`. `index.html` is now the start page's own rendered
+    // document, so a fallback still pointing at it would paint the start page's
+    // content on a repeat or offline visit to any hull — and Angular would then
+    // replace it with the hull's, which is content changing after the first
+    // frame (015/FR-009, `contracts/address-set.md` §3).
+    assert.equal(config.index, '/index.csr.html');
+  });
+
+  it('answers a navigation from the network first, so a returning Commander gets the document', () => {
+    // Nothing else asserts this, and without it the feature is invisible to
+    // everyone who has visited before.
+    //
+    // The default is `performance`, which is cache-first: the first visit would
+    // fetch the generated document from the network and every visit after it
+    // would get the cached shell instead. That is legal, and it would hand back
+    // today's empty first frame to precisely the people who use the application
+    // most — silently, with no test failing and no line in a diff to notice
+    // (015/FR-014).
+    //
+    // Offline is unaffected: `freshness` falls back to the cache when the
+    // network does not answer, so every capability stays usable with no network
+    // (constitution I, 015/FR-013).
+    assert.equal(config.navigationRequestStrategy, 'freshness');
+  });
+
   it('adds ship artwork as feature 001’s only asset group', () => {
     const names = config.assetGroups.map((group) => group.name);
 
@@ -103,8 +133,12 @@ describe('service-worker ownership across features', () => {
   it('leaves feature 011’s app-shell and locale groups untouched', () => {
     const byName = Object.fromEntries(config.assetGroups.map((group) => [group.name, group]));
 
+    // `/index.csr.html` rather than `/index.html` since feature 015. The shell
+    // moved off `index.html` because `index.html` became the root's own
+    // rendered document — Pages resolves `/` to that file and to no other, so
+    // the content-free file had to be the one that moved.
     assert.deepEqual(byName['app-shell'].resources.files, [
-      '/index.html',
+      '/index.csr.html',
       '/manifest.webmanifest',
       '/*.css',
       '/*.js',
