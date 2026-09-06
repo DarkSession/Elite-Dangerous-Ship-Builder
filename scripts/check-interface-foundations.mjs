@@ -25,7 +25,12 @@ import { fileURLToPath } from 'node:url';
 import { TmplAstText, TmplAstTextAttribute, parseTemplate } from '@angular/compiler';
 import ts from 'typescript';
 import scssSyntax from 'postcss-scss';
-import { declaredOrigin, publishedAddresses, readSitemap } from './search/published-addresses.mjs';
+import {
+  contentBearingAddresses,
+  declaredOrigin,
+  readSitemap,
+} from './search/published-addresses.mjs';
+import { prerenderRoutes } from './generate-prerender-routes.mjs';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -1056,7 +1061,9 @@ export function searchMetadataSources(originSource, englishText) {
   try {
     const origin = declaredOrigin(originSource);
     try {
-      published = publishedAddresses({ origin });
+      // With feature 015's verdict attached, so the reconciliation below reads
+      // one list rather than joining two by path (015/FR-021).
+      published = contentBearingAddresses({ origin });
     } catch (failure) {
       fail(
         SEARCH_METADATA_FILES.addresses,
@@ -2012,6 +2019,70 @@ export function searchMetadataViolations(input) {
           `"${entry.route}" is published but the route table declares no "${leaf}".`,
         );
       }
+    }
+  }
+
+  // Which advertised addresses the build renders a document for.
+  //
+  // Feature 015 turns 50 of the 52 into documents that state their subject
+  // before any script runs, and leaves 2 as the head-only shells they have
+  // always been. What makes that safe is that the verdict is recorded once and
+  // read by both the build and the gate — so this reconciles the record against
+  // itself and against what the routes-file generator would actually write, and
+  // an address that is neither generated nor deliberately content-free fails
+  // the build rather than being published silently (015/FR-021).
+  if (published !== undefined) {
+    for (const entry of published) {
+      if (typeof entry.contentBearing !== 'boolean') {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"/${entry.path}" is advertised but nothing records whether it has content to state. ` +
+            'It would be neither generated nor deliberately content-free.',
+        );
+        continue;
+      }
+      if (!entry.contentBearing && (entry.reason ?? '').trim().length === 0) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"/${entry.path}" is advertised with no document and no reason. ` +
+            'An address left out because nobody got to it is not a decision.',
+        );
+      }
+      if (entry.contentBearing && entry.reason !== null) {
+        fail(
+          SEARCH_METADATA_FILES.addresses,
+          `"/${entry.path}" is generated but carries a reason for not being. ` +
+            'One of the two is stale.',
+        );
+      }
+    }
+
+    // And the list the builder is actually handed. `prerender.routesFile` with
+    // `discoverRoutes: false` means that file is the whole set: an address
+    // missing from it ships the empty shell this feature exists to replace, and
+    // nothing about the build would say so.
+    try {
+      const rendered = new Set(prerenderRoutes(published).trimEnd().split('\n'));
+      for (const entry of published) {
+        const route = `/${entry.path}`;
+        if (entry.contentBearing && !rendered.has(route)) {
+          fail(
+            SEARCH_METADATA_FILES.addresses,
+            `"${route}" has content to state but the build is not told to render it.`,
+          );
+        }
+        if (!entry.contentBearing && rendered.has(route)) {
+          fail(
+            SEARCH_METADATA_FILES.addresses,
+            `"${route}" is recorded as having nothing to state but the build renders it.`,
+          );
+        }
+      }
+    } catch (failure) {
+      fail(
+        SEARCH_METADATA_FILES.addresses,
+        `The set of addresses to render could not be built: ${failure.message}`,
+      );
     }
   }
 

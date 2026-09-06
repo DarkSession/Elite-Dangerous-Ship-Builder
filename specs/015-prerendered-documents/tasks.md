@@ -105,8 +105,8 @@ search-visibility gain with neither other story built.
 - [x] T020 [US1] Create `scripts/check-prerendered-documents.mjs` asserting the five things [contracts/prerendered-document.md](./contracts/prerendered-document.md) lists: every content-bearing address has a document; each hull's document carries that hull's figures as the package reports them; no document carries a prohibited item; every head still matches `documentHead`; and every document's first `<h1>` names its subject with no body left as an empty `<app-root>` (FR-020)
 - [x] T021 [US1] Register `check-prerendered-documents.mjs` in `pnpm run test:scripts` in `package.json`, so CI runs it (`ci.yml:122-123`)
 - [x] T022 [P] [US1] Add `scripts/check-prerendered-documents.test.mjs` proving each assertion **fails** on a document doctored to break it — a gate that has never been seen to fail is a gate nobody has tested
-- [ ] T023 [US1] Extend `scripts/check-interface-foundations.mjs` to reconcile the content-bearing registry against the advertised address set and the generated output, failing the build by name for any address that is neither generated nor recorded content-free (FR-021)
-- [ ] T024 [P] [US1] Extend `scripts/check-interface-foundations.test.mjs` with the unreconciled-address case, asserting the failure names the address
+- [x] T023 [US1] Extend `scripts/check-interface-foundations.mjs` to reconcile the content-bearing registry against the advertised address set and the generated output, failing the build by name for any address that is neither generated nor recorded content-free (FR-021)
+- [x] T024 [P] [US1] Extend `scripts/check-interface-foundations.test.mjs` with the unreconciled-address case, asserting the failure names the address
 
 ### The journey
 
