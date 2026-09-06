@@ -33,12 +33,25 @@ this reason.
 
 **The service worker would hide the whole feature.** It answers navigations from
 the cached `/index.html`, so only a first-ever visit would see a document. And
-because the root's document _is_ `index.html`, prerendering the root would make a
-repeat visit to any hull paint the start page first. Both are settled in
-[research.md](./research.md) decisions 8 and 9, and together they are the
-substance of FR-014.
+because the root's document must _be_ `index.html` — Pages resolves `/` to that
+file and no other — prerendering the root would make a repeat visit to any hull
+paint the start page first. The answer is to move the three things that used
+`index.html` as a content-free shell onto `index.csr.html`: the worker's
+navigation fallback, the `app-shell` prefetch list, and `404.html`. Settled in
+[research.md](./research.md) decisions 8 and 9 and in
+[contracts/address-set.md](./contracts/address-set.md) §2-§3, and together they
+are the substance of FR-014.
 
-**One capability genuinely conflicts**, and it is ruled on below.
+**The publishing script would undo it.** `publish-static-routes.mjs` writes a
+head-substituted copy of the built `index.html` to all 52 addresses. Run unchanged
+against a prerendered build it would overwrite all 50 generated documents with a
+content-free shell — a build that passes every head assertion and ships nothing.
+Its contract changes in address-set.md §5.
+
+**One capability genuinely conflicted** — the catalogue's stored session view
+against FR-009. That was a spec-level question, not a plan one, and it went back
+to the spec: it is answered in the Clarifications for 2026-09-06 and bounded by
+FR-009a.
 
 ## Technical Context
 
@@ -109,40 +122,23 @@ first frame and to text only — FR-011 requires the replacement to change words
 never layout. It introduces no per-language address (`hreflang` stays out of
 scope, 011/FR-017) and licenses nothing else to ship in one language.
 
-## The ruling FR-009 needs: session restore on `/ships`
+## Where the session-restore ruling went
 
-Research decision 11 found a conflict the spec did not foresee, and it is not a
-composition problem.
+Research decision 11 found a conflict the spec did not foresee: the catalogue
+restores a Commander's filter, sort and anchor from `sessionStorage`, and a
+generated `/ships` states the default view, so a returning Commander's takeover
+can reorder and shorten a list that has already painted.
 
-`CatalogueSessionStore` restores `filters`, `sort` and `anchor` from
-`sessionStorage` in its constructor
-(`catalogue-session.store.ts:54-56, 82-95`). A prerendered `/ships` states the
-catalogue in default order with no filter, because the build knows no session. A
-returning Commander's takeover can therefore reorder and shorten the list — which
-is content changing after the first frame, and FR-009 forbids that flatly.
+That is a question about what a Commander is entitled to, not about how to build
+something, so it belongs to the spec rather than to this plan. It was put to the
+Commander and answered on 2026-09-06: **the stored view wins, applied in the
+takeover frame.** The spec's Clarifications record the reasoning and **FR-009a**
+bounds it — the change lands in the takeover frame itself, a Commander with no
+stored view sees no change at all, and nothing but the catalogue's stored view may
+claim the exception.
 
-**Ruling: the stored view wins, and the change is bounded to the takeover frame.**
-
-A stored filter is the Commander's own instruction, given earlier in this session.
-Discarding it to keep a frame stable would trade a capability for an appearance,
-and the capability is worth more. So the prerendered document states the default
-view, and a Commander with a stored view sees it applied when the application
-takes over.
-
-What this does **not** license, and what the plan holds it to:
-
-- The reorder must land **in the takeover frame itself**, not a frame later.
-  `sessionStorage` is synchronous and the store restores in its constructor, so
-  this should already hold; T-014 proves it rather than assuming it.
-- A Commander with **no** stored view — every first-time visitor, and every reader
-  that runs no script — must see no change at all. That is the common case and it
-  is held to FR-009 in full.
-- Nothing else may claim this exception. It covers the catalogue's stored view and
-  nothing more.
-
-This is a spec-level ruling in the shape of the one feature 014 carried, not a
-constitutional exception. It is recorded here and folded into the acceptance work;
-do not re-derive it.
+Recorded here only so the trail from decision 11 is not lost. The requirement is
+in [spec.md](./spec.md); do not re-derive it here.
 
 ## Project Structure
 
@@ -159,6 +155,7 @@ specs/015-prerendered-documents/
 │   ├── prerendered-document.md  # What a generated document must contain
 │   └── address-set.md           # Which addresses are generated, and the gate
 ├── design/
+│   ├── screen-inventory.md      # Phase 1 — screens, states, requirement mapping
 │   └── first-frame.md           # What each in-scope screen's first frame is
 ├── checklists/requirements.md
 └── tasks.md                     # Phase 2 — /speckit-tasks, not created here
@@ -168,7 +165,7 @@ specs/015-prerendered-documents/
 
 ```text
 angular.json                     # build: server entry + prerender.routesFile
-package.json                     # @angular/ssr, @angular/platform-server; build script
+package.json                     # @angular/ssr, @angular/platform-server; e2e:offline spec list
 ngsw-config.json                 # navigationRequestStrategy: freshness (FR-014)
 
 src/
@@ -182,17 +179,19 @@ src/
 │       └── sticky-banner.ts     # injected view + afterNextRender (decision 6)
 
 .github/workflows/ci.yml         # NEW job e2e-production; deploy gates on it
+                                 # preview: noindex across all 50; 404 from index.csr.html
 
 scripts/
 ├── search/published-addresses.mjs   # + contentBearing registry (FR-021)
 ├── generate-prerender-routes.mjs    # NEW — routes file from the address list
-├── publish-static-routes.mjs        # keeps the 2 head-only addresses; places documents
+├── publish-static-routes.mjs        # substitutes over generated documents (address-set.md §5)
 ├── check-prerendered-documents.mjs  # NEW — FR-020 package comparison
 └── check-interface-foundations.mjs  # reconciles the content-bearing registry
 
 e2e/
 ├── search-published.spec.ts     # + the body states the subject (US1)
 ├── prerendered-first-frame.spec.ts  # NEW — takeover, no shift, axe (US2)
+│                                    #       and added to e2e:offline's spec list
 └── coverage-ledger.ts           # + '015-prerendered-documents' and its rows
 ```
 
@@ -213,20 +212,32 @@ actually sits.
    build that fails on every route.
 3. **Configuration and the routes file** — `angular.json`, the generator, the
    `<address>.html` placement step.
-4. **FR-014 together** — the `freshness` setting and the root-document decision
-   are one change; either alone leaves a wrong first frame.
-5. **Gates last** — the package comparison, the content-bearing reconciliation,
-   and the ledger rows, which cannot be registered until the requirement ids exist
-   in the spec.
+4. **The publishing script before anything is verified** — until
+   `publish-static-routes.mjs` substitutes over the generated documents rather
+   than over the shell, the build overwrites every document it just made and
+   every body assertion tests a shell (address-set.md §5).
+5. **FR-014 as one change** — `navigationRequestStrategy: freshness`, the worker's
+   `index` and the `app-shell` list moving to `index.csr.html`, and `404.html`
+   copying it. Any one alone leaves a wrong first frame, and the pinned service
+   worker test is edited deliberately in the same change.
+6. **The preview job with the same change** — `ng build` prerenders too, so a
+   preview publishes 50 indexable near-duplicates unless the `noindex` rewrite
+   covers every document, and answers unmatched addresses with the start page
+   unless its `404.html` comes from `index.csr.html`
+   ([quickstart.md](./quickstart.md), "What CI runs").
+7. **Gates last** — the package comparison, the content-bearing reconciliation,
+   the `navigationRequestStrategy` assertion, and the ledger rows.
 
 ## Complexity Tracking
 
-| Violation                                                            | Why needed                                                                                                                                          | Simpler alternative rejected because                                                                                                                                                                                  |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Two new dependencies (`@angular/ssr`, `@angular/platform-server`)    | Angular's prerenderer renders the real application through the real router and DI graph, so a document cannot drift from what the application shows | A bespoke jsdom render step would be a second renderer to keep true to the first — the parallel-implementation problem constitution II exists to prevent, applied to behaviour rather than data (research decision 1) |
-| A server entry point in a project whose constitution forbids servers | The builder requires one for any prerender; it runs at build time and no server bundle is emitted                                                   | There is no prerender configuration without it. The honesty is preserved by `ignoreServer` and stated in 9.1.0: build-time rendering is permitted, per-request rendering is not (research decision 2)                 |
-| `PLATFORM_ID` introduced to a repository that has never used it      | The prerender DOM emulation provides `defaultView` but not `crypto`, so every existing `defaultView` guard is the wrong test                        | Guarding on `defaultView` was tried in the spike and did not work (research decision 5). One injectable home keeps it out of components (constitution III)                                                            |
-| A post-build move of every prerendered document                      | Angular emits `<route>/index.html`; GitHub Pages answers a directory with a 301                                                                     | Advertising `/ships/` would change addresses already published and already indexed; accepting the redirect re-creates the problem feature 011 fixed (research decision 4)                                             |
+| Violation                                                                     | Why needed                                                                                                                                          | Simpler alternative rejected because                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Two new dependencies (`@angular/ssr`, `@angular/platform-server`)             | Angular's prerenderer renders the real application through the real router and DI graph, so a document cannot drift from what the application shows | A bespoke jsdom render step would be a second renderer to keep true to the first — the parallel-implementation problem constitution II exists to prevent, applied to behaviour rather than data (research decision 1) |
+| A server entry point in a project whose constitution forbids servers          | The builder requires one for any prerender; it runs at build time and no server bundle is emitted                                                   | There is no prerender configuration without it. The honesty is preserved by `ignoreServer` and stated in 9.1.0: build-time rendering is permitted, per-request rendering is not (research decision 2)                 |
+| `PLATFORM_ID` introduced to a repository that has never used it               | The prerender DOM emulation provides `defaultView` but not `crypto`, so every existing `defaultView` guard is the wrong test                        | Guarding on `defaultView` was tried in the spike and did not work (research decision 5). One injectable home keeps it out of components (constitution III)                                                            |
+| A post-build move of every prerendered document                               | Angular emits `<route>/index.html`; GitHub Pages answers a directory with a 301                                                                     | Advertising `/ships/` would change addresses already published and already indexed; accepting the redirect re-creates the problem feature 011 fixed (research decision 4)                                             |
+| `publish-static-routes.mjs` changes its template from one file to per-address | Its current contract — copy the shell to every address — silently destroys the feature's entire output                                              | Skipping the script for the 50 would split the head contract across two writers, so the 2 head-only addresses could drift from the 50 without any test seeing it (address-set.md §5)                                  |
+| The service worker's navigation fallback moves off `index.html`               | `index.html` becomes a generated document, and a fallback carrying one address's content answers every other address with it                        | Writing the root's document elsewhere was tried on paper and cannot be built: Pages resolves `/` to `index.html` alone, so the root would answer with a shell (research decision 9)                                   |
 
 ## Post-Design Constitution Re-check
 
@@ -241,6 +252,11 @@ and which the new script test extends.
 
 The carried divergence from principle VI is unchanged by the design work: it was
 ruled on before this plan and the design does not widen it.
+
+Two artefacts were added to satisfy constitution IX rather than to satisfy a
+requirement: `design/screen-inventory.md`, which is the mapping the constitution
+requires before tasks are broken down, and `contracts/address-set.md` §5, which
+states the publishing pipeline the feature cannot work without.
 
 One thing the design surfaced, and the change that answers it: the production
 documents exist only under `e2e:offline`, which CI did not run, so SC-005's scan

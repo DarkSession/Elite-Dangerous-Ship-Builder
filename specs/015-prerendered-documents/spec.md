@@ -8,8 +8,8 @@
 
 **Input**: User description: "Prerendered documents for search visibility"
 
-Every Nav Beacon address that has something to say answers with a document that
-already says it, before any script runs.
+Every content-bearing address answers with a document whose body states its
+subject before any script runs.
 
 Today it does not. The application paints its content after Angular boots, so a
 reader that runs no script is served a shell: the head is correct, the body is
@@ -59,6 +59,19 @@ the content, and how each composes it, is settled at plan time in `design/`.
   to state, not a claim that a bench matters less; a bench that later gains
   package-derived resting content becomes content-bearing and is generated.
 
+- Q: The hull catalogue restores a Commander's filter, sort and scroll anchor
+  from the session. A generated document states the default view, because the
+  build knows no session. What happens when a returning Commander's session says
+  otherwise? → A: **The stored view wins, applied in the takeover frame.** A
+  stored filter is the Commander's own instruction, given earlier in this session;
+  discarding it to keep a frame stable would trade a capability for an appearance,
+  and the capability is worth more. So the document states the default view, and a
+  Commander with a stored view sees it applied when the application takes over.
+  This is bounded three ways, and FR-009a holds it there: the change lands in the
+  takeover frame itself and not a frame later; a Commander with no stored view —
+  every first-time reader, and every reader that runs no script — sees no change
+  at all; and nothing but the catalogue's stored view may claim the exception.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - A reader that runs no script can read a hull (Priority: P1)
@@ -68,9 +81,8 @@ a search engine's indexer, an AI crawler, a link checker, a Commander with scrip
 disabled — fetches the hull's address and reads the answer out of the response.
 It does not boot an application, wait for a frame, or run anything.
 
-**Why this priority**: This is the feature. Every other story here protects a
-Commander from the cost of delivering it. Nothing else in this specification is
-worth doing on its own.
+**Why this priority**: This is the capability the feature exists for. The other
+two stories bound its cost to a Commander.
 
 **Independent Test**: Fetch each content-bearing address with script execution
 disabled and confirm the response body states the address's subject. For a hull,
@@ -105,8 +117,8 @@ disappear.
 
 **Why this priority**: Equal first priority with story 1, because it is the
 condition on shipping it. A document that reaches a crawler but costs a Commander
-a visible flash or a reflow under their finger is a net loss: it trades a real
-regression for an invisible gain. This story is what makes story 1 releasable.
+a visible flash or a reflow while they are reading trades a regression they can
+see for a gain they cannot.
 
 **Independent Test**: Open each content-bearing address on each of the five layout
 profiles, record the frames from first paint until the application is
@@ -191,9 +203,11 @@ Commander data.
 
 - **FR-001**: Every content-bearing advertised address MUST answer with a document
   whose main content is present in the served response, without script execution.
-- **FR-002**: A hull's document MUST state that hull's manufacturer, size,
-  maximum speed, base shield, hull mass, crew, mass lock, hardpoint counts by
-  class, and internal capacity by size.
+- **FR-002**: A hull's document MUST state at least that hull's manufacturer,
+  size, maximum speed, base shield, hull mass, crew, mass lock, hardpoint counts
+  by class, and internal capacity by size. These are the figures a reader must be
+  able to find; a document states whatever else its screen states, and FR-004
+  governs all of it alike.
 - **FR-003**: The hull catalogue's document MUST name every hull it lists and MUST
   link to each hull's own address.
 - **FR-004**: Every figure in a document MUST be the value the pinned
@@ -201,10 +215,12 @@ Commander data.
   re-derived or substituted (constitution II and IV). Where the package reports a
   value as unavailable, the document MUST state the absence rather than a
   plausible number.
-- **FR-005**: Every document MUST carry the per-address head feature 011
-  established — title, description, canonical, `og:url` and card image — unchanged
-  in contract. This feature supersedes the body-less output of
-  `scripts/publish-static-routes.mjs`; it does not weaken that head.
+- **FR-005**: Every one of the 52 advertised addresses MUST carry the per-address
+  head feature 011 established — title, description, canonical, `og:url` and card
+  image — byte-for-byte what that machinery produces today, whether or not a body
+  was generated for it. This feature supersedes the body-less output of
+  `scripts/publish-static-routes.mjs`; the head that script computes stays, and is
+  applied to the generated document rather than to a content-free shell.
 - **FR-006**: The set of generated documents MUST be derived from the installed
   package and the advertised address list, never from a hand-maintained list of
   hulls (constitution II).
@@ -216,8 +232,14 @@ Commander data.
 
 - **FR-008**: The first frame of an advertised address MUST show that address's
   content rather than an empty shell.
-- **FR-009**: When the application takes over from the document, no content
-  visible to the Commander MAY move position, blank, or disappear and return.
+- **FR-009**: When the application takes over from the document, content visible
+  to the Commander MUST NOT move position, blank, or disappear and return.
+  Exactly two exceptions exist — FR-011 and FR-009a — and nothing else may claim
+  either.
+- **FR-009a**: When a Commander has a stored catalogue view, the takeover MUST
+  apply it, and MUST do so in the takeover frame itself rather than a frame later.
+  A Commander with no stored view MUST see no change at all. This exception covers
+  the catalogue's stored filter, sort and anchor and nothing else.
 - **FR-010**: The first frame MUST be laid out correctly for the viewport it is
   painted at, on every one of the five layout profiles in both orientations,
   without being corrected to a different composition after takeover. Composition
@@ -225,12 +247,14 @@ Commander data.
   application later refines the composition by measurement, that refinement MUST
   NOT move content the Commander can already see.
 - **FR-011**: A document MUST be written in bundled English. When the committed
-  locale is not English, the application MUST replace the document's text with the
-  committed locale's text on takeover. That replacement is the one content change
-  FR-009 permits: it MUST replace text in place, MUST NOT move layout, and MUST NOT
-  add, remove or reorder anything on the page. A Commander whose locale is not
-  English therefore reads English in the first frame rather than the blank shell
-  they are served today.
+  locale is not English, the application replaces the document's text with the
+  committed locale's text once that catalogue arrives. The replacement MUST NOT
+  add, remove or reorder anything on the page; it changes words only. It MAY
+  reflow, because a translation is not the same length as its source. This is the
+  behaviour the application already has — a non-English Commander reads complete
+  bundled English while their catalogue loads — and this feature changes only
+  which frame that English arrives in. It is a named exception to FR-009 and to
+  SC-003.
 - **FR-012**: If the takeover does not complete, the Commander MUST be left with
   the readable document rather than an empty or broken page.
 
@@ -238,9 +262,10 @@ Commander data.
 
 - **FR-013**: Every capability MUST remain usable offline after first load,
   unchanged from today (constitution I).
-- **FR-014**: Where a cached shell and a generated document could both answer one
-  address, exactly one MUST be defined to win, and the rule MUST be stated rather
-  than left to ordering.
+- **FR-014**: A Commander who has opened the application before MUST receive the
+  generated document when they have a network, and a readable cached shell when
+  they do not. Which of the two answers an address MUST NOT depend on the order
+  things happened in.
 - **FR-015**: An address for which no document was generated MUST still work: the
   running application resolves it and the Commander sees the screen they would
   otherwise have seen.
@@ -255,22 +280,24 @@ Commander data.
   address: the root, the hull catalogue and each of the 48 hulls. `/outfitting`
   and `/equipment` MUST NOT be generated, and MUST keep today's behaviour and
   today's head unchanged.
-- **FR-021**: Which advertised addresses are content-bearing MUST be recorded in
-  one place that the build and the verification gate both read, so the two cannot
-  disagree about what should have been generated. An advertised address that is
-  neither generated nor recorded as content-free MUST fail the build rather than
-  be published silently.
+  Which addresses are content-bearing is recorded once, and enforced by FR-021.
 
 **How it is verified**
 
 - **FR-019**: The accessibility requirement of constitution V — WCAG 2.2 AA with
   the eight named exclusions (2.1.1, 2.1.2, 2.1.4, 2.2.1, 2.4.1, 2.4.3, 2.4.7,
-  2.4.11) — MUST hold for the prerendered first frame exactly as it holds for
-  every other frame. The automated scan MUST cover the first frame, not only the
-  settled page.
+  2.4.11) — MUST hold for the generated first frame exactly as it holds for every
+  other frame. The automated scan MUST cover that frame, not only the settled
+  page, for each of the 50 content-bearing addresses. The two head-only addresses
+  have no generated first frame to scan and keep the coverage they have today.
 - **FR-020**: The content of every generated document MUST be checked against the
   package by an automated gate, so a document that silently stops matching the
   package fails the build rather than being published.
+- **FR-021**: Which advertised addresses are content-bearing MUST be recorded in
+  one place that the build and the verification gate both read, so the two cannot
+  disagree about what should have been generated. An advertised address that is
+  neither generated nor recorded as content-free MUST fail the build rather than
+  be published silently.
 
 ### Key Entities
 
@@ -295,18 +322,26 @@ Commander data.
 ### Measurable Outcomes
 
 - **SC-001**: 100% of the 50 content-bearing addresses state their subject in the
-  served response with no script executed. Today 0% do. The two benches are
-  unchanged, and all 52 keep the head they have today.
+  body of the served response, with no script executed. Today 0% do — every body
+  is an empty `<app-root>`. The two benches are unchanged, and all 52 keep the
+  head they have today.
 - **SC-002**: For all 48 hulls, a reader that runs no script can read every figure
   named in FR-002, and each matches the pinned package exactly.
 - **SC-003**: Across the takeover, visible content moves by zero pixels on all
-  five layout profiles in both orientations. No frame between first paint and
-  interactive is emptier than the frame before it.
-- **SC-004**: A Commander sees an address's content in a measurably earlier frame
-  than they do today, on every layout profile.
-- **SC-005**: The automated accessibility scan covers the first frame of every
-  advertised address across the ten Playwright projects, and reports no in-scope
-  violation.
+  five layout profiles in both orientations — measured as a cumulative layout
+  shift of 0 from first paint to interactive. No frame between first paint and
+  interactive is emptier than the frame before it. FR-011 and FR-009a are the two
+  named exceptions, and each is measured separately rather than folded into this
+  number.
+- **SC-004**: On every layout profile, a Commander sees a content-bearing
+  address's content in the **first painted frame**, where today the first frame
+  carrying that content is the one after the application has booted. The
+  measurement is the frame index of the first paint that contains the address's
+  subject: 0 after this feature, and greater than 0 before it.
+- **SC-005**: The automated accessibility scan covers the generated first frame of
+  all 50 content-bearing addresses across the ten Playwright projects, and reports
+  no in-scope violation. The scan runs in CI rather than only on a contributor's
+  machine, because a generated document exists only in a production build.
 - **SC-006**: Every offline journey that passes today passes unchanged.
 - **SC-007**: An address with no generated document opens the correct screen 100%
   of the time.
@@ -348,9 +383,10 @@ Stated so it is not re-derived:
   a second definition of which addresses exist.
 - The head contract from feature 011 is correct and stays as it is. Only the body
   is new.
-- Hull content has no per-request variance. `HullDetailFacade` reads the package,
-  the formatters and the localisation layer, and no session or Commander state.
-  If that stops being true, this feature's premise stops holding.
+- Hull content has no per-request variance: it is a function of the pinned
+  package, the formatters and the localisation catalogue, and of no session,
+  request or Commander. If that stops being true, this feature's premise stops
+  holding.
 - The measurement-driven parts of the composition can be arranged so the first
   frame is correct at every width without knowing the viewport. If that turns out
   to be false for a given region, that region's first frame is settled at plan

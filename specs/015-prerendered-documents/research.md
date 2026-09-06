@@ -178,17 +178,29 @@ still exited 0 because the prerenderer catches component errors, which makes thi
 the dangerous kind of defect: it does not fail the build, it just serves a
 document rendered from a broken measurement.
 
-What it would serialise: `getBoundingClientRect()` returns zeros under the
-emulation, so `0 - 0 < stackableMinimum()` is true, and the document would ship
-`class="frame--released"` and `style="--ednb-layout-bar-height: 0px"` — both of
-which the browser contradicts on takeover.
+**What it actually serialises, measured rather than assumed.** `measure()` reads
+`element.getBoundingClientRect().height` on its first line
+(`sticky-banner.ts:69`), so the throw happens before either signal is written.
+`released` keeps its initial `false` and `height` keeps its initial `null`, and
+`AppFrame`'s two host bindings (`app-frame.ts:185-186`) therefore emit nothing —
+no `frame--released` class, no `--ednb-layout-bar-height`. The generated document
+is, by luck, indistinguishable from an unmeasured one.
 
-**Why this is a small risk and still must be fixed.** Both bindings drive
-`position: sticky` offsets, `max-block-size` and `scroll-margin`, never normal
-flow, and `sticky → static` does not reflow. So the visible cost is near zero.
-But FR-009 is written as "no content moves", not "little content moves", and a
-document that states a measured value it did not measure is the kind of thing
-this repository does not ship.
+**Why it must still be fixed.** By luck is the problem. The emulation's behaviour
+is not a contract: an emulation that returned a zero-height rect instead of
+throwing would make `0 - 0 < stackableMinimum()` true and ship
+`class="frame--released"` and `style="--ednb-layout-bar-height: 0px"` — a
+measurement the build never made, which the browser then contradicts. And an
+effect that throws four times per document across 50 documents is noise a build
+log cannot distinguish from a real regression. The guard makes the correct outcome
+the intended one.
+
+**Why the visible risk is small either way.** Both bindings drive `position:
+sticky` offsets, `max-block-size` and `scroll-margin`, never normal flow, and
+`sticky → static` does not reflow. So even the bad case costs close to nothing to
+look at. But FR-009 is written as "no content moves", not "little content moves",
+and a document that states a measured value it did not measure is not something
+this repository ships.
 
 **Both fix patterns already exist here**: `element-size.adapter.ts:28` for the
 injected view, `bench-composition.ts:91-94` for the `afterNextRender` deferral —
@@ -265,33 +277,49 @@ exact shape (`:59-69`, `:89-101`).
 
 ---
 
-## Decision 9: The root must not be prerendered into `index.html`
+## Decision 9: The root's document stays `index.html`; the fallback moves off it
 
-**Decision**: Write the root's prerendered document to a filename that is not the
-service worker's navigation fallback, and keep the fallback a content-free shell.
+**Decision**: The root's prerendered document is written to `index.html`, because
+that is the only file `/` resolves to. The service worker's navigation fallback
+and `404.html` move to `index.csr.html`, the content-free shell Angular already
+emits.
 
 **Rationale**: This is the trap that decision 8 alone does not close, and it is
-the most consequential finding in this research.
+the most consequential finding in this research. The first draft of this decision
+got the direction wrong — it proposed moving the root's document instead — and
+that cannot be built, which is why the reasoning is spelled out here.
 
-`fileFor` maps the root address to `index.html`
-(`publish-static-routes.mjs:169-171`). `index.html` is also (a) the app-shell
-asset group's cached file (`ngsw-config.json:10`) and (b) the worker's navigation
-fallback for **every** address. If the start page's body is written into
-`index.html`, then a repeat or offline visit to `/ships/Anaconda` paints **the
-start page's content**, which Angular then replaces with hull content. That is a
-visible content change and a probable reflow — a direct FR-009 and SC-003
-failure, caused by prerendering the root rather than the hull.
+`index.html` is three things at once today: (a) the file Pages serves for `/`, (b)
+the app-shell asset group's cached file (`ngsw-config.json:10`), and (c) the
+worker's navigation fallback for **every** address. It is also (d) the template
+`publish-static-routes.mjs` copies to `404.html` (`:192`). If the start page's
+body is written into it, a repeat or offline visit to `/ships/Anaconda` paints
+**the start page's content**, which Angular then replaces with hull content — a
+visible content change and a probable reflow, a direct FR-009 and SC-003 failure
+caused by prerendering the root rather than the hull.
 
 Today this is invisible only because every body is `<app-root></app-root>`.
 
-Conveniently, the spike showed Angular already emits the artifact needed:
-`index.csr.html`, 5,541 bytes, a content-free client-render shell — essentially
-today's `index.html`. The plan's task is to decide which file the worker's
-`index` points at and which file Pages serves for `/`, and to state it once. The
-two are not the same file any more, and that is the substance of FR-014.
+**(a) cannot move.** Pages resolves `/` to `index.html` and to nothing else, and
+`fileFor` says exactly that in a comment (`publish-static-routes.mjs:169-171`).
+Writing the root's document elsewhere would leave `/` answering with a shell while
+a file no reader requests carried the content — losing FR-001 for the root and
+gaining nothing.
 
-`404.html` is unaffected: it is copied from the pre-substitution index
-(`publish-static-routes.mjs:192`), before the loop rewrites anything.
+**(b), (c) and (d) can.** The spike showed Angular emits `index.csr.html`, 5,541
+bytes, a content-free client-render shell — essentially today's `index.html`. So
+the fallback points at that, the app-shell group prefetches that, and `404.html`
+is copied from that. Three edits, all in files this feature already touches, and
+they leave `/` answering correctly.
+
+`404.html` is **not** unaffected, contrary to what a first reading suggests. It is
+copied before the substitution loop, so it never inherits another address's
+_head_ — but its source is `index.html`, whose _body_ this feature fills. Pages
+serves `404.html` for every unmatched address, so leaving the copy as it is would
+state the start page's content under every address that has no document. That is
+the same trap as the fallback, reached through the host instead of the worker.
+
+Settled in [contracts/address-set.md](./contracts/address-set.md) §2, §3 and §5.
 
 ---
 
@@ -337,7 +365,10 @@ conflict, and it needs a ruling rather than an implementation. Options, for the
 plan to choose between: prerender the default and accept the re-sort as a stated
 exception; suppress session restore on a first frame that came from a document;
 or render the catalogue in a way that makes the reorder invisible. Recorded here
-as an open design question, resolved in [plan.md](./plan.md).
+as an open design question. **Resolved** in the spec's Clarifications for
+2026-09-06 and bounded by FR-009a: the stored view wins, it is applied in the
+takeover frame itself, a Commander with no stored view sees no change at all, and
+nothing else may claim the exception.
 
 ---
 
@@ -423,12 +454,12 @@ the running application.
 
 ## Resolved unknowns
 
-| Unknown at spec time                              | Resolution                                                          |
-| ------------------------------------------------- | ------------------------------------------------------------------- |
-| Can the first frame be correct at every viewport? | Yes, by construction — decision 7                                   |
-| Which Angular configuration?                      | `routesFile` + `server`, no `outputMode` — decision 2               |
-| Does prerendering need a deployed server?         | No; `ignoreServer` emits none — decision 2                          |
-| What breaks first?                                | The app initializer, then `sticky-banner.ts` — decisions 5, 6       |
-| How is FR-014 answered?                           | `freshness`, plus a non-`index.html` root document — decisions 8, 9 |
-| Is the payload acceptable?                        | Yes, ~20 KB compressed per document — decision 10                   |
-| Anything the spec did not foresee?                | Yes — session restore on `/ships`, decision 11                      |
+| Unknown at spec time                              | Resolution                                                                                |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Can the first frame be correct at every viewport? | Yes, by construction — decision 7                                                         |
+| Which Angular configuration?                      | `routesFile` + `server`, no `outputMode` — decision 2                                     |
+| Does prerendering need a deployed server?         | No; `ignoreServer` emits none — decision 2                                                |
+| What breaks first?                                | The app initializer, then `sticky-banner.ts` — decisions 5, 6                             |
+| How is FR-014 answered?                           | `freshness`, plus a fallback and a `404.html` that move off `index.html` — decisions 8, 9 |
+| Is the payload acceptable?                        | Yes, ~20 KB compressed per document — decision 10                                         |
+| Anything the spec did not foresee?                | Yes — session restore on `/ships`, decision 11                                            |

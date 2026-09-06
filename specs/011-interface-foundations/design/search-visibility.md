@@ -115,18 +115,37 @@ form what the previous six findings only imply.
 
 ## What was considered and deliberately not done
 
-- **Prerendering or SSR.** The single highest-value change available, and explicitly out of the
+- **Prerendering or SSR.** ~~The single highest-value change available, and explicitly out of the
   chosen scope. It is also not free: the application is client-side only by constitution, a
   prerender step would need the Almanac at build time and would produce four HTML documents to keep
   honest. Google executes JavaScript, and — now that each route answers 200 rather than 404 — will
   index the routes as they are; every other crawler sees the static head this change adds and
-  nothing more.
+  nothing more.~~
+
+  **Superseded on 2026-09-06 by feature 015** (`specs/015-prerendered-documents/`), which builds
+  it. Three things this record got wrong or that stopped being true:
+
+  - "Client-side only by constitution" was the blocker, and the constitution moved. Version 9.1.0
+    permits build-time rendering explicitly and keeps per-request rendering prohibited, so a
+    prerendered document is a static asset and principle I is untouched.
+  - "Four HTML documents" undercounted by an order of magnitude. The set is 50 — the root, the
+    catalogue and each of the 48 hulls — and it is derived from the pinned package rather than
+    listed, so it costs no more to keep honest than four would.
+  - "Google executes JavaScript" was true and beside the point. Most AI crawlers and several search
+    engines do not, and the hull figures — mass lock, hardpoint counts, internal capacity — were
+    reachable by none of them. That is the gap feature 015 closes.
+
+  What this record established **stands**: the per-address head is unchanged in contract, and
+  feature 015 applies it to the generated document rather than replacing it (015/FR-005).
+
 - **`hreflang` alternates.** There is no per-language URL. The language follows the browser setting
   and nothing else (FR-017), so `en` and `de` are the same address and there is no alternate to
   declare. `og:locale` still reports which language the document was actually rendered in.
 - **Structured data for hulls.** A `Product`- or `Vehicle`-shaped node per hull would be game data
   restated in this repository's markup. The Almanac owns those values (constitution II); a generated
   hull sitemap is the right vehicle for hull-level search presence, not hand-written schema.
+  Feature 015 reopened nothing here: it renders the hull's figures as text through the existing
+  components, which is the package presenting itself rather than a second copy of it.
 - **Keyword meta tags.** No search engine has used them in twenty years.
 
 ## Where the pieces live

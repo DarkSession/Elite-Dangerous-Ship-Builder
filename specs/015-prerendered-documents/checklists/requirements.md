@@ -42,6 +42,29 @@ session of 2026-09-06 and are recorded in the spec:
   root, the hull catalogue and the 48 hulls. `/outfitting` and `/equipment` are
   advertised but state nothing until a Commander acts, so they keep today's
   behaviour and today's head.
+- **Q3 (FR-009a)** — the catalogue's stored session view wins over the document's
+  default view, applied in the takeover frame. Raised by research decision 11
+  during planning and returned to the spec, because what a Commander is entitled
+  to is a spec question rather than a plan one.
+
+**Re-validated 2026-09-06** after an adversarial review of the whole artifact set.
+All items still pass. What changed in the spec, and why each was a real defect:
+
+- **FR-009 carried two exceptions in prose.** The catalogue's stored view is now
+  its own requirement, FR-009a, so it can be tested and so nothing else can claim
+  it by reading the Clarifications loosely.
+- **FR-002 read as a closed list**, which would have made a document stating the
+  hull's price a violation. It is a floor now, with FR-004 governing everything a
+  document states.
+- **SC-004 was not measurable** — "a measurably earlier frame" names no
+  measurement. It is now the frame index of the first paint containing the
+  subject: 0 after, greater than 0 before.
+- **SC-005 and FR-019 claimed the scan covers all 52 addresses.** Two of them get
+  no generated first frame, so the claim was untestable as written. Both now name
+  the 50.
+- **The assumptions named `HullDetailFacade`**, a class — the one genuine
+  implementation-detail leak in the spec. It now states the property (no
+  per-request variance) rather than the code that has it.
 
 Named exceptions to "no implementation details", each deliberate:
 

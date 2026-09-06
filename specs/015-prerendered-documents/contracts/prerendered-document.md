@@ -37,6 +37,10 @@ Every generated document carries, exactly as `documentHead` already produces the
 
 - This feature adds a body. It does not weaken, reorder or reinterpret the head
   (FR-005).
+- The substitution is applied **to the generated document for that address**, not
+  to a content-free shell. Applying it to a shell is the old behaviour and would
+  destroy every body this feature produces
+  ([address-set.md](./address-set.md) §5).
 - A substitution whose anchor tag is absent MUST throw. A silent no-op here looks
   exactly like a published address (`publish-static-routes.mjs:22-23`).
 - Every substitution passes a **function** to `String.replace`, so `$&`, `` $` ``,
@@ -50,6 +54,12 @@ Every generated document carries, exactly as `documentHead` already produces the
 
 - The rendered screen for that address, in **bundled English** (FR-011).
 - Enough text that a reader running no script can state what the address is about.
+- **A heading naming the address's subject, first in document order.** The shell
+  renders one bar composition and hides the other with `display: none`, so a hull's
+  document carries two `<h1>` elements in markup while exactly one is rendered and
+  exactly one is in the accessibility tree. A reader applying no CSS sees both, so
+  document order is the contract: the first `<h1>` is the address's subject
+  (`design/first-frame.md`).
 
 ### A hull's document — `ships/<hull>` (FR-002)
 
@@ -112,6 +122,9 @@ requires importing the package.
 2. Each hull's document contains that hull's figures, as the package reports them.
 3. No document contains a prohibited item from the list above.
 4. Every document's head still matches `documentHead` for its address.
+5. Every document's first `<h1>` names that address's subject, and no document's
+   body is an empty `<app-root>` — the signature of the publishing script having
+   overwritten what the builder produced (address-set.md §5).
 
 ## Failure behaviour
 

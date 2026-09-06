@@ -44,10 +44,12 @@ responsive rule is a media query.
 
 **Takeover must not**: move anything, blank anything, or re-compose.
 
-**Special rule**: this document is **not** written to `index.html`. That file is
-the service worker's navigation fallback for every address, so a start page stored
-there would paint on a repeat visit to a hull
-([contracts/address-set.md](../contracts/address-set.md) §3).
+**Special rule**: this document **is** `index.html` — Pages resolves `/` to that
+file and to no other. So the things that used `index.html` as a content-free shell
+move off it: the service worker's navigation fallback, the `app-shell` prefetch
+list and `404.html` all point at `index.csr.html` instead. Without that move, a
+repeat visit to a hull would paint the start page
+([contracts/address-set.md](../contracts/address-set.md) §2-§3).
 
 ---
 
@@ -68,7 +70,7 @@ and event behaviour, never a box. Already guarded for a renderer with no
 - The language of the text, in place.
 - The accessible name of the row action, as `observeRestingReads` resolves.
 - **The order and length of the list, once**, when the Commander has a stored view
-  in `sessionStorage` — the ruling in [plan.md](./plan.md).
+  in `sessionStorage` — FR-009a.
 
 **Takeover must not**:
 
@@ -76,7 +78,8 @@ and event behaviour, never a box. Already guarded for a renderer with no
   common case and FR-009 holds in full.
 - Apply the stored view a frame late. It must land in the takeover frame itself.
 - Scroll the page. `CatalogueAnchorRestorer` fires only when a hull detail closes,
-  never on a cold load — verified, and T-014 keeps it that way.
+  never on a cold load — verified in Phase 0, and a takeover test keeps it that
+  way.
 
 **Watch**: `offline-privacy.spec.ts:61` asserts exactly 48 visible
 `[data-hull-symbol]` nodes. A prerendered catalogue plus a hydrated one is a
@@ -118,10 +121,13 @@ action layer (`bar-folded`), and the banner.
 every prerendered page inherits.
 
 **What it must not do**: publish either of its host bindings into a generated
-document. Under the prerender emulation `getBoundingClientRect()` returns zeros,
-so an unguarded pass would serialise `class="frame--released"` and
-`--ednb-layout-bar-height: 0px` — a measurement it never made, which the browser
-then contradicts.
+document, or throw while trying. Under the emulation the spike ran,
+`element.getBoundingClientRect` is not a function, so `measure()`
+(`sticky-banner.ts:69`) throws before either signal is written: the bindings emit
+nothing and the document is, by luck, correct. By luck is the problem — an
+emulation returning a zero-height rect instead would serialise
+`class="frame--released"` and `--ednb-layout-bar-height: 0px`, a measurement it
+never made and the browser immediately contradicts (research decision 6).
 
 **The fix, using patterns already in this repository**: a `DOCUMENT`-injected view
 as `element-size.adapter.ts:28` does, and an `afterNextRender` deferral as
@@ -150,6 +156,15 @@ execution disabled, across the ten projects.
 
 Two things the first frame must get right on its own, with no script:
 
-- One `<h1>` per document, naming that address's subject.
+- **One rendered `<h1>`, naming that address's subject.** The shell draws two bar
+  compositions and hides one with `display: none`
+  (`app-frame.scss:318-324`), so a hull's document carries two `<h1>` elements in
+  markup — the return bar's, naming the hull, and the identity block's, naming the
+  catalogue. Exactly one is rendered and exactly one is in the accessibility tree
+  at any width, which is what axe scans and what this already gets right. For a
+  reader that applies no CSS the rule is document order: **the first `<h1>` names
+  the address's subject**, and it does, because the narrower composition's bar
+  comes first in the template (`app-frame.html:109` before `:154`). The FR-020
+  gate asserts it rather than trusting template order to stay that way.
 - `html[lang]` and `dir` correct for bundled English, so a screen reader reading
   the document before takeover announces it in the right language.

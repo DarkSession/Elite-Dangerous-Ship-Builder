@@ -102,12 +102,12 @@ a Commander having acted.
 
 **New.** The HTML a content-bearing address answers with.
 
-| Field     | Meaning                                                           |
-| --------- | ----------------------------------------------------------------- |
-| `address` | The advertised address it answers                                 |
-| `file`    | Where it is written: `<address>.html`, or the root's own filename |
-| `head`    | Title, description, canonical, `og:url`, card image, card alt     |
-| `body`    | The rendered screen, in bundled English                           |
+| Field     | Meaning                                                              |
+| --------- | -------------------------------------------------------------------- |
+| `address` | The advertised address it answers                                    |
+| `file`    | Where it is written: `<address>.html`, and `index.html` for the root |
+| `head`    | Title, description, canonical, `og:url`, card image, card alt        |
+| `body`    | The rendered screen, in bundled English                              |
 
 **Rules**
 
@@ -117,8 +117,16 @@ a Commander having acted.
   see [contracts/prerendered-document.md](./contracts/prerendered-document.md).
 - Written as `<address>.html`, never `<address>/index.html`, because Pages answers
   a directory with a 301 (research decision 4).
-- The root's document is **not** written to `index.html`, because that file is the
-  service worker's navigation fallback for every address (research decision 9).
+- The root's document **is** `index.html`, because Pages resolves `/` to that file
+  and to no other. The navigation fallback moves off it instead (research
+  decision 9, [contracts/address-set.md](./contracts/address-set.md) §2-§3).
+- The head is applied by `publish-static-routes.mjs` **over this document**, not
+  over a shell. A content-bearing address whose document is missing when the
+  script runs is a build failure (FR-005, FR-021, address-set.md §5).
+- The first `<h1>` in document order names this address's subject. A document
+  carries both of the shell's bar compositions, so `ships/<hull>` carries two
+  `<h1>` elements in markup; CSS renders exactly one, and the narrower
+  composition's — the hull's own name — comes first.
 - Contains no Commander data and no runtime environment configuration, the
   application version included (FR-007, research decision 14).
 - Every figure is the package's value, presented and never altered. Where the
@@ -134,17 +142,21 @@ a Commander having acted.
 **New as a named thing**, though the file already exists. The content-free document
 the service worker returns for a navigation it cannot match.
 
-| Field  | Meaning                                            |
-| ------ | -------------------------------------------------- |
-| `file` | The shell the worker's `index` points at           |
-| `body` | `<app-root></app-root>` — no content, deliberately |
+| Field  | Meaning                                                                            |
+| ------ | ---------------------------------------------------------------------------------- |
+| `file` | `index.csr.html` — what the worker's `index` points at, and what `404.html` copies |
+| `body` | `<app-root></app-root>` — no content, deliberately                                 |
 
 **Rules**
 
 - MUST NOT carry any screen's content. A fallback carrying the start page would
   make a repeat visit to a hull paint the start page first (research decision 9).
-- Angular already emits a suitable artifact: `index.csr.html`, 5,541 bytes in the
-  spike.
+- Angular already emits it: `index.csr.html`, 5,541 bytes in the spike —
+  essentially today's `index.html`.
+- It has **three** consumers, and all three move off `index.html` together: the
+  worker's `index`, the `app-shell` asset group's prefetch list, and `404.html`
+  (address-set.md §3). A fourth consumer would be a defect; `index.html` is now a
+  generated document like the other 49.
 - Exactly one of the fallback and a generated document answers any given address,
   and which one is stated rather than left to ordering (FR-014).
 
@@ -160,5 +172,5 @@ the service worker returns for a navigation it cannot match.
   rendered by the existing components. Restating their shape here would be the
   parallel copy constitution II forbids.
 - **Session state.** `filters`, `sort` and `anchor` stay where they are. The
-  document states the default view; the ruling in [plan.md](./plan.md) says what
-  the takeover does with a stored one.
+  document states the default view; FR-009a says what the takeover does with a
+  stored one.

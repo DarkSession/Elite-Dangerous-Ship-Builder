@@ -24,20 +24,32 @@ checkout during Phase 0, except where marked as needing the implementation.
 pnpm run build
 ```
 
-Expect 50 documents plus the content-free shell and `404.html`.
+Expect 50 generated documents — `index.html` among them — plus the content-free
+`index.csr.html`, a `404.html` copied from it, and the 2 head-only addresses.
 
 ```bash
-# The three shapes, one of each
-ls -l dist/navbeacon/browser/ships/Anaconda.html \
-      dist/navbeacon/browser/ships.html \
-      dist/navbeacon/browser/404.html
+cd dist/navbeacon/browser
+
+# The four shapes, one of each
+ls -l ships/Anaconda.html ships.html index.html index.csr.html
+
+# The root's document has a body; the shell and the 404 page do not
+grep -c 'Nav Beacon' index.html                    # > 0
+grep -q '<app-root></app-root>' index.csr.html && echo "ok: shell is content-free"
+cmp index.csr.html 404.html && echo "ok: 404 copies the shell, not the start page"
 
 # Never a directory — Pages would 301 it
-find dist/navbeacon/browser/ships -type d -name '*' | grep -v '^dist/navbeacon/browser/ships$' && echo "FAIL: directory layout" || echo "ok: flat layout"
+[ -e ships/index.html ] && echo "FAIL: directory layout left behind" || echo "ok: flat layout"
 
-# Exactly 50 generated documents
+# Exactly 50 generated documents, against the content-bearing registry
 node -e "…count against the content-bearing registry…"
 ```
+
+The `cmp` is the one to watch. Today `404.html` is a byte copy of `index.html`
+(`publish-static-routes.mjs:192`) and that was harmless because every body was
+empty. After this feature `index.html` carries the start page, so an unchanged
+copy would answer every unmatched address with the start page's content
+([contracts/address-set.md](./contracts/address-set.md) §3).
 
 ## 2. A reader that runs no script sees the content
 
@@ -60,6 +72,20 @@ PY
 **Phase 0 result**, from the spike on `ships/Adder/index.html`: every one found.
 The body opened `Adder Zorgon Peterson · Small landing pad` and carried the
 catalogue's 48 rows with hardpoints and prices.
+
+Also check the heading, which a reader applying no CSS resolves by document order:
+
+```bash
+python3 -c "
+import re,sys
+h=open('dist/navbeacon/browser/ships/Anaconda.html').read()
+print(re.findall(r'<h1[^>]*>(.*?)</h1>',h,re.S)[:2])"
+```
+
+Expect two `<h1>` elements and **`Anaconda` first** — the shell renders one bar
+composition and hides the other with `display: none`, so exactly one is on screen
+and in the accessibility tree, and the narrower composition's comes first in the
+markup (`design/first-frame.md`, FR-019).
 
 ## 3. The figures match the package
 
@@ -87,6 +113,19 @@ pnpm run search:sitemap:check   # the committed sitemap still matches the packag
 pnpm run policy                 # every advertised address is generated or recorded content-free
 ```
 
+`pnpm run build` runs `publish-static-routes.mjs`, which now substitutes each
+address's head **over that address's generated document** rather than over the
+shell (address-set.md §5). To prove that is what happened rather than the old
+behaviour, check a hull document has both its own canonical and its own body:
+
+```bash
+grep -o 'rel="canonical" href="[^"]*"' dist/navbeacon/browser/ships/Anaconda.html
+grep -c 'Faulcon DeLacy' dist/navbeacon/browser/ships/Anaconda.html   # > 0
+```
+
+A document with the right canonical and an empty body is the failure mode this
+step exists to catch: the script ran, and it overwrote what the builder made.
+
 FR-021: an address that is neither must fail the build. To prove the gate bites,
 add an address to the route table and the sitemap without recording it, and
 confirm `pnpm run policy` names it.
@@ -107,6 +146,12 @@ Runs the production suite, which builds first
 - `e2e/prerendered-first-frame.spec.ts` (new) — the takeover moves nothing, blanks
   nothing, re-composes nothing, on all ten projects; and axe over the document
   before takeover (FR-019).
+
+  **`e2e:offline` names its spec files explicitly** (`package.json:27`), so this
+  file does not run until it is added to that list. Adding it is part of the work,
+  not a consequence of writing the file — without the edit, CI would run the new
+  job and never run the new test.
+
 - `e2e/offline*.spec.ts` — unchanged behaviour, proving FR-013 and SC-006.
 
 ## 7. The service worker rule holds
@@ -121,10 +166,20 @@ Manually, against `pnpm exec node scripts/serve-production.mjs`:
 
 1. Open `/ships/Anaconda`, let the worker take control, reload. **Expect** the
    prerendered hull document, not the shell — this is what `freshness` buys.
-2. Go offline and reload. **Expect** the cached shell then the application, and
+2. Go offline and reload. **Expect** `index.csr.html` then the application, and
    every capability still working.
 3. Repeat-visit `/ships/Anaconda` and watch the first paint. **Expect** never to
    see the start page's content — the trap research decision 9 closes.
+4. Open `/ships/NotAShip` offline. **Expect** the shell then the application's own
+   handling, never the start page (FR-016, and the `404.html` copy above).
+
+The three assertions the service worker test must carry after this
+(`scripts/check-service-worker-ownership.test.mjs`): `config.index` is
+`/index.csr.html`, the `app-shell` file list names `/index.csr.html` in place of
+`/index.html`, and `config.navigationRequestStrategy` is `freshness`. The last has
+no assertion today, so without it a later edit could restore the cache-first
+default and every returning Commander would silently go back to today's empty
+first frame with nothing failing.
 
 ## 8. The takeover does not move anything
 
@@ -133,7 +188,7 @@ SC-003 asks for zero pixels of movement. What to measure:
 - Cumulative Layout Shift across the takeover, per layout profile, expected `0`.
 - No frame between first paint and interactive is emptier than the frame before.
 - On `/ships` with a stored session view, the reorder lands **in the takeover
-  frame**, not later — the bounded exception ruled in [plan.md](./plan.md).
+  frame**, not later — the bounded exception FR-009a allows.
 - On `/ships` with **no** stored view, nothing changes at all.
 
 ## What CI runs, and what it does not
@@ -158,10 +213,24 @@ last of those is not a cost decision — it measures under CPU throttling, which
 only honest when nothing else runs beside it, and a shared runner cannot promise
 that.
 
-**PR previews have no generated documents.** `ci.yml:426-439` runs `ng build`
-directly rather than `pnpm run build`, so a reviewer following a preview link
-sees today's behaviour. If the prerendered first frame should be reviewable in a
-preview, that job needs a step — it is not one this feature adds.
+**PR previews gain 50 generated documents, and the preview job must be changed
+for it.** `prerender` is an option of the `application` builder, so `ng build`
+prerenders too: a preview build produces the same 50 documents at the preview
+origin. Two existing steps then do the wrong thing, and both are this feature's to
+fix because this feature is what breaks them:
+
+- **`ci.yml:533-540` rewrites the robots tag in `index.html` only.** With 50
+  documents, 49 would keep `content="index,follow"` and publish full near-duplicates
+  of production on another host — precisely the duplicate that step exists to
+  prevent, now with content behind it. The rewrite must cover every generated
+  document, and the check that it happened must count them.
+- **`ci.yml:542-544` copies `index.html` to `404.html`.** After this feature that
+  is the start page's document, so every unmatched preview address would answer
+  with the start page. It must copy `index.csr.html`, the same file
+  `publish-static-routes.mjs` now copies (address-set.md §5).
+
+The upside is that a reviewer following a preview link sees the real first frame,
+which is worth having. The two steps above are the price.
 
 ## Full gate
 
