@@ -181,6 +181,8 @@ src/
 │   └── ui/components/app-frame/
 │       └── sticky-banner.ts     # injected view + afterNextRender (decision 6)
 
+.github/workflows/ci.yml         # NEW job e2e-production; deploy gates on it
+
 scripts/
 ├── search/published-addresses.mjs   # + contentBearing registry (FR-021)
 ├── generate-prerender-routes.mjs    # NEW — routes file from the address list
@@ -240,7 +242,9 @@ and which the new script test extends.
 The carried divergence from principle VI is unchanged by the design work: it was
 ruled on before this plan and the design does not widen it.
 
-One thing the design surfaced that the gates do not cover: `e2e:offline` is not
-run by CI (`ci.yml:8-12`), and the production documents only exist there.
-[quickstart.md](./quickstart.md) records what that means for SC-005 and what a
-contributor must run before proposing the change.
+One thing the design surfaced, and the change that answers it: the production
+documents exist only under `e2e:offline`, which CI did not run, so SC-005's scan
+would have rested on a contributor remembering. This feature therefore adds the
+`e2e-production` job to `.github/workflows/ci.yml` and puts `deploy` behind it
+(research decision 13). The suite is 23 tests and passes today; it is added as a
+gate that is already green, not as one the feature has to make green.

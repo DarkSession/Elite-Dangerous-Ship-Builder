@@ -379,12 +379,24 @@ first task, not discovered halfway through.
   what an address answers with; the body is the same contract's next clause.
 - `published-addresses.mjs` is already the one module all three consumers read.
 
-**A constraint the plan must state.** `e2e:offline` — where the production
-documents exist — **is not run by CI** (`ci.yml:8-12` names it a contributor's
-gate). SC-005 asks for the accessibility scan over the first frame across the ten
-projects. Either the new coverage goes somewhere CI runs, or SC-005 is enforced
-locally only. This is a decision, not an oversight, and [plan.md](./plan.md)
-records which way it went.
+**The constraint this raised, and how it was answered.** `e2e:offline` — where
+the production documents exist — was **not run by CI** (`ci.yml:8-12` named it a
+contributor's gate). SC-005 asks for the accessibility scan over the first frame
+across the ten projects, so leaving it there would have made the feature's
+central gate a thing a contributor could forget.
+
+The answer, decided on 2026-09-06: **`e2e:offline` runs in CI**, in a job of its
+own (`e2e-production`), and `deploy` gates on it. It cannot join the sharded
+matrix, because a service worker and the documents each address answers with
+exist only in a built deployment and the matrix is served by development
+servers. It is not sharded itself: the six specs are 23 tests, and a shard would
+repeat the production build for every slice.
+
+`e2e:timing` stays a contributor's gate, and not for cost. It measures under CPU
+throttling, and what makes that measurement honest is that nothing else runs
+beside it (`e2e/coverage-ledger.ts`, "The one measurement project outside the
+matrix"). A shared runner cannot promise that, so a budget asserted there would
+fail on a noisy neighbour and report nothing about the code that was pushed.
 
 **Two existing assertions to watch**:
 

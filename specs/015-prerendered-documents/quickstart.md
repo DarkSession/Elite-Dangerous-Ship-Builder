@@ -136,26 +136,32 @@ SC-003 asks for zero pixels of movement. What to measure:
   frame**, not later — the bounded exception ruled in [plan.md](./plan.md).
 - On `/ships` with **no** stored view, nothing changes at all.
 
-## A constraint to know before proposing the change
+## What CI runs, and what it does not
 
-**`e2e:offline` is not run by CI.** `.github/workflows/ci.yml:8-12` names
-`policy`, `build:preview`, `codec:capacity`, `e2e:timing` and `e2e:offline` a
-contributor's gate rather than the pipeline's. The prerendered documents only
-exist in a production build, so **every assertion in sections 1, 2, 6 and 7 is
-enforced locally, not by CI**, unless the implementation moves some of it.
+**`e2e:offline` runs in CI**, in the `e2e-production` job added by this feature,
+and `deploy` gates on it. So sections 1, 2, 6 and 7 above are enforced by the
+pipeline rather than by a contributor's memory — which is what SC-005 needs, since
+the prerendered documents exist only in a production build.
 
-Two consequences the implementation must settle:
+It is a job of its own rather than part of the sharded matrix: a service worker
+and the published documents exist only in a built deployment, and the matrix is
+served by development servers. It is not sharded, because a shard would repeat
+the production build for each slice.
 
-- SC-005 asks for the accessibility scan over the first frame across the ten
-  projects. Either that coverage runs somewhere CI runs, or SC-005 is a
-  contributor's gate. This is a decision, and it belongs in `tasks.md`.
-- FR-020's package comparison is deliberately a **script** test rather than an
-  end-to-end one, precisely so CI runs it. Keep it there.
+FR-020's package comparison stays a **script** test rather than an end-to-end
+one, because `pnpm run test:scripts` already runs in CI and can import the
+package directly. Keep it there.
 
-**PR previews have no generated documents either.** `ci.yml:426-439` runs
-`ng build` directly rather than `pnpm run build`, so a reviewer following a
-preview link sees today's behaviour. If the prerendered first frame should be
-reviewable, that job needs a step.
+Still a contributor's gate, deliberately: `pnpm run policy`,
+`help:artifacts:check`, `build:preview`, `codec:capacity` and `e2e:timing`. The
+last of those is not a cost decision — it measures under CPU throttling, which is
+only honest when nothing else runs beside it, and a shared runner cannot promise
+that.
+
+**PR previews have no generated documents.** `ci.yml:426-439` runs `ng build`
+directly rather than `pnpm run build`, so a reviewer following a preview link
+sees today's behaviour. If the prerendered first frame should be reviewable in a
+preview, that job needs a step — it is not one this feature adds.
 
 ## Full gate
 
