@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { LoadoutPresenter } from '../../../application/equipment/loadout.presenter';
+import { LoadoutImportPresenter } from '../../../application/equipment/loadout-import.presenter';
 import { LibraryPresence } from '../../build-library/library-presence';
 import { MODIFICATION_SLOT_COUNT } from '../../../domain/equipment/loadout/loadout-edit';
 import { MessageService } from '../../../i18n/message.service';
@@ -38,6 +39,7 @@ export class SuitGate {
   readonly #messages = inject(MessageService);
   readonly #presenter = inject(LoadoutPresenter);
   readonly #library = inject(LibraryPresence);
+  readonly #import = inject(LoadoutImportPresenter);
 
   /** Canvas 2b's arrangement: the chooser alone, without the two previews. */
   readonly compact = input(false);
@@ -52,6 +54,7 @@ export class SuitGate {
   readonly step = this.#messages.messageSignal('equipment.gate.step');
   readonly prompt = this.#messages.messageSignal('equipment.gate.prompt');
   readonly savedLabel = this.#messages.messageSignal('equipment.gate.saved');
+  readonly importLabel = this.#messages.messageSignal('equipment.import.open');
   readonly slotsHeading = this.#messages.messageSignal('equipment.gate.slots');
 
   /** The ladder the canvas previews: every grade a suit can reach, none chosen. */
@@ -78,6 +81,11 @@ export class SuitGate {
    */
   openSaved(): void {
     this.#library.raise();
+  }
+
+  /** Opens the import panel, which is the gate's other way past it. */
+  openImport(): void {
+    this.#import.openLayer();
   }
 
   readonly choices = computed<readonly EquipmentChoice[]>(() =>

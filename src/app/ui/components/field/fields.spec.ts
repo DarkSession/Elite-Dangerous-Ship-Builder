@@ -455,4 +455,35 @@ describe('ChoiceGroup', () => {
     expect(group.getAttribute('aria-invalid')).toBe('true');
     expect(describedText(group)).toContain('Choose a measurement condition.');
   });
+
+  it('sets a choice’s far-edge fact against it, and reads it with the choice', () => {
+    const fixture = renderComponent(ChoiceGroup, {
+      legend: 'Builds found',
+      kind: 'checkbox',
+      layout: 'marked-cards',
+      choices: [
+        {
+          value: 'night-watch',
+          label: 'Night Watch · NW-01',
+          description: 'Anaconda · 42 modules',
+          meta: '2026-09-01 10:00',
+        },
+      ],
+    });
+    const control = query(fixture, 'input');
+
+    expect(textOf(element(fixture).querySelector('.choice__meta'))).toBe('2026-09-01 10:00');
+    expect(describedText(control)).toContain('Anaconda · 42 modules');
+    expect(describedText(control)).toContain('2026-09-01 10:00');
+  });
+
+  it('draws no far-edge fact for a choice that carries none', () => {
+    const fixture = renderComponent(ChoiceGroup, {
+      legend: 'Measured under',
+      layout: 'marked-cards',
+      choices,
+    });
+
+    expect(element(fixture).querySelector('.choice__meta')).toBeNull();
+  });
 });

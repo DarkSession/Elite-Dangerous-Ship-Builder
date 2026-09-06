@@ -32,9 +32,21 @@ export class LibraryPresence {
   readonly #window = inject(DOCUMENT).defaultView;
 
   readonly #open = signal(false);
+  readonly #notice = signal<string | null>(null);
 
   /** Whether the layer is standing over a screen. */
   readonly open = this.#open.asReadonly();
+
+  /**
+   * The sentence whoever raised the layer wants read over the records.
+   *
+   * `null` at every other moment, which is every moment a Commander opened the
+   * library themselves. It is carried here rather than read from the feature
+   * that composed it: the library is behind the exchange layers, and a library
+   * that reached forward to ask them what happened would make the two one
+   * feature (`scripts/policy/slef-ownership.mjs`).
+   */
+  readonly notice = this.#notice.asReadonly();
 
   constructor() {
     const view = this.#window;
@@ -54,10 +66,11 @@ export class LibraryPresence {
   }
 
   /** Raises the layer over whatever screen is showing. */
-  raise(): boolean {
+  raise(notice: string | null = null): boolean {
     if (this.#open()) {
       return false;
     }
+    this.#notice.set(notice);
 
     // The address stays the screen's own; the entry is pushed so back closes
     // the layer rather than leaving the screen underneath it.
@@ -109,5 +122,6 @@ export class LibraryPresence {
   /** Closes the layer. */
   #lower(): void {
     this.#open.set(false);
+    this.#notice.set(null);
   }
 }

@@ -72,6 +72,22 @@ export function importSlef(text: string, requestToken: SlefRequestToken): SlefIm
 }
 
 /**
+ * One entry a journal scan found, taken the same way a pasted one is.
+ *
+ * The size gate and the cardinality gate are the paste's own: a journal is a log
+ * of every build a Commander has flown, and the scan has already framed it into
+ * entries. Everything after that — construction, normalization, the refusal
+ * vocabulary — is the one path, because a second one would eventually skip a
+ * check this one makes.
+ */
+export function importJournalEntry(
+  entry: SlefEntry,
+  requestToken: SlefRequestToken,
+): SlefImportResult {
+  return construct(entry, requestToken);
+}
+
+/**
  * Steps 6 to 10, through feature 002's one ingress gate.
  *
  * The gate owns the ordering: record what the source said about partial rolls,

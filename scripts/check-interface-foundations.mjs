@@ -2608,6 +2608,17 @@ export const REVIEWED_IDENTICAL_VALUES = {
       'A composition pattern: every part is a variable, and the separator is language-neutral.',
     'slef.announce.delivery':
       'A composition pattern: both parts are variables, and the colon is language-neutral.',
+    'slef.import.scanned':
+      'A composition pattern: the file name and the counted phrase are variables, and the separator is language-neutral. The counted phrase itself is translated.',
+    'slef.import.pick.title':
+      'A composition pattern: a Commander\u2019s own ship name and ident, which no language translates, either side of a language-neutral separator.',
+    'slef.import.failure.refused':
+      'A composition pattern: the record\u2019s own title and the package\u2019s reason, either side of a language-neutral separator.',
+    'equipment.import.scanned': 'The same scan report, on the bench\u2019s own import layer.',
+    'equipment.import.failure.refused':
+      'The same refusal line, on the bench\u2019s own import layer.',
+    'equipment.import.outcome.line':
+      'A composition pattern: where the entry sat, the package\u2019s own symbol and its reason, between language-neutral separators.',
     'slef.diagnostic.code': '"Code" is the ordinary German word.',
     'slef.export.mode.label': '"Format" is the ordinary German word.',
     'equipment.export.mode.label': 'The same word, on the bench\u2019s own export layer.',

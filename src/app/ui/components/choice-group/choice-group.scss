@@ -296,6 +296,24 @@
     align-items: start;
   }
 
+  // The far edge, against both rows of the plate. It is the metric face for the
+  // same reason the outcome line is: an instant is a fact, not prose.
+  //
+  // Placed in a track the base plate does not declare, rather than by widening
+  // the template: an explicit third column changes where auto-placement puts a
+  // description on every other marked list, and the effect menu's options
+  // stopped wrapping under their own titles (measured 2026-09-06).
+  .choice__meta {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-family: var(--ednb-font-metric);
+    font-size: var(--ednb-text-size-caption);
+    color: var(--ednb-text-subtle);
+    text-align: end;
+    white-space: nowrap;
+  }
+
   // Spanning both rows, so it stands against the title rather than floating
   // between the title and the line beneath it. The title's own leading centres
   // it on the first line of text at any text size, which a fixed offset would

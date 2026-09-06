@@ -4,12 +4,14 @@ import { getSlefDiagnosticMessage } from '@elite-dangerous-almanac/core/i18n/dia
 import { ShipLoadout } from '@elite-dangerous-almanac/core/ships/ship-loadout';
 import { GameTextPresenter } from '../../i18n/game-text.presenter';
 import { provideLocalization } from '../../i18n/i18n.providers';
+import { MemoryStorage, provideMemoryStorage } from '../../platform/storage/storage.spec-helpers';
 import { provideIsolatedLocaleEnvironment } from '../../i18n/testing/localization-harness';
 import { FIXTURE_HULL, FIXTURE_SLOTS } from '../../domain/ships/outfitting/outfitting.fixtures';
 import {
   SLEF_IMPORT_LIMIT_BYTES,
   type SlefPackageDiagnostic,
 } from '../../domain/ships/slef/slef-import.models';
+import { AnnouncementService } from '../../ui/announcements/announcement.service';
 import { ActiveBuildStore } from '../active-build/active-build.store';
 import { DownloadAdapter } from '../../platform/browser/download.adapter';
 import { NavigatorAdapter } from '../../platform/browser/navigator.adapter';
@@ -82,6 +84,8 @@ describe('what feature 004 says out loud', () => {
         provideRouter([]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
+        // The import coordinator reaches the record repository to store a batch.
+        ...provideMemoryStorage(new MemoryStorage()),
         { provide: NavigatorAdapter, useClass: FakeNavigator },
         { provide: DownloadAdapter, useClass: FakeDownload },
       ],
@@ -391,5 +395,147 @@ describe('what feature 004 says out loud', () => {
 
       expect(presenter.exportView().actions.map((one) => one.action)).toEqual(['download', 'copy']);
     });
+  });
+});
+
+describe('what a journal source adds to the words', () => {
+  let presenter: SlefPresenter;
+  let store: SlefStore;
+  let announcements: AnnouncementService;
+
+  const FILE = (name: string, lines: readonly string[]) => {
+    const text = lines.join('\n');
+    return { name, size: text.length, text: () => Promise.resolve(text) };
+  };
+
+  const line = (fields: Record<string, unknown>) =>
+    JSON.stringify({
+      timestamp: '2026-09-01T10:00:00Z',
+      event: 'Loadout',
+      Ship: 'Anaconda',
+      Modules: [],
+      ...fields,
+    });
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        provideLocalization(),
+        ...provideIsolatedLocaleEnvironment(),
+        ...provideMemoryStorage(new MemoryStorage()),
+        { provide: NavigatorAdapter, useClass: FakeNavigator },
+        { provide: DownloadAdapter, useClass: FakeDownload },
+      ],
+    });
+    presenter = TestBed.inject(SlefPresenter);
+    store = TestBed.inject(SlefStore);
+    announcements = TestBed.inject(AnnouncementService);
+  });
+
+  it('says what the one file it read came to', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [line({ ShipName: 'A' }), line({ ShipName: 'B' })]),
+    ]);
+
+    expect(presenter.importView().scanned).toBe('Journal.01.log · 2 builds');
+  });
+
+  it('counts the files rather than naming one when it read several', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [line({ ShipName: 'A' })]),
+      FILE('Journal.02.log', [line({ ShipName: 'B' })]),
+    ]);
+
+    expect(presenter.importView().scanned).toBe('2 files · 2 builds');
+  });
+
+  it('says one build in the singular', async () => {
+    await presenter.scanFiles([FILE('Journal.01.log', [line({ ShipName: 'A' })])]);
+
+    expect(presenter.importView().scanned).toBe('Journal.01.log · 1 build');
+  });
+
+  it('lists nothing where a scan found one build', async () => {
+    await presenter.scanFiles([FILE('Journal.01.log', [line({ ShipName: 'A' })])]);
+
+    expect(presenter.importView().picks).toEqual([]);
+    expect(presenter.importView().picksLabel).toBeNull();
+  });
+
+  it('names each build by what tells it apart, with the hull from the package', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [
+        line({ ShipName: 'Night Watch', ShipIdent: 'NW-01' }),
+        line({ ShipName: 'Day Watch', timestamp: '2026-08-01T10:00:00Z' }),
+      ]),
+    ]);
+    const [first, second] = presenter.importView().picks;
+
+    expect(first?.title).toBe('Night Watch · NW-01');
+    expect(first?.detail).toBe('Anaconda · 0 modules');
+    expect(first?.selected).toBe(true);
+    expect(second?.title).toBe('Day Watch');
+    expect(second?.selected).toBe(false);
+  });
+
+  it('says how many were found and how many are chosen', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [
+        line({ ShipName: 'A' }),
+        line({ ShipName: 'B', timestamp: '2026-08-01T10:00:00Z' }),
+      ]),
+    ]);
+
+    expect(presenter.importView().picksLabel).toBe(
+      '2 builds found · select one or more · 1 selected',
+    );
+  });
+
+  it('counts the chosen builds on the action that loads them', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [
+        line({ ShipName: 'A' }),
+        line({ ShipName: 'B', timestamp: '2026-08-01T10:00:00Z' }),
+      ]),
+    ]);
+    presenter.chooseJournalPicks(store.journalEntries().map((entry) => entry.key));
+
+    expect(presenter.importView().submitLabel).toBe('Load 2 builds');
+  });
+
+  it('refuses to submit while nothing is chosen from a list', async () => {
+    await presenter.scanFiles([
+      FILE('Journal.01.log', [
+        line({ ShipName: 'A' }),
+        line({ ShipName: 'B', timestamp: '2026-08-01T10:00:00Z' }),
+      ]),
+    ]);
+    presenter.chooseJournalPicks([]);
+
+    expect(presenter.importView().canSubmit).toBe(false);
+  });
+
+  it('names the file that was too large, and the bound', async () => {
+    await presenter.scanFiles([
+      { name: 'Journal.huge.log', size: 25_000_001, text: () => Promise.resolve('') },
+    ]);
+
+    expect(presenter.importView().failure?.message).toContain('Journal.huge.log');
+    expect(presenter.importView().failure?.message).toContain('25');
+  });
+
+  it('names the files it scanned when none of them holds a build', async () => {
+    await presenter.scanFiles([FILE('Journal.01.log', ['{"event":"Docked"}'])]);
+
+    expect(presenter.importView().failure?.message).toBe(
+      'No loadout event was found in Journal.01.log.',
+    );
+  });
+
+  it('says that it is reading files, out loud', async () => {
+    await presenter.scanFiles([FILE('Journal.01.log', [line({ ShipName: 'A' })])]);
+
+    expect(announcements.polite()).toBe('Reading journal files.');
   });
 });

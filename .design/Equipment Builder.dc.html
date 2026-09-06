@@ -3078,6 +3078,29 @@
                         multiple="multiple"
                         style="display: none"
                       />
+                      <div id="ge-imp-pick" style="display: none; flex-direction: column; gap: 7px">
+                        <div
+                          id="ge-imp-picklabel"
+                          style="
+                            font:
+                              600 9px/1 'JetBrains Mono',
+                              monospace;
+                            letter-spacing: 0.16em;
+                            color: var(--amber-2);
+                          "
+                        ></div>
+                        <div
+                          id="ge-imp-list"
+                          style="
+                            display: flex;
+                            flex-direction: column;
+                            gap: 5px;
+                            max-height: 186px;
+                            overflow-y: auto;
+                            padding-right: 2px;
+                          "
+                        ></div>
+                      </div>
                       <div style="display: flex; align-items: center; gap: 10px">
                         <div style="flex: 1; height: 1px; background: var(--amber-a14)"></div>
                         <div
@@ -5834,6 +5857,7 @@
           $('#ge-open-btn').addEventListener('click', () => { savedRender(); openModal('#ge-open-modal'); });
           $('#ge-help-btn').addEventListener('click', () => openModal('#ge-help-modal'));
 
+          const self = this;
           const parseLoadout = raw => {
             raw = (raw || '').trim();
             if (!raw) return { err: 'NOTHING TO IMPORT' };
@@ -5844,22 +5868,9 @@
             else {
               try { d = JSON.parse(raw); } catch (e) { return { err: 'JSON PARSE ERROR \u00b7 ' + e.message.toUpperCase().slice(0, 46) }; }
             }
-            if (!d || typeof d !== 'object') return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT' };
-            if (String(d.event || '').toLowerCase() === 'suitloadout') {
-              const sn = d.SuitName_Localised || d.SuitName;
-              if (!sn) return { err: 'JOURNAL SUITLOADOUT \u00b7 NO SUIT IN PAYLOAD' };
-              const wp = Array.isArray(d.Modules) ? d.Modules : [];
-              const mods = (Array.isArray(d.SuitMods) ? d.SuitMods.length : 0)
-                + wp.reduce((s, m) => s + (Array.isArray(m.WeaponMods) ? m.WeaponMods.length : 0), 0);
-              return { src: 'JOURNAL SUITLOADOUT', name: d.LoadoutName || String(sn), suit: String(sn), grade: Number(d.SuitClass) || 1, items: wp.length + 1, mods };
-            }
-            if (d.suit && d.suit.name) {
-              const wp = Array.isArray(d.weapons) ? d.weapons : [];
-              const mods = (Array.isArray(d.suit.modifications) ? d.suit.modifications.length : 0)
-                + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
-              return { src: 'LOADOUT JSON', name: d.name || String(d.suit.name), suit: String(d.suit.name), grade: Number(d.suit.grade) || 1, items: wp.length + 1, mods };
-            }
-            return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT' };
+            const sum = this.summariseSuit(d);
+            if (!sum) return { err: 'UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT' };
+            return sum;
           };
 
           const scanJournal = text => this.scanSuitJournal(text);
@@ -5871,11 +5882,51 @@
             el.textContent = t || '';
             el.style.display = show ? 'block' : 'none';
           };
+          let impPicks = [], impChosen = [];
+          const impPickRender = () => {
+            const wrap = $('#ge-imp-pick'), list = $('#ge-imp-list'), label = $('#ge-imp-picklabel');
+            if (!wrap || !list) return;
+            if (impPicks.length < 2) { wrap.style.display = 'none'; list.innerHTML = ''; return; }
+            wrap.style.display = 'flex';
+            if (label) label.textContent = impPicks.length + ' BUILDS FOUND \u00b7 SELECT ONE OR MORE \u00b7 ' + impChosen.length + ' SELECTED';
+            list.innerHTML = impPicks.map((e, i) => {
+              const s = e.sum, on = impChosen.indexOf(i) > -1;
+              return '<div class="ge-ib" data-i="' + i + '" style="display:flex;align-items:center;gap:11px;padding:8px 11px;cursor:pointer;border:1px solid ' + (on ? 'var(--amber-a6)' : 'var(--amber-a14)') + ';background:' + (on ? 'var(--panel-6)' : 'transparent') + '">'
+                + '<div style="flex:none;width:13px;height:13px;border:1px solid ' + (on ? 'var(--amber)' : 'var(--ink-18)') + ';background:' + (on ? 'var(--amber)' : 'transparent') + '"></div>'
+                + '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">'
+                + '<div style="font:600 11.5px/1.2 Barlow,sans-serif;color:' + (on ? 'var(--amber-3)' : 'var(--ink)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + String(s.name).toUpperCase() + '</div>'
+                + '<div style="font:400 8.5px/1.2 \'JetBrains Mono\',monospace;letter-spacing:.05em;color:var(--ink-45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + String(s.label || 'UNRECOGNISED SUIT').toUpperCase() + ' G' + s.grade + ' \u00b7 ' + s.items + ' ITEMS \u00b7 ' + s.mods + ' MODS</div>'
+                + '</div>'
+                + '<div style="flex:none;font:400 8.5px/1.2 \'JetBrains Mono\',monospace;color:var(--ink-36);text-align:right">' + self.stampLabel(s.ts) + '</div></div>';
+            }).join('');
+            const go = $('#ge-imp-go');
+            if (go) go.textContent = impChosen.length > 1 ? 'LOAD ' + impChosen.length + ' LOADOUTS' : 'LOAD LOADOUT';
+          };
+          const impSelect = i => {
+            if (!impPicks[i]) return;
+            const at = impChosen.indexOf(i);
+            if (at > -1) impChosen.splice(at, 1); else impChosen.push(i);
+            impChosen.sort((a, b) => a - b);
+            const inp = $('#ge-imp-in');
+            const primary = impChosen.length ? impPicks[impChosen[0]] : null;
+            if (inp) inp.value = primary ? JSON.stringify(primary.obj, null, 1) : '';
+            impPickRender();
+            impSay(impChosen.length
+              ? impChosen.length + ' SELECTED \u00b7 ' + String(primary.sum.name).toUpperCase() + (impChosen.length > 1 ? ' WILL OPEN ON THE BENCH' : '')
+              : 'NOTHING SELECTED', 'rgba(232,222,209,.62)');
+          };
+          const impListEl = $('#ge-imp-list');
+          if (impListEl) impListEl.addEventListener('click', e => {
+            const row = e.target.closest('.ge-ib');
+            if (row) impSelect(Number(row.dataset.i));
+          });
           function impReset() {
             const inp = $('#ge-imp-in');
             if (inp) inp.value = '';
             const f = $('#ge-imp-file');
             if (f) f.value = '';
+            impPicks = []; impChosen = [];
+            impPickRender();
             impFname('', false);
             impSay('');
           }
@@ -5888,9 +5939,13 @@
           const impFiles = files => {
             this.readSuitJournalFiles(files, impSay).then(r => {
               if (!r) return;
-              impFname(r.name.toUpperCase() + ' \u00b7 ' + r.events + ' EVENT' + (r.events > 1 ? 'S \u00b7 LATEST APPLIED' : ''), true);
+              impPicks = r.entries; impChosen = [0];
+              const src = r.files > 1 ? r.files + ' FILES' : r.name.toUpperCase();
+              impFname(src + ' \u00b7 ' + r.events + ' BUILD' + (r.events > 1 ? 'S' : ''), true);
               const inp = $('#ge-imp-in');
-              if (inp) inp.value = JSON.stringify(r.obj, null, 1);
+              if (inp) inp.value = JSON.stringify(r.entries[0].obj, null, 1);
+              if (r.entries.length > 1) { impPickRender(); impSay(r.entries.length + ' BUILDS FOUND \u00b7 SELECT ONE OR MORE, THEN LOAD', 'rgba(232,222,209,.62)'); return; }
+              impPickRender();
               impGo();
             });
           };
@@ -5917,7 +5972,18 @@
             }
           }
           function impGo() {
-            const r = parseLoadout($('#ge-imp-in').value);
+            const rawIn = $('#ge-imp-in').value;
+            if (!impChosen.length) {
+              const found = self.collectSuitLoadouts(rawIn);
+              if (found.length > 1) {
+                impPicks = found; impChosen = [0];
+                $('#ge-imp-in').value = JSON.stringify(found[0].obj, null, 1);
+                impPickRender();
+                return impSay(found.length + ' BUILDS IN PASTED JOURNAL \u00b7 SELECT ONE OR MORE, THEN LOAD', 'rgba(232,222,209,.62)');
+              }
+            }
+            const extra = Math.max(0, impChosen.length - 1);
+            const r = parseLoadout(rawIn);
             if (r.err) return impSay(r.err, '#ff6b3d');
             const k = Object.keys(SUITS).find(x => SUITS[x].n.toLowerCase() === r.suit.toLowerCase());
             if (!k) return impSay(r.src + ' \u00b7 UNKNOWN SUIT \u00b7 ' + r.suit.toUpperCase(), '#ff6b3d');
@@ -5928,7 +5994,13 @@
             const nameEl = $('#ge-save-name');
             if (nameEl && r.name) nameEl.value = r.name;
             render();
-            impSay(r.src + ' \u00b7 ' + r.suit.toUpperCase() + ' G' + st.sg + ' \u00b7 ' + r.items + ' ITEMS \u00b7 ' + r.mods + ' MODS \u00b7 LOADOUT APPLIED', '#7fc46b');
+            if (extra) impChosen.slice(1).forEach(i => {
+              const s = impPicks[i] && impPicks[i].sum;
+              if (s) SAVED.unshift({ n: s.name, s: s.suit, g: s.grade, m: s.mods, t: 'just now', note: 'Imported from journal' });
+            });
+            impSay(extra
+              ? (extra + 1) + ' BUILDS IMPORTED \u00b7 ' + String(r.name).toUpperCase() + ' ON THE BENCH \u00b7 ' + extra + ' ADDED TO SAVED BUILDS'
+              : r.src + ' \u00b7 ' + r.suit.toUpperCase() + ' G' + st.sg + ' \u00b7 ' + r.items + ' ITEMS \u00b7 ' + r.mods + ' MODS \u00b7 LOADOUT APPLIED', '#7fc46b');
             setTimeout(closeModals, 900);
           };
           $('#ge-imp-go').addEventListener('click', impGo);
@@ -6224,6 +6296,25 @@
             return L.join('\n');
           };
 
+          const mePicks = { list: [], chosen: [] };
+          const mePickRender = () => {
+            const wrap = root.querySelector('#me-ipick'), list = root.querySelector('#me-ilist'), label = root.querySelector('#me-ipicklabel');
+            if (!wrap || !list) return;
+            if (mePicks.list.length < 2) { wrap.style.display = 'none'; list.innerHTML = ''; return; }
+            wrap.style.display = 'flex';
+            if (label) label.textContent = mePicks.list.length + ' BUILDS FOUND \u00b7 ' + mePicks.chosen.length + ' SELECTED';
+            list.innerHTML = mePicks.list.map((e, i) => {
+              const s = e.sum, on = mePicks.chosen.indexOf(i) > -1;
+              return '<div class="me-ib" data-i="' + i + '" style="display:flex;align-items:center;gap:11px;padding:11px 12px;cursor:pointer;background:' + (on ? 'rgba(255,140,26,.14)' : '#141414') + ';border:1px solid rgba(255,140,26,' + (on ? '.5' : '.14') + ')">'
+                + '<div style="flex:none;width:15px;height:15px;border:1px solid ' + (on ? '#ff8c1a' : 'rgba(232,222,209,.38)') + ';background:' + (on ? '#ff8c1a' : 'transparent') + '"></div>'
+                + '<div style="flex:1;min-width:0"><div style="font:500 13px/1.2 Barlow,sans-serif;color:' + (on ? '#ffb060' : '#ddd3c6') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(String(s.name)) + '</div>'
+                + '<div style="font:400 9px/1.2 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.45);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(String(s.label || 'UNRECOGNISED SUIT').toUpperCase()) + ' G' + s.grade + ' · ' + s.items + ' ITEMS · ' + s.mods + ' MODS</div>'
+                + '<div style="font:400 8.5px/1.2 \'JetBrains Mono\',monospace;color:rgba(232,222,209,.36);margin-top:5px">' + this.stampLabel(s.ts) + '</div></div></div>';
+            }).join('');
+            const go = root.querySelector('#me-igo');
+            if (go) go.textContent = mePicks.chosen.length > 1 ? 'LOAD ' + mePicks.chosen.length + ' LOADOUTS' : 'LOAD LOADOUT';
+          };
+
           const openSheet = kind => {
             st.sheet = kind;
             $('#me-sheet').style.display = 'block';
@@ -6282,24 +6373,31 @@
                 + '<div id="me-ifname" style="display:none;font:400 9px/1.4 \'JetBrains Mono\',monospace;letter-spacing:.04em;color:rgba(232,222,209,.62);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>'
                 + '</div></div>'
                 + '<input id="me-ifile" type="file" accept=".log,.json,.txt,application/json" multiple style="display:none">'
+                + '<div id="me-ipick" style="display:none;flex-direction:column;gap:8px">'
+                + '<div id="me-ipicklabel" style="font:600 9.5px/1 \'JetBrains Mono\',monospace;letter-spacing:.14em;color:#ffa54d"></div>'
+                + '<div id="me-ilist" style="display:flex;flex-direction:column;gap:6px;max-height:250px;overflow-y:auto"></div></div>'
                 + '<div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:1px;background:rgba(255,140,26,.14)"></div>'
                 + '<div style="font:400 8.5px/1 \'JetBrains Mono\',monospace;letter-spacing:.16em;color:rgba(232,222,209,.36)">OR PASTE</div>'
                 + '<div style="flex:1;height:1px;background:rgba(255,140,26,.14)"></div></div>'
                 + '<textarea id="me-iin" spellcheck="false" placeholder="{&quot;event&quot;:&quot;SuitLoadout&quot;,&quot;SuitName_Localised&quot;:&quot;Dominator Suit&quot;,&quot;Modules&quot;:[…]}" style="width:100%;height:132px;box-sizing:border-box;resize:none;background:#0b0b0c;border:1px solid rgba(255,140,26,.22);color:#e8ded1;padding:11px 12px;font:400 10.5px/1.6 \'JetBrains Mono\',monospace;outline:none"></textarea>'
                 + '<div id="me-imsg" style="min-height:13px;font:400 9px/1.4 \'JetBrains Mono\',monospace;letter-spacing:.06em;color:rgba(232,222,209,.45)"></div>';
+              mePicks.list = []; mePicks.chosen = [];
               const mif = body.querySelector('#me-ifile');
               if (mif) mif.addEventListener('change', () => {
                 const msg = body.querySelector('#me-imsg');
                 const say = (t, c) => { if (msg) { msg.textContent = t; msg.style.color = c || 'rgba(232,222,209,.45)'; } };
                 this.readSuitJournalFiles(mif.files, say).then(r => {
                   if (!r) return;
+                  mePicks.list = r.entries; mePicks.chosen = [0];
                   const fn = body.querySelector('#me-ifname');
                   if (fn) {
-                    fn.textContent = r.name.toUpperCase() + ' \u00b7 ' + r.events + ' EVENT' + (r.events > 1 ? 'S \u00b7 LATEST APPLIED' : '');
+                    fn.textContent = (r.files > 1 ? r.files + ' FILES' : r.name.toUpperCase()) + ' \u00b7 ' + r.events + ' BUILD' + (r.events > 1 ? 'S' : '');
                     fn.style.display = 'block';
                   }
                   const ta = body.querySelector('#me-iin');
-                  if (ta) ta.value = JSON.stringify(r.obj, null, 1);
+                  if (ta) ta.value = JSON.stringify(r.entries[0].obj, null, 1);
+                  mePickRender();
+                  if (r.entries.length > 1) return say(r.entries.length + ' BUILDS FOUND \u00b7 SELECT ONE OR MORE BELOW', 'rgba(232,222,209,.62)');
                   const go = root.querySelector('#me-igo');
                   if (go) go.click();
                 });
@@ -6365,28 +6463,27 @@
               const raw = (($('#me-iin') || {}).value || '').trim();
               if (!raw) return say('NOTHING TO IMPORT', '#ff6b3d');
               if (/^https?:\/\//i.test(raw)) return say('SHARE LINKS NOT SUPPORTED \u00b7 UPLOAD A JOURNAL FILE OR PASTE A SUITLOADOUT EVENT', '#ff6b3d');
+              if (!mePicks.chosen.length) {
+                const found = this.collectSuitLoadouts(raw);
+                if (found.length > 1) {
+                  mePicks.list = found; mePicks.chosen = [0];
+                  const ta = $('#me-iin');
+                  if (ta) ta.value = JSON.stringify(found[0].obj, null, 1);
+                  mePickRender();
+                  return say(found.length + ' BUILDS IN PASTED JOURNAL \u00b7 SELECT ONE OR MORE', 'rgba(232,222,209,.62)');
+                }
+              }
+              const meExtra = Math.max(0, mePicks.chosen.length - 1);
               let d;
               const scan = this.scanSuitJournal(raw);
               if (scan) d = scan.obj;
               else {
                 try { d = JSON.parse(raw); } catch (err) { return say('JSON PARSE ERROR \u00b7 ' + err.message.toUpperCase().slice(0, 40), '#ff6b3d'); }
               }
-              let src, sname, grade, lname, items, mods;
-              if (d && String(d.event || '').toLowerCase() === 'suitloadout') {
-                sname = d.SuitName_Localised || d.SuitName;
-                if (!sname) return say('JOURNAL SUITLOADOUT \u00b7 NO SUIT IN PAYLOAD', '#ff6b3d');
-                const wp = Array.isArray(d.Modules) ? d.Modules : [];
-                src = 'JOURNAL SUITLOADOUT'; grade = Number(d.SuitClass) || 1; lname = d.LoadoutName || String(sname);
-                items = wp.length + 1;
-                mods = (Array.isArray(d.SuitMods) ? d.SuitMods.length : 0) + wp.reduce((s, m) => s + (Array.isArray(m.WeaponMods) ? m.WeaponMods.length : 0), 0);
-              } else if (d && d.suit && d.suit.name) {
-                const wp = Array.isArray(d.weapons) ? d.weapons : [];
-                src = 'LOADOUT JSON'; sname = String(d.suit.name); grade = Number(d.suit.grade) || 1; lname = d.name || sname;
-                items = wp.length + 1;
-                mods = (Array.isArray(d.suit.modifications) ? d.suit.modifications.length : 0) + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
-              } else {
-                return say('UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
-              }
+              const sum = this.summariseSuit(d);
+              if (!sum) return say('UNRECOGNISED PAYLOAD \u00b7 EXPECTED A JOURNAL SUITLOADOUT EVENT', '#ff6b3d');
+              if (!sum.suit) return say('JOURNAL SUITLOADOUT \u00b7 UNRECOGNISED SUIT IN PAYLOAD', '#ff6b3d');
+              const src = sum.src, sname = sum.suit, grade = sum.grade, lname = sum.name, items = sum.items, mods = sum.mods;
               const k = Object.keys(SUITS).find(x => SUITS[x].n.toLowerCase() === String(sname).toLowerCase());
               if (!k) return say(src + ' \u00b7 UNKNOWN SUIT \u00b7 ' + String(sname).toUpperCase(), '#ff6b3d');
               st.suit = k; st.sg = Math.max(1, Math.min(grade, maxG(SUITS[k]))); fit(st.smods);
@@ -6394,8 +6491,32 @@
               $('#me-name').innerHTML = st.name.toUpperCase() + ' <span style="display:inline-block;transform:scaleX(-1)">✎</span>';
               st.sel = null; st.pick = -1;
               render();
-              say(src + ' \u00b7 ' + String(sname).toUpperCase() + ' G' + st.sg + ' \u00b7 ' + items + ' ITEMS \u00b7 ' + mods + ' MODS \u00b7 APPLIED', '#7fc46b');
+              if (meExtra) mePicks.chosen.slice(1).forEach(i => {
+                const s = mePicks.list[i] && mePicks.list[i].sum;
+                if (s) SAVED.unshift({ n: s.name, s: s.suit, g: s.grade, m: s.mods, t: 'just now', note: 'Imported from journal' });
+              });
+              say(meExtra
+                ? (meExtra + 1) + ' BUILDS IMPORTED \u00b7 ' + String(lname).toUpperCase() + ' OPENED \u00b7 ' + meExtra + ' SAVED'
+                : src + ' \u00b7 ' + String(sname).toUpperCase() + ' G' + st.sg + ' \u00b7 ' + items + ' ITEMS \u00b7 ' + mods + ' MODS \u00b7 APPLIED', '#7fc46b');
               setTimeout(closeSheet, 900);
+              return;
+            }
+            const ib = e.target.closest('.me-ib');
+            if (ib) {
+              const i = Number(ib.dataset.i), at = mePicks.chosen.indexOf(i);
+              if (at > -1) mePicks.chosen.splice(at, 1); else mePicks.chosen.push(i);
+              mePicks.chosen.sort((a, b) => a - b);
+              const p = mePicks.chosen.length ? mePicks.list[mePicks.chosen[0]] : null;
+              const ta = $('#me-iin');
+              if (ta) ta.value = p ? JSON.stringify(p.obj, null, 1) : '';
+              mePickRender();
+              const msg = $('#me-imsg');
+              if (msg) {
+                msg.textContent = p
+                  ? mePicks.chosen.length + ' SELECTED \u00b7 ' + String(p.sum.name).toUpperCase() + (mePicks.chosen.length > 1 ? ' WILL OPEN' : '')
+                  : 'NOTHING SELECTED';
+                msg.style.color = 'rgba(232,222,209,.62)';
+              }
               return;
             }
             const srow = e.target.closest('.me-srow');
@@ -6452,6 +6573,88 @@
           render();
         }
 
+        stampLabel(ts) {
+          const d = ts ? new Date(ts) : null;
+          if (!d || isNaN(d.getTime())) return '';
+          const p = n => String(n).padStart(2, '0');
+          return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+
+        // Journal symbol names ($tacticalsuit_class1_name;) are not user readable.
+        readableSuit(raw) {
+          const MAP = { tacticalsuit: 'Dominator Suit', utilitysuit: 'Maverick Suit', explorationsuit: 'Artemis Suit', flightsuit: 'Flight Suit' };
+          const s = String(raw || '').replace(/^\$/, '').replace(/_name;?$/i, '').trim().toLowerCase();
+          if (!s) return { name: '', grade: 0 };
+          if (/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/.test(s) === false) return { name: String(raw).trim(), grade: 0 };
+          const m = s.match(/^([a-z]+suit)(?:_class(\d+))?$/);
+          const base = m ? m[1] : s;
+          const grade = m && m[2] ? Number(m[2]) : 0;
+          if (MAP[base]) return { name: MAP[base], grade };
+          // Unknown or newly released suit: titleize the symbol rather than reject it.
+          const name = base.replace(/suit$/, ' suit').replace(/^(.+?)mk([ivx]+|\d+)$/, '$1 mk $2')
+            .split(/[_\s]+/).filter(Boolean)
+            .map(w => {
+              const mk = w.match(/^mk([ivx]+|\d+)$/);
+              return mk ? 'Mk ' + mk[1].toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1);
+            }).join(' ');
+          return { name, grade };
+        }
+
+        // Normalises a SuitLoadout event (or loadout JSON) into a summary row.
+        summariseSuit(d) {
+          if (!d || typeof d !== 'object') return null;
+          if (String(d.event || '').toLowerCase() === 'suitloadout') {
+            // A journal's *_Localised value is sometimes the raw symbol itself.
+            const loc = String(d.SuitName_Localised || '').trim();
+            const dec = this.readableSuit(/^\$|_name;$/i.test(loc) || !loc ? d.SuitName : loc);
+            const sn = dec.name;
+            if (!sn && !d.SuitName) return null;
+            const wp = Array.isArray(d.Modules) ? d.Modules : [];
+            const mods = (Array.isArray(d.SuitMods) ? d.SuitMods.length : 0)
+              + wp.reduce((s, m) => s + (Array.isArray(m.WeaponMods) ? m.WeaponMods.length : 0), 0);
+            return {
+              src: 'JOURNAL SUITLOADOUT',
+              name: d.LoadoutName || String(sn || 'Unnamed loadout'),
+              suit: String(sn || ''),
+              label: sn ? String(sn) : 'Unrecognised suit',
+              grade: Number(d.SuitClass) || dec.grade || 1,
+              items: wp.length + 1, mods, ts: d.timestamp || ''
+            };
+          }
+          if (d.suit && d.suit.name) {
+            const wp = Array.isArray(d.weapons) ? d.weapons : [];
+            const mods = (Array.isArray(d.suit.modifications) ? d.suit.modifications.length : 0)
+              + wp.reduce((s, w) => s + (Array.isArray(w.modifications) ? w.modifications.length : 0), 0);
+            return { src: 'LOADOUT JSON', name: d.name || String(d.suit.name), suit: String(d.suit.name), label: String(d.suit.name), grade: Number(d.suit.grade) || 1, items: wp.length + 1, mods, ts: d.timestamp || '' };
+          }
+          return null;
+        }
+
+        // Every distinct loadout in a pasted event or a whole journal file,
+        // newest first. A journal usually holds one event per outfitting change.
+        collectSuitLoadouts(text) {
+          const raw = String(text || '').trim();
+          if (!raw) return [];
+          try {
+            const o = JSON.parse(raw);
+            const s = this.summariseSuit(o);
+            if (s) return [{ obj: o, sum: s }];
+          } catch (e) { /* fall through to line scan */ }
+          const out = [], seen = {};
+          raw.split(/\r?\n/).forEach(line => {
+            const l = line.trim();
+            if (l.charAt(0) !== '{') return;
+            let o; try { o = JSON.parse(l); } catch (e) { return; }
+            const s = this.summariseSuit(o);
+            if (!s) return;
+            const key = s.name + '|' + s.suit + '|' + s.grade + '|' + s.items + '|' + s.mods;
+            if (seen[key]) { if (String(s.ts) > String(seen[key].sum.ts)) seen[key].sum.ts = s.ts; return; }
+            seen[key] = { obj: o, sum: s };
+            out.push(seen[key]);
+          });
+          return out.sort((a, b) => String(b.sum.ts).localeCompare(String(a.sum.ts)));
+        }
+
         // Scans a pasted event or a whole line-delimited journal file
         // (Journal.*.log) — the most recent SuitLoadout event wins.
         scanSuitJournal(text) {
@@ -6481,18 +6684,24 @@
           say('SCANNING ' + list.length + ' FILE' + (list.length > 1 ? 'S' : '') + ' \u2026');
           return Promise.all(list.map(f => f.text().then(t => ({ name: f.name, text: t }), () => ({ name: f.name, text: '' }))))
             .then(res => {
-              let best = null, name = '', events = 0;
+              const entries = [], seen = {};
+              let name = '';
               res.forEach(r => {
-                const c = this.scanSuitJournal(r.text);
-                if (!c) return;
-                events += c.count;
-                if (!best || String(c.obj.timestamp || '') >= String(best.timestamp || '')) { best = c.obj; name = r.name; }
+                this.collectSuitLoadouts(r.text).forEach(e => {
+                  const s = e.sum;
+                  const key = s.name + '|' + s.suit + '|' + s.grade + '|' + s.items + '|' + s.mods;
+                  if (seen[key]) return;
+                  seen[key] = 1;
+                  entries.push({ obj: e.obj, sum: s, file: r.name });
+                });
               });
-              if (!best) {
+              if (!entries.length) {
                 say('NO SUITLOADOUT EVENT FOUND IN ' + (list.length > 1 ? list.length + ' FILES' : list[0].name.toUpperCase()), '#ff6b3d');
                 return null;
               }
-              return { obj: best, name, events };
+              entries.sort((a, b) => String(b.sum.ts).localeCompare(String(a.sum.ts)));
+              name = entries[0].file;
+              return { obj: entries[0].obj, entries, name, files: list.length, events: entries.length };
             });
         }
 

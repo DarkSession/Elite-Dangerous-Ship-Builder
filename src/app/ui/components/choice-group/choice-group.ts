@@ -39,6 +39,15 @@ export interface Choice {
   readonly label: string;
   readonly description?: string;
   readonly disabled?: boolean;
+  /**
+   * A short fact set against the far edge of the plate.
+   *
+   * Canvas 1c puts the instant a journal wrote a build there, opposite its name.
+   * Drawn on `marked-cards` only, and described by the control rather than
+   * hidden from it: when a build was written is how two builds of one ship are
+   * told apart, so a reader who cannot see the plate still needs it.
+   */
+  readonly meta?: string;
 }
 
 /**
@@ -118,6 +127,19 @@ export class ChoiceGroup {
 
   choiceDescriptionId(value: string): string {
     return `${this.groupName}-${value}-description`;
+  }
+
+  choiceMetaId(value: string): string {
+    return `${this.groupName}-${value}-meta`;
+  }
+
+  /** The parts of a choice a reader hears after its label, in reading order. */
+  choiceDescribedBy(choice: Choice): string | null {
+    const parts = [
+      choice.description === undefined ? null : this.choiceDescriptionId(choice.value),
+      choice.meta === undefined || choice.meta === '' ? null : this.choiceMetaId(choice.value),
+    ].filter((part): part is string => part !== null);
+    return parts.length === 0 ? null : parts.join(' ');
   }
 
   toggle(value: string): void {

@@ -1,0 +1,2 @@
+{"timestamp": "2026-09-03T10:00:00Z", "event": "Loadout", "Ship": "anaconda", "Modules": [{"Slot": "PowerPlant", "Item": "Int_Powerplant_Size8_Class5"}, {"Slot": "MainEngines", "Item": "Int_Engine_Size7_Class5"}], "ShipName": "Night Watch", "ShipIdent": "NW-01"}
+{"timestamp": "2026-09-04T10:00:00Z", "event": "Loadout", "Ship": "python_nx", "Modules": [], "ShipName": "Day Watch", "ShipIdent": "DW-01"}

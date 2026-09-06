@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { SlefPresenter } from '../../../application/slef/slef.presenter';
 import { MessageService } from '../../../i18n/message.service';
 import { Layer } from '../../../ui/components/layer/layer';
-import { ImportBuildLayer } from './import-build-layer';
+import { LibraryPresence } from '../../build-library/library-presence';
+import { JournalImportLayer } from '../../shared/journal-import-layer/journal-import-layer';
 
 /**
  * The import layer, mounted once for the whole application.
@@ -18,12 +19,13 @@ import { ImportBuildLayer } from './import-build-layer';
  */
 @Component({
   selector: 'ednb-slef-import-dialog',
-  imports: [ImportBuildLayer, Layer],
+  imports: [JournalImportLayer, Layer],
   templateUrl: './import.dialog.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportDialog {
   readonly #messages = inject(MessageService);
+  readonly #library = inject(LibraryPresence);
   readonly presenter = inject(SlefPresenter);
 
   readonly open = computed(() => this.presenter.layer() === 'import');
@@ -31,6 +33,26 @@ export class ImportDialog {
   readonly dismissLabel = this.#messages.messageSignal('action.close');
 
   submit(): void {
-    void this.presenter.submit();
+    void this.#submit();
+  }
+
+  /** Reads the journal files a Commander selected or dropped. */
+  scan(files: readonly File[]): void {
+    void this.presenter.scanFiles(files);
+  }
+
+  /**
+   * Submits, and opens the saved builds over whatever screen is behind.
+   *
+   * A batch import opens nothing in the workspace, so the records are where the
+   * Commander goes next and the layer takes them there (016/FR-010). A batch
+   * carrying a refusal stays where it is: the refusal is read on the layer that
+   * was refused, not over a list of records.
+   */
+  async #submit(): Promise<void> {
+    const submission = await this.presenter.submit();
+    if (submission.kind === 'stored' && submission.refused.length === 0) {
+      this.#library.raise(this.presenter.importNotice());
+    }
   }
 }

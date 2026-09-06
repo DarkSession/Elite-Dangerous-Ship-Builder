@@ -137,6 +137,15 @@
   color: var(--ednb-text-subtle);
 }
 
+// The 3px square the canvas sets between the two ways past the gate.
+// Decorative: the two controls name themselves.
+.gate__separator {
+  align-self: center;
+  inline-size: var(--ednb-space-hair);
+  block-size: var(--ednb-space-hair);
+  background-color: var(--ednb-border-decorative-strong);
+}
+
 .gate__link {
   @include layout.target-baseline;
 

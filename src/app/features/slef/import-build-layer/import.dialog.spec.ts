@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideLocalization } from '../../../i18n/i18n.providers';
+import {
+  MemoryStorage,
+  provideMemoryStorage,
+} from '../../../platform/storage/storage.spec-helpers';
 import { provideIsolatedLocaleEnvironment } from '../../../i18n/testing/localization-harness';
 import { DocumentAdapter } from '../../../platform/browser/document.adapter';
 import { SlefStore } from '../../../application/slef/slef.store';
@@ -42,6 +46,8 @@ describe('the import layer’s host', () => {
         provideRouter([{ path: 'outfitting', children: [] }]),
         provideLocalization(),
         ...provideIsolatedLocaleEnvironment(),
+        // The import coordinator reaches the record repository to store a batch.
+        ...provideMemoryStorage(new MemoryStorage()),
         { provide: DocumentAdapter, useValue: new SilentDocumentAdapter() },
       ],
     });

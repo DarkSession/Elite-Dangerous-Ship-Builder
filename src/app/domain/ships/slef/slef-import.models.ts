@@ -5,6 +5,7 @@ import type {
 import type { LoadoutIssueParams } from '@elite-dangerous-almanac/core/ships/loadout-validation';
 import type { SlefDiagnostic } from '@elite-dangerous-almanac/core/ships/slef';
 import type { SourcePartialEngineering } from '../build/build-ingress-result';
+import type { JournalScanFailure } from '../../journal/journal-scan';
 
 export type { SourcePartialEngineering };
 
@@ -59,10 +60,12 @@ export type SlefPackageDiagnostic = SlefDiagnostic;
 /**
  * Why an import did not happen.
  *
- * Nine kinds, because nine different things are worth telling a Commander apart
- * — and because collapsing them is how "something went wrong" screens happen.
- * The first five are the application's own workflow gates; the last four report
- * what the package said, carrying its structured result rather than its prose.
+ * Every kind is a different thing worth telling a Commander apart — collapsing
+ * them is how "something went wrong" screens happen. The application's own
+ * workflow gates come first, then what the package said, carried as its
+ * structured result rather than as its prose, and last the ones a journal
+ * source brings: a file over the bound, a scan that found nothing, a selection
+ * with nothing in it, and a build the browser store would not take.
  */
 export type SlefImportFailure =
   | { readonly kind: 'tooLarge'; readonly utf8Bytes: number; readonly limitBytes: number }
@@ -81,7 +84,10 @@ export type SlefImportFailure =
       readonly kind: 'normalizationUnsupported';
       readonly failures: readonly NormalizationRefusal[];
     }
-  | { readonly kind: 'packageContractFailure'; readonly failures: readonly NormalizationRefusal[] };
+  | { readonly kind: 'packageContractFailure'; readonly failures: readonly NormalizationRefusal[] }
+  | JournalScanFailure
+  | { readonly kind: 'nothingSelected' }
+  | { readonly kind: 'notStored' };
 
 /** One refused partial roll: what arrived, and what the package said about it. */
 export interface NormalizationRefusal {

@@ -24,6 +24,17 @@
     }
 
     <!--
+      What a journal import left here.
+      
+      The layer opens on its own after a batch import, and a list that grew by
+      three says nothing about why (016/FR-010). It is stated rather than drawn
+      differently: the rows are the ordinary rows.
+    -->
+    @if (importNotice(); as notice) {
+      <ednb-status-notice class="library__notice" tone="info" [message]="notice" />
+    }
+
+    <!--
       The header row: one search field over the records, and the count in
       monospace beside it on the same line, where the reference puts them.
 

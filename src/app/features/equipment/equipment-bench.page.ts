@@ -38,6 +38,7 @@ import {
 import { HISTORY_REDO_MARK, HISTORY_UNDO_MARK, ScreenChrome } from '../shared/screen-chrome';
 import { CommanderStats } from './commander-stats/commander-stats';
 import { ExportLoadoutDialog } from './export-loadout-layer/export-loadout.dialog';
+import { ImportLoadoutDialog } from './import-loadout-layer/import-loadout.dialog';
 import { ItemView } from './item-view/item-view';
 import { LoadoutLedger } from './loadout-ledger/loadout-ledger';
 import { MaterialRequirements } from './material-requirements/material-requirements';
@@ -74,6 +75,7 @@ type BenchTab = 'loadout' | 'stats' | 'materials';
     ChoiceDialog,
     CommanderStats,
     ExportLoadoutDialog,
+    ImportLoadoutDialog,
     ItemView,
     LoadoutLedger,
     MaterialRequirements,

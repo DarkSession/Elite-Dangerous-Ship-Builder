@@ -838,6 +838,11 @@
   --ednb-measure-export-content: 23.5rem; //      376
   --ednb-measure-export-content-wide: 21.375rem; // 342
 
+  // The list of builds a journal scan found, 186px in canvas 1c: about four
+  // rows, so the list reads as a list and the paste box under it stays on
+  // screen. Past that it scrolls inside the layer.
+  --ednb-measure-import-picks: 11.625rem; //     186
+
   // The folded action menu, 196px in canvas 1d, and the width it may grow to
   // before a translated label would rather wrap than push past the screen.
   --ednb-measure-menu-row: 2.875rem;

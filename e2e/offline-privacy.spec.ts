@@ -8,7 +8,13 @@ import {
   revealMount,
   revealStatusRail,
 } from './outfitting-surfaces';
-import { buildStockHull, openFirstHullFromManifest, openLibrary, waitForTakeover } from './shell';
+import {
+  buildStockHull,
+  openFirstHullFromManifest,
+  openLibrary,
+  reachShellAction,
+  waitForTakeover,
+} from './shell';
 
 /**
  * Offline capability and the privacy promise (US1, US2, US3).
@@ -386,5 +392,43 @@ test.describe('the privacy promise', () => {
     // The loadout link lives in the fragment, which a browser never transmits
     // and a cache never keys on. Nothing carrying one is stored either.
     expect(cached.filter((url) => url.includes('#e.'))).toEqual([]);
+  });
+
+  test('reads a journal without sending or storing any of it', async ({ page }) => {
+    const foreign: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).origin !== new URL(page.url() || '/', 'http://x').origin) {
+        foreign.push(request.url());
+      }
+    });
+
+    await withWorker(page, '/ships');
+    await reachShellAction(page, /^import build$/i);
+    const layer = page.getByRole('dialog', { name: /import build/i });
+    await expect(layer).toBeVisible();
+    await layer
+      .locator('input[type="file"]')
+      .setInputFiles(['e2e/fixtures/journal/Journal.ship-multiple.log']);
+    await expect(layer.getByRole('checkbox')).toHaveCount(3);
+    await layer.getByRole('button', { name: /^load build$/i }).click();
+    await expect(page).toHaveURL(/\/outfitting(#|$)/);
+
+    const origin = new URL(page.url()).origin;
+    expect(foreign.filter((url) => new URL(url).origin !== origin)).toEqual([]);
+
+    const cached = await page.evaluate(async () => {
+      const urls: string[] = [];
+      for (const name of await caches.keys()) {
+        const cache = await caches.open(name);
+        for (const request of await cache.keys()) {
+          urls.push(request.url);
+        }
+      }
+      return urls;
+    });
+
+    // A journal is read in the browser and never leaves it: no request carries
+    // a file name, and no cache entry holds one (016/FR-001, SC-002).
+    expect(cached.filter((url) => url.toLowerCase().includes('journal'))).toEqual([]);
   });
 });

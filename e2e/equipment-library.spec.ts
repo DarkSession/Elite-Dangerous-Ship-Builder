@@ -141,7 +141,8 @@ test.describe('keeping a loadout', () => {
   test('offers the library from the gate, before a suit is chosen', async ({ page }) => {
     await page.goto('/equipment');
 
-    await page.locator('.gate__link').click();
+    // Named, because the gate offers two: the other one imports a journal.
+    await page.getByRole('button', { name: 'Open a saved build' }).click();
 
     // Over the bench and not away from it: the library has no address of its
     // own (Commander request 2026-09-04), so the gate raises the same layer the

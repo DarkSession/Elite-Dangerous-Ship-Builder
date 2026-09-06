@@ -1,7 +1,8 @@
 ## Purpose
 
-Commanders export the active build as one SLEF entry and import exactly one SLEF entry or journal
-`Loadout` event. The Almanac owns inspection, parsing, construction and serialization.
+Commanders export the active build as one SLEF entry, and import builds from a pasted SLEF entry, a
+pasted journal `Loadout` event, or the journal files themselves — choosing which of the events a
+journal holds to take. The Almanac owns inspection, parsing, construction and serialization.
 
 ## Requirements
 

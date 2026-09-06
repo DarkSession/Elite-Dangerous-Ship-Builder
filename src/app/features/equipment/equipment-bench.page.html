@@ -118,6 +118,12 @@
   <ednb-export-loadout-dialog [open]="exportOpen()" (dismissed)="exportOpen.set(false)" />
 
   <!--
+    Where a journal event comes in. The same panel the ship tool's import
+    draws, because both canvases draw one (canvas 2a, `ge-imp-modal`).
+  -->
+  <ednb-import-loadout-dialog />
+
+  <!--
     Naming and saving, through the ship tool's own save layer: one library holds
     both tools' records, so the question a duplicate name raises is asked once
     and answered the same way (FR-016, FR-017).

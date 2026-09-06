@@ -1,0 +1,4 @@
+{"timestamp": "2026-09-03T10:00:00Z", "event": "SuitLoadout", "SuitName": "tacticalsuit_class5", "SuitMods": ["suit_nightvision"], "Modules": [{"SlotName": "PrimaryWeapon1", "ModuleName": "wpn_m_launcher_rocket_sauto", "Class": 5}], "LoadoutName": "Double Trouble"}
+{"timestamp": "2026-09-01T09:59:00Z", "event": "Docked", "StarSystem": "Shinrarta Dezhra"}
+{"timestamp": "2026-09-02T10:00:00Z", "event": "SuitLoadout", "SuitName": "tacticalsuit_class5", "SuitMods": ["suit_increasedsprintduration"], "Modules": [], "LoadoutName": "Quiet Approach"}
+{"timestamp": "2026-09-01T10:00:00Z", "event": "SuitLoadout", "SuitName": "utilitysuit_class3", "SuitMods": [], "Modules": []}

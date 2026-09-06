@@ -7,6 +7,45 @@
     one control on the surface is the same fact a third time. Neither exchange
     canvas draws it (Commander request 2026-08-26).
   -->
+  <!--
+    Where files come in. The canvas draws it above the paste box, because a
+    Commander who has a journal has it as a file: pasting a build out of one
+    means finding the line first (canvas 1c, `imp-drop`).
+  -->
+  <ednb-file-drop
+    [label]="view().dropLabel"
+    [hint]="null"
+    [scanned]="view().scanned"
+    [accept]="accept"
+    [busy]="view().scanning"
+    (chosen)="filesChosen.emit($event)"
+  />
+
+  <!--
+    What a scan found, where it found more than one build. A group of
+    checkboxes, because that is the question: several builds, any number of
+    them chosen (016/FR-008).
+  -->
+  @if (view().picksLabel; as picksLabel) {
+    <ednb-choice-group
+      class="slef-import__picks"
+      [legend]="picksLabel"
+      kind="checkbox"
+      layout="marked-cards"
+      [choices]="choices()"
+      [selected]="selectedKeys()"
+      (changed)="picksChosen.emit($event)"
+    />
+  }
+
+  <!--
+    The rule the canvas draws between the two ways in. It is a heading for the
+    box below it, not an ornament, so the words are real text.
+  -->
+  <p class="slef-import__divider">
+    <span>{{ view().dividerLabel }}</span>
+  </p>
+
   <ednb-textarea-field
     [label]="view().fieldLabel"
     [labelHidden]="true"

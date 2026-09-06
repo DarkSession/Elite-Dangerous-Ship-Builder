@@ -58,3 +58,37 @@
 .slef-import__actions {
   @include layout.wrapping-row(var(--ednb-space-inline-tight));
 }
+
+/*
+ * The list of builds a scan found. It scrolls inside the layer rather than
+ * pushing the paste box and the footer off the bottom: a journal covering a
+ * long career holds dozens of builds, and the two controls under it are how a
+ * Commander answers the list (canvas 1c, `imp-list`).
+ */
+.slef-import__picks {
+  max-block-size: var(--ednb-layout-import-picks);
+  overflow-y: auto;
+}
+
+/*
+ * The rule between the two ways in, with its words set into it. One line, two
+ * rules, drawn with the same hairline the canvas uses either side of `OR PASTE`.
+ */
+.slef-import__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--ednb-space-inline);
+  font-family: var(--ednb-font-metric);
+  font-size: var(--ednb-text-size-caption);
+  letter-spacing: var(--ednb-text-tracking-meta);
+  text-transform: uppercase;
+  color: var(--ednb-text-faint);
+}
+
+.slef-import__divider::before,
+.slef-import__divider::after {
+  flex: 1;
+  block-size: var(--ednb-border-width-hairline);
+  background-color: var(--ednb-border-quiet);
+  content: '';
+}

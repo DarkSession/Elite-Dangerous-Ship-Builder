@@ -210,6 +210,7 @@ import { AppFrame } from '../components/app-frame/app-frame';
 import { ChoiceGroup } from '../components/choice-group/choice-group';
 import { Collection } from '../components/collection/collection';
 import { Disclosure } from '../components/disclosure/disclosure';
+import { FileDrop } from '../components/file-drop/file-drop';
 import { Tooltip } from '../components/tooltip/tooltip';
 import { GameText } from '../components/game-text/game-text';
 import { Layer } from '../components/layer/layer';
@@ -263,7 +264,7 @@ import { LegalExcerpt } from '../components/legal-excerpt/legal-excerpt';
 import { ToolCard } from '../components/tool-card/tool-card';
 import { VersionFacts } from '../components/version-facts/version-facts';
 import { ExportBuildLayer } from '../../features/slef/export-build-layer/export-build-layer';
-import { ImportBuildLayer } from '../../features/slef/import-build-layer/import-build-layer';
+import { JournalImportLayer } from '../../features/shared/journal-import-layer/journal-import-layer';
 
 /** A state rendered from a fixture. */
 function state(
@@ -4016,14 +4017,20 @@ const IMPORT_VIEW = {
   submitLabel: 'Load build',
   cancelLabel: 'Cancel',
   canSubmit: false,
+  dropLabel: 'Select or drop journal files',
+  scanned: null,
+  scanning: false,
+  dividerLabel: 'Or paste',
+  picks: [],
+  picksLabel: null,
 } as const;
 
 registerPreview({
-  componentId: 'slef-import-layer',
+  componentId: 'journal-import-layer',
   group: 'Exchange',
-  component: ImportBuildLayer,
+  component: JournalImportLayer,
   contract: contract(
-    'slef-import-layer',
+    'journal-import-layer',
     {
       role: 'group',
       visibleNameMatchesAccessibleName: true,
@@ -4045,12 +4052,40 @@ registerPreview({
           ...IMPORT_VIEW,
           draft: SLEF_PAYLOAD,
           canSubmit: true,
+          scanned: 'Journal.2026-09-01T100000.01.log · 3 builds',
+          submitLabel: 'Load 2 builds',
+          picksLabel: '3 builds found · select one or more · 2 selected',
+          picks: [
+            {
+              key: 'night-watch',
+              title: 'Night Watch · NW-01',
+              detail: 'Anaconda · 42 modules',
+              meta: '2026-09-01 10:00',
+              selected: true,
+            },
+            {
+              key: 'day-watch',
+              title: 'Day Watch',
+              detail: 'Python Mk II · 30 modules',
+              meta: '2026-08-30 21:14',
+              selected: true,
+            },
+            {
+              key: 'stock',
+              title: 'Sidewinder',
+              detail: 'Sidewinder · 12 modules',
+              meta: '2026-08-12 08:02',
+              selected: false,
+            },
+          ],
         },
       },
       [
         'the payload is monospaced, direction-isolated and editable',
         'the status line holds its height while it has nothing to say',
-        'Cancel and Load build are the only controls, as the canvas draws them',
+        'the file control carries its own label and what the last scan read',
+        'each build a scan found is a checkbox with its own name, hull and time',
+        'Cancel and the counted load action are the only controls, as the canvas draws them',
       ],
       ['normal', 'expanded-copy', 'rtl', 'reduced-motion', 'long-identity'],
     ),
@@ -4060,7 +4095,15 @@ registerPreview({
     ]),
     state(
       'loading',
-      { view: { ...IMPORT_VIEW, draft: SLEF_PAYLOAD, busy: true, status: 'Reading this payload' } },
+      {
+        view: {
+          ...IMPORT_VIEW,
+          draft: SLEF_PAYLOAD,
+          busy: true,
+          scanning: true,
+          status: 'Reading 3 files',
+        },
+      },
       [
         'the draft stays readable while it is being inspected',
         'the busy state is named in text, not only shown as motion',
@@ -4705,5 +4748,52 @@ registerPreview({
       'disabled',
       'Every tool offered answers an address. A tool that could not be opened would be left out of the registry rather than drawn unavailable.',
     ),
+  ],
+});
+
+registerPreview({
+  componentId: 'file-drop',
+  group: 'Fields',
+  component: FileDrop,
+  contract: contract(
+    'file-drop',
+    {
+      role: 'button',
+      visibleNameMatchesAccessibleName: true,
+      exposedStates: ['disabled'],
+      relationships: ['label', 'description'],
+      textEquivalents: ['what the last selection came to'],
+    },
+    ['default', 'empty', 'loading', 'disabled'],
+  ),
+  states: [
+    state(
+      'default',
+      {
+        label: 'Select or drop journal files',
+        hint: 'Journal, log and JSON files, several at a time',
+        scanned: 'Journal.2026-09-01T100000.01.log \u00b7 4 builds',
+        accept: '.log,.json,.txt,application/json',
+      },
+      [
+        'the label names the control and belongs to the file input',
+        'the hint and the scanned line are associated by aria-describedby',
+        'the input keeps the keyboard operation the browser gives it',
+      ],
+      ['normal', 'expanded-copy', 'rtl', 'long-identity'],
+    ),
+    state('empty', { label: 'Select or drop journal files' }, [
+      'renders before anything has been chosen, with the label alone',
+    ]),
+    state('loading', { label: 'Select or drop journal files', busy: true }, [
+      'the control is unavailable while what was chosen is being read',
+    ]),
+    notApplicable(
+      'error',
+      'The plate takes files and reports nothing about them. What a file holds is refused by the surface that asked for it, where the refusal is read.',
+    ),
+    state('disabled', { label: 'Select or drop journal files', disabled: true }, [
+      'exposes the disabled state natively on the file control',
+    ]),
   ],
 });

@@ -183,6 +183,12 @@ test.describe('engineering a module', () => {
 
     await page.keyboard.press('End');
 
+    // Polled, not read once. The browser applies the scroll after the key, and
+    // on a loaded machine that is not the same tick — this assertion is the one
+    // failure a full matrix run produces without a defect behind it (measured
+    // 2026-09-04 and again 2026-09-06).
+    await expect.poll(() => list.evaluate((box) => box.scrollTop)).toBeGreaterThan(0);
+
     const inView = await list.evaluate((box) => {
       const active = box.querySelector(
         `#${CSS.escape(box.getAttribute('aria-activedescendant') ?? '')}`,
@@ -193,7 +199,6 @@ test.describe('engineering a module', () => {
     });
 
     expect(inView).toBe(true);
-    expect(await list.evaluate((box) => box.scrollTop)).toBeGreaterThan(0);
   });
 
   test('opens with nothing selected on an unengineered module', async ({ page }) => {

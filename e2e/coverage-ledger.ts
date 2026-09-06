@@ -47,6 +47,7 @@ export const COVERED_FEATURES: readonly string[] = [
   '012-help-and-licences',
   '014-start-page',
   '015-prerendered-documents',
+  '016-journal-import',
 ];
 
 /** The five layout profiles, each run in both engines. */
@@ -1311,7 +1312,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
     manualRecord: 'actual-zoom',
   },
   {
-    surfaceId: 'shell/slef-import-layer',
+    surfaceId: 'shell/journal-import-layer',
     requirements: [
       '004/FR-007',
       '004/FR-008',
@@ -1319,6 +1320,7 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       '004/FR-011',
       '004/FR-014',
       '004/SC-003',
+      '016/FR-007',
     ],
     journey: 'product/slef-import',
     axe: true,
@@ -1330,6 +1332,68 @@ export const COVERAGE_LEDGER: readonly CoverageEntry[] = [
       'every package diagnostic keeps its own index, path, code, constraint and reason',
       'no application parser, trim, repair or heuristic decode runs on the draft',
       'no state is carried by colour alone, and the draft JSON is never announced',
+      'the pasted-entry bound is the paste box’s own, and a chosen journal file is bounded by its size instead',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'shell/journal-scan',
+    requirements: [
+      '016/FR-001',
+      '016/FR-002',
+      '016/FR-003',
+      '016/FR-004',
+      '016/FR-005',
+      '016/FR-006',
+      '016/SC-001',
+      '016/SC-002',
+    ],
+    journey: 'product/journal-import',
+    axe: true,
+    assertions: [
+      'several journal files are chosen at once, by the control and by dropping them',
+      'a file over the stated bound is refused by name, and the rest of the selection is still read',
+      'what was read is stated: the files by name, and how many events they hold',
+      'a build two files both hold is listed once, and the list is newest first',
+      'a file at the bound is scanned within the budget in the reference environment',
+      'nothing is sent anywhere and nothing of a journal is cached',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'shell/journal-selection',
+    requirements: ['016/FR-008', '016/FR-009', '016/FR-010', '016/FR-011', '016/SC-003'],
+    journey: 'product/journal-import',
+    axe: true,
+    assertions: [
+      'every event a journal holds is offered, and loading is refused with none chosen',
+      'one chosen build replaces the active build and lands on the workspace',
+      'several chosen builds are saved, none is opened, and the saved builds open on the count',
+      'a refused entry names itself with the package’s own answer and costs the others nothing',
+    ],
+    manualRecord: 'screen-reader',
+  },
+  {
+    surfaceId: 'library/journal-records',
+    requirements: ['016/FR-012', '016/FR-013'],
+    journey: 'product/journal-import',
+    axe: true,
+    assertions: [
+      'a saved build takes its ship name, its ident where it has none, and its hull where it has neither',
+      'a name already taken is kept beside the one that has it, without a question',
+    ],
+    manualRecord: null,
+  },
+  {
+    surfaceId: 'equipment/journal-import',
+    requirements: ['016/FR-014', '016/FR-015', '016/FR-016', '016/FR-017', '016/SC-004'],
+    journey: 'equipment/journal-import',
+    axe: true,
+    assertions: [
+      'the bench reads suit loadouts from the same files, newest first',
+      'what the package left out is named as the package reported it, and nothing is substituted',
+      'one chosen loadout opens on the bench, and several are saved with the bench left empty',
+      'a saved loadout is named by the journal’s own loadout name, and carries the journal note',
     ],
     manualRecord: 'screen-reader',
   },
